@@ -22,7 +22,7 @@ import se.anatom.ejbca.util.query.*;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalLogSessionBean.java,v 1.10 2003-04-01 11:27:22 scop Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.11 2003-06-14 10:28:28 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean  {
 
@@ -234,7 +234,7 @@ public class LocalLogSessionBean extends BaseSessionBean  {
              if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
-              se.printStackTrace();
+               error("Fel vid upprensning: ", se);
            }
         }
     } // query

@@ -32,7 +32,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.41 2003-06-13 16:34:31 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.42 2003-06-14 10:28:32 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -177,14 +177,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
         catch (Exception e) {
             throw new EJBException(e);
-        }
-        finally {
+        } finally {
             try {
                 if (result != null) result.close();
                 if (ps != null) ps.close();
                 if (con!= null) con.close();
             } catch(SQLException se) {
-                se.printStackTrace();
+                error("Fel vid upprensning: ", se);
             }
         }
     } // listAllCertificates
@@ -215,14 +214,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
         catch (Exception e) {
             throw new EJBException(e);
-        }
-        finally {
+        } finally {
             try {
                 if (result != null) result.close();
                 if (ps != null) ps.close();
                 if (con!= null) con.close();
             } catch(SQLException se) {
-                se.printStackTrace();
+                error("Fel vid upprensning: ", se);
             }
         }
     } // listRevokedCertificates
@@ -299,14 +297,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
         catch (Exception e) {
             throw new EJBException(e);
-        }
-        finally {
+        } finally {
             try {
                 if (result != null) result.close();
                 if (ps != null) ps.close();
                 if (con!= null) con.close();
             } catch(SQLException se) {
-                se.printStackTrace();
+                error("Fel vid upprensning: ", se);
             }
         }
     } //findCertificatesByExpireTimeWithLimit
@@ -638,14 +635,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
         catch (Exception e) {
             throw new EJBException(e);
-        }
-        finally {
+        } finally {
             try {
                 if (result != null) result.close();
                 if (ps != null) ps.close();
                 if (con!= null) con.close();
             } catch(SQLException se) {
-                se.printStackTrace();
+                error("Fel vid upprensning: ", se);
             }
         }
     } //getLastCRLNumber

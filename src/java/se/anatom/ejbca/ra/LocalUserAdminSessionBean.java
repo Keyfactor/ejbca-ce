@@ -41,7 +41,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.55 2003-06-13 16:34:53 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.56 2003-06-14 10:28:32 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -693,7 +693,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
              if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
-              se.printStackTrace();
+               error("Fel vid upprensning: ", se);
            }
         }
     } // findAllUsersByStatus
@@ -741,7 +741,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
              if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
-              se.printStackTrace();
+               error("Fel vid upprensning: ", se);
            }
         }
     }
@@ -792,7 +792,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
              if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
-              se.printStackTrace();
+               error("Fel vid upprensning: ", se);
            }
         }
     }
@@ -866,7 +866,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
              if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
-              se.printStackTrace();
+               error("Fel vid upprensning: ", se);
            }
         }
     } // query
@@ -909,7 +909,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
              if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
-              se.printStackTrace();
+               error("Fel vid upprensning: ", se);
            }
         }
 
@@ -955,7 +955,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
              if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
-              se.printStackTrace();
+               error("Fel vid upprensning: ", se);
            }
         }
     } // checkForCertificateProfileId

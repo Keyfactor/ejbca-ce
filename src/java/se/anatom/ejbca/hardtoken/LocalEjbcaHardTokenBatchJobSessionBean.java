@@ -24,7 +24,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from EJBCA RA.
  *
- * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.5 2003-03-11 09:47:41 anatom Exp $
+ * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.6 2003-06-14 10:28:32 anatom Exp $
  */
 public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
@@ -149,13 +149,13 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
             getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with dn: " + CertTools.getSubjectDN(issuercert));
           }catch(RemoteException re){}
           throw new EJBException(e);
-        }finally{
+        } finally {
            try{
              if(rs != null) rs.close();
              if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
-              se.printStackTrace();
+               error("Fel vid upprensning: ", se);
            }
         }
       }
@@ -211,7 +211,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
              if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
-              se.printStackTrace();
+               error("Fel vid upprensning: ", se);
            }
         }
       }
@@ -274,7 +274,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
              if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
-              se.printStackTrace();
+               error("Fel vid upprensning: ", se);
            }
         }
       }
@@ -321,7 +321,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
              if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
-              se.printStackTrace();
+               error("Fel vid upprensning: ", se);
            }
         }
       }
@@ -364,7 +364,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
              if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
-              se.printStackTrace();
+               error("Fel vid upprensning: ", se);
            }
         }
     } // checkForHardTokenIssuerId
