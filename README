@@ -27,8 +27,8 @@ Please take a minute to thorougly consider the security implications and make su
 DEPENDENCIES
 ------------
 EJBCA uses the OpenSource JCE crypto provider from Bouncycastle (www.bouncycastle.org). 
-The provider is distributed with EJBCA as 'bcprov-jdk13-<version>.jar. The latest version of the JCE provider can always be obtained from www.bouncycastle.org.
-bcprov-jdk13-<version>.jar is Copyright (c) 2000 The Legion Of The Bouncy Castle (http://www.bouncycastle.org).
+The provider is distributed with EJBCA as 'jce-jdk13-<version>.jar. The latest version of the JCE provider can always be obtained from www.bouncycastle.org.
+jce-jdk13-<version>.jar is Copyright (c) 2000 The Legion Of The Bouncy Castle (http://www.bouncycastle.org).
 The version used in this release is 1.11b.
 
 EJBCA is developed on the OpenSource J2EE application server JBoss (www.jboss.org).
@@ -58,7 +58,7 @@ Ant 1.4 to build (http://jakarta.apache.org/ant/)
 
 Simply unpack the archive in a directory and run "ant" to build everything.
 
-Copy the Bouncycastle JCE provider lib/bcprov-jdk13-<version>.jar to the directory jboss/lib/ext in, it will be added to JBoss's classpath 
+Copy the Bouncycastle JCE provider lib/jce-jdk13-<version>.jar to the directory jboss/lib/ext in, it will be added to JBoss's classpath 
 automatically when JBoss is started.
 
 Set the environment variable JBOSS_HOME to the directory where JBoss's root is (/jboss). This is done so the deploy script will know where files are to be copied, they are copied to the $JBOSS_HOME/deploy directory.
@@ -207,6 +207,12 @@ a certificate for a user. A remote user database is used by configuring the CA t
 of 'LocalAuthenticationSession'.
 The sample files implement a simple file based user database and a servlet that responds to the HTTP requests comming from the CA.
 The sample remote authentication is deployes by deploying the file 'sampleauth.war' in JBoss.
+
+-HttpGetCert.java
+Example how a certificate can be fetched programmatically using HTTP/S. The sample generates a certificate request and uses POST to the same servlet
+as used from a browser through (http://127.0.0.1:8080/apply/request/apply_man.jsp), the servlet url is http://127.0.0.1:8080/apply/certreq. 
+The certificate reply containing a PEM-formatted certificate is printed to the screen.
+
 
 REFERENCES
 ----------

@@ -13,6 +13,8 @@ import com.sun.net.ssl.*;
 import java.security.KeyStore;
 import java.security.KeyPair;
 import java.security.cert.*;
+import java.security.Provider;
+import java.security.Security;
 
 import org.apache.log4j.*;
 
@@ -34,7 +36,7 @@ import se.anatom.ejbca.util.*;
  * <li>password - password for the above user.
  * </ul>
  *
- * @version: $Id: HttpGetCert.java,v 1.2 2001-12-12 13:55:49 anatom Exp $
+ * @version: $Id: HttpGetCert.java,v 1.3 2001-12-12 14:22:20 anatom Exp $
  *
  */
 public class HttpGetCert {
@@ -161,8 +163,8 @@ public class HttpGetCert {
         
         // POST it
         PrintWriter out = new PrintWriter(con.getOutputStream());
-        out.println("pkcs10=" + URLEncoder.encode(request) +
-        "&username=" + URLEncoder.encode(username) +
+        out.println("pkcs10req=" + URLEncoder.encode(request) +
+        "&user=" + URLEncoder.encode(username) +
         "&password=" + URLEncoder.encode(password) +
         "&submit=Submit+Query");
         out.close();
@@ -186,13 +188,12 @@ public class HttpGetCert {
     } // sendHttpReq
 
     public static void main(String args[])  throws Exception {
-        
-        if (args.length < 2) {
-            System.out.println("Usage: HttpGetCert <requestUrl>");
-            return;
-        }
-        String dn = args[1];
-        int keysize = Integer.parseInt(args[2]);
+        //Configure Log4j
+        BasicConfigurator.configure();
+        // Install BouncyCastle provider
+        Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
+        int result = Security.addProvider(BCJce);
+
         // Generate keys (512 bit for sample purposes)
         System.out.print("Generating 512 bit RSA keys.");
         KeyPair rsaKeys = KeyTools.genKeys(512);
@@ -214,7 +215,7 @@ public class HttpGetCert {
         // Now send the request
         System.out.println("Trying to send request...");
         HttpGetCert getter = new HttpGetCert();
-        getter.sendHttpReq("http://127.0.0.1:8080/apply/apply_man.jsp", new String(bos1.toByteArray()), "foo", "foo123");
+        getter.sendHttpReq("http://127.0.0.1:8080/apply/certreq", new String(bos1.toByteArray()), "foo", "foo123");
     }
 
 }  // class CertRequest
