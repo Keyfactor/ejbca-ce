@@ -5,7 +5,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  *  This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.7 2003-02-06 15:35:53 herrvendil Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.8 2003-02-07 11:37:35 scop Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
   
@@ -212,7 +212,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
       return returnval.substring(returnval.lastIndexOf('/')+1);  
     }
     public   void setFootBanner(String foot){
-      data.put(FOOTBANNER,  "/" + ((String) data.get(BANNERS_PATH)) + "/" +foot);
+      data.put(FOOTBANNER, ((String) data.get(ADMINPATH)) + "/" + ((String) data.get(BANNERS_PATH)) + "/" +foot);
     }
     
     // Methods for manipulating the title.     
