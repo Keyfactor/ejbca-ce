@@ -55,14 +55,6 @@
 
 <%
    // Generate Html file.
-     System.out.println("admingroupname '" + admingroup[ADMINGROUPNAME] + "', caid :" + caid);
-   if(adh == null)
-     System.out.println(" adh is null");
-
-   if(admingroup == null)
-     System.out.println(" admingroup is null");
-   if(adh.getAdminGroup(admingroup[ADMINGROUPNAME],caid) == null)
-     System.out.println(" AdminGroup is null");
 
    Collection adminentities = adh.getAdminGroup(admingroup[ADMINGROUPNAME],caid).getAdminEntities();
 
