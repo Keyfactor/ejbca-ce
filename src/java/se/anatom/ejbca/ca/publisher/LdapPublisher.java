@@ -56,7 +56,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.2 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.3 2004-05-12 14:10:30 herrvendil Exp $
  */
 public class LdapPublisher extends BasePublisher{
 	 	
@@ -469,14 +469,16 @@ public class LdapPublisher extends BasePublisher{
                 throw new PublisherException("Certificate doesn't exist in database");            
             }
         } else  {
-            log.debug("Removing CA certificate from " + getHostname());
-
+            log.debug("Not removing CA certificate from " + getHostname() + "Because of object class restrictions.");
+            // Currently removal of CA certificate isn't support because of object class restictions
+            /*
             if (oldEntry != null) {
                 modSet = getModificationSet(oldEntry, dn, false, false);
                 modSet.add(LDAPModification.DELETE, new LDAPAttribute(getCACertAttribute()));
             } else {
                 log.error("Certificate doesn't exist in database");            
-                throw new PublisherException("Certificate doesn't exist in database");            }
+                throw new PublisherException("Certificate doesn't exist in database");            
+            }*/
         }
 
         try {
@@ -485,7 +487,7 @@ public class LdapPublisher extends BasePublisher{
             // authenticate to the server
             lc.bind(ldapVersion, getLoginDN(), getLoginPassword());            
             // Add or modify the entry
-            if (oldEntry != null && getModifyExistingUsers()) {
+            if (oldEntry != null && modSet != null && getModifyExistingUsers()) {
                 lc.modify(dn, modSet);
                 log.debug("\nRemoved certificate : " + dn + " successfully.");  
             }               
