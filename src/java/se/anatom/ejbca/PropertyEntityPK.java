@@ -1,38 +1,44 @@
 package se.anatom.ejbca;
 
-/**
- * @version $Id: PropertyEntityPK.java,v 1.2 2004-01-09 09:35:43 anatom Exp $
+/** Compount primary key for property entities.
+ *
+ * @version $Id: PropertyEntityPK.java,v 1.3 2004-01-09 11:20:56 anatom Exp $
  */
 
 public final class PropertyEntityPK implements java.io.Serializable {
 
-    public int pK;
+    public int id;
+    public String property;
 
     public PropertyEntityPK(int id, String property) {
-        this.pK =
-        ((property==null?0:property.hashCode())
-        ^
-        ((int) id));
+        this.id = id;
+        this.property=property;
+    }
+    
+    public int getId() {
+        return id;
+    }
+    public String getProperty() {
+        return property;
     }
 
     /**
      * @see java.lang.Object#equals(java.lang.Object)
      */
-    public boolean equals(java.lang.Object otherOb) {
-        if (!(otherOb instanceof se.anatom.ejbca.PropertyEntityPK)) {
-            return false;
+    public boolean equals(java.lang.Object other) {
+        if (other instanceof PropertyEntityPK) {
+           return ( (id == ((PropertyEntityPK)other).id) &&
+               (property.equals(((PropertyEntityPK)other).property)) );
         }
-        se.anatom.ejbca.PropertyEntityPK other = (se.anatom.ejbca.PropertyEntityPK) otherOb;
-        return (this.pK == other.pK);
+        return false;
     }
 
     /**
      * @see java.lang.Object#hashCode()
      */
     public int hashCode() {
-
-        return this.pK;
-
+        return this.id;
     }
 
 }
+
