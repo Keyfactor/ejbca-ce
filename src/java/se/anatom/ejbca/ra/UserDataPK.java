@@ -4,6 +4,8 @@ import se.anatom.ejbca.util.StringTools;
 
 /**
  * The primary key of the User is the username fingerprint which should be unique.
+ *
+ * @version $Id: UserDataPK.java,v 1.4 2002-06-27 11:00:25 anatom Exp $
  **/
 public class UserDataPK implements java.io.Serializable {
     public String username;

@@ -8,6 +8,8 @@ import java.util.Collection;
 
 /**
  * For docs, see UserDataBean
+ *
+ * @version $Id: UserDataHome.java,v 1.5 2002-06-27 11:00:25 anatom Exp $
  **/
 public interface UserDataHome extends javax.ejb.EJBHome {
 

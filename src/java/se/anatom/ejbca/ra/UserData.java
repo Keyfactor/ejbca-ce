@@ -6,6 +6,8 @@ import java.security.NoSuchAlgorithmException;
 
 /**
  * For docs, see UserDataBean
+ *
+ * @version $Id: UserData.java,v 1.7 2002-06-27 11:00:25 anatom Exp $
  **/
 public interface UserData extends javax.ejb.EJBObject {
 
