@@ -468,6 +468,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/protocol/PKCS10RequestMessage.class"/>                                                                                                                                                                                                 
                 <include name="se/anatom/ejbca/protocol/IResponseMessage.class"/>                                                                                                                                                                                                 
                 <include name="se/anatom/ejbca/protocol/X509ResponseMessage.class"/>                                                                                                                                                                                                 
+                <include name="se/anatom/ejbca/ra/raadmin/DNFieldExtractor.class"/>                                                                                                                                                                                                 
                 <exclude name="se/anatom/ejbca/**/*Test*"/> 
        </fileset>
       </copy>
