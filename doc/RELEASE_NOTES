@@ -8,6 +8,10 @@ This release is not backwards compatible with EJBCA 2.1 without database upgrade
 Upgrade instructions must be followed if upgrading from EJBCA 2.1, 
 backup your database before trying any upgrades.
 
+EJBCA V2.1.1
+------------
+This is a plugin upgrade from V2.1.
+
 EJBCA V2.1
 ----------
 New method to revoke certificates with external publishers.
