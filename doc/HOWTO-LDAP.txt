@@ -151,6 +151,9 @@ and it will fetch an adress book entry with the information about the user, incl
 
 The LDAP url format is described in rfc2255: http://www.ietf.org/rfc/rfc2255.txt
 
+Examples of using LDAP with Netscape/Mozilla:
+http://www.umdnj.edu/istweb/pki/pki_files/secure_email_ns7.html
+
 CONFIGURE OpenLDAP
 ==================
 
