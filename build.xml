@@ -340,6 +340,8 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/log/LogEntry.class"/>
                 <include name="se/anatom/ejbca/util/CertTools.class"/> 
                 <include name="se/anatom/ejbca/SecConst.class"/>                                  
+                 <include name="se/anatom/ejbca/BaseProperty*.class"/>
+                                  <include name="se/anatom/ejbca/PropertyEntityPK.class"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
@@ -566,7 +568,9 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/hardtoken/IHardTokenBatchJobSessionRemote.class"/>
                 <include name="se/anatom/ejbca/hardtoken/HardTokenIssuer.class"/>   
                 <include name="se/anatom/ejbca/hardtoken/HardTokenIssuerData.class"/>   
+                <include name="se/anatom/ejbca/hardtoken/*Exception.class"/>
                 <include name="se/anatom/ejbca/hardtoken/hardtokentypes/*.class"/>   
+                <include name="se/anatom/ejbca/hardtoken/hardtokenprofiles/*.class"/>   
                 <include name="se/anatom/ejbca/hardtoken/HardTokenData.class"/>                 
                 <include name="se/anatom/ejbca/hardtoken/UnavailableTokenException.class"/>
                 <include name="se/anatom/ejbca/hardtoken/HardTokenExistsException.class"/> 
