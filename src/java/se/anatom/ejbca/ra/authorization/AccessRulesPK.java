@@ -9,12 +9,14 @@ package se.anatom.ejbca.ra.authorization;
 
 public final class AccessRulesPK implements java.io.Serializable {
     
-    public java.lang.String usergroupname;  
-    public java.lang.String directory;
+    public int fingerprint;
+
     
     public AccessRulesPK(java.lang.String usergroupname, java.lang.String directory){
-      this.usergroupname=usergroupname;
-      this.directory=directory;
+        this.fingerprint =
+        ((usergroupname==null?0:usergroupname.hashCode()) 
+        ^
+        (directory==null?0:directory.hashCode()));
     }
 
     
@@ -30,27 +32,14 @@ public final class AccessRulesPK implements java.io.Serializable {
             return false;
         }
         se.anatom.ejbca.ra.authorization.AccessRulesPK other = (se.anatom.ejbca.ra.authorization.AccessRulesPK) otherOb;
-        return (
-        
-        (usergroupname==null?other.usergroupname==null:usergroupname.equals(other.usergroupname))
-        &&
-        (directory==null?other.directory==null:directory.equals(other.directory))
-
-        
-        );
+        return (fingerprint==other.fingerprint);
     }
     
     /**
      * @see java.lang.Object#hashCode()
      */
     public int hashCode() {
-        return (
-        
-        (usergroupname==null?0:usergroupname.hashCode()) 
-        ^
-        (directory==null?0:directory.hashCode())
-    
-        );
+        return this.fingerprint;
     }
     
 }
