@@ -15,6 +15,8 @@ ALTER TABLE accessrulesdata
 #  Possibly data modifications needed!
 #
 
+# data must be REBUILT
+DELETE FROM adminentitydata;
 ALTER TABLE adminentitydata
     MODIFY matchWith int(11) NOT NULL DEFAULT '0',
     MODIFY matchType int(11) NOT NULL DEFAULT '0',
@@ -27,6 +29,8 @@ ALTER TABLE adminentitydata
 #  Possibly data modifications needed!
 #
 
+# data must be REBUILT
+DELETE FROM admingroupdata;
 ALTER TABLE admingroupdata
     ADD pK int(11) NOT NULL DEFAULT '0' FIRST,
     ADD cAId int(11) NOT NULL DEFAULT '0' AFTER adminGroupName,
