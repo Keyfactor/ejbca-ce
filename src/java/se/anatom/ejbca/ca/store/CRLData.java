@@ -24,8 +24,8 @@ public interface CRLData extends javax.ejb.EJBObject {
     public void setCRL(X509CRL crl) throws RemoteException;
     public int getCRLNumber() throws RemoteException;
     public void setCRLNumber(int number) throws RemoteException;
-    public String getIssuer() throws RemoteException;
-    public void setIssuer(String dn) throws RemoteException;
+    public String getIssuerDN() throws RemoteException;
+    public void setIssuerDN(String dn) throws RemoteException;
     public String getFingerprint() throws RemoteException;
     public void setFingerprint(String fp) throws RemoteException;
     public String getCAFingerprint() throws RemoteException;

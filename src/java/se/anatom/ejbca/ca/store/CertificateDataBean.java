@@ -114,43 +114,52 @@ public class CertificateDataBean implements javax.ejb.EntityBean {
             cat.error("Can't extract DER encoded certificate information.", cee);
         }
     }
-    public String getIssuer() {
+    public String getIssuerDN() {
         return issuerDN;
     }
-    public void setIssuer(String dn) {
+    public void setIssuerDN(String dn) {
         issuerDN = CertTools.stringToBCDNString(dn);
     }
-    public String getSubject(){
+    public String getSubjectDN(){
         return subjectDN;
     }
-    public void setSubject(String dn) {
+    public void setSubjectDN(String dn) {
         subjectDN = CertTools.stringToBCDNString(dn);
     }
-    public String getFingerprint(){
+    public String getFp() {
+        return fp;
+    }
+    public String getFingerprint() {
         return fp;
     }
     public void setFingerprint(String f) {
         fp = f;
     }
-    public String getCAFingerprint(){
+    public String getCafp() {
+        return cafp;
+    }
+    public String getCAFingerprint() {
         return cafp;
     }
     public void setCAFingerprint(String f) {
         cafp = f;
     }
-    public int getStatus(){
+    public int getStatus() {
         return status;
     }
     public void setStatus(int st) {
         status = st;
     }
-    public int getType(){
+    public int getType() {
         return type;
     }
-    public void setType(int t){
+    public void setType(int t) {
         type = t;
     }
-    public BigInteger getSerialNumber(){
+    public String getSerno() {
+        return serno;
+    }
+    public BigInteger getSerialNumber() {
         return new BigInteger(serno);
     }
     public void setSerialNumber(BigInteger s){

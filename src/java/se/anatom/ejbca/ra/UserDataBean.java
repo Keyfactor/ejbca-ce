@@ -79,7 +79,7 @@ public class UserDataBean implements javax.ejb.EntityBean {
             throw nsae;
         }
     }
-    public String getUsername(){
+    public String getUsername() {
         return username;
     }
     public void setUsername(String username) {

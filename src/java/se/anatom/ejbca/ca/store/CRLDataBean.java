@@ -14,7 +14,7 @@ import se.anatom.ejbca.util.Base64;
  * Entity Bean representing a CRL.
  * Information stored:
  * <pre>
- * CRL (b64crl)
+ * CRL (b64Crl)
  * Issuer DN (issuerDN)
  * CRLNumber (CRLNumber)
  * SHA1 fingerprint (fp)
@@ -27,7 +27,7 @@ public class CRLDataBean implements javax.ejb.EntityBean {
 
     private static Category cat = Category.getInstance( CRLDataBean.class.getName() );
 
-    public String b64crl;
+    public String b64Crl;
     public String fp;
     public String issuerDN;
     public int CRLNumber;
@@ -51,7 +51,7 @@ public class CRLDataBean implements javax.ejb.EntityBean {
     public CRLDataPK ejbCreate(X509CRL incrl, int number) {
         // Exctract all fields to store with the certificate.
         try {
-            b64crl = new String(Base64.encode(incrl.getEncoded()));
+            b64Crl = new String(Base64.encode(incrl.getEncoded()));
             fp = CertTools.getFingerprintAsString(incrl);
         } catch (CRLException ce) {
             cat.error("Can't extract DER encoded CRL.", ce);
@@ -74,10 +74,13 @@ public class CRLDataBean implements javax.ejb.EntityBean {
     public void ejbPostCreate(X509CRL incrl, int number) {
         // Do nothing. Required.
     }
-    public X509CRL getCRL(){
+    public String getB64Crl() {
+        return b64Crl;
+    }
+    public X509CRL getCRL() {
         X509CRL crl = null;
         try {
-            crl = CertTools.getCRLfromByteArray(Base64.decode(b64crl.getBytes()));
+            crl = CertTools.getCRLfromByteArray(Base64.decode(b64Crl.getBytes()));
         } catch (IOException ioe) {
             cat.error("Can't decode CRL.", ioe);
             return null;
@@ -92,7 +95,7 @@ public class CRLDataBean implements javax.ejb.EntityBean {
     }
     public void setCRL(X509CRL incrl){
         try {
-            b64crl = new String(Base64.encode((incrl).getEncoded()));
+            b64Crl = new String(Base64.encode((incrl).getEncoded()));
         } catch (CRLException ce) {
             cat.error("Can't extract DER encoded CRL.", ce);
         }
@@ -103,19 +106,25 @@ public class CRLDataBean implements javax.ejb.EntityBean {
     public void setCRLNumber(int number) {
         CRLNumber = number;
     }
-    public String getIssuer(){
+    public String getIssuerDN() {
         return issuerDN;
     }
-    public void setIssuer(String dn) {
+    public void setIssuerDN(String dn) {
         issuerDN = CertTools.stringToBCDNString(dn);
     }
-    public String getFingerprint(){
+    public String getFp() {
+        return fp;
+    }
+    public String getFingerprint() {
         return fp;
     }
     public void setFingerprint(String f) {
         fp = f;
     }
-    public String getCAFingerprint(){
+    public String getCafp() {
+        return cafp;
+    }
+    public String getCAFingerprint() {
         return cafp;
     }
     public void setCAFingerprint(String f) {

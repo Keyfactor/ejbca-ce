@@ -68,7 +68,7 @@
       <description>
          This role represents an internal process
       </description>
-      <role-name>internalUser</role-name>
+      <role-name>InternalUser</role-name>
     </security-role>
 
    <!-- 
@@ -81,7 +81,7 @@
        to have any real meaning.
    -->
    <method-permission>
-     <role-name>internalUser</role-name>
+     <role-name>InternalUser</role-name>
      <method>
          <ejb-name>UserData</ejb-name>
          <method-name>*</method-name>

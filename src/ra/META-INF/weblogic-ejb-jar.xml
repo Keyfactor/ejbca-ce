@@ -31,4 +31,13 @@
     <jndi-name>UserData</jndi-name>
   </weblogic-enterprise-bean>
 
+   <security-role-assignment>
+      <role-name>InternalUser</role-name>
+      <principal-name>system</principal-name>
+   </security-role-assignment>
+   <security-role-assignment>
+      <role-name>everyone</role-name>
+      <principal-name>everyone</principal-name>
+   </security-role-assignment>
+
 </weblogic-ejb-jar>

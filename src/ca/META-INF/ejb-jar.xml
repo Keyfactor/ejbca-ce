@@ -377,7 +377,7 @@
       <prim-key-class>se.anatom.ejbca.ca.store.CertificateDataPK</prim-key-class>
       <reentrant>False</reentrant>
 
-      <cmp-field><field-name>b64cert</field-name></cmp-field>
+      <cmp-field><field-name>b64Cert</field-name></cmp-field>
       <cmp-field><field-name>fp</field-name></cmp-field>
       <cmp-field><field-name>subjectDN</field-name></cmp-field>
       <cmp-field><field-name>issuerDN</field-name></cmp-field>
@@ -402,7 +402,7 @@
       <prim-key-class>se.anatom.ejbca.ca.store.CRLDataPK</prim-key-class>
       <reentrant>False</reentrant>
 
-      <cmp-field><field-name>b64crl</field-name></cmp-field>
+      <cmp-field><field-name>b64Crl</field-name></cmp-field>
       <cmp-field><field-name>fp</field-name></cmp-field>
       <cmp-field><field-name>CRLNumber</field-name></cmp-field>
       <cmp-field><field-name>issuerDN</field-name></cmp-field>
@@ -424,8 +424,8 @@
       <description>
          This role represents an internal process
       </description>
-      <role-name>internalUser</role-name>
-    </security-role>
+      <role-name>InternalUser</role-name>
+   </security-role>
 
    <!-- 
        Method permissions define who can access a given method on a bean.
@@ -437,7 +437,7 @@
        to have any real meaning.
    -->
    <method-permission>
-     <role-name>internalUser</role-name>
+     <role-name>InternalUser</role-name>
      <method>
          <ejb-name>AuthenticationSession</ejb-name>
          <method-name>*</method-name>
@@ -473,6 +473,7 @@
          <method-name>storeCertificate</method-name>
      </method>
    </method-permission>
+   
    <method-permission>
      <role-name>everyone</role-name>
      <method>

@@ -22,13 +22,12 @@ public interface CertificateData extends javax.ejb.EJBObject {
     public static int CERT_ARCHIVED =        60;   // Certificate is expired and kept for archive purpose
 
     // public methods
-    public String getB64Cert() throws RemoteException;
     public Certificate getCertificate() throws RemoteException;
     public void setCertificate(Certificate cert) throws RemoteException;
-    public String getSubject() throws RemoteException;
-    public void setSubject(String dn) throws RemoteException;
-    public String getIssuer() throws RemoteException;
-    public void setIssuer(String dn) throws RemoteException;
+    public String getSubjectDN() throws RemoteException;
+    public void setSubjectDN(String dn) throws RemoteException;
+    public String getIssuerDN() throws RemoteException;
+    public void setIssuerDN(String dn) throws RemoteException;
     public BigInteger getSerialNumber() throws RemoteException;
     public void setSerialNumber(BigInteger serno) throws RemoteException;
     public String getFingerprint() throws RemoteException;
