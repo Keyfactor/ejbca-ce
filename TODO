@@ -1,4 +1,4 @@
-$Id: TODO,v 1.70 2003-09-08 10:10:44 anatom Exp $
+$Id: TODO,v 1.71 2003-10-05 08:43:59 anatom Exp $
 
 V 1.x
 -----
@@ -6,20 +6,23 @@ V 1.x
 
 V 2.x
 -----
-- Clean javacode to use plain us-ascii ( \uXXXX escapes to the rescue?http://java.sun.com/docs/books/jls/second_edition/html/lexical.doc.html#95504)
-- All DNs UTF8 in the DB to work around encoding issues in DB/JDK(?).
+- Command line to edit/change users.
+- Import utility to get users from external datasources.
+- Better command line tools for batch stuff.
+
+V 3.x
+-----
 - Make it possible to dynamically configure new OtherNames in subjectAltName.
-- XML format of profiles and konfig (see java.beans.XMLEncoder/XMLDecoder,http://www.fawcette.com/javapro/2003_06/magazine/features/chavener/default_pf.asp)
 - LDAPPublisherSession should remove cert from the store when revoked.
 - More automated testing, Junit as well as web-stuff.
 - Continue improving exceptions and error handling.
 - Commands and status for certificate suspend (command for unrevoke, status for unrevoked).
 - Strategy for handling certificate issuance if notAfter is beyond CAs notAfter.
 - Import utility to get users from external datasources.
+- Command line to edit/change users.
 - Better command line tools for batch stuff.
-- Export/import utilities to export/import configuration data to XML-files.
-- OCSP
-- AuthorityInfoAcess extension required by OCSP (id-ad-ocsp for the accessMethod), 
+- OCSP, with responder cert signed by CA.
+- AuthorityInfoAcess extension required by OCSP (id-ad-ocsp for the accessMethod),
 and ocspSigning extendedKeyUsage + id-pkix-ocsp-check extensions.
 - Encrypt key recoverable keys stored in database.
 - Add smart card support (PKCS15) in CA for protection of private key.
