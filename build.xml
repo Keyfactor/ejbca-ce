@@ -585,6 +585,8 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceResponse.class"/>                                                                                                                                                                                                 
                 <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/IllegalExtendedCAServiceRequestException.class"/>                                                                                                                                                                                                 
                 <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceNotActiveException.class"/>                                                                                                                                                                                                 
+                <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/OCSPCAServiceInfo.class"/>                                                                                                                                                                                                 
+                <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceInfo.class"/>                                                                                                                                                                                                 
                 <exclude name="se/anatom/ejbca/**/*Test*"/> 
        </fileset>
       </copy>
