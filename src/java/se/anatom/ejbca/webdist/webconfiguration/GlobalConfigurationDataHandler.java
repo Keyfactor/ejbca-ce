@@ -29,8 +29,9 @@ public class GlobalConfigurationDataHandler {
     /** Creates a new instance of GlobalConfigurationDataHandler */
     public GlobalConfigurationDataHandler() throws IOException, FileNotFoundException, NamingException, CreateException,
                                                    FinderException{
-        InitialContext jndicontext = new InitialContext();
-        
+        Properties jndienv = new Properties();
+        jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));                                                       
+        InitialContext jndicontext = new InitialContext(jndienv);
         Object obj1 = jndicontext.lookup("RaAdminSession");
         IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, 
                                                                                  IRaAdminSessionHome.class);
@@ -42,9 +43,7 @@ public class GlobalConfigurationDataHandler {
      
         ret = raadminsession.loadGlobalConfiguration();  
         if(ret == null){
-           System.out.println("HERE"); 
            ret = new GlobalConfiguration();    
-           System.out.println("HEREEND"); 
         }
         return ret;
     }

@@ -3,6 +3,6 @@
     <!-- A reference to an EJB in the same server with a custom JNDI binding -->
     <ejb-ref>
         <ejb-ref-name>RSASignSession</ejb-ref-name>
-        <jndi-name>jnp://127.0.0.1:1099/ca/RSASignSession</jndi-name>
+        <jndi-name>jnp://localhost:1099/local/RSASignSession</jndi-name>
     </ejb-ref>
 </jboss-web>

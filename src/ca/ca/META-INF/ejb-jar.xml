@@ -181,7 +181,6 @@
         <local>se.anatom.ejbca.ca.store.IAuthenticationSessionLocal</local>
         <ejb-link>AuthenticationSession</ejb-link>
      </ejb-local-ref>
-
     <security-identity>
         <run-as>
             <role-name>InternalUser</role-name>

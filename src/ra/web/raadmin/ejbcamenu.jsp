@@ -10,7 +10,7 @@
 
   final String THIS_FILENAME            =   GlobalConfiguration.getMenuFilename();
 
-  final String MAIN_LINK                =  GlobalConfiguration.getRaAdminPath() + "/" +GlobalConfiguration.getMainFilename();
+  final String MAIN_LINK                =  GlobalConfiguration.getRaAdminPath() +GlobalConfiguration.getMainFilename();
 
   final String CA_LINK                  = GlobalConfiguration.getCaPath() 
                                                   + "/cafunctions.jsp";

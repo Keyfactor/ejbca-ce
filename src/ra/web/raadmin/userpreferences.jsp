@@ -1,7 +1,7 @@
 <%@page contentType="text/html"%>
 <%@page  errorPage="errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration, 
                 se.anatom.ejbca.webdist.webconfiguration.UserPreference, se.anatom.ejbca.webdist.webconfiguration.GlobalConfigurationDataHandler,
-                se.anatom.ejbca.webdist.webconfiguration.WebLanguages, se.anatom.ejbca.webdist.webconfiguration.UsersPreferences"%>
+                se.anatom.ejbca.webdist.webconfiguration.WebLanguages, se.anatom.ejbca.webdist.webconfiguration.UsersPreferenceDataHandler"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 

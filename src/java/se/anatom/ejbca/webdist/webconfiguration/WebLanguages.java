@@ -26,38 +26,22 @@ public class WebLanguages {
       if(languages == null){ 
         // Get available languages.  
          this.availablelanguages=null;
-         String[] availablelanguagefilenames;
-         FileInputStream fis;
-         java.io.File languagedirectory = new java.io.File(GlobalConfiguration.getDocumentRoot() 
-                                                           +GlobalConfiguration.getLanguagePath());
-         availablelanguagefilenames = languagedirectory.list(new LanguageFilenameFilter());
- 
-         if(availablelanguagefilenames != null){
-           availablelanguages = new String[availablelanguagefilenames.length];  
-
-           for(int i = 0; i <  availablelanguages.length; i++){
-              availablelanguages[i] = availablelanguagefilenames[i].substring(GlobalConfiguration.getLanguageFilename().length()+1
-                                                                             ,availablelanguagefilenames[i].length()-11)
-                                                                             .toUpperCase();    
-           }  
-
-           // Load availabe languages
-           languages = new Properties[availablelanguages.length];
-           for(int i = 0; i < availablelanguagefilenames.length; i++){
-             fis = new FileInputStream(GlobalConfiguration.getDocumentRoot() 
-                                       +GlobalConfiguration.getLanguagePath() + "/" +availablelanguagefilenames[i]);
-             languages[i] = new Properties();
-             languages[i].load(fis);
-             fis.close();
-           } 
+         
+         String availablelanguagesstring = GlobalConfiguration.getAvailableLanguagesAsString();
+         availablelanguages =  availablelanguagesstring.split(",");
+         for(int i=0; i < availablelanguages.length;i++){
+           availablelanguages[i] =  availablelanguages[i].trim().toUpperCase();  
          }
-       }
-    }
-      
-      
-      
-
-    
+           // Load availabe languages
+         languages = new Properties[availablelanguages.length];
+         for(int i = 0; i < availablelanguages.length; i++){
+           languages[i] = new Properties();
+           languages[i].load(this.getClass().getResourceAsStream("/" + GlobalConfiguration.getLanguagePath() + "/" 
+                                                                    + GlobalConfiguration.getLanguageFilename() + "."  
+                                                                    + availablelanguages[i].toLowerCase() +".properties"));
+         } 
+      } 
+    }    
     
     public WebLanguages(int preferedlang, int secondarylang) {   
       this.userspreferedlanguage=preferedlang;

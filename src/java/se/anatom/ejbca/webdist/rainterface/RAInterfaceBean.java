@@ -51,8 +51,8 @@ public class RAInterfaceBean extends Object implements java.io.Serializable {
       profiles = this.profiledatahandler.loadProfilesData();
       
       // Get the UserSdminSession instance.
-      Properties jndienv = new Properties();
-      jndienv.load(new FileInputStream(GlobalConfiguration.getDocumentRoot() +"/WEB-INF/jndi.properties"));
+      Properties jndienv = new Properties(); 
+      jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));
       jndicontext = new InitialContext(jndienv);
 
       Object obj1 = jndicontext.lookup("UserAdminSession");

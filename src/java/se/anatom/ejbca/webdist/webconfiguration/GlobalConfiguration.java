@@ -57,6 +57,9 @@ public class GlobalConfiguration implements java.io.Serializable {
        String tempbaseurl = ((String) myenv.lookup("BASEURL")).trim();
        String tempdocroot = ((String) myenv.lookup("DOCUMENTROOT")).trim();
        String tempraadminpath =  ((String) myenv.lookup("RAADMINDIRECTORY")).trim();
+       String tempavailablelanguages = ((String) myenv.lookup("AVAILABLELANGUAGES")).trim();
+       String tempavailablethemes = ((String) myenv.lookup("AVAILABLETHEMES")).trim();
+       
        if(!tempbaseurl.endsWith("/")){
          tempbaseurl = tempbaseurl + "/";   // Remove ending '/'
        }
@@ -76,6 +79,8 @@ public class GlobalConfiguration implements java.io.Serializable {
        setBaseUrl(tempbaseurl);
        setDocumentRoot(tempdocroot + "/src/ra/web/raadmin/"); 
        config.put(P_RAADMINPATH,tempraadminpath);
+       config.put(P_AVAILABLELANGUAGES,tempavailablelanguages);
+       config.put(P_AVAILABLETHEMES,tempavailablethemes);
        
        // Add Ra Admin Path to the default open and hidden directories strings.
        String tempraadminpath2 = tempraadminpath;
@@ -229,11 +234,10 @@ public class GlobalConfiguration implements java.io.Serializable {
     
     public static String[] getAvailableThemes() {
        String[] availablethemes;
-       java.io.File themedirectory = new java.io.File(((String) config.get(P_DOCUMENTROOT)) 
-                                                      + (String) config.get(P_THEME_PATH));
-       availablethemes = themedirectory.list(new CssFilenameFilter());
+       availablethemes =  getAvailableThenesAsString().split(",");
        if(availablethemes != null){
          for(int i = 0; i <  availablethemes.length; i++){
+           availablethemes[i] = availablethemes[i].trim();   
            if(availablethemes[i].endsWith(".css")){
              availablethemes[i] = availablethemes[i].substring(0,availablethemes[i].length()-4);    
            }
@@ -295,6 +299,9 @@ public class GlobalConfiguration implements java.io.Serializable {
     
     public static String[] getPossibleEntiresPerPage(){return (String[]) config.get(P_POSSIBLEENTRIESPERPAGE);}      
 
+    public static String getAvailableLanguagesAsString(){return (String) config.get(P_AVAILABLELANGUAGES);} 
+    public static String getAvailableThenesAsString(){return (String) config.get(P_AVAILABLETHEMES);}         
+    
     // Private fields.
     // Overloaded from the serialize interface. Used to save and restore the configuration.
     private void writeObject(ObjectOutputStream out) throws IOException {
@@ -312,6 +319,8 @@ public class GlobalConfiguration implements java.io.Serializable {
     private final static String P_BASEURL            = "baseurl";
     private final static String P_DOCUMENTROOT       = "documentroot";
     private final static String P_RAADMINPATH        = "raadminpath";
+    private final static String P_AVAILABLELANGUAGES = "availablelanguages";
+    private final static String P_AVAILABLETHEMES    = "availablethemes";
     
     private final static String P_OPENDIRECTORIES    = "opendirectories"; 
     private final static String P_HIDDENDIRECTORIES  = "hiddendirectories"; 

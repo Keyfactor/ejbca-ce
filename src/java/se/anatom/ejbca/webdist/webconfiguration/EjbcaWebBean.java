@@ -81,7 +81,7 @@ public class EjbcaWebBean {
     // Check if user certificae is revoked
         // Get the ICertificateStoreSession instance.
         Properties jndienv = new Properties();
-        jndienv.load(new FileInputStream(GlobalConfiguration.getDocumentRoot() +"/WEB-INF/jndi.properties"));
+        jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));
         InitialContext jndicontext = new InitialContext(jndienv);
         
         Object obj1 = jndicontext.lookup("CertificateStoreSession");
@@ -226,12 +226,10 @@ public class EjbcaWebBean {
       String helpfile = helpfilename.substring(0,helpfilename.lastIndexOf('.'));
       String postfix  = helpfilename.substring(helpfilename.lastIndexOf('.')+1);
       
-      String preferedfilename = GlobalConfiguration.getDocumentRoot() 
-                                + GlobalConfiguration.getHelpPath()+"/"
+      String preferedfilename = "/" + GlobalConfiguration.getHelpPath()+"/"
                                 + helpfile + "." + prefered + "." + postfix;
       
-      String secondaryfilename = GlobalConfiguration.getDocumentRoot()
-                                 + GlobalConfiguration.getHelpPath()+"/"
+      String secondaryfilename = "/" + GlobalConfiguration.getHelpPath()+"/"
                                  + helpfile + "." + secondary + "." + postfix;
       
       String preferedurl = GlobalConfiguration.getBaseUrl() + GlobalConfiguration.getRaAdminPath()
@@ -242,7 +240,7 @@ public class EjbcaWebBean {
                           + GlobalConfiguration.getHelpPath()+"/"
                           + helpfile + "." + secondary + "." + postfix;
     
-      if(new java.io.File(preferedfilename).exists())
+      if(this.getClass().getResourceAsStream(preferedfilename) != null)
         returnedurl = preferedurl;
       else
         returnedurl = secondaryurl;
@@ -266,12 +264,10 @@ public class EjbcaWebBean {
       String imagefile = imagefilename.substring(0,imagefilename.lastIndexOf('.'));
       String postfix  = imagefilename.substring(imagefilename.lastIndexOf('.')+1);
       
-      String preferedfilename = GlobalConfiguration.getDocumentRoot() 
-                                + GlobalConfiguration.getImagesPath()+"/"
+      String preferedfilename = "/" + GlobalConfiguration.getImagesPath()+"/"
                                 + imagefile + "." + prefered + "." + postfix;
       
-      String secondaryfilename = GlobalConfiguration.getDocumentRoot()
-                                 + GlobalConfiguration.getImagesPath()+"/"
+      String secondaryfilename = "/" + GlobalConfiguration.getImagesPath()+"/"
                                  + imagefile + "." + secondary + "." + postfix;
       
       String preferedurl = GlobalConfiguration.getBaseUrl() + GlobalConfiguration.getRaAdminPath()
@@ -286,10 +282,10 @@ public class EjbcaWebBean {
                           + GlobalConfiguration.getImagesPath()+"/"
                           + imagefile + "."  + postfix;
     
-      if(new java.io.File(preferedfilename).exists())
+      if(this.getClass().getResourceAsStream(preferedfilename) != null)
         returnedurl = preferedurl;
       else{
-        if(new java.io.File(secondaryfilename).exists())
+        if(this.getClass().getResourceAsStream(secondaryfilename) != null)
           returnedurl = secondaryurl;
         else
           returnedurl = imageurl;
@@ -308,7 +304,6 @@ public class EjbcaWebBean {
     }
     
     public void reloadGlobalConfiguration() throws RemoteException, NamingException {
-      System.out.println("EjbcaWebBean reload");
       globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();
     }
     

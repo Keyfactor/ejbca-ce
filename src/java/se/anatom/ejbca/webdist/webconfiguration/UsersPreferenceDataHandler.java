@@ -30,7 +30,9 @@ public class UsersPreferenceDataHandler {
     /** Creates a new instance of UsersPreferences */
     public UsersPreferenceDataHandler()throws IOException, FileNotFoundException, NamingException, CreateException,
                                                    FinderException{
-        InitialContext jndicontext = new InitialContext();
+        Properties jndienv = new Properties();
+        jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));     
+        InitialContext jndicontext = new InitialContext(jndienv);
         
         Object obj1 = jndicontext.lookup("RaAdminSession");
         IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, 
