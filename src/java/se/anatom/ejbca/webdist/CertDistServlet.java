@@ -1,4 +1,3 @@
-
 package se.anatom.ejbca.webdist;
 
 import java.io.*;
@@ -14,7 +13,7 @@ import javax.naming.InitialContext;
 
 import se.anatom.ejbca.util.Base64;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
@@ -27,8 +26,9 @@ import se.anatom.ejbca.log.Admin;
 /**
  * Servlet used to distribute certificates and CRLs.<br>
  *
- * The servlet is called with method GET and syntax 'command=<command>'.
- * <p>The follwing commads are supported:<br>
+ * The servlet is called with method GET or POST and syntax
+ * <code>command=&lt;command&gt;</code>.
+ * <p>The follwing commands are supported:<br>
  * <ul>
  * <li>crl - gets the latest CRL.
  * <li>lastcert - gets latest certificate of a user, takes argument 'subject=<subjectDN>'.
@@ -41,12 +41,12 @@ import se.anatom.ejbca.log.Admin;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.10 2002-11-17 14:01:40 herrvendil Exp $
+ * @version $Id: CertDistServlet.java,v 1.11 2003-02-03 13:51:13 scop Exp $
  *
  */
 public class CertDistServlet extends HttpServlet {
 
-    static private Category cat = Category.getInstance( CertDistServlet.class.getName() );
+    private static Logger log = Logger.getInstance(CertDistServlet.class.getName());
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
     private static final String COMMAND_CRL = "crl";
@@ -62,17 +62,15 @@ public class CertDistServlet extends HttpServlet {
     private static final String SERNO_PROPERTY = "serno";
     private static final String LEVEL_PROPERTY = "level";
 
-    private InitialContext ctx = null;
-    private Admin administrator = null;
-    ICertificateStoreSessionHome storehome = null;
-    ISignSessionHome signhome = null;
+    private ICertificateStoreSessionHome storehome = null;
+    private ISignSessionHome signhome = null;
 
     public void init(ServletConfig config) throws ServletException {
-    super.init(config);
+        super.init(config);
         try {
 
             // Get EJB context and home interfaces
-            ctx = new InitialContext();
+            InitialContext ctx = new InitialContext();
             storehome = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
             ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
             signhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
@@ -82,20 +80,19 @@ public class CertDistServlet extends HttpServlet {
     }
 
     public void doPost(HttpServletRequest req, HttpServletResponse res)
-        throws IOException {
-        cat.debug(">doPost()");
-        res.setContentType("text/html");
-        res.getOutputStream().println("The certificate/CRL distribution servlet only handles GET method.");
-        cat.debug("<doPost()");
+        throws IOException, ServletException {
+        log.debug(">doPost()");
+        doGet(req, res);
+        log.debug("<doPost()");
     } //doPost
 
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
-        cat.debug(">doGet()");
+        log.debug(">doGet()");
 
         String command;
         // Keep this for logging.
         String remoteAddr = req.getRemoteAddr();
-        administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
+        Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
         
         command = req.getParameter(COMMAND_PROPERTY_NAME);
         if (command == null)
@@ -111,24 +108,24 @@ public class CertDistServlet extends HttpServlet {
                 res.setContentType("application/x-x509-crl");
                 res.setContentLength(crl.length);
                 res.getOutputStream().write(crl);
-                cat.debug("Sent latest CRL to client at " + remoteAddr);
+                log.debug("Sent latest CRL to client at " + remoteAddr);
             } catch (Exception e) {
                 PrintStream ps = new PrintStream(res.getOutputStream());
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting latest CRL.");
                 e.printStackTrace(ps);
-                cat.debug("Error sending latest CRL to " + remoteAddr);
-                cat.debug(e);
+                log.debug("Error sending latest CRL to " + remoteAddr);
+                log.debug(e);
                 return;
             }
         } else if (command.equalsIgnoreCase(COMMAND_CERT) || command.equalsIgnoreCase(COMMAND_LISTCERT)) {
             String dn = req.getParameter(SUBJECT_PROPERTY);
             if (dn == null) {
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=cert?subject=<subjectdn>.");
-                cat.debug("Bad request, no 'dn' arg to 'lastcert' or 'listcert' command.");
+                log.debug("Bad request, no 'dn' arg to 'lastcert' or 'listcert' command.");
                 return;
             }
             try {
-                cat.debug("Looking for certificates for '"+dn+"'.");
+                log.debug("Looking for certificates for '"+dn+"'.");
                 ICertificateStoreSessionRemote store = storehome.create();
                 Collection certcoll = store.findCertificatesBySubject(administrator, dn);
                 Object[] certs = certcoll.toArray();
@@ -152,11 +149,11 @@ public class CertDistServlet extends HttpServlet {
                         res.setContentType("application/octet-stream");
                         res.setContentLength(cert.length);
                         res.getOutputStream().write(cert);
-                        cat.debug("Sent latest certificate for '"+dn+"' to client at " + remoteAddr);
+                        log.debug("Sent latest certificate for '"+dn+"' to client at " + remoteAddr);
 
                     } else {
                         res.sendError(HttpServletResponse.SC_NOT_FOUND, "No certificate found for requested subject '"+dn+"'.");
-                        cat.debug("No certificate found for '"+dn+"'.");
+                        log.debug("No certificate found for '"+dn+"'.");
                     }
                 }
                 if (command.equalsIgnoreCase(COMMAND_LISTCERT)) {
@@ -190,8 +187,8 @@ public class CertDistServlet extends HttpServlet {
                 PrintStream ps = new PrintStream(res.getOutputStream());
                 e.printStackTrace(ps);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting certificates.");
-                cat.debug("Error getting certificates for '"+dn+"' for "+remoteAddr);
-                cat.debug(e);
+                log.debug("Error getting certificates for '"+dn+"' for "+remoteAddr);
+                log.debug(e);
                 return;
             }
         } else if (command.equalsIgnoreCase(COMMAND_NSCACERT) || command.equalsIgnoreCase(COMMAND_IECACERT) || command.equalsIgnoreCase(COMMAND_CACERT) ) {
@@ -210,7 +207,7 @@ public class CertDistServlet extends HttpServlet {
                 if ( (chain.length-1-level) < 0 ) {
                     PrintStream ps = new PrintStream(res.getOutputStream());
                     ps.println("No CA certificate of level "+level+"exist.");
-                    cat.debug("No CA certificate of level "+level+"exist.");
+                    log.debug("No CA certificate of level "+level+"exist.");
                     return;
                 }
                 X509Certificate cacert = (X509Certificate)chain[chain.length-1-level];
@@ -226,7 +223,7 @@ public class CertDistServlet extends HttpServlet {
                     res.setContentType("application/x-x509-ca-cert");
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);
-                    cat.debug("Sent CA cert to NS client, len="+enccert.length+".");
+                    log.debug("Sent CA cert to NS client, len="+enccert.length+".");
                 } else if (command.equalsIgnoreCase(COMMAND_IECACERT)) {
                     if (pkcs7)
                         res.setHeader("Content-disposition", "attachment; filename="+filename+".p7c");
@@ -235,7 +232,7 @@ public class CertDistServlet extends HttpServlet {
                     res.setContentType("application/octet-stream");
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);
-                    cat.debug("Sent CA cert to IE client, len="+enccert.length+".");
+                    log.debug("Sent CA cert to IE client, len="+enccert.length+".");
                 } else if (command.equalsIgnoreCase(COMMAND_CACERT)) {
                     byte[] b64cert = Base64.encode(enccert);
                     String out;
@@ -252,7 +249,7 @@ public class CertDistServlet extends HttpServlet {
                     res.setContentType("application/octet-stream");
                     res.setContentLength(out.length());
                     res.getOutputStream().write(out.getBytes());
-                    cat.debug("Sent CA cert to client, len="+out.length()+".");
+                    log.debug("Sent CA cert to client, len="+out.length()+".");
                 } else {
                     res.setContentType("text/plain");
                     res.getOutputStream().println("Commands="+COMMAND_NSCACERT+" || "+COMMAND_IECACERT+" || "+COMMAND_CACERT);
@@ -262,24 +259,24 @@ public class CertDistServlet extends HttpServlet {
                 PrintStream ps = new PrintStream(res.getOutputStream());
                 e.printStackTrace(ps);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting CA certificates.");
-                cat.debug("Error getting CA certificates.");
-                cat.debug(e);
+                log.debug("Error getting CA certificates.");
+                log.debug(e);
                 return;
             }
         } else if (command.equalsIgnoreCase(COMMAND_REVOKED)) {
             String dn = req.getParameter(ISSUER_PROPERTY);
             if (dn == null) {
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=revoked?issuer=<subjectdn>&serno=<serianlnumber>.");
-                cat.debug("Bad request, no 'issuer' arg to 'revoked' command.");
+                log.debug("Bad request, no 'issuer' arg to 'revoked' command.");
                 return;
             }
             String serno = req.getParameter(SERNO_PROPERTY);
             if (serno == null) {
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=revoked?issuer=<subjectdn>&serno=<serianlnumber>.");
-                cat.debug("Bad request, no 'serno' arg to 'revoked' command.");
+                log.debug("Bad request, no 'serno' arg to 'revoked' command.");
                 return;
             }
-            cat.debug("Looking for certificate for '"+dn+"' and serno='"+serno+"'.");
+            log.debug("Looking for certificate for '"+dn+"' and serno='"+serno+"'.");
             try {
                 ICertificateStoreSessionRemote store = storehome.create();
                 RevokedCertInfo revinfo = store.isRevoked(administrator, dn, new BigInteger(serno));
@@ -301,8 +298,8 @@ public class CertDistServlet extends HttpServlet {
                 PrintStream ps = new PrintStream(res.getOutputStream());
                 e.printStackTrace(ps);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error checking revocation.");
-                cat.debug("Error checking revocation for '"+dn+"' with serno '"+serno+"'.");
-                cat.debug(e);
+                log.debug("Error checking revocation for '"+dn+"' with serno '"+serno+"'.");
+                log.debug(e);
                 return;
             }
         } else {
