@@ -348,18 +348,26 @@
          <ejb-name>HardTokenBatchJobSession</ejb-name>
          <method-name>*</method-name>
      </method>
-  <!--   <method>
+     <method>
          <ejb-name>HardTokenIssuerData</ejb-name>
          <method-name>*</method-name>
      </method>
+     <method>
+         <ejb-name>HardTokenProfileData</ejb-name>
+         <method-name>*</method-name>
+     </method>     
      <method>
          <ejb-name>HardTokenData</ejb-name>
          <method-name>*</method-name>
      </method>
      <method>
+         <ejb-name>HardTokenPropertyData</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
          <ejb-name>HardTokenCertificateMap</ejb-name>
          <method-name>*</method-name>
-     </method>          -->
+     </method> 
    </method-permission>
 
    <!--
@@ -442,6 +450,14 @@
      <method>
          <ejb-name>HardTokenSession</ejb-name>
          <method-name>removeHardTokenCertificateMapping</method-name>
+     </method>                                        
+     <method>
+         <ejb-name>HardTokenSession</ejb-name>
+         <method-name>tokenGenerated</method-name>
+     </method>                                        
+     <method>
+         <ejb-name>HardTokenSession</ejb-name>
+         <method-name>errorWhenGeneratingToken</method-name>
      </method>                                        
 
      <trans-attribute>Required</trans-attribute>
