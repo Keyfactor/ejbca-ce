@@ -38,12 +38,12 @@ import se.anatom.ejbca.util.CertTools;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.18 2004-11-20 21:03:53 sbailliez Exp $
+ * @version $Id: CRLDataBean.java,v 1.19 2005-02-10 09:08:25 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CRLDataEB"
  * name="CRLData"
- * view-type="both"
+ * view-type="local"
  * type="CMP"
  * reentrant="False"
  * cmp-version="2.x"
@@ -58,25 +58,19 @@ import se.anatom.ejbca.util.CertTools;
  * extends="java.lang.Object"
  * implements="java.io.Serializable"
  *
- * @ejb.home extends="javax.ejb.EJBHome"
+ * @ejb.home
+ * generate="local"
  * local-extends="javax.ejb.EJBLocalHome"
  * local-class="se.anatom.ejbca.ca.store.CRLDataLocalHome"
- * remote-class="se.anatom.ejbca.ca.store.CRLDataHome"
  *
- * @ejb.interface extends="javax.ejb.EJBObject"
+ * @ejb.interface
+ * generate="local"
  * local-extends="javax.ejb.EJBLocalObject"
  * local-class="se.anatom.ejbca.ca.store.CRLDataLocal"
- * remote-class="se.anatom.ejbca.ca.store.CRLData"
  *
- * @ejb.finder
- *   description="findByIssuerDNAndCRLNumber"
- *   view-type="local"
+ * @ejb.finder description="findByIssuerDNAndCRLNumber"
  *   signature="se.anatom.ejbca.ca.store.CRLDataLocal findByIssuerDNAndCRLNumber(java.lang.String issuerdn, int cRLNumber)"
  *   query="SELECT DISTINCT OBJECT(a) from CRLDataBean a WHERE a.issuerDN=?1 AND a.CRLNumber=?2"
- *
- * @ejb.finder
- *   view-type="remote"
- *   signature="se.anatom.ejbca.ca.store.CRLData findByIssuerDNAndCRLNumber(java.lang.String issuerdn, int cRLNumber)"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
