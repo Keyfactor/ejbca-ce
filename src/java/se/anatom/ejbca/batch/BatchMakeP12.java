@@ -41,7 +41,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.7 2002-01-25 13:11:49 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.8 2002-01-25 13:13:39 anatom Exp $
  *
  */
 
@@ -57,10 +57,10 @@ public class BatchMakeP12 {
     private ISignSessionHome signhome;
 
     static public Context getInitialContext() throws NamingException{
-        System.out.println(">GetInitialContext");
+        //System.out.println(">GetInitialContext");
         // jndi.properties must exist in classpath
         Context ctx = new javax.naming.InitialContext();
-        System.out.println("<GetInitialContext");
+        //System.out.println("<GetInitialContext");
         return ctx;
     }
     /**
