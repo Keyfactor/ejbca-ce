@@ -18,8 +18,9 @@
 3.0.5
 -----
 Added support for activation of hardcatokens in View CA Info page.
-Added MS Template for DomainController functionallity
-Fixed Certificate upgrade problems
+Added MS Template for DomainController functionallity.
+Fixed Certificate upgrade problems.
+Add checks for illegal SQL chars in advanced modes in list end entities and view log.
 
 3.0.4
 -----
