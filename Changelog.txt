@@ -1,5 +1,6 @@
 2.1b1
 -----
+Initial SCEP support.
 
 2.0.1
 -----
