@@ -1,3 +1,16 @@
+Subject and Issuer DNs
+======================
+Handling of subject and issuer DNs must be done in an extremely predictable way,
+and in the same way everywhere. Issue are ordering of DN elements, handling of
+localized strings (UTF8) etc. Because of this, there are a few methods in
+se.anatom.ejbca.util.CertTools that MUST be used when handling DNs:
+
+stringToBCDNString() - when handling user input of a DN string to store od
+match.
+getSubjectDN(cert) - extracts subject DN from a certificate
+getIssuerDN(cert) - extracts issuer DN from a certificate
+getIssuerDN(crl) - - extracts issuer DN from a CRL
+
 Logging
 =======
 
@@ -135,8 +148,9 @@ Making entity beans
 --------------------
 
 All entity beans should inherit the class se.anatom.ejbca.BaseEntityBean.java.
-When doing this, the standard methods like setting the context are already in there. They 
-can however always be overriden. 
+When doing this, the standard methods like setting the context are already in
+there. They
+can however always be overriden.
 
 
 CVS
@@ -144,14 +158,14 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.8 2003-03-04 13:17:36 koen_serry Exp $
+@version $Id: DEVELOP,v 1.9 2003-03-11 09:46:04 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.8 2003-03-04 13:17:36 koen_serry Exp $
+ * @version $Id: DEVELOP,v 1.9 2003-03-11 09:46:04 anatom Exp $
  */
 
 CA KeyStore architecture/creating a custom CA Keystore
@@ -212,3 +226,4 @@ This architecture gives us the choice of for example an SQL database aa
 CertificateStoreSession where we also publish certificates to an LDAP directory,
 or the LDAP directory as the primary CertificateStoreSession where we also
 publish certificates to a specific SQL database for a specific purpose.
+

@@ -1,4 +1,4 @@
-$Id: README,v 1.71 2003-03-04 14:17:06 koen_serry Exp $
+$Id: README,v 1.72 2003-03-11 09:46:05 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source Initiative.
@@ -545,6 +545,11 @@ INSTALLING WEB RA-ADMIN
 Automatic method (preferred)
 ----------------------------
 
+0. Edit the file 'src/adminweb/WEB-INF/web.xml'. Change BASEURL to reflect your
+hostname, to be able to use the adminpages from external machines, this must be
+a real hostname or ip-address.
+Run 'ant deploy' to install the changes.
+
 1. Run the script 'setup-adminweb.cmd'
 
 2. Import the certificate from 'ejbca/p12/SuperAdmin.p12' in your browser and go
@@ -555,7 +560,7 @@ Manual method
 0. Edit the file 'src/adminweb/WEB-INF/web.xml'. Change BASEURL to reflect your
 hostname, to be able to use the adminpages from external machines, this must be
 a real hostname or ip-address.
-Run 'ant' and 'deploy' to install the changes.
+Run 'ant deploy' to install the changes.
 
 1. Copy src/ra/web/raadmin/WEB-INF/tomcat4-service.xml to
 $JBOSS_HOME/server/default/deploy. Edit the file so 'keyStorePass' is the
