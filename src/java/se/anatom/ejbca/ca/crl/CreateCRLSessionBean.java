@@ -21,12 +21,16 @@ import se.anatom.ejbca.ca.store.CertificateDataPK;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.log.ILogSessionRemote;
+import se.anatom.ejbca.log.ILogSessionHome;
+import se.anatom.ejbca.log.LogEntry;
 
 /**
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.8 2002-05-26 13:28:53 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.9 2002-09-12 18:14:16 herrvendil Exp $
  */
 public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerSession {
 
@@ -40,11 +44,16 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
 
     /** The home interface of the signing session */
     private ISignSessionLocalHome signHome = null;
+    
+    /** The remote interface of the log session bean */
+    private ILogSessionRemote logsession;        
+    
+    private Admin admin = null;
 
     /** Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
      */
-    public void ejbCreate () throws CreateException {
+    public void ejbCreate (Admin administrator) throws CreateException {
         debug(">ejbCreate()");
         // Get env variables and read in nessecary data
         crlperiod = (Long)lookup("java:comp/env/CRLPeriod", java.lang.Long.class);
@@ -52,6 +61,15 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
         storeHome = (ICertificateStoreSessionLocalHome)lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
         certHome = (CertificateDataLocalHome)lookup("java:comp/env/ejb/CertificateDataLocal");
         signHome = (ISignSessionLocalHome)lookup("java:comp/env/ejb/SignSessionLocal");
+        
+        try{
+          this.admin = administrator;  
+          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
+          logsession = logsessionhome.create();
+        }catch(Exception e){
+          throw new EJBException(e);   
+        }  
+        
         debug("<ejbCreate()");
     }
 
@@ -65,7 +83,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
         debug(">run()");
 
         try {
-            ICertificateStoreSessionLocal store = storeHome.create();
+            ICertificateStoreSessionLocal store = storeHome.create(admin);
             // Find all revoked certificates
             Collection revcerts = store.listRevokedCertificates();
             debug("Found "+revcerts.size()+" revoked certificates.");
@@ -93,14 +111,18 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
                     certs.add(certinfo);
                 }
             }
-            ISignSessionLocal sign = signHome.create();
+            ISignSessionLocal sign = signHome.create(admin);
             X509CRL crl = sign.createCRL(certs);
 
             //FileOutputStream fos = new FileOutputStream("srvtestcrl.der");
             //fos.write(crl.getEncoded());
             //fos.close();
         } catch (Exception e) {
-            error("Failed to create CRL.", e);
+            try{
+              logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,"");       
+            }catch(RemoteException re){
+              throw new EJBException(re);                
+            } 
             throw new EJBException(e);
         }
         debug("<run()");

@@ -23,7 +23,9 @@
   final String RA_ADDUSERLINK           = "/" +globalconfiguration.getRaPath()+"/adduser.jsp";
   final String RA_LISTUSERS             = "/" +globalconfiguration.getRaPath()+"/listusers.jsp";
   final String LOG_LINK                 = "/" +globalconfiguration.getLogPath() 
-                                                  + "/ejbcaauthorization.jsp";
+                                                  + "/viewlog.jsp";
+  final String LOG_CONFIGURATION_LINK   = "/" +globalconfiguration.getLogPath() 
+                                                  + "/logconfiguration/logconfiguration.jsp";
   final String CONFIGURATION_LINK       = "/" +globalconfiguration.getConfigPath() 
                                                   + "/configuration.jsp";
   final String AUTHORIZATION_LINK       = "/" +globalconfiguration.getAuthorizationPath() 
@@ -92,7 +94,22 @@
            <%=ejbcawebbean.getText("ADDUSER") %></a><br>
            &nbsp;&nbsp;<A href='<%=RA_LISTUSERSLINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"> 
            <%=ejbcawebbean.getText("LISTUSERS") %></a><br>
-  
+<%   }
+   }catch(AuthorizationDeniedException e){}
+    // If authorized to view log then display related links.
+    try{
+      if(ejbcawebbean.isAuthorized(LOG_LINK)){ %>
+   <br>
+   <br>
+   <A href="<%= LOG_LINK %>" target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("VIEWLOG") %></A>
+   <br>
+<%    }
+   }catch(AuthorizationDeniedException e){} 
+   try{
+    // If authorized to edit log configurationthen display related link.
+     if(ejbcawebbean.isAuthorized(LOG_CONFIGURATION_LINK)){ %>
+     &nbsp;&nbsp;<A href='<%= LOG_CONFIGURATION_LINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("LOGCONFIGURATION") %></a>
+     <br>
 <%   }
    }catch(AuthorizationDeniedException e){}
     // If authorized to configure Ejbca then display related links.

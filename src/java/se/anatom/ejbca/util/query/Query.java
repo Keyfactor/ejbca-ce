@@ -94,7 +94,7 @@ public class Query implements java.io.Serializable {
     public void add(int matchwith, int matchtype, String matchvalue) throws NumberFormatException {
       switch(this.type){
           case TYPE_LOGQUERY :
-             // TODO 
+             matches.addElement(new LogMatch(matchwith,matchtype,matchvalue)); 
             break;
           case TYPE_USERQUERY :
              matches.addElement(new UserMatch(matchwith,matchtype,matchvalue)); 
@@ -114,7 +114,7 @@ public class Query implements java.io.Serializable {
     public void add(int matchwith, int matchtype, String matchvalue, int connector) throws NumberFormatException {
        switch(this.type){
           case TYPE_LOGQUERY :
-             // TODO 
+             matches.addElement(new LogMatch(matchwith,matchtype,matchvalue)); 
             break;
           case TYPE_USERQUERY :
              matches.addElement(new UserMatch(matchwith,matchtype,matchvalue)); 
@@ -154,7 +154,7 @@ public class Query implements java.io.Serializable {
      * Checks if the present query is legal by checking if every match is legal and that
      * the number of connectors is one less than matches.
      */
-    public boolean isLegalQuery() {
+    public boolean isLegalQuery() { 
       boolean returnval = true;  
       Iterator i = matches.iterator();
       while(i.hasNext()){
@@ -164,7 +164,7 @@ public class Query implements java.io.Serializable {
       returnval = returnval && (matches.size() -1 == connectors.size());
       
       returnval = returnval && (matches.size() > 0 );
-      
+
       return returnval;
     }
     

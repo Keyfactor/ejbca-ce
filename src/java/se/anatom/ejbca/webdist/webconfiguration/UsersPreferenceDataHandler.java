@@ -10,22 +10,22 @@ import java.math.BigInteger;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.ra.raadmin.UserPreference;
-
+import se.anatom.ejbca.log.Admin;
 /**
  * A class handling the storage of user preferences. Currently all user preferences are
  * save to a database.
  *
  * @author  Philip Vendil
- * @version $Id: UsersPreferenceDataHandler.java,v 1.7 2002-07-20 18:40:08 herrvendil Exp $
+ * @version $Id: UsersPreferenceDataHandler.java,v 1.8 2002-09-12 18:14:15 herrvendil Exp $
  */
 public class UsersPreferenceDataHandler {
 
     /** Creates a new instance of UsersPreferences */
-    public UsersPreferenceDataHandler() throws RemoteException, NamingException, CreateException {
+    public UsersPreferenceDataHandler(Admin administrator) throws RemoteException, NamingException, CreateException {
         InitialContext jndicontext = new InitialContext();
         IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"),
                                                IRaAdminSessionHome.class);
-        raadminsession = raadminsessionhome.create();
+        raadminsession = raadminsessionhome.create(administrator);
     }
 
     /** Retrieves the user from the database or null if the user doesn't exists. */

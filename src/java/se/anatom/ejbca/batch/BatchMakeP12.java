@@ -31,8 +31,7 @@ import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.UserDataLocal;
-import se.anatom.ejbca.ra.authorization.UserInformation;
-import se.anatom.ejbca.ra.authorization.UserEntity;
+import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.util.CertTools;
@@ -45,7 +44,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.21 2002-08-27 12:41:07 herrvendil Exp $
+ * @version $Id: BatchMakeP12.java,v 1.22 2002-09-12 18:14:17 herrvendil Exp $
  *
  */
 
@@ -63,6 +62,8 @@ public class BatchMakeP12 {
     private boolean createJKS = false;
     private IUserAdminSessionHome adminhome;
     private ISignSessionHome signhome;
+    
+    private Admin administrator;
 
     static public Context getInitialContext() throws NamingException{
         cat.debug(">GetInitialContext");
@@ -82,7 +83,8 @@ public class BatchMakeP12 {
 
     public BatchMakeP12() throws javax.naming.NamingException, javax.ejb.CreateException, java.rmi.RemoteException, java.io.IOException {
         cat.debug(">BatchMakeP12:");
-
+        administrator = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
+        
         // Bouncy Castle security provider
         Security.addProvider(new BouncyCastleProvider());
 
@@ -104,7 +106,7 @@ public class BatchMakeP12 {
     private X509Certificate getCACertificate()
       throws Exception {
         cat.debug(">getCACertificate()");
-        ISignSessionRemote ss = signhome.create();
+        ISignSessionRemote ss = signhome.create(administrator);
         Certificate[] chain = ss.getCertificateChain();
         X509Certificate rootcert = (X509Certificate)chain[chain.length-1];
         cat.debug("<getCACertificate()");
@@ -119,7 +121,7 @@ public class BatchMakeP12 {
     private Certificate[] getCACertChain()
       throws Exception {
         cat.debug(">getCACertChain()");
-        ISignSessionRemote ss = signhome.create();
+        ISignSessionRemote ss = signhome.create(administrator);
         Certificate[] chain = ss.getCertificateChain();
         cat.debug("<getCACertChain()");
         return chain;
@@ -202,7 +204,7 @@ public class BatchMakeP12 {
         cat.debug(">createUser: username=" + username + ", hiddenpwd, keys=" + rsaKeys.toString());
 
         // Send the certificate request to the CA
-        ISignSessionRemote ss = signhome.create();
+        ISignSessionRemote ss = signhome.create(administrator);
         X509Certificate cert = (X509Certificate)ss.createCertificate(username, password, rsaKeys.getPublic());
 
         // Make a certificate chain from the certificate and the CA-certificate
@@ -290,8 +292,7 @@ public class BatchMakeP12 {
     public void createAllWithStatus(int status) throws Exception {
         cat.debug(">createAllWithStatus: "+status);
 
-        IUserAdminSessionRemote admin = adminhome.create();
-        admin.init(new UserInformation(UserEntity.SPECIALUSER_RACOMMANDLINEADMIN));
+        IUserAdminSessionRemote admin = adminhome.create(administrator);
         
         Collection result = admin.findAllUsersByStatus(status);
         Iterator it = result.iterator();
@@ -340,8 +341,7 @@ public class BatchMakeP12 {
 
     public void createUser(String username) throws Exception {
         cat.debug(">createUser("+username+")");
-        IUserAdminSessionRemote admin = adminhome.create();
-        admin.init(new UserInformation(UserEntity.SPECIALUSER_RACOMMANDLINEADMIN));
+        IUserAdminSessionRemote admin = adminhome.create(administrator);
         UserAdminData data = admin.findUser(username);
         if ((data != null) && (data.getPassword() != null)) {
             try {

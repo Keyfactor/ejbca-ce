@@ -13,6 +13,7 @@ package se.anatom.ejbca.webdist.rainterface;
  */
 public class SortBy {
     // Public constants
+      // Constants used by userdata.
     public static final int USERNAME         = 0;
     public static final int PASSWORD         = 1;
     public static final int COMMONNAME       = 2;
@@ -27,6 +28,14 @@ public class SortBy {
     public static final int CERTIFICATETYPE  = 11; 
     public static final int TIMECREATED      = 12;     
     public static final int TIMEMODIFIED     = 13;     
+      // Constants used by logentrydata. 
+
+    public static final int ADMINTYPE        = 1;
+    public static final int ADMINDATA        = 2;
+    public static final int TIME             = 3;
+    public static final int CERTIFICATE      = 4;    
+    public static final int EVENT            = 5;     
+    public static final int COMMENT          = 6;     
     
     public static final int ACCENDING        = 0;
     public static final int DECENDING        = 1;
@@ -43,19 +52,19 @@ public class SortBy {
       this.sortorder=sortorder;
     }
     
-    int getSortBy() {
+    public int getSortBy() {
       return sortby;
     }
     
-    int getSortOrder() {
+    public int getSortOrder() {
       return sortorder;
     }
     
-    void setSortBy(int sortby) {
+    public void setSortBy(int sortby) {
        this.sortby=sortby;      
     }
 
-    void setSortOrder(int sortorder){
+    public void setSortOrder(int sortorder){
       this.sortorder=sortorder;        
     }
     // Private fields.

@@ -21,6 +21,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.ra.raadmin.Profile;
 import se.anatom.ejbca.ra.raadmin.ProfileExistsException;
 import se.anatom.ejbca.ra.raadmin.ProfileDoesntExistsException;
+import se.anatom.ejbca.log.Admin;
 /**
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
@@ -30,11 +31,11 @@ public class ProfileDataHandler {
 
     public static final String EMPTY_PROFILE        = IRaAdminSessionRemote.EMPTY_PROFILE;    
     /** Creates a new instance of ProfileDataHandler */
-    public ProfileDataHandler() throws   RemoteException, NamingException, FinderException, CreateException{
+    public ProfileDataHandler(Admin administrator) throws   RemoteException, NamingException, FinderException, CreateException{
        InitialContext jndicontext = new InitialContext();
        IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"), 
                                                                                  IRaAdminSessionHome.class);
-       raadminsession = raadminsessionhome.create();               
+       raadminsession = raadminsessionhome.create(administrator);               
           
     }
         

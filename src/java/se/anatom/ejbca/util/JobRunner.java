@@ -8,6 +8,7 @@ import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
 
 import se.anatom.ejbca.IJobRunnerSessionHome;
+import se.anatom.ejbca.log.Admin;
 
 import org.apache.log4j.*;
 
@@ -20,7 +21,7 @@ import org.apache.log4j.*;
  *    - credentials (the password is needed)
  *    - agent       (the JNDI-name of the agent session to start)
  *
- * @version $Id: JobRunner.java,v 1.1.1.1 2001-11-15 14:58:19 anatom Exp $
+ * @version $Id: JobRunner.java,v 1.2 2002-09-12 18:13:25 herrvendil Exp $
  */
 
 public class JobRunner extends java.lang.Object {
@@ -50,7 +51,7 @@ public class JobRunner extends java.lang.Object {
     private void runJob(String jndiName) throws Exception {
         IJobRunnerSessionHome home  = (IJobRunnerSessionHome)PortableRemoteObject.narrow( context.lookup(jndiName) , 
 IJobRunnerSessionHome.class );
-        home.create().run();
+        home.create(new Admin(Admin.TYPE_INTERNALUSER)).run();
     }
 
     /**

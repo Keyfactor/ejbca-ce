@@ -14,13 +14,14 @@ import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.ca.auth.*;
 import se.anatom.ejbca.util.*;
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.log.Admin;
 
 import org.apache.log4j.*;
 import junit.framework.*;
 
 /** Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.7 2002-07-21 12:59:34 anatom Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.8 2002-09-12 18:14:16 herrvendil Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     static Category cat = Category.getInstance( TestAuthenticationSession.class.getName() );
@@ -39,7 +40,7 @@ public class TestAuthenticationSession extends TestCase {
         ctx = getInitialContext();
         Object obj = ctx.lookup("AuthenticationSession");
         home = (IAuthenticationSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IAuthenticationSessionHome.class);
-        remote = home.create();
+        remote = home.create(new Admin(Admin.TYPE_INTERNALUSER));
         cat.debug("<setUp()");
     }
 

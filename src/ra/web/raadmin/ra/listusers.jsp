@@ -18,10 +18,6 @@
   static final String USER_PARAMETER           = "userparameter";
   static final String SUBJECTDN_PARAMETER      = "subjectdnparameter";
 
-  static final String VIEWUSER_LINK            = "viewuser.jsp";
-  static final String EDITUSER_LINK            = "edituser.jsp";
-
-
   static final String OLD_ACTION               = "oldaction";
   static final String OLD_ACTION_LISTUSERS     = "oldactionlistusers";
   static final String OLD_ACTION_FINDUSER      = "oldactionfinduser";
@@ -132,6 +128,9 @@
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
                                             rabean.initialize(request);
   final String VIEWCERT_LINK            = "/" + globalconfiguration.getRaAdminPath() + "viewcertificate.jsp";
+  final String VIEWUSER_LINK            = "/" + globalconfiguration.getRaAdminPath() + "ra/viewuser.jsp";
+  final String EDITUSER_LINK            = "/" + globalconfiguration.getRaAdminPath() + "ra/edituser.jsp";
+  final String VIEWHISTORY_LINK         = "/" + globalconfiguration.getRaAdminPath() + "ra/viewhistory.jsp";
 
   String oldaction        = OLD_ACTION_NOACTION; 
   String oldactionvalue   = null;

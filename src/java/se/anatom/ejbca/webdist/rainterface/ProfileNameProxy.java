@@ -13,6 +13,8 @@ import java.util.HashMap;
 
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
+import se.anatom.ejbca.log.Admin;
+
 /**
  * A class used to improve performance by proxying profileid to profilename mappings by minimizing the number of needed lockups over rmi.
  * 
@@ -21,13 +23,13 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 public class ProfileNameProxy {
     
     /** Creates a new instance of ProfileNameProxy */
-    public ProfileNameProxy()  throws   RemoteException, NamingException, FinderException, CreateException {
+    public ProfileNameProxy(Admin administrator)  throws   RemoteException, NamingException, FinderException, CreateException {
               // Get the RaAdminSession instance.
       InitialContext jndicontext = new InitialContext();
       Object obj1 = jndicontext.lookup("RaAdminSession");
       IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"), 
                                                                                  IRaAdminSessionHome.class);
-      raadminsession = raadminsessionhome.create();  
+      raadminsession = raadminsessionhome.create(administrator);  
       
       profilenamestore = new HashMap(); 
         

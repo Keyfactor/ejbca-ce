@@ -24,6 +24,7 @@ import se.anatom.ejbca.ca.store.*;
 import se.anatom.ejbca.util.*;
 import se.anatom.ejbca.*;
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.log.Admin;
 
 import org.apache.log4j.*;
 import junit.framework.*;
@@ -31,7 +32,7 @@ import junit.framework.*;
 
 /** Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.4 2002-05-23 14:28:27 anatom Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.5 2002-09-12 18:14:16 herrvendil Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 
@@ -50,10 +51,10 @@ public class TestCreateCRLSession extends TestCase {
         ctx = getInitialContext();
         Object obj = ctx.lookup("CreateCRLSession");
         home = (IJobRunnerSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IJobRunnerSessionHome.class);
-        remote = home.create();
+        remote = home.create(new Admin(Admin.TYPE_INTERNALUSER));
         Object obj1 = ctx.lookup("CertificateStoreSession");
         storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-        storeremote = storehome.create();
+        storeremote = storehome.create(new Admin(Admin.TYPE_INTERNALUSER));
         cat.debug("<setUp()");
     }
     protected void tearDown() throws Exception {

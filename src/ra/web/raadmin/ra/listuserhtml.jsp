@@ -22,6 +22,13 @@ function edituser(row){
     window.open(link, 'edit_user',config='height=600,width=550,scrollbars=yes,toolbar=no,resizable=1');
 }
 
+function viewhistory(row){
+    var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
+    var username = hiddenusernamefield.value;
+    var link = "<%= VIEWHISTORY_LINK %>?<%= USER_PARAMETER %>="+username;
+    window.open(link, 'view_history',config='height=600,width=800,scrollbars=yes,toolbar=no,resizable=1');
+}
+
 function viewcert(row){
     var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
@@ -320,6 +327,10 @@ function confirmrevokation(){
         <% } %>
         <A  onclick='viewcert(<%= i %>)'>
         <u><%= ejbcawebbean.getText("VIEWCERTIFICATE") %></u> </A>
+        <% if(rabean.authorizedToViewHistory(users[i][UserView.PROFILE]) || !globalconfiguration.getUseStrongAuthorization()){ %>
+        <A  onclick='viewhistory(<%= i %>)'>
+        <u><%= ejbcawebbean.getText("VIEWHISTORY") %></u> </A>
+        <% } %>
       </td>
   </tr>
  <%      }

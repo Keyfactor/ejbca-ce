@@ -1,4 +1,4 @@
-<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,se.anatom.ejbca.ca.sign.*"%>
+<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,se.anatom.ejbca.ca.sign.*, se.anatom.ejbca.log.Admin"%>
 
 <HTML>
 <HEAD>
@@ -90,7 +90,7 @@ try  {
     InitialContext ctx = new InitialContext();
     ISignSessionHome home = home = (ISignSessionHome) PortableRemoteObject.narrow(
             ctx.lookup("RSASignSession"), ISignSessionHome.class );
-    ISignSessionRemote ss = home.create();
+    ISignSessionRemote ss = home.create(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()));
     Certificate[] chain = ss.getCertificateChain();
     if (chain.length == 0) {
         out.println("No CA certificates exist");
@@ -184,3 +184,4 @@ try  {
 
 </BODY>
 </HTML>
+

@@ -12,7 +12,7 @@ import se.anatom.ejbca.webdist.webconfiguration.WebLanguages;
  * A class representing a users personal preferenses.
  *
  * @author  Philip Vendil
- * @version $Id: UserPreference.java,v 1.3 2002-07-28 23:27:48 herrvendil Exp $
+ * @version $Id: UserPreference.java,v 1.4 2002-09-12 18:14:15 herrvendil Exp $
  */
 public class UserPreference implements java.io.Serializable, Cloneable {
     
@@ -44,6 +44,15 @@ public class UserPreference implements java.io.Serializable, Cloneable {
     public void setEntriesPerPage(int entriesperpage){
       this.entriesperpage= entriesperpage;
     }
+    
+    public int getLogEntriesPerPage(){
+      return logentriesperpage;
+    }
+
+    public void setLogEntriesPerPage(int logentriesperpage){
+      this.logentriesperpage= logentriesperpage;
+    }
+    
     public String getTheme() {return theme;}
 
     public void setPreferedLanguage(String languagecode) {
@@ -86,6 +95,9 @@ public class UserPreference implements java.io.Serializable, Cloneable {
     public int getLastFilterMode(){ return lastfiltermode;}
     public void setLastFilterMode(int lastfiltermode){this.lastfiltermode=lastfiltermode;}
     
+    public int getLastLogFilterMode(){ return lastlogfiltermode;}
+    public void setLastLogFilterMode(int lastlogfiltermode){this.lastlogfiltermode=lastlogfiltermode;}    
+    
     public Object clone() throws CloneNotSupportedException {
       return super.clone();
     }
@@ -93,9 +105,11 @@ public class UserPreference implements java.io.Serializable, Cloneable {
     // Private fields
     private int preferedlanguage;
     private int secondarylanguage;
-    private int entriesperpage= 30;
+    private int entriesperpage= 25;
+    private int logentriesperpage = 25;
     private String theme;
     private String lastprofile;
+    private int lastlogfiltermode = FILTERMODE_BASIC;
     private int lastfiltermode = FILTERMODE_BASIC;
 
 }

@@ -12,12 +12,14 @@ import java.security.cert.X509Certificate;
 
 import se.anatom.ejbca.ra.authorization.*;
 import se.anatom.ejbca.ra.GlobalConfiguration;
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.log.ILogSessionRemote;
 
 /**
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
  * @author  Philip Vendil
- * @version $Id: AuthorizationDataHandler.java,v 1.5 2002-08-27 12:41:06 herrvendil Exp $
+ * @version $Id: AuthorizationDataHandler.java,v 1.6 2002-09-12 18:14:15 herrvendil Exp $
  */
 public class AuthorizationDataHandler {
 
@@ -30,12 +32,11 @@ public class AuthorizationDataHandler {
     public static final int USER_ENTITY_MATCHVALUE = 2;
 
     /** Creates a new instance of ProfileDataHandler */
-    public AuthorizationDataHandler(GlobalConfiguration globalconfiguration) throws RemoteException, NamingException, CreateException{
+    public AuthorizationDataHandler(GlobalConfiguration globalconfiguration,ILogSessionRemote logsession, Admin administrator) throws RemoteException, NamingException, CreateException{
        InitialContext jndicontext = new InitialContext();
        IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("AuthorizationSession"),
                                                                                  IAuthorizationSessionHome.class);
-       authorizationsession = authorizationsessionhome.create();
-       authorizationsession.init(globalconfiguration);
+       authorizationsession = authorizationsessionhome.create(globalconfiguration, administrator);
        
        Collection names = authorizationsession.getAvailableAccessRules();
        if(names.size()==0){
@@ -48,7 +49,7 @@ public class AuthorizationDataHandler {
        }
 
        availabledirectories = new AvailableDirectories(globalconfiguration);
-       authorize = new EjbcaAuthorization(getUserGroups(), globalconfiguration);
+       authorize = new EjbcaAuthorization(getUserGroups(), globalconfiguration, logsession, administrator);
     }
     // Public methods.
     /**

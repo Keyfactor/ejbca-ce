@@ -9,9 +9,9 @@ import java.security.PublicKey;
  * using the getInstance() method.
  *
  *
- * @version $Id: ISigningDevice.java,v 1.4 2002-09-10 18:53:41 anatom Exp $
+ * @version $Id: ISigningDevice.java,v 1.5 2002-09-12 18:14:14 herrvendil Exp $
  */
-public interface ISigningDevice {
+public interface ISigningDevice extends  java.io.Serializable{
 
    /** Returns an array with the certificate chain, the root certificate is last in the chain.
     *

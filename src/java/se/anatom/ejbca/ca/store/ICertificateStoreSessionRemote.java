@@ -21,7 +21,7 @@ import se.anatom.ejbca.ca.store.certificatetypes.*;
  *
  * Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.5 2002-08-28 12:22:21 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.6 2002-09-12 18:14:16 herrvendil Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote  {
         
@@ -30,7 +30,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
 
     public final static int FIXED_ENDUSER = LocalCertificateStoreSessionBean.FIXED_ENDUSER;
     public final static int FIXED_CA = LocalCertificateStoreSessionBean.FIXED_CA;
-    public final static int FIXED_ROOTCA = LocalCertificateStoreSessionBean.FIXED_ROOTCA; 
+    public final static int FIXED_ROOTCA = LocalCertificateStoreSessionBean.FIXED_ROOTCA;  
    /**
     * Lists fingerprint (primary key) of ALL certificates in the database.
     * NOTE: Caution should be taken with this method as execution may be very

@@ -108,9 +108,6 @@
   }  
 
   if( request.getParameter(ACTION) != null){
-/*    if(request.getParameter(ACTION).equals(ACTION_CHANGEPROFILE)){
-      profileid = Integer.parseInt(request.getParameter(SELECT_PROFILE)); 
-    } */
     if( request.getParameter(ACTION).equals(ACTION_EDITUSER)){
       if( request.getParameter(BUTTON_SAVE) != null ||  request.getParameter(BUTTON_SAVEANDCLOSE) != null){
          String[] newuser = new String[UserView.NUMBEROF_USERFIELDS];
@@ -118,12 +115,8 @@
            newuser[i] = userdata[i];
          } 
 
-         // Get previous chosen profile.
-/*         String hiddenprofileid = request.getParameter(HIDDEN_PROFILE); 
-      
-         newuser[UserView.PROFILE]= hiddenprofileid; */
          profileid = Integer.parseInt(userdata[UserView.PROFILE]);
-
+         System.out.println("Setting profile id to : " +  profileid );
          String value = request.getParameter(TEXTFIELD_USERNAME);
          if(value !=null){
            value=value.trim(); 

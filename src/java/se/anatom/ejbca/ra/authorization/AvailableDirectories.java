@@ -18,7 +18,7 @@ import java.rmi.RemoteException;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
-
+import se.anatom.ejbca.log.Admin;
 
 /**
  * 
@@ -37,13 +37,12 @@ public class AvailableDirectories {
       Object objl = jndicontext.lookup("RaAdminSession");
       IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(objl, 
                                                                        IRaAdminSessionHome.class);
-      raadminsession = raadminsessionhome.create();
+      raadminsession = raadminsessionhome.create(new Admin(Admin.TYPE_INTERNALUSER));
       
       objl = jndicontext.lookup("AuthorizationSession");
       IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(objl, 
                                                                        IAuthorizationSessionHome.class);
-      authorizationsession = authorizationsessionhome.create();
-      authorizationsession.init(globalconfiguration);
+      authorizationsession = authorizationsessionhome.create(globalconfiguration,new Admin(Admin.TYPE_INTERNALUSER));
  
     }
     // Public methods 

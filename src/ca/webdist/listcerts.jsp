@@ -1,4 +1,4 @@
-<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.net.*,java.security.cert.*,java.math.BigInteger,se.anatom.ejbca.ca.store.*,se.anatom.ejbca.util.Hex"%>
+<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.net.*,java.security.cert.*,java.math.BigInteger,se.anatom.ejbca.ca.store.*,se.anatom.ejbca.util.Hex, se.anatom.ejbca.log.Admin"%>
 <html>
 <head><title>EJBCA - List certificates</title>
 <link rel="stylesheet" href="../indexmall.css" type="text/css">
@@ -16,7 +16,7 @@ try  {
         InitialContext ctx = new InitialContext();
         ICertificateStoreSessionHome home = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
         ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
-        ICertificateStoreSessionRemote store = home.create();
+        ICertificateStoreSessionRemote store = home.create(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()));
         Collection certs = store.findCertificatesBySubject(dn);
         Iterator i = certs.iterator();
         while (i.hasNext()) {

@@ -25,6 +25,8 @@ public class GlobalConfiguration implements java.io.Serializable {
     // Default Values
     // Entries to choose from in userpreference part, defines the size of data to be displayed on one page.                                                  
     private final  String[] POSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};    
+    // Entries to choose from in view log part, defines the size of data to be displayed on one page.                                                  
+    private final  String[] POSSIBLELOGENTRIESPERPAGE = {"10" , "25" , "50" , "100", "200", "400"};        
     
     // Directories made open to all ra administrators, but client certificate is still needed.
     private final  String[] OPENDIRECTORIES        = { "banners","images","help",
@@ -32,7 +34,7 @@ public class GlobalConfiguration implements java.io.Serializable {
     // Rules available by default i authorization module.
     private final  String[]  DEFAULT_AVAILABLE_RULES = {  "authorization", "authorization/availablerules", 
                                                        "ca", "ca/editcertificatetypes", "ca/createcrl", "ca/getcrl", "config", 
-                                                       "ra", "ra/editprofiles"};
+                                                       "ra", "ra/editprofiles","log", "log/logconfiguration"};
  
     // Available authorization rules.                                                   
     public static final String VIEW_RIGHTS = "/view";
@@ -94,7 +96,8 @@ public class GlobalConfiguration implements java.io.Serializable {
        config = new HashMap();
  
        setEjbcaTitle(EJBCATITLE);       
-       config.put(P_POSSIBLEENTRIESPERPAGE,POSSIBLEENTRIESPERPAGE);       
+       config.put(P_POSSIBLEENTRIESPERPAGE,POSSIBLEENTRIESPERPAGE);    
+       config.put(P_POSSIBLELOGENTRIESPERPAGE,POSSIBLELOGENTRIESPERPAGE);        
        config.put(P_PROFILE_ENDINGS,PROFILE_ENDINGS);
        config.put(P_PROFILEPREFIX,PROFILEPREFIX);
              
@@ -303,7 +306,8 @@ public class GlobalConfiguration implements java.io.Serializable {
     public   String getErrorPage(){return (String) config.get(P_ERRORPAGE);}   
     
     public   String[] getPossibleEntiresPerPage(){return (String[]) config.get(P_POSSIBLEENTRIESPERPAGE);}      
-
+    public   String[] getPossibleLogEntiresPerPage(){return (String[]) config.get(P_POSSIBLELOGENTRIESPERPAGE);}
+    
     public   String getAvailableLanguagesAsString(){return (String) config.get(P_AVAILABLELANGUAGES);} 
     public   String getAvailableThenesAsString(){return (String) config.get(P_AVAILABLETHEMES);}  
     
@@ -350,7 +354,8 @@ public class GlobalConfiguration implements java.io.Serializable {
     private final   String P_MENUFILENAME        =  "menufilename"; 
     private final   String P_ERRORPAGE           =  "errorpage";  
     
-    private final   String P_POSSIBLEENTRIESPERPAGE = "possibleentiresperpage";    
+    private final   String P_POSSIBLEENTRIESPERPAGE    = "possibleentiresperpage";  
+    private final   String P_POSSIBLELOGENTRIESPERPAGE = "possiblelogentiresperpage"; 
     
     private final   String P_USESTRONGAUTHORIZATION = "usestrongauthorization";
     

@@ -15,7 +15,7 @@ import se.anatom.ejbca.ra.authorization.UserInformation;
 
 /**
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.8 2002-08-28 12:22:25 herrvendil Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.9 2002-09-12 18:14:16 herrvendil Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
 
@@ -23,8 +23,6 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     public static final int MAXIMUM_QUERY_ROWCOUNT = 300; // The maximun number of rows passed back in a query.
     // Public methods
     
-    /** Initializes the statful session bean. */
-    public void init(UserInformation userinformation) throws RemoteException;
     
    /**
     * Adds a user in the database.

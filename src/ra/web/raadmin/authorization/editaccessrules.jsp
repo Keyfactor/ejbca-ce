@@ -106,7 +106,7 @@
   <div align="right"><A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOUSERGROUPS") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <input type="hidden" name='<%= HIDDEN_GROUPNAME %>' value='<%= usergroup %>'>
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_USERENTITIES%>'>
-    <% if(!usergroup.equals(UserGroup.SPECIALUSERGROUP_COMMONWEBUSER) && !usergroup.equals(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN)
+    <% if(!usergroup.equals(UserGroup.SPECIALUSERGROUP_PUBLICWEBUSER) && !usergroup.equals(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN)
           && !usergroup.equals(UserGroup.SPECIALUSERGROUP_RACOMMANDLINEADMIN)){ %>
     <A href='javascript:document.touserentities.submit();'><u><%= ejbcawebbean.getText("EDITUSERS") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <% } %>

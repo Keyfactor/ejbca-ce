@@ -21,6 +21,7 @@ public abstract class BasicMatch implements java.io.Serializable {
     // Public Constants
     public final static int MATCH_TYPE_EQUALS      = 0;
     public final static int MATCH_TYPE_BEGINSWITH  = 1;
+    public final static int MATCH_TYPE_CONTAINS    = 2;
     
     /** Creates a new instance of BasicMatch */
     public BasicMatch() {

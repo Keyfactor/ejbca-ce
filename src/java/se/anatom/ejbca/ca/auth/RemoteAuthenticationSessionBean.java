@@ -13,11 +13,15 @@ import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.log.ILogSessionRemote;
+import se.anatom.ejbca.log.ILogSessionHome;
+import se.anatom.ejbca.log.LogEntry;
 
 /**
  * Authenticates users towards a remote user database, using HTTP-based protocol.
  *
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.4 2002-06-04 13:59:55 anatom Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.5 2002-09-12 18:14:16 herrvendil Exp $
  */
 public class RemoteAuthenticationSessionBean extends BaseSessionBean {
 
@@ -26,14 +30,27 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
     /** URL to remote authentication server */
     String remoteurl = null;
 
+    /** The remote interface of the log session bean */
+    private ILogSessionRemote logsession;         
+    
+    /** Var containing iformation about administrator using the bean.*/
+    private Admin admin = null;    
+    
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
      */
-    public void ejbCreate() throws CreateException {
+    public void ejbCreate(Admin administrator) throws CreateException {
         debug(">ejbCreate()");
         // Get the URL from the environment from deployment descriptor
         remoteurl = (String)lookup("java:comp/env/AuthURL", java.lang.String.class);
+        try{ 
+          this.admin = administrator;   
+          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
+          logsession = logsessionhome.create();
+        }catch(Exception e){
+          throw new EJBException(e);   
+        }          
         debug("<ejbCreate()");
     }
 
@@ -54,7 +71,11 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
         }
         // Only end users can be authenticated on remote database (so far...)
         ret.setType(SecConst.USER_ENDUSER);
-        info("Autenticated user with dn \""+ ret.getDN()+"\" and email "+ret.getEmail());
+        try{
+          logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"Autenticated user");       
+        }catch(RemoteException re){
+           throw new EJBException(re);                
+        }          
         debug(">authenticateUser("+username+", hiddenpwd)");
         return ret;
     } // authenticateUser

@@ -1,6 +1,8 @@
 package se.anatom.ejbca.ra.authorization;
 
 import javax.ejb.CreateException;
+import se.anatom.ejbca.ra.GlobalConfiguration;
+import se.anatom.ejbca.log.Admin;
 
 /**
  * @version $Id: IAuthorizationSessionLocalHome.java
@@ -15,7 +17,7 @@ public interface IAuthorizationSessionLocalHome extends javax.ejb.EJBLocalHome {
      * @return ICertificateStoreSessionRemote interface
      */
 
-    IAuthorizationSessionLocal create() throws CreateException;
+    IAuthorizationSessionLocal create(GlobalConfiguration globalconfiguration, Admin administrator) throws CreateException;
 
 }
 

@@ -3,10 +3,10 @@ package se.anatom.ejbca.ra.raadmin;
 import java.rmi.RemoteException;
 import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
-
+import se.anatom.ejbca.log.Admin;
 
 /**
- * @version $Id: IRaAdminSessionHome.java,v 1.3 2002-07-22 10:38:48 anatom Exp $
+ * @version $Id: IRaAdminSessionHome.java,v 1.4 2002-09-12 18:14:15 herrvendil Exp $
  */
 
 public interface IRaAdminSessionHome extends EJBHome {
@@ -18,7 +18,7 @@ public interface IRaAdminSessionHome extends EJBHome {
      * @return IRaAdminSessionRemote interface
      */
 
-    IRaAdminSessionRemote create() throws CreateException, RemoteException;
+    IRaAdminSessionRemote create(Admin administrator) throws CreateException, RemoteException;
 
 }
 

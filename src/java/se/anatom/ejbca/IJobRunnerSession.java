@@ -8,7 +8,7 @@ import java.rmi.RemoteException;
  * JobRunner session wraps around any class and is a general session bean
  * that can be used to launch a specified job.
  *
- * @version $Id: IJobRunnerSession.java,v 1.1.1.1 2001-11-15 14:58:13 anatom Exp $
+ * @version $Id: IJobRunnerSession.java,v 1.2 2002-09-12 18:14:15 herrvendil Exp $
  */
 public interface IJobRunnerSession {
     public void run() throws RemoteException;

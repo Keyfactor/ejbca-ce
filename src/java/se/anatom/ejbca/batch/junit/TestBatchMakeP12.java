@@ -15,8 +15,7 @@ import se.anatom.ejbca.batch.*;
 import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.util.*;
 import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ra.authorization.UserInformation;
-import se.anatom.ejbca.ra.authorization.UserEntity;
+import se.anatom.ejbca.log.Admin;
 
 import org.apache.log4j.*;
 import junit.framework.*;
@@ -24,7 +23,7 @@ import junit.framework.*;
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.10 2002-08-27 12:41:06 herrvendil Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.11 2002-09-12 18:14:16 herrvendil Exp $
  */
 
 public class TestBatchMakeP12 extends TestCase {
@@ -89,8 +88,7 @@ public class TestBatchMakeP12 extends TestCase {
         IUserAdminSessionRemote data1=null;
         String username = genRandomUserName();
   
-        data1 = home.create();
-        data1.init(new UserInformation(UserEntity.SPECIALUSER_RACOMMANDLINEADMIN));
+        data1 = home.create(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER));
         Object o = null;       
         try{
           data1.addUser(username, "foo123", "C=SE, O=AnaTom, CN="+username, username+"@anatom.se", SecConst.USER_ENDUSER, false,

@@ -51,12 +51,13 @@ import se.anatom.ejbca.ra.authorization.IAuthorizationSessionHome;
 import se.anatom.ejbca.ra.authorization.IAuthorizationSessionRemote;
 import se.anatom.ejbca.util.query.*;
 import se.anatom.ejbca.webdist.cainterface.CertificateTypeNameProxy;
+import se.anatom.ejbca.log.Admin;
 
 /**
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.13 2002-08-28 12:22:25 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.14 2002-09-12 18:14:15 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -67,38 +68,39 @@ public class RAInterfaceBean {
     public RAInterfaceBean() throws  IOException, NamingException, FinderException, CreateException  {  
       users = new UsersView();
       addedusermemory = new AddedUserMemory();
-      this.profiles = new ProfileDataHandler();    
     }
     // Public methods.
     public void initialize(HttpServletRequest request) throws  Exception{
 
       if(!initialized){
-        userinformation = new UserInformation(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);  
+        administrator = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);  
         // Get the UserAdminSession instance.
+        
         jndicontext = new InitialContext();
         Object obj1 = jndicontext.lookup("UserAdminSession");
         adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-        adminsession = adminsessionhome.create();
-        adminsession.init(userinformation);
+        adminsession = adminsessionhome.create(administrator);
       
         obj1 = jndicontext.lookup("RaAdminSession");
         raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"), 
                                                                                  IRaAdminSessionHome.class);
-        raadminsession = raadminsessionhome.create(); 
+        raadminsession = raadminsessionhome.create(administrator); 
+        this.profiles = new ProfileDataHandler(administrator);    
         
         obj1 =  jndicontext.lookup("CertificateStoreSession");   
         certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-        certificatesession = certificatesessionhome.create();
+        certificatesession = certificatesessionhome.create(administrator);
         
         obj1 = jndicontext.lookup("AuthorizationSession");
         IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("AuthorizationSession"),
                                                                                  IAuthorizationSessionHome.class);
-        authorizationsession = authorizationsessionhome.create();
-        authorizationsession.init(adminsession.loadGlobalConfiguration());
+        globalconfiguration = adminsession.loadGlobalConfiguration();        
+        authorizationsession = authorizationsessionhome.create(globalconfiguration, administrator);
+
         
-        profileauthproxy = new ProfileAuthorizationProxy(userinformation, authorizationsession);
-        certtypenameproxy = new CertificateTypeNameProxy();    
-        profilenameproxy = new ProfileNameProxy();  
+        profileauthproxy = new ProfileAuthorizationProxy(administrator.getUserInformation(), authorizationsession);
+        certtypenameproxy = new CertificateTypeNameProxy(administrator);    
+        profilenameproxy = new ProfileNameProxy(administrator);  
         initialized =true; 
       }
     }
@@ -257,8 +259,9 @@ public class RAInterfaceBean {
     public UserView findUserForEdit(String username) throws RemoteException, NamingException, FinderException, CreateException, AuthorizationDeniedException{
 
        UserAdminData user = adminsession.findUser(username);
-       if(!profileauthproxy.getProfileAuthorization(user.getProfileId(),ProfileAuthorizationProxy.EDIT_RIGHTS))     
-         throw new AuthorizationDeniedException("Not Authorized to edit user.");
+       if(globalconfiguration.getUseStrongAuthorization())
+         if(!profileauthproxy.getProfileAuthorization(user.getProfileId(),ProfileAuthorizationProxy.EDIT_RIGHTS))     
+           throw new AuthorizationDeniedException("Not Authorized to edit user.");
        
        UserView userview = new UserView(user); 
        return userview;
@@ -348,6 +351,11 @@ public class RAInterfaceBean {
 
       return users.getUsers(index,size);        
     }    
+    
+    public boolean isAuthorizedToViewUserHistory(String username) throws Exception {
+      UserAdminData user = adminsession.findUser(username);  
+      return profileauthproxy.getProfileAuthorization(user.getProfileId(),ProfileAuthorizationProxy.HISTORY_RIGHTS); 
+    }   
 
     /* Method to resort filtered user data. */
     public void sortUserData(int sortby, int sortorder){
@@ -478,11 +486,6 @@ public class RAInterfaceBean {
     }
 
     public void loadCertificates(String subjectdn) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
-      if(certificatesession == null){
-        Object obj1 = jndicontext.lookup("CertificateStoreSession");
-        certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-        certificatesession = certificatesessionhome.create();
-      }
       Collection certs = certificatesession.findCertificatesBySubject(subjectdn);
       
       UserAdminData user = adminsession.findUserBySubjectDN(subjectdn);
@@ -527,6 +530,10 @@ public class RAInterfaceBean {
       return profileauthproxy.getProfileAuthorization(Integer.parseInt(profileid), ProfileAuthorizationProxy.EDIT_RIGHTS);
     }
     
+    public boolean authorizedToViewHistory(String profileid) throws RemoteException{
+      return profileauthproxy.getProfileAuthorization(Integer.parseInt(profileid), ProfileAuthorizationProxy.HISTORY_RIGHTS);
+    }    
+    
     public String[] getCertificateTypeNames() throws RemoteException{
       String[] dummy = {""};
       Collection certtypenames = certificatesession.getCertificateTypeNames();
@@ -561,9 +568,10 @@ public class RAInterfaceBean {
     private UsersView                      users;
     private CertificateView[]              certificates;
     private AddedUserMemory                addedusermemory;
-    private UserInformation                userinformation;
+    private Admin                          administrator;
     private ProfileAuthorizationProxy      profileauthproxy;
     private CertificateTypeNameProxy       certtypenameproxy;  
     private ProfileNameProxy               profilenameproxy;
+    private GlobalConfiguration            globalconfiguration;
     private boolean initialized=false;
 }

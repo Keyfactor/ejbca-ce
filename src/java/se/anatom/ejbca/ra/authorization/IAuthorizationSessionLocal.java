@@ -13,10 +13,7 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
 
 public interface IAuthorizationSessionLocal extends javax.ejb.EJBLocalObject
 {
-    
-    /** Initializes the statful session bean. */
-    public void init(GlobalConfiguration globalconfiguration);
-    
+        
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 

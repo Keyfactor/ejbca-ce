@@ -19,10 +19,10 @@ import se.anatom.ejbca.util.KeyTools;
 
 /** Implements a signing device using PKCS12 keystore, implementes the Singleton pattern.
  *
- * @version $Id: PKCS12SigningDevice.java,v 1.4 2002-09-10 18:53:41 anatom Exp $
+ * @version $Id: PKCS12SigningDevice.java,v 1.5 2002-09-12 18:14:14 herrvendil Exp $
  */
 
-public class PKCS12SigningDevice implements ISigningDevice {
+public class PKCS12SigningDevice implements ISigningDevice{
 
     /** Log4j instance for Base */
     private static Category cat = Category.getInstance( PKCS12SigningDevice.class.getName() );

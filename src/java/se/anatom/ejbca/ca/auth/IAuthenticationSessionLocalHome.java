@@ -2,9 +2,10 @@
 package se.anatom.ejbca.ca.auth;
 
 import javax.ejb.CreateException;
+import se.anatom.ejbca.log.Admin;
 
 /**
- * @version $Id: IAuthenticationSessionLocalHome.java,v 1.1 2002-05-26 12:42:25 anatom Exp $
+ * @version $Id: IAuthenticationSessionLocalHome.java,v 1.2 2002-09-12 18:14:16 herrvendil Exp $
  */
 public interface IAuthenticationSessionLocalHome extends javax.ejb.EJBLocalHome {
 
@@ -13,5 +14,5 @@ public interface IAuthenticationSessionLocalHome extends javax.ejb.EJBLocalHome 
      * @throws CreateException
      * @return IAuthenticationSessionRemote interface
      */
-    IAuthenticationSessionLocal create() throws CreateException;
+    IAuthenticationSessionLocal create(Admin administrator) throws CreateException;
 }

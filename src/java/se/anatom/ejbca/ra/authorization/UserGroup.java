@@ -7,14 +7,15 @@ import java.io.Serializable;
 /**
  * A class that represents a group of users and their access rules.
  *
- * @version $Id: UserGroup.java,v 1.3 2002-07-23 16:02:58 anatom Exp $
+ * @version $Id: UserGroup.java,v 1.4 2002-09-12 18:14:14 herrvendil Exp $
  */
 public class UserGroup implements Serializable {
 
-    public static final String SPECIALUSERGROUP_COMMONWEBUSER      = "SPECIAL_COMMON_WEBUSER";
-    public static final String SPECIALUSERGROUP_CACOMMANDLINEADMIN = "SPECIAL_CA_COMMANDLINEADMIN";
-    public static final String SPECIALUSERGROUP_RACOMMANDLINEADMIN = "SPECIAL_RA_COMMANDLINEADMIN";
-
+    public static final String SPECIALUSERGROUP_PUBLICWEBUSER         = "SPECIAL_PUBLIC_WEBUSER";
+    public static final String SPECIALUSERGROUP_CACOMMANDLINEADMIN    = "SPECIAL_CA_COMMANDLINEADMIN";
+    public static final String SPECIALUSERGROUP_RACOMMANDLINEADMIN    = "SPECIAL_RA_COMMANDLINEADMIN";
+    public static final String SPECIALUSERGROUP_BATCHCOMMANDLINEADMIN = "SPECIAL_BATCH_COMMANDLINEADMIN";
+    
     /** Creates a new instance of UserGroup */
     public UserGroup() {
       accessrules = new Vector();

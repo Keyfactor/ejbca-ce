@@ -1,9 +1,9 @@
 package se.anatom.ejbca.ra.raadmin;
 
 import javax.ejb.CreateException;
-
+import se.anatom.ejbca.log.Admin;
 /**
- * @version $Id: IRaAdminSessionLocalHome.java,v 1.3 2002-07-22 10:38:48 anatom Exp $
+ * @version $Id: IRaAdminSessionLocalHome.java,v 1.4 2002-09-12 18:14:15 herrvendil Exp $
  */
 
 public interface IRaAdminSessionLocalHome extends javax.ejb.EJBLocalHome {
@@ -15,7 +15,7 @@ public interface IRaAdminSessionLocalHome extends javax.ejb.EJBLocalHome {
      * @return ICertificateStoreSessionRemote interface
      */
 
-    IRaAdminSessionLocal create() throws CreateException;
+    IRaAdminSessionLocal create(Admin administrator) throws CreateException;
 
 }
 

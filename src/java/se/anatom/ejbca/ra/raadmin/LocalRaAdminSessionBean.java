@@ -24,12 +24,16 @@ import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.ra.raadmin.UserPreference;
 import se.anatom.ejbca.ra.raadmin.Profile;
+import se.anatom.ejbca.log.ILogSessionRemote;
+import se.anatom.ejbca.log.ILogSessionHome;
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.log.LogEntry;
 
 /**
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.11 2002-08-27 12:41:07 herrvendil Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.12 2002-09-12 18:14:15 herrvendil Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
@@ -43,6 +47,13 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
     /** The home interface of  ProfileData entity bean */
     private ProfileDataLocalHome profiledatahome=null;
+    
+    /** The remote interface of  log session bean */    
+    private ILogSessionRemote logsession = null;
+ 
+    /** Var containing iformation about administrator using the bean.*/
+    private Admin admin = null;    
+    
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -50,15 +61,22 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     public final static String EMPTY_PROFILE   = "EMPTY"; 
     public final static int    EMPTY_PROFILEID = 1;
     
-    public void ejbCreate() throws CreateException {
+    public void ejbCreate(Admin administrator) throws CreateException {
         debug(">ejbCreate()");
+      try{  
         dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
         debug("DataSource=" + dataSource);
 
+         
         userpreferenceshome = (UserPreferencesDataLocalHome)lookup("java:comp/env/ejb/UserPreferencesDataLocal", UserPreferencesDataLocalHome.class);
         profiledatahome = (ProfileDataLocalHome)lookup("java:comp/env/ejb/ProfileDataLocal", ProfileDataLocalHome.class);
+        
+        this.admin = administrator;
+        ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
+        logsession = logsessionhome.create();        
         debug("<ejbCreate()");
                
+        
         try{
           profiledatahome.findByProfileName(EMPTY_PROFILE);
         }catch(FinderException e){
@@ -66,7 +84,10 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
             profiledatahome.create(new Integer(EMPTY_PROFILEID),EMPTY_PROFILE,new Profile());
           }catch(Exception f){}  
         }
-
+      }catch(Exception e){
+         throw new EJBException(e);  
+      } 
+        
     }
 
 
@@ -108,10 +129,14 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         boolean ret = false;
         try {
             UserPreferencesDataLocal updata= userpreferenceshome.create(serialnumber.toString(),userpreference);
+            logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,"Administrator preference added.");              
             ret = true;
         }
-        catch (Exception e) {
+        catch (Exception e) {  
           ret = false;
+          try{
+            logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,"Trying to add preference for administrator that already exists.");  
+          }catch(RemoteException re){}  
         }
         debug("<addUserPreference()");
         return ret;
@@ -136,10 +161,14 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
                 UserPreferencesDataLocal updata3 = userpreferenceshome.findByPrimaryKey(serialnumber.toString());
             }  catch (javax.ejb.FinderException fe) {
             }
+            logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,"Administrator preference changed.");  
             ret = true;
         } catch (javax.ejb.FinderException fe) {
              ret=false;
-        } catch(Exception e){
+             try{
+               logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED,"Administrator cannot be found i database.");              
+             }catch (RemoteException re) {}
+        } catch(Exception e){  
           throw new EJBException(e);
         }
         debug("<changeUserPreference()");
@@ -171,13 +200,18 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
     public boolean addProfile(String profilename, Profile profile){
        boolean returnval=false;
-       try{
+       try{ 
           profiledatahome.findByProfileName(profilename);
        }catch(FinderException e){
          try{  
            profiledatahome.create(findFreeProfileId(),profilename,profile);
            returnval = true;
-         }catch(Exception f){}  
+           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_USERPROFILE,"Userprofile " + profilename + " added.");
+         }catch(Exception f){
+            try{ 
+             logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_USERPROFILE,"Error adding userprofile "+ profilename);
+            }catch(Exception re){}
+         }  
        }
        return returnval;
     } // addProfile
@@ -193,8 +227,11 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
          profile = (Profile) pdl.getProfile().clone();
          
          returnval = addProfile(newprofilename, profile);
-       }catch(FinderException e){}
-        catch(CloneNotSupportedException f){}
+         if(returnval)
+           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_USERPROFILE,"New userprofile " + newprofilename +  " used profile " + originalprofilename + " as template.");             
+         else    
+           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_USERPROFILE,"Error adding userprofile " + newprofilename +  " using profile " + originalprofilename + " as template.");             
+       }catch(Exception e){}
        
        return returnval;
     } // cloneProfile
@@ -207,7 +244,12 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
       try{
         ProfileDataLocal pdl = profiledatahome.findByProfileName(profilename);  
         pdl.remove();
-      }catch(Exception e){}  
+        logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_USERPROFILE,"Userprofile " + profilename + " removed.");                     
+      }catch(Exception e){
+         try{ 
+           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_USERPROFILE,"Error removing userprofile " + profilename + ".");
+         }catch(Exception re){}      
+      }  
     } // removeProfile
 
      /**
@@ -224,6 +266,14 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
            returnvalue = true;
          }catch(FinderException f){}
        }  
+       
+       try{
+         if(returnvalue)
+           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_USERPROFILE,"Userprofile " + oldprofilename + " renamed to " + newprofilename +  "." );                          
+         else
+           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_USERPROFILE," Error renaming userprofile " + oldprofilename + " to " + newprofilename +  "." );                          
+       }catch(RemoteException e){}
+       
        return returnvalue;   
     } // remameProfile
 
@@ -239,6 +289,14 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
          pdl.setProfile(profile);
          returnvalue = true;
        }catch(FinderException e){}  
+       
+       try{
+         if(returnvalue)
+           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_USERPROFILE,"Userprofile + " +  profilename + " edited.");                          
+         else
+           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_USERPROFILE,"Error editing userprofile " + profilename + ".");                          
+       }catch(RemoteException e){}
+       
        return returnvalue;   
     }// changeProfile
 

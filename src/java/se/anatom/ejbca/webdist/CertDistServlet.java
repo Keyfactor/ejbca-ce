@@ -22,6 +22,7 @@ import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.log.Admin;
 
 /**
  * Servlet used to distribute certificates and CRLs.<br>
@@ -40,7 +41,7 @@ import se.anatom.ejbca.util.CertTools;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.8 2002-09-11 12:36:10 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.9 2002-09-12 18:14:16 herrvendil Exp $
  *
  */
 public class CertDistServlet extends HttpServlet {
@@ -62,6 +63,7 @@ public class CertDistServlet extends HttpServlet {
     private static final String LEVEL_PROPERTY = "level";
 
     private InitialContext ctx = null;
+    private Admin administrator = null;
     ICertificateStoreSessionHome storehome = null;
     ISignSessionHome signhome = null;
 
@@ -93,27 +95,29 @@ public class CertDistServlet extends HttpServlet {
         String command;
         // Keep this for logging.
         String remoteAddr = req.getRemoteAddr();
+        administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
+        
         command = req.getParameter(COMMAND_PROPERTY_NAME);
         if (command == null)
             command = "";
         if (command.equalsIgnoreCase(COMMAND_CRL)) {
             try {
-                ICertificateStoreSessionRemote store = storehome.create();
+                ICertificateStoreSessionRemote store = storehome.create(administrator);
                 byte[] crl = store.getLastCRL();
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = x509crl.getIssuerDN().toString();
                 String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
                 res.setHeader("Content-disposition", "attachment; filename=" +  filename);
-                res.setContentType("application/octet-stream");
+                res.setContentType("application/x-x509-crl");
                 res.setContentLength(crl.length);
                 res.getOutputStream().write(crl);
-                cat.info("Sent latest CRL to client at " + remoteAddr);
+                cat.debug("Sent latest CRL to client at " + remoteAddr);
             } catch (Exception e) {
                 PrintStream ps = new PrintStream(res.getOutputStream());
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting latest CRL.");
                 e.printStackTrace(ps);
-                cat.error("Error sending latest CRL to " + remoteAddr);
-                cat.error(e);
+                cat.debug("Error sending latest CRL to " + remoteAddr);
+                cat.debug(e);
                 return;
             }
         } else if (command.equalsIgnoreCase(COMMAND_CERT) || command.equalsIgnoreCase(COMMAND_LISTCERT)) {
@@ -125,7 +129,7 @@ public class CertDistServlet extends HttpServlet {
             }
             try {
                 cat.debug("Looking for certificates for '"+dn+"'.");
-                ICertificateStoreSessionRemote store = storehome.create();
+                ICertificateStoreSessionRemote store = storehome.create(administrator);
                 Collection certcoll = store.findCertificatesBySubject(dn);
                 Object[] certs = certcoll.toArray();
                 int latestcertno = -1;
@@ -148,7 +152,7 @@ public class CertDistServlet extends HttpServlet {
                         res.setContentType("application/octet-stream");
                         res.setContentLength(cert.length);
                         res.getOutputStream().write(cert);
-                        cat.info("Sent latest certificate for '"+dn+"' to client at " + remoteAddr);
+                        cat.debug("Sent latest certificate for '"+dn+"' to client at " + remoteAddr);
 
                     } else {
                         res.sendError(HttpServletResponse.SC_NOT_FOUND, "No certificate found for requested subject '"+dn+"'.");
@@ -186,8 +190,8 @@ public class CertDistServlet extends HttpServlet {
                 PrintStream ps = new PrintStream(res.getOutputStream());
                 e.printStackTrace(ps);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting certificates.");
-                cat.error("Error getting certificates for '"+dn+"' for "+remoteAddr);
-                cat.error(e);
+                cat.debug("Error getting certificates for '"+dn+"' for "+remoteAddr);
+                cat.debug(e);
                 return;
             }
         } else if (command.equalsIgnoreCase(COMMAND_NSCACERT) || command.equalsIgnoreCase(COMMAND_IECACERT) || command.equalsIgnoreCase(COMMAND_CACERT) ) {
@@ -200,13 +204,13 @@ public class CertDistServlet extends HttpServlet {
                 pkcs7 = true;
             // Root CA is level 0, next below root level 1 etc etc, -1 returns chain as PKCS7
             try {
-                ISignSessionRemote ss = signhome.create();
+                ISignSessionRemote ss = signhome.create(administrator);
                 Certificate[] chain = ss.getCertificateChain();
                 // chain.length-1 is last cert in chain (root CA)
                 if ( (chain.length-1-level) < 0 ) {
                     PrintStream ps = new PrintStream(res.getOutputStream());
                     ps.println("No CA certificate of level "+level+"exist.");
-                    cat.error("No CA certificate of level "+level+"exist.");
+                    cat.debug("No CA certificate of level "+level+"exist.");
                     return;
                 }
                 X509Certificate cacert = (X509Certificate)chain[chain.length-1-level];
@@ -258,8 +262,8 @@ public class CertDistServlet extends HttpServlet {
                 PrintStream ps = new PrintStream(res.getOutputStream());
                 e.printStackTrace(ps);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting CA certificates.");
-                cat.error("Error getting CA certificates.");
-                cat.error(e);
+                cat.debug("Error getting CA certificates.");
+                cat.debug(e);
                 return;
             }
         } else if (command.equalsIgnoreCase(COMMAND_REVOKED)) {
@@ -277,7 +281,7 @@ public class CertDistServlet extends HttpServlet {
             }
             cat.debug("Looking for certificate for '"+dn+"' and serno='"+serno+"'.");
             try {
-                ICertificateStoreSessionRemote store = storehome.create();
+                ICertificateStoreSessionRemote store = storehome.create(administrator);
                 RevokedCertInfo revinfo = store.isRevoked(dn, new BigInteger(serno));
                 res.setContentType("text/html");
                 PrintWriter pout = new PrintWriter(res.getOutputStream());
@@ -297,8 +301,8 @@ public class CertDistServlet extends HttpServlet {
                 PrintStream ps = new PrintStream(res.getOutputStream());
                 e.printStackTrace(ps);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error checking revocation.");
-                cat.error("Error checking revocation for '"+dn+"' with serno '"+serno+"'.");
-                cat.error(e);
+                cat.debug("Error checking revocation for '"+dn+"' with serno '"+serno+"'.");
+                cat.debug(e);
                 return;
             }
         } else {

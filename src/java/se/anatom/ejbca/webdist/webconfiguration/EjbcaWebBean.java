@@ -26,9 +26,13 @@ import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.authorization.EjbcaAuthorization;
-import se.anatom.ejbca.ra.authorization.UserInformation;
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.log.LogEntry;
+import se.anatom.ejbca.log.ILogSessionRemote;
+import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ra.authorization.AuthenticationFailedException;
+import se.anatom.ejbca.ra.authorization.UserInformation;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import se.anatom.ejbca.webdist.rainterface.UserView;
 import se.anatom.ejbca.ra.GlobalConfiguration;
@@ -38,7 +42,7 @@ import se.anatom.ejbca.ra.raadmin.UserPreference;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.13 2002-08-28 12:22:25 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.14 2002-09-12 18:14:15 herrvendil Exp $
  */
 public class EjbcaWebBean {
 
@@ -53,10 +57,7 @@ public class EjbcaWebBean {
     // Public Methods.
 
         /* Sets the current user and returns the global configuration */
-    public GlobalConfiguration initialize(HttpServletRequest request) throws AuthorizationDeniedException, AuthenticationFailedException, IOException,
-                                                              NamingException, CreateException, java.security.cert.CertificateException,
-                                                              java.security.cert.CertificateExpiredException,  java.security.cert.CertificateNotYetValidException,
-                                                              javax.ejb.FinderException{
+    public GlobalConfiguration initialize(HttpServletRequest request) throws Exception{
 
       String userdn = "";
 
@@ -66,31 +67,39 @@ public class EjbcaWebBean {
       if(certificates == null) throw new AuthenticationFailedException("Client certificate required.");
       // Check if certificate is still valid
       if(!initialized){
-        UserInformation userinformation = new UserInformation(certificates[0]) ;  
-        globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(userinformation);
+        Admin administrator = new Admin(certificates[0]) ;  
+       
+       
+        globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(administrator);
         globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();
-        userspreferences = new UsersPreferenceDataHandler();
-        authorizedatahandler = new AuthorizationDataHandler(globalconfiguration);
+        userspreferences = new UsersPreferenceDataHandler(administrator);
         weblanguages = new WebLanguages(globalconfiguration);          
           
         userdn = certificates[0].getSubjectX500Principal().toString();
-
-        authorizedatahandler.authenticate(certificates[0]);
         
         // Check if user certificate is revoked
         InitialContext jndicontext = new InitialContext();
 
         Object obj1 = jndicontext.lookup("UserAdminSession");
         IUserAdminSessionHome adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-        IUserAdminSessionRemote  adminsession = adminsessionhome.create();
-        adminsession.init(userinformation);
+        IUserAdminSessionRemote  adminsession = adminsessionhome.create(administrator);
+        
+        obj1 = jndicontext.lookup("LogSession");
+        ILogSessionHome logsessionhome = (ILogSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ILogSessionHome.class);   
+        logsession = logsessionhome.create();
 
+
+        authorizedatahandler = new AuthorizationDataHandler(globalconfiguration, logsession, administrator);
+        authorizedatahandler.authenticate(certificates[0]); 
+        
         // Check if certificate belongs to a RA Admin
         cat.debug("Verifying authoirization of '"+userdn);
         
         // Check that user is administrator.
         adminsession.checkIfSubjectDNisAdmin(userdn);
 
+        logsession.log(administrator, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORLOGGEDIN,"");               
+        
       }
       try{
         isAuthorized(URLDecoder.decode(request.getRequestURI(),"UTF-8"));
@@ -151,7 +160,20 @@ public class EjbcaWebBean {
     public int getEntriesPerPage(){
       return currentuserpreference.getEntriesPerPage();
     }
+    
+    public int getLogEntriesPerPage(){
+      return currentuserpreference.getLogEntriesPerPage();        
+    }
 
+    public void setLogEntriesPerPage(int logentriesperpage) throws Exception{
+        currentuserpreference.setLogEntriesPerPage(logentriesperpage);
+        if(existsUserPreference()){
+          changeUserPreference(currentuserpreference);
+        }else{
+          addUserPreference(currentuserpreference);
+        }
+    }
+    
     public int getLastFilterMode(){ return currentuserpreference.getLastFilterMode();}
     public void setLastFilterMode(int lastfiltermode) throws Exception{
         currentuserpreference.setLastFilterMode(lastfiltermode);
@@ -161,6 +183,16 @@ public class EjbcaWebBean {
           addUserPreference(currentuserpreference);
         }
     }
+    public int getLastLogFilterMode(){ return currentuserpreference.getLastLogFilterMode();}
+    public void setLastLogFilterMode(int lastlogfiltermode) throws Exception{
+        currentuserpreference.setLastLogFilterMode(lastlogfiltermode);
+        if(existsUserPreference()){
+          changeUserPreference(currentuserpreference);
+        }else{
+          addUserPreference(currentuserpreference);
+        }
+    }
+    
     public String getLastProfile(){ return currentuserpreference.getLastProfile();}
     public void setLastProfile(String lastprofile) throws Exception{
         currentuserpreference.setLastProfile(lastprofile);
@@ -343,7 +375,7 @@ public class EjbcaWebBean {
     }
 
     public String printDateTime(Date date){
- return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(date);
+      return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(date);
     }    
     
     public void reloadGlobalConfiguration() throws  Exception {
@@ -376,16 +408,17 @@ public class EjbcaWebBean {
 
 
     // Private Fields.
-    private UsersPreferenceDataHandler userspreferences;
-    private UserPreference currentuserpreference;
-    private GlobalConfiguration globalconfiguration;
+    private ILogSessionRemote              logsession; 
+    private UsersPreferenceDataHandler     userspreferences;
+    private UserPreference                 currentuserpreference;
+    private GlobalConfiguration            globalconfiguration;
     private GlobalConfigurationDataHandler globaldataconfigurationdatahandler;
-    private AuthorizationDataHandler authorizedatahandler;
-    private WebLanguages weblanguages;
-    private WebLanguages usersweblanguage;
-    private String usercommonname = "";
-    private BigInteger certificateserialnumber;
-    private X509Certificate[] certificates;
-    private boolean initialized=false;
+    private AuthorizationDataHandler       authorizedatahandler;
+    private WebLanguages                   weblanguages;
+    private WebLanguages                   usersweblanguage;
+    private String                         usercommonname = "";
+    private BigInteger                     certificateserialnumber;
+    private X509Certificate[]              certificates;
+    private boolean                        initialized=false;
 
 }

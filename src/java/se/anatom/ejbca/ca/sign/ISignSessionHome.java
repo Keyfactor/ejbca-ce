@@ -4,10 +4,10 @@ package se.anatom.ejbca.ca.sign;
 import java.rmi.RemoteException;
 import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
-
+import se.anatom.ejbca.log.Admin;
 
 /**
- * @version $Id: ISignSessionHome.java,v 1.1.1.1 2001-11-15 14:58:14 anatom Exp $
+ * @version $Id: ISignSessionHome.java,v 1.2 2002-09-12 18:14:14 herrvendil Exp $
  */
 public interface ISignSessionHome extends EJBHome {
 
@@ -17,5 +17,5 @@ public interface ISignSessionHome extends EJBHome {
      * @throws RemoteException
      * @return ISignSessionRemote interface
      */
-    ISignSessionRemote create() throws CreateException, RemoteException;
+    ISignSessionRemote create(Admin administrator) throws CreateException, RemoteException;
 }

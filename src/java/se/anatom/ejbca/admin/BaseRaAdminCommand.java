@@ -7,12 +7,11 @@ import java.rmi.RemoteException;
 
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.authorization.UserInformation;
-import se.anatom.ejbca.ra.authorization.UserEntity;
+import se.anatom.ejbca.log.Admin;
 
 /** Base for RA commands, contains comom functions for RA operations
  *
- * @version $Id: BaseRaAdminCommand.java,v 1.4 2002-08-27 12:41:06 herrvendil Exp $
+ * @version $Id: BaseRaAdminCommand.java,v 1.5 2002-09-12 18:14:15 herrvendil Exp $
  */
 public abstract class BaseRaAdminCommand extends BaseAdminCommand {
 
@@ -20,6 +19,8 @@ public abstract class BaseRaAdminCommand extends BaseAdminCommand {
     private IUserAdminSessionRemote cacheAdmin;
     /** Handle to AdminSessionHome */
     private static IUserAdminSessionHome cacheHome;
+    
+    protected Admin administrator = null;
     
     /** Creates a new instance of BaseRaAdminCommand */
     public BaseRaAdminCommand(String[] args) {
@@ -32,6 +33,7 @@ public abstract class BaseRaAdminCommand extends BaseAdminCommand {
      */
     protected IUserAdminSessionRemote getAdminSession() throws CreateException, NamingException, RemoteException {
         debug(">getAdminSession()");
+        administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER);
         try {
             if( cacheAdmin == null ) {
                 if (cacheHome == null) {
@@ -39,8 +41,7 @@ public abstract class BaseRaAdminCommand extends BaseAdminCommand {
                     Object obj1 = jndiContext.lookup("UserAdminSession");
                     cacheHome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
                 }
-                cacheAdmin = cacheHome.create();
-                cacheAdmin.init(new UserInformation(UserEntity.SPECIALUSER_RACOMMANDLINEADMIN));
+                cacheAdmin = cacheHome.create(administrator);
             }
             debug("<getAdminSession()");
             return  cacheAdmin;

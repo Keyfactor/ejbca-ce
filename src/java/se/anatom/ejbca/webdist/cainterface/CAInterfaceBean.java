@@ -41,18 +41,18 @@ import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
-import se.anatom.ejbca.ra.authorization.UserInformation;
-
+import se.anatom.ejbca.log.Admin;
 
 
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.7 2002-08-27 12:41:07 herrvendil Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.8 2002-09-12 18:14:16 herrvendil Exp $
  */
 public class CAInterfaceBean   {
 
+    
     /** Creates a new instance of CaInterfaceBean */
     public CAInterfaceBean() {
     }
@@ -61,11 +61,11 @@ public class CAInterfaceBean   {
     public void initialize(HttpServletRequest request) throws  Exception{
 
       if(!initialized){
-        userinformation = new UserInformation(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);  
+        administrator = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);  
         InitialContext jndicontext = new InitialContext();
         Object obj1 = jndicontext.lookup("CertificateStoreSession");
         certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-        certificatesession = certificatesessionhome.create();
+        certificatesession = certificatesessionhome.create(administrator);
       
         certificatetypes = new CertificateTypeDataHandler(certificatesession); 
         initialized =true; 
@@ -76,7 +76,7 @@ public class CAInterfaceBean   {
       CertificateView[] returnval = null;
       InitialContext jndicontext = new InitialContext();
       ISignSessionHome home = (ISignSessionHome)javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RSASignSession"), ISignSessionHome.class );
-      ISignSessionRemote ss = home.create();
+      ISignSessionRemote ss = home.create(administrator);
       Certificate[] chain = ss.getCertificateChain();
 
       if(chain != null){
@@ -96,7 +96,7 @@ public class CAInterfaceBean   {
     public void createCRL()  throws RemoteException, NamingException, CreateException  {
       InitialContext jndicontext = new InitialContext();        
       IJobRunnerSessionHome home  = (IJobRunnerSessionHome)javax.rmi.PortableRemoteObject.narrow( jndicontext.lookup("CreateCRLSession") , IJobRunnerSessionHome.class );
-      home.create().run();
+      home.create(administrator).run();
     }
 
     public int getLastCRLNumber() throws RemoteException   {
@@ -139,13 +139,12 @@ public class CAInterfaceBean   {
         InitialContext jndicontext = new InitialContext();              
         Object obj1 = jndicontext.lookup("UserAdminSession");
         IUserAdminSessionHome adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-        IUserAdminSessionRemote adminsession = adminsessionhome.create();
-        adminsession.init(userinformation);
+        IUserAdminSessionRemote adminsession = adminsessionhome.create(administrator);
       
         obj1 = jndicontext.lookup("RaAdminSession");
         IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"), 
                                                                                  IRaAdminSessionHome.class);
-        IRaAdminSessionRemote raadminsession = raadminsessionhome.create(); 
+        IRaAdminSessionRemote raadminsession = raadminsessionhome.create(administrator); 
         
         
         boolean certificatetypeused = false;
@@ -177,6 +176,6 @@ public class CAInterfaceBean   {
     private ICertificateStoreSessionHome      certificatesessionhome;
     private CertificateTypeDataHandler        certificatetypes;
     private boolean                           initialized;
-    private UserInformation                   userinformation;
+    private Admin                             administrator;
 
 }

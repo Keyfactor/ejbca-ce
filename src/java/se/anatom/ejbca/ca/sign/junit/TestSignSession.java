@@ -22,6 +22,7 @@ import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.ca.sign.*;
 import se.anatom.ejbca.util.*;
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.log.Admin;
 
 import org.bouncycastle.jce.*;
 import org.bouncycastle.asn1.*;
@@ -32,7 +33,7 @@ import junit.framework.*;
 
 /** Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.9 2002-07-05 23:43:18 herrvendil Exp $
+ * @version $Id: TestSignSession.java,v 1.10 2002-09-12 18:14:16 herrvendil Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -90,7 +91,7 @@ public class TestSignSession extends TestCase {
         ctx = getInitialContext();
         Object obj = ctx.lookup("RSASignSession");
         home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
-        remote = home.create();
+        remote = home.create(new Admin(Admin.TYPE_INTERNALUSER));
 
         Object obj1 = ctx.lookup("UserData");
         userhome = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj1, UserDataHome.class);

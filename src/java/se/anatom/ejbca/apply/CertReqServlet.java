@@ -36,6 +36,7 @@ import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
+import se.anatom.ejbca.log.Admin;
 
 /**
  * Servlet used to install a private key with a corresponding certificate in a
@@ -62,14 +63,16 @@ import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.18 2002-09-11 12:35:58 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.19 2002-09-12 18:14:16 herrvendil Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
     static private Category cat = Category.getInstance( CertReqServlet.class.getName() );
 
     private InitialContext ctx = null;
+    private Admin administrator = null;
     ISignSessionHome home = null;
+
 
     public void init(ServletConfig config) throws ServletException {
     super.init(config);
@@ -94,7 +97,8 @@ public class CertReqServlet extends HttpServlet {
         try {
             String username = request.getParameter("user");
             String password = request.getParameter("password");
-            cat.info("Got request for " + username + "/" + password);
+            administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
+            cat.debug("Got request for " + username + "/" + password);
             debug.print("<h3>username: "+username+"</h3>");
             // first check if it is a netcsape request,
             if (request.getParameter("keygen") != null) {
@@ -126,43 +130,43 @@ public class CertReqServlet extends HttpServlet {
                 }
             }
         } catch (ObjectNotFoundException oe) {
-            cat.info("Non existens username!");
+            cat.debug("Non existens username!");
             debug.printMessage("Non existent username!");
             debug.printMessage("To generate a certificate a valid username and password must be entered.");
             debug.printDebugInfo();
             return;
         } catch (AuthStatusException ase) {
-            cat.info("Wrong user status!");
+            cat.debug("Wrong user status!");
             debug.printMessage("Wrong user status!");
             debug.printMessage("To generate a certificate for a user the user must have status new, failed or inprocess.");
             debug.printDebugInfo();
             return;
         } catch (AuthLoginException ale) {
-            cat.info("Wrong password for user!");
+            cat.debug("Wrong password for user!");
             debug.printMessage("Wrong username or password!");
             debug.printMessage("To generate a certificate a valid username and password must be entered.");
             debug.printDebugInfo();
             return;
         } catch (SignRequestException re) {
-            cat.info("Invalid request!");
+            cat.debug("Invalid request!");
             debug.printMessage("Invalid request!");
             debug.printMessage("Please supply a correct request.");
             debug.printDebugInfo();
             return;
         } catch (SignRequestSignatureException se) {
-            cat.info("Invalid signature on certificate request!");
+            cat.debug("Invalid signature on certificate request!");
             debug.printMessage("Invalid signature on certificate request!");
             debug.printMessage("Please supply a correctly signed request.");
             debug.printDebugInfo();
             return;
         } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
-            cat.info("Empty or invalid request received.");
+            cat.debug("Empty or invalid request received.");
             debug.printMessage("Empty or invalid request!");
             debug.printMessage("Please supply a correct request.");
             debug.printDebugInfo();
             return;
         } catch (Exception e) {
-            cat.error(e);
+            cat.debug(e);
             debug.print("<h3>parameter name and values: </h3>");
             Enumeration paramNames=request.getParameterNames();
             while (paramNames.hasMoreElements()) {
@@ -223,7 +227,7 @@ public class CertReqServlet extends HttpServlet {
                 ieCertFormat(b64cert, ps);
         }
         ps.close();
-        cat.info("Sent reply to IE client");
+        cat.debug("Sent reply to IE client");
         cat.debug(new String(b64cert));
     }
 
@@ -234,7 +238,7 @@ public class CertReqServlet extends HttpServlet {
         out.setContentLength(certs.length);
         // Print the certificate
         out.getOutputStream().write(certs);
-        cat.info("Sent reply to NS client");
+        cat.debug("Sent reply to NS client");
         cat.debug(new String(Base64.encode(certs)));
     }
     private void sendNewB64Cert(byte[] b64cert, HttpServletResponse out)
@@ -251,7 +255,7 @@ public class CertReqServlet extends HttpServlet {
         os.write(b64cert);
         os.write(end.getBytes());
         out.flushBuffer();
-        cat.info("Sent reply to client");
+        cat.debug("Sent reply to client");
         cat.debug(new String(b64cert));
     }
 
@@ -279,11 +283,12 @@ public class CertReqServlet extends HttpServlet {
             if (nscr.verify("challenge") == false)
                 throw new SignRequestSignatureException("Invalid signature in NetscapeCertRequest, popo-verification failed.");
             cat.debug("POPO verification succesful");
-            ISignSessionRemote ss = home.create();
+            ISignSessionRemote ss = home.create(administrator);
             X509Certificate cert = (X509Certificate) ss.createCertificate(username, password, nscr.getPublicKey());
             //Certificate[] chain = ss.getCertificateChain();
+
             byte[] pkcs7 = ss.createPKCS7(cert);
-            cat.info("Created certificate (PKCS7) for "+ username);
+            cat.debug("Created certificate (PKCS7) for "+ username);
             debug.print("<h4>Generated certificate:</h4>");
             debug.printInsertLineBreaks(cert.toString().getBytes());
             return pkcs7;
@@ -330,8 +335,12 @@ public class CertReqServlet extends HttpServlet {
                 // IE PKCS10 Base64 coded request
                 buffer = Base64.decode(b64Encoded);
             }
+
+            ISignSessionRemote ss = home.create(administrator);
+            cert = (X509Certificate) ss.createCertificate(username, password, buffer);
+            cat.debug("Created certificate for " + username);
         }
-        ISignSessionRemote ss = home.create();
+        ISignSessionRemote ss = home.create(administrator);
         cert = (X509Certificate) ss.createCertificate(username, password, buffer);
         byte[] pkcs7 = ss.createPKCS7(cert);
         cat.info("Created certificate (PKCS7) for " + username);

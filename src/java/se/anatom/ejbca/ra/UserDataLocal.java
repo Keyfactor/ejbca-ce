@@ -8,7 +8,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataLocal.java,v 1.2 2002-07-28 23:27:47 herrvendil Exp $
+ * @version $Id: UserDataLocal.java,v 1.3 2002-09-12 18:14:16 herrvendil Exp $
  **/
 
 public interface UserDataLocal extends javax.ejb.EJBLocalObject {
@@ -22,9 +22,7 @@ public interface UserDataLocal extends javax.ejb.EJBLocalObject {
     public static final int STATUS_GENERATED = 40;  // A certificate has been generated for the user
     public static final int STATUS_REVOKED = 50;  // The user has been revoked and should not have any more certificates issued
     public static final int STATUS_HISTORICAL = 60; // The user is old and archived
-
-
-
+    
     // public methods
 
     public String getUsername();

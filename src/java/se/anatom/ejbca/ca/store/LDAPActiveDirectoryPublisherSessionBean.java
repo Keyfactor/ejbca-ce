@@ -22,6 +22,7 @@ import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.sign.*;
 import se.anatom.ejbca.util.*;
 import java.util.Properties;
+import se.anatom.ejbca.log.Admin;
 
 import org.apache.log4j.*;
 
@@ -55,7 +56,7 @@ import org.apache.log4j.*;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.2 2002-08-08 18:40:33 anatom Exp $
+ * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.3 2002-09-12 18:14:16 herrvendil Exp $
  */
 public class LDAPActiveDirectoryPublisherSessionBean
     extends BaseSessionBean {
@@ -303,7 +304,7 @@ public class LDAPActiveDirectoryPublisherSessionBean
                         System.out.println("Error retrieving the home of  CertificateData or CRLData.");
                         exc.printStackTrace();
                     }
-                    ICertificateStoreSessionRemote localstore = storeHome.create();
+                    ICertificateStoreSessionRemote localstore = storeHome.create(new Admin(Admin.TYPE_INTERNALUSER));
                     byte[] lastcrl = localstore.getLastCRL();
                     attrs.put(new BasicAttribute("certificateRevocationList;binary", lastcrl));
                     attrs.put(new BasicAttribute("authorityRevocationList;binary", lastcrl));
@@ -393,7 +394,7 @@ public class LDAPActiveDirectoryPublisherSessionBean
                 exc.printStackTrace();
                 return false;
             }
-            ISignSessionRemote rsasign = signHome.create();
+            ISignSessionRemote rsasign = signHome.create(new Admin(Admin.TYPE_INTERNALUSER));
             Certificate[] certchain = rsasign.getCertificateChain();
 
             //Use CA's certificate.

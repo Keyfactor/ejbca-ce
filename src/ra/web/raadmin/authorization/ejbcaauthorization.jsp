@@ -83,7 +83,7 @@
          usergroup = request.getParameter(SELECT_USERGROUPS);
          if(usergroup != null){
            if(!usergroup.trim().equals("")){
-             if(!usergroup.equals(UserGroup.SPECIALUSERGROUP_COMMONWEBUSER) && !usergroup.equals(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN)
+             if(!usergroup.equals(UserGroup.SPECIALUSERGROUP_PUBLICWEBUSER) && !usergroup.equals(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN)
                 && !usergroup.equals(UserGroup.SPECIALUSERGROUP_RACOMMANDLINEADMIN)){      
                  includefile="edituserentities.jsp"; 
              }
@@ -120,7 +120,7 @@
           usergroup = request.getParameter(SELECT_USERGROUPS);
           if(usergroup != null){
             if(!usergroup.trim().equals("")){
-              if(!usergroup.equals(UserGroup.SPECIALUSERGROUP_COMMONWEBUSER) && !usergroup.equals(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN)
+              if(!usergroup.equals(UserGroup.SPECIALUSERGROUP_PUBLICWEBUSER) && !usergroup.equals(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN)
                  && !usergroup.equals(UserGroup.SPECIALUSERGROUP_RACOMMANDLINEADMIN)){           
                    adh.removeUserGroup(usergroup);
                }
@@ -138,8 +138,8 @@
        String oldusergroup = request.getParameter(SELECT_USERGROUPS);
        if(oldusergroup != null && newusergroup != null){
          if(!newusergroup.trim().equals("") && !oldusergroup.trim().equals("")){
-           if(!oldusergroup.equals(UserGroup.SPECIALUSERGROUP_COMMONWEBUSER) && !oldusergroup.equals(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN)
-                 && !oldusergroup.equals(UserGroup.SPECIALUSERGROUP_RACOMMANDLINEADMIN) && !newusergroup.equals(UserGroup.SPECIALUSERGROUP_COMMONWEBUSER)
+           if(!oldusergroup.equals(UserGroup.SPECIALUSERGROUP_PUBLICWEBUSER) && !oldusergroup.equals(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN)
+                 && !oldusergroup.equals(UserGroup.SPECIALUSERGROUP_RACOMMANDLINEADMIN) && !newusergroup.equals(UserGroup.SPECIALUSERGROUP_PUBLICWEBUSER)
                  && !newusergroup.equals(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN) && !newusergroup.equals(UserGroup.SPECIALUSERGROUP_RACOMMANDLINEADMIN) ){      
              try{
                adh.renameUserGroup(oldusergroup, newusergroup);
@@ -157,7 +157,7 @@
          usergroup = request.getParameter(TEXTFIELD_GROUPNAME);
          if(usergroup != null){
            if(!usergroup.trim().equals("")){
-             if(!usergroup.equals(UserGroup.SPECIALUSERGROUP_COMMONWEBUSER) && !usergroup.equals(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN)
+             if(!usergroup.equals(UserGroup.SPECIALUSERGROUP_PUBLICWEBUSER) && !usergroup.equals(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN)
                  && !usergroup.equals(UserGroup.SPECIALUSERGROUP_RACOMMANDLINEADMIN)){     
                try{
                  adh.addUserGroup(usergroup);

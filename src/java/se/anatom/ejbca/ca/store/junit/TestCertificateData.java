@@ -17,6 +17,7 @@ import se.anatom.ejbca.ca.store.*;
 import se.anatom.ejbca.ca.crl.*;
 import se.anatom.ejbca.util.*;
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.log.Admin;
 
 import org.apache.log4j.*;
 import junit.framework.*;
@@ -24,7 +25,7 @@ import junit.framework.*;
 
 /** Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.9 2002-05-26 14:26:00 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.10 2002-09-12 18:14:15 herrvendil Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -121,7 +122,7 @@ public class TestCertificateData extends TestCase {
 
     public void test03listAndRevoke() throws Exception {
         cat.debug(">test03listAndRevoke()");
-        ICertificateStoreSessionRemote store = storehome.create();
+        ICertificateStoreSessionRemote store = storehome.create(new Admin(Admin.TYPE_INTERNALUSER));
         Collection certfps = store.listAllCertificates();
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
@@ -143,7 +144,7 @@ public class TestCertificateData extends TestCase {
     }
     public void test04CheckRevoked() throws Exception {
         cat.debug(">test04CheckRevoked()");
-        ICertificateStoreSessionRemote store = storehome.create();
+        ICertificateStoreSessionRemote store = storehome.create(new Admin(Admin.TYPE_INTERNALUSER));
         Collection certfps = store.listAllCertificates();
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
@@ -180,7 +181,7 @@ public class TestCertificateData extends TestCase {
         assertTrue("wrong reason", (data3.getRevocationReason() & CRLData.REASON_KEYCOMPROMISE) == CRLData.REASON_KEYCOMPROMISE);
 
         cat.debug("Looking for cert with DN="+cert.getSubjectDN().toString());
-        ICertificateStoreSessionRemote store = storehome.create();
+        ICertificateStoreSessionRemote store = storehome.create(new Admin(Admin.TYPE_INTERNALUSER));
         Collection certs = store.findCertificatesBySubject(cert.getSubjectDN().toString());
         Iterator iter = certs.iterator();
         while (iter.hasNext()) {
@@ -203,7 +204,7 @@ public class TestCertificateData extends TestCase {
         long findDateSecs = data.getExpireDate() - (yearmillis*100);
         Date findDate = new Date(findDateSecs);
 
-        ICertificateStoreSessionRemote store = storehome.create();
+        ICertificateStoreSessionRemote store = storehome.create(new Admin(Admin.TYPE_INTERNALUSER));
         cat.debug("1. Looking for cert with expireDate="+findDate);
         Collection certs = store.findCertificatesByExpireTime(findDate);
         cat.debug("findCertificatesByExpireTime returned "+ certs.size()+" certs.");
@@ -232,7 +233,7 @@ public class TestCertificateData extends TestCase {
         assertNotNull("Failed to find cert", data3);
 
         cat.debug("Looking for cert with DN:"+cert.getIssuerDN().toString()+" and serno "+cert.getSerialNumber());
-        ICertificateStoreSessionRemote store = storehome.create();
+        ICertificateStoreSessionRemote store = storehome.create(new Admin(Admin.TYPE_INTERNALUSER));
         Certificate fcert = store.findCertificateByIssuerAndSerno(cert.getIssuerDN().toString(), cert.getSerialNumber());
         assertNotNull("Cant find by issuer and serno", fcert);
         //cat.debug(fcert.toString());
@@ -262,7 +263,7 @@ public class TestCertificateData extends TestCase {
         assertTrue("wrong reason", (data3.getRevocationReason() & CRLData.REASON_KEYCOMPROMISE) == CRLData.REASON_KEYCOMPROMISE);
 
         cat.debug("Checking if cert is revoked DN:'"+cert.getIssuerDN().toString()+"', serno:'"+cert.getSerialNumber().toString()+"'.");
-        ICertificateStoreSessionRemote store = storehome.create();
+        ICertificateStoreSessionRemote store = storehome.create(new Admin(Admin.TYPE_INTERNALUSER));
         RevokedCertInfo revinfo = store.isRevoked(cert.getIssuerDN().toString(), cert.getSerialNumber());
         assertNotNull("Certificate not revoked, it should be!", revinfo);
         assertTrue("Wrong revocationDate!", revinfo.getRevocationDate().getTime() == data3.getRevocationDate());

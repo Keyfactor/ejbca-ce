@@ -15,7 +15,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 
 /** List certificates that will expire within the given number of days.
  *
- * @version $Id: CaListExpiredCommand.java,v 1.3 2002-06-04 14:42:04 anatom Exp $
+ * @version $Id: CaListExpiredCommand.java,v 1.4 2002-09-12 18:14:15 herrvendil Exp $
  */
 public class CaListExpiredCommand extends BaseCaAdminCommand {
 
@@ -56,7 +56,7 @@ public class CaListExpiredCommand extends BaseCaAdminCommand {
         try {
             Context ctx = getInitialContext();
             ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome)javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );;
-            ICertificateStoreSessionRemote store = storehome.create();
+            ICertificateStoreSessionRemote store = storehome.create(administrator);
             debug("Looking for cert with expireDate="+findDate);
             Collection certs = store.findCertificatesByExpireTime(findDate);
             debug("Found "+certs.size()+" certs.");

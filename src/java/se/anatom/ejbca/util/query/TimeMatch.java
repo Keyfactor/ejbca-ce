@@ -75,7 +75,7 @@ public  class TimeMatch extends BasicMatch {
       return returnval;  
     } // getQueryString
     
-    public boolean isLegalQuery(){
+    public boolean isLegalQuery(){       
       return !(startdate==null && enddate==null);  
     }
     

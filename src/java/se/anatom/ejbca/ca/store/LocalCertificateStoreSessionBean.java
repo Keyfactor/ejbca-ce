@@ -24,12 +24,16 @@ import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Base64;
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.log.ILogSessionRemote;
+import se.anatom.ejbca.log.ILogSessionHome;
+import se.anatom.ejbca.log.LogEntry;
 
 /**
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.24 2002-08-28 12:22:22 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.25 2002-09-12 18:14:16 herrvendil Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -44,6 +48,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
     /** The home interface of CRL entity bean */
     private CRLDataLocalHome crlHome = null;
+    
+    /** The remote interface of the log session bean */
+    private ILogSessionRemote logsession;    
+
+    /** Var containing iformation about administrator using the bean.*/
+    private Admin admin = null;
+    
 
     /** Constants used with fixed certificate types. All constants should have an integer value greater than 0 and less than 1000. */
     public final static int FIXED_ENDUSER = 1;
@@ -54,14 +65,21 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
      */
-    public void ejbCreate() throws CreateException {
+    public void ejbCreate(Admin administrator) throws CreateException {
         debug(">ejbCreate()");
         dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
         debug("DataSource=" + dataSource);
         crlHome = (CRLDataLocalHome)lookup("java:comp/env/ejb/CRLDataLocal");
         certHome = (CertificateDataLocalHome)lookup("java:comp/env/ejb/CertificateDataLocal");
         certtypehome = (CertificateTypeDataLocalHome)lookup("java:comp/env/ejb/CertificateTypeDataLocal");
-
+        
+        try{
+          this.admin = administrator;  
+          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
+          logsession = logsessionhome.create();
+        }catch(Exception e){
+          throw new EJBException(e);   
+        }  
 
         // Check if fixed certificates exists in database.
        try{
@@ -101,7 +119,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             X509Certificate cert = (X509Certificate)incert;
             CertificateDataPK pk = new CertificateDataPK();
             pk.fingerprint = CertTools.getFingerprintAsString(cert);
-            info("Storing cert with fp="+pk.fingerprint);
+            logsession.log(admin, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE,"");             
             CertificateDataLocal data1=null;
             data1 = certHome.create(cert);
             data1.setCAFingerprint(cafp);
@@ -109,7 +127,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             data1.setType(type);
         }
         catch (Exception e) {
-            error("Storage of cert failed.", e);
+            try{
+              logsession.log(admin, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"");
+            }catch(RemoteException re){}  
             throw new EJBException(e);
         }
         debug("<storeCertificate()");
@@ -123,14 +143,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     public boolean storeCRL(byte[] incrl, String cafp, int number) {
         debug(">storeCRL("+cafp+", "+number+")");
         try {
-            X509CRL crl = CertTools.getCRLfromByteArray(incrl);
-            CRLDataLocal data1 = crlHome.create(crl, number);
-            data1.setCAFingerprint(cafp);
-            info("Stored CRL with fp="+CertTools.getFingerprintAsString(crl));
+          X509CRL crl = CertTools.getCRLfromByteArray(incrl);
+          CRLDataLocal data1 = crlHome.create(crl, number);
+          data1.setCAFingerprint(cafp);
+          logsession.log(admin, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECRL,"Number : " +  number + " Fingerprint : " + CertTools.getFingerprintAsString(crl) + ".");    
         }
         catch (Exception e) {
-            error("Storage of CRL failed.", e);
-            throw new EJBException(e);
+          try{  
+            logsession.log(admin, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Number : " +  number +  ".");  
+          }catch(RemoteException re){} 
+          throw new EJBException(e);
         }
         debug("<storeCRL()");
         return true;
@@ -230,7 +252,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             debug("<findCertificatesBySubject(), dn='"+subjectDN+"'");
             return ret;
         } catch (javax.ejb.FinderException fe) {
-            cat.error(fe);
             throw new EJBException(fe);
         }
     } //findCertificatesBySubject
@@ -254,7 +275,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             debug("<findCertificatesByExpireTime(), time="+expireTime);
             return ret;
         } catch (javax.ejb.FinderException fe) {
-            cat.error(fe);
             throw new EJBException(fe);
         }
     } //findCertificatesByExpireTime
@@ -272,7 +292,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             Certificate ret = null;
             if (coll != null) {
                 if (coll.size() > 1)
-                    cat.error("Error in database, more than one certificate has the same Issuer and SerialNumber!");
+                  logsession.log(admin, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_DATABASE,"Error in database, more than one certificate has the same Issuer : " + issuerDN + " and serialnumber "
+                                                                                                          + serno.toString(16) + ".");                      
                 Iterator iter = coll.iterator();
                 if (iter.hasNext()) {
                     ret= ((CertificateDataLocal)iter.next()).getCertificate();
@@ -280,8 +301,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             }
             debug("<findCertificateByIssuerAndSerno(), dn:"+issuerDN+", serno="+serno);
             return ret;
-        } catch (javax.ejb.FinderException fe) {
-            cat.error(fe);
+        } catch (Exception fe) {
+
             throw new EJBException(fe);
         }
     } //findCertificateByIssuerAndSerno
@@ -303,7 +324,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             debug("<findCertificateBySerno(), serno="+serno);
             return ret;
         } catch (javax.ejb.FinderException fe) {
-            cat.error(fe);
             throw new EJBException(fe);
         }
     } // findCertificateBySerno
@@ -313,6 +333,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param dn the dn of user to revoke certificates.
      */
     public void setRevokeStatus(String dn, int reason) {
+       X509Certificate certificate = null; 
        try{ 
          Collection certs = findCertificatesBySubject(dn);
           // Revoke all certs
@@ -320,16 +341,28 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
            Iterator j = certs.iterator();
            while (j.hasNext()) {
              CertificateDataPK revpk = new CertificateDataPK();
-             revpk.fingerprint = CertTools.getFingerprintAsString((X509Certificate) j.next());
+             certificate = (X509Certificate) j.next();
+             revpk.fingerprint = CertTools.getFingerprintAsString(certificate);
              CertificateDataLocal rev = certHome.findByPrimaryKey(revpk);
              if (rev.getStatus() != CertificateData.CERT_REVOKED) {
               rev.setStatus(CertificateData.CERT_REVOKED);
               rev.setRevocationDate(new Date());
               rev.setRevocationReason(reason);
+              try{
+                logsession.log(admin, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_REVOKEDCERT,("Reason :" + reason)); 
+              }catch(RemoteException re){
+                throw new EJBException(re);              
+              }                
             }
           }
          }
+         
        }catch(FinderException e){
+          try{ 
+            logsession.log(admin, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT,("Couldn't find certificate with dn :" + dn));     
+          }catch(RemoteException f){
+          throw new EJBException(f);              
+          }    
           throw new EJBException(e);           
        }
     } // setRevokeStatus   
@@ -349,7 +382,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             Certificate ret = null;
             if (coll != null) {
                 if (coll.size() > 1)
-                    cat.error("Error in database, more than one certificate has the same Issuer and SerialNumber!");
+                  logsession.log(admin, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_DATABASE,"Error in database, more than one certificate has the same Issuer : " + issuerDN + " and serialnumber "
+                                                                                                          + serno.toString(16) + ".");   
                 Iterator iter = coll.iterator();
                 if (iter.hasNext()) {
                     RevokedCertInfo revinfo = null;
@@ -385,9 +419,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             debug("<findLatestCRL()");
             if (crl == null)
                 return null;
+            
+            logsession.log(admin, new java.util.Date(), null, null, LogEntry.EVENT_INFO_GETLASTCRL,"Number :" + maxnumber);              
             return crl.getEncoded();
         }
         catch (Exception e) {
+            try{
+              logsession.log(admin, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL,"Error retrieving last crl.");   
+            }catch(RemoteException re){
+              throw new EJBException(re);              
+            }              
             throw new EJBException(e);
         }
     } //getLastCRL
@@ -408,7 +449,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             int maxnumber = 0;
             if (result.next())
                 maxnumber = result.getInt(1);
-            info("Last CRLNumber="+maxnumber);
             debug("<getLastCRLNumber()");
             return maxnumber;
         }
@@ -441,6 +481,15 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
            returnval = true;
          }catch(Exception f){}
        }
+      
+        try{
+         if(returnval)
+           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"New certificateprofile " + certificatetypename + ".");             
+         else    
+           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificateprofile " + certificatetypename + ".");   
+       }catch(RemoteException re){
+          throw new EJBException(re);              
+       }         
        return returnval;
     } // addCertificateType
 
@@ -458,6 +507,15 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
        }catch(FinderException e){}
         catch(CloneNotSupportedException f){}
 
+       try{
+         if(returnval)
+           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"New certificateprofile " + newcertificatetypename +  " used profile " + originalcertificatetypename + " as template.");             
+         else    
+           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificaterprofile " + newcertificatetypename +  " using profile " + originalcertificatetypename + " as template.");  
+       }catch(RemoteException re){
+          throw new EJBException(re);              
+       }
+       
        return returnval;
     } // cloneCertificateType
 
@@ -469,7 +527,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
       try{
         CertificateTypeDataLocal pdl = certtypehome.findByCertificateTypeName(certificatetypename);
         pdl.remove();
-      }catch(Exception e){}
+        logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"Removed certificateprofile " + certificatetypename + ".");        
+      }catch(Exception e){
+         try{ 
+           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error removing certificateprofile " + certificatetypename + ".");    
+         }catch(RemoteException re){} 
+      }
     } // removeCertificateType
 
      /**
@@ -486,6 +549,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
            returnvalue = true;
          }catch(FinderException f){}
        }
+      
+       try{
+         if(returnvalue)
+           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"Renamed certificateprofile " + oldcertificatetypename +  " to " + newcertificatetypename + ".");             
+         else    
+           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error renaming certificateprofile " + oldcertificatetypename +  " to " + newcertificatetypename + ".");     
+       }catch(RemoteException re){
+          throw new EJBException(re);              
+       }         
+       
        return returnvalue;
     } // remameCertificateType
 
@@ -501,6 +574,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
          pdl.setCertificateType(certificatetype);
          returnvalue = true;
        }catch(FinderException e){}
+       
+       try{
+         if(returnvalue)
+           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"Certificateprofile " + certificatetypename +  " edited.");             
+         else    
+           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE," Error editing certificateprofile " + certificatetypename + ".");  
+       }catch(RemoteException re){
+          throw new EJBException(re);              
+       }  
+       
        return returnvalue;
     }// changeCertificateType
 

@@ -86,15 +86,18 @@
   Profile  profile                 = null;
   String[] profilenames            = null; 
   boolean noprofiles               = false; 
+  int profileid = 0;
 
   if(globalconfiguration.getUseStrongAuthorization())
      profilenames                  = rabean.getCreateAuthorizedProfileNames();
   else
      profilenames                  = rabean.getProfileNames();
-  int profileid = 0;
+
 
   if(profilenames== null || profilenames.length == 0) 
      noprofiles=true;
+  else 
+    profileid = rabean.getProfileId(profilenames[0]);
 
   boolean chooselastprofile = false;
   if(ejbcawebbean.getLastProfile() != null){
@@ -140,7 +143,7 @@
          for(int i=0; i< UserView.NUMBEROF_USERFIELDS; i++){
            newuser[i]=""; 
          }
-         int oldprofileid = 0;
+         int oldprofileid = 1;
  
          // Get previous chosen profile.
          String hiddenprofileid = request.getParameter(HIDDEN_PROFILE); 
@@ -397,11 +400,12 @@
       }
     }
   
-    if(!useoldprofile)
-      profile = rabean.getProfile(profileid);
-    else
-      profile = oldprofile;
-    
+    if(!noprofiles){
+      if(!useoldprofile)
+        profile = rabean.getProfile(profileid);
+      else
+        profile = oldprofile;
+    } 
 
     int numberofrows = ejbcawebbean.getEntriesPerPage();
     String[][] addedusers = rabean.getAddedUsers(numberofrows);

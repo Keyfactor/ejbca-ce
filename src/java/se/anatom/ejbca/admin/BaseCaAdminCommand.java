@@ -25,16 +25,19 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Base64;
+import se.anatom.ejbca.log.Admin;
 
 /** Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.5 2002-06-04 14:42:04 anatom Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.6 2002-09-12 18:14:15 herrvendil Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
 
     /** Private key alias in PKCS12 keystores */
     protected String privKeyAlias = "privateKey";
     protected char[] privateKeyPass = null;
+    
+    protected Admin administrator = null;
 
     /** Creates a new instance of BaseCaAdminCommand */
     public BaseCaAdminCommand(String[] args) {
@@ -43,6 +46,8 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         // Install BouncyCastle provider
         Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
         int result = Security.addProvider(BCJce);
+        
+        administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     }
 
     /** Retrieves the complete certificate chain from the CA
@@ -54,7 +59,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         try {
             Context ctx = getInitialContext();
             ISignSessionHome home = (ISignSessionHome)javax.rmi.PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
-            ISignSessionRemote ss = home.create();
+            ISignSessionRemote ss = home.create(administrator);
             Certificate[] chain = ss.getCertificateChain();
             return chain;
         } catch (Exception e) {
@@ -100,14 +105,18 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
 
     protected void createCRL() throws NamingException, CreateException, RemoteException {
         debug(">createCRL()");
+      try{  
         Context context = getInitialContext();
         IJobRunnerSessionHome home  = (IJobRunnerSessionHome)javax.rmi.PortableRemoteObject.narrow( context.lookup("CreateCRLSession") , IJobRunnerSessionHome.class );
-        home.create().run();
+        home.create(administrator).run();
         ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class);
-        ICertificateStoreSessionRemote storeremote = storehome.create();
+        ICertificateStoreSessionRemote storeremote = storehome.create(new Admin(Admin.TYPE_CACOMMANDLINE_USER));
         int number = storeremote.getLastCRLNumber();
         System.out.println("CRL with number " + number+ " generated.");
+      } catch (Exception e) {
+          error("Error while getting certfificate chain from CA.", e);
+      }        
         debug(">createCRL()");
-    } // createCRL
+   } // createCRL
 
 }

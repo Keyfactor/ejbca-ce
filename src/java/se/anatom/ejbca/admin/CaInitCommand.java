@@ -22,7 +22,7 @@ import se.anatom.ejbca.util.CertTools;
 
 /** Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.4 2002-08-26 11:17:28 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.5 2002-09-12 18:14:15 herrvendil Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -42,7 +42,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             // First get and publish CA certificates
             Context context = getInitialContext();
             ISignSessionHome signhome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("RSASignSession"), ISignSessionHome.class);
-            ISignSessionRemote sign = signhome.create();
+            ISignSessionRemote sign = signhome.create(administrator);
             Certificate[] certs = sign.getCertificateChain();
             initCertificateStore();
             for (int j=0;j<certs.length;j++) {
@@ -82,7 +82,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
     /**
      * Creates the CertificateStore and Publishers so they are available.
      */
-    private void initCertificateStore() throws RemoteException {
+    private void initCertificateStore() throws Exception {
         debug(">initCertificateStore()");
         Context context = null;
         try {
@@ -90,7 +90,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             // First init main certificate store
             if (certificateStore == null) {
                 ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class);
-                certificateStore = storehome.create();
+                certificateStore = storehome.create(administrator);
             }
         } catch (NamingException e) {
             // We could not find this publisher

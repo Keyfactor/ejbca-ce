@@ -18,14 +18,16 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * Matchtype constants tells under which contitions the match shall be performed.
  *
  * @author  Philip Vendil
- * @version $Id: UserEntity.java,v 1.4 2002-08-27 12:41:02 herrvendil Exp $
+ * @version $Id: UserEntity.java,v 1.5 2002-09-12 18:10:31 herrvendil Exp $
  */
 public class UserEntity implements Serializable, Comparable {
     // Special Users. (Constants cannot have 0 value).
-    public static final int SPECIALUSER_COMMONWEBUSER             = 2000;
+    public static final int SPECIALUSER_PUBLICWEBUSER             = 2000;
     public static final int SPECIALUSER_CACOMMANDLINEADMIN        = 2001;
     public static final int SPECIALUSER_RACOMMANDLINEADMIN        = 2002;
-    public static final int SPECIALUSER_NOUSER                    = 2003;   
+    public static final int SPECIALUSER_BATCHCOMMANDLINEADMIN     = 2003;    
+    public static final int SPECIALUSER_INTERNALUSER              = 2004;    
+    public static final int SPECIALUSER_NOUSER                    = 2005;   
     
     // Match type constants.
     public static final int TYPE_EQUALCASE        = 1000;

@@ -19,6 +19,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.log.Admin;
 
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 
@@ -30,7 +31,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java,v 1.5 2002-06-27 12:14:03 anatom Exp $
+ * @version $Id: GetCRLServlet.java,v 1.6 2002-09-12 18:14:16 herrvendil Exp $
  */
 public class GetCRLServlet extends HttpServlet {
 
@@ -103,13 +104,13 @@ public class GetCRLServlet extends HttpServlet {
             command = "";
         if (command.equalsIgnoreCase(COMMAND_CRL)) {
             try {
-                ICertificateStoreSessionRemote store = storehome.create();
+                ICertificateStoreSessionRemote store = storehome.create(new Admin(((X509Certificate[]) req.getAttribute( "javax.servlet.request.X509Certificate" ))[0]));
                 byte[] crl = store.getLastCRL();
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = x509crl.getIssuerDN().toString();
                 String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
                 res.setHeader("Content-disposition", "attachment; filename=" +  filename);
-                res.setContentType("application/octet-stream");
+                res.setContentType("application/pkix-crl");
                 res.setContentLength(crl.length);
                 res.getOutputStream().write(crl);
                 cat.info("Sent latest CRL to client at " + remoteAddr);

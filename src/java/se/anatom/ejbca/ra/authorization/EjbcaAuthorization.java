@@ -23,6 +23,9 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.log.ILogSessionRemote;
+import se.anatom.ejbca.log.LogEntry;
 
 import se.anatom.ejbca.ra.GlobalConfiguration;
 
@@ -36,21 +39,29 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
 public class EjbcaAuthorization extends Object implements java.io.Serializable{
        
     /** Creates new EjbcaAthorization */
-    public EjbcaAuthorization(UserGroup[] usergroups, GlobalConfiguration globalconfiguration) throws NamingException, CreateException, RemoteException {         
+    public EjbcaAuthorization(UserGroup[] usergroups, GlobalConfiguration globalconfiguration, ILogSessionRemote logsession, Admin admin) throws NamingException, CreateException, RemoteException {         
         getParameters(globalconfiguration);
         accesstree = new AccessTree(opendirectories);       
         buildAccessTree(usergroups); 
         
+        this.admin= admin;
+        this.logsession = logsession;        
         InitialContext jndicontext = new InitialContext();
         Object obj1 = jndicontext.lookup("CertificateStoreSession");
-        ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome)
+        try{
+          ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome)
                                                                javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);  
-        certificatesession = certificatesessionhome.create();
+          certificatesession = certificatesessionhome.create(admin);
        
-        ISignSessionHome signhome = (ISignSessionHome) PortableRemoteObject.narrow(jndicontext.lookup("RSASignSession"),
+          ISignSessionHome signhome = (ISignSessionHome) PortableRemoteObject.narrow(jndicontext.lookup("RSASignSession"),
                                                                                    ISignSessionHome.class );  
-        ISignSessionRemote signsession = signhome.create();        
-        this.cacertificatechain = signsession.getCertificateChain();  
+
+          ISignSessionRemote signsession = signhome.create(admin); 
+          
+          this.cacertificatechain = signsession.getCertificateChain();
+        }catch(Exception e){
+          throw new CreateException(e.getMessage());   
+        }          
         
     }
     
@@ -66,8 +77,16 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
      */
     public boolean isAuthorized(UserInformation userinformation, String resource) throws AuthorizationDeniedException {
         // Check in accesstree. 
-       if(accesstree.isAuthorized(userinformation, resource) == false)
+       if(accesstree.isAuthorized(userinformation, resource) == false){
+         try{
+          logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);       
+         }catch(RemoteException re){}    
          throw  new AuthorizationDeniedException();  
+       }
+       try{
+        logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);       
+       }catch(RemoteException re){}           
+       
         return true;
     }    
     
@@ -135,7 +154,9 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
     private String[]              opendirectories;
     private AccessTree            accesstree;  
     private Certificate[]         cacertificatechain;
+    private Admin                 admin;
     
     private ICertificateStoreSessionRemote certificatesession;      
     private ISignSessionRemote             signsession; 
+    private ILogSessionRemote              logsession;
 }

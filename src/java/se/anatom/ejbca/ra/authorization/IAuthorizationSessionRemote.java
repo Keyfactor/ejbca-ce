@@ -9,13 +9,11 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
 
 /**
  *
- * @version $Id: IAuthorizationSessionRemote.java,v 1.4 2002-08-27 12:41:02 herrvendil Exp $
+ * @version $Id: IAuthorizationSessionRemote.java,v 1.5 2002-09-12 18:14:14 herrvendil Exp $
  */
 public interface IAuthorizationSessionRemote extends javax.ejb.EJBObject {
     
-    /** Initializes the statful session bean. */
-    public void init(GlobalConfiguration globalconfiguration)throws RemoteException;
-    
+
     // Methods used with AvailableAccessRulesData Entity beans.
     
     /** 

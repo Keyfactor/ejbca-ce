@@ -13,6 +13,7 @@ import java.util.HashMap;
 
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
+import se.anatom.ejbca.log.Admin;
 /**
  * A class used to improve performance by proxying certificatetype id to certificate name mappings by minimizing the number of needed lockups over rmi.
  * 
@@ -21,14 +22,14 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 public class CertificateTypeNameProxy {
     
     /** Creates a new instance of ProfileNameProxy */
-    public CertificateTypeNameProxy() throws RemoteException, NamingException, FinderException, CreateException {
+    public CertificateTypeNameProxy(Admin administrator) throws Exception {
               // Get the RaAdminSession instance.
       InitialContext jndicontext = new InitialContext();
       Object obj1 = jndicontext.lookup("CertificateStoreSession");
       ICertificateStoreSessionHome certificatestoresessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(
                                                                                  jndicontext.lookup("CertificateStoreSession"), 
                                                                                  ICertificateStoreSessionHome.class);
-      certificatestoresession = certificatestoresessionhome.create();  
+      certificatestoresession = certificatestoresessionhome.create(administrator);  
       
       certificatetypenamestore = new HashMap(); 
         

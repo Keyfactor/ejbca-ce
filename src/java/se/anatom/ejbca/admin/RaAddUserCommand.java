@@ -13,10 +13,11 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.Profile;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillProfile;
+import se.anatom.ejbca.log.Admin;
 
 /** Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.5 2002-08-27 12:41:06 herrvendil Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.6 2002-09-12 18:14:15 herrvendil Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 
@@ -31,7 +32,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             
             Object obj1 = jndicontext.lookup("CertificateStoreSession");
             ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-            ICertificateStoreSessionRemote certificatesession = certificatesessionhome.create();     
+            ICertificateStoreSessionRemote certificatesession = certificatesessionhome.create(administrator);     
             
             String[] certtypenames = (String[]) certificatesession.getCertificateTypeNames().toArray((Object[]) new String[0]);
             if (args.length < 6) {
@@ -74,7 +75,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
               obj1 = jndicontext.lookup("RaAdminSession");
               IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"), 
                                                                                  IRaAdminSessionHome.class);
-              IRaAdminSessionRemote raadminsession = raadminsessionhome.create();      
+              IRaAdminSessionRemote raadminsession = raadminsessionhome.create(new Admin(Admin.TYPE_RACOMMANDLINE_USER));      
               profileid = raadminsession.getProfileId(args[7]);
               certificatetypeid = certificatesession.getCertificateTypeId(args[6]);
             }            
