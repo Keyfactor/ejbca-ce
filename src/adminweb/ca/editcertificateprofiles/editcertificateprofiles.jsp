@@ -357,9 +357,11 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
              if(value != null && value.equals(CHECKBOX_VALUE)){
                certificateprofiledata.setUseExtendedKeyUsage(true); 
                value = request.getParameter(CHECKBOX_EXTENDEDKEYUSAGECRITICAL); 
-               if(value != null){
+               if(value != null)
                  certificateprofiledata.setExtendedKeyUsageCritical(value.equals(CHECKBOX_VALUE));
-               } 
+               else
+                 certificateprofiledata.setExtendedKeyUsageCritical(false);
+                 
                values = request.getParameterValues(SELECT_EXTENDEDKEYUSAGE);
                ArrayList eku = new ArrayList(); 
                 if(values != null){
