@@ -59,12 +59,12 @@ import se.anatom.ejbca.BaseEntityBean;
  *
  * @ejb.finder
  *   description="findByTokenSN"
- *   signature="Collection findByTokenSN(java.lang.String)"
+ *   signature="Collection findByTokenSN(java.lang.String sn)"
  *   query="SELECT DISTINCT OBJECT(a) from HardTokenCertificateMapBean a WHERE a.tokenSN=?1"
  */
 public abstract class HardTokenCertificateMapBean extends BaseEntityBean {
 
-    private static Logger log = Logger.getLogger(HardTokenCertificateMapBean.class);
+    private static final Logger log = Logger.getLogger(HardTokenCertificateMapBean.class);
 
     /**
      * @ejb.pk-field
