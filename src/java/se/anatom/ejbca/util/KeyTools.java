@@ -39,7 +39,7 @@ import org.bouncycastle.jce.interfaces.*;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.27 2004-05-31 14:28:51 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.28 2004-11-08 19:48:39 sbailliez Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -113,7 +113,7 @@ public class KeyTools {
      * @return KeyStore containing PKCS12-keystore
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
-    static public KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, Collection cacerts)
+    public static KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, Collection cacerts)
     throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         Certificate[] chain;
         if (cacerts == null)
