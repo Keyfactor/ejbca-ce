@@ -1,9 +1,8 @@
-$Id: TODO,v 1.77 2004-02-02 13:25:14 anatom Exp $
+$Id: TODO,v 1.78 2004-03-10 20:27:57 anatom Exp $
 
 V 3.x
 -----
 - Make it possible to dynamically configure new OtherNames in subjectAltName.
-- LDAPPublisherSession should remove cert from the store when revoked.
 - More automated testing, Junit as well as web-stuff (httpjunit).
 - Continue improving exceptions and error handling.
 - Commands and status for certificate suspend (command for unrevoke, status for unrevoked).
