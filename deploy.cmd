@@ -11,4 +11,4 @@ copy dist\*.war %JBOSS_HOME%\deploy
 copy dist\*.jar %JBOSS_HOME%\deploy
 
 :end
-echo jce-jdk13-111.jar must be copied to jboss/lib/ext.
+echo jce-jdk13-111.jar and ldap.jar must be copied to jboss/lib/ext.
