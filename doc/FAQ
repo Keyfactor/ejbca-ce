@@ -1,6 +1,6 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.6 2002-03-21 13:43:33 anatom Exp $
+$Id: FAQ,v 1.7 2002-05-26 14:40:15 anatom Exp $
 ---------
 Q : What applications servers do EJBCA run on?
 
@@ -88,8 +88,8 @@ keytool -certreq -alias mykey -sigalg SHA1WithRSA -file myreq.p10 -keypass
 You now hav the certification request in the file 'myreq.p10'.
 
 Open up EJBCA request page in your favorite browser,
- 'http://127.0.0.1:8080/apply/request/index.html', and select the link for NOT
- having a browser, 'http://127.0.0.1:8080/apply/request/apply_man.jsp'
+ 'http://127.0.0.1:8080/apply/index.html', and select the link for NOT
+ having a browser, 'http://127.0.0.1:8080/apply/apply_man.jsp'
 
 Download the Root CA certificate by clicking on the link. Save the certificate
  as 'ca.pem'.
@@ -129,7 +129,7 @@ Q : What aliases do a EJBCA keystore contain?
 
 A : The keystore EJBCA uses is a PKCS12 keystore. The CAs private key and
 certificate is cotained in the alias 'privateKey', as configures in
-'src/ca/META-INF/ejb-jar.xml'.
+'src/ca/ca/META-INF/ejb-jar.xml'.
 
 If the CA is not a Root CA, i.e. the certificate in alias 'privateKey' is
 signed by another certificate, that CA certificate (Root certificate) is
