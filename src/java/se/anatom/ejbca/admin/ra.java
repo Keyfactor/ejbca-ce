@@ -26,6 +26,19 @@ public class ra {
 
 
     public static void main(String [] args){
+        /*
+        try {
+            IAdminCommand cmd = RaAdminCommandFactory.getCommand(args);
+            if (cmd != null) {
+                cmd.execute();
+            } else {
+            System.out.println("Usage: RA adduser | deluser | setpwd | setclearpwd | setuserstatus | finduser | listnewusers | listusers | revokeuser");
+            }            
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            //e.printStackTrace();
+        }
+        */
         if (args.length < 1) {
             System.out.println("Usage: RA adduser | deluser | setpwd | setclearpwd | setuserstatus | finduser | listnewusers | listusers | revokeuser");
             return;

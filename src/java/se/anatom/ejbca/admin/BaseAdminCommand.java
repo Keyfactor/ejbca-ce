@@ -7,7 +7,7 @@ import org.apache.log4j.*;
 
 /** Base for all AdminCommands, contains functions for getting initial context and logging
  *
- * @version $Id: BaseAdminCommand.java,v 1.2 2002-04-07 10:09:55 anatom Exp $
+ * @version $Id: BaseAdminCommand.java,v 1.3 2002-04-13 19:00:56 anatom Exp $
  */
 public abstract class BaseAdminCommand implements IAdminCommand {
 
@@ -31,7 +31,7 @@ public abstract class BaseAdminCommand implements IAdminCommand {
     /** Gets InitialContext
      *@return InitialContext
      */
-    public InitialContext getInitialContext() throws NamingException {
+    protected InitialContext getInitialContext() throws NamingException {
         baseCat.debug(">getInitialContext()");
         try {
             if( cacheCtx == null )
