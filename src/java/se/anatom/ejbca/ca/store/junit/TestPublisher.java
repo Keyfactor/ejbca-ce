@@ -17,7 +17,7 @@ import junit.framework.*;
 
 /** Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.2 2002-01-06 11:43:22 anatom Exp $
+ * @version $Id: TestPublisher.java,v 1.3 2002-01-06 17:40:22 anatom Exp $
  */
 public class TestPublisher extends TestCase {
 
@@ -92,7 +92,7 @@ public class TestPublisher extends TestCase {
         boolean ret = pub.storeCRL(crl, null, 1);
         assertTrue("Storing CRL failed", ret);
         cat.debug("<test02StoreCRL()");
-    }
+    }*/
     public void test03AddCertAgain() throws Exception {
         cat.debug(">test03AddCertAgain()");
         X509Certificate cert = CertTools.getCertfromByteArray(testcert);
@@ -100,6 +100,7 @@ public class TestPublisher extends TestCase {
         assertTrue("Storing certificate failed", ret);
         cat.debug("<test03AddCertAgain()");
     }
+    /*
     public void test04StoreCRLAgain() throws Exception {
         cat.debug(">test04StoreCRLAgain()");
         X509CRL crl = CertTools.getCRLfromByteArray(testcrl);
@@ -107,8 +108,21 @@ public class TestPublisher extends TestCase {
         assertTrue("Storing CRL failed", ret);
         cat.debug("<test04StoreCRLAgain()");
     }
+    public void test05AddCACert() throws Exception {
+        cat.debug(">test05AddCACert()");
+        X509Certificate cacert = CertTools.getCertfromByteArray(testcacert);
+        boolean ret = pub.storeCertificate(cacert, null, CertificateData.CERT_ACTIVE, SecConst.USER_CA);
+        assertTrue("Storing certificate failed", ret);
+        cat.debug("<test05AddCACert()");
+    }
+    public void test06AddCACertAgain() throws Exception {
+        cat.debug(">test06AddCACertAgain()");
+        X509Certificate cacert = CertTools.getCertfromByteArray(testcacert);
+        boolean ret = pub.storeCertificate(cacert, null, CertificateData.CERT_ACTIVE, SecConst.USER_CA);
+        assertTrue("Storing certificate failed", ret);
+        cat.debug("<test06AddCACertAgain()");
+    }
      */
-    
     
 }
 

@@ -14,17 +14,23 @@ import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.x509.*;
 
 import se.anatom.ejbca.BaseSessionBean;
+import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.*;
 
 /**
  * Stores certificates and CRL in an LDAP v3 directory.
  *
  * <p>LDAP schema required:<br>
- * Certificates are published as 'userCertificate' in objectclass 'inetOrgPerson'.<br>
- * CRLs are published as 'certificateRevocationList' in objectclass 'certificationAuthority'.
+ * Certificates for USER_ENDUSER, USER_RA, USER_RAADMIN, USER_CAADMIN are published 
+ * as attribute 'userCertificate' in objectclass 'inetOrgPerson'.<br>
+ * Certificates for USER_CA and USER_ROOTCA are published as attribute cACertificate in 
+ * objectclass 'certificationAuthority'.<br>
+ * CRLs are published as attribute 'certificateRevocationList' in objectclass 
+ * 'certificationAuthority'.
  *
- * <p>In inetOrgPerson the following attributes are set if present in the certificate:
+ * <p>In 'inetOrgPerson' the following attributes are set if present in the certificate:
  * <pre>
+ * DN
  * cn
  * ou
  * l
@@ -33,8 +39,13 @@ import se.anatom.ejbca.util.*;
  * mail
  * userCertificate
  * </pre>
+ * <p>In 'certificationAuthority' the only attributes set are:
+ * <pre>
+ * DN
+ * cACertificate
+ * </pre>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.3 2002-01-06 11:43:22 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.4 2002-01-06 17:40:22 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublisherSession {
 
@@ -95,7 +106,6 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
         int ldapVersion  = LDAPConnection.LDAP_V3;             
         LDAPConnection lc = new LDAPConnection();
 
-     
         // Extract the users DN from the cert.
         String dn = CertTools.stringToBCDNString(((X509Certificate)incert).getSubjectDN().toString());
         
@@ -127,81 +137,182 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
                 }
             } catch (IOException e) {
                 error("IOException when getting subjectAltNames extension.");
-            }
-            
+            }            
         }
         
         // Match users DN with 'containerName'?
-        // Normalize string lo lower case so we don't care about matching case (we are not THAT picky about
-        // different case inside O,C etc, it will fail later in that case.
+        // Normalize string lo BC DN format to avoide different case in o, C etc.
         if (dn.indexOf(CertTools.stringToBCDNString(containerName)) == -1)
         {
             info("SubjectDN '"+dn+"' is not part of containerName '"+containerName+"' for LDAP server.");
             return false;
         }
         
-        // TODO: different objectclasses for different certificate types
-        // CA etc.
-        
-        /* To Add an entry to the directory,
-         *   -- Create the attributes of the entry and add them to an attribute set
-         *   -- Specify the DN of the entry to be created
-         *   -- Create an LDAPEntry object with the DN and the attribute set
-         *   -- Call the LDAPConnection add method to add it to the directory
-         */           
-        LDAPAttributeSet attributeSet = getAttributeSet("inetOrgPerson", dn);
-        if (email != null)
-            attributeSet.add( new LDAPAttribute( "mail", email ) ); 
+        // TODO: Check if the entry is already present, we will update it with the new certificate.
+        LDAPEntry oldEntry = null;
         try {
-            attributeSet.add( new LDAPAttribute( "userCertificate;binary", incert.getEncoded() ) );
-        } catch (CertificateEncodingException e) {
-            error("Error encoding certificate when storing in LDAP: ",e);
-            return false;
-        }
-        LDAPEntry newEntry = new LDAPEntry( dn, attributeSet );
-        try {  
             // connect to the server
             lc.connect( ldapHost, ldapPort );
             // authenticate to the server
             lc.bind( ldapVersion, loginDN, loginPassword );
+            // try to read the old object
+            oldEntry = lc.read(dn);
+            // disconnect with the server
+            lc.disconnect();
+        } catch( LDAPException e ) {
+            if (e.getLDAPResultCode() == LDAPException.NO_SUCH_OBJECT) {
+                debug("No old entry exist for '"+dn+"'.");
+            } else {
+                error( "Error binding to and reading from LDAP server: ", e);
+                return false;
+            }
+        }
 
-            lc.add( newEntry );
-            debug( "\nAdded object: " + dn + " successfully." );
-
+        LDAPEntry newEntry = null;
+        LDAPModificationSet modSet = null;
+        if ( ((type & SecConst.USER_ENDUSER) != 0) || ((type & SecConst.USER_CAADMIN) != 0) ||
+        ((type & SecConst.USER_RAADMIN) != 0) || ((type & SecConst.USER_RA) != 0) ) {            
+            
+            LDAPAttributeSet attributeSet = null;
+            if (oldEntry != null) {
+                // TODO: Are we the correct type objectclass?
+                modSet = getModificationSet(oldEntry, dn, true);
+            } else
+                attributeSet = getAttributeSet("inetOrgPerson", dn, true);
+            if (email != null) {
+                LDAPAttribute mailAttr = new LDAPAttribute( "mail", email );
+                if (oldEntry != null)
+                    modSet.add(LDAPModification.REPLACE, mailAttr);
+                else
+                    attributeSet.add( mailAttr );
+            }
+            try {
+                LDAPAttribute certAttr = new LDAPAttribute( "userCertificate;binary", incert.getEncoded() );
+                if (oldEntry != null)
+                    modSet.add(LDAPModification.REPLACE, certAttr);
+                else
+                    attributeSet.add( certAttr );
+            } catch (CertificateEncodingException e) {
+                error("Error encoding certificate when storing in LDAP: ",e);
+                return false;
+            }
+            if (oldEntry == null)
+                newEntry = new LDAPEntry( dn, attributeSet );
+        } else if ( ((type & SecConst.USER_CA) != 0) || ((type & SecConst.USER_ROOTCA) != 0) ) {
+            LDAPAttributeSet attributeSet = null;
+            if (oldEntry != null)
+                modSet = getModificationSet(oldEntry, dn, false);
+            else
+                attributeSet = getAttributeSet("certificationAuthority", dn, false);
+            try {
+                LDAPAttribute certAttr = new LDAPAttribute( "cACertificate;binary", incert.getEncoded() );
+                if (oldEntry != null)
+                    modSet.add(LDAPModification.REPLACE, certAttr);
+                else
+                    attributeSet.add( certAttr );
+            } catch (CertificateEncodingException e) {
+                error("Error encoding certificate when storing in LDAP: ",e);
+                return false;
+            }
+            if (oldEntry == null)
+                newEntry = new LDAPEntry( dn, attributeSet );
+        } else {
+            info("Certificate of type '"+type+"' will not be published.");
+            return false;
+        }
+        try {            
+            // connect to the server
+            lc.connect( ldapHost, ldapPort );
+            // authenticate to the server
+            lc.bind( ldapVersion, loginDN, loginPassword );
+            // Add or modify the entry
+            if (oldEntry != null) {
+                lc.modify(dn, modSet);
+                info( "\nModified object: " + dn + " successfully." );
+            } else {
+                lc.add( newEntry );
+                info( "\nAdded object: " + dn + " successfully." );
+            }
             // disconnect with the server
             lc.disconnect();
         }
         catch( LDAPException e ) {
             error( "Error storing certificate in LDAP: ", e);
             return false;
-        }   
-        
-        // TODO: If the entry was already present, we will update it with the new certificate.
+        }
         
         return true;
     } // storeCertificate
     
-    private LDAPAttributeSet getAttributeSet(String objectclass, String dn) 
+    /** Creates an LDAPAttributeSet.
+     * @param objectclass the objectclass the attribute set should be of.
+     * @param dn dn of the LDAP entry.
+     * @param extra if we should add extra attributes except the objectclass to the attributeset.
+     * @return LDAPAtributeSet created...
+     */
+    private LDAPAttributeSet getAttributeSet(String objectclass, String dn, boolean extra) 
     {
         LDAPAttributeSet attributeSet = new LDAPAttributeSet();
 
+        /* To Add an entry to the directory,
+         *   -- Create the attributes of the entry and add them to an attribute set
+         *   -- Specify the DN of the entry to be created
+         *   -- Create an LDAPEntry object with the DN and the attribute set
+         *   -- Call the LDAPConnection add method to add it to the directory
+         */           
         attributeSet.add( new LDAPAttribute( "objectclass", objectclass ) );      
-        String cn = CertTools.getPartFromDN(dn,"CN");
-        if (cn!=null)
-            attributeSet.add(new LDAPAttribute( "cn", cn));
-        String sn = CertTools.getPartFromDN(dn,"SN");
-        if (sn!=null)
-            attributeSet.add( new LDAPAttribute( "sn", sn ) );
-        String l = CertTools.getPartFromDN(dn,"L");
-        if (l!=null)
-            attributeSet.add( new LDAPAttribute( "l", l ) );
-        String st = CertTools.getPartFromDN(dn,"ST");
-        if (st!=null)
-            attributeSet.add( new LDAPAttribute( "st", st ) );
-        String ou = CertTools.getPartFromDN(dn,"OU");
-        if (ou!=null)
-            attributeSet.add( new LDAPAttribute( "ou", ou ) );
-            
+        if (extra) {
+            String cn = CertTools.getPartFromDN(dn,"CN");
+            if (cn!=null)
+                attributeSet.add(new LDAPAttribute( "cn", cn));
+            String sn = CertTools.getPartFromDN(dn,"SN");
+            if (sn!=null)
+                attributeSet.add( new LDAPAttribute( "sn", sn ) );
+            String l = CertTools.getPartFromDN(dn,"L");
+            if (l!=null)
+                attributeSet.add( new LDAPAttribute( "l", l ) );
+            String st = CertTools.getPartFromDN(dn,"ST");
+            if (st!=null)
+                attributeSet.add( new LDAPAttribute( "st", st ) );
+            String ou = CertTools.getPartFromDN(dn,"OU");
+            if (ou!=null)
+                attributeSet.add( new LDAPAttribute( "ou", ou ) );
+        }
         return attributeSet;
     } // getAttributeSet
+    
+    /** Creates an LDAPModificationSet.
+     * @param objectclass the objectclass the attribute set should be of.
+     * @param dn dn of the LDAP entry.
+     * @param extra if we should add extra attributes except the objectclass to the modificationset.
+     * @return LDAPModificationSet created...
+     */
+    private LDAPModificationSet getModificationSet(LDAPEntry oldEntry, String dn, boolean extra) 
+    {
+        LDAPModificationSet modSet = new LDAPModificationSet();
+
+        if (extra) {
+            String cn = CertTools.getPartFromDN(dn,"CN");
+            if (cn!=null) {
+                modSet.add(LDAPModification.REPLACE, new LDAPAttribute( "cn", cn));
+            }
+            String sn = CertTools.getPartFromDN(dn,"SN");
+            if (sn!=null) {
+                modSet.add(LDAPModification.REPLACE, new LDAPAttribute( "sn", sn ) );
+            }
+            String l = CertTools.getPartFromDN(dn,"L");
+            if (l!=null) {
+                modSet.add(LDAPModification.REPLACE, new LDAPAttribute( "l", l ) );
+            }
+            String st = CertTools.getPartFromDN(dn,"ST");
+            if (st!=null) {
+                modSet.add(LDAPModification.REPLACE, new LDAPAttribute( "st", st ) );
+            }
+            String ou = CertTools.getPartFromDN(dn,"OU");
+            if (ou!=null) {
+                modSet.add(LDAPModification.REPLACE, new LDAPAttribute( "ou", ou ) );
+            }
+        }
+        return modSet;
+    } // getModificationSet
 }

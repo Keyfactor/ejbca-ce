@@ -7,7 +7,7 @@ package se.anatom.ejbca;
  * Type is constructed as a mask since one user can be of several types.
  * To test a user type:
  * <pre>
- * if (((type & USER_ENDUSER) == USER_ENDUSER)) && ((type & USER_CAADMIN) == USER_CAADMIN))
+ * if (((type & USER_ENDUSER) == USER_ENDUSER) && ((type & USER_CAADMIN) == USER_CAADMIN) || ...
  *    ...
  * </pre>
  *
@@ -18,7 +18,7 @@ package se.anatom.ejbca;
  * bits 16-23 (3:rd byte):  unused
  * bits 24-30 (4:th byte):  unused
  *
- * @version $Id: SecConst.java,v 1.1.1.1 2001-11-15 14:58:13 anatom Exp $
+ * @version $Id: SecConst.java,v 1.2 2002-01-06 17:40:21 anatom Exp $
  */
 public class SecConst extends Object {
 
