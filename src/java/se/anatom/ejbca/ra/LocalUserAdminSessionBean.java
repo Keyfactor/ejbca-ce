@@ -68,7 +68,7 @@ import java.util.Iterator;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.86 2005-02-04 16:30:05 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.87 2005-02-07 17:24:57 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -426,22 +426,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         try {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1 = home.findByPrimaryKey(pk);
-
-            if (password != null) {
-                if (clearpwd) {
-                    setClearTextPassword(admin, username, newpassword);
-                } else {
-                    setPassword(admin, username, newpassword);
-                }
-            }
-
             data1.setDN(dn);
             if (subjectaltname != null)
                 data1.setSubjectAltName(subjectaltname);
-
             if (email != null)
                 data1.setSubjectEmail(email);
-
             data1.setCAId(caid);
             data1.setType(type);
             data1.setEndEntityProfileId(endentityprofileid);
@@ -451,8 +440,20 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             oldstatus = data1.getStatus();
             statuschanged = status != oldstatus;
             data1.setStatus(status);
-
             data1.setTimeModified((new java.util.Date()).getTime());
+
+            if(newpassword != null){
+                if(clearpwd) {
+                    try {
+                        data1.setOpenPassword(newpassword);
+                    } catch (java.security.NoSuchAlgorithmException nsae) {
+                        debug("NoSuchAlgorithmException while setting password for user "+username);
+                        throw new EJBException(nsae);
+                    }
+                } else {
+                    data1.setPassword(newpassword);
+                }
+            }
 
             if ((type & SecConst.USER_SENDNOTIFICATION) != 0 && statuschanged && (status == UserDataLocal.STATUS_NEW || status == UserDataLocal.STATUS_KEYRECOVERY)) {
 

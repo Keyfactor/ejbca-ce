@@ -17,15 +17,18 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 
 
 /**
  * This class is used to create notification messages
  *
- * @version $Id: NotificationCreator.java,v 1.11 2004-08-18 09:12:16 sbailliez Exp $
+ * @version $Id: NotificationCreator.java,v 1.12 2005-02-07 17:24:57 anatom Exp $
  */
 public class NotificationCreator {
+    private static final Logger log = Logger.getLogger(NotificationCreator.class);
     /**
      * Availabe vairables used to replace text in a message or printlayout
      * Variable text are case-insensitive.
@@ -90,15 +93,19 @@ public class NotificationCreator {
                                        .format(new Date());
         String newline = System.getProperty("line.separator");
 
-        returnval = USERNAME.matcher(returnval).replaceAll(username);
-        returnval = PASSWORD.matcher(returnval).replaceAll(password);
-        returnval = CN.matcher(returnval).replaceAll(dnfields.getField(DNFieldExtractor.CN, 0));
-        returnval = OU.matcher(returnval).replaceAll(dnfields.getField(DNFieldExtractor.OU, 0));
-        returnval = O.matcher(returnval).replaceAll(dnfields.getField(DNFieldExtractor.O, 0));
-        returnval = C.matcher(returnval).replaceAll(dnfields.getField(DNFieldExtractor.C, 0));
-        returnval = DATE.matcher(returnval).replaceAll(currentdate);
-
-        returnval = NEWLINE.matcher(returnval).replaceAll(newline);
+        try {            
+            returnval = USERNAME.matcher(returnval).replaceAll(username);
+            returnval = PASSWORD.matcher(returnval).replaceAll(password);
+            returnval = CN.matcher(returnval).replaceAll(dnfields.getField(DNFieldExtractor.CN, 0));
+            returnval = OU.matcher(returnval).replaceAll(dnfields.getField(DNFieldExtractor.OU, 0));
+            returnval = O.matcher(returnval).replaceAll(dnfields.getField(DNFieldExtractor.O, 0));
+            returnval = C.matcher(returnval).replaceAll(dnfields.getField(DNFieldExtractor.C, 0));
+            returnval = DATE.matcher(returnval).replaceAll(currentdate);
+            returnval = NEWLINE.matcher(returnval).replaceAll(newline);
+        } catch (IllegalArgumentException e) {
+            log.error("Error creating message for username: "+username+", password: "+password+", dn: "+dn+", altname: "+subjectaltname+", email: "+email);
+            throw e;
+        }
 
         return returnval;
     }
