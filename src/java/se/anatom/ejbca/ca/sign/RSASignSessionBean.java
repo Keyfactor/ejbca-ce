@@ -24,10 +24,11 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
-
+import java.util.StringTokenizer;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.ObjectNotFoundException;
+
 
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -42,7 +43,7 @@ import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.CRLNumber;
-import org.bouncycastle.asn1.x509.CertificatePolicies;
+import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
@@ -83,11 +84,10 @@ import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
 
-
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.92 2003-07-24 08:43:30 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.93 2003-07-24 15:24:41 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     transient X509Certificate caCert;
@@ -746,23 +746,18 @@ public class RSASignSessionBean extends BaseSessionBean {
 
             ret.setCertificate(cert);
             ret.setStatus(IResponseMessage.STATUS_OK);
-
             if (req.getSenderNonce() != null) {
                 ret.setRecipientNonce(req.getSenderNonce());
             }
-
             if (req.getTransactionId() != null) {
                 ret.setTransactionId(req.getTransactionId());
             }
-
             // Sendernonce is a random number
             ret.setSenderNonce(Hex.encode("PrimeKey Solutions".getBytes()));
-
             // If we have a specified request key info, use it in the reply
             if (req.getRequestKeyInfo() != null) {
                 ret.setRecipientKeyInfo(req.getRequestKeyInfo());
             }
-
             ret.create();
 
             // TODO: handle returning errors as response message,
@@ -1075,20 +1070,28 @@ public class RSASignSessionBean extends BaseSessionBean {
 
         // Certificate Policies
         if (certProfile.getUseCertificatePolicies() == true) {
-            CertificatePolicies cp = new CertificatePolicies(certProfile.getCertificatePolicyId());
+            PolicyInformation pi = new PolicyInformation(new DERObjectIdentifier(certProfile.getCertificatePolicyId()));
+            DERSequence seq = new DERSequence(pi);
             certgen.addExtension(X509Extensions.CertificatePolicies.getId(),
-                certProfile.getCertificatePoliciesCritical(), cp);
+                certProfile.getCertificatePoliciesCritical(), seq);
         }
 
         // CRL Distribution point URI
         if (certProfile.getUseCRLDistributionPoint() == true) {
-            GeneralName gn = new GeneralName(new DERIA5String(
-                        certProfile.getCRLDistributionPointURI()), 6);
-            GeneralNames gns = new GeneralNames(new DERSequence(gn));
-            DistributionPointName dpn = new DistributionPointName(0, gns);
-            DistributionPoint distp = new DistributionPoint(dpn, null, null);
-            certgen.addExtension(X509Extensions.CRLDistributionPoints.getId(),
-                certProfile.getCRLDistributionPointCritical(), new DERSequence(distp));
+            StringTokenizer tokenizer = new StringTokenizer(certProfile.getCRLDistributionPointURI(), ";", false);
+            DEREncodableVector vec = new DEREncodableVector();
+            while (tokenizer.hasMoreTokens()) {
+                GeneralName gn = new GeneralName(new DERIA5String(
+                            tokenizer.nextToken()), 6);
+                GeneralNames gns = new GeneralNames(new DERSequence(gn));
+                DistributionPointName dpn = new DistributionPointName(0, gns);
+                DistributionPoint distp = new DistributionPoint(dpn, null, null);
+                vec.add(distp);
+            }
+            if (vec.size() > 0) {
+                certgen.addExtension(X509Extensions.CRLDistributionPoints.getId(),
+                    certProfile.getCRLDistributionPointCritical(), new DERSequence(vec));
+            }
         }
 
         X509Certificate cert = certgen.generateX509Certificate(signingDevice.getPrivateSignKey(),
