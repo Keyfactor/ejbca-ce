@@ -6,7 +6,6 @@
 package se.anatom.ejbca.admin;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -99,13 +98,14 @@ public class Install {
 	public void run(){
 		displayWelcomeScreen();
 	    while(!collectData());
-	    runInstall();	   	   
+	    runInstall();	
+
 	}
 					
 	public static void main(String[] args) throws Exception {
 		if(args.length != 6){
-			System.out.println("Usage: install install <unix|windows><language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>\n" +
-					                     " Or : install displayendmessage <unix|windows><language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>");
+			System.out.println("Usage: install install <unix|windows> <language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>\n" +
+					                     " Or : install displayendmessage <unix|windows> <language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>");
 			System.exit(-1);
 		}
 		
@@ -118,7 +118,7 @@ public class Install {
 			  if(args[Install.ARG_COMMAND].equalsIgnoreCase("displayendmessage")){		
 			  	install.displayEndMessage();    
 			  }else{
-				System.out.println("Usage: install install <unix|windows><language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>\n" +
+				System.out.println("Usage: install install <unix|windows> <language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>\n" +
 				" Or : install displayendmessage <unix|windows><language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>");
 				System.exit(-1);
 			  }
@@ -329,17 +329,24 @@ public class Install {
 					System.out.println(line);
 				}
 				
-				if(runcainit.waitFor() != 0){
+				
+				
+				if(runcainit.waitFor() != 0){					
 					System.out.print(text.getProperty("ERRORINITCA"));
 					System.exit(-1);
 				}				
-			} catch (Exception e) {
-				System.out.print(text.getProperty("ERRORINITCA"));
+			} catch (Exception e) {				
+		    	System.out.print(text.getProperty("ERRORINITCA") + e.getMessage());
 				System.exit(-1);
-			} 
-			
-			try {			  
-				Process setupadminweb = Runtime.getRuntime().exec("setup-adminweb.cmd " + this.caname + "  \"" + this.servercertdn + "\" " + this.serverkeystorepasswd + " " + this.superadminpasswd + " changeit " + this.computername);			   			   
+			} 	
+			System.out.print(text.getProperty("SETUPOFADMINWEB"));
+			try {	
+				Process setupadminweb = Runtime.getRuntime().exec("setup-adminweb.cmd " + this.caname + "  \"" + this.servercertdn + "\" " + this.serverkeystorepasswd + " " + this.superadminpasswd + " dummy " + this.computername);
+
+				BufferedReader br = new BufferedReader(new InputStreamReader(setupadminweb.getInputStream()));
+				Thread.sleep(1000);
+				String line = "";
+				while((line = br.readLine()) != null);
 				
 				if(setupadminweb.waitFor() != 0){
 					System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB"));
@@ -347,19 +354,18 @@ public class Install {
 				}
 				
 				
-				Process getrootcert = Runtime.getRuntime().exec("./ca.cmd getrootcert "+ this.caname + " tmp/rootca.der -der");			   			   
-				
+				Process getrootcert = Runtime.getRuntime().exec("ca.cmd getrootcert "+ this.caname + " tmp/rootca.der -der");			   			   				
 				if(getrootcert.waitFor() != 0){
 					System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB"));
 					System.exit(-1);
 				}
 				
-			} catch (Exception e) {
-				System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB"));
+			} catch (Exception e) {		
+				System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB") + e.getMessage());
 				System.exit(-1);
 			}
 		}
-		if(os == OS_UNIX){
+		if(os == OS_UNIX){			
 			try {															
 				Process runcainit = Runtime.getRuntime().exec("./ca.sh init " + this.caname + " \"" + this.cadn + "\" " + this.keysize + " " + this.validity + " " + this.policyid.trim() );
 			    								
@@ -371,6 +377,7 @@ public class Install {
 				}
 								
 				if(runcainit.waitFor() != 0){
+					
 					System.out.print(text.getProperty("ERRORINITCA"));
 					System.exit(-1);
 				}				
@@ -378,7 +385,7 @@ public class Install {
 				System.out.print(text.getProperty("ERRORINITCA"));
 				System.exit(-1);
 			} 
-			
+			System.out.print(text.getProperty("SETUPOFADMINWEB"));
 			try {			  
 			   Process setupadminweb = Runtime.getRuntime().exec("./setup-adminweb.sh " + this.caname + "  \"" + this.servercertdn + "\" " + this.serverkeystorepasswd + " " + this.superadminpasswd + " changeit " + this.computername);			   			   
 								
@@ -398,7 +405,7 @@ public class Install {
 				System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB"));
 				System.exit(-1);
 			}
-	    }
+	    }	
 		
 	}
 	
@@ -409,7 +416,7 @@ public class Install {
 	public void displayEndMessage(){
 		System.out.print(text.getProperty("INSTALLATIONCOMPLETE"));
 		System.out.print(text.getProperty("REMAININGSTEPS"));
-		System.out.print(text.getProperty("GOTOURLSTART") + this.computername + text.getProperty("GOTOURLEND"));
+		System.out.print(text.getProperty("GOTOURL"));
 		System.out.print(text.getProperty("ANDYOUAREALLSET"));
 		System.out.print(text.getProperty("INTERESTEDINSUPPORT"));		
 	}

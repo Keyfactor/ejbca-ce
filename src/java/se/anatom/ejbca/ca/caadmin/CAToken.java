@@ -2,13 +2,12 @@ package se.anatom.ejbca.ca.caadmin;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.cert.Certificate;
 
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
 
 /** Handles maintenance of the device producing signatures and handling the private key.
  * 
- * @version $Id: CAToken.java,v 1.3 2004-01-28 14:47:51 herrvendil Exp $
+ * @version $Id: CAToken.java,v 1.4 2004-02-01 10:51:30 herrvendil Exp $
  */
 public abstract class CAToken extends UpgradeableDataHashMap implements java.io.Serializable{
     

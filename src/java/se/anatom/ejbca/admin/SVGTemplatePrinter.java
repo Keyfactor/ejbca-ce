@@ -9,9 +9,7 @@ import java.awt.print.PageFormat;
 import java.awt.print.Paper;
 import java.awt.print.PrinterJob;
 import java.io.FileInputStream;
-
 import java.io.InputStreamReader;
-
 import java.util.Date;
 import java.util.Properties;
 
@@ -20,7 +18,6 @@ import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
-import javax.print.attribute.standard.MediaSize;
 
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.SVGImageManipulator;
 import se.anatom.ejbca.ra.UserAdminData;

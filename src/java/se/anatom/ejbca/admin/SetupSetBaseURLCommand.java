@@ -9,7 +9,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 /**
  * Sets the base url of the web interface
  *
- * @version $Id: SetupSetBaseURLCommand.java,v 1.1 2004-01-31 14:24:58 herrvendil Exp $
+ * @version $Id: SetupSetBaseURLCommand.java,v 1.2 2004-02-01 10:51:38 herrvendil Exp $
  */
 public class SetupSetBaseURLCommand extends BaseAdminCommand {
     /**
@@ -28,7 +28,7 @@ public class SetupSetBaseURLCommand extends BaseAdminCommand {
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-        if (args.length < 2) {
+        if (args.length < 3) {
 	       throw new IllegalAdminCommandException("Usage: SETUP setbaseurl <computername> <applicationpath>\n" + 
 	       		                                                               "Example: setup setbaseurl localhost ejbca \n\n");	       
 	    }	
