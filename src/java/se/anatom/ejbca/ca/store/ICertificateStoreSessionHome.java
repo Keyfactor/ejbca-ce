@@ -3,10 +3,9 @@ package se.anatom.ejbca.ca.store;
 
 import java.rmi.RemoteException;
 import javax.ejb.CreateException;
-import se.anatom.ejbca.log.Admin;
 
 /**
- * @version $Id: ICertificateStoreSessionHome.java,v 1.3 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionHome.java,v 1.4 2002-11-17 14:01:21 herrvendil Exp $
  */
 public interface ICertificateStoreSessionHome extends javax.ejb.EJBHome {
 
@@ -16,5 +15,5 @@ public interface ICertificateStoreSessionHome extends javax.ejb.EJBHome {
      * @throws RemoteException
      * @return ICertificateStoreSessionRemote interface
      */
-    ICertificateStoreSessionRemote create(Admin administrator) throws CreateException, RemoteException;
+    ICertificateStoreSessionRemote create() throws CreateException, RemoteException;
 }

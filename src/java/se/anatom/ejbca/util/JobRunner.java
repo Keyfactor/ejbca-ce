@@ -21,7 +21,7 @@ import org.apache.log4j.*;
  *    - credentials (the password is needed)
  *    - agent       (the JNDI-name of the agent session to start)
  *
- * @version $Id: JobRunner.java,v 1.2 2002-09-12 18:13:25 herrvendil Exp $
+ * @version $Id: JobRunner.java,v 1.3 2002-11-17 14:01:41 herrvendil Exp $
  */
 
 public class JobRunner extends java.lang.Object {
@@ -51,7 +51,7 @@ public class JobRunner extends java.lang.Object {
     private void runJob(String jndiName) throws Exception {
         IJobRunnerSessionHome home  = (IJobRunnerSessionHome)PortableRemoteObject.narrow( context.lookup(jndiName) , 
 IJobRunnerSessionHome.class );
-        home.create(new Admin(Admin.TYPE_INTERNALUSER)).run();
+        home.create().run(new Admin(Admin.TYPE_INTERNALUSER));
     }
 
     /**

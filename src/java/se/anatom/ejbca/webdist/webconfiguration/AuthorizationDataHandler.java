@@ -20,7 +20,7 @@ import se.anatom.ejbca.log.ILogSessionRemote;
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
  * @author  Philip Vendil
- * @version $Id: AuthorizationDataHandler.java,v 1.9 2002-10-24 20:13:55 herrvendil Exp $
+ * @version $Id: AuthorizationDataHandler.java,v 1.10 2002-11-17 14:01:39 herrvendil Exp $
  */
 public class AuthorizationDataHandler {
 
@@ -37,16 +37,17 @@ public class AuthorizationDataHandler {
        InitialContext jndicontext = new InitialContext();
        IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("AuthorizationSession"),
                                                                                  IAuthorizationSessionHome.class);
-       authorizationsession = authorizationsessionhome.create(globalconfiguration, administrator);
-       
-       Collection names = authorizationsession.getAvailableAccessRules();
+       authorizationsession = authorizationsessionhome.create();
+       authorizationsession.init(globalconfiguration);
+       this.administrator = administrator;
+       Collection names = authorizationsession.getAvailableAccessRules(administrator);
        if(names.size()==0){
           Vector rules = new Vector();
           String[] defaultrules = globalconfiguration.getDefaultAvailableResources();
           for(int i = 0; i < defaultrules.length ; i++){
             rules.addElement( defaultrules[i]);
           }
-         authorizationsession.addAvailableAccessRules(rules);
+         authorizationsession.addAvailableAccessRules(administrator, rules);
        }
 
        availableresources = new AvailableResources(globalconfiguration);
@@ -91,33 +92,33 @@ public class AuthorizationDataHandler {
     // Methods used with admingroup data
         /** Method to add a new admingroup to the access control data.*/
     public void addAdminGroup(String name) throws AdmingroupExistsException, RemoteException{
-        if(!authorizationsession.addAdminGroup(name))
+        if(!authorizationsession.addAdminGroup(administrator, name))
           throw new AdmingroupExistsException();
     
-        authorize.buildAccessTree(authorizationsession.getAdminGroups());        
+        authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));        
     }
 
     /** Method to remove a admingroup.*/
     public void removeAdminGroup(String name) throws RemoteException{
-        authorizationsession.removeAdminGroup(name);
-        authorize.buildAccessTree(authorizationsession.getAdminGroups());        
+        authorizationsession.removeAdminGroup(administrator, name);
+        authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));        
     }
 
     /** Method to rename a admingroup. */
     public void renameAdminGroup(String oldname, String newname) throws AdmingroupExistsException, RemoteException{
-        if(!authorizationsession.renameAdminGroup(oldname,newname))
+        if(!authorizationsession.renameAdminGroup(administrator, oldname,newname))
           throw new AdmingroupExistsException();
         
-         authorize.buildAccessTree(authorizationsession.getAdminGroups());
+         authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));
     }
 
     /** Method to retrieve all admingroup's names.*/
     public String[] getAdminGroupnames() throws RemoteException{
-        return authorizationsession.getAdminGroupnames();
+        return authorizationsession.getAdminGroupnames(administrator);
     }
 
     public AdminGroup[] getAdminGroups() throws RemoteException{
-      return authorizationsession.getAdminGroups();
+      return authorizationsession.getAdminGroups(administrator);
     }
 
     /** Method to add an array of access rules to a admingroup. The accessrules must be a 2d array where
@@ -125,11 +126,11 @@ public class AuthorizationDataHandler {
     public void addAccessRules(String groupname, String[][] accessrules) throws RemoteException{
         try{
           for(int i=0; i < accessrules.length; i++){
-            authorizationsession.addAccessRule(groupname, accessrules[i][ACCESS_RULE_RESOURCE],
+            authorizationsession.addAccessRule(administrator, groupname, accessrules[i][ACCESS_RULE_RESOURCE],
                                 java.lang.Integer.valueOf(accessrules[i][ACCESS_RULE_RULE]).intValue(),
                                 java.lang.Boolean.valueOf(accessrules[i][ACCESS_RULE_RECURSIVE]).booleanValue());
           }
-          authorize.buildAccessTree(authorizationsession.getAdminGroups());          
+          authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));          
         }catch (Exception e){
             // Do not add erronios rules.
         }
@@ -140,10 +141,10 @@ public class AuthorizationDataHandler {
         int arraysize = accessrules.length;
         try{
           for(int i=0; i < arraysize; i++){
-            authorizationsession.removeAccessRule(groupname, accessrules[i][ACCESS_RULE_RESOURCE]);
+            authorizationsession.removeAccessRule(administrator, groupname, accessrules[i][ACCESS_RULE_RESOURCE]);
           }
           
-          authorize.buildAccessTree(authorizationsession.getAdminGroups());  
+          authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));  
         }catch (Exception e){
             // Do not add erronios rules.
         }
@@ -154,7 +155,7 @@ public class AuthorizationDataHandler {
         AccessRule[] accessrules = null;
         String[][]   returnarray = null;
 
-        accessrules=authorizationsession.getAccessRules(groupname);
+        accessrules=authorizationsession.getAccessRules(administrator, groupname);
         if(accessrules != null){
           returnarray = new String[accessrules.length][3];
           for(int i = 0; i < accessrules.length; i++){
@@ -170,7 +171,7 @@ public class AuthorizationDataHandler {
     /** Method that returns all avaliable rules to a admingroup. It checks the filesystem for
      * all resources beneaf document root that isn't set hidden or already applied to this group.*/
     public String[] getAvailableRules(String groupname) throws RemoteException{
-      return authorizationsession.getAdminGroup(groupname).nonUsedResources(availableresources.getResources());
+      return authorizationsession.getAdminGroup(administrator, groupname).nonUsedResources(availableresources.getResources());
     }
 
       /** Method to add an array of admin entities  to a admingroup. A admin entity
@@ -181,12 +182,12 @@ public class AuthorizationDataHandler {
        int arraysize = adminentities.length;
         try{
           for(int i=0; i < arraysize; i++){
-            authorizationsession.addAdminEntity(groupname,
+            authorizationsession.addAdminEntity(administrator, groupname,
                                 Integer.parseInt(adminentities[i][ADMIN_ENTITY_MATCHWITH]),
                                 Integer.parseInt(adminentities[i][ADMIN_ENTITY_MATCHTYPE]),
                                 adminentities[i][ADMIN_ENTITY_MATCHVALUE]);
           }
-          authorize.buildAccessTree(authorizationsession.getAdminGroups());          
+          authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));          
        }catch (Exception e){
             // Do not add erronios rules.
        }
@@ -197,11 +198,11 @@ public class AuthorizationDataHandler {
       int arraysize = adminentities.length;
       try{
         for(int i=0; i < arraysize; i++){
-           authorizationsession.removeAdminEntity(groupname, Integer.parseInt(adminentities[i][ADMIN_ENTITY_MATCHWITH])
+           authorizationsession.removeAdminEntity(administrator, groupname, Integer.parseInt(adminentities[i][ADMIN_ENTITY_MATCHWITH])
                                                                ,Integer.parseInt(adminentities[i][ADMIN_ENTITY_MATCHTYPE])
                                                                ,adminentities[i][ADMIN_ENTITY_MATCHVALUE]);
         }
-        authorize.buildAccessTree(authorizationsession.getAdminGroups());
+        authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));
       }catch (Exception e){
         // Do not remove erronios rules.
       }
@@ -212,7 +213,7 @@ public class AuthorizationDataHandler {
       AdminEntity[] adminentities;
       String[][]   returnarray = null;
 
-      adminentities=authorizationsession.getAdminEntities(groupname);
+      adminentities=authorizationsession.getAdminEntities(administrator, groupname);
       if(adminentities != null){
         returnarray = new String[adminentities.length][3];
         for(int i = 0; i < adminentities.length; i++){
@@ -231,7 +232,7 @@ public class AuthorizationDataHandler {
      */
 
     public void addAvailableAccessRule(String name) throws RemoteException{
-      authorizationsession.addAvailableAccessRule(name);
+      authorizationsession.addAvailableAccessRule(administrator, name);
     } // addAvailableAccessRule
 
     /**
@@ -239,7 +240,7 @@ public class AuthorizationDataHandler {
      */
 
     public void addAvailableAccessRules(Collection names) throws RemoteException{
-      authorizationsession.addAvailableAccessRules(names);
+      authorizationsession.addAvailableAccessRules(administrator, names);
     } //  addAvailableAccessRules
 
     /**
@@ -247,7 +248,7 @@ public class AuthorizationDataHandler {
      */
 
     public void removeAvailableAccessRule(String name)  throws RemoteException{
-      authorizationsession.removeAvailableAccessRule(name);
+      authorizationsession.removeAvailableAccessRule(administrator, name);
     } // removeAvailableAccessRule
 
     /**
@@ -255,7 +256,7 @@ public class AuthorizationDataHandler {
      */
 
     public void removeAvailableAccessRules(Collection names)  throws RemoteException{
-      authorizationsession.removeAvailableAccessRules(names);
+      authorizationsession.removeAvailableAccessRules(administrator, names);
     } // removeAvailableAccessRules
 
     /**
@@ -263,7 +264,7 @@ public class AuthorizationDataHandler {
      */
 
     public Collection getAvailableAccessRules() throws RemoteException{
-       return authorizationsession.getAvailableAccessRules();
+       return authorizationsession.getAvailableAccessRules(administrator);
     } // getAvailableAccessRules
 
     /**
@@ -271,12 +272,13 @@ public class AuthorizationDataHandler {
      */
 
     public boolean existsAvailableAccessRule(String name) throws RemoteException{
-      return authorizationsession.existsAvailableAccessRule(name);
+      return authorizationsession.existsAvailableAccessRule(administrator, name);
     } // existsAvailableAccessRule
 
 
     // Private fields
     private IAuthorizationSessionRemote authorizationsession;
-    private AvailableResources        availableresources;
+    private AvailableResources          availableresources;
     private EjbcaAuthorization          authorize;
+    private Admin                       administrator;
 }

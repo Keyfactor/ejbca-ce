@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
+import se.anatom.ejbca.log.Admin;
 
 /** Besides the CertificateStoreSession, certificates and CRLs can also be published
  * to any number of other certificate stores, which are defined by session beans
@@ -15,7 +16,7 @@ import java.security.cert.X509CRL;
  *
  * Remote interface for EJB.
  *
- * @version $Id: IPublisherSessionRemote.java,v 1.3 2002-11-12 08:25:26 herrvendil Exp $
+ * @version $Id: IPublisherSessionRemote.java,v 1.4 2002-11-17 14:01:21 herrvendil Exp $
  */
 public interface IPublisherSessionRemote extends javax.ejb.EJBObject {
 
@@ -31,7 +32,7 @@ public interface IPublisherSessionRemote extends javax.ejb.EJBObject {
     * @return true if storage was succesful.
     * @throws EJBException if a communication or other error occurs.
     */
-    public boolean storeCertificate(Certificate incert, String username, String cafp, int status, int type) throws RemoteException;
+    public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp, int status, int type) throws RemoteException;
 
    /**
     * Published a CRL to a CRL store.
@@ -43,6 +44,6 @@ public interface IPublisherSessionRemote extends javax.ejb.EJBObject {
     * @return true if storage was succesful.
     * @throws EJBException if a communication or other error occurs.
     */
-    public boolean storeCRL(byte[] incrl, String cafp, int number) throws RemoteException;
+    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) throws RemoteException;
 
 }

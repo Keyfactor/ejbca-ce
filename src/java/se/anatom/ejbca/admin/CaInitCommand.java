@@ -22,7 +22,7 @@ import se.anatom.ejbca.util.CertTools;
 
 /** Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.6 2002-11-12 08:25:36 herrvendil Exp $
+ * @version $Id: CaInitCommand.java,v 1.7 2002-11-17 14:01:39 herrvendil Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -42,8 +42,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
             // First get and publish CA certificates
             Context context = getInitialContext();
             ISignSessionHome signhome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("RSASignSession"), ISignSessionHome.class);
-            ISignSessionRemote sign = signhome.create(administrator);
-            Certificate[] certs = sign.getCertificateChain();
+            ISignSessionRemote sign = signhome.create();
+            Certificate[] certs = sign.getCertificateChain(administrator);
             initCertificateStore();
             for (int j=0;j<certs.length;j++) {
                 X509Certificate cert = (X509Certificate)certs[j];
@@ -57,12 +57,12 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 }
                 try {
                     // We will get an exception if the entity already exist
-                    certificateStore.storeCertificate(cert, "cainit", cafingerprint, CertificateData.CERT_ACTIVE, type);
+                    certificateStore.storeCertificate(administrator, cert, "cainit", cafingerprint, CertificateData.CERT_ACTIVE, type);
                 } catch (java.rmi.ServerException e) {
                     System.out.println("Certificate for subject '"+cert.getSubjectDN()+"' already exist in the certificate store.");
                 }
                 for (int i=0;i<publishers.size();i++) {
-                    boolean ret = ((IPublisherSessionRemote)(publishers.get(i))).storeCertificate(cert, "cainit", cafingerprint, CertificateData.CERT_ACTIVE, type);
+                    boolean ret = ((IPublisherSessionRemote)(publishers.get(i))).storeCertificate(administrator, cert, "cainit", cafingerprint, CertificateData.CERT_ACTIVE, type);
                     if (ret == true)
                         System.out.println("Published certificate in publisher no "+i+1);
                     else
@@ -90,7 +90,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             // First init main certificate store
             if (certificateStore == null) {
                 ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class);
-                certificateStore = storehome.create(administrator);
+                certificateStore = storehome.create();
             }
         } catch (NamingException e) {
             // We could not find this publisher

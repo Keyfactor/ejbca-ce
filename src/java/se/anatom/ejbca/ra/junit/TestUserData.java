@@ -28,7 +28,7 @@ import junit.framework.*;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.9 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: TestUserData.java,v 1.10 2002-11-17 14:01:40 herrvendil Exp $
  */
 
 public class TestUserData extends TestCase {
@@ -194,18 +194,18 @@ public class TestUserData extends TestCase {
         cat.debug(">test05ListNewUser()");
         Object obj1 = ctx.lookup("UserAdminSession");
         IUserAdminSessionHome adminhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-        IUserAdminSessionRemote admin = adminhome.create(new Admin(Admin.TYPE_INTERNALUSER));
-        Collection coll = admin.findAllUsersByStatus(UserDataRemote.STATUS_NEW);
+        IUserAdminSessionRemote admin = adminhome.create();
+        Collection coll = admin.findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataRemote.STATUS_NEW);
         Iterator iter = coll.iterator();
         while (iter.hasNext())
         {
 
             UserAdminData data = (UserAdminData)iter.next();
             cat.debug("New user: "+data.getUsername()+", "+data.getDN()+", "+data.getEmail()+", "+data.getStatus()+", "+data.getType());
-            admin.setUserStatus(data.getUsername(), UserDataRemote.STATUS_GENERATED);
+            admin.setUserStatus(new Admin(Admin.TYPE_INTERNALUSER), data.getUsername(), UserDataRemote.STATUS_GENERATED);
         }
 
-        Collection coll1 = admin.findAllUsersByStatus(UserDataRemote.STATUS_NEW);
+        Collection coll1 = admin.findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataRemote.STATUS_NEW);
         assertTrue("found NEW users though there should be none!", coll1.isEmpty());
         cat.debug("<test05ListNewUser()");
     }

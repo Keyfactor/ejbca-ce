@@ -21,6 +21,7 @@ import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
+import se.anatom.ejbca.log.Admin;
 /**
  * A class handling the certificate type data. It saves and retrieves them currently from a database.
  *
@@ -30,73 +31,72 @@ public class CertificateProfileDataHandler implements Serializable {
 
     public static final int FIXED_CERTIFICATEPROFILE_BOUNDRY        = SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY;
     /** Creates a new instance of CertificateProfileDataHandler */
-    public CertificateProfileDataHandler(ICertificateStoreSessionRemote certificatesession) throws RemoteException, FinderException{
+    public CertificateProfileDataHandler(ICertificateStoreSessionRemote certificatesession, Admin admin) throws RemoteException, FinderException{
 
-       certificatestoresession = certificatesession;
-
-       Collection certificatetypenames = certificatestoresession.getCertificateProfileNames();
-
+       certificatestoresession = certificatesession;               
+       this.admin=admin;
     }
 
        /** Method to add a certificateprofile. Throws CertificateProfileExitsException if certificateprofile already exists  */
     public void addCertificateProfile(String name, CertificateProfile certificateprofile) throws CertificateProfileExistsException, RemoteException {
-      if(!certificatestoresession.addCertificateProfile(name,certificateprofile))
+      if(!certificatestoresession.addCertificateProfile(admin, name,certificateprofile))   
         throw new CertificateProfileExistsException(name);
     }
 
        /** Method to change a  certificateprofile. Throws CertificateProfileDoesntExitsException if certificateprofile cannot be found */
     public void changeCertificateProfile(String name, CertificateProfile certificateprofile) throws CertificateProfileDoesntExistsException, RemoteException {
-       if(!certificatestoresession.changeCertificateProfile(name,certificateprofile))
-         throw new CertificateProfileDoesntExistsException(name);
+       if(!certificatestoresession.changeCertificateProfile(admin, name, certificateprofile))
+         throw new CertificateProfileDoesntExistsException(name); 
     }
 
     /** Method to remove a certificateprofile.*/
     public void removeCertificateProfile(String name) throws RemoteException{
-        certificatestoresession.removeCertificateProfile(name);
+        certificatestoresession.removeCertificateProfile(admin, name);
     }
 
     /** Metod to rename a certificateprofile */
     public void renameCertificateProfile(String oldname, String newname) throws CertificateProfileExistsException, RemoteException{
-      if(!certificatestoresession.renameCertificateProfile(oldname,newname))
+      if(!certificatestoresession.renameCertificateProfile(admin, oldname,newname))   
         throw new CertificateProfileExistsException(newname);
     }
 
 
       /** Method to get a reference to a certificateprofile.*/
     public CertificateProfile getCertificateProfile(String name) throws RemoteException {
-        return certificatestoresession.getCertificateProfile(name);
-    }
-
+        return certificatestoresession.getCertificateProfile(admin, name);
+    }  
+        
     /** Returns the number of certificateprofiles i database. */
     public int getNumberOfCertificateProfiles() throws RemoteException {
-      return certificatestoresession.getNumberOfCertificateProfiles();
+      return certificatestoresession.getNumberOfCertificateProfiles(admin);
     }
 
     /** Returns an array containing all the certificateprofiles names.*/
      public String[] getCertificateProfileNames() throws RemoteException {
-      String[] dummy={};
-      TreeMap result = certificatestoresession.getCertificateProfiles();
-      return (String[]) result.keySet().toArray(dummy);
+      String[] dummy={}; 
+      TreeMap result = certificatestoresession.getCertificateProfiles(admin);      
+      return (String[]) result.keySet().toArray(dummy);  
     }
 
     /** Returns an array containing all the certificatetypes.*/
     public CertificateProfile[] getCertificateProfiles() throws RemoteException {
-      CertificateProfile[] dummy={};
-      TreeMap result = certificatestoresession.getCertificateProfiles();
-      return (CertificateProfile[]) result.values().toArray(dummy);
+      CertificateProfile[] dummy={}; 
+      TreeMap result = certificatestoresession.getCertificateProfiles(admin);      
+      return (CertificateProfile[]) result.values().toArray(dummy);   
     }
-
-
-    public void cloneCertificateProfile(String originalname, String newname) throws CertificateProfileExistsException, RemoteException{
-      // Check if original certificatetype already exists.
-      if(!certificatestoresession.cloneCertificateProfile(originalname,newname)){
-        throw new CertificateProfileExistsException(newname);
-      }
+        
+    
+    public void cloneCertificateProfile(String originalname, String newname) throws CertificateProfileExistsException, RemoteException{         
+      // Check if original certificatetype already exists. 
+      if(!certificatestoresession.cloneCertificateProfile(admin, originalname,newname)){
+        throw new CertificateProfileExistsException(newname);        
+      }       
     }
 
     public int getCertificateProfileId(String certificateprofilename) throws RemoteException{
-      return certificatestoresession.getCertificateProfileId(certificateprofilename);
+      return certificatestoresession.getCertificateProfileId(admin, certificateprofilename);  
     }
-
-    private ICertificateStoreSessionRemote certificatestoresession;
+   
+    private ICertificateStoreSessionRemote certificatestoresession; 
+    private Admin                          admin;
 }

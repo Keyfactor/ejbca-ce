@@ -13,11 +13,12 @@ import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.protocol.RequestMessage;
+import se.anatom.ejbca.log.Admin;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown.
  *  Creates certificates.
  *
- * @version $Id: ISignSessionLocal.java,v 1.5 2002-10-13 11:40:24 anatom Exp $
+ * @version $Id: ISignSessionLocal.java,v 1.6 2002-11-17 14:01:38 herrvendil Exp $
  * @see se.anatom.ejbca.ca.sign.ISignSession
  */
 public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
@@ -25,41 +26,41 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
-    public Certificate[] getCertificateChain();
+    public Certificate[] getCertificateChain(Admin admin);
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
-    public byte[] createPKCS7(Certificate cert) throws SignRequestSignatureException;
+    public byte[] createPKCS7(Admin admin, Certificate cert) throws SignRequestSignatureException;
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
-    public Certificate createCertificate(String username, String password, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException;
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException;
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
-    public Certificate createCertificate(String username, String password, PublicKey pk, boolean[] keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException;
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, boolean[] keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException;
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
-    public Certificate createCertificate(String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException;
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException;
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
-    public Certificate createCertificate(String username, String password, int certType, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException;
+    public Certificate createCertificate(Admin admin, String username, String password, int certType, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException;
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
-    public Certificate createCertificate(String username, String password, Certificate incert) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestSignatureException;
+    public Certificate createCertificate(Admin admin, String username, String password, Certificate incert) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestSignatureException;
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
-    public Certificate createCertificate(String username, String password, RequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException;
+    public Certificate createCertificate(Admin admin, String username, String password, RequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException;
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
-    public Certificate createCertificate(String username, String password, RequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException;
+    public Certificate createCertificate(Admin admin, String username, String password, RequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException;
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
-    public X509CRL createCRL(Vector certs);
+    public X509CRL createCRL(Admin admin, Vector certs);
 }

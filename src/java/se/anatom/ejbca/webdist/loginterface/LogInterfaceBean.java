@@ -38,7 +38,7 @@ import se.anatom.ejbca.util.query.*;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.3 2002-10-24 20:12:18 herrvendil Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.4 2002-11-17 14:01:40 herrvendil Exp $
  */
 public class LogInterfaceBean {
 
@@ -67,13 +67,13 @@ public class LogInterfaceBean {
         
         ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("CertificateStoreSession")
                                                                                                                                  , ICertificateStoreSessionHome.class);
-        certificatesession = certificatesessionhome.create(admin);
+        certificatesession = certificatesessionhome.create();
         
         logauthorization = new LogAuthorization(ejbcawebbean);        
         
         initializeEventNameTables(ejbcawebbean);
         
-        dnproxy = new SubjectDNProxy(certificatesession);                 
+        dnproxy = new SubjectDNProxy(admin, certificatesession);                 
         logentriesview = new LogEntriesView(dnproxy, localinfoeventnamesunsorted, localerroreventnamesunsorted, localmodulenamesunsorted);
         initialized =true; 
       }

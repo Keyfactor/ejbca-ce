@@ -25,7 +25,7 @@ import junit.framework.*;
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.14 2002-11-13 12:21:52 anatom Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.15 2002-11-17 14:01:40 herrvendil Exp $
  */
 
 public class TestBatchMakeP12 extends TestCase {
@@ -89,15 +89,15 @@ public class TestBatchMakeP12 extends TestCase {
         cat.debug(">test01CreateNewUser()");
         IUserAdminSessionRemote data1=null;
         String username = genRandomUserName();
-
-        data1 = home.create(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER));
-        Object o = null;
+  
+        data1 = home.create();
+        Object o = null;       
         try{
-          data1.addUser(username, "foo123", "C=SE, O=AnaTom, CN="+username, "", username+"@anatom.se",  false,
+          data1.addUser(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username, "foo123", "C=SE, O=AnaTom, CN="+username, "", username+"@anatom.se",  false,
                         IRaAdminSessionRemote.EMPTY_ENDENTITYPROFILEID, SecConst.PROFILE_NO_CERTIFICATEPROFILE,
                         false, false, SecConst.TOKEN_SOFT_BROWSERGEN,0);
-          data1.setClearTextPassword(username,"foo123");
-          o = new String("");
+          data1.setClearTextPassword(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username,"foo123");
+          o = new String(""); 
         }catch(Exception e){
           assertNotNull("Failed to create user "+username, o);
         }
@@ -107,10 +107,10 @@ public class TestBatchMakeP12 extends TestCase {
         String username1 = genRandomUserName();
         o = null;
         try{
-          data1.addUser(username1, "foo123", "C=SE, O=AnaTom, CN="+username1, "",username1+"@anatom.se", false,
+          data1.addUser(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username1, "foo123", "C=SE, O=AnaTom, CN="+username1, "",username1+"@anatom.se", false,
                         IRaAdminSessionRemote.EMPTY_ENDENTITYPROFILEID, SecConst.PROFILE_NO_CERTIFICATEPROFILE,
                         false, false, SecConst.TOKEN_SOFT_BROWSERGEN,0);
-          data1.setClearTextPassword(username1,"foo123");
+          data1.setClearTextPassword(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username1,"foo123");   
           o = new String("");
         }catch(Exception e){
           assertNotNull("Failed to create user "+username1, o);

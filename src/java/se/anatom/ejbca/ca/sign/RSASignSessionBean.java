@@ -49,7 +49,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.52 2002-11-13 14:08:45 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.53 2002-11-17 14:01:38 herrvendil Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -76,14 +76,11 @@ public class RSASignSessionBean extends BaseSessionBean {
     /** The remote interface of the log session bean */
     private ILogSessionRemote logsession;
 
-    /** Var containing iformation about administrator using the bean.*/
-    private Admin admin = null;
-
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
      */
-    public void ejbCreate(Admin administrator) throws CreateException {
+    public void ejbCreate() throws CreateException {
         debug(">ejbCreate()");
         try {
             // Install BouncyCastle provider
@@ -94,7 +91,6 @@ public class RSASignSessionBean extends BaseSessionBean {
             storeHome = (ICertificateStoreSessionLocalHome)lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
             authHome = (IAuthenticationSessionLocalHome)lookup("java:comp/env/ejb/AuthenticationSessionLocal");
 
-            this.admin = administrator;
             ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);
             logsession = logsessionhome.create();
 
@@ -165,7 +161,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::getCertificateChain
      */
-    public Certificate[] getCertificateChain() {
+    public Certificate[] getCertificateChain(Admin admin) {
         debug(":getCertificateChain()");
         return signingDevice.getCertificateChain();
         } // getCertificateChain
@@ -173,7 +169,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::createPKCS7
      */
-    public byte[] createPKCS7(Certificate cert) throws SignRequestSignatureException {
+    public byte[] createPKCS7(Admin admin, Certificate cert) throws SignRequestSignatureException {
         debug(">createPKCS7()");
         // First verify that we signed this certificate
         try {
@@ -182,7 +178,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (Exception e) {
             throw new SignRequestSignatureException("Cannot verify certificate in createPKCS7(), did I sign this?");
         }
-        Certificate[] chain = getCertificateChain();
+        Certificate[] chain = getCertificateChain(admin);
         Certificate[] certs;
         if (cert != null) {
             certs = new Certificate[chain.length+1];
@@ -204,7 +200,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(String username, String password, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">createCertificate(pk)");
         // Standard key usages for end users are: digitalSignature | keyEncipherment or nonRepudiation
         // Default key usage is digitalSignature | keyEncipherment
@@ -216,40 +212,41 @@ public class RSASignSessionBean extends BaseSessionBean {
         // keyEncipherment
         keyusage[2] = true;
         debug("<createCertificate(pk)");
-        return createCertificate(username, password, pk, keyusage);
+        return createCertificate(admin, username, password, pk, keyusage);
     } // createCertificate
 
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(String username, String password, PublicKey pk, boolean[] keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
-        return createCertificate(username, password, pk, sunKeyUsageToBC(keyusage));
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, boolean[] keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
+        return createCertificate(admin, username, password, pk, sunKeyUsageToBC(keyusage));
     }
 
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">createCertificate(pk, ku)");
 
         try {
             // Authorize user and get DN
-            IAuthenticationSessionLocal authSession = authHome.create(admin);
-            UserAuthData data = authSession.authenticateUser(username, password);
+            IAuthenticationSessionLocal authSession = authHome.create();
+            UserAuthData data = authSession.authenticateUser(admin, username, password);
             debug("Authorized user " + username + " with DN='" + data.getDN()+"'.");
             debug("type="+ data.getType());
             if ((data.getType() & SecConst.USER_INVALID) !=0) {
                 logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"User type is invalid, cannot create certificate for this user.");
-            } else {
+            } else {               
                 if ( ((data.getType() & SecConst.USER_CA) != 0) || ((data.getType() & SecConst.USER_ROOTCA) != 0) ) {
                     debug("Setting new keyusage...");
                     // If this is a CA, we only allow CA-type keyUsage
                     keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
                 }
-                ICertificateStoreSessionLocal certificateStore = storeHome.create(admin);
+
+                ICertificateStoreSessionLocal certificateStore = storeHome.create();
                 // Retrieve the certificate profile this user should have
                 int certProfileId = data.getCertProfileId();
-                CertificateProfile certProfile = certificateStore.getCertificateProfile(certProfileId);
+                CertificateProfile certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
                 // What if certProfile == null?
                 if (certProfile == null) {
                     if (data.getType() == SecConst.USER_CA) {
@@ -261,7 +258,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     else {
                         certProfileId = SecConst.PROFILE_FIXED_ENDUSER;
                     }
-                    certProfile = certificateStore.getCertificateProfile(certProfileId);
+                    certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
                 }
                 cat.debug("Using certificate profile with id "+certProfileId);
                 X509Certificate cert = makeBCCertificate(data, caSubjectName, pk, keyusage, certProfile);
@@ -271,15 +268,15 @@ public class RSASignSessionBean extends BaseSessionBean {
                 // Verify before returning
                 cert.verify(caCert.getPublicKey());
                 // Store certificate in the database
-                certificateStore.storeCertificate(cert, username, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
+                certificateStore.storeCertificate(admin, cert, username, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
                 // Call authentication session and tell that we are finished with this user
                 for (int i=0;i<publishers.size();i++) {
                     IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(i);
                     IPublisherSessionLocal pub = pubHome.create();
-                    pub.storeCertificate(cert, username, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
+                    pub.storeCertificate(admin, cert, username, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
                 }
                 if (finishUser.booleanValue() == true)
-                    authSession.finishUser(username, password);
+                    authSession.finishUser(admin, username, password);
                 debug("<createCertificate(pk, ku)");
                 return cert;
             }
@@ -300,7 +297,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * Implements ISignSession::createCertificate
      */
 
-    public Certificate createCertificate(String username, String password, int certType, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
+    public Certificate createCertificate(Admin admin, String username, String password, int certType, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">createCertificate(pk, certType)");
         // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
         boolean[] keyusage = new boolean[9];
@@ -326,7 +323,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 break;
         }
 
-        Certificate ret = createCertificate(username, password, pk, keyusage);
+        Certificate ret = createCertificate(admin, username, password, pk, keyusage);
         debug("<createCertificate(pk, certType)");
         return ret;
     } // createCertificate
@@ -334,7 +331,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(String username, String password, Certificate incert) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestSignatureException {
+    public Certificate createCertificate(Admin admin, String username, String password, Certificate incert) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestSignatureException {
         debug(">createCertificate(cert)");
         X509Certificate cert = (X509Certificate)incert;
         try {
@@ -349,7 +346,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         }
 
         // TODO: extract more extensions than just KeyUsage
-        Certificate ret = createCertificate(username, password, cert.getPublicKey(), cert.getKeyUsage());
+        Certificate ret = createCertificate(admin, username, password, cert.getPublicKey(), cert.getKeyUsage());
         debug("<createCertificate(cert)");
         return ret;
     } // createCertificate
@@ -358,15 +355,15 @@ public class RSASignSessionBean extends BaseSessionBean {
      * Implements ISignSession::createCertificate
      */
 
-    public Certificate createCertificate(String username, String password, RequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
-        return createCertificate( username, password, req, -1 );
+    public Certificate createCertificate(Admin admin, String username, String password, RequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
+        return createCertificate(admin, username, password, req, -1 );
     }
 
     /**
      * Implements ISignSession::createCertificate
      */
 
-    public Certificate createCertificate(String username, String password, RequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
+    public Certificate createCertificate(Admin admin, String username, String password, RequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
         debug(">createCertificate(pkcs10)");
         Certificate ret = null;
         try {
@@ -383,9 +380,9 @@ public class RSASignSessionBean extends BaseSessionBean {
                 if (reqpk == null)
                     throw new InvalidKeyException("Key is null!");
                 if (keyUsage < 0)
-                    ret =createCertificate(username,password,reqpk);
+                    ret =createCertificate(admin, username,password,reqpk);
                 else
-                    ret =createCertificate(username,password,reqpk,keyUsage);
+                    ret =createCertificate(admin, username,password,reqpk,keyUsage);
             } catch (IOException e) {
                 logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error reading PKCS10-request.");
                 throw new SignRequestException("Error reading PKCS10-request.");
@@ -410,13 +407,13 @@ public class RSASignSessionBean extends BaseSessionBean {
      * Implements ISignSession::createCRL
      */
 
-    public X509CRL createCRL(Vector certs) {
+    public X509CRL createCRL(Admin admin, Vector certs) {
         debug(">createCRL()");
         X509CRL crl = null;
         try {
-            ICertificateStoreSessionLocal certificateStore = storeHome.create(admin);
+            ICertificateStoreSessionLocal certificateStore = storeHome.create();
             // Get number of last CRL and increase by 1
-            int number = certificateStore.getLastCRLNumber() + 1;
+            int number = certificateStore.getLastCRLNumber(admin) + 1;
             crl = makeBCCRL(caSubjectName, crlperiod.longValue(), certs, number);
             // Verify before sending back
             crl.verify(caCert.getPublicKey());
@@ -426,11 +423,11 @@ public class RSASignSessionBean extends BaseSessionBean {
               throw new EJBException(re);
             }
             // Store CRL in the database
-            certificateStore.storeCRL(crl.getEncoded(), CertTools.getFingerprintAsString(caCert), number);
+            certificateStore.storeCRL(admin, crl.getEncoded(), CertTools.getFingerprintAsString(caCert), number);
             for (int i=0;i<publishers.size();i++) {
                 IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(i);
                 IPublisherSessionLocal pub = pubHome.create();
-                pub.storeCRL(crl.getEncoded(), CertTools.getFingerprintAsString(caCert), number);
+                pub.storeCRL(admin, crl.getEncoded(), CertTools.getFingerprintAsString(caCert), number);
             }
         } catch (Exception e) {
             try{

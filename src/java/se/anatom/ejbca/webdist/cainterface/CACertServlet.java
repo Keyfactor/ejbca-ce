@@ -38,7 +38,7 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.7 2002-10-24 20:12:00 herrvendil Exp $
+ * @version $Id: CACertServlet.java,v 1.8 2002-11-17 14:01:39 herrvendil Exp $
  *
  */
 public class CACertServlet extends HttpServlet {
@@ -111,8 +111,8 @@ public class CACertServlet extends HttpServlet {
                 level = Integer.parseInt(lev);
             // Root CA is level 0, next below root level 1 etc etc
             try {
-                ISignSessionRemote ss = signhome.create(new Admin(((X509Certificate[]) req.getAttribute( "javax.servlet.request.X509Certificate" ))[0]));
-                Certificate[] chain = ss.getCertificateChain();
+                ISignSessionRemote ss = signhome.create();
+                Certificate[] chain = ss.getCertificateChain(new Admin(((X509Certificate[]) req.getAttribute( "javax.servlet.request.X509Certificate" ))[0]));
                 // chain.length-1 is last cert in chain (root CA)
                 if ( (chain.length-1-level) < 0 ) {
                     PrintStream ps = new PrintStream(res.getOutputStream());

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import se.anatom.ejbca.ra.GlobalConfiguration;
+import se.anatom.ejbca.log.Admin;
 
 /**
  * A class used to improve performance by proxying a users end entity profile authorization minimizing the need of traversing 
@@ -29,20 +30,17 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
     public static final String HISTORY_RIGHTS = GlobalConfiguration.HISTORY_RIGHTS;    
     
     /** Creates a new instance of ProfileAuthorizationProxy. */
-    public EndEntityProfileAuthorizationProxy(AdminInformation admininformation, IAuthorizationSessionRemote authorizationsession) {
+    public EndEntityProfileAuthorizationProxy(IAuthorizationSessionRemote authorizationsession) {
               // Get the RaAdminSession instance.
 
        profileauthstore = new HashMap(); 
-       this.admininformation = admininformation;
        this.local=false;
        this.authorizationsessionremote = authorizationsession;
     }
 
-    public EndEntityProfileAuthorizationProxy(AdminInformation admininformation, IAuthorizationSessionLocal authorizationsession) {
+    public EndEntityProfileAuthorizationProxy(IAuthorizationSessionLocal authorizationsession) {
               // Get the RaAdminSession instance.
-
        profileauthstore = new HashMap(); 
-       this.admininformation = admininformation;
        this.local=true;
        this.authorizationsessionlocal = authorizationsession;
     }
@@ -55,19 +53,25 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
      * @param rights which profile rights to look for.
      * @return the profilename or null if no profilename is relatied to the given id
      */
-    public boolean getEndEntityProfileAuthorization(int profileid, String rights) throws RemoteException {
+    public boolean getEndEntityProfileAuthorization(Admin admin, int profileid, String rights) throws RemoteException {
       Boolean returnval = null;  
-      String resource = GlobalConfiguration.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights;
-      // Check if name is in hashmap
+      String resource= null;  
+      String adm = null;
+      if(admin.getAdminInformation().isSpecialUser())
+        adm = Integer.toString(admin.getAdminInformation().getSpecialUser());  
+      else
+        adm = new String(admin.getAdminInformation().getX509Certificate().getSignature());          
+      resource =  adm + GlobalConfiguration.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights;
+        // Check if name is in hashmap
       returnval = (Boolean) profileauthstore.get(resource);
       
       if(returnval==null){
         // Retreive profilename over RMI
         try{
           if(local)  
-            authorizationsessionlocal.isAuthorized(admininformation,resource);
+            authorizationsessionlocal.isAuthorized(admin.getAdminInformation(),resource);
           else
-            authorizationsessionremote.isAuthorized(admininformation,resource);              
+            authorizationsessionremote.isAuthorized(admin.getAdminInformation(),resource);              
           returnval = new Boolean(true);
         }catch(AuthorizationDeniedException e){
           returnval = new Boolean(false); 
@@ -82,6 +86,5 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
     private HashMap profileauthstore;
     private IAuthorizationSessionRemote authorizationsessionremote;
     private IAuthorizationSessionLocal authorizationsessionlocal;    
-    private AdminInformation admininformation;
 
 }

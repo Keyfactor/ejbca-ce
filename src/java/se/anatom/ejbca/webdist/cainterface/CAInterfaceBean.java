@@ -48,7 +48,7 @@ import se.anatom.ejbca.log.Admin;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.10 2002-11-12 08:25:38 herrvendil Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.11 2002-11-17 14:01:39 herrvendil Exp $
  */
 public class CAInterfaceBean   {
 
@@ -65,9 +65,9 @@ public class CAInterfaceBean   {
         InitialContext jndicontext = new InitialContext();
         Object obj1 = jndicontext.lookup("CertificateStoreSession");
         certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-        certificatesession = certificatesessionhome.create(administrator);
+        certificatesession = certificatesessionhome.create();
       
-        certificateprofiles = new CertificateProfileDataHandler(certificatesession); 
+        certificateprofiles = new CertificateProfileDataHandler(certificatesession, administrator); 
         initialized =true; 
       }    
     }
@@ -76,14 +76,14 @@ public class CAInterfaceBean   {
       CertificateView[] returnval = null;
       InitialContext jndicontext = new InitialContext();
       ISignSessionHome home = (ISignSessionHome)javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RSASignSession"), ISignSessionHome.class );
-      ISignSessionRemote ss = home.create(administrator);
-      Certificate[] chain = ss.getCertificateChain();
+      ISignSessionRemote ss = home.create();
+      Certificate[] chain = ss.getCertificateChain(administrator);
 
       if(chain != null){
         returnval = new CertificateView[chain.length];
         for(int i = 0; i < chain.length; i++){
           RevokedInfoView revokedinfo = null;
-          RevokedCertInfo revinfo = certificatesession.isRevoked(((X509Certificate) chain[i]).getIssuerDN().toString(), ((X509Certificate) chain[i]).getSerialNumber());
+          RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, ((X509Certificate) chain[i]).getIssuerDN().toString(), ((X509Certificate) chain[i]).getSerialNumber());
           if(revinfo != null)
             revokedinfo = new RevokedInfoView(revinfo);
           returnval[i] = new CertificateView((X509Certificate) chain[i], revokedinfo,null);
@@ -96,11 +96,11 @@ public class CAInterfaceBean   {
     public void createCRL()  throws RemoteException, NamingException, CreateException  {
       InitialContext jndicontext = new InitialContext();        
       IJobRunnerSessionHome home  = (IJobRunnerSessionHome)javax.rmi.PortableRemoteObject.narrow( jndicontext.lookup("CreateCRLSession") , IJobRunnerSessionHome.class );
-      home.create(administrator).run();
+      home.create().run(administrator);
     }
 
     public int getLastCRLNumber() throws RemoteException   {
-      return certificatesession.getLastCRLNumber();
+      return certificatesession.getLastCRLNumber(administrator);
     }
  
     // Methods dealing with certificate types.
@@ -139,19 +139,19 @@ public class CAInterfaceBean   {
         InitialContext jndicontext = new InitialContext();              
         Object obj1 = jndicontext.lookup("UserAdminSession");
         IUserAdminSessionHome adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-        IUserAdminSessionRemote adminsession = adminsessionhome.create(administrator);
+        IUserAdminSessionRemote adminsession = adminsessionhome.create();
       
         obj1 = jndicontext.lookup("RaAdminSession");
         IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"), 
                                                                                  IRaAdminSessionHome.class);
-        IRaAdminSessionRemote raadminsession = raadminsessionhome.create(administrator); 
+        IRaAdminSessionRemote raadminsession = raadminsessionhome.create(); 
         
         
         boolean certificateprofileused = false;
-        int certificateprofileid = certificatesession.getCertificateProfileId(name);
+        int certificateprofileid = certificatesession.getCertificateProfileId(administrator, name);
         // Check if any users or profiles use the certificate id.
-        certificateprofileused = adminsession.checkForCertificateProfileId(certificateprofileid) 
-                            || raadminsession.existsCertificateProfileInEndEntityProfiles(certificateprofileid); 
+        certificateprofileused = adminsession.checkForCertificateProfileId(administrator, certificateprofileid) 
+                            || raadminsession.existsCertificateProfileInEndEntityProfiles(administrator, certificateprofileid); 
 
         if(!certificateprofileused){
           certificateprofiles.removeCertificateProfile(name);

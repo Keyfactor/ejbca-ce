@@ -21,7 +21,7 @@ import junit.framework.*;
 
 /** Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.8 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.9 2002-11-17 14:01:40 herrvendil Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     static Category cat = Category.getInstance( TestAuthenticationSession.class.getName() );
@@ -40,7 +40,7 @@ public class TestAuthenticationSession extends TestCase {
         ctx = getInitialContext();
         Object obj = ctx.lookup("AuthenticationSession");
         home = (IAuthenticationSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IAuthenticationSessionHome.class);
-        remote = home.create(new Admin(Admin.TYPE_INTERNALUSER));
+        remote = home.create();
         cat.debug("<setUp()");
     }
 
@@ -105,7 +105,7 @@ public class TestAuthenticationSession extends TestCase {
     public void test02AuthenticateUser() throws Exception {
         cat.debug(">test02AuthenticateUser()");
         // user that we know exists...
-        UserAuthData data = remote.authenticateUser(username, pwd);
+        UserAuthData data = remote.authenticateUser(new Admin(Admin.TYPE_INTERNALUSER), username, pwd);
 
         cat.debug("DN: "+data.getDN());
         assertTrue("DN is wrong", data.getDN().indexOf(username) != -1);
@@ -130,7 +130,7 @@ public class TestAuthenticationSession extends TestCase {
         data.setStatus(UserDataRemote.STATUS_GENERATED);
         boolean authfailed = false;
         try {
-            UserAuthData auth = remote.authenticateUser(username, pwd);
+            UserAuthData auth = remote.authenticateUser(new Admin(Admin.TYPE_INTERNALUSER), username, pwd);
         } catch (Exception e) {
             authfailed = true;
         }
@@ -144,7 +144,7 @@ public class TestAuthenticationSession extends TestCase {
         // user that we know exists... but we issue wrong password
         boolean authfailed = false;
         try {
-            UserAuthData auth = remote.authenticateUser(username, "abc123");
+            UserAuthData auth = remote.authenticateUser(new Admin(Admin.TYPE_INTERNALUSER), username, "abc123");
         } catch (Exception e) {
             authfailed = true;
         }

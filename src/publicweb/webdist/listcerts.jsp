@@ -16,8 +16,8 @@ try  {
         InitialContext ctx = new InitialContext();
         ICertificateStoreSessionHome home = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
         ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
-        ICertificateStoreSessionRemote store = home.create(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()));
-        Collection certs = store.findCertificatesBySubject(dn);
+        ICertificateStoreSessionRemote store = home.create();
+        Collection certs = store.findCertificatesBySubject(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()), dn);
         Iterator i = certs.iterator();
         while (i.hasNext()) {
             X509Certificate x509cert = (X509Certificate)i.next();

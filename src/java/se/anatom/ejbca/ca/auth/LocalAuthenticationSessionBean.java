@@ -23,7 +23,7 @@ import se.anatom.ejbca.log.LogEntry;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.15 2002-11-12 15:00:16 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.16 2002-11-17 14:01:39 herrvendil Exp $
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean {
 
@@ -31,22 +31,20 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
     private UserDataHome userHome = null;
 
     /** The remote interface of the log session bean */
-    private ILogSessionRemote logsession;
-    /** Var containing iformation about administrator using the bean.*/
-    private Admin admin = null;
+    private ILogSessionRemote logsession;    
 
+    
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
      */
-    public void ejbCreate (Admin administrator) throws CreateException {
+    public void ejbCreate () throws CreateException {
         debug(">ejbCreate()");
         // Look up the UserDataLocal entity bean home interface
         userHome = (UserDataHome)lookup("java:comp/env/ejb/UserData", UserDataHome.class);
 
         try{
-          this.admin = administrator;
-          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);
+          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
           logsession = logsessionhome.create();
         }catch(Exception e){
           throw new EJBException(e);
@@ -59,7 +57,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
     * Implements a mechanism that queries a local database directly. Only allows authentication when user status is
     * STATUS_NEW, STATUS_FAILED or STATUS_INPROCESS.
     */
-    public UserAuthData authenticateUser(String username, String password) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
+    public UserAuthData authenticateUser(Admin admin, String username, String password) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">authenticateUser("+username+", hiddenpwd)");
         try {
             // Find the user with username username
@@ -113,7 +111,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
     * Implements IAuthenticationSession::finishUser.
     * Implements a mechanism that uses a local database directly to set users status to UserDataRemote.STATUS_GENERATED.
     */
-    public void finishUser(String username, String password) throws ObjectNotFoundException {
+    public void finishUser(Admin admin, String username, String password) throws ObjectNotFoundException {
         debug(">finishUser("+username+", hiddenpwd)");
         try {
             // Find the user with username username

@@ -32,7 +32,7 @@ import junit.framework.*;
 
 /** Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.5 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.6 2002-11-17 14:01:40 herrvendil Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 
@@ -51,10 +51,10 @@ public class TestCreateCRLSession extends TestCase {
         ctx = getInitialContext();
         Object obj = ctx.lookup("CreateCRLSession");
         home = (IJobRunnerSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IJobRunnerSessionHome.class);
-        remote = home.create(new Admin(Admin.TYPE_INTERNALUSER));
+        remote = home.create();
         Object obj1 = ctx.lookup("CertificateStoreSession");
         storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-        storeremote = storehome.create(new Admin(Admin.TYPE_INTERNALUSER));
+        storeremote = storehome.create();
         cat.debug("<setUp()");
     }
     protected void tearDown() throws Exception {
@@ -68,15 +68,15 @@ public class TestCreateCRLSession extends TestCase {
 
     public void test01CreateNewCRL() throws Exception {
         cat.debug(">test01CreateNewCRL()");
-        remote.run();
+        remote.run(new Admin(Admin.TYPE_INTERNALUSER));
         cat.debug("<test01CreateNewCRL()");
     }
     public void test02LastCRL() throws Exception {
         cat.debug(">test02LastCRL()");
         // Get number of last CRL
-        int number = storeremote.getLastCRLNumber();
+        int number = storeremote.getLastCRLNumber(new Admin(Admin.TYPE_INTERNALUSER));
         cat.debug("Last CRLNumber = "+number);
-        byte[] crl = storeremote.getLastCRL();
+        byte[] crl = storeremote.getLastCRL(new Admin(Admin.TYPE_INTERNALUSER));
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         //FileOutputStream fos = new FileOutputStream("testcrl.der");
@@ -87,9 +87,9 @@ public class TestCreateCRLSession extends TestCase {
     public void test03CheckNumberofRevokedCerts() throws Exception {
         cat.debug(">test03CheckNumberofRevokedCerts()");
         // Get number of last CRL
-        Collection revfp = storeremote.listRevokedCertificates();
+        Collection revfp = storeremote.listRevokedCertificates(new Admin(Admin.TYPE_INTERNALUSER));
         cat.debug("Number of revoked certificates="+revfp.size());
-        byte[] crl = storeremote.getLastCRL();
+        byte[] crl = storeremote.getLastCRL(new Admin(Admin.TYPE_INTERNALUSER));
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         Set revset = x509crl.getRevokedCertificates();

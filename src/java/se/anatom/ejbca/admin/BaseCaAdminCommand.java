@@ -29,7 +29,7 @@ import se.anatom.ejbca.log.Admin;
 
 /** Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.6 2002-09-12 18:14:15 herrvendil Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.7 2002-11-17 14:01:38 herrvendil Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
 
@@ -59,8 +59,8 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         try {
             Context ctx = getInitialContext();
             ISignSessionHome home = (ISignSessionHome)javax.rmi.PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
-            ISignSessionRemote ss = home.create(administrator);
-            Certificate[] chain = ss.getCertificateChain();
+            ISignSessionRemote ss = home.create();
+            Certificate[] chain = ss.getCertificateChain(administrator);
             return chain;
         } catch (Exception e) {
             error("Error while getting certfificate chain from CA.", e);
@@ -108,10 +108,10 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
       try{  
         Context context = getInitialContext();
         IJobRunnerSessionHome home  = (IJobRunnerSessionHome)javax.rmi.PortableRemoteObject.narrow( context.lookup("CreateCRLSession") , IJobRunnerSessionHome.class );
-        home.create(administrator).run();
+        home.create().run(administrator);
         ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class);
-        ICertificateStoreSessionRemote storeremote = storehome.create(new Admin(Admin.TYPE_CACOMMANDLINE_USER));
-        int number = storeremote.getLastCRLNumber();
+        ICertificateStoreSessionRemote storeremote = storehome.create();
+        int number = storeremote.getLastCRLNumber(administrator);
         System.out.println("CRL with number " + number+ " generated.");
       } catch (Exception e) {
           error("Error while getting certfificate chain from CA.", e);

@@ -6,11 +6,12 @@ import java.rmi.RemoteException;
 import javax.ejb.ObjectNotFoundException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
+import se.anatom.ejbca.log.Admin;
 
 /** Interface used for authenticating entities when issuing their certificates.
  * Remote interface for EJB.
  *
- * @version $Id: IAuthenticationSessionRemote.java,v 1.3 2002-10-24 20:01:41 herrvendil Exp $
+ * @version $Id: IAuthenticationSessionRemote.java,v 1.4 2002-11-17 14:01:39 herrvendil Exp $
  */
 public interface IAuthenticationSessionRemote extends EJBObject {
 
@@ -26,7 +27,7 @@ public interface IAuthenticationSessionRemote extends EJBObject {
     * @throws AuthLoginException If the password is incorrect.
     * @throws EJBException if a communication or other error occurs.
     */
-    public UserAuthData authenticateUser(String username, String password) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException;
+    public UserAuthData authenticateUser(Admin admin, String username, String password) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException;
 
    /**
     * Set the status of a user to finished, called when a user has been successfully processed.
@@ -39,6 +40,6 @@ public interface IAuthenticationSessionRemote extends EJBObject {
     * @throws ObjectNotFoundException if the user does not exist.
     * @throws EJBException if a communication or other error occurs.
     */
-    public void finishUser(String username, String password) throws RemoteException, ObjectNotFoundException;
+    public void finishUser(Admin admin, String username, String password) throws RemoteException, ObjectNotFoundException;
 
 }

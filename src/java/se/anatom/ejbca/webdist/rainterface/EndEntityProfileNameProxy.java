@@ -29,10 +29,10 @@ public class EndEntityProfileNameProxy {
       Object obj1 = jndicontext.lookup("RaAdminSession");
       IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"), 
                                                                                  IRaAdminSessionHome.class);
-      raadminsession = raadminsessionhome.create(administrator);  
+      raadminsession = raadminsessionhome.create();  
       
       profilenamestore = new HashMap(); 
-        
+      this.administrator = administrator;  
     }
     
     /**
@@ -48,7 +48,7 @@ public class EndEntityProfileNameProxy {
       
       if(returnval==null){
         // Retreive profilename over RMI
-        returnval = raadminsession.getEndEntityProfileName(profileid);
+        returnval = raadminsession.getEndEntityProfileName(administrator, profileid);
         if(returnval != null)
           profilenamestore.put(new Integer(profileid),returnval);
       }    
@@ -59,5 +59,6 @@ public class EndEntityProfileNameProxy {
     // Private fields
     private HashMap profilenamestore;
     private IRaAdminSessionRemote raadminsession;
+    private Admin   administrator;
 
 }

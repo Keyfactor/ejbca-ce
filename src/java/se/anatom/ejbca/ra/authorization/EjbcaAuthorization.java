@@ -51,14 +51,14 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
         try{
           ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome)
                                                                javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);  
-          certificatesession = certificatesessionhome.create(admin);
+          certificatesession = certificatesessionhome.create();
        
           ISignSessionHome signhome = (ISignSessionHome) PortableRemoteObject.narrow(jndicontext.lookup("RSASignSession"),
                                                                                    ISignSessionHome.class );  
 
-          ISignSessionRemote signsession = signhome.create(admin); 
+          ISignSessionRemote signsession = signhome.create(); 
           
-          this.cacertificatechain = signsession.getCertificateChain();
+          this.cacertificatechain = signsession.getCertificateChain(admin);
         }catch(Exception e){
           throw new CreateException(e.getMessage());   
         }          
@@ -139,7 +139,7 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
         
       // Check if certificate is revoked.
         try{
-          if(certificatesession.isRevoked(certificate.getIssuerDN().toString(),certificate.getSerialNumber()) != null){
+          if(certificatesession.isRevoked(admin, certificate.getIssuerDN().toString(),certificate.getSerialNumber()) != null){
             // Certificate revoked
             throw new AuthenticationFailedException("Your certificate have been revoked.");
           }

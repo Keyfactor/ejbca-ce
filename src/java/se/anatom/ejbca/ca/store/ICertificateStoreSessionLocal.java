@@ -10,10 +10,11 @@ import java.security.cert.X509CRL;
 
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.store.certificateprofiles.*;
+import se.anatom.ejbca.log.Admin;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: ICertificateStoreSessionLocal.java,v 1.10 2002-11-13 12:21:33 anatom Exp $
+ * @version $Id: ICertificateStoreSessionLocal.java,v 1.11 2002-11-17 14:01:21 herrvendil Exp $
  * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
  */
 public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject, IPublisherSessionLocal {
@@ -21,134 +22,142 @@ public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject,
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public Collection listAllCertificates();
+    public Collection listAllCertificates(Admin admin);
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public Collection findCertificatesBySubject(String subjectDN);
+    public Collection findCertificatesBySubject(Admin admin, String subjectDN);
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public Certificate findCertificateByIssuerAndSerno(String issuerDN, BigInteger serno);
+    public Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno);
 
     /**
     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
     */
-    public Collection findCertificatesBySerno(BigInteger serno);
 
+    public Collection findCertificatesBySerno(Admin admin, BigInteger serno);
+    
     /**
     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
     */
-    public Collection findCertificatesByUsername(String username);
 
+    public Collection findCertificatesByUsername(Admin admin, String username);   
+    
     /**
     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
-    */
-    public String findUsernameByCertSerno(BigInteger serno);
+    */    
+    public String findUsernameByCertSerno(Admin admin, BigInteger serno);    
+ 
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */
+    public Collection findCertificatesByExpireTime(Admin admin, Date expireTime);
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public Collection findCertificatesByExpireTime(Date expireTime);
+    public RevokedCertInfo isRevoked(Admin admin, String issuerDN, BigInteger serno);
+
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */    
+    public void setRevokeStatus(Admin admin, String dn, int reason);
+    
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */    
+    public void setRevokeStatus(Admin admin, BigInteger serno, int reason);    
+
+
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */      
+    public boolean checkIfAllRevoked(Admin admin, String username);    
+      
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */
+    public Collection listRevokedCertificates(Admin admin);
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public RevokedCertInfo isRevoked(String issuerDN, BigInteger serno);
+    public byte[] getLastCRL(Admin admin);
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public void setRevokeStatus(String dn, int reason);
-
-    /**
-     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
-     */
-    public void setRevokeStatus(BigInteger serno, int reason);
-
-    /**
-     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
-     */
-    public boolean checkIfAllRevoked(String username);
-
-    /**
-     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
-     */
-    public Collection listRevokedCertificates();
-
-    /**
-     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
-     */
-    public byte[] getLastCRL();
-
-    /**
-     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
-     */
-    public int getLastCRLNumber();
-
+    public int getLastCRLNumber(Admin admin);
+    
     // Functions used for Certificate Types.
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
-     */
-
-    public boolean addCertificateProfile(String certificateprofilename, CertificateProfile certificateprofile);
-
+     */    
+    
+    public boolean addCertificateProfile(Admin admin, String certificateprofilename, CertificateProfile certificateprofile);   
+    
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public boolean cloneCertificateProfile(String originalcertificateprofilename, String newcertificateprofilename);
-
+    public boolean cloneCertificateProfile(Admin admin, String originalcertificateprofilename, String newcertificateprofilename);
+    
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public void removeCertificateProfile(String certificateprofilename);
 
+    public void removeCertificateProfile(Admin admin, String certificateprofilename);
+    
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public boolean renameCertificateProfile(String oldcertificateprofilename, String newcertificateprofilename);
 
-    /**
-     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
-     */
-    public boolean changeCertificateProfile(String certificateprofilename, CertificateProfile certificateprofile);
+    public boolean renameCertificateProfile(Admin admin, String oldcertificateprofilename, String newcertificateprofilename);   
+
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public Collection getCertificateProfileNames();
+    public boolean changeCertificateProfile(Admin admin, String certificateprofilename, CertificateProfile certificateprofile); 
+    
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
-     */
-    public TreeMap getCertificateProfiles();
+     */  
+    public Collection getCertificateProfileNames(Admin admin);
+
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */     
+    public TreeMap getCertificateProfiles(Admin admin);
+
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */ 
+    public CertificateProfile getCertificateProfile(Admin admin, String certificateprofilename);
+
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */      
+    public CertificateProfile getCertificateProfile(Admin admin, int id);
+
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */         
+    public int getNumberOfCertificateProfiles(Admin admin);
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public CertificateProfile getCertificateProfile(String certificateprofilename);
+    public int getCertificateProfileId(Admin admin, String certificateprofilename);
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public CertificateProfile getCertificateProfile(int id);
+    public String getCertificateProfileName(Admin admin, int id);      
 
-    /**
-     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
-     */
-    public int getNumberOfCertificateProfiles();
-
-    /**
-     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
-     */
-    public int getCertificateProfileId(String certificateprofilename);
-
-    /**
-     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
-     */
-    public String getCertificateProfileName(int id);
 
 }
 

@@ -13,10 +13,11 @@ import se.anatom.ejbca.util.query.IllegalQueryException;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import se.anatom.ejbca.ra.authorization.AdminInformation;
+import se.anatom.ejbca.log.Admin;
 
 /**
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.11 2002-11-12 08:25:36 herrvendil Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.12 2002-11-17 14:01:40 herrvendil Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
 
@@ -42,7 +43,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public void addUser(String username, String password, String dn, String subjectaltname, String email,  boolean clearpwd,
+    public void addUser(Admin admin, String username, String password, String dn, String subjectaltname, String email,  boolean clearpwd,
                         int endentityprofileid, int certificateprofileid, boolean administrator, boolean keyrecoverable,
                         int tokentype, int hardtokenissuerid)
                          throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException;
@@ -63,7 +64,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @throws EJBException if a communication or other error occurs.
     */   
-    public void changeUser(String username,  String dn, String subjectaltname, String email,  
+    public void changeUser(Admin admin, String username,  String dn, String subjectaltname, String email,  
                         int endentityprofileid, int certificateprofileid, boolean administrator, boolean keyrecoverable,
                         int tokentype, int hardtokenissuerid) 
                         throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException;    
@@ -75,7 +76,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public void deleteUser(String username) throws AuthorizationDeniedException, RemoteException;
+    public void deleteUser(Admin admin, String username) throws AuthorizationDeniedException, RemoteException;
 
    /**
     * Changes status of a user.
@@ -85,14 +86,14 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public void setUserStatus(String username, int status) throws AuthorizationDeniedException, FinderException, RemoteException;
+    public void setUserStatus(Admin admin, String username, int status) throws AuthorizationDeniedException, FinderException, RemoteException;
 
     /**
      * Method that revokes a user.
      *
      * @param username, the username to revoke.
      */    
-    public void revokeUser(String username,int reason) throws AuthorizationDeniedException,FinderException, RemoteException;    
+    public void revokeUser(Admin admin, String username,int reason) throws AuthorizationDeniedException,FinderException, RemoteException;    
 
     /**
      * Method that revokes a users certificate and sets users status to revoked if all certificates are revoked.
@@ -101,7 +102,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * @param username, the username to revoke.
      * @param reason, the reason of revokation.
      */           
-    public void revokeCert(BigInteger certserno, String username, int reason) throws AuthorizationDeniedException,FinderException, RemoteException;    
+    public void revokeCert(Admin admin, BigInteger certserno, String username, int reason) throws AuthorizationDeniedException,FinderException, RemoteException;    
 
     /**
     * Sets a new password for a user.
@@ -111,7 +112,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public void setPassword(String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,FinderException, RemoteException;
+    public void setPassword(Admin admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,FinderException, RemoteException;
 
     /**
     * Sets a clear text password for a user.
@@ -121,7 +122,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public void setClearTextPassword(String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,FinderException, RemoteException;
+    public void setClearTextPassword(Admin admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,FinderException, RemoteException;
 
    /**
     * Finds a user.
@@ -130,7 +131,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @return UserAdminData or null if the user is not found.
     * @throws EJBException if a communication or other error occurs.
     */
-    public UserAdminData findUser(String username) throws FinderException, RemoteException, AuthorizationDeniedException;
+    public UserAdminData findUser(Admin admin, String username) throws FinderException, RemoteException, AuthorizationDeniedException;
     
     /**
     * Finds a user by its subjectDN.
@@ -140,7 +141,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     */
 
-    public UserAdminData findUserBySubjectDN(String subjectdn) throws AuthorizationDeniedException, FinderException, RemoteException;
+    public UserAdminData findUserBySubjectDN(Admin admin, String subjectdn) throws AuthorizationDeniedException, FinderException, RemoteException;
     
     /**
     * Finds a user by its Email.
@@ -150,7 +151,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     */    
 
-    public UserAdminData findUserByEmail(String email) throws AuthorizationDeniedException, RemoteException;
+    public UserAdminData findUserByEmail(Admin admin, String email) throws AuthorizationDeniedException, RemoteException;
     
     /**
     * Method that checks if user with specified userdn exists in database and is set as administrator.
@@ -160,7 +161,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     */    
     
-    public void checkIfSubjectDNisAdmin(String subjectdn) throws AuthorizationDeniedException, RemoteException;  
+    public void checkIfSubjectDNisAdmin(Admin admin, String subjectdn) throws AuthorizationDeniedException, RemoteException;  
 
    /**
     * Finds all users with a specified status.
@@ -170,7 +171,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     * @see se.anatom.ejbca.ra.UserAdminData
     */
-    public Collection findAllUsersByStatus(int status) throws AuthorizationDeniedException, FinderException, RemoteException;
+    public Collection findAllUsersByStatus(Admin admin, int status) throws AuthorizationDeniedException, FinderException, RemoteException;
 
    /**
     * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
@@ -179,7 +180,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     * @see se.anatom.ejbca.ra.UserAdminData
     */    
-    public Collection findAllUsersWithLimit()  throws  FinderException, RemoteException;
+    public Collection findAllUsersWithLimit(Admin admin)  throws  FinderException, RemoteException;
     
     /**
     * Starts an external service that may be needed bu user administration.
@@ -196,7 +197,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
      * @see se.anatom.ejbca.util.query.Query 
      */
-     public Collection query(Query query) throws IllegalQueryException , RemoteException;    
+     public Collection query(Admin admin, Query query) throws IllegalQueryException , RemoteException;    
      
     /** 
      * Methods that checks if a user exists in the database having the given endentityprofileid. This function is mainly for avoiding 
@@ -205,7 +206,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * @param endentityprofileid the id of profile to look for.
      * @return true if endentityprofileid exists in userdatabase.
      */
-    public boolean checkForEndEntityProfileId(int endentityprofileid)  throws RemoteException;        
+    public boolean checkForEndEntityProfileId(Admin admin, int endentityprofileid)  throws RemoteException;        
      
     /** 
      * Methods that checks if a user exists in the database having the given certificateprofileid. This function is mainly for avoiding 
@@ -214,7 +215,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * @param certificateprofileid the id of certificateprofile to look for.
      * @return true if certificaterofileid exists in userdatabase.
      */     
-    public boolean checkForCertificateProfileId(int certificaterofileid) throws RemoteException;   
+    public boolean checkForCertificateProfileId(Admin admin, int certificaterofileid) throws RemoteException;   
     
      // Functions used to save  Global Configuration
    /**
@@ -222,14 +223,14 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public void saveGlobalConfiguration(GlobalConfiguration globalconfiguration) throws RemoteException;
+    public void saveGlobalConfiguration(Admin admin, GlobalConfiguration globalconfiguration) throws RemoteException;
 
    /**
     * Loads the global configuration from the database.
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public GlobalConfiguration loadGlobalConfiguration() throws RemoteException;
+    public GlobalConfiguration loadGlobalConfiguration(Admin admin) throws RemoteException;
     
     
    

@@ -14,7 +14,7 @@
      <local-home>se.anatom.ejbca.ca.sign.ISignSessionLocalHome</local-home>
      <local>se.anatom.ejbca.ca.sign.ISignSessionLocal</local>
      <ejb-class>se.anatom.ejbca.ca.sign.RSASignSessionBean</ejb-class>
-     <session-type>Stateful</session-type>
+     <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
      <env-entry>
         <description>Factory class for creating a SigningDevice</description>
@@ -145,7 +145,7 @@ END LDAP Publisher -->
      <local-home>se.anatom.ejbca.ca.auth.IAuthenticationSessionLocalHome</local-home>
      <local>se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal</local>
      <ejb-class>se.anatom.ejbca.ca.auth.LocalAuthenticationSessionBean</ejb-class>
-     <session-type>Stateful</session-type>
+     <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
 
      <ejb-ref>
@@ -207,7 +207,7 @@ END LDAP Publisher -->
      <local-home>se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome</local-home>
      <local>se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal</local>
      <ejb-class>se.anatom.ejbca.ca.store.LocalCertificateStoreSessionBean</ejb-class>
-     <session-type>Stateful</session-type>
+     <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>     
 
      <env-entry>
@@ -265,7 +265,7 @@ END LDAP Publisher -->
      <home>se.anatom.ejbca.IJobRunnerSessionHome</home>
      <remote>se.anatom.ejbca.IJobRunnerSessionRemote</remote>
      <ejb-class>se.anatom.ejbca.ca.crl.CreateCRLSessionBean</ejb-class>
-     <session-type>Stateful</session-type>
+     <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>     
 
      <env-entry>
@@ -319,7 +319,7 @@ END LDAP Publisher -->
      <ejb-class>se.anatom.ejbca.ca.store.LDAPPublisherSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>     
-
+      
      <env-entry>
         <description>LDAP host</description>
         <env-entry-name>ldapHost</env-entry-name>
@@ -380,6 +380,14 @@ END LDAP Publisher -->
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>certificateRevocationList;binary</env-entry-value>
      </env-entry>
+     <ejb-ref>
+        <description>The Log session bean</description>
+        <ejb-ref-name>ejb/LogSession</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <home>se.anatom.ejbca.log.ILogSessionHome</home>
+        <remote>se.anatom.ejbca.log.ILogSessionRemote</remote>
+        <ejb-link>LogSession</ejb-link>
+     </ejb-ref>      
    </session>
 END LDAP Publisher -->
 

@@ -11,7 +11,7 @@ import se.anatom.ejbca.ra.UserDataLocal;
 /** List users with specified status in the database.
  *
  * @see se.anatom.ejbca.ra.UserDataLocal
- * @version $Id: RaListUsersCommand.java,v 1.3 2002-07-31 14:10:58 anatom Exp $
+ * @version $Id: RaListUsersCommand.java,v 1.4 2002-11-17 14:01:39 herrvendil Exp $
  */
 public class RaListUsersCommand extends BaseRaAdminCommand {
 
@@ -28,7 +28,7 @@ public class RaListUsersCommand extends BaseRaAdminCommand {
                 return;
             }
             int status = Integer.parseInt(args[1]);
-            Collection coll = getAdminSession().findAllUsersByStatus(status);
+            Collection coll = getAdminSession().findAllUsersByStatus(administrator, status);
             Iterator iter = coll.iterator();
             while (iter.hasNext()) {
                 UserAdminData data = (UserAdminData)iter.next();

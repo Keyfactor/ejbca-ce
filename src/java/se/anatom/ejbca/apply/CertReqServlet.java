@@ -74,7 +74,7 @@ import se.anatom.ejbca.protocol.PKCS10RequestMessage;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.21 2002-11-07 10:31:08 herrvendil Exp $
+ * @version $Id: CertReqServlet.java,v 1.22 2002-11-17 14:01:40 herrvendil Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
@@ -134,8 +134,8 @@ public class CertReqServlet extends HttpServlet {
             // Check user
             int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
         
-            IUserAdminSessionRemote admin = userdatahome.create(administrator);
-            UserAdminData data = admin.findUser(username);
+            IUserAdminSessionRemote admin = userdatahome.create();
+            UserAdminData data = admin.findUser(administrator, username);
             if(data == null)
               throw new ObjectNotFoundException();
 
@@ -448,12 +448,12 @@ public class CertReqServlet extends HttpServlet {
     private KeyStore generateToken(String username, String password, int keylength, boolean createJKS)
        throws Exception{
          KeyPair rsaKeys = KeyTools.genKeys(keylength);   
-         ISignSessionRemote ss = home.create(administrator);
-         X509Certificate cert = (X509Certificate)ss.createCertificate(username, password, rsaKeys.getPublic());
+         ISignSessionRemote ss = home.create();
+         X509Certificate cert = (X509Certificate)ss.createCertificate(administrator, username, password, rsaKeys.getPublic());
 
         // Make a certificate chain from the certificate and the CA-certificate
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        Certificate[] cachain = ss.getCertificateChain();
+        Certificate[] cachain = ss.getCertificateChain(administrator);
         // Verify CA-certificate
         if (CertTools.isSelfSigned((X509Certificate)cachain[cachain.length-1])) {
             try {
@@ -509,11 +509,11 @@ public class CertReqServlet extends HttpServlet {
             if (nscr.verify("challenge") == false)
                 throw new SignRequestSignatureException("Invalid signature in NetscapeCertRequest, popo-verification failed.");
             cat.debug("POPO verification succesful");
-            ISignSessionRemote ss = home.create(administrator);
-            X509Certificate cert = (X509Certificate) ss.createCertificate(username, password, nscr.getPublicKey());
+            ISignSessionRemote ss = home.create();
+            X509Certificate cert = (X509Certificate) ss.createCertificate(administrator, username, password, nscr.getPublicKey());
             //Certificate[] chain = ss.getCertificateChain();
 
-            byte[] pkcs7 = ss.createPKCS7(cert);
+            byte[] pkcs7 = ss.createPKCS7(administrator, cert);
             cat.debug("Created certificate (PKCS7) for "+ username);
             debug.print("<h4>Generated certificate:</h4>");
             debug.printInsertLineBreaks(cert.toString().getBytes());
@@ -562,13 +562,13 @@ public class CertReqServlet extends HttpServlet {
                 buffer = Base64.decode(b64Encoded);
             }
             /*
-            ISignSessionRemote ss = home.create(administrator);
-            cert = (X509Certificate) ss.createCertificate(username, password, new PKCS10RequestMessage(buffer));
+            ISignSessionRemote ss = home.create();
+            cert = (X509Certificate) ss.createCertificate(administrator, username, password, new PKCS10RequestMessage(buffer));
             */
         }
-        ISignSessionRemote ss = home.create(administrator);
-        cert = (X509Certificate) ss.createCertificate(username, password, new PKCS10RequestMessage(buffer));
-        byte[] pkcs7 = ss.createPKCS7(cert);
+        ISignSessionRemote ss = home.create();
+        cert = (X509Certificate) ss.createCertificate(administrator, username, password, new PKCS10RequestMessage(buffer));
+        byte[] pkcs7 = ss.createPKCS7(administrator, cert);
         cat.debug("Created certificate (PKCS7) for " + username);
         debug.print("<h4>Generated certificate:</h4>");
         debug.printInsertLineBreaks(cert.toString().getBytes());

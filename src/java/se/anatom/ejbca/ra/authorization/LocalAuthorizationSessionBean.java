@@ -28,7 +28,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.8 2002-10-24 20:06:55 herrvendil Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.9 2002-11-17 14:01:39 herrvendil Exp $
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
@@ -47,15 +47,12 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     
     private String profileprefix = null;
     
-    /** Var containing information about administrator using the bean.*/
-    private Admin admin = null;
-   
 
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
      */
-    public void ejbCreate(GlobalConfiguration globalconfiguration, Admin administrator) throws CreateException {
+    public void ejbCreate() throws CreateException {
         debug(">ejbCreate()");
         try{   
           dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);  
@@ -63,7 +60,6 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
           availableaccessruleshome = (AvailableAccessRulesDataLocalHome)lookup("java:comp/env/ejb/AvailableAccessRulesDataLocal");
           admingrouphome = (AdminGroupDataLocalHome)lookup("java:comp/env/ejb/AdminGroupDataLocal");
           
-           this.admin = administrator;
            ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
            logsession = logsessionhome.create();
         }catch(Exception e){
@@ -100,20 +96,26 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
        }catch(CreateException e){
            throw new EJBException(e.getMessage());             
        }
-       
-       try{
-          authorization = new EjbcaAuthorization(getAdminGroups(),globalconfiguration, logsession, admin, LogEntry.MODULE_RA); 
-       }catch(NullPointerException f){
-       }catch(Exception e){
-           throw new EJBException(e.getMessage());   
-       }       
-       this.profileprefix = globalconfiguration.ENDENTITYPROFILEPREFIX;        
-                
+                       
        debug("<ejbCreate()");
     }
 
 
     // Methods used with AdminGroupData Entity Beans
+    
+    /**
+     * Method to initialize authorization bean, must be called directly after creation of bean.
+     */
+    public void init(GlobalConfiguration globalconfiguration){
+       try{
+          authorization = new EjbcaAuthorization(getAdminGroups(new Admin(Admin.TYPE_INTERNALUSER)),globalconfiguration, logsession, new Admin(Admin.TYPE_INTERNALUSER), LogEntry.MODULE_RA); 
+       }catch(NullPointerException f){
+       }catch(Exception e){
+           throw new EJBException(e.getMessage());   
+       }       
+       this.profileprefix = globalconfiguration.ENDENTITYPROFILEPREFIX;         
+    }
+    
     
      /** 
      * Method to check if a user is authorized to a certain resource.
@@ -141,7 +143,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     *
     * @return  False if admingroup already exists
     */
-    public boolean addAdminGroup(String admingroupname){
+    public boolean addAdminGroup(Admin admin, String admingroupname){
       boolean returnval=true;
       try{
         admingrouphome.findByPrimaryKey(admingroupname);
@@ -170,7 +172,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     /**
      * Method to remove a admingroup.
      */
-    public void removeAdminGroup(String admingroupname){
+    public void removeAdminGroup(Admin admin, String admingroupname){
       try{
          AdminGroupDataLocal ugl = admingrouphome.findByPrimaryKey(admingroupname);          
         // Remove groups user entities.
@@ -198,7 +200,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      *
      * @return false if new admingroup already exists.
      */
-    public boolean renameAdminGroup(String oldname, String newname){
+    public boolean renameAdminGroup(Admin admin, String oldname, String newname){
       boolean returnval = false;
       AdminGroupDataLocal ugl = null;
       try{
@@ -214,7 +216,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
           AdminGroupDataLocal newugl = admingrouphome.create(newname);
           newugl.addAccessRules(accessrules);
           newugl.addAdminEntities(adminentities);
-          removeAdminGroup(oldname);
+          removeAdminGroup(admin, oldname);
         }catch(Exception e){
           returnval=false;
         }
@@ -235,7 +237,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      * Method to get a reference to a admingroup.
      */
 
-    public AdminGroup getAdminGroup(String admingroupname){
+    public AdminGroup getAdminGroup(Admin admin, String admingroupname){
       AdminGroup returnval = null;
       try{
         returnval= (admingrouphome.findByPrimaryKey(admingroupname)).getAdminGroup();
@@ -246,7 +248,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     /**
      * Returns the number of admingroups
      */
-    public int getNumberOfAdminGroups(){
+    public int getNumberOfAdminGroups(Admin admin){
       int returnval=0;
       try{
         returnval =  admingrouphome.findAll().size();
@@ -258,7 +260,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     /**
      *Returns an array containing all the admingroups names.
      */
-     public String[] getAdminGroupnames(){
+     public String[] getAdminGroupnames(Admin admin){
        TreeMap treemap = new TreeMap();
        String[] returnval = null;
        try{
@@ -278,7 +280,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     /**
      * Returns an array containing all the admingroups.
      */
-    public AdminGroup[] getAdminGroups(){
+    public AdminGroup[] getAdminGroups(Admin admin){
        TreeMap treemap = new TreeMap();
        AdminGroup[] returnval= null;
        try{
@@ -300,7 +302,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      *
      */
 
-    public void addAccessRule(String admingroupname, String resource, int rule, boolean recursive){
+    public void addAccessRule(Admin admin, String admingroupname, String resource, int rule, boolean recursive){
       String logrule = " accept ";
       if(rule == AccessRule.RULE_DECLINE)
         logrule = " decline ";
@@ -308,7 +310,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
          logrule = logrule + " recursive"; 
       try{
         (admingrouphome.findByPrimaryKey(admingroupname)).addAccessRule(resource,rule,recursive);
-        authorization.buildAccessTree(getAdminGroups());       
+        authorization.buildAccessTree(getAdminGroups(admin));       
         logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Added accessrule : " + resource + logrule + " to administratorgroup " + admingroupname + ".");
       }catch(Exception e){
         try{  
@@ -322,10 +324,10 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      * Removes an accessrule from the database.
      *
      */
-    public void removeAccessRule(String admingroupname, String resource){
+    public void removeAccessRule(Admin admin, String admingroupname, String resource){
       try{
         (admingrouphome.findByPrimaryKey(admingroupname)).removeAccessRule(resource);
-        authorization.buildAccessTree(getAdminGroups());
+        authorization.buildAccessTree(getAdminGroups(admin));
         logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Removed accessrule : " + resource + " from administratorgroup " + admingroupname + ".");        
       }catch(Exception e){
         try{  
@@ -339,7 +341,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      *
      * @return the number of accessrules in the admingroup
      */
-    public int getNumberOfAccessRules(String admingroupname){
+    public int getNumberOfAccessRules(Admin admin, String admingroupname){
       int returnval=0;
       try{
         returnval=(admingrouphome.findByPrimaryKey(admingroupname)).getNumberOfAccessRules();
@@ -351,11 +353,11 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
       * Returns all the accessrules in the admingroup as an array of AccessRule
       *
       */
-    public AccessRule[] getAccessRules(String admingroupname){
+    public AccessRule[] getAccessRules(Admin admin, String admingroupname){
       AccessRule[] returnval=null;
       try{
         returnval=(admingrouphome.findByPrimaryKey(admingroupname)).getAccessRulesAsArray();
-        authorization.buildAccessTree(getAdminGroups());
+        authorization.buildAccessTree(getAdminGroups(admin));
       }catch(FinderException e){}
 
       return returnval;
@@ -366,10 +368,10 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      *
      */
 
-    public void addAdminEntity(String admingroupname, int matchwith, int matchtype, String matchvalue){         
+    public void addAdminEntity(Admin admin, String admingroupname, int matchwith, int matchtype, String matchvalue){         
       try{
         (admingrouphome.findByPrimaryKey(admingroupname)).addAdminEntity(matchwith, matchtype, matchvalue);
-        authorization.buildAccessTree(getAdminGroups());
+        authorization.buildAccessTree(getAdminGroups(admin));
         logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Added administrator entity " + matchvalue + " to administratorgroup " + admingroupname + ".");        
       }catch(Exception e){
         try{  
@@ -383,10 +385,10 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      * Removes a user entity from the admingroup.
      *
      */
-    public void removeAdminEntity(String admingroupname, int matchwith, int matchtype, String matchvalue){
+    public void removeAdminEntity(Admin admin, String admingroupname, int matchwith, int matchtype, String matchvalue){
       try{
         (admingrouphome.findByPrimaryKey(admingroupname)).removeAdminEntity(matchwith, matchtype, matchvalue);
-        authorization.buildAccessTree(getAdminGroups());
+        authorization.buildAccessTree(getAdminGroups(admin));
         logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Removed administrator entity " + matchvalue + " from administratorgroup " + admingroupname + ".");        
       }catch(Exception e){
         try{  
@@ -400,7 +402,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      *
      * @return the number of user entities in the database for the specified group
      */
-    public int getNumberOfAdminEntities(String admingroupname){
+    public int getNumberOfAdminEntities(Admin admin, String admingroupname){
       int returnval=0;
       try{
         returnval = (admingrouphome.findByPrimaryKey(admingroupname)).getNumberOfAdminEntities();
@@ -413,7 +415,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
       * Returns all the AdminEntities as an array of AdminEntities for the specified group.
       *
       */
-    public AdminEntity[] getAdminEntities(String admingroupname){
+    public AdminEntity[] getAdminEntities(Admin admin, String admingroupname){
       AdminEntity[] returnval = null;
       try{
         returnval = (admingrouphome.findByPrimaryKey(admingroupname)).getAdminEntitiesAsArray();
@@ -427,7 +429,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      * Method to add an access rule.
      */
 
-    public void addAvailableAccessRule(String name){
+    public void addAvailableAccessRule(Admin admin, String name){
         debug(">addAvailableAccessRule(name : " + name + ")");
         try {
             AvailableAccessRulesDataLocal data= availableaccessruleshome.create(name);      
@@ -445,7 +447,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      * Method to add an Collection of access rules.
      */
 
-    public void addAvailableAccessRules(Collection names){
+    public void addAvailableAccessRules(Admin admin, Collection names){
         debug(">addAvailableAccessRules(size : " + names.size() + ")");
         if(names != null){
           Iterator i = names.iterator();
@@ -470,7 +472,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      * Method to remove an access rule.
      */
 
-    public void removeAvailableAccessRule(String name){
+    public void removeAvailableAccessRule(Admin admin, String name){
       debug(">removeAvailableAccessRule(name : " + name + ")");
       try{
         AvailableAccessRulesDataLocal data= availableaccessruleshome.findByPrimaryKey(name);
@@ -488,7 +490,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      * Method to remove an Collection of access rules.
      */
 
-    public void removeAvailableAccessRules(Collection names){
+    public void removeAvailableAccessRules(Admin admin, Collection names){
       debug(">removeAvailableAccessRules(size : " + names.size() + ")");
         if(names != null){
           Iterator i = names.iterator();
@@ -513,7 +515,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      * Method that returns a Collection of Strings containing all access rules.
      */
 
-    public Collection getAvailableAccessRules(){
+    public Collection getAvailableAccessRules(Admin admin){
        Vector returnval = new Vector();
        Collection result = null;
        try{
@@ -535,7 +537,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      * Checks wheither an access rule exists in the database.
      */
 
-    public boolean existsAvailableAccessRule(String name){
+    public boolean existsAvailableAccessRule(Admin admin, String name){
        boolean returnval = false;
        try{
          availableaccessruleshome.findByPrimaryKey(name);
@@ -553,7 +555,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      * @return true if profile exists in any of the accessrules.
      */
     
-    public boolean existsEndEntityProfileInRules(int profileid){
+    public boolean existsEndEntityProfileInRules(Admin admin, int profileid){
        boolean exists = false;
        String profilestring= this.profileprefix + Integer.toString(profileid);
        try{

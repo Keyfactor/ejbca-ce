@@ -53,9 +53,6 @@ function checkallfields(){
 
     if(!checkfieldfordecimalnumbers("document.editcertificateprofile.<%=TEXTFIELD_VALIDITY%>","<%= ejbcawebbean.getText("ONLYDECNUMBERSINVALIDITY") %>"))
       illegalfields++;
-
-    if(!checkfieldfordecimalnumbers("document.editcertificateprofile.<%=TEXTFIELD_CRLPERIOD%>","<%= ejbcawebbean.getText("ONLYDECNUMBERSINCRLPERIOD") %>"))
-      illegalfields++;
     
     var availablebitlengths = document.editcertificateprofile.<%= SELECT_AVAILABLEBITLENGTHS%>.options;
     var selected = 0;
@@ -102,7 +99,7 @@ function checkallfields(){
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="5" maxlength="255" 
-           value="<%= certificateprofiledata.getValidity().longValue()  %>"><br>
+           value="<%= certificateprofiledata.getValidity()  %>"><br>
       </td>
     <tr  id="Row1"> 
       <td width="50%"  align="right"> 
@@ -111,15 +108,15 @@ function checkallfields(){
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_BASICCONSTRAINTS %>"   onClick="checkusefield('<%=CHECKBOX_BASICCONSTRAINTS %>', '<%=CHECKBOX_BASICCONSTRAINTSCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseBasicConstraints().booleanValue()) 
+           <% if(certificateprofiledata.getUseBasicConstraints()) 
                  out.write("CHECKED");
            %>> <br> 
           <input type="checkbox" name="<%=CHECKBOX_BASICCONSTRAINTSCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
            <%
-               if(!certificateprofiledata.getUseBasicConstraints().booleanValue())
+               if(!certificateprofiledata.getUseBasicConstraints())
                  out.write(" disabled ");  
                else
-               if(certificateprofiledata.getBasicConstraintsCritical().booleanValue())
+               if(certificateprofiledata.getBasicConstraintsCritical())
                  out.write("CHECKED");
            %>> 
       </td>
@@ -130,15 +127,15 @@ function checkallfields(){
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_KEYUSAGE %>" onClick="checkusefield('<%=CHECKBOX_KEYUSAGE %>', '<%=CHECKBOX_KEYUSAGECRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseKeyUsage().booleanValue())
+           <% if(certificateprofiledata.getUseKeyUsage())
                  out.write("CHECKED");
            %>> <br> 
           <input type="checkbox" name="<%=CHECKBOX_KEYUSAGECRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
            <%
-               if(!certificateprofiledata.getUseKeyUsage().booleanValue())
+               if(!certificateprofiledata.getUseKeyUsage())
                  out.write(" disabled ");  
                else
-               if(certificateprofiledata.getKeyUsageCritical().booleanValue())
+               if(certificateprofiledata.getKeyUsageCritical())
                  out.write("CHECKED");
            %>> 
       </td>
@@ -149,15 +146,15 @@ function checkallfields(){
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_SUBJECTKEYIDENTIFIER %>" onClick="checkusefield('<%=CHECKBOX_SUBJECTKEYIDENTIFIER %>', '<%=CHECKBOX_SUBJECTKEYIDENTIFIERCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseSubjectKeyIdentifier().booleanValue())
+           <% if(certificateprofiledata.getUseSubjectKeyIdentifier())
                  out.write("CHECKED");
            %>> <br> 
           <input type="checkbox" name="<%=CHECKBOX_SUBJECTKEYIDENTIFIERCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
            <%
-             if(!certificateprofiledata.getUseSubjectKeyIdentifier().booleanValue())
+             if(!certificateprofiledata.getUseSubjectKeyIdentifier())
                  out.write(" disabled "); 
               else
-              if(certificateprofiledata.getSubjectKeyIdentifierCritical().booleanValue())
+              if(certificateprofiledata.getSubjectKeyIdentifierCritical())
                  out.write("CHECKED");
            %>> 
       </td>
@@ -168,15 +165,15 @@ function checkallfields(){
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>" onClick="checkusefield('<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>', '<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseAuthorityKeyIdentifier().booleanValue())
+           <% if(certificateprofiledata.getUseAuthorityKeyIdentifier())
                  out.write("CHECKED");
            %>> <br> 
           <input type="checkbox" name="<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
            <%
-             if(!certificateprofiledata.getUseAuthorityKeyIdentifier().booleanValue())
+             if(!certificateprofiledata.getUseAuthorityKeyIdentifier())
                  out.write(" disabled ");  
              else
-             if(certificateprofiledata.getAuthorityKeyIdentifierCritical().booleanValue())
+             if(certificateprofiledata.getAuthorityKeyIdentifierCritical())
                  out.write("CHECKED");
            %>> 
       </td>
@@ -188,15 +185,15 @@ function checkallfields(){
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_SUBJECTALTERNATIVENAME %>" onClick="checkusefield('<%=CHECKBOX_SUBJECTALTERNATIVENAME %>', '<%=CHECKBOX_SUBJECTALTERNATIVENAMECRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseSubjectAlternativeName().booleanValue())
+           <% if(certificateprofiledata.getUseSubjectAlternativeName())
                  out.write("CHECKED");
            %>> <br> 
           <input type="checkbox" name="<%=CHECKBOX_SUBJECTALTERNATIVENAMECRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
            <% 
-             if(!certificateprofiledata.getUseSubjectAlternativeName().booleanValue())
+             if(!certificateprofiledata.getUseSubjectAlternativeName())
                  out.write(" disabled "); 
               else
-              if(certificateprofiledata.getSubjectAlternativeNameCritical().booleanValue())
+              if(certificateprofiledata.getSubjectAlternativeNameCritical())
                  out.write("CHECKED");
            %>> 
       </td>
@@ -208,19 +205,19 @@ function checkallfields(){
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_CRLDISTRIBUTIONPOINT %>" onClick="checkusecrldisturifield()" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseCRLDistributionPoint().booleanValue())
+           <% if(certificateprofiledata.getUseCRLDistributionPoint())
                  out.write("CHECKED");
            %>> <br> 
           <input type="checkbox" name="<%=CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
            <%
-               if(!certificateprofiledata.getUseCRLDistributionPoint().booleanValue())
+               if(!certificateprofiledata.getUseCRLDistributionPoint())
                  out.write(" disabled "); 
                else
-                 if(certificateprofiledata.getCRLDistributionPointCritical().booleanValue())
+                 if(certificateprofiledata.getCRLDistributionPointCritical())
                  out.write("CHECKED");
            %>> <br> 
            <input type="text" name="<%=TEXTFIELD_CRLDISTURI%>" size="60" maxlength="255" 
-           <%       if(!certificateprofiledata.getUseCRLDistributionPoint().booleanValue())
+           <%       if(!certificateprofiledata.getUseCRLDistributionPoint())
                       out.write(" disabled "); 
                     else 
                       if(!certificateprofiledata.getCRLDistributionPointURI().equals(""))
@@ -236,41 +233,22 @@ function checkallfields(){
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATEPOLICIES %>" onClick="checkusecertificatepoliciesfield()" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseCertificatePolicies().booleanValue())
+           <% if(certificateprofiledata.getUseCertificatePolicies())
                  out.write("CHECKED");
            %>> <br> 
           <input type="checkbox" name="<%=CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
            <%
-               if(!certificateprofiledata.getUseCertificatePolicies().booleanValue())
+               if(!certificateprofiledata.getUseCertificatePolicies())
                  out.write(" disabled "); 
                else
-                 if(certificateprofiledata.getCertificatePoliciesCritical().booleanValue())
+                 if(certificateprofiledata.getCertificatePoliciesCritical())
                  out.write("CHECKED");
            %>> <br> 
            <input type="text" name="<%=TEXTFIELD_CERTIFICATEPOLICYID%>" size="60" maxlength="255" 
-           <%       if(!certificateprofiledata.getUseCertificatePolicies().booleanValue())
+           <%       if(!certificateprofiledata.getUseCertificatePolicies())
                       out.write(" disabled "); 
                     else 
                       out.write(" value=\"" + certificateprofiledata.getCertificatePolicyId() + "\""); %>
-      </td>
-    </tr>
-    <tr  id="Row0"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CRLPERIOD") %> <br>&nbsp;
-      </td>
-      <td width="50%">
-           <input type="text" name="<%=TEXTFIELD_CRLPERIOD%>" size="5" maxlength="255" value="<%= certificateprofiledata.getCRLPeriod().longValue()%>"> 
-      </td>
-    </tr>
-    <tr  id="Row1"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("FINISHUSER") %> <br>&nbsp;
-      </td>
-      <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_FINISHUSER%>"  value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getFinishUser().booleanValue())
-                 out.write("CHECKED");
-           %>> <br> &nbsp;
       </td>
     </tr>
     <tr  id="Row0"> 

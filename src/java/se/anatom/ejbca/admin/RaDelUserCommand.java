@@ -6,7 +6,7 @@ import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 
 /** Deletes a user from the database.
  *
- * @version $Id: RaDelUserCommand.java,v 1.3 2002-09-16 15:21:28 anatom Exp $
+ * @version $Id: RaDelUserCommand.java,v 1.4 2002-11-17 14:01:39 herrvendil Exp $
  */
 public class RaDelUserCommand extends BaseRaAdminCommand {
 
@@ -25,7 +25,7 @@ public class RaDelUserCommand extends BaseRaAdminCommand {
 				int inp = System.in.read();
 				if ((inp == 121) || (inp == 89)) {
 					try {
-						getAdminSession().deleteUser(username);
+						getAdminSession().deleteUser(administrator, username);
 						System.out.println("Deleted user " + username);
 					} catch (AuthorizationDeniedException e) {
 						System.out.println(

@@ -41,7 +41,7 @@ import se.anatom.ejbca.log.Admin;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.9 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: CertDistServlet.java,v 1.10 2002-11-17 14:01:40 herrvendil Exp $
  *
  */
 public class CertDistServlet extends HttpServlet {
@@ -102,8 +102,8 @@ public class CertDistServlet extends HttpServlet {
             command = "";
         if (command.equalsIgnoreCase(COMMAND_CRL)) {
             try {
-                ICertificateStoreSessionRemote store = storehome.create(administrator);
-                byte[] crl = store.getLastCRL();
+                ICertificateStoreSessionRemote store = storehome.create();
+                byte[] crl = store.getLastCRL(administrator);
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = x509crl.getIssuerDN().toString();
                 String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
@@ -129,8 +129,8 @@ public class CertDistServlet extends HttpServlet {
             }
             try {
                 cat.debug("Looking for certificates for '"+dn+"'.");
-                ICertificateStoreSessionRemote store = storehome.create(administrator);
-                Collection certcoll = store.findCertificatesBySubject(dn);
+                ICertificateStoreSessionRemote store = storehome.create();
+                Collection certcoll = store.findCertificatesBySubject(administrator, dn);
                 Object[] certs = certcoll.toArray();
                 int latestcertno = -1;
                 if (command.equalsIgnoreCase(COMMAND_CERT)) {
@@ -204,8 +204,8 @@ public class CertDistServlet extends HttpServlet {
                 pkcs7 = true;
             // Root CA is level 0, next below root level 1 etc etc, -1 returns chain as PKCS7
             try {
-                ISignSessionRemote ss = signhome.create(administrator);
-                Certificate[] chain = ss.getCertificateChain();
+                ISignSessionRemote ss = signhome.create();
+                Certificate[] chain = ss.getCertificateChain(administrator);
                 // chain.length-1 is last cert in chain (root CA)
                 if ( (chain.length-1-level) < 0 ) {
                     PrintStream ps = new PrintStream(res.getOutputStream());
@@ -219,7 +219,7 @@ public class CertDistServlet extends HttpServlet {
                     filename = "ca";
                 byte[] enccert = null;
                 if (pkcs7)
-                    enccert = ss.createPKCS7(null);
+                    enccert = ss.createPKCS7(administrator, null);
                 else
                     enccert = cacert.getEncoded();
                 if (command.equalsIgnoreCase(COMMAND_NSCACERT)) {
@@ -281,8 +281,8 @@ public class CertDistServlet extends HttpServlet {
             }
             cat.debug("Looking for certificate for '"+dn+"' and serno='"+serno+"'.");
             try {
-                ICertificateStoreSessionRemote store = storehome.create(administrator);
-                RevokedCertInfo revinfo = store.isRevoked(dn, new BigInteger(serno));
+                ICertificateStoreSessionRemote store = storehome.create();
+                RevokedCertInfo revinfo = store.isRevoked(administrator, dn, new BigInteger(serno));
                 res.setContentType("text/html");
                 PrintWriter pout = new PrintWriter(res.getOutputStream());
                 pout.println("<html><head><title>Check revocation</title></head>");

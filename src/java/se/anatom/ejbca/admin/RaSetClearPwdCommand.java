@@ -8,7 +8,7 @@ import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 /** Set the clear text password for a user in the database. 
  * Clear text passwords are used for batch generation of keystores (pkcs12/pem).
  *
- * @version $Id: RaSetClearPwdCommand.java,v 1.3 2002-10-24 20:00:27 herrvendil Exp $
+ * @version $Id: RaSetClearPwdCommand.java,v 1.4 2002-11-17 14:01:38 herrvendil Exp $
  */
 public class RaSetClearPwdCommand extends BaseRaAdminCommand {
 
@@ -27,7 +27,7 @@ public class RaSetClearPwdCommand extends BaseRaAdminCommand {
             String password = args[2];
             System.out.println("Setting clear text password "+password+" for user "+username);
             try{
-              getAdminSession().setClearTextPassword(username, password);
+              getAdminSession().setClearTextPassword(administrator, username, password);
             }catch(AuthorizationDeniedException e){
                System.out.println("Error : Not authorized to change userdata."); 
             }catch(UserDoesntFullfillEndEntityProfile e){

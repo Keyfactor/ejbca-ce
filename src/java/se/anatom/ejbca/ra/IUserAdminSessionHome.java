@@ -5,10 +5,8 @@ import java.rmi.RemoteException;
 import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
 
-import se.anatom.ejbca.log.Admin;
-
 /**
- * @version $Id: IUserAdminSessionHome.java,v 1.5 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: IUserAdminSessionHome.java,v 1.6 2002-11-17 14:01:40 herrvendil Exp $
  */
 public interface IUserAdminSessionHome extends EJBHome {
 
@@ -18,6 +16,6 @@ public interface IUserAdminSessionHome extends EJBHome {
      * @throws RemoteException
      * @return IUserAdminSessionRemote interface
      */
-    IUserAdminSessionRemote create(Admin administrator) throws CreateException, RemoteException;
+    IUserAdminSessionRemote create() throws CreateException, RemoteException;
 
 }

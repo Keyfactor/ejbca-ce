@@ -29,7 +29,7 @@ import se.anatom.ejbca.SecConst;
  * A class used as an interface between Apply jsp pages and ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: ApplyBean.java,v 1.2 2002-11-13 12:23:39 anatom Exp $
+ * @version $Id: ApplyBean.java,v 1.3 2002-11-17 14:01:40 herrvendil Exp $
  */
 public class ApplyBean   {
 
@@ -55,11 +55,11 @@ public class ApplyBean   {
 
     /** Method that returns a users tokentype defined in SecConst, if 0 is returned user couldn't be found i database. */
     public int getTokenType(String username) throws Exception{
-      int returnval =0;
-      UserAdminData userdata = null;
-      IUserAdminSessionRemote useradminsession = useradminhome.create(administrator);
+      int returnval =0;  
+      UserAdminData userdata = null;      
+      IUserAdminSessionRemote useradminsession = useradminhome.create(); 
       try{
-        userdata = useradminsession.findUser(username);
+        userdata = useradminsession.findUser(administrator, username);
       }catch(FinderException fe){}
       if(userdata != null)
         returnval = userdata.getTokenType();
@@ -69,19 +69,19 @@ public class ApplyBean   {
 
     /** Method that returns a bitlengths available for the user. Returns null if user couldn't be found in database.*/
     public int[] availableBitLengths(String username) throws Exception {
-      int[] returnval = null;
-      UserAdminData userdata = null;
-      IUserAdminSessionRemote useradminsession = useradminhome.create(administrator);
-      try{
-        userdata = useradminsession.findUser(username);
-      }catch(FinderException fe){}
+      int[] returnval = null;  
+      UserAdminData userdata = null;        
+      IUserAdminSessionRemote useradminsession = useradminhome.create();  
+      try{      
+        userdata = useradminsession.findUser(administrator, username);
+      }catch(FinderException fe){}      
       if(userdata != null){
-        ICertificateStoreSessionRemote certstoresession = certificatesessionhome.create(administrator);
-        int certprofile = userdata.getCertificateProfileId();
+        ICertificateStoreSessionRemote certstoresession = certificatesessionhome.create();           
+        int certprofile = userdata.getCertificateProfileId();        
         if(certprofile !=SecConst.PROFILE_NO_CERTIFICATEPROFILE){
-          returnval =  certstoresession.getCertificateProfile(certprofile).getAvailableBitLengths();
-        }
-      }
+          returnval =  certstoresession.getCertificateProfile(administrator, certprofile).getAvailableBitLengths(); 
+        }        
+      }  
       return returnval;
     }
 

@@ -19,9 +19,9 @@ try  {
         InitialContext ctx = new InitialContext();
         ICertificateStoreSessionHome home = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
         ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
-        ICertificateStoreSessionRemote store = home.create(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()));
+        ICertificateStoreSessionRemote store = home.create();
         try {
-            RevokedCertInfo revinfo = store.isRevoked(dn, new BigInteger(Hex.decode(serno)));
+            RevokedCertInfo revinfo = store.isRevoked(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()), dn, new BigInteger(Hex.decode(serno)));
             if (revinfo != null) {
 %>
   <b>REVOKED</b><br>

@@ -13,7 +13,7 @@ import org.apache.log4j.*;
 
 /** Base for Session Beans providing common features, new Session Beans 'extends' BaseSessionBean.
  *
- * @version $Id: BaseSessionBean.java,v 1.5 2002-07-20 18:40:08 herrvendil Exp $
+ * @version $Id: BaseSessionBean.java,v 1.6 2002-11-17 14:01:39 herrvendil Exp $
  */
 public class BaseSessionBean implements SessionBean{
     
@@ -160,5 +160,6 @@ public class BaseSessionBean implements SessionBean{
     public SessionContext getSessionContext() {
         return  ctx;
     }
+    
 }
 

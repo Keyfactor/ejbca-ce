@@ -1,6 +1,6 @@
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration
+<%@page errorPage="/errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, se.anatom.ejbca.SecConst
                ,se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile, se.anatom.ejbca.webdist.cainterface.CertificateProfileDataHandler, se.anatom.ejbca.webdist.cainterface.CertificateProfileExistsException"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
@@ -30,7 +30,6 @@
   static final String BUTTON_CANCEL            = "buttoncancel";
  
   static final String TEXTFIELD_VALIDITY            = "textfieldvalidity";
-  static final String TEXTFIELD_CRLPERIOD           = "textfieldcrlperiod";
   static final String TEXTFIELD_CRLDISTURI          = "textfieldcrldisturi";
   static final String TEXTFIELD_CERTIFICATEPOLICYID = "textfieldcertificatepolicyid";
 
@@ -46,7 +45,6 @@
   static final String CHECKBOX_SUBJECTALTERNATIVENAMECRITICAL     = "checkboxsubjectalternativenamecritical";
   static final String CHECKBOX_CRLDISTRIBUTIONPOINT               = "checkboxcrldistributionpoint";
   static final String CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL       = "checkboxcrldistributionpointcritical";
-  static final String CHECKBOX_FINISHUSER                         = "checkboxfinishuser";
   static final String CHECKBOX_USECERTIFICATEPOLICIES             = "checkusecertificatepolicies";
   static final String CHECKBOX_CERTIFICATEPOLICIESCRITICAL        = "checkcertificatepoliciescritical";
 
@@ -195,13 +193,7 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
                if(!value.equals(""))
                  certificateprofiledata.setValidity(Long.parseLong(value));
              }
- 
-             value = request.getParameter(TEXTFIELD_CRLPERIOD);
-             if(value != null){
-               value=value.trim();
-               if(!value.equals(""))
-                 certificateprofiledata.setCRLPeriod(Long.parseLong(value));
-             } 
+  
 
              boolean use = false;
              value = request.getParameter(CHECKBOX_BASICCONSTRAINTS);
@@ -330,14 +322,6 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
                  certificateprofiledata.setCertificatePolicyId("");
              } 
 
-             value = request.getParameter(CHECKBOX_FINISHUSER);
-             if(value != null){
-                 use = value.equals(CHECKBOX_VALUE);
-                 certificateprofiledata.setFinishUser(use);
-             } 
-             else{
-                 certificateprofiledata.setFinishUser(false);
-             }
               String[] values = request.getParameterValues(SELECT_AVAILABLEBITLENGTHS); 
               if(values != null){
                 int[] abl = new int[values.length];

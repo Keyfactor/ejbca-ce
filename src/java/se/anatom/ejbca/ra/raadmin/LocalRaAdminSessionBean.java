@@ -28,12 +28,13 @@ import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.LogEntry;
+import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 
 /**
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.14 2002-10-24 20:09:27 herrvendil Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.15 2002-11-17 14:01:39 herrvendil Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
@@ -50,10 +51,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     
     /** The remote interface of  log session bean */    
     private ILogSessionRemote logsession = null;
- 
-    /** Var containing iformation about administrator using the bean.*/
-    private Admin admin = null;    
-    
+     
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -63,7 +61,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     
     private static final String DEFAULTUSERPREFERENCE = "default";    
     
-    public void ejbCreate(Admin administrator) throws CreateException {
+    public void ejbCreate() throws CreateException {
         debug(">ejbCreate()");
       try{  
         dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
@@ -73,7 +71,6 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         adminpreferenceshome = (AdminPreferencesDataLocalHome)lookup("java:comp/env/ejb/AdminPreferencesDataLocal", AdminPreferencesDataLocalHome.class);
         profiledatahome = (EndEntityProfileDataLocalHome)lookup("java:comp/env/ejb/EndEntityProfileDataLocal", EndEntityProfileDataLocalHome.class);
         
-        this.admin = administrator;
         ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
         logsession = logsessionhome.create();        
         debug("<ejbCreate()");
@@ -110,7 +107,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Finds the admin preference belonging to a certificate serialnumber. Returns null if admin doesn't exists.
      */
 
-    public AdminPreference getAdminPreference(BigInteger serialnumber){
+    public AdminPreference getAdminPreference(Admin admin, BigInteger serialnumber){
         debug(">getAdminPreference()");
         AdminPreference ret =null;
         try {
@@ -130,7 +127,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Adds a admin preference to the database. Returns false if admin already exists.
      */
 
-    public boolean addAdminPreference(BigInteger serialnumber, AdminPreference adminpreference){
+    public boolean addAdminPreference(Admin admin, BigInteger serialnumber, AdminPreference adminpreference){
         debug(">addAdminPreference(serial : " + serialnumber + ")");
         boolean ret = false;
         try {
@@ -152,7 +149,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Changes the admin preference in the database. Returns false if admin doesn't exists.
      */
 
-    public boolean changeAdminPreference(BigInteger serialnumber, AdminPreference adminpreference){
+    public boolean changeAdminPreference(Admin admin, BigInteger serialnumber, AdminPreference adminpreference){
        debug(">changeAdminPreference(serial : " + serialnumber + ")");
        boolean ret = false;
         try {
@@ -185,7 +182,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Checks if a admin preference exists in the database.
      */
 
-    public boolean existsAdminPreference(BigInteger serialnumber){
+    public boolean existsAdminPreference(Admin admin, BigInteger serialnumber){
        debug(">existsAdminPreference(serial : " + serialnumber + ")");
        boolean ret = false;
         try {
@@ -206,7 +203,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * @throws EJBException if a communication or other error occurs.
      */     
     
-    public AdminPreference getDefaultAdminPreference(){
+    public AdminPreference getDefaultAdminPreference(Admin admin){
         debug(">getDefaultAdminPreference()");
         AdminPreference ret =null;
         try {
@@ -228,7 +225,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * @throws EJBException if a communication or other error occurs.
      */     
     
-    public void saveDefaultAdminPreference(AdminPreference defaultadminpreference){
+    public void saveDefaultAdminPreference(Admin admin, AdminPreference defaultadminpreference){
        debug(">saveDefaultAdminPreference()");
        try {
           AdminPreferencesDataLocal apdata = adminpreferenceshome.findByPrimaryKey(DEFAULTUSERPREFERENCE);
@@ -249,7 +246,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Adds a profile to the database.
      */
 
-    public boolean addEndEntityProfile(String profilename, EndEntityProfile profile){
+    public boolean addEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile){
        boolean returnval=false;
        try{ 
           profiledatahome.findByProfileName(profilename);
@@ -270,14 +267,14 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      /**
      * Adds a end entity profile to a group with the same content as the original profile.
      */
-    public boolean cloneEndEntityProfile(String originalprofilename, String newprofilename){
+    public boolean cloneEndEntityProfile(Admin admin, String originalprofilename, String newprofilename){
        EndEntityProfile profile = null; 
        boolean returnval = false;
        try{
          EndEntityProfileDataLocal pdl = profiledatahome.findByProfileName(originalprofilename);
          profile = (EndEntityProfile) pdl.getProfile().clone();
          
-         returnval = addEndEntityProfile(newprofilename, profile);
+         returnval = addEndEntityProfile(admin, newprofilename, profile);
          if(returnval)
            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ENDENTITYPROFILE,"New end entity profile " + newprofilename +  " used profile " + originalprofilename + " as template.");             
          else    
@@ -291,7 +288,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Removes an end entity profile from the database.
      * @throws EJBException if a communication or other error occurs.
      */
-    public void removeEndEntityProfile(String profilename) {
+    public void removeEndEntityProfile(Admin admin, String profilename) {
       try{
         EndEntityProfileDataLocal pdl = profiledatahome.findByProfileName(profilename);  
         pdl.remove();
@@ -306,7 +303,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      /**
      * Renames a end entity profile
      */
-    public boolean renameEndEntityProfile(String oldprofilename, String newprofilename){
+    public boolean renameEndEntityProfile(Admin admin, String oldprofilename, String newprofilename){
        boolean returnvalue = false;   
        try{
           profiledatahome.findByProfileName(newprofilename); 
@@ -332,7 +329,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Updates profile data
      */
 
-    public boolean changeEndEntityProfile(String profilename, EndEntityProfile profile){
+    public boolean changeEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile){
        boolean returnvalue = false;
        
        try{
@@ -354,7 +351,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     /**
      * Retrives profile names sorted.
      */
-    public Collection getEndEntityProfileNames(){
+    public Collection getEndEntityProfileNames(Admin admin){
       Vector returnval = new Vector();
       Collection result = null;
       try{
@@ -373,7 +370,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     /**
      * Retrives end entity profiles sorted by name.
      */
-    public TreeMap getEndEntityProfiles(){
+    public TreeMap getEndEntityProfiles(Admin admin){
       TreeMap returnval = new TreeMap();
       Collection result = null;
       try{
@@ -393,7 +390,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     /**
      * Retrives a named end entity profile.
      */
-    public EndEntityProfile getEndEntityProfile(String profilename){
+    public EndEntityProfile getEndEntityProfile(Admin admin, String profilename){
        EndEntityProfile returnval=null;
        try{
          returnval = (profiledatahome.findByProfileName(profilename)).getProfile();
@@ -406,7 +403,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      /**
      * Finds a end entity profile by id.
      */       
-    public EndEntityProfile getEndEntityProfile(int id){
+    public EndEntityProfile getEndEntityProfile(Admin admin, int id){
        EndEntityProfile returnval=null;
        try{
          if(id!=0)  
@@ -420,7 +417,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      /**
      * Retrives the numbers of end entity profiles.
      */
-    public int getNumberOfEndEntityProfiles(){
+    public int getNumberOfEndEntityProfiles(Admin admin){
       int returnval =0;
       try{
         returnval = (profiledatahome.findAll()).size();
@@ -434,7 +431,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      *
      * @return the id or 0 if profile cannot be found.
      */   
-    public int getEndEntityProfileId(String profilename){
+    public int getEndEntityProfileId(Admin admin, String profilename){
       int returnval = 0;  
       try{  
         Integer id = (profiledatahome.findByProfileName(profilename)).getId();
@@ -449,7 +446,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      *
      * @return profilename or null if profile id doesn't exists.
      */    
-    public String getEndEntityProfileName(int id){
+    public String getEndEntityProfileName(Admin admin, int id){
       String returnval = null;  
       try{  
         returnval = (profiledatahome.findByPrimaryKey(new Integer(id))).getProfileName();
@@ -465,7 +462,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * @return true if certificateprofile exists in any of the accessrules.
      */
     
-    public boolean existsCertificateProfileInEndEntityProfiles(int certificateprofileid){
+    public boolean existsCertificateProfileInEndEntityProfiles(Admin admin, int certificateprofileid){
       String[] availablecertprofiles=null;
       boolean exists = false;
       try{

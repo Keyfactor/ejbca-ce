@@ -17,6 +17,8 @@ import java.security.cert.X509Certificate;
 
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
+import se.anatom.ejbca.log.Admin;
+
 /**
  * A class used to improve performance by proxying certificatesnr to subjectdn mappings by minimizing the number of needed lockups over rmi.
  * 
@@ -25,11 +27,12 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 public class SubjectDNProxy {
     
     /** Creates a new instance of SubjectDNProxy with remote access to CA part */
-    public SubjectDNProxy(ICertificateStoreSessionRemote certificatesession){
+    public SubjectDNProxy(Admin admin, ICertificateStoreSessionRemote certificatesession){
               // Get the RaAdminSession instance.
       this.local = false;
       this.certificatesessionremote = certificatesession;
       this.subjectdnstore = new HashMap(); 
+      this.admin = admin;
         
     }
     
@@ -57,9 +60,9 @@ public class SubjectDNProxy {
       if(returnval==null){
         // Retreive subjectDN over RMI
         if(local)  
-          result = certificatesessionlocal.findCertificatesBySerno(new BigInteger(certificatesnr,16));
+          result = certificatesessionlocal.findCertificatesBySerno(admin, new BigInteger(certificatesnr,16));
         else
-          result = certificatesessionremote.findCertificatesBySerno(new BigInteger(certificatesnr, 16));            
+          result = certificatesessionremote.findCertificatesBySerno(admin, new BigInteger(certificatesnr, 16));            
         if(result != null){
           Iterator i = result.iterator();
           if(i.hasNext()){
@@ -77,5 +80,6 @@ public class SubjectDNProxy {
     private HashMap subjectdnstore;
     private ICertificateStoreSessionLocal  certificatesessionlocal;
     private ICertificateStoreSessionRemote certificatesessionremote;
+    private Admin                          admin;
 
 }

@@ -17,7 +17,7 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
  * By default all data are saved to a database.
  *
  * @author  Philip Vendil
- * @version $Id: GlobalConfigurationDataHandler.java,v 1.11 2002-10-24 20:14:00 herrvendil Exp $
+ * @version $Id: GlobalConfigurationDataHandler.java,v 1.12 2002-11-17 14:01:39 herrvendil Exp $
  */
 public class GlobalConfigurationDataHandler {
 
@@ -30,7 +30,7 @@ public class GlobalConfigurationDataHandler {
     public GlobalConfiguration loadGlobalConfiguration() throws RemoteException, NamingException{
         GlobalConfiguration ret = null;
 
-        ret = adminsession.loadGlobalConfiguration();
+        ret = adminsession.loadGlobalConfiguration(administrator);
         InitialContext ictx = new InitialContext();
         Context myenv = (Context) ictx.lookup("java:comp/env");      
         ret.initialize((String) myenv.lookup("BASEURL"), (String) myenv.lookup("ADMINDIRECTORY"),
@@ -41,7 +41,7 @@ public class GlobalConfigurationDataHandler {
     }
 
     public void saveGlobalConfiguration(GlobalConfiguration gc) throws RemoteException {
-       adminsession.saveGlobalConfiguration( gc);
+       adminsession.saveGlobalConfiguration(administrator,  gc);
     }
 
    // private IRaAdminSessionHome  raadminsessionhome;

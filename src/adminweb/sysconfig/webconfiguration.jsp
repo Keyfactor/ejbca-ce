@@ -57,6 +57,7 @@
         <input type="text" name="<%=TEXTFIELD_FOOTBANNER %>" value="<%= gc.getFootBannerFilename() %>" maxlength="150" size="70">
       </td>
     </tr>
+<!-- /* Wait for implementation.
     <tr id="Row1"> 
       <td width="49%" valign="top"> 
         <h3>Enable Authenticated Users Only</h3>
@@ -68,7 +69,8 @@
                                                                                                 out.write(" CHECKED "); %>> 
       </td>
     </tr>
-    <tr id="Row0"> 
+-->
+    <tr id="Row1"> 
       <td width="49%" valign="top"> 
         <h3>Enable End Entity Profile Limitations</h3>
         <h5>Check this field if you want to uses end entity access control. </h5>
@@ -79,6 +81,7 @@
                                                                                                 out.write(" CHECKED "); %>> 
       </td>
     </tr>
+<!-- /* Wait for implementation.
     <tr id="Row1"> 
       <td width="49%" valign="top"> 
         <h3>Enable Key Recovery</h3>
@@ -90,6 +93,8 @@
                                                                                                 out.write(" CHECKED "); %>> 
       </td>
     </tr>
+-->
+<!-- /* Wait for implementation.
     <tr id="Row0"> 
       <td width="49%" valign="top"> 
         <h3>Issue Hardware Tokens</h3>
@@ -101,6 +106,7 @@
                                                                                                 out.write(" CHECKED "); %>> 
       </td>
     </tr>
+ -->
     <tr> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top">

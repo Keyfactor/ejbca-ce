@@ -23,6 +23,9 @@ import se.anatom.ejbca.ca.sign.*;
 import se.anatom.ejbca.util.*;
 import java.util.Properties;
 import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.log.ILogSessionRemote;
+import se.anatom.ejbca.log.ILogSessionHome;
+import se.anatom.ejbca.log.LogEntry;
 
 import org.apache.log4j.*;
 
@@ -56,7 +59,7 @@ import org.apache.log4j.*;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.3 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.4 2002-11-17 14:01:21 herrvendil Exp $
  */
 public class LDAPActiveDirectoryPublisherSessionBean
     extends BaseSessionBean {
@@ -70,6 +73,9 @@ public class LDAPActiveDirectoryPublisherSessionBean
     private String userObjectclass = "user";
     //For Microsoft Active directory
     private String cAObjectclass = "certificationAuthority";
+    
+    /** The remote interface of the log session bean */
+    private ILogSessionRemote logsession;    
 
     /**
          * Default create for SessionBean without any creation Arguments.
@@ -92,6 +98,13 @@ public class LDAPActiveDirectoryPublisherSessionBean
         debug("userObjectclass=" + userObjectclass);
         debug("cAObjectclass=" + cAObjectclass);
 
+        try{ 
+          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
+          logsession = logsessionhome.create();
+        }catch(Exception e){
+          throw new EJBException(e);   
+        }         
+        
         debug("<ejbCreate()");
     }
 
@@ -109,6 +122,7 @@ public class LDAPActiveDirectoryPublisherSessionBean
     } // checkContainerName
 
     public boolean storeCertificate(
+        Admin admin,    
         byte[] byte_incert,
         String cafp,
         int status,
@@ -118,7 +132,10 @@ public class LDAPActiveDirectoryPublisherSessionBean
         try {
             incert = CertTools.getCertfromByteArray(Base64.decode(byte_incert));
         } catch (Exception e) {
-            error("Error decoding input Certificate: ", e);
+            debug("Error decoding input Certificate: ", e);
+            try{
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"Error decoding input Certificate.");
+            }catch(RemoteException re){}             
             return false;
         }
 
@@ -157,7 +174,10 @@ public class LDAPActiveDirectoryPublisherSessionBean
                     }
                 }
             } catch (IOException e) {
-                error("IOException when getting subjectAltNames extension.");
+                debug("IOException when getting subjectAltNames extension.");
+                try{
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"IOException when getting subjectAltNames extension.");
+                }catch(RemoteException re){}         
             }
         }
 
@@ -253,7 +273,10 @@ public class LDAPActiveDirectoryPublisherSessionBean
                     ctx.close();
 
                 } catch (Exception e) {
-                    error("Error storing certificate in LDAP: ", e);
+                   debug("Error storing certificate in Active Directory LDAP: ", e);
+                   try{
+                     logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"Error storing certificate in Active Directory LDAP.");
+                   }catch(RemoteException re){}                      
                     return false;
                 }
             } else {
@@ -270,7 +293,10 @@ public class LDAPActiveDirectoryPublisherSessionBean
                     ctx.modifyAttributes("CN=" + cn, DirContext.REPLACE_ATTRIBUTE, attrs);
                     ctx.close();
                 } catch (Exception e) {
-                    error("Error storing certificate in LDAP: ", e);
+                   debug("Error storing certificate in Active Directory LDAP: ", e);
+                   try{
+                     logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"Error storing certificate in Active Directory LDAP.");
+                   }catch(RemoteException re){}    
                     return false;
                 }
 
@@ -304,8 +330,8 @@ public class LDAPActiveDirectoryPublisherSessionBean
                         System.out.println("Error retrieving the home of  CertificateData or CRLData.");
                         exc.printStackTrace();
                     }
-                    ICertificateStoreSessionRemote localstore = storeHome.create(new Admin(Admin.TYPE_INTERNALUSER));
-                    byte[] lastcrl = localstore.getLastCRL();
+                    ICertificateStoreSessionRemote localstore = storeHome.create();
+                    byte[] lastcrl = localstore.getLastCRL(new Admin(Admin.TYPE_INTERNALUSER));
                     attrs.put(new BasicAttribute("certificateRevocationList;binary", lastcrl));
                     attrs.put(new BasicAttribute("authorityRevocationList;binary", lastcrl));
 
@@ -319,7 +345,10 @@ public class LDAPActiveDirectoryPublisherSessionBean
                     ctx.close();
 
                 } catch (Exception e) {
-                    error("Error storing certificate in LDAP: ", e);
+                   debug("Error storing certificate in Active Directory LDAP: ", e);
+                   try{
+                     logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"Error storing certificate in Active Directory LDAP.");
+                   }catch(RemoteException re){}    
                     return false;
                 }
 
@@ -327,14 +356,17 @@ public class LDAPActiveDirectoryPublisherSessionBean
     }
     // storeCertificate
 
-    public boolean storeCRL(byte[] incrl, String cafp, int number)
+    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number)
         throws RemoteException {
 
         X509CRL crl;
         try {
             crl = CertTools.getCRLfromByteArray(incrl);
         } catch (Exception e) {
-            error("Error decoding input CRL: ", e);
+            debug("Error decoding input CRL: ",e);
+            try{
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Error decoding input CRL.");
+            }catch(RemoteException re){}  
             return false;
         }
 
@@ -390,12 +422,12 @@ public class LDAPActiveDirectoryPublisherSessionBean
                         ISignSessionHome.class);
 
             } catch (NamingException exc) {
-                System.out.println("Error retrieving the home of  CertificateData or CRLData.");
+                debug("Error retrieving the home of  CertificateData or CRLData.");
                 exc.printStackTrace();
                 return false;
             }
-            ISignSessionRemote rsasign = signHome.create(new Admin(Admin.TYPE_INTERNALUSER));
-            Certificate[] certchain = rsasign.getCertificateChain();
+            ISignSessionRemote rsasign = signHome.create();
+            Certificate[] certchain = rsasign.getCertificateChain(new Admin(Admin.TYPE_INTERNALUSER));
 
             //Use CA's certificate.
             attrs.put(
@@ -413,7 +445,10 @@ public class LDAPActiveDirectoryPublisherSessionBean
             return true;
 
         } catch (Exception e) {
-            error("Error storing CRL in LDAP: ", e);
+            debug("Error storing CRL in Active Directory LDAP: ", e);
+            try{
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Error storing CRL in Active Directory LDAP.");
+            }catch(RemoteException re){}              
         }
         return false;
     }

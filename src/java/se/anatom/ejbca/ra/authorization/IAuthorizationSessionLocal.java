@@ -3,6 +3,7 @@ package se.anatom.ejbca.ra.authorization;
 import java.util.Collection;
 import java.security.cert.X509Certificate;
 import se.anatom.ejbca.ra.GlobalConfiguration;
+import se.anatom.ejbca.log.Admin;
 
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see IAuthorizationSessionRemote for docs.
@@ -13,7 +14,13 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
 
 public interface IAuthorizationSessionLocal extends javax.ejb.EJBLocalObject
 {
-        
+     
+    
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */    
+     public void init(GlobalConfiguration globalconfiguration);
+     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
@@ -28,83 +35,83 @@ public interface IAuthorizationSessionLocal extends javax.ejb.EJBLocalObject
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public boolean addAdminGroup(String admingroupname);
+    public boolean addAdminGroup(Admin admin, String admingroupname);
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public void removeAdminGroup(String admingroupname);
+    public void removeAdminGroup(Admin admin, String admingroupname);
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public boolean renameAdminGroup(String oldname, String newname);
+    public boolean renameAdminGroup(Admin admin, String oldname, String newname);
  
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
     
-    public AdminGroup getAdminGroup(String name);
+    public AdminGroup getAdminGroup(Admin admin, String name);
         
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public int getNumberOfAdminGroups();
+    public int getNumberOfAdminGroups(Admin admin);
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-     public String[] getAdminGroupnames();
+     public String[] getAdminGroupnames(Admin admin);
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public AdminGroup[] getAdminGroups();
+    public AdminGroup[] getAdminGroups(Admin admin);
 
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
     
-    public void addAccessRule(String admingroupname, String resource, int rule, boolean recursive);    
+    public void addAccessRule(Admin admin, String admingroupname, String resource, int rule, boolean recursive);    
     
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public void removeAccessRule(String admingroupname, String resource);
+    public void removeAccessRule(Admin admin, String admingroupname, String resource);
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public int getNumberOfAccessRules(String admingroupname);
+    public int getNumberOfAccessRules(Admin admin, String admingroupname);
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public AccessRule[] getAccessRules(String admingroupname);
+    public AccessRule[] getAccessRules(Admin admin, String admingroupname);
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
     
-    public void addAdminEntity(String admingroupname, int matchwith, int matchtype, String matchvalue);    
+    public void addAdminEntity(Admin admin, String admingroupname, int matchwith, int matchtype, String matchvalue);    
     
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public void removeAdminEntity(String admingroupname, int matchwith, int matchtype, String matchvalue);
+    public void removeAdminEntity(Admin admin, String admingroupname, int matchwith, int matchtype, String matchvalue);
     
      /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public int getNumberOfAdminEntities(String admingroupname);
+    public int getNumberOfAdminEntities(Admin admin, String admingroupname);
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public AdminEntity[] getAdminEntities(String admingroupname);
+    public AdminEntity[] getAdminEntities(Admin admin, String admingroupname);
 
 
            
@@ -114,42 +121,42 @@ public interface IAuthorizationSessionLocal extends javax.ejb.EJBLocalObject
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
 
-    public void addAvailableAccessRule(String name);
+    public void addAvailableAccessRule(Admin admin, String name);
 
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
     
-    public void addAvailableAccessRules(Collection names);    
+    public void addAvailableAccessRules(Admin admin, Collection names);    
  
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
 
-    public void removeAvailableAccessRule(String name);
+    public void removeAvailableAccessRule(Admin admin, String name);
 
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
     
-    public void removeAvailableAccessRules(Collection names);   
+    public void removeAvailableAccessRules(Admin admin, Collection names);   
 
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
     
-    public Collection getAvailableAccessRules();
+    public Collection getAvailableAccessRules(Admin admin);
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
     
-    public boolean existsAvailableAccessRule(String name);
+    public boolean existsAvailableAccessRule(Admin admin, String name);
 
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */     
-    public boolean existsEndEntityProfileInRules(int profileid);
+    public boolean existsEndEntityProfileInRules(Admin admin, int profileid);
        
 }
 

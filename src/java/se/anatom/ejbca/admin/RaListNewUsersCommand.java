@@ -12,7 +12,7 @@ import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 /** List users with status NEW in the database.
  *
  * @see se.anatom.ejbca.ra.UserDataLocal
- * @version $Id: RaListNewUsersCommand.java,v 1.3 2002-08-27 12:41:06 herrvendil Exp $
+ * @version $Id: RaListNewUsersCommand.java,v 1.4 2002-11-17 14:01:38 herrvendil Exp $
  */
 public class RaListNewUsersCommand extends BaseRaAdminCommand {
 
@@ -23,7 +23,7 @@ public class RaListNewUsersCommand extends BaseRaAdminCommand {
 
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
-            Collection coll = getAdminSession().findAllUsersByStatus(UserDataLocal.STATUS_NEW);
+            Collection coll = getAdminSession().findAllUsersByStatus(administrator, UserDataLocal.STATUS_NEW);
             Iterator iter = coll.iterator();
             while (iter.hasNext()) {
                 UserAdminData data = (UserAdminData)iter.next();

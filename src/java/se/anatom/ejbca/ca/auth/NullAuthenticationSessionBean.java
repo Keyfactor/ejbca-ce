@@ -22,24 +22,21 @@ import se.anatom.ejbca.log.LogEntry;
  * the username is returned as DN.
  * Useful for demo purposes to give out certificates to anyone.
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.7 2002-11-12 15:00:19 anatom Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.8 2002-11-17 14:01:39 herrvendil Exp $
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean {
 
     /** The remote interface of the log session bean */
-    private ILogSessionRemote logsession;
-
-    /** Var containing iformation about administrator using the bean.*/
-    private Admin admin = null;
+    private ILogSessionRemote logsession;   
+      
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
      */
-    public void ejbCreate (Admin administrator) throws CreateException {
+    public void ejbCreate () throws CreateException {
         debug(">ejbCreate()");
-        try{
-          this.admin = administrator;
-          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);
+        try{ 
+          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
           logsession = logsessionhome.create();
         }catch(Exception e){
           throw new EJBException(e);
@@ -53,7 +50,7 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
     * contains a DN. Only returns entities of type USER_ENDUSER.
     * STATUS_NEW, STATUS_FAILED or STATUS_INPROCESS.
     */
-    public UserAuthData authenticateUser(String username, String password) throws ObjectNotFoundException,AuthStatusException,AuthLoginException {
+    public UserAuthData authenticateUser(Admin admin, String username, String password) throws ObjectNotFoundException,AuthStatusException,AuthLoginException {
         debug(">authenticateUser("+username+", hiddenpwd)");
         try {
             // Does the username contain a DN?
@@ -88,7 +85,7 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
     * Implements IAuthenticationSession::finishUser.
     * Does nothing...
     */
-    public void finishUser(String username, String password) throws ObjectNotFoundException {
+    public void finishUser(Admin admin, String username, String password) throws ObjectNotFoundException {
         debug(">finishUser("+username+", hiddenpwd)");
         debug("<finishUser("+username+", hiddenpwd)");
     } //finishUser

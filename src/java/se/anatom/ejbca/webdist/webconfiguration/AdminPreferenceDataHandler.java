@@ -25,7 +25,8 @@ public class AdminPreferenceDataHandler {
         InitialContext jndicontext = new InitialContext();
         IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"),
                                                IRaAdminSessionHome.class);
-        raadminsession = raadminsessionhome.create(administrator);
+        raadminsession = raadminsessionhome.create();
+        this.administrator = administrator;
     }
 
     /** Retrieves the admin from the database or null if the admin doesn't exists. */
@@ -33,7 +34,7 @@ public class AdminPreferenceDataHandler {
      AdminPreference returnvalue=null;
 
       try{
-         returnvalue = raadminsession.getAdminPreference(certificateserialnumber);
+         returnvalue = raadminsession.getAdminPreference(administrator, certificateserialnumber);
       }catch(Exception e) {
          returnvalue=null;
       }
@@ -43,34 +44,35 @@ public class AdminPreferenceDataHandler {
     /** Adds a admin preference to the database */
     public void addAdminPreference(BigInteger certificateserialnumber, AdminPreference adminpreference)
                                   throws AdminExistsException, RemoteException {
-      if(!raadminsession.addAdminPreference(certificateserialnumber, adminpreference))
+      if(!raadminsession.addAdminPreference(administrator, certificateserialnumber, adminpreference))
         throw new AdminExistsException("Admin already exists in the database.");
     }
 
     /** Changes the admin preference for the given admin. */
     public void changeAdminPreference(BigInteger certificateserialnumber, AdminPreference adminpreference)
                               throws AdminDoesntExistException, RemoteException {
-      if(!raadminsession.changeAdminPreference(certificateserialnumber, adminpreference))
+      if(!raadminsession.changeAdminPreference(administrator, certificateserialnumber, adminpreference))
         throw new AdminDoesntExistException("Admin doesn't exists in the database.");
 
     }
 
     /** Checks if admin preference exists in database. */
     public boolean existsAdminPreference(BigInteger certificateserialnumber) throws RemoteException {
-      return raadminsession.existsAdminPreference(certificateserialnumber);
+      return raadminsession.existsAdminPreference(administrator, certificateserialnumber);
 
     }
     
     /** Returns the default administrator preference. */
     public AdminPreference getDefaultAdminPreference() throws RemoteException{
-      return raadminsession.getDefaultAdminPreference();  
+      return raadminsession.getDefaultAdminPreference(administrator);  
     }
     
     /** Saves the default administrator preference. */
     public void saveDefaultAdminPreference(AdminPreference adminpreference) throws RemoteException{
-      raadminsession.saveDefaultAdminPreference(adminpreference);  
+      raadminsession.saveDefaultAdminPreference(administrator, adminpreference);  
     }
     
     
     private IRaAdminSessionRemote raadminsession;
+    private Admin                 administrator;
 }

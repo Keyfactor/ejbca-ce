@@ -42,7 +42,7 @@ import se.anatom.ejbca.ra.raadmin.AdminPreference;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.17 2002-10-24 20:13:57 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.18 2002-11-17 14:01:39 herrvendil Exp $
  */
 public class EjbcaWebBean {
 
@@ -89,7 +89,7 @@ public class EjbcaWebBean {
         InitialContext jndicontext = new InitialContext();
         Object obj1 = jndicontext.lookup("UserAdminSession");
         IUserAdminSessionHome adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-        IUserAdminSessionRemote  adminsession = adminsessionhome.create(administrator);        
+        IUserAdminSessionRemote  adminsession = adminsessionhome.create();        
         obj1 = jndicontext.lookup("LogSession");
         ILogSessionHome logsessionhome = (ILogSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ILogSessionHome.class);   
         logsession = logsessionhome.create();
@@ -109,7 +109,7 @@ public class EjbcaWebBean {
         cat.debug("Verifying authoirization of '"+userdn);
         
         // Check that user is administrator.
-        adminsession.checkIfSubjectDNisAdmin(userdn);
+        adminsession.checkIfSubjectDNisAdmin(administrator, userdn);
 
         logsession.log(administrator,LogEntry.MODULE_ADMINWEB,  new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORLOGGEDIN,"");               
         

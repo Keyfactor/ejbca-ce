@@ -34,7 +34,7 @@ import junit.framework.*;
 
 /** Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.13 2002-10-17 15:24:47 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.14 2002-11-17 14:01:40 herrvendil Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -130,7 +130,7 @@ public class TestSignSession extends TestCase {
         ctx = getInitialContext();
         Object obj = ctx.lookup("RSASignSession");
         home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
-        remote = home.create(new Admin(Admin.TYPE_INTERNALUSER));
+        remote = home.create();
 
         Object obj1 = ctx.lookup("UserData");
         userhome = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj1, UserDataHome.class);
@@ -196,7 +196,7 @@ public class TestSignSession extends TestCase {
         cat.debug(">test02SignSession()");
         keys = genKeys();
         // user that we know exists...
-        X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", keys.getPublic());
+        X509Certificate cert = (X509Certificate)remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER), "foo", "foo123", keys.getPublic());
         assertNotNull("Misslyckades skapa cert", cert);
         cat.debug("Cert="+cert.toString());
         //FileOutputStream fos = new FileOutputStream("testcert.crt");
@@ -230,7 +230,7 @@ public class TestSignSession extends TestCase {
         }
         cat.debug("CertificationRequest generated succefully.");
         byte[] bcp10 = bOut.toByteArray();
-        X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", new PKCS10RequestMessage(bcp10));
+        X509Certificate cert = (X509Certificate)remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER), "foo", "foo123", new PKCS10RequestMessage(bcp10));
         assertNotNull("Failed to create certificate", cert);
         cat.debug("Cert="+cert.toString());
         cat.debug("<test03TestBCPKCS10()");
@@ -241,7 +241,7 @@ public class TestSignSession extends TestCase {
         UserDataRemote data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
         cat.debug("Reset status of 'foo' to NEW");
-        X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", new PKCS10RequestMessage(keytoolp10));
+        X509Certificate cert = (X509Certificate)remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER), "foo", "foo123", new PKCS10RequestMessage(keytoolp10));
         assertNotNull("Failed to create certificate", cert);
         cat.debug("Cert="+cert.toString());
         cat.debug("<test04TestKeytoolPKCS10()");
@@ -252,7 +252,7 @@ public class TestSignSession extends TestCase {
         UserDataRemote data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
         cat.debug("Reset status of 'foo' to NEW");
-        X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", new PKCS10RequestMessage(iep10));
+        X509Certificate cert = (X509Certificate)remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER),"foo", "foo123", new PKCS10RequestMessage(iep10));
         assertNotNull("Failed to create certificate", cert);
         cat.debug("Cert="+cert.toString());
         cat.debug("<test05TestIEPKCS10()");

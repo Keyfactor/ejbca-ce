@@ -21,7 +21,7 @@ import se.anatom.ejbca.util.Hex;
 
 /** Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaRevokeUserCommand.java,v 1.8 2002-08-28 12:22:25 herrvendil Exp $
+ * @version $Id: RaRevokeUserCommand.java,v 1.9 2002-11-17 14:01:38 herrvendil Exp $
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
 
@@ -44,17 +44,17 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
             if(reason == 7 || reason < 0 || reason > 10)
               System.out.println("Error : Reason must be an integer between 0 and 10 except 7.");
             else{
-              UserAdminData data = getAdminSession().findUser(username);
+              UserAdminData data = getAdminSession().findUser(administrator, username);
               System.out.println("Found user:");
               System.out.println("username="+data.getUsername());
               System.out.println("dn=\""+data.getDN()+"\"");
               System.out.println("Old status="+data.getStatus());
-              getAdminSession().setUserStatus(username, UserDataLocal.STATUS_REVOKED);
+              getAdminSession().setUserStatus(administrator, username, UserDataLocal.STATUS_REVOKED);
               System.out.println("New status="+UserDataLocal.STATUS_REVOKED);
 
               // Revoke users certificates
               try{
-               getAdminSession().revokeUser(username, reason);
+               getAdminSession().revokeUser(administrator, username, reason);
               }catch(AuthorizationDeniedException e){
                 System.out.println("Error : Not authorized to revoke user.");                             
               }

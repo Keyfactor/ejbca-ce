@@ -5,7 +5,6 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
 
 import se.anatom.ejbca.ra.GlobalConfiguration;
-import se.anatom.ejbca.log.Admin;
 
 /**
  * @version $Id: IAuthorizationSessionHome.java
@@ -20,7 +19,7 @@ public interface IAuthorizationSessionHome extends EJBHome {
      * @return IAuthorizationSessionRemote interface
      */
 
-    IAuthorizationSessionRemote create(GlobalConfiguration globalconfiguration, Admin administrator) throws CreateException, RemoteException;
+    IAuthorizationSessionRemote create() throws CreateException, RemoteException;
 
 }
 

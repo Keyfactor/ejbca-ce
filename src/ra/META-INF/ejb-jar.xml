@@ -13,7 +13,7 @@
      <home>se.anatom.ejbca.ra.IUserAdminSessionHome</home>
      <remote>se.anatom.ejbca.ra.IUserAdminSessionRemote</remote>
      <ejb-class>se.anatom.ejbca.ra.LocalUserAdminSessionBean</ejb-class>
-     <session-type>Stateful</session-type>
+     <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
 
      <env-entry>
@@ -95,7 +95,7 @@
      <local>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal</local>     
      <remote>se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote</remote>
      <ejb-class>se.anatom.ejbca.ra.raadmin.LocalRaAdminSessionBean</ejb-class>
-     <session-type>Stateful</session-type>
+     <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
      <env-entry>
         <description>JDBC datasource to be used</description>
@@ -150,7 +150,7 @@
      <local>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocal</local>
      <remote>se.anatom.ejbca.ra.authorization.IAuthorizationSessionRemote</remote>
      <ejb-class>se.anatom.ejbca.ra.authorization.LocalAuthorizationSessionBean</ejb-class>
-     <session-type>Stateful</session-type>
+     <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
      <env-entry>
         <description>JDBC datasource to be used</description>

@@ -16,6 +16,10 @@ import org.bouncycastle.asn1.x509.*;
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.*;
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.log.ILogSessionRemote;
+import se.anatom.ejbca.log.ILogSessionHome;
+import se.anatom.ejbca.log.LogEntry;
 
 /**
  * Stores certificates and CRL in an LDAP v3 directory.
@@ -45,7 +49,7 @@ import se.anatom.ejbca.util.*;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.11 2002-11-12 08:25:27 herrvendil Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.12 2002-11-17 14:01:22 herrvendil Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
 
@@ -59,6 +63,9 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
     private String cRLAttribute   = "certificateRevocationList;binary";
     private String userCertAttribute = "userCertificate;binary";
     private String cACertAttribute= "cACertificate;binary";
+    
+    /** The remote interface of the log session bean */
+    private ILogSessionRemote logsession;     
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -83,6 +90,13 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         debug("userObjectclass=" + userObjectclass);
         debug("cAObjectclass=" + cAObjectclass);
         debug("<ejbCreate()");
+        
+        try{ 
+          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
+          logsession = logsessionhome.create();
+        }catch(Exception e){
+          throw new EJBException(e);   
+        }         
     }
 
     /**
@@ -95,7 +109,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
      * @return true if storage was succesful.
      * @throws EJBException if a communication or other error occurs.
      */
-    public boolean storeCRL(byte[] incrl, String cafp, int number) {
+    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) {
 
         int ldapVersion  = LDAPConnection.LDAP_V3;
         LDAPConnection lc = new LDAPConnection();
@@ -104,7 +118,10 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         try {
             crl = CertTools.getCRLfromByteArray(incrl);
         } catch (Exception e) {
-            error("Error decoding input CRL: ",e);
+            debug("Error decoding input CRL: ",e);
+            try{
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Error decoding input CRL.");
+            }catch(RemoteException re){}  
             return false;
         }
 
@@ -112,7 +129,10 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         String dn = CertTools.stringToBCDNString(crl.getIssuerDN().toString());
 
         if (checkContainerName(dn) == false) {
-            error("DN not part of containername, aborting store operation.");
+            debug("DN not part of containername, aborting store operation.");
+            try{
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"DN not part of containername, aborting store operation.");
+            }catch(RemoteException re){}             
             return false;
         }
 
@@ -131,7 +151,10 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
             if (e.getLDAPResultCode() == LDAPException.NO_SUCH_OBJECT) {
                 debug("No old entry exist for '"+dn+"'.");
             } else {
-                error( "Error binding to and reading from LDAP server: ", e);
+                debug( "Error binding to and reading from LDAP server: ", e);
+               try{
+                 logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Error binding to and reading from LDAP server.");
+               }catch(RemoteException re){}                 
                 return false;
             }
         }
@@ -150,7 +173,10 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
             else
                 attributeSet.add( crlAttr );
         } catch (CRLException e) {
-            error("Error encoding CRL when storing in LDAP: ",e);
+            debug("Error encoding CRL when storing in LDAP: ",e);
+            try{
+               logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Error encoding CRL when storing in LDAP.");
+            }catch(RemoteException re){}              
             return false;
         }
         if (oldEntry == null)
@@ -163,16 +189,25 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
             // Add or modify the entry
             if (oldEntry != null) {
                 lc.modify(dn, modSet);
-                info( "\nModified object: " + dn + " successfully." );
+                debug( "\nModified object: " + dn + " successfully." );
+                try{
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECRL,"Modified object: " + dn + " successfully in LDAP.");
+                }catch(RemoteException re){}                     
             } else {
                 lc.add( newEntry );
-                info( "\nAdded object: " + dn + " successfully." );
+                debug( "\nAdded object: " + dn + " successfully." );
+                try{
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECRL,"Added object: " + dn + " successfully in LDAP.");
+                }catch(RemoteException re){}                      
             }
             // disconnect with the server
             lc.disconnect();
         }
         catch( LDAPException e ) {
-            error( "Error storing CRL ("+cRLAttribute+") in LDAP ("+cAObjectclass+"): ", e);
+            debug( "Error storing CRL ("+cRLAttribute+") in LDAP ("+cAObjectclass+"): ", e);
+            try{
+               logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Error storing CRL ("+cRLAttribute+") in LDAP ("+cAObjectclass+").");
+            }catch(RemoteException re){}                 
             return false;
         }
 
@@ -191,7 +226,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
      * @return true if storage was succesful.
      * @throws EJBException if a communication or other error occurs.
      */
-    public boolean storeCertificate(Certificate incert, String username, String cafp, int status, int type) {
+    public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp, int status, int type) {
 
         int ldapVersion  = LDAPConnection.LDAP_V3;
         LDAPConnection lc = new LDAPConnection();
@@ -226,12 +261,18 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                     }
                 }
             } catch (IOException e) {
-                error("IOException when getting subjectAltNames extension.");
+                debug("IOException when getting subjectAltNames extension.");
+                try{
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"IOException when getting subjectAltNames extension.");
+                }catch(RemoteException re){}                  
             }
         }
 
         if (checkContainerName(dn) == false) {
-            error("DN not part of containername, aborting store operation.");
+            debug("DN not part of containername, aborting store operation.");
+            try{
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"DN not part of containername, aborting store operation.");
+            }catch(RemoteException re){}                  
             return false;
         }
 
@@ -248,9 +289,15 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
             lc.disconnect();
         } catch( LDAPException e ) {
             if (e.getLDAPResultCode() == LDAPException.NO_SUCH_OBJECT) {
-                info("No old entry exist for '"+dn+"'.");
+                debug("No old entry exist for '"+dn+"'.");
+                try{
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE,"No old entry exist for '"+dn+"'.");
+                }catch(RemoteException re){}                  
             } else {
-                error( "Error binding to and reading from LDAP server: ", e);
+                debug( "Error binding to and reading from LDAP server: ", e);
+                try{
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"Error binding to and reading from LDAP server.");
+                }catch(RemoteException re){}                     
                 return false;
             }
         }
@@ -283,7 +330,10 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                 else
                     attributeSet.add( certAttr );
             } catch (CertificateEncodingException e) {
-                error("Error encoding certificate when storing in LDAP: ",e);
+                debug("Error encoding certificate when storing in LDAP: ",e);
+                try{
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"Error encoding certificate when storing in LDAP.");
+                }catch(RemoteException re){}                     
                 return false;
             }
         } else if ( ((type & SecConst.USER_CA) != 0) || ((type & SecConst.USER_ROOTCA) != 0) ) {
@@ -306,11 +356,17 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                     debug("Added (fake) attribute for CRL.");
                 }
             } catch (CertificateEncodingException e) {
-                error("Error encoding certificate when storing in LDAP: ",e);
+                debug("Error encoding certificate when storing in LDAP: ",e);
+                try{
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"Error encoding certificate when storing in LDAP.");
+                }catch(RemoteException re){}                             
                 return false;
             }
         } else {
-            error("Certificate of type '"+type+"' will not be published.");
+            debug("Certificate of type '"+type+"' will not be published.");
+            try{
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"Certificate of type '"+type+"' will not be published.");
+            }catch(RemoteException re){}              
             return false;
         }
         try {
@@ -321,18 +377,27 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
             // Add or modify the entry
             if (oldEntry != null) {
                 lc.modify(dn, modSet);
-                info( "\nModified object: " + dn + " successfully." );
+                debug( "\nModified object: " + dn + " successfully." );
+                try{
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE,"Modified object: " + dn + " successfully in LDAP.");
+                }catch(RemoteException re){}                    
             } else {
                 if (oldEntry == null)
                     newEntry = new LDAPEntry( dn, attributeSet );
                 lc.add( newEntry );
-                info( "\nAdded object: " + dn + " successfully." );
+                debug( "\nAdded object: " + dn + " successfully." );
+                try{
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE,"Added object: " + dn + " successfully in LDAP.");
+                }catch(RemoteException re){}                      
             }
             // disconnect with the server
             lc.disconnect();
         }
         catch( LDAPException e ) {
-            error( "Error storing certificate ("+attribute+") in LDAP ("+objectclass+"): ", e);
+            debug( "Error storing certificate ("+attribute+") in LDAP ("+objectclass+"): ", e);
+            try{
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"Error storing certificate ("+attribute+") in LDAP ("+objectclass+").");
+            }catch(RemoteException re){}              
             return false;
         }
 

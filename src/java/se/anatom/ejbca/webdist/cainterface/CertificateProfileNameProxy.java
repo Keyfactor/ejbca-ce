@@ -29,9 +29,10 @@ public class CertificateProfileNameProxy {
       ICertificateStoreSessionHome certificatestoresessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(
                                                                                  jndicontext.lookup("CertificateStoreSession"), 
                                                                                  ICertificateStoreSessionHome.class);
-      certificatestoresession = certificatestoresessionhome.create(administrator);  
+      certificatestoresession = certificatestoresessionhome.create();  
       
       certificateprofilenamestore = new HashMap(); 
+      this.admin= administrator;
         
     }
     
@@ -48,7 +49,7 @@ public class CertificateProfileNameProxy {
       
       if(returnval==null){
         // Retreive profilename over RMI
-        returnval = certificatestoresession.getCertificateProfileName(certificateprofileid);
+        returnval = certificatestoresession.getCertificateProfileName(admin, certificateprofileid);
         if(returnval != null)
           certificateprofilenamestore.put(new Integer(certificateprofileid),returnval);
       }    
@@ -57,7 +58,8 @@ public class CertificateProfileNameProxy {
     }
     
     // Private fields
-    private HashMap certificateprofilenamestore;
+    private HashMap                        certificateprofilenamestore;
     private ICertificateStoreSessionRemote certificatestoresession;
+    private Admin                          admin;
 
 }

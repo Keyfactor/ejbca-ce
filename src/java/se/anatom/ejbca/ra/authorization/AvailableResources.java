@@ -37,14 +37,15 @@ public class AvailableResources {
       Object objl = jndicontext.lookup("RaAdminSession");
       IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(objl, 
                                                                        IRaAdminSessionHome.class);
-      raadminsession = raadminsessionhome.create(new Admin(Admin.TYPE_INTERNALUSER));
+      raadminsession = raadminsessionhome.create();
       
       objl = jndicontext.lookup("AuthorizationSession");
       IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(objl, 
                                                                        IAuthorizationSessionHome.class);
-      authorizationsession = authorizationsessionhome.create(globalconfiguration,new Admin(Admin.TYPE_INTERNALUSER));
- 
+      authorizationsession = authorizationsessionhome.create();
+      authorizationsession.init(globalconfiguration);
     }
+    
     // Public methods 
     /** Returns all the resources and subresources from the given subresource */
     public String[] getResources()  {
@@ -62,19 +63,20 @@ public class AvailableResources {
     // Private methods
     private void insertAvailableRules(Vector resources) {
       try{  
-        resources.addAll(authorizationsession.getAvailableAccessRules());  
+        resources.addAll(authorizationsession.getAvailableAccessRules(new Admin(Admin.TYPE_INTERNALUSER)));  
       }catch(RemoteException e){}
     }
     
     private void insertAvailableProfileRules(Vector resources){
+      Admin admin = new Admin(Admin.TYPE_INTERNALUSER);  
       try{  
-        Collection profilenames = raadminsession.getEndEntityProfileNames();
+        Collection profilenames = raadminsession.getEndEntityProfileNames(admin);
         if(profilenames != null){
           Iterator i = profilenames.iterator();
       
           while(i.hasNext()){
             String name = (String) i.next();
-            int id = raadminsession.getEndEntityProfileId(name);
+            int id = raadminsession.getEndEntityProfileId(admin, name);
             resources.addElement(profileprefix + id);
             for(int j=0;j < profileendings.length; j++){     
               resources.addElement(profileprefix + id +profileendings[j]);             

@@ -2,9 +2,9 @@
 package se.anatom.ejbca.ca.sign;
 
 import javax.ejb.CreateException;
-import se.anatom.ejbca.log.Admin;
+
 /**
- * @version $Id: ISignSessionLocalHome.java,v 1.2 2002-09-12 18:14:14 herrvendil Exp $
+ * @version $Id: ISignSessionLocalHome.java,v 1.3 2002-11-17 14:01:38 herrvendil Exp $
  */
 public interface ISignSessionLocalHome extends javax.ejb.EJBLocalHome {
 
@@ -13,5 +13,5 @@ public interface ISignSessionLocalHome extends javax.ejb.EJBLocalHome {
      * @throws CreateException
      * @return ISignSessionRemote interface
      */
-    ISignSessionLocal create(Admin administrator) throws CreateException;
+    ISignSessionLocal create() throws CreateException;
 }

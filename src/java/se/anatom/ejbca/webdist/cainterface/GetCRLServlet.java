@@ -31,7 +31,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java,v 1.7 2002-10-24 20:12:02 herrvendil Exp $
+ * @version $Id: GetCRLServlet.java,v 1.8 2002-11-17 14:01:39 herrvendil Exp $
  */
 public class GetCRLServlet extends HttpServlet {
 
@@ -104,8 +104,9 @@ public class GetCRLServlet extends HttpServlet {
             command = "";
         if (command.equalsIgnoreCase(COMMAND_CRL)) {
             try {
-                ICertificateStoreSessionRemote store = storehome.create(new Admin(((X509Certificate[]) req.getAttribute( "javax.servlet.request.X509Certificate" ))[0]));
-                byte[] crl = store.getLastCRL();
+                Admin admin = new Admin(((X509Certificate[]) req.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
+                ICertificateStoreSessionRemote store = storehome.create();
+                byte[] crl = store.getLastCRL(admin);
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = x509crl.getIssuerDN().toString();
                 String filename = CertTools.getPartFromDN(dn,"CN")+".crl";

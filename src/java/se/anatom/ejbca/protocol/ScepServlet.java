@@ -37,7 +37,7 @@ import se.anatom.ejbca.util.Base64;
 * 6. sign the reply data (PKCS#7) from the previous step
 * 7. output the result as a der encoded block on stdout
 * -----
-* @version  $Id: ScepServlet.java,v 1.4 2002-10-08 20:10:55 anatom Exp $
+* @version  $Id: ScepServlet.java,v 1.5 2002-11-17 14:01:40 herrvendil Exp $
 */
 public class ScepServlet extends HttpServlet {
 
@@ -87,7 +87,7 @@ public class ScepServlet extends HttpServlet {
 			cat.debug("Got request '" + operation + "'");
 			debug.print("<h3>Operation: " + operation + "</h3>");
             cat.debug("Message: "+message);
-            ISignSessionRemote ss = home.create(administrator);
+            ISignSessionRemote ss = home.create();
 			if (operation.equals("PKIOperation")) {
                 byte[] scepmsg = Base64.decode(message.getBytes());
                 ScepPkiOpHelper helper = new ScepPkiOpHelper(scepmsg);

@@ -46,7 +46,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.23 2002-11-07 19:56:25 herrvendil Exp $
+ * @version $Id: BatchMakeP12.java,v 1.24 2002-11-17 14:01:40 herrvendil Exp $
  *
  */
 
@@ -104,8 +104,8 @@ public class BatchMakeP12 {
     private X509Certificate getCACertificate()
       throws Exception {
         cat.debug(">getCACertificate()");
-        ISignSessionRemote ss = signhome.create(administrator);
-        Certificate[] chain = ss.getCertificateChain();
+        ISignSessionRemote ss = signhome.create();
+        Certificate[] chain = ss.getCertificateChain(administrator);
         X509Certificate rootcert = (X509Certificate)chain[chain.length-1];
         cat.debug("<getCACertificate()");
         return rootcert;
@@ -119,8 +119,8 @@ public class BatchMakeP12 {
     private Certificate[] getCACertChain()
       throws Exception {
         cat.debug(">getCACertChain()");
-        ISignSessionRemote ss = signhome.create(administrator);
-        Certificate[] chain = ss.getCertificateChain();
+        ISignSessionRemote ss = signhome.create();
+        Certificate[] chain = ss.getCertificateChain(administrator);
         cat.debug("<getCACertChain()");
         return chain;
     } // getCACertificate
@@ -187,8 +187,8 @@ public class BatchMakeP12 {
         cat.debug(">createUser: username=" + username + ", hiddenpwd, keys=" + rsaKeys.toString());
 
         // Send the certificate request to the CA
-        ISignSessionRemote ss = signhome.create(administrator);
-        X509Certificate cert = (X509Certificate)ss.createCertificate(username, password, rsaKeys.getPublic());
+        ISignSessionRemote ss = signhome.create();
+        X509Certificate cert = (X509Certificate)ss.createCertificate(administrator, username, password, rsaKeys.getPublic());
 
         // Make a certificate chain from the certificate and the CA-certificate
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
@@ -275,9 +275,9 @@ public class BatchMakeP12 {
     public void createAllWithStatus(int status) throws Exception {
         cat.debug(">createAllWithStatus: "+status);
 
-        IUserAdminSessionRemote admin = adminhome.create(administrator);
+        IUserAdminSessionRemote admin = adminhome.create();
         
-        Collection result = admin.findAllUsersByStatus(status);
+        Collection result = admin.findAllUsersByStatus(administrator, status);
         Iterator it = result.iterator();
         boolean createJKS;
         boolean createPEM;
@@ -305,12 +305,12 @@ public class BatchMakeP12 {
                     // Only generate supported tokens
                     if(createP12 || createPEM || createJKS){
                       // Grab new user, set status to INPROCESS
-                      admin.setUserStatus(data.getUsername(), UserDataLocal.STATUS_INPROCESS);
+                      admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_INPROCESS);
                       processUser(data, createJKS, createPEM);
                       // If all was OK , set status to GENERATED
-                      admin.setUserStatus(data.getUsername(), UserDataLocal.STATUS_GENERATED);
+                      admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_GENERATED);
                       // Delete clear text password
-                      admin.setClearTextPassword(data.getUsername(), null);
+                      admin.setClearTextPassword(administrator, data.getUsername(), null);
                       successusers += ":" + data.getUsername();
                       successcount++;
                     }  
@@ -322,7 +322,7 @@ public class BatchMakeP12 {
                     cat.error(e.getMessage());
                     failedusers += ":" + data.getUsername();
                     failcount++;
-                    admin.setUserStatus(data.getUsername(), UserDataLocal.STATUS_FAILED);
+                    admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_FAILED);
                 }
             } else
                 cat.debug("User '"+data.getUsername()+"' does not have clear text password.");
@@ -347,8 +347,8 @@ public class BatchMakeP12 {
         boolean createP12 = false; 
         int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
         
-        IUserAdminSessionRemote admin = adminhome.create(administrator);
-        UserAdminData data = admin.findUser(username);
+        IUserAdminSessionRemote admin = adminhome.create();
+        UserAdminData data = admin.findUser(administrator, username);
         if ((data != null) && (data.getPassword() != null)) {
             try {
                 // get users Token Type.
@@ -361,12 +361,12 @@ public class BatchMakeP12 {
                 if(createP12 || createPEM || createJKS){    
                   cat.info("Generating keys for " + data.getUsername());                    
                   // Grab new user, set status to INPROCESS
-                  admin.setUserStatus(data.getUsername(), UserDataLocal.STATUS_INPROCESS);
+                  admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_INPROCESS);
                   processUser(data, createJKS, createPEM);
                   // If all was OK , set status to GENERATED
-                  admin.setUserStatus(data.getUsername(), UserDataLocal.STATUS_GENERATED);
+                  admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_GENERATED);
                   // Delete clear text password
-                  admin.setClearTextPassword(data.getUsername(), null);
+                  admin.setClearTextPassword(administrator, data.getUsername(), null);
                   cat.info("New user generated successfully - " + data.getUsername());                  
                 }
                 else
@@ -375,7 +375,7 @@ public class BatchMakeP12 {
                 // If things went wrong set status to FAILED
                 cat.error("An error happened, setting status to FAILED.");
                 cat.error(e);
-                admin.setUserStatus(data.getUsername(), UserDataLocal.STATUS_FAILED);
+                admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_FAILED);
                 throw new Exception("BatchMakeP12 failed for '" + username+"'.");
             }
         }

@@ -21,7 +21,7 @@ import se.anatom.ejbca.log.LogEntry;
 /**
  * Authenticates users towards a remote user database, using HTTP-based protocol.
  *
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.6 2002-09-17 09:19:44 herrvendil Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.7 2002-11-17 14:01:39 herrvendil Exp $
  */
 public class RemoteAuthenticationSessionBean extends BaseSessionBean {
 
@@ -33,19 +33,17 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
     /** The remote interface of the log session bean */
     private ILogSessionRemote logsession;         
     
-    /** Var containing iformation about administrator using the bean.*/
-    private Admin admin = null;    
+   
     
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
      */
-    public void ejbCreate(Admin administrator) throws CreateException {
+    public void ejbCreate() throws CreateException {
         debug(">ejbCreate()");
         // Get the URL from the environment from deployment descriptor
         remoteurl = (String)lookup("java:comp/env/AuthURL", java.lang.String.class);
-        try{ 
-          this.admin = administrator;   
+        try{  
           ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
           logsession = logsessionhome.create();
         }catch(Exception e){
@@ -58,7 +56,7 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
      * Implements IAuthenticationSession::authenticateUser.
      * Implements a mechanism that queries a remote database through a HTTP-based protocol.
      */
-    public UserAuthData authenticateUser(String username, String password) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
+    public UserAuthData authenticateUser(Admin admin, String username, String password) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">authenticateUser("+username+", hiddenpwd)");
 
         UserAuthData ret;
@@ -84,7 +82,7 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
      * Implements IAuthenticationSession::finishUser.
      * Does nothing!.
      */
-    public void finishUser(String username, String password) throws ObjectNotFoundException {
+    public void finishUser(Admin admin, String username, String password) throws ObjectNotFoundException {
 
     }
 

@@ -47,9 +47,9 @@ public class CACertificateProfile extends CertificateProfile{
 
       setUseCertificatePolicies(false);
       setCertificatePoliciesCritical(false);
-      setCertificatePolicyId("2.5.29.32.0");
-
-      setType(TYPE_CA);
+      setCertificatePolicyId("2.5.29.32.0");      
+      setType(TYPE_CA); 
+      
 
       int[] bitlengths = {512,1024,2048,4096};
       setAvailableBitLengths(bitlengths);

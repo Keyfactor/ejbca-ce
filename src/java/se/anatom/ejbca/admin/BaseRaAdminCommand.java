@@ -11,7 +11,7 @@ import se.anatom.ejbca.log.Admin;
 
 /** Base for RA commands, contains comom functions for RA operations
  *
- * @version $Id: BaseRaAdminCommand.java,v 1.5 2002-09-12 18:14:15 herrvendil Exp $
+ * @version $Id: BaseRaAdminCommand.java,v 1.6 2002-11-17 14:01:38 herrvendil Exp $
  */
 public abstract class BaseRaAdminCommand extends BaseAdminCommand {
 
@@ -41,7 +41,7 @@ public abstract class BaseRaAdminCommand extends BaseAdminCommand {
                     Object obj1 = jndiContext.lookup("UserAdminSession");
                     cacheHome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
                 }
-                cacheAdmin = cacheHome.create(administrator);
+                cacheAdmin = cacheHome.create();
             }
             debug("<getAdminSession()");
             return  cacheAdmin;

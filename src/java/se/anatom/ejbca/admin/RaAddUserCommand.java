@@ -18,7 +18,7 @@ import se.anatom.ejbca.SecConst;
 
 /** Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.9 2002-11-13 12:22:10 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.10 2002-11-17 14:01:39 herrvendil Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 
@@ -33,20 +33,35 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             Object obj1 = jndicontext.lookup("CertificateStoreSession");
             ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-            ICertificateStoreSessionRemote certificatesession = certificatesessionhome.create(administrator);
+            ICertificateStoreSessionRemote certificatesession = certificatesessionhome.create();    
+            
+            obj1 = jndicontext.lookup("RaAdminSession");
+            IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"), 
+                                                                                 IRaAdminSessionHome.class);
+            IRaAdminSessionRemote raadminsession = raadminsessionhome.create();              
+            
+            String[] certprofnames = (String[]) certificatesession.getCertificateProfileNames(administrator).toArray((Object[]) new String[0]);
+            String[] endentityprofilenames = (String[]) raadminsession.getEndEntityProfileNames(administrator).toArray((Object[]) new String[0]);
 
-            String[] certprofnames = (String[]) certificatesession.getCertificateProfileNames().toArray((Object[]) new String[0]);
             if (args.length < 8) {
                 System.out.println("Usage: RA adduser <username> <password> <dn> <subjectalternativename> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] ");
                 System.out.println("Type (mask): INVALID=0; END-USER=1; CA=2;  ROOTCA=8; ADMINISTRATOR=64");
-                System.out.println("Token      : Browser Generated=" + SecConst.TOKEN_SOFT_BROWSERGEN + "; P12=" + SecConst.TOKEN_SOFT_P12 + "; JKS="
-                                    + SecConst.TOKEN_SOFT_JKS + ";  PEM=" + SecConst.TOKEN_SOFT_PEM);
+                System.out.println("Token      : Browser Generated=" + SecConst.TOKEN_SOFT_BROWSERGEN + "; P12=" + SecConst.TOKEN_SOFT_P12 + "; JKS=" 
+                                    + SecConst.TOKEN_SOFT_JKS + ";  PEM=" + SecConst.TOKEN_SOFT_PEM);                
+                
+                System.out.print("Existing certificate profiles  : ");
 
-                System.out.print("Existing certificatetypes  : ");
                 for(int i=0; i < certprofnames.length-1; i++){
                   System.out.print(certprofnames[i] + ", ");
                 }
                 System.out.print(certprofnames[certprofnames.length-1] + "\n");
+
+                
+                System.out.print("Existing endentity profiles  : ");
+                for(int i=0; i < endentityprofilenames.length-1; i++){
+                  System.out.print(endentityprofilenames[i] + ", ");
+                }
+                System.out.print(endentityprofilenames[endentityprofilenames.length-1] + "\n");
 
                 System.out.println("If the user does not have an email address, use the value 'null'. ");
                 return;
@@ -65,19 +80,15 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             boolean error = false;
 
             if(args.length == 9){
-              // Use certificate type, no profile.
-              certificatetypeid = certificatesession.getCertificateProfileId(args[8]);
+              // Use certificate type, no profile.              
+              certificatetypeid = certificatesession.getCertificateProfileId(administrator, args[8]);
               profileid = IRaAdminSessionRemote.EMPTY_ENDENTITYPROFILEID;
             }
 
             if(args.length == 10){
               // Use certificate type and profile.
-              obj1 = jndicontext.lookup("RaAdminSession");
-              IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"),
-                                                                                 IRaAdminSessionHome.class);
-              IRaAdminSessionRemote raadminsession = raadminsessionhome.create(new Admin(Admin.TYPE_RACOMMANDLINE_USER));
-              profileid = raadminsession.getEndEntityProfileId(args[9]);
-              certificatetypeid = certificatesession.getCertificateProfileId(args[8]);
+              profileid = raadminsession.getEndEntityProfileId(administrator, args[9]);
+              certificatetypeid = certificatesession.getCertificateProfileId(administrator, args[8]);
             }
 
             if(!validToken(token)){
@@ -96,9 +107,9 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             // Check if username already exists.
             try{
-              if(getAdminSession().findUser(username) != null){;
-                System.out.println("Error : User already exists in the database." );
-                error= true;
+              if(getAdminSession().findUser(administrator, username) != null){;
+                System.out.println("Error : User already exists in the database." );                
+                error= true;                
               }
             }catch(FinderException e){
 
@@ -111,10 +122,11 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
               System.out.println("DN: "+dn);
               System.out.println("Email: "+email);
               System.out.println("Type: "+type);
+              System.out.println("Token: "+token);              
               if (email.equals("null"))
                   email = null;
               try{
-                getAdminSession().addUser(username, password, dn, subjectaltname, email, false, profileid, certificatetypeid,
+                getAdminSession().addUser(administrator, username, password, dn, subjectaltname, email, false, profileid, certificatetypeid, 
                                          (type & SecConst.USER_ADMINISTRATOR) == SecConst.USER_ADMINISTRATOR,
                                          (type & SecConst.USER_KEYRECOVERABLE) == SecConst.USER_KEYRECOVERABLE,
                                           token,0);

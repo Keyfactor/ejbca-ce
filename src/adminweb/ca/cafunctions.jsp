@@ -70,7 +70,7 @@
           <tr id="Row0">
             <td>&nbsp;</td>
             <td> 
-              <a href="<%=THIS_FILENAME%>"  onClick="window.open('<%=VIEWCERTIFICATE_LINK%>?subjectdnparameter=<%=java.net.URLEncoder.encode(cacerts[index].getSubjectDN(),"UTF-8") %>', 'view_cert',config='height=600,width=550,scrollbars=yes,toolbar=no,resizable=1')";><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;&nbsp;
+              <a href="<%=THIS_FILENAME%>"  onClick="window.open('<%=VIEWCERTIFICATE_LINK%>?certsernoparameter=<%=java.net.URLEncoder.encode(cacerts[index].getSerialNumber(),"UTF-8") %>', 'view_cert',config='height=600,width=550,scrollbars=yes,toolbar=no,resizable=1')";><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;&nbsp;
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecacert&level=0"><%= ejbcawebbean.getText("DOWNLOADIE")%></a>&nbsp;&nbsp;&nbsp;
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscacert&level=0"><%= ejbcawebbean.getText("DOWNLOADNS")%></a>&nbsp;&nbsp;&nbsp;
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cacert&level=0"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>

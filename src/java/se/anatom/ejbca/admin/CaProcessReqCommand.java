@@ -13,7 +13,7 @@ import se.anatom.ejbca.util.Base64;
 
 /** Receive certification request and create certificate to send back.
  *
- * @version $Id: CaProcessReqCommand.java,v 1.5 2002-10-13 11:40:29 anatom Exp $
+ * @version $Id: CaProcessReqCommand.java,v 1.6 2002-11-17 14:01:39 herrvendil Exp $
  */
 public class CaProcessReqCommand extends BaseCaAdminCommand {
 
@@ -52,8 +52,8 @@ public class CaProcessReqCommand extends BaseCaAdminCommand {
 
             Context ctx = getInitialContext();
             ISignSessionHome home = (ISignSessionHome)javax.rmi.PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
-            ISignSessionRemote ss = home.create(administrator);
-            X509Certificate cert = (X509Certificate) ss.createCertificate(username, password, new PKCS10RequestMessage(buffer));
+            ISignSessionRemote ss = home.create();
+            X509Certificate cert = (X509Certificate) ss.createCertificate(administrator, username, password, new PKCS10RequestMessage(buffer));
             FileOutputStream fos = new FileOutputStream(outfile);
             fos.write("-----BEGIN CERTIFICATE-----\n".getBytes());
             fos.write(Base64.encode(cert.getEncoded()));
