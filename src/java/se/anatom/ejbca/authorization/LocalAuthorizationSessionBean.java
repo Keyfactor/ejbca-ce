@@ -13,6 +13,20 @@
 
 package se.anatom.ejbca.authorization;
 
+import java.security.cert.X509Certificate;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Random;
+
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+import javax.ejb.FinderException;
+
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.JNDINames;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
@@ -28,26 +42,11 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
 import se.anatom.ejbca.util.JDBCUtil;
 import se.anatom.ejbca.util.ServiceLocator;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBLocalHome;
-import java.security.cert.X509Certificate;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Random;
-
 /**
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.16 2004-08-05 15:26:21 sbailliez Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.17 2004-08-05 18:24:15 anatom Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
