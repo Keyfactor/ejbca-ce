@@ -1,4 +1,4 @@
-$Id: TODO,v 1.51 2002-10-29 16:49:06 anatom Exp $
+$Id: TODO,v 1.52 2002-10-30 11:16:07 anatom Exp $
 
 V 1.x
 -----
@@ -23,6 +23,8 @@ using keytool, as well as JDK 1.4 stuff.
 http://support.microsoft.com/default.aspx?scid=kb;EN-US;q281245
 - Implement SCEP, http://openscep.othello.ch/
 - Test LDAP with mod_authz_ldap in apache
+- Import utility to get users from external datasources.
+- Multiple instances of EJBCA running within a singe JBoss.
 - Key recovery 
 - XML/Soap stuff.
 
