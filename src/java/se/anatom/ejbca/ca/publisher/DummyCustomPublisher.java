@@ -19,13 +19,14 @@ import java.util.Properties;
 import se.anatom.ejbca.ca.exception.PublisherConnectionException;
 import se.anatom.ejbca.ca.exception.PublisherException;
 import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ra.ExtendedInformation;
 
 /**
  * This is an class used for testing and example purposes.
  * I supposed to illustrat how to implement a custom publisher to EJBCA 3.
  *  
  *
- * @version $Id: DummyCustomPublisher.java,v 1.2 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: DummyCustomPublisher.java,v 1.3 2004-05-13 15:36:11 herrvendil Exp $
  */
 public class DummyCustomPublisher implements ICustomPublisher{
     		
@@ -48,7 +49,7 @@ public class DummyCustomPublisher implements ICustomPublisher{
 	/**
 	 * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#storeCertificate(se.anatom.ejbca.log.Admin, java.security.cert.Certificate, java.lang.String, java.lang.String, int, int)
 	 */
-	public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp, int status, int type) throws PublisherException {
+	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, ExtendedInformation extendedinformation) throws PublisherException {
 		System.out.println("DummyCustomPublisher, Storing Certificate for user: " + username);	
 		return true;
 	}

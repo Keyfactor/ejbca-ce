@@ -34,7 +34,7 @@ import junit.framework.*;
 /**
  * Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.3 2004-04-16 07:39:00 anatom Exp $
+ * @version $Id: TestPublisher.java,v 1.4 2004-05-13 15:36:12 herrvendil Exp $
  */
 public class TestPublisher extends TestCase {
 
@@ -261,7 +261,7 @@ public class TestPublisher extends TestCase {
        ArrayList publishers = new ArrayList();
        publishers.add(new Integer(pub.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
     	 
-       boolean ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", null, se.anatom.ejbca.ca.store.CertificateData.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY);
+       boolean ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, se.anatom.ejbca.ca.store.CertificateData.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, null);
        assertTrue("Storing certificate to dummy publisher failed", ret); 
        log.debug("<test07StoreCertToDummyr()");
     }

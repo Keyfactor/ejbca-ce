@@ -16,9 +16,8 @@ package se.anatom.ejbca.ca.sign;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
-import java.util.Vector;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Vector;
 
 import javax.ejb.ObjectNotFoundException;
 
@@ -41,7 +40,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
  * Local interface for EJB, unforturnately this must be a copy of the remote interface except that
  * RemoteException is not thrown. Creates certificates.
  *
- * @version $Id: ISignSessionLocal.java,v 1.22 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: ISignSessionLocal.java,v 1.23 2004-05-13 15:36:31 herrvendil Exp $
  *
  * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
  */
@@ -135,8 +134,7 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */    
     public void publishCACertificate(Admin admin, Collection certificatechain, Collection publishers, int certtype);
-
-    public HashMap getPublisherIdToNameMap(Admin admin);
+    
     
     
 }

@@ -46,12 +46,13 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.log.LogEntry;
+import se.anatom.ejbca.ra.ExtendedInformation;
 
 /**
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalPublisherSessionBean.java,v 1.3 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: LocalPublisherSessionBean.java,v 1.4 2004-05-13 15:36:11 herrvendil Exp $
  */
 public class LocalPublisherSessionBean extends BaseSessionBean  {
 
@@ -156,7 +157,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean  {
      * @see se.anatom.ejbca.ca.publisher.BasePublisher
      * @return true if sucessfull result on all given publishers
      */    
-    public boolean storeCertificate(Admin admin, Collection publisherids, Certificate incert, String username, String cafp, int status, int type){
+    public boolean storeCertificate(Admin admin, Collection publisherids, Certificate incert, String username, String password, String cafp, int status, int type, ExtendedInformation extendedinformation){
       Iterator iter = publisherids.iterator();
       boolean returnval = true;
       while(iter.hasNext()){
@@ -164,7 +165,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean  {
         try{
           PublisherDataLocal pdl = publisherhome.findByPrimaryKey(id);
           try{    
-          returnval &= pdl.getPublisher().storeCertificate(admin,incert,username,cafp,status,type);
+          returnval &= pdl.getPublisher().storeCertificate(admin,incert,username, password, cafp,status,type, extendedinformation);
           getLogSession().log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), username,
                         (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE,
                         "Added object: " + ((X509Certificate) incert).getSubjectDN().toString() + " successfully to publisher " + pdl.getName() +".");        	

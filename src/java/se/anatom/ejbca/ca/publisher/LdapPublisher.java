@@ -36,6 +36,15 @@ import org.bouncycastle.asn1.DERInputStream;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERTaggedObject;
 
+import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.ca.exception.PublisherConnectionException;
+import se.anatom.ejbca.ca.exception.PublisherException;
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ra.ExtendedInformation;
+import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
+import se.anatom.ejbca.util.Base64;
+import se.anatom.ejbca.util.CertTools;
+
 import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPAttributeSet;
 import com.novell.ldap.LDAPConnection;
@@ -45,18 +54,10 @@ import com.novell.ldap.LDAPJSSESecureSocketFactory;
 import com.novell.ldap.LDAPModification;
 import com.novell.ldap.LDAPModificationSet;
 
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ca.exception.PublisherConnectionException;
-import se.anatom.ejbca.ca.exception.PublisherException;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
-import se.anatom.ejbca.util.Base64;
-import se.anatom.ejbca.util.CertTools;
-
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.3 2004-05-12 14:10:30 herrvendil Exp $
+ * @version $Id: LdapPublisher.java,v 1.4 2004-05-13 15:36:11 herrvendil Exp $
  */
 public class LdapPublisher extends BasePublisher{
 	 	
@@ -137,7 +138,7 @@ public class LdapPublisher extends BasePublisher{
 	/**
 	 * @see se.anatom.ejbca.ca.publisher.BasePublisher
 	 */    
-	public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp, int status, int type) throws PublisherException{
+	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, ExtendedInformation extendedinformation) throws PublisherException{
         log.debug(">storeCertificate(username="+username+")");
         int ldapVersion = LDAPConnection.LDAP_V3;
         LDAPConnection lc = null;

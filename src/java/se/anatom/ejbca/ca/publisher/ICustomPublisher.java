@@ -19,6 +19,7 @@ import java.util.Properties;
 import se.anatom.ejbca.ca.exception.PublisherConnectionException;
 import se.anatom.ejbca.ca.exception.PublisherException;
 import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ra.ExtendedInformation;
 
 
 
@@ -26,7 +27,7 @@ import se.anatom.ejbca.log.Admin;
  * Interface contating methods that need to be implementet in order 
  * to have a custom publisher. All Custom publishers must implement this interface.
  * 
- * @version $Id: ICustomPublisher.java,v 1.2 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: ICustomPublisher.java,v 1.3 2004-05-13 15:36:11 herrvendil Exp $
  */
 
 public interface ICustomPublisher {
@@ -40,7 +41,7 @@ public interface ICustomPublisher {
 	/**
 	 * @see se.anatom.ejbca.ca.publisher.BasePublisher
 	 */    
-	public abstract boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp, int status, int type)throws PublisherException;
+	public abstract boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, ExtendedInformation extendedinformation)throws PublisherException;
 	
 	/**
 	 * @see se.anatom.ejbca.ca.publisher.BasePublisher

@@ -16,9 +16,12 @@ package se.anatom.ejbca.ca.publisher;
 import java.io.Serializable;
 import java.security.cert.Certificate;
 
+import javax.ejb.EJBException;
+
 import se.anatom.ejbca.ca.exception.PublisherConnectionException;
 import se.anatom.ejbca.ca.exception.PublisherException;
 import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ra.ExtendedInformation;
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
 
 /**
@@ -26,7 +29,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * of publishers in the system.
  *  
  *
- * @version $Id: BasePublisher.java,v 1.3 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: BasePublisher.java,v 1.4 2004-05-13 15:36:11 herrvendil Exp $
  */
 public abstract class BasePublisher extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values
@@ -70,15 +73,17 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      *
      * @param incert The certificate to be stored.
      * @param chainfp Fingerprint (hex) of the CAs certificate.
-     * @param username username of end entity owning the certificate.
+     * @param username Username of end entity owning the certificate.
+     * @param password Password given to the user, may be null if no password exists for the user.
      * @param status Status of the certificate (from CertificateData).
      * @param type Type of certificate (from SecConst).
+     * @param extendedinformation contains extended information about the user, like picture, is null if no extendedinformation exists about the user.
      *
      * @return true if storage was successful.
      *
      * @throws EJBException if a communication or other error occurs.
      */    
-    public abstract boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp, int status, int type) throws PublisherException;
+    public abstract boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, ExtendedInformation extendedinformation) throws PublisherException;
 	
     /**
      * Published a CRL to a CRL store.

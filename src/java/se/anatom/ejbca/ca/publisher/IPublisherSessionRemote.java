@@ -17,13 +17,16 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.HashMap;
 
+import javax.ejb.EJBException;
+
 import se.anatom.ejbca.ca.exception.PublisherConnectionException;
 import se.anatom.ejbca.ca.exception.PublisherExistsException;
 import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ra.ExtendedInformation;
 
 /**
  *
- * @version $Id: IPublisherSessionRemote.java,v 1.2 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: IPublisherSessionRemote.java,v 1.3 2004-05-13 15:36:11 herrvendil Exp $
  */
 public interface IPublisherSessionRemote extends javax.ejb.EJBObject {
     
@@ -36,7 +39,7 @@ public interface IPublisherSessionRemote extends javax.ejb.EJBObject {
 	 * @see se.anatom.ejbca.ca.publisher.BasePublisher
 	 * @return true if sucessfull result on all given publishers
 	 */    
-	public boolean storeCertificate(Admin admin, Collection publisherids, Certificate incert, String username, String cafp, int status, int type) throws RemoteException;
+	public boolean storeCertificate(Admin admin, Collection publisherids, Certificate incert, String username, String password, String cafp, int status, int type, ExtendedInformation extendedinformation) throws RemoteException;
 	
 	/**
 	 * Stores the crl to the given collection of publishers.

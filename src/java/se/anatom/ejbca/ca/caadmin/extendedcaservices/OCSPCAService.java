@@ -41,7 +41,7 @@ import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.KeyTools;
 /** Handles and maintains the CA -part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.6 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.7 2004-05-13 15:35:49 herrvendil Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -155,12 +155,12 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	 KeyPair ocspkeys = KeyTools.genKeys(info.getKeySize());
 	   	  
 	 Certificate ocspcertificate =
-	  ca.generateCertificate(new UserAuthData("NOUSERNAME", 	                                          
+	  ca.generateCertificate(new UserAuthData("NOUSERNAME", null, 	                                          
 											info.getSubjectDN(),
 											0, 
 											info.getSubjectAltName(),
 											"NOEMAIL",
-											0,0)
+											0,0,null)
 						   , ocspkeys.getPublic(),
 						   -1, // KeyUsage
 						   ca.getValidity(), 

@@ -20,10 +20,11 @@ import java.util.HashMap;
 import se.anatom.ejbca.ca.exception.PublisherConnectionException;
 import se.anatom.ejbca.ca.exception.PublisherExistsException;
 import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ra.ExtendedInformation;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see IPublisherSessionRemote for docs.
  *
- * @version $Id: IPublisherSessionLocal.java,v 1.2 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: IPublisherSessionLocal.java,v 1.3 2004-05-13 15:36:11 herrvendil Exp $
  * @see se.anatom.ejbca.ca.publisher.IPublisherSessionRemote
  */
 
@@ -34,7 +35,7 @@ public interface IPublisherSessionLocal extends javax.ejb.EJBLocalObject
 	/**
 	 * @see se.anatom.ejbca.ca.publisher.IPublisherSessionRemote
 	 */    
-	public boolean storeCertificate(Admin admin, Collection publisherids, Certificate incert, String username, String cafp, int status, int type);
+	public boolean storeCertificate(Admin admin, Collection publisherids, Certificate incert, String username, String password, String cafp, int status, int type, ExtendedInformation extendedinformation);
 	
 	/**
 	 * @see se.anatom.ejbca.ca.publisher.IPublisherSessionRemote

@@ -14,20 +14,22 @@
 package se.anatom.ejbca.ca.sign;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.cert.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.X509CRL;
+import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -59,27 +61,27 @@ import se.anatom.ejbca.ca.exception.IllegalKeyException;
 import se.anatom.ejbca.ca.exception.IllegalKeyStoreException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
+import se.anatom.ejbca.ca.publisher.IPublisherSessionLocal;
+import se.anatom.ejbca.ca.publisher.IPublisherSessionLocalHome;
 import se.anatom.ejbca.ca.store.CertificateData;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
-import se.anatom.ejbca.ca.publisher.IPublisherSessionLocal;
-import se.anatom.ejbca.ca.publisher.IPublisherSessionLocalHome;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.log.LogEntry;
+import se.anatom.ejbca.protocol.FailInfo;
 import se.anatom.ejbca.protocol.IRequestMessage;
 import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.protocol.ResponseStatus;
-import se.anatom.ejbca.protocol.FailInfo;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
 
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.126 2004-05-10 04:33:02 herrvendil Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.127 2004-05-13 15:36:30 herrvendil Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -89,18 +91,12 @@ public class RSASignSessionBean extends BaseSessionBean {
     
     /** Home interface to certificate store */
     private ICertificateStoreSessionLocalHome storeHome = null;
-
-    /** A vector of publishers home interfaces where certs and CRLs are stored */
-    private ArrayList publishers = null;
-
-    private HashMap publisheridtonamemap = null;
-    
+        
     /* Home interface to Authentication session */
     private IAuthenticationSessionLocalHome authHome = null;
 
     /* Home interface to Publisher session */
     private IPublisherSessionLocalHome publishHome = null;
-
     
     /** The local interface of the log session bean */
     private ILogSessionLocal logsession;
@@ -671,7 +667,8 @@ public class RSASignSessionBean extends BaseSessionBean {
                 }  
                 // Store cert in ca cert publishers.
                 IPublisherSessionLocal pub = publishHome.create();
-                pub.storeCertificate(admin, usedpublishers, cacert, fingerprint, fingerprint, CertificateData.CERT_ACTIVE, certtype);
+                if(usedpublishers != null)
+                  pub.storeCertificate(admin, usedpublishers, cacert, fingerprint, null , fingerprint, CertificateData.CERT_ACTIVE, certtype, null);
         }
        }catch(javax.ejb.CreateException ce){
            throw new EJBException(ce);   
@@ -818,7 +815,8 @@ public class RSASignSessionBean extends BaseSessionBean {
                 certificateStore.storeCertificate(admin, cert, data.getUsername(), fingerprint, CertificateData.CERT_ACTIVE, certProfile.getType());
                 // Store certificate in certificate profiles publishers.
                 IPublisherSessionLocal pub = publishHome.create();
-                pub.storeCertificate(admin, certProfile.getPublisherList(), cert, data.getUsername(), fingerprint, CertificateData.CERT_ACTIVE, certProfile.getType());
+                if(certProfile.getPublisherList() != null)
+                  pub.storeCertificate(admin, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), fingerprint, CertificateData.CERT_ACTIVE, certProfile.getType(), data.getExtendedInformation());
                                                 
                 debug("<createCertificate(pk, ku)");
                 return cert;
@@ -860,8 +858,6 @@ public class RSASignSessionBean extends BaseSessionBean {
 	  		     
 	}
     
-    public HashMap getPublisherIdToNameMap(Admin admin){
-      return publisheridtonamemap;   
-    }
+
     
 } //RSASignSessionBean

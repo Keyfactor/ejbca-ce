@@ -25,13 +25,14 @@ import javax.ejb.EJBException;
 import se.anatom.ejbca.ca.exception.PublisherConnectionException;
 import se.anatom.ejbca.ca.exception.PublisherException;
 import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ra.ExtendedInformation;
 
 /**
  * CustomPublisherContainer is a class handling a custom publisher. It is used 
  * to store and retrieve custom publisher configuration to database.
  * 
  *
- * @version $Id: CustomPublisherContainer.java,v 1.2 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: CustomPublisherContainer.java,v 1.3 2004-05-13 15:36:11 herrvendil Exp $
  */
 public class CustomPublisherContainer extends BasePublisher{
 	private ICustomPublisher custompublisher = null; 
@@ -93,8 +94,8 @@ public class CustomPublisherContainer extends BasePublisher{
 	/**
 	 * @see se.anatom.ejbca.ca.publisher.BasePublisher
 	 */    
-	public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp, int status, int type) throws PublisherException{
-		return this.getCustomPublisher().storeCertificate(admin,incert,username,cafp,status,type);		
+	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, ExtendedInformation extendedinformation) throws PublisherException{
+		return this.getCustomPublisher().storeCertificate(admin,incert,username,password, cafp,status,type, extendedinformation);		
 	}
 	
 	/**

@@ -13,36 +13,34 @@
  
 package se.anatom.ejbca.ca.sign;
 
-import java.util.HashMap;
-import java.util.Vector;
-import java.util.Collection;
 import java.rmi.RemoteException;
-
-import javax.ejb.ObjectNotFoundException;
-
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
-import java.security.PublicKey;
+import java.util.Collection;
+import java.util.Vector;
+
+import javax.ejb.ObjectNotFoundException;
 
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
-import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
+import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.CADoesntExistsException;
+import se.anatom.ejbca.ca.exception.IllegalKeyException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
-import se.anatom.ejbca.ca.exception.IllegalKeyException;
+import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.IRequestMessage;
 import se.anatom.ejbca.protocol.IResponseMessage;
-import se.anatom.ejbca.log.Admin;
 
 /**
  * Creates certificates. Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.27 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.28 2004-05-13 15:36:31 herrvendil Exp $
  */
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
 	/**
@@ -332,8 +330,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     *  @param certtype is one of SecConst.CERTTYPE_ constants
     */
     public void publishCACertificate(Admin admin, Collection certificatechain, Collection publishers, int certtype) throws RemoteException;
-
-    public HashMap getPublisherIdToNameMap(Admin admin) throws RemoteException;
+    
 }
 
 
