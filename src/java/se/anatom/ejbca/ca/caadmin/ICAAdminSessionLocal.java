@@ -13,7 +13,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
 
 /** Local interface of CAAdmin sessio bean for EJB. Manages CAs
  *
- * @version $Id: ICAAdminSessionLocal.java,v 1.1 2003-09-03 16:21:29 herrvendil Exp $
+ * @version $Id: ICAAdminSessionLocal.java,v 1.2 2003-10-03 14:34:20 herrvendil Exp $
  */
 public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
  
@@ -140,7 +140,7 @@ public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
                                 char[] privkeypass, String privatekeyalias);
   
   /**
-   * TODO
+   *  Method returning a Collection of Certificate of all CA certificates known to the system.
    */
   public Collection getAllCACertificates(Admin admin);
   

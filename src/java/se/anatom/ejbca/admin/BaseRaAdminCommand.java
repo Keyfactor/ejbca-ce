@@ -3,21 +3,21 @@ package se.anatom.ejbca.admin;
 import java.rmi.RemoteException;
 
 import javax.ejb.CreateException;
-import javax.naming.*;
+import javax.naming.Context;
+import javax.naming.NamingException;
 
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
-import se.anatom.ejbca.log.Admin;
 
 
 
 /**
  * Base for RA commands, contains comom functions for RA operations
  *
- * @version $Id: BaseRaAdminCommand.java,v 1.9 2003-09-03 14:32:02 herrvendil Exp $
+ * @version $Id: BaseRaAdminCommand.java,v 1.10 2003-10-03 14:34:20 herrvendil Exp $
  */
 public abstract class BaseRaAdminCommand extends BaseAdminCommand {
     /**

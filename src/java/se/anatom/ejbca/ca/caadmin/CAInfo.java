@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * Holds nonsensitive information about a CA.
  *
- * @version $Id: CAInfo.java,v 1.2 2003-10-01 11:12:14 herrvendil Exp $
+ * @version $Id: CAInfo.java,v 1.3 2003-10-03 14:34:20 herrvendil Exp $
  */
 public abstract class CAInfo implements Serializable {
 
@@ -40,6 +40,7 @@ public abstract class CAInfo implements Serializable {
     protected CATokenInfo catokeninfo;
     protected String description;
     protected int revokationreason;
+    protected Date revokationdate;
     protected int certificateprofileid;
     protected int crlperiod;
     protected Collection crlpublishers;  
@@ -67,18 +68,15 @@ public abstract class CAInfo implements Serializable {
     public void setDescription(String description){ this.description = description;}
     
     public int getRevokationReason(){ return this.revokationreason;}
+    public Date getRevokationDate(){ return this.revokationdate;}    
     
     public int getCertificateProfileId(){ return this.certificateprofileid; };
     
     public int getCRLPeriod(){ return crlperiod;}
     public void setCRLPeriod(int crlperiod){ this.crlperiod=crlperiod;}
   
-    public Collection getCRLPublishers(){ 
-		System.out.println("CAInfo, g	etCRLPublishers size :" + crlpublishers.size());// TODO remove
-		return crlpublishers;}
-    public void setCRLPublishers(Collection crlpublishers){ 
-    	System.out.println("CAInfo, setCRLPublishers size :" + crlpublishers.size());// TODO remove
-    	this.crlpublishers=crlpublishers;}    
+    public Collection getCRLPublishers(){ return crlpublishers;}
+    public void setCRLPublishers(Collection crlpublishers){this.crlpublishers=crlpublishers;}    
     	
 	public boolean getFinishUser(){ return finishuser;}
 	public void setFinishUser(boolean finishuser){ this.finishuser=finishuser;}    	

@@ -23,7 +23,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.15 2003-10-01 11:12:14 herrvendil Exp $
+ * @version $Id: CaInitCommand.java,v 1.16 2003-10-03 14:34:20 herrvendil Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
     /** Pointer to main certificate store */
@@ -100,7 +100,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                                                (Collection) null,
                                                catokeninfo,
                                                "Initial CA",
-                                               -1,
+                                               -1, null,
                                                policyId, // PolicyId
                                                24, // CRLPeriod
                                                (Collection) new ArrayList(),

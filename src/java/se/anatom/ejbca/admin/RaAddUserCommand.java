@@ -1,41 +1,35 @@
 package se.anatom.ejbca.admin;
 
-import javax.ejb.FinderException;
-import javax.naming.*;
-
-import java.security.cert.X509Certificate;
-import java.security.cert.Certificate;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.HashMap;
+import java.util.Iterator;
+
+import javax.ejb.FinderException;
+import javax.naming.InitialContext;
 
 import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.ca.sign.ISignSessionHome;
-import se.anatom.ejbca.ca.sign.ISignSessionRemote;
+import se.anatom.ejbca.authorization.AuthorizationDeniedException;
+import se.anatom.ejbca.authorization.IAuthorizationSessionHome;
+import se.anatom.ejbca.authorization.IAuthorizationSessionRemote;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
-
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
+import se.anatom.ejbca.hardtoken.AvailableHardToken;
+import se.anatom.ejbca.hardtoken.IHardTokenSessionHome;
+import se.anatom.ejbca.hardtoken.IHardTokenSessionRemote;
+import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
-import se.anatom.ejbca.authorization.IAuthorizationSessionRemote;
-import se.anatom.ejbca.authorization.IAuthorizationSessionHome;
-import se.anatom.ejbca.authorization.AuthorizationDeniedException;
-
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
-import se.anatom.ejbca.hardtoken.IHardTokenSessionRemote;
-import se.anatom.ejbca.hardtoken.IHardTokenSessionHome;
-import se.anatom.ejbca.hardtoken.AvailableHardToken;
 
 
 
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.26 2003-09-03 14:32:02 herrvendil Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.27 2003-10-03 14:34:20 herrvendil Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
     /**

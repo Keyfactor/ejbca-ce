@@ -8,7 +8,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Holds nonsensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.2 2003-10-01 11:12:14 herrvendil Exp $
+ * @version $Id: X509CAInfo.java,v 1.3 2003-10-03 14:34:20 herrvendil Exp $
  */
 public class X509CAInfo extends CAInfo{
    
@@ -24,7 +24,7 @@ public class X509CAInfo extends CAInfo{
      */
     public X509CAInfo(String subjectdn, String name, int status, String subjectaltname, int certificateprofileid, 
                     int validity, Date expiretime, int catype, int signedby, Collection certificatechain, 
-                    CATokenInfo catokeninfo, String description, int revokationreason, String policyid, int crlperiod, Collection crlpublishers,
+                    CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, String policyid, int crlperiod, Collection crlpublishers,
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                     boolean usecrlnumber, boolean crlnumbercritical, boolean finishuser) {
         this.subjectdn = CertTools.stringToBCDNString(subjectdn);
@@ -39,6 +39,7 @@ public class X509CAInfo extends CAInfo{
         this.catokeninfo = catokeninfo; 
         this.description = description;
         this.revokationreason = revokationreason;
+        this.revokationdate = revokationdate;
         this.policyid = policyid;
         this.crlperiod = crlperiod;
         this.crlpublishers = crlpublishers;

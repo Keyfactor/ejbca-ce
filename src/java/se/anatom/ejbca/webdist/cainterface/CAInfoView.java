@@ -13,7 +13,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 /**
  * A class representing a view of a CA Information view..
  *
- * @version $Id: CAInfoView.java,v 1.2 2003-10-01 11:12:14 herrvendil Exp $
+ * @version $Id: CAInfoView.java,v 1.3 2003-10-03 14:34:20 herrvendil Exp $
  */
 public class CAInfoView implements java.io.Serializable, Cloneable {
     // Public constants.
@@ -75,7 +75,8 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
             case SecConst.CA_REVOKED :
               cainfodata[STATUS]     = ejbcawebbean.getText("CAREVOKED") + ", " + 
                                        ejbcawebbean.getText("REASON") + " :<br>&nbsp;&nbsp;" +
-                                       ejbcawebbean.getText(RevokedInfoView.reasontexts[cainfo.getRevokationReason()]);
+                                       ejbcawebbean.getText(RevokedInfoView.reasontexts[cainfo.getRevokationReason()])
+			                           + "<br>&nbsp;&nbsp;" + ejbcawebbean.getText("REVOKATIONDATE") + ejbcawebbean.printDateTime(cainfo.getRevokationDate());
               break;
             case SecConst.CA_WAITING_CERTIFICATE_RESPONSE :
               cainfodata[STATUS]     = ejbcawebbean.getText("WAITINGFORCERTRESPONSE");

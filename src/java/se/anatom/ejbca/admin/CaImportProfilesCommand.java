@@ -4,13 +4,15 @@ import java.beans.XMLDecoder;
 import java.io.File;
 import java.io.FileInputStream;
 
-import javax.naming.*;
+import javax.naming.InitialContext;
 
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.ca.exception.CertificateProfileExistsException;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
+import se.anatom.ejbca.ra.raadmin.EndEntityProfileExistsException;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 
@@ -18,7 +20,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 /**
  * Export profiles from the databse to XML-files.
  *
- * @version $Id: CaImportProfilesCommand.java,v 1.4 2003-09-03 14:32:02 herrvendil Exp $
+ * @version $Id: CaImportProfilesCommand.java,v 1.5 2003-10-03 14:34:20 herrvendil Exp $
  */
 public class CaImportProfilesCommand extends BaseCaAdminCommand {
     /**
@@ -38,9 +40,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
-            System.out.println("TODO");
-            //TODO
-            /*
+
             InitialContext jndicontext = new InitialContext();
 
             Object obj1 = jndicontext.lookup("CertificateStoreSession");
@@ -54,10 +54,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                         "RaAdminSession"), IRaAdminSessionHome.class);
             IRaAdminSessionRemote raadminsession = raadminsessionhome.create();
 
-            String[] certprofnames = (String[]) certificatesession.getCertificateProfileNames(administrator)
-                                                                  .toArray((Object[]) new String[0]);
-            String[] endentityprofilenames = (String[]) raadminsession.getEndEntityProfileNames(administrator)
-                                                                      .toArray((Object[]) new String[0]);
+
 
             if (args.length < 2) {
                 System.out.println("Usage: CA importprofiles <inpath>");
@@ -90,7 +87,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                         int profileid = Integer.parseInt(infiles[i].getName().substring(index2+1,index3));
                         // We don't add the fixed profiles, EJBCA handles those automagically
                         if ( (!entityprofile && profileid == SecConst.CERTPROFILE_FIXED_ENDUSER) || 
-                            (!entityprofile && profileid == SecConst.CERTPROFILE_FIXED_CA) ||
+                            (!entityprofile && profileid == SecConst.CERTPROFILE_FIXED_SUBCA) ||
                             (!entityprofile && profileid == SecConst.CERTPROFILE_FIXED_ROOTCA) ) { 
                             System.out.println("Not adding fixed certificate profile '"+profilename+"'.");
                         } else {
@@ -125,20 +122,20 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                     XMLDecoder decoder = new XMLDecoder( is );
                                     if (entityprofile) {
                                         eprofile = (EndEntityProfile)decoder.readObject();
-                                        boolean ret = raadminsession.addEndEntityProfile(administrator,profileid,profilename,eprofile);
-                                        if (ret == false){
-                                            System.out.println("Error: Error adding entity profile '"+profilename+"' to database.");
-                                        } else {
-                                            System.out.println("Added entity profile '"+profilename+"' to database.");
-                                        }
+                                        try{                                        
+                                           raadminsession.addEndEntityProfile(administrator,profileid,profilename,eprofile);
+										   System.out.println("Added entity profile '"+profilename+"' to database.");
+                                        }catch(EndEntityProfileExistsException eepee){  
+										  System.out.println("Error: Error adding entity profile '"+profilename+"' to database.");
+                                        }                                        
                                     } else {
                                         cprofile = (CertificateProfile)decoder.readObject();
-                                        boolean ret = certificatesession.addCertificateProfile(administrator,profileid,profilename,cprofile);
-                                        if (ret == false){
-                                            System.out.println("Error: Error adding certificate profile '"+profilename+"' to database.");
-                                        } else {
-                                            System.out.println("Added certificate profile '"+profilename+"' to database.");
-                                        }
+                                        try{                                        
+                                          certificatesession.addCertificateProfile(administrator,profileid,profilename,cprofile);
+										  System.out.println("Added certificate profile '"+profilename+"' to database.");
+                                        }catch(CertificateProfileExistsException cpee){
+											System.out.println("Error: Error adding certificate profile '"+profilename+"' to database.");
+                                        }                                          
                                     }
                                     decoder.close();
                                     is.close();
@@ -147,8 +144,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                         }
                     }
                 }
-            }
-            */
+            }          
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

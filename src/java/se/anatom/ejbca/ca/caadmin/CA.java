@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.3 2003-10-01 11:12:14 herrvendil Exp $
+ * @version $Id: CA.java,v 1.4 2003-10-03 14:34:20 herrvendil Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -46,6 +46,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected static final String SIGNEDBY                       = "signedby";
     protected static final String DESCRIPTION                    = "description";
     protected static final String REVOKATIONREASON               = "revokationreason";
+	protected static final String REVOKATIONDATE                   = "revokationdate";
     protected static final String CERTIFICATEPROFILEID           = "certificateprofileid";
     protected static final String CRLPERIOD                      = "crlperiod";
     protected static final String CRLPUBLISHERS                  = "crlpublishers";
@@ -104,6 +105,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public int getRevokationReason(){return ((Integer) data.get(REVOKATIONREASON)).intValue();}
     public void setRevokationReason(int reason){ data.put(REVOKATIONREASON,new Integer(reason));}
         
+	public Date getRevokationDate(){return (Date) data.get(REVOKATIONDATE);}
+	public void setRevokationDate(Date date){ data.put(REVOKATIONDATE,date);}
+                
     public int  getCRLPeriod(){return ((Integer)data.get(CRLPERIOD)).intValue();}
     public void setCRLPeriod(int crlperiod) {data.put(CRLPERIOD, new Integer(crlperiod));}
     
@@ -114,8 +118,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public int getCertificateProfileId() {return ((Integer) data.get(CERTIFICATEPROFILEID)).intValue();}
     
     public CAToken getCAToken() throws IllegalKeyStoreException {
-      if(catoken == null){
-        System.out.println("CA: LOADING CATOKEN" + getName());  
+      if(catoken == null){         
         switch(((Integer) ((HashMap)data.get(CATOKENDATA)).get(CAToken.CATOKENTYPE)).intValue()){
             case CATokenInfo.CATOKENTYPE_P12:
               catoken = (CAToken) new SoftCAToken((HashMap)data.get(CATOKENDATA));
@@ -209,12 +212,12 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
   
         
     public byte[] encryptKeys(KeyPair keypair){
-       // TODO        
+		// TODO, encryptKeys       
        return null; 
     }
     
     public KeyPair decryptKeys(byte[] data){
-      // TODO
+      // TODO, decryptKeys
       return null;  
     }
     

@@ -11,7 +11,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 /**
  * Retrieves the latest CRL from the CA.
  *
- * @version $Id: CaGetCrlCommand.java,v 1.9 2003-09-03 14:32:02 herrvendil Exp $
+ * @version $Id: CaGetCrlCommand.java,v 1.10 2003-10-03 14:34:20 herrvendil Exp $
  */
 public class CaGetCrlCommand extends BaseCaAdminCommand {
     /**
@@ -35,8 +35,8 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
 			}
 			try {
 				String outfile = args[2];
-                                String caname = args[1];
-                                String issuerdn = getIssuerDN(caname);
+                String caname = args[1];
+                String issuerdn = getIssuerDN(caname);
 				Context context = getInitialContext();
 				ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CertificateStoreSession"),ICertificateStoreSessionHome.class);
 				ICertificateStoreSessionRemote store = storehome.create();

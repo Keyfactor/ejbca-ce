@@ -16,7 +16,7 @@ import se.anatom.ejbca.log.Admin;
  * Local interface for EJB, unforturnately this must be a copy of the remote interface except that
  * RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: ICertificateStoreSessionLocal.java,v 1.19 2003-09-03 19:57:54 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionLocal.java,v 1.20 2003-10-03 14:34:20 herrvendil Exp $
  *
  * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
  */
@@ -80,8 +80,13 @@ public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject,
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
-     */    
-    public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, int reason);    
+     */ 
+    public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, int reason);  
+
+	/**
+	 * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+	 */    
+	public void revokeAllCertByCA(Admin admin, String issuerdn, int reason); 
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote

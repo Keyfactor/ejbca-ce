@@ -42,16 +42,14 @@
         <env-entry-value>SHA1PRNG</env-entry-value>
      </env-entry>     
 <!-- Uncomment to use LDAP publisher -->
-<!--     
-     <env-entry>
-        <description>Environment entry ussed to map a publishers id to name in the web interface.
+<!--     <env-entry>
+        <description>Environment entry used to map a publishers id to name in the web interface.
                      the Id is the integer in the end of the key.
         </description>
         <env-entry-name>PublisherName1</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>First Publisher</env-entry-value>     
-     </env-entry>
--->
+     </env-entry> -->
 <!--END LDAP Publisher --> 
      <ejb-local-ref>
         <description>The CA entity bean.</description>
@@ -90,9 +88,9 @@
         <ejb-link>AuthenticationSession</ejb-link>
      </ejb-local-ref>
 <!-- Uncomment to use LDAP publisher -->
-<!--     <ejb-local-ref>
+<!--   <ejb-local-ref>
         <description>
-                Publishers are configured to store certificates and CRLs in addiotional places
+                Publishers are configured to store certificates and CRLs in additional places
                 from the main database. Publishers runs as local beans.
         </description>
         <ejb-ref-name>ejb/PublisherSession1</ejb-ref-name>
@@ -100,8 +98,7 @@
         <local-home>se.anatom.ejbca.ca.store.IPublisherSessionLocalHome</local-home>
         <local>se.anatom.ejbca.ca.store.IPublisherSessionLocal</local>
         <ejb-link>PublisherSession1</ejb-link>
-     </ejb-local-ref>
--->
+     </ejb-local-ref> -->
 <!--END LDAP Publisher -->
     <security-identity>
         <description></description>
@@ -390,7 +387,7 @@
    </session>
 
 <!-- Uncomment to use LDAP publisher -->
-<!--   <session>
+   <session>
      <ejb-name>PublisherSession1</ejb-name>
      <home>se.anatom.ejbca.ca.store.IPublisherSessionHome</home>
      <remote>se.anatom.ejbca.ca.store.IPublisherSessionRemote</remote>
@@ -468,7 +465,7 @@
         <local>se.anatom.ejbca.log.ILogSessionLocal</local>
         <ejb-link>LogSession</ejb-link>
      </ejb-local-ref>
-   </session> -->
+   </session>
 <!-- END LDAP Publisher -->
 
    <entity>
@@ -835,6 +832,10 @@ END LDAP Publisher -->
      <method>
          <ejb-name>CertificateStoreSession</ejb-name>
          <method-name>setRevokeStatus</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>revokeAllCertByCA</method-name>
      </method>
      <method>
          <ejb-name>CAAdminSession</ejb-name>

@@ -54,7 +54,7 @@ import se.anatom.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.4 2003-10-01 11:12:14 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.5 2003-10-03 14:34:20 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -134,7 +134,7 @@ public class X509CA extends CA implements Serializable {
     public CAInfo getCAInfo() throws Exception{                
       return new X509CAInfo(getSubjectDN(), getName(), getStatus(), getSubjectAltName() ,getCertificateProfileId(),  
                     getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(), 
-                    getCAToken().getCATokenInfo(), getDescription(), getRevokationReason(), getPolicyId(), getCRLPeriod(), getCRLPublishers(),
+                    getCAToken().getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicyId(), getCRLPeriod(), getCRLPublishers(),
                     getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
                     getUseCRLNumber(), getCRLNumberCritical(), getFinishUser()); 
     }

@@ -1,29 +1,29 @@
 package se.anatom.ejbca.admin;
 
-import java.io.*;
-import java.util.Collection;
-import javax.naming.*;
-import java.security.Security;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
-
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Provider;
+import java.security.Security;
 import java.security.SignatureException;
+import java.util.Collection;
 
 import javax.ejb.CreateException;
+import javax.naming.Context;
+import javax.naming.NamingException;
 
-import org.bouncycastle.asn1.*;
-import org.bouncycastle.jce.*;
+import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 
+import se.anatom.ejbca.IJobRunnerSessionHome;
+import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
-import se.anatom.ejbca.ca.caadmin.CAInfo;
-import se.anatom.ejbca.IJobRunnerSessionHome;
-import se.anatom.ejbca.ca.sign.ISignSessionRemote;
-
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.log.Admin;
@@ -34,7 +34,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.13 2003-09-03 14:32:02 herrvendil Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.14 2003-10-03 14:34:20 herrvendil Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
     /** Private key alias in PKCS12 keystores */
