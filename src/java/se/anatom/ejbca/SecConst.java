@@ -23,7 +23,7 @@ package se.anatom.ejbca;
  * Constants for Token Types
  * Token type is constructed of integer constants since only one token type can be generated.
  *
- * @version $Id: SecConst.java,v 1.5 2002-10-24 20:14:24 herrvendil Exp $
+ * @version $Id: SecConst.java,v 1.6 2002-11-13 12:22:44 anatom Exp $
  */
 public class SecConst extends Object {
 
@@ -31,14 +31,14 @@ public class SecConst extends Object {
 
     /** Dummy type. */
     public static final int USER_INVALID        =     0x0;
-        
+
     /** This is an end user certificate (default). */
     public static final int USER_ENDUSER        =     0x1;
     /** This user is an administrator. */
     public static final int USER_ADMINISTRATOR  =     0x40;
     /** This users keystores are key recoverable. */
     public static final int USER_KEYRECOVERABLE =     0x80;
-    
+
     // Old user values
 
     /** This is a CA. */
@@ -52,25 +52,33 @@ public class SecConst extends Object {
     /** This is a RA Administrator. */
     public static final int USER_RAADMIN =        0x20;
     /** All bits used by Type. */
-    public static final int USER_MASK =           0xff;    
+    public static final int USER_MASK =           0xff;
 
-   
-    // Token types.    
+
+    // Token types.
     /** Indicates that a browser generated token should be used. */
     public static final int TOKEN_SOFT_BROWSERGEN    = 1;
     /** Indicates that a p12 token should be generated. */
-    public static final int TOKEN_SOFT_P12           = 2;    
+    public static final int TOKEN_SOFT_P12           = 2;
     /** Indicates that a jks token should be generated. */
     public static final int TOKEN_SOFT_JKS           = 3;
     /** Indicates that a pem token should be generated. */
     public static final int TOKEN_SOFT_PEM           = 4;
-    
+
     /** All values equal or below this constant should be treated as a soft token. */
     public static final int TOKEN_SOFT               = 100;
     /** Constant indicating a standard hard token, defined in scaper. */
     public static final int TOKEN_HARD_DEFAULT       = 101;
-     
-    
+
+    // Certificate profiles.
+    /** Constants defining range of id's reserved for fixed certificate types. Observe fixed certificates cannot have value 0. */
+    public final static int FIXED_CERTIFICATEPROFILE_BOUNDRY = 1000;
+
+    public final static int PROFILE_NO_CERTIFICATEPROFILE = 0;
+    public final static int PROFILE_FIXED_ENDUSER = 1;
+    public final static int PROFILE_FIXED_CA = 2;
+    public final static int PROFILE_FIXED_ROOTCA = 3;
+
     /** Prevents creation of new SecConst **/
     private SecConst() {
     }
