@@ -5,6 +5,7 @@ NOTE: This document is work in progress. So far it only describes how to set
 up mySQL as DefaultDS. The default database HypersoniqDB should also be
 removed completely. The section "JBossCX setup" must probably be edited for
 this...
+Also transactionsupport in mySQL should be described.
 
 NOTE2: For the time beeing, mySQL does not work (with the config below) since
 it uses 'VARCHAR(255) BINARY' as mapping form String, and my Strings
@@ -19,6 +20,22 @@ padded; instead, trailing spaces are removed when values are stored.
 (This space removal differs from the ANSI SQL specification.)
 
 For longer fields, a BLOB should be used with mySQL I think...
+example
+<entity>
+<ejb-name>Scanning</ejb-name>
+<cmp-field>
+<field-name>name</field-name>
+<column-name>name</column-name>
+<jdbc-type>VARCHAR</jdbc-type>
+<sql-type>VARCHAR(20)</sql-type>
+</cmp-field>
+<cmp-field>
+<field-name>scanningValueObj</field-name>
+<column-name>scanningValueObj</column-name>
+<jdbc-type>JAVA_OBJECT</jdbc-type>
+<sql-type>MEDIUMBLOB</sql-type>
+</cmp-field>
+</entity>
 
 -----
 Now on to the howto:
