@@ -295,3 +295,31 @@ keytool -import -trustcacert -alias MyCA -keystore $JAVA_HOME/jre/lib/security/c
 
 A guide for configuring OpenLDAP on Solaris can be found at:
 http://www.bolthole.com/solaris/LDAP.html
+
+Configuring extra device schema
+===============================
+
+To store certificates for devices (e.g. routers, toasters etc) in LDAP there is
+no really suitable standard object class. inetOrgPerson requires surnames etc, and 
+the device objectclass does not include a certifictae attribute.
+Mike Jackson has kindly contributed additional objects that extend the standard device 
+class with a certificate attribute. The ejbcaDevice uses object ids from PrimeKey Solutions AB.
+  
+Installation
+------------
+For the Netscape/SUN servers, on UNIX, copy the 85ejbca.ldif file into:
+
+/usr/netscape/servers/slapd-`hostname`/config/schema/
+
+and restart the LDAP server.
+
+
+For OpenLDAP, copy the ejbca.schema file into, e.g.:
+
+/usr/local/etc/openldap/schema/
+
+and edit slapd.conf to add the following line:
+
+include /usr/local/etc/openldap/schema/ejbca.schema
+
+then restart the server.
