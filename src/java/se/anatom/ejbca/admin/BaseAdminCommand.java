@@ -7,24 +7,24 @@ import org.apache.log4j.*;
 
 /** Base for all AdminCommands, contains functions for getting initial context and logging
  *
- * @version $Id: BaseAdminCommand.java,v 1.4 2002-04-14 08:49:31 anatom Exp $
+ * @version $Id: BaseAdminCommand.java,v 1.5 2002-05-10 08:29:04 anatom Exp $
  */
 public abstract class BaseAdminCommand implements IAdminCommand {
 
     /** Log4j instance for Base */
-    private static Category baseCat = Category.getInstance( BaseAdminCommand.class.getName() );
+    private static Logger baseLog = Logger.getLogger( BaseAdminCommand.class.getName() );
     /** Log4j instance for actual class */
-    private Category cat;
-    
+    private Logger log;
+
     /** Cached initial context to save JNDI lookups */
     private static InitialContext cacheCtx = null;
-    
+
     /** holder of argument array */
     protected String[] args = null;
-    
+
     /** Creates a new instance of BaseAdminCommand */
     public BaseAdminCommand(String[] args) {
-        cat = Category.getInstance( this.getClass().getName() );
+        log = Logger.getLogger( this.getClass().getName() );
         this.args = args;
     }
 
@@ -32,56 +32,56 @@ public abstract class BaseAdminCommand implements IAdminCommand {
      *@return InitialContext
      */
     protected InitialContext getInitialContext() throws NamingException {
-        baseCat.debug(">getInitialContext()");
+        baseLog.debug(">getInitialContext()");
         try {
             if( cacheCtx == null )
                 cacheCtx = new InitialContext();
-            baseCat.debug("<getInitialContext()");
+            baseLog.debug("<getInitialContext()");
             return  cacheCtx;
         } catch (NamingException e ) {
-            baseCat.error("Can't get InitialContext", e);
+            baseLog.error("Can't get InitialContext", e);
             throw e;
         }
     } // getInitialContext
-    
+
     /** Logs a message with priority DEBUG
      * @param msg Message
      */
     public  void    debug( String msg ) {
-        cat.debug( msg );
+        log.debug( msg );
     }
     /** Logs a message and an exception with priority DEBUG
      * @param msg Message
      * @param t Exception
      */
     public  void    debug( String msg, Throwable t ) {
-        cat.debug( msg, t );
+        log.debug( msg, t );
     }
     /** Logs a message with priority INFO
      * @param msg Message
      */
     public  void    info( String msg ) {
-        cat.info( msg );
+        log.info( msg );
     }
     /** Logs a message and an exception with priority INFO
      * @param msg Message
      * @param t Exception
      */
     public  void    info( String msg, Throwable t  ) {
-        cat.info( msg, t );
+        log.info( msg, t );
     }
     /** Logs a message with priority ERROR
      * @param msg Message
      */
     public  void    error( String msg ) {
-        cat.error( msg );
-    }    
+        log.error( msg );
+    }
     /** Logs a message and an exception with priority ERROR
      * @param msg Message
      * @param t Exception
      */
     public  void    error( String msg, Throwable t  ) {
-        cat.error( msg, t );
+        log.error( msg, t );
     }
-    
+
 } //BaseAdminCommand

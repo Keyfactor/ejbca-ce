@@ -28,14 +28,14 @@ import se.anatom.ejbca.util.Base64;
 
 /** Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.2 2002-04-13 18:11:27 anatom Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.3 2002-05-10 08:29:04 anatom Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
 
     /** Private key alias in PKCS12 keystores */
     protected String privKeyAlias = "privateKey";
     protected char[] privateKeyPass = null;
-    
+
     /** Creates a new instance of BaseCaAdminCommand */
     public BaseCaAdminCommand(String[] args) {
         super(args);
@@ -44,7 +44,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
         int result = Security.addProvider(BCJce);
     }
-    
+
     /** Retrieves the complete certificate chain from the CA
      *
      *@return array of certificates, from ISignSession.getCertificateChain()
@@ -63,7 +63,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         debug("<getCertChain()");
         return null;
     } // getCertChain
-    
+
     protected void makeCertRequest(String dn, KeyPair rsaKeys, String reqfile) throws NoSuchAlgorithmException, IOException, NoSuchProviderException, InvalidKeyException, SignatureException {
         debug(">makeCertRequest: dn='"+dn+"', reqfile='"+reqfile+"'.");
         PKCS10CertificationRequest req = new PKCS10CertificationRequest(
@@ -99,6 +99,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
     } // makeCertRequest
 
     protected void createCRL() throws NamingException, CreateException, RemoteException {
+        debug(">createCRL()");
         Context context = getInitialContext();
         IJobRunnerSessionHome home  = (IJobRunnerSessionHome)javax.rmi.PortableRemoteObject.narrow( context.lookup("CreateCRLSession") , IJobRunnerSessionHome.class );
         home.create().run();
@@ -106,6 +107,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         ICertificateStoreSession storeremote = storehome.create();
         int number = storeremote.getLastCRLNumber();
         System.out.println("CRL with number " + number+ " generated.");
+        debug(">createCRL()");
     } // createCRL
-    
+
 }

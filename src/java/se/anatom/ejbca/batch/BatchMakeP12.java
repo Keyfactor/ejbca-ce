@@ -43,7 +43,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.11 2002-03-28 08:46:45 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.12 2002-05-10 08:29:04 anatom Exp $
  *
  */
 
@@ -156,7 +156,7 @@ public class BatchMakeP12 {
             p12topem.setExportPath(PEMfilename);
             p12topem.createPEM();
         }
-        
+
         cat.debug("Keystore stored in " + keyStoreFilename);
         cat.debug("<storeKeyStore: ks=" + ks.toString() + ", username=" + username);
     } // storeKeyStore
@@ -206,7 +206,7 @@ public class BatchMakeP12 {
         // Store keys and certificates in keystore.
         KeyStore p12 = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);
         storeKeyStore(p12, username, password);
-        
+
         cat.info("Created P12 for " + username+ ".");
         cat.debug(">createUser: username=" + username + ", hiddenpwd, keys=" + rsaKeys.toString());
     } // doit
@@ -245,7 +245,7 @@ public class BatchMakeP12 {
         createAllWithStatus(UserData.STATUS_FAILED);
         cat.debug("<createAllFailed:");
     } // createAllFailed
-    
+
     /**
      * Creates P12-files for all users with status in the local database.
      *
@@ -266,7 +266,7 @@ public class BatchMakeP12 {
         int successcount = 0;
         while( it.hasNext() ) {
             UserAdminData data = (UserAdminData) it.next();
-            if (data.getPassword() != null) {                
+            if (data.getPassword() != null) {
                 try {
                     cat.info("Generating keys for " + data.getUsername());
                     // Grab new user, set status to INPROCESS
@@ -337,7 +337,7 @@ public class BatchMakeP12 {
     public static void main(String[] args) {
         try {
 
-            org.apache.log4j.PropertyConfigurator.configure();
+            org.apache.log4j.PropertyConfigurator.configure("log4j.properties");
             BatchMakeP12 makep12 = new BatchMakeP12();
             // Create subdirectory 'p12' if it does not exist
             File dir = new File("./p12");
