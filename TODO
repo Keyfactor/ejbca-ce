@@ -1,4 +1,4 @@
-$Id: TODO,v 1.47 2002-09-11 12:40:58 anatom Exp $
+$Id: TODO,v 1.48 2002-09-12 14:47:02 anatom Exp $
 
 V 1.x
 -----
@@ -6,6 +6,7 @@ V 1.x
 
 V 2.x
 -----
+- Make generation of RootCerts better, CertPolicy ext etc.
 - Installation procedure, including installation of Web-RA.
 - Describe SSL-setup in server.
 - Fix user 'walter' in admin web-GUI.
