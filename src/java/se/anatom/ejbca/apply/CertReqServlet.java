@@ -58,7 +58,7 @@ import se.anatom.ejbca.util.FileTools;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.12 2002-02-01 09:08:19 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.13 2002-02-27 16:32:10 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
@@ -130,25 +130,44 @@ public class CertReqServlet extends HttpServlet {
             }
         } catch (Exception e) {
             cat.error(e);
-            if (e.getMessage().indexOf("status") != -1) {
-                debug.printMessage("Wrong user status!");
-                debug.printMessage("To generate a certificate for a user the user must have status new, failed or inprocess.");
-                debug.printDebugInfo(response.getOutputStream());
-            } else if (e.getMessage().indexOf("password") != -1) {
-                debug.printMessage("Wrong username or password!");
-                debug.printMessage("To generate a certificate a valid username and password must be entered.");
-                debug.printDebugInfo(response.getOutputStream());                
-            } else {
-                debug.print("<h3>parameter name and values: </h3>");
-                Enumeration paramNames=request.getParameterNames();
-                while (paramNames.hasMoreElements()) {
-                    String name=paramNames.nextElement().toString();
-                    String parameter=request.getParameter(name);
-                    debug.print("<h4>"+name+":</h4>"+parameter+"<br>");
+            if (e.getMessage() != null) {
+                if (e.getMessage().indexOf("status") != -1) {
+                    debug.printMessage("Wrong user status!");
+                    debug.printMessage("To generate a certificate for a user the user must have status new, failed or inprocess.");
+                    debug.printDebugInfo(response.getOutputStream());
+                    return;
+                } else if (e.getMessage().indexOf("password") != -1) {
+                    debug.printMessage("Wrong username or password!");
+                    debug.printMessage("To generate a certificate a valid username and password must be entered.");
+                    debug.printDebugInfo(response.getOutputStream());
+                    return;
+                } else if (e.getMessage().indexOf("ObjectNotFoundException") != -1) {
+                    debug.printMessage("Non existent username!");
+                    debug.printMessage("To generate a certificate a valid username and password must be entered.");
+                    debug.printDebugInfo(response.getOutputStream());
+                    return;
+                } else if ( (e.getMessage().indexOf("PKCS10") != -1) || (e.getMessage().indexOf("NetscapeCertRequest") != -1) ) {
+                    debug.printMessage("Invalid request!");
+                    debug.printMessage("Please supply a correct request.");
+                    debug.printDebugInfo(response.getOutputStream());
+                    return;
                 }
-                debug.takeCareOfException(e);
-                debug.printDebugInfo(response.getOutputStream());
             }
+            if (e instanceof java.lang.ArrayIndexOutOfBoundsException) {
+                debug.printMessage("Empty or invalid request!");
+                debug.printMessage("Please supply a correct request.");
+                debug.printDebugInfo(response.getOutputStream());
+                return;
+            }
+            debug.print("<h3>parameter name and values: </h3>");
+            Enumeration paramNames=request.getParameterNames();
+            while (paramNames.hasMoreElements()) {
+                String name=paramNames.nextElement().toString();
+                String parameter=request.getParameter(name);
+                debug.print("<h4>"+name+":</h4>"+parameter+"<br>");
+            }
+            debug.takeCareOfException(e);
+            debug.printDebugInfo(response.getOutputStream());            
         }
     } //doPost
 

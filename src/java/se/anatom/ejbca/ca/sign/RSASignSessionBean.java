@@ -38,7 +38,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.13 2002-02-22 08:24:21 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.14 2002-02-27 16:32:11 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -189,7 +189,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             * machine dependent, some not. This information is then hashed together
             * with the 20 seed bytes. */
         } catch( Exception e ) {
-            throw new EJBException(e);
+            throw new EJBException(e.toString());
         }
         debug("<ejbCreate()");
     }
@@ -273,9 +273,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
                 return cert;
             }
         } catch (Exception e) {
-            if (e instanceof EJBException)
-                throw (EJBException)e;
-            throw new EJBException(e);
+            throw new EJBException(e.toString());
         }
         debug("<createCertificate(pk, ku)");
         throw new EJBException("Invalid user type for user "+username);
@@ -316,20 +314,20 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             // TODO: extract more information or attributes
             ret = createCertificate(username, password, pkcs10.getPublicKey());
         } catch (IOException e) {
-            error("Error reading PKSC10-request.", e);
-            throw new EJBException("Error reading PKSC10-request.", e);
+            error("Error reading PKCS10-request.", e);
+            throw new EJBException("Error reading PKCS10-request.", e);
         } catch (NoSuchAlgorithmException e) {
-            error("Error in PKSC10-request, no such algorithm.", e);
-            throw new EJBException("Error in PKSC10-request, no such algorithm.", e);
+            error("Error in PKCS10-request, no such algorithm.", e);
+            throw new EJBException("Error in PKCS10-request, no such algorithm.", e);
         } catch (NoSuchProviderException e) {
             error("Internal error processing PKCS10-request.", e);
             throw new EJBException("Internal error processing PKCS10-request.", e);
         } catch (InvalidKeyException e) {
-            error("Error in PKSC10-request, invlid key.", e);
-            throw new EJBException("Error in PKSC10-request, invalid key.", e);
+            error("Error in PKCS10-request, invlid key.", e);
+            throw new EJBException("Error in PKCS10-request, invalid key.", e);
         } catch (SignatureException e) {
-            error("Error in PKSC10-signature.", e);
-            throw new EJBException("Error in PKSC10-signature.", e);
+            error("Error in PKCS10-signature.", e);
+            throw new EJBException("Error in PKCS10-signature.", e);
         }
         debug("<createCertificate(pkcs10)");
         return ret;
@@ -355,7 +353,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
                 ((IPublisherSession)(publishers.get(i))).storeCRL(crl.getEncoded(), CertTools.getFingerprintAsString(caCert), number);
             }
         } catch (Exception e) {
-            throw new EJBException(e);
+            throw new EJBException(e.toString());
         }
         debug("<createCRL()");
         return crl;

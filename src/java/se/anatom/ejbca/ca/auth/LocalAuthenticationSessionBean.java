@@ -15,7 +15,7 @@ import se.anatom.ejbca.ra.UserDataHome;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.1.1.1 2001-11-15 14:58:14 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.2 2002-02-27 16:32:11 anatom Exp $
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean implements IAuthenticationSession {
 
@@ -59,7 +59,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean implements I
                 throw new SecurityException("User "+username+" has status '"+status+"', NEW, FAILED or INPROCESS required.");
             }
         } catch (Exception e) {
-            throw new EJBException(e);
+            throw new EJBException(e.toString());
         }
     } //authenticateUser
 
@@ -79,7 +79,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean implements I
             data.setStatus(UserData.STATUS_GENERATED);
             debug("<finishUser("+username+", hiddenpwd)");
         } catch (Exception e) {
-            throw new EJBException(e);
+            throw new EJBException(e.toString());
         }
     } //finishUser
 }
