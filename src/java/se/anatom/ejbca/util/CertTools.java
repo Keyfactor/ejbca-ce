@@ -4,6 +4,7 @@ import java.io.*;
 import java.security.*;
 import java.security.cert.*;
 import java.util.*;
+import java.net.URL;
 
 import org.apache.log4j.Logger;
 
@@ -16,7 +17,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.51 2003-12-01 12:21:07 anatom Exp $
+ * @version $Id: CertTools.java,v 1.52 2004-01-15 10:41:19 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -661,6 +662,64 @@ public class CertTools {
         return null;
     } // getUPNAltName
 
+    /**
+     * Return the CRL distribution point URL form a certificate.
+     */
+    public static URL getCrlDistributionPoint(X509Certificate certificate)
+      throws CertificateParsingException {
+        try {
+            DERObject obj = getExtensionValue(certificate, X509Extensions
+                                              .CRLDistributionPoints.getId());
+            if (obj == null) {
+                return null;
+            }
+            ASN1Sequence distributionPoints = (ASN1Sequence) obj;
+            for (int i = 0; i < distributionPoints.size(); i++) {
+                ASN1Sequence distrPoint = (ASN1Sequence) distributionPoints.getObjectAt(i);
+                for (int j = 0; j < distrPoint.size(); j++) {
+                    ASN1TaggedObject tagged = (ASN1TaggedObject) distrPoint.getObjectAt(j);
+                    if (tagged.getTagNo() == 0) {
+                        String url
+                          = getStringFromGeneralNames(tagged.getObject());
+                        if (url != null) {
+                            return new URL(url);
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            throw new CertificateParsingException(e.toString());
+        }
+        return null;
+    }
+
+    /**
+     * Return an Extension DERObject from a certificate
+     */
+    private static DERObject getExtensionValue(X509Certificate cert, String oid)
+      throws IOException {
+        byte[] bytes = cert.getExtensionValue(oid);
+        if (bytes == null) {
+            return null;
+        }
+        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(bytes));
+        ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
+        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
+        return aIn.readObject();
+    } //getExtensionValue
+
+    private static String getStringFromGeneralNames(DERObject names) {
+         ASN1Sequence namesSequence = ASN1Sequence.getInstance((ASN1TaggedObject)names, false);
+         if (namesSequence.size() == 0) {
+             return null;
+         }
+         DERTaggedObject taggedObject
+           = (DERTaggedObject)namesSequence.getObjectAt(0);
+         return new String(ASN1OctetString.getInstance(taggedObject, false).getOctets());
+     } //getStringFromGeneralNames
+    
     /**
      * Generate SHA1 fingerprint in string representation.
      *
