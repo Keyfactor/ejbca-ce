@@ -9,7 +9,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Export root CA certificate.
  *
- * @version $Id: CaGetRootCertCommand.java,v 1.7 2003-10-11 14:38:41 anatom Exp $
+ * @version $Id: CaGetRootCertCommand.java,v 1.8 2003-11-01 14:11:05 anatom Exp $
  */
 public class CaGetRootCertCommand extends BaseCaAdminCommand {
     /**
@@ -37,8 +37,8 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
         String caname = args[1];
         String filename = args[2];
         boolean pem = true;
-        if (args.length > 3) {
-            if (("-cer").equals(args[3])) {
+        if (args.length > 2) {
+            if (("-der").equals(args[3])) {
                 pem = false;
             }
         }
