@@ -19,7 +19,7 @@ import javax.naming.NamingException;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 
-import se.anatom.ejbca.IJobRunnerSessionHome;
+import se.anatom.ejbca.ca.crl.ICreateCRLSessionHome;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
@@ -33,7 +33,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.17 2003-11-23 09:47:53 anatom Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.18 2004-02-11 10:42:46 herrvendil Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
     /** Private key alias in PKCS12 keystores */
@@ -120,17 +120,22 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
 
         try {
             Context context = getInitialContext();
-            IJobRunnerSessionHome home = (IJobRunnerSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-                        "CreateCRLSession"), IJobRunnerSessionHome.class);
-            home.create().run(administrator, issuerdn);
+            ICreateCRLSessionHome home = (ICreateCRLSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
+                        "CreateCRLSession"), ICreateCRLSessionHome.class);
+            if(issuerdn != null){
+              home.create().run(administrator, issuerdn);
 
-            ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
+              ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
                         "CertificateStoreSession"), ICertificateStoreSessionHome.class);
-            ICertificateStoreSessionRemote storeremote = storehome.create();
-            int number = storeremote.getLastCRLNumber(administrator, issuerdn);
-            System.out.println("CRL with number " + number + " generated.");
+              ICertificateStoreSessionRemote storeremote = storehome.create();
+              int number = storeremote.getLastCRLNumber(administrator, issuerdn);
+              System.out.println("CRL with number " + number + " generated.");
+            }else{
+            	int createdcrls = home.create().createCRLs(administrator);
+            	System.out.println("  " + createdcrls + " CRLs have been created.");	
+            }
         } catch (Exception e) {
-            error("Error while getting certfificate chain from CA.", e);
+            error("Error while getting certficate chain from CA.", e);
         }
 
         debug(">createCRL()");
@@ -148,5 +153,5 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         caadminsession = home.create();          
       } 
       return caadminsession;
-   } // createCRL
+   }
 }

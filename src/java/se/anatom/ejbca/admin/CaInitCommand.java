@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.25 2004-01-25 09:37:31 herrvendil Exp $
+ * @version $Id: CaInitCommand.java,v 1.26 2004-02-11 10:42:46 herrvendil Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
     /** Pointer to main certificate store */
@@ -58,7 +58,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
            throw new IllegalAdminCommandException(msg);
         }
             
-        try {        
+        try {             	
             String caname = args[1];
             String dn = CertTools.stringToBCDNString(args[2]);
             int keysize = Integer.parseInt(args[3]);
