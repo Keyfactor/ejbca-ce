@@ -1,4 +1,3 @@
-
 package se.anatom.ejbca.webdist.cainterface;
 
 import java.io.*;
@@ -18,9 +17,9 @@ import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
 
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
+
 /**
- * Servlet used to distribute ca certificates <br>
- *
+ * Servlet used to distribute CA certificates <br>
  *
  * cacert - returns ca certificate in PEM-format
  * nscacert - returns ca certificate for Netscape/Mozilla
@@ -29,7 +28,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.9 2003-01-12 17:16:34 anatom Exp $
+ * @version $Id: CACertServlet.java,v 1.10 2003-02-03 09:07:12 scop Exp $
  *
  */
 public class CACertServlet extends HttpServlet {
@@ -43,15 +42,14 @@ public class CACertServlet extends HttpServlet {
 
     private static final String LEVEL_PROPERTY = "level";
 
-    private InitialContext ctx = null;
-    ISignSessionHome signhome = null;
+    private ISignSessionHome signhome = null;
 
     public void init(ServletConfig config) throws ServletException {
     super.init(config);
        try {
 
             // Get EJB context and home interfaces
-            ctx = new InitialContext();
+            InitialContext ctx = new InitialContext();
 
             signhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
         } catch( Exception e ) {
@@ -62,8 +60,7 @@ public class CACertServlet extends HttpServlet {
     public void doPost(HttpServletRequest req, HttpServletResponse res)
         throws IOException {
         cat.debug(">doPost()");
-        res.setContentType("text/html");
-        res.getOutputStream().println("The certificate/CRL distribution servlet only handles GET method.");
+        doGet(req, res);
         cat.debug("<doPost()");
     } //doPost
 
