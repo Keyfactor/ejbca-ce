@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.authorization;
 
 import javax.ejb.CreateException;
@@ -25,15 +25,14 @@ import se.anatom.ejbca.BaseEntityBean;
  * Access rule
  * rule (accept of decline)
  * isrecursive
- * 
+ *
  * </pre>
  *
  *
  * @ejb.bean
- *   generate="false"
- *   display-name="This enterprise bean entity represents an access rule"
+ *   description="This enterprise bean entity represents an access rule"
+ *   display-name="AccessRuleDataEB"
  *   name="AccessRulesData"
- *   local-jndi-name="AccessRulesData"
  *   view-type="local"
  *   type="CMP"
  *   reentrant="false"
@@ -68,7 +67,7 @@ public abstract class AccessRulesDataBean extends BaseEntityBean
 	 * @ejb.persistence
 	 */
     public abstract int getPK();
-	
+
 	/**
 	 * @ejb.persistence
 	 */
@@ -104,15 +103,14 @@ public abstract class AccessRulesDataBean extends BaseEntityBean
 	/**
 	 * @ejb.persistence
 	 */
-    public abstract void setIsRecursive(boolean isrecursive);    
-    
+    public abstract void setIsRecursive(boolean isrecursive);
+
 	/**
 	 *
      * @ejb.create-method
 	 */
     public AccessRulesPK ejbCreate(String admingroupname, int caid, AccessRule accessrule) throws CreateException {
         AccessRulesPK pk = new AccessRulesPK(admingroupname, caid, accessrule);
-
         setPK(pk.hashCode());
         setAccessRule(accessrule.getAccessRule());
         setRule(accessrule.getRule());
@@ -124,20 +122,20 @@ public abstract class AccessRulesDataBean extends BaseEntityBean
     public void ejbPostCreate(String admingroupname, int caid, AccessRule accessrule) {
         // Do nothing. Required method.
     }
-    
+
 	/**
      * @ejb.interface-method view-type="local"
      */
     public  AccessRule getAccessRuleObject(){
-      return new AccessRule(getAccessRule(), getRule(), getIsRecursive()); 
+      return new AccessRule(getAccessRule(), getRule(), getIsRecursive());
     }
-    
-	/**    
+
+	/**
      * @ejb.interface-method view-type="local"
      */
     public void setAccessRuleObject(AccessRule accessrule){
       setAccessRule(accessrule.getAccessRule());
-      setRule(accessrule.getRule());  
-      setIsRecursive(accessrule.isRecursive());  
+      setRule(accessrule.getRule());
+      setIsRecursive(accessrule.isRecursive());
     }
 }

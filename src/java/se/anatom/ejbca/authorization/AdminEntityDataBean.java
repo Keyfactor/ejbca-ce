@@ -31,7 +31,6 @@ import se.anatom.ejbca.BaseEntityBean;
  *   description="This enterprise bean entity represents a user entity"
  *   display-name="AdminEntityDataEB"
  *   name="AdminEntityData"
- *   local-jndi-name="AdminEntityDataLocal"
  *   view-type="local"
  *   type="CMP"
  *   reentrant="false"

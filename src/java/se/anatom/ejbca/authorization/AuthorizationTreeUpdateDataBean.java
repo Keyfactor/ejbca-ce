@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.authorization;
 
 import javax.ejb.CreateException;
@@ -25,15 +25,13 @@ import se.anatom.ejbca.BaseEntityBean;
  * Access rule
  * rule (accept of decline)
  * isrecursive
- * 
+ *
  * </pre>
  *
  * @ejb.bean
- *   generate="false"
  *   description="This enterprise bean entity represents an access rule"
  *   display-name="AuthorizationTreeUpdateDataEB"
  *   name="AuthorizationTreeUpdateData"
- *   local-jndi-name="AuthorizationTreeUpdateData"
  *   view-type="local"
  *   type="CMP"
  *   reentrant="false"
@@ -44,6 +42,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * @ejb.permission role-name="InternalUser"
  *
  * @ejb.pk
+ *   generate="false"
  *   class="java.lang.Integer"
  *
  * @ejb.home
@@ -63,7 +62,7 @@ public abstract class AuthorizationTreeUpdateDataBean extends BaseEntityBean
     private static Logger log = Logger.getLogger(AuthorizationTreeUpdateDataBean.class);
 
 	/**
-     * @ejb.pk-Field
+     * @ejb.pk-field
      */
     public abstract Integer getPK();
 
@@ -76,7 +75,7 @@ public abstract class AuthorizationTreeUpdateDataBean extends BaseEntityBean
 
     public abstract void setAuthorizationTreeUpdateNumber(int authorizationtreeupdatenumber);
 
-    
+
 
 	/**
 	 *
@@ -97,16 +96,16 @@ public abstract class AuthorizationTreeUpdateDataBean extends BaseEntityBean
      * @ejb.interface-method view-type="local"
      */
     public boolean updateNeccessary(int currentauthorizationtreeupdatenumber){
-      return getAuthorizationTreeUpdateNumber() != currentauthorizationtreeupdatenumber;          
+      return getAuthorizationTreeUpdateNumber() != currentauthorizationtreeupdatenumber;
     } // updateNeccessary
-    
+
 
      /**
      * @see se.anatom.ejbca.authorization.AuthorizationTreeUpdateDataLocal
      * @ejb.interface-method view-type="local"
      */
     public void incrementAuthorizationTreeUpdateNumber(){
-      setAuthorizationTreeUpdateNumber(getAuthorizationTreeUpdateNumber() +1);  
+      setAuthorizationTreeUpdateNumber(getAuthorizationTreeUpdateNumber() +1);
     }  // incrementAuthorizationTreeUpdateNumber
 
 }

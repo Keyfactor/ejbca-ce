@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.authorization;
 
 import javax.ejb.CreateException;
@@ -19,9 +19,11 @@ import javax.ejb.FinderException;
 /**
  * For docs, see AdminEntityDataDataBean
  *
- * @version $Id: AdminEntityDataLocalHome.java,v 1.2 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: AdminEntityDataLocalHome.java,v 1.3 2004-06-08 13:17:48 sbailliez Exp $
  **/
 public interface AdminEntityDataLocalHome extends javax.ejb.EJBLocalHome {
+
+   public static final String COMP_NAME="java:comp/env/ejb/AdminEntityDataLocal";
 
     public AdminEntityDataLocal create(String admingroupname, int caid, int matchwith, int matchtype, String matchvalue)
         throws CreateException;

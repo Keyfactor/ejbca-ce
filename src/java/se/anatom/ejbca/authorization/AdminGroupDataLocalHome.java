@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.authorization;
 
 import java.util.Collection;
@@ -20,20 +20,22 @@ import javax.ejb.FinderException;
 /**
  * For docs, see AdminGroupDataBean
  *
- * @version $Id: AdminGroupDataLocalHome.java,v 1.3 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: AdminGroupDataLocalHome.java,v 1.4 2004-06-08 13:17:48 sbailliez Exp $
  **/
 
 public interface AdminGroupDataLocalHome extends javax.ejb.EJBLocalHome {
+
+   public static final String COMP_NAME="java:comp/env/ejb/AdminGroupDataLocal";
 
     public AdminGroupDataLocal create(Integer pk, String admingroupname, int caid)
         throws CreateException;
 
     public AdminGroupDataLocal findByPrimaryKey(Integer pk)
         throws FinderException;
-        
-    public AdminGroupDataLocal findByGroupNameAndCAId(String groupname, int caid)        
+
+    public AdminGroupDataLocal findByGroupNameAndCAId(String groupname, int caid)
 	    throws FinderException;
-	    
+
     public Collection findAll()
         throws FinderException;
 

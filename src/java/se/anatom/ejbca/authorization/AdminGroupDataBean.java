@@ -37,13 +37,12 @@ import se.anatom.ejbca.BaseEntityBean;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.6 2004-06-04 17:38:45 thepyr0 Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.7 2004-06-08 13:17:48 sbailliez Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
  *   display-name="AdminGroupDataEB"
  *   name="AdminGroupData"
- *   local-jndi-name="AdminGroupData"
  *   view-type="local"
  *   type="CMP"
  *   reentrant="false"

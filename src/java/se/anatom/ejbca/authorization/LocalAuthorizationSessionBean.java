@@ -47,10 +47,11 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.10 2004-06-03 06:58:39 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.11 2004-06-08 13:17:48 sbailliez Exp $
  *
  * @ejb.bean
- *   display-name="Session bean handling interface with ra authorization"
+ *   description="Session bean handling interface with ra authorization"
+ *   display-name="AuthorizationSessionSB"
  *   name="AuthorizationSession"
  *   jndi-name="AuthorizationSession"
  *   local-jndi-name="AuthorizationSessionLocal"
@@ -1014,7 +1015,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * Method used check if a reconstruction of authorization tree is needed in the
      * authorization beans.
      *
-     * @returns true if update is needed.
+     * @return true if update is needed.
      */
 
     private boolean updateNeccessary(){
