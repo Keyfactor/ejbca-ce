@@ -66,7 +66,6 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.exception.MalformedRequestException;
 import se.anatom.ejbca.protocol.exception.NotSupportedException;
 import se.anatom.ejbca.util.Hex;
-import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 
 /** 
@@ -74,7 +73,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.30 2004-05-19 10:57:03 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.31 2004-05-19 13:30:49 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -373,7 +372,7 @@ public class OCSPServlet extends HttpServlet {
             X509Certificate cacert = null; // CA-certificate used to sign response
             try {
                 OCSPReq req = new OCSPReq(reqBytes);
-                m_log.debug("OCSPReq: "+new String(Base64.encode(req.getEncoded())));
+                //m_log.debug("OCSPReq: "+new String(Base64.encode(req.getEncoded())));
 
                 loadCertificates();
             
