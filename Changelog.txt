@@ -10,6 +10,7 @@ Many small improvements.
 Many bugfixes: 
 DN can now contain C=CN or similar, 
 fixed CRL distribution point encoding,
+improved serial number generation,
 
 1.4
 ---
