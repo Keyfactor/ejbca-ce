@@ -37,7 +37,7 @@ import se.anatom.ejbca.util.Base64;
 * 6. sign the reply data (PKCS#7) from the previous step
 * 7. output the result as a der encoded block on stdout
 * -----
-* @version $Id: ScepServlet.java,v 1.2 2002-09-21 11:30:03 anatom Exp $
+* @version  $Id: ScepServlet.java,v 1.3 2002-09-21 16:12:54 anatom Exp $
 */
 public class ScepServlet extends HttpServlet {
 
