@@ -329,10 +329,10 @@ public class Install {
 				String[] command = new String[7];
 				command[0] = "setup-adminweb.cmd";
 				command[1] = this.caname;
-				command[2] = this.servercertdn;
+				command[2] = "\"" + this.servercertdn + "\"";
 				command[3] = this.serverkeystorepasswd;
 				command[4] = this.superadminpasswd;
-				command[5] = "changeit";
+				command[5] = "dummy";
 				command[6] = this.computername;
 				Process setupadminweb = Runtime.getRuntime().exec(command);											   			   			  
 				
@@ -348,7 +348,7 @@ public class Install {
 				command[0] = "ca.cmd";
 				command[1] = "getrootcert";
 				command[2] = this.caname;
-				command[3] = "tmp\rootca.der";
+				command[3] = "tmp\\rootca.der";
 				command[4] = "-der";
 				Process getrootcert = Runtime.getRuntime().exec(command);
 				
