@@ -71,33 +71,37 @@ public class DNFieldExtractor {
         fields = SUBJECTALTNAME;        
       }        
       
-      this.dn=dn;  
-      dnfields = new HashMap();
-      String[] dnexploded = LDAPDN.explodeDN(dn,false);
-      for(int i = 0; i < dnexploded.length; i++){ 
-        boolean exists = false;  
-        for(int j = 0; j < fields.length; j++){
-          if(dnexploded[i].toUpperCase().startsWith("E=") && type == TYPE_SUBJECTDN){ // Special Case
-              exists = true;  
-              String rdn = LDAPDN.unescapeRDN(dnexploded[i]);   
-              dnfields.put(new Integer((EMAILADDRESS * BOUNDRARY) + fieldnumbers[EMAILADDRESS]) ,rdn);             
-          }
-          else{
-            if(dnexploded[i].toUpperCase().startsWith(fields[j])){
-              exists = true;  
-              String rdn = LDAPDN.unescapeRDN(dnexploded[i]);   
-              if(type == TYPE_SUBJECTDN) 
-                dnfields.put(new Integer((j * BOUNDRARY) + fieldnumbers[j]) ,rdn);  
-              else  
-                dnfields.put(new Integer(((j+ SUBJECTALTERNATIVENAMEBOUNDRARY) * BOUNDRARY) + fieldnumbers[j]) ,rdn);                 
-              fieldnumbers[j]++;
+      if(dn != null){
+        this.dn=dn;  
+        dnfields = new HashMap();
+        String[] dnexploded = LDAPDN.explodeDN(dn,false);
+        for(int i = 0; i < dnexploded.length; i++){ 
+          boolean exists = false;  
+          for(int j = 0; j < fields.length; j++){
+            if(dnexploded[i].toUpperCase().startsWith("E=") && type == TYPE_SUBJECTDN){ // Special Case
+                exists = true;  
+                String rdn = LDAPDN.unescapeRDN(dnexploded[i]);   
+                dnfields.put(new Integer((EMAILADDRESS * BOUNDRARY) + fieldnumbers[EMAILADDRESS]) ,rdn);             
             }
-          }
-        }  
-        if(!exists)
-          existsother=true;  
+            else{
+              if(dnexploded[i].toUpperCase().startsWith(fields[j])){
+                exists = true;  
+                String rdn = LDAPDN.unescapeRDN(dnexploded[i]);   
+                if(type == TYPE_SUBJECTDN) 
+                  dnfields.put(new Integer((j * BOUNDRARY) + fieldnumbers[j]) ,rdn);  
+                else  
+                  dnfields.put(new Integer(((j+ SUBJECTALTERNATIVENAMEBOUNDRARY) * BOUNDRARY) + fieldnumbers[j]) ,rdn);                 
+                fieldnumbers[j]++;
+              }
+            }
+          }  
+          if(!exists)
+            existsother=true;  
+        }
       }
-    }
+      else
+        this.dn = null;
+    }  
     
     public String getDN() {
       return dn;  
