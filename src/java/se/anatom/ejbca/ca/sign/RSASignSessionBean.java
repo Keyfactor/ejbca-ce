@@ -41,7 +41,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.19 2002-03-24 10:47:23 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.20 2002-03-25 09:27:21 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -132,6 +132,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             caCert = (X509Certificate)certchain[0];
             debug("cacertIssuer: " + caCert.getIssuerDN().toString());
             debug("cacertSubject: " + caCert.getSubjectDN().toString());
+            caSubjectName = CertTools.stringToBcX509Name(caCert.getSubjectDN().toString());
             // is there only one root cert?
             if (CertTools.isSelfSigned(caCert))
                 rootCert = caCert;
@@ -305,7 +306,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
         } catch (AuthLoginException le) {
             throw le;
         } catch (Exception e) {
-            throw new EJBException(e.toString());
+            throw new EJBException(e);
         }
         debug("<createCertificate(pk, ku)");
         throw new EJBException("Invalid user type for user "+username);
