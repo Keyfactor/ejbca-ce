@@ -94,10 +94,10 @@
          EndEntityProfileData and AdminPreferencesData
      </description>
      <ejb-name>RaAdminSession</ejb-name>
-     <local-home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome</local-home>
      <home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome</home>
-     <local>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal</local>
      <remote>se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote</remote>
+     <local-home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome</local-home>
+     <local>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal</local>
      <ejb-class>se.anatom.ejbca.ra.raadmin.LocalRaAdminSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
@@ -151,10 +151,11 @@
          AdminGroupData
      </description>
      <ejb-name>AuthorizationSession</ejb-name>
-     <local-home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome</local-home>
      <home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionHome</home>
-     <local>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocal</local>
      <remote>se.anatom.ejbca.ra.authorization.IAuthorizationSessionRemote</remote>
+     <local-home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome</local-home>
+     <local>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocal</local>
+
      <ejb-class>se.anatom.ejbca.ra.authorization.LocalAuthorizationSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
@@ -226,10 +227,10 @@
             This enterprise bean entity represents a User with accompanying data.
       </description>
       <ejb-name>UserData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.UserDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.UserDataLocal</local>
       <home>se.anatom.ejbca.ra.UserDataHome</home>
       <remote>se.anatom.ejbca.ra.UserDataRemote</remote>
+      <local-home>se.anatom.ejbca.ra.UserDataLocalHome</local-home>
+      <local>se.anatom.ejbca.ra.UserDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.UserDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
       <prim-key-class>se.anatom.ejbca.ra.UserDataPK</prim-key-class>
@@ -425,8 +426,8 @@
       <local-home>se.anatom.ejbca.ra.authorization.AccessRulesDataLocalHome</local-home>
       <local>se.anatom.ejbca.ra.authorization.AccessRulesDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.authorization.AccessRulesDataBean</ejb-class>
-      <prim-key-class>se.anatom.ejbca.ra.authorization.AccessRulesPK</prim-key-class>
       <persistence-type>Container</persistence-type>
+      <prim-key-class>se.anatom.ejbca.ra.authorization.AccessRulesPK</prim-key-class>
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>AccessRulesDataBean</abstract-schema-name>
@@ -536,7 +537,7 @@
 
    <!--
        Transaction settings. Default setting i for *, which is overridden
-       for methods with special transactionsal needs.
+       for methods with special transactional needs.
        Required is used for mission critical methods, which cannot collide.
        Supports is used for methods which only read data.
    -->
@@ -790,4 +791,3 @@
 
  </assembly-descriptor>
 </ejb-jar>
-
