@@ -55,7 +55,7 @@ import org.apache.log4j.*;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.6 2003-01-19 09:40:13 herrvendil Exp $
+ * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.7 2003-01-22 09:06:11 scop Exp $
  */
 public class LDAPActiveDirectoryPublisherSessionBean
     extends BaseSessionBean {
@@ -157,9 +157,9 @@ public class LDAPActiveDirectoryPublisherSessionBean
                 ByteArrayInputStream bIn = new ByteArrayInputStream(subjAltNameValue);
                 DEROctetString asn1 = (DEROctetString) new DERInputStream(bIn).readObject();
                 ByteArrayInputStream bIn1 = new ByteArrayInputStream(asn1.getOctets());
-                DERConstructedSequence san =
-                    (DERConstructedSequence) new DERInputStream(bIn1).readObject();
-                for (int i = 0; i < san.getSize(); i++) {
+                DERSequence san =
+                    (DERSequence) new DERInputStream(bIn1).readObject();
+                for (int i = 0; i < san.size(); i++) {
                     DERTaggedObject gn = (DERTaggedObject) san.getObjectAt(i);
                     if (gn.getTagNo() == 1) {
                         // This is rfc822Name!

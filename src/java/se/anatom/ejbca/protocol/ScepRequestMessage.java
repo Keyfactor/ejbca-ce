@@ -33,7 +33,7 @@ import org.bouncycastle.cms.CMSException;
 
 /** Class to handle SCEP request messages sent to the CA.
  *
-* @version  $Id: ScepRequestMessage.java,v 1.6 2003-01-12 17:24:01 anatom Exp $
+* @version  $Id: ScepRequestMessage.java,v 1.7 2003-01-22 09:06:12 scop Exp $
  */
 public class ScepRequestMessage implements IRequestMessage, Serializable {
 
@@ -108,7 +108,7 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
         // Parse and verify the entegrity of the PKIOperation message PKCS#7
 
         /* If this would have been done using the newer CMS it would have made me so much happier... */
-        DERConstructedSequence seq =(DERConstructedSequence)(new DERInputStream(new ByteArrayInputStream(msg)).readObject());
+        ASN1Sequence seq =(ASN1Sequence)new DERInputStream(new ByteArrayInputStream(msg)).readObject();
         ContentInfo ci = new ContentInfo(seq);
         String ctoid = ci.getContentType().getId();
         if (ctoid.equals(CMSObjectIdentifiers.signedData.getId())) {
@@ -117,7 +117,7 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
             // (could also be pkcsRepSigned or certOnly, but we don't receive them on the server side
 
             // Try to find out what kind of message this is
-            sd = new SignedData((DERConstructedSequence)ci.getContent());
+            sd = new SignedData((ASN1Sequence)ci.getContent());
             Enumeration sis = sd.getSignerInfos().getObjects();
             if (sis.hasMoreElements()) {
                 SignerInfo si = new SignerInfo((ASN1Sequence)sis.nextElement());
@@ -144,11 +144,11 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
                 if (ctoid.equals(CMSObjectIdentifiers.data.getId())) {
                     DEROctetString content = (DEROctetString)ci.getContent();
                     cat.debug("envelopedData is "+content.getOctets().length+" bytes.");
-                    DERConstructedSequence seq1 =(DERConstructedSequence)(new DERInputStream(new ByteArrayInputStream(content.getOctets())).readObject());
+                    ASN1Sequence seq1 =(ASN1Sequence)new DERInputStream(new ByteArrayInputStream(content.getOctets())).readObject();
                     envEncData = new ContentInfo(seq1);
                     ctoid = envEncData.getContentType().getId();
                     if (ctoid.equals(CMSObjectIdentifiers.envelopedData.getId())) {
-                        envData = new EnvelopedData((DERConstructedSequence)envEncData.getContent());
+                        envData = new EnvelopedData((ASN1Sequence)envEncData.getContent());
                     } else {
                         cat.error("EncapsulatedContentInfo does not contain PKCS7 envelopedData: "+ctoid);
                         error = 2;

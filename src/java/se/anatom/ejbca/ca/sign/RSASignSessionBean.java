@@ -47,7 +47,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.65 2003-01-21 10:06:13 scop Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.66 2003-01-22 09:05:55 scop Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -545,7 +545,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         if (certProfile.getUseSubjectKeyIdentifier() == true) {
             SubjectPublicKeyInfo spki =
                 new SubjectPublicKeyInfo(
-                    (DERConstructedSequence) new DERInputStream(new ByteArrayInputStream(publicKey
+                    (ASN1Sequence) new DERInputStream(new ByteArrayInputStream(publicKey
                         .getEncoded()))
                         .readObject());
             SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
@@ -558,7 +558,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         if (certProfile.getUseAuthorityKeyIdentifier() == true) {
             SubjectPublicKeyInfo apki =
                 new SubjectPublicKeyInfo(
-                    (DERConstructedSequence) new DERInputStream(new ByteArrayInputStream(caCert
+                    (ASN1Sequence) new DERInputStream(new ByteArrayInputStream(caCert
                         .getPublicKey()
                         .getEncoded()))
                         .readObject());
@@ -575,25 +575,25 @@ public class RSASignSessionBean extends BaseSessionBean {
                 email = CertTools.getPartFromDN(altName, CertTools.EMAIL1);
             if (email == null)
                 email = CertTools.getPartFromDN(altName, CertTools.EMAIL2);
-            DERConstructedSequence seq = new DERConstructedSequence();
+            DEREncodableVector vec = new DEREncodableVector();
             if (email != null) {
                 GeneralName gn = new GeneralName(new DERIA5String(email), 1);
-                seq.addObject(gn);
+                vec.add(gn);
             }
             String dns = CertTools.getPartFromDN(altName, CertTools.DNS);
             if (dns != null) {
                 GeneralName gn = new GeneralName(new DERIA5String(dns), 2);
-                seq.addObject(gn);
+                vec.add(gn);
             }
             String uri = CertTools.getPartFromDN(altName, CertTools.URI);
             if (uri == null)
                 uri  = CertTools.getPartFromDN(altName, CertTools.URI1);
             if (uri != null) {
                 GeneralName gn = new GeneralName(new DERIA5String(uri), 6);
-                seq.addObject(gn);
+                vec.add(gn);
             }
-            if (seq.getSize() > 0) {
-                GeneralNames san = new GeneralNames(seq);
+            if (vec.size() > 0) {
+                GeneralNames san = new GeneralNames(new DERSequence(vec));
                 certgen.addExtension(X509Extensions.SubjectAlternativeName.getId(), certProfile.getSubjectAlternativeNameCritical(), san);
             }
         }
@@ -608,17 +608,13 @@ public class RSASignSessionBean extends BaseSessionBean {
         // CRL Distribution point URI
         if (certProfile.getUseCRLDistributionPoint() == true) {
             GeneralName gn = new GeneralName(new DERIA5String(certProfile.getCRLDistributionPointURI()), 6);
-            DERConstructedSequence seq = new DERConstructedSequence();
-            seq.addObject(gn);
-            GeneralNames gns = new GeneralNames(seq);
+            GeneralNames gns = new GeneralNames(new DERSequence(gn));
             DistributionPointName dpn = new DistributionPointName(0, gns);
             DistributionPoint distp = new DistributionPoint(dpn, null, null);
-            DERConstructedSequence ext = new DERConstructedSequence();
-            ext.addObject(distp);
             certgen.addExtension(
                 X509Extensions.CRLDistributionPoints.getId(),
                 certProfile.getCRLDistributionPointCritical(),
-                ext);
+                new DERSequence(distp));
         }
         X509Certificate cert =
             certgen.generateX509Certificate(
@@ -656,7 +652,7 @@ public class RSASignSessionBean extends BaseSessionBean {
 
         // Authority key identifier
         if (useaki.booleanValue() == true) {
-            SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((DERConstructedSequence)new DERInputStream(
+            SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence)new DERInputStream(
                 new ByteArrayInputStream(caCert.getPublicKey().getEncoded())).readObject());
             AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
             crlgen.addExtension(X509Extensions.AuthorityKeyIdentifier.getId(), akicritical.booleanValue(), aki);

@@ -28,7 +28,7 @@ import org.apache.log4j.*;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.12 2003-01-12 17:16:33 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.13 2003-01-22 09:06:13 scop Exp $
  */
 public class KeyTools {
 
@@ -258,7 +258,7 @@ public class KeyTools {
             ByteArrayInputStream  bIn = new ByteArrayInputStream(
                                                     pubKey.getEncoded());
             SubjectPublicKeyInfo info = new SubjectPublicKeyInfo(
-                (DERConstructedSequence)new DERInputStream(bIn).readObject());
+                (ASN1Sequence)new DERInputStream(bIn).readObject());
 
             return new SubjectKeyIdentifier(info);
         }

@@ -9,18 +9,19 @@ import java.security.PrivateKey;
 import java.util.*;
 
 import org.bouncycastle.jce.*;
-import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.x509.*;
-import org.bouncycastle.asn1.DERConstructedSequence;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERInputStream;
 import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.DEROctetString;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Category;
 
 
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.28 2003-01-12 17:16:33 anatom Exp $
+ * @version $Id: CertTools.java,v 1.29 2003-01-22 09:06:13 scop Exp $
  */
 public class CertTools {
 
@@ -362,11 +363,11 @@ public class CertTools {
         // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Mozilla.
         try {
             if (isCA == true) {
-                SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((DERConstructedSequence)new DERInputStream(
+                SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence)new DERInputStream(
                 new ByteArrayInputStream(pubKey.getEncoded())).readObject());
                 SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
 
-                SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((DERConstructedSequence)new DERInputStream(
+                SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence)new DERInputStream(
                 new ByteArrayInputStream(pubKey.getEncoded())).readObject());
                 AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
 
@@ -391,7 +392,7 @@ public class CertTools {
             return null;
 
         DEROctetString oct = (DEROctetString)(new DERInputStream(new ByteArrayInputStream(extvalue)).readObject());
-        AuthorityKeyIdentifier keyId = new AuthorityKeyIdentifier((DERConstructedSequence)new DERInputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
+        AuthorityKeyIdentifier keyId = new AuthorityKeyIdentifier((ASN1Sequence)new DERInputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
         return keyId.getKeyIdentifier();
     } // getAuthorityKeyId
 
@@ -411,7 +412,7 @@ public class CertTools {
             return null;
 
         DEROctetString oct = (DEROctetString)(new DERInputStream(new ByteArrayInputStream(extvalue)).readObject());
-        CertificatePolicies cp = new CertificatePolicies((DERConstructedSequence)new DERInputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
+        CertificatePolicies cp = new CertificatePolicies((ASN1Sequence)new DERInputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
         String id = cp.getPolicy(0);
         return id;
     } // getCertificatePolicyId
