@@ -1,6 +1,6 @@
 @echo off
 rem ----
-rem $Id: deploy.cmd,v 1.5 2002-03-07 13:55:51 karlkoenig Exp $
+rem $Id: deploy.cmd,v 1.6 2002-03-10 20:06:06 anatom Exp $
 rem
 rem Deploy script for EJBCA
 rem
@@ -18,13 +18,16 @@ if exist %JBOSS_HOME%\lib\ext\jce-jdk13-111.jar goto deploy
 :install
 xcopy lib\jce-jdk13-111.jar %JBOSS_HOME%\lib\ext /Q /Y
 xcopy lib\ldap.jar %JBOSS_HOME%\lib\ext /Q /Y
+echo Copied jce-jdk13-111.jar and ldap.jar to %JBOSS_HOME%\lib\ext. JBoss must be restared.
 
 :deploy
 xcopy dist\*.war %JBOSS_HOME%\deploy /Q /Y
 xcopy dist\*.jar %JBOSS_HOME%\deploy /Q /Y
+echo Deployed jar- and war-files in %JBOSS_HOME%\deploy
 goto end
 
 :error 
 echo JBOSS_HOME must be set
 
 :end
+

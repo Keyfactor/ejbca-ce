@@ -3,6 +3,7 @@
 Configuration howto/support for Oracle.
 CA-certs now downloaded from webdist.
 Better documentation with architectural overview.
+Better deployment scripts.
 Minor, mostly cosmetic and GUI changes.
 
 1.2
@@ -48,5 +49,6 @@ Creates p12-files during test in real temporary dir.
 1.0b1
 -----
 Initial release
+
 
 
