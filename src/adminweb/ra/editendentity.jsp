@@ -188,8 +188,8 @@
                  value = request.getParameter(TEXTFIELD_SUBJECTALTNAME+i);
                else{
                  value=null;
-                 if(request.getParameter(CHECKBOX_SUBJECTDN+i)!=null)
-                   if(request.getParameter(CHECKBOX_SUBJECTDN+i).equals(CHECKBOX_VALUE))
+                 if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i)!=null)
+                   if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i).equals(CHECKBOX_VALUE))
                      value = newuser.getEmail();
                }
                if(value !=null){
