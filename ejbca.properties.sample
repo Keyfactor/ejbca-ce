@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.13 2005-03-21 11:58:32 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.14 2005-03-29 15:14:08 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -19,11 +19,11 @@ jboss.home=${env.JBOSS_HOME}
 
 # ------------- database configuration ------------------------
 
-# jndi name of the datasource to use in deployment descriptors of ejbs
+# jndi name of the datasource to use in deployment descriptors of ejbs.
 # default: ejbcaDS
 #datasource.jndi-name=ejbcaDS
 
-# the database name selected for deployment
+# The database name selected for deployment, used to copy XDoclet merge files.
 # All supported databases are defined below, others can easily be added
 # Default: hsqldb
 #database.name=mysql
@@ -33,7 +33,7 @@ jboss.home=${env.JBOSS_HOME}
 #database.name=sapdb
 #database.name=sybase
 
-# the datasource mapping selected for deployment
+# The datasource mapping selected for deployment.
 # The J2EE server needs to be configured with the appropriate datasource mapping. 
 # For JBoss this maps to a setting in standardjbosscmp-jdbc.xml and must match the database chosen above.
 # All supported mappings are defined below, others can easily be added
@@ -43,57 +43,60 @@ jboss.home=${env.JBOSS_HOME}
 #datasource.mapping=PostgreSQL 8.0
 #datasource.mapping=MS SQLSERVER2000
 #datasource.mapping=Oracle8
+#datasource.mapping=Oracle9i
 #datasource.mapping=SapDB
 #datasource.mapping=Sybase
 
-# Database connection url
+# Database connection url.
 # This is the URL used to connect to the database, used to configure a new datasource in JBoss.
 # Default: jdbc:hsqldb:${jboss.server.data.dir}${/}hypersonic${/}ejbcaDB
 #database.url=jdbc:mysql://127.0.0.1:3306/ejbca
 #database.url=jdbc:postgresql://127.0.0.1/ejbca
 #database.url=jdbc:oracle:thin:@127.0.0.1:1521:ejbca
+#database.url=jdbc:microsoft:sqlserver://localhost:1433;DatabaseName=ejbca
 
-# JDBC driver classname
+# JDBC driver classname.
 # The J2EE server needs to be configured with the appropriate JDBC driver for the selected database
 # Default: org.hsqldb.jdbcDriver
 #database.driver=com.mysql.jdbc.Driver
 #database.driver=org.postgresql.Driver
 #database.driver=oracle.jdbc.driver.OracleDriver
+#database.driver=com.microsoft.jdbc.sqlserver.SQLServerDriver
 
-# database username
+# Database username.
 # Default: sa (works with hsqldb)
 #database.username=ejbca
 #database.username=postgres
 
-# database password
+# Database password.
 # Default: (works with hsqldb)
 #database.password=ejbca
 #database.password=postgres
 
 # ------------ mail configuration ---------------------
 
-# Used to send notification email from the RA
+# Used to send notification email from the RA.
 # See ${ejbca.home}/src/appserver/ejbca-mail-service.xml
 # It will be copied in ${jboss.server.dir}/deploy/ejbca-mail-service.xml
 
-# The JNDI-name used to send email notifications from EJBCA
+# The JNDI-name used to send email notifications from EJBCA.
 mail.jndi-name=java:/EjbcaMail
 
-# user/password to connect to server
+# user/password to connect to server.
 mail.user=ejbca_user
 mail.password=primekey
 
-# POP3 and SMTP servers
+# POP3 and SMTP servers.
 mail.pop3.host=pop3.domain.com
 mail.smtp.host=smtp.domain.com
 
-# email address used to send emails
+# Email address used to send emails.
 mail.from=ejbca-donotreply@domain.com
 
-# JavaMail debug info
-mail.debug=true
+# JavaMail debug info.
+mail.debug=false
 
-# Default subject of notification messages sent from EJBCA
+# Default subject of notification messages sent from EJBCA.
 mail.subject=Retrieve your certificate
 
 # Defines the default message of the notification. 
@@ -151,10 +154,10 @@ httpsserver.hostname=localhost
 # The CN part  should match your hosts DNS name to avoid browser warnings.
 httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 
-# Defines the available languages by languagecodes separated with a comma (example EN,CH)
+# Defines the available languages by languagecodes separated with a comma (example EN,CH).
 # Default: EN 
 web.availablelanguages=EN
 
-# Default content encoding used to display JSP pages
+# Default content encoding used to display JSP pages.
 # Default: ISO-8859-1
-web.contentencoding=UTF-8
+web.contentencoding=ISO-8859-1
