@@ -204,8 +204,37 @@ Check what you have in the LDAP by:
 
 Configure SSL
 -------------
-TODO
+Create a user in ejbca (cli example given below, admin-GUI works just as fine):
+ra adduser ldap foo123 "C=SE,O=Foo,CN=ldap" null AdminCA1 null 1 PEM
+(User type end-user, keystore type PEM, use batch).
+Batch generate the PEM keystore:
+batch
+
+Copy the resulting files p12/pem/ldap.pem, p12/pem/ldap-CA.pem and p12/pem/ldap-Key.pem to your 
+LDAP server. In this example the slapd.conf is located in /usr/local/etc/openldap so we copy the 
+files to that directory.
+
+Add the following to your slapd.conf:
+# Use SSL
+TLSCipherSuite HIGH:MEDIUM:+SSLv3
+TLSCertificateFile /usr/local/etc/openldap/ldap.pem
+TLSCertificateKeyFile /usr/local/etc/openldap/ldap-Key.pem
+TLSCACertificateFile /usr/local/etc/openldap/ldap-CA.pem
+
+Restart slapd:
+./slapd -h "ldap:/// ldaps:///"
+and check thats it is running with 'ps -ef|grep slapd'.
+
+Configure your LDAP publisher to use SSL by checking the checkbox 'Use SSL', the port
+shold change to port 636.
+
+Note! The CA certificate of the (root)CA used to sign the ldap server certificate must be present in
+the java trust cert store ($JAVA_HOME/jre/lib/security/cacerts). If you use the defualt CA created when  
+ejbca was installed this is alread included. Otherwise you will have to add it using something like:
+First get the CA cert:
+ca getrootcert MyCA -der
+Then add it to javas trust store:
+keytool -import -trustcacert -alias MyCA -keystore $JAVA_HOME/jre/lib/security/cacerts -password changeit
+
 A guide for configuring OpenLDAP on Solaris can be found at:
 http://www.bolthole.com/solaris/LDAP.html
-
-
