@@ -21,7 +21,7 @@ public class TestRunner extends Object {
      */
     public static void main(String[] args) {
         BasicConfigurator.configure();
-        junit.textui.TestRunner.run(suite());
+        junit.textui.TestRunner.run(suite(args));
     }
 
     private void cleanUp() {
@@ -34,11 +34,16 @@ public class TestRunner extends Object {
      *
      * @return none
      */
-    public static Test suite() {
+    public static Test suite(String[] args) {
         log.debug(">suite()");
 
         TestSuite suite = new TestSuite();
-        suite.addTest(new TestSuite(TestMessages.class));
+        if ((args.length > 0) && args[0].equals("web")) {
+            // Webtests using httpuint to send stuff to ejbca@localhost
+            suite.addTest(ProtocolHttpTest.suite());
+        } else {
+            suite.addTest(new TestSuite(TestMessages.class));
+        }
 
         log.debug("<suite()");
 
