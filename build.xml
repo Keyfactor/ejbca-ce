@@ -95,6 +95,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
     <!-- Compile the java code from ${javasrc} into ${build} -->
     <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on" >
         <exclude name="**/CVS/**"/>    
+        <exclude name="**/log/*.java"/>
         <include name="**/*.java"/>
     </javac>
     <copy todir="${javasrc}">

@@ -1,4 +1,4 @@
-<!-- Version: $Id: viewcertificate.jsp,v 1.3 2002-08-27 12:41:05 herrvendil Exp $ -->
+<!-- Version: $Id: viewcertificate.jsp,v 1.4 2002-08-28 12:22:25 herrvendil Exp $ -->
 
 <html>
 <%@page contentType="text/html"%>
@@ -73,6 +73,7 @@
            currentindex = 0;
          }
          certificatedata = rabean.getCertificate(currentindex);
+         notauthorized = false;
        }
     }
     if(request.getParameter(BUTTON_VIEW_NEXT) != null){
@@ -83,6 +84,7 @@
            currentindex = numberofcertificates;
          }
          certificatedata = rabean.getCertificate(currentindex);
+         notauthorized = false;
        }
     }
   }  

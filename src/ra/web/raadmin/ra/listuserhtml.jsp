@@ -1,3 +1,4 @@
+
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
@@ -35,6 +36,17 @@ function confirmdelete(){
   returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREDELETE") %>");
   returnval = returnval && confirm("<%= ejbcawebbean.getText("HAVEYOUREVOKEDTHEUSERS") %>");
 
+  return returnval;
+}
+
+function confirmrevokation(){
+  var returnval = false;
+  if(document.form.<%= SELECT_REVOKE_REASON %>.options.selectedIndex == -1){
+     alert("<%= ejbcawebbean.getText("ATLEASTONEREVOKEREASON") %>"); 
+     returnval = false;
+  }else{
+    returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKE") %>");
+  } 
   return returnval;
 }
 
@@ -342,15 +354,26 @@ function confirmdelete(){
   </table>
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
     <tr>
-      <td>
+      <td  valign="top">
         <input type="submit" name="<%=BUTTON_DELETE_USERS %>" value="<%= ejbcawebbean.getText("DELETESELECTED") %>"
                onClick='return confirmdelete()'>
         &nbsp;&nbsp;&nbsp;
+      </td>
+      <td  valign="top">
         <input type="submit" name="<%=BUTTON_REVOKE_USERS %>" value="<%= ejbcawebbean.getText("REVOKESELECTED") %>"
-               onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKE") %>")'>
+               onClick='return confirmrevokation()'><br>
+        <select name="<%=SELECT_REVOKE_REASON %>" >
+          <% for(int i=0; i < RevokedInfoView.reasontexts.length; i++){ 
+               if(i!= 7){%>
+               <option value='<%= i%>'><%= ejbcawebbean.getText(RevokedInfoView.reasontexts[i]) %></option>
+          <%   } 
+             }%> 
+        </select>
         &nbsp;&nbsp;&nbsp;
+      </td>
+      <td  valign="top">
         <input type="submit" name="<%=BUTTON_CHANGESTATUS %>" value="<%= ejbcawebbean.getText("CHANGESTATUSTO") %>"
-               onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSURECHANGE") %>")'>
+               onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSURECHANGE") %>")'><br>
         <select name="<%=SELECT_CHANGE_STATUS %>">
          <option selected value='<%= Integer.toString(UserDataRemote.STATUS_NEW) %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
      <!--   <option value='<%= Integer.toString(UserDataRemote.STATUS_FAILED) %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>  -->
@@ -361,7 +384,6 @@ function confirmdelete(){
          <option value='<%= Integer.toString(UserDataRemote.STATUS_HISTORICAL) %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
         </select>
       </td>
-      <td>&nbsp;</td>
     </tr>
   </table>
   </form>

@@ -21,7 +21,7 @@ import se.anatom.ejbca.ca.store.certificatetypes.*;
  *
  * Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.4 2002-08-27 12:41:06 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.5 2002-08-28 12:22:21 herrvendil Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote  {
         
@@ -84,9 +84,10 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      /** 
      * Set the status of certificates of given dn to revoked.
      * @param dn the dn of user to revoke certificates.
+     * @param reason the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON constants.)
      * @throws EJBException if a communication or other error occurs.
      */
-    public void setRevokeStatus(String dn) throws RemoteException;
+    public void setRevokeStatus(String dn, int reason) throws RemoteException;
 
    /**
     * Checks if a certificate is revoked.

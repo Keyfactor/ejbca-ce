@@ -15,7 +15,7 @@ import se.anatom.ejbca.ra.authorization.UserInformation;
 
 /**
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.7 2002-08-27 12:41:06 herrvendil Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.8 2002-08-28 12:22:25 herrvendil Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
 
@@ -82,7 +82,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      *
      * @param username, the username to revoke.
      */    
-    public void revokeUser(String username) throws AuthorizationDeniedException,FinderException, RemoteException;    
+    public void revokeUser(String username,int reason) throws AuthorizationDeniedException,FinderException, RemoteException;    
 
    /**
     * Sets a new password for a user.
@@ -141,7 +141,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     */    
     
-    public void CheckIfSubjectDNisAdmin(String subjectdn) throws AuthorizationDeniedException, RemoteException;  
+    public void checkIfSubjectDNisAdmin(String subjectdn) throws AuthorizationDeniedException, RemoteException;  
 
    /**
     * Finds all users with a specified status.

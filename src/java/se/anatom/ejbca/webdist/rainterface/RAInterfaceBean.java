@@ -56,7 +56,7 @@ import se.anatom.ejbca.webdist.cainterface.CertificateTypeNameProxy;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.12 2002-08-27 12:41:05 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.13 2002-08-28 12:22:25 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -169,13 +169,14 @@ public class RAInterfaceBean {
     /** Revokes the the given users.
      *
      * @param users an array of usernames to revoke.
+     * @param reason reason(s) of revokation.
      * @return false if administrator wasn't authorized to revoke all of the given users.
      */
-    public boolean revokeUsers(String[] usernames) throws  Exception{
+    public boolean revokeUsers(String[] usernames, int reason) throws  Exception{
       boolean success = true;
       for(int i=0; i < usernames.length; i++){
         try{
-          adminsession.revokeUser( usernames[i]); 
+          adminsession.revokeUser( usernames[i], reason); 
         }catch( AuthorizationDeniedException e){
           success =false;   
         }

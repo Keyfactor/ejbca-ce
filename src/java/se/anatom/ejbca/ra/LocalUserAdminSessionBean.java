@@ -30,7 +30,7 @@ import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillProfile;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.23 2002-08-27 12:41:06 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.24 2002-08-28 12:22:25 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -326,7 +326,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
      *
      * @param username, the username to revoke.
      */
-    public void revokeUser(String username) throws AuthorizationDeniedException,FinderException, RemoteException{
+    public void revokeUser(String username, int reason) throws AuthorizationDeniedException,FinderException, RemoteException{
         debug(">revokeUser("+username+")");
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data;
@@ -340,7 +340,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
           throw new AuthorizationDeniedException("Not authorized to revoke user : " + username + ".");
         
         setUserStatus(username, UserDataRemote.STATUS_REVOKED);
-        certificatesession.setRevokeStatus(data.getSubjectDN());
+        certificatesession.setRevokeStatus(data.getSubjectDN(), reason);
  
         debug("<revokeUser()");
     } // revokeUser
@@ -436,7 +436,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
    /**
     * Implements IUserAdminSession::CheckIfSubjectDNisAdmin.
     */
-    public void CheckIfSubjectDNisAdmin(String subjectdn) throws AuthorizationDeniedException, RemoteException {
+    public void checkIfSubjectDNisAdmin(String subjectdn) throws AuthorizationDeniedException, RemoteException {
         debug(">CheckIfSubjectDNisAdmin("+subjectdn+")");
         String dn = CertTools.stringToBCDNString(subjectdn);
         debug("Looking for users with subjectdn: " + dn);
@@ -452,7 +452,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         
         if(data != null){
           int type = data.getType();
-          if( (type & 32)  != 0) // Temporate RAADMIN.
+          if( (type & 32)  == 0) // Temporate RAADMIN.
             throw new  AuthorizationDeniedException("Your certificate do not belong to an administrator.");
         }else{
           throw new  AuthorizationDeniedException("Your certificate do not belong to any user.");

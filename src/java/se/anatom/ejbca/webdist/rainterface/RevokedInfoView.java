@@ -20,15 +20,7 @@ import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 public class RevokedInfoView {
     
     // Public constants.
-    public static final int UNUSED                = 0x0001;    
-    public static final int KEYCOMPROMISE         = 0x0002;
-    public static final int CACOMPROMISE          = 0x0004;
-    public static final int AFFILIATIONCHANGED    = 0x0008;
-    public static final int SUPERSEDED            = 0x0010; 
-    public static final int CESSATIONOFOPERATION  = 0x0020;    
-    public static final int CERTIFICATEHOLD       = 0x0040;   
-
-        
+         
     /** Creates a new instance of RevokedInfoView */
     public RevokedInfoView(RevokedCertInfo revokedcertinfo) {
       this.revokedcertinfo=revokedcertinfo;
@@ -50,27 +42,23 @@ public class RevokedInfoView {
     public String[] getRevokationReasons(){
       String[] dummy = {""};
       Vector reasons = new Vector();
-        for(int i=0; i < reasonmasks.length; i++){
-           if((this.revokedcertinfo.getReason() & reasonmasks[i]) > 0){
-             // Add this reason.
-               reasons.addElement(reasontexts[i]);
-           }
-        }
-        if(reasons.size()==0){
-          reasons.addElement("UNKNOWNREASON");            
-        }
+      int reason = this.revokedcertinfo.getReason() ;
+      if(reason  >= 0 && reason < HIGN_REASON_BOUNDRARY){
+         // Add this reason.
+             reasons.addElement(reasontexts[reason]);
+      }  
       
       return (String[]) reasons.toArray(dummy);  
     }
         
     // Private constants.
-
-    private static final int[] reasonmasks = {UNUSED,KEYCOMPROMISE,CACOMPROMISE,
-                                             AFFILIATIONCHANGED,SUPERSEDED,CESSATIONOFOPERATION,
-                                             CERTIFICATEHOLD};
-    private static final String[] reasontexts = {"UNUSED","KEYCOMPROMISE","CACOMPROMISE",
+    
+    public static final String[] reasontexts = {"UNSPECIFIED","KEYCOMPROMISE","CACOMPROMISE",
                                                   "AFFILIATIONCHANGED","SUPERSEDED",
-                                                  "CESSATIONOFOPERATION","CERTIFICATEHOLD"};
+                                                  "CESSATIONOFOPERATION","CERTIFICATEHOLD", "UNUSED"
+                                                  ,"REMOVEFROMCRL", "PRIVILEGESWITHDRAWN", "AACOMPROMISE" };
+                                                  
+    public static final int HIGN_REASON_BOUNDRARY = 11;                                               
     
     // Private fields.
     private RevokedCertInfo revokedcertinfo;

@@ -1,7 +1,7 @@
 <html>
 <%@page contentType="text/html"%>
 <%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, 
-                 se.anatom.ejbca.webdist.rainterface.UserView, se.anatom.ejbca.webdist.rainterface.SortBy,
+                 se.anatom.ejbca.webdist.rainterface.UserView, se.anatom.ejbca.webdist.rainterface.SortBy,se.anatom.ejbca.webdist.rainterface.RevokedInfoView,
                  se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.ra.UserDataRemote,se.anatom.ejbca.ra.raadmin.UserPreference,
                  javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.util.query.*, java.util.Calendar, java.util.Date, java.text.DateFormat, java.util.Locale" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
@@ -86,6 +86,7 @@
 
   static final String SELECT_LIST_STATUS        = "selectliststatus";
   static final String SELECT_CHANGE_STATUS      = "selectchangestatus"; 
+  static final String SELECT_REVOKE_REASON      = "selectrevokereason"; 
   static final String SELECT_MATCHWITH_ROW1     = "selectmatchwithrow1"; 
   static final String SELECT_MATCHWITH_ROW2     = "selectmatchwithrow2"; 
   static final String SELECT_MATCHWITH_ROW3     = "selectmatchwithrow3"; 
@@ -244,27 +245,32 @@
        }
       }
       if( request.getParameter(BUTTON_REVOKE_USERS) != null){
+        // Check reasons.
+        String reason = request.getParameter(SELECT_REVOKE_REASON);
+        if(reason != null){
+
           // Revoke selected users
-       editbuttonpressed=true;
-       java.util.Enumeration parameters = request.getParameterNames();
-       java.util.Vector indexes = new  java.util.Vector();
-       int index;
-       while(parameters.hasMoreElements()){
-        String parameter = (String) parameters.nextElement();
-         if(parameter.startsWith(CHECKBOX_SELECT_USER) && request.getParameter(parameter).equals(CHECKBOX_VALUE)) {
-           index = java.lang.Integer.parseInt(parameter.substring(CHECKBOX_SELECT_USER.length())); //Without []
-           indexes.addElement(new Integer(index));
+         editbuttonpressed=true;
+         java.util.Enumeration parameters = request.getParameterNames();
+         java.util.Vector indexes = new  java.util.Vector();
+         int index;
+         while(parameters.hasMoreElements()){
+          String parameter = (String) parameters.nextElement();
+           if(parameter.startsWith(CHECKBOX_SELECT_USER) && request.getParameter(parameter).equals(CHECKBOX_VALUE)) {
+             index = java.lang.Integer.parseInt(parameter.substring(CHECKBOX_SELECT_USER.length())); //Without []
+             indexes.addElement(new Integer(index));
+           }
          }
-       }
        
-       if(indexes.size() > 0){
-         String[] usernames = new String[indexes.size()];
-         for(int i = 0; i < indexes.size(); i++){
-           index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
-           usernames[i] = request.getParameter(HIDDEN_USERNAME+index);
+         if(indexes.size() > 0){
+           String[] usernames = new String[indexes.size()];
+           for(int i = 0; i < indexes.size(); i++){
+             index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
+             usernames[i] = request.getParameter(HIDDEN_USERNAME+index);
+           }
+           notauthorizedrevokeall = !rabean.revokeUsers(usernames, Integer.parseInt(reason));
          }
-         notauthorizedrevokeall = !rabean.revokeUsers(usernames);
-       }
+        }
       }
       if( request.getParameter(BUTTON_CHANGESTATUS) != null){
           // Change statuse on selected users

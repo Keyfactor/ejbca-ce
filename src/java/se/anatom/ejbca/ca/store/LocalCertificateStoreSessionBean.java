@@ -29,7 +29,7 @@ import se.anatom.ejbca.util.Base64;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.23 2002-08-27 12:41:06 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.24 2002-08-28 12:22:22 herrvendil Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -312,7 +312,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * Set the status of certificates of given dn to revoked.
      * @param dn the dn of user to revoke certificates.
      */
-    public void setRevokeStatus(String dn) {
+    public void setRevokeStatus(String dn, int reason) {
        try{ 
          Collection certs = findCertificatesBySubject(dn);
           // Revoke all certs
@@ -325,6 +325,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
              if (rev.getStatus() != CertificateData.CERT_REVOKED) {
               rev.setStatus(CertificateData.CERT_REVOKED);
               rev.setRevocationDate(new Date());
+              rev.setRevocationReason(reason);
             }
           }
          }
