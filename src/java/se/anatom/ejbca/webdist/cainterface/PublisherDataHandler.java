@@ -1,8 +1,6 @@
 package se.anatom.ejbca.webdist.cainterface;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashSet;
 
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.AvailableAccessRules;

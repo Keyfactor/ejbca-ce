@@ -4,7 +4,6 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,7 +38,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalPublisherSessionBean.java,v 1.1 2004-03-07 12:08:50 herrvendil Exp $
+ * @version $Id: LocalPublisherSessionBean.java,v 1.2 2004-03-10 20:23:06 anatom Exp $
  */
 public class LocalPublisherSessionBean extends BaseSessionBean  {
 
