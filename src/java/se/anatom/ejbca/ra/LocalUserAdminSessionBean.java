@@ -37,7 +37,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.46 2003-03-01 21:16:14 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.47 2003-03-02 21:22:35 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -221,18 +221,14 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1= home.findByPrimaryKey(pk);
 
-            if(password != null){
-                System.out.println("passowrd == " + password);  
-              if(clearpwd){
-                 System.out.println("clear passowrd ");                   
+            if(password != null){  
+              if(clearpwd){                 
                 setClearTextPassword(admin, username, password);
               }  
-              else{
-                 System.out.println("noclear passowrd ");                      
+              else{                     
                 setPassword(admin, username, password);
               }
-            }else
-              System.out.println("passowrd == null");    
+            }  
 
             data1.setDN(dn);
             if(subjectaltname != null )
