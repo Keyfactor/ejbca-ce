@@ -6,7 +6,7 @@ import se.anatom.ejbca.exception.EjbcaException;
 /**
  * Error due to malformed key. The cause of failure can be related to illegal key length etc.
  *
- * @version $Id: IllegalKeyException.java,v 1.2 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: IllegalKeyException.java,v 1.3 2003-09-09 12:53:49 anatom Exp $
  */
 public class IllegalKeyException extends EjbcaException {
     /**
@@ -17,5 +17,12 @@ public class IllegalKeyException extends EjbcaException {
      */
     public IllegalKeyException(String message) {
         super(message);
+    }
+    /**
+     * Constructs an instance of <code>IllegalKeyException</code> with the specified cause.
+     * @param msg the detail message.
+     */
+    public IllegalKeyException(Exception e) {
+        super(e);
     }
 }

@@ -4,9 +4,9 @@ import se.anatom.ejbca.exception.EjbcaException;
 
 
 /**
- * Error due to malformed key. The cause of failure can be related to illegal key length etc.
+ * Error due to malformed key store. The cause of failure can be related to illegal key length etc.
  *
- * @version $Id: IllegalKeyStoreException.java,v 1.1 2003-09-04 19:52:49 anatom Exp $
+ * @version $Id: IllegalKeyStoreException.java,v 1.2 2003-09-09 12:53:49 anatom Exp $
  */
 public class IllegalKeyStoreException extends EjbcaException {
     /**

@@ -27,6 +27,7 @@ import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.PKCS10RequestMessage;
+import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.ra.UserDataHome;
 import se.anatom.ejbca.ra.UserDataPK;
 import se.anatom.ejbca.ra.UserDataRemote;
@@ -37,7 +38,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.25 2003-09-03 17:44:29 herrvendil Exp $
+ * @version $Id: TestSignSession.java,v 1.26 2003-09-09 12:53:49 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -272,8 +273,12 @@ public class TestSignSession extends TestCase {
         log.debug("CertificationRequest generated successfully.");
 
         byte[] bcp10 = bOut.toByteArray();
-        X509Certificate cert = (X509Certificate) remote.createCertificate(new Admin(
-                    Admin.TYPE_INTERNALUSER), "foo", "foo123", new PKCS10RequestMessage(bcp10));
+        PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
+        p10.setUsername("foo");
+        p10.setPassword("foo123");
+        IResponseMessage resp = remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER), 
+            p10, Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
+        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         log.debug("<test03TestBCPKCS10()");
@@ -292,8 +297,12 @@ public class TestSignSession extends TestCase {
         data.setStatus(UserDataRemote.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
-        X509Certificate cert = (X509Certificate) remote.createCertificate(new Admin(
-                    Admin.TYPE_INTERNALUSER), "foo", "foo123", new PKCS10RequestMessage(keytoolp10));
+        PKCS10RequestMessage p10 = new PKCS10RequestMessage(keytoolp10);
+        p10.setUsername("foo");
+        p10.setPassword("foo123");
+        IResponseMessage resp = remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER), 
+            p10, Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
+        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         log.debug("<test04TestKeytoolPKCS10()");
@@ -312,8 +321,12 @@ public class TestSignSession extends TestCase {
         data.setStatus(UserDataRemote.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
-        X509Certificate cert = (X509Certificate) remote.createCertificate(new Admin(
-                    Admin.TYPE_INTERNALUSER), "foo", "foo123", new PKCS10RequestMessage(iep10));
+        PKCS10RequestMessage p10 = new PKCS10RequestMessage(iep10);
+        p10.setUsername("foo");
+        p10.setPassword("foo123");
+        IResponseMessage resp = remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER), 
+            p10, Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
+        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         log.debug("<test05TestIEPKCS10()");
@@ -392,9 +405,12 @@ public class TestSignSession extends TestCase {
         log.debug("Reset status of 'foo' to NEW");
 
         try {
-            X509Certificate cert = (X509Certificate) remote.createCertificate(new Admin(
-                        Admin.TYPE_INTERNALUSER), "foo", "foo123",
-                    new PKCS10RequestMessage(keytooldsa));
+            PKCS10RequestMessage p10 = new PKCS10RequestMessage(keytooldsa);
+            p10.setUsername("foo");
+            p10.setPassword("foo123");
+            IResponseMessage resp = remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER), 
+                p10, Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
+            X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         } catch (Exception e) {
             // RSASignSession should throw an IllegalKeyException here.
             assertTrue("Expected IllegalKeyException: " + e.toString(),

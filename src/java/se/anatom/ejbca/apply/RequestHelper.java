@@ -17,9 +17,10 @@ import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.PKCS10RequestMessage;
+import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.FileTools;
-
+import se.anatom.ejbca.util.CertTools;
 
 /**
  * Helper class for hadnling certificate request from browsers or general PKCS#10
@@ -111,7 +112,7 @@ public class RequestHelper {
      */
     public byte[] pkcs10CertRequest(ISignSessionRemote signsession, byte[] b64Encoded,
         String username, String password) throws Exception {
-        X509Certificate cert;
+        X509Certificate cert=null;
         byte[] buffer;
 
         try {
@@ -129,25 +130,20 @@ public class RequestHelper {
                 // IE PKCS10 Base64 coded request
                 buffer = Base64.decode(b64Encoded);
             }
-
-            /*
-            ISignSessionRemote ss = home.create();
-            cert = (X509Certificate) ss.createCertificate(administrator, username, password, new PKCS10RequestMessage(buffer));
-            */
         }
 
         if (buffer == null) {
             return null;
         }
-
-        cert = (X509Certificate) signsession.createCertificate(administrator, username, password,
-                new PKCS10RequestMessage(buffer));
-
+        PKCS10RequestMessage req = new PKCS10RequestMessage(buffer);
+        req.setUsername(username);
+        req.setPassword(password);
+        IResponseMessage resp = signsession.createCertificate(administrator,req,Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
+        cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         byte[] pkcs7 = signsession.createPKCS7(administrator, cert);
         log.debug("Created certificate (PKCS7) for " + username);
         debug.print("<h4>Generated certificate:</h4>");
         debug.printInsertLineBreaks(cert.toString().getBytes());
-
         return Base64.encode(pkcs7);
     }
 

@@ -2,6 +2,8 @@ package se.anatom.ejbca.ca.sign;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -39,6 +41,7 @@ import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.CADoesntExistsException;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
+import se.anatom.ejbca.ca.exception.IllegalKeyStoreException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.store.CertificateData;
@@ -59,7 +62,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.100 2003-09-08 19:03:02 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.101 2003-09-09 12:53:49 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -345,23 +348,23 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(Admin admin, String username, String password, IRequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException {
-        return createCertificate(admin, username, password, req, -1 );
+    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException {
+        return createCertificate(admin, req, -1, responseClass);
     }
 
     /**
      * Implements ISignSession::createCertificate
      *
      * @param admin Information about the administrator or admin preforming the event.
-     * @param username unique username within the instance.
-     * @param password password for the user.
      * @param req a Certification Request message, containing the public key to be put in the
      *        created certificate. Currently no additional parameters in requests are considered!
      * @param keyUsage integer with bit mask describing desired keys usage. Bit mask is packed in
      *        in integer using contants from CertificateData. ex. int keyusage =
      *        CertificateData.digitalSignature | CertificateData.nonRepudiation; gives
      *        digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
-     *        | CertificateData.cRLSign; gives keyCertSign and cRLSign
+     *        | CertificateData.cRLSign; gives keyCertSign and cRLSign. Keyusage < 0 means that default 
+     *        keyUsage should be used.
+     * @param responseClass the implementation class of the desired response 
      *
      * @return The newly created certificate or null.
      *
@@ -369,64 +372,15 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws AuthStatusException If the users status is incorrect.
      * @throws AuthLoginException If the password is incorrect.
      * @throws IllegalKeyException if the public key is of wrong type.
+     * @throws CADoesntExistsException if the targeted CA does not exist
      * @throws SignRequestException if the provided request is invalid.
      * @throws SignRequestSignatureException if the provided client certificate was not signed by
      *         the CA.
      */
-    public Certificate createCertificate(Admin admin, String username, String password, IRequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException {
-        debug(">createCertificate(user,pwd,IRequestMessage)");
-        Certificate ret = null;
-        try {
-            // Authorize user and get DN
-            UserAuthData data = authUser(admin, username, password);
-            // get CA
-            CADataLocal cadata = null; 
-            try{
-                cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
-            }catch(javax.ejb.FinderException fe){
-                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Invalid CA Id",fe);  
-                throw new EJBException(fe);                   
-            }
-            CA ca = cadata.getCA();
-            CAToken catoken = ca.getCAToken();
-            if (req.requireKeyInfo()) {
-                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateDecKey());
-            }
-            if (req.verify() == false) {
-                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"POPO verification failed.");
-                throw new EJBException("Verification of signature (popo) on request failed.");
-            }
-            PublicKey reqpk = req.getRequestPublicKey();
-            if (reqpk == null)
-                throw new InvalidKeyException("Key is null!");
-            if (keyUsage < 0)
-                ret =createCertificate(admin, username,password,reqpk);
-            else
-                ret =createCertificate(admin, username,password,reqpk,keyUsage);
-        } catch (NoSuchAlgorithmException e) {
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error in PKCS10-request, no such algorithm.");
-            throw new SignRequestException("Error in request, no such algorithm.");
-        } catch (NoSuchProviderException e) {
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Internal error processing PKCS10-request.");
-            throw new SignRequestException("Internal error processing request.");
-        } catch (InvalidKeyException e) {
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error in PKCS10-request, invlid key.");
-            throw new SignRequestException("Error in request, invalid key.");
-        } catch (Exception e) {
-            log.error(e);
-            throw new EJBException(e);
-        }
-        debug("<createCertificate(user,pwd,IRequestMessage)");
-        return ret;
-    }
-
-    /**
-     * Implements ISignSession::createCertificate
-     */
-    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException {
+    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException {
         debug(">createCertificate(IRequestMessage)");
         IResponseMessage ret = null;
-/*
+
         // Get CA that will receive request
         CADataLocal cadata = null; 
         UserAuthData data = null;
@@ -447,43 +401,70 @@ public class RSASignSessionBean extends BaseSessionBean {
             getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Invalid CA Id",fe);  
             throw new EJBException(fe);                   
         }
-        CA ca = cadata.getCA();
-        CAToken catoken = ca.getCAToken();
-        if (req.requireKeyInfo()) {
-            req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateDecKey());
-        }
-
-        if ((req.getUsername() == null ) || (req.getPassword() == null)) {
-            throw new SignRequestException("No username/password in request!");
-        }
-        Certificate cert = createCertificate(admin,req.getUsername(),req.getPassword(),req,keyUsage);
         try {
+            CA ca = cadata.getCA();
+            CAToken catoken = ca.getCAToken();
+            // Check that CA hasn't expired.
+            X509Certificate cacert = (X509Certificate) ca.getCACertificate();                  
+            try{
+                cacert.checkValidity();                   
+            }catch(Exception e){
+                 // Signers Certificate has expired.   
+                cadata.setStatus(SecConst.CA_EXPIRED);  
+                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " has expired",e);
+                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " has expired");   
+            }                
+            if (req.requireKeyInfo()) {
+                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateDecKey());
+            }
+            if ((req.getUsername() == null ) || (req.getPassword() == null)) {
+                throw new SignRequestException("No username/password in request!");
+            }
+            if (req.verify() == false) {
+                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,new java.util.Date(),req.getUsername(),null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"POPO verification failed.");
+                throw new SignRequestSignatureException("Verification of signature (popo) on request failed.");
+            }
+            // If we haven't done so yet, authenticate user
+            if (data == null) {
+                data = authUser(admin, req.getUsername(), req.getPassword());
+            }    
+            Certificate cert = null;
+            PublicKey reqpk = req.getRequestPublicKey();
+            if (reqpk == null) {
+                throw new InvalidKeyException("Key is null!");
+            }
+            cert = createCertificate(admin,data,ca,reqpk,keyUsage);        
             ret = (IResponseMessage)responseClass.newInstance();
             if (ret.requireSignKeyInfo()) {
-                ret.setSignKeyInfo(caCert, signingDevice.getPrivateSignKey());
+                ret.setSignKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateSignKey());
             }
             if (ret.requireEncKeyInfo()) {
-                ret.setEncKeyInfo(caCert, signingDevice.getPrivateDecKey());
+                ret.setEncKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateDecKey());
             }
             ret.setCertificate(cert);
             ret.setStatus(IResponseMessage.STATUS_OK);
             ret.create();
             // TODO: handle returning errors as response message,
             // javax.ejb.ObjectNotFoundException and the others thrown...
+        } catch (IllegalKeyStoreException e) {
+            throw new IllegalKeyException(e);
+        } catch (UnsupportedEncodingException e) {
+            throw new CADoesntExistsException(e);
         } catch (NoSuchProviderException e) {
-            log.error("Cannot create class for response message: ", e);
+            log.error("NoSuchProvider provider: ", e);
         } catch (InvalidKeyException e) {
-            log.error("Cannot create class for response message: ", e);
-        } catch (IOException e) {
-            log.error("Cannot create class for response message: ", e);
+            log.error("Invalid key in request: ", e);
         } catch (NoSuchAlgorithmException e) {
-            log.error("Cannot create class for response message: ", e);
+            log.error("No such algorithm: ", e);
         } catch (IllegalAccessException e) {
-            log.error("Cannot create class for response message: ", e);
+            log.error("Illegal Access: ", e);
         } catch (InstantiationException e) {
             log.error("Cannot create class for response message: ", e);
-        } */ 
+        } catch (IOException e) {
+            log.error("Cannot create response message: ", e);
+        } 
         debug("<createCertificate(IRequestMessage)");
+        ret.setStatus(IResponseMessage.STATUS_FAILED);
         return ret;
     }
 

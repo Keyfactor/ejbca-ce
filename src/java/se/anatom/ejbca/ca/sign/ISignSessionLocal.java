@@ -23,7 +23,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
  * Local interface for EJB, unforturnately this must be a copy of the remote interface except that
  * RemoteException is not thrown. Creates certificates.
  *
- * @version $Id: ISignSessionLocal.java,v 1.15 2003-09-08 19:03:03 anatom Exp $
+ * @version $Id: ISignSessionLocal.java,v 1.16 2003-09-09 12:53:49 anatom Exp $
  *
  * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
  */
@@ -83,21 +83,10 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException, 
             IllegalKeyException, CADoesntExistsException, SignRequestSignatureException;
 
-
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
-    public Certificate createCertificate(Admin admin, String username, String password,
-        IRequestMessage req)
-        throws ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-            IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException;
-
-
-    /**
-     * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
-     */
-    public Certificate createCertificate(Admin admin, String username, String password,
-        IRequestMessage req, int keyUsage)
+    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException, 
             IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException;
 
@@ -109,13 +98,11 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException, 
             IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException;
 
-
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
     public X509CRL createCRL(Admin admin, int caid, Vector certs);
     
-
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */    

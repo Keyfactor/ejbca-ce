@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.security.Provider;
 import java.security.Security;
 import java.security.cert.X509Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 
 import javax.ejb.CreateException;
 import javax.ejb.ObjectNotFoundException;
@@ -31,6 +33,7 @@ import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.PKCS10RequestMessage;
+import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.FileTools;
@@ -97,7 +100,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * 
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.11 2003-09-08 19:03:03 anatom Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.12 2003-09-09 12:53:46 anatom Exp $
  */
 public class AdminCertReqServlet extends HttpServlet {
   private final static Logger log = Logger.getLogger(AdminCertReqServlet.class);
@@ -267,9 +270,20 @@ public class AdminCertReqServlet extends HttpServlet {
 
     byte[] pkcs7;
     try {
-      X509Certificate cert =
-        (X509Certificate) ss.createCertificate(admin, username, password, p10);
+      p10.setUsername(username);
+      p10.setPassword(password);
+      IResponseMessage resp = ss.createCertificate(admin, p10, Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
+      X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
       pkcs7 = ss.createPKCS7(admin, cert);
+    } catch (ClassNotFoundException e) {
+      // Class not found
+      throw new ServletException(e);
+    } catch (CertificateEncodingException e) {
+      // Error in cert
+      throw new ServletException(e);
+    } catch (CertificateException e) {
+      // Error in cert
+      throw new ServletException(e);
     } catch (ObjectNotFoundException e) {
       // User not found
       throw new ServletException(e);

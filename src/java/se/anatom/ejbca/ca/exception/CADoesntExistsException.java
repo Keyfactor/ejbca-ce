@@ -19,13 +19,20 @@ public class CADoesntExistsException extends java.lang.Exception {
     public CADoesntExistsException() {
         super();
     }
-    
-    
+        
     /**
      * Constructs an instance of <code>CAProfileDoesntExistsException</code> with the specified detail message.
      * @param msg the detail message.
      */
     public CADoesntExistsException(String msg) {
         super(msg);
+    }
+
+    /**
+     * Constructs an instance of <code>CAProfileDoesntExistsException</code> with the specified cause.
+     * @param msg the detail message.
+     */
+    public CADoesntExistsException(Exception e) {
+        super(e);
     }
 }

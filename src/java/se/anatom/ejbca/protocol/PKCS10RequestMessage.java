@@ -28,7 +28,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.19 2003-09-08 19:02:40 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.20 2003-09-09 12:53:49 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(PKCS10RequestMessage.class);
@@ -36,6 +36,12 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     /** Raw form of the PKCS10 message */
     protected byte[] p10msg;
 
+    /** manually set password */
+    protected String password=null;
+    
+    /** manually set username */
+    protected String username=null;
+    
     /** The pkcs10 request message, not serialized. */
     protected transient PKCS10CertificationRequest pkcs10 = null;
 
@@ -107,12 +113,19 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
         return pkcs10.getPublicKey();
     }
 
+    /** force a password, i.e. ignore the challenge password in the request
+    */
+    public void setPassword(String pwd) {
+        this.password=pwd;
+    }
     /**
      * Returns the challenge password from the certificattion request.
      *
      * @return challenge password from certification request.
      */
     public String getPassword() {
+        if (password != null)
+            return password;
         try {
             if (pkcs10 == null) {
                 init();
@@ -149,6 +162,11 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
         return ret;
     }
 
+    /** force a username, i.e. ignore the DN/username in the request
+    */
+    public void setUsername(String username) {
+        this.username=username;
+    }
     /**
      * Returns the string representation of the CN field from the DN of the certification request,
      * to be used as username.
@@ -156,6 +174,8 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
      * @return username, which is the CN field from the subject DN in certification request.
      */
     public String getUsername() {
+        if (username != null)
+            return username;
         return CertTools.getPartFromDN(getRequestDN(), "CN");
     }
 

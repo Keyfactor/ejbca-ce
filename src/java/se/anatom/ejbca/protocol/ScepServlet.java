@@ -39,7 +39,7 @@ import se.anatom.ejbca.util.Base64;
  * 7. output the result as a der encoded block on stdout
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.20 2003-09-04 08:15:29 herrvendil Exp $
+ * @version $Id: ScepServlet.java,v 1.21 2003-09-09 12:53:49 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);
@@ -123,7 +123,6 @@ public class ScepServlet extends HttpServlet {
 
                 if (reply == null) {
                     response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Fatal error processing Scep request");
-
                     return;
                 }
 
