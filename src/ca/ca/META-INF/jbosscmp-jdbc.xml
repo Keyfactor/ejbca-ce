@@ -4,7 +4,7 @@
 
 <defaults>
     <datasource>java:/DefaultDS</datasource>
-    <datasource-mapping>mySQL</datasource-mapping>
+    <datasource-mapping>Hypersonic SQL</datasource-mapping>
 </defaults>
 
 <!-- Default setting for mySQL in EJBCA version > 1.0. 
@@ -13,7 +13,7 @@
      the <entity> sections below if things don't work. -->
 
 <enterprise-beans>
-    <entity>
+ <!--   <entity>
         <ejb-name>CertificateData</ejb-name>
         <cmp-field>
             <field-name>base64Cert</field-name>
@@ -29,7 +29,7 @@
             <jdbc-type>LONGVARCHAR</jdbc-type>
             <sql-type>TEXT</sql-type>
         </cmp-field>
-    </entity>
+    </entity> -->
 </enterprise-beans>
 
 </jbosscmp-jdbc>
