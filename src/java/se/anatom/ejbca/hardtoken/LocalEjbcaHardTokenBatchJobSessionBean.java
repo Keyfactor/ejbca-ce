@@ -23,7 +23,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from EJBCA RA.
  *
- * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.10 2003-09-03 12:43:13 herrvendil Exp $
+ * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.11 2003-09-13 09:02:24 anatom Exp $
  */
 public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
@@ -125,14 +125,11 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
       if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
         Connection con = null;
-        PreparedStatement ps = null;
         ResultSet rs = null;
         try{
            // Construct SQL query.
             con = getConnection();
-            ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId = " + issuerid + " and tokenType > " + SecConst.TOKEN_SOFT);
-            // Execute query.
-            rs = ps.executeQuery();
+            rs = getHardTokensFromHardTokenIssuer(con,issuerid);
             // Assemble result.
            if(rs.next()){
               returnval = new UserAdminData(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
@@ -151,7 +148,6 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         } finally {
            try{
              if(rs != null) rs.close();
-             if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
                error("Fel vid upprensning: ", se);
@@ -179,15 +175,12 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
       int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, issuercert);
 
       if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
-        Connection con = null;
-        PreparedStatement ps = null;
         ResultSet rs = null;
+        Connection con = null;
         try{
            // Construct SQL query.
             con = getConnection();
-            ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId = " + issuerid + " and tokenType > " + SecConst.TOKEN_SOFT);
-            // Execute query.
-            rs = ps.executeQuery();
+            rs = getHardTokensFromHardTokenIssuer(con,issuerid);
             // Assemble result.
            while(rs.next() && returnval.size() <= IHardTokenBatchJobSessionLocal.MAX_RETURNED_QUEUE_SIZE){
               UserAdminData data = new UserAdminData(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
@@ -205,7 +198,6 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         }finally{
            try{
              if(rs != null) rs.close();
-             if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
                error("Fel vid upprensning: ", se);
@@ -240,14 +232,11 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
       if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
         Connection con = null;
-        PreparedStatement ps = null;
         ResultSet rs = null;
         try{
            // Construct SQL query.
             con = getConnection();
-            ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId = " + issuerid + " and tokenType > " + SecConst.TOKEN_SOFT);
-            // Execute query.
-            rs = ps.executeQuery();
+            rs = getHardTokensFromHardTokenIssuer(con,issuerid);
             // Assemble result.
            if(rs.relative(index)){
               returnval = new UserAdminData(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
@@ -266,7 +255,6 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         }finally{
            try{
              if(rs != null) rs.close();
-             if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
                error("Fel vid upprensning: ", se);
@@ -301,7 +289,9 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         try{
            // Construct SQL query.
             con = getConnection();
-            ps = con.prepareStatement("select COUNT(*) from UserData where hardTokenIssuerId = " + issuerid + " and tokenType > " + SecConst.TOKEN_SOFT);
+            ps = con.prepareStatement("select COUNT(*) from UserData where hardTokenIssuerId=? and tokenType>?");
+            ps.setInt(1,issuerid);
+            ps.setInt(2,SecConst.TOKEN_SOFT);
             // Execute query.
             rs = ps.executeQuery();
             // Assemble result.
@@ -341,7 +331,8 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         try{
            // Construct SQL query.
             con = getConnection();
-            ps = con.prepareStatement("select COUNT(*) from UserData where hardTokenIssuerId = " + hardtokenissuerid );
+            ps = con.prepareStatement("select COUNT(*) from UserData where hardTokenIssuerId=?");
+            ps.setInt(1,hardtokenissuerid);
             // Execute query.
             rs = ps.executeQuery();
             // Assemble result.
@@ -363,6 +354,22 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
            }
         }
     } // checkForHardTokenIssuerId
+
+    private ResultSet getHardTokensFromHardTokenIssuer(Connection con, int issuerid) throws SQLException {
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+        try {
+            // Construct SQL query.
+            ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId=? and tokenType>?");
+            ps.setInt(1,issuerid);
+            ps.setInt(2,SecConst.TOKEN_SOFT);
+            // Execute query.
+            rs = ps.executeQuery();
+            return rs;
+        } finally {
+            if(ps != null) ps.close();
+        }
+    }
 
 } // LocalRaAdminSessionBean
 

@@ -44,7 +44,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.49 2003-09-10 09:34:17 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.50 2003-09-13 09:01:58 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -377,8 +377,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
         try {
             con = getConnection();
-            ps = con.prepareStatement("SELECT DISTINCT username FROM CertificateData WHERE expireDate >= " +  currentdate + 
-                                      " AND expireDate < " + expiretime.getTime() + " AND status = " + CertificateData.CERT_ACTIVE);
+            ps = con.prepareStatement(
+				"SELECT DISTINCT username FROM CertificateData WHERE expireDate>=? AND expireDate<? AND status=?"); 
+            ps.setLong(1,currentdate);
+			ps.setLong(2,expiretime.getTime());
+			ps.setInt(3,CertificateData.CERT_ACTIVE);
             result = ps.executeQuery();
             while(result.next() && returnval.size() <= SecConst.MAXIMUM_QUERY_ROWCOUNT +1){
                 if(result.getString(1) != null && !result.getString(1).equals(""))
@@ -692,7 +695,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
 
     /**
-     * Implements ICertificateStoreSession::isRevoked. Uses select directly from datasource.
+     * Implements ICertificateStoreSession::isRevoked.
      *
      * @param admin DOCUMENT ME!
      * @param issuerDN DOCUMENT ME!
@@ -737,7 +740,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     } //isRevoked
 
     /**
-     * Implements ICertificateStoreSession::getLastCRL. Uses select directly from datasource.
+     * Implements ICertificateStoreSession::getLastCRL.
      *
      * @param admin DOCUMENT ME!
      *
@@ -770,7 +773,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
     /**
      * Implements ICertificateStoreSession::getLastCRLInfo.
-     * Uses select directly from datasource.
      */
     public CRLInfo getLastCRLInfo(Admin admin, String issuerdn) {
         debug(">findLatestCRL()");
@@ -807,7 +809,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         ResultSet result = null;
         try {
             con = getConnection();
-            ps = con.prepareStatement("select MAX(CRLNumber) from CRLData where issuerDN=\'" + issuerdn + "\'");
+            ps = con.prepareStatement("select MAX(CRLNumber) from CRLData where issuerDN=?");
+            ps.setString(1,issuerdn);
             result = ps.executeQuery();
 
             int maxnumber = 0;

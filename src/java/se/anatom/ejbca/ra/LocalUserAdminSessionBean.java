@@ -54,7 +54,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.61 2003-09-04 14:36:14 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.62 2003-09-13 09:02:28 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -865,11 +865,13 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
      * itself.
      */
     
-    private Collection query(Admin admin, Query query, boolean withlimit, String caauthorizationstring, String endentityprofilestring,  boolean onlybatchusers) throws IllegalQueryException{
+    private Collection query(Admin admin, Query query, boolean withlimit, String caauthorizationstr, String endentityprofilestr,  boolean onlybatchusers) throws IllegalQueryException{
         debug(">query()");
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
+        String caauthorizationstring = StringTools.strip(caauthorizationstr);
+        String endentityprofilestring = StringTools.strip(endentityprofilestr);
         ArrayList returnval = new ArrayList();
         GlobalConfiguration globalconfiguration = getGlobalConfiguration(admin);
         RAAuthorization raauthorization = null; 
