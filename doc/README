@@ -1,4 +1,4 @@
-$Id: README,v 1.121 2004-02-02 10:49:58 herrvendil Exp $
+$Id: README,v 1.122 2004-02-03 15:24:42 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -33,29 +33,30 @@ FEATURES
 - Built on the J2EE 1.3 (EJB 2.0) specification.
 
 - Flexible, component based architecture.
-- Multiple CAs and levels of CAs, build a complete infrastructure within one instance of EJBCA.
+- Multiple CAs and levels of CAs, build a complete infrastructure (or several) within one instance of EJBCA.
 - Standalone or integrated in any J2EE application.
+- Simple installation and configuration.
+- Powerful Web based administration GUI using strong authentication.
+- Command line administration for scripts etc.
 - Individual enrollment or batch production of certificates.
 - Server and client certificates can be exported as PKCS12, JKS or PEM.
 - Browser enrollment with Netscape, Mozilla, IE, etc.
 - Enrollment for other applications through open APIs and tools.
-- Support for issuing hard tokens through flexible interface.
+- E-mail notification to new users added by RA.
+- Random or manual password for initial user authentication.
+- Hard token module for integrating with hard token issuing system (smart cards).
 - Supports the Simple Certificate Enrollment Protocol (SCEP).
-- Powerful Web based administration GUI using strong authentication.
-- Command line administration for scripts etc.
 - Multiple levels of administrators with specified privileges and user groups.
-- Configurable certificate- and entity profiles for different types of
-  certificates and users.
-- Configurable certificate content.
+- Configurable certificate profiles for different types and contents of certificates.
+- Configurable entity profiles for different types of users.
 - Follows X509 and PKIX (RFC3280) standards where applicable.
 - Revocation and Certificate Revocation Lists (CRLs).
 - Fully supports the Online Certificate Status Protocol (OCSP), including AIA-extension.
-- CRL creation using scheduled jobs and URL-based CRLDistribution Points according to RFC3280.
-- E-mail notification to new users added by RA.
+- CRL creation and URL-based CRLDistribution Points according to RFC3280.
 - Stores Certificates and CRLs in any SQL database (handled by application server).
-- Component based architecture for publishing certificates and
-  CRLs to different sources.
-- Optional publisher for LDAP publishes certificates and CRLs in LDAP.
+- Optional multiple publishers for publishing certificates and CRLs in LDAP and other stores.
+- Key recovery module to store private keys for recovery for selected users and certificates.
+- Component based architecture for publishing certificates and CRLs to different sources.
 - Component based architecture for various authorization methods
   of entities when issuing certificates.
 - Easy to integrate into large applications for optimal integration into bussiness process.
@@ -183,8 +184,8 @@ FOR THE IMPATIENT:
 1. Build and deploy everything with 'ant deploy'.
 2. Start JBoss, ejbca-ca.ear should be deployed.
 3. execute 'install.sh/cmd' in the ejbca directory.  The installation script
- will use the default javacacerts password. If you have changeit it you should use
- 'install.sh/cmd <javacacerts password>'.
+ will use the default javacacerts password. If you have changed it (from changeit) 
+ it you should use 'install.sh/cmd <javacacerts password>'.
 
 If you want to run a thorough test of your new CA, run the automated tests with 'runtest.sh/cmd'.
 
