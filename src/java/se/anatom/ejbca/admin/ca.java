@@ -56,7 +56,7 @@ public class ca {
     
     public static void main(String [] args){
         if (args.length < 1) {
-            System.out.println("Usage: CA info | makeroot | getrootcert | makereq | recrep | processreq | init | createcrl | getcrl | rolloverroot | rolloversub");
+            System.out.println("Usage: CA info | makeroot | getrootcert | makereq | recrep | processreq | init | createcrl | getcrl | rolloverroot | rolloversub | listexpired");
             return;
         }
         try {
@@ -108,6 +108,26 @@ public class ca {
                 fos.write(rootcert.getEncoded());
                 fos.close();
                 System.out.println("Wrote Root CA certificate to '"+filename+"'");
+            } else if (args[0].equals("listexpired")) {
+                // List certificates that will expire within the given number of days
+                if (args.length < 2) {
+                    System.out.println("List certificates that will expire within the given number of days.");
+                    System.out.println("Usage: CA listexpired <days>");
+                    return;
+                }
+                long days = Long.parseLong(args[1]);
+                Date findDate = new Date();
+                long millis = (days * 24 * 60 * 60 * 1000);
+                findDate.setTime(findDate.getTime() + (long)millis);
+                System.out.println("Looking for certificates that expire before "+findDate+".");
+                Certificate[] certs = getExpiredCerts(findDate);
+                for (int i=0;i<certs.length;i++) {
+                    X509Certificate xcert = (X509Certificate)certs[i];
+                    Date retDate = xcert.getNotAfter();
+                    String subjectDN= xcert.getSubjectDN().toString();
+                    String serNo = xcert.getSerialNumber().toString();
+                    System.out.println("Certificate with subjectDN '"+subjectDN+"' and serialNumber '"+serNo+"' expires at "+retDate+".");
+                }
             } else if (args[0].equals("info")) {
                 Certificate[] chain = getCertChain();
                 if (chain.length < 2)
@@ -432,7 +452,7 @@ public class ca {
                 
                 System.out.println("Submit certificare request to RootCA and when receiving reply run 'ca recrep'.");
             } else {
-                System.out.println("Usage: CA info | makeroot | getrootcert | makereq | recrep | processreq | init | createcrl | getcrl | rolloverroot | rolloversub");
+                System.out.println("Usage: CA info | makeroot | getrootcert | makereq | recrep | processreq | init | createcrl | getcrl | rolloverroot | rolloversub | listexpire");
             }
 
         } catch (Exception e) {
@@ -496,7 +516,22 @@ public class ca {
             cat.error(e);
         }
         return null;
-    } // getRootCert
+    } // getCertChain
+    
+    static private Certificate[] getExpiredCerts(Date findDate) {
+        try {
+            Context ctx = getInitialContext();
+            ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome)javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );;
+            ICertificateStoreSession store = storehome.create();
+            cat.debug("Looking for cert with expireDate="+findDate);
+            Certificate[] certs = store.findCertificatesByExpireTime(findDate);
+            cat.debug("Found "+certs.length+" certs.");
+            return certs;
+        } catch (Exception e) {
+            cat.error(e);
+        }
+        return null;
+    } // getExpiredCerts
     
     static private Context getInitialContext() throws NamingException{
         cat.debug(">getInitialContext");

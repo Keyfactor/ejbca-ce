@@ -5,9 +5,10 @@ import java.rmi.*;
 import java.io.*;
 import java.math.BigInteger;
 
+import java.util.Date;
+import java.util.Vector;
 import java.sql.*;
 import javax.sql.DataSource;
-import java.util.Vector;
 import javax.naming.*;
 import javax.rmi.*;
 import javax.ejb.*;
@@ -25,7 +26,7 @@ import se.anatom.ejbca.util.Base64;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.5 2002-03-07 15:00:37 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.6 2002-04-01 12:10:17 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean implements ICertificateStoreSession {
 
@@ -210,7 +211,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
             debug("found "+vect.size()+" certificate(s) with DN="+dn);
             X509Certificate[] returnArray = new X509Certificate[vect.size()];
             vect.copyInto(returnArray);
-            debug("<findCertificatesBySubject()");
+            debug("<findCertificatesBySubject(), dn="+subjectDN);
             return returnArray;
         }
         catch (Exception e) {
@@ -225,9 +226,51 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
                 se.printStackTrace();
             }
         }
-
     } //findCertificatesBySubject
 
+    /** Finds certificate which expire within a specified time.
+     *
+     * Implements ICertificateStoreSession::findCertificatesByExpireTime.
+     * Uses select directly from datasource.
+     */
+    public Certificate[] findCertificatesByExpireTime(Date expireTime) {
+        debug(">findCertificatesByExpireTime(), time="+expireTime);
+        // First make expiretime in well know format
+        long expireSeconds = expireTime.getTime();
+        debug("Looking for certs with (expireSeconds: " + expireSeconds);
+
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet result = null;
+        try{
+            con = getConnection();
+            ps = con.prepareStatement("select b64cert from CertificateData where expireDate<? ORDER BY expireDate DESC");
+            ps.setLong(1,expireSeconds);
+            result = ps.executeQuery();
+            Vector vect = new Vector();
+            while(result.next()){
+                vect.addElement(CertTools.getCertfromByteArray(Base64.decode(result.getString(1).getBytes())));
+            } 
+            debug("found "+vect.size()+" certificate(s) with expireDate<"+expireSeconds);
+            X509Certificate[] returnArray = new X509Certificate[vect.size()];
+            vect.copyInto(returnArray);
+            debug("<findCertificatesByExpireTime(), time="+expireTime);
+            return returnArray;
+        }
+        catch (Exception e) {
+            throw new EJBException(e);
+        }
+        finally {
+            try {
+                if (result != null) result.close();
+                if (ps != null) ps.close();
+                if (con!= null) con.close();
+            } catch(SQLException se) {
+                se.printStackTrace();
+            }
+        }
+    } //findCertificatesByExpireTime
+    
    /**
     * Implements ICertificateStoreSession::findCertificateByIssuerAndSerno.
     * Uses select directly from datasource.

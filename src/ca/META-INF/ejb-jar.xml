@@ -17,7 +17,7 @@
         <description>Location of CA keystore</description>
         <env-entry-name>keyStore</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>/tmp/server.p12</env-entry-value>
+        <env-entry-value>../conf/server.p12</env-entry-value>
      </env-entry>
      <env-entry>
         <description>Password for server keystore, comment out to prompt for pwd.</description>

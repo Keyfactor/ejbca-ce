@@ -1,6 +1,6 @@
 @echo off
 rem ----
-rem $Id: deploy.cmd,v 1.6 2002-03-10 20:06:06 anatom Exp $
+rem $Id: deploy.cmd,v 1.7 2002-04-01 12:10:15 anatom Exp $
 rem
 rem Deploy script for EJBCA
 rem
@@ -9,17 +9,29 @@ rem that the dependant files are properly installed.
 rem
 rem ----
 
+KEYSTORE=src\ca\keyStore\server.p12
+
 rem Check for proper settings of environment variables
 if "%JBOSS_HOME%" == ""  goto error
 
-rem Check for dependencies
-if exist %JBOSS_HOME%\lib\ext\jce-jdk13-111.jar goto deploy
+# Install keystore is 'keystore' is given as argument to deploy
+if "%1" == "" goto install
+if "%1" != "keystore" goto install
+if exist %JBOSS_HOME%\conf\server.p12 goto ksexist
+xcopy %KEYSTORE% %JBOSS_HOME%\conf /Q /Y
+echo Copied %KEYSTORE% to %JBOSS_HOME%\conf.
+goto install
+:ksexist
+echo %KEYSTORE% already exist, no files copied.
 
+rem Install BouncyCastle provider and ldap.jar
 :install
-xcopy lib\jce-jdk13-111.jar %JBOSS_HOME%\lib\ext /Q /Y
+if exist %JBOSS_HOME%\lib\ext\jce-jdk13-112.jar goto deploy
+xcopy lib\jce-jdk13-112.jar %JBOSS_HOME%\lib\ext /Q /Y
 xcopy lib\ldap.jar %JBOSS_HOME%\lib\ext /Q /Y
-echo Copied jce-jdk13-111.jar and ldap.jar to %JBOSS_HOME%\lib\ext. JBoss must be restared.
+echo Copied jce-jdk13-112.jar and ldap.jar to %JBOSS_HOME%\lib\ext. JBoss must be restared.
 
+rem Deploy jar and war files
 :deploy
 xcopy dist\*.war %JBOSS_HOME%\deploy /Q /Y
 xcopy dist\*.jar %JBOSS_HOME%\deploy /Q /Y

@@ -1,4 +1,4 @@
-$Id: TODO,v 1.26 2002-03-28 09:12:11 anatom Exp $
+$Id: TODO,v 1.27 2002-04-01 12:10:15 anatom Exp $
 
 V 1.0
 -----
@@ -7,11 +7,13 @@ V 1.0
 
 V 1.x
 -----
-- Make a database model similar to architecture model.
-- Function to warn about certificates about to expire.
+- NONE
 
 V 2.0
 -----
+- Make a database model similar to architecture model.
+- Add a 'Service Locator' to concentrate code for lookups.
+- Use a 'Value List Handler' for listing of all certificates, clrs and users.
 - Update to EJB 2.0 spec (when JBoss is ready).
 - Better architecture for JSPs (MVC - ModelViewController?).
 - Add administration interface web-GUI (through servlets/JSP).

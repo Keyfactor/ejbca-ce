@@ -137,27 +137,24 @@ Configure
 
 Now when everything is installed, there are a few things to configure before
  starting JBOSS and running everything.
-Most important, to run the CA a keystore must be in the directory designated by
- the item 'keyStore' in src/ca/META-INF/ejb-jar.xml (default /tmp/server.p12). A
- test keyStore is provided in 'src/ca/keystore/server.p12'.
-
-NOTE: After running tests with 'runtest.sh/cmd', you might consider deleting the
-database since some leftovers are left in the database. Also DO NOT run the
-testscripts on a production database since it will revoke all certificates in
-the
-database.
 
 FOR THE IMPATIENT:
 
 1. Build everything with 'ant'.
 2. Deploy EJBCA to JBoss with 'deploy.sh/cmd'.
-3. Copy 'src/ca/keyStore/server.p12' to /tmp.
+3. Copy the keystore (src/ca/keyStore/server.p12) to $JBOSS_HOME/conf with 'deploy.cmd/sh keystore'.
 4. Start JBoss, jars and wars should be deployed.
 5. Run the tests with 'runtest.sh/cmd'.
 6. Initialize the CA for operation by running 'ca.sh/cmd init'.
 
-Please note that '/tmp' is often regularly cleaned on UNIX systems, so it might
-be wise to change the location of the keystore in 'src/ca/META-INF/ejb-jar.xml'.
+NOTE-1: After running tests with 'runtest.sh/cmd', you might consider deleting the
+database since some leftovers are left in the database. Also DO NOT run the
+testscripts on a production database since it will revoke all certificates in
+the database. 'runtest.sh/cmd should not be run on a production system, only
+to test the installation.
+
+NOTE-2: The installed keystore is a demo keystore with DN 'C=SE,O=AnaTom,CN=TestCA'.
+You should create a new keystore (see below) if using EJBCA for production purposes.
 
 FOR THE OTHERS:
 
@@ -178,10 +175,11 @@ run 'ca.sh/bat makeroot' and enter all required parameters.
 Ex: 'ca.sh makeroot "C=SE,O=AnaTom,CN=EJBCA" 1024 365 /tmp/server.p12 foo123
 will create a root CA with the DN 'C=SE,O=AnaTom,CN=EJBCA'. The keylength is
  1024 bit (RSA) and the validity of the root certificate is 365 days. The CAs
- keystore will be stored in 'tmp/server.p12' and be protected by the password
+ keystore will be stored in '$JBOSS_HOME/conf/server.p12' and be protected by the password
  'foo123'. Quote the DN  so it is treated as one argument.
 Now edit 'src/ca/META-INF/ejb-jar.xml' to reflect the values you entered for
- 'keyStore' and 'keyStorePass'.
+ 'keyStore' and 'keyStorePass'. If the keystore is placed in a custom directory, don't
+run the command 'deploy.cmd/sh keystore'.
 
 Subordinate CA:
 run 'ca.sh/bat makereq' and enter all required parameters.
@@ -384,6 +382,7 @@ resigned.
 * rolloversub - used to generate a new subCA certificate using an existing
 keypair. This updates the current subCA keystore.
 When this is used, sub-certificates do not need to be resigned.
+* listexpired - List certificates that will expire within a given number of days.
 
 Configuring RA
 --------------

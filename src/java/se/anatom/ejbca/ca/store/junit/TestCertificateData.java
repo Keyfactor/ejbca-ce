@@ -25,7 +25,7 @@ import junit.framework.*;
 
 /** Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.3 2002-03-21 12:50:54 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.4 2002-04-01 12:10:17 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -46,6 +46,7 @@ public class TestCertificateData extends TestCase {
     static Category cat = Category.getInstance( TestCertificateData.class.getName() );
     private static Context ctx;
     private static CertificateDataHome home;
+    private static ICertificateStoreSessionHome storehome; 
     private static X509Certificate cert;
 
     public TestCertificateData(String name) {
@@ -56,6 +57,8 @@ public class TestCertificateData extends TestCase {
         ctx = getInitialContext();
         Object obj = ctx.lookup("CertificateData");
         home = (CertificateDataHome) javax.rmi.PortableRemoteObject.narrow(obj, CertificateDataHome.class);
+        Object obj2 = ctx.lookup("CertificateStoreSession");
+        storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
         cert = CertTools.getCertfromByteArray(testcert);
         cat.debug("<setUp()");
     }
@@ -119,8 +122,6 @@ public class TestCertificateData extends TestCase {
 
     public void test03listAndRevoke() throws Exception {
         cat.debug(">test03listAndRevoke()");
-        Object obj2 = ctx.lookup("CertificateStoreSession");
-        ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
         ICertificateStoreSessionRemote store = storehome.create();
         String[] certfps = store.listAllCertificates();
         assertNotNull("failed to list certs", certfps);
@@ -144,8 +145,6 @@ public class TestCertificateData extends TestCase {
     }
     public void test04CheckRevoked() throws Exception {
         cat.debug(">test04CheckRevoked()");
-        Object obj2 = ctx.lookup("CertificateStoreSession");
-        ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
         ICertificateStoreSessionRemote store = storehome.create();
         String[] certfps = store.listAllCertificates();
         assertNotNull("failed to list certs", certfps);
@@ -182,34 +181,64 @@ public class TestCertificateData extends TestCase {
         assertTrue("wrong reason", (data3.getRevocationReason() & CRLData.REASON_KEYCOMPROMISE) == CRLData.REASON_KEYCOMPROMISE);
 
         cat.debug("Looking for cert with DN="+cert.getSubjectDN().toString());
-        Object obj2 = ctx.lookup("CertificateStoreSession");
-        ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
         ICertificateStoreSessionRemote store = storehome.create();
         Certificate[] certs = store.findCertificatesBySubject(cert.getSubjectDN().toString());
-        for (int i=0;i<certs.length;i++)
-            cat.debug(certs[i].toString());
+        for (int i=0;i<certs.length;i++) {
+            X509Certificate xcert = (X509Certificate)certs[i];
+            cat.debug(xcert.getSubjectDN().toString()+" - "+xcert.getSerialNumber().toString());
+            //cat.debug(certs[i].toString());
+        }
         cat.debug("<test05FindAgain()");
     }
+    public void test06FindByExpireTime() throws Exception {
+        cat.debug(">test06FindByExpireTime()");
+        CertificateDataPK pk = new CertificateDataPK();
+        pk.fp = CertTools.getFingerprintAsString(cert);
+        CertificateData data = home.findByPrimaryKey(pk);
+        assertNotNull("Failed to find cert", data);
+        cat.debug("expiredate="+data.getExpireDate());
 
-    public void test06FindByIssuerAndSerno() throws Exception {
-        cat.debug(">test06FindByIssuerAndSerno()");
+        // Seconds in a year
+        long yearmillis = 365*24*60*60*1000;
+        long findDateSecs = data.getExpireDate().getTime() - (yearmillis*100);
+        Date findDate = new Date(findDateSecs);
+        
+        ICertificateStoreSessionRemote store = storehome.create();
+        cat.debug("1. Looking for cert with expireDate="+findDate);
+        Certificate[] certs = store.findCertificatesByExpireTime(findDate);
+        cat.debug("findCertificatesByExpireTime returned "+ certs.length+" certs.");
+        assertTrue("No certs should have expired before this date", certs.length == 0);
+        findDateSecs = data.getExpireDate().getTime() + 10000;
+        findDate = new Date(findDateSecs);
+        cat.debug("2. Looking for cert with expireDate="+findDate);
+        certs = store.findCertificatesByExpireTime(findDate);
+        cat.debug("findCertificatesByExpireTime returned "+ certs.length+" certs.");
+        assertTrue("Some certs should have expired before this date", certs.length != 0);
+        for (int i=0;i<certs.length;i++) {
+            Date retDate = ((X509Certificate)certs[i]).getNotAfter();
+            cat.debug(retDate);
+            assertTrue("This cert is not expired by the specified Date.", retDate.getTime() < findDate.getTime()); 
+        }
+        cat.debug("<test06FindByExpireTime()");
+    }
+
+    public void test07FindByIssuerAndSerno() throws Exception {
+        cat.debug(">test07FindByIssuerAndSerno()");
         CertificateDataPK pk = new CertificateDataPK();
         pk.fp = CertTools.getFingerprintAsString(cert);
         CertificateData data3 = home.findByPrimaryKey(pk);
         assertNotNull("Failed to find cert", data3);
 
         cat.debug("Looking for cert with DN:"+cert.getIssuerDN().toString()+" and serno "+cert.getSerialNumber());
-        Object obj2 = ctx.lookup("CertificateStoreSession");
-        ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
         ICertificateStoreSessionRemote store = storehome.create();
         Certificate fcert = store.findCertificateByIssuerAndSerno(cert.getIssuerDN().toString(), cert.getSerialNumber());
         assertNotNull("Cant find by issuer and serno", fcert);
-        cat.debug(fcert.toString());
-        cat.debug("<test06FindByIssuerAndSerno()");
+        //cat.debug(fcert.toString());
+        cat.debug("<test07FindByIssuerAndSerno()");
     }
 
-    public void test07IsRevoked() throws Exception {
-        cat.debug(">test07IsRevoked()");
+    public void test08IsRevoked() throws Exception {
+        cat.debug(">test08IsRevoked()");
         CertificateDataPK pk = new CertificateDataPK();
         pk.fp = CertTools.getFingerprintAsString(cert);
         CertificateData data3 = home.findByPrimaryKey(pk);
@@ -231,8 +260,6 @@ public class TestCertificateData extends TestCase {
         assertTrue("wrong reason", (data3.getRevocationReason() & CRLData.REASON_KEYCOMPROMISE) == CRLData.REASON_KEYCOMPROMISE);
 
         cat.debug("Checking if cert is revoked DN:'"+cert.getIssuerDN().toString()+"', serno:'"+cert.getSerialNumber().toString()+"'.");
-        Object obj2 = ctx.lookup("CertificateStoreSession");
-        ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
         ICertificateStoreSessionRemote store = storehome.create();
         RevokedCertInfo revinfo = store.isRevoked(cert.getIssuerDN().toString(), cert.getSerialNumber());
         assertNotNull("Certificate not revoked, it should be!", revinfo);
@@ -240,7 +267,7 @@ public class TestCertificateData extends TestCase {
         assertTrue("Wrong reason!", revinfo.getReason() == data3.getRevocationReason());
         home.remove(pk);
         cat.debug("Removed it!");
-        cat.debug("<test07IsRevoked()");
+        cat.debug("<test08IsRevoked()");
     }
 
 }
