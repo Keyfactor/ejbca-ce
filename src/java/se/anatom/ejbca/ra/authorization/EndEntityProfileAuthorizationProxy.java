@@ -61,7 +61,7 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
         adm = Integer.toString(admin.getAdminInformation().getSpecialUser());  
       else
         adm = new String(admin.getAdminInformation().getX509Certificate().getSignature());          
-      resource =  adm + GlobalConfiguration.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights;
+      resource = adm + GlobalConfiguration.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights;
         // Check if name is in hashmap
       returnval = (Boolean) profileauthstore.get(resource);
       
@@ -69,9 +69,9 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
         // Retreive profilename over RMI
         try{
           if(local)  
-            authorizationsessionlocal.isAuthorized(admin.getAdminInformation(),resource);
+            authorizationsessionlocal.isAuthorized(admin.getAdminInformation(),GlobalConfiguration.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
           else
-            authorizationsessionremote.isAuthorized(admin.getAdminInformation(),resource);              
+            authorizationsessionremote.isAuthorized(admin.getAdminInformation(),GlobalConfiguration.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);              
           returnval = new Boolean(true);
         }catch(AuthorizationDeniedException e){
           returnval = new Boolean(false); 

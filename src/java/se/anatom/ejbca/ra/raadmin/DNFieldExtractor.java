@@ -55,7 +55,7 @@ public class DNFieldExtractor {
   
     /** Creates a new instance of DNFieldExtractor */
     public DNFieldExtractor(String dn, int type) {
-        
+      dnfields = new HashMap();   
       setDN(dn,type);
     }
     
