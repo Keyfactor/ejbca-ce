@@ -24,6 +24,10 @@ Improved support for keyrecovery.
 Improved configuration of administrative privileges.
 Many minor fixes and enhancements.
 
+2.1.3
+-----
+Fixed a bux when applying with IE, wrong csp could be used.
+
 2.1.2
 -----
 LDAP schema now correctly follows RFC 2256 and works with OpenLDAP 2.2. 
