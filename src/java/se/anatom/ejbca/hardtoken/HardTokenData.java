@@ -24,7 +24,7 @@ import se.anatom.ejbca.util.StringTools;
  *  server and clients.
  *
  * @author  TomSelleck
- * @version $Id: HardTokenData.java,v 1.7 2004-04-16 07:38:56 anatom Exp $
+ * @version $Id: HardTokenData.java,v 1.8 2004-07-23 12:23:46 sbailliez Exp $
  */
 
 public class HardTokenData implements java.io.Serializable {
@@ -91,7 +91,7 @@ public class HardTokenData implements java.io.Serializable {
      * Returns a collection of (Strings) containing the tokenSN of all copies made
      * of this token.
      * 
-     * @returns A Collection of tokenSN or null of no copies have been made.
+     * @return A Collection of tokenSN or null of no copies have been made.
      * 
      */
     public Collection getCopies(){
