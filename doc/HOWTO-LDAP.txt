@@ -51,6 +51,9 @@ Then make sure
 THEN you can try
 "cn=ldaphost,ou=hosts,dc=yourdom,dc=com" 
 
+EJBCA does not create branches in LDAP. 
+You have to put them there with other means, before you start publishing.
+
 CONFIGURE LDAP PUBLISHERS
 =========================
 
