@@ -1,6 +1,5 @@
 EJBCA V2.0B2
 ------------
-Delete table CertificateProfiles 'drop table certificateprofiledata';
 
 EJBCA V2.0
 ----------
