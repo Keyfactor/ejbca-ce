@@ -55,7 +55,7 @@ import org.apache.log4j.*;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.1 2002-08-07 08:33:45 anatom Exp $
+ * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.2 2002-08-08 18:40:33 anatom Exp $
  */
 public class LDAPActiveDirectoryPublisherSessionBean
     extends BaseSessionBean {
@@ -76,21 +76,13 @@ public class LDAPActiveDirectoryPublisherSessionBean
          */
     public void ejbCreate() throws CreateException {
         debug(">ejbCreate()");
-        Properties prp = getSessionContext().getEnvironment();
-        if (prp.getProperty("ldapHost") != null)
-            ldapHost = prp.getProperty("ldapHost");
-        if (prp.getProperty("ldapPort") != null)
-            ldapPort = (new Integer(prp.getProperty("ldapPort"))).intValue();
-        if (prp.getProperty("loginDN") != null)
-            loginDN = prp.getProperty("loginDN");
-        if (prp.getProperty("loginPassword") != null)
-            loginPassword = prp.getProperty("loginPassword");
-        if (prp.getProperty("containerName") != null)
-            containerName = prp.getProperty("containerName");
-        if (prp.getProperty("userObjectclass") != null)
-            userObjectclass = prp.getProperty("userObjectclass");
-        if (prp.getProperty("cAObjectclass") != null)
-            cAObjectclass = prp.getProperty("cAObjectclass");
+        ldapHost = (String)lookup("java:comp/env/ldapHost", java.lang.String.class);
+        ldapPort = ( (Integer)lookup("java:comp/env/ldapPort", java.lang.Integer.class) ).intValue();
+        loginDN = (String)lookup("java:comp/env/loginDN", java.lang.String.class);
+        loginPassword = (String)lookup("java:comp/env/loginPassword", java.lang.String.class);
+        containerName = (String)lookup("java:comp/env/containerName", java.lang.String.class);
+        userObjectclass = (String)lookup("java:comp/env/userObjectclass", java.lang.String.class);
+        cAObjectclass = (String)lookup("java:comp/env/cAObjectclass", java.lang.String.class);
 
         debug("ldapHost=" + ldapHost);
         debug("loginDN=" + loginDN);
