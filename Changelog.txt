@@ -18,6 +18,7 @@
 
 3.0.3
 -----
+Fixed bugg in certificate profiles jsp page where critical extended keyusade couldn't be unchecked.
 Added missing class in admin.jar for 'ca processreq'.
 Fixes to demo servlet.
 Fixed minor error in authorization log text.
