@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.23 2004-01-07 19:50:19 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.24 2004-01-07 19:58:04 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
     /** Pointer to main certificate store */
@@ -72,65 +72,60 @@ public class CaInitCommand extends BaseCaAdminCommand {
             ICAAdminSessionHome caadminsessionhome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CAAdminSession"), ICAAdminSessionHome.class);
             ICAAdminSessionRemote caadminsession = caadminsessionhome.create();
             
-            if(caadminsession.getAllCACertificates(administrator).size() > 0){
-               System.out.println("Error: A CA already exists in database");   
-            }else{
-                
-              System.out.println("Generating rootCA keystore:");
-              System.out.println("DN: "+dn);
-              System.out.println("Keysize: "+keysize);
-              System.out.println("Validity (days): "+validity);
-              System.out.println("Policy ID: "+policyId);
+            System.out.println("Generating rootCA keystore:");
+            System.out.println("DN: "+dn);
+            System.out.println("Keysize: "+keysize);
+            System.out.println("Validity (days): "+validity);
+            System.out.println("Policy ID: "+policyId);
                             
-              initAuthorizationModule(dn.hashCode());
+            initAuthorizationModule(dn.hashCode());
 
                        
-              SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-              catokeninfo.setKeySize(keysize);
-              catokeninfo.setAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-              catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA_WITH_RSA);
-			  // Create and active OSCP CA Service.
-			  ArrayList extendedcaservices = new ArrayList();
-			  extendedcaservices.add(
-				new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-									  "CN=OCSPSignerCertificate, " + dn,
-									  "",
-									  2048,
-									  OCSPCAServiceInfo.KEYALGORITHM_RSA));
+            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
+            catokeninfo.setKeySize(keysize);
+            catokeninfo.setAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
+            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA_WITH_RSA);
+            // Create and active OSCP CA Service.
+            ArrayList extendedcaservices = new ArrayList();
+            extendedcaservices.add(
+              new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
+                                    "CN=OCSPSignerCertificate, " + dn,
+                                    "",
+                                    2048,
+                                    OCSPCAServiceInfo.KEYALGORITHM_RSA));
               
             
-              X509CAInfo cainfo = new X509CAInfo(dn, 
-                                               caname, SecConst.CA_ACTIVE,
-                                               "", SecConst.CERTPROFILE_FIXED_ROOTCA,
-                                               validity, 
-                                               null, // Expiretime                                             
-                                               CAInfo.CATYPE_X509,
-                                               CAInfo.SELFSIGNED,
-                                               (Collection) null,
-                                               catokeninfo,
-                                               "Initial CA",
-                                               -1, null,
-                                               policyId, // PolicyId
-                                               24, // CRLPeriod
-                                               (Collection) new ArrayList(),
-                                               true, // Authority Key Identifier
-                                               false, // Authority Key Identifier Critical
-                                               true, // CRL Number
-                                               false, // CRL Number Critical
-                                               true, // Finish User
-				                               extendedcaservices);         
+            X509CAInfo cainfo = new X509CAInfo(dn, 
+                                             caname, SecConst.CA_ACTIVE,
+                                             "", SecConst.CERTPROFILE_FIXED_ROOTCA,
+                                             validity, 
+                                             null, // Expiretime                                             
+                                             CAInfo.CATYPE_X509,
+                                             CAInfo.SELFSIGNED,
+                                             (Collection) null,
+                                             catokeninfo,
+                                             "Initial CA",
+                                             -1, null,
+                                             policyId, // PolicyId
+                                             24, // CRLPeriod
+                                             (Collection) new ArrayList(),
+                                             true, // Authority Key Identifier
+                                             false, // Authority Key Identifier Critical
+                                             true, // CRL Number
+                                             false, // CRL Number Critical
+                                             true, // Finish User
+                                             extendedcaservices);         
             
-              System.out.println("Creating CA...");
-              caadminsession.createCA(administrator, cainfo);
+            System.out.println("Creating CA...");
+            caadminsession.createCA(administrator, cainfo);
             
-              int caid = caadminsession.getCAInfo(administrator, caname).getCAId();
-			  System.out.println("CAId for created CA: " + caid);
+            int caid = caadminsession.getCAInfo(administrator, caname).getCAId();
+            System.out.println("CAId for created CA: " + caid);
               
-              // Second create (and publish) CRL
-              createCRL(dn);
-              System.out.println("-Created and published initial CRL.");
-              System.out.println("CA initialized");
-            }  
+            // Second create (and publish) CRL
+            createCRL(dn);
+            System.out.println("-Created and published initial CRL.");
+            System.out.println("CA initialized");
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
