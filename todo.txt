@@ -1,15 +1,16 @@
-$Id: todo.txt,v 1.1.1.1 2001-11-15 14:57:37 anatom Exp $
+$Id: todo.txt,v 1.2 2001-11-16 10:46:53 anatom Exp $
 
 V 1.0
 -----
-- Return PKCS7 with whole chain to IE, response is PKCS7 with whole chain. ca.crt is also pkcs7 with whole chain.
-- Return PKCS7 with whole chain to IE, response is PKCS7 with whole chain. ca-cert is also pkcs7 with whole chain. 
+- Make JSP for CA-cert installation in browsers with list of all CA-certs in chain.
 - Look over security for Servlets and Beans. Define roles, method-permissions and authentication-methods. See security.txt.
 - Compare against ejbca-design.txt to see what requirements are left in 1.0 and which are left to 2.0.
 - Documentation, howto set up and configure. Bean descriptions and dependencies.
 
 V 2.0
 -----
+- Return PKCS7 with whole chain to IE, response is PKCS7 with whole chain. ca.crt is also pkcs7 with whole chain.
+- Return PKCS7 with whole chain to IE, response is PKCS7 with whole chain. ca-cert is also pkcs7 with whole chain. 
 - Add administration interface web-GUI (through servlets/JSP).
 - EJB best practices and performance meashurements ant optimization.
 - Add Configuration through database so changes can be made on-the-fly.
