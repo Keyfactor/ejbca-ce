@@ -13,6 +13,12 @@ import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
 
+import se.anatom.ejbca.ca.exception.AuthLoginException;
+import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.ca.exception.IllegalKeyException;
+import se.anatom.ejbca.ca.exception.SignRequestException;
+import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
+import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
@@ -39,7 +45,7 @@ import se.anatom.ejbca.util.Base64;
 * 6. sign the reply data (PKCS#7) from the previous step
 * 7. output the result as a der encoded block on stdout
 * -----
-* @version  $Id: ScepServlet.java,v 1.9 2003-06-04 20:06:02 anatom Exp $
+* @version  $Id: ScepServlet.java,v 1.10 2003-06-05 09:24:40 anatom Exp $
 */
 public class ScepServlet extends HttpServlet {
 
@@ -91,7 +97,7 @@ public class ScepServlet extends HttpServlet {
                 // TODO:
                 response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
                 
-                // helper.scepCertRequest(scepmsg);                    
+                if (false) helper.scepCertRequest(scepmsg);                    
             } else if (operation.equals("GetCACert")) {
                 // TODO:
                 response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
@@ -105,7 +111,15 @@ public class ScepServlet extends HttpServlet {
         } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
             log.error("Empty or invalid request received.", ae);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, ae.getMessage());
-            return;
+        } catch (AuthorizationDeniedException ae) {
+            log.error("Authorization denied.", ae);
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
+        } catch (AuthLoginException ae) {
+            log.error("Authorization denied.", ae);
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
+        } catch (AuthStatusException ae) {
+            log.error("Wrong client status.", ae);
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
         } catch (Exception e) {
             log.error("Error in ScepServlet:", e);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());

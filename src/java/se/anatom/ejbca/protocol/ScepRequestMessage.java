@@ -21,6 +21,8 @@ import org.apache.log4j.Logger;
 
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.asn1.*;
+import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.cms.*;
 import org.bouncycastle.cms.*;
 
@@ -29,7 +31,7 @@ import se.anatom.ejbca.util.Base64;
 /**
  * Class to handle SCEP request messages sent to the CA.
  *
- * @version  $Id: ScepRequestMessage.java,v 1.12 2003-06-04 20:06:02 anatom Exp $
+ * @version  $Id: ScepRequestMessage.java,v 1.13 2003-06-05 09:24:40 anatom Exp $
  */
 public class ScepRequestMessage implements IRequestMessage, Serializable {
 
@@ -228,10 +230,20 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
     }
     
     public String getRequestChallengePwd() {
+        String ret = null;
         // TODO:
-        return "foo123";
+        // Get attributes
+        CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
+        AttributeTable attributes = new AttributeTable(info.getAttributes());
+        Attribute attr = attributes.get(PKCSObjectIdentifiers.pkcs_9_at_challengePassword);
+        ASN1Set values = attr.getAttrValues();
+        if (values.size() > 0) {
+            DERIA5String str = DERIA5String.getInstance((values.getObjectAt(0)));
+            ret = str.getString();
+        } 
+        return ret;
     }
-
+    
     public boolean verify() {
         log.debug(">verify()");
         boolean ret = false;
