@@ -4,7 +4,7 @@ IFS=
 # Check for proper settings of environment variables
 if [ -f $JBOSS_HOME ]
 then
-        echo JBOSS_HOME must be set to deploy automagically.
+        echo JBOSS_HOME must be set.
         exit
 fi
 
