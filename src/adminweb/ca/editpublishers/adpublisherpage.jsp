@@ -1,0 +1,92 @@
+<%               
+
+   ActiveDirectoryPublisher adpublisher = (ActiveDirectoryPublisher) publisherhelper.publisherdata;
+
+   int[]  useraccountcontrol = {ActiveDirectoryPublisher.UAC_NEVEREXPIRE , ActiveDirectoryPublisher.UAC_NORMAL, ActiveDirectoryPublisher.UAC_DISABLE};
+   String[] useraccountcontroltexts =  {"ACCOUNTNEVEREXPIRE","ACCOUNTNORMAL","ACCOUNTDISABLED"};
+ 
+
+   int[]  samaccountname = {DNFieldExtractor.UPN, DNFieldExtractor.CN, DNFieldExtractor.UID, DNFieldExtractor.SN, 
+                           DNFieldExtractor.GIVENNAME, DNFieldExtractor.SURNAME };
+   String[] samaccountnametexts =  {"UPN","MATCHCOMMONNAME","MATCHUID",
+                                    "MATCHDNSERIALNUMBER","MATCHGIVENNAME", "MATCHSURNAME"}; 
+
+%> 
+   <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+         &nbsp;
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+         &nbsp;
+      </td>
+   </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("ADSETTINGS") %>:
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+         &nbsp;
+      </td>
+    </tr>  
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("USERACCOUNTCONTROL") %>         
+        </div>
+      </td>
+      <td width="50%" valign="top">   
+        <select name="<%=EditPublisherJSPHelper.SELECT_ADUSERACCOUNTCONTROL%>" size="1"  >       
+            <% int currentuac = adpublisher.getUserAccountControl();
+               for(int i=0;i < useraccountcontrol.length; i++){ %>                                  
+              <option value="<%=useraccountcontrol[i]%>" <% if(currentuac == useraccountcontrol[i]) out.write(" selected "); %>> 
+                  <%= ejbcawebbean.getText(useraccountcontroltexts[i]) %>
+               </option>
+            <%}%>
+          </select>         
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("SETUSERPASSWORD") %>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+        <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_ADUSEPASSWORD %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(adpublisher.getUseUserPassword())
+                 out.write(" CHECKED ");
+           %>>
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("SAMACCOUNTNAME") %>         
+        </div>
+      </td>
+      <td width="50%" valign="top">   
+        <select name="<%=EditPublisherJSPHelper.SELECT_ADSAMACCOUNTNAME%>" size="1"  >       
+            <% int currentsan = adpublisher.getSAMAccountName();
+               for(int i=0;i < samaccountname.length; i++){ %>                                  
+              <option value="<%=samaccountname[i]%>" <% if(currentsan == samaccountname[i]) out.write(" selected "); %>> 
+                  <%= ejbcawebbean.getText(samaccountnametexts[i]) %>
+               </option>
+            <%}%>
+          </select>         
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("USERDESCRIPTION") %>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_ADUSERDESCRIPTION%>" size="30" maxlength="255" 
+               value='<%= adpublisher.getUserDescription()%>'> 
+      </td>
+    </tr>

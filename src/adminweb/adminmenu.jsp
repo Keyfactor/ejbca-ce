@@ -14,6 +14,8 @@
 
   final String EDITCA_LINK              =  globalconfiguration.getBaseUrl() + globalconfiguration.getCaPath() 
                                                   + "/editcas/editcas.jsp";
+  final String EDITPUBLISHERS_LINK      =  globalconfiguration.getBaseUrl() + globalconfiguration.getCaPath() 
+                                                  + "/editpublishers/editpublishers.jsp";
 
   final String CA_LINK                  =  globalconfiguration.getBaseUrl() + globalconfiguration.getCaPath() 
                                                   + "/cafunctions.jsp";
@@ -43,6 +45,7 @@
   final String MAIN_RESOURCE                          = "/administrator";
   final String CABASICFUNCTIONS_RESOURCE              = "/ca_functionality/basic_functions";
   final String EDITCAS_RESOURCE                       = "/super_administrator";
+  final String EDITPUBLISHERS_RESOURCE                = "/super_administrator";
   final String EDITCERTIFICATEPROFILES_RESOURCE       = "/ca_functionality/edit_certificate_profiles";
   final String RAEDITENDENTITYPROFILES_RESOURCE       = "/ra_functionality/edit_end_entity_profiles";
   final String RAADDENDENTITY_RESOURCE                = "/ra_functionality/create_end_entity";
@@ -95,9 +98,20 @@
      if(ejbcawebbean.isAuthorizedNoLog(EDITCERTIFICATEPROFILES_RESOURCE)){ 
         if(!caheaderprinted){
           out.write("<br>" + ejbcawebbean.getText("CAFUNCTIONS")+"<br>"); 
-           raheaderprinted=true;
+           caheaderprinted=true;
         } %>
      &nbsp;&nbsp;<A href='<%= CA_CERTIFICATEPROFILELINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITCERTIFICATEPROFILES") %></a>
+     <br>
+
+<%    }
+   }catch(AuthorizationDeniedException e){} 
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(EDITPUBLISHERS_RESOURCE)){ 
+        if(!caheaderprinted){
+          out.write("<br>" + ejbcawebbean.getText("CAFUNCTIONS")+"<br>"); 
+           caheaderprinted=true;
+        } %>
+     &nbsp;&nbsp;<A href='<%= EDITPUBLISHERS_LINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITPUBLISHERS") %></a>
      <br>
 
 <%    }
@@ -106,7 +120,7 @@
      if(ejbcawebbean.isAuthorizedNoLog(EDITCAS_RESOURCE)){ 
         if(!caheaderprinted){
           out.write("<br>" + ejbcawebbean.getText("CAFUNCTIONS")+"<br>"); 
-           raheaderprinted=true;
+           caheaderprinted=true;
         } %>
      &nbsp;&nbsp;<A href='<%= EDITCA_LINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITCAS") %></a>
      <br>
