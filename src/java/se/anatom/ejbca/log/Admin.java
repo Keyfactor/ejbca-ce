@@ -19,21 +19,20 @@
 
 package se.anatom.ejbca.log;
 
-import java.security.cert.X509Certificate;
-
 import se.anatom.ejbca.authorization.AdminEntity;
 import se.anatom.ejbca.authorization.AdminInformation;
 import se.anatom.ejbca.util.CertTools;
 
+import java.io.Serializable;
+import java.security.cert.X509Certificate;
+
 /**
- *  This is a class containing information about the administrator or admin preforming the event.
- *  Data contained in the class is preferbly
+ * This is a class containing information about the administrator or admin preforming the event.
+ * Data contained in the class is preferbly
  *
- *
- *
- * @author  TomSelleck
+ * @author TomSelleck
  */
-public class Admin implements java.io.Serializable {
+public class Admin implements Serializable {
 
     // Public Constants
     // Indicates the type of administrator.
@@ -48,15 +47,17 @@ public class Admin implements java.io.Serializable {
 
     public static final String[] ADMINTYPETEXTS = {"CLIENTCERT", "PUBLICWEBUSER", "RACMDLINE", "CACMDLINE", "BATCHCMDLINE", "INTERNALUSER"};
 
-    private int[] ADMINTYPETOADMINENTITY = {0, AdminEntity.SPECIALADMIN_PUBLICWEBUSER, AdminEntity.SPECIALADMIN_RACOMMANDLINEADMIN,
-                                            AdminEntity.SPECIALADMIN_CACOMMANDLINEADMIN, AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN,
-                                            AdminEntity.SPECIALADMIN_INTERNALUSER};
+    private static final int[] ADMINTYPETOADMINENTITY = {0, AdminEntity.SPECIALADMIN_PUBLICWEBUSER, AdminEntity.SPECIALADMIN_RACOMMANDLINEADMIN,
+                                                         AdminEntity.SPECIALADMIN_CACOMMANDLINEADMIN, AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN,
+                                                         AdminEntity.SPECIALADMIN_INTERNALUSER};
 
+    private int type;
+    private String data;
+    private X509Certificate certificate;
 
     // Public Constructors
     public Admin(X509Certificate certificate) {
-        this.type = TYPE_CLIENTCERT_USER;
-        this.data = certificate.getSerialNumber().toString(16) + ", " + CertTools.getIssuerDN(certificate);
+        this(TYPE_CLIENTCERT_USER, certificate.getSerialNumber().toString(16) + ", " + CertTools.getIssuerDN(certificate));
         this.certificate = certificate;
     }
 
@@ -66,9 +67,9 @@ public class Admin implements java.io.Serializable {
     }
 
     public Admin(int type) {
-        this.type = type;
-        this.data = null;
+        this(type, null);
     }
+
 
     // Public Methods
 
@@ -100,11 +101,4 @@ public class Admin implements java.io.Serializable {
         return returnval;
     }
 
-
-    // Private Methods
-
-    // Private fields
-    private int type = 0;
-    private String data = null;
-    private X509Certificate certificate = null;
 }
