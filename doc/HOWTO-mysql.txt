@@ -6,10 +6,21 @@ up mySQL as DefaultDS. The default database HypersoniqDB should also be
 removed completely. The section "JBossCX setup" must probably be edited for
 this...
 
-NOTE: For the time beeing, mySQL does not work (with the config below) since
+NOTE2: For the time beeing, mySQL does not work (with the config below) since
 it uses 'VARCHAR(255) BINARY' as mapping form String, and my Strings
 (b64cert etc) are longer than 255 chars.
 
+NOTE3: Obviously, String maps to VARCHAR and according to mySQL docs:
+Values in VARCHAR columns are variable-length strings. You can declare a
+VARCHAR column to be any length between 1 and 255, just as for CHAR columns.
+However, in contrast to CHAR, VARCHAR values are stored using only as many
+characters as are needed, plus one byte to record the length. Values are not
+padded; instead, trailing spaces are removed when values are stored. 
+(This space removal differs from the ANSI SQL specification.)
+
+For longer fields, a BLOB should be used with mySQL I think...
+
+-----
 Now on to the howto:
 
 1. Download and install mySQL.
