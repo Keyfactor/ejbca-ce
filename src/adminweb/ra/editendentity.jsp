@@ -520,10 +520,6 @@ function checkallfields(){
 
      return illegalfields == 0;  
 }
-
-<% } %>
-
-
 <% if(profile.getUse(EndEntityProfile.CLEARTEXTPASSWORD,0)){%> 
 function checkUseInBatch(){
   var returnval = false;
@@ -543,7 +539,9 @@ function checkUseInBatch(){
 
   return returnval;
 }
-<% } %>   
+<% } 
+  }
+ %>   
 
    -->
   </script>
