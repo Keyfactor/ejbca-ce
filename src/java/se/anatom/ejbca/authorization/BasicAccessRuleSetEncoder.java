@@ -10,7 +10,7 @@ import java.util.Iterator;
  * A class used as a help class for displaying and configuring basic access rules
  *
  * @author  herrvendil 
- * @version $Id: BasicAccessRuleSetEncoder.java,v 1.3 2004-02-24 11:53:31 herrvendil Exp $
+ * @version $Id: BasicAccessRuleSetEncoder.java,v 1.4 2004-04-08 12:32:02 herrvendil Exp $
  */
 public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 
@@ -33,9 +33,11 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
      */
     public BasicAccessRuleSetEncoder(Collection currentaccessrules, Collection availableaccessrules, boolean usehardtokens, boolean usekeyrecovery){
     	 HashSet aar = new HashSet();
-    	 aar.addAll(availableaccessrules);    	    	 
+    	 aar.addAll(availableaccessrules);
+    	 Iterator iter = currentaccessrules.iterator();
+    	 while(iter.hasNext()) aar.add(((AccessRule) iter.next()).getAccessRule());    	 
     	 initAvailableRoles(aar);    	 
-    	 initAvailableRules(usehardtokens, usekeyrecovery, availableaccessrules);    	 
+    	 initAvailableRules(usehardtokens, usekeyrecovery, aar);    	 
     	 
     	 initCurrentRole(currentaccessrules);    	 
     	 initCurrentRules(currentaccessrules);
@@ -138,35 +140,30 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 
 	}
 	
-	private void initCurrentRole(Collection currentaccessrules){
-		System.out.println("BasicAccessRuleSetEncoder: >initCurrentRole ");
+	private void initCurrentRole(Collection currentaccessrules){		
 		// Check if administrator is superadministrator
 		
 		if(currentaccessrules.size() >0){
           if(isSuperAdministrator(currentaccessrules)){
-          	  System.out.println("BasicAccessRuleSetEncoder: initCurrentRole : superadministrator");
+        
         	  this.currentrole = BasicAccessRuleSet.ROLE_SUPERADMINISTRATOR;
           }else
 		    // Check if administrator is caadministrator
-            if(isCAAdministrator(currentaccessrules)){
-          	    System.out.println("BasicAccessRuleSetEncoder: initCurrentRole : caadministrator");
+            if(isCAAdministrator(currentaccessrules)){          	    
           	    this.currentrole = BasicAccessRuleSet.ROLE_CAADMINISTRATOR;
             }else        
 		    // Check if administrator is raadministrator
-            if(isRAAdministrator(currentaccessrules)){
-          	  System.out.println("BasicAccessRuleSetEncoder: initCurrentRole : raadministrator");
+            if(isRAAdministrator(currentaccessrules)){          	  
           	  this.currentrole = BasicAccessRuleSet.ROLE_RAADMINISTRATOR;
             }else
 		    // Check if administrator is supervisor
-            if(isSupervisor(currentaccessrules)){
-          	   System.out.println("BasicAccessRuleSetEncoder: initCurrentRole : supervisor");
+            if(isSupervisor(currentaccessrules)){          	   
           	    this.currentrole = BasicAccessRuleSet.ROLE_SUPERVISOR;          	  	 
             }else
           	    this.forceadvanced = true;
 		}else{
 			this.currentrole = BasicAccessRuleSet.ROLE_NONE;
-		}	
-        System.out.println("BasicAccessRuleSetEncoder: <initCurrentRole ");
+		}	        
 	}
 		
 	private boolean isSuperAdministrator(Collection currentaccessrules){
@@ -216,8 +213,6 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 	     if(!illegal && requiredacceptrecrules.size()==0 && requiredacceptnonrecrules.size() == 0)
 	     	returnval = true;
 	     
-	     System.out.println("IsCAAdmin " + requiredacceptrecrules.toString());
-	     System.out.println("IsCAAdmin " + requiredacceptnonrecrules.toString());
 	   }
 	   
 
@@ -323,8 +318,6 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 				returnval = true;
 			
 
-			System.out.println("IsSupervisor " + requiredacceptrecrules.toString());
-			System.out.println("IsSupervisor " + requiredacceptnonrecrules.toString());
 		}
 				
 		return returnval;
@@ -354,7 +347,6 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 	}
 			
 	private void initAvailableRules(boolean usehardtokens, boolean usekeyrecovery, Collection availableaccessrules){
-		System.out.println("BasicAccessRuleSetEncoder: >initAvailableRules ");
 		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEW));
 		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEWHISTORY));
 		if(usehardtokens)
@@ -386,15 +378,14 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		    }		    		    		    						
 		}
 		
-		System.out.println("BasicAccessRuleSetEncoder: add ing other rules ");
+		
 		this.availableotherrules.add(new Integer(BasicAccessRuleSet.OTHER_VIEWLOG));
 		if(usehardtokens)
 			this.availableotherrules.add(new Integer(BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS));
-		System.out.println("BasicAccessRuleSetEncoder: <initAvailableRules ");
+		
 	}
 	
-	private void initCurrentRules(Collection currentaccessrules){
-		System.out.println("BasicAccessRuleSetEncoder: >initCurrentRules ");
+	private void initCurrentRules(Collection currentaccessrules){		
 		Iterator iter = currentaccessrules.iterator();
 		HashMap endentityrules = new HashMap();
 		
@@ -403,50 +394,42 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		
 		
 		while(iter.hasNext()){
-			AccessRule ar = (AccessRule) iter.next();
-			System.out.println("BasicAccessRuleSetEncoder: " + ar.getAccessRule() + ", " + this.forceadvanced);
+			AccessRule ar = (AccessRule) iter.next();			
 									
 			if(ar.getAccessRule().startsWith(AvailableAccessRules.REGULAR_RAFUNCTIONALITY) &&
 				ar.getAccessRule().length() > AvailableAccessRules.REGULAR_RAFUNCTIONALITY.length() &&
 			   !ar.getAccessRule().equals(AvailableAccessRules.REGULAR_EDITENDENTITYPROFILES)){
 				if(ar.getRule() == AccessRule.RULE_ACCEPT && !ar.isRecursive()){
 					if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_VIEWENDENTITY)){
-						System.out.println("BasicAccessRuleSetEncoder: currentendentityrules add : ENDENTITY_VIEW");
+						
 						currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEW));
 						endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_VIEW));	
 					}else
-				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_VIEWENDENTITYHISTORY)){
-				    	System.out.println("BasicAccessRuleSetEncoder: currentendentityrules add : ENDENTITY_VIEWHISTORY");
+				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_VIEWENDENTITYHISTORY)){				    	
 				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEWHISTORY));							
 				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_VIEWHISTORY));
 				    }else
-				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_CREATEENDENTITY)){
-				    	System.out.println("BasicAccessRuleSetEncoder: currentendentityrules add : ENDENTITY_CREATE");
+				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_CREATEENDENTITY)){				    	
 				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_CREATE));							
 				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_CREATE));				    	
 				    }else
-				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_DELETEENDENTITY)){
-				    	System.out.println("BasicAccessRuleSetEncoder: currentendentityrules add : ENDENTITY_DELETE");
+				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_DELETEENDENTITY)){				    	
 				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_DELETE));							
 				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_DELETE));				    	
 				    }else
-				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_EDITENDENTITY)){
-				    	System.out.println("BasicAccessRuleSetEncoder: currentendentityrules add : ENDENTITY_EDIT");
+				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_EDITENDENTITY)){				    	
 				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_EDIT));							
 				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_EDIT));				    	
 				    }else
-				     if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_REVOKEENDENTITY)){
-				     	System.out.println("BasicAccessRuleSetEncoder: currentendentityrules add : ENDENTITY_REVOKE");
+				     if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_REVOKEENDENTITY)){				     	
 				     	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_REVOKE));							
 				     	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_REVOKE));				     	
 				    }else				    	
-				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_VIEWHARDTOKENS)){
-				    	System.out.println("BasicAccessRuleSetEncoder: currentendentityrules add : ENDENTITY_VIEWHARDTOKESN");
+				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_VIEWHARDTOKENS)){				    	
 				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS));							
 				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS));				    	
 				    }else
-				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_KEYRECOVERY)){
-				    	System.out.println("BasicAccessRuleSetEncoder: currentendentityrules add : ENDENTITY_KEYRECOVERY");
+				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_KEYRECOVERY)){				    	
 				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_KEYRECOVER));							
 				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_KEYRECOVER));				    	
 				    }				    						
@@ -456,8 +439,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 				}				
 			}else{
 				if(ar.getAccessRule().equals(AvailableAccessRules.ENDENTITYPROFILEBASE)){
-				  if(ar.getRule() == AccessRule.RULE_ACCEPT && ar.isRecursive()){
-				  	System.out.println("BasicAccessRuleSetEncoder: currentendentityprofiles : add all");
+				  if(ar.getRule() == AccessRule.RULE_ACCEPT && ar.isRecursive()){				  	
 				       this.currentendentityprofiles.add(new Integer(BasicAccessRuleSet.ENDENTITYPROFILE_ALL));
 				  }else{
 				  	this.forceadvanced = true;
@@ -546,8 +528,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 			}			
 		}
 		
-		System.out.println("BasicAccessRuleSetEncoder: forced " + this.forceadvanced);				
-		
+						
 		
 		int endentityruleval = ((Integer) endentityrules.get(general)).intValue();	
 		
@@ -561,8 +542,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 					this.forceadvanced = true;
 			}			
 		}
-		
-		System.out.println("BasicAccessRuleSetEncoder: <initCurrentRules ");
+
 	}
 	 	
 }

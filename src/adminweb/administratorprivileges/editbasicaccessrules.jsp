@@ -97,8 +97,9 @@ function roleupdated(){
     for( i=numofother-1; i >= 0; i-- ){
        document.basicrules.<%=SELECT_OTHER %>.options[i]=null;
     }
+    <% if(globalconfiguration.getIssueHardwareTokens()){ %>
     document.basicrules.<%=SELECT_OTHER %>.options[0]=new Option("<%= ejbcawebbean.getText(BasicAccessRuleSet.OTHERTEXTS[BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS]) %>",<%= BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS %>);
-
+    <% } %>
   }
   if(currentrole == <%= BasicAccessRuleSet.ROLE_RAADMINISTRATOR%>){
     document.basicrules.<%=SELECT_CAS %>.disabled = false;
@@ -242,7 +243,6 @@ function checkallfields(){
               <% if(basicruleset.getCurrentCAs().contains(new Integer(BasicAccessRuleSet.CA_ALL))) out.write(" selected "); %>> 
               <%=  ejbcawebbean.getText("ALL")%>
            </option>
-
            <% } %>   
         </select>
       </td>
@@ -317,7 +317,8 @@ function checkallfields(){
            <%  iter = basicruleset.getAvailableOtherRules().iterator();                 
                while(iter.hasNext()){
                  Integer next = (Integer) iter.next();
-                 if(!(currentrole == BasicAccessRuleSet.ROLE_CAADMINISTRATOR && next.intValue() == BasicAccessRuleSet.OTHER_VIEWLOG)){ %>
+                 if(!(next.intValue() == BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS && !globalconfiguration.getIssueHardwareTokens()) 
+                    && !(currentrole == BasicAccessRuleSet.ROLE_CAADMINISTRATOR && next.intValue() == BasicAccessRuleSet.OTHER_VIEWLOG)){ %>
            <option  value="<%= next %>" 
               <% if(basicruleset.getCurrentOtherRules().contains(next)) out.write(" selected "); %>> 
               <%= ejbcawebbean.getText(BasicAccessRuleSet.OTHERTEXTS[next.intValue()])%>

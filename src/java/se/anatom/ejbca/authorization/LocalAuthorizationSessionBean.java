@@ -34,7 +34,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.6 2004-02-20 08:35:01 herrvendil Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.7 2004-04-08 12:32:02 herrvendil Exp $
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
@@ -69,8 +69,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
     private String[] customaccessrules = null;
     
-    private static final String DEFAULTGROUPNAME = "DEFAULT";
-    
+    private static final String DEFAULTGROUPNAME   = "DEFAULT";
+    private static final String PUBLICWEBGROUPNAME = "Public Web Users";
     
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -229,12 +229,12 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
          }catch(CreateException ce){}
        }
 	   // Add Public Web Group
-	   this.removeAdminGroup(admin, "Public Web Users",  ILogSessionLocal.INTERNALCAID);
+	   this.removeAdminGroup(admin, PUBLICWEBGROUPNAME,  caid);
 	   try{
-		  admingrouphome.findByGroupNameAndCAId("Public Web Users", ILogSessionLocal.INTERNALCAID);   
+		  admingrouphome.findByGroupNameAndCAId(PUBLICWEBGROUPNAME, caid);   
 	   }catch(FinderException e){	   	   	 
 	     try{           	   	 
-		   AdminGroupDataLocal agdl = admingrouphome.create(new Integer(findFreeAdminGroupId()),"Public Web Users",  ILogSessionLocal.INTERNALCAID);
+		   AdminGroupDataLocal agdl = admingrouphome.create(new Integer(findFreeAdminGroupId()),PUBLICWEBGROUPNAME,  caid);
         
 		   ArrayList adminentities = new ArrayList();
 		   adminentities.add(new AdminEntity(AdminEntity.SPECIALADMIN_PUBLICWEBUSER));		 
@@ -466,42 +466,76 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
          
     /**
      * Returns a Collection of AdminGroup the administrator is authorized to.
+     * 
+     * SuperAdmin is autorized to all groups
+     * Other admins are only authorized to the groups cointaining a subset of authorized CA that the admin 
+     * himself is authorized to. 
+     * 	
      * The AdminGroup objects only contains only name and caid and no accessdata
      */
     
      public Collection getAuthorizedAdminGroupNames(Admin admin){
        ArrayList returnval = new ArrayList();
-       HashSet authorizedcaids = new HashSet(authorizer.getAuthorizedCAIds(admin));
+              
+       
+       boolean issuperadmin = false;
+	   try {
+		issuperadmin = this.isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+  	   } catch (AuthorizationDeniedException e1) {	}
+	   HashSet authorizedcaids = new HashSet();
+       HashSet allcaids = new HashSet();
+       if(!issuperadmin){                               
+         authorizedcaids.addAll(authorizer.getAuthorizedCAIds(admin));
+         allcaids.addAll(getCAAdminSession().getAvailableCAs(admin));
+       }
+       
        try{
          Collection result = admingrouphome.findAll();
          Iterator i = result.iterator();
 
-         while(i.hasNext()){
+         while(i.hasNext()){                 
             AdminGroupDataLocal agdl = (AdminGroupDataLocal) i.next();
-            if(authorizedcaids.contains(new Integer(agdl.getCAId()))){ 
-              // check access rules  
-              Iterator iter = agdl.getAccessRuleObjects().iterator();  
-              boolean allauthorized = true;
-              while(iter.hasNext()){
-              	AccessRule accessrule = ((AccessRule) iter.next());
-                String rule = accessrule.getAccessRule();
-                if(rule.equals(AvailableAccessRules.CABASE)){
+            
+            boolean allauthorized = false;
+            boolean carecursive = false;
+            boolean superadmingroup = false;
+            boolean authtogroup = false;
+            
+            ArrayList groupcaids = new ArrayList();                
+            if(!issuperadmin){
+              // Is admin authorized to group caid.
+              if(authorizedcaids.contains(new Integer(agdl.getCAId()))){
+                authtogroup = true;
+                // check access rules  
+                Iterator iter = agdl.getAccessRuleObjects().iterator();
+                while(iter.hasNext()){                  
+              	  AccessRule accessrule = ((AccessRule) iter.next());
+                  String rule = accessrule.getAccessRule();            
+                  if(rule.equals(AvailableAccessRules.ROLE_SUPERADMINISTRATOR) && accessrule.getRule() == AccessRule.RULE_ACCEPT){
+                    superadmingroup = true;                  
+                    break;
+                  }                  
+                  if(rule.equals(AvailableAccessRules.CABASE)){
                 	if(accessrule.getRule() == AccessRule.RULE_ACCEPT && accessrule.isRecursive()){
-                	  allauthorized= true;
-                      break;
+                	  if(authorizedcaids.containsAll(allcaids)){
+                	    carecursive = true;
+                	  }  
                 	}
-                }else{                
-                  if(rule.startsWith(AvailableAccessRules.CAPREFIX) && accessrule.getRule() == AccessRule.RULE_ACCEPT){  
-                    if(!authorizedcaids.contains(new Integer(rule.substring(AvailableAccessRules.CAPREFIX.length())))){
-                       allauthorized=false;   
+                  }else{
+                    if(rule.startsWith(AvailableAccessRules.CAPREFIX) && accessrule.getRule() == AccessRule.RULE_ACCEPT){
+                      groupcaids.add(new Integer(rule.substring(AvailableAccessRules.CAPREFIX.length()))); 
                     }
-                  }
-                }  
+                  }  
+                }
               }
-              if(allauthorized)
-                if(!(agdl.getAdminGroupName().equals(DEFAULTGROUPNAME) && agdl.getCAId() == ILogSessionLocal.INTERNALCAID))  
+            }	
+            
+            allauthorized = authorizedcaids.containsAll(groupcaids);
+                                       
+            if(issuperadmin || ((allauthorized || carecursive) && authtogroup && !superadmingroup)){
+              if(!agdl.getAdminGroupName().equals(PUBLICWEBGROUPNAME) && !(agdl.getAdminGroupName().equals(DEFAULTGROUPNAME) && agdl.getCAId() == ILogSessionLocal.INTERNALCAID))  
                   returnval.add(agdl.getAdminGroupNames());  
-            }
+            } 
          }
        }catch(FinderException e){}
        return returnval;
