@@ -10,38 +10,37 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.keyrecovery;
 
 import java.math.BigInteger;
 
 
-
 /**
  * For docs, see KeyRecoveryDataBean
  *
- * @version $Id: KeyRecoveryDataLocal.java,v 1.7 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: KeyRecoveryDataLocal.java,v 1.8 2004-06-08 18:06:05 sbailliez Exp $
  */
 public interface KeyRecoveryDataLocal extends javax.ejb.EJBLocalObject {
-	// Public methods
-	public BigInteger getCertificateSN();
+    // Public methods
+    public BigInteger getCertificateSN();
 
-	public void setCertificateSN(BigInteger certificatesn);
+    public void setCertificateSN(BigInteger certificatesn);
 
-	public String getIssuerDN();
+    public String getIssuerDN();
 
-	public void setIssuerDN(String issuerdn);
+    public void setIssuerDN(String issuerdn);
 
-	public String getUsername();
+    public String getUsername();
 
-	public void setUsername(String username);
+    public void setUsername(String username);
 
-	public boolean getMarkedAsRecoverable();
+    public boolean getMarkedAsRecoverable();
 
-	public void setMarkedAsRecoverable(boolean markedasrecoverable);
+    public void setMarkedAsRecoverable(boolean markedasrecoverable);
 
-	public byte[] getKeyDataAsByteArray();
+    public byte[] getKeyDataAsByteArray();
 
-	public void setKeyDataFromByteArray(byte[] keydata);
+    public void setKeyDataFromByteArray(byte[] keydata);
 
 }

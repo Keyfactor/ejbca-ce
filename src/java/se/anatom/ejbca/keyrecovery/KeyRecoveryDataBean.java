@@ -14,11 +14,9 @@
 package se.anatom.ejbca.keyrecovery;
 
 import java.math.BigInteger;
-
 import javax.ejb.CreateException;
 
 import org.apache.log4j.Logger;
-
 import se.anatom.ejbca.BaseEntityBean;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.StringTools;
@@ -36,7 +34,7 @@ import se.anatom.ejbca.util.StringTools;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.15 2004-06-08 18:02:29 sbailliez Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.16 2004-06-08 18:06:05 sbailliez Exp $
  *
  * @ejb.bean
  *   description="Stores key recovery data"
@@ -88,126 +86,126 @@ import se.anatom.ejbca.util.StringTools;
 public abstract class KeyRecoveryDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(KeyRecoveryDataBean.class);
 
-	/**
-	 * @ejb.persistence
+    /**
+     * @ejb.persistence
      * @ejb.pk-field
-	 */
-	public abstract String getCertSN();
+     */
+    public abstract String getCertSN();
 
-	/**
-	 * @ejb.persistence
-	 */
-	public abstract void setCertSN(String certificatesn);
+    /**
+     * @ejb.persistence
+     */
+    public abstract void setCertSN(String certificatesn);
 
-	/**
-	 * @ejb.persistence
+    /**
+     * @ejb.persistence
      * @ejb.pk-field
      * @ejb.interface-method view-type="local"
-	 */
-	public abstract String getIssuerDN();
+     */
+    public abstract String getIssuerDN();
 
-	/**
-	 * @ejb.persistence
+    /**
+     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
-	public abstract void setIssuerDN(String issuerdn);
+    public abstract void setIssuerDN(String issuerdn);
 
-	/**
-	 * @ejb.persistence
+    /**
+     * @ejb.persistence
      * @ejb.interface-method view-type="local"
-	 */
-	public abstract String getUsername();
+     */
+    public abstract String getUsername();
 
-	/**
-	 * username must be called 'striped' using StringTools.strip()
-	 *
-	 * @see se.anatom.ejbca.util.StringTools
-	 * @ejb.persistence
+    /**
+     * username must be called 'striped' using StringTools.strip()
+     *
+     * @see se.anatom.ejbca.util.StringTools
+     * @ejb.persistence
      * @ejb.interface-method view-type="local"
-	 */
-	public abstract void setUsername(String username);
+     */
+    public abstract void setUsername(String username);
 
-	/**
-	 * @ejb.persistence
+    /**
+     * @ejb.persistence
      * @ejb.interface-method view-type="local"
-	 */
-	public abstract boolean getMarkedAsRecoverable();
+     */
+    public abstract boolean getMarkedAsRecoverable();
 
-	/**
-	 * @ejb.persistence
+    /**
+     * @ejb.persistence
      * @ejb.interface-method view-type="local"
-	 */
-	public abstract void setMarkedAsRecoverable(boolean markedasrecoverable);
+     */
+    public abstract void setMarkedAsRecoverable(boolean markedasrecoverable);
 
-	/**
-	 * @ejb.persistence
-	 */
-	public abstract String getKeyData();
+    /**
+     * @ejb.persistence
+     */
+    public abstract String getKeyData();
 
-	/**
-	 * @ejb.persistence
-	 */
-	public abstract void setKeyData(String keydata);
+    /**
+     * @ejb.persistence
+     */
+    public abstract void setKeyData(String keydata);
 
     /**
      * @ejb.interface-method view-type="local"
      */
-	public BigInteger getCertificateSN() {
-		return new BigInteger(getCertSN(), 16);
-	}
+    public BigInteger getCertificateSN() {
+        return new BigInteger(getCertSN(), 16);
+    }
 
     /**
      * @ejb.interface-method view-type="local"
      */
-	public void setCertificateSN(BigInteger certificatesn) {
-		setCertSN(certificatesn.toString(16));
-	}
+    public void setCertificateSN(BigInteger certificatesn) {
+        setCertSN(certificatesn.toString(16));
+    }
 
     /**
      * @ejb.interface-method view-type="local"
      */
-	public byte[] getKeyDataAsByteArray(){
-		return Base64.decode(this.getKeyData().getBytes());
-	}
+    public byte[] getKeyDataAsByteArray() {
+        return Base64.decode(this.getKeyData().getBytes());
+    }
 
-	/**
+    /**
      * @ejb.interface-method view-type="local"
      */
-	public void setKeyDataFromByteArray(byte[] keydata){
-	  	setKeyData(new String(Base64.encode(keydata)));
-	}
+    public void setKeyDataFromByteArray(byte[] keydata) {
+        setKeyData(new String(Base64.encode(keydata)));
+    }
 
-	//
-	// Fields required by Container
-	//
+    //
+    // Fields required by Container
+    //
 
-	/**
-	 * Entity Bean holding keyrecovery data of users certificate.
-	 *
-	 * @param certificatesn of certificate the keys are belonging to.
-	 * @param issuerdn issuerdn of certificate the keys are belonging to.
-	 * @param username of the owner of the keys.
-	 * @param keydata the actual keydata.
-	 *
-	 * @return Primary Key
-	 *
+    /**
+     * Entity Bean holding keyrecovery data of users certificate.
+     *
+     * @param certificatesn of certificate the keys are belonging to.
+     * @param issuerdn issuerdn of certificate the keys are belonging to.
+     * @param username of the owner of the keys.
+     * @param keydata the actual keydata.
+     *
+     * @return Primary Key
+     *
      * @ejb.create-method
-	 */
-	public KeyRecoveryDataPK ejbCreate(BigInteger certificatesn, String issuerdn, String username,
-		byte[] keydata) throws CreateException {
-		setCertificateSN(certificatesn);
-		setIssuerDN(issuerdn);
-		setUsername(StringTools.strip(username));
-		setMarkedAsRecoverable(false);
-		setKeyDataFromByteArray(keydata);
+     */
+    public KeyRecoveryDataPK ejbCreate(BigInteger certificatesn, String issuerdn, String username,
+                                       byte[] keydata) throws CreateException {
+        setCertificateSN(certificatesn);
+        setIssuerDN(issuerdn);
+        setUsername(StringTools.strip(username));
+        setMarkedAsRecoverable(false);
+        setKeyDataFromByteArray(keydata);
         KeyRecoveryDataPK pk = new KeyRecoveryDataPK(getCertSN(), issuerdn);
-		log.debug("Created Key Recoverydata for user " + username);
-		return pk;
-	}
+        log.debug("Created Key Recoverydata for user " + username);
+        return pk;
+    }
 
-	public void ejbPostCreate(BigInteger certificatesn, String issuerdn, String username,
-		byte[] keydata) {
-		// Do nothing. Required.
-	}
+    public void ejbPostCreate(BigInteger certificatesn, String issuerdn, String username,
+                              byte[] keydata) {
+        // Do nothing. Required.
+    }
 
 }

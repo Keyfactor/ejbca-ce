@@ -19,14 +19,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Iterator;
-
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-
-
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRequest;
@@ -46,7 +43,7 @@ import se.anatom.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.18 2004-06-08 18:02:29 sbailliez Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.19 2004-06-08 18:06:05 sbailliez Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -121,541 +118,538 @@ import se.anatom.ejbca.util.CertTools;
  */
 public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
-	/** Var holding JNDI name of datasource */
-	private String dataSource = "";
+    /** Var holding JNDI name of datasource */
+    private String dataSource = "";
 
-	/** The local home interface of hard token issuer entity bean. */
-	private KeyRecoveryDataLocalHome keyrecoverydatahome = null;
+    /** The local home interface of hard token issuer entity bean. */
+    private KeyRecoveryDataLocalHome keyrecoverydatahome = null;
 
-	/** The local interface of sign session bean */
-	private ISignSessionLocal signsession = null;
+    /** The local interface of sign session bean */
+    private ISignSessionLocal signsession = null;
 
-	/** The local interface of certificate store session bean */
-	private ICertificateStoreSessionLocal certificatestoresession = null;
+    /** The local interface of certificate store session bean */
+    private ICertificateStoreSessionLocal certificatestoresession = null;
 
-	/** The remote interface of  log session bean */
-	private ILogSessionLocal logsession = null;
+    /** The remote interface of  log session bean */
+    private ILogSessionLocal logsession = null;
 
-	/**
-	 * Default create for SessionBean without any creation Arguments.
-	 *
-	 * @throws CreateException if bean instance can't be created
-	 */
-	public void ejbCreate() throws CreateException {
-		debug(">ejbCreate()");
+    /**
+     * Default create for SessionBean without any creation Arguments.
+     *
+     * @throws CreateException if bean instance can't be created
+     */
+    public void ejbCreate() throws CreateException {
+        debug(">ejbCreate()");
 
-		try {
-			dataSource = (String) lookup("java:comp/env/DataSource", java.lang.String.class);
-			debug("DataSource=" + dataSource);
-			keyrecoverydatahome = (KeyRecoveryDataLocalHome) lookup("java:comp/env/ejb/KeyRecoveryData",
-					KeyRecoveryDataLocalHome.class);
+        try {
+            dataSource = (String) lookup("java:comp/env/DataSource", java.lang.String.class);
+            debug("DataSource=" + dataSource);
+            keyrecoverydatahome = (KeyRecoveryDataLocalHome) lookup("java:comp/env/ejb/KeyRecoveryData",
+                    KeyRecoveryDataLocalHome.class);
 
-			debug("<ejbCreate()");
-		} catch (Exception e) {
-			throw new EJBException(e);
-		}
-	}
+            debug("<ejbCreate()");
+        } catch (Exception e) {
+            throw new EJBException(e);
+        }
+    }
 
-	/**
-	 * Gets connection to Datasource used for manual SQL searches
-	 *
-	 * @return Connection
-	 */
-	private Connection getConnection() throws SQLException, NamingException {
-		DataSource ds = (DataSource) getInitialContext().lookup(dataSource);
+    /**
+     * Gets connection to Datasource used for manual SQL searches
+     *
+     * @return Connection
+     */
+    private Connection getConnection() throws SQLException, NamingException {
+        DataSource ds = (DataSource) getInitialContext().lookup(dataSource);
 
-		return ds.getConnection();
-	} //getConnection
+        return ds.getConnection();
+    } //getConnection
 
-	/**
-	 * Gets connection to log session bean
-	 *
-	 * @return Connection
-	 */
-	private ILogSessionLocal getLogSession() {
-		if (logsession == null) {
-			try {
-				ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup("java:comp/env/ejb/LogSessionLocal",
-						ILogSessionLocalHome.class);
-				logsession = logsessionhome.create();
-			} catch (Exception e) {
-				throw new EJBException(e);
-			}
-		}
+    /**
+     * Gets connection to log session bean
+     *
+     * @return Connection
+     */
+    private ILogSessionLocal getLogSession() {
+        if (logsession == null) {
+            try {
+                ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup("java:comp/env/ejb/LogSessionLocal",
+                        ILogSessionLocalHome.class);
+                logsession = logsessionhome.create();
+            } catch (Exception e) {
+                throw new EJBException(e);
+            }
+        }
 
-		return logsession;
-	} //getLogSession
+        return logsession;
+    } //getLogSession
 
-	/**
-	 * Gets connection to certificate store session bean
-	 *
-	 * @return Connection
-	 */
-	private ICertificateStoreSessionLocal getCertificateStoreSession() {
-		if (certificatestoresession == null) {
-			try {
-				ICertificateStoreSessionLocalHome certificatestoresessionhome = (ICertificateStoreSessionLocalHome) lookup("java:comp/env/ejb/CertificateStoreSession",
-						ICertificateStoreSessionLocalHome.class);
-				certificatestoresession = certificatestoresessionhome.create();
-			} catch (Exception e) {
-				throw new EJBException(e);
-			}
-		}
+    /**
+     * Gets connection to certificate store session bean
+     *
+     * @return Connection
+     */
+    private ICertificateStoreSessionLocal getCertificateStoreSession() {
+        if (certificatestoresession == null) {
+            try {
+                ICertificateStoreSessionLocalHome certificatestoresessionhome = (ICertificateStoreSessionLocalHome) lookup("java:comp/env/ejb/CertificateStoreSession",
+                        ICertificateStoreSessionLocalHome.class);
+                certificatestoresession = certificatestoresessionhome.create();
+            } catch (Exception e) {
+                throw new EJBException(e);
+            }
+        }
 
-		return certificatestoresession;
-	} //getCertificateStoreSession
+        return certificatestoresession;
+    } //getCertificateStoreSession
 
-	/**
-	 * Gets connection to sign session bean
-	 *
-	 * @return ISignSessionLocal
-	 */
-	private ISignSessionLocal getSignSession() {
-		if (signsession == null) {
-			try {
-				ISignSessionLocalHome signsessionhome = (ISignSessionLocalHome) lookup("java:comp/env/ejb/RSASignSession",
-						ISignSessionLocalHome.class);
-				signsession = signsessionhome.create();
-			} catch (Exception e) {
-				throw new EJBException(e);
-			}
-		}
+    /**
+     * Gets connection to sign session bean
+     *
+     * @return ISignSessionLocal
+     */
+    private ISignSessionLocal getSignSession() {
+        if (signsession == null) {
+            try {
+                ISignSessionLocalHome signsessionhome = (ISignSessionLocalHome) lookup("java:comp/env/ejb/RSASignSession",
+                        ISignSessionLocalHome.class);
+                signsession = signsessionhome.create();
+            } catch (Exception e) {
+                throw new EJBException(e);
+            }
+        }
 
-		return signsession;
-	} //getSignSession
+        return signsession;
+    } //getSignSession
 
-	/**
-	 * Adds a certificates keyrecovery data to the database.
-	 *
-	 * @param admin the administrator calling the function
-	 * @param certificate the certificate used with the keypair.
-	 * @param username of the administrator
-	 * @param keypair the actual keypair to save.
-	 *
-	 * @return false if the certificates keyrecovery data already exists.
-	 *
-	 * @throws EJBException if a communication or other error occurs.
-	 *
-	 * @ejb.interface-method view-type="both"
-	 */
-	public boolean addKeyRecoveryData(Admin admin, X509Certificate certificate, String username,
-		KeyPair keypair) {
-		debug(">addKeyRecoveryData(user: " + username + ")");
+    /**
+     * Adds a certificates keyrecovery data to the database.
+     *
+     * @param admin the administrator calling the function
+     * @param certificate the certificate used with the keypair.
+     * @param username of the administrator
+     * @param keypair the actual keypair to save.
+     *
+     * @return false if the certificates keyrecovery data already exists.
+     *
+     * @throws EJBException if a communication or other error occurs.
+     *
+     * @ejb.interface-method view-type="both"
+     */
+    public boolean addKeyRecoveryData(Admin admin, X509Certificate certificate, String username,
+                                      KeyPair keypair) {
+        debug(">addKeyRecoveryData(user: " + username + ")");
 
-		boolean returnval = false;
+        boolean returnval = false;
 
-		try {
-			int caid = CertTools.getIssuerDN(certificate).hashCode();
+        try {
+            int caid = CertTools.getIssuerDN(certificate).hashCode();
 
-			KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) getSignSession().extendedService(admin,caid,
-					                                                                new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS,keypair));
+            KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) getSignSession().extendedService(admin, caid,
+                    new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS, keypair));
 
-			keyrecoverydatahome.create(certificate.getSerialNumber(),
-				CertTools.getIssuerDN(certificate), username, response.getKeyData());
-			getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), username,
-				certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
-				"Keyrecovery data for certificate with serial number : " +
-				certificate.getSerialNumber().toString(16) + ", " +
-				CertTools.getIssuerDN(certificate) + " added.");
-			returnval = true;
-		} catch (Exception e) {
-				getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
-					username, certificate, LogEntry.EVENT_ERROR_KEYRECOVERY,
-					"Error when trying to add keyrecovery data for certificate with serial number : " +
-					certificate.getSerialNumber().toString(16) + ", " +
-					CertTools.getIssuerDN(certificate) + ".");
-		}
+            keyrecoverydatahome.create(certificate.getSerialNumber(),
+                    CertTools.getIssuerDN(certificate), username, response.getKeyData());
+            getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), username,
+                    certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
+                    "Keyrecovery data for certificate with serial number : " +
+                    certificate.getSerialNumber().toString(16) + ", " +
+                    CertTools.getIssuerDN(certificate) + " added.");
+            returnval = true;
+        } catch (Exception e) {
+            getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
+                    username, certificate, LogEntry.EVENT_ERROR_KEYRECOVERY,
+                    "Error when trying to add keyrecovery data for certificate with serial number : " +
+                    certificate.getSerialNumber().toString(16) + ", " +
+                    CertTools.getIssuerDN(certificate) + ".");
+        }
 
-		debug("<addKeyRecoveryData()");
+        debug("<addKeyRecoveryData()");
 
-		return returnval;
-	} // addKeyRecoveryData
+        return returnval;
+    } // addKeyRecoveryData
 
-	/**
-	 * Updates keyrecovery data
-	 *
-	 * @param admin DOCUMENT ME!
-	 * @param certificate DOCUMENT ME!
-	 * @param markedasrecoverable DOCUMENT ME!
-	 * @param keypair DOCUMENT ME!
-	 *
-	 * @return false if certificates keyrecovery data doesn't exists
-	 *
-	 * @throws EJBException if a communication or other error occurs.
-	 *
-	 * @ejb.interface-method view-type="both"
-	 */
-	public boolean changeKeyRecoveryData(Admin admin, X509Certificate certificate,
-		boolean markedasrecoverable, KeyPair keypair) {
-		debug(">changeKeyRecoveryData(certsn: " + certificate.getSerialNumber().toString() + ", " +
-			CertTools.getIssuerDN(certificate) + ")");
+    /**
+     * Updates keyrecovery data
+     *
+     * @param admin DOCUMENT ME!
+     * @param certificate DOCUMENT ME!
+     * @param markedasrecoverable DOCUMENT ME!
+     * @param keypair DOCUMENT ME!
+     *
+     * @return false if certificates keyrecovery data doesn't exists
+     *
+     * @throws EJBException if a communication or other error occurs.
+     *
+     * @ejb.interface-method view-type="both"
+     */
+    public boolean changeKeyRecoveryData(Admin admin, X509Certificate certificate,
+                                         boolean markedasrecoverable, KeyPair keypair) {
+        debug(">changeKeyRecoveryData(certsn: " + certificate.getSerialNumber().toString() + ", " +
+                CertTools.getIssuerDN(certificate) + ")");
 
-		boolean returnval = false;
+        boolean returnval = false;
         final String hexSerial = certificate.getSerialNumber().toString(16);
         final String dn = CertTools.getIssuerDN(certificate);
-		try {
-			KeyRecoveryDataLocal krd = keyrecoverydatahome.findByPrimaryKey(new KeyRecoveryDataPK(hexSerial, dn));
-			krd.setMarkedAsRecoverable(markedasrecoverable);
+        try {
+            KeyRecoveryDataLocal krd = keyrecoverydatahome.findByPrimaryKey(new KeyRecoveryDataPK(hexSerial, dn));
+            krd.setMarkedAsRecoverable(markedasrecoverable);
 
-			int caid = dn.hashCode();
+            int caid = dn.hashCode();
 
-			KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) getSignSession().extendedService(admin,caid,
-					new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS,keypair));
+            KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) getSignSession().extendedService(admin, caid,
+                    new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS, keypair));
 
 
-			krd.setKeyDataFromByteArray(response.getKeyData());
-			getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
-				krd.getUsername(), certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
-				"Keyrecovery data for certificate with serial number : " +
-				hexSerial + ", " +
-				dn + " changed.");
-			returnval = true;
-		} catch (Exception e) {
-				getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), null,
-					certificate, LogEntry.EVENT_ERROR_KEYRECOVERY,
-					"Error when trying to update keyrecovery data for certificate with serial number : " +
-					hexSerial + ", " +
-					dn + ".");
-		}
+            krd.setKeyDataFromByteArray(response.getKeyData());
+            getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
+                    krd.getUsername(), certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
+                    "Keyrecovery data for certificate with serial number : " +
+                    hexSerial + ", " +
+                    dn + " changed.");
+            returnval = true;
+        } catch (Exception e) {
+            getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), null,
+                    certificate, LogEntry.EVENT_ERROR_KEYRECOVERY,
+                    "Error when trying to update keyrecovery data for certificate with serial number : " +
+                    hexSerial + ", " +
+                    dn + ".");
+        }
 
-		debug("<changeKeyRecoveryData()");
+        debug("<changeKeyRecoveryData()");
 
-		return returnval;
-	} // changeKeyRecoveryData
+        return returnval;
+    } // changeKeyRecoveryData
 
-	/**
-	 * Removes a certificates keyrecovery data from the database.
-	 *
-	 * @param admin the administrator calling the function
-	 * @param certificate the certificate used with the keys about to be removed.
-	 *
-	 * @throws EJBException if a communication or other error occurs.
-	 *
-	 * @ejb.interface-method view-type="both"
-	 */
-	public void removeKeyRecoveryData(Admin admin, X509Certificate certificate) {
-		debug(">removeKeyRecoveryData(certificate: " + certificate.getSerialNumber().toString() +
-			")");
+    /**
+     * Removes a certificates keyrecovery data from the database.
+     *
+     * @param admin the administrator calling the function
+     * @param certificate the certificate used with the keys about to be removed.
+     *
+     * @throws EJBException if a communication or other error occurs.
+     *
+     * @ejb.interface-method view-type="both"
+     */
+    public void removeKeyRecoveryData(Admin admin, X509Certificate certificate) {
+        debug(">removeKeyRecoveryData(certificate: " + certificate.getSerialNumber().toString() +
+                ")");
         final String hexSerial = certificate.getSerialNumber().toString(16);
         final String dn = CertTools.getIssuerDN(certificate);
-		try {
-			String username = null;
-			KeyRecoveryDataLocal krd = keyrecoverydatahome.findByPrimaryKey(new KeyRecoveryDataPK(
-						hexSerial, dn));
-			username = krd.getUsername();
-			krd.remove();
-			getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), username,
-				certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
-				"Keyrecovery data for certificate with serial number : " +
-				hexSerial + ", " +
-				dn + " removed.");
-		} catch (Exception e) {
-				getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), null,
-					certificate, LogEntry.EVENT_ERROR_KEYRECOVERY,
-					"Error when removing keyrecovery data for certificate with serial number : " +
-					hexSerial + ", " +
-					dn + ".");
-		}
+        try {
+            String username = null;
+            KeyRecoveryDataLocal krd = keyrecoverydatahome.findByPrimaryKey(new KeyRecoveryDataPK(hexSerial, dn));
+            username = krd.getUsername();
+            krd.remove();
+            getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), username,
+                    certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
+                    "Keyrecovery data for certificate with serial number : " +
+                    hexSerial + ", " +
+                    dn + " removed.");
+        } catch (Exception e) {
+            getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), null,
+                    certificate, LogEntry.EVENT_ERROR_KEYRECOVERY,
+                    "Error when removing keyrecovery data for certificate with serial number : " +
+                    hexSerial + ", " +
+                    dn + ".");
+        }
 
-		debug("<removeKeyRecoveryData()");
-	} // removeKeyRecoveryData
+        debug("<removeKeyRecoveryData()");
+    } // removeKeyRecoveryData
 
-	/**
-	 * Removes a all keyrecovery data saved for a user from the database.
-	 *
-	 * @param admin DOCUMENT ME!
-	 * @param username DOCUMENT ME!
-	 *
-	 * @throws EJBException if a communication or other error occurs.
-	 *
-	 * @ejb.interface-method view-type="both"
-	 */
-	public void removeAllKeyRecoveryData(Admin admin, String username) {
-		debug(">removeAllKeyRecoveryData(user: " + username + ")");
+    /**
+     * Removes a all keyrecovery data saved for a user from the database.
+     *
+     * @param admin DOCUMENT ME!
+     * @param username DOCUMENT ME!
+     *
+     * @throws EJBException if a communication or other error occurs.
+     *
+     * @ejb.interface-method view-type="both"
+     */
+    public void removeAllKeyRecoveryData(Admin admin, String username) {
+        debug(">removeAllKeyRecoveryData(user: " + username + ")");
 
-		try {
-			Collection result = keyrecoverydatahome.findByUsername(username);
-			Iterator iter = result.iterator();
+        try {
+            Collection result = keyrecoverydatahome.findByUsername(username);
+            Iterator iter = result.iterator();
 
-			while (iter.hasNext()) {
-				((KeyRecoveryDataLocal) iter.next()).remove();
-			}
+            while (iter.hasNext()) {
+                ((KeyRecoveryDataLocal) iter.next()).remove();
+            }
 
-			getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), username,
-				null, LogEntry.EVENT_INFO_KEYRECOVERY,
-				"All keyrecovery data for user: " + username + " removed.");
-		} catch (Exception e) {
-				getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), null,
-					null, LogEntry.EVENT_ERROR_KEYRECOVERY,
-					"Error when removing all keyrecovery data for user: " + username + ".");
-		}
+            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), username,
+                    null, LogEntry.EVENT_INFO_KEYRECOVERY,
+                    "All keyrecovery data for user: " + username + " removed.");
+        } catch (Exception e) {
+            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), null,
+                    null, LogEntry.EVENT_ERROR_KEYRECOVERY,
+                    "Error when removing all keyrecovery data for user: " + username + ".");
+        }
 
-		debug("<removeAllKeyRecoveryData()");
-	} // removeAllKeyRecoveryData
+        debug("<removeAllKeyRecoveryData()");
+    } // removeAllKeyRecoveryData
 
-	/**
-	 * Returns the keyrecovery data for a user. Observe only one certificates key can be recovered
-	 * for every user at the time.
-	 *
-	 * @param admin DOCUMENT ME!
-	 * @param username DOCUMENT ME!
-	 *
-	 * @return the marked keyrecovery data  or null if no recoverydata can be found.
-	 *
-	 * @throws EJBException if a communication or other error occurs.
-	 *
-	 * @ejb.interface-method view-type="both"
-	 */
-	public KeyRecoveryData keyRecovery(Admin admin, String username) {
-		debug(">keyRecovery(user: " + username + ")");
+    /**
+     * Returns the keyrecovery data for a user. Observe only one certificates key can be recovered
+     * for every user at the time.
+     *
+     * @param admin DOCUMENT ME!
+     * @param username DOCUMENT ME!
+     *
+     * @return the marked keyrecovery data  or null if no recoverydata can be found.
+     *
+     * @throws EJBException if a communication or other error occurs.
+     *
+     * @ejb.interface-method view-type="both"
+     */
+    public KeyRecoveryData keyRecovery(Admin admin, String username) {
+        debug(">keyRecovery(user: " + username + ")");
 
-		KeyRecoveryData returnval = null;
-		KeyRecoveryDataLocal krd = null;
-		X509Certificate certificate = null;
+        KeyRecoveryData returnval = null;
+        KeyRecoveryDataLocal krd = null;
+        X509Certificate certificate = null;
 
-		try {
-			Collection result = keyrecoverydatahome.findByUserMark(username);
-			Iterator i = result.iterator();
+        try {
+            Collection result = keyrecoverydatahome.findByUserMark(username);
+            Iterator i = result.iterator();
 
-			try {
-				while (i.hasNext()) {
-					krd = (KeyRecoveryDataLocal) i.next();
+            try {
+                while (i.hasNext()) {
+                    krd = (KeyRecoveryDataLocal) i.next();
 
-					if (returnval == null) {
-						int caid = krd.getIssuerDN().hashCode();
+                    if (returnval == null) {
+                        int caid = krd.getIssuerDN().hashCode();
 
-						KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) getSignSession().extendedService(admin,caid,
-								new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS,krd.getKeyDataAsByteArray()));
-						KeyPair keys = response.getKeyPair();
-						returnval = new KeyRecoveryData(krd.getCertificateSN(), krd.getIssuerDN(),
-								krd.getUsername(), krd.getMarkedAsRecoverable(), keys);
-						certificate = (X509Certificate) getCertificateStoreSession()
-															.findCertificateByIssuerAndSerno(admin,
-								krd.getIssuerDN(), krd.getCertificateSN());
-					}
+                        KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) getSignSession().extendedService(admin, caid,
+                                new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS, krd.getKeyDataAsByteArray()));
+                        KeyPair keys = response.getKeyPair();
+                        returnval = new KeyRecoveryData(krd.getCertificateSN(), krd.getIssuerDN(),
+                                krd.getUsername(), krd.getMarkedAsRecoverable(), keys);
+                        certificate = (X509Certificate) getCertificateStoreSession()
+                                .findCertificateByIssuerAndSerno(admin,
+                                        krd.getIssuerDN(), krd.getCertificateSN());
+                    }
 
-					krd.setMarkedAsRecoverable(false);
-				}
+                    krd.setMarkedAsRecoverable(false);
+                }
 
-				getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
-					username, certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
-					"Keydata for user: " + username + " have been sent for key recovery.");
-			} catch (Exception e) {
-				log.error("-keyRecovery: ", e);
+                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
+                        username, certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
+                        "Keydata for user: " + username + " have been sent for key recovery.");
+            } catch (Exception e) {
+                log.error("-keyRecovery: ", e);
                 getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
                         username, null, LogEntry.EVENT_ERROR_KEYRECOVERY,
                         "Error when trying to revover key data.");
-			}
-		} catch (FinderException e) {
-		}
+            }
+        } catch (FinderException e) {
+        }
 
-		debug("<keyRecovery()");
+        debug("<keyRecovery()");
 
-		return returnval;
-	} // keyRecovery
+        return returnval;
+    } // keyRecovery
 
-	/**
-	 * Marks a users newest certificate for key recovery. Newest means certificate with latest not
-	 * before date.
-	 *
-	 * @param admin the administrator calling the function
-	 * @param username or the user.
-	 *
-	 * @return true if operation went successful or false if no certificates could be found for
-	 *         user, or user already marked.
-	 *
-	 * @throws EJBException if a communication or other error occurs.
-	 *
-	 * @ejb.interface-method view-type="both"
-	 */
-	public boolean markNewestAsRecoverable(Admin admin, String username) {
-		debug(">markNewestAsRecoverable(user: " + username + ")");
+    /**
+     * Marks a users newest certificate for key recovery. Newest means certificate with latest not
+     * before date.
+     *
+     * @param admin the administrator calling the function
+     * @param username or the user.
+     *
+     * @return true if operation went successful or false if no certificates could be found for
+     *         user, or user already marked.
+     *
+     * @throws EJBException if a communication or other error occurs.
+     *
+     * @ejb.interface-method view-type="both"
+     */
+    public boolean markNewestAsRecoverable(Admin admin, String username) {
+        debug(">markNewestAsRecoverable(user: " + username + ")");
 
-		boolean returnval = false;
-		long newesttime = 0;
-		KeyRecoveryDataLocal krd = null;
-		KeyRecoveryDataLocal newest = null;
-		X509Certificate certificate = null;
-		X509Certificate newestcertificate = null;
+        boolean returnval = false;
+        long newesttime = 0;
+        KeyRecoveryDataLocal krd = null;
+        KeyRecoveryDataLocal newest = null;
+        X509Certificate certificate = null;
+        X509Certificate newestcertificate = null;
 
-		if (!isUserMarked(admin, username)) {
-			try {
-				Collection result = keyrecoverydatahome.findByUsername(username);
-				Iterator iter = result.iterator();
+        if (!isUserMarked(admin, username)) {
+            try {
+                Collection result = keyrecoverydatahome.findByUsername(username);
+                Iterator iter = result.iterator();
 
-				while (iter.hasNext()) {
-					krd = (KeyRecoveryDataLocal) iter.next();
-					certificate = (X509Certificate) getCertificateStoreSession()
-														.findCertificateByIssuerAndSerno(admin,
-							krd.getIssuerDN(), krd.getCertificateSN());
+                while (iter.hasNext()) {
+                    krd = (KeyRecoveryDataLocal) iter.next();
+                    certificate = (X509Certificate) getCertificateStoreSession()
+                            .findCertificateByIssuerAndSerno(admin,
+                                    krd.getIssuerDN(), krd.getCertificateSN());
 
-					if (certificate != null) {
-						if (certificate.getNotBefore().getTime() > newesttime) {
-							newesttime = certificate.getNotBefore().getTime();
-							newest = krd;
-							newestcertificate = certificate;
-						}
-					}
-				}
+                    if (certificate != null) {
+                        if (certificate.getNotBefore().getTime() > newesttime) {
+                            newesttime = certificate.getNotBefore().getTime();
+                            newest = krd;
+                            newestcertificate = certificate;
+                        }
+                    }
+                }
 
-				if (newest != null) {
-					newest.setMarkedAsRecoverable(true);
-					returnval = true;
-				}
+                if (newest != null) {
+                    newest.setMarkedAsRecoverable(true);
+                    returnval = true;
+                }
 
-				getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
-					username, newestcertificate, LogEntry.EVENT_INFO_KEYRECOVERY,
-					"User's newest certificate marked for recovery.");
-			} catch (Exception e) {
-					getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
-						username, null, LogEntry.EVENT_ERROR_KEYRECOVERY,
-						"Error when trying to mark users newest certificate for recovery.");
-			}
-		}
+                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
+                        username, newestcertificate, LogEntry.EVENT_INFO_KEYRECOVERY,
+                        "User's newest certificate marked for recovery.");
+            } catch (Exception e) {
+                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
+                        username, null, LogEntry.EVENT_ERROR_KEYRECOVERY,
+                        "Error when trying to mark users newest certificate for recovery.");
+            }
+        }
 
-		debug("<markNewestAsRecoverable()");
+        debug("<markNewestAsRecoverable()");
 
-		return returnval;
-	} // markNewestAsRecoverable
+        return returnval;
+    } // markNewestAsRecoverable
 
-	/**
-	 * Marks a users certificate for key recovery.
-	 *
-	 * @param admin the administrator calling the function
-	 * @param certificate the certificate used with the keys about to be removed.
-	 *
-	 * @return true if operation went successful or false if  certificate couldn't be found.
-	 *
-	 * @throws EJBException if a communication or other error occurs.
-	 *
-	 * @ejb.interface-method view-type="both"
-	 */
-	public boolean markAsRecoverable(Admin admin, X509Certificate certificate) {
-		debug(">markAsRecoverable(certificatesn: " + certificate.getSerialNumber() + ")");
+    /**
+     * Marks a users certificate for key recovery.
+     *
+     * @param admin the administrator calling the function
+     * @param certificate the certificate used with the keys about to be removed.
+     *
+     * @return true if operation went successful or false if  certificate couldn't be found.
+     *
+     * @throws EJBException if a communication or other error occurs.
+     *
+     * @ejb.interface-method view-type="both"
+     */
+    public boolean markAsRecoverable(Admin admin, X509Certificate certificate) {
+        debug(">markAsRecoverable(certificatesn: " + certificate.getSerialNumber() + ")");
 
-		boolean returnval = false;
+        boolean returnval = false;
         final String hexSerial = certificate.getSerialNumber().toString(16);
         final String dn = CertTools.getIssuerDN(certificate);
-		try {
-			String username = null;
-			KeyRecoveryDataLocal krd = keyrecoverydatahome.findByPrimaryKey(new KeyRecoveryDataPK(
-						hexSerial, dn));
-			username = krd.getUsername();
-			krd.setMarkedAsRecoverable(true);
-			getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), username,
-				certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
-				"User's certificate marked for recovery.");
-			returnval = true;
-		} catch (Exception e) {
-				getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), null,
-					certificate, LogEntry.EVENT_ERROR_KEYRECOVERY,
-					"Error when trying to mark certificate for recovery.");
-		}
+        try {
+            String username = null;
+            KeyRecoveryDataLocal krd = keyrecoverydatahome.findByPrimaryKey(new KeyRecoveryDataPK(hexSerial, dn));
+            username = krd.getUsername();
+            krd.setMarkedAsRecoverable(true);
+            getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), username,
+                    certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
+                    "User's certificate marked for recovery.");
+            returnval = true;
+        } catch (Exception e) {
+            getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), null,
+                    certificate, LogEntry.EVENT_ERROR_KEYRECOVERY,
+                    "Error when trying to mark certificate for recovery.");
+        }
 
-		debug("<markAsRecoverable()");
+        debug("<markAsRecoverable()");
 
-		return returnval;
-	} // markAsRecoverable
+        return returnval;
+    } // markAsRecoverable
 
-	/**
-	 * Resets keyrecovery mark for a user,
-	 *
-	 * @param admin DOCUMENT ME!
-	 * @param username DOCUMENT ME!
-	 *
-	 * @throws EJBException if a communication or other error occurs.
-	 *
-	 * @ejb.interface-method view-type="both"
-	 */
-	public void unmarkUser(Admin admin, String username) {
-		debug(">unmarkUser(user: " + username + ")");
+    /**
+     * Resets keyrecovery mark for a user,
+     *
+     * @param admin DOCUMENT ME!
+     * @param username DOCUMENT ME!
+     *
+     * @throws EJBException if a communication or other error occurs.
+     *
+     * @ejb.interface-method view-type="both"
+     */
+    public void unmarkUser(Admin admin, String username) {
+        debug(">unmarkUser(user: " + username + ")");
 
-		KeyRecoveryDataLocal krd = null;
+        KeyRecoveryDataLocal krd = null;
 
-		try {
-			Collection result = keyrecoverydatahome.findByUserMark(username);
-			Iterator i = result.iterator();
+        try {
+            Collection result = keyrecoverydatahome.findByUserMark(username);
+            Iterator i = result.iterator();
 
-			while (i.hasNext()) {
-				krd = (KeyRecoveryDataLocal) i.next();
-				krd.setMarkedAsRecoverable(false);
-			}
-		} catch (Exception e) {
-			throw new EJBException(e);
-		}
+            while (i.hasNext()) {
+                krd = (KeyRecoveryDataLocal) i.next();
+                krd.setMarkedAsRecoverable(false);
+            }
+        } catch (Exception e) {
+            throw new EJBException(e);
+        }
 
-		debug("<unmarkUser()");
-	} // unmarkUser
+        debug("<unmarkUser()");
+    } // unmarkUser
 
-	/**
-	 * Returns true if a user is marked for key recovery.
-	 *
-	 * @param admin DOCUMENT ME!
-	 * @param username DOCUMENT ME!
-	 *
-	 * @return true if user is already marked for key recovery.
-	 *
-	 * @throws EJBException if a communication or other error occurs.
-	 *
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
-	 */
-	public boolean isUserMarked(Admin admin, String username) {
-		debug(">isUserMarked(user: " + username + ")");
+    /**
+     * Returns true if a user is marked for key recovery.
+     *
+     * @param admin DOCUMENT ME!
+     * @param username DOCUMENT ME!
+     *
+     * @return true if user is already marked for key recovery.
+     *
+     * @throws EJBException if a communication or other error occurs.
+     *
+     * @ejb.interface-method view-type="both"
+     * @ejb.transaction type="Supports"
+     */
+    public boolean isUserMarked(Admin admin, String username) {
+        debug(">isUserMarked(user: " + username + ")");
 
-		boolean returnval = false;
-		KeyRecoveryDataLocal krd = null;
+        boolean returnval = false;
+        KeyRecoveryDataLocal krd = null;
 
-		try {
-			Collection result = keyrecoverydatahome.findByUserMark(username);
-			Iterator i = result.iterator();
+        try {
+            Collection result = keyrecoverydatahome.findByUserMark(username);
+            Iterator i = result.iterator();
 
-			while (i.hasNext()) {
-				krd = (KeyRecoveryDataLocal) i.next();
+            while (i.hasNext()) {
+                krd = (KeyRecoveryDataLocal) i.next();
 
-				if (krd.getMarkedAsRecoverable()) {
-					returnval = true;
+                if (krd.getMarkedAsRecoverable()) {
+                    returnval = true;
 
-					break;
-				}
-			}
-		} catch (Exception e) {
-			throw new EJBException(e);
-		}
-		debug("<isUserMarked(" + returnval + ")");
-		return returnval;
-	} // isUserMarked
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            throw new EJBException(e);
+        }
+        debug("<isUserMarked(" + returnval + ")");
+        return returnval;
+    } // isUserMarked
 
-	/**
-	 * Returns true if specified certificates keys exists in database.
-	 *
-	 * @param admin the administrator calling the function
-	 * @param certificate the certificate used with the keys about to be removed.
-	 *
-	 * @return true if user is already marked for key recovery.
-	 *
-	 * @throws EJBException if a communication or other error occurs.
-	 *
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
-	 */
-	public boolean existsKeys(Admin admin, X509Certificate certificate) {
-		debug(">existsKeys()");
+    /**
+     * Returns true if specified certificates keys exists in database.
+     *
+     * @param admin the administrator calling the function
+     * @param certificate the certificate used with the keys about to be removed.
+     *
+     * @return true if user is already marked for key recovery.
+     *
+     * @throws EJBException if a communication or other error occurs.
+     *
+     * @ejb.interface-method view-type="both"
+     * @ejb.transaction type="Supports"
+     */
+    public boolean existsKeys(Admin admin, X509Certificate certificate) {
+        debug(">existsKeys()");
 
-		boolean returnval = false;
+        boolean returnval = false;
         final String hexSerial = certificate.getSerialNumber().toString(16);
         final String dn = CertTools.getIssuerDN(certificate);
-		try {
-			KeyRecoveryDataLocal krd = keyrecoverydatahome.findByPrimaryKey(new KeyRecoveryDataPK(
-						hexSerial, dn));
-			returnval = true;
-		} catch (FinderException e) {
-		}
+        try {
+            KeyRecoveryDataLocal krd = keyrecoverydatahome.findByPrimaryKey(new KeyRecoveryDataPK(hexSerial, dn));
+            returnval = true;
+        } catch (FinderException e) {
+        }
 
-		debug("<existsKeys(" + returnval + ")");
+        debug("<existsKeys(" + returnval + ")");
 
-		return returnval;
-	} // existsKeys
+        return returnval;
+    } // existsKeys
 
 }// LocalKeyRecoverySessionBean
 

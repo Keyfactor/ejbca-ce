@@ -10,11 +10,10 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.keyrecovery;
 
 import java.rmi.RemoteException;
-
 import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
 
@@ -22,7 +21,7 @@ import javax.ejb.EJBHome;
 /**
  * DOCUMENT ME!
  *
- * @version $Id: IKeyRecoverySessionHome.java,v 1.3 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: IKeyRecoverySessionHome.java,v 1.4 2004-06-08 18:06:04 sbailliez Exp $
  */
 public interface IKeyRecoverySessionHome extends EJBHome {
     /**

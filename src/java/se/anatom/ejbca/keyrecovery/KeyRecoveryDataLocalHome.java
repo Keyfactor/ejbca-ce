@@ -14,7 +14,6 @@
 package se.anatom.ejbca.keyrecovery;
 
 import java.math.BigInteger;
-
 import java.util.Collection;
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
@@ -23,23 +22,23 @@ import javax.ejb.FinderException;
 /**
  * For docs, see KeyRecoveryDataBean
  *
- * @version $Id: KeyRecoveryDataLocalHome.java,v 1.7 2004-06-08 14:35:58 sbailliez Exp $
+ * @version $Id: KeyRecoveryDataLocalHome.java,v 1.8 2004-06-08 18:06:05 sbailliez Exp $
  */
 public interface KeyRecoveryDataLocalHome extends javax.ejb.EJBLocalHome {
 
-   public static final String COMP_NAME="java:comp/env/ejb/KeyRecoveryDataLocal";
-   public static final String JNDI_NAME="KeyRecoveryData";    
+    public static final String COMP_NAME = "java:comp/env/ejb/KeyRecoveryDataLocal";
+    public static final String JNDI_NAME = "KeyRecoveryData";
 
 
-	public KeyRecoveryDataLocal create(BigInteger certificatesn, String issuerdn, String username,
-		byte[] keydata) throws CreateException;
+    public KeyRecoveryDataLocal create(BigInteger certificatesn, String issuerdn, String username,
+                                       byte[] keydata) throws CreateException;
 
 
-	public KeyRecoveryDataLocal findByPrimaryKey(KeyRecoveryDataPK pk)
-		throws FinderException;
+    public KeyRecoveryDataLocal findByPrimaryKey(KeyRecoveryDataPK pk)
+            throws FinderException;
 
-	public Collection findByUsername(String username) throws FinderException;
+    public Collection findByUsername(String username) throws FinderException;
 
-	public Collection findByUserMark(String username) throws FinderException;
+    public Collection findByUserMark(String username) throws FinderException;
 
 }

@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.keyrecovery;
 
 import javax.ejb.CreateException;
@@ -19,16 +19,16 @@ import javax.ejb.CreateException;
 /**
  * DOCUMENT ME!
  *
- * @version $Id: IKeyRecoverySessionLocalHome.java,v 1.4 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: IKeyRecoverySessionLocalHome.java,v 1.5 2004-06-08 18:06:04 sbailliez Exp $
  */
 public interface IKeyRecoverySessionLocalHome extends javax.ejb.EJBLocalHome {
-	/**
-	 * Default create method. Maps to ejbCreate in implementation.
-	 *
-	 * @return IHardTokenSessionLocal interface
-	 *
-	 * @throws CreateException
-	 * @throws RemoteException
-	 */
-	IKeyRecoverySessionLocal create() throws CreateException;
+    /**
+     * Default create method. Maps to ejbCreate in implementation.
+     *
+     * @return IHardTokenSessionLocal interface
+     *
+     * @throws CreateException
+     * @throws RemoteException
+     */
+    IKeyRecoverySessionLocal create() throws CreateException;
 }
