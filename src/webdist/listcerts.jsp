@@ -3,13 +3,15 @@
 <head><title>EJBCA - List certificates</title></head>
 <body>
 
-<h1>Certificates for <%=request.getParameter("subject")%></h1>
+<h2>Certificates for <%=request.getParameter("subject")%></h2>
 <hr>
 <%
 try  {
     String dn=request.getParameter("subject");
     if (dn == null) {
-        out.println("Usage: listcerts.jsp?subject=<DN>");
+%>
+Usage: listcerts.jsp?subject=<DN>
+<%
     } else {
         InitialContext ctx = new InitialContext();
         ICertificateStoreSessionHome home = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
@@ -22,17 +24,23 @@ try  {
             String subject = ((X509Certificate)certs[i]).getSubjectDN().toString();
             String issuer = ((X509Certificate)certs[i]).getIssuerDN().toString();
             BigInteger serno = ((X509Certificate)certs[i]).getSerialNumber();
-            out.println("<pre>Subject:"+subject);
-            out.println("Issuer:"+issuer);
-            out.println("NotBefore:"+notBefore.toString());
-            out.println("NotAfter:"+notAfter.toString());
-            out.println("Serial number:"+Hex.encode(serno.toByteArray()));
-            out.println("</pre>");
-            out.println("<a href=\"revoked.jsp?issuer="+URLEncoder.encode(issuer)+"&serno="+Hex.encode(serno.toByteArray())+"\">Check if certificate is revoked</a>");
-            out.println("<hr>");
+            String hexSerno = Hex.encode(serno.toByteArray());
+            String urlEncIssuer = URLEncoder.encode(issuer);
+%>            
+<pre>Subject: <%=subject%>
+Issuer: <%=issuer%>
+NotBefore: <%=notBefore.toString()%>
+NotAfter: <%=notAfter.toString()%>
+Serial number: <%=hexSerno%>
+</pre>
+<a href="revoked.jsp?issuer=<%=urlEncIssuer%>&serno=<%=hexSerno%>">Check if certificate is revoked</a>
+<hr>
+<%
         }
         if (certs.length == 0) {
-            out.println("No certificates exists for '"+dn+"'.");
+%>
+No certificates exists for '<%=dn%>'.
+<%
         }
     }
 } catch(Exception ex) {

@@ -3,14 +3,16 @@
 <head><title>EJBCA - Check revocation</title></head>
 <body>
 
-<h1>Check certificate with issuer '<%=request.getParameter("issuer")%>' and serial number '<%=request.getParameter("serno")%>'.</h1>
+<h2>Check certificate with issuer '<%=request.getParameter("issuer")%>' and serial number '<%=request.getParameter("serno")%>'.</h2>
 <hr>
 <%
 try  {
     String dn=request.getParameter("issuer");
     String serno=request.getParameter("serno").trim();
     if ((dn == null) || (serno == null)) {
-        out.println("Usage: revoked.jsp?issuer=<DN>&serno=<serial number>");
+%>
+Usage: revoked.jsp?issuer=<DN>&serno=<serial number>
+<%
     } else {
         InitialContext ctx = new InitialContext();
         ICertificateStoreSessionHome home = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
@@ -19,13 +21,19 @@ try  {
         try {
             RevokedCertInfo revinfo = store.isRevoked(dn, new BigInteger(Hex.decode(serno)));
             if (revinfo != null) {
-                out.println("<b>REVOKED</b><br>");
-                out.println("RevocationDate is '"+revinfo.getRevocationDate()+"' and reason '"+revinfo.getReason()+"'.");
+%>
+<b>REVOKED</b><br>
+RevocationDate is '<%=revinfo.getRevocationDate()%>' and reason '<%=revinfo.getReason()%>'.
+<%
             } else {
-                out.println("<b>NOT REVOKED</b>");
+%>
+<b>NOT REVOKED</b>
+<%
             }
         } catch (Exception e) {
-            out.println("<b>Certificate does not exist</b>");
+%>
+<b>Certificate does not exist</b>
+<%
         }
     }
 } catch(Exception ex) {
