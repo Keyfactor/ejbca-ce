@@ -142,7 +142,7 @@ For example: cn=Philip Vendil,cn=Users,dc=primekey,dc=se for the domain primekey
 If your DN is like "cn=Ejbca1,0=MyOrg,c=SE" and your base DN is like
 "DC=Security,DC=Software,DC=MyOrg".
 The publisher for AD should have base DN like
-"cn=Users,dc=Security,dc=software,dc=MyOrg"
+"cn=Users,dc=Security,dc=Software,dc=MyOrg"
 
 For Login DN you should use the full ldap name, for example:
 "CN=Administrator,C=Users,dc=primekey,dc=se"
