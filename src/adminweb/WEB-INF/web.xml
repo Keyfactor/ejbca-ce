@@ -5,15 +5,18 @@
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
+  <display-name>Administration web</display-name>
   <distributable/>
   <servlet>
     <servlet-name>GetCRL</servlet-name>
+    <display-name>GetCRLServlet</display-name>
     <description>Returns the latest CRL</description>
     <servlet-class>se.anatom.ejbca.webdist.cainterface.GetCRLServlet</servlet-class>
     <load-on-startup>99</load-on-startup>
   </servlet>
   <servlet>
     <servlet-name>CACert</servlet-name>
+    <display-name>CACertServlet</display-name>
     <description>Returns the specified CA certificate</description>
     <servlet-class>se.anatom.ejbca.webdist.cainterface.CACertServlet</servlet-class>
     <load-on-startup>99</load-on-startup>
@@ -27,21 +30,13 @@
     <url-pattern>/ca/cacert</url-pattern>
   </servlet-mapping>
   <session-config>
-    <session-timeout>
-            30
-        </session-timeout>
+    <session-timeout>30</session-timeout>
   </session-config>
 
   <welcome-file-list>
-    <welcome-file>
-            index.jsp
-        </welcome-file>
-    <welcome-file>
-            index.html
-        </welcome-file>
-    <welcome-file>
-            index.htm
-        </welcome-file>
+    <welcome-file>index.jsp</welcome-file>
+    <welcome-file>index.html</welcome-file>
+    <welcome-file>index.htm</welcome-file>
   </welcome-file-list>
   <error-page>
     <exception-type>Exception Type</exception-type>
@@ -98,33 +93,33 @@
     <env-entry-name>PRIVATEPROTOCOL</env-entry-name>
     <env-entry-value>https</env-entry-value>
     <env-entry-type>java.lang.String</env-entry-type>
-  </env-entry>      
+  </env-entry>
   <ejb-ref>
     <ejb-ref-name>RSASignSession</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
     <home>se.anatom.ejbca.ca.sign.ISignSessionHome</home>
     <remote>se.anatom.ejbca.ca.sign.ISignSessionRemote</remote>
     <ejb-link>RSASignSession</ejb-link>
-  </ejb-ref>   
+  </ejb-ref>
   <ejb-ref>
     <ejb-ref-name>RaAdminSession</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
     <home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome</home>
     <remote>se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote</remote>
     <ejb-link>RaAdminSession</ejb-link>
-  </ejb-ref>   
+  </ejb-ref>
   <ejb-ref>
     <ejb-ref-name>CertificateStoreSession</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
     <home>se.anatom.ejbca.ca.store.ICertificateStoreSessionHome</home>
     <remote>se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote</remote>
     <ejb-link>CertificateStoreSession</ejb-link>
-  </ejb-ref>   
+  </ejb-ref>
   <ejb-ref>
     <ejb-ref-name>UserAdminSession</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
     <home>se.anatom.ejbca.ra.IUserAdminSessionHome</home>
     <remote>se.anatom.ejbca.ra.IUserAdminSessionRemote</remote>
     <ejb-link>UserAdminSession</ejb-link>
-  </ejb-ref>     
+  </ejb-ref>
 </web-app>

@@ -5,17 +5,15 @@
 	"http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
+    <display-name>Web distribution</display-name>
     <servlet>
-        <servlet-name>
-            CertDist
-        </servlet-name>
-        <servlet-class>
-            se.anatom.ejbca.webdist.CertDistServlet
-        </servlet-class>
+        <servlet-name>CertDist</servlet-name>
+        <display-name>CertDistServlet</display-name>
+        <servlet-class>se.anatom.ejbca.webdist.CertDistServlet</servlet-class>
     </servlet>
     <servlet-mapping>
 	<servlet-name>CertDist</servlet-name>
 	<url-pattern>/certdist</url-pattern>
     </servlet-mapping>
-    
+
 </web-app>

@@ -3,6 +3,10 @@
 	"-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN"
 	"http://java.sun.com/dtd/ejb-jar_2_0.dtd">
 <ejb-jar>
+
+ <description></description>
+ <display-name>Log component</display-name>
+
  <enterprise-beans>
 
    <session>
@@ -22,24 +26,23 @@
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>java:/DefaultDS</env-entry-value>
      </env-entry>
-     
-     <!-- Env-entries for starting an external log devices. --> 
+
+     <!-- Env-entries for starting external log devices. -->
      <env-entry>
-        <description>String representing the log device factories to be used. The different device classes should be separeded with a ';' character. 
-        </description>
+        <description>String representing the log device factories to be used. The different device classes should be separated with semicolons (;).</description>
         <env-entry-name>logDeviceFactories</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>se.anatom.ejbca.log.Log4jLogDeviceFactory</env-entry-value>
      </env-entry>
      <env-entry>
-        <description>String representing the property file corresponding to each log device. 
-                     The property files should be placed in the "/logdeviceproperties" subdirectory. 
-                     The filenames should be separated with a ';' sign.</description>
+        <description>String representing the property file corresponding to each log device.
+                     The property files should be placed in the "/logdeviceproperties" subdirectory.
+                     The filenames should be separated with semicolons (;).</description>
         <env-entry-name>logDevicePropertyFiles</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>Log4j.properties</env-entry-value>
      </env-entry>
-     
+
      <ejb-local-ref>
         <description>The Log Entry Data entity bean</description>
         <ejb-ref-name>ejb/LogEntryDataLocal</ejb-ref-name>
@@ -50,16 +53,16 @@
      </ejb-local-ref>
      <ejb-local-ref>
         <description>
-          The Log Configuration Data Entity bean 
+          The Log Configuration Data Entity bean
         </description>
         <ejb-ref-name>ejb/LogConfigurationDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
         <local-home>se.anatom.ejbca.log.LogConfigurationDataLocalHome</local-home>
         <local>se.anatom.ejbca.log.LogConfigurationDataLocal</local>
         <ejb-link>LogConfigurationData</ejb-link>
-     </ejb-local-ref> 
+     </ejb-local-ref>
    </session>
-      
+
    <entity>
       <description>
             This enterprise bean entity represents a Log Entry with accompanying data.
@@ -73,18 +76,18 @@
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>LogEntryDataBean</abstract-schema-name>
-      <cmp-field><field-name>id</field-name></cmp-field>      
+      <cmp-field><field-name>id</field-name></cmp-field>
       <cmp-field><field-name>adminType</field-name></cmp-field>
       <cmp-field><field-name>adminData</field-name></cmp-field>
-      <cmp-field><field-name>module</field-name></cmp-field>      
+      <cmp-field><field-name>module</field-name></cmp-field>
       <cmp-field><field-name>time</field-name></cmp-field>
       <cmp-field><field-name>username</field-name></cmp-field>
       <cmp-field><field-name>certificateSNR</field-name></cmp-field>
       <cmp-field><field-name>event</field-name></cmp-field>
-      <cmp-field><field-name>comment</field-name></cmp-field>    
-      <primkey-field>id</primkey-field>                       
+      <cmp-field><field-name>comment</field-name></cmp-field>
+      <primkey-field>id</primkey-field>
    </entity>
-   
+
    <entity>
       <description>
             This enterprise bean entity represents log configuration of ejbca.
@@ -94,19 +97,19 @@
       <local>se.anatom.ejbca.log.LogConfigurationDataLocal</local>
       <ejb-class>se.anatom.ejbca.log.LogConfigurationDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
-      <prim-key-class>java.lang.Integer</prim-key-class>            
-      <reentrant>False</reentrant>      
+      <prim-key-class>java.lang.Integer</prim-key-class>
+      <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>LogConfigurationDataBean</abstract-schema-name>
       <cmp-field><field-name>id</field-name></cmp-field>
-      <cmp-field><field-name>logConfiguration</field-name></cmp-field>   
-      <cmp-field><field-name>logEntryRowNumber </field-name></cmp-field>      
-      <primkey-field>id</primkey-field>  
+      <cmp-field><field-name>logConfiguration</field-name></cmp-field>
+      <cmp-field><field-name>logEntryRowNumber </field-name></cmp-field>
+      <primkey-field>id</primkey-field>
    </entity>
 
-  </enterprise-beans> 
- 
-   
+  </enterprise-beans>
+
+
   <assembly-descriptor>
    <security-role>
       <description>
@@ -121,13 +124,13 @@
       <role-name>InternalUser</role-name>
     </security-role>
 
-   <!-- 
+   <!--
        Method permissions define who can access a given method on a bean.
-       Role name internalUser means that the bean methods shouln NOT be 
+       Role name internalUser means that the bean methods should NOT be
        accessible from the outside.
        Role name everyone means that the bean methods can be accessible from
        the outside.
-       NOTE! Security must be enabled in the container for these settings 
+       NOTE! Security must be enabled in the container for these settings
        to have any real meaning.
    -->
    <method-permission>
@@ -139,20 +142,20 @@
      <method>
          <ejb-name>LogConfigurationData</ejb-name>
          <method-name>*</method-name>
-     </method>     
+     </method>
      <method>
          <ejb-name>LogSession</ejb-name>
          <method-name>*</method-name>
      </method>
    </method-permission>
 
-   <!-- 
-       Transaction settings. Default setting i for *, which is overridden 
-       for methods with special transactionsal needs.
+   <!--
+       Transaction settings. Default setting i for *, which is overridden
+       for methods with special transactional needs.
        Required is used for mission critical methods, which cannot collide.
        Supports is used for methods which only read data.
    -->
-    <container-transaction>     
+    <container-transaction>
      <method>
          <ejb-name>LogSession</ejb-name>
          <method-name>query</method-name>
@@ -161,10 +164,10 @@
          <ejb-name>LogSession</ejb-name>
          <method-name>SaveLogConfiguration</method-name>
      </method>
-                              
-     <trans-attribute>Supports</trans-attribute> 
+
+     <trans-attribute>Supports</trans-attribute>
    </container-transaction>
-    
+
    <container-transaction>
      <method>
          <ejb-name>LogSession</ejb-name>
@@ -174,9 +177,9 @@
          <ejb-name>LogSession</ejb-name>
          <method-name>saveLogConfiguration</method-name>
      </method>
-                                   
-     <trans-attribute>Required</trans-attribute>   
-   </container-transaction> 
+
+     <trans-attribute>Required</trans-attribute>
+   </container-transaction>
 
 
  </assembly-descriptor>

@@ -5,8 +5,10 @@
 	"http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
+    <display-name>Web enrollment</display-name>
     <servlet>
         <servlet-name>CertReqServlet</servlet-name>
+        <display-name>CertReqServlet</display-name>
         <servlet-class>se.anatom.ejbca.apply.CertReqServlet</servlet-class>
         <init-param>
             <param-name>responseTemplate</param-name>
@@ -15,6 +17,7 @@
     </servlet>
     <servlet>
         <servlet-name>ScepServlet</servlet-name>
+        <display-name>ScepServlet</display-name>
         <servlet-class>se.anatom.ejbca.protocol.ScepServlet</servlet-class>
     </servlet>
     <servlet-mapping>
@@ -25,5 +28,5 @@
 	<servlet-name>ScepServlet</servlet-name>
 	<url-pattern>/scep/pkiclient.exe</url-pattern>
     </servlet-mapping>
-    
+
 </web-app>

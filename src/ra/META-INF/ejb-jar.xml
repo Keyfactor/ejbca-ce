@@ -3,6 +3,10 @@
 	"-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN"
 	"http://java.sun.com/dtd/ejb-jar_2_0.dtd">
 <ejb-jar>
+
+ <description></description>
+ <display-name>RA component</display-name>
+
  <enterprise-beans>
 
    <session>
@@ -22,15 +26,15 @@
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>java:/DefaultDS</env-entry-value>
      </env-entry>
-     
-     <!-- Env-entries for starting an external RMI service using SSL --> 
+
+     <!-- Env-entries for starting an external RMI service using SSL -->
      <env-entry>
         <description>Factory class can dynamically link to external implementation class.</description>
         <env-entry-name>RMIFactory</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>se.walter.cardPersonalization.ra.ejbca.RMIFactoryImpl</env-entry-value>
      </env-entry>
-     <!-- END Env-entries for starting an external RMI service using SSL --> 
+     <!-- END Env-entries for starting an external RMI service using SSL -->
      <ejb-ref>
         <description>The Certificate Store session bean</description>
         <ejb-ref-name>ejb/CertificateStoreSession</ejb-ref-name>
@@ -38,7 +42,7 @@
         <home>se.anatom.ejbca.ca.store.ICertificateStoreSessionHome</home>
         <remote>se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote</remote>
         <ejb-link>CertificateStoreSession</ejb-link>
-     </ejb-ref>     
+     </ejb-ref>
      <ejb-ref>
         <description>The Log session bean</description>
         <ejb-ref-name>ejb/LogSession</ejb-ref-name>
@@ -46,7 +50,7 @@
         <home>se.anatom.ejbca.log.ILogSessionHome</home>
         <remote>se.anatom.ejbca.log.ILogSessionRemote</remote>
         <ejb-link>LogSession</ejb-link>
-     </ejb-ref>          
+     </ejb-ref>
      <ejb-local-ref>
         <description>The Authorization session bean</description>
         <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
@@ -62,7 +66,7 @@
         <local-home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome</local-home>
         <local>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal</local>
         <ejb-link>RaAdminSession</ejb-link>
-     </ejb-local-ref>     
+     </ejb-local-ref>
      <ejb-local-ref>
         <description>The User entity bean</description>
         <ejb-ref-name>ejb/UserDataLocal</ejb-ref-name>
@@ -73,7 +77,7 @@
      </ejb-local-ref>
      <ejb-local-ref>
         <description>
-          The GlobalConfigurationData Entity bean 
+          The GlobalConfigurationData Entity bean
         </description>
         <ejb-ref-name>ejb/GlobalConfigurationDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
@@ -81,18 +85,18 @@
         <local>se.anatom.ejbca.ra.GlobalConfigurationDataLocal</local>
         <ejb-link>GlobalConfigurationData</ejb-link>
      </ejb-local-ref>
- 
+
    </session>
-   
+
    <session>
      <description>
-         Session bean handling interface with ra administration web services, uses entity beans 
+         Session bean handling interface with ra administration web services, uses entity beans
          EndEntityProfileData and AdminPreferencesData
      </description>
      <ejb-name>RaAdminSession</ejb-name>
      <local-home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome</local-home>
      <home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome</home>
-     <local>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal</local>     
+     <local>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal</local>
      <remote>se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote</remote>
      <ejb-class>se.anatom.ejbca.ra.raadmin.LocalRaAdminSessionBean</ejb-class>
      <session-type>Stateless</session-type>
@@ -110,10 +114,10 @@
         <home>se.anatom.ejbca.log.ILogSessionHome</home>
         <remote>se.anatom.ejbca.log.ILogSessionRemote</remote>
         <ejb-link>LogSession</ejb-link>
-     </ejb-ref>   
+     </ejb-ref>
      <ejb-local-ref>
         <description>
-          The AdminPreferencesData Entity bean 
+          The AdminPreferencesData Entity bean
         </description>
         <ejb-ref-name>ejb/AdminPreferencesDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
@@ -123,15 +127,15 @@
      </ejb-local-ref>
      <ejb-local-ref>
         <description>
-          The EndEntityProfileData Entity bean 
+          The EndEntityProfileData Entity bean
         </description>
         <ejb-ref-name>ejb/EndEntityProfileDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
         <local-home>se.anatom.ejbca.ra.raadmin.EndEntityProfileDataLocalHome</local-home>
         <local>se.anatom.ejbca.ra.raadmin.EndEntityProfileDataLocal</local>
         <ejb-link>EndEntityProfileData</ejb-link>
-     </ejb-local-ref>     
-               
+     </ejb-local-ref>
+
      <security-identity>
         <description></description>
         <run-as>
@@ -147,7 +151,7 @@
          AdminGroupData
      </description>
      <ejb-name>AuthorizationSession</ejb-name>
-     <local-home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome</local-home>     
+     <local-home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome</local-home>
      <home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionHome</home>
      <local>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocal</local>
      <remote>se.anatom.ejbca.ra.authorization.IAuthorizationSessionRemote</remote>
@@ -167,7 +171,7 @@
         <home>se.anatom.ejbca.log.ILogSessionHome</home>
         <remote>se.anatom.ejbca.log.ILogSessionRemote</remote>
         <ejb-link>LogSession</ejb-link>
-     </ejb-ref>   
+     </ejb-ref>
      <ejb-local-ref>
         <description>
           Available Access Rules
@@ -207,7 +211,7 @@
         <local-home>se.anatom.ejbca.ra.authorization.AdminEntityDataLocalHome</local-home>
         <local>se.anatom.ejbca.ra.authorization.AdminEntityDataLocal</local>
         <ejb-link>AdminEntityData</ejb-link>
-     </ejb-local-ref>                  
+     </ejb-local-ref>
      <security-identity>
         <description></description>
         <run-as>
@@ -215,8 +219,8 @@
             <role-name>InternalUser</role-name>
         </run-as>
       </security-identity>
-   </session>   
-   
+   </session>
+
    <entity>
       <description>
             This enterprise bean entity represents a User with accompanying data.
@@ -232,10 +236,10 @@
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>UserDataBean</abstract-schema-name>
-      
+
       <cmp-field><field-name>username</field-name></cmp-field>
       <cmp-field><field-name>subjectDN</field-name></cmp-field>
-      <cmp-field><field-name>subjectAltName</field-name></cmp-field>      
+      <cmp-field><field-name>subjectAltName</field-name></cmp-field>
       <cmp-field><field-name>subjectEmail</field-name></cmp-field>
       <cmp-field><field-name>status</field-name></cmp-field>
       <cmp-field><field-name>type</field-name></cmp-field>
@@ -244,11 +248,11 @@
       <cmp-field><field-name>timeCreated</field-name></cmp-field>
       <cmp-field><field-name>timeModified</field-name></cmp-field>
       <cmp-field><field-name>endEntityProfileId</field-name></cmp-field>
-      <cmp-field><field-name>certificateProfileId</field-name></cmp-field>    
-      <cmp-field><field-name>tokenType</field-name></cmp-field> 
-      <cmp-field><field-name>hardTokenIssuerId</field-name></cmp-field> 
-      <cmp-field><field-name>keyStorePassword</field-name></cmp-field>      
-      
+      <cmp-field><field-name>certificateProfileId</field-name></cmp-field>
+      <cmp-field><field-name>tokenType</field-name></cmp-field>
+      <cmp-field><field-name>hardTokenIssuerId</field-name></cmp-field>
+      <cmp-field><field-name>keyStorePassword</field-name></cmp-field>
+
       <query>
       	<query-method>
       	  <method-name>findBySubjectDN</method-name>
@@ -259,7 +263,7 @@
 	<ejb-ql>
 	  <![CDATA[SELECT DISTINCT OBJECT(a) from UserDataBean a WHERE a.subjectDN=?1]]>
 	</ejb-ql>
-      </query>    
+      </query>
       <query>
       	<query-method>
       	  <method-name>findBySubjectEmail</method-name>
@@ -270,7 +274,7 @@
 	<ejb-ql>
 	  <![CDATA[SELECT DISTINCT OBJECT(a) from UserDataBean a WHERE a.subjectEmail=?1]]>
 	</ejb-ql>
-      </query>    
+      </query>
       <query>
       	<query-method>
       	  <method-name>findByStatus</method-name>
@@ -281,10 +285,10 @@
 	<ejb-ql>
 	  <![CDATA[SELECT DISTINCT OBJECT(a) from UserDataBean a WHERE a.status=?1]]>
 	</ejb-ql>
-      </query>                
-                                                 
+      </query>
+
    </entity>
-   
+
    <entity>
       <description>
             This enterprise bean entity represents global configuration of ra administration.
@@ -294,14 +298,14 @@
       <local>se.anatom.ejbca.ra.GlobalConfigurationDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.GlobalConfigurationDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
-      <prim-key-class>java.lang.String</prim-key-class>            
-      <reentrant>False</reentrant>      
+      <prim-key-class>java.lang.String</prim-key-class>
+      <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>GlobalConfigurationDataBean</abstract-schema-name>
       <cmp-field><field-name>configurationId</field-name></cmp-field>
-      <cmp-field><field-name>data</field-name></cmp-field>    
-      <primkey-field>configurationId</primkey-field>  
-      
+      <cmp-field><field-name>data</field-name></cmp-field>
+      <primkey-field>configurationId</primkey-field>
+
       <query>
       	<query-method>
       	  <method-name>findByConfigurationId</method-name>
@@ -312,9 +316,9 @@
 	<ejb-ql>
 	  <![CDATA[SELECT DISTINCT OBJECT(a) from GlobalConfigurationDataBean a WHERE a.configurationId=?1]]>
 	</ejb-ql>
-      </query>            
+      </query>
    </entity>
-   
+
    <entity>
       <description>
             This enterprise bean entity represents a ra admins user preference.
@@ -324,13 +328,13 @@
       <local>se.anatom.ejbca.ra.raadmin.AdminPreferencesDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.raadmin.AdminPreferencesDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
-      <prim-key-class>java.lang.String</prim-key-class>    
+      <prim-key-class>java.lang.String</prim-key-class>
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>AdminPreferencesDataBean</abstract-schema-name>
       <cmp-field><field-name>id</field-name></cmp-field>
       <cmp-field><field-name>data</field-name></cmp-field>
-       <primkey-field>id</primkey-field>  
+       <primkey-field>id</primkey-field>
    </entity>
 
    <entity>
@@ -342,15 +346,15 @@
       <local>se.anatom.ejbca.ra.raadmin.EndEntityProfileDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.raadmin.EndEntityProfileDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
-      <prim-key-class>java.lang.Integer</prim-key-class>    
+      <prim-key-class>java.lang.Integer</prim-key-class>
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>EndEntityProfileDataBean</abstract-schema-name>
-      <cmp-field><field-name>id</field-name></cmp-field>      
+      <cmp-field><field-name>id</field-name></cmp-field>
       <cmp-field><field-name>profileName</field-name></cmp-field>
       <cmp-field><field-name>data</field-name></cmp-field>
-      <primkey-field>id</primkey-field>  
-      
+      <primkey-field>id</primkey-field>
+
       <query>
       	<query-method>
       	  <method-name>findByProfileName</method-name>
@@ -361,8 +365,8 @@
 	<ejb-ql>
 	  <![CDATA[SELECT DISTINCT OBJECT(a) from EndEntityProfileDataBean a WHERE a.profileName=?1]]>
 	</ejb-ql>
-      </query>           
-   </entity>   
+      </query>
+   </entity>
 
    <entity>
       <description>
@@ -373,28 +377,28 @@
       <local>se.anatom.ejbca.ra.authorization.AdminGroupDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.authorization.AdminGroupDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
-      <prim-key-class>java.lang.String</prim-key-class>  
+      <prim-key-class>java.lang.String</prim-key-class>
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>AdminGroupDataBean</abstract-schema-name>
       <cmp-field><field-name>adminGroupName</field-name></cmp-field>
-      <primkey-field>adminGroupName</primkey-field>       
+      <primkey-field>adminGroupName</primkey-field>
       <ejb-local-ref>
         <ejb-ref-name>ejb/AdminEntityDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
         <local-home>se.anatom.ejbca.ra.authorization.AdminEntityDataLocalHome</local-home>
         <local>se.anatom.ejbca.ra.authorization.AdminEntityDataLocal</local>
         <ejb-link>AdminEntityData</ejb-link>
-      </ejb-local-ref>    
+      </ejb-local-ref>
       <ejb-local-ref>
         <ejb-ref-name>ejb/AccessRulesDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
         <local-home>se.anatom.ejbca.ra.authorization.AccessRulesDataLocalHome</local-home>
         <local>se.anatom.ejbca.ra.authorization.AccessRulesDataLocal</local>
         <ejb-link>AccessRulesData</ejb-link>
-      </ejb-local-ref>       
-   </entity>   
-         
+      </ejb-local-ref>
+   </entity>
+
    <entity>
       <description>
             This enterprise bean entity represents a user entity.
@@ -403,34 +407,34 @@
       <local-home>se.anatom.ejbca.ra.authorization.AdminEntityDataLocalHome</local-home>
       <local>se.anatom.ejbca.ra.authorization.AdminEntityDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.authorization.AdminEntityDataBean</ejb-class>
-      <persistence-type>Container</persistence-type>  
+      <persistence-type>Container</persistence-type>
       <prim-key-class>se.anatom.ejbca.ra.authorization.AdminEntityPK</prim-key-class>
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>AdminEntityDataBean</abstract-schema-name>
-      <cmp-field><field-name>pK</field-name></cmp-field>        
+      <cmp-field><field-name>pK</field-name></cmp-field>
       <cmp-field><field-name>matchWith</field-name></cmp-field>
       <cmp-field><field-name>matchType</field-name></cmp-field>
-      <cmp-field><field-name>matchValue</field-name></cmp-field>                
-   </entity>   
+      <cmp-field><field-name>matchValue</field-name></cmp-field>
+   </entity>
    <entity>
       <description>
             This enterprise bean entity represents an access rule.
-      </description> 
+      </description>
       <ejb-name>AccessRulesData</ejb-name>
       <local-home>se.anatom.ejbca.ra.authorization.AccessRulesDataLocalHome</local-home>
       <local>se.anatom.ejbca.ra.authorization.AccessRulesDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.authorization.AccessRulesDataBean</ejb-class>
-      <prim-key-class>se.anatom.ejbca.ra.authorization.AccessRulesPK</prim-key-class> 
-      <persistence-type>Container</persistence-type>   
+      <prim-key-class>se.anatom.ejbca.ra.authorization.AccessRulesPK</prim-key-class>
+      <persistence-type>Container</persistence-type>
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>AccessRulesDataBean</abstract-schema-name>
-      <cmp-field><field-name>pK</field-name></cmp-field> 
+      <cmp-field><field-name>pK</field-name></cmp-field>
       <cmp-field><field-name>resource</field-name></cmp-field>
-      <cmp-field><field-name>accessRule</field-name></cmp-field>         
-   </entity>   
-   
+      <cmp-field><field-name>accessRule</field-name></cmp-field>
+   </entity>
+
    <entity>
       <description>
             This enterprise bean entity represents available access rules in ra authorization.
@@ -440,16 +444,16 @@
       <local>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
-      <prim-key-class>java.lang.String</prim-key-class>             
-      <reentrant>False</reentrant>      
+      <prim-key-class>java.lang.String</prim-key-class>
+      <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>AvailableAccessRulesDataBean</abstract-schema-name>
       <cmp-field><field-name>name</field-name></cmp-field>
-      <primkey-field>name</primkey-field>  
+      <primkey-field>name</primkey-field>
    </entity>
-  </enterprise-beans> 
- 
-  <relationships>         
+  </enterprise-beans>
+
+  <relationships>
      <ejb-relation>
        <ejb-relation-name>AdminGroupDataToAdminEntities</ejb-relation-name>
        <ejb-relationship-role>
@@ -470,8 +474,8 @@
            <ejb-name>AdminEntityData</ejb-name>
          </relationship-role-source>
        </ejb-relationship-role>
-     </ejb-relation>     
-     
+     </ejb-relation>
+
      <ejb-relation>
        <ejb-relation-name>AdminGroupDataToAccessRules</ejb-relation-name>
        <ejb-relationship-role>
@@ -492,9 +496,9 @@
            <ejb-name>AccessRulesData</ejb-name>
          </relationship-role-source>
        </ejb-relationship-role>
-     </ejb-relation>          
-  </relationships>            
-   
+     </ejb-relation>
+  </relationships>
+
   <assembly-descriptor>
    <security-role>
       <description>
@@ -509,13 +513,13 @@
       <role-name>InternalUser</role-name>
     </security-role>
 
-   <!-- 
+   <!--
        Method permissions define who can access a given method on a bean.
-       Role name internalUser means that the bean methods shouln NOT be 
+       Role name internalUser means that the bean methods should NOT be
        accessible from the outside.
        Role name everyone means that the bean methods can be accessible from
        the outside.
-       NOTE! Security must be enabled in the container for these settings 
+       NOTE! Security must be enabled in the container for these settings
        to have any real meaning.
    -->
    <method-permission>
@@ -530,13 +534,13 @@
      </method>
    </method-permission>
 
-   <!-- 
-       Transaction settings. Default setting i for *, which is overridden 
+   <!--
+       Transaction settings. Default setting i for *, which is overridden
        for methods with special transactionsal needs.
        Required is used for mission critical methods, which cannot collide.
        Supports is used for methods which only read data.
    -->
-    <container-transaction>     
+    <container-transaction>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>findUser</method-name>
@@ -548,11 +552,11 @@
      <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>findUserByEmail</method-name>
-     </method>     
+     </method>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>CheckIfSubjectDNisAdmin</method-name>
-     </method>     
+     </method>
     <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>findAllUsersByStatus</method-name>
@@ -568,15 +572,15 @@
      <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>checkForCertificateTypeId</method-name>
-     </method>          
+     </method>
     <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>loadGlobalConfiguration</method-name>
-     </method>     
+     </method>
     <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>query</method-name>
-     </method>          
+     </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
          <method-name>getAdminPreference</method-name>
@@ -608,11 +612,11 @@
      <method>
          <ejb-name>RaAdminSession</ejb-name>
          <method-name>getProfileName</method-name>
-     </method> 
+     </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
          <method-name>existsCertificateTypeInProfiles</method-name>
-     </method>                
+     </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>isAuthorized</method-name>
@@ -628,7 +632,7 @@
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>getAdminGroupnames</method-name>
-     </method>    
+     </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>getAdminGroups</method-name>
@@ -644,7 +648,7 @@
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>getNumberOfAdminEntities</method-name>
-     </method>       
+     </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>getAdminEntities</method-name>
@@ -656,14 +660,14 @@
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>existsAvailableAccessRule</method-name>
-     </method> 
+     </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>existsProfileInRules</method-name>
-     </method>                              
-     <trans-attribute>Supports</trans-attribute> 
+     </method>
+     <trans-attribute>Supports</trans-attribute>
    </container-transaction>
-    
+
    <container-transaction>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
@@ -676,7 +680,7 @@
      <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>deleteUser</method-name>
-     </method>   
+     </method>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>setUserStatus</method-name>
@@ -684,11 +688,11 @@
      <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>revokeUser</method-name>
-     </method>  
+     </method>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>revokeCert</method-name>
-     </method>         
+     </method>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>setPassword</method-name>
@@ -700,12 +704,12 @@
      <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>startExternalService</method-name>
-     </method>     
+     </method>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>saveGlobalConfiguration</method-name>
      </method>
-         
+
      <method>
          <ejb-name>RaAdminSession</ejb-name>
          <method-name>addAdminPreference</method-name>
@@ -733,8 +737,8 @@
      <method>
          <ejb-name>RaAdminSession</ejb-name>
          <method-name>changeProfile</method-name>
-     </method>          
-      
+     </method>
+
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>addAdminGroup</method-name>
@@ -750,7 +754,7 @@
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>addAccessRule</method-name>
-     </method>    
+     </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>removeAccessRule</method-name>
@@ -766,7 +770,7 @@
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>addAvailableAccessRule</method-name>
-     </method>       
+     </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>addAvailableAccessRules</method-name>
@@ -778,10 +782,10 @@
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>removeAvailableAccessRules</method-name>
-     </method>   
-                                   
-     <trans-attribute>Required</trans-attribute>   
-   </container-transaction> 
+     </method>
+
+     <trans-attribute>Required</trans-attribute>
+   </container-transaction>
 
 
  </assembly-descriptor>

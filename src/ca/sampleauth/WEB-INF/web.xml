@@ -6,12 +6,8 @@
 
 <web-app>
     <servlet>
-        <servlet-name>
-            RemoteVerify
-        </servlet-name>
-        <servlet-class>
-            se.anatom.ejbca.samples.RemoteVerifyServlet
-        </servlet-class>
+        <servlet-name>RemoteVerify</servlet-name>
+        <servlet-class>se.anatom.ejbca.samples.RemoteVerifyServlet</servlet-class>
         <init-param>
             <param-name>dbfilename</param-name>
             <param-value>/database/dbUsers.txt</param-value>
@@ -21,5 +17,5 @@
 	<servlet-name>RemoteVerify</servlet-name>
 	<url-pattern>/verify</url-pattern>
     </servlet-mapping>
-    
+
 </web-app>
