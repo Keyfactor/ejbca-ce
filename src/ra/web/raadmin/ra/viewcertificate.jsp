@@ -157,7 +157,11 @@
        </tr>
        <tr id="Row1">
 	 <td align="right"><%= ejbcawebbean.getText("BASICCONSTRAINTS") %></td>
-	 <td><%= certificatedata.getBasicConstraints() %>
+	 <td><% if(Integer.parseInt(certificatedata.getBasicConstraints()) == -1)
+                     out.write(ejbcawebbean.getText("ENDENTITY"));
+                else
+                     out.write(ejbcawebbean.getText("CA"));
+                   %>
          </td>
        </tr>
        <tr id="Row0">
