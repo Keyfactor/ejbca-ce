@@ -1,4 +1,4 @@
-$Id: TODO,v 1.13 2002-03-11 08:49:42 anatom Exp $
+$Id: TODO,v 1.14 2002-03-14 11:07:56 anatom Exp $
 
 V 1.0
 -----
@@ -7,6 +7,7 @@ V 1.0
 
 V 2.0
 -----
+- Upgrade BC provider to latest version.
 - Batch create keystores in other formats, PKCS8/PEM. Apache compatible.
 - Better architecture for JSPs (MVC - ModelViewController?).
 - Certificate update/rollover for CAs and clients.
