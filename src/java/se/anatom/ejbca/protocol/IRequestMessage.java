@@ -12,7 +12,7 @@ import java.security.cert.X509Certificate;
  * Base interface for request messages sent to the CA. Implementors of this interface must also
  * implement Serializable if they are to be sent to any EJB bussiness methods.
  *
- * @version $Id: IRequestMessage.java,v 1.10 2003-07-24 08:43:31 anatom Exp $
+ * @version $Id: IRequestMessage.java,v 1.11 2003-09-08 19:02:40 anatom Exp $
  */
 public interface IRequestMessage {
     /**
@@ -29,6 +29,13 @@ public interface IRequestMessage {
      */
     public String getPassword();
 
+    /**
+     * Gets the issuer DN if contained in the request (the CA the request is targeted at).
+     *
+     * @return issuerDN of receiving CA or null.
+     */
+    public String getIssuerDN();
+    
     /**
      * Get the public key from a certification request.
      *

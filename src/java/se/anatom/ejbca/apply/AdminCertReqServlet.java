@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.ca.exception.CADoesntExistsException;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
@@ -96,7 +97,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * 
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.10 2003-09-04 14:38:11 herrvendil Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.11 2003-09-08 19:03:03 anatom Exp $
  */
 public class AdminCertReqServlet extends HttpServlet {
   private final static Logger log = Logger.getLogger(AdminCertReqServlet.class);
@@ -288,6 +289,9 @@ public class AdminCertReqServlet extends HttpServlet {
       throw new ServletException(e);
     } catch (SignRequestSignatureException e) {
       // Invalid signature in certificate request
+      throw new ServletException(e);
+    } catch (CADoesntExistsException e) {
+      // Reqqested CA does not exist
       throw new ServletException(e);
     }
 

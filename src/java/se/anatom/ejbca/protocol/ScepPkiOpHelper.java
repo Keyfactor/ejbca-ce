@@ -12,6 +12,7 @@ import org.bouncycastle.cms.CMSException;
 
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.ca.exception.CADoesntExistsException;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
@@ -23,7 +24,7 @@ import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version  $Id: ScepPkiOpHelper.java,v 1.20 2003-09-04 08:15:28 herrvendil Exp $
+ * @version  $Id: ScepPkiOpHelper.java,v 1.21 2003-09-08 19:02:40 anatom Exp $
  */
 public class ScepPkiOpHelper {
     private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);
@@ -82,6 +83,8 @@ public class ScepPkiOpHelper {
             log.error("Error receiving ScepMessage: ", e);
         } catch (ClassNotFoundException e) {
             log.error("Error createing response message template: ", e);
+        } catch (CADoesntExistsException e) {
+            log.error("Requested CA does not exist: ", e);
         }
 
         log.debug("<getRequestMessage():" + ((ret == null) ? 0 : ret.length));

@@ -13,6 +13,7 @@ import java.security.PublicKey;
 
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
+import se.anatom.ejbca.ca.exception.CADoesntExistsException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
@@ -23,7 +24,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * Creates certificates. Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.18 2003-09-04 14:38:10 herrvendil Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.19 2003-09-08 19:03:03 anatom Exp $
  */
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
 	/**
@@ -76,7 +77,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
 		 */		
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk)
         throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-            IllegalKeyException;
+            IllegalKeyException, CADoesntExistsException;
 
     /**
      * Requests for a certificate to be created for the passed public key with the passed key
@@ -105,7 +106,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     public Certificate createCertificate(Admin admin, String username, String password,
         PublicKey pk, boolean[] keyusage)
         throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-            IllegalKeyException;
+            IllegalKeyException, CADoesntExistsException;
 
     /**
      * Requests for a certificate to be created for the passed public key with the passed key
@@ -136,7 +137,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     public Certificate createCertificate(Admin admin, String username, String password,
         PublicKey pk, int keyusage)
         throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-            IllegalKeyException;
+            IllegalKeyException, CADoesntExistsException;
 
     /**
      * Requests for a certificate of the specified type to be created for the passed public key.
@@ -165,7 +166,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     public Certificate createCertificate(Admin admin, String username, String password,
         int certType, PublicKey pk)
         throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-            IllegalKeyException;
+            IllegalKeyException, CADoesntExistsException;
 
     /**
      * Requests for a certificate to be created for the passed public key wrapped in a self-signed
@@ -193,7 +194,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     public Certificate createCertificate(Admin admin, String username, String password,
         Certificate incert)
         throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-            IllegalKeyException, SignRequestSignatureException;
+            IllegalKeyException, CADoesntExistsException, SignRequestSignatureException;
 
     /**
      * Requests for a certificate to be created for the passed public key wrapped in a
@@ -224,7 +225,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     public Certificate createCertificate(Admin admin, String username, String password,
         IRequestMessage req)
         throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-            IllegalKeyException, SignRequestException, SignRequestSignatureException;
+            IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException;
 
     /**
      * Requests for a certificate to be created for the passed public key wrapped in a
@@ -260,7 +261,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     public Certificate createCertificate(Admin admin, String username, String password,
         IRequestMessage req, int keyUsage)
         throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-            IllegalKeyException, SignRequestException, SignRequestSignatureException;
+            IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException;
 
     /**
      * Requests for a certificate to be created for the passed public key wrapped in a
@@ -298,7 +299,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage,
         Class responseClass)
         throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-            IllegalKeyException, SignRequestException, SignRequestSignatureException;
+            IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException;
 
 	/**
 	 * Requests for a CRL to be created with the passed (revoked) certificates.

@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 /**
  * Class to handle PKCS7 request messages sent to the CA.
  *
- * @version $Id: PKCS7RequestMessage.java,v 1.13 2003-07-24 08:43:31 anatom Exp $
+ * @version $Id: PKCS7RequestMessage.java,v 1.14 2003-09-08 19:02:40 anatom Exp $
  */
 public class PKCS7RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(PKCS7RequestMessage.class);
@@ -92,6 +92,15 @@ public class PKCS7RequestMessage implements IRequestMessage, Serializable {
      * @return DOCUMENT ME!
      */
     public String getPassword() {
+        return null;
+    }
+
+    /**
+     * Gets the issuer DN if contained in the request (the CA the request is targeted at).
+     *
+     * @return issuerDN of receiving CA or null.
+     */
+    public String getIssuerDN() {
         return null;
     }
 

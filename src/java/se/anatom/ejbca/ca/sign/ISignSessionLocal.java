@@ -11,6 +11,7 @@ import javax.ejb.ObjectNotFoundException;
 
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.ca.exception.CADoesntExistsException;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
@@ -22,7 +23,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
  * Local interface for EJB, unforturnately this must be a copy of the remote interface except that
  * RemoteException is not thrown. Creates certificates.
  *
- * @version $Id: ISignSessionLocal.java,v 1.14 2003-09-03 17:36:44 herrvendil Exp $
+ * @version $Id: ISignSessionLocal.java,v 1.15 2003-09-08 19:03:03 anatom Exp $
  *
  * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
  */
@@ -45,7 +46,7 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
 
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-            IllegalKeyException;
+            IllegalKeyException, CADoesntExistsException;
 
 
     /**
@@ -54,7 +55,7 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
     public Certificate createCertificate(Admin admin, String username, String password,
         PublicKey pk, boolean[] keyusage)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-            IllegalKeyException;
+            IllegalKeyException, CADoesntExistsException;
 
 
     /**
@@ -63,7 +64,7 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
     public Certificate createCertificate(Admin admin, String username, String password,
         PublicKey pk, int keyusage)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-            IllegalKeyException;
+            IllegalKeyException, CADoesntExistsException;
 
 
     /**
@@ -72,7 +73,7 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
     public Certificate createCertificate(Admin admin, String username, String password,
         int certType, PublicKey pk)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-            IllegalKeyException;
+            IllegalKeyException, CADoesntExistsException;
 
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
@@ -80,7 +81,7 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
     public Certificate createCertificate(Admin admin, String username, String password,
         Certificate incert)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-            IllegalKeyException, SignRequestSignatureException;
+            IllegalKeyException, CADoesntExistsException, SignRequestSignatureException;
 
 
     /**
@@ -89,7 +90,7 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
     public Certificate createCertificate(Admin admin, String username, String password,
         IRequestMessage req)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-            IllegalKeyException, SignRequestException, SignRequestSignatureException;
+            IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException;
 
 
     /**
@@ -98,7 +99,7 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
     public Certificate createCertificate(Admin admin, String username, String password,
         IRequestMessage req, int keyUsage)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-            IllegalKeyException, SignRequestException, SignRequestSignatureException;
+            IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException;
 
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
@@ -106,7 +107,7 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
     public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage,
         Class responseClass)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-            IllegalKeyException, SignRequestException, SignRequestSignatureException;
+            IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException;
 
 
     /**

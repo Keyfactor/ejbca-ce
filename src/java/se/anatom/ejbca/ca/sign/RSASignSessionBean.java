@@ -37,6 +37,7 @@ import se.anatom.ejbca.ca.caadmin.CAToken;
 import se.anatom.ejbca.ca.caadmin.X509CA;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.ca.exception.CADoesntExistsException;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
@@ -58,7 +59,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.99 2003-09-08 12:33:51 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.100 2003-09-08 19:03:02 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -224,7 +225,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException {
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
         debug(">createCertificate(pk)");
         // Default key usage is defined in certificate profiles
         debug("<createCertificate(pk)");
@@ -234,14 +235,14 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, boolean[] keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException {
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, boolean[] keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
         return createCertificate(admin, username, password, pk, sunKeyUsageToBC(keyusage));                    
     }
 
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException {
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
         debug(">createCertificate(pk, ku)");
         try {
             // Authorize user and get DN
@@ -254,7 +255,7 @@ public class RSASignSessionBean extends BaseSessionBean {
               cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
             }catch(javax.ejb.FinderException fe){
               getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Invalid CA Id",fe);  
-              throw new EJBException(fe);                   
+              throw new CADoesntExistsException();                   
             }
             CA ca = null;
             try{
@@ -294,7 +295,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * Implements ISignSession::createCertificate
      */
 
-    public Certificate createCertificate(Admin admin, String username, String password, int certType, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException {
+    public Certificate createCertificate(Admin admin, String username, String password, int certType, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
         debug(">createCertificate(pk, certType)");
         // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
         boolean[] keyusage = new boolean[9];
@@ -328,7 +329,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(Admin admin, String username, String password, Certificate incert) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestSignatureException {
+    public Certificate createCertificate(Admin admin, String username, String password, Certificate incert) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestSignatureException, CADoesntExistsException {
         debug(">createCertificate(cert)");
         X509Certificate cert = (X509Certificate)incert;
         try {
@@ -426,23 +427,24 @@ public class RSASignSessionBean extends BaseSessionBean {
         debug(">createCertificate(IRequestMessage)");
         IResponseMessage ret = null;
 /*
-        // See if we can get username and password directly from request
-        String username = req.getUsername();
-        String password = reg.getPassword()
-        
-        // If we can't get that, see ifwe can get issuerDN directly from request
-        // TODO:
-        
-        // If we can't get that, fail
-        // TODO:
-        UserAuthData data = authUser(admin, username, password);
-        
-        // get CA
+        // Get CA that will receive request
         CADataLocal cadata = null; 
+        UserAuthData data = null;
         try{
-            cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
+            // See if we can get issuerDN directly from request
+            if (req.getIssuerDN() != null) {
+                cadata = cadatahome.findByName(req.getIssuerDN());
+            } else if (req.getUsername() != null ){
+                // See if we can get username and password directly from request
+                String username = req.getUsername();
+                String password = req.getPassword();
+                data = authUser(admin, username, password);
+                cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
+            } else {
+                throw new CADoesntExistsException();
+            }
         }catch(javax.ejb.FinderException fe){
-            getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Invalid CA Id",fe);  
+            getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Invalid CA Id",fe);  
             throw new EJBException(fe);                   
         }
         CA ca = cadata.getCA();
@@ -450,13 +452,11 @@ public class RSASignSessionBean extends BaseSessionBean {
         if (req.requireKeyInfo()) {
             req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateDecKey());
         }
- 
-        String username = req.getUsername();
-        String pwd = req.getPassword();
-        if ((username == null ) || (pwd == null)) {
+
+        if ((req.getUsername() == null ) || (req.getPassword() == null)) {
             throw new SignRequestException("No username/password in request!");
         }
-        Certificate cert = createCertificate(admin,username,pwd,req,keyUsage);
+        Certificate cert = createCertificate(admin,req.getUsername(),req.getPassword(),req,keyUsage);
         try {
             ret = (IResponseMessage)responseClass.newInstance();
             if (ret.requireSignKeyInfo()) {
@@ -482,7 +482,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             log.error("Cannot create class for response message: ", e);
         } catch (InstantiationException e) {
             log.error("Cannot create class for response message: ", e);
-        } */
+        } */ 
         debug("<createCertificate(IRequestMessage)");
         return ret;
     }
