@@ -1,4 +1,4 @@
-$Id: README,v 1.110 2004-01-05 18:28:53 anatom Exp $
+$Id: README,v 1.111 2004-01-06 14:19:46 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -841,9 +841,6 @@ In the file src/publicweb/status/WEB-INF/web.xml there are several parameters af
 important are:
 'responderID', that specifies the subject of the certificate which is used to identifiy the responder 
 which generates the OCSP response (i.e. the CAs subject DN).
-keyStore, keyStorePass, privateKeyAlias, privateKeyPass, certificateAlias must point to the same keystore
-as the CA, and the parameters must match the CAs so the OCSP responder can access the CAs private key 
-and signing certificate.
 
 Example to generate OCSP request using OpenSSL:
 openssl ocsp -issuer Test-CA.pem -cert Test.pem -req_text -url http://localhost:8080/ejbca/publicweb/status/ocsp
