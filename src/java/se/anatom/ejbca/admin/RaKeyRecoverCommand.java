@@ -1,18 +1,15 @@
 package se.anatom.ejbca.admin;
 
+import java.math.BigInteger;
+import java.security.cert.X509Certificate;
+
+import javax.naming.InitialContext;
+
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionHome;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote;
 import se.anatom.ejbca.ra.UserDataRemote;
-import se.anatom.ejbca.util.CertTools;
-
-import java.math.BigInteger;
-
-import java.security.cert.X509Certificate;
-
-import javax.naming.*;
-
 
 /**
  * Find details of a user in the database.
@@ -66,7 +63,7 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
              }   
               
              X509Certificate cert = (X509Certificate) certificatesession.findCertificateByIssuerAndSerno(
-                                                                             administrator, CertTools.stringToBCDNString(issuerdn), 
+                                                                             administrator, issuerdn, 
                                                                              certificatesn);
               
              if(cert == null){

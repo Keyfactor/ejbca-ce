@@ -54,7 +54,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.62 2003-09-13 09:02:28 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.63 2003-09-21 10:54:59 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -193,7 +193,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                         int type, int tokentype, int hardwaretokenissuerid, int caid)
                          throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
         // String used in SQL so strip it
-        String dn = StringTools.strip(subjectdn);
+        String dn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
         debug(">addUser("+username+", password, "+dn+", "+email+")");
         if(getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()){
           // Check if user fulfills it's profile.

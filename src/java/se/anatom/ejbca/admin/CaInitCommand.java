@@ -1,16 +1,11 @@
 package se.anatom.ejbca.admin;
 
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Vector;
 
-import javax.ejb.CreateException;
 import javax.naming.Context;
-import javax.naming.NamingException;
 
-import se.anatom.ejbca.ca.store.IPublisherSessionHome;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
@@ -18,10 +13,8 @@ import se.anatom.ejbca.ca.caadmin.X509CAInfo;
 import se.anatom.ejbca.ca.caadmin.CATokenInfo;
 import se.anatom.ejbca.ca.caadmin.SoftCATokenInfo;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.authorization.IAuthorizationSessionHome;
 import se.anatom.ejbca.authorization.IAuthorizationSessionRemote;
-import se.anatom.ejbca.ca.store.CertificateData;
 import se.anatom.ejbca.SecConst;
 
 import se.anatom.ejbca.util.CertTools;
@@ -30,7 +23,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.13 2003-09-03 14:32:02 herrvendil Exp $
+ * @version $Id: CaInitCommand.java,v 1.14 2003-09-21 10:54:59 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
     /** Pointer to main certificate store */
@@ -83,7 +76,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             }else{
                 
               System.out.println("Generating rootCA keystore:");
-              System.out.println("DN: "+dn);
+              System.out.println("DN (UFT-8): "+dn);
               System.out.println("Keysize: "+keysize);
               System.out.println("Validity (days): "+validity);
               System.out.println("Policy ID: "+policyId);

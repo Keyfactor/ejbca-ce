@@ -1,5 +1,6 @@
 package se.anatom.ejbca.util.junit;
 
+import java.io.FileOutputStream;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
@@ -12,7 +13,7 @@ import se.anatom.ejbca.util.*;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.11 2003-07-24 08:43:32 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.12 2003-09-21 10:54:59 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -249,5 +250,26 @@ public class TestCertTools extends TestCase {
         assertEquals(bcdn1,
             "CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE");
         log.debug("<test04DNComponents()");
+    }
+
+    /** Tests utf-8 encoding of international (swedish characters)
+     *
+     * @throws Exception if error...
+     */
+    public void test05IntlChars() throws Exception {
+        log.debug(">test05IntlChars()");
+
+        // We try to examine the general case and som special cases, which we want to be able to handle
+        String dn1 = "CN=Tomasåäö, O=ÅÄÖ-Org, OU=ÜÉ-Unit, C=SE";
+        String bcdn1 = CertTools.stringToBCDNString(dn1);
+//        FileOutputStream fos = new FileOutputStream("foo.txt");
+//        fos.write(dn1.getBytes("UTF-8"));
+//        fos.write(dn1.getBytes("ISO-8859-1"));
+//        fos.write(dn1.getBytes("US-ASCII"));
+//        fos.close();
+        //log.info("dn1: " + dn1);
+        //log.info("bcdn1: " + bcdn1);
+        assertEquals("CN=Tomasåäö,OU=ÜÉ-Unit,O=ÅÄÖ-Org,C=SE", bcdn1);
+        log.debug("<test05IntlChars()");
     }
 }
