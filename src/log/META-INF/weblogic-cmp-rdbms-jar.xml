@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE weblogic-rdbms-bean PUBLIC '-//BEA Systems, Inc.//DTD WebLogic 5.1.0 EJB RDBMS Persistence//EN' 'http://www.bea.com/servers/wls510/dtd/weblogic-rdbms-persistence.dtd'>
+
+
+<weblogic-rdbms-bean>
+
+  <pool-name>DefaultPool</pool-name>
+  <table-name>USERDATA</table-name>
+  <attribute-map>
+    <object-link>
+       <bean-field>username</bean-field>
+       <dbms-column>username</dbms-column>
+    </object-link>
+    <object-link>
+       <bean-field>password</bean-field>
+       <dbms-column>password</dbms-column>
+    </object-link>
+    <object-link>
+      <bean-field>passwordHash</bean-field>
+      <dbms-column>passwordHash</dbms-column>
+    </object-link>
+    <object-link>
+      <bean-field>subjectDN</bean-field>
+      <dbms-column>subjectDN</dbms-column>
+    </object-link>
+    <object-link>
+      <bean-field>subjectEmail</bean-field>
+      <dbms-column>subjectEmail</dbms-column>
+    </object-link>
+    <object-link>
+      <bean-field>status</bean-field>
+      <dbms-column>status</dbms-column>
+    </object-link>
+    <object-link>
+      <bean-field>type</bean-field>
+      <dbms-column>type</dbms-column>
+    </object-link>
+  </attribute-map>
+
+</weblogic-rdbms-bean>
+
+
+<!-- EJB 2.0 Stuff below...
+
+<!DOCTYPE weblogic-rdbms-jar PUBLIC '-//BEA Systems, Inc.//DTD WebLogic 6.0.0 EJB RDBMS20 Persistence//EN' 'http://www.bea.com/servers/wls600/dtd/weblogic-rdbms20-persistence-600.dtd'>
+
+<weblogic-rdbms-jar>
+
+    <weblogic-rdbms-bean>
+        <ejb-name>UserData</ejb-name>
+        <data-source-name>DafaultDS</data-source-name>
+        <table-name>USERDATA</table-name>
+
+        <field-map>
+            <cmp-field>username</cmp-field>
+            <dbms-column>username</dbms-column>
+        </field-map>
+        <field-map>
+            <cmp-field>password</cmp-field>
+            <dbms-column>password</dbms-column>
+        </field-map>
+        <field-map>
+            <cmp-field>passwordHash</cmp-field>
+            <dbms-column>passwordHash</dbms-column>
+        </field-map>
+        <field-map>
+            <cmp-field>subjectDN</cmp-field>
+            <dbms-column>subjectDN</dbms-column>
+        </field-map>
+        <field-map>
+            <cmp-field>subjectEmail</cmp-field>
+            <dbms-column>subjectEmail</dbms-column>
+        </field-map>
+        <field-map>
+            <cmp-field>status</cmp-field>
+            <dbms-column>status</dbms-column>
+        </field-map>
+        <field-map>
+            <cmp-field>type</cmp-field>
+            <dbms-column>type</dbms-column>
+        </field-map>
+    </weblogic-rdbms-bean>
+
+</weblogic-rdbms-jar>
+
+-->
