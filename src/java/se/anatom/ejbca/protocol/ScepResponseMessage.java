@@ -8,7 +8,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.MessageDigest;
 import java.security.cert.CertStore;
 import java.security.cert.CertStoreException;
 import java.security.cert.Certificate;
@@ -28,7 +27,6 @@ import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.smime.SMIMECapability;
 
 import org.bouncycastle.cms.CMSEnvelopedData;
@@ -45,7 +43,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.12 2004-03-12 13:30:29 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.13 2004-03-14 15:05:54 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage, Serializable {
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);
