@@ -42,7 +42,7 @@ If PKCS12 files are generateed for users, the subdirectory ('p12') where
 they are stored and the generated files should be protected in the same way.
 
 BEAN PERMISSIONS
-----------------
+================
 
 Below is a list describing the access permissions that should apply on all beans
  and their methods.
@@ -52,7 +52,7 @@ internalUser means that the method should not be available to the public, only
 
 Bean permissions are set in the 'ejb-jar.xml' files.
 
-CA BEAN
+CA bean
 =======
 
 RSASignSession
@@ -85,7 +85,7 @@ CRLData
 -------
 All methods are protected and can only be accessed from the internalUser.
 
-RA BEAN
+RA bean
 =======
 
 UserAdminSession
@@ -96,6 +96,6 @@ UserData
 --------
 All methods are protected and can only be accessed from the internalUser.
 
-SERVLETS
+Servlets
 ========
 Servlets are available to the public.
