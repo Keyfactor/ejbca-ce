@@ -12,6 +12,9 @@ AccessRulesData and EndEntityProfileData to flush configuration and
 administrator privileges (actually deleting the content would be enough but you
 might as well drop the tables).
 
+Delete bcmail-jdk13-116.jar, jce-jdk13-116.jar, ldap.jar and regexp1_0_0.jar
+from $JBOSS_HOME/server/default/lib.
+
 EJBCA V2.0B1
 ----------
 We have moved to EJB 2.0. JBoss 3 is now required.
@@ -54,6 +57,7 @@ subjectDN in table UserData.
 
 If a tool is needed to perform the migration, please contact us.
 See http://sourceforge.net/projects/ejbca
+
 
 
 
