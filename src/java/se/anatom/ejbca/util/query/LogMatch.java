@@ -31,19 +31,19 @@ package se.anatom.ejbca.util.query;
 public class LogMatch extends BasicMatch {
     // Public Constants
 
-    public final static int MATCH_WITH_USERNAME         = 0;
-    public final static int MATCH_WITH_ADMINCERTIFICATE = 1;
-    public final static int MATCH_WITH_IP               = 2;
-    public final static int MATCH_WITH_SPECIALADMIN     = 3;   
-    public final static int MATCH_WITH_CERTIFICATE      = 4; 
-    public final static int MATCH_WITH_COMMENT          = 5; 
-    public final static int MATCH_WITH_EVENT            = 6; // Value must the number representation.
-    public final static int MATCH_WITH_MODULE           = 7;
-    public final static int MATCH_WITH_CA               = 8;
+    public static final int MATCH_WITH_USERNAME         = 0;
+    public static final int MATCH_WITH_ADMINCERTIFICATE = 1;
+    public static final int MATCH_WITH_IP               = 2;
+    public static final int MATCH_WITH_SPECIALADMIN     = 3;
+    public static final int MATCH_WITH_CERTIFICATE      = 4;
+    public static final int MATCH_WITH_COMMENT          = 5;
+    public static final int MATCH_WITH_EVENT            = 6; // Value must the number representation.
+    public static final int MATCH_WITH_MODULE           = 7;
+    public static final int MATCH_WITH_CA               = 8;
 
 
     // Private Constants.
-    private final static String[] MATCH_WITH_SQLNAMES = {"username", "adminData", "adminData", "adminType"
+    private static final String[] MATCH_WITH_SQLNAMES = {"username", "adminData", "adminData", "adminType"
                                                          , "certificateSNR", "comment", "event", "module", "caid"}; // Represents the column names in ra userdata table.
    
     

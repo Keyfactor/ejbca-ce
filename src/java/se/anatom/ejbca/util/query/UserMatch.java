@@ -31,31 +31,31 @@ package se.anatom.ejbca.util.query;
 public class UserMatch extends BasicMatch {
     // Public Constants
 
-    public final static int MATCH_WITH_USERNAME            = 0;
-    public final static int MATCH_WITH_EMAIL               = 1;
-    public final static int MATCH_WITH_STATUS              = 2; // Value must the number representation.
-    public final static int MATCH_WITH_ENDENTITYPROFILE    = 3; // Matches the profile id not profilename.
-    public final static int MATCH_WITH_CERTIFICATEPROFILE  = 4; // Matches the certificatetype id not name.
-    public final static int MATCH_WITH_CA                  = 5; // Matches the CA id not CA name.
-	public final static int MATCH_WITH_TOKEN               = 6;
+    public static final int MATCH_WITH_USERNAME            = 0;
+    public static final int MATCH_WITH_EMAIL               = 1;
+    public static final int MATCH_WITH_STATUS              = 2; // Value must the number representation.
+    public static final int MATCH_WITH_ENDENTITYPROFILE    = 3; // Matches the profile id not profilename.
+    public static final int MATCH_WITH_CERTIFICATEPROFILE  = 4; // Matches the certificatetype id not name.
+    public static final int MATCH_WITH_CA                  = 5; // Matches the CA id not CA name.
+	public static final int MATCH_WITH_TOKEN               = 6;
     // Subject DN fields.
-    public final static int MATCH_WITH_UID              = 100;    
-    public final static int MATCH_WITH_COMMONNAME       = 101;
-    public final static int MATCH_WITH_DNSERIALNUMBER   = 102;   
-    public final static int MATCH_WITH_GIVENNAME        = 103; 
-    public final static int MATCH_WITH_INITIALS         = 104; 
-    public final static int MATCH_WITH_SURNAME          = 105;      
-    public final static int MATCH_WITH_TITLE            = 106;      
-    public final static int MATCH_WITH_ORGANIZATIONUNIT = 107;
-    public final static int MATCH_WITH_ORGANIZATION     = 108;
-    public final static int MATCH_WITH_LOCALE           = 109;
-    public final static int MATCH_WITH_STATE            = 110;
-    public final static int MATCH_WITH_DOMAINCOMPONENT  = 111;      
-    public final static int MATCH_WITH_COUNTRY          = 112;    
+    public static final int MATCH_WITH_UID              = 100;
+    public static final int MATCH_WITH_COMMONNAME       = 101;
+    public static final int MATCH_WITH_DNSERIALNUMBER   = 102;
+    public static final int MATCH_WITH_GIVENNAME        = 103;
+    public static final int MATCH_WITH_INITIALS         = 104;
+    public static final int MATCH_WITH_SURNAME          = 105;
+    public static final int MATCH_WITH_TITLE            = 106;
+    public static final int MATCH_WITH_ORGANIZATIONUNIT = 107;
+    public static final int MATCH_WITH_ORGANIZATION     = 108;
+    public static final int MATCH_WITH_LOCALE           = 109;
+    public static final int MATCH_WITH_STATE            = 110;
+    public static final int MATCH_WITH_DOMAINCOMPONENT  = 111;
+    public static final int MATCH_WITH_COUNTRY          = 112;
 
 
     // Private Constants.
-    private final static String[] MATCH_WITH_SQLNAMES = {"username", "subjectEmail", "status"
+    private static final String[] MATCH_WITH_SQLNAMES = {"username", "subjectEmail", "status"
                                                          , "endEntityProfileId", "certificateProfileId"
                                                          , "cAId", "tokenType"}; 
                                                          
