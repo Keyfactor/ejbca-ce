@@ -26,7 +26,7 @@ import org.bouncycastle.jce.interfaces.*;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.21 2003-08-23 08:56:27 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.22 2003-09-07 09:50:22 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -93,38 +93,53 @@ public class KeyTools {
     // createP12
 
     /**
+     * Creates PKCS12-file that can be imported in IE or Netscape.
+     * The alias for the private key is set to 'privateKey' and the private key password is null.
+     * @param alias the alias used for the key entry
+     * @param privKey RSA private key
+     * @param cert user certificate
+     * @param cacert Collection of X509Certificate, or null if only one cert in chain, in that case use 'cert'.
+     * @param username user's username
+     * @param password user's password
+     * @return KeyStore containing PKCS12-keystore
+     * @exception Exception if input parameters are not OK or certificate generation fails
+     */
+    static public KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, Collection cacerts)
+    throws Exception {
+        Certificate[] chain;
+        if (cacerts == null)
+            chain = null;
+        else {
+            chain = new Certificate[cacerts.size()];
+            chain = (Certificate[])cacerts.toArray(chain);
+        }
+        return createP12(alias, privKey, cert, chain);
+    } // createP12
+
+    /**
      * Creates PKCS12-file that can be imported in IE or Netscape. The alias for the private key is
      * set to 'privateKey' and the private key password is null.
      *
      * @param alias the alias used for the key entry
      * @param privKey RSA private key
      * @param cert user certificate
-     * @param cachain CA-certificate chain or null if only one cert in chain, in that case use
-     *        'cert'.
-     *
+     * @param cachain CA-certificate chain or null if only one cert in chain, in that case use 'cert'.
      * @return KeyStore containing PKCS12-keystore
-     *
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
     public static KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert,
         Certificate[] cachain) throws Exception {
-        log.debug(">createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) +
-            ", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
+        log.debug(">createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) +", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
 
-        // TODO: support more than two levels of CAs
-        // Certificate chain, only max two levels deep unforturnately
+        // Certificate chain
         if (cert == null) {
             throw new IllegalArgumentException("Parameter cert cannot be null.");
         }
-
         int len = 1;
-
         if (cachain != null) {
             len += cachain.length;
         }
-
         Certificate[] chain = new Certificate[len];
-
         // To not get a ClassCastException we need to genereate a real new certificate with BC
         CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
         chain[0] = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(
@@ -137,7 +152,6 @@ public class KeyTools {
                 chain[i + 1] = tmpcert;
             }
         }
-
         if (chain.length > 1) {
             for (int i = 1; i < chain.length; i++) {
                 X509Certificate cacert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(
@@ -146,14 +160,15 @@ public class KeyTools {
                 PKCS12BagAttributeCarrier caBagAttr = (PKCS12BagAttributeCarrier) chain[i];
                 // We constuct a friendly name for the CA, and try with some parts from the DN if they exist.
                 String cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
+                // On the ones below we +i to make it unique, O might not be otherwise
                 if (cafriendly == null) {
-                    cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "O");
+                    cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "O")+i;
                 }
                 if (cafriendly == null) {
-                    cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "OU");
+                    cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "OU"+i);
                 }
                 if (cafriendly == null) {
-                    cafriendly = "CA_unknown";
+                    cafriendly = "CA_unknown"+i;
                 }
                 caBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName,
                     new DERBMPString(cafriendly));
@@ -162,32 +177,22 @@ public class KeyTools {
 
         // Set attributes on user-cert
         PKCS12BagAttributeCarrier certBagAttr = (PKCS12BagAttributeCarrier) chain[0];
-        certBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName,
-            new DERBMPString(alias));
-
+        certBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(alias));
         // in this case we just set the local key id to that of the public key
-        certBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_localKeyId,
-            createSubjectKeyId(chain[0].getPublicKey()));
-
+        certBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_localKeyId, createSubjectKeyId(chain[0].getPublicKey()));
         // "Clean" private key, i.e. remove any old attributes
         KeyFactory keyfact = KeyFactory.getInstance(privKey.getAlgorithm(), "BC");
         PrivateKey pk = keyfact.generatePrivate(new PKCS8EncodedKeySpec(privKey.getEncoded()));
-
         // Set attributes for private key
         PKCS12BagAttributeCarrier keyBagAttr = (PKCS12BagAttributeCarrier) pk;
-
         // in this case we just set the local key id to that of the public key
-        keyBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName,
-            new DERBMPString(alias));
-        keyBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_localKeyId,
-            createSubjectKeyId(chain[0].getPublicKey()));
-
+        keyBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(alias));
+        keyBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_localKeyId, createSubjectKeyId(chain[0].getPublicKey()));
         // store the key and the certificate chain
         KeyStore store = KeyStore.getInstance("PKCS12", "BC");
         store.load(null, null);
         store.setKeyEntry(alias, pk, null, chain);
-        log.debug("<createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) +
-            ", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
+        log.debug("<createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) + ", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
 
         return store;
     }

@@ -16,7 +16,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.39 2003-07-24 08:43:32 anatom Exp $
+ * @version $Id: CertTools.java,v 1.40 2003-09-07 09:50:22 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -347,82 +347,95 @@ public class CertTools {
     }
 
     /**
-     * Reads a certificate in PEM-format from a file. The file may contain other things, the first
-     * certificate in the file is read.
+     * Reads a certificate in PEM-format from a file. The file may contain other things,
+     * the first certificate in the file is read.
      *
      * @param certFile the file containing the certificate in PEM-format
-     *
-     * @return X509Certificate
-     *
-     * @throws IOException if the filen cannot be read.
-     * @throws CertificateException if the filen does not contain a correct certificate.
+     * @return Ordered Collection of X509Certificate, first certificate first, or empty Collection
+     * @exception IOException if the filen cannot be read.
+     * @exception CertificateException if the filen does not contain a correct certificate.
      */
-    public static X509Certificate getCertfromPEM(String certFile)
-        throws IOException, CertificateException {
+    public static Collection getCertsFromPEM(String certFile) throws IOException, CertificateException {
         log.debug(">getCertfromPEM: certFile=" + certFile);
-
         InputStream inStrm = new FileInputStream(certFile);
-        X509Certificate cert = getCertfromPEM(inStrm);
+        Collection certs = getCertsFromPEM(inStrm);
         log.debug("<getCertfromPEM: certFile=" + certFile);
-
-        return cert;
+        return certs;
     }
 
     /**
      * Reads a certificate in PEM-format from an InputStream. The stream may contain other things,
      * the first certificate in the stream is read.
      *
-     * @param certstream the input stream containing the certificate in PEM-format
-     *
-     * @return X509Certificate
-     *
-     * @throws IOException if the stream cannot be read.
-     * @throws CertificateException if the stream does not contain a correct certificate.
+     * @param certFile the input stream containing the certificate in PEM-format
+     * @return Ordered Collection of X509Certificate, first certificate first, or empty Collection
+     * @exception IOException if the stream cannot be read.
+     * @exception CertificateException if the stream does not contain a correct certificate.
      */
-    public static X509Certificate getCertfromPEM(InputStream certstream)
-        throws IOException, CertificateException {
+    public static Collection getCertsFromPEM(InputStream certstream)
+    throws IOException, CertificateException {
         log.debug(">getCertfromPEM:");
-
+        ArrayList ret = new ArrayList();
         String beginKey = "-----BEGIN CERTIFICATE-----";
         String endKey = "-----END CERTIFICATE-----";
         BufferedReader bufRdr = new BufferedReader(new InputStreamReader(certstream));
+        while (bufRdr.ready()) {
+            ByteArrayOutputStream ostr = new ByteArrayOutputStream();
+            PrintStream opstr = new PrintStream(ostr);
+            String temp;
+            while ((temp = bufRdr.readLine()) != null &&
+            !temp.equals(beginKey))
+                continue;
+            if (temp == null)
+                throw new IOException("Error in " + certstream.toString() + ", missing " + beginKey + " boundary");
+            while ((temp = bufRdr.readLine()) != null &&
+            !temp.equals(endKey))
+                opstr.print(temp);
+            if (temp == null)
+                throw new IOException("Error in " + certstream.toString() + ", missing " + endKey + " boundary");
+            opstr.close();
+
+            byte[] certbuf = Base64.decode(ostr.toByteArray());
+            ostr.close();
+            // Phweeew, were done, now decode the cert from file back to X509Certificate object
+            CertificateFactory cf = CertTools.getCertificateFactory();
+            X509Certificate x509cert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certbuf));
+            String dn=x509cert.getSubjectDN().toString();
+            ret.add(x509cert);
+        }
+
+        log.debug("<getcertfromPEM:" + ret.size());
+        return ret;
+    } // getCertsFromPEM
+
+    /**
+     * Returns a certificate in PEM-format.
+     *
+     * @param cert the certificate to convert to PEM
+     * @return byte array containing PEM certificate
+     * @exception IOException if the stream cannot be read.
+     * @exception CertificateException if the stream does not contain a correct certificate.
+     */
+    public static byte[] getPEMFromCerts(Collection certs)
+    throws CertificateException {
+        String beginKey = "-----BEGIN CERTIFICATE-----";
+        String endKey = "-----END CERTIFICATE-----";
         ByteArrayOutputStream ostr = new ByteArrayOutputStream();
         PrintStream opstr = new PrintStream(ostr);
-        String temp;
-
-        while (((temp = bufRdr.readLine()) != null) && !temp.equals(beginKey)) {
-            continue;
+        Iterator iter = certs.iterator();
+        while (iter.hasNext()) {
+            X509Certificate cert = (X509Certificate)iter.next();
+            byte[] certbuf = Base64.encode(cert.getEncoded());
+            opstr.println("Subject: "+cert.getSubjectDN());
+            opstr.println("Issuer: "+cert.getIssuerDN());
+            opstr.println(beginKey);
+            opstr.println(new String(certbuf));
+            opstr.println(endKey);
         }
-
-        if (temp == null) {
-            throw new IOException("Error in " + certstream.toString() + ", missing " + beginKey +
-                " boundary");
-        }
-
-        while (((temp = bufRdr.readLine()) != null) && !temp.equals(endKey)) {
-            opstr.print(temp);
-        }
-
-        if (temp == null) {
-            throw new IOException("Error in " + certstream.toString() + ", missing " + endKey +
-                " boundary");
-        }
-
         opstr.close();
-
-        byte[] certbuf = Base64.decode(ostr.toByteArray());
-
-        // Phweeew, were done, now decode the cert from file back to X509Certificate object
-        CertificateFactory cf = CertTools.getCertificateFactory();
-        X509Certificate x509cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(
-                    certbuf));
-
-        log.debug("<getcertfromPEM:" + x509cert.toString());
-
-        return x509cert;
+        byte[] ret = ostr.toByteArray();
+        return ret;
     }
-
-    // getCertfromPEM
 
     /**
      * Creates X509Certificate from byte[].
