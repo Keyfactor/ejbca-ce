@@ -3,7 +3,7 @@ package se.anatom.ejbca.ca.sign;
 
 /** Interface for a serial number generator.
  *
- * @version $Id: ISernoGenerator.java,v 1.1 2002-08-20 12:18:23 anatom Exp $
+ * @version $Id: ISernoGenerator.java,v 1.2 2002-09-05 08:22:25 anatom Exp $
  */
 public interface ISernoGenerator {
 
@@ -19,5 +19,13 @@ public interface ISernoGenerator {
     */
     public int getNoSernoBytes();
 
-}
+   /** Sets an optional seed needed by the serno generator. This can be different things,
+    * for a sequential generator it can for instance be the first number to be generated and
+    * for a random generator it can be a random seed.
+    * The constructor may seed the generator enough so this method may not be nessecary to call.
+    *
+    * @param the seed used to initilize the serno generator.
+    */
+    public void setSeed(long seed);
 
+}
