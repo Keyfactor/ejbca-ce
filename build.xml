@@ -608,6 +608,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
 
         <replace dir="${src}" value="${ejbca.DS}">
 	        <include name="**/jbosscmp-jdbc.xml"/>
+	        <include name="**/ejb-jar.xml"/>
 	        <replacetoken>java:/DefaultDS</replacetoken>
         </replace>
   </target>
