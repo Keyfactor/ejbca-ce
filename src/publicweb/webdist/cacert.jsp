@@ -61,34 +61,36 @@ try  {
 <br>
 <div align="center">For Netscape/Mozilla:<br>
 </div>
-  <div align="center"><a href="certdist?cmd=nscacert&issuer=<%= issuerdn %>&level=0">Root CA</a></div>
 <div align="center">
 <%
-            if (chain.size() > 1) {
-                for (i=chain.size()-1;i>0;i--) {
+            i = 0;
+            chainiter = chain.iterator();
+            while (chainiter.hasNext()) {
+            	X509Certificate cert = (X509Certificate)chainiter.next();
 %>
 </div>
-  <div align="center"><a href="certdist?cmd=nscacert&issuer=<%= issuerdn %>&level=<%= i %>">CA</a></div>
+  <div align="center"><a href="certdist?cmd=nscacert&issuer=<%= issuerdn %>&level=<%= i %>"><%= cert.getSubjectDN().getName() %></a></div>
 <div align="center">
-  <%
-                }
+<%
+                i++;
             }
 %>
 </div>
 <br>
 <div align="center">For Internet Explorer:<br>
 </div>
-  <div align="center"><a href="certdist?cmd=iecacert&issuer=<%= issuerdn %>&level=0">Root CA</a></div>
 <div align="center">
-  <%
-            if (chain.size() > 1) {
-                for (i=chain.size()-1;i>0;i--) {
+<%
+            i = 0;
+            chainiter = chain.iterator();
+            while (chainiter.hasNext()) {
+            	X509Certificate cert = (X509Certificate)chainiter.next();
 %>
 </div>
-  <div align="center"><a href="certdist?cmd=iecacert&issuer=<%= issuerdn %>&level=<%= i %>">CA</a></div>
+  <div align="center"><a href="certdist?cmd=iecacert&issuer=<%= issuerdn %>&level=<%= i %>"><%= cert.getSubjectDN().getName() %></a></div>
 <div align="center">
-  <%
-                }
+<%
+                i++;
             }
         }
     }
