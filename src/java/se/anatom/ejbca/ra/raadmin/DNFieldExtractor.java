@@ -24,33 +24,32 @@ public class DNFieldExtractor {
     public static final int UID                       = 1;    
     public static final int CN                        = 2;
     public static final int SN                        = 3;      
-    public static final int SERIALNUMBER              = 4; 
-    public static final int GIVENNAME                 = 5;
-    public static final int INITIALS                  = 6;    
-    public static final int SURNAME                   = 7;    
-    public static final int T                         = 8;      
-    public static final int OU                        = 9;
-    public static final int O                         = 10;
-    public static final int L                         = 11;
-    public static final int ST                        = 12;
-    public static final int DC                        = 13;      
-    public static final int C                         = 14;
+    public static final int GIVENNAME                 = 4;
+    public static final int INITIALS                  = 5;    
+    public static final int SURNAME                   = 6;    
+    public static final int T                         = 7;      
+    public static final int OU                        = 8;
+    public static final int O                         = 9;
+    public static final int L                         = 10;
+    public static final int ST                        = 11;
+    public static final int DC                        = 12;      
+    public static final int C                         = 13;
 
     // Subject Alternative Names.
-    public static final int OTHERNAME                 = 15;
-    public static final int RFC822NAME                = 16;  
-    public static final int DNSNAME                   = 17;      
-    public static final int IPADDRESS                 = 18;
-    public static final int X400ADDRESS               = 19;
-    public static final int DIRECTORYNAME             = 20;
-    public static final int EDIPARTNAME               = 21;    
-    public static final int URI                       = 22;     
-    public static final int REGISTEREDID              = 23;    
+    public static final int OTHERNAME                 = 14;
+    public static final int RFC822NAME                = 15;  
+    public static final int DNSNAME                   = 16;      
+    public static final int IPADDRESS                 = 17;
+    public static final int X400ADDRESS               = 18;
+    public static final int DIRECTORYNAME             = 19;
+    public static final int EDIPARTNAME               = 20;    
+    public static final int URI                       = 21;     
+    public static final int REGISTEREDID              = 22;    
     
-    public static final int SUBJECTALTERNATIVENAMEBOUNDRARY = 15;
-    public static final int NUMBEROFFIELDS                  = 23;
+    public static final int SUBJECTALTERNATIVENAMEBOUNDRARY = 14;
+    public static final int NUMBEROFFIELDS                  = 22;
        
-    public static final String[] SUBJECTDNFIELDS = {"E=", "UID=", "CN=", "SN=", "SERIALNUMBER=", "GIVENNAME=", "INITIALS=", "SURNAME=", "T=", "OU=", "O=", "L=", "ST=", "DC=", "C="};
+    public static final String[] SUBJECTDNFIELDS = {"E=", "UID=", "CN=", "SN=", "GIVENNAME=", "INITIALS=", "SURNAME=", "T=", "OU=", "O=", "L=", "ST=", "DC=", "C="};
     
     public static final String[] SUBJECTALTNAME =  {"OTHERNAME=","RFC822NAME=",  "DNSNAME=", "IPADDRESS=", "X400ADDRESS=", "DIRECTORYNAME=", "EDIPARTNAME=", "UNIFORMRESOURCEIDENTIFIER=",
                                                      "REGISTEREDID="};      

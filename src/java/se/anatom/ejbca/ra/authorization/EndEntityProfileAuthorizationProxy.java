@@ -125,7 +125,7 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
       if(logsession == null){
         try{
           jndicontext = new InitialContext();
-          ILogSessionHome logsessionhome = (ILogSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/ejb/LogSession"),ILogSessionHome.class);
+          ILogSessionHome logsessionhome = (ILogSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("LogSession"),ILogSessionHome.class);
           logsession = logsessionhome.create();
         }catch(Exception e){
            throw new EJBException(e.getMessage());
