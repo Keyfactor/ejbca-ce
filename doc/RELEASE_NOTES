@@ -1,7 +1,9 @@
 EJBCA V2.0
 ----------
-We have moved to EJB 2.0. JBoss 3 is now required, the database schemas have also changed.
-A complete reinstall from EJBCA 1.x is required. Data in the database must be migrated.
+We have moved to EJB 2.0. JBoss 3 is now required.
+A complete reinstall from EJBCA 1.x is required, old jars, wars and ears must be
+deleted.
+Database schema has changed sligtly, old data in the database must be migrated.
 
 EJBCA V1.3
 ----------
@@ -36,3 +38,4 @@ subjectDN in table UserData.
 
 If a tool is needed to perform the migration, please contact us.
 See http://sourceforge.net/projects/ejbca
+
