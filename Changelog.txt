@@ -5,11 +5,12 @@
 - Added rough French translation for the admin webapp .
 - Add parameter for jboss/weblogic to install.
 - Lots of minor and structural changes.
+- Changed database configuration to make it more flexible for deployment 
 
 3.0.1
 -----
-Fixed subject DN field removal bugg of UNSTRUCTURED IPADDRESS and UNSTRUCTURED NAME.
-Fixed bugg where PKCS7 header and footer always was generated when using manual pkcs10.
+Fixed subject DN field removal bugg of UNSTRUCTURED IPADDRESS and UNSTRUCTURED NAME
+Fixed bugg where PKCS7 header and footer always was generated when using manual pkcs10
 Fixed warning in SSL deployment with JBoss 3.2.4.
 Long timeout for ca creation in JBoss 3.2.4.
 Fix for keystore path in Tomcat41-JBoss32.
