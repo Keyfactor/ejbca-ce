@@ -27,6 +27,7 @@ import java.util.Vector;
 
 import javax.ejb.EJBException;
 
+import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.auth.UserAuthData;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAService;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
@@ -50,7 +51,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.9 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: CA.java,v 1.10 2004-05-10 04:35:10 herrvendil Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -84,11 +85,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     /** Creates a new instance of CA, this constuctor should be used when a new CA is created */
     public CA(CAInfo cainfo){
        data = new HashMap();
-       data.put(SUBJECTDN, CertTools.stringToBCDNString(cainfo.getSubjectDN()));
-       data.put(NAME, cainfo.getName());
-       data.put(STATUS, new Integer(cainfo.getStatus()));
+       
+       this.cainfo = cainfo;
+              
        data.put(VALIDITY, new Integer(cainfo.getValidity()));
-       data.put(EXPIRETIME,  cainfo.getExpireTime());
        data.put(SIGNEDBY, new Integer(cainfo.getSignedBy()));
        data.put(DESCRIPTION, cainfo.getDescription());
        data.put(REVOKATIONREASON, new Integer(-1));
@@ -111,27 +111,50 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
     
     /** Constructor used when retrieving existing CA from database. */
-    public CA(HashMap data, String name, int status, Date expiretime){
+    public CA(HashMap data, CADataBean owner){
       loadData(data);
-      data.put(NAME, name);
-      setStatus(status);
-      setExpireTime(expiretime);
+      this.owner = owner;
       
 	  extendedcaservicemap = new HashMap();
     }
 
     // Public Methods.
-    public String getSubjectDN(){return ((String)data.get(SUBJECTDN));}
+    public String getSubjectDN(){
+    	if(owner == null)
+      	  return cainfo.getSubjectDN();
+    	
+    	return owner.getSubjectDN();
+    }
     
-    public int getCAId(){return ((String)data.get(SUBJECTDN)).hashCode();}    
+    public int getCAId(){
+    	if(owner == null)
+    		return cainfo.getCAId();
+    	
+    	return owner.getCAId().intValue();
+    }    
     
     public int getCAType(){ return ((Integer)data.get(CATYPE)).intValue();}
     
-    public String getName(){return  ((String)data.get(NAME));}
-    public void setName(String name) {data.put(NAME, name);}
+    public String getName(){
+    	if(owner == null)
+    	  return cainfo.getName();
+    	
+    	return owner.getName();
+    }
+    
+    public void setName(String name) { owner.setName(name);}
 
-    public int getStatus(){return ((Integer)data.get(STATUS)).intValue();}
-    public void setStatus(int status) { data.put(STATUS,new Integer(status));}    
+    public int getStatus(){
+    	    	    	
+    	if(owner == null)
+      	  return cainfo.getStatus();	
+    	
+    	return owner.getStatus();
+    }
+    
+    public void setStatus(int status) {     	
+    	owner.setStatus(status);    	
+    }    
     
     public int getValidity(){ return ((Integer) data.get(VALIDITY)).intValue();}
     public void setValidity(int validity){ data.put(VALIDITY,  new Integer(validity));}
@@ -166,6 +189,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         switch(((Integer) ((HashMap)data.get(CATOKENDATA)).get(CAToken.CATOKENTYPE)).intValue()){
             case CATokenInfo.CATOKENTYPE_P12:
               catoken = (CAToken) new SoftCAToken((HashMap)data.get(CATOKENDATA));
+              break;
+            case CATokenInfo.CATOKENTYPE_HSM:
+              catoken = (CAToken) new HardCATokenContainer((HashMap)data.get(CATOKENDATA)); 
               break;
             case CATokenInfo.CATOKENTYPE_NULL:
               catoken = new NullCAToken();  
@@ -343,7 +369,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
           	    returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_ENCRYPTKEYSRESPONSE, 
           	  		                       encryptKeys(keyrecoveryrequest.getKeyPair()));	
           	  }catch(Exception e){
-          	  	 throw new IllegalExtendedCAServiceRequestException(e.getMessage());
+          	  	 throw new IllegalExtendedCAServiceRequestException(e.getClass().getName() + " : " + e.getMessage());
           	  }
           	}else{
           		if(keyrecoveryrequest.getCommand() == KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS){
@@ -351,7 +377,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                   	returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_DECRYPTKEYSRESPONSE, 
           					this.decryptKeys(keyrecoveryrequest.getKeyData()));
           		  }catch(Exception e){
-          		  	 throw new IllegalExtendedCAServiceRequestException(e.getMessage());
+          		  	 throw new IllegalExtendedCAServiceRequestException(e.getClass().getName() + " : " + e.getMessage());
           		  }
           		}else{
           		  throw new IllegalExtendedCAServiceRequestException("Illegal Command"); 
@@ -400,11 +426,15 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 		return (Collection) data.get(EXTENDEDCASERVICES);	  	 
 	}
     
+	public void setOwner(CADataBean owner){
+	  this.owner = owner;	
+	}
     
     private CAToken catoken = null;
     private HashMap extendedcaservicemap = null;
     private ArrayList certificatechain = null;
     private ArrayList requestcertchain = null;
     
-
+    private CADataBean owner = null;
+    private CAInfo cainfo = null;
 }

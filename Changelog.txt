@@ -1,5 +1,6 @@
 3.0 beta 3
 ----------
+Added initial support for HSM plug-ins
 Fixed install script freeze when installing adminweb. Added -noprompt
 Added Sybase as target for 'ant replaceDS'
 Support for JBoss3.2.4/Tomcat5.0

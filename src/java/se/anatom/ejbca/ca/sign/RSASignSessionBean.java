@@ -54,6 +54,7 @@ import se.anatom.ejbca.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceReq
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.CADoesntExistsException;
+import se.anatom.ejbca.ca.exception.CATokenOfflineException;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
 import se.anatom.ejbca.ca.exception.IllegalKeyStoreException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
@@ -78,7 +79,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.125 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.126 2004-05-10 04:33:02 herrvendil Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -325,6 +326,8 @@ public class RSASignSessionBean extends BaseSessionBean {
             } catch (CertificateNotYetValidException cve) {
 				throw new EJBException(cve);
 			}                
+            
+
             // Now finally after all these checks, get the certificate
             Certificate cert = createCertificate(admin, data, ca, pk, keyusage);
             // Call authentication session and tell that we are finished with this user
@@ -397,7 +400,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::createCertificate
      */
-    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException {
+    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException{
         return createCertificate(admin, req, -1, responseClass);
     }
 
@@ -474,10 +477,11 @@ public class RSASignSessionBean extends BaseSessionBean {
             } catch (CertificateNotYetValidException cve) {
 				throw new CADoesntExistsException(cve); 
 			}                
-            
+
+             
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateSignKey());
+                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
             }
             // Create the response message and set all required fields
             try {
@@ -491,10 +495,10 @@ public class RSASignSessionBean extends BaseSessionBean {
                 return null;
             }
             if (ret.requireSignKeyInfo()) {
-                ret.setSignKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateSignKey());
+                ret.setSignKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
             }
             if (ret.requireEncKeyInfo()) {
-                ret.setEncKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateDecKey());
+                ret.setEncKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT));
             }
             if (req.getSenderNonce() != null) {
                 ret.setRecipientNonce(req.getSenderNonce());
@@ -567,7 +571,12 @@ public class RSASignSessionBean extends BaseSessionBean {
             log.error("No such algorithm: ", e);
         } catch (IOException e) {
             log.error("Cannot create response message: ", e);
-        } 
+        } catch (CATokenOfflineException ctoe) {
+            log.error("CA Token is Offline: ", ctoe);
+            cadata.setStatus(SecConst.CA_OFFLINE);  
+            getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " is offline.",ctoe);
+            throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " is offline.");   
+		} 
         debug("<createCertificate(IRequestMessage)");
         return ret;
     }
@@ -616,8 +625,14 @@ public class RSASignSessionBean extends BaseSessionBean {
           ICertificateStoreSessionLocal certificateStore = storeHome.create();
            // Get number of last CRL and increase by 1
           int number = certificateStore.getLastCRLNumber(admin, ca.getSubjectDN()) + 1;
-          crl = (X509CRL) ca.generateCRL(certs, number);
-                    
+          try{
+            crl = (X509CRL) ca.generateCRL(certs, number);
+          } catch(CATokenOfflineException ctoe) {
+            log.error("CA Token is Offline: ", ctoe);
+            cadata.setStatus(SecConst.CA_OFFLINE);  
+            getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECRL,"Signing CA " + cadata.getSubjectDN() + " is offline.",ctoe);
+            throw new EJBException("Signing CA " + cadata.getSubjectDN() + " is offline.");
+          }
           getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CREATECRL,"Number :" + number);
           
           // Store CRL in the database
@@ -626,6 +641,7 @@ public class RSASignSessionBean extends BaseSessionBean {
           // Store crl in ca CRL publishers.
           IPublisherSessionLocal pub = publishHome.create();
           pub.storeCRL(admin, ca.getCRLPublishers(), crl.getEncoded(), fingerprint, number);
+          
         } catch (Exception e) {          
             getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,"");          
             throw new EJBException(e);
@@ -790,9 +806,9 @@ public class RSASignSessionBean extends BaseSessionBean {
                         log.error(msg);
                         throw new IllegalKeyException(msg);
                     }
+ 
+                X509Certificate   cert = (X509Certificate) ca.generateCertificate(data, pk, keyusage, certProfile);
                 
-                X509Certificate cert = (X509Certificate) ca.generateCertificate(data, pk, keyusage, certProfile);
-                                                
                 getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),data.getUsername(), cert, LogEntry.EVENT_INFO_CREATECERTIFICATE,"");
                 debug("Generated certificate with SerialNumber '" + Hex.encode(cert.getSerialNumber().toByteArray())+"' for user '"+data.getUsername()+"'.");
                 debug(cert.toString());
@@ -809,7 +825,10 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
         } catch (IllegalKeyException ke) {
             throw ke;
-        } catch (Exception e) {
+        } catch (CATokenOfflineException ctoe) {        	
+        	ca.setStatus(SecConst.CA_OFFLINE);
+        	throw new EJBException("Error CA Token is Offline", ctoe);
+        }catch (Exception e) {
             log.error(e);
             throw new EJBException(e);
         }

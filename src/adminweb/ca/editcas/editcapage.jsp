@@ -7,11 +7,28 @@
   HashMap certprofileidtonamemap = info.getCertificateProfileIdToNameMap();
   HashMap publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
 
-  int[]    availablecatokentypes = {CATokenInfo.CATOKENTYPE_P12};  
-  String[] availablecatokentypetexts = {"SOFTCATOKEN"};
+  Collection availablecatokens = HardCATokenManager.getAvailableHardCATokens();
+  String[] availablecatokentypes = new String[availablecatokens.size() + 1];
+  String[] availablecatokentypetexts = new String[availablecatokens.size() + 1];  
+  availablecatokentypes[0] = "NONE";
+  availablecatokentypetexts[0] = ejbcawebbean.getText("SOFT");
+
+  Iterator availablecatokensiter = availablecatokens.iterator();
+  int numberofavailabletokens = 1;
+  while(availablecatokensiter.hasNext()){
+    AvailableHardCAToken nextavailable = (AvailableHardCAToken) availablecatokensiter.next();
+    if(nextavailable.isUsed()){
+      availablecatokentypes[numberofavailabletokens] = nextavailable.getClassPath();
+      if(nextavailable.isTranslateable()){
+        availablecatokentypetexts[numberofavailabletokens] =  ejbcawebbean.getText(nextavailable.getName());
+      }else{
+        availablecatokentypetexts[numberofavailabletokens] =  nextavailable.getName();
+      }
+      numberofavailabletokens++;
+    }
+  }
  
   row = 0;
-
   CAInfo cainfo = null;
   X509CAInfo x509cainfo = null;
   
@@ -27,8 +44,21 @@
     cainfo = cabean.getCAInfo(caid).getCAInfo();
     catokeninfo = cainfo.getCATokenInfo();
 
-    if(catokeninfo instanceof SoftCATokenInfo)
+    if(catokeninfo instanceof SoftCATokenInfo){
       catokentext = ejbcawebbean.getText("SOFT"); 
+    }
+    if(catokeninfo instanceof HardCATokenInfo){
+       catokentype = CATokenInfo.CATOKENTYPE_HSM;
+       catokenpath = ((HardCATokenInfo  ) catokeninfo).getClassPath();
+       AvailableHardCAToken availablecatoken = HardCATokenManager.getAvailableHardCAToken(catokenpath); 
+       if(!availablecatoken.isUsed())
+         throw new Exception("HardCAToken is not used, configuration error");
+      if(availablecatoken.isTranslateable()){
+        catokentext =  ejbcawebbean.getText(availablecatoken.getName());
+      }else{
+        catokentext =  availablecatoken.getName();
+      }      
+    }
 
     revokable = cainfo.getStatus() != SecConst.CA_REVOKED && cainfo.getStatus() != SecConst.CA_EXTERNAL && cainfo.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE;
 
@@ -287,17 +317,15 @@ function checkallfields(){
     <%   }else{ %>
     <form name="changecatokentype" action="<%= THIS_FILENAME %>" method="post">
        <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHOOSE_CATOKENTYPE %>'>
-       <tr>
+       <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%=caname %>'>
+       <tr id="Row<%=row++%2%>">
           <td width="50%"  align="right">          
             <%= ejbcawebbean.getText("CATOKENTYPE") %>
          </td>	 
 	 <td><select name="<%=SELECT_CATOKEN %>" size="1" onchange="document.changecatokentype.submit()"'>
-                <% for(int i=0; i < availablecatokentypes.length; i++){%>                
-	 	<option value="<%=availablecatokentypes[i] %>" <% if(catokentype == availablecatokentypes[i])
-                                             out.write("selected"); %>>
- 
-                         <%= availablecatokentypetexts[i] %>
-                </option>
+                <% for(int i=0; i < numberofavailabletokens; i++){%>
+	 	<option value="<%=availablecatokentypes[i] %>" <% if(catokenpath.equals(availablecatokentypes[i]))
+                                             out.write("selected"); %>><%= availablecatokentypetexts[i] %></option>
                 <% } %>
 	     </select>
          </td>	
@@ -322,9 +350,11 @@ function checkallfields(){
     <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%=caname %>'>
   <%   }
      }
-
    if( catokentype == CATokenInfo.CATOKENTYPE_P12 && !processrequest && !isexternal){ %>
    <%@ include file="softcatokenpage.jsp" %> 
+<%}  
+   if( catokentype == CATokenInfo.CATOKENTYPE_HSM && !processrequest && !isexternal){ %>
+   <%@ include file="hardcatokenpage.jsp" %> 
 <%}  %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 

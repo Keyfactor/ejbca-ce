@@ -34,6 +34,8 @@ import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.exception.CADoesntExistsException;
 import se.anatom.ejbca.ca.exception.CAExistsException;
+import se.anatom.ejbca.ca.exception.CATokenAuthenticationFailedException;
+import se.anatom.ejbca.ca.exception.CATokenOfflineException;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
@@ -80,7 +82,7 @@ public class CADataHandler implements Serializable {
   /**
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
    */    
-  public void createCA(CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException{
+  public void createCA(CAInfo cainfo) throws CAExistsException, CATokenOfflineException, CATokenAuthenticationFailedException, AuthorizationDeniedException{
     caadminsession.createCA(administrator, cainfo);
     info.cAsEdited();
   }
@@ -154,7 +156,7 @@ public class CADataHandler implements Serializable {
   /**
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
    */  
-  public PKCS10CertificationRequest  makeRequest(int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException{
+  public PKCS10CertificationRequest  makeRequest(int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
   	
 	  PKCS10RequestMessage result = (PKCS10RequestMessage) caadminsession.makeRequest(administrator, caid,cachain,setstatustowaiting);
 	  return result.getCertificationRequest();    
@@ -191,7 +193,7 @@ public class CADataHandler implements Serializable {
   /**
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
    */  
-  public void renewCA(int caid, IResponseMessage responsemessage) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException{
+  public void renewCA(int caid, IResponseMessage responsemessage) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
       caadminsession.renewCA(administrator, caid, responsemessage);
       info.cAsEdited();
   }
@@ -199,7 +201,7 @@ public class CADataHandler implements Serializable {
   /**
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
    */  
-  public void revokeCA(int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException{
+  public void revokeCA(int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException, CATokenOfflineException{
       caadminsession.revokeCA(administrator, caid, reason);
       info.cAsEdited();
   }

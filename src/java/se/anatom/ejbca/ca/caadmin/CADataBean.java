@@ -14,7 +14,6 @@
 package se.anatom.ejbca.ca.caadmin;
 
 import java.security.cert.X509Certificate;
-import java.util.Date;
 import java.util.HashMap;
 
 import javax.ejb.CreateException;
@@ -37,7 +36,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.4 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.5 2004-05-10 04:35:10 herrvendil Exp $
  */
 public abstract class CADataBean extends BaseEntityBean {
 
@@ -76,15 +75,11 @@ public abstract class CADataBean extends BaseEntityBean {
              
         switch(((Integer)(data.get(CA.CATYPE))).intValue()){
             case CAInfo.CATYPE_X509:
-              ca = (CA) new X509CA(data, getName(), getStatus(), new Date(getExpireTime()));
+              ca = (CA) new X509CA(data, this);
               break;
         }      
       }
-      
-      ca.setName(getName());
-      ca.setStatus(getStatus());
-      ca.setExpireTime(new Date(getExpireTime()));
-      
+            
       return ca;              
     }
     
@@ -100,6 +95,7 @@ public abstract class CADataBean extends BaseEntityBean {
        setData(baos.toString("UTF8"));
        
        this.ca = ca;
+       ca.setOwner(this);
     }   
     
     /**

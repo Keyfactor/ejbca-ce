@@ -31,7 +31,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * A class that looks up the which CA:s and certificate profiles the administrator is authorized to view.
  * 
- * @version $Id: CAAuthorization.java,v 1.6 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: CAAuthorization.java,v 1.7 2004-05-10 04:32:00 herrvendil Exp $
  */
 public class CAAuthorization implements Serializable {
     
@@ -162,8 +162,7 @@ public class CAAuthorization implements Serializable {
       return canames;  
     }
     
-	public TreeMap getAllCANames(){        
-	  if(allcanames==null){        
+	public TreeMap getAllCANames(){              
 		allcanames = new TreeMap();        
 		HashMap idtonamemap = this.caadminsession.getCAIdToNameMap(admin);
 		Iterator iter = idtonamemap.keySet().iterator();
@@ -171,7 +170,7 @@ public class CAAuthorization implements Serializable {
 		  Integer id = (Integer) iter.next();          
 		  allcanames.put(idtonamemap.get(id),id);
 		}        
-	  }       
+       
 	  return allcanames;  
 	}    
     public void clear(){

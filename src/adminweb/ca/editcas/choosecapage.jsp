@@ -1,7 +1,7 @@
 <%
   TreeMap canames     = info.getAllCANames(); 
 
-  String[] statustexts = {"", "ACTIVE", "WAITINGFORCERTRESPONSE", "EXPIRED", "REVOKED", "INACTIVE","EXTERNALCA"};
+  String[] statustexts = {"", "ACTIVE", "WAITINGFORCERTRESPONSE", "EXPIRED", "REVOKED", "OFFLINE","EXTERNALCA"};
 
 %>
 
@@ -32,6 +32,20 @@
       <tr> 
         <td width="5%"></td>
         <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("CAACTIVATED") %></H4></td>
+        <td width="35%"></td>
+      </tr>
+    <% } %>
+    <% if(catokenoffline){ %> 
+      <tr> 
+        <td width="5%"></td>
+        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("CATOKENISOFFLINE") %></H4></td>
+        <td width="35%"></td>
+      </tr>
+    <% } %>
+    <% if(catokenauthfailed){ %> 
+      <tr> 
+        <td width="5%"></td>
+        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("CATOKENAUTHFAILED") %></H4></td>
         <td width="35%"></td>
       </tr>
     <% } %>

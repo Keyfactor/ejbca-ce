@@ -24,6 +24,9 @@ import java.util.HashMap;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.ca.exception.CATokenAuthenticationFailedException;
+import se.anatom.ejbca.ca.exception.CATokenOfflineException;
 import se.anatom.ejbca.ca.exception.IllegalKeyStoreException;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
@@ -31,7 +34,7 @@ import se.anatom.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.6 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: SoftCAToken.java,v 1.7 2004-05-10 04:35:10 herrvendil Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
 
@@ -214,39 +217,30 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
        // Do nothing, no data can be updated after the keys are generated.                   
     }
    
-   /** Returns the private key (if possible) used for signature creation.
-    *
+   /**
+    * @see se.anatom.ejbca.ca.caadmin.CAToken
+    * 
     * @return PrivateKey object
     */
-    public PrivateKey getPrivateSignKey(){
+    public PrivateKey getPrivateKey(int purpose){       
+      if(purpose == SecConst.CAKEYPURPOSE_KEYENCRYPT)
+      	return this.privateDecKey;
+      	
       return privateSignKey;        
     }
 
-   /** Returns the public key (if possible) used for signature verification.
+   /**
+    * @see se.anatom.ejbca.ca.caadmin.CAToken
     *
     * @return PublicKey object
     */
-    public PublicKey getPublicSignKey(){    
+    public PublicKey getPublicKey(int purpose){
+     if(purpose == SecConst.CAKEYPURPOSE_KEYENCRYPT)
+       return this.publicEncKey;
+     
       return publicSignKey;        
     }
-
-   /** Returns the private key (if possible) used for decryption.
-    *
-    * @return PrivateKey object
-    */
-    public PrivateKey getPrivateDecKey(){
-      return privateDecKey;        
-    }
-
-   /** Returns the public key (if possible) used for encryption.
-    *
-    * @return PublicKey object
-    */
-    public PublicKey getPublicEncKey(){
-      return publicEncKey;        
-    }
     
-
 
     /** Returns the signature Provider that should be used to sign things with
      *  the PrivateKey object returned by this signingdevice implementation.
@@ -270,6 +264,23 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
         data.put(VERSION, new Float(LATEST_VERSION));
       }  
     }
+
+	/**
+	 * Method doing nothing.
+	 * 
+	 * @see se.anatom.ejbca.ca.caadmin.CAToken#activate(java.lang.String)
+	 */
+	public void activate(String authenticationcode) throws CATokenAuthenticationFailedException, CATokenOfflineException {
+		// Do nothing		
+	}
+
+	/**
+	 * @see se.anatom.ejbca.ca.caadmin.CAToken#deactivate()
+	 */
+	public boolean deactivate() {
+		// Do nothing		
+		return true;
+	}
     
     
 }

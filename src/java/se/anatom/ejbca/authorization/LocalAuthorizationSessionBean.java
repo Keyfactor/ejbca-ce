@@ -47,7 +47,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.8 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.9 2004-05-10 04:36:32 herrvendil Exp $
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
@@ -242,7 +242,11 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
          }catch(CreateException ce){}
        }
 	   // Add Public Web Group
-	   this.removeAdminGroup(admin, PUBLICWEBGROUPNAME,  caid);
+       try{
+          admingrouphome.findByGroupNameAndCAId(PUBLICWEBGROUPNAME, caid);
+          this.removeAdminGroup(admin, PUBLICWEBGROUPNAME,  caid);
+       }catch(FinderException e){}
+        	   
 	   try{
 		  admingrouphome.findByGroupNameAndCAId(PUBLICWEBGROUPNAME, caid);   
 	   }catch(FinderException e){	   	   	 
@@ -573,7 +577,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
 
      /**
-     * Removes a Collection of (Sting) containing accessrules to remove from admin group.
+     * Removes a Collection of (String) containing accessrules to remove from admin group.
      *
      */
     public void removeAccessRules(Admin admin, String admingroupname, int caid, Collection accessrules){

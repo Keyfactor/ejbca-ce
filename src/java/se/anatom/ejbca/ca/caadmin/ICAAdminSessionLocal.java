@@ -21,13 +21,16 @@ import java.util.HashMap;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ca.exception.CADoesntExistsException;
 import se.anatom.ejbca.ca.exception.CAExistsException;
+import se.anatom.ejbca.ca.exception.CATokenAuthenticationFailedException;
+import se.anatom.ejbca.ca.exception.CATokenOfflineException;
+import se.anatom.ejbca.exception.EjbcaException;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.IRequestMessage;
 import se.anatom.ejbca.protocol.IResponseMessage;
 
 /** Local interface of CAAdmin sessio bean for EJB. Manages CAs
  *
- * @version $Id: ICAAdminSessionLocal.java,v 1.8 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: ICAAdminSessionLocal.java,v 1.9 2004-05-10 04:35:10 herrvendil Exp $
  */
 public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
  
@@ -49,7 +52,7 @@ public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
    *  @see se.anatom.ejbca.ca.caadmin.CAInfo
    *  @see se.anatom.ejbca.ca.caadmin.X509CAInfo
    */
-  public void createCA(Admin admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException;
+  public void createCA(Admin admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException, CATokenOfflineException, CATokenAuthenticationFailedException;
   
   /**
    * Method used to edit the data of a CA. 
@@ -121,21 +124,21 @@ public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
    *  @rootcertificates A Collection of rootcertificates.
    *  @setstatustowaiting should be set true when creating new CAs and false for renewing old CAs
    */
-  public IRequestMessage  makeRequest(Admin admin, int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException;
+  public IRequestMessage  makeRequest(Admin admin, int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException;
 
   /**
    *  Receives a certificate response from an external CA and sets the newly created CAs status
    *  to active.
    *
    */  
-  public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException;
+  public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException;
 
   /**
    *  Processes a Certificate Request from an external CA. 
    *  
    * @return the processed certificate chain
    */  
-  public IResponseMessage processRequest(Admin admin, CAInfo cainfo, IRequestMessage requestmessage) throws CAExistsException, CADoesntExistsException, AuthorizationDeniedException;
+  public IResponseMessage processRequest(Admin admin, CAInfo cainfo, IRequestMessage requestmessage) throws CAExistsException, CADoesntExistsException, AuthorizationDeniedException, CATokenOfflineException;
 
   /**
    *  Renews a existing CA certificate using the same keys as before. Data  about new CA is taken
@@ -145,7 +148,7 @@ public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
    *         RootCA, otherwise use the null value. 
    *
    */  
-  public void renewCA(Admin admin, int caid, IResponseMessage responcemessage) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException;
+  public void renewCA(Admin admin, int caid, IResponseMessage responcemessage) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException;
 
   /**
    *  Method that revokes the CA. After this is all certificates created by this CA
@@ -154,7 +157,7 @@ public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
    *  @param reason one of RevokedCertInfo.REVOKATION_REASON values.
    *
    */
-  public void revokeCA(Admin admin, int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException;  
+  public void revokeCA(Admin admin, int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException, CATokenOfflineException;  
   
   /**
    * Method that should be used when upgrading from a older version of EJBCA. i.e. >3.0
@@ -170,6 +173,30 @@ public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
    *  Method returning a Collection of Certificate of all CA certificates known to the system.
    */
   public Collection getAllCACertificates(Admin admin);
+  
+  /**
+   *  Activates an 'Offline' CA Token and sets the CA status to acitve and ready for use again.
+   * 
+   *  @param admin the adomistrator calling the method
+   *  @param caid the is of the ca to activate
+   *  @param the authorizationcode used to unlock the CA tokens private keys. 
+   * 
+   *  @throws AuthorizationDeniedException it the administrator isn't authorized to activate the CA.
+   *  @throws CATokenAuthenticationFailedException if the current status of the ca or authenticationcode is wrong.
+   *  @throws CATokenOfflineException if the CA token is still offline when calling the method.
+   */
+  public void activateCAToken(Admin admin, int caid, String authorizationcode) throws AuthorizationDeniedException, CATokenAuthenticationFailedException, CATokenOfflineException;
+  
+  /**
+   *  Deactivates an 'active' CA token and sets the CA status to offline.
+   * 
+   *  @param admin the adomistrator calling the method
+   *  @param caid the is of the ca to activate. 
+   * 
+   *  @throws AuthorizationDeniedException it the administrator isn't authorized to activate the CA.
+   *  @throws EjbcaException if the given caid couldn't be found or its status is wrong.
+   */
+  public void deactivateCAToken(Admin admin, int caid) throws AuthorizationDeniedException, EjbcaException;
   
   /**
    *  Method used to check if certificate profile id exists in any CA.

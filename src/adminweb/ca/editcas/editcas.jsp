@@ -3,8 +3,8 @@
 <%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, org.apache.commons.fileupload.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst, se.anatom.ejbca.util.FileTools, se.anatom.ejbca.util.CertTools, se.anatom.ejbca.authorization.AuthorizationDeniedException,
                se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.ca.caadmin.CAInfo, se.anatom.ejbca.ca.caadmin.X509CAInfo, se.anatom.ejbca.ca.caadmin.CATokenInfo, se.anatom.ejbca.ca.caadmin.SoftCATokenInfo, se.anatom.ejbca.webdist.cainterface.CADataHandler,
                se.anatom.ejbca.webdist.rainterface.RevokedInfoView, se.anatom.ejbca.ca.caadmin.CATokenInfo, se.anatom.ejbca.ca.caadmin.SoftCATokenInfo, se.anatom.ejbca.webdist.webconfiguration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.bouncycastle.jce.PKCS10CertificationRequest, 
-               se.anatom.ejbca.protocol.PKCS10RequestMessage, se.anatom.ejbca.ca.exception.CAExistsException, se.anatom.ejbca.ca.exception.CADoesntExistsException, 
-               se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo, se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo"%>
+               se.anatom.ejbca.protocol.PKCS10RequestMessage, se.anatom.ejbca.ca.exception.CAExistsException, se.anatom.ejbca.ca.exception.CADoesntExistsException, se.anatom.ejbca.ca.exception.CATokenOfflineException, se.anatom.ejbca.ca.exception.CATokenAuthenticationFailedException,
+               se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo, se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenManager, se.anatom.ejbca.ca.caadmin.AvailableHardCAToken, se.anatom.ejbca.ca.caadmin.HardCATokenInfo"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
@@ -40,6 +40,7 @@
   static final String HIDDEN_CANAME                        = "hiddencaname";
   static final String HIDDEN_CAID                          = "hiddencaid";
   static final String HIDDEN_CATYPE                        = "hiddencatype";
+  static final String HIDDEN_CATOKENPATH                   = "hiddencatokenpath";
   static final String HIDDEN_CATOKENTYPE                   = "hiddencatokentype";
  
 // Buttons used in editcapage.jsp
@@ -54,12 +55,14 @@
   static final String BUTTON_PUBLISHCA                  = "buttonpublishca";     
   static final String BUTTON_REVOKERENEWOCSPCERTIFICATE = "checkboxrenewocspcertificate";
 
-  static final String TEXTFIELD_SUBJECTDN           = "textfieldsubjectdn";
-  static final String TEXTFIELD_SUBJECTALTNAME      = "textfieldsubjectaltname";  
-  static final String TEXTFIELD_CRLPERIOD           = "textfieldcrlperiod";
-  static final String TEXTFIELD_DESCRIPTION         = "textfielddescription";
-  static final String TEXTFIELD_VALIDITY            = "textfieldvalidity";
-  static final String TEXTFIELD_POLICYID            = "textfieldpolicyid";
+  static final String TEXTFIELD_SUBJECTDN             = "textfieldsubjectdn";
+  static final String TEXTFIELD_SUBJECTALTNAME        = "textfieldsubjectaltname";  
+  static final String TEXTFIELD_CRLPERIOD             = "textfieldcrlperiod";
+  static final String TEXTFIELD_DESCRIPTION           = "textfielddescription";
+  static final String TEXTFIELD_VALIDITY              = "textfieldvalidity";
+  static final String TEXTFIELD_POLICYID              = "textfieldpolicyid";
+  static final String TEXTFIELD_HARDCATOKENPROPERTIES = "textfieldhardcatokenproperties";
+  static final String TEXTFIELD_AUTHENTICATIONCODE    = "textfieldauthenticationcode";
 
   static final String CHECKBOX_AUTHORITYKEYIDENTIFIER             = "checkboxauthoritykeyidentifier";
   static final String CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL     = "checkboxauthoritykeyidentifiercritical";
@@ -68,9 +71,8 @@
   static final String CHECKBOX_FINISHUSER                         = "checkboxfinishuser";
   static final String CHECKBOX_ACTIVATEOCSPSERVICE                = "checkboxactivateocspservice";  
   
-  
   static final String HIDDEN_CATOKEN                              = "hiddencatoken";  
-
+  
   static final String SELECT_REVOKEREASONS                        = "selectrevokereasons";
   static final String SELECT_CATYPE                               = "selectcatype";  
   static final String SELECT_CATOKEN                              = "selectcatoken";
@@ -102,6 +104,7 @@
   String processedsubjectdn = "";
   int catype = CAInfo.CATYPE_X509;  // default
   int catokentype = CATokenInfo.CATOKENTYPE_P12; // default
+  String catokenpath = "NONE";
 
   InputStream file = null;
 
@@ -110,6 +113,8 @@
   boolean  illegaldnoraltname   = false;
   boolean  errorrecievingfile   = false;
   boolean  ocsprenewed          = false;
+  boolean  catokenoffline       = false;
+  boolean  catokenauthfailed    = false;
   
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/super_administrator"); 
@@ -175,6 +180,7 @@
    }else{
      action = request.getParameter(ACTION);
    }
+  try{
   // Determine action 
   if( action != null){
     if( action.equals(ACTION_EDIT_CAS)){
@@ -255,7 +261,17 @@
            ((SoftCATokenInfo) catoken).setKeySize(keysize);              
          } 
          if(catokentype == CATokenInfo.CATOKENTYPE_HSM){
-           // TODO IMPLEMENT HSM FUNCTIONALITY
+            catokenpath = request.getParameter(HIDDEN_CATOKENPATH);
+            String properties = request.getParameter(TEXTFIELD_HARDCATOKENPROPERTIES);
+            String signalg = request.getParameter(SELECT_SIGNATUREALGORITHM);
+            String authenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODE);
+            if(catokenpath == null || catokenpath == null || signalg == null)
+              throw new Exception("Error in CATokenData");  
+            catoken = new HardCATokenInfo();           
+            ((HardCATokenInfo) catoken).setClassPath(catokenpath);
+            ((HardCATokenInfo) catoken).setProperties(properties);
+            ((HardCATokenInfo) catoken).setSignatureAlgorithm(signalg);
+            ((HardCATokenInfo) catoken).setAuthenticationCode(authenticationcode);
          }
 
          catype  = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
@@ -371,6 +387,8 @@
                    cadatahandler.createCA((CAInfo) x509cainfo);
                  }catch(CAExistsException caee){
                     caexists = true; 
+                 }catch(CATokenAuthenticationFailedException catfe){
+                    catokenauthfailed = true;
                  }
                  includefile="choosecapage.jsp"; 
                }
@@ -425,7 +443,11 @@
            catoken = new SoftCATokenInfo();          
          } 
          if(catokentype == CATokenInfo.CATOKENTYPE_HSM){
-           // TODO IMPLEMENT HSM FUNCTIONALITY
+            String properties = request.getParameter(TEXTFIELD_HARDCATOKENPROPERTIES);
+            if(catokenpath == null)
+              throw new Exception("Error in CATokenData");  
+            catoken = new HardCATokenInfo();                       
+            ((HardCATokenInfo) catoken).setProperties(properties);
          }
 
           
@@ -747,13 +769,23 @@
         // Currently not need        
       }
       if( action.equals(ACTION_CHOOSE_CATOKENTYPE)){
-        // TODO Implement
-        catokentype = Integer.parseInt(request.getParameter(SELECT_CATOKEN));   
+        
+        catokenpath = request.getParameter(SELECT_CATOKEN);   
+        caname = request.getParameter(HIDDEN_CANAME);   
+        if(catokenpath.equals("NONE")){
+          catokentype = CATokenInfo.CATOKENTYPE_P12;
+        }else{
+          catokentype = CATokenInfo.CATOKENTYPE_HSM;
+        }
         editca = false;
         includefile="editcapage.jsp";              
       }
 
-    }   
+    }
+  }catch(CATokenOfflineException ctoe){
+    catokenoffline = true;
+    includefile="choosecapage.jsp";
+  }   
 
 
  // Include page

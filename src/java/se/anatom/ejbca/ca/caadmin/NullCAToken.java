@@ -16,10 +16,13 @@ package se.anatom.ejbca.ca.caadmin;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.HashMap;
+
+import se.anatom.ejbca.ca.exception.CATokenAuthenticationFailedException;
+import se.anatom.ejbca.ca.exception.CATokenOfflineException;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: NullCAToken.java,v 1.5 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: NullCAToken.java,v 1.6 2004-05-10 04:35:10 herrvendil Exp $
  */
 public class NullCAToken extends CAToken implements java.io.Serializable{
 
@@ -55,39 +58,22 @@ public class NullCAToken extends CAToken implements java.io.Serializable{
     public void updateCATokenInfo(CATokenInfo catokeninfo){                          
     }
    
-   /** Returns the private key (if possible) used for signature creation.
+   /** Returns null
     *
     * @return PrivateKey object
     */
-    public PrivateKey getPrivateSignKey(){
+    public PrivateKey getPrivateKey(int purpose){
       return null;        
     }
 
-   /** Returns the public key (if possible) used for signature verification.
+    /** Returns null
     *
     * @return PublicKey object
     */
-    public PublicKey getPublicSignKey(){    
-      return null;        
-    }
-
-   /** Returns the private key (if possible) used for decryption.
-    *
-    * @return PrivateKey object
-    */
-    public PrivateKey getPrivateDecKey(){
-      return null;        
-    }
-
-   /** Returns the public key (if possible) used for encryption.
-    *
-    * @return PublicKey object
-    */
-    public PublicKey getPublicEncKey(){
+    public PublicKey getPublicKey(int purpose){    
       return null;        
     }
     
-
 
     /** Returns the signature Provider that should be used to sign things with
      *  the PrivateKey object returned by this signingdevice implementation.
@@ -111,6 +97,21 @@ public class NullCAToken extends CAToken implements java.io.Serializable{
         data.put(VERSION, new Float(LATEST_VERSION));
       }  
     }
+
+	/** 
+	 * @see se.anatom.ejbca.ca.caadmin.CAToken#activate(java.lang.String)
+	 */
+	public void activate(String authenticationcode) throws CATokenAuthenticationFailedException, CATokenOfflineException {
+		// Do Nothing		
+	}
+
+	/**
+	 * @see se.anatom.ejbca.ca.caadmin.CAToken#deactivate()
+	 */
+	public boolean deactivate() {
+       // Do Nothing
+	   return true;	
+	}
     
     
 }

@@ -10,35 +10,32 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.ca.caadmin;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.Properties;
 
 import se.anatom.ejbca.ca.exception.CATokenAuthenticationFailedException;
 import se.anatom.ejbca.ca.exception.CATokenOfflineException;
-import se.anatom.ejbca.util.UpgradeableDataHashMap;
 
-/** Handles maintenance of the device producing signatures and handling the private key.
+
+/** Handles maintenance of the hardware device producing signatures and handling the private key.
+ *  All HardCAToken plug-ins must implement this interface.
  * 
- * @version $Id: CAToken.java,v 1.6 2004-05-10 04:35:10 herrvendil Exp $
+ * 
+ * @version $Id: IHardCAToken.java,v 1.1 2004-05-10 04:35:10 herrvendil Exp $
  */
-public abstract class CAToken extends UpgradeableDataHashMap implements java.io.Serializable{
-    
-    public static final String CATOKENTYPE = "catokentype";
-    
-    protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
-   /**
-    *  Returns information about this CAToken.
-    */
-    public abstract CATokenInfo getCATokenInfo();  
-    
-   /**
-    * Updates the CAToken data saved in database.
-    */
-    public abstract void updateCATokenInfo(CATokenInfo catokeninfo);
+public interface IHardCAToken {
 
+   /** 
+    * Method called after creation of instance. Gives the object it's properties.
+    *
+    */	
+	public abstract void init(Properties properties, String signaturealgorithm);
+	
+	
     /**
      * Method used to activate HardCATokens when connected after being offline.
      * 
@@ -55,24 +52,22 @@ public abstract class CAToken extends UpgradeableDataHashMap implements java.io.
      * @return true if deactivation was successful.
      */
     public abstract boolean deactivate();    
-   
     
-   /** Returns the private key (if possible) of token.
+    /** Returns the private key (if possible) of token.
     *
     * @param purpose should be SecConst.CAKEYPURPOSE_CERTSIGN, SecConst.CAKEYPURPOSE_CRLSIGN or SecConst.CAKEYPURPOSE_KEYENCRYPT 
     * @throws CATokenOfflineException if CAToken is not available or connected.
     * @return PrivateKey object
     */
-    public abstract PrivateKey getPrivateKey(int purpose)  throws CATokenOfflineException;
+    public abstract PrivateKey getPrivateKey(int purpose) throws CATokenOfflineException;
 
-   /** Returns the public key (if possible) of token.
+    /** Returns the public key (if possible) of token.
     *
     * @param purpose should be SecConst.CAKEYPURPOSE_CERTSIGN, SecConst.CAKEYPURPOSE_CRLSIGN or SecConst.CAKEYPURPOSE_KEYENCRYPT    
     * @throws CATokenOfflineException if CAToken is not available or connected.
     * @return PublicKey object
     */
     public abstract PublicKey getPublicKey(int purpose) throws CATokenOfflineException;
-
     
     
     /** Returns the signature Provider that should be used to sign things with

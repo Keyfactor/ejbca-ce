@@ -29,7 +29,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 /**
  * A class representing a view of a CA Information view..
  *
- * @version $Id: CAInfoView.java,v 1.7 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: CAInfoView.java,v 1.8 2004-05-10 04:32:00 herrvendil Exp $
  */
 public class CAInfoView implements java.io.Serializable, Cloneable {
     // Public constants.
@@ -90,8 +90,8 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
             case SecConst.CA_EXPIRED :
               cainfodata[STATUS]     = ejbcawebbean.getText("EXPIRED");
               break;
-            case SecConst.CA_INACTIVE :
-              cainfodata[STATUS]     = ejbcawebbean.getText("INACTIVE");
+            case SecConst.CA_OFFLINE :
+              cainfodata[STATUS]     = ejbcawebbean.getText("OFFLINE");
               break;
             case SecConst.CA_REVOKED :
               cainfodata[STATUS]     = ejbcawebbean.getText("CAREVOKED") + "<br>&nbsp;&nbsp;" + 

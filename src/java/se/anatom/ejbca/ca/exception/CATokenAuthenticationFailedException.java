@@ -11,33 +11,31 @@
  *                                                                       *
  *************************************************************************/
  
-package se.anatom.ejbca.ca.caadmin;
+package se.anatom.ejbca.ca.exception;
 
-import java.io.Serializable;
+import se.anatom.ejbca.exception.EjbcaException;
 
 /**
- * Holds nonsensitive information about a CAToken.
+ * An exception thrown when authentication to HardCATokens fail.
  *
- * @version $Id: CATokenInfo.java,v 1.4 2004-05-10 04:35:10 herrvendil Exp $
+ * @author  Philip Vendil
+ * @version $Id: CATokenAuthenticationFailedException.java,v 1.1 2004-05-10 04:33:47 herrvendil Exp $
  */
-public abstract class CATokenInfo implements Serializable {
-
-    public static final String SIGALG_SHA_WITH_RSA = "SHA1WithRSA";
-    
-    public static final String[] AVAILABLE_SIGALGS = {SIGALG_SHA_WITH_RSA};
-    
-    public static final int CATOKENTYPE_P12          = 1;
-    public static final int CATOKENTYPE_HSM          = 2;
-	public static final int CATOKENTYPE_NULL         = 3;
-	
-    private String signaturealgoritm = null;
-    
-    public CATokenInfo(){}
+public class CATokenAuthenticationFailedException extends EjbcaException {
     
     /**
-     * Method to retrieve which algoritm that should be used for signing of certificates and CRLs.
+     * Creates a new instance of <code>CATokenAuthenticationFailedException</code> without detail message.
      */
-    public String getSignatureAlgorithm(){ return signaturealgoritm; }
-    public void setSignatureAlgorithm(String signaturealgoritm){ this.signaturealgoritm=signaturealgoritm;}
+    public CATokenAuthenticationFailedException() {
+        super();
+    }
     
+    
+    /**
+     * Constructs an instance of <code>CATokenAuthenticationFailedException</code> with the specified detail message.
+     * @param msg the detail message.
+     */
+    public CATokenAuthenticationFailedException(String msg) {
+        super(msg);
+    }
 }
