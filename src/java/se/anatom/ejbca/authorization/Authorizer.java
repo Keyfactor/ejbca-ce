@@ -37,7 +37,7 @@ import se.anatom.ejbca.util.CertTools;
  *
  * The main metod are isAthorized and authenticate.
  *
- * @version $Id: Authorizer.java,v 1.6 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: Authorizer.java,v 1.7 2004-05-10 16:10:56 herrvendil Exp $
  */
 public class Authorizer extends Object implements java.io.Serializable{
 
@@ -72,7 +72,10 @@ public class Authorizer extends Object implements java.io.Serializable{
      * @throws AuthorizationDeniedException when authorization is denied.
      */
     public boolean isAuthorized(Admin admin, String resource) throws AuthorizationDeniedException {
-
+        
+       if(admin == null)
+       	 throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
+       
        AdminInformation admininformation = admin.getAdminInformation();
 	   
        if(!authorizationproxy.isAuthorized(admininformation, resource)  && !authorizationproxy.isAuthorized(admininformation, "/super_administrator")){
@@ -100,6 +103,9 @@ public class Authorizer extends Object implements java.io.Serializable{
      * @throws AuthorizationDeniedException when authorization is denied.
      */
     public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException {
+        if(admin == null)
+        	throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
+        
         // Check in accesstree.
        if(!authorizationproxy.isAuthorized(admin.getAdminInformation(), resource)  && !authorizationproxy.isAuthorized(admin.getAdminInformation(), "/super_administrator")){
          throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
@@ -116,7 +122,9 @@ public class Authorizer extends Object implements java.io.Serializable{
 	 * @throws AuthorizationDeniedException when authorization is denied.
 	 */
 	public boolean isGroupAuthorized(Admin admin, int pk, String resource) throws AuthorizationDeniedException {
-
+	   if(admin == null)
+	   	 throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
+		
 	   AdminInformation admininformation = admin.getAdminInformation();
 	   
 	   if(!authorizationproxy.isGroupAuthorized(admininformation, pk, resource)){
@@ -144,6 +152,9 @@ public class Authorizer extends Object implements java.io.Serializable{
 	 * @throws AuthorizationDeniedException when authorization is denied.
 	 */
 	public boolean isGroupAuthorizedNoLog(Admin admin, int pk, String resource) throws AuthorizationDeniedException {
+	   if(admin == null)
+  	   	 throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
+
 		// Check in accesstree.
 	   if(!authorizationproxy.isGroupAuthorized(admin.getAdminInformation(), 
 	                                              pk, resource)){
