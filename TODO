@@ -1,4 +1,4 @@
-$Id: TODO,v 1.46 2002-08-31 11:52:01 anatom Exp $
+$Id: TODO,v 1.47 2002-09-11 12:40:58 anatom Exp $
 
 V 1.x
 -----
@@ -11,16 +11,12 @@ V 2.x
 - Fix user 'walter' in admin web-GUI.
 - Make to work with JDK 1.3, problems with importing certificate chains in jks
 using keytool, as well as JDK 1.4 stuff.
-- Verify support for different databases.
-- Verify support for different app-servers (Weblogic).
 - More automated testing, Junit as well as web-stuff.
 - Make a database model similar to architecture model.
 - Add a 'Service Locator' to concentrate code for lookups.
 - Use a 'Value List Handler' for listing of all certificates, clrs and users.
 - Better architecture for JSPs (MVC - ModelViewController?).
 - Continue improving exceptions and error handling.
-- Return PKCS7 response to IE/Mozilla, response is PKCS7 with whole chain.
-ca.crt is also pkcs7 with whole chain.
 - Strategy for handling certificate issuance if notAfter is beyond CAs notAfter.
 - Create Windows logon certificates, i.e. add "Extended Key Usage",
 http://support.microsoft.com/default.aspx?scid=kb;EN-US;q281245
@@ -28,6 +24,8 @@ http://support.microsoft.com/default.aspx?scid=kb;EN-US;q281245
 
 Future
 ------
+- Verify support for different databases.
+- Verify support for different app-servers (Weblogic).
 - XKMS specifications, and other XML/Soap stuff.
 - Invent strategy for handling multiple instances of CAs on the same app-server.
 - Add support for deeper hierarchies than 2 levels of CAs (today only root and
