@@ -25,7 +25,7 @@ import junit.framework.*;
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.12 2002-10-24 20:01:08 herrvendil Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.13 2002-11-07 23:03:39 herrvendil Exp $
  */
 
 public class TestBatchMakeP12 extends TestCase {
@@ -125,7 +125,6 @@ public class TestBatchMakeP12 extends TestCase {
         File tmpfile = File.createTempFile("ejbca", "p12");
         //System.out.println("tempdir="+tmpfile.getParent());
         makep12.setMainStoreDir(tmpfile.getParent());
-        makep12.createPEM(true);
         makep12.createAllNew();
         cat.debug("<test02MakeP12()");
     }
