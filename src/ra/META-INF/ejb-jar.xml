@@ -343,34 +343,32 @@
       <local-home>se.anatom.ejbca.ra.authorization.UserEntityDataLocalHome</local-home>
       <local>se.anatom.ejbca.ra.authorization.UserEntityDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.authorization.UserEntityDataBean</ejb-class>
-      <persistence-type>Container</persistence-type>
-      <prim-key-class>se.anatom.ejbca.ra.authorization.UserEntityPK</prim-key-class>    
+      <persistence-type>Container</persistence-type>  
+      <prim-key-class>se.anatom.ejbca.ra.authorization.UserEntityPK</prim-key-class>
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>UserEntityDataBean</abstract-schema-name>
       <cmp-field><field-name>pK</field-name></cmp-field>        
       <cmp-field><field-name>matchWith</field-name></cmp-field>
       <cmp-field><field-name>matchType</field-name></cmp-field>
-      <cmp-field><field-name>matchValue</field-name></cmp-field>
-      <primkey-field>pK</primkey-field>                 
+      <cmp-field><field-name>matchValue</field-name></cmp-field>                
    </entity>   
    <entity>
       <description>
             This enterprise bean entity represents an access rule.
-      </description>
+      </description> 
       <ejb-name>AccessRulesData</ejb-name>
       <local-home>se.anatom.ejbca.ra.authorization.AccessRulesDataLocalHome</local-home>
       <local>se.anatom.ejbca.ra.authorization.AccessRulesDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.authorization.AccessRulesDataBean</ejb-class>
-      <persistence-type>Container</persistence-type>
-      <prim-key-class>se.anatom.ejbca.ra.authorization.AccessRulesPK</prim-key-class>    
+      <prim-key-class>se.anatom.ejbca.ra.authorization.AccessRulesPK</prim-key-class> 
+      <persistence-type>Container</persistence-type>   
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>AccessRulesDataBean</abstract-schema-name>
       <cmp-field><field-name>pK</field-name></cmp-field> 
       <cmp-field><field-name>directory</field-name></cmp-field>
-      <cmp-field><field-name>accessRule</field-name></cmp-field> 
-      <primkey-field>pK</primkey-field>        
+      <cmp-field><field-name>accessRule</field-name></cmp-field>         
    </entity>   
    
    <entity>
