@@ -264,7 +264,6 @@ database.password    = ${database.password}
         <copy todir="${adminweb.build}">
             <fileset dir="${adminweb.src}">
                 <exclude name="**/tomcat*-service.xml"/>
-                <!--exclude name="languages/**"/-->
             </fileset>
         </copy>
         
@@ -276,7 +275,6 @@ database.password    = ${database.password}
             <fileset dir="${adminweb.build}">
                 <exclude name="WEB-INF/*-service.xml" />
                 <exclude name="WEB-INF/web.xml"/>
-                <!--exclude name="languages/**"/-->
             </fileset>
             <classes dir="${build}">
                 <include name="se/anatom/ejbca/webdist/**" />
@@ -329,6 +327,7 @@ database.password    = ${database.password}
         <jar jarfile="${dist.dir}/ca-ejb.jar">
 	        <!-- that should be another ejb-jar, but keep it here for now -->
 	        <fileset dir="${build}" includes="se/anatom/ejbca/upgrade/**" />
+            <fileset dir="${adminweb.src}" includes="languages/*.properties" />
 	        <fileset dir="${src}" includes="upgrade/**/*.sql" />
 	        <fileset dir="${src}/ca/ca"/>
             <manifest>

@@ -65,7 +65,7 @@
   </welcome-file-list>
 
   <error-page>
-    <exception-type>Exception Type</exception-type>
+    <exception-type>java.lang.Exception</exception-type>
     <location>/errorpage.jsp</location>
   </error-page>
   
