@@ -32,7 +32,7 @@ import se.anatom.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.21 2003-08-13 10:20:28 anatom Exp $
+ * @version $Id: CertificateDataBean.java,v 1.22 2003-09-10 11:01:29 anatom Exp $
  */
 public abstract class CertificateDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(CertificateDataBean.class);
@@ -285,9 +285,9 @@ public abstract class CertificateDataBean extends BaseEntityBean {
     public void setExpireDate(Date expireDate) {
         if (expireDate == null) {
             setExpireDate(-1L);
+        } else {
+            setExpireDate(expireDate.getTime());
         }
-
-        setExpireDate(expireDate.getTime());
     }
 
     /**
@@ -298,9 +298,9 @@ public abstract class CertificateDataBean extends BaseEntityBean {
     public void setRevocationDate(Date revocationDate) {
         if (revocationDate == null) {
             setRevocationDate(-1L);
+        } else {
+            setRevocationDate(revocationDate.getTime());
         }
-
-        setRevocationDate(revocationDate.getTime());
     }
 
     //
