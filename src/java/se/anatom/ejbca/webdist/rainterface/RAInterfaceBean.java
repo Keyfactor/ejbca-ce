@@ -44,7 +44,7 @@ import org.apache.log4j.Logger;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.29 2003-02-26 20:01:56 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.30 2003-02-26 22:27:39 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -408,6 +408,11 @@ public class RAInterfaceBean {
       return users.getUsers(index, size);
     }
 
+    /* Method that clears the userview memory. */
+    public void clearUsers(){
+      users.clear();    
+    }
+     
     public boolean nextButton(int index, int size){
       return index + size < users.size();
     }

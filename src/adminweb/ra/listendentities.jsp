@@ -730,6 +730,9 @@
     numcheckboxes= users.length;
   }
 
+  if(blank)
+    rabean.clearUsers();
+
   
     int[] availablestatuses = {UserDataRemote.STATUS_NEW, UserDataRemote.STATUS_FAILED ,UserDataRemote.STATUS_INITIALIZED, 
                                UserDataRemote.STATUS_INPROCESS, UserDataRemote.STATUS_GENERATED, UserDataRemote.STATUS_REVOKED,

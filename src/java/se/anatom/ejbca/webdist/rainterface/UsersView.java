@@ -5,7 +5,7 @@
  */
 
 package se.anatom.ejbca.webdist.rainterface;
-import java.util.Vector;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Collection;
 import java.util.Iterator;
@@ -22,20 +22,20 @@ public class UsersView {
         
     /** Creates a new instance of UsersView */
     public UsersView() {
-      users = new Vector();
+      users = new ArrayList();
       sortby = new SortBy();
     }
     
     public UsersView(UserAdminData importuser) throws RemoteException, NamingException, FinderException, CreateException{
-      users = new Vector();
+      users = new ArrayList();
       sortby = new SortBy();        
-      users.addElement(new UserView(importuser)); 
+      users.add(new UserView(importuser)); 
       
       Collections.sort(users); 
     }
     
     public UsersView(Collection importusers) throws RemoteException, NamingException, FinderException, CreateException{ 
-      users = new Vector();
+      users = new ArrayList();
       sortby = new SortBy();
       
       setUsers(importusers);
@@ -49,7 +49,7 @@ public class UsersView {
       Collections.sort(users);
     }
     
-    public UserView[] getUsers(int index, int size) {
+    public UserView[] getUsers(int index, int size) {       
       int endindex;  
       UserView[] returnval;
    
@@ -63,18 +63,20 @@ public class UsersView {
       
       int end = endindex - index;
       for(int i = 0; i < end; i++){
-        returnval[i] = (UserView) users.elementAt(index+i);   
+        returnval[i] = (UserView) users.get(index+i);   
       }
+      System.out.println("UsersView, getUsers(UserView[] users), index : " + index + ", size : " + size + " number : " + returnval.length);         
       
       return returnval;
     }
     
     public void setUsers(UserView[] users) {
-       this.users.clear();
+      System.out.println("UsersView, SetUsers(UserView[] users), Loading : " + users.length);        
+      this.users.clear();
       if(users !=null && users.length > 0){       
         for(int i=0; i < users.length; i++){
           users[i].setSortBy(this.sortby);
-          this.users.addElement(users[i]);
+          this.users.add(users[i]);
         }
       }
       Collections.sort(this.users);
@@ -82,18 +84,21 @@ public class UsersView {
     
     public void setUsers(UserAdminData[] users) throws RemoteException, NamingException, FinderException, CreateException {
       UserView user;  
+      System.out.println("UsersView, SetUsers(UserAdminData[] users), Loading : " + users.length);       
       this.users.clear();
       if(users !=null && users.length > 0){ 
         for(int i=0; i< users.length; i++){
           user = new UserView(users[i]); 
           user.setSortBy(this.sortby);
-          this.users.addElement(user);
+          this.users.add(user);
         }
         Collections.sort(this.users);
       }
     }
 
     public void setUsers(Collection importusers) throws RemoteException, NamingException, FinderException, CreateException{ 
+        
+      System.out.println("UsersView, SetUsers(inportusers), Loading : " + importusers.size());  
       UserView user;  
       Iterator i;  
       this.users.clear();
@@ -103,22 +108,29 @@ public class UsersView {
           UserAdminData nextuser = (UserAdminData) i.next();  
           user = new UserView(nextuser); 
           user.setSortBy(this.sortby);
-          users.addElement(user);
+          users.add(user);
         }
         Collections.sort(users);
       }
     }
 
     public void addUser(UserView user) {
+      System.out.println("UsersView, AddUser() ");          
        user.setSortBy(this.sortby);        
-       users.addElement(user);
+       users.add(user);
     }
     
     public int size(){
+      System.out.println("UsersView, size() : "+ users.size());           
       return users.size();   
     }
+    
+    public void clear(){
+      System.out.println("UsersView, clear() ");              
+      this.users.clear();   
+    }
     // Private fields
-    private Vector users;
+    private ArrayList users;
     private SortBy sortby;
     
 }
