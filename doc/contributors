@@ -1,8 +1,12 @@
-These people have in some way contributed to EJBCA:
----------------------------------------------------
+CONTRIBUTORS
+------------
 
-Tomas Gustavsson <tomas.gustavsson@abc.se>, Project founder
-Anna Diruba Christensen <dilnet@hotmail.com>, Project homepage
-Nathan Phelps <nphelps@solarc.com>, Testing, bugfinding, suggestions.
-Leo Tai <hkleo@users.sourceforge.net>, Oracle database config.
-Karl-König Königsson <karlkoenig@users.sourceforge.net>, better deployment
+The following people have in some way or other contributed to EJBCA:
+
+Tomas Gustavsson <tomas.gustavsson@abc.se>, project founder.
+Anna Diruba Christensen <dilnet@hotmail.com>, project homepage design.
+Nathan Phelps <nphelps@solarc.com>, testing, bugfinding and suggestions.
+Leo Tai <hkleo@users.sourceforge.net>, Oracle database configuration.
+Timothy Fisher <timothyf@users.sourceforge.net>, architecture overview.
+Karl-König Königsson <karlkoenig@users.sourceforge.net>, better deployment scripts.
+Thomas Karlsson <thomas.karlsson@planet.eu.org>, firewall script.

@@ -18,6 +18,9 @@ The easiest way to keep the installation secure is to block all JBOSS ports
 This is because the public end-user actions can be performed through the public
  servlets, while administration tasks are performed directly on the beans.
 
+See 'ejbcafirewall.sh' for an example how to configure an Iptables firewall in
+Linux for protecting EJBCA running on JBoss.
+
 See http://www.jboss.org/online-manual/HTML/ch11s03.html for a list of ports
  used in JBOSS.
 See http://www.jboss.org/online-manual/HTML/ch13s84.html for information about
@@ -99,3 +102,4 @@ All methods are protected and can only be accessed from the internalUser.
 Servlets
 ========
 Servlets are available to the public.
+
