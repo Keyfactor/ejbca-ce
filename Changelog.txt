@@ -3,6 +3,9 @@
 - Changed packaging to avoid classes duplication between jars
 - Added ear classloader isolation for JBoss to avoid class leaking between ears
  
+3.0.1
+-----
+Fixed warning in SSL deployment with JBoss 3.2.4.
 
 3.0
 ---

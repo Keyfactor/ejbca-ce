@@ -1,17 +1,23 @@
 <Server>
 
-  <Service name="jboss.web">
+   <!-- Use a custom version of StandardService that allows the
+   connectors to be started independent of the normal lifecycle
+   start to allow web apps to be deployed before starting the
+   connectors.
+   -->
+   <Service name="jboss.web"
+      className="org.jboss.web.tomcat.tc5.StandardService">
 
-    <!-- A HTTP/1.1 Connector on port 8080 -->
-    <Connector port="8080" address="${jboss.bind.address}"
+      <!-- A HTTP/1.1 Connector on port 8080 -->
+      <Connector port="8080" address="${jboss.bind.address}"
          maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
          enableLookups="false" redirectPort="8443" acceptCount="100"
-         connectionTimeout="20000" disableUploadTimeout="true" />
+         connectionTimeout="20000" disableUploadTimeout="true"/>
 
-    <!-- A AJP 1.3 Connector on port 8009 -->
-    <Connector port="8009" address="${jboss.bind.address}"
+      <!-- A AJP 1.3 Connector on port 8009 -->
+      <Connector port="8009" address="${jboss.bind.address}"
          enableLookups="false" redirectPort="8443" debug="0"
-         protocol="AJP/1.3" />
+         protocol="AJP/1.3"/>
 
     <!-- A HTTPS Connector without client cert on port 8442 -->
     <Connector port="8442" address="${jboss.bind.address}"
@@ -27,44 +33,46 @@
          keystoreFile="${jboss.server.home.dir}/../../bin/tomcat.jks"
          keystorePass="foo123" sslProtocol = "TLS" />
 
-    <Engine name="jboss.web" defaultHost="localhost">
+      <Engine name="jboss.web" defaultHost="localhost">
 
-      <Logger className="org.jboss.web.tomcat.Log4jLogger"
-          verbosityLevel="INFORMATION" 
-          category="org.jboss.web.localhost.Engine"/>
+         <Logger className="org.jboss.web.tomcat.Log4jLogger"
+            verbosityLevel="WARNING"
+            category="org.jboss.web.localhost.Engine"/>
 
-      <Realm className="org.jboss.web.tomcat.security.JBossSecurityMgrRealm"
-         subjectAttributeName="j_subject"
-         certificatePrincipal="org.jboss.security.auth.certs.SubjectDNMapping"
-         />
+         <Host name="localhost"
+            autoDeploy="false" deployOnStartup="false" deployXML="false">
 
-      <Host name="localhost" autoDeploy="false">
+            <!-- Access logger -->
+            <!--
+            <Valve className="org.apache.catalina.valves.AccessLogValve"
+               prefix="localhost_access_log." suffix=".log"
+               pattern="common" directory="${jboss.server.home.dir}/log" 
+               resolveHosts="false" />
+            -->
 
-        <!-- Access logger -->
-        <!--
-        <Valve className="org.apache.catalina.valves.AccessLogValve"
-           prefix="localhost_access_log." suffix=".log"
-           pattern="common" directory="${jboss.server.home.dir}/log" 
-           resolveHosts="false" />
-        -->
-
-        <!-- Uncomment to enable single sign-on across web apps
-        deployed to this host.
-        <Valve className="org.apache.catalina.authenticator.SingleSignOn"
-           debug="0"/>
-        -->
+            <!-- Uncomment to enable single sign-on across web apps
+               deployed to this host. Does not provide SSO across a cluster.     
+            
+               If this valve is used, do not use the JBoss SingleSignOn valve 
+               shown below. 
+            -->
+            <!--
+            <Valve className="org.apache.catalina.authenticator.SingleSignOn"
+               debug="0"/>
+            -->
          
-         <!-- Check for unclosed connections -->
-        <Valve className="org.jboss.web.tomcat.tc5.jca.CachedConnectionValve"
-            cachedConnectionManagerObjectName="jboss.jca:service=CachedConnectionManager" />
+            <!-- Uncomment to check for unclosed connections in servlets/jsps
+            <Valve className="org.jboss.web.tomcat.tc5.jca.CachedConnectionValve"
+                cachedConnectionManagerObjectName="jboss.jca:service=CachedConnectionManager" />
+            -->
 
-        <!-- Default context parameters -->
-        <DefaultContext cookies="true" crossContext="true" override="true" />
+            <!-- Default context parameters -->
+            <DefaultContext cookies="true" crossContext="true" override="true"/>
 
-      </Host>
+         </Host>
 
-    </Engine>
+      </Engine>
 
-  </Service>
+   </Service>
 
 </Server>
