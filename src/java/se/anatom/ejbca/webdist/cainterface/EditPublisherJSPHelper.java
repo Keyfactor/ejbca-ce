@@ -31,7 +31,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a publisher jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditPublisherJSPHelper.java,v 1.6 2005-02-13 11:27:45 anatom Exp $
+ * @version $Id: EditPublisherJSPHelper.java,v 1.7 2005-03-15 08:57:35 anatom Exp $
  */
 public class EditPublisherJSPHelper {
 	
@@ -95,6 +95,9 @@ public class EditPublisherJSPHelper {
     public static final String SELECT_ADSAMACCOUNTNAME         = "selectsamaccountname";
     public static final String TEXTFIELD_ADUSERDESCRIPTION     = "textfieldaduserdescription";
 
+    public static final String PAGE_PUBLISHER                  = "publisherpage.jspf";
+    public static final String PAGE_PUBLISHERS                 = "publisherspage.jspf";
+    
     /** Creates new LogInterfaceBean */
     public EditPublisherJSPHelper(){     	    	
     }
@@ -119,7 +122,7 @@ public class EditPublisherJSPHelper {
     }
     
     public String parseRequest(HttpServletRequest request) throws AuthorizationDeniedException{
-      String includefile = "publisherspage.jsp"; 
+      String includefile = PAGE_PUBLISHERS; 
 	  String publisher = null;
 	  PublisherDataHandler handler  = cabean.getPublisherDataHandler();
       String action = null;
@@ -131,7 +134,7 @@ public class EditPublisherJSPHelper {
 			 publisher = request.getParameter(SELECT_PUBLISHER);
 			 if(publisher != null){
 			   if(!publisher.trim().equals("")){
-				   includefile="publisherpage.jsp";
+				   includefile=PAGE_PUBLISHER;
 				   this.publishername = publisher;
 				   this.publisherdata = handler.getPublisher(publishername);
 			   } 
@@ -140,7 +143,7 @@ public class EditPublisherJSPHelper {
 			  } 
 			}
 			if(publisher == null){   
-			  includefile="publisherspage.jsp";     
+			  includefile=PAGE_PUBLISHERS;     
 			}
 		  }
 		  if( request.getParameter(BUTTON_DELETE_PUBLISHER) != null) { 
@@ -150,7 +153,7 @@ public class EditPublisherJSPHelper {
 					publisherdeletefailed = handler.removePublisher(publisher);          
 				}
 			  }
-			  includefile="publisherspage.jsp";             
+			  includefile=PAGE_PUBLISHERS;             
 		  }
 		  if( request.getParameter(BUTTON_RENAME_PUBLISHER) != null){ 
 			 // Rename selected publisher and display profilespage.
@@ -165,7 +168,7 @@ public class EditPublisherJSPHelper {
 			   }
 			 }
 		   }      
-		   includefile="publisherspage.jsp"; 
+		   includefile=PAGE_PUBLISHERS; 
 		  }
 		  if( request.getParameter(BUTTON_ADD_PUBLISHER) != null){
 			 publisher = request.getParameter(TEXTFIELD_PUBLISHERNAME);
@@ -178,7 +181,7 @@ public class EditPublisherJSPHelper {
 				 }             
 			   }      
 			 }
-			 includefile="publisherspage.jsp"; 
+			 includefile=PAGE_PUBLISHERS; 
 		  }
 		  if( request.getParameter(BUTTON_CLONE_PUBLISHER) != null){
 		   String newpublishername = request.getParameter(TEXTFIELD_PUBLISHERNAME);
@@ -192,7 +195,7 @@ public class EditPublisherJSPHelper {
 			   }
 			 }
 		   }      
-			  includefile="publisherspage.jsp"; 
+			  includefile=PAGE_PUBLISHERS; 
 		  }
 		}
 		if( action.equals(ACTION_EDIT_PUBLISHER)){
@@ -355,7 +358,7 @@ public class EditPublisherJSPHelper {
              				 				 
 				 if(request.getParameter(BUTTON_SAVE) != null){
 				   handler.changePublisher(publisher,publisherdata);					
-				   includefile="publisherspage.jsp";
+				   includefile=PAGE_PUBLISHERS;
 				 }
 				 if(request.getParameter(BUTTON_TESTCONNECTION)!= null){
 				 	connectionmessage = true;				 
@@ -366,13 +369,13 @@ public class EditPublisherJSPHelper {
 				 	}catch(PublisherConnectionException pce){
 				 	  connectionerrormessage = pce.getMessage();	
 				 	}
-				 	includefile="publisherpage.jsp";
+				 	includefile=PAGE_PUBLISHER;
 				 }
 				 
 			   }
 			   if(request.getParameter(BUTTON_CANCEL) != null){
 				  // Don't save changes.
-				 includefile="publisherspage.jsp";
+				 includefile=PAGE_PUBLISHERS;
 			   }
 
 			 }
@@ -397,7 +400,7 @@ public class EditPublisherJSPHelper {
 			}   
 		  }
 
-		  includefile="publisherpage.jsp";
+		  includefile=PAGE_PUBLISHER;
 		}						
 	  }    
   	    
