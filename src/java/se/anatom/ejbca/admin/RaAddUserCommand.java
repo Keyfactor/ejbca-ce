@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.CertTools;
 
 /** Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.16 2003-01-19 16:35:03 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.17 2003-01-23 16:44:35 anatom Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 
@@ -40,7 +40,8 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             String[] certprofnames = (String[]) certificatesession.getCertificateProfileNames(administrator).toArray((Object[]) new String[0]);
             String[] endentityprofilenames = (String[]) raadminsession.getEndEntityProfileNames(administrator).toArray((Object[]) new String[0]);
 
-            if (args.length < 9) {
+            System.out.println(args.length);
+            if (args.length < 8) {
                 System.out.println("Usage: RA adduser <username> <password> <dn> <subjectAltName> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] ");
                 System.out.println();
                 System.out.println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
@@ -79,14 +80,14 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
             boolean error = false;
 
-            if(args.length == 10){
+            if(args.length == 9){
               // Use certificate type, no profile.
               certificatetypeid = certificatesession.getCertificateProfileId(administrator, args[8]);
               profileid = SecConst.EMPTY_ENDENTITYPROFILE;
             }
 
-            if(args.length == 11){
-              // Use certificate type and profile.  
+            if(args.length == 10){
+              // Use certificate type and profile.
               profileid = raadminsession.getEndEntityProfileId(administrator, args[9]);
               certificatetypeid = certificatesession.getCertificateProfileId(administrator, args[8]);
             }
@@ -124,8 +125,10 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
               System.out.println("Email: "+email);
               System.out.println("Type: "+type);
               System.out.println("Token: "+token);
+              System.out.println("Certificate profile: "+certificatetypeid);
+              System.out.println("End entity profile: "+profileid);
               if (subjectaltname.toUpperCase().equals("NULL"))
-                  subjectaltname = null;                       
+                  subjectaltname = null;
               if (email.toUpperCase().equals("NULL"))
                   email = null;
               try{
