@@ -14,7 +14,7 @@
         </servlet-class>
         <init-param>
             <param-name>responseTemplate</param-name>
-            <param-value>/request/certInstT.html</param-value>
+            <param-value>certInstT.html</param-value>
         </init-param>
     </servlet>
     <servlet-mapping>
