@@ -16,7 +16,7 @@ import se.anatom.ejbca.util.Base64;
  * Entity Bean representing a certificate.
  * Information stored:
  * <pre>
- * Certificate (b64cert)
+ * Certificate (b64Cert)
  * Subject DN (subjectDN)
  * Issuer DN (issuerDN)
  * Serial number (serno)
@@ -33,7 +33,7 @@ public class CertificateDataBean implements javax.ejb.EntityBean {
 
     private static Category cat = Category.getInstance( CertificateDataBean.class.getName() );
 
-    public String b64cert;
+    public String b64Cert;
     public String fp;
     public String subjectDN;
     public String issuerDN;
@@ -63,7 +63,7 @@ public class CertificateDataBean implements javax.ejb.EntityBean {
         // Exctract all fields to store with the certificate.
         X509Certificate tmpcert;
         try {
-            b64cert = new String(Base64.encode(incert.getEncoded()));
+            b64Cert = new String(Base64.encode(incert.getEncoded()));
             tmpcert = (X509Certificate)incert;
             fp = CertTools.getFingerprintAsString(tmpcert);
         } catch (CertificateEncodingException cee) {
@@ -91,10 +91,13 @@ public class CertificateDataBean implements javax.ejb.EntityBean {
     public void ejbPostCreate(Certificate incert) {
         // Do nothing. Required.
     }
-    public Certificate getCertificate(){
+    public String getB64Cert() {
+        return b64Cert;
+    }
+    public Certificate getCertificate() {
         X509Certificate cert = null;
         try {
-            cert = CertTools.getCertfromByteArray(Base64.decode(b64cert.getBytes()));
+            cert = CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()));
         } catch (IOException ioe) {
             cat.error("Can't decode certificate.", ioe);
             return null;
@@ -104,14 +107,14 @@ public class CertificateDataBean implements javax.ejb.EntityBean {
         }
         return cert;
     }
-    public void setCertificate(Certificate incert){
+    public void setCertificate(Certificate incert) {
         try {
-            b64cert = new String(Base64.encode(incert.getEncoded()));
+            b64Cert = new String(Base64.encode(incert.getEncoded()));
         } catch (CertificateEncodingException cee) {
             cat.error("Can't extract DER encoded certificate information.", cee);
         }
     }
-    public String getIssuer(){
+    public String getIssuer() {
         return issuerDN;
     }
     public void setIssuer(String dn) {

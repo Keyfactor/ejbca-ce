@@ -22,6 +22,7 @@ public interface UserData extends javax.ejb.EJBObject {
     public String getUsername() throws RemoteException;
     public void setUsername(String username) throws RemoteException;
     public boolean comparePassword(String password) throws RemoteException, NoSuchAlgorithmException;
+    public String getPasswordHash() throws RemoteException;
     public String getPassword() throws RemoteException;
     public void setPassword(String password) throws RemoteException, NoSuchAlgorithmException;
     public void setClearPassword(String password) throws RemoteException, NoSuchAlgorithmException;

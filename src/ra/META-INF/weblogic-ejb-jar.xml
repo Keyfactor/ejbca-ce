@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE weblogic-ejb-jar PUBLIC "-//BEA Systems, Inc.//DTD WebLogic 6.0.0 EJB//EN" "http://www.bea.com/servers/wls600/dtd/weblogic-ejb-jar.dtd" >
+
+<weblogic-ejb-jar>
+
+  <weblogic-enterprise-bean>
+    <ejb-name>UserAdminSession</ejb-name>
+    <transaction-descriptor>
+      <trans-timeout-seconds>900</trans-timeout-seconds>
+    </transaction-descriptor>
+    <reference-descriptor>
+        <ejb-reference-description>
+            <ejb-ref-name>ejb/UserData</ejb-ref-name>
+            <jndi-name>UserData</jndi-name>
+        </ejb-reference-description>
+    </reference-descriptor>
+    <jndi-name>UserAdminSession</jndi-name>
+  </weblogic-enterprise-bean>
+
+  <weblogic-enterprise-bean>
+    <ejb-name>UserData</ejb-name>   
+    <entity-descriptor>
+      <persistence>
+        <persistence-use>
+          <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
+          <type-version>6.0</type-version>
+        </persistence-use>
+      </persistence>
+    </entity-descriptor>
+    <jndi-name>UserData</jndi-name>
+  </weblogic-enterprise-bean>
+
+</weblogic-ejb-jar>

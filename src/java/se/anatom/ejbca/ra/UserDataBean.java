@@ -30,7 +30,7 @@ public class UserDataBean implements javax.ejb.EntityBean {
 
     public String username;
     public String password;
-    public String passwordhash;
+    public String passwordHash;
     public String subjectDN;
     public String subjectEmail;
     public int status;
@@ -52,7 +52,7 @@ public class UserDataBean implements javax.ejb.EntityBean {
 
         this.username = username;
         this.password = null;
-        this.passwordhash = getPasswordHash(password);
+        this.passwordHash = getPasswordHash(password);
         this.subjectDN = CertTools.stringToBCDNString(dn);
         this.subjectEmail = null;
         this.status = UserData.STATUS_NEW;
@@ -90,7 +90,12 @@ public class UserDataBean implements javax.ejb.EntityBean {
     public boolean comparePassword(String password) throws NoSuchAlgorithmException {
         if (password == null)
             return false;
-        return (getPasswordHash(password).equals(passwordhash));
+        return (getPasswordHash(password).equals(passwordHash));
+    }
+    /** Returns the hashed password.
+     */
+    public String getPasswordHash() {
+        return passwordHash;
     }
     /** Returns password or null.
      * NOTE: To set clear text password setClearPassword() must be used.
@@ -101,13 +106,13 @@ public class UserDataBean implements javax.ejb.EntityBean {
     /** Sets passwordhash
     */
     public void setPassword(String password) throws NoSuchAlgorithmException {
-        this.passwordhash = getPasswordHash(password);
+        this.passwordHash = getPasswordHash(password);
     }
     /** Sets password AND passwordhash
     */
     public void setClearPassword(String password) throws NoSuchAlgorithmException {
         this.password = password;
-        this.passwordhash = getPasswordHash(password);
+        this.passwordHash = getPasswordHash(password);
     }
     public String getSubjectDN(){
         return subjectDN;

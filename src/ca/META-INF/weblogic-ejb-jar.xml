@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE weblogic-ejb-jar PUBLIC "-//BEA Systems, Inc.//DTD WebLogic 6.0.0 EJB//EN" "http://www.bea.com/servers/wls600/dtd/weblogic-ejb-jar.dtd" >
+
+<weblogic-ejb-jar>
+
+  <weblogic-enterprise-bean>
+    <ejb-name>RSASignSession</ejb-name>
+    <transaction-descriptor>
+      <trans-timeout-seconds>900</trans-timeout-seconds>
+    </transaction-descriptor>
+    <reference-descriptor>
+        <ejb-reference-description>
+            <ejb-ref-name>ejb/AuthenticationSession</ejb-ref-name>
+            <jndi-name>AuthenticationSession</jndi-name>
+        </ejb-reference-description>
+    </reference-descriptor>
+    <jndi-name>RSASignSession</jndi-name>
+  </weblogic-enterprise-bean>
+
+  <weblogic-enterprise-bean>
+    <ejb-name>AuthenticationSession</ejb-name>
+    <transaction-descriptor>
+      <trans-timeout-seconds>900</trans-timeout-seconds>
+    </transaction-descriptor>
+    <reference-descriptor>
+        <ejb-reference-description>
+            <ejb-ref-name>ejb/UserData</ejb-ref-name>
+            <jndi-name>UserData</jndi-name>
+        </ejb-reference-description>
+    </reference-descriptor>
+    <jndi-name>AuthenticationSession</jndi-name>
+  </weblogic-enterprise-bean>
+
+  <weblogic-enterprise-bean>
+    <ejb-name>CertificateStoreSession</ejb-name>
+    <transaction-descriptor>
+      <trans-timeout-seconds>900</trans-timeout-seconds>
+    </transaction-descriptor>
+    <reference-descriptor>
+        <ejb-reference-description>
+            <ejb-ref-name>ejb/CertificateData</ejb-ref-name>
+            <jndi-name>CertificateData</jndi-name>
+        </ejb-reference-description>
+        <ejb-reference-description>
+            <ejb-ref-name>ejb/CRLData</ejb-ref-name>
+            <jndi-name>CRLData</jndi-name>
+        </ejb-reference-description>
+    </reference-descriptor>
+    <jndi-name>CertificateStoreSession</jndi-name>
+  </weblogic-enterprise-bean>
+
+  <weblogic-enterprise-bean>
+    <ejb-name>CreateCRLSession</ejb-name>
+    <transaction-descriptor>
+      <trans-timeout-seconds>900</trans-timeout-seconds>
+    </transaction-descriptor>
+    <reference-descriptor>
+        <ejb-reference-description>
+            <ejb-ref-name>ejb/CertificateData</ejb-ref-name>
+            <jndi-name>CertificateData</jndi-name>
+        </ejb-reference-description>
+        <ejb-reference-description>
+            <ejb-ref-name>ejb/CertificateStoreSession</ejb-ref-name>
+            <jndi-name>CertificateStoreSession</jndi-name>
+        </ejb-reference-description>
+        <ejb-reference-description>
+            <ejb-ref-name>ejb/SignSession</ejb-ref-name>
+            <jndi-name>RSASignSession</jndi-name>
+        </ejb-reference-description>
+    </reference-descriptor>
+    <jndi-name>CreateCRLSession</jndi-name>
+  </weblogic-enterprise-bean>
+
+<!-- Uncomment to use LDAP Publisher
+
+  <weblogic-enterprise-bean>
+    <ejb-name>PublisherSession1</ejb-name>
+    <transaction-descriptor>
+      <trans-timeout-seconds>900</trans-timeout-seconds>
+    </transaction-descriptor>
+    <jndi-name>PublisherSession1</jndi-name>
+  </weblogic-enterprise-bean>
+  
+ END LDAP Publisher section -->
+
+  <weblogic-enterprise-bean>
+    <ejb-name>CertificateData</ejb-name>   
+    <entity-descriptor>
+      <persistence>
+        <persistence-use>
+          <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
+          <type-version>6.0</type-version>
+        </persistence-use>
+      </persistence>
+    </entity-descriptor>
+    <jndi-name>CertificateData</jndi-name>
+  </weblogic-enterprise-bean>
+
+  <weblogic-enterprise-bean>
+    <ejb-name>CRLData</ejb-name>   
+    <entity-descriptor>
+      <persistence>
+        <persistence-use>
+          <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
+          <type-version>6.0</type-version>
+        </persistence-use>
+      </persistence>
+    </entity-descriptor>
+    <jndi-name>CRLData</jndi-name>
+  </weblogic-enterprise-bean>
+
+</weblogic-ejb-jar>

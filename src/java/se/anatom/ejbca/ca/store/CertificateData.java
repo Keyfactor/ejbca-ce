@@ -22,6 +22,7 @@ public interface CertificateData extends javax.ejb.EJBObject {
     public static int CERT_ARCHIVED =        60;   // Certificate is expired and kept for archive purpose
 
     // public methods
+    public String getB64Cert() throws RemoteException;
     public Certificate getCertificate() throws RemoteException;
     public void setCertificate(Certificate cert) throws RemoteException;
     public String getSubject() throws RemoteException;

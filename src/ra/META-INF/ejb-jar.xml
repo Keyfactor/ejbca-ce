@@ -48,7 +48,7 @@
 
       <cmp-field><field-name>username</field-name></cmp-field>
       <cmp-field><field-name>password</field-name></cmp-field>
-      <cmp-field><field-name>passwordhash</field-name></cmp-field>
+      <cmp-field><field-name>passwordHash</field-name></cmp-field>
       <cmp-field><field-name>subjectDN</field-name></cmp-field>
       <cmp-field><field-name>subjectEmail</field-name></cmp-field>
       <cmp-field><field-name>status</field-name></cmp-field>
