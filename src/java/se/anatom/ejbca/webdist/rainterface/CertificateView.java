@@ -201,6 +201,10 @@ public class CertificateView {
       return this.username;  
     } 
     
+    public X509Certificate getCertificate(){
+      return certificate;   
+    }
+    
     // Private fields
     private X509Certificate  certificate;    
     private DNFieldExtractor subjectdnfieldextractor, issuerdnfieldextractor;

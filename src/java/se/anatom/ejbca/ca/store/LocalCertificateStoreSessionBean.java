@@ -31,7 +31,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.35 2003-02-06 15:35:49 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.36 2003-02-12 13:21:38 herrvendil Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -111,7 +111,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             X509Certificate cert = (X509Certificate)incert;
             CertificateDataPK pk = new CertificateDataPK();
             pk.fingerprint = CertTools.getFingerprintAsString(cert);
-            logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE,"");
+            logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE,"");
             CertificateDataLocal data1=null;
             data1 = certHome.create(cert);
             data1.setUsername(username);
@@ -121,7 +121,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
         catch (Exception e) {
             try{
-              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"");
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"");
             }catch(RemoteException re){}
             throw new EJBException(e);
         }

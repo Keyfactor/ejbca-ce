@@ -18,15 +18,11 @@
   static final String CACERT_PARAMETER           = "cacert";
   static final String HARDTOKENSN_PARAMETER      = "tokensn";
 
-// For internal use only.
-  static final String USER_SAVED_PARAMETER       = "user";
-  static final String TOKEN_SAVED_PARAMETER      = "token";  
-
-
   static final String BUTTON_CLOSE               = "buttonclose"; 
   static final String BUTTON_VIEW_PREVIOUS       = "buttonviewprevious"; 
   static final String BUTTON_VIEW_NEXT           = "buttonviewnext";
   static final String BUTTON_REVOKE              = "buttonrevoke";
+  static final String BUTTON_RECOVERKEY          = "buttonrekoverkey";
 
   static final String CHECKBOX_DIGITALSIGNATURE  = "checkboxdigitalsignature";
   static final String CHECKBOX_NONREPUDATION     = "checkboxnonrepudation";
@@ -55,6 +51,7 @@
   boolean noparameter             = true;
   boolean notauthorized           = true;
   boolean cacerts                 = false;
+  boolean usekeyrecovery          = globalconfiguration.getEnableKeyRecovery() && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_KEYRECOVERY_RIGHTS);
   CertificateView certificatedata = null;
   String certificateserno         = null;
   String username                 = null;         
@@ -101,7 +98,7 @@
   }
   if(!noparameter){  
     if(request.getParameter(BUTTON_VIEW_PREVIOUS) == null && request.getParameter(BUTTON_VIEW_NEXT) == null && 
-       request.getParameter(BUTTON_REVOKE) == null){
+       request.getParameter(BUTTON_REVOKE) == null && request.getParameter(BUTTON_RECOVERKEY) == null){
       numberofcertificates = rabean.getNumberOfCertificates();
       if(numberofcertificates > 0)
         certificatedata = rabean.getCertificate(currentindex);
@@ -112,12 +109,38 @@
      noparameter=false;
      int reason = Integer.parseInt(request.getParameter(SELECT_REVOKE_REASON));
      certificatedata = rabean.getCertificate(currentindex);
-     rabean.revokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getUsername(),reason);
+     if(!cacerts && rabean.authorizedToRevokeCert(certificatedata) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
+        && !certificatedata.isRevoked())   
+       rabean.revokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getUsername(),reason);
      try{
-       if(username != null)
-         rabean.loadCertificates(username);
-       else
-         rabean.loadCertificates(new BigInteger(certificateserno,16));
+       if(tokensn !=null)
+         rabean.loadTokenCertificates(tokensn,username);
+       else 
+         if(username != null)
+           rabean.loadCertificates(username);
+         else
+           rabean.loadCertificates(new BigInteger(certificateserno,16));
+       notauthorized = false;
+     }catch(AuthorizationDeniedException e){
+     }
+     numberofcertificates = rabean.getNumberOfCertificates();
+     certificatedata = rabean.getCertificate(currentindex);
+   }
+   if(request.getParameter(BUTTON_RECOVERKEY) != null && request.getParameter(HIDDEN_INDEX)!= null && !cacerts){
+     // Mark certificate for key recovery.
+     currentindex = Integer.parseInt(request.getParameter(HIDDEN_INDEX));
+     noparameter=false;
+     certificatedata = rabean.getCertificate(currentindex);
+     if(!cacerts && rabean.keyRecoveryPossible(certificatedata) && usekeyrecovery)  
+       rabean.markForRecovery(certificatedata); 
+     try{
+       if(tokensn !=null)
+         rabean.loadTokenCertificates(tokensn,username);
+       else 
+         if(username != null)
+           rabean.loadCertificates(username);
+         else
+           rabean.loadCertificates(new BigInteger(certificateserno,16));
        notauthorized = false;
      }catch(AuthorizationDeniedException e){
      }
@@ -151,10 +174,7 @@
     }
 
 
-  if(username==null)
-    username = request.getParameter(USER_SAVED_PARAMETER);
-  if(tokensn==null)
-    tokensn = request.getParameter(TOKEN_SAVED_PARAMETER);
+
 
   int row = 0; 
   int columnwidth = 150;
@@ -175,6 +195,10 @@ function confirmrevokation(){
     returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKECERT") %>");
   } 
   return returnval;
+}
+
+function confirmkeyrecovery(){
+  return confirm("<%= ejbcawebbean.getText("AREYOUSUREKEYRECOVER") %>");
 }
 -->
 </script>
@@ -200,21 +224,24 @@ function confirmrevokation(){
 
   <form name="viewcertificate" action="<%= THIS_FILENAME %>" method="post">
     <% if(username != null){ %>
-     <input type="hidden" name='<%= USER_SAVED_PARAMETER %>' value='<%=username %>'> 
+     <input type="hidden" name='<%= USER_PARAMETER %>' value='<%=username %>'> 
      <% } 
      if(tokensn != null){ %>
-     <input type="hidden" name='<%= TOKEN_SAVED_PARAMETER %>' value='<%=tokensn %>'> 
+     <input type="hidden" name='<%= HARDTOKENSN_PARAMETER%>' value='<%=tokensn %>'> 
      <% }       
 
- /*    if(certificateserno != null){ %>
+    if(certificateserno != null){ %>
      <input type="hidden" name='<%= CERTSERNO_PARAMETER %>' value='<%=certificateserno %>'> 
-     <% } */ %>
+     <% } 
+    if(cacerts){ %>
+     <input type="hidden" name='<%= CACERT_PARAMETER %>' value='<%=currentindex %>'> 
+     <% } %>
      <input type="hidden" name='<%= HIDDEN_INDEX %>' value='<%=currentindex %>'>
      <table border="0" cellpadding="0" cellspacing="2" width="500">
       <% if(username != null){%>
       <tr id="Row<%=(row++)%2%>">
 	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("USERNAME") %></td>
-	<td><%= username %>
+	<td><%= certificatedata.getUsername() %>
         </td>
       </tr>
       <% if(tokensn != null){ %>
@@ -392,7 +419,14 @@ function confirmrevokation(){
           </td>
        </tr> 
        <tr id="Row<%=(row++)%2%>">
-          <td>&nbsp;</td>
+          <td>  
+       <% 
+            if(!cacerts &&  rabean.keyRecoveryPossible(certificatedata) && usekeyrecovery){ %>
+        <input type="submit" name="<%=BUTTON_RECOVERKEY %>" value="<%= ejbcawebbean.getText("RECOVERKEY") %>"
+               onClick='return confirmkeyrecovery()'>
+       <% } %>
+         &nbsp;
+          </td>
           <td>
        <% 
             if(!cacerts && rabean.authorizedToRevokeCert(certificatedata) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 

@@ -8,7 +8,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataRemote.java,v 1.4 2003-01-19 09:40:14 herrvendil Exp $
+ * @version $Id: UserDataRemote.java,v 1.5 2003-02-12 13:21:29 herrvendil Exp $
  **/
 
 public interface UserDataRemote extends javax.ejb.EJBObject {
@@ -21,6 +21,7 @@ public interface UserDataRemote extends javax.ejb.EJBObject {
     public static final int STATUS_GENERATED   = UserDataLocal.STATUS_GENERATED;  // A certificate has been generated for the user
     public static final int STATUS_REVOKED     = UserDataLocal.STATUS_REVOKED;  // The user has been revoked and should not have any more certificates issued
     public static final int STATUS_HISTORICAL  = UserDataLocal.STATUS_HISTORICAL; // The user is old and archived
+    public static final int STATUS_KEYRECOVERY  = UserDataLocal.STATUS_KEYRECOVERY; // The user is should use key recovery functions in next certificate generation.    
 
     // public methods
     public String getUsername() throws RemoteException;

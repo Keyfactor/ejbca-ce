@@ -5,7 +5,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  *  This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.8 2003-02-07 11:37:35 scop Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.9 2003-02-12 13:21:30 herrvendil Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
   
@@ -31,7 +31,8 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
                                                        "/system_functionallity/edit_administrator_privileges/edit_available_accessrules"};
                                                        
     public static final String[] LOGMODULERESOURCES = { "/log_functionallity/view_log/ca_entries","/log_functionallity/view_log/ra_entries","/log_functionallity/view_log/log_entries",
-                                                        "/log_functionallity/view_log/publicweb_entries","/log_functionallity/view_log/adminweb_entries","/log_functionallity/view_log/hardtoken_entries" };                                                   
+                                                        "/log_functionallity/view_log/publicweb_entries","/log_functionallity/view_log/adminweb_entries","/log_functionallity/view_log/hardtoken_entries",
+                                                        "/log_functionallity/view_log/keyrecovery_entries"};                                                   
                                                     
     // Available end entity profile authorization rules.                                                   
     public static final String VIEW_RIGHTS = "/view_end_entity";

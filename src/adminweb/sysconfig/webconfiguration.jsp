@@ -81,7 +81,6 @@
                                                                                                 out.write(" CHECKED "); %>> 
       </td>
     </tr>
-<!-- /* Wait for implementation.
     <tr id="Row1"> 
       <td width="49%" valign="top"> 
         <h3>Enable Key Recovery</h3>
@@ -93,8 +92,6 @@
                                                                                                 out.write(" CHECKED "); %>> 
       </td>
     </tr>
--->
-
     <tr id="Row0"> 
       <td width="49%" valign="top"> 
         <h3>Issue Hardware Tokens</h3>

@@ -120,7 +120,7 @@
   static final String HIDDEN_RECORDNUMBER       = "hiddenrecordnumber"; 
 
   static final String VALUE_NONE                = "-1";
-  static final String ALL_STATUS                = "-1";
+  static final int ALL_STATUS                   = -1;
 %><%
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionallity/view_end_entity"); 
@@ -359,7 +359,7 @@
          String status = oldactionvalue;
          if(status != null){
            if(!status.trim().equals("")){
-               if(status.equals(ALL_STATUS)){
+               if(status.equals(Integer.toString(ALL_STATUS))){
                   users = rabean.findAllUsers(record,size);
                }
                else{
@@ -496,7 +496,7 @@
              status= status.trim();
              if(!status.equals("")){
                record=0;
-               if(status.equals(ALL_STATUS)){
+               if(status.equals(Integer.toString(ALL_STATUS))){
                   users = rabean.findAllUsers(record,size);
                }
                else{
@@ -726,6 +726,24 @@
   if(users != null){ 
     numcheckboxes= users.length;
   }
+
+  
+    int[] availablestatuses = {UserDataRemote.STATUS_NEW, UserDataRemote.STATUS_FAILED ,UserDataRemote.STATUS_INITIALIZED, 
+                               UserDataRemote.STATUS_INPROCESS, UserDataRemote.STATUS_GENERATED, UserDataRemote.STATUS_REVOKED,
+                               UserDataRemote.STATUS_HISTORICAL};
+    String[] availablestatustexts = {"STATUSNEW", "STATUSFAILED", "STATUSINITIALIZED", "STATUSINPROCESS", "STATUSGENERATED",
+                                     "STATUSREVOKED", "STATUSHISTORICAL"}; 
+
+    if(globalconfiguration.getEnableKeyRecovery()){
+      int[] tempintarray = {UserDataRemote.STATUS_NEW, UserDataRemote.STATUS_FAILED ,UserDataRemote.STATUS_INITIALIZED, 
+                               UserDataRemote.STATUS_INPROCESS, UserDataRemote.STATUS_GENERATED, UserDataRemote.STATUS_REVOKED,
+                               UserDataRemote.STATUS_HISTORICAL, UserDataRemote.STATUS_KEYRECOVERY}; 
+       
+      String[] tempstringarray = {"STATUSNEW", "STATUSFAILED", "STATUSINITIALIZED", "STATUSINPROCESS", "STATUSGENERATED",
+                                  "STATUSREVOKED", "STATUSHISTORICAL", "STATUSKEYRECOVERY"};
+      availablestatuses=tempintarray;
+      availablestatustexts=tempstringarray; 
+    }
 
 %>
 

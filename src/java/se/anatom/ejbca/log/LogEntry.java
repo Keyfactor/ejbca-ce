@@ -45,7 +45,8 @@ public class LogEntry implements java.io.Serializable {
     public static final int EVENT_INFO_HARDTOKENGENERATED             = 23; 
     public static final int EVENT_INFO_HARDTOKENDATA                  = 24;   
     public static final int EVENT_INFO_HARDTOKENISSUERDATA            = 25;
-    public static final int EVENT_INFO_HARDTOKENCERTIFICATEMAP        = 26;    
+    public static final int EVENT_INFO_HARDTOKENCERTIFICATEMAP        = 26;   
+    public static final int EVENT_INFO_KEYRECOVERY                    = 27;    
     
     
     
@@ -77,7 +78,7 @@ public class LogEntry implements java.io.Serializable {
     public static final int EVENT_ERROR_HARDTOKENDATA                  = 1024;   
     public static final int EVENT_ERROR_HARDTOKENISSUERDATA            = 1025;
     public static final int EVENT_ERROR_HARDTOKENCERTIFICATEMAP        = 1026;      
-    
+    public static final int EVENT_ERROR_KEYRECOVERY                    = 1027;    
     
     // Indicates the module using the logsession bean.
     public static final int MODULE_CA                  = 0;
@@ -86,6 +87,7 @@ public class LogEntry implements java.io.Serializable {
     public static final int MODULE_PUBLICWEB           = 3;
     public static final int MODULE_ADMINWEB            = 4;
     public static final int MODULE_HARDTOKEN           = 5;
+    public static final int MODULE_KEYRECOVERY         = 6;    
         
     public static final int EVENT_ERROR_BOUNDRARY                = 1000;
     
@@ -96,7 +98,7 @@ public class LogEntry implements java.io.Serializable {
                                                     "EVENT_INFO_STORECERTIFICATE", "EVENT_INFO_STORECRL", "EVENT_INFO_GETLASTCRL", "EVENT_INFO_CERTPROFILE", "EVENT_INFO_DATABASE",
                                                     "EVENT_INFO_CREATECERTIFICATE", "EVENT_INFO_CREATECRL", "EVENT_INFO_ADMINISTRATORLOGGEDIN", "EVENT_INFO_AUTHORIZEDTORESOURCE", 
                                                     "EVENT_INFO_PUBLICWEBUSERCONNECTED", "EVENT_INFO_HARDTOKEN_USERDATASENT","EVENT_INFO_HARDTOKENGENERATED","EVENT_INFO_HARDTOKENDATA",
-                                                    "EVENT_INFO_HARDTOKENISSUERDATA", "EVENT_INFO_HARDTOKENCERTIFICATEMAP"};   
+                                                    "EVENT_INFO_HARDTOKENISSUERDATA", "EVENT_INFO_HARDTOKENCERTIFICATEMAP", "EVENT_INFO_KEYRECOVERY"};   
     
                                                                                                          
     public static final String[] EVENTNAMES_ERROR = {"EVENT_ERROR_UNKNOWN", "EVENT_ERROR_ADDEDENDENTITY", "EVENT_ERROR_CHANGEDENDENTITY" , "EVENT_ERROR_REVOKEDENDENTITY", "EVENT_ERROR_REVOKEDCERT",
@@ -105,9 +107,9 @@ public class LogEntry implements java.io.Serializable {
                                                      "EVENT_ERROR_STORECERTIFICATE", "EVENT_ERROR_STORECRL", "EVENT_ERROR_GETLASTCRL", "EVENT_ERROR_CERTPROFILE", "EVENT_ERROR_DATABASE",
                                                      "EVENT_ERROR_CREATECERTIFICATE", "EVENT_ERROR_CREATECRL" ,"EVENT_ERROR_ADMINISTRATORLOGGEDIN", "EVENT_ERROR_NOTAUTHORIZEDTORESOURCE",
                                                      "EVENT_ERROR_PUBLICWEBUSERCONNECTED","EVENT_ERROR_HARDTOKEN_USERDATASENT","EVENT_ERROR_HARDTOKENGENERATED","EVENT_ERROR_HARDTOKENDATA",
-                                                     "EVENT_ERROR_HARDTOKENISSUERDATA", "EVENT_ERROR_HARDTOKENCERTIFICATEMAP"};    
+                                                     "EVENT_ERROR_HARDTOKENISSUERDATA", "EVENT_ERROR_HARDTOKENCERTIFICATEMAP", "EVENT_ERROR_KEYRECOVERY"};    
                                                      
-    public static final String[] MODULETEXTS    = {"CA", "RA", "LOG", "PUBLICWEB", "ADMINWEB", "HARDTOKEN"};                                                     
+    public static final String[] MODULETEXTS    = {"CA", "RA", "LOG", "PUBLICWEB", "ADMINWEB", "HARDTOKEN", "KEYRECOVERY"};                                                     
     
    /** 
     * Function used by EJBCA to log information.

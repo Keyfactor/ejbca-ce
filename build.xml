@@ -34,7 +34,12 @@
   <property name="hardtoken.src" value="${src}/hardtoken" />
   <property name="hardtoken.build" value="${tmp}/hardtoken.jar" />
   <property name="hardtokenjar" value="${dist}/hardtoken.jar" />   
+ 
   
+  <property name="keyrecovery.src" value="${src}/keyrecovery" />
+  <property name="keyrecovery.build" value="${tmp}/keyrecovery.jar" />
+  <property name="keyrecoveryjar" value="${dist}/keyrecovery.jar" />   
+   
   <property name="ra.src" value="${src}/ra" />
   <property name="ra.build" value="${tmp}/ra.jar" />
   <property name="rajar" value="${dist}/ra.jar" />
@@ -99,7 +104,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- Build ALL                                                           -->
   <!-- =================================================================== -->
   <target name="build" depends="compile, apply.war, webdist.war, ca.jar, log.jar, 
-  hardtoken.jar, ca.ear, canora.ear, ra.jar, adminweb.war, admin.jar, sampleauth.war">
+  hardtoken.jar, keyrecovery.jar, ca.ear, canora.ear, ra.jar, adminweb.war, admin.jar, sampleauth.war">
   </target>
 
   <!-- =================================================================== -->
@@ -233,26 +238,52 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
       </fileset>
     </copy>
     <copy todir="${hardtoken.build}">
-      <fileset dir="${build}">
-        <include name="se/anatom/ejbca/hardtoken/*.class"/>
-        <include name="se/anatom/ejbca/ra/I*.class"/>
-        <include name="se/anatom/ejbca/ra/UserAdminData.class"/>
-        <include name="se/anatom/ejbca/ra/UserDataLocal.class"/>
-        <include name="se/anatom/ejbca/ra/UserDataLocalHome.class"/>
-        <include name="se/anatom/ejbca/ra/authorization/I*.class"/>
-        <include name="se/anatom/ejbca/ca/store/I*.class"/>
-        <include name="se/anatom/ejbca/log/I*.class"/>
-        <include name="se/anatom/ejbca/log/Admin.class"/>
-        <include name="se/anatom/ejbca/log/LogEntry.class"/>
-        <include name="se/anatom/ejbca/util/CertTools.class"/>
-        <include name="se/anatom/ejbca/SecConst.class"/>
-        <exclude name="se/anatom/ejbca/**/*Test*"/>
-      </fileset>
+        <fileset dir="${build}">
+                <include name="se/anatom/ejbca/hardtoken/*.class"/>
+                <include name="se/anatom/ejbca/ra/I*.class"/>
+                <include name="se/anatom/ejbca/ra/UserAdminData.class"/>  
+                <include name="se/anatom/ejbca/ra/UserDataLocal.class"/> 
+                <include name="se/anatom/ejbca/ra/UserDataLocalHome.class"/>                                                
+                <include name="se/anatom/ejbca/ra/authorization/I*.class"/>                
+                <include name="se/anatom/ejbca/ca/store/I*.class"/>  
+                <include name="se/anatom/ejbca/log/I*.class"/>
+                <include name="se/anatom/ejbca/log/Admin.class"/>  
+                <include name="se/anatom/ejbca/log/LogEntry.class"/>                                                                               
+                <include name="se/anatom/ejbca/util/CertTools.class"/> 
+                <include name="se/anatom/ejbca/SecConst.class"/>                                  
+                <exclude name="se/anatom/ejbca/**/*Test*"/>
+        </fileset>
     </copy>
+    <jar basedir="${hardtoken.build}" jarfile="${hardtokenjar}"/>    
+  </target>    
+  
+  <!-- =================================================================== -->
+  <!-- Build key recovery part                                                    -->
+  <!-- =================================================================== -->
+  <target name="keyrecovery.jar" depends="compile">
+    <mkdir    dir="${keyrecovery.build}"/>
+    <copy todir="${keyrecovery.build}">
+        <fileset dir="${keyrecovery.src}"> 
+                <include name="**/*"/>
+        </fileset>
+    </copy>
+    <copy todir="${keyrecovery.build}">
+        <fileset dir="${build}">
+                <include name="se/anatom/ejbca/keyrecovery/*.class"/>                                               
+                <include name="se/anatom/ejbca/ca/sign/I*.class"/>                
+                <include name="se/anatom/ejbca/ca/store/I*.class"/>  
+                <include name="se/anatom/ejbca/log/I*.class"/>
+                <include name="se/anatom/ejbca/log/Admin.class"/>  
+                <include name="se/anatom/ejbca/log/LogEntry.class"/>                                                                               
+                <include name="se/anatom/ejbca/util/CertTools.class"/> 
+                <include name="se/anatom/ejbca/SecConst.class"/>                                  
+                <exclude name="se/anatom/ejbca/**/*Test*"/>
+        </fileset>
+    </copy>
+    
+    <jar basedir="${keyrecovery.build}" jarfile="${keyrecoveryjar}"/>    
+  </target>      
 
-    <!-- Jar the ca.jar package together -->
-    <jar basedir="${hardtoken.build}" jarfile="${hardtokenjar}"/>
-  </target>
 
   <!-- =================================================================== -->
   <!-- Build ra part                                                    -->
@@ -413,7 +444,10 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/hardtoken/HardTokenData.class"/>                 
                 <include name="se/anatom/ejbca/hardtoken/UnavailableTokenException.class"/>
                 <include name="se/anatom/ejbca/hardtoken/HardTokenExistsException.class"/> 
-                <include name="se/anatom/ejbca/hardtoken/HardTokenDoesntExistsException.class"/>                                                                                                                                                                          
+                <include name="se/anatom/ejbca/hardtoken/HardTokenDoesntExistsException.class"/>         
+                <include name="se/anatom/ejbca/keyrecovery/IKeyRecoverySessionRemote.class"/>      
+                <include name="se/anatom/ejbca/keyrecovery/IKeyRecoverySessionHome.class"/> 
+                <include name="se/anatom/ejbca/keyrecovery/KeyRecoveryData.class"/>                                                                                                                                                                                                             
                 <include name="se/anatom/ejbca/ra/authorization/*Exception.class"/>
                 <include name="se/anatom/ejbca/ra/authorization/UserEntity.class"/>  
                 <include name="se/anatom/ejbca/ra/authorization/AdminInformation.class"/>      
@@ -430,7 +464,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- =================================================================== -->
   <!-- Build CA-ear                                                        -->
   <!-- =================================================================== -->
-  <target name="ca.ear" depends="apply.war, webdist.war, ca.jar, ra.jar, adminweb.war, log.jar">
+  <target name="ca.ear" depends="apply.war, webdist.war, ca.jar, ra.jar, adminweb.war, log.jar, hardtoken.jar, keyrecovery.jar">
     <mkdir dir="${caear.build}"/>
     <copy todir="${caear.earbuild}">
         <fileset dir="${caear.earsrc}"> 
@@ -454,7 +488,8 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="ca.jar"/>
                 <include name="ra.jar"/>
                 <include name="log.jar"/>         
-                <include name="hardtoken.jar"/>                          
+                <include name="hardtoken.jar"/>   
+                <include name="keyrecovery.jar"/>                                        
                 <include name="adminweb.war"/>
         </fileset>
     </copy>

@@ -116,7 +116,8 @@
   boolean userexists               = false;
   boolean useradded                = false;
   boolean useoldprofile            = false;
-  boolean usehardtokenissuers  = false;
+  boolean usehardtokenissuers      = false;
+  boolean usekeyrecovery           = false;
   EndEntityProfile oldprofile      = null;
   String addedusername             = ""; 
 
@@ -397,6 +398,7 @@
     }
     ArrayList[] tokenissuers = null;
 
+    usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && profile.getUse(EndEntityProfile.KEYRECOVERABLE,0);
     usehardtokenissuers = globalconfiguration.getIssueHardwareTokens() && profile.getUse(EndEntityProfile.AVAILTOKENISSUER,0);
     if(usehardtokenissuers){       
        tokenissuers = new ArrayList[availabletokens.length];
@@ -478,6 +480,28 @@ function setAvailableHardTokenIssuers(){
         }      
       }
     }
+}
+
+   <% } 
+      if(usekeyrecovery){ %>
+function isKeyRecoveryPossible(){
+   var seltoken = document.adduser.<%=SELECT_TOKEN%>.options.selectedIndex; 
+   var token = document.adduser.<%=SELECT_TOKEN%>.options[seltoken].value;
+   if(token == <%=SecConst.TOKEN_SOFT_BROWSERGEN %>){
+     document.adduser.<%=CHECKBOX_KEYRECOVERABLE%>.checked=false;
+     document.adduser.<%=CHECKBOX_KEYRECOVERABLE%>.disabled=true;
+   }else{
+     <% if(profile.isRequired(EndEntityProfile.KEYRECOVERABLE,0)){ %>
+       document.adduser.<%=CHECKBOX_KEYRECOVERABLE%>.disabled=true; 
+     <% }else{ %>
+     document.adduser.<%=CHECKBOX_KEYRECOVERABLE%>.disabled=false;
+     <%}
+       if(profile.getValue(EndEntityProfile.KEYRECOVERABLE,0).equals(EndEntityProfile.TRUE)){ %>
+     document.adduser.<%=CHECKBOX_KEYRECOVERABLE%>.checked=true;
+   <% }else{ %>  
+     document.adduser.<%=CHECKBOX_KEYRECOVERABLE%>.checked=false;
+     <% } %>
+   }
 }
 
    <% } %>
@@ -600,7 +624,8 @@ function checkallfields(){
   </script>
   <script language=javascript src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
-<body <% if(usehardtokenissuers) out.write("onload='setAvailableHardTokenIssuers()'");%>>
+<body onload='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");
+                   if(usekeyrecovery) out.write(" isKeyRecoveryPossible();");%>'>
   <h2 align="center"><%= ejbcawebbean.getText("ADDENDENTITY") %></h2>
   <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#addendentity"%>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A>
@@ -889,7 +914,8 @@ function checkallfields(){
 	 <td></td>
 	 <td align="right"><%= ejbcawebbean.getText("TOKEN") %></td>
 	 <td>
-         <select name="<%= SELECT_TOKEN %>" size="1" tabindex="<%=tabindex++%>" <% if(usehardtokenissuers) out.write("onchange='setAvailableHardTokenIssuers()'");%>>
+         <select name="<%= SELECT_TOKEN %>" size="1" tabindex="<%=tabindex++%>" onchange='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");
+                                                                                             if(usekeyrecovery) out.write(" isKeyRecoveryPossible();");%>'>
          <%
            if(lastselectedtoken.equals(""))
              lastselectedtoken= profile.getValue(EndEntityProfile.DEFKEYSTORE,0);
@@ -926,7 +952,7 @@ function checkallfields(){
 	 <td></td>
        </tr>
        <% } %>
-       <% if( profile.getUse(EndEntityProfile.ADMINISTRATOR,0) || profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery()){ %>
+       <% if( profile.getUse(EndEntityProfile.ADMINISTRATOR,0) || usekeyrecovery){ %>
        <tr id="Row<%=(row++)%2%>">
 	 <td></td>
 	 <td align="right"><%= ejbcawebbean.getText("TYPES") %></td>
@@ -950,7 +976,7 @@ function checkallfields(){
       </td>
       <td></td>
     </tr>
-      <%} if(profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery()){ %>
+      <%} if(usekeyrecovery){ %>
     <tr  id="Row<%=(row++)%2%>"> 
       <td></td>
       <td  align="right"> 

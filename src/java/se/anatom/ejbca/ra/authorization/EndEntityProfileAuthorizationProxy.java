@@ -35,6 +35,7 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
     public static final String REVOKE_RIGHTS         = GlobalConfiguration.REVOKE_RIGHTS;
     public static final String HISTORY_RIGHTS        = GlobalConfiguration.HISTORY_RIGHTS;    
     public static final String HARDTOKEN_VIEW_RIGHTS = GlobalConfiguration.HARDTOKEN_RA_ENDING;
+    public static final String KEYRECOVERY_RIGHTS    = GlobalConfiguration.KEYRECOVERYRESOURCE;    
     
     /** Creates a new instance of ProfileAuthorizationProxy. */
     public EndEntityProfileAuthorizationProxy(IAuthorizationSessionRemote authorizationsession) {

@@ -19,7 +19,7 @@ import se.anatom.ejbca.hardtoken.AvailableHardToken;
 
 /** Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.19 2003-02-06 15:35:54 herrvendil Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.20 2003-02-12 13:21:39 herrvendil Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 
@@ -46,6 +46,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             GlobalConfiguration globalconfiguration = getAdminSession().loadGlobalConfiguration(administrator);
             boolean usehardtokens = globalconfiguration.getIssueHardwareTokens();
+            boolean usekeyrecovery = globalconfiguration.getEnableKeyRecovery();
             String[] hardtokenissueraliases = null;
             AvailableHardToken[] availabletokens = new AvailableHardToken[0];
             IHardTokenSessionRemote hardtokensession=null;
@@ -66,7 +67,10 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 System.out.println("");
                 System.out.println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
                 System.out.println("SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>\"");
-                System.out.println("Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64");
+                if(usekeyrecovery)
+                  System.out.println("Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64; KEYRECOVERABLE=128");
+                else
+                  System.out.println("Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64");                    
                 System.out.print("Token      : User Generated=" + SecConst.TOKEN_SOFT_BROWSERGEN + "; P12=" + SecConst.TOKEN_SOFT_P12 + "; JKS="
                                     + SecConst.TOKEN_SOFT_JKS + ";  PEM=" + SecConst.TOKEN_SOFT_PEM);
                 if( usehardtokens){

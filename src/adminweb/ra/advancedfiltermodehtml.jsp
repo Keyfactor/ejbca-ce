@@ -50,23 +50,13 @@
    matchtypefields[NAME][1] = "<%= ejbcawebbean.getText("BEGINSWITH") %>";
 
    statusfields = new Array(2);
-   statusfields[ID] = new Array(7);
-   statusfields[ID][0] = <%= UserDataRemote.STATUS_NEW %>;
-   statusfields[ID][1] = <%= UserDataRemote.STATUS_FAILED %>;
-   statusfields[ID][2] = <%= UserDataRemote.STATUS_INITIALIZED %>;
-   statusfields[ID][3] = <%= UserDataRemote.STATUS_INPROCESS %>;
-   statusfields[ID][4] = <%= UserDataRemote.STATUS_GENERATED %>;
-   statusfields[ID][5] = <%= UserDataRemote.STATUS_REVOKED %>;
-   statusfields[ID][6] = <%= UserDataRemote.STATUS_HISTORICAL %>;
+   statusfields[ID] = new Array(<%=availablestatuses.length%>);
+   statusfields[NAME] = new Array(<%=availablestatuses.length%>);
+   <% for(int i=0; i < availablestatuses.length; i++){ %>
+   statusfields[ID][<%=i%>] = <%= availablestatuses[i] %>;
+   statusfields[NAME][<%=i%>] ="<%= ejbcawebbean.getText(availablestatustexts[i]) %>";
 
-   statusfields[NAME] = new Array(7);
-   statusfields[NAME][0] ="<%= ejbcawebbean.getText("STATUSNEW") %>";
-   statusfields[NAME][1] = "<%= ejbcawebbean.getText("STATUSFAILED") %>";
-   statusfields[NAME][2] = "<%= ejbcawebbean.getText("STATUSINITIALIZED") %>";
-   statusfields[NAME][3] = "<%= ejbcawebbean.getText("STATUSINPROCESS") %>";
-   statusfields[NAME][4] = "<%= ejbcawebbean.getText("STATUSGENERATED") %>";
-   statusfields[NAME][5] = "<%= ejbcawebbean.getText("STATUSREVOKED") %>";
-   statusfields[NAME][6] = "<%= ejbcawebbean.getText("STATUSHISTORICAL") %>";
+   <% } %>
 
 
 function changematchfields(row){
@@ -273,28 +263,11 @@ function changematchfields(row){
                 tempval = -1;
                 if(oldmatchtyperow1!= null)
                   tempval= Integer.parseInt(oldmatchvaluerow1);
-            %>
-      <option <% if( tempval == UserDataRemote.STATUS_NEW)
+                for(int k=0;k<availablestatuses.length;k++){ %>
+      <option <% if( tempval == availablestatuses[k])
                      out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_NEW) %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
-      <option <%  if( tempval == UserDataRemote.STATUS_FAILED)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_FAILED) %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>
-      <option <% if( tempval == UserDataRemote.STATUS_INITIALIZED)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_INITIALIZED) %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>
-      <option <%  if( tempval == UserDataRemote.STATUS_INPROCESS)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_INPROCESS) %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>
-      <option <%  if( tempval == UserDataRemote.STATUS_GENERATED)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_GENERATED) %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>
-      <option <%  if( tempval == UserDataRemote.STATUS_REVOKED)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_REVOKED) %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>
-      <option <% if( tempval == UserDataRemote.STATUS_HISTORICAL)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_HISTORICAL) %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option> 
+              value='<%= availablestatuses[k] %>'><%= ejbcawebbean.getText(availablestatustexts[k]) %></option>
+             <% } %>    
        <% } else{ %>
           disabled >
        <%  }
@@ -401,28 +374,11 @@ function changematchfields(row){
                 tempval = -1;
                 if(oldmatchtyperow2!= null)
                   tempval= Integer.parseInt(oldmatchvaluerow2);
-            %>
-      <option <% if( tempval == UserDataRemote.STATUS_NEW)
+                for(int k=0;k<availablestatuses.length;k++){ %>
+      <option <% if( tempval == availablestatuses[k])
                      out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_NEW) %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
-      <option <%  if( tempval == UserDataRemote.STATUS_FAILED)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_FAILED) %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>
-      <option <% if( tempval == UserDataRemote.STATUS_INITIALIZED)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_INITIALIZED) %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>
-      <option <%  if( tempval == UserDataRemote.STATUS_INPROCESS)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_INPROCESS) %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>
-      <option <%  if( tempval == UserDataRemote.STATUS_GENERATED)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_GENERATED) %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>
-      <option <%  if( tempval == UserDataRemote.STATUS_REVOKED)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_REVOKED) %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>
-      <option <% if( tempval == UserDataRemote.STATUS_HISTORICAL)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_HISTORICAL) %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option> 
+              value='<%= availablestatuses[k] %>'><%= ejbcawebbean.getText(availablestatustexts[k]) %></option>
+             <% } %>    
        <% } else{ %>
           disabled >
        <%  }
@@ -528,28 +484,11 @@ function changematchfields(row){
                 tempval = -1;
                 if(oldmatchtyperow3!= null)
                   tempval= Integer.parseInt(oldmatchvaluerow3);
-            %>
-      <option <% if( tempval == UserDataRemote.STATUS_NEW)
+                for(int k=0;k<availablestatuses.length;k++){ %>
+      <option <% if( tempval == availablestatuses[k])
                      out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_NEW) %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
-      <option <%  if( tempval == UserDataRemote.STATUS_FAILED)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_FAILED) %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>
-      <option <% if( tempval == UserDataRemote.STATUS_INITIALIZED)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_INITIALIZED) %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>
-      <option <%  if( tempval == UserDataRemote.STATUS_INPROCESS)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_INPROCESS) %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>
-      <option <%  if( tempval == UserDataRemote.STATUS_GENERATED)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_GENERATED) %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>
-      <option <%  if( tempval == UserDataRemote.STATUS_REVOKED)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_REVOKED) %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>
-      <option <% if( tempval == UserDataRemote.STATUS_HISTORICAL)
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_HISTORICAL) %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option> 
+              value='<%= availablestatuses[k] %>'><%= ejbcawebbean.getText(availablestatustexts[k]) %></option>
+             <% } %>    
        <% } else{ %>
           disabled >
        <%  }

@@ -1,3 +1,4 @@
+
   <p><%= ejbcawebbean.getText("FINDENDENTITYWITHUSERNAME") %>
     <input type="text" name="<%=TEXTFIELD_USERNAME %>" size="40" maxlength="255" 
      <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_FINDUSER))
@@ -27,37 +28,15 @@
     <select name="<%=SELECT_LIST_STATUS %>">
       <option value=''>--</option> 
       <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(ALL_STATUS))
+                   if(oldactionvalue.equals(Integer.toString(ALL_STATUS)))
                      out.write("selected"); %>
               value='<%= ALL_STATUS %>'><%= ejbcawebbean.getText("ALL") %></option>
+      <% for(int i=0; i<availablestatuses.length; i++){ %>
       <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_NEW)))
+                   if(oldactionvalue.equals(Integer.toString(availablestatuses[i])))
                      out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_NEW) %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
-      <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_FAILED)))
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_FAILED) %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>
-      <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_INITIALIZED)))
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_INITIALIZED) %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>
-      <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_INPROCESS)))
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_INPROCESS) %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>
-      <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_GENERATED)))
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_GENERATED) %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>
-      <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_REVOKED)))
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_REVOKED) %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>
-      <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_HISTORICAL)))
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_HISTORICAL) %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
+              value='<%= availablestatuses[i] %>'><%= ejbcawebbean.getText(availablestatustexts[i]) %></option>
+      <% } %>
     </select>
     <input type="submit" name="<%=BUTTON_LIST %>" value="<%= ejbcawebbean.getText("LIST") %>">
   </p>

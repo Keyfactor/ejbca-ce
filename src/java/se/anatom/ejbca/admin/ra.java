@@ -11,7 +11,7 @@ public class ra {
             if (cmd != null) {
                 cmd.execute();
             } else {
-            System.out.println("Usage: RA adduser | deluser | setpwd | setclearpwd | setuserstatus | finduser | listnewusers | listusers | revokeuser");
+            System.out.println("Usage: RA adduser | deluser | setpwd | setclearpwd | setuserstatus | finduser | listnewusers | listusers | revokeuser | keyrecover | keyrecovernewest");
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());

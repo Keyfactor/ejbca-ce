@@ -20,7 +20,7 @@ import se.anatom.ejbca.log.LogEntry;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.18 2003-01-12 17:16:31 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.19 2003-02-12 13:21:35 herrvendil Exp $
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean {
 
@@ -61,7 +61,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
             UserDataPK pk = new UserDataPK(username);
             UserDataRemote data = userHome.findByPrimaryKey(pk);
             int status = data.getStatus();
-            if ( (status == UserDataRemote.STATUS_NEW) || (status == UserDataRemote.STATUS_FAILED) || (status == UserDataRemote.STATUS_INPROCESS) ) {
+            if ( (status == UserDataRemote.STATUS_NEW) || (status == UserDataRemote.STATUS_FAILED) || (status == UserDataRemote.STATUS_INPROCESS) || (status == UserDataRemote.STATUS_KEYRECOVERY)) {
                 debug("Trying to authenticate user: username="+data.getUsername()+", dn="+data.getSubjectDN()+", email="+data.getSubjectEmail()+", status="+data.getStatus()+", type="+data.getType());
                 if (data.comparePassword(password) == false)
                 {

@@ -37,7 +37,7 @@ import se.anatom.ejbca.ra.IUserAdminSessionHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.3 2003-02-12 11:23:17 scop Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.4 2003-02-12 13:21:42 herrvendil Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
@@ -173,7 +173,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
          if(returnval)
            getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " + alias + " added.");
          else
-           getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error adding hard token issuer"+ alias);
+           getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error adding hard token issuer "+ alias);
        }catch(RemoteException e){
           throw new EJBException(e);
        }
@@ -567,11 +567,11 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
                 addHardTokenCertificateMapping(admin, tokensn, (X509Certificate) i.next());              
               }           
             }
-            getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENDATA,"Hard token with serial number : " + tokensn + " added.");              
+            getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_INFO_HARDTOKENDATA,"Hard token with serial number : " + tokensn + " added.");              
         }
         catch (Exception e) {  
           try{
-            getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENDATA,"Trying to add hard tokensn that already exists.");  
+            getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_HARDTOKENDATA,"Trying to add hard tokensn that already exists.");  
           }catch(RemoteException re){
              throw new EJBException(e);         
           }              
@@ -597,7 +597,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
             htd.setTokenType(tokentype);
             htd.setHardToken(hardtokendata);            
             htd.setModifyTime(new java.util.Date());
-            getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENDATA,"Hard token with serial number : " + tokensn + " changed.");              
+            getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENDATA,"Hard token with serial number : " + tokensn + " changed.");              
         }
         catch (Exception e) {  
           try{

@@ -53,7 +53,7 @@
         <ejb-ref-name>ejb/HardTokenIssuerData</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
         <local-home>se.anatom.ejbca.hardtoken.HardTokenIssuerDataLocalHome</local-home>
-        <local>se.anatom.ejbca.hardtoken.HardTokenIssuerDataLocalHome</local>
+        <local>se.anatom.ejbca.hardtoken.HardTokenIssuerDataLocal</local>
         <ejb-link>HardTokenIssuerData</ejb-link>
      </ejb-local-ref>
      <ejb-local-ref>
@@ -61,28 +61,12 @@
         <ejb-ref-name>ejb/HardTokenData</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
         <local-home>se.anatom.ejbca.hardtoken.HardTokenDataLocalHome</local-home>
-        <local>se.anatom.ejbca.hardtoken.HardTokenDataLocalHome</local>
+        <local>se.anatom.ejbca.hardtoken.HardTokenDataLocal</local>
         <ejb-link>HardTokenData</ejb-link>
      </ejb-local-ref>
      <ejb-local-ref>
         <description>The hard token to certificate map data entity bean</description>
         <ejb-ref-name>ejb/HardTokenCertificateMap</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.hardtoken.HardTokenCertificateMapLocalHome</local-home>
-        <local>se.anatom.ejbca.hardtoken.HardTokenCertificateMapLocal</local>
-        <ejb-link>HardTokenCertificateMap</ejb-link>
-     </ejb-local-ref>
-     <ejb-local-ref>
-        <description>The hard token to certificate map data entity bean</description>
-        <ejb-ref-name>ejb/HardTokenCertificateMapLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.hardtoken.HardTokenCertificateMapLocalHome</local-home>
-        <local>se.anatom.ejbca.hardtoken.HardTokenCertificateMapLocal</local>
-        <ejb-link>HardTokenCertificateMap</ejb-link>
-     </ejb-local-ref>
-     <ejb-local-ref>
-        <description>The hard token to certificate map data entity bean</description>
-        <ejb-ref-name>ejb/HardTokenCertificateMapLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
         <local-home>se.anatom.ejbca.hardtoken.HardTokenCertificateMapLocalHome</local-home>
         <local>se.anatom.ejbca.hardtoken.HardTokenCertificateMapLocal</local>

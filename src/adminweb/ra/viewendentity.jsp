@@ -41,8 +41,8 @@
                                 "EDIPARTNAME", "REGISTEREDID"};
    
    int[] statusids            = {UserDataRemote.STATUS_NEW ,UserDataRemote.STATUS_FAILED, UserDataRemote.STATUS_INITIALIZED, UserDataRemote.STATUS_INPROCESS
-                                , UserDataRemote.STATUS_GENERATED, UserDataRemote.STATUS_REVOKED , UserDataRemote.STATUS_HISTORICAL};
-   String[] statustexts         = {"STATUSNEW", "STATUSFAILED", "STATUSINITIALIZED", "STATUSINPROCESS", "STATUSGENERATED", "STATUSREVOKED", "STATUSHISTORICAL"};
+                                , UserDataRemote.STATUS_GENERATED, UserDataRemote.STATUS_REVOKED , UserDataRemote.STATUS_HISTORICAL, UserDataRemote.STATUS_KEYRECOVERY};
+   String[] statustexts         = {"STATUSNEW", "STATUSFAILED", "STATUSINITIALIZED", "STATUSINPROCESS", "STATUSGENERATED", "STATUSREVOKED", "STATUSHISTORICAL", "STATUSKEYRECOVERY"};
 
   UserView userdata = null;
   String   username = null;

@@ -313,6 +313,9 @@ function confirmrevokation(){
                           case UserDataRemote.STATUS_HISTORICAL :
                             out.write(ejbcawebbean.getText("STATUSHISTORICAL"));
                             break;
+                          case UserDataRemote.STATUS_KEYRECOVERY :
+                            out.write(ejbcawebbean.getText("STATUSKEYRECOVERY"));
+                            break;
                         }%></td>
       <td width="18%">
 

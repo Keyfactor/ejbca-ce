@@ -27,6 +27,8 @@ import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ra.authorization.EndEntityProfileAuthorizationProxy;
 import se.anatom.ejbca.ra.authorization.IAuthorizationSessionHome;
 import se.anatom.ejbca.ra.authorization.IAuthorizationSessionRemote;
+import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote;
+import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionHome;
 import se.anatom.ejbca.hardtoken.IHardTokenSessionRemote;
 import se.anatom.ejbca.hardtoken.IHardTokenSessionHome;
 import se.anatom.ejbca.hardtoken.HardTokenData;
@@ -42,7 +44,7 @@ import org.apache.log4j.Logger;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.23 2003-02-12 11:23:21 scop Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.24 2003-02-12 13:21:30 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -95,6 +97,9 @@ public class RAInterfaceBean {
                                                                                  IHardTokenSessionHome.class);
         hardtokensession = hardtokensessionhome.create();         
         
+        IKeyRecoverySessionHome keyrecoverysessionhome = (IKeyRecoverySessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("KeyRecoverySession"), 
+                                                                                 IKeyRecoverySessionHome.class);        
+        keyrecoverysession = keyrecoverysessionhome.create();
         
         profileauthproxy = new EndEntityProfileAuthorizationProxy(authorizationsession);
         certprofilenameproxy = new CertificateProfileNameProxy(administrator);
@@ -633,6 +638,29 @@ public class RAInterfaceBean {
       
       return returnval;
     }
+    
+    public boolean keyRecoveryPossible(CertificateView certificatedata) throws Exception{
+      boolean returnval = true;  
+      if(globalconfiguration.getEnableEndEntityProfileLimitations()){ 
+        int profileid = adminsession.findUser(administrator, certificatedata.getUsername()).getEndEntityProfileId();     
+        returnval = profileauthproxy.getEndEntityProfileAuthorizationNoLog(administrator, profileid, EndEntityProfileAuthorizationProxy.KEYRECOVERY_RIGHTS);
+      }  
+        
+      return returnval && keyrecoverysession.existsKeys(administrator, certificatedata.getCertificate()) && !keyrecoverysession.isUserMarked(administrator,certificatedata.getUsername());
+    }
+    
+    public void markForRecovery(CertificateView certificatedata) throws Exception{
+      boolean authorized = true;  
+      if( globalconfiguration.getEnableEndEntityProfileLimitations()){ 
+        int profileid = adminsession.findUser(administrator, certificatedata.getUsername()).getEndEntityProfileId();     
+        authorized = profileauthproxy.getEndEntityProfileAuthorizationNoLog(administrator, profileid, EndEntityProfileAuthorizationProxy.KEYRECOVERY_RIGHTS);
+      }          
+      
+      if(authorized){
+        keyrecoverysession.markAsRecoverable(administrator, certificatedata.getCertificate());
+        adminsession.setUserStatus(administrator, certificatedata.getUsername(),UserDataRemote.STATUS_KEYRECOVERY);        
+      }
+    }
       
     public String[] getCertificateProfileNames() throws RemoteException{
       String[] dummy = {""};
@@ -671,8 +699,9 @@ public class RAInterfaceBean {
     private IRaAdminSessionHome            raadminsessionhome;
     private IRaAdminSessionRemote          raadminsession;
     private IAuthorizationSessionRemote    authorizationsession;
-    private IHardTokenSessionRemote        hardtokensession;    
-
+    private IHardTokenSessionRemote        hardtokensession;   
+    private IKeyRecoverySessionRemote      keyrecoverysession; 
+    
     private UsersView                           users;
     private CertificateView[]                   certificates;
     private AddedUserMemory                     addedusermemory;

@@ -32,7 +32,7 @@ import se.anatom.ejbca.ra.raadmin.AdminPreference;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.22 2003-02-12 11:23:21 scop Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.23 2003-02-12 13:21:31 herrvendil Exp $
  */
 public class EjbcaWebBean {
 
@@ -47,12 +47,14 @@ public class EjbcaWebBean {
     public static final int AUTHORIZED_RA_HISTORY_RIGHTS     = 5; 
     public static final int AUTHORIZED_HARDTOKEN_VIEW_RIGHTS = 6;
     public static final int AUTHORIZED_CA_VIEW_CERT          = 7;
+    public static final int AUTHORIZED_RA_KEYRECOVERY_RIGHTS = 8;
     
-    private static final int AUTHORIZED_FIELD_LENGTH     = 8; 
+    private static final int AUTHORIZED_FIELD_LENGTH     = 9; 
     private static final String[] AUTHORIZED_RA_RESOURCES = {"/ra_functionallity/view_end_entity", "/ra_functionallity/edit_end_entity", 
                                                              "/ra_functionallity/create_end_entity", "/ra_functionallity/delete_end_entity",
                                                              "/ra_functionallity/revoke_end_entity","/ra_functionallity/view_end_entity_history",
-                                                             "/ra_functionallity/view_hardtoken","/ca_functionallity/view_certificate"};
+                                                             "/ra_functionallity/view_hardtoken","/ca_functionallity/view_certificate",
+                                                             "/ra_functionallity/keyrecovery"};
     
     // Private Fields.
     private ILogSessionRemote              logsession; 
