@@ -1,21 +1,20 @@
 <%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,se.anatom.ejbca.ca.sign.*"%>
 
 <HTML>
-<HEAD><TITLE>EJBCA Mozilla Demo Certificate enroll</TITLE>
-<link rel="stylesheet" href="indexmall.css" type="text/css">
+<HEAD>
+<TITLE>EJBCA Demo Certificate Enroll</TITLE>
 </HEAD>
 <BODY bgcolor="#ffffff" link="black" vlink="black" alink="black">
-
 <center>
-  <strong><span class="E">E</span><span class="J">J</span><span class="B">B</span><span class="C">C</span><span class="A">A 
-  </span> <span class="titel">Mozilla Demo Certificate Enrollment</span></strong> 
+<FONT face=arial size="3"><strong>EJBCA Demo Certificate Enrollment
+</strong></FONT>
 </center>
 
 <HR>
 Welcome to certificate enrollment. <BR>
-If you haven't done so already, you must first install the CA certificate(s) in your browser.
+If you haven't done so already, you should first fetch the CA certificate(s).
 
-<P>Install CA certificates:
+<P>Fetch CA certificates:
 
 <%
 try  {
@@ -27,10 +26,10 @@ try  {
     if (chain.length == 0) {
         out.println("No CA certificates exist");
     } else {
-        out.println("<li><a href=\"/webdist/certdist?cmd=nscacert&level=0\">Root CA</a></li>");
+        out.println("<li><a href=\"/webdist/certdist?cmd=cacert&level=0\">Root CA</a></li>");
         if (chain.length > 1) {
             for (int i=chain.length-2;i>=0;i--) {
-                out.println("<li><a href=\"/webdist/certdist?cmd=nscacert&level="+i+"\">CA</a></li>");
+                out.println("<li><a href=\"/webdist/certdist?cmd=cacert&level="+i+"\">CA</a></li>");
             }
         }
     }
@@ -38,7 +37,7 @@ try  {
     ex.printStackTrace();
 }                                             
 %>
-<HR>
+<hr>
 
 <script language="javaScript">
 //*** This function, triggered by clicking the fake Submit button, checks
@@ -71,23 +70,28 @@ function validateForm() {
   }
 }
 </script>
-<FORM name="demoreq" ACTION="/apply/certreq" ENCTYPE=x-www-form-encoded METHOD="POST">
+
+<FORM NAME="demoreq" ACTION="/apply/certreq" ENCTYPE=x-www-form-encoded METHOD=POST>
 Certificates issued by this CA comes with absolutely NO WARRANTY whatsoever. 
 NO AUTHENTICATION is performed on the information entered below.
+
+Please give your username and password, paste the PEM-formated PKCS10 certification request into the field below and
+ click OK to fetch your certificate. 
 <p>
-Please give your name, then click OK to fetch your certificate.<BR>
+A PEM-formatted request is a BASE64 encoded PKCS10 request between the two lines:<BR>
+-----BEGIN CERTIFICATE REQUEST-----<br>
+-----END CERTIFICATE REQUEST-----
+<p>
 
 <INPUT name=user type=hidden><br>
 <INPUT name=dn type=hidden value="C=SE,O=AnaTom,CN="><br>
 Common Name, e.g. Sven Svensson:<br>
 	<INPUT NAME=cn TYPE=text SIZE=30><p>
 Email (you may leave empty): <INPUT name=email TYPE=text size=20><p>
-Key length
-	<KEYGEN TYPE="hidden" NAME="keygen" VALUE="challenge">
+		<textarea rows="15" cols="70" name=pkcs10req wrap="physical"></textarea>
+		<br>
 
 <input type="button" value="OK" onclick="validateForm()">
-
-</FORM>
 
 <script language="JavaScript">
 //-- This little script, executed after form has been rendered, 
@@ -95,5 +99,6 @@ Key length
   document.demoreq.cn.focus()
 </script>
 
+</FORM>
 </BODY>
 </HTML>

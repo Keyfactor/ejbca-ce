@@ -1,0 +1,12 @@
+a:active {  font-family: Helvetica, sans-serif, Arial; font-size: small; font-style: normal; font-weight: normal; color: #00CC99; text-decoration: none; line-height: normal}
+a:link {  font-family: Helvetica, sans-serif, Arial; font-size: small; font-style: normal; font-weight: normal; color: #CC33CC; text-decoration: underline; line-height: normal}
+a:visited {  font-family: Helvetica, sans-serif, Arial; font-size: small; font-style: normal; font-weight: normal; color: #0066FF; text-decoration: underline; line-height: normal}
+body {  background-color: #FFFFFF}
+.B {  font-family: Helvetica, sans-serif, Arial; font-size: 36px; font-style: normal; line-height: normal; font-weight: bold; color: #6699FF}
+.E { font-family: Helvetica, sans-serif, Arial; font-size: 36px; font-style: normal; line-height: normal; font-weight: bold; color: #00CC99}
+.J { font-family: Helvetica, sans-serif, Arial; font-size: 36px; font-style: normal; line-height: normal; font-weight: bold; color: #CC99FF}
+.C { font-family: Helvetica, sans-serif, Arial; font-size: 36px; font-style: normal; line-height: normal; font-weight: bold; color: #FFCCFF}
+.titel { font-family: Helvetica, sans-serif, Arial; font-size: 14pt; font-style: normal; line-height: normal; font-weight: normal; color: #6699FF}
+.A { font-family: Helvetica, sans-serif, Arial; font-size: 36px; font-style: normal; line-height: normal; font-weight: bold; color: #FF99FF }
+a:hover { font-family: Helvetica, sans-serif, Arial; font-size: small; font-style: normal; font-weight: normal; color: #00CC99; line-height: normal ; text-decoration: underline}
+.text { font-family: Helvetica, sans-serif, Arial; font-size: small; font-style: normal; line-height: 6mm; font-weight: normal; color: #0066FF; clip:   rect(   ); cursor: text; filter: Invert}

@@ -1,10 +1,13 @@
 <%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,se.anatom.ejbca.ca.sign.*"%>
 
+
 <HTML>
 <HEAD>
 <TITLE>EJBCA IE Demo Certificate Enroll</TITLE>
 
- <object
+ 
+<link rel="stylesheet" href="indexmall.css" type="text/css">
+<object
    classid="clsid:43F8F289-7A20-11D0-8F06-00C04FC295E1"
    id="encoder">
  </object>
@@ -53,8 +56,8 @@
 </HEAD>
 <BODY onLoad="GetProviderList()" bgcolor="#ffffff" link="black" vlink="black" alink="black">
 <center>
-<FONT face=arial size="3"><strong>EJBCA IE Demo Certificate Enrollment
-</strong></FONT>
+  <strong><span class="E">E</span><span class="J">J</span><span class="B">B</span><span class="C">C</span><span class="A">A 
+  </span><span class="titel"> IE Demo Certificate Enrollment</span> </strong> 
 </center>
 
 <HR>
@@ -93,8 +96,9 @@ Please give your name, then click OK to fetch your certificate.<BR>
 <INPUT name=user type=hidden><br>
 <INPUT name=dn type=hidden value="C=SE,O=AnaTom,CN="><br>
 Common Name, e.g. Sven Svensson:<br>
-	<INPUT NAME=cn TYPE=text SIZE=30><p>
-Email (you may leave empty): <INPUT name=email TYPE=text size=20><p>
+	<INPUT NAME=cn TYPE=text SIZE=30>
+  <p> Email (voluntary): 
+    <INPUT name=email TYPE=text size=20><p>
 
     <P>Please choose the CSP you wish to use from the list below (the default is probably good):</P>
     <SELECT NAME="CspProvider">
