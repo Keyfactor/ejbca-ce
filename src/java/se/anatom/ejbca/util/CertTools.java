@@ -26,7 +26,7 @@ import se.anatom.ejbca.util.StringTools;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.13 2002-07-09 15:04:22 anatom Exp $
+ * @version $Id: CertTools.java,v 1.14 2002-08-02 09:23:16 anatom Exp $
  */
 public class CertTools {
 
@@ -142,7 +142,8 @@ public class CertTools {
 
 
     /**
-     * Gets a specified part of a DN.
+     * Gets a specified part of a DN. Specifically the first occurrence it the DN contains several
+     * instances of a part (i.e. cn=x, cn=y returns x).
      *
      * @param dn String containing DN, The DN string has the format "C=SE, O=xx, OU=yy, CN=zz".
      * @param dnpart String specifying which part of the DN to get, should be "CN" or "OU" etc.
@@ -152,11 +153,14 @@ public class CertTools {
         cat.debug(">getPartFromDN: dn:'" + dn+"', dnpart="+dnpart);
         String trimmeddn = dn.trim();
         String part = null, o = null;
-        StringTokenizer st = new StringTokenizer(trimmeddn, ",=");
+        dnpart += "="; // we search for 'CN=' etc.
+        StringTokenizer st = new StringTokenizer(trimmeddn, ",");
         while (st.hasMoreTokens()) {
             o = st.nextToken();
-            if (o.trim().equalsIgnoreCase(dnpart)) {
-                part = st.nextToken();
+            cat.debug("checking: "+o.trim().substring(0,dnpart.length()));
+            if (o.trim().substring(0,dnpart.length()).equalsIgnoreCase(dnpart)) {
+                part = o.trim().substring(dnpart.length());
+                break;
             }
         }
         cat.debug("<getpartFromDN: resulting DN part="+part);

@@ -1,0 +1,99 @@
+package se.anatom.ejbca.util.junit;
+
+import se.anatom.ejbca.util.*;
+
+import org.apache.log4j.*;
+import junit.framework.*;
+
+/** Tests the CertTools class .
+ *
+ * @version $Id: TestCertTools.java,v 1.1 2002-08-02 09:23:16 anatom Exp $
+ */
+public class TestCertTools extends TestCase {
+
+    static Category cat = Category.getInstance( TestCertTools.class.getName() );
+
+    public TestCertTools(String name) {
+        super(name);
+    }
+
+    protected void setUp() throws Exception {
+        cat.debug(">setUp()");
+        cat.debug("<setUp()");
+
+    }
+    protected void tearDown() throws Exception {
+    }
+
+    public void test01GetPartFromDN() throws Exception {
+        cat.debug(">test01GetPartFromDN()");
+
+        // We try to examine the general case and som special cases, which we want to be able to handle
+        String dn0 = "C=SE, O=AnaTom, CN=foo";
+        assertEquals(CertTools.getPartFromDN(dn0, "CN"), "foo");
+        assertEquals(CertTools.getPartFromDN(dn0, "O"), "AnaTom");
+        assertEquals(CertTools.getPartFromDN(dn0, "C"), "SE");
+        assertEquals(CertTools.getPartFromDN(dn0, "cn"), "foo");
+        assertEquals(CertTools.getPartFromDN(dn0, "o"), "AnaTom");
+        assertEquals(CertTools.getPartFromDN(dn0, "c"), "SE");
+        String dn1 = "c=SE, o=AnaTom, cn=foo";
+        assertEquals(CertTools.getPartFromDN(dn1, "CN"), "foo");
+        assertEquals(CertTools.getPartFromDN(dn1, "O"), "AnaTom");
+        assertEquals(CertTools.getPartFromDN(dn1, "C"), "SE");
+        assertEquals(CertTools.getPartFromDN(dn1, "cn"), "foo");
+        assertEquals(CertTools.getPartFromDN(dn1, "o"), "AnaTom");
+        assertEquals(CertTools.getPartFromDN(dn1, "c"), "SE");
+        String dn2 = "C=SE, O=AnaTom, CN=cn";
+        assertEquals(CertTools.getPartFromDN(dn2, "CN"), "cn");
+        String dn3 = "C=SE, O=AnaTom, CN=CN";
+        assertEquals(CertTools.getPartFromDN(dn3, "CN"), "CN");
+        String dn4 = "C=CN, O=AnaTom, CN=foo";
+        assertEquals(CertTools.getPartFromDN(dn4, "CN"), "foo");
+        String dn5 = "C=cn, O=AnaTom, CN=foo";
+        assertEquals(CertTools.getPartFromDN(dn5, "CN"), "foo");
+        String dn6 = "CN=foo, O=PrimeKey, C=SE";
+        assertEquals(CertTools.getPartFromDN(dn6, "CN"), "foo");
+        assertEquals(CertTools.getPartFromDN(dn6, "O"), "PrimeKey");
+        assertEquals(CertTools.getPartFromDN(dn6, "C"), "SE");
+        String dn7 = "CN=foo, O=PrimeKey, C=cn";
+        assertEquals(CertTools.getPartFromDN(dn7, "CN"), "foo");
+        assertEquals(CertTools.getPartFromDN(dn7, "C"), "cn");
+        String dn8 = "CN=foo, O=PrimeKey, C=CN";
+        assertEquals(CertTools.getPartFromDN(dn8, "CN"), "foo");
+        assertEquals(CertTools.getPartFromDN(dn8, "C"), "CN");
+        String dn9 = "CN=foo, O=CN, C=CN";
+        assertEquals(CertTools.getPartFromDN(dn9, "CN"), "foo");
+        assertEquals(CertTools.getPartFromDN(dn9, "O"), "CN");
+        String dn10 = "CN=foo, CN=bar,O=CN, C=CN";
+        assertEquals(CertTools.getPartFromDN(dn10, "CN"), "foo");
+        assertEquals(CertTools.getPartFromDN(dn10, "O"), "CN");
+        String dn11 = "CN=foo,CN=bar, O=CN, C=CN";
+        assertEquals(CertTools.getPartFromDN(dn11, "CN"), "foo");
+        assertEquals(CertTools.getPartFromDN(dn11, "O"), "CN");
+
+        cat.debug("<test01GetPartFromDN()");
+    }
+
+    public void test02StringToBCDNString() throws Exception {
+        cat.debug(">test02StringToBCDNString()");
+
+        // We try to examine the general case and som special cases, which we want to be able to handle
+        String dn1 = "C=SE, O=AnaTom, CN=foo";
+        assertEquals(CertTools.stringToBCDNString(dn1), "CN=foo,O=AnaTom,C=SE");
+        String dn2 = "C=SE, O=AnaTom, CN=cn";
+        assertEquals(CertTools.stringToBCDNString(dn2), "CN=cn,O=AnaTom,C=SE");
+        String dn3 = "CN=foo, O=PrimeKey, C=SE";
+        assertEquals(CertTools.stringToBCDNString(dn3), "CN=foo,O=PrimeKey,C=SE");
+        String dn4 = "cn=foo, o=PrimeKey, c=SE";
+        assertEquals(CertTools.stringToBCDNString(dn4), "CN=foo,O=PrimeKey,C=SE");
+        String dn5 = "cn=foo,o=PrimeKey,c=SE";
+        assertEquals(CertTools.stringToBCDNString(dn5), "CN=foo,O=PrimeKey,C=SE");
+
+        String dn6 = "cn=jean,cn=EJBCA,dc=home,dc=jean";
+        //assertEquals(CertTools.stringToBCDNString(dn6), "CN=jean,CN=EJBCA,DC=home,DC=jean");
+
+        cat.debug("<test02StringToBCDNString()");
+    }
+
+}
+
