@@ -82,7 +82,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.79 2003-03-28 08:54:26 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.80 2003-03-28 08:59:17 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -641,8 +641,8 @@ public class RSASignSessionBean extends BaseSessionBean {
             if (upn != null) {
                 DERConstructedSequence upnSeq = new DERConstructedSequence();
                 upnSeq.addObject(new DERObjectIdentifier(CertTools.UPN_OBJECTID));
-                upnSeq.addObject(new DERTaggedObject(0, new DERUTF8String(upn)));
-                GeneralName gn = new GeneralName(true, upnSeq, 0);
+                upnSeq.addObject(new DERTaggedObject(true, 0, new DERUTF8String(upn)));
+                GeneralName gn = new GeneralName(upnSeq, 0);
                 vec.add(gn);
             }
             if (vec.size() > 0) {
