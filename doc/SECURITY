@@ -12,8 +12,9 @@ After realising this, please read on and take a pragmatic approach to security
 
 Setting up SSL
 --------------
-To set upp SSL communcation for all HTTP-traffic to the server, 
-follow the instructions in README about setting up Web Administration.
+To set upp SSL communcation for all HTTP-traffic to the server 
+follow the instructions in README for installing EJBCA, this will set up HTTPS 
+for the admin-GUI.
 This will set up an SSL port open for the public at 8442 and an SSL port
 which require client certificate to access the administraton pages at 8443.
 
