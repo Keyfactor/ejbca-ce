@@ -49,7 +49,7 @@
           </select>         
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+<!--    <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("SETUSERPASSWORD") %>
@@ -61,7 +61,7 @@
                  out.write(" CHECKED ");
            %>>
       </td>
-    </tr>
+    </tr> -->
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
         <div align="right"> 
