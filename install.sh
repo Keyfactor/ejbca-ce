@@ -12,7 +12,7 @@ fi
 
 CP=.:./admin.jar:./lib/ldap.jar
 
-if java -cp $CP se.anatom.ejbca.admin.Install install unix en ejbca jboss tomcat
+if java -cp $CP se.anatom.ejbca.admin.Install install unix en ejbca jboss
 then
 #This command must be run as root
 echo
@@ -24,6 +24,6 @@ su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -import -trustcacerts -file tmp/ro
 
 rm tmp/rootca.der
 
-java -cp $CP se.anatom.ejbca.admin.Install displayendmessage unix en ejbca jboss tomcat
+java -cp $CP se.anatom.ejbca.admin.Install displayendmessage unix en ejbca jboss
 fi 
 

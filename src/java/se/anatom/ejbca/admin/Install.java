@@ -34,11 +34,7 @@ public class Install {
 	private final static int APPSERVER_JBOSS         = 0; 
 	private final static int APPSERVER_WEBLOGIC  = 1;
 	
-    private final static int WEBSERVER_JETTY      = 0;
-    private final static int WEBSERVER_TOMCAT  = 1;
-
     private int appserver = APPSERVER_JBOSS;
-    private int webserver = WEBSERVER_JETTY;
 
     private int os = OS_UNIX;
     
@@ -62,7 +58,7 @@ public class Install {
 	
 	private BufferedReader reader = null;
 	
-	public Install(String osstring, String language, String version, String appserverstring, String webserverstring) throws Exception{
+	public Install(String osstring, String language, String version, String appserverstring) throws Exception{
 			
 		reader = new BufferedReader(new InputStreamReader(System.in));
 		
@@ -79,19 +75,9 @@ public class Install {
 		}
 		if(osstring.equalsIgnoreCase("windows")){
 			this.os = OS_WINDOWS;
-		}
-		
-		if(appserverstring.equalsIgnoreCase("tomcat")){
-			this.webserver = WEBSERVER_TOMCAT;
-		}
-		
-		
+		}		
         if(appserverstring.equalsIgnoreCase("weblogic")){
             this.appserver = APPSERVER_WEBLOGIC;
-        }
-
-        if(appserverstring.equalsIgnoreCase("tomcat")){
-            this.webserver = WEBSERVER_TOMCAT;
         }
 	}			
 	
@@ -103,23 +89,23 @@ public class Install {
 	}
 					
 	public static void main(String[] args) throws Exception {
-		if(args.length != 6){
-			System.out.println("Usage: install install <unix|windows> <language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>\n" +
-					                     " Or : install displayendmessage <unix|windows> <language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>");
+		if(args.length != 5){
+			System.out.println("Usage: install install <unix|windows> <language> <ejbca|primeca> <jboss|weblogic>\n" +
+					                     " Or : install displayendmessage <unix|windows> <language> <ejbca|primeca> <jboss|weblogic>");
 			System.exit(-1);
 		}
 		
-		Install install = new Install(args[ARG_OS], args[ARG_LANGUAGE], args[ARG_VERSION], args[ARG_APPSERVER], args[ARG_WEBSERVER]);
+		Install install = new Install(args[ARG_OS], args[ARG_LANGUAGE], args[ARG_VERSION], args[ARG_APPSERVER]);
 		
-		if(args.length == 6){
+		if(args.length == 5){
 			if(args[Install.ARG_COMMAND].equalsIgnoreCase("install")){
 		      install.run();
 		    }else{		    			
 			  if(args[Install.ARG_COMMAND].equalsIgnoreCase("displayendmessage")){		
 			  	install.displayEndMessage();    
 			  }else{
-				System.out.println("Usage: install install <unix|windows> <language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>\n" +
-				" Or : install displayendmessage <unix|windows><language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>");
+				System.out.println("Usage: install install <unix|windows> <language> <ejbca|primeca> <jboss|weblogic>\n" +
+				" Or : install displayendmessage <unix|windows><language> <ejbca|primeca> <jboss|weblogic>");
 				System.exit(-1);
 			  }
 		    }
@@ -318,8 +304,8 @@ public class Install {
 		displayInstallingMessage();
         
 		if(this.os == OS_WINDOWS){
-			try {											
-				Process runcainit = Runtime.getRuntime().exec("ca.cmd init " + this.caname + " \"" + this.cadn + "\" " + this.keysize + " " + this.validity + " " + this.policyid.trim() );
+			try {
+				Process runcainit = Runtime.getRuntime().exec("ca.cmd init " + this.caname + " \"" + this.cadn + "\" " + this.keysize + " " + this.validity + " " + this.policyid.trim());
 				BufferedReader br = new BufferedReader(new InputStreamReader(runcainit.getInputStream()));
 				Thread.sleep(1000);
 				String line = "";
