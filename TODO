@@ -1,4 +1,4 @@
-$Id: TODO,v 1.76 2004-01-31 09:55:03 anatom Exp $
+$Id: TODO,v 1.77 2004-02-02 13:25:14 anatom Exp $
 
 V 3.x
 -----
@@ -12,6 +12,7 @@ V 3.x
 - Command line to edit/change users.
 - Better command line tools for batch stuff.
 - Add smart card support (PKCS15) in CA for protection of private key.
+- CMP (rfc 2510)
 
 General
 -------
