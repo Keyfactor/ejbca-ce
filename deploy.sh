@@ -10,4 +10,4 @@ fi
 cp dist/*.war $JBOSS_HOME/deploy
 cp dist/*.jar $JBOSS_HOME/deploy
 
-echo bcprov.jar must be copied to jboss/lib/ext.
+echo jce-jdk13-111b.jar must be copied to jboss/lib/ext.
