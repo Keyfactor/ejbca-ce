@@ -14,6 +14,7 @@ import javax.naming.NamingException;
 import java.rmi.RemoteException;
 import javax.ejb.DuplicateKeyException;
 
+import se.anatom.ejbca.ca.exception.IllegalKeyException;
 import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.ca.sign.*;
@@ -30,7 +31,7 @@ import junit.framework.*;
 
 /** Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.17 2003-01-12 17:16:27 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.18 2003-01-24 09:04:03 scop Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -106,6 +107,19 @@ public class TestSignSession extends TestCase {
     +"M2pQ7Wt2syG65+2nBIVCyafs+DT+R/5CZQsC0Dq/oiegSJ1Np0j/ZkFvhAQThB8V"
     +"7FVVk2/1bvfGDJ1jI/qYvTzc9G8mNI3jgYJAj8x8BUbcRaTzYS2BIhZuZPXWjhGB"
     +"etm1q/SDGGMhR2MZjLou5ZhQcE/Y+BJvo/Hsr9fLfg==").getBytes());
+
+    static byte[] keytooldsa = Base64.decode(
+    ("MIICNjCCAfQCAQAwMTERMA8GA1UEAxMIRFNBIFRlc3QxDzANBgNVBAoTBkFuYXRvbTELMAkGA1UE"
+    +"BhMCU0UwggG4MIIBLAYHKoZIzjgEATCCAR8CgYEA/X9TgR11EilS30qcLuzk5/YRt1I870QAwx4/"
+    +"gLZRJmlFXUAiUftZPY1Y+r/F9bow9subVWzXgTuAHTRv8mZgt2uZUKWkn5/oBHsQIsJPu6nX/rfG"
+    +"G/g7V+fGqKYVDwT7g/bTxR7DAjVUE1oWkTL2dfOuK2HXKu/yIgMZndFIAccCFQCXYFCPFSMLzLKS"
+    +"uYKi64QL8Fgc9QKBgQD34aCF1ps93su8q1w2uFe5eZSvu/o66oL5V0wLPQeCZ1FZV4661FlP5nEH"
+    +"EIGAtEkWcSPoTCgWE7fPCTKMyKbhPBZ6i1R8jSjgo64eK7OmdZFuo38L+iE1YvH7YnoBJDvMpPG+"
+    +"qFGQiaiD3+Fa5Z8GkotmXoB7VSVkAUw7/s9JKgOBhQACgYEAiVCUaC95mHaU3C9odWcuJ8j3fT6z"
+    +"bSR02CVFC0F6QO5s2Tx3JYWrm5aAjWkXWJfeYOR6qBSwX0R1US3rDI0Kepsrdco2q7wGSo+235KL"
+    +"Yfl7tQ9RLOKUGX/1c5+XuvN1ZbGy0yUw3Le16UViahWmmx6FM1sW6M48U7C/CZOyoxagADALBgcq"
+    +"hkjOOAQDBQADLwAwLAIUQ+S2iFA1y7dfDWUCg7j1Nc8RW0oCFFhnDlU69xFRMeXXn1C/Oi+8pwrQ"
+    ).getBytes());
 
     static Category cat = Category.getInstance( TestSignSession.class.getName() );
     private static Context ctx;
@@ -294,6 +308,24 @@ public class TestSignSession extends TestCase {
 
         cat.debug("Cert="+cert1.toString());
         cat.debug("<test06KeyUsage()");
+    }
+
+    public void test07DSAKey()
+        throws Exception
+    {
+        cat.debug(">test07DSAKey()");
+        UserDataPK pk = new UserDataPK("foo");
+        UserDataRemote data = userhome.findByPrimaryKey(pk);
+        data.setStatus(UserDataRemote.STATUS_NEW);
+        cat.debug("Reset status of 'foo' to NEW");
+        try {
+            X509Certificate cert = (X509Certificate)remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER),"foo", "foo123", new PKCS10RequestMessage(keytooldsa));
+        } catch (Exception e) {
+            // RSASignSession should throw an IllegalKeyException here.
+            assertTrue("Expected IllegalKeyException: " + e.toString(),
+                       e instanceof IllegalKeyException);
+        }
+        cat.debug("<test07DSAKey()");
     }
 
 /*

@@ -47,7 +47,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.66 2003-01-22 09:05:55 scop Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.67 2003-01-24 09:04:02 scop Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -238,8 +238,15 @@ public class RSASignSessionBean extends BaseSessionBean {
                     certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
                 }
                 cat.debug("Using certificate profile with id "+certProfileId);
-                cat.debug("Public key is a " + pk.getClass().getName());
-                int keyLength = ((RSAPublicKey)pk).getModulus().bitLength();
+                int keyLength;
+                try {
+                  keyLength = ((RSAPublicKey)pk).getModulus().bitLength();
+                } catch (ClassCastException e) {
+                  throw new
+                    IllegalKeyException("Unsupported public key (" +
+                                        pk.getClass().getName() +
+                                        "), only RSA keys are supported.");
+                }
                 cat.debug("Keylength = "+keyLength); // bitBength() will return 1 less bit if BigInt i negative
                 if ( (keyLength < (certProfile.getMinimumAvailableBitLength()-1))
                     || (keyLength > (certProfile.getMaximumAvailableBitLength())) ) {
