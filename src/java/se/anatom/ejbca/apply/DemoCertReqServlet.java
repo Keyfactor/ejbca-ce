@@ -74,13 +74,12 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.5 2003-01-16 08:44:56 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.6 2003-01-16 10:24:38 anatom Exp $
  */
 public class DemoCertReqServlet
   extends HttpServlet {
 
-  private final static Category cat =
-    Category.getInstance(CertReqServlet.class.getName());
+  private final static Category cat = Category.getInstance(DemoCertReqServlet.class.getName());
 
   private InitialContext ctx = null;
   private ISignSessionHome home = null;
@@ -180,10 +179,10 @@ public class DemoCertReqServlet
       throw new ServletException("A certification request must be provided!");
     }
 
-      String username = request.getParameter("username");
-      if (username == null || username.trim().length() == 0) {
-          username = CertTools.getPartFromDN(dn, "CN");
-      }
+    String username = request.getParameter("username");
+    if (username == null || username.trim().length() == 0) {
+        username = CertTools.getPartFromDN(dn, "CN");
+    }
     // need null check here?
     // Before doing anything else, check if the user name is unique and ok.
     boolean check = checkUsername(admin,username);
@@ -195,6 +194,9 @@ public class DemoCertReqServlet
         return;
     }
 
+    String includeEmail = request.getParameter("FormsCheckbox1");
+    cat.debug("includeEmail="+includeEmail);
+
     UserView newuser = new UserView();
     newuser.setUsername(username);
 
@@ -205,10 +207,11 @@ public class DemoCertReqServlet
 
     String email = request.getParameter("email");
     if (email == null) email = CertTools.getPartFromDN(dn, "EMAILADDRESS");
-    // TODO: get values from subject altname, lookup email as well
     if (email != null) {
       newuser.setEmail(email);
-      newuser.setSubjectAltName("email="+email);
+      if (includeEmail != null) {
+          newuser.setSubjectAltName("email="+email);
+      }
     }
 
     int eProfileId = SecConst.EMPTY_ENDENTITYPROFILE;
@@ -225,9 +228,8 @@ public class DemoCertReqServlet
     // TODO: check that we're authorized to use the profile
     newuser.setCertificateProfileId(cProfileId);
 
-    // TODO: figure out if we can manage without a password.
     String password = request.getParameter("password");
-    if (password == null) password = "";
+    if (password == null) password = "demo";
     newuser.setPassword(password);
     newuser.setClearTextPassword(false);
 

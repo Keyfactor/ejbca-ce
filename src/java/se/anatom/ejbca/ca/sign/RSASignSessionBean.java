@@ -47,7 +47,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.62 2003-01-12 17:26:40 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.63 2003-01-16 10:24:41 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -502,6 +502,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         // Make DNs
         String dn = subject.getDN();
         String altName = subject.getAltName();
+        /* Old stuff
         if (subject.getEmail() != null) {
             String email = null;
             if (altName != null) {
@@ -514,7 +515,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             if (email == null) {
                 altName = "rfc822Name="+subject.getEmail()+ ((altName == null) ? "":(", "+altName));
             }
-        }
+        } */
         /* This is handled automatically?? (anyway we don't want it)
         if ((subject.getEmail() != null) && (emailindn.booleanValue() == true))
             dn = dn + ", EmailAddress=" + subject.getEmail();
