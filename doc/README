@@ -1,4 +1,4 @@
-$Id: README,v 1.87 2003-06-01 19:26:49 anatom Exp $
+$Id: README,v 1.88 2003-06-03 11:35:16 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -729,17 +729,16 @@ The sampleauth servlet (sampleauth.war) is only an example and
 should never be
 deployed in a real production environment.
 
-Troubleshooting
-===============
-Add Debug output from the console administration commands by
-replacing:
-
-    log4j.rootCategory=INFO, Console
-
-in the file 'log4j.properties' with:
-
-    log4j.rootCategory=DEBUG, Console
-
+Certificate- and EndEntity Profiles
+-----------------------------------
+CertificateProfiles define different types of certificates, with 
+regards to DN-contents, extensions etc. We also have 
+EndEntityProfiles, where users are grouped, and you can determine 
+which parts of their DN that is already set, and which can be 
+altered etc. 
+An EndEntityProfile can be connected to specific CertificateProfiles 
+so users belonging to a specific EndEntityProfile can only get 
+certificates from the specified CertificateProfile.
 
 INSTALLING WEB RA-ADMIN
 =======================
@@ -927,6 +926,17 @@ http://127.0.0.1:8080/ejbca/publicweb/apply/certreq.
 The certificate reply containing a PEM-formatted certificate is
 printed to the
  screen.
+
+Troubleshooting
+===============
+Add Debug output from the console administration commands by
+replacing:
+
+    log4j.rootCategory=INFO, Console
+
+in the file 'log4j.properties' with:
+
+    log4j.rootCategory=DEBUG, Console
 
 REFERENCES
 ==========
