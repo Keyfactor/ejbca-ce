@@ -26,8 +26,8 @@ function checkallfields(){
    if(!checkfieldfordecimalnumbers("document.editprofile.<%=EditHardTokenProfileJSPHelper.TEXTFIELD_VISUALVALIDITY%>","<%= ejbcawebbean.getText("ONLYDIGITSINVISUALVALIDITY") %>"))
       illegalfields++;
    <% } %>
-   if((document.editprofile.<%= EditHardTokenProfileJSPHelper.TEXTFIELD_SNPREFIX %>.value.length != 5)){
-      alert("<%= ejbcawebbean.getText("HARDTOKENSNMUSTBEFIVE") %>");
+   if((document.editprofile.<%= EditHardTokenProfileJSPHelper.TEXTFIELD_SNPREFIX %>.value.length != 6)){
+      alert("<%= ejbcawebbean.getText("HARDTOKENSNMUSTBESIX") %>");
       illegalfields++;
    } 
    if(!checkfieldfordecimalnumbers("document.editprofile.<%=EditHardTokenProfileJSPHelper.TEXTFIELD_SNPREFIX%>","<%= ejbcawebbean.getText("ONLYDIGITSINHARDTOKENSN") %>"))
@@ -152,7 +152,7 @@ function checkallfields(){
          <%= ejbcawebbean.getText("HARDTOKENSNPREFIX") %> 
       </td>
       <td width="50%">
-        <input type="text" name="<%=EditHardTokenProfileJSPHelper.TEXTFIELD_SNPREFIX%>" size="5" maxlength="5" 
+        <input type="text" name="<%=EditHardTokenProfileJSPHelper.TEXTFIELD_SNPREFIX%>" size="6" maxlength="6" 
                value='<%= helper.profiledata.getHardTokenSNPrefix()%>'>
       </td>
     </tr>

@@ -84,7 +84,8 @@ public class DNFieldExtractor {
     public void setDN(String dn, int type) {
         String[] fields;
         this.type = type;
-
+        
+        
         if (type == TYPE_SUBJECTDN) {
             fieldnumbers = new int[SUBJECTDNFIELDS.length];
             fields = SUBJECTDNFIELDS;
@@ -125,6 +126,7 @@ public class DNFieldExtractor {
                     }
                 }
             } catch (Exception e) {
+            	e.printStackTrace();
 				illegal = true;
                 if (type == TYPE_SUBJECTDN) {
                     dnfields.put(new Integer((CN * BOUNDRARY)), "Illegal DN : " + dn);

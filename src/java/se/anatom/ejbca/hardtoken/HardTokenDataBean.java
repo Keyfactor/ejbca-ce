@@ -24,7 +24,7 @@ import se.anatom.ejbca.util.StringTools;
  *  data (Data saved concerning the hard token)
  * </pre>
  *
- * @version $Id: HardTokenDataBean.java,v 1.8 2003-09-03 12:46:59 herrvendil Exp $
+ * @version $Id: HardTokenDataBean.java,v 1.9 2004-01-25 09:37:08 herrvendil Exp $
  */
 public abstract class HardTokenDataBean extends BaseEntityBean {
 
@@ -74,7 +74,13 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
       int tokentype = ((Integer) data.get(HardToken.TOKENTYPE)).intValue();
 
       switch(tokentype){
-          case SecConst.TOKEN_EID :
+          case SecConst.TOKEN_SWEDISHEID :
+      	     returnval = new SwedishEIDHardToken();
+      	     break;
+          case SecConst.TOKEN_ENHANCEDEID :
+      	     returnval = new EnhancedEIDHardToken();
+      	     break;      	
+          case SecConst.TOKEN_EID :    // Left for backward compability
              returnval = new EIDHardToken();
              break;
           default:

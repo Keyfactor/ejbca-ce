@@ -17,6 +17,8 @@ public abstract class HardToken extends UpgradeableDataHashMap implements Serial
     public static final float LATEST_VERSION = 0;
     public static final String TOKENTYPE = "TOKENTYPE";
 
+    
+    public static final String TOKENPROFILE = "TOKENPROFILE";
     // Protexted Constants, must be overloaded by all deriving classes.
     public String[] FIELDS;
     public int[] DATATYPES;
@@ -33,64 +35,42 @@ public abstract class HardToken extends UpgradeableDataHashMap implements Serial
     public static final int EMPTYROW = 5;
     public static final String EMPTYROW_FIELD = "EMTPYROW";
 
-    // Abstarct Methods.
-    public abstract int getNumberOfFields();
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param index DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public abstract String getFieldText(int index);
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param index DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public abstract String getFieldPointer(int index);
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param index DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public abstract int getFieldDataType(int index);
-
+    
     // Public Methods
     public Object getField(String field) {
         return (Object) data.get(field);
     }
+    	
+	public abstract int getNumberOfFields() ;
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param field DOCUMENT ME!
-     * @param value DOCUMENT ME!
-     */
+	public abstract String getFieldText(int index); 
+
+	public abstract String getFieldPointer(int index);
+
+	public abstract int getFieldDataType(int index);
+
     public void setField(String field, Object value) {
         data.put(field, value);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public int getTokenType() {
-        return ((Integer) data.get(HardToken.TOKENTYPE)).intValue();
+    
+    public int getTokenProfileId() {
+    	if(data.get(HardToken.TOKENPROFILE) == null)
+    		return 0;
+    	
+        return ((Integer) data.get(HardToken.TOKENPROFILE)).intValue();
     }
+    
+	public void setTokenProfileId(int hardtokenprofileid) {
+	  data.put(HardToken.TOKENPROFILE, new Integer(hardtokenprofileid));
+	}
+
 
     /**
      * Implemtation of UpgradableDataHashMap function getLatestVersion
      *
-     * @return DOCUMENT ME!
      */
     public float getLatestVersion() {
         return LATEST_VERSION;

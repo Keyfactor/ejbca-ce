@@ -1,5 +1,6 @@
 package se.anatom.ejbca.hardtoken;
 
+import java.util.Collection;
 import java.util.Date;
 
 import se.anatom.ejbca.hardtoken.hardtokentypes.HardToken;
@@ -10,19 +11,36 @@ import se.anatom.ejbca.util.StringTools;
  *  server and clients.
  *
  * @author  TomSelleck
- * @version $Id: HardTokenData.java,v 1.5 2003-09-03 12:45:02 herrvendil Exp $
+ * @version $Id: HardTokenData.java,v 1.6 2004-01-25 09:37:10 herrvendil Exp $
  */
 
 public class HardTokenData implements java.io.Serializable {
 
     // Public Constructors
-    public HardTokenData(String tokensn, String username, Date createtime,  Date modifytime, int tokentype, HardToken hardtoken){
+	/** 
+	 * Construtor of a hard token data.
+	 * 
+	 * @param tokensn the tokensn
+	 * @param username the username owning the token
+	 * @param createtime time the token was created
+	 * @param modifytime time whem token was modified or a copy was made.
+	 * @param tokentype the hardtokenprofile used to create the token
+	 * @param hardtoken the actual hardtoken data
+	 * @param copyof tokenSN of original or null of this is an original
+	 * @param copies Collention of tokensn of tokens copied from this token, null if no copies have been made.
+	 * 
+	 */
+    public HardTokenData(String tokensn, String username, Date createtime,  Date modifytime, 
+                         int tokentype, HardToken hardtoken, String copyof,
+                         Collection copies){
       this.tokensn=tokensn;
       this.username=StringTools.strip(username);
       this.createtime=createtime;
       this.modifytime=modifytime;
       this.tokentype=tokentype;
       this.hardtoken=hardtoken;
+      this.copyof=copyof;
+      this.copies=copies;
     }
 
     public HardTokenData(){
@@ -47,6 +65,25 @@ public class HardTokenData implements java.io.Serializable {
 
     public HardToken getHardToken(){ return this.hardtoken; }
     public void setHardToken(HardToken hardtoken){ this.hardtoken=hardtoken; }
+    
+    public boolean isOriginal(){
+      return copyof==null;	
+    }
+    
+    public String getCopyOf(){
+      return copyof;	
+    }
+    
+    /** 
+     * Returns a collection of (Strings) containing the tokenSN of all copies made
+     * of this token.
+     * 
+     * @returns A Collection of tokenSN or null of no copies have been made.
+     * 
+     */
+    public Collection getCopies(){
+      return copies;	
+    }
 
     // Private fields
     private    String          tokensn;
@@ -55,4 +92,6 @@ public class HardTokenData implements java.io.Serializable {
     private    Date            modifytime;
     private    int             tokentype;
     private    HardToken       hardtoken;
+    private    String          copyof;
+    private    Collection      copies;
 }

@@ -16,6 +16,8 @@ import javax.sql.DataSource;
 
 
 import se.anatom.ejbca.BaseSessionBean;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRequest;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceResponse;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
@@ -31,7 +33,7 @@ import se.anatom.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.11 2003-12-05 14:50:28 herrvendil Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.12 2004-01-25 09:37:11 herrvendil Exp $
  */
 public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
@@ -141,10 +143,10 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	/**
 	 * Adds a certificates keyrecovery data to the database.
 	 *
-	 * @param admin DOCUMENT ME!
-	 * @param certificate DOCUMENT ME!
-	 * @param username DOCUMENT ME!
-	 * @param keypair DOCUMENT ME!
+	 * @param admin the administrator calling the function
+	 * @param certificate the certificate used with the keypair.
+	 * @param username of the administrator
+	 * @param keypair the actual keypair to save.
 	 *
 	 * @return false if the certificates keyrecovery data already exists.
 	 *
@@ -157,9 +159,13 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 		boolean returnval = false;
 
 		try {
-			// TODO, encrypt keys.
+			int caid = CertTools.getIssuerDN(certificate).hashCode();
+			
+			KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) getSignSession().extendedService(admin,caid, 
+					                                                                new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS,keypair));
+						
 			keyrecoverydatahome.create(certificate.getSerialNumber(),
-				CertTools.getIssuerDN(certificate), username, keypair);
+				CertTools.getIssuerDN(certificate), username, response.getKeyData());
 			getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), username,
 				certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
 				"Keyrecovery data for certificate with serial number : " +
@@ -203,8 +209,13 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 						certificate.getSerialNumber(), CertTools.getIssuerDN(certificate)));
 			krd.setMarkedAsRecoverable(markedasrecoverable);
 
-			// TODO, encrypt keys.
-			krd.setKeyPair(keypair);
+			int caid = CertTools.getIssuerDN(certificate).hashCode();
+			
+			KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) getSignSession().extendedService(admin,caid, 
+					new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS,keypair));
+			
+			
+			krd.setKeyDataFromByteArray(response.getKeyData());
 			getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
 				krd.getUsername(), certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
 				"Keyrecovery data for certificate with serial number : " +
@@ -227,8 +238,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	/**
 	 * Removes a certificates keyrecovery data from the database.
 	 *
-	 * @param admin DOCUMENT ME!
-	 * @param certificate DOCUMENT ME!
+	 * @param admin the administrator calling the function
+	 * @param certificate the certificate used with the keys about to be removed.
 	 *
 	 * @throws EJBException if a communication or other error occurs.
 	 */
@@ -316,8 +327,11 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 					krd = (KeyRecoveryDataLocal) i.next();
 
 					if (returnval == null) {
-						// TODO decrypt keys
-						KeyPair keys = krd.getKeyPair();
+						int caid = krd.getIssuerDN().hashCode();
+						
+						KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) getSignSession().extendedService(admin,caid, 
+								new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS,krd.getKeyDataAsByteArray()));												
+						KeyPair keys = response.getKeyPair();
 						returnval = new KeyRecoveryData(krd.getCertificateSN(), krd.getIssuerDN(),
 								krd.getUsername(), krd.getMarkedAsRecoverable(), keys);
 						certificate = (X509Certificate) getCertificateStoreSession()
@@ -349,8 +363,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	 * Marks a users newest certificate for key recovery. Newest means certificate with latest not
 	 * before date.
 	 *
-	 * @param admin DOCUMENT ME!
-	 * @param username DOCUMENT ME!
+	 * @param admin the administrator calling the function
+	 * @param username or the user.
 	 *
 	 * @return true if operation went successful or false if no certificates could be found for
 	 *         user, or user already marked.
@@ -410,8 +424,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	/**
 	 * Marks a users certificate for key recovery.
 	 *
-	 * @param admin DOCUMENT ME!
-	 * @param certificate DOCUMENT ME!
+	 * @param admin the administrator calling the function
+	 * @param certificate the certificate used with the keys about to be removed.
 	 *
 	 * @return true if operation went successful or false if  certificate couldn't be found.
 	 *
@@ -510,8 +524,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	/**
 	 * Returns true if specified certificates keys exists in database.
 	 *
-	 * @param admin DOCUMENT ME!
-	 * @param certificate DOCUMENT ME!
+	 * @param admin the administrator calling the function
+	 * @param certificate the certificate used with the keys about to be removed.
 	 *
 	 * @return true if user is already marked for key recovery.
 	 *

@@ -1,13 +1,13 @@
 package se.anatom.ejbca.keyrecovery;
 
 import java.math.BigInteger;
-import java.security.KeyPair;
 
 import javax.ejb.CreateException;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.BaseEntityBean;
+import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.StringTools;
 
 
@@ -23,44 +23,19 @@ import se.anatom.ejbca.util.StringTools;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.10 2004-01-12 14:12:55 anatom Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.11 2004-01-25 09:37:11 herrvendil Exp $
  */
 public abstract class KeyRecoveryDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(KeyRecoveryDataBean.class);
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
 	public abstract String getCertSN();
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param certificatesn DOCUMENT ME!
-	 */
 	public abstract void setCertSN(String certificatesn);
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
 	public abstract String getIssuerDN();
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param issuerdn DOCUMENT ME!
-	 */
 	public abstract void setIssuerDN(String issuerdn);
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
 	public abstract String getUsername();
 
 	/**
@@ -70,51 +45,32 @@ public abstract class KeyRecoveryDataBean extends BaseEntityBean {
 	 */
 	public abstract void setUsername(String username);
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
 	public abstract boolean getMarkedAsRecoverable();
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param markedasrecoverable DOCUMENT ME!
-	 */
 	public abstract void setMarkedAsRecoverable(boolean markedasrecoverable);
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public abstract KeyPair getKeyPair();
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param keypair DOCUMENT ME!
-	 */
-	public abstract void setKeyPair(KeyPair keypair);
+	public abstract String getKeyData();
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	public abstract void setKeyData(String keydata);
+
 	public BigInteger getCertificateSN() {
 		return new BigInteger(getCertSN(), 16);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param certificatesn DOCUMENT ME!
-	 */
 	public void setCertificateSN(BigInteger certificatesn) {
 		setCertSN(certificatesn.toString(16));
 	}
+
+	public byte[] getKeyDataAsByteArray(){
+		return Base64.decode(this.getKeyData().getBytes()); 
+	}
+	
+	public void setKeyDataFromByteArray(byte[] keydata){
+	  	setKeyData(new String(Base64.encode(keydata)));
+	}
+	
+
 
 	//
 	// Fields required by Container
@@ -123,36 +79,29 @@ public abstract class KeyRecoveryDataBean extends BaseEntityBean {
 	/**
 	 * Entity Bean holding keyrecovery data of users certificate.
 	 *
-	 * @param certificatesn DOCUMENT ME!
-	 * @param issuerdn DOCUMENT ME!
-	 * @param username DOCUMENT ME!
-	 * @param keypair DOCUMENT ME!
+	 * @param certificatesn of certificate the keys are belonging to.
+	 * @param issuerdn issuerdn of certificate the keys are belonging to.
+	 * @param username of the owner of the keys.
+	 * @param keydata the actual keydata.
 	 *
 	 * @return Primary Key
 	 */
+	
 	public KeyRecoveryDataPK ejbCreate(BigInteger certificatesn, String issuerdn, String username,
-		KeyPair keypair) throws CreateException {
+		byte[] keydata) throws CreateException {
 		KeyRecoveryDataPK pk = new KeyRecoveryDataPK(certificatesn, issuerdn);
 		setCertificateSN(certificatesn);
 		setIssuerDN(issuerdn);
 		setUsername(StringTools.strip(username));
 		setMarkedAsRecoverable(false);
-		setKeyPair(keypair);
+		setKeyDataFromByteArray(keydata);
 
 		log.debug("Created Key Recoverydata for user " + username);
 		return pk;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param certificatesn DOCUMENT ME!
-	 * @param issuerdn DOCUMENT ME!
-	 * @param username DOCUMENT ME!
-	 * @param keypair DOCUMENT ME!
-	 */
 	public void ejbPostCreate(BigInteger certificatesn, String issuerdn, String username,
-		KeyPair keypair) {
+		byte[] keydata) {
 		// Do nothing. Required.
 	}
 

@@ -9,7 +9,7 @@ import javax.ejb.CreateException;
  * A property entity bean extends other entity beans with propertys.
  * 
  * Primary Key is a combined id and property hash.
- * id (Integer) primary key of entity bean using this property entity bean.
+ * id (String) primary key of entity bean using this property entity bean.
  * property String should be one of the property constants.
  * value (String) the value of the property.
  *
@@ -20,8 +20,8 @@ public abstract class BasePropertyEntityBean extends BaseEntityBean {
     public abstract PropertyEntityPK getPK();
 	public abstract void setPK(PropertyEntityPK pK);
     
-	public abstract int getId();
-	public abstract void setId(int id);
+	public abstract String getId();
+	public abstract void setId(String id);
 
 
 	public abstract String getProperty();
@@ -41,17 +41,15 @@ public abstract class BasePropertyEntityBean extends BaseEntityBean {
 	/**
 	 * Entity Bean holding data of a raadmin profile.
 	 *
-	 * @param certificateprofilename DOCUMENT ME!
-	 * @param certificateprofilename
-	 * @param certificateprofile is the CertificateProfile.
-	 *
+	 * 
 	 * @return null
 	 */
-	public PropertyEntityPK ejbCreate(int id, String property, String value)
+	public PropertyEntityPK ejbCreate(String id, String property, String value)
 	       throws CreateException {
 	       	
 	    PropertyEntityPK pk = new PropertyEntityPK(id,property); 
 
+	    setPK(pk); 
 		setId(id);
 		setProperty(property);
 		setValue(value);
@@ -59,7 +57,7 @@ public abstract class BasePropertyEntityBean extends BaseEntityBean {
 		return pk;
 	}
 
-	public void ejbPostCreate(int id, String property, String value) {
+	public void ejbPostCreate(String id, String property, String value) {
 		// Do nothing. Required.
 	}
 

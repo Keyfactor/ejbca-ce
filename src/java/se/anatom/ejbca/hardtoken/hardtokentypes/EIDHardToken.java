@@ -4,7 +4,7 @@ import se.anatom.ejbca.SecConst;
 
 
 /**
- * EIDHardToken is a class defining data stored in database for a EID token.
+ *  @deprecated EIDHardToken is a class defining data stored in database for a EID token.
  *
  * @version $Id$
  */

@@ -1,9 +1,14 @@
 package se.anatom.ejbca.ca.caadmin;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.security.KeyPair;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -31,11 +36,11 @@ import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
-import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
-import org.bouncycastle.asn1.x509.CRLNumber;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
+import org.bouncycastle.asn1.x509.CRLNumber;
 import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
@@ -45,8 +50,13 @@ import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509ObjectIdentifiers; 
 import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
+import org.bouncycastle.cms.CMSEnvelopedData;
+import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
+import org.bouncycastle.cms.CMSProcessableByteArray;
+import org.bouncycastle.cms.RecipientInformation;
+import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.jce.PKCS7SignedData;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.X509V2CRLGenerator;
@@ -74,7 +84,7 @@ import se.anatom.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.16 2004-01-09 18:13:02 anatom Exp $
+ * @version $Id: X509CA.java,v 1.17 2004-01-25 09:37:11 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -84,6 +94,7 @@ public class X509CA extends CA implements Serializable {
     public static final float LATEST_VERSION = 1;
 
     private X509Name subjectx509name = null;
+    
     
     // protected fields.
     protected static final String POLICYID                       = "policyid";
@@ -484,6 +495,45 @@ public class X509CA extends CA implements Serializable {
           log.debug("<extendedService()");
           return returnval;
     }
+    
+    public byte[] encryptKeys(KeyPair keypair) throws IOException{    
+    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    	ObjectOutputStream os = new ObjectOutputStream(baos);
+    	os.writeObject(keypair);    	    	     		
+    		
+       CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();    	    	    	
+    	
+       System.out.println("X509CA : encrypyKeys : first " + baos.toByteArray().length);
+       
+    	CMSEnvelopedData ed;
+		try {
+			edGen.addKeyTransRecipient((X509Certificate) getCAToken().getEncCert());
+			ed = edGen.generate(
+					new CMSProcessableByteArray(baos.toByteArray()),
+					CMSEnvelopedDataGenerator.AES256_CBC, getCAToken().getProvider());
+		} catch (Exception e) {
+			e.printStackTrace();
+          throw new IOException(e.getMessage());		
+		}
+		
+		System.out.println("X509CA : encrypyKeys : second " + ed.getEncoded().length);
+		
+		return ed.getEncoded(); 
+    }
+    
+    public KeyPair decryptKeys(byte[] data) throws Exception{
+    	CMSEnvelopedData ed = new CMSEnvelopedData(data);   	    	
+    	     
+		RecipientInformationStore  recipients = ed.getRecipientInfos();           	
+    	Iterator    it =  recipients.getRecipients().iterator();
+    	RecipientInformation   recipient = (RecipientInformation) it.next();
+    	
+    	byte[] recdata = recipient.getContent(getCAToken().getPrivateDecKey(),getCAToken().getProvider());		    	
+    	ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(recdata));
+    	    	
+    	return (KeyPair) ois.readObject();  
+    }
+    
     
    // private help methods
     private int sunKeyUsageToBC(boolean[] sku) {

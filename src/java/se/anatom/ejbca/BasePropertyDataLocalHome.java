@@ -11,11 +11,11 @@ import javax.ejb.FinderException;
 /**
  * For docs, see BasePropertyDataBean
  *
- * @version $Id: BasePropertyDataLocalHome.java,v 1.1 2004-01-08 14:31:26 herrvendil Exp $
+ * @version $Id: BasePropertyDataLocalHome.java,v 1.2 2004-01-25 09:37:10 herrvendil Exp $
  */
 public interface BasePropertyDataLocalHome extends javax.ejb.EJBLocalHome {
 
-    public BasePropertyDataLocal create(int id, String property,
+    public BasePropertyDataLocal create(String id, String property,
                                         String value) throws CreateException;
 
 
@@ -29,7 +29,7 @@ public interface BasePropertyDataLocalHome extends javax.ejb.EJBLocalHome {
      *
      * @throws FinderException if nothing matching could be found.
      */
-    public BasePropertyDataLocal findByProperty(int id, String property)
+    public BasePropertyDataLocal findByProperty(String id, String property)
         throws FinderException;
         
             

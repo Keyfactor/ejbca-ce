@@ -12,7 +12,7 @@ import se.anatom.ejbca.ra.UserAdminData;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: IHardTokenSessionLocal.java,v 1.6 2004-01-08 14:31:26 herrvendil Exp $
+ * @version $Id: IHardTokenSessionLocal.java,v 1.7 2004-01-25 09:37:10 herrvendil Exp $
  * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
  */
 
@@ -191,7 +191,7 @@ public interface IHardTokenSessionLocal extends javax.ejb.EJBLocalObject
      * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
      */
     
-    public void addHardToken(Admin admin, String tokensn, String username, String significantissuerdn, int tokentype, HardToken hardtokendata, Collection certificates) throws HardTokenExistsException;      
+    public void addHardToken(Admin admin, String tokensn, String username, String significantissuerdn, int tokentype, HardToken hardtokendata, Collection certificates, String copyof	) throws HardTokenExistsException;      
   
     /**
      * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
@@ -210,11 +210,18 @@ public interface IHardTokenSessionLocal extends javax.ejb.EJBLocalObject
      */
     
     public HardTokenData getHardToken(Admin admin, String tokensn);
+
     /**
      * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
-     */     
+     */         
     
     public Collection getHardTokens(Admin admin, String username);        
+
+    /**
+     * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+     */         
+    
+    public Collection findHardTokenByTokenSerialNumber(Admin admin, String searchstring);
     
     /**
      * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote

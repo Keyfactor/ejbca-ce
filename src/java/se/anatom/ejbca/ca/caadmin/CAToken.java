@@ -2,12 +2,13 @@ package se.anatom.ejbca.ca.caadmin;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
 
 /** Handles maintenance of the device producing signatures and handling the private key.
  * 
- * @version $Id: CAToken.java,v 1.1 2003-09-03 16:21:29 herrvendil Exp $
+ * @version $Id: CAToken.java,v 1.2 2004-01-25 09:37:11 herrvendil Exp $
  */
 public abstract class CAToken extends UpgradeableDataHashMap implements java.io.Serializable{
     
@@ -49,6 +50,14 @@ public abstract class CAToken extends UpgradeableDataHashMap implements java.io.
     */
     public abstract PublicKey getPublicEncKey();
 
+    /** Returns a certificate with the public key (if possible) used for encryption.
+     *
+     * @return Certificate object
+     */
+    public abstract Certificate getEncCert();
+    
+    
+    
     /** Returns the signature Provider that should be used to sign things with
      *  the PrivateKey object returned by this signingdevice implementation.
      * @return String the name of the Provider

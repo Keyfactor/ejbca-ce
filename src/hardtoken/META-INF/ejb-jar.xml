@@ -67,7 +67,7 @@
         <local-home>se.anatom.ejbca.hardtoken.HardTokenCertificateMapLocalHome</local-home>
         <local>se.anatom.ejbca.hardtoken.HardTokenCertificateMapLocal</local>
         <ejb-link>HardTokenCertificateMap</ejb-link>
-     </ejb-local-ref>
+     </ejb-local-ref>         
      <ejb-local-ref>
         <description>The Authorization session bean</description>
         <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
@@ -85,7 +85,7 @@
         <ejb-link>CertificateStoreSession</ejb-link>
      </ejb-local-ref>                    
      <ejb-local-ref>
-        <description>The log session bean</description>
+        <description>The log se ssion bean</description>
         <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
         <local-home>se.anatom.ejbca.log.ILogSessionLocalHome</local-home>
@@ -253,15 +253,16 @@
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>HardTokenPropertyEntityBean</abstract-schema-name>
+      <cmp-field><field-name>pK</field-name></cmp-field>
       <cmp-field><field-name>id</field-name></cmp-field>
       <cmp-field><field-name>property</field-name></cmp-field>      
       <cmp-field><field-name>value</field-name></cmp-field>
-      
+      <primkey-field>pK</primkey-field>
       <query>
       	<query-method>
       	  <method-name>findByProperty</method-name>
       	  <method-params>
-            <method-param>int</method-param>
+            <method-param>java.lang.String</method-param>
       	    <method-param>java.lang.String</method-param>
       	  </method-params>
       	</query-method>

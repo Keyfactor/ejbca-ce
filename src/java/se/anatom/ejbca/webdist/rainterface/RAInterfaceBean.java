@@ -11,7 +11,6 @@ import java.util.TreeMap;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
-import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
@@ -26,7 +25,6 @@ import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
-import se.anatom.ejbca.hardtoken.HardTokenData;
 import se.anatom.ejbca.hardtoken.IHardTokenSessionLocal;
 import se.anatom.ejbca.hardtoken.IHardTokenSessionLocalHome;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionLocal;
@@ -49,7 +47,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.43 2003-11-14 14:59:57 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.44 2004-01-25 09:37:30 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -292,32 +290,20 @@ public class RAInterfaceBean {
     public UserView[] filterByTokenSN(String tokensn, int index,int size) throws Exception{
       UserView[] returnval = null;
       UserAdminData user = null;
-      InitialContext ictx = new InitialContext();
-      Context myenv = (Context) ictx.lookup("java:comp/env");
-      boolean useprefix = false;
-      String sIIN = null;
-
-      if(myenv.lookup("USEHARDTOKENPREFIX") != null && myenv.lookup("ISSUERIDENTIFICATIONNUMBER") != null){
-        useprefix = ((Boolean) myenv.lookup("USEHARDTOKENPREFIX")).booleanValue();
-        sIIN = (String) myenv.lookup("ISSUERIDENTIFICATIONNUMBER");
-      }
-
-      tokensn = StringTools.stripWhitespace(tokensn);
-
-      if(useprefix)
-        tokensn = calculateCardNumber(tokensn, sIIN);
-
-      HardTokenData token = hardtokensession.getHardToken(administrator, tokensn);
-
-      if(token!=null){
-        try{  
-          user = adminsession.findUser(administrator, token.getUsername());
-        }catch(AuthorizationDeniedException e){}
-      }  
       ArrayList userlist = new ArrayList();
-      if(user!=null)
-         userlist.add(user);
-
+      
+      Collection usernames = hardtokensession.findHardTokenByTokenSerialNumber(administrator, tokensn);
+     
+      Iterator iter = usernames.iterator();
+      while(iter.hasNext()){       	 
+         try{  
+           user = adminsession.findUser(administrator, (String) iter.next());
+         }catch(AuthorizationDeniedException e){}
+        
+         if(user!=null)
+           userlist.add(user);
+      }
+     
       users.setUsers(userlist, informationmemory.getCAIdToNameMap());
 
       returnval= users.getUsers(index,size);

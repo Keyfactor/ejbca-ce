@@ -2,20 +2,20 @@ package se.anatom.ejbca;
 
 /** Compount primary key for property entities.
  *
- * @version $Id: PropertyEntityPK.java,v 1.4 2004-01-12 14:12:52 anatom Exp $
+ * @version $Id: PropertyEntityPK.java,v 1.5 2004-01-25 09:37:10 herrvendil Exp $
  */
 
 public final class PropertyEntityPK implements java.io.Serializable {
 
-    public int id;
+    public String id;
     public String property;
 
-    public PropertyEntityPK(int id, String property) {
+    public PropertyEntityPK(String id, String property) {
         this.id = id;
         this.property=property;
     }
     
-    public int getId() {
+    public String getId() {
         return id;
     }
     public String getProperty() {
@@ -27,7 +27,7 @@ public final class PropertyEntityPK implements java.io.Serializable {
      */
     public boolean equals(java.lang.Object other) {
         if (other instanceof PropertyEntityPK) {
-           return ( (id == ((PropertyEntityPK)other).id) &&
+           return ( (id.equals(((PropertyEntityPK)other).id)) &&
                (property.equals(((PropertyEntityPK)other).property)) );
         }
         return false;
@@ -37,7 +37,7 @@ public final class PropertyEntityPK implements java.io.Serializable {
      * @see java.lang.Object#hashCode()
      */
     public int hashCode() {
-        return this.id+this.property.hashCode();
+        return this.id.hashCode()^this.property.hashCode();
     }
 
 }

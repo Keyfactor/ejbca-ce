@@ -77,7 +77,7 @@ function checkfieldforlegalcharswithchangeable(thetextfield , alerttext){
 function checkfieldforlegaldnchars(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-Ö_ 0-9@\.\-:\/]/g;
+  re = /[^a-öA-Ö_ 0-9@\.\,\-:\/\?\=\(\)]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
@@ -90,7 +90,7 @@ function checkfieldforlegaldnchars(thetextfield , alerttext){
 function checkfieldforcompletednchars(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-Ö_ 0-9@\,\=\.\-:\/]/g;
+  re = /[^a-öA-Ö_ 0-9@\,\=\.\-:\/\?\(\)]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
@@ -103,7 +103,7 @@ function checkfieldforcompletednchars(thetextfield , alerttext){
 function checkfieldforlegaldncharswithchangeable(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-Ö_ 0-9@.,\-:\/;]/g;
+  re = /[^a-öA-Ö_ 0-9@.,\-:\/;\'\?\+\=\(\)\"]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;

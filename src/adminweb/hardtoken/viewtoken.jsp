@@ -1,6 +1,6 @@
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
+<%@page errorPage="/errorpage.jsp"  import="java.util.Iterator, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
                  se.anatom.ejbca.webdist.hardtokeninterface.HardTokenView, se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, se.anatom.ejbca.SecConst,
                  javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.RevokedInfoView" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
@@ -22,7 +22,7 @@
 
   static final String SELECT_REVOKE_REASON       = "selectrevokationreason";
 
-  static final String CHECKBOX_VALUE             = "true";
+  static final String CHECKBOX_VALUE             = "true";  
 
 
 %><%
@@ -33,6 +33,7 @@
   String THIS_FILENAME                    = globalconfiguration.getHardTokenPath() + "/viewtoken.jsp";
 
   final String VIEWCERT_LINK            = "/" + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
+  final String VIEWTOKEN_LINK           = "/" + globalconfiguration.getAdminWebPath() + "hardtoken/viewtoken.jsp";
 
   boolean noparameter              = true;
   boolean authorized               = true;
@@ -93,8 +94,10 @@
 
       if(token == null)
         numberoftokens = 0;
-      else
+      else{
         numberoftokens = 1;
+        index = 0;
+      }
     }
   }else{
     if( request.getParameter(USER_PARAMETER) != null ){
@@ -154,7 +157,7 @@ function viewcert(){
   <h2 align="center"><%= ejbcawebbean.getText("VIEWHARDTOKEN") %></h2>
  <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("hardtoken_help.html")  + "#viewhardtoken"%>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
-  </div>
+  </div> 
   <%if(noparameter){%>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYPARAMETER") %></h4></div> 
   <% } 
@@ -179,7 +182,7 @@ function viewcert(){
 	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("USERNAME") %></td>
 	<td><% if(token.getUsername() != null) out.write(token.getUsername()); %>
         </td>
-      </tr>
+      </tr> 
       <% if(alluserstokens){ %>
       <tr id="Row<%=(row++)%2%>">
 	<td align="right"><%= ejbcawebbean.getText("HARDTOKENNR") %></td>
@@ -192,12 +195,11 @@ function viewcert(){
 	 <td>&nbsp;</td>
        </tr>
       <tr id="Row<%=(row++)%2%>">
-	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("HARDTOKENTYPE") %></td>
-	<td><% if(token.getHardTokenType().equals(""))
-                 out.write(ejbcawebbean.getText("UNKNOWNHARDTOKENTYPE"));
-               else
-                 out.write(token.getHardTokenType());
-             %>
+	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("HARDTOKENPROFILE") %></td>        
+	<td><% if(token.getHardTokenProfileId().intValue() != 0){
+                  out.write((String) ejbcawebbean.getInformationMemory().getHardTokenProfileIdToNameMap().get(token.getHardTokenProfileId()));
+                }else
+                  out.write(ejbcawebbean.getText("NONE"));%>
         </td>
       </tr>
       <tr id="Row<%=(row++)%2%>">
@@ -216,11 +218,13 @@ function viewcert(){
                                                             out.write(ejbcawebbean.getText(token.getTextOfField(i)));
                                                        else 
                                                             out.write("&nbsp;");%></td>
-	 <td><% Object o = token.getField(i); 
-                if( o instanceof java.util.Date){
-                  out.write(ejbcawebbean.printDateTime((java.util.Date) o));
-                }else{
-                  out.write(o.toString());
+	 <td><% Object o = token.getField(i);
+                if(o != null){ 
+                  if( o instanceof java.util.Date){
+                    out.write(ejbcawebbean.printDateTime((java.util.Date) o));
+                  }else{
+                    out.write(o.toString());
+                  }
                 }%> 
          </td>
        </tr>
@@ -229,7 +233,38 @@ function viewcert(){
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>
        </tr>
-       <tr id="Row0">
+       <tr id="Row<%=(row++)%2%>">
+	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("ORIGINALCOPYOF") %></td>
+	 <td> <% 
+            if(token.isOriginal()){
+              out.write(ejbcawebbean.getText("THISISANORIGINAL"));             
+              if(token.getCopies() == null || token.getCopies().size() == 0){
+                 out.write("<br>" + ejbcawebbean.getText("NOCOPIESHAVEBEENMADE"));
+              }else{
+                 out.write("<br>" + ejbcawebbean.getText("FOLLOWINGCOPIESHAVEBEEN") + ":");
+                 Iterator iter = token.getCopies().iterator();
+                 while(iter.hasNext()){ 
+                    String copytokensn = (String) iter.next();%>
+                   <br>
+                   <A  href='<%= java.net.URLDecoder.decode(VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copytokensn + "&" + USER_PARAMETER + "=" + username,"UTF-8")%>'>
+                      <u><%= copytokensn %></u> 
+                   </A><%
+                 }
+              }     
+            }else{
+              out.write(ejbcawebbean.getText("THISISACOPYOF") + ":<br>");  
+              String copyofsn = token.getCopyOf();%>
+                <A  href='<%= java.net.URLDecoder.decode(VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copyofsn + "&" + USER_PARAMETER + "=" + username,"UTF-8")%>'>
+                   <u><%= copyofsn %></u> 
+                 </A><%
+            } %>
+      </td>
+       </tr>
+       <tr id="Row<%=(row++)%2%>">
+	 <td>&nbsp;</td>
+	 <td>&nbsp;</td>
+       </tr>
+       <tr id="Row<%=(row++)%2%>">
          <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CREATED") %></td>
          <td>
            <%= ejbcawebbean.printDateTime(token.getCreateTime()) %>
@@ -269,7 +304,7 @@ function viewcert(){
      </tr> 
        <tr id="Row<%=(row++)%2%>">
           <td>  
-            &nbsp;
+            &nbsp; 
           </td>
           <td>
        <% 

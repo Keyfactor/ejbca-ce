@@ -12,7 +12,7 @@ import se.anatom.ejbca.ra.UserAdminData;
 
 /**
  *
- * @version $Id: IHardTokenSessionRemote.java,v 1.7 2004-01-08 14:31:26 herrvendil Exp $
+ * @version $Id: IHardTokenSessionRemote.java,v 1.8 2004-01-25 09:37:08 herrvendil Exp $
  */
 public interface IHardTokenSessionRemote extends javax.ejb.EJBObject {
     
@@ -253,20 +253,21 @@ public interface IHardTokenSessionRemote extends javax.ejb.EJBObject {
     
     public void getIsHardTokenProfileAvailableToIssuer(Admin admin, int issuerid, UserAdminData userdata) throws UnavailableTokenException, RemoteException;
        
-       /**
-       * Adds a hard token to the database
-       *
-       * @param admin, the administrator calling the function
-       * @param tokensn, The serialnumber of token.
-       * @param username, the user owning the token.
-       * @param significantissuerdn, indicates which CA the hard token should belong to.
-       * @param hardtoken, the hard token data
-       * @param certificates,  a collection of certificates places in the hard token
-       * 
-       * @throws EJBException if a communication or other error occurs.
-       * @throws HardTokenExistsException if tokensn already exists in databas.
-       */    
-    public void addHardToken(Admin admin, String tokensn, String username, String significantissuerdn, int tokentype, HardToken hardtokendata, Collection certificates) throws HardTokenExistsException, RemoteException;      
+    /**
+     * Adds a hard token to the database
+     *
+     * @param admin, the administrator calling the function
+     * @param tokensn, The serialnumber of token.
+     * @param username, the user owning the token.
+     * @param significantissuerdn, indicates which CA the hard token should belong to.
+     * @param hardtoken, the hard token data
+     * @param certificates,  a collection of certificates places in the hard token
+     * @param copyof indicates if the newly created token is a copy of an existing token. Use null if token is an original
+     *
+     * @throws EJBException if a communication or other error occurs.
+     * @throws HardTokenExistsException if tokensn already exists in databas.
+     */
+    public void addHardToken(Admin admin, String tokensn, String username, String significantissuerdn, int tokentype, HardToken hardtokendata, Collection certificates, String copyof) throws HardTokenExistsException, RemoteException;      
   
        /**
        * changes a hard token data in the database
@@ -313,6 +314,19 @@ public interface IHardTokenSessionRemote extends javax.ejb.EJBObject {
        * @throws EJBException if a communication or other error occurs.
        */        
     public Collection getHardTokens(Admin admin, String username) throws RemoteException;    
+
+    /**
+     *  Method that searches the database for a tokensn. The search string can have to forms, 
+     *  either the full tokensn (prefix + snnumber + checksum) or just the short serialnumber.
+     * 
+     *  @param admin the administrator calling the function
+     *  @param searchpattern of either the full serialnumber or just the short version
+     *  @return a Collection of hardtokens matching the search string
+     * 
+     */
+    
+    public Collection findHardTokenByTokenSerialNumber(Admin admin, String searchstring) throws RemoteException;
+    	
     
        /**
        * Checks if a hard token serialnumber exists in the database

@@ -1,9 +1,8 @@
 package se.anatom.ejbca.keyrecovery;
 
 import java.math.BigInteger;
-import java.security.KeyPair;
-import java.util.Collection;
 
+import java.util.Collection;
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 
@@ -11,56 +10,21 @@ import javax.ejb.FinderException;
 /**
  * For docs, see KeyRecoveryDataBean
  *
- * @version $Id: KeyRecoveryDataLocalHome.java,v 1.4 2003-09-03 11:27:06 herrvendil Exp $
+ * @version $Id: KeyRecoveryDataLocalHome.java,v 1.5 2004-01-25 09:37:28 herrvendil Exp $
  */
 public interface KeyRecoveryDataLocalHome extends javax.ejb.EJBLocalHome {
 	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param certificatesn DOCUMENT ME!
-	 * @param issuerdn DOCUMENT ME!
-	 * @param username DOCUMENT ME!
-	 * @param keypair DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 *
-	 * @throws CreateException DOCUMENT ME!
+	 *  @see se.anatom.ejbca.keyrecovery.KeyRecoveryDataBean
 	 */
 	public KeyRecoveryDataLocal create(BigInteger certificatesn, String issuerdn, String username,
-		KeyPair keypair) throws CreateException;
+		byte[] keydata) throws CreateException;
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param pk DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 *
-	 * @throws FinderException DOCUMENT ME!
-	 */
+
 	public KeyRecoveryDataLocal findByPrimaryKey(KeyRecoveryDataPK pk)
 		throws FinderException;
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param username DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 *
-	 * @throws FinderException DOCUMENT ME!
-	 */
 	public Collection findByUsername(String username) throws FinderException;
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param username DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 *
-	 * @throws FinderException DOCUMENT ME!
-	 */
 	public Collection findByUserMark(String username) throws FinderException;
 
 }

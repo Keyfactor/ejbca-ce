@@ -3,6 +3,8 @@ package se.anatom.ejbca.hardtoken;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,6 +24,8 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 
+import se.anatom.ejbca.BasePropertyDataLocal;
+import se.anatom.ejbca.BasePropertyDataLocalHome;
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
@@ -31,11 +35,14 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.EIDProfile;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile;
+import se.anatom.ejbca.hardtoken.hardtokentypes.EnhancedEIDHardToken;
 import se.anatom.ejbca.hardtoken.hardtokentypes.HardToken;
+import se.anatom.ejbca.hardtoken.hardtokentypes.SwedishEIDHardToken;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.log.LogEntry;
+import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.util.CertTools;
 
@@ -43,7 +50,7 @@ import se.anatom.ejbca.util.CertTools;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.18 2004-01-08 14:31:26 herrvendil Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.19 2004-01-25 09:37:08 herrvendil Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
@@ -63,6 +70,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
     /** The local home interface of hard token certificate map entity bean. */
     private HardTokenCertificateMapLocalHome hardtokencertificatemaphome = null;
+    
+    /** The local home interface of hard token property entity bean. */
+    private BasePropertyDataLocalHome hardtokenpropertyhome = null;
 
     /** The local interface of authorization session bean */
     private IAuthorizationSessionLocal authorizationsession = null;
@@ -91,13 +101,43 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         hardtokendatahome = (HardTokenDataLocalHome) lookup("java:comp/env/ejb/HardTokenData", HardTokenDataLocalHome.class);
         hardtokencertificatemaphome = (HardTokenCertificateMapLocalHome) lookup("java:comp/env/ejb/HardTokenCertificateMap", HardTokenCertificateMapLocalHome.class);
 		hardtokenprofilehome = (HardTokenProfileDataLocalHome) lookup("java:comp/env/ejb/HardTokenProfileData", HardTokenProfileDataLocalHome.class); 
+		hardtokenpropertyhome = (BasePropertyDataLocalHome) lookup("java:comp/env/ejb/HardTokenPropertyData", BasePropertyDataLocalHome.class);
+		
+		//TODO Tempary add tree tokens
+		final String SWESTANDALONESN = "SWESTANDALONESN";
 
+		
+		final String ENCMASTERSN   = "ENCMASTERSN";
+		final String ENCCOPYSN1     = "ENCCOPYSN1";
+		final String ENCCOPYSN2     = "ENCCOPYSN2";
+		
+		Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+		if(existsHardToken(admin, SWESTANDALONESN)){
+			this.removeHardToken(admin, SWESTANDALONESN);		
+		}
+		this.addHardToken(admin, SWESTANDALONESN, "superadmin", "CN=testca", SecConst.TOKEN_SWEDISHEID, (HardToken) new SwedishEIDHardToken("initialauthencpin","authencpuk", "initialsignaturepin", "signaturepuk", this.getHardTokenProfileId(admin,"test4")), new ArrayList(), null);
+
+		if(existsHardToken(admin, ENCMASTERSN)){
+			this.removeHardToken(admin, ENCMASTERSN);	
+		}
+		this.addHardToken(admin, ENCMASTERSN, "superadmin", "CN=testca", SecConst.TOKEN_ENHANCEDEID,  new EnhancedEIDHardToken( "initialsignaturepin", "signaturepuk" ,"initialauthpin","authpuk","initialencpin","encpuk",true, this.getHardTokenProfileId(admin,"test4")), new ArrayList(), null);
+
+		if(existsHardToken(admin, ENCCOPYSN1)){
+			this.removeHardToken(admin, ENCCOPYSN1);			
+		}			
+	    this.addHardToken(admin, ENCCOPYSN1, "superadmin", "CN=testca", SecConst.TOKEN_ENHANCEDEID,  new EnhancedEIDHardToken( "initialsignaturepin", "signaturepuk" ,"initialauthpin","authpuk","initialencpin","encpuk",true, this.getHardTokenProfileId(admin,"test4")), new ArrayList(), ENCMASTERSN);
+	    
+		if(existsHardToken(admin, ENCCOPYSN2)){
+			this.removeHardToken(admin, ENCCOPYSN2);
+		}	
+		this.addHardToken(admin, ENCCOPYSN2, "superadmin", "CN=testca", SecConst.TOKEN_ENHANCEDEID,  new EnhancedEIDHardToken( "initialsignaturepin", "signaturepuk" ,"initialauthpin","authpuk","initialencpin","encpuk",true, this.getHardTokenProfileId(admin,"test4")), new ArrayList(), ENCMASTERSN);
+						
         debug("<ejbCreate()");
       }catch(Exception e){
          throw new EJBException(e);
       }
     }
-
+    
 
     /** Gets connection to Datasource used for manual SQL searches
      * @return Connection
@@ -822,11 +862,12 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        * @param significantissuerdn, indicates which CA the hard token should belong to.
        * @param hardtoken, the hard token data
        * @param certificates,  a collection of certificates places in the hard token
+       * @param copyof indicates if the newly created token is a copy of an existing token. Use null if token is an original
        *
        * @throws EJBException if a communication or other error occurs.
        * @throws HardTokenExistsException if tokensn already exists in databas.
        */
-    public void addHardToken(Admin admin, String tokensn, String username, String significantissuerdn, int tokentype,  HardToken hardtokendata, Collection certificates) throws HardTokenExistsException{
+    public void addHardToken(Admin admin, String tokensn, String username, String significantissuerdn, int tokentype,  HardToken hardtokendata, Collection certificates, String copyof) throws HardTokenExistsException{
         debug(">addHardToken(tokensn : " + tokensn + ")");
 		String bcdn = CertTools.stringToBCDNString(significantissuerdn);
         try {
@@ -836,6 +877,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
               while(i.hasNext()){
                 addHardTokenCertificateMapping(admin, tokensn, (X509Certificate) i.next());
               }
+            }
+            if(copyof != null){
+            	hardtokenpropertyhome.create(tokensn, HardTokenPropertyEntityBean.PROPERTY_COPYOF,copyof);
             }
             getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_INFO_HARDTOKENDATA,"Hard token with serial number : " + tokensn + " added.");
         }
@@ -890,6 +934,18 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         HardTokenDataLocal htd = hardtokendatahome.findByPrimaryKey(tokensn);
         caid = htd.getSignificantIssuerDN().hashCode();
         htd.remove();
+        
+        // Remove all copyof references id property database.
+       try{
+        	hardtokenpropertyhome.findByProperty(tokensn, HardTokenPropertyEntityBean.PROPERTY_COPYOF).remove();         
+        }catch(FinderException fe){}                                         	
+        try{
+          Collection copieslocal = hardtokenpropertyhome.findIdsByPropertyAndValue(HardTokenPropertyEntityBean.PROPERTY_COPYOF , tokensn);                          
+          Iterator iter = copieslocal.iterator();
+          while(iter.hasNext()){
+        	 ((BasePropertyDataLocal) iter.next()).remove();         	
+           }        
+        }catch(FinderException fe){}                               
         getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENDATA,"Hard token with sn " + tokensn + " removed.");
       }catch(Exception e){
          getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENDATA,"Error removing hard token with sn " + tokensn + ".");
@@ -937,8 +993,30 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        HardTokenDataLocal htd = null;
        try{
          htd = hardtokendatahome.findByPrimaryKey(tokensn);
+         
+         // Find Copyof
+         String copyof = null;
+         try{
+         	copyof = hardtokenpropertyhome.findByProperty(tokensn, HardTokenPropertyEntityBean.PROPERTY_COPYOF).getValue();         	
+         }catch(FinderException fe){}                          
+         
+         ArrayList copies = null;
+         if(copyof == null){
+           //  Find Copies           
+	  	   try{
+             Collection copieslocal = hardtokenpropertyhome.findIdsByPropertyAndValue(HardTokenPropertyEntityBean.PROPERTY_COPYOF , tokensn);         
+             if(copieslocal.size() >0 ){
+               copies = new ArrayList();
+		       Iterator iter = copieslocal.iterator();
+               while(iter.hasNext()){
+           	      copies.add(((BasePropertyDataLocal) iter.next()).getId());         	
+               }
+             }
+		   }catch(FinderException fe){}
+         }         
+         
          if(htd != null){
-           returnval = new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),htd.getHardToken());
+           returnval = new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),htd.getHardToken(), copyof, copies);
            getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENVIEWED,"Hard token with sn " + tokensn + " viewed.");
          }
        }catch(Exception e){}
@@ -965,7 +1043,30 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
          Iterator i = result.iterator();
          while(i.hasNext()){
            htd = (HardTokenDataLocal) i.next();
-           returnval.add(new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),htd.getHardToken()));
+           // Find Copyof
+           String copyof = null;
+           try{
+           	copyof = hardtokenpropertyhome.findByProperty(htd.getTokenSN(), HardTokenPropertyEntityBean.PROPERTY_COPYOF).getValue();         
+           }catch(FinderException fe){}         
+         
+           System.out.println("Token SN " + htd.getTokenSN() + "copyof" + copyof);  
+           
+           ArrayList copies = null;
+           if(copyof == null){
+           	//  Find Copies           	
+           	 try{
+           		Collection copieslocal = hardtokenpropertyhome.findIdsByPropertyAndValue(HardTokenPropertyEntityBean.PROPERTY_COPYOF , htd.getTokenSN());         
+           		if(copieslocal.size() >0 ){
+           			copies = new ArrayList();
+           			Iterator iter = copieslocal.iterator();
+           			while(iter.hasNext()){
+           				copies.add(((BasePropertyDataLocal) iter.next()).getId());         	
+           			}
+           		}
+           	 }catch(FinderException fe){}
+           }                   
+           
+           returnval.add(new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),htd.getHardToken(),copyof, copies));
            getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENVIEWED,"Hard token with sn " + htd.getTokenSN() + " viewed.");
          }
        }catch(Exception e){}
@@ -973,6 +1074,52 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        debug("<getHardToken()");
        return returnval;
     } // getHardTokens
+    
+    /**
+     *  Method that searches the database for a tokensn. It returns all hardtokens
+     * with a serialnumber that begins with the given searchpattern.
+     * 
+     *  @param admin the administrator calling the function
+     *  @param searchpattern of begining of hard token sn
+     *  @return a Collection of username(String) matching the search string
+     * 
+     */
+    
+    public Collection findHardTokenByTokenSerialNumber(Admin admin, String searchpattern){
+    	debug(">findHardTokenByTokenSerialNumber()");
+    	ArrayList returnval = new ArrayList();
+    	Connection con = null;
+    	PreparedStatement ps = null;
+    	ResultSet rs = null;
+    	int count = 1; // return true as default.
+
+
+    	try{
+    		// Construct SQL query.
+    		con = getConnection();
+    		ps = con.prepareStatement("select distinct username from HardTokenData where  tokenSN LIKE '" + searchpattern + "%'");
+    		// Execute query.
+    		rs = ps.executeQuery();
+    		// Assemble result.
+    		while(rs.next() && returnval.size() <= IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT){
+    			returnval.add(rs.getString(1));
+    		}
+    		debug("<findHardTokenByTokenSerialNumber()");
+    		return returnval;
+
+    	}catch(Exception e){
+    		throw new EJBException(e);
+    	}finally{
+    		try{
+    			if(rs != null) rs.close();
+    			if(ps != null) ps.close();
+    			if(con!= null) con.close();
+    		}catch(SQLException se){
+    			error("Error at cleanup: ", se);
+    		}
+    	}
+    	    	
+    }
 
        /**
        * Adds a mapping between a hard token and a certificate

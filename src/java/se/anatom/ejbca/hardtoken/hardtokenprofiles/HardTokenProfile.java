@@ -14,7 +14,7 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
  * processed. This information could be PIN-type number of certificates, 
  * certificate profiles and so on. 
  *
- * @version $Id: HardTokenProfile.java,v 1.1 2003-12-05 14:50:27 herrvendil Exp $
+ * @version $Id: HardTokenProfile.java,v 1.2 2004-01-25 09:37:34 herrvendil Exp $
  */
 public abstract class HardTokenProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values
@@ -44,7 +44,7 @@ public abstract class HardTokenProfile extends UpgradeableDataHashMap implements
     public HardTokenProfile() {
       setNumberOfCopies(1);	 
       setEreasableToken(false);     
-      setHardTokenSNPrefix("00000");    
+      setHardTokenSNPrefix("000000");    
       setGenerateIdenticalPINForCopies(true);  
     }
 

@@ -272,7 +272,15 @@
         <local>se.anatom.ejbca.ca.store.ISignSessionLocal</local>
         <ejb-link>RSASignSession</ejb-link>
      </ejb-local-ref>  
-
+     <ejb-local-ref>
+        <description>The CRL Create bean</description>
+        <ejb-ref-name>ejb/CreateCRLSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.IJobRunnerLocalHome</local-home>
+        <local>se.anatom.ejbca.IJobRunnerLocal</local>
+        <ejb-link>CreateCRLSession</ejb-link>
+     </ejb-local-ref>  
+     
      <ejb-local-ref>
         <description>The User Admin Session Bean</description>
         <ejb-ref-name>ejb/UserAdminSessionLocal</ejb-ref-name>
@@ -363,6 +371,8 @@
      <ejb-name>CreateCRLSession</ejb-name>
      <home>se.anatom.ejbca.IJobRunnerSessionHome</home>
      <remote>se.anatom.ejbca.IJobRunnerSessionRemote</remote>
+     <local-home>se.anatom.ejbca.IJobRunnerSessionLocalHome</local-home>
+     <local>se.anatom.ejbca.IJobRunnerSessionLocal</local>
      <ejb-class>se.anatom.ejbca.ca.crl.CreateCRLSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>

@@ -1,10 +1,22 @@
 package se.anatom.ejbca.ca.caadmin;
 
 import java.io.UnsupportedEncodingException;
+import java.rmi.RemoteException;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.cert.*;
+import java.security.cert.CertPath;
+import java.security.cert.CertPathValidator;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.CertPathValidatorResult;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.PKIXCertPathValidatorResult;
+import java.security.cert.PKIXParameters;
+import java.security.cert.TrustAnchor;
+import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -13,7 +25,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -25,7 +36,8 @@ import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 
 import se.anatom.ejbca.BaseSessionBean;
-import se.anatom.ejbca.IJobRunnerSessionHome;
+import se.anatom.ejbca.IJobRunnerSessionLocal;
+import se.anatom.ejbca.IJobRunnerSessionLocalHome;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.AvailableAccessRules;
@@ -60,7 +72,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.11 2004-01-07 19:50:21 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.12 2004-01-25 09:37:11 herrvendil Exp $
  */
 public class CAAdminSessionBean extends BaseSessionBean {
     
@@ -84,6 +96,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
     
     /** The local interface of the sign session bean */
     private ISignSessionLocal signsession;
+    
+    /** The local interface of the job runner session bean used to create crls.*/
+    private IJobRunnerSessionLocal jobrunner;
     
 
     
@@ -139,7 +154,22 @@ public class CAAdminSessionBean extends BaseSessionBean {
         }
         return authorizationsession;
     } //getAuthorizationSession
-    
+
+    /** Gets connection to crl create session bean
+     * @return Connection
+     */
+    private IJobRunnerSessionLocal getCRLCreateSession() {
+      if(jobrunner == null){
+      	 try{
+      	    IJobRunnerSessionLocalHome home = (IJobRunnerSessionLocalHome) lookup("java:comp/env/ejb/CreateCRLSessionLocal", IJobRunnerSessionLocalHome.class);
+    	    jobrunner = home.create();
+      	 }catch(Exception e){
+      	 	throw new EJBException(e);
+      	 }      	 
+      }  
+      return jobrunner;
+    }  
+      
     /** Gets connection to user admin session bean
      * @return Connection
      */
@@ -352,6 +382,12 @@ public class CAAdminSessionBean extends BaseSessionBean {
         // Store CA in database.
        try{
             cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), ca.getStatus(), ca);
+            
+              
+              if(ca.getStatus() == SecConst.CA_ACTIVE){
+                //  create initial CRL
+                this.getCRLCreateSession().run(admin,cainfo.getSubjectDN()); 
+              }
             getLogSession().log(admin, ca.getCAId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CACREATED,"CA created successfully, status: " + ca.getStatus());                        
         }catch(javax.ejb.CreateException e){
             getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Error when trying to create CA.");
@@ -680,7 +716,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
 				   getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Couldn't Initialize ExternalCAService.",fe);
 				   throw new EJBException(fe);                                     				   
 				 }
-			   }
+			   }			   
+			   	//  create initial CRL
+			   	this.getCRLCreateSession().run(admin,ca.getSubjectDN()); 			   			   
 			}
 						 
 			cadata.setCA(ca); 			
@@ -947,9 +985,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			// Revoke CA certificate 
 			getCertificateStoreSession().revokeCertificate(admin, cadata.getCACertificate(), reason);
 				
-			InitialContext jndicontext = new InitialContext();
-            IJobRunnerSessionHome home  = (IJobRunnerSessionHome)javax.rmi.PortableRemoteObject.narrow( jndicontext.lookup("CreateCRLSession") , IJobRunnerSessionHome.class );
-            home.create().run(admin, issuerdn);
+			InitialContext jndicontext = new InitialContext();            
+            getCRLCreateSession().run(admin, issuerdn);
 			
 				
 			cadata.setRevokationReason(reason);
@@ -1217,6 +1254,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
 	
   	 return returnval;  	    
   }
+  
+  
     
     
 } //CAAdminSessionBean

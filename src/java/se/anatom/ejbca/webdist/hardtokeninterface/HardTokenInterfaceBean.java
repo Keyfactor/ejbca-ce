@@ -235,18 +235,17 @@ public class HardTokenInterfaceBean {
     
     
 	
-	public HardTokenProfileDataHandler getHardTokenProfileDataHandler() {
-	
+	public HardTokenProfileDataHandler getHardTokenProfileDataHandler() {	
 		return hardtokenprofiledatahandler;
 	}    
     // Private fields.
-    private IHardTokenSessionLocal          hardtokensession;
+    private IHardTokenSessionLocal                hardtokensession;
     private IHardTokenBatchJobSessionLocal  hardtokenbatchsession;        
-    private AdminInformation                admininformation;
-    private Admin                           admin;
-    private InformationMemory               informationmemory;
-    private boolean                         initialized=false;
-    private HardTokenView[]                 result;
-    private HardTokenProfileDataHandler     hardtokenprofiledatahandler;
+    private AdminInformation                         admininformation;
+    private Admin                                          admin;
+    private InformationMemory                      informationmemory;
+    private boolean                                       initialized=false;
+    private HardTokenView[]                          result;
+    private HardTokenProfileDataHandler         hardtokenprofiledatahandler;
 
 }

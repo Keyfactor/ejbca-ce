@@ -1,7 +1,6 @@
 package se.anatom.ejbca.ca.crl;
 
 import java.math.BigInteger;
-import java.rmi.RemoteException;
 import java.security.cert.X509CRL;
 import java.util.Collection;
 import java.util.Date;
@@ -35,7 +34,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.17 2003-11-03 14:00:31 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.18 2004-01-25 09:37:33 herrvendil Exp $
  */
 public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerSession {
     
@@ -85,7 +84,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
 	 *
 	 * @throws EJBException om ett kommunikations eller systemfel intr?ffar.
 	 */
-    public void run(Admin admin, String issuerdn) throws RemoteException {
+    public void run(Admin admin, String issuerdn)  {
         debug(">run()");
         int caid = issuerdn.hashCode();
         try {       

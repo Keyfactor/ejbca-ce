@@ -18,16 +18,19 @@ import se.anatom.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.3 2003-10-21 13:48:45 herrvendil Exp $
+ * @version $Id: SoftCAToken.java,v 1.4 2004-01-25 09:37:11 herrvendil Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
 
     public static final float LATEST_VERSION = 1; 
+    
+    private final static String  PROVIDER = "BC";
 
     private PrivateKey privateSignKey = null;
     private PrivateKey privateDecKey  = null;
     private PublicKey  publicSignKey  = null;
     private PublicKey  publicEncKey   = null;
+    private Certificate encCert = null;
     
     private static final String PRIVATESIGNKEYALIAS = "privatesignkeyalias";
     private static final String PRIVATEDECKEYALIAS = "privatedeckeyalias";
@@ -71,7 +74,9 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
             this.privateDecKey = (PrivateKey) keystore.getKey(PRIVATEDECKEYALIAS, pkpass);      
       
             this.publicSignKey = ((Certificate) keystore.getCertificateChain(PRIVATESIGNKEYALIAS)[0]).getPublicKey();
-            this.publicEncKey = ((Certificate) keystore.getCertificateChain(PRIVATEDECKEYALIAS)[0]).getPublicKey();
+            this.encCert =  ((Certificate) keystore.getCertificateChain(PRIVATEDECKEYALIAS)[0]);
+            this.publicEncKey = this.encCert.getPublicKey();
+            
         } catch (Exception e) {
             throw new IllegalKeyStoreException(e);
         }
@@ -115,6 +120,7 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
        KeyPair enckeys = KeyTools.genKeys(keysize);
        // generate dummy certificate
        certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, enckeys.getPrivate(), enckeys.getPublic(), true);
+       this.encCert = certchain[0]; 
        keystore.setKeyEntry(PRIVATEDECKEYALIAS,enckeys.getPrivate(),pkpass,certchain);              
        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
        keystore.store(baos, keystorepass.toCharArray());
@@ -125,7 +131,7 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
        // initalize CAToken
        this.publicSignKey  = signkeys.getPublic();
        this.privateSignKey = signkeys.getPrivate();
-       
+              
        this.publicEncKey  = enckeys.getPublic();
        this.privateDecKey = enckeys.getPrivate();
    }
@@ -160,7 +166,7 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
        // generate enc keys.  
        KeyPair enckeys = KeyTools.genKeys(keysize);
        certchain[0] = CertTools.genSelfCert("CN=dummy2", 1000, null, enckeys.getPrivate(), enckeys.getPublic(), true);
-       
+       this.encCert = certchain[0];
        keystore.setKeyEntry(PRIVATEDECKEYALIAS,enckeys.getPrivate(),pkpass,certchain);       
      
        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
@@ -226,13 +232,21 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
     public PublicKey getPublicEncKey(){
       return publicEncKey;        
     }
+    
+    /** Returns a certificate with the public key (if possible) used for encryption.
+     *
+     * @return Certificate object
+     */
+    public Certificate getEncCert(){
+    	return encCert;    	
+    }
 
     /** Returns the signature Provider that should be used to sign things with
      *  the PrivateKey object returned by this signingdevice implementation.
      * @return String the name of the Provider
      */
     public String getProvider(){
-      return "BC";  
+      return PROVIDER;  
     }
 
     /** Implemtation of UpgradableDataHashMap function getLatestVersion */

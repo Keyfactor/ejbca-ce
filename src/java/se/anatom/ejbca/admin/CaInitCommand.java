@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.24 2004-01-07 19:58:04 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.25 2004-01-25 09:37:31 herrvendil Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
     /** Pointer to main certificate store */
@@ -122,8 +122,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             int caid = caadminsession.getCAInfo(administrator, caname).getCAId();
             System.out.println("CAId for created CA: " + caid);
               
-            // Second create (and publish) CRL
-            createCRL(dn);
+
             System.out.println("-Created and published initial CRL.");
             System.out.println("CA initialized");
         } catch (Exception e) {

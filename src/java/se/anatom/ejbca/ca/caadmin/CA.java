@@ -15,7 +15,18 @@ import java.util.Vector;
 import javax.ejb.EJBException;
 
 import se.anatom.ejbca.ca.auth.UserAuthData;
-import se.anatom.ejbca.ca.caadmin.extendedcaservices.*;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAService;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRequest;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceResponse;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAService;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import se.anatom.ejbca.ca.exception.IllegalKeyStoreException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
@@ -26,7 +37,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.7 2004-01-02 15:33:15 anatom Exp $
+ * @version $Id: CA.java,v 1.8 2004-01-25 09:37:11 herrvendil Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -278,15 +289,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public abstract byte[] createPKCS7(Certificate cert) throws SignRequestSignatureException;            
   
         
-    public byte[] encryptKeys(KeyPair keypair){
-		// TODO, encryptKeys       
-       return null; 
-    }
+    public abstract byte[] encryptKeys(KeyPair keypair) throws Exception;
     
-    public KeyPair decryptKeys(byte[] data){
-      // TODO, decryptKeys
-      return null;  
-    }
+    public abstract KeyPair decryptKeys(byte[] data) throws Exception;
 
     
     // Methods used with extended services	
@@ -317,6 +322,30 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
           if(request instanceof OCSPCAServiceRequest) {
               returnval = getExtendedCAService(OCSPCAService.TYPE).extendedService(request);            
           }
+          
+          if(request instanceof KeyRecoveryCAServiceRequest){
+          	KeyRecoveryCAServiceRequest keyrecoveryrequest =  (KeyRecoveryCAServiceRequest) request;
+          	if(keyrecoveryrequest.getCommand() == KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS){
+          	  try{	
+          	    returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_ENCRYPTKEYSRESPONSE, 
+          	  		                       encryptKeys(keyrecoveryrequest.getKeyPair()));	
+          	  }catch(Exception e){
+          	  	 throw new IllegalExtendedCAServiceRequestException(e.getMessage());
+          	  }
+          	}else{
+          		if(keyrecoveryrequest.getCommand() == KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS){
+                  try{
+                  	returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_DECRYPTKEYSRESPONSE, 
+          					this.decryptKeys(keyrecoveryrequest.getKeyData()));
+          		  }catch(Exception e){
+          		  	 throw new IllegalExtendedCAServiceRequestException(e.getMessage());
+          		  }
+          		}else{
+          		  throw new IllegalExtendedCAServiceRequestException("Illegal Command"); 
+          		}
+          	}          	
+          }
+          
           return returnval;
 	}
     

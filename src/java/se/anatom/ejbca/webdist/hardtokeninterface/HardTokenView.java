@@ -1,5 +1,6 @@
 package se.anatom.ejbca.webdist.hardtokeninterface;
 
+import java.util.Collection;
 import java.util.Date;
 
 import se.anatom.ejbca.hardtoken.*;
@@ -18,134 +19,48 @@ public class HardTokenView implements java.io.Serializable, Cloneable {
         this.tokendata = new HardTokenData();        
     }
 
-    /**
-     * Creates a new HardTokenView object.
-     *
-     * @param availablehardtokens DOCUMENT ME!
-     * @param newtokendata DOCUMENT ME!
-     */
     public HardTokenView(HardTokenData newtokendata) {
         tokendata = newtokendata;        
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param user DOCUMENT ME!
-     */
     public void setUsername(String user) {
         tokendata.setUsername(StringTools.strip(user));
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public String getUsername() {
         return tokendata.getUsername();
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param tokentype DOCUMENT ME!
-     */
-    public void setHardTokenType(String tokentype) {
-/*        for (int i = 0; i < availablehardtokens.length; i++) {
-            if (tokentype.equals(availablehardtokens[i].getName())) {
-                tokendata.setTokenType(Integer.parseInt(availablehardtokens[i].getId()));
-            }
-        }*/
-    }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public String getHardTokenType() {
-        String returnval = "";
-
- /*       for (int i = 0; i < availablehardtokens.length; i++) {
-            if (tokendata.getTokenType() == Integer.parseInt(availablehardtokens[i].getId())) {
-                returnval = availablehardtokens[i].getName();
-            }
-        }*/
-
-        return returnval;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param tokensn DOCUMENT ME!
-     */
     public void setTokenSN(String tokensn) {
         tokendata.setTokenSN(tokensn);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
+
     public String getTokenSN() {
         return tokendata.getTokenSN();
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param createtime DOCUMENT ME!
-     */
     public void setCreateTime(Date createtime) {
         tokendata.setCreateTime(createtime);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public Date getCreateTime() {
         return tokendata.getCreateTime();
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param modifytime DOCUMENT ME!
-     */
     public void setModifyTime(Date modifytime) {
         tokendata.setModifyTime(modifytime);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public Date getModifyTime() {
         return tokendata.getModifyTime();
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public int getNumberOfFields() {
         return tokendata.getHardToken().getNumberOfFields();
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param index DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public String getTextOfField(int index) {
         if (tokendata.getHardToken().getFieldText(index).equals(HardToken.EMPTYROW_FIELD)) {
             return "";
@@ -153,14 +68,23 @@ public class HardTokenView implements java.io.Serializable, Cloneable {
             return tokendata.getHardToken().getFieldText(index);
         }
     }
+    
+    public boolean isOriginal(){
+      return tokendata.isOriginal();	
+    }
+    
+    public String getCopyOf(){
+      return tokendata.getCopyOf();	
+    }
+    
+    public Collection getCopies(){
+      return tokendata.getCopies();	
+    }
+    
+    public Integer getHardTokenProfileId(){    	
+    	  return new Integer(tokendata.getHardToken().getTokenProfileId());
+    }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param index DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public Object getField(int index) {
         HardToken token = tokendata.getHardToken();
 
