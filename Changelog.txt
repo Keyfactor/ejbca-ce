@@ -5,7 +5,15 @@
 - Added rough French translation for the admin webapp .
 - Add parameter for jboss/weblogic to install.
 - Lots of minor and structural changes.
-- Changed database configuration to make it more flexible for deployment 
+- Changed database configuration to make it more flexible for deployment
+- The BaseProperty and PropertyPK entity bean is no more used by the HardTokenPropertyEntityBean
+- se.anatom.ejbca.PropertyPK is not used anymore and it should use se.anatom.ejbca.hardtoken.HardTokenPropertyPK
+- BatchMake has been changed to support a dir (directory attribute). Default is still 'p12'
+- Lots of XDoclet tagging to simplify development and deployment. This is near completion.
+- The AccessRulesDataBean entity bean has been modified as it was not compliant with EJB Specifications.
+  All fields of the PK are now persistent fields. This means that it is NOT backward compatible.
+  ! No SQL migration file is available right now to do so !
+
 
 3.0.3
 -----
