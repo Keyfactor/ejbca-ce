@@ -624,6 +624,9 @@ The certificate reply containing a PEM-formatted certificate is printed to the
 REFERENCES
 ==========
 
+PGP:
+PKCS12 files generated from EJBCA works excellent as PGP-keys.
+
 Browser key generation:
 http://home.netscape.com/eng/security/comm4-keygen.html
 
