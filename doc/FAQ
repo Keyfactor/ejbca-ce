@@ -1,6 +1,14 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.23 2004-05-28 06:41:49 anatom Exp $
+$Id: FAQ,v 1.24 2004-08-05 06:34:24 anatom Exp $
+
+---------
+Q : Installation hangs and the https server will not work.
+
+A : Perhaps $JBOSS_HOME/bin/tomcat.jks must be executable. All scripts in EJBCA 
+home directory must be executable, run 'chmod u+x *.sh'. Make sure you run the 
+installation of ejbca as a user with enough privileges to write in JBOSS_HOME, 
+preferably the same user as is used to run the JBoss server.
 
 ---------
 Q : After upgrading the version of Java, the Admin GUI no longer works.
@@ -83,9 +91,13 @@ entered. Some schemas require the DN-attribute SN for instance.
 -----
 Q : What applications servers do EJBCA run on?
 
-A : Version 1.x of EJBCA has been known to run on JBoss, Weblogic and Orion.
-Version 2.x of EJBCA has only been tested on JBoss, but should run on any EJB2
-capable application server.
+A : Official application server used for development is JBoss. Contributors have 
+ensured that ejbca works on other applications servers as well. 
+Version 1.x of EJBCA has been known to run on JBoss, Weblogic and Orion.
+Version 2.x of EJBCA has been known to run on JBoss, Weblogic.
+Version 3.x of EJBCA has been known to run on JBoss, Jonas and Weblogic.
+EJBCA tries to stay as close to the spec as possible and should run on any EJB2
+capable application server. Differences are present anyhow so you have to try.
 
 -----
 Q : What databases do EJBCA support?
@@ -95,7 +107,7 @@ server. The database must have support for long fields, a CRL can in theory
 become very large.
 EJBCA has been known to work with MySQL, PostgreSQL, Oracle, Sybase,
 InstantDB, SAPDB and MSSQL 2000.
-Other databases should work with simple configuration.
+Other databases should work with simple configuration of xml-files.
 
 -----
 Q : When using JDK 1.4.x i get a java.io.InvalidClassException?
