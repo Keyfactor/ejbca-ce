@@ -11,12 +11,12 @@
   <property name="dist"  value="./dist"/>
   <property name="apidoc" value="./doc/api"/>
   
-  <property name="apply.src" value="${src}/ca/apply" />
-  <property name="apply.build" value="${tmp}/ca/apply.war" />
+  <property name="apply.src" value="${src}/publicweb/apply" />
+  <property name="apply.build" value="${tmp}/publicweb/apply.war" />
   <property name="applyjar" value="${dist}/apply.war" />
   
-  <property name="webdist.src" value="${src}/ca/webdist" />
-  <property name="webdist.build" value="${tmp}/ca/webdist.war" />
+  <property name="webdist.src" value="${src}/publicweb/webdist" />
+  <property name="webdist.build" value="${tmp}/publicweb/webdist.war" />
   <property name="webdistjar" value="${dist}/webdist.war" />
 
   <property name="sampleauth.src" value="${src}/ca/sampleauth" />
@@ -35,23 +35,23 @@
   <property name="ra.build" value="${tmp}/ra.jar" />
   <property name="rajar" value="${dist}/ra.jar" />
   
-  <property name="raadmin.src" value="${src}/ra/web/raadmin" />
-  <property name="raadmin.build" value="${tmp}/raadmin.war" />
-  <property name="raadminjar" value="${dist}/raadmin.war" />  
+  <property name="adminweb.src" value="${src}/adminweb" />
+  <property name="adminweb.build" value="${tmp}/adminweb.war" />
+  <property name="adminwebjar" value="${dist}/adminweb.war" />  
 
   <property name="caear.src" value="${src}/ca/ear" />
   <property name="caear.earsrc" value="${caear.src}/ear" />
-  <property name="caear.warsrc" value="${caear.src}/root" />
+  <property name="caear.warsrc" value="${src}/publicweb/root" />
   <property name="caear.build" value="${tmp}/ca/ear" />
-  <property name="caear.warbuild" value="${tmp}/ca/ear/caroot.war" />
+  <property name="caear.warbuild" value="${tmp}/publicweb/publicwebroot.war" />
   <property name="caear.earbuild" value="${tmp}/ca/ear/ear" />
-  <property name="carootwar" value="${caear.earbuild}/caroot.war" />
+  <property name="carootwar" value="${caear.earbuild}/publicwebroot.war" />
   <property name="caear" value="${dist}/ejbca-ca.ear" />
 
   <property name="caearnora.build" value="${tmp}/canora/ear" />
-  <property name="caearnora.warbuild" value="${tmp}/canora/ear/caroot.war" />
+  <property name="caearnora.warbuild" value="${tmp}/canora/ear/publicwebroot.war" />
   <property name="caearnora.earbuild" value="${tmp}/canora/ear/ear" />
-  <property name="canorarootwar" value="${caearnora.earbuild}/caroot.war" />
+  <property name="canorarootwar" value="${caearnora.earbuild}/publicwebroot.war" />
   <property name="caearnora" value="${dist}/ejbca-canora.ear" />
 
   <!-- Jar with class files needed for administration, i.e. ca, ra, jobrunner -->
@@ -91,7 +91,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- Build ALL                                                           -->
   <!-- =================================================================== -->
   <target name="build" depends="compile, apply.war, webdist.war, ca.jar, log.jar,
-ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
+ca.ear, canora.ear, ra.jar, adminweb.war, admin.jar, sampleauth.war">
   </target>
 
   <!-- =================================================================== -->
@@ -272,21 +272,21 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
   </target>
   
   <!-- =================================================================== -->
-  <!-- Build raadmin web part                                              -->
+  <!-- Build admin web part                                              -->
   <!-- =================================================================== -->
-  <target name="raadmin.war" depends="compile">
-    <mkdir    dir="${raadmin.build}"/>
-    <copy todir="${raadmin.build}">
-        <fileset dir="${raadmin.src}"> 
+  <target name="adminweb.war" depends="compile">
+    <mkdir    dir="${adminweb.build}"/>
+    <copy todir="${adminweb.build}">
+        <fileset dir="${adminweb.src}"> 
                 <include name="**/**"/>
         </fileset>
     </copy>
-    <copy todir="${raadmin.build}/WEB-INF/classes">
+    <copy todir="${adminweb.build}/WEB-INF/classes">
         <fileset dir="${build}">
                 <include name="se/anatom/ejbca/webdist/**/*.class"/>
                 <include name="se/anatom/ejbca/ca/store/CertificateData*.class"/>                
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>         
-                <include name="se/anatom/ejbca/ca/store/certificatetypes/*.class"/>                        
+                <include name="se/anatom/ejbca/ca/store/certificateprofiles/*.class"/>                        
                 <include name="se/anatom/ejbca/ra/*.class"/>
                 <include name="se/anatom/ejbca/ra/authorization/*.class"/>      
                 <include name="se/anatom/ejbca/ra/raadmin/*.class"/>
@@ -301,13 +301,13 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
-    <copy todir="${raadmin.build}/WEB-INF/lib">
+    <copy todir="${adminweb.build}/WEB-INF/lib">
         <fileset dir="${lib}">
                 <include name="regexp1_0_0.jar"/>
         </fileset>
     </copy>     
     <!-- Jar the webdist.war package together -->
-    <jar basedir="${raadmin.build}" jarfile="${raadminjar}"/>    
+    <jar basedir="${adminweb.build}" jarfile="${adminwebjar}"/>    
   </target>
 
   <!-- =================================================================== -->
@@ -324,7 +324,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/admin/*.class"/>
                 <include name="se/anatom/ejbca/batch/*.class"/>
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
-                <include name="se/anatom/ejbca/ca/store/certificatetypes/*.class"/>                
+                <include name="se/anatom/ejbca/ca/store/certificateprofiles/*.class"/>                
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
                 <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/RevokedCertInfo*.class"/>
@@ -333,14 +333,14 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/ra/*.class"/> 
                 <include name="se/anatom/ejbca/exception/**/*.class"/>
                 <include name="se/anatom/ejbca/ca/exception/**/*.class"/> 
-                <include name="se/anatom/ejbca/ra/raadmin/UserPreference.class"/>   
-                <include name="se/anatom/ejbca/ra/raadmin/UserDoesntFullfillProfile.class"/>   
+                <include name="se/anatom/ejbca/ra/raadmin/AdminPreference.class"/>   
+                <include name="se/anatom/ejbca/ra/raadmin/UserDoesntFullfillEndEntityProfile.class"/>   
                 <include name="se/anatom/ejbca/ra/raadmin/IRaAdminSessionHome.class"/>   
                 <include name="se/anatom/ejbca/ra/raadmin/IRaAdminSessionRemote.class"/>
-                <include name="se/anatom/ejbca/ra/raadmin/Profile.class"/>                                                 
+                <include name="se/anatom/ejbca/ra/raadmin/EndEntityProfile.class"/>                                                 
                 <include name="se/anatom/ejbca/ra/authorization/*Exception.class"/>
                 <include name="se/anatom/ejbca/ra/authorization/UserEntity.class"/>  
-                <include name="se/anatom/ejbca/ra/authorization/UserInformation.class"/>      
+                <include name="se/anatom/ejbca/ra/authorization/AdminInformation.class"/>      
                 <include name="se/anatom/ejbca/log/Admin.class"/>                                                                                                                                                                                                 
                 <include name="se/anatom/ejbca/protocol/RequestMessage.class"/>                                                                                                                                                                                                 
                 <include name="se/anatom/ejbca/protocol/PKCS10RequestMessage.class"/>                                                                                                                                                                                                 
@@ -354,7 +354,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
   <!-- =================================================================== -->
   <!-- Build CA-ear                                                        -->
   <!-- =================================================================== -->
-  <target name="ca.ear" depends="apply.war, webdist.war, ca.jar, ra.jar, raadmin.war, log.jar">
+  <target name="ca.ear" depends="apply.war, webdist.war, ca.jar, ra.jar, adminweb.war, log.jar">
     <mkdir dir="${caear.build}"/>
     <copy todir="${caear.earbuild}">
         <fileset dir="${caear.earsrc}"> 
@@ -378,7 +378,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="ca.jar"/>
                 <include name="ra.jar"/>
                 <include name="log.jar"/>                
-                <include name="raadmin.war"/>
+                <include name="adminweb.war"/>
         </fileset>
     </copy>
   

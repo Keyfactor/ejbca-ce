@@ -23,7 +23,7 @@ import se.anatom.ejbca.log.LogEntry;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.13 2002-09-17 09:19:44 herrvendil Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.14 2002-10-24 20:01:38 herrvendil Exp $
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean {
 
@@ -121,7 +121,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
             UserDataRemote data = userHome.findByPrimaryKey(pk);
             data.setStatus(UserDataRemote.STATUS_GENERATED);
             data.setTimeModified((new Date()).getTime());
-            logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDUSER,"Changed status to STATUS_GENERATED.");               
+            logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"Changed status to STATUS_GENERATED.");               
             debug("<finishUser("+username+", hiddenpwd)");
         } catch (ObjectNotFoundException oe) {
             try{

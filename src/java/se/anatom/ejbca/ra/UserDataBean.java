@@ -15,9 +15,6 @@ import se.anatom.ejbca.SecConst;
 import org.apache.log4j.*;
 
 
-
-
-
 /** Entity bean should not be used directly, use though Session beans.
  *
  * Entity Bean representing a User.
@@ -27,9 +24,14 @@ import org.apache.log4j.*;
  * SHA1 hash of password (passwordHash)
  * Clear text password if needed (clearPassword)
  * Subject DN (subjectDN)
+ * Subject Alternative Name (subjectAltName
  * Subject Email (subjectEmail)
  * Status (status)
- * Type (type, from SecConst)
+ * Type (type, from SecConst)  
+ * End Entity Profile (endEntityProfileId)
+ * Certificate Profile (certificateProfileId)
+ * Token Type (tokenType)
+ * Hard Token Issuer (hardTokenIssuerId)
  * </pre>
  *
  * Passwords should me manipulated through helper functions setPassword() and setOpenPassword().
@@ -37,7 +39,7 @@ import org.apache.log4j.*;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.12 2002-07-28 23:27:47 herrvendil Exp $
+ * @version $Id: UserDataBean.java,v 1.13 2002-10-24 20:10:12 herrvendil Exp $
  **/
 
 public abstract class UserDataBean implements javax.ejb.EntityBean {
@@ -52,6 +54,9 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
     public abstract String getSubjectDN();
     public abstract void setSubjectDN(String subjectDN);
 
+    public abstract String getSubjectAltName();
+    public abstract void setSubjectAltName(String subjectAltName);    
+    
     public abstract String getSubjectEmail();
     public abstract void setSubjectEmail(String subjectEmail);
 
@@ -97,22 +102,39 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
      */   
     public abstract void setTimeModified(long createtime);
     /**
-     *  Returns the profile id the user belongs to.
+     *  Returns the end entity profile id the user belongs to.
      */     
-    public abstract int getProfileId();
+    public abstract int getEndEntityProfileId();
     /**
-     *  Sets the profileid the user should belong to. 0 if profileid is not applicable.
+     *  Sets the end entity profile id the user should belong to. 0 if profileid is not applicable.
      */     
-    public abstract void setProfileId(int profileid);
-    /**
-     *  Returns the certificate type id that should be generated for the user.
-     */     
-    public abstract int getCertificateTypeId();
-    /**
-     *  Sets the certificate type id that should be generated for the user. 0 if profileid is not applicable.
-     */     
-    public abstract void setCertificateTypeId(int certificatetypeid);
+    public abstract void setEndEntityProfileId(int endentityprofileid);
     
+    /**
+     *  Returns the certificate profile id that should be generated for the user.
+     */     
+    public abstract int getCertificateProfileId();
+    /**
+     *  Sets the certificate profile id that should be generated for the user. 0 if profileid is not applicable.
+     */     
+    public abstract void setCertificateProfileId(int certificateprofileid);
+    
+    /**
+     *  Returns the token type id that should be generated for the user.
+     */     
+    public abstract int getTokenType();
+    /**
+     *  Sets the token type  that should be generated for the user. Available token types can be found in SecConst.
+     */     
+    public abstract void setTokenType(int tokentype);
+    /**
+     *  Returns the hard token issuer id that should genererate for the users hard token.
+     */     
+    public abstract int getHardTokenIssuerId();
+    /**
+     *  Sets tthe hard token issuer id that should genererate for the users hard token. 0 if issuerid is not applicable.
+     */     
+    public abstract void setHardTokenIssuerId(int hardtokenissuerid);    
     
     //
     // Public methods used to help us manage passwords
@@ -205,14 +227,16 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
         setClearPassword(null);
         setPasswordHash(makePasswordHash(password));
         setSubjectDN(CertTools.stringToBCDNString(dn));
+        setSubjectAltName(null);        
         setSubjectEmail(null);
         setStatus(UserDataLocal.STATUS_NEW);
         setType(SecConst.USER_INVALID);
         setTimeCreated(time);
         setTimeModified(time);
-        setProfileId(0);
-        setCertificateTypeId(0);
-        
+        setEndEntityProfileId(0);
+        setCertificateProfileId(0);
+        setTokenType(SecConst.TOKEN_SOFT_BROWSERGEN);
+        setHardTokenIssuerId(0);
         UserDataPK pk = new UserDataPK(username);
         log.debug("Created user "+username);
 

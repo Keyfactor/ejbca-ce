@@ -6,7 +6,7 @@ import junit.framework.*;
 
 /**
  *
- * @version $Id: TestRunner.java,v 1.2 2002-08-20 12:17:15 anatom Exp $
+ * @version $Id: TestRunner.java,v 1.3 2002-10-24 20:02:53 herrvendil Exp $
  */
 public class TestRunner extends Object {
 

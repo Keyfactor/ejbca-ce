@@ -9,18 +9,20 @@ import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
-import se.anatom.ejbca.ca.store.certificatetypes.*;
+import se.anatom.ejbca.ca.store.certificateprofiles.*;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: ICertificateStoreSessionLocal.java,v 1.7 2002-08-28 12:22:22 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionLocal.java,v 1.8 2002-10-24 20:04:20 herrvendil Exp $
  * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
  */
 public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject, IPublisherSessionLocal {
  
    
-    public final static int FIXED_CERTIFICATETYPE_BOUNDRY = ICertificateStoreSessionRemote.FIXED_CERTIFICATETYPE_BOUNDRY;    
+    public final static int FIXED_CERTIFICATEPROFILE_BOUNDRY = ICertificateStoreSessionRemote.FIXED_CERTIFICATEPROFILE_BOUNDRY;    
 
+    public final static int NO_CERTIFICATEPROFILE = LocalCertificateStoreSessionBean.NO_CERTIFICATEPROFILE;
+    
     public final static int FIXED_ENDUSER = LocalCertificateStoreSessionBean.FIXED_ENDUSER;
     public final static int FIXED_CA = LocalCertificateStoreSessionBean.FIXED_CA;
     public final static int FIXED_ROOTCA = LocalCertificateStoreSessionBean.FIXED_ROOTCA; 
@@ -81,61 +83,61 @@ public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject,
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */    
     
-    public boolean addCertificateType(String certificatetypename, CertificateType certificatetype);   
+    public boolean addCertificateProfile(String certificateprofilename, CertificateProfile certificateprofile);   
     
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public boolean cloneCertificateType(String originalcertificatetypename, String newcertificatetypename);
+    public boolean cloneCertificateProfile(String originalcertificateprofilename, String newcertificateprofilename);
     
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public void removeCertificateType(String certificatetypename);
+    public void removeCertificateProfile(String certificateprofilename);
     
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public boolean renameCertificateType(String oldcertificatetypename, String newcertificatetypename);   
+    public boolean renameCertificateProfile(String oldcertificateprofilename, String newcertificateprofilename);   
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public boolean changeCertificateType(String certificatetypename, CertificateType certificatetype); 
+    public boolean changeCertificateProfile(String certificateprofilename, CertificateProfile certificateprofile); 
     
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */  
-    public Collection getCertificateTypeNames();
+    public Collection getCertificateProfileNames();
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */     
-    public TreeMap getCertificateTypes();
+    public TreeMap getCertificateProfiles();
     
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */ 
-    public CertificateType getCertificateType(String certificatetypename);
+    public CertificateProfile getCertificateProfile(String certificateprofilename);
     
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */      
-    public CertificateType getCertificateType(int id);
+    public CertificateProfile getCertificateProfile(int id);
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */         
-    public int getNumberOfCertificateTypes();
+    public int getNumberOfCertificateProfiles();
     
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public int getCertificateTypeId(String certificatetypename);
+    public int getCertificateProfileId(String certificateprofilename);
     
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public String getCertificateTypeName(int id);      
+    public String getCertificateProfileName(int id);      
 
 }
 

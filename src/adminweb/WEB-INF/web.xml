@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE web-app
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+    "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+  <distributable/>
+  <servlet>
+    <servlet-name>GetCRL</servlet-name>
+    <description>Returns the latest CRL</description>
+    <servlet-class>se.anatom.ejbca.webdist.cainterface.GetCRLServlet</servlet-class>
+    <load-on-startup>99</load-on-startup>
+  </servlet>
+  <servlet>
+    <servlet-name>CACert</servlet-name>
+    <description>Returns the specified CA certificate</description>
+    <servlet-class>se.anatom.ejbca.webdist.cainterface.CACertServlet</servlet-class>
+    <load-on-startup>99</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetCRL</servlet-name>
+    <url-pattern>/ca/getcrl/getcrl</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>CACert</servlet-name>
+    <url-pattern>/ca/cacert</url-pattern>
+  </servlet-mapping>
+  <session-config>
+    <session-timeout>
+            30
+        </session-timeout>
+  </session-config>
+
+  <welcome-file-list>
+    <welcome-file>
+            index.jsp
+        </welcome-file>
+    <welcome-file>
+            index.html
+        </welcome-file>
+    <welcome-file>
+            index.htm
+        </welcome-file>
+  </welcome-file-list>
+  <error-page>
+    <exception-type>Exception Type</exception-type>
+    <location>/errorpage.jsp</location>
+  </error-page>
+  <login-config>
+    <auth-method>CLIENT-CERT</auth-method>
+  </login-config>
+
+  <env-entry>
+    <description>Defines the administrationserver baseurl</description>
+    <env-entry-name>BASEURL</env-entry-name>
+    <env-entry-value>https://localhost:8443/</env-entry-value>
+    <env-entry-type>java.lang.String</env-entry-type>
+  </env-entry>
+  <env-entry>
+    <description>Defines the admin directory</description>
+    <env-entry-name>ADMINDIRECTORY</env-entry-name>
+    <env-entry-value>ejbca/adminweb/</env-entry-value>
+    <env-entry-type>java.lang.String</env-entry-type>
+  </env-entry>
+  <env-entry>
+    <description>Defines the available languages by languagecodes separated with a comma </description>
+    <env-entry-name>AVAILABLELANGUAGES</env-entry-name>
+    <env-entry-value>EN, SE</env-entry-value>
+    <env-entry-type>java.lang.String</env-entry-type>
+  </env-entry>
+  <env-entry>
+    <description>Defines the available themes by css-filenames separated with a comma </description>
+    <env-entry-name>AVAILABLETHEMES</env-entry-name>
+    <env-entry-value>default_theme.css, second_theme.css</env-entry-value>
+    <env-entry-type>java.lang.String</env-entry-type>
+  </env-entry>
+  <env-entry>
+    <description>Port used by EJBCA public webcomponents. i.e that doesn't require client authentication.</description>
+    <env-entry-name>PUBLICPORT</env-entry-name>
+    <env-entry-value>8080</env-entry-value>
+    <env-entry-type>java.lang.String</env-entry-type>
+  </env-entry>
+  <env-entry>
+    <description>Port  used by EJBCA private webcomponents. i.e that requires client authentication </description>
+    <env-entry-name>PRIVATEPORT</env-entry-name>
+    <env-entry-value>8443</env-entry-value>
+    <env-entry-type>java.lang.String</env-entry-type>
+  </env-entry>
+  <env-entry>
+    <description>Protocol used by EJBCA public webcomponents. i.e that doesn't require client authentication </description>
+    <env-entry-name>PUBLICPROTOCOL</env-entry-name>
+    <env-entry-value>http</env-entry-value>
+    <env-entry-type>java.lang.String</env-entry-type>
+  </env-entry>
+  <env-entry>
+    <description>Protocol used by EJBCA private webcomponents. i.e that requires client authentication</description>
+    <env-entry-name>PRIVATEPROTOCOL</env-entry-name>
+    <env-entry-value>https</env-entry-value>
+    <env-entry-type>java.lang.String</env-entry-type>
+  </env-entry>      
+  <ejb-ref>
+    <ejb-ref-name>RSASignSession</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <home>se.anatom.ejbca.ca.sign.ISignSessionHome</home>
+    <remote>se.anatom.ejbca.ca.sign.ISignSessionRemote</remote>
+    <ejb-link>RSASignSession</ejb-link>
+  </ejb-ref>   
+  <ejb-ref>
+    <ejb-ref-name>RaAdminSession</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome</home>
+    <remote>se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote</remote>
+    <ejb-link>RaAdminSession</ejb-link>
+  </ejb-ref>   
+  <ejb-ref>
+    <ejb-ref-name>CertificateStoreSession</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <home>se.anatom.ejbca.ca.store.ICertificateStoreSessionHome</home>
+    <remote>se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote</remote>
+    <ejb-link>CertificateStoreSession</ejb-link>
+  </ejb-ref>   
+  <ejb-ref>
+    <ejb-ref-name>UserAdminSession</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <home>se.anatom.ejbca.ra.IUserAdminSessionHome</home>
+    <remote>se.anatom.ejbca.ra.IUserAdminSessionRemote</remote>
+    <ejb-link>UserAdminSession</ejb-link>
+  </ejb-ref>     
+</web-app>

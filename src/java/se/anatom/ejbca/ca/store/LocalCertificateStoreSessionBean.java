@@ -19,7 +19,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.cert.X509CRL;
 
-import se.anatom.ejbca.ca.store.certificatetypes.*;
+import se.anatom.ejbca.ca.store.certificateprofiles.*;
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.util.CertTools;
@@ -33,7 +33,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.26 2002-09-17 09:19:47 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.27 2002-10-24 20:04:30 herrvendil Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -44,7 +44,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     private CertificateDataLocalHome certHome = null;
 
     /** The home interface of Certificate Type entity bean */
-    private CertificateTypeDataLocalHome certtypehome = null;
+    private CertificateProfileDataLocalHome certprofilehome = null;
 
     /** The home interface of CRL entity bean */
     private CRLDataLocalHome crlHome = null;
@@ -57,6 +57,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     
 
     /** Constants used with fixed certificate types. All constants should have an integer value greater than 0 and less than 1000. */
+    public final static int NO_CERTIFICATEPROFILE = 0;    
     public final static int FIXED_ENDUSER = 1;
     public final static int FIXED_CA = 2;
     public final static int FIXED_ROOTCA = 3;
@@ -71,7 +72,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         debug("DataSource=" + dataSource);
         crlHome = (CRLDataLocalHome)lookup("java:comp/env/ejb/CRLDataLocal");
         certHome = (CertificateDataLocalHome)lookup("java:comp/env/ejb/CertificateDataLocal");
-        certtypehome = (CertificateTypeDataLocalHome)lookup("java:comp/env/ejb/CertificateTypeDataLocal");
+        certprofilehome = (CertificateProfileDataLocalHome)lookup("java:comp/env/ejb/CertificateProfileDataLocal");
         
         try{
           this.admin = administrator;  
@@ -83,19 +84,19 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
         // Check if fixed certificates exists in database.
        try{
-          certtypehome.findByPrimaryKey(new Integer(FIXED_ENDUSER));
+          certprofilehome.findByPrimaryKey(new Integer(FIXED_ENDUSER));
        }catch(FinderException e){
-          certtypehome.create(new Integer(FIXED_ENDUSER),EndUserCertificateType.CERTIFICATETYPENAME, (CertificateType) new EndUserCertificateType());
+          certprofilehome.create(new Integer(FIXED_ENDUSER),EndUserCertificateProfile.CERTIFICATEPROFILENAME, (CertificateProfile) new EndUserCertificateProfile());
        }
        try{
-          certtypehome.findByPrimaryKey(new Integer(FIXED_CA));
+          certprofilehome.findByPrimaryKey(new Integer(FIXED_CA));
        }catch(FinderException e){
-          certtypehome.create(new Integer(FIXED_CA),CACertificateType.CERTIFICATETYPENAME, (CertificateType) new CACertificateType());
+          certprofilehome.create(new Integer(FIXED_CA),CACertificateProfile.CERTIFICATEPROFILENAME, (CertificateProfile) new CACertificateProfile());
        }
        try{
-          certtypehome.findByPrimaryKey(new Integer(FIXED_ROOTCA));
+          certprofilehome.findByPrimaryKey(new Integer(FIXED_ROOTCA));
        }catch(FinderException e){
-          certtypehome.create(new Integer(FIXED_ROOTCA),RootCACertificateType.CERTIFICATETYPENAME, (CertificateType) new RootCACertificateType());
+          certprofilehome.create(new Integer(FIXED_ROOTCA),RootCACertificateProfile.CERTIFICATEPROFILENAME, (CertificateProfile) new RootCACertificateProfile());
        }
 
         debug("<ejbCreate()");
@@ -468,242 +469,243 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
 
      /**
-     * Adds a certificate type to the database.
+     * Adds a certificate profile to the database.
      */
 
-    public boolean addCertificateType(String certificatetypename, CertificateType certificatetype){
+    public boolean addCertificateProfile(String certificateprofilename, CertificateProfile certificateprofile){
        boolean returnval=false;
        try{
-          certtypehome.findByCertificateTypeName(certificatetypename);
+          certprofilehome.findByCertificateProfileName(certificateprofilename);
        }catch(FinderException e){
          try{
-           certtypehome.create(findFreeCertificateTypeId(),certificatetypename,certificatetype);
+           certprofilehome.create(findFreeCertificateProfileId(),certificateprofilename,certificateprofile);
            returnval = true;
          }catch(Exception f){}
        }
       
         try{
          if(returnval)
-           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"New certificateprofile " + certificatetypename + ".");             
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"New certificateprofile " + certificateprofilename + ".");             
          else    
-           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificateprofile " + certificatetypename + ".");   
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificateprofile " + certificateprofilename + ".");   
        }catch(RemoteException re){
           throw new EJBException(re);              
        }         
        return returnval;
-    } // addCertificateType
+    } // addCertificateProfile
 
      /**
-     * Adds a certificate type with the same content as the original certificatetype,
+     * Adds a certificate profile with the same content as the original certificateprofile,
      */
-    public boolean cloneCertificateType(String originalcertificatetypename, String newcertificatetypename){
-       CertificateType certificatetype = null;
+    public boolean cloneCertificateProfile(String originalcertificateprofilename, String newcertificateprofilename){
+       CertificateProfile certificateprofile = null;
        boolean returnval = false;
        try{
-         CertificateTypeDataLocal pdl = certtypehome.findByCertificateTypeName(originalcertificatetypename);
-         certificatetype = (CertificateType) pdl.getCertificateType().clone();
+         CertificateProfileDataLocal pdl = certprofilehome.findByCertificateProfileName(originalcertificateprofilename);
+         certificateprofile = (CertificateProfile) pdl.getCertificateProfile().clone();
 
-         returnval = addCertificateType(newcertificatetypename, certificatetype);
+         returnval = addCertificateProfile(newcertificateprofilename, certificateprofile);
        }catch(FinderException e){}
         catch(CloneNotSupportedException f){}
 
        try{
          if(returnval)
-           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"New certificateprofile " + newcertificatetypename +  " used profile " + originalcertificatetypename + " as template.");             
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"New certificateprofile " + newcertificateprofilename +  " used profile " + originalcertificateprofilename + " as template.");             
          else    
-           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificaterprofile " + newcertificatetypename +  " using profile " + originalcertificatetypename + " as template.");  
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificaterprofile " + newcertificateprofilename +  " using profile " + originalcertificateprofilename + " as template.");  
        }catch(RemoteException re){
           throw new EJBException(re);              
        }
        
        return returnval;
-    } // cloneCertificateType
+    } // cloneCertificateProfile
 
      /**
-     * Removes a certificatetype from the database.
+     * Removes a certificateprofile from the database.
      * @throws EJBException if a communication or other error occurs.
      */
-    public void removeCertificateType(String certificatetypename) {
+    public void removeCertificateProfile(String certificateprofilename) {
       try{
-        CertificateTypeDataLocal pdl = certtypehome.findByCertificateTypeName(certificatetypename);
+        CertificateProfileDataLocal pdl = certprofilehome.findByCertificateProfileName(certificateprofilename);
         pdl.remove();
-        logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"Removed certificateprofile " + certificatetypename + ".");        
+        logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"Removed certificateprofile " + certificateprofilename + ".");        
       }catch(Exception e){
          try{ 
-           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error removing certificateprofile " + certificatetypename + ".");    
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error removing certificateprofile " + certificateprofilename + ".");    
          }catch(RemoteException re){} 
       }
-    } // removeCertificateType
+    } // removeCertificateProfile
 
      /**
-     * Renames a certificatetype
+     * Renames a certificateprofile
      */
-    public boolean renameCertificateType(String oldcertificatetypename, String newcertificatetypename){
+    public boolean renameCertificateProfile(String oldcertificateprofilename, String newcertificateprofilename){
        boolean returnvalue = false;
        try{
-          certtypehome.findByCertificateTypeName(newcertificatetypename);
+          certprofilehome.findByCertificateProfileName(newcertificateprofilename);
        }catch(FinderException e){
          try{
-           CertificateTypeDataLocal pdl = certtypehome.findByCertificateTypeName(oldcertificatetypename);
-           pdl.setCertificateTypeName(newcertificatetypename);
+           CertificateProfileDataLocal pdl = certprofilehome.findByCertificateProfileName(oldcertificateprofilename);
+           pdl.setCertificateProfileName(newcertificateprofilename);
            returnvalue = true;
          }catch(FinderException f){}
        }
       
        try{
          if(returnvalue)
-           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"Renamed certificateprofile " + oldcertificatetypename +  " to " + newcertificatetypename + ".");             
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"Renamed certificateprofile " + oldcertificateprofilename +  " to " + newcertificateprofilename + ".");             
          else    
-           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error renaming certificateprofile " + oldcertificatetypename +  " to " + newcertificatetypename + ".");     
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error renaming certificateprofile " + oldcertificateprofilename +  " to " + newcertificateprofilename + ".");     
        }catch(RemoteException re){
           throw new EJBException(re);              
        }         
        
        return returnvalue;
-    } // remameCertificateType
+    } // remameCertificateProfile
 
     /**
-     * Updates certificatetype data
+     * Updates certificateprofile data
      */
 
-    public boolean changeCertificateType(String certificatetypename, CertificateType certificatetype){
+    public boolean changeCertificateProfile(String certificateprofilename, CertificateProfile certificateprofile){
        boolean returnvalue = false;
 
        try{
-         CertificateTypeDataLocal pdl = certtypehome.findByCertificateTypeName(certificatetypename);
-         pdl.setCertificateType(certificatetype);
+         CertificateProfileDataLocal pdl = certprofilehome.findByCertificateProfileName(certificateprofilename);
+         pdl.setCertificateProfile(certificateprofile);
          returnvalue = true;
        }catch(FinderException e){}
        
        try{
          if(returnvalue)
-           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"Certificateprofile " + certificatetypename +  " edited.");             
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"Certificateprofile " + certificateprofilename +  " edited.");             
          else    
-           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE," Error editing certificateprofile " + certificatetypename + ".");  
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE," Error editing certificateprofile " + certificateprofilename + ".");  
        }catch(RemoteException re){
           throw new EJBException(re);              
        }  
        
        return returnvalue;
-    }// changeCertificateType
+    }// changeCertificateProfile
 
     /**
-     * Retrives certificate type names sorted.
+     * Retrives certificate profile names sorted.
      */
-    public Collection getCertificateTypeNames(){
+    public Collection getCertificateProfileNames(){
       ArrayList returnval = new ArrayList();
       Collection result = null;
       try{
-        result = certtypehome.findAll();
+        result = certprofilehome.findAll();
         if(result.size()>0){
           Iterator i = result.iterator();
           while(i.hasNext()){
-            returnval.add(((CertificateTypeDataLocal) i.next()).getCertificateTypeName());
+            returnval.add(((CertificateProfileDataLocal) i.next()).getCertificateProfileName());
           }
         }
         Collections.sort(returnval);
       }catch(Exception e){}
       return returnval;
-    } // getCertificateTypeNames
+    } // getCertificateProfileNames
 
     /**
-     * Retrives certificate types sorted by name.
+     * Retrives certificate profiles sorted by name.
      */
-    public TreeMap getCertificateTypes(){
+    public TreeMap getCertificateProfiles(){
       TreeMap returnval = new TreeMap();
       Collection result = null;
       try{
-        result = certtypehome.findAll();
+        result = certprofilehome.findAll();
         if(result.size()>0){
           returnval = new TreeMap();
           Iterator i = result.iterator();
           while(i.hasNext()){
-            CertificateTypeDataLocal pdl = (CertificateTypeDataLocal) i.next();
-            returnval.put(pdl.getCertificateTypeName(),pdl.getCertificateType());
+            CertificateProfileDataLocal pdl = (CertificateProfileDataLocal) i.next();
+            returnval.put(pdl.getCertificateProfileName(),pdl.getCertificateProfile());
           }
         }
       }catch(FinderException e){}
       return returnval;
-    } // getCertificateTypes
+    } // getCertificateProfiles
 
     /**
-     * Retrives a named certificate type.
+     * Retrives a named certificate profile.
      */
-    public CertificateType getCertificateType(String certificatetypename){
-       CertificateType returnval=null;
+    public CertificateProfile getCertificateProfile(String certificateprofilename){
+       CertificateProfile returnval=null;
+       System.out.println("Searching Certificate Profile : " + certificateprofilename);
        try{
-         returnval = (certtypehome.findByCertificateTypeName(certificatetypename)).getCertificateType();
+         returnval = (certprofilehome.findByCertificateProfileName(certificateprofilename)).getCertificateProfile();
        }catch(FinderException e){
          throw new EJBException(e);
        }
        return returnval;
-    } //  getCertificateType
+    } //  getCertificateProfile
 
      /**
-     * Finds a certificate type by id.
+     * Finds a certificate profile by id.
      */
-    public CertificateType getCertificateType(int id){
-       CertificateType returnval=null;
+    public CertificateProfile getCertificateProfile(int id){
+       CertificateProfile returnval=null;
        try{
-         returnval = (certtypehome.findByPrimaryKey(new Integer(id))).getCertificateType();
+         returnval = (certprofilehome.findByPrimaryKey(new Integer(id))).getCertificateProfile();
        }catch(FinderException e){
          throw new EJBException(e);
        }
        return returnval;
-    } // getCertificateType
+    } // getCertificateProfile
 
      /**
-     * Retrives the numbers of certificatetypes.
+     * Retrives the numbers of certificateprofiles.
      */
-    public int getNumberOfCertificateTypes(){
+    public int getNumberOfCertificateProfiles(){
       int returnval =0;
       try{
-        returnval = (certtypehome.findAll()).size();
+        returnval = (certprofilehome.findAll()).size();
       }catch(FinderException e){}
 
       return returnval;
     }
 
      /**
-     * Returns a certificate types id, given it's certificate type name
+     * Returns a certificate profile id, given it's certificate profile name
      *
-     * @return the id or 0 if certificatetype cannot be found.
+     * @return the id or 0 if certificateprofile cannot be found.
      */
-    public int getCertificateTypeId(String certificatetypename){
+    public int getCertificateProfileId(String certificateprofilename){
       int returnval = 0;
       try{
-        Integer id = (certtypehome.findByCertificateTypeName(certificatetypename)).getId();
+        Integer id = (certprofilehome.findByCertificateProfileName(certificateprofilename)).getId();
         returnval = id.intValue();
       }catch(FinderException e){}
 
       return returnval;
-    } // getCertificateTypeId
+    } // getCertificateProfileId
 
      /**
-     * Returns a certificatetypes name given it's id.
+     * Returns a certificateprofiles name given it's id.
      *
-     * @return certificatetypename or null if certificatetype id doesn't exists.
+     * @return certificateprofilename or null if certificateprofile id doesn't exists.
      */
-    public String getCertificateTypeName(int id){
+    public String getCertificateProfileName(int id){
       String returnval = null;
       try{
-        returnval = (certtypehome.findByPrimaryKey(new Integer(id))).getCertificateTypeName();
+        returnval = (certprofilehome.findByPrimaryKey(new Integer(id))).getCertificateProfileName();
       }catch(FinderException e){}
 
       return returnval;
-    } // getCertificateTypeName
+    } // getCertificateProfileName
 
     // Private methods
 
-    private Integer findFreeCertificateTypeId(){
+    private Integer findFreeCertificateProfileId(){
       Random random = new Random((new Date()).getTime());
       int id = random.nextInt();
       boolean foundfree = false;
 
       while(!foundfree){
         try{
-          if(id > ICertificateStoreSessionRemote.FIXED_CERTIFICATETYPE_BOUNDRY){
-            certtypehome.findByPrimaryKey(new Integer(id));
+          if(id > ICertificateStoreSessionRemote.FIXED_CERTIFICATEPROFILE_BOUNDRY){
+            certprofilehome.findByPrimaryKey(new Integer(id));
           }else{
             id = random.nextInt();
           }
@@ -712,7 +714,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
       }
       return new Integer(id);
-    } // findFreeCertificateTypeId
+    } // findFreeCertificateProfileId
 
 
 } // CertificateStoreSessionBean

@@ -85,9 +85,9 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
        if(logentry.getAdminType() == Admin.TYPE_CLIENTCERT_USER){
           String dnstring = dnproxy.getSubjectDN(logentry.getAdminData());
           if(dnstring !=null){
-            DNFieldExtractor dn = new DNFieldExtractor(dnstring);           
+            DNFieldExtractor dn = new DNFieldExtractor(dnstring, DNFieldExtractor.TYPE_SUBJECTDN);           
             logentrydata[ADMINCERTDN] = dnstring;
-            logentrydata[ADMINDATA] = dn.getField(DNFieldExtractor.COMMONNAME) + ", " + dn.getField(DNFieldExtractor.ORGANIZATION);
+            logentrydata[ADMINDATA] = dn.getField(DNFieldExtractor.COMMONNAME,0) + ", " + dn.getField(DNFieldExtractor.ORGANIZATION,0);
           }  
        }else{
           if(logentry.getAdminType() == Admin.TYPE_PUBLIC_WEB_USER){
@@ -119,8 +119,8 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
        if(logentrydata[CERTIFICATEDN] != null){
           String dnstring = dnproxy.getSubjectDN(logentry.getCertificateSNR()); 
           if(dnstring != null){
-            DNFieldExtractor dn = new DNFieldExtractor(dnstring); 
-            logentrydata[CERTIFICATE] = dn.getField(DNFieldExtractor.COMMONNAME) + ", " + dn.getField(DNFieldExtractor.ORGANIZATION);
+            DNFieldExtractor dn = new DNFieldExtractor(dnstring, DNFieldExtractor.TYPE_SUBJECTDN); 
+            logentrydata[CERTIFICATE] = dn.getField(DNFieldExtractor.COMMONNAME,0) + ", " + dn.getField(DNFieldExtractor.ORGANIZATION,0);
           }  
        }
        

@@ -17,19 +17,13 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
  * By default all data are saved to a database.
  *
  * @author  Philip Vendil
- * @version $Id: GlobalConfigurationDataHandler.java,v 1.10 2002-09-12 18:14:15 herrvendil Exp $
+ * @version $Id: GlobalConfigurationDataHandler.java,v 1.11 2002-10-24 20:14:00 herrvendil Exp $
  */
 public class GlobalConfigurationDataHandler {
 
     /** Creates a new instance of GlobalConfigurationDataHandler */
-    public GlobalConfigurationDataHandler(Admin administrator) throws IOException,  NamingException,
-                                                   FinderException, CreateException{
-      // Get the UserSdminSession instance.
-      InitialContext jndicontext = new InitialContext();
-      Object obj1 = jndicontext.lookup("UserAdminSession");
-      IUserAdminSessionHome adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-      adminsession = adminsessionhome.create(administrator);
-
+    public GlobalConfigurationDataHandler(IUserAdminSessionRemote adminsession, Admin administrator ){
+      this.adminsession = adminsession;
       this.administrator = administrator;
     }
 
@@ -37,13 +31,12 @@ public class GlobalConfigurationDataHandler {
         GlobalConfiguration ret = null;
 
         ret = adminsession.loadGlobalConfiguration();
-        if(!ret.isInitialized()){
-           InitialContext ictx = new InitialContext();
-           Context myenv = (Context) ictx.lookup("java:comp/env");      
-           ret.initialize((String) myenv.lookup("BASEURL"), (String) myenv.lookup("RAADMINDIRECTORY"),
-                          (String) myenv.lookup("AVAILABLELANGUAGES"), (String) myenv.lookup("AVAILABLETHEMES"));
-           saveGlobalConfiguration(ret);
-        }
+        InitialContext ictx = new InitialContext();
+        Context myenv = (Context) ictx.lookup("java:comp/env");      
+        ret.initialize((String) myenv.lookup("BASEURL"), (String) myenv.lookup("ADMINDIRECTORY"),
+                        (String) myenv.lookup("AVAILABLELANGUAGES"), (String) myenv.lookup("AVAILABLETHEMES"), 
+                        (String) myenv.lookup("PUBLICPORT"),(String) myenv.lookup("PRIVATEPORT"),
+                        (String) myenv.lookup("PUBLICPROTOCOL"),(String) myenv.lookup("PRIVATEPROTOCOL"));
         return ret;
     }
 

@@ -6,7 +6,7 @@ import se.anatom.ejbca.exception.EjbcaException;
  * Authentication error due to wrong credentials of user object.
  * To authenticate a user the user must have valid credentials, i.e. password.
  *
- * @version $Id: AuthLoginException.java,v 1.1 2002-03-22 11:21:49 anatom Exp $
+ * @version $Id: AuthLoginException.java,v 1.2 2002-10-24 20:02:23 herrvendil Exp $
  */
 public class AuthLoginException extends EjbcaException {
 

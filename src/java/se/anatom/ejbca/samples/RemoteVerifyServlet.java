@@ -28,7 +28,7 @@ import org.apache.log4j.*;
  * followed by the information to use for this user's certificate.
  *
  * @author Original code by Peter Neemeth
- * @version $Id: RemoteVerifyServlet.java,v 1.1.1.1 2001-11-15 14:58:18 anatom Exp $
+ * @version $Id: RemoteVerifyServlet.java,v 1.2 2002-10-24 20:10:52 herrvendil Exp $
  */
 public class RemoteVerifyServlet extends HttpServlet {
     

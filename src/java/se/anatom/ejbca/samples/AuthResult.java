@@ -8,7 +8,7 @@ import java.util.Hashtable;
  * an authenticateUser request.
  *
  * @author Original code by Peter Neemeth
- * @version $Id: AuthResult.java,v 1.1.1.1 2001-11-15 14:58:18 anatom Exp $
+ * @version $Id: AuthResult.java,v 1.2 2002-10-24 20:10:51 herrvendil Exp $
  *
  */
 public class AuthResult {

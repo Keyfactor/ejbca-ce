@@ -18,7 +18,7 @@ public interface IAuthorizationSessionLocal extends javax.ejb.EJBLocalObject
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
     
-    public boolean isAuthorized(UserInformation userinformation, String resource) throws AuthorizationDeniedException;
+    public boolean isAuthorized(AdminInformation admininformation, String resource) throws AuthorizationDeniedException;
     
      /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
@@ -28,83 +28,83 @@ public interface IAuthorizationSessionLocal extends javax.ejb.EJBLocalObject
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public boolean addUserGroup(String usergroupname);
+    public boolean addAdminGroup(String admingroupname);
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public void removeUserGroup(String usergroupname);
+    public void removeAdminGroup(String admingroupname);
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public boolean renameUserGroup(String oldname, String newname);
+    public boolean renameAdminGroup(String oldname, String newname);
  
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
     
-    public UserGroup getUserGroup(String name);
+    public AdminGroup getAdminGroup(String name);
         
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public int getNumberOfUserGroups();
+    public int getNumberOfAdminGroups();
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-     public String[] getUserGroupnames();
+     public String[] getAdminGroupnames();
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public UserGroup[] getUserGroups();
+    public AdminGroup[] getAdminGroups();
 
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
     
-    public void addAccessRule(String usergroupname, String directory, int rule, boolean recursive);    
+    public void addAccessRule(String admingroupname, String resource, int rule, boolean recursive);    
     
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public void removeAccessRule(String usergroupname, String directory);
+    public void removeAccessRule(String admingroupname, String resource);
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public int getNumberOfAccessRules(String usergroupname);
+    public int getNumberOfAccessRules(String admingroupname);
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public AccessRule[] getAccessRules(String usergroupname);
+    public AccessRule[] getAccessRules(String admingroupname);
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
     
-    public void addUserEntity(String usergroupname, int matchwith, int matchtype, String matchvalue);    
+    public void addAdminEntity(String admingroupname, int matchwith, int matchtype, String matchvalue);    
     
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public void removeUserEntity(String usergroupname, int matchwith, int matchtype, String matchvalue);
+    public void removeAdminEntity(String admingroupname, int matchwith, int matchtype, String matchvalue);
     
      /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public int getNumberOfUserEntities(String usergroupname);
+    public int getNumberOfAdminEntities(String admingroupname);
     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
-    public UserEntity[] getUserEntities(String usergroupname);
+    public AdminEntity[] getAdminEntities(String admingroupname);
 
 
            
@@ -149,7 +149,7 @@ public interface IAuthorizationSessionLocal extends javax.ejb.EJBLocalObject
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */     
-    public boolean existsProfileInRules(int profileid);
+    public boolean existsEndEntityProfileInRules(int profileid);
        
 }
 

@@ -6,7 +6,7 @@ import se.anatom.ejbca.exception.EjbcaException;
  * Error due to malformed certificate request.
  * The cause of failure can be related to ASN.1, algorithm or other
  *
- * @version $Id: SignRequestException.java,v 1.1 2002-03-22 11:21:49 anatom Exp $
+ * @version $Id: SignRequestException.java,v 1.2 2002-10-24 20:02:21 herrvendil Exp $
  */
 public class SignRequestException extends EjbcaException {
 

@@ -20,16 +20,16 @@ public class LogEntry implements java.io.Serializable {
     /*Possible log events, all information events should have an id below 1000 and all error events should have a id above 1000 */
     // Information events. Important all id:s should map to the array EVENTNAMES_INFO.
     public static final int EVENT_INFO_UNKNOWN                        = 0;    
-    public static final int EVENT_INFO_ADDEDUSER                      = 1;
-    public static final int EVENT_INFO_CHANGEDUSER                    = 2;  
-    public static final int EVENT_INFO_REVOKEDUSER                    = 3;    
+    public static final int EVENT_INFO_ADDEDENDENTITY                 = 1;
+    public static final int EVENT_INFO_CHANGEDENDENTITY               = 2;  
+    public static final int EVENT_INFO_REVOKEDENDENTITY               = 3;    
     public static final int EVENT_INFO_REVOKEDCERT                    = 4;      
-    public static final int EVENT_INFO_DELETEDUSER                    = 5;
+    public static final int EVENT_INFO_DELETEDENDENTITY               = 5;
     public static final int EVENT_INFO_EDITSYSTEMCONFIGURATION        = 6;  
-    public static final int EVENT_INFO_EDITEDADMINISTRATORPRIVILEDGES = 7;
+    public static final int EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES  = 7;
     public static final int EVENT_INFO_EDITLOGCONFIGURATION           = 8;
     public static final int EVENT_INFO_ADMINISTRATORPREFERENCECHANGED = 9;
-    public static final int EVENT_INFO_USERPROFILE                    = 10;
+    public static final int EVENT_INFO_ENDENTITYPROFILE               = 10;
     public static final int EVENT_INFO_USERAUTHENTICATION             = 11;
     public static final int EVENT_INFO_STORECERTIFICATE               = 12;
     public static final int EVENT_INFO_STORECRL                       = 13;
@@ -46,16 +46,16 @@ public class LogEntry implements java.io.Serializable {
     
     // Error events. Important all id:s should map to the array EVENTNAMES_ERROR - EVENT_ERROR_BOUNDRARY.
     public static final int EVENT_ERROR_UNKNOWN                        = 1000;      
-    public static final int EVENT_ERROR_ADDEDUSER                      = 1001;
-    public static final int EVENT_ERROR_CHANGEDUSER                    = 1002;  
-    public static final int EVENT_ERROR_REVOKEDUSER                    = 1003;    
+    public static final int EVENT_ERROR_ADDEDENDENTITY                 = 1001;
+    public static final int EVENT_ERROR_CHANGEDENDENTITY               = 1002;  
+    public static final int EVENT_ERROR_REVOKEDENDENTITY               = 1003;    
     public static final int EVENT_ERROR_REVOKEDCERT                    = 1004;  
-    public static final int EVENT_ERROR_DELETEUSER                     = 1005;
+    public static final int EVENT_ERROR_DELETEENDENTITY                = 1005;
     public static final int EVENT_ERROR_EDITSYSTEMCONFIGURATION        = 1006;      
-    public static final int EVENT_ERROR_EDITEDADMINISTRATORPRIVILEDGES = 1007;
+    public static final int EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES  = 1007;
     public static final int EVENT_ERROR_EDITLOGCONFIGURATION           = 1008;    
     public static final int EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED = 1009;
-    public static final int EVENT_ERROR_USERPROFILE                    = 1010;
+    public static final int EVENT_ERROR_ENDENTITYPROFILE               = 1010;
     public static final int EVENT_ERROR_USERAUTHENTICATION             = 1011;
     public static final int EVENT_ERROR_STORECERTIFICATE               = 1012;
     public static final int EVENT_ERROR_STORECRL                       = 1013;
@@ -80,15 +80,15 @@ public class LogEntry implements java.io.Serializable {
     public static final int EVENT_ERROR_BOUNDRARY                = 1000;
     
     // Id -> String maps
-    public static final String[] EVENTNAMES_INFO = {"EVENT_INFO_UNKNOWN", "EVENT_INFO_ADDEDUSER", "EVENT_INFO_CHANGEDUSER" , "EVENT_INFO_REVOKEDUSER", "EVENT_INFO_REVOKEDCERT", 
-                                                    "EVENT_INFO_DELETEDUSER", "EVENT_INFO_EDITSYSTEMCONFIGURATION", "EVENT_INFO_EDITEDADMINISTRATORPRIVILEDGES",
-                                                    "EVENT_INFO_EDITLOGCONFIGURATION", "EVENT_INFO_ADMINISTRATORPREFERENCECHANGED", "EVENT_INFO_USERPROFILE", "EVENT_INFO_USERAUTHENTICATION",
+    public static final String[] EVENTNAMES_INFO = {"EVENT_INFO_UNKNOWN", "EVENT_INFO_ADDEDENDENTITY", "EVENT_INFO_CHANGEDENDENTITY" , "EVENT_INFO_REVOKEDENDENTITY", "EVENT_INFO_REVOKEDCERT", 
+                                                    "EVENT_INFO_DELETEDENDENTITY", "EVENT_INFO_EDITSYSTEMCONFIGURATION", "EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES",
+                                                    "EVENT_INFO_EDITLOGCONFIGURATION", "EVENT_INFO_ADMINISTRATORPREFERENCECHANGED", "EVENT_INFO_ENDENTITYPROFILE", "EVENT_INFO_USERAUTHENTICATION",
                                                     "EVENT_INFO_STORECERTIFICATE", "EVENT_INFO_STORECRL", "EVENT_INFO_GETLASTCRL", "EVENT_INFO_CERTPROFILE", "EVENT_INFO_DATABASE",
                                                     "EVENT_INFO_CREATECERTIFICATE", "EVENT_INFO_CREATECRL", "EVENT_INFO_ADMINISTRATORLOGGEDIN", "EVENT_INFO_AUTHORIZEDTORESOURCE", "EVENT_INFO_PUBLICWEBUSERCONNECTED"};   
     
-    public static final String[] EVENTNAMES_ERROR = {"EVENT_ERROR_UNKNOWN", "EVENT_ERROR_ADDEDUSER", "EVENT_ERROR_CHANGEDUSER" , "EVENT_ERROR_REVOKEDUSER", "EVENT_ERROR_REVOKEDCERT",
-                                                     "EVENT_ERROR_DELETEUSER", "EVENT_ERROR_EDITSYSTEMCONFIGURATION", "EVENT_ERROR_EDITEDADMINISTRATORPRIVILEDGES",
-                                                     "EVENT_ERROR_EDITLOGCONFIGURATION", "EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED", "EVENT_ERROR_USERPROFILE", "EVENT_ERROR_USERAUTHENTICATION",
+    public static final String[] EVENTNAMES_ERROR = {"EVENT_ERROR_UNKNOWN", "EVENT_ERROR_ADDEDENDENTITY", "EVENT_ERROR_CHANGEDENDENTITY" , "EVENT_ERROR_REVOKEDENDENTITY", "EVENT_ERROR_REVOKEDCERT",
+                                                     "EVENT_ERROR_DELETEENDENTITY", "EVENT_ERROR_EDITSYSTEMCONFIGURATION", "EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES",
+                                                     "EVENT_ERROR_EDITLOGCONFIGURATION", "EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED", "EVENT_ERROR_ENDENTITYPROFILE", "EVENT_ERROR_USERAUTHENTICATION",
                                                      "EVENT_ERROR_STORECERTIFICATE", "EVENT_ERROR_STORECRL", "EVENT_ERROR_GETLASTCRL", "EVENT_ERROR_CERTPROFILE", "EVENT_ERROR_DATABASE",
                                                      "EVENT_ERROR_CREATECERTIFICATE", "EVENT_ERROR_CREATECRL" ,"EVENT_ERROR_ADMINISTRATORLOGGEDIN", "EVENT_ERROR_NOTAUTHORIZEDTORESOURCE",
                                                      "EVENT_ERROR_PUBLICWEBUSERCONNECTED"};    

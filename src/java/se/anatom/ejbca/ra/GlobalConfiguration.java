@@ -7,239 +7,177 @@
 package se.anatom.ejbca.ra;
 
 import java.io.IOException;
-import java.util.HashMap;
 import javax.naming.InitialContext;
 import javax.naming.Context;
 
-import se.anatom.ejbca.ra.raadmin.UserPreference;
-import se.anatom.ejbca.ra.authorization.ProfileAuthorizationProxy;
+import se.anatom.ejbca.ra.raadmin.AdminPreference;
+import se.anatom.ejbca.ra.authorization.EndEntityProfileAuthorizationProxy;
+import se.anatom.ejbca.util.UpgradeableDataHashMap;
 
 /**
- *  This is a  class containing global configuration parameters and default
- *  user preferences.
+ *  This is a  class containing global configuration parameters.
  *
- * @author  Philip Vendil
+ * @author  TomSelleck
  */
-public class GlobalConfiguration implements java.io.Serializable {
+public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
   
     // Default Values
-    // Entries to choose from in userpreference part, defines the size of data to be displayed on one page.                                                  
-    private final  String[] POSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};    
-    // Entries to choose from in view log part, defines the size of data to be displayed on one page.                                                  
-    private final  String[] POSSIBLELOGENTRIESPERPAGE = {"10" , "25" , "50" , "100", "200", "400"};        
+    public static final float LATEST_VERSION = 0;
     
-    // Directories made open to all ra administrators, but client certificate is still needed.
-    private final  String[] OPENDIRECTORIES        = { "banners","images","help",
-                                                      "/themes","/languages"};    
+       
+    // Entries to choose from in userpreference part, defines the size of data to be displayed on one page.                                                  
+    private final  String[] DEFAULTPOSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};    
+    // Entries to choose from in view log part, defines the size of data to be displayed on one page.                                                  
+    private final  String[] DEFAULTPOSSIBLELOGENTRIESPERPAGE = {"10" , "25" , "50" , "100", "200", "400"};        
+    
     // Rules available by default i authorization module.
-    private final  String[]  DEFAULT_AVAILABLE_RULES = {  "authorization", "authorization/availablerules", 
-                                                       "ca", "ca/editcertificatetypes", "ca/createcrl", "ca/getcrl", "config", 
-                                                       "ra", "ra/editprofiles","log", "log/logconfiguration"};
- 
-    // Available authorization rules.                                                   
-    public static final String VIEW_RIGHTS = "/view";
-    public static final String EDIT_RIGHTS = "/edit";
-    public static final String CREATE_RIGHTS = "/create";
-    public static final String DELETE_RIGHTS = "/delete";
-    public static final String REVOKE_RIGHTS = "/revoke";
-    public static final String HISTORY_RIGHTS = "/history";                                                         
+    private  final  String[] DEFAULT_AVAILABLE_RULES = { "/", "/ca_functionallity", "/ca_functionallity/basic_functions", "/ca_functionallity/view_certificate",
+                                                       "/ca_functionallity/edit_certificate_profiles", "/ra_functionallity/edit_end_entity_profiles",
+                                                       "/ra_functionallity", "/ra_functionallity/edit_end_entity_profiles", "/ra_functionallity/view_end_entity", 
+                                                       "/ra_functionallity/create_end_entity", "/ra_functionallity/edit_end_entity", "/ra_functionallity/delete_end_entity",
+                                                       "/ra_functionallity/revoke_end_entity","/ra_functionallity/view_end_entity_history","/log_functionallity",
+                                                       "/log_functionallity/view_log","/log_functionallity/view_log/log_entries","/log_functionallity/view_log/ca_entries","/log_functionallity/view_log/ra_entries",
+                                                       "/log_functionallity/edit_log_configuration","/log_functionallity/view_log/adminweb_entries","/log_functionallity/view_log/publicweb_entries",
+                                                       "/system_functionallity","/system_functionallity/edit_system_configuration", "/system_functionallity/edit_administrator_privileges",
+                                                       "/system_functionallity/edit_administrator_privileges/edit_available_accessrules"};
+                                                       
+    public static final String[] LOGMODULERESOURCES = { "/log_functionallity/view_log/ca_entries","/log_functionallity/view_log/ra_entries","/log_functionallity/view_log/log_entries",
+                                                        "/log_functionallity/view_log/publicweb_entries","/log_functionallity/view_log/adminweb_entries","/log_functionallity/view_log/scaper_entries" };                                                   
+                                                    
+    // Available end entity profile authorization rules.                                                   
+    public static final String VIEW_RIGHTS = "/view_end_entity";
+    public static final String EDIT_RIGHTS = "/edit_end_entity";
+    public static final String CREATE_RIGHTS = "/create_end_entity";
+    public static final String DELETE_RIGHTS = "/delete_end_entity";
+    public static final String REVOKE_RIGHTS = "/revoke_end_entity";
+    public static final String HISTORY_RIGHTS = "/view_end_entity_history";                                                         
                                                        
     // Endings to add to profile authorizxation.                                                   
-    private final String[]  PROFILE_ENDINGS        = {VIEW_RIGHTS,
-                                                      EDIT_RIGHTS,
-                                                      CREATE_RIGHTS,
-                                                      DELETE_RIGHTS,
-                                                      REVOKE_RIGHTS,
-                                                      HISTORY_RIGHTS};
+    public static final String[]  ENDENTITYPROFILE_ENDINGS        = {VIEW_RIGHTS,EDIT_RIGHTS,CREATE_RIGHTS,DELETE_RIGHTS,REVOKE_RIGHTS,HISTORY_RIGHTS};
     
-    
-   
-    // Name of profile prefix directory in authorization module.
-    private final String    PROFILEPREFIX          = "/profiles/";
+    // Name of end entity profile prefix directory in authorization module.
+    public static final String    ENDENTITYPROFILEPREFIX          = "/endentityprofilesrules/";
    
     // Path added to baseurl used as default vaule in CRLDistributionPointURI field in Certificate Type definitions.
-    private final String    DEFAULTCRLDISTURIPATH  = "webdist/certdist?cmd=crl";
-    
-    // Port used by EJBCA public webcomponents. i.e that doesn't require client authentication
-    private final String    PUBLICPORT             = "8080";
-    
-    // Port  used by EJBCA private webcomponents. i.e that requires client authentication
-    private final String    PRIVATEPORT           = "8443";
-    
-    // Protocol used by EJBCA public webcomponents. i.e that doesn't require client authentication
-    private final String    PUBLICPROTOCOL        = "http";
-    // Protocol used by EJBCA private webcomponents. i.e that requires client authentication
-    private final String    PRIVATEPROTOCOL       = "https";
-    
-    // Name of headbanner in web interface.
-    private final  String   HEADBANNER             = "head_banner.jsp";
-    // Name of footbanner page in web interface.
-    private final  String   FOOTBANNER             = "foot_banner.jsp";
+    private final  String   DEFAULTCRLDISTURIPATH  = "ejbca/webdist/certdist?cmd=crl";
+        
+    // Default name of headbanner in web interface.
+    private final  String   DEFAULTHEADBANNER             = "head_banner.jsp";
+    // Default name of footbanner page in web interface.
+    private final  String   DEFAULTFOOTBANNER             = "foot_banner.jsp";
     
     // Title of ra admin web interface.
-    private final  String   EJBCATITLE             = "Enterprise Java Bean Certificate Authority";
+    private final  String   DEFAULTEJBCATITLE             = "Enterprise Java Bean Certificate Authority";
     
     // Language codes. Observe the order is important
-    public final  int      EN                 = 0; 
-    public final  int      SE                 = 1;
+    public static final  int      EN                 = 0; 
+    public static final  int      SE                 = 1;
     
     // Public constants.
-    public final  String HEADERFRAME         = "topFrame";  // Name of header browser frame
-    public final  String MENUFRAME           = "leftFrame"; // Name of menu browser frame
-    public final  String MAINFRAME           = "mainFrame"; // Name of main browser frame  
+    public static final  String HEADERFRAME         = "topFrame";  // Name of header browser frame
+    public static final  String MENUFRAME           = "leftFrame"; // Name of menu browser frame
+    public static final  String MAINFRAME           = "mainFrame"; // Name of main browser frame  
     
 
     
-    /** Creates a new instance of GlobalConfiguration */
+    /** Creates a new instance of Globaldatauration */
     public GlobalConfiguration()  {    
-       defaultuserpreference = new UserPreference();
-       config = new HashMap();
- 
-       setEjbcaTitle(EJBCATITLE);       
-       config.put(P_POSSIBLEENTRIESPERPAGE,POSSIBLEENTRIESPERPAGE);    
-       config.put(P_POSSIBLELOGENTRIESPERPAGE,POSSIBLELOGENTRIESPERPAGE);        
-       config.put(P_PROFILE_ENDINGS,PROFILE_ENDINGS);
-       config.put(P_PROFILEPREFIX,PROFILEPREFIX);
-             
-       setUseStrongAuthorization(false);
+       super(); 
+       
+       setEjbcaTitle(DEFAULTEJBCATITLE);                       
+       setEnableEndEntityProfileLimitations(false);
+       setEnableAuthenticatedUsersOnly(false);
+       setEnableKeyRecovery(false);
+       setIssueHardwareTokens(false);
     }
     
-    /** Initializes a new global configuration with data used in ra web interface. */
-    public void initialize(String baseurl, String raadminpath, String availablelanguages, String availablethemes){
-       String tempbaseurl = baseurl;
-       String tempraadminpath =  raadminpath.trim();
-       String tempavailablelanguages = availablelanguages.trim();
-       String tempavailablethemes = availablethemes.trim();        
-        
+    /** Initializes a new global datauration with data used in ra web interface. */
+    public void initialize(String baseurl, String adminpath, String availablelanguages, String availablethemes, 
+                           String publicport, String privateport, String publicprotocol, String privateprotocol){                       
+       String tempbaseurl            = baseurl;
+       String tempadminpath           = adminpath.trim();
+       
        if(!tempbaseurl.endsWith("/")){
          tempbaseurl = tempbaseurl + "/";   
        }
-       if(tempraadminpath == null)
-         tempraadminpath = "";
-       if(!tempraadminpath.endsWith("/") && !tempraadminpath.equals("")){
-         tempraadminpath = tempraadminpath + "/";   // Add ending '/'
+       if(tempadminpath == null)
+         tempadminpath = "";
+       if(!tempadminpath.endsWith("/") && !tempadminpath.equals("")){
+         tempadminpath = tempadminpath + "/";   // Add ending '/'
        }         
-       if(tempraadminpath.startsWith("/")){
-         tempraadminpath =tempraadminpath.substring(1);   // Remove starting '/'
+       if(tempadminpath.startsWith("/")){
+         tempadminpath =tempadminpath.substring(1);   // Remove starting '/'
        }   
        
-       String[] tempopendirs = new String[OPENDIRECTORIES.length+2];
-       tempopendirs[0] = "/";
-       tempopendirs[1] = "/" +  tempraadminpath;  
-       for(int i=2;i < tempopendirs.length; i++){
-          tempopendirs[i] =  "/" + tempraadminpath + OPENDIRECTORIES[i-2];  
-       }    
        String[] tempdefaultdirs = new String[DEFAULT_AVAILABLE_RULES.length+2];
        tempdefaultdirs[0] = "/";
-       tempdefaultdirs[1] = "/" +  tempraadminpath;     
+       tempdefaultdirs[1] = "/" +  tempadminpath;     
        for(int i=2;i < tempdefaultdirs.length; i++){
-          tempdefaultdirs[i] =  "/" + tempraadminpath + DEFAULT_AVAILABLE_RULES[i-2];  
+          tempdefaultdirs[i] =  "/" + tempadminpath + DEFAULT_AVAILABLE_RULES[i-2];  
        }           
- 
-       config.put(P_OPENDIRECTORIES, tempopendirs);
-       config.put(P_DEFAULT_AVAILABLE_RULES, tempdefaultdirs);       
        
        setBaseUrl(tempbaseurl);
-       config.put(P_RAADMINPATH,tempraadminpath);
-       config.put(P_AVAILABLELANGUAGES,tempavailablelanguages);
-       config.put(P_AVAILABLETHEMES,tempavailablethemes);
+       data.put(ADMINPATH,tempadminpath);
+       data.put(AVAILABLELANGUAGES,availablelanguages.trim());
+       data.put(AVAILABLETHEMES,availablethemes.trim());
+       data.put(PUBLICPORT,publicport.trim());  
+       data.put(PRIVATEPORT,privateport.trim());     
+       data.put(PUBLICPROTOCOL,publicprotocol.trim());  
+       data.put(PRIVATEPROTOCOL,privateprotocol.trim());
       
-       config.put(P_AUTHORIZATION_PATH,tempraadminpath+"authorization");
-       config.put(P_BANNERS_PATH,"banners");
-       config.put(P_CA_PATH, tempraadminpath+"ca");
-       config.put(P_CONFIG_PATH,tempraadminpath+"config");
-       config.put(P_HELP_PATH,"help");
-       config.put(P_IMAGES_PATH,"images");
-       config.put(P_LANGUAGE_PATH,"languages");
-       config.put(P_LOG_PATH,tempraadminpath+"log");
-       config.put(P_RA_PATH,tempraadminpath+"ra");
-       config.put(P_THEME_PATH,"themes");
+       data.put(AUTHORIZATION_PATH,tempadminpath+"administratorprivileges");
+       data.put(BANNERS_PATH,"banners");
+       data.put(CA_PATH, tempadminpath+"ca");
+       data.put(CONFIG_PATH,tempadminpath+"sysconfig");
+       data.put(HELP_PATH,"help");
+       data.put(IMAGES_PATH,"images");
+       data.put(LANGUAGE_PATH,"languages");
+       data.put(LOG_PATH,tempadminpath+"log");
+       data.put(RA_PATH,tempadminpath+"ra");
+       data.put(THEME_PATH,"themes");
        
-       config.put(P_LANGUAGEFILENAME,"languagefile");
-       config.put(P_MAINFILENAME,"main.jsp");
-       config.put(P_INDEXFILENAME,"index.jsp");
-       config.put(P_MENUFILENAME,"ejbcamenu.jsp");
-       config.put(P_ERRORPAGE,"errorpage.jsp");
+       data.put(LANGUAGEFILENAME,"languagefile");
+       data.put(MAINFILENAME,"main.jsp");
+       data.put(INDEXFILENAME,"index.jsp");
+       data.put(MENUFILENAME,"adminmenu.jsp");
+       data.put(ERRORPAGE,"errorpage.jsp");
            
-       defaultuserpreference.setTheme(getAvailableThemes()[0]);    
-       setHeadBanner(HEADBANNER);
-       setFootBanner(FOOTBANNER);
+       setHeadBanner(DEFAULTHEADBANNER);
+       setFootBanner(DEFAULTFOOTBANNER);
         
     }
     
-    /** Checks if global configuration have been initialized. */
+    /** Checks if global datauration have been initialized. */
     public boolean isInitialized(){
-      return config.get(P_BASEURL)!=null;   
+      return data.get(BASEURL)!=null;   
     }
-    
-    // Configurable fields.    
-    public   String getBaseUrl() {return (String) config.get(P_BASEURL);}
+       
+    public   String getBaseUrl() {return (String) data.get(BASEURL);}
     public   void setBaseUrl(String burl){
       // Add trailing '/' if it doesn't exists.  
       if(!burl.endsWith("/")){
-        config.put(P_BASEURL,burl + "/");    
+        data.put(BASEURL,burl + "/");    
       }
       else{
-        config.put(P_BASEURL,burl);    
+        data.put(BASEURL,burl);    
       }
     }
-    
-    
-    public String getRaAdminPath(){return (String) config.get(P_RAADMINPATH);}
+        
+    public String getAdminWebPath(){return (String) data.get(ADMINPATH);}
     
     public String getStandardCRLDistributionPointURI(){ 
-        String retval = (String) config.get(P_BASEURL);
-        retval =retval.replaceFirst(PRIVATEPROTOCOL, PUBLICPROTOCOL);        
-        retval =retval.replaceFirst(PRIVATEPORT, PUBLICPORT);
+        String retval = (String) data.get(BASEURL);
+        retval =retval.replaceFirst((String) data.get(PRIVATEPROTOCOL), (String) data.get(PUBLICPROTOCOL));        
+        retval =retval.replaceFirst((String) data.get(PRIVATEPORT), (String) data.get(PUBLICPORT));
         retval+= DEFAULTCRLDISTURIPATH;
         return retval;
     }
-
-    public   String[] getOpenDirectories() {return (String[]) config.get(P_OPENDIRECTORIES);} 
-    // Returns all opendirectories as a comma-separated string.
-    public   String getOpenDirectoriesAsString(){
-      String[] opendirectories = (String[]) config.get(P_OPENDIRECTORIES); 
-      String returnvalue="";
-      for(int i=0; i < opendirectories.length -1; i++){
-         returnvalue += opendirectories[i] + ", ";   
-      }
-      returnvalue+= opendirectories[opendirectories.length-1];
-      
-      return returnvalue;
-    }
     
-    /** Returns the default available directories in the authorization module. */
-    public String[] getDefaultAvailableDirectories(){return (String[]) config.get(P_DEFAULT_AVAILABLE_RULES);}
-    
-    /** Returns authorization rules applied to profile groups */
-    public String[] getProfileEndings(){return (String[]) config.get(P_PROFILE_ENDINGS);}
-    
-    /** Gives the directory profilegroups are placed in auhtorization module. */
-    public String getProfilePrefix(){return (String) config.get(P_PROFILEPREFIX);} 
-    
-    /** The opendirectories parameter is a comma separated string containing the 
-        open directories*/
-    public   void setOpenDirectories(String opendirs){
-      opendirs=opendirs.trim();  
-      if(opendirs.endsWith(",")){
-        opendirs=opendirs.substring(0,opendirs.length()-1);   
-      }
-      String[] dirs = opendirs.split(",");
-    
-      for(int i=0; i < dirs.length; i++){
-         dirs[i]=dirs[i].trim();   
-         // Add a heading "/" if it doesn't exists. 
-         if(!dirs[i].startsWith("/")){
-           dirs[i]= "/" +dirs[i];   
-         }
-      }
-      
-      config.put(P_OPENDIRECTORIES,dirs);
-    }
+    /** Returns the default available resources in the authorization module. */
+    public String[] getDefaultAvailableResources(){return DEFAULT_AVAILABLE_RULES;}
         
      /** Checks the themes paht for css files and returns an array of filenames
-     *  without the ".css" ending. */
-    
+     *  without the ".css" ending. */    
     public   String[] getAvailableThemes() {
        String[] availablethemes;
        availablethemes =  getAvailableThenesAsString().split(",");
@@ -254,113 +192,127 @@ public class GlobalConfiguration implements java.io.Serializable {
        return availablethemes;
     }
     
-     /** Special function used in confuration part that doesn't return a copy of the object. */
-     public   UserPreference getRealDefaultPreference(){  
-       return defaultuserpreference;
-    }   
-    
-    public   UserPreference getDefaultPreference(){
-       UserPreference returnvalue=null;
-       try{
-         returnvalue = (UserPreference) defaultuserpreference.clone();
-       }catch( Exception e){   
-       }
-       return returnvalue;
+    /** Returns the default avaiable theme used by administrator preferences. */
+    public String getDefaultAvailableTheme(){
+      return getAvailableThemes()[0];   
     }
-    
-
-    
-    public   String getHeadBanner() {return (String) config.get(P_HEADBANNER);}
+     
+    // Methods for manipulating the headbanner filename. 
+    public   String getHeadBanner() {return (String) data.get(HEADBANNER);}
     public   String getHeadBannerFilename(){
-      String returnval = (String) config.get(P_HEADBANNER);
+      String returnval = (String) data.get(HEADBANNER);
       return returnval.substring(returnval.lastIndexOf('/')+1);  
     }
-    public   void setHeadBanner(String head){config.put(P_HEADBANNER, ((String) config.get(P_RAADMINPATH)) +
-                                                             ((String) config.get(P_BANNERS_PATH)) + "/" + head);}
-    public   String getFootBanner() {return (String) config.get(P_FOOTBANNER);} 
+    public   void setHeadBanner(String head){
+      data.put(HEADBANNER, ((String) data.get(ADMINPATH)) + ((String) data.get(BANNERS_PATH)) + "/" + head);
+    }
+    
+    
+    // Methods for manipulating the headbanner filename.     
+    public   String getFootBanner() {return (String) data.get(FOOTBANNER);} 
     public   String getFootBannerFilename(){
-      String returnval = (String) config.get(P_FOOTBANNER);
+      String returnval = (String) data.get(FOOTBANNER);
       return returnval.substring(returnval.lastIndexOf('/')+1);  
     }
-    public   void setFootBanner(String foot){config.put(P_FOOTBANNER,  "/" + ((String) config.get(P_BANNERS_PATH)) + "/" +foot);}
+    public   void setFootBanner(String foot){
+      data.put(FOOTBANNER,  "/" + ((String) data.get(BANNERS_PATH)) + "/" +foot);
+    }
     
-    public   String getEjbcaTitle() {return (String) config.get(P_TITLE);}
-    public   void setEjbcaTitle(String ejbcatitle) {config.put(P_TITLE,ejbcatitle);}
-    //   fields
+    // Methods for manipulating the title.     
+    public   String getEjbcaTitle() {return (String) data.get(TITLE);}
+    public   void setEjbcaTitle(String ejbcatitle) {data.put(TITLE,ejbcatitle);}
+
        
-    public   String getAuthorizationPath() {return (String) config.get(P_AUTHORIZATION_PATH);}  
-    public   String getBannersPath() {return (String) config.get(P_BANNERS_PATH);}
-    public   String getCaPath() {return (String) config.get(P_CA_PATH);}
-    public   String getConfigPath() {return (String) config.get(P_CONFIG_PATH);}
-    public   String getHelpPath() {return (String) config.get(P_HELP_PATH);}
-    public   String getImagesPath() {return (String) config.get(P_IMAGES_PATH);}
-    public   String getLanguagePath() {return (String) config.get(P_LANGUAGE_PATH);}       
-    public   String getLogPath() {return (String) config.get(P_LOG_PATH);}        
-    public   String getRaPath() {return (String) config.get(P_RA_PATH);}
-    public   String getThemePath() {return (String) config.get(P_THEME_PATH);}
+    public   String getAuthorizationPath() {return (String) data.get(AUTHORIZATION_PATH);}  
+    public   String getBannersPath() {return (String) data.get(BANNERS_PATH);}
+    public   String getCaPath() {return (String) data.get(CA_PATH);}
+    public   String getConfigPath() {return (String) data.get(CONFIG_PATH);}
+    public   String getHelpPath() {return (String) data.get(HELP_PATH);}
+    public   String getImagesPath() {return (String) data.get(IMAGES_PATH);}
+    public   String getLanguagePath() {return (String) data.get(LANGUAGE_PATH);}       
+    public   String getLogPath() {return (String) data.get(LOG_PATH);}        
+    public   String getRaPath() {return (String) data.get(RA_PATH);}
+    public   String getThemePath() {return (String) data.get(THEME_PATH);}
             
-    public   String getLanguageFilename(){return (String) config.get(P_LANGUAGEFILENAME);}
-    public   String getMainFilename(){return (String) config.get(P_MAINFILENAME);}   
-    public   String getIndexFilename(){return (String) config.get(P_INDEXFILENAME);}   
-    public   String getMenuFilename(){return (String) config.get(P_MENUFILENAME);}   
-    public   String getErrorPage(){return (String) config.get(P_ERRORPAGE);}   
+    public   String getLanguageFilename(){return (String) data.get(LANGUAGEFILENAME);}
+    public   String getMainFilename(){return (String) data.get(MAINFILENAME);}   
+    public   String getIndexFilename(){return (String) data.get(INDEXFILENAME);}   
+    public   String getMenuFilename(){return (String) data.get(MENUFILENAME);}   
+    public   String getErrorPage(){return (String) data.get(ERRORPAGE);}   
     
-    public   String[] getPossibleEntiresPerPage(){return (String[]) config.get(P_POSSIBLEENTRIESPERPAGE);}      
-    public   String[] getPossibleLogEntiresPerPage(){return (String[]) config.get(P_POSSIBLELOGENTRIESPERPAGE);}
+    public   String[] getPossibleEntiresPerPage(){return DEFAULTPOSSIBLEENTRIESPERPAGE;}      
+    public   String[] getPossibleLogEntiresPerPage(){return DEFAULTPOSSIBLELOGENTRIESPERPAGE;}
     
-    public   String getAvailableLanguagesAsString(){return (String) config.get(P_AVAILABLELANGUAGES);} 
-    public   String getAvailableThenesAsString(){return (String) config.get(P_AVAILABLETHEMES);}  
+    public   String getAvailableLanguagesAsString(){return (String) data.get(AVAILABLELANGUAGES);} 
+    public   String getAvailableThenesAsString(){return (String) data.get(AVAILABLETHEMES);}  
     
-    public   boolean getUseStrongAuthorization(){return ((Boolean) config.get(P_USESTRONGAUTHORIZATION)).booleanValue();}
-    public   void    setUseStrongAuthorization(boolean usestrongauthorization){ config.put(P_USESTRONGAUTHORIZATION,new Boolean(usestrongauthorization));}
+    public   boolean getEnableEndEntityProfileLimitations(){return ((Boolean) data.get(ENABLEEEPROFILELIMITATIONS)).booleanValue();}
+    public   void    setEnableEndEntityProfileLimitations(boolean value){ data.put(ENABLEEEPROFILELIMITATIONS,new Boolean(value));}
+ 
+    public   boolean getEnableAuthenticatedUsersOnly(){return ((Boolean) data.get(ENABLEAUTHENTICATEDUSERSONLY)).booleanValue();}
+    public   void    setEnableAuthenticatedUsersOnly(boolean value){ data.put(ENABLEAUTHENTICATEDUSERSONLY,new Boolean(value));}    
+ 
+    public   boolean getEnableKeyRecovery(){return ((Boolean) data.get(ENABLEKEYRECOVERY)).booleanValue();}
+    public   void    setEnableKeyRecovery(boolean value){ data.put(ENABLEKEYRECOVERY,new Boolean(value));}    
+    
+    public   boolean getIssueHardwareTokens(){return ((Boolean) data.get(ISSUEHARDWARETOKENS)).booleanValue();}
+    public   void    setIssueHardwareTokens(boolean value){ data.put(ISSUEHARDWARETOKENS,new Boolean(value));} 
+    
+    
+    /** Implemtation of UpgradableDataHashMap function getLatestVersion */
+    public float getLatestVersion(){
+       return LATEST_VERSION;  
+    }
+    
+    /** Implemtation of UpgradableDataHashMap function upgrade. */    
+    
+    public void upgrade(){
+      if(LATEST_VERSION != getVersion()){
+        // New version of the class, upgrade  
+        
+        data.put(VERSION, new Float(LATEST_VERSION));  
+      }  
+    }
     
     // Private fields.
-    
+
     // Private constants
-      // Basic configuration
-    private final   String P_BASEURL            = "baseurl";
-    private final   String P_RAADMINPATH        = "raadminpath";
-    private final   String P_AVAILABLELANGUAGES = "availablelanguages";
-    private final   String P_AVAILABLETHEMES    = "availablethemes";
-    
-    private final   String P_OPENDIRECTORIES    = "opendirectories"; 
-    
-    private final   String P_DEFAULT_AVAILABLE_RULES = "defaultavailablerules";
-    private final   String P_PROFILE_ENDINGS         = "profileendings";
-    private final   String P_PROFILEPREFIX           = "profileprefix";
-    
-      // Banner files.
-    private final   String P_HEADBANNER         = "headbanner";  
-    private final   String P_FOOTBANNER         = "footbanner";   
+    private final   String BASEURL            = "baseurl";
+    private final   String ADMINPATH          = "raadminpath";
+    private final   String AVAILABLELANGUAGES = "availablelanguages";
+    private final   String AVAILABLETHEMES    = "availablethemes";
+    private final   String PUBLICPORT         = "publicport";
+    private final   String PRIVATEPORT        = "privateport";
+    private final   String PUBLICPROTOCOL     = "publicprotocol";
+    private final   String PRIVATEPROTOCOL    = "privateprotocol";    
+   
     
       // Title
-    private final   String P_TITLE               = "title";      
-    
+    private final   String TITLE              = "title";      
+      // Banner files.
+    private final   String HEADBANNER         = "headbanner";  
+    private final   String FOOTBANNER         = "footbanner";    
+      // Other configuration.
+    private final   String ENABLEEEPROFILELIMITATIONS   = "endentityprofilelimitations"; 
+    private final   String ENABLEAUTHENTICATEDUSERSONLY = "authenticatedusersonly"; 
+    private final   String ENABLEKEYRECOVERY            = "enablekeyrecovery";
+    private final   String ISSUEHARDWARETOKENS          = "issuehardwaretokens";
       // Paths
-    private final   String P_AUTHORIZATION_PATH  = "authorization_path";   
-    private final   String P_BANNERS_PATH        = "banners_path";
-    private final   String P_CA_PATH             = "ca_path";
-    private final   String P_CONFIG_PATH         = "config_path";   
-    private final   String P_HELP_PATH           = "help_path"; 
-    private final   String P_IMAGES_PATH         = "images_path";
-    private final   String P_LANGUAGE_PATH       = "language_path";
-    private final   String P_LOG_PATH            = "log_path"; 
-    private final   String P_RA_PATH             = "ra_path";
-    private final   String P_THEME_PATH          = "theme_path"; 
+    private final   String AUTHORIZATION_PATH  = "authorization_path";   
+    private final   String BANNERS_PATH        = "banners_path";
+    private final   String CA_PATH             = "ca_path";
+    private final   String CONFIG_PATH         = "data_path";   
+    private final   String HELP_PATH           = "help_path"; 
+    private final   String IMAGES_PATH         = "images_path";
+    private final   String LANGUAGE_PATH       = "language_path";
+    private final   String LOG_PATH            = "log_path"; 
+    private final   String RA_PATH             = "ra_path";
+    private final   String THEME_PATH          = "theme_path"; 
     
-    private final   String P_LANGUAGEFILENAME    =  "languagefilename"; 
-    private final   String P_MAINFILENAME        =  "mainfilename"; 
-    private final   String P_INDEXFILENAME       =  "indexfilename"; 
-    private final   String P_MENUFILENAME        =  "menufilename"; 
-    private final   String P_ERRORPAGE           =  "errorpage";  
-    
-    private final   String P_POSSIBLEENTRIESPERPAGE    = "possibleentiresperpage";  
-    private final   String P_POSSIBLELOGENTRIESPERPAGE = "possiblelogentiresperpage"; 
-    
-    private final   String P_USESTRONGAUTHORIZATION = "usestrongauthorization";
-    
-    // Private fields
-    private    HashMap        config;
-    private    UserPreference defaultuserpreference;
-    
+    private final   String LANGUAGEFILENAME    =  "languagefilename"; 
+    private final   String MAINFILENAME        =  "mainfilename"; 
+    private final   String INDEXFILENAME       =  "indexfilename"; 
+    private final   String MENUFILENAME        =  "menufilename"; 
+    private final   String ERRORPAGE           =  "errorpage";  
+              
 }

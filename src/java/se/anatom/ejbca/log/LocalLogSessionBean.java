@@ -26,7 +26,7 @@ import se.anatom.ejbca.util.query.*;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalLogSessionBean.java,v 1.3 2002-09-18 11:31:48 herrvendil Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.4 2002-10-24 20:05:26 herrvendil Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean  {
 
@@ -129,13 +129,17 @@ public class LocalLogSessionBean extends BaseSessionBean  {
         // Get logging configuration  
         if(logconfiguration.logEvent(event)){
           if(logconfiguration.useLogDB()){
-             // Log to the local database.
-             if(certificate != null)                      
-               logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), module, time, username,
-                                   certificate.getSerialNumber().toString(16), event, comment); 
-             else 
-               logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), module, time, username,
-                                   null, event, comment);               
+            try{  
+               // Log to the local database.
+               if(certificate != null)                      
+                 logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), module, time, username,
+                                     certificate.getSerialNumber().toString(16), event, comment); 
+               else 
+                 logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), module, time, username,
+                                     null, event, comment);    
+            }catch(javax.ejb.DuplicateKeyException dke){
+              logconfigurationdata.getAndIncrementRowCount();    
+            }
           }    
           if(logconfiguration.useExternalLogDevices()){
             // Log to external devices. I.e Log4j etc 

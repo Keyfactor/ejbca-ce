@@ -49,9 +49,9 @@ public class UsersView {
       Collections.sort(users);
     }
     
-    public String[][] getUsers(int index, int size) {
+    public UserView[] getUsers(int index, int size) {
       int endindex;  
-      String[][] returnval;
+      UserView[] returnval;
    
       if(index > users.size()) index = users.size()-1;
       if(index < 0) index =0;
@@ -59,11 +59,11 @@ public class UsersView {
       endindex = index + size;
       if(endindex > users.size()) endindex = users.size();
       
-      returnval = new String[endindex-index][UserView.NUMBEROF_USERFIELDS];  
+      returnval = new UserView[endindex-index];  
       
       int end = endindex - index;
       for(int i = 0; i < end; i++){
-        returnval[i] = ((UserView) users.elementAt(index+i)).getValues();   
+        returnval[i] = (UserView) users.elementAt(index+i);   
       }
       
       return returnval;

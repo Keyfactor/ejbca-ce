@@ -10,7 +10,7 @@ import se.anatom.ejbca.ca.exception.AuthLoginException;
 /** Interface used for authenticating entities when issuing their certificates.
  * Remote interface for EJB.
  *
- * @version $Id: IAuthenticationSessionRemote.java,v 1.2 2002-06-04 13:59:55 anatom Exp $
+ * @version $Id: IAuthenticationSessionRemote.java,v 1.3 2002-10-24 20:01:41 herrvendil Exp $
  */
 public interface IAuthenticationSessionRemote extends EJBObject {
 

@@ -87,7 +87,7 @@
    <session>
      <description>
          Session bean handling interface with ra administration web services, uses entity beans 
-         ProfileData ant UserPreferencesData
+         EndEntityProfileData and AdminPreferencesData
      </description>
      <ejb-name>RaAdminSession</ejb-name>
      <local-home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome</local-home>
@@ -113,23 +113,23 @@
      </ejb-ref>   
      <ejb-local-ref>
         <description>
-          The UserPreferencesData Entity bean 
+          The AdminPreferencesData Entity bean 
         </description>
-        <ejb-ref-name>ejb/UserPreferencesDataLocal</ejb-ref-name>
+        <ejb-ref-name>ejb/AdminPreferencesDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra..raadmin.UserPreferencesDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.raadmin.UserPreferencesDataLocal</local>
-        <ejb-link>UserPreferencesData</ejb-link>
+        <local-home>se.anatom.ejbca.ra.raadmin.AdminPreferencesDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.raadmin.AdminPreferencesDataLocal</local>
+        <ejb-link>AdminPreferencesData</ejb-link>
      </ejb-local-ref>
      <ejb-local-ref>
         <description>
-          The ProfileData Entity bean 
+          The EndEntityProfileData Entity bean 
         </description>
-        <ejb-ref-name>ejb/ProfileDataLocal</ejb-ref-name>
+        <ejb-ref-name>ejb/EndEntityProfileDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.raadmin.ProfileDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.raadmin.ProfileDataLocal</local>
-        <ejb-link>ProfileData</ejb-link>
+        <local-home>se.anatom.ejbca.ra.raadmin.EndEntityProfileDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.raadmin.EndEntityProfileDataLocal</local>
+        <ejb-link>EndEntityProfileData</ejb-link>
      </ejb-local-ref>     
                
      <security-identity>
@@ -142,7 +142,7 @@
    <session>
      <description>
          Session bean handling interface with ra authorization, uses entity beans AvailableAccessRules,
-         UserGroupData
+         AdminGroupData
      </description>
      <ejb-name>AuthorizationSession</ejb-name>
      <local-home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome</local-home>     
@@ -178,13 +178,13 @@
      </ejb-local-ref>
      <ejb-local-ref>
         <description>
-          User Groups
+          Admin Groups
         </description>
-        <ejb-ref-name>ejb/UserGroupDataLocal</ejb-ref-name>
+        <ejb-ref-name>ejb/AdminGroupDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.UserGroupDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.UserGroupDataLocal</local>
-        <ejb-link>UserGroupData</ejb-link>
+        <local-home>se.anatom.ejbca.ra.authorization.AdminGroupDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.authorization.AdminGroupDataLocal</local>
+        <ejb-link>AdminGroupData</ejb-link>
      </ejb-local-ref>
      <ejb-local-ref>
         <description>
@@ -198,13 +198,13 @@
      </ejb-local-ref>
      <ejb-local-ref>
         <description>
-          User Entities
+          Admin Entities
         </description>
-        <ejb-ref-name>ejb/UserEntityDataLocal</ejb-ref-name>
+        <ejb-ref-name>ejb/AdminEntityDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.UserEntityDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.UserEntityDataLocal</local>
-        <ejb-link>UserEntityData</ejb-link>
+        <local-home>se.anatom.ejbca.ra.authorization.AdminEntityDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.authorization.AdminEntityDataLocal</local>
+        <ejb-link>AdminEntityData</ejb-link>
      </ejb-local-ref>                  
      <security-identity>
         <run-as>
@@ -231,6 +231,7 @@
       
       <cmp-field><field-name>username</field-name></cmp-field>
       <cmp-field><field-name>subjectDN</field-name></cmp-field>
+      <cmp-field><field-name>subjectAltName</field-name></cmp-field>      
       <cmp-field><field-name>subjectEmail</field-name></cmp-field>
       <cmp-field><field-name>status</field-name></cmp-field>
       <cmp-field><field-name>type</field-name></cmp-field>
@@ -238,8 +239,10 @@
       <cmp-field><field-name>passwordHash</field-name></cmp-field>
       <cmp-field><field-name>timeCreated</field-name></cmp-field>
       <cmp-field><field-name>timeModified</field-name></cmp-field>
-      <cmp-field><field-name>profileId</field-name></cmp-field>
-      <cmp-field><field-name>certificateTypeId</field-name></cmp-field>                             
+      <cmp-field><field-name>endEntityProfileId</field-name></cmp-field>
+      <cmp-field><field-name>certificateProfileId</field-name></cmp-field>    
+      <cmp-field><field-name>tokenType</field-name></cmp-field> 
+      <cmp-field><field-name>hardTokenIssuerId</field-name></cmp-field>                                      
    </entity>
    
    <entity>
@@ -256,7 +259,7 @@
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>GlobalConfigurationDataBean</abstract-schema-name>
       <cmp-field><field-name>configurationId</field-name></cmp-field>
-      <cmp-field><field-name>globalConfiguration</field-name></cmp-field>    
+      <cmp-field><field-name>data</field-name></cmp-field>    
       <primkey-field>configurationId</primkey-field>  
    </entity>
    
@@ -264,17 +267,17 @@
       <description>
             This enterprise bean entity represents a ra admins user preference.
       </description>
-      <ejb-name>UserPreferencesData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.raadmin.UserPreferencesDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.raadmin.UserPreferencesDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.raadmin.UserPreferencesDataBean</ejb-class>
+      <ejb-name>AdminPreferencesData</ejb-name>
+      <local-home>se.anatom.ejbca.ra.raadmin.AdminPreferencesDataLocalHome</local-home>
+      <local>se.anatom.ejbca.ra.raadmin.AdminPreferencesDataLocal</local>
+      <ejb-class>se.anatom.ejbca.ra.raadmin.AdminPreferencesDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
       <prim-key-class>java.lang.String</prim-key-class>    
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>UserPreferencesDataBean</abstract-schema-name>
+      <abstract-schema-name>AdminPreferencesDataBean</abstract-schema-name>
       <cmp-field><field-name>id</field-name></cmp-field>
-      <cmp-field><field-name>userPreference</field-name></cmp-field>
+      <cmp-field><field-name>data</field-name></cmp-field>
        <primkey-field>id</primkey-field>  
    </entity>
 
@@ -282,18 +285,18 @@
       <description>
             This enterprise bean entity represents a profile.
       </description>
-      <ejb-name>ProfileData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.raadmin.ProfileDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.raadmin.ProfileDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.raadmin.ProfileDataBean</ejb-class>
+      <ejb-name>EndEntityProfileData</ejb-name>
+      <local-home>se.anatom.ejbca.ra.raadmin.EndEntityProfileDataLocalHome</local-home>
+      <local>se.anatom.ejbca.ra.raadmin.EndEntityProfileDataLocal</local>
+      <ejb-class>se.anatom.ejbca.ra.raadmin.EndEntityProfileDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
       <prim-key-class>java.lang.Integer</prim-key-class>    
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>ProfileDataBean</abstract-schema-name>
+      <abstract-schema-name>EndEntityProfileDataBean</abstract-schema-name>
       <cmp-field><field-name>id</field-name></cmp-field>      
       <cmp-field><field-name>profileName</field-name></cmp-field>
-      <cmp-field><field-name>profile</field-name></cmp-field>
+      <cmp-field><field-name>data</field-name></cmp-field>
       <primkey-field>id</primkey-field>  
    </entity>   
 
@@ -301,23 +304,23 @@
       <description>
             This enterprise bean entity represents an authorization usergroup.
       </description>
-      <ejb-name>UserGroupData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.authorization.UserGroupDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.authorization.UserGroupDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.authorization.UserGroupDataBean</ejb-class>
+      <ejb-name>AdminGroupData</ejb-name>
+      <local-home>se.anatom.ejbca.ra.authorization.AdminGroupDataLocalHome</local-home>
+      <local>se.anatom.ejbca.ra.authorization.AdminGroupDataLocal</local>
+      <ejb-class>se.anatom.ejbca.ra.authorization.AdminGroupDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
       <prim-key-class>java.lang.String</prim-key-class>  
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>UserGroupDataBean</abstract-schema-name>
-      <cmp-field><field-name>userGroupName</field-name></cmp-field>
-      <primkey-field>userGroupName</primkey-field>       
+      <abstract-schema-name>AdminGroupDataBean</abstract-schema-name>
+      <cmp-field><field-name>adminGroupName</field-name></cmp-field>
+      <primkey-field>adminGroupName</primkey-field>       
       <ejb-local-ref>
-        <ejb-ref-name>ejb/UserEntityDataLocal</ejb-ref-name>
+        <ejb-ref-name>ejb/AdminEntityDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.UserEntityDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.UserEntityDataLocal</local>
-        <ejb-link>UserEntityData</ejb-link>
+        <local-home>se.anatom.ejbca.ra.authorization.AdminEntityDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.authorization.AdminEntityDataLocal</local>
+        <ejb-link>AdminEntityData</ejb-link>
       </ejb-local-ref>    
       <ejb-local-ref>
         <ejb-ref-name>ejb/AccessRulesDataLocal</ejb-ref-name>
@@ -332,15 +335,15 @@
       <description>
             This enterprise bean entity represents a user entity.
       </description>
-      <ejb-name>UserEntityData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.authorization.UserEntityDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.authorization.UserEntityDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.authorization.UserEntityDataBean</ejb-class>
+      <ejb-name>AdminEntityData</ejb-name>
+      <local-home>se.anatom.ejbca.ra.authorization.AdminEntityDataLocalHome</local-home>
+      <local>se.anatom.ejbca.ra.authorization.AdminEntityDataLocal</local>
+      <ejb-class>se.anatom.ejbca.ra.authorization.AdminEntityDataBean</ejb-class>
       <persistence-type>Container</persistence-type>  
-      <prim-key-class>se.anatom.ejbca.ra.authorization.UserEntityPK</prim-key-class>
+      <prim-key-class>se.anatom.ejbca.ra.authorization.AdminEntityPK</prim-key-class>
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>UserEntityDataBean</abstract-schema-name>
+      <abstract-schema-name>AdminEntityDataBean</abstract-schema-name>
       <cmp-field><field-name>pK</field-name></cmp-field>        
       <cmp-field><field-name>matchWith</field-name></cmp-field>
       <cmp-field><field-name>matchType</field-name></cmp-field>
@@ -360,7 +363,7 @@
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>AccessRulesDataBean</abstract-schema-name>
       <cmp-field><field-name>pK</field-name></cmp-field> 
-      <cmp-field><field-name>directory</field-name></cmp-field>
+      <cmp-field><field-name>resource</field-name></cmp-field>
       <cmp-field><field-name>accessRule</field-name></cmp-field>         
    </entity>   
    
@@ -384,34 +387,34 @@
  
   <relationships>         
      <ejb-relation>
-       <ejb-relation-name>UserGroupDataToUserEntities</ejb-relation-name>
+       <ejb-relation-name>AdminGroupDataToAdminEntities</ejb-relation-name>
        <ejb-relationship-role>
-         <ejb-relationship-role-name>UserGroupData</ejb-relationship-role-name>
+         <ejb-relationship-role-name>AdminGroupData</ejb-relationship-role-name>
          <multiplicity>One</multiplicity>
          <relationship-role-source>
-           <ejb-name>UserGroupData</ejb-name>
+           <ejb-name>AdminGroupData</ejb-name>
          </relationship-role-source>
          <cmr-field>
-           <cmr-field-name>userEntities</cmr-field-name>
+           <cmr-field-name>adminEntities</cmr-field-name>
            <cmr-field-type>java.util.Collection</cmr-field-type>
          </cmr-field>
        </ejb-relationship-role>
        <ejb-relationship-role>
-         <ejb-relationship-role-name>UserEntityData</ejb-relationship-role-name>
+         <ejb-relationship-role-name>AdminEntityData</ejb-relationship-role-name>
          <multiplicity>Many</multiplicity>
          <relationship-role-source>
-           <ejb-name>UserEntityData</ejb-name>
+           <ejb-name>AdminEntityData</ejb-name>
          </relationship-role-source>
        </ejb-relationship-role>
      </ejb-relation>     
      
      <ejb-relation>
-       <ejb-relation-name>UserGroupDataToAccessRules</ejb-relation-name>
+       <ejb-relation-name>AdminGroupDataToAccessRules</ejb-relation-name>
        <ejb-relationship-role>
-         <ejb-relationship-role-name>UserGroupData</ejb-relationship-role-name>
+         <ejb-relationship-role-name>AdminGroupData</ejb-relationship-role-name>
          <multiplicity>One</multiplicity>
          <relationship-role-source>
-           <ejb-name>UserGroupData</ejb-name>
+           <ejb-name>AdminGroupData</ejb-name>
          </relationship-role-source>
          <cmr-field>
            <cmr-field-name>accessRules</cmr-field-name>
@@ -512,11 +515,11 @@
      </method>          
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getUserPreference</method-name>
+         <method-name>getAdminPreference</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>existsUserPreference</method-name>
+         <method-name>existsAdminPreference</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
@@ -556,15 +559,15 @@
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getUserGroup</method-name>
+         <method-name>getAdminGroup</method-name>
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getUserGroupnames</method-name>
+         <method-name>getAdminGroupnames</method-name>
      </method>    
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getUserGroups</method-name>
+         <method-name>getAdminGroups</method-name>
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
@@ -576,11 +579,11 @@
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getNumberOfUserEntities</method-name>
+         <method-name>getNumberOfAdminEntities</method-name>
      </method>       
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getUserEntities</method-name>
+         <method-name>getAdminEntities</method-name>
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
@@ -637,11 +640,11 @@
          
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>addUserPreference</method-name>
+         <method-name>addAdminPreference</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>changeUserPreference</method-name>
+         <method-name>changeAdminPreference</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
@@ -666,15 +669,15 @@
       
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>addUserGroup</method-name>
+         <method-name>addAdminGroup</method-name>
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>removeUserGroup</method-name>
+         <method-name>removeAdminGroup</method-name>
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>renameUserGroup</method-name>
+         <method-name>renameAdminGroup</method-name>
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
@@ -686,11 +689,11 @@
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>addUserEntity</method-name>
+         <method-name>addAdminEntity</method-name>
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>removeUserEntity</method-name>
+         <method-name>removeAdminEntity</method-name>
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>

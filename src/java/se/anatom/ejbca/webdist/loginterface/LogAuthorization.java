@@ -10,7 +10,8 @@ import java.io.Serializable;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
-import se.anatom.ejbca.ra.authorization.UserInformation;
+import se.anatom.ejbca.ra.authorization.AdminInformation;
+import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 
 /**
@@ -36,7 +37,7 @@ public class LogAuthorization implements Serializable {
      *
      * @return a string of log module privileges that should be used in the where clause of SQL queries.
      */
-    public String getViewLogRights() {
+    public String getViewLogRights() {      
       return querystring; 
     }    
         
@@ -47,7 +48,7 @@ public class LogAuthorization implements Serializable {
         
       for(int i = 0 ; i < LogEntry.MODULETEXTS.length; i++){
          authorized = false; 
-         String resource = "/logfunctionality/viewlog/" +  LogEntry.MODULETEXTS[i];
+         String resource = GlobalConfiguration.LOGMODULERESOURCES[i];
          try{ 
            authorized = ejbcawebbean.isAuthorizedNoLog(resource);
          }catch(AuthorizationDeniedException e){} 

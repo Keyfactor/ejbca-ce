@@ -10,7 +10,7 @@ import org.apache.log4j.*;
  * Entity Bean representing  accessrules in EJBCA authorization module
  * Information stored:
  * <pre>
- * Directory
+ * Resource
  * Access rule
  * </pre>
  *
@@ -24,8 +24,8 @@ public abstract class AccessRulesDataBean implements javax.ejb.EntityBean {
     public abstract int getPK();
     public abstract void setPK(int pK);
 
-    public abstract String getDirectory();
-    public abstract void setDirectory(String directory);
+    public abstract String getResource();
+    public abstract void setResource(String resource);
 
     public abstract AccessRule getAccessRule();
     public abstract void setAccessRule(AccessRule accessrule);
@@ -35,17 +35,17 @@ public abstract class AccessRulesDataBean implements javax.ejb.EntityBean {
     //
 
 
-    public AccessRulesPK ejbCreate(String usergroupname, String directory, AccessRule accessrule) throws CreateException {
-        AccessRulesPK pk = new AccessRulesPK(usergroupname, directory);
+    public AccessRulesPK ejbCreate(String usergroupname, String resource, AccessRule accessrule) throws CreateException {
+        AccessRulesPK pk = new AccessRulesPK(usergroupname, resource);
 
         setPK(pk.hashCode());
-        setDirectory(directory);
+        setResource(resource);
         setAccessRule(accessrule);
-        log.debug("Created available accessrule "+ directory);
+        log.debug("Created available accessrule "+ resource);
         return pk;
     }
 
-    public void ejbPostCreate(String usergroupname, String directory, AccessRule accessrule) {
+    public void ejbPostCreate(String usergroupname, String resource, AccessRule accessrule) {
         // Do nothing. Required.
     }
 

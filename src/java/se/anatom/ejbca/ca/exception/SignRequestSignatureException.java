@@ -5,7 +5,7 @@ import se.anatom.ejbca.exception.EjbcaException;
 /**
  * Error due to invlid signature on certificate request.
  *
- * @version $Id: SignRequestSignatureException.java,v 1.1 2002-03-22 11:21:49 anatom Exp $
+ * @version $Id: SignRequestSignatureException.java,v 1.2 2002-10-24 20:02:19 herrvendil Exp $
  */
 public class SignRequestSignatureException extends EjbcaException {
 

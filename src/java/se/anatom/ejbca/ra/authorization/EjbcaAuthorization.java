@@ -39,10 +39,9 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
 public class EjbcaAuthorization extends Object implements java.io.Serializable{
        
     /** Creates new EjbcaAthorization */
-    public EjbcaAuthorization(UserGroup[] usergroups, GlobalConfiguration globalconfiguration, ILogSessionRemote logsession, Admin admin, int module) throws NamingException, CreateException, RemoteException {         
-        getParameters(globalconfiguration);
-        accesstree = new AccessTree(opendirectories);       
-        buildAccessTree(usergroups); 
+    public EjbcaAuthorization(AdminGroup[] admingroups, GlobalConfiguration globalconfiguration, ILogSessionRemote logsession, Admin admin, int module) throws NamingException, CreateException, RemoteException {         
+        accesstree = new AccessTree();       
+        buildAccessTree(admingroups); 
         
         this.admin= admin;
         this.logsession = logsession;    
@@ -71,14 +70,14 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
     /**
      * Method to check if a user is authorized to a resource
      *
-     * @param userinformation information about the user to be authorized.
+     * @param admininformation information about the user to be authorized.
      * @param resource the resource to look up.
      * @returns true if authorizes
      * @throws AuthorizationDeniedException when authorization is denied.
      */
-    public boolean isAuthorized(UserInformation userinformation, String resource) throws AuthorizationDeniedException {
+    public boolean isAuthorized(AdminInformation admininformation, String resource) throws AuthorizationDeniedException {
         // Check in accesstree. 
-       if(accesstree.isAuthorized(userinformation, resource) == false){
+       if(accesstree.isAuthorized(admininformation, resource) == false){
          try{
           logsession.log(admin, module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);       
          }catch(RemoteException re){}    
@@ -95,14 +94,14 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
     /**
      * Method to check if a user is authorized to a resource without performing any logging
      *
-     * @param userinformation information about the user to be authorized.
+     * @param AdminInformation information about the user to be authorized.
      * @param resource the resource to look up.
      * @returns true if authorizes
      * @throws AuthorizationDeniedException when authorization is denied.
      */
-    public boolean isAuthorizedNoLog(UserInformation userinformation, String resource) throws AuthorizationDeniedException {
+    public boolean isAuthorizedNoLog(AdminInformation admininformation, String resource) throws AuthorizationDeniedException {
         // Check in accesstree. 
-       if(accesstree.isAuthorized(userinformation, resource) == false){
+       if(accesstree.isAuthorized(admininformation, resource) == false){
          throw  new AuthorizationDeniedException();  
        }              
         return true;
@@ -152,24 +151,17 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
     }
      
     /** Metod to load the access data from database. */
-    public void buildAccessTree(UserGroup[] usergroups){
-      accesstree.buildTree(usergroups, opendirectories);
+    public void buildAccessTree(AdminGroup[] admingroups){
+      accesstree.buildTree(admingroups);
     }
     
     // Private metods 
     
-    /** Method to retrieve parameters from configuration part.*/
-    private void getParameters(GlobalConfiguration globalconfiguration){
-        // Get a copy of global values. 
-        opendirectories = new String[globalconfiguration.getOpenDirectories().length];
-        System.arraycopy(globalconfiguration .getOpenDirectories(),0,opendirectories,0,
-                         globalconfiguration .getOpenDirectories().length);
-    }
+
     
 
     // Private fields.
     
-    private String[]              opendirectories;
     private AccessTree            accesstree;  
     private Certificate[]         cacertificatechain;
     private Admin                 admin;

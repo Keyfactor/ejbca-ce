@@ -7,7 +7,7 @@ package se.anatom.ejbca.ra.authorization;
 public interface AccessRulesDataLocal extends javax.ejb.EJBLocalObject {
     // public methods
 
-    public String getDirectory();
+    public String getResource();
 
     public AccessRule getAccessRule();
     public void setAccessRule(AccessRule accessrule);

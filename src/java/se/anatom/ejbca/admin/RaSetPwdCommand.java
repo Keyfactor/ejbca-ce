@@ -3,11 +3,11 @@ package se.anatom.ejbca.admin;
 
 import java.io.*;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
-import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillProfile;
+import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /** Set the (hashed) password for a user in the database.
  *
- * @version $Id: RaSetPwdCommand.java,v 1.3 2002-08-27 12:41:06 herrvendil Exp $
+ * @version $Id: RaSetPwdCommand.java,v 1.4 2002-10-24 20:00:28 herrvendil Exp $
  */
 public class RaSetPwdCommand extends BaseRaAdminCommand {
 
@@ -29,7 +29,7 @@ public class RaSetPwdCommand extends BaseRaAdminCommand {
               getAdminSession().setPassword(username, password);
             }catch(AuthorizationDeniedException e){
                System.out.println("Error : Not authorized to change userdata."); 
-            }catch(UserDoesntFullfillProfile e){
+            }catch(UserDoesntFullfillEndEntityProfile e){
                 System.out.println("Error : Given userdata doesn't fullfill profile.");                
             }   
         } catch (Exception e) {

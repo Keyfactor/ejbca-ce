@@ -8,8 +8,8 @@ package se.anatom.ejbca.ra.authorization;
 
 import java.io.Serializable;
 /**
- * A class representing an accessrule in the Ejbca package. Sets rules to directories and tell if it also
- * should apply for subdirectories.
+ * A class representing an accessrule in the Ejbca package. Sets rules to resources and tell if it also
+ * should apply for subresources.
  *
  * @author  Philip Vendil
  */
@@ -19,8 +19,8 @@ public class AccessRule implements Serializable, Comparable {
     public static final int RULE_DECLINE = 2;
     
     /** Creates a new instance of AccessRule */
-    public AccessRule(String directory, int rule, boolean recursive ) {
-        this.directory=directory.trim();
+    public AccessRule(String resource, int rule, boolean recursive ) {
+        this.resource=resource.trim();
         this.rule=rule;
         this.recursive=recursive;
         
@@ -35,8 +35,8 @@ public class AccessRule implements Serializable, Comparable {
       return recursive;  
     }
     
-    public String getDirectory() {
-      return directory;
+    public String getResource() {
+      return resource;
     }
     
     public void setRule(int rule) {
@@ -49,8 +49,8 @@ public class AccessRule implements Serializable, Comparable {
       setState();
     }
     
-    public void setDirectory(String directory) {
-        this.directory=directory.trim();
+    public void setResource(String resource) {
+        this.resource=resource.trim();
     }
     
     /** Method used by the access tree to speed things up. */
@@ -59,7 +59,7 @@ public class AccessRule implements Serializable, Comparable {
     }
     
     public int compareTo(Object obj) {
-      return directory.compareTo(((AccessRule)obj).getDirectory());   
+      return resource.compareTo(((AccessRule)obj).getResource());   
     }
     
     // Private methods.
@@ -91,6 +91,6 @@ public class AccessRule implements Serializable, Comparable {
     // Private fields.
     private boolean recursive;
     private int rule;
-    private String directory;
+    private String resource;
     private int state; // A more efficent way of reprecenting rule and recusive.
 }

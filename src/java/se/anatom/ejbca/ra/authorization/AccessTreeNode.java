@@ -15,7 +15,7 @@ import org.apache.log4j.*;
  * The building component of the AccessTree. All nodes consist of these objects.
  *
  * @author  Philip Vendil
- * @version $Id: AccessTreeNode.java,v 1.4 2002-08-27 12:41:02 herrvendil Exp $
+ * @version $Id: AccessTreeNode.java,v 1.5 2002-10-24 20:07:00 herrvendil Exp $
  */
 
 public class AccessTreeNode implements Serializable{
@@ -26,96 +26,60 @@ public class AccessTreeNode implements Serializable{
     // Private Constants
     // OBSERVE that the order is important!!
     public static final int STATE_UNKNOWN = 1;
-    public static final int STATE_OPEN = 2;
-    public static final int STATE_ACCEPT = 3;
-    public static final int STATE_ACCEPT_RECURSIVE = 4;
-    public static final int STATE_DECLINE = 5;
-    public static final int STATE_DECLINE_RECURSIVE = 6;
+    public static final int STATE_ACCEPT = 2;
+    public static final int STATE_ACCEPT_RECURSIVE = 3;
+    public static final int STATE_DECLINE = 4;
+    public static final int STATE_DECLINE_RECURSIVE = 5;
 
     /** Creates a new instance of AccessTreeNode */
-    public AccessTreeNode(String directory) {
-        //cat.debug(">AccessTreeNode:" +directory);
-        name=directory;
+    public AccessTreeNode(String resource) {
+        //cat.debug(">AccessTreeNode:" +resource);
+        name=resource;
         useraccesspairs = new Vector();
         leafs = new HashMap();
     }
 
     /** Checks the tree if the users X509Certificate is athorized to view the requested resource */
-    public boolean isAuthorized(UserInformation userinformation, String resource) {
+    public boolean isAuthorized(AdminInformation admininformation, String resource) {
         cat.debug(">isAuthorized: " +resource);
-        boolean retval =isAuthorizedRecursive(userinformation,resource,STATE_DECLINE); // Default is to decline access.
+        boolean retval =isAuthorizedRecursive(admininformation,resource,STATE_DECLINE); // Default is to decline access.
         cat.debug("<isAuthorized: returns " + retval);
         return retval;
     }
 
-    /** Adds an open access rule to the tree. Open means that no athorization at all is requred. */
-     public void addOpenAccessRule(String opendirectory) {
-       cat.debug(">addOpenAccessRule: " + opendirectory);
+     /** Adds an access rule with associated admingroup to the tree. */
+     public void addAccessRule(String subresource, AccessRule accessrule, AdminGroup admingroup) {
+       cat.debug(">addAccessRule: " + subresource );
        int index;
        AccessTreeNode next;
        String nextname;
-       String nextsubdirectory;
+       String nextsubresource;
 
-       if(opendirectory.equals(this.name)){
-           cat.debug("addOpenAccessRule : Opening " + this.name);
-           this.open=true;
+       if(subresource.equals(this.name)){ // Root is a special case.
+           Object[] accessadmingroupair = {accessrule,admingroup};
+           useraccesspairs.addElement(accessadmingroupair);
        }
        else{
-           nextsubdirectory = opendirectory.substring(this.name.length());
-           if((nextsubdirectory.toCharArray()[0])=='/')
-             nextsubdirectory = nextsubdirectory.substring(1);
-           index = nextsubdirectory.indexOf('/');
+           nextsubresource = subresource.substring(this.name.length());
+           if((nextsubresource.toCharArray()[0])=='/')
+             nextsubresource = nextsubresource.substring(1);
+
+           index = nextsubresource.indexOf('/');
            if(index != -1){
-             nextname =  nextsubdirectory.substring(0,index);
+             nextname =  nextsubresource.substring(0,index);
            }
            else{
-             nextname = nextsubdirectory;
+             nextname = nextsubresource;
            }
            next= (AccessTreeNode) leafs.get(nextname);
            if(next == null){  // Doesn't exist, create.
               next=new AccessTreeNode(nextname);
               leafs.put(nextname, next);
-           }
+           }        
            //cat.debug(this.name + " --> ");
-           next.addOpenAccessRule(nextsubdirectory);
-
+           next.addAccessRule(nextsubresource, accessrule, admingroup);
        }
-       cat.debug("<addOpenAccessRule: " + opendirectory);
-     }
-
-     /** Adds an access rule with associated usergroup to the tree. */
-     public void addAccessRule(String subdirectory, AccessRule accessrule, UserGroup usergroup) {
-       cat.debug(">addAccessRule: " + subdirectory );
-       int index;
-       AccessTreeNode next;
-       String nextname;
-       String nextsubdirectory;
-
-       if(subdirectory.equals(this.name)){ // Root is a special case.
-           Object[] accessusergroupair = {accessrule,usergroup};
-           useraccesspairs.addElement(accessusergroupair);
-       }
-       else{
-           nextsubdirectory = subdirectory.substring(this.name.length());
-           if((nextsubdirectory.toCharArray()[0])=='/')
-             nextsubdirectory = nextsubdirectory.substring(1);
-
-           index = nextsubdirectory.indexOf('/');
-           if(index != -1){
-             nextname =  nextsubdirectory.substring(0,index);
-           }
-           else{
-             nextname = nextsubdirectory;
-           }
-           next= (AccessTreeNode) leafs.get(nextname);
-           if(next == null){  // Doesn't exist, create.
-              next=new AccessTreeNode(nextname);
-              leafs.put(nextname, next);
-           }
-           //cat.debug(this.name + " --> ");
-           next.addAccessRule(nextsubdirectory, accessrule, usergroup);
-       }
-       cat.debug("<addAccessRule: " + subdirectory);
+       cat.debug("<addAccessRule: " + subresource);
      }
 
     // Private methods
@@ -123,54 +87,46 @@ public class AccessTreeNode implements Serializable{
       return leafs.size()==0;
     }
 
-    private boolean isAuthorizedRecursive(UserInformation userinformation, String resource, int state){
+    private boolean isAuthorizedRecursive(AdminInformation admininformation, String resource, int state){
        cat.debug("isAuthorizedRecursive: " + " resource: " + resource + " name: "+ this.name + "," +state);
        int index;
        int internalstate = STATE_DECLINE;
        boolean returnval = false;
        AccessTreeNode next;
-       String nextname;
-       boolean lastdirectory=false;
-       String nextsubdirectory;
+       String nextname = null;
+       boolean lastresource=false;
+       String nextsubresource;
        Set keys;
        String matchname;
 
-       internalstate = matchInformation(userinformation);
-       
-       if(resource.matches(this.name)) {
-         // If this directory have state open or accept recursive state is given
-         if(this.open || state == STATE_ACCEPT_RECURSIVE || internalstate == STATE_ACCEPT || internalstate == STATE_ACCEPT_RECURSIVE ){
-             // If this directory's rule set don't says decline.
+       internalstate = matchInformation(admininformation);    
+       if(resource.equals(this.name)) {        
+         // If this resource have state accept recursive state is given
+         if( state == STATE_ACCEPT_RECURSIVE || internalstate == STATE_ACCEPT || internalstate == STATE_ACCEPT_RECURSIVE ){
+             // If this resource's rule set don't says decline.
            if(!(internalstate == STATE_DECLINE || internalstate == STATE_DECLINE_RECURSIVE))
              returnval=true;
          }
        }
        else{
          //cat.debug(" resource : " + resource);
-         nextsubdirectory = resource.substring(this.name.length());
-         if((nextsubdirectory.toCharArray()[0])=='/')
-         nextsubdirectory = nextsubdirectory.substring(1);
-         //cat.debug(" nextresource : " + nextsubdirectory);
-
-         index = nextsubdirectory.indexOf('/');
+         nextsubresource = resource.substring(this.name.length());
+         if((nextsubresource.toCharArray()[0])=='/')
+         nextsubresource = nextsubresource.substring(1);
+         //cat.debug(" nextresource : " + nextsubresource);
+         
+         index = nextsubresource.indexOf('/');
          if(index != -1){
-             nextname =  nextsubdirectory.substring(0,index);
-       }
-       else {
-           lastdirectory = true;
-           nextname = nextsubdirectory;
-       }
+             nextname =  nextsubresource.substring(0,index);
+         }
+         else {
+           nextname = nextsubresource; 
+         }
          //cat.debug(" nextname : " + nextname);
+         
          next = (AccessTreeNode) leafs.get(nextname);
-         if(next == null){  // resource path doesn't exist
-            // Se if any key matches a regular expression.
-            keys = leafs.keySet();
-            for( Iterator i = keys.iterator(); i.hasNext();){
-              matchname = (String) i.next();
-              if(nextname.matches(matchname)){
-                 next = (AccessTreeNode) leafs.get(matchname);
-              }
-            }
+         if(next == null ){  // resource path doesn't exist
+
             // If  internal state isn't decline recusive is accept recursive.
             if(internalstate == STATE_ACCEPT_RECURSIVE){
                returnval=true;
@@ -179,9 +135,9 @@ public class AccessTreeNode implements Serializable{
             if(state == STATE_ACCEPT_RECURSIVE  && internalstate != STATE_DECLINE_RECURSIVE && internalstate != STATE_DECLINE){
               returnval=true;
             }
-            if((this.open == true || internalstate == STATE_ACCEPT) && lastdirectory){
+       /*     if(internalstate == STATE_ACCEPT && lastresource){
               returnval=true;
-            }
+            } */
          }
          if(next != null){ // resource path exists.
            // If internalstate is accept recursive or decline recusive.
@@ -189,14 +145,14 @@ public class AccessTreeNode implements Serializable{
              state=internalstate;
            }
            //cat.debug(this.name + " --> ");
-           returnval=next.isAuthorizedRecursive(userinformation, nextsubdirectory, state);
+           returnval=next.isAuthorizedRecursive(admininformation, nextsubresource, state);
          }
        }
        cat.debug("<isAthorizedRecursive: returns " + returnval + " : " + resource + "," +state);
        return returnval;
     }
 
-       private int matchInformation(UserInformation userinformation){
+       private int matchInformation(AdminInformation admininformation){
           cat.debug(">matchInformation");
           final int ACCESSRULE = 0;
           final int USERGROUP  = 1;
@@ -204,16 +160,16 @@ public class AccessTreeNode implements Serializable{
           int state     = STATE_UNKNOWN;
           int stateprio = 0;
           Object[] accessuserpair;
-          UserEntity[] userentities;
-
-          for (int i = 0; i < useraccesspairs.size();i++){
+          AdminEntity[] adminentities;
+           
+          for (int i = 0; i < useraccesspairs.size();i++){ 
             accessuserpair = (Object[]) useraccesspairs.elementAt(i);
-            userentities = ((UserGroup) accessuserpair[USERGROUP]).getUserEntities();
-            for(int j = 0; j < userentities.length;j++){
+            adminentities = ((AdminGroup) accessuserpair[USERGROUP]).getAdminEntities();
+            for(int j = 0; j < adminentities.length;j++){
               // If user entity match.
-              if(userentities[j].match(userinformation)){
+              if(adminentities[j].match(admininformation)){
                 int thisuserstate = ((AccessRule) accessuserpair[ACCESSRULE]).getRuleState();
-                int thisuserstateprio = userentities[j].getPriority();
+                int thisuserstateprio = adminentities[j].getPriority();
                 // If rule has higher priority, it's state is to be used.
                 if( stateprio < thisuserstateprio){
                    state=thisuserstate;
@@ -238,6 +194,5 @@ public class AccessTreeNode implements Serializable{
     private String  name;
     private Vector  useraccesspairs;
     private HashMap leafs;
-    private boolean open=false;
 
 }

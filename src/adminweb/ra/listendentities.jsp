@@ -1,0 +1,717 @@
+<html>
+<%@page contentType="text/html"%>
+<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, se.anatom.ejbca.ra.authorization.AuthorizationDeniedException,
+                 se.anatom.ejbca.webdist.rainterface.UserView, se.anatom.ejbca.webdist.rainterface.SortBy,se.anatom.ejbca.webdist.rainterface.RevokedInfoView,
+                 se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.ra.UserDataRemote,se.anatom.ejbca.ra.raadmin.AdminPreference, se.anatom.ejbca.ra.raadmin.DNFieldExtractor,
+                 javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.util.query.*, java.util.Calendar, java.util.Date, java.text.DateFormat, java.util.Locale" %>
+<jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
+<jsp:setProperty name="ejbcawebbean" property="*" /> 
+<jsp:useBean id="rabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
+<jsp:setProperty name="rabean" property="*" /> 
+<%! // Declarations
+
+  static final String ACTION                             = "action";
+  static final String ACTION_LISTUSERS                   = "listusers";
+  static final String ACTION_CHANGEFILTERMODETO_BASIC    = "changefiltermodetobasic";
+  static final String ACTION_CHANGEFILTERMODETO_ADVANCED = "changefiltermodetoadvanced";
+
+  static final String USER_PARAMETER           = "username";
+  static final String SUBJECTDN_PARAMETER      = "subjectdnparameter";
+
+  static final String OLD_ACTION               = "oldaction";
+  static final String OLD_ACTION_LISTUSERS     = "oldactionlistusers";
+  static final String OLD_ACTION_FINDUSER      = "oldactionfinduser";
+  static final String OLD_ACTION_ISREVOKED     = "oldactionisrevoked";
+  static final String OLD_ACTION_LISTEXPIRED   = "oldactionlistexpired";
+  static final String OLD_ACTION_NOACTION      = "oldactionnoaction";  
+  static final String OLD_ACTION_ADVANCEDLIST  = "oldactionadvancedlist";
+  static final String OLD_ACTION_VALUE         = "oldactionvalue";
+
+  static final String OLD_MATCHWITHROW1 = "oldmatchwithrow1";
+  static final String OLD_MATCHWITHROW2 = "oldnmatchwithrow2";
+  static final String OLD_MATCHWITHROW3 = "oldmatchwithrow3";
+  static final String OLD_MATCHWITHROW4 = "oldmatchwithrow4";
+  static final String OLD_MATCHTYPEROW1 = "oldmatchtyperow1";
+  static final String OLD_MATCHTYPEROW2 = "oldmatchtyperow2";
+  static final String OLD_MATCHTYPEROW3 = "oldmatchtyperow3";
+  static final String OLD_MATCHVALUEROW1 = "oldmatchvaluerow1";
+  static final String OLD_MATCHVALUEROW2 = "oldmatchvaluerow2";
+  static final String OLD_MATCHVALUEROW3 = "oldmatchvaluerow3";
+  static final String OLD_CONNECTORROW2  = "oldconnectorrow2";
+  static final String OLD_CONNECTORROW3  = "oldconnectorrow3";
+  static final String OLD_CONNECTORROW4  = "oldconnectorrow4";
+  static final String OLD_DAY_ROW4       = "olddayrow4"; 
+  static final String OLD_DAY_ROW5       = "olddayrow5"; 
+  static final String OLD_MONTH_ROW4     = "oldmonthrow4"; 
+  static final String OLD_MONTH_ROW5     = "oldmonthrow5"; 
+  static final String OLD_YEAR_ROW4      = "oldyearrow4"; 
+  static final String OLD_YEAR_ROW5      = "oldyearrow5"; 
+  static final String OLD_TIME_ROW4      = "oldtimerow4";
+  static final String OLD_TIME_ROW5      = "oldtimerow5";
+
+  static final String BUTTON_VIEW_USER         = "buttonviewuser"; 
+  static final String BUTTON_EDIT_USER         = "buttonedituser"; 
+  static final String BUTTON_VIEW_CERTIFICATE  = "buttonviewcertificate"; 
+  static final String BUTTON_DELETE_USERS      = "buttondeleteusers";
+  static final String BUTTON_CHANGESTATUS      = "buttonchangestatus"; 
+  static final String BUTTON_REVOKE_USERS      = "buttonrevokeusers";  
+  static final String BUTTON_FIND              = "buttonfind";
+  static final String BUTTON_LIST              = "buttonlist";
+  static final String BUTTON_ISREVOKED         = "buttonisrevoked";
+  static final String BUTTON_LISTEXPIRED       = "buttonlistexpired";
+  static final String BUTTON_RELOAD            = "buttonreload";
+  static final String BUTTON_ADVANCEDLIST      = "buttonadvancedlist";
+
+  static final String BUTTON_NEXT              = "buttonnext";
+  static final String BUTTON_PREVIOUS          = "buttonprevious";
+  static final String BUTTON_SELECTALL         = "buttonselectall";
+  static final String BUTTON_DESELECTALL       = "buttondeselectall";
+  static final String BUTTON_INVERTSELECTION   = "buttoninvertselection";
+
+  static final String SORTBY_USERNAME_ACC         = "sortbyusernameaccending";
+  static final String SORTBY_USERNAME_DEC         = "sortbyusernamedecending";
+  static final String SORTBY_COMMONNAME_ACC       = "sortbycommonnameaccending";
+  static final String SORTBY_COMMONNAME_DEC       = "sortbycommonnamedecending";
+  static final String SORTBY_ORGANIZATIONUNIT_ACC = "sortbyorganizationunitaccending";
+  static final String SORTBY_ORGANIZATIONUNIT_DEC = "sortbyorganizationunitdecending";
+  static final String SORTBY_ORGANIZATION_ACC     = "sortbyorganizationaccending";
+  static final String SORTBY_ORGANIZATION_DEC     = "sortbyorganizationdecending";
+  static final String SORTBY_STATUS_ACC           = "sortbystatusaccending";
+  static final String SORTBY_STATUS_DEC           = "sortbystatusdecending";
+
+  static final String SELECT_LIST_STATUS        = "selectliststatus";
+  static final String SELECT_CHANGE_STATUS      = "selectchangestatus"; 
+  static final String SELECT_REVOKE_REASON      = "selectrevokereason"; 
+  static final String SELECT_MATCHWITH_ROW1     = "selectmatchwithrow1"; 
+  static final String SELECT_MATCHWITH_ROW2     = "selectmatchwithrow2"; 
+  static final String SELECT_MATCHWITH_ROW3     = "selectmatchwithrow3"; 
+  static final String SELECT_MATCHWITH_ROW4     = "selectmatchwithrow4"; 
+  static final String SELECT_MATCHTYPE_ROW1     = "selectmatchtyperow1"; 
+  static final String SELECT_MATCHTYPE_ROW2     = "selectmatchtyperow2"; 
+  static final String SELECT_MATCHTYPE_ROW3     = "selectmatchtyperow3"; 
+  static final String SELECT_MATCHVALUE_ROW1    = "selectmatchvaluerow1";
+  static final String SELECT_MATCHVALUE_ROW2    = "selectmatchvaluerow2";
+  static final String SELECT_MATCHVALUE_ROW3    = "selectmatchvaluerow3";
+  static final String SELECT_CONNECTOR_ROW2     = "selectconnectorrow2"; 
+  static final String SELECT_CONNECTOR_ROW3     = "selectconnectorrow3"; 
+  static final String SELECT_CONNECTOR_ROW4     = "selectconnectorrow4"; 
+  static final String SELECT_DAY_ROW4           = "selectdayrow4"; 
+  static final String SELECT_DAY_ROW5           = "selectdayrow5"; 
+  static final String SELECT_MONTH_ROW4         = "selectmonthrow4"; 
+  static final String SELECT_MONTH_ROW5         = "selectmonthrow5"; 
+  static final String SELECT_YEAR_ROW4          = "selectyearrow4"; 
+  static final String SELECT_YEAR_ROW5          = "selectyearrow5"; 
+  static final String SELECT_TIME_ROW4          = "selecttimerow4";
+  static final String SELECT_TIME_ROW5          = "selecttimerow5";
+
+  static final String CHECKBOX_SELECT_USER      = "checkboxselectuser";
+  static final String CHECKBOX_VALUE            = "true";
+
+  static final String TEXTFIELD_USERNAME        = "textfieldusername";
+  static final String TEXTFIELD_SERIALNUMBER    = "textfieldserialnumber";
+  static final String TEXTFIELD_DAYS            = "textfielddays";
+  static final String TEXTFIELD_MATCHVALUE_ROW1 = "textfieldmatchvaluerow1";
+  static final String TEXTFIELD_MATCHVALUE_ROW2 = "textfieldmatchvaluerow2";
+  static final String TEXTFIELD_MATCHVALUE_ROW3 = "textfieldmatchvaluerow3";
+
+  static final String HIDDEN_SORTBY             = "hiddensortby";
+  static final String HIDDEN_USERNAME           = "hiddenusername";
+  static final String HIDDEN_USERDN             = "hiddenuserdn";
+  static final String HIDDEN_RECORDNUMBER       = "hiddenrecordnumber"; 
+
+  static final String VALUE_NONE                = "-1";
+  static final String ALL_STATUS                = "-1";
+%><%
+  // Initialize environment.
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionallity/view_end_entity"); 
+                                            rabean.initialize(request);
+  final String VIEWCERT_LINK            = "/" + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
+  final String VIEWUSER_LINK            = "/" + globalconfiguration.getAdminWebPath() + "ra/viewendentity.jsp";
+  final String EDITUSER_LINK            = "/" + globalconfiguration.getAdminWebPath() + "ra/editendentity.jsp";
+  final String VIEWHISTORY_LINK         = "/" + globalconfiguration.getAdminWebPath() + "ra/viewhistory.jsp";
+
+  String oldaction        = OLD_ACTION_NOACTION; 
+  String oldactionvalue   = null;
+  String oldmatchwithrow1 = request.getParameter(OLD_MATCHWITHROW1);
+  String oldmatchwithrow2 = request.getParameter(OLD_MATCHWITHROW2);
+  String oldmatchwithrow3 = request.getParameter(OLD_MATCHWITHROW3);
+  String oldmatchwithrow4 = request.getParameter(OLD_MATCHWITHROW4);
+  String oldmatchtyperow1 = request.getParameter(OLD_MATCHTYPEROW1);
+  String oldmatchtyperow2 = request.getParameter(OLD_MATCHTYPEROW2);
+  String oldmatchtyperow3 = request.getParameter(OLD_MATCHTYPEROW3);
+  String oldmatchvaluerow1 = request.getParameter(OLD_MATCHVALUEROW1);
+  String oldmatchvaluerow2 = request.getParameter(OLD_MATCHVALUEROW2);
+  String oldmatchvaluerow3 = request.getParameter(OLD_MATCHVALUEROW3);
+  String oldconnectorrow2 = request.getParameter(OLD_CONNECTORROW2);
+  String oldconnectorrow3 = request.getParameter(OLD_CONNECTORROW3);
+  String oldconnectorrow4 = request.getParameter(OLD_CONNECTORROW4);
+  String olddayrow4 = request.getParameter(OLD_DAY_ROW4); 
+  String olddayrow5 = request.getParameter(OLD_DAY_ROW5); 
+  String oldmonthrow4 = request.getParameter(OLD_MONTH_ROW4);
+  String oldmonthrow5 = request.getParameter(OLD_MONTH_ROW5);
+  String oldyearrow4 = request.getParameter(OLD_YEAR_ROW4);
+  String oldyearrow5 = request.getParameter(OLD_YEAR_ROW5);
+  String oldtimerow4 = request.getParameter(OLD_TIME_ROW4);
+  String oldtimerow5 = request.getParameter(OLD_TIME_ROW5);
+
+  String sortby         = SORTBY_USERNAME_ACC;
+
+  boolean blank                   = true;
+  String THIS_FILENAME            =  globalconfiguration.getRaPath()  + "/listendentities.jsp";
+  UserView[] users                = null;
+  int numcheckboxes               = 0;
+  boolean editbuttonpressed       = false;
+
+  boolean illegalquery            = false;
+  boolean largeresult             = false;
+  boolean notauthorizedrevokeall  = false; 
+  boolean notauthorizeddeleteall  = false; 
+  boolean notauthorizedchangeall  = false; 
+
+  int filtermode = ejbcawebbean.getLastFilterMode();
+
+
+  // Determine action 
+  int record   = 0;
+  int size = ejbcawebbean.getEntriesPerPage();
+ 
+  if (request.getParameter(HIDDEN_RECORDNUMBER) != null ){
+    record =  Integer.parseInt(request.getParameter(HIDDEN_RECORDNUMBER)); 
+  } 
+
+  if (request.getParameter(HIDDEN_SORTBY) != null ){
+    sortby =  request.getParameter(HIDDEN_SORTBY); 
+  } 
+
+  if( request.getParameter(OLD_ACTION) != null){
+    oldaction = request.getParameter(OLD_ACTION);
+    if(request.getParameter(OLD_ACTION_VALUE) != null){
+      oldactionvalue= request.getParameter(OLD_ACTION_VALUE);
+    }
+    
+
+  }
+
+  if( request.getParameter(ACTION) != null){
+    if( request.getParameter(ACTION).equals(ACTION_CHANGEFILTERMODETO_ADVANCED)){
+      ejbcawebbean.setLastFilterMode(AdminPreference.FILTERMODE_ADVANCED);
+      filtermode = AdminPreference.FILTERMODE_ADVANCED;
+    }
+    if( request.getParameter(ACTION).equals(ACTION_CHANGEFILTERMODETO_BASIC)){
+      ejbcawebbean.setLastFilterMode(AdminPreference.FILTERMODE_BASIC);
+      filtermode = AdminPreference.FILTERMODE_BASIC;    
+    }
+    if( request.getParameter(ACTION).equals(ACTION_LISTUSERS)){
+      blank=false;
+      if( request.getParameter(BUTTON_VIEW_USER) != null){
+        editbuttonpressed=true;
+
+      }
+
+      if( request.getParameter(BUTTON_EDIT_USER) != null){
+        editbuttonpressed=true;
+
+      }
+      if( request.getParameter(BUTTON_VIEW_CERTIFICATE) != null){
+        editbuttonpressed=true;
+
+      }
+      if( request.getParameter(BUTTON_DELETE_USERS) != null){
+          // Delete selected users
+          // TEMPORATE
+       editbuttonpressed=true;
+       java.util.Enumeration parameters = request.getParameterNames();
+       java.util.Vector indexes = new  java.util.Vector();
+       int index;
+       while(parameters.hasMoreElements()){
+        String parameter = (String) parameters.nextElement();
+         if(parameter.startsWith(CHECKBOX_SELECT_USER) && request.getParameter(parameter).equals(CHECKBOX_VALUE)) {
+           index = java.lang.Integer.parseInt(parameter.substring(CHECKBOX_SELECT_USER.length())); //Without []
+           indexes.addElement(new Integer(index));
+         }
+       }
+       
+       if(indexes.size() > 0){
+         String[] usernames = new String[indexes.size()];
+         for(int i = 0; i < indexes.size(); i++){
+           index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
+           usernames[i] = request.getParameter(HIDDEN_USERNAME+index);
+         }
+         notauthorizeddeleteall = !rabean.deleteUsers(usernames);
+       }
+      }
+      if( request.getParameter(BUTTON_REVOKE_USERS) != null){
+        // Check reasons.
+        String reason = request.getParameter(SELECT_REVOKE_REASON);
+        if(reason != null){
+
+          // Revoke selected users
+         editbuttonpressed=true;
+         java.util.Enumeration parameters = request.getParameterNames();
+         java.util.Vector indexes = new  java.util.Vector();
+         int index;
+         while(parameters.hasMoreElements()){
+          String parameter = (String) parameters.nextElement();
+           if(parameter.startsWith(CHECKBOX_SELECT_USER) && request.getParameter(parameter).equals(CHECKBOX_VALUE)) {
+             index = java.lang.Integer.parseInt(parameter.substring(CHECKBOX_SELECT_USER.length())); //Without []
+             indexes.addElement(new Integer(index));
+           }
+         }
+       
+         if(indexes.size() > 0){
+           String[] usernames = new String[indexes.size()];
+           for(int i = 0; i < indexes.size(); i++){
+             index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
+             usernames[i] = request.getParameter(HIDDEN_USERNAME+index);
+           }
+           notauthorizedrevokeall = !rabean.revokeUsers(usernames, Integer.parseInt(reason));
+         }
+        }
+      }
+      if( request.getParameter(BUTTON_CHANGESTATUS) != null){
+          // Change statuse on selected users
+          // TEMPORATE
+       editbuttonpressed=true;
+       java.util.Enumeration parameters = request.getParameterNames();
+       java.util.Vector indexes = new  java.util.Vector();
+       int index;
+       while(parameters.hasMoreElements()){
+        String parameter = (String) parameters.nextElement();
+         if(parameter.startsWith(CHECKBOX_SELECT_USER) && request.getParameter(parameter).equals(CHECKBOX_VALUE)) {
+           index = java.lang.Integer.parseInt(parameter.substring(CHECKBOX_SELECT_USER.length())); //Without []
+           indexes.addElement(new Integer(index));
+         }
+       }
+       
+       String newstatus = request.getParameter(SELECT_CHANGE_STATUS);
+       if(indexes.size() > 0){
+         String[] usernames = new String[indexes.size()];
+         for(int i = 0; i < indexes.size(); i++){
+           index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
+           usernames[i] = request.getParameter(HIDDEN_USERNAME+index);
+         }
+         if(newstatus != null && !newstatus.trim().equals("")) 
+           notauthorizedchangeall=!rabean.setUserStatuses(usernames,newstatus);
+       }
+      }
+    }
+   }
+ 
+   if( request.getParameter(SORTBY_USERNAME_ACC+".x") != null ){
+     // Sortby username accending
+     sortby = SORTBY_USERNAME_ACC;
+     rabean.sortUserData(SortBy.USERNAME,SortBy.ACCENDING);
+   }
+   if( request.getParameter(SORTBY_USERNAME_DEC+".x") != null ){
+     // Sortby username accending
+     sortby = SORTBY_USERNAME_DEC;
+     rabean.sortUserData(SortBy.USERNAME,SortBy.DECENDING);
+   }
+   if( request.getParameter(SORTBY_COMMONNAME_ACC+".x") != null ){
+     // Sortby username accending
+     sortby = SORTBY_COMMONNAME_ACC;
+     rabean.sortUserData(SortBy.COMMONNAME,SortBy.ACCENDING);
+   }
+   if( request.getParameter(SORTBY_COMMONNAME_DEC+".x") != null ){
+     // Sortby username accending
+     sortby = SORTBY_COMMONNAME_DEC;
+     rabean.sortUserData(SortBy.COMMONNAME,SortBy.DECENDING);
+   }
+   if( request.getParameter(SORTBY_ORGANIZATIONUNIT_ACC+".x") != null ){
+     // Sortby username accending
+     sortby = SORTBY_ORGANIZATIONUNIT_ACC;
+     rabean.sortUserData(SortBy.ORGANIZATIONUNIT,SortBy.ACCENDING);
+   }
+   if( request.getParameter(SORTBY_ORGANIZATIONUNIT_DEC+".x") != null ){
+     // Sortby username accending
+     sortby = SORTBY_ORGANIZATIONUNIT_DEC;
+     rabean.sortUserData(SortBy.ORGANIZATIONUNIT,SortBy.DECENDING);
+   }
+   if( request.getParameter(SORTBY_ORGANIZATION_ACC+".x") != null ){
+     // Sortby username accending
+     sortby = SORTBY_ORGANIZATION_ACC;
+     rabean.sortUserData(SortBy.ORGANIZATION,SortBy.ACCENDING);
+   }
+   if( request.getParameter(SORTBY_ORGANIZATION_DEC+".x") != null ){
+     // Sortby username accending
+     sortby = SORTBY_ORGANIZATION_DEC;
+     rabean.sortUserData(SortBy.ORGANIZATION,SortBy.DECENDING);
+   }
+   if( request.getParameter(SORTBY_STATUS_ACC+".x") != null ){
+     // Sortby username accending
+     sortby = SORTBY_STATUS_ACC;
+     rabean.sortUserData(SortBy.STATUS,SortBy.ACCENDING);
+   }
+   if( request.getParameter(SORTBY_STATUS_DEC+".x") != null ){
+     // Sortby username accending
+     sortby = SORTBY_STATUS_DEC;
+     rabean.sortUserData(SortBy.STATUS,SortBy.DECENDING);
+   }
+
+   if( request.getParameter(BUTTON_PREVIOUS) != null ){
+     record = Integer.parseInt(request.getParameter(HIDDEN_RECORDNUMBER));
+     record -= ejbcawebbean.getEntriesPerPage();
+     if(record < 0 ) record=0;
+   }
+   if( request.getParameter(BUTTON_NEXT) != null ){
+     record = Integer.parseInt(request.getParameter(HIDDEN_RECORDNUMBER));
+     record += ejbcawebbean.getEntriesPerPage();
+   }
+
+   if( (editbuttonpressed || request.getParameter(BUTTON_RELOAD)!=null) && oldaction.equals(OLD_ACTION_FINDUSER) ){
+        String user = oldactionvalue; 
+       if(user != null){
+         if(!user.trim().equals("")){
+           users = rabean.filterByUsername(user);
+         }
+       }
+     }else{
+       if( (editbuttonpressed || request.getParameter(BUTTON_RELOAD)!=null) && oldaction.equals(OLD_ACTION_LISTUSERS) ){
+         String status = oldactionvalue;
+         if(status != null){
+           if(!status.trim().equals("")){
+               if(status.equals(ALL_STATUS)){
+                  users = rabean.findAllUsers(record,size);
+               }
+               else{
+                 Query query = new Query(Query.TYPE_USERQUERY); 
+                 query.add(UserMatch.MATCH_WITH_STATUS,BasicMatch.MATCH_TYPE_EQUALS,status);
+                 users = rabean.filterByQuery(query,record,size);
+               }
+
+               if(users != null)
+                 if(users.length >= RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
+                  largeresult = true; 
+         }
+       }
+     }else{
+       if( (editbuttonpressed || request.getParameter(BUTTON_RELOAD)!=null)&& oldaction.equals(OLD_ACTION_ISREVOKED) ){
+         String serialnumber = oldactionvalue;
+         if(serialnumber != null){
+           if(!serialnumber.trim().equals("")){
+             users = rabean.filterByCertificateSerialNumber(serialnumber.trim(),record,size);
+         }
+       }
+     }else{
+       if( (editbuttonpressed || request.getParameter(BUTTON_RELOAD)!=null) && oldaction.equals(OLD_ACTION_LISTEXPIRED) ){
+         String days = oldactionvalue;
+         if(days != null){
+           if(!days.trim().equals("")){
+             users = rabean.filterByExpiringCertificates(days.trim(),record,size);
+             if(users != null)
+               if(users.length >= RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
+                 largeresult = true; 
+         }
+       }
+     }else{
+       if( (editbuttonpressed || request.getParameter(BUTTON_RELOAD)!=null) && oldaction.equals(OLD_ACTION_ADVANCEDLIST) ){
+
+               int matchwithrow1 = (request.getParameter(OLD_MATCHWITHROW1)==null?-1:Integer.parseInt(request.getParameter(OLD_MATCHWITHROW1)));
+               int matchwithrow2 = (request.getParameter(OLD_MATCHWITHROW2)==null?-1:Integer.parseInt(request.getParameter(OLD_MATCHWITHROW2)));
+               int matchwithrow3 = (request.getParameter(OLD_MATCHWITHROW3)==null?-1:Integer.parseInt(request.getParameter(OLD_MATCHWITHROW3)));
+               int matchwithrow4 = (request.getParameter(OLD_MATCHWITHROW4)==null?-1:Integer.parseInt(request.getParameter(OLD_MATCHWITHROW4)));
+               int matchtyperow1 = (request.getParameter(OLD_MATCHTYPEROW1)==null?-1:Integer.parseInt(request.getParameter(OLD_MATCHTYPEROW1)));
+               int matchtyperow2 = (request.getParameter(OLD_MATCHTYPEROW2)==null?-1:Integer.parseInt(request.getParameter(OLD_MATCHTYPEROW2)));
+               int matchtyperow3 = (request.getParameter(OLD_MATCHTYPEROW3)==null?-1:Integer.parseInt(request.getParameter(OLD_MATCHTYPEROW3)));
+               int connectorrow2 = (request.getParameter(OLD_CONNECTORROW2)==null?-1:Integer.parseInt(request.getParameter(OLD_CONNECTORROW2)));
+               int connectorrow3 = (request.getParameter(OLD_CONNECTORROW3)==null?-1:Integer.parseInt(request.getParameter(OLD_CONNECTORROW3)));
+               int connectorrow4 = (request.getParameter(OLD_CONNECTORROW4)==null?-1:Integer.parseInt(request.getParameter(OLD_CONNECTORROW4)));
+               int dayrow4       = (request.getParameter(OLD_DAY_ROW4)==null?-1:Integer.parseInt(request.getParameter(OLD_DAY_ROW4)));
+               int dayrow5       = (request.getParameter(OLD_DAY_ROW5)==null?-1:Integer.parseInt(request.getParameter(OLD_DAY_ROW5)));
+               int monthrow4     = (request.getParameter(OLD_MONTH_ROW4)==null?-1:Integer.parseInt(request.getParameter(OLD_MONTH_ROW4)));
+               int monthrow5     = (request.getParameter(OLD_MONTH_ROW5)==null?-1:Integer.parseInt(request.getParameter(OLD_MONTH_ROW5)));
+               int yearrow4      = (request.getParameter(OLD_YEAR_ROW4)==null?-1:Integer.parseInt(request.getParameter(OLD_YEAR_ROW4)));
+               int yearrow5      = (request.getParameter(OLD_YEAR_ROW5)==null?-1:Integer.parseInt(request.getParameter(OLD_YEAR_ROW5)));
+               int timerow4      = (request.getParameter(OLD_TIME_ROW4)==null?-1:Integer.parseInt(request.getParameter(OLD_TIME_ROW4)));
+               int timerow5      = (request.getParameter(OLD_TIME_ROW5)==null?-1:Integer.parseInt(request.getParameter(OLD_TIME_ROW5)));
+               
+               String matchvaluerow1 = request.getParameter(OLD_MATCHVALUEROW1);
+               String matchvaluerow2 = request.getParameter(OLD_MATCHVALUEROW2);
+               String matchvaluerow3 = request.getParameter(OLD_MATCHVALUEROW3);
+               boolean matchadded = false; 
+    
+              Query query = new Query(Query.TYPE_USERQUERY);
+
+              if(matchwithrow1 != -1 && matchtyperow1 != -1 && matchvaluerow1 != null){
+                 if(!matchvaluerow1.trim().equals("")){
+                   query.add(matchwithrow1,matchtyperow1, matchvaluerow1);
+                   matchadded = true; 
+                 } 
+              }
+              if(connectorrow2 != -1 && matchwithrow2 != -1 && matchtyperow2 != -1 && matchvaluerow2 != null){
+                 if(!matchvaluerow2.trim().equals("")){
+                   query.add(connectorrow2);
+                   query.add(matchwithrow2,matchtyperow2, matchvaluerow2);
+                   matchadded = true; 
+                 } 
+              }
+              if(connectorrow3 != -1 && matchwithrow3 != -1 && matchtyperow3 != -1 && matchvaluerow3 != null){
+                 if(!matchvaluerow3.trim().equals("")){
+                   query.add(connectorrow3);
+                   query.add(matchwithrow3,matchtyperow3, matchvaluerow3);
+                   matchadded = true; 
+                 } 
+              }
+              Date startdate = null;
+              Date enddate = null;
+              Calendar querytime = Calendar.getInstance();
+              if( matchwithrow4 != -1 ){
+                querytime.set(yearrow4, monthrow4, dayrow4, timerow4, 0 ,0); 
+                startdate = querytime.getTime();
+                querytime.set(yearrow5, monthrow5, dayrow5, timerow5, 0 ,0); 
+                enddate = querytime.getTime();
+              }
+
+              if(connectorrow4 != -1 && matchwithrow4 != -1 ){
+                   query.add(connectorrow4);
+                   query.add(startdate, enddate);
+              }
+
+              if(connectorrow4 == -1 && !matchadded && matchwithrow4 != -1 ){
+                   query.add(startdate, enddate);
+              }
+
+              if(query.isLegalQuery()){
+                users = rabean.filterByQuery(query,record,size);  
+              }else{
+                 illegalquery = true;
+              } 
+              if(users != null)
+                if(users.length >= RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
+                 largeresult = true; 
+     }
+     else{
+       if( request.getParameter(BUTTON_FIND) != null){
+         String username = request.getParameter(TEXTFIELD_USERNAME); 
+         if(username != null){
+           username=username.trim();
+           if(!username.equals("")){
+             record=0;
+             users = rabean.filterByUsername(username);
+             oldaction=OLD_ACTION_FINDUSER;
+             oldactionvalue=username;
+          }
+        }
+      }else{
+         if( request.getParameter(BUTTON_LIST) != null){
+           String status = request.getParameter(SELECT_LIST_STATUS); 
+           if(status != null){
+             status= status.trim();
+             if(!status.equals("")){
+               record=0;
+               if(status.equals(ALL_STATUS)){
+                  users = rabean.findAllUsers(record,size);
+               }
+               else{
+                 Query query = new Query(Query.TYPE_USERQUERY); 
+                 query.add(UserMatch.MATCH_WITH_STATUS,BasicMatch.MATCH_TYPE_EQUALS,status);
+                 users = rabean.filterByQuery(query,record,size);
+               }
+
+               if(users != null)
+                 if(users.length >= RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
+                  largeresult = true; 
+               oldaction=OLD_ACTION_LISTUSERS;
+               oldactionvalue=status;
+             }
+           }
+         }else{
+           if( request.getParameter(BUTTON_ISREVOKED) != null){
+               String serialnumber = request.getParameter(TEXTFIELD_SERIALNUMBER);  
+               if(serialnumber != null){
+                 serialnumber=serialnumber.trim();
+                 if(!serialnumber.equals("")){
+                   record=0;   
+                   users = rabean.filterByCertificateSerialNumber(serialnumber,record,size);
+                   oldaction=OLD_ACTION_ISREVOKED;
+                   oldactionvalue=serialnumber;  
+                 }
+               }
+
+           }else{
+             if( request.getParameter(BUTTON_LISTEXPIRED) != null){
+               String days = request.getParameter(TEXTFIELD_DAYS); 
+               if(days != null){
+                 days=days.trim();
+                 if(!days.equals("")){                
+                   record=0;   
+                   users = rabean.filterByExpiringCertificates(days,record,size);
+                   if(users != null)
+                     if(users.length >= RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
+                       largeresult = true; 
+                   oldaction=OLD_ACTION_LISTEXPIRED;
+                   oldactionvalue=days; 
+                 }
+               }
+            }else{
+             if( request.getParameter(BUTTON_ADVANCEDLIST) != null){
+               oldaction = OLD_ACTION_ADVANCEDLIST;
+               oldmatchwithrow1 = request.getParameter(SELECT_MATCHWITH_ROW1);
+               oldmatchwithrow2 = request.getParameter(SELECT_MATCHWITH_ROW2);
+               oldmatchwithrow3 = request.getParameter(SELECT_MATCHWITH_ROW3);
+               oldmatchwithrow4 = request.getParameter(SELECT_MATCHWITH_ROW4);
+               oldmatchtyperow1 = request.getParameter(SELECT_MATCHTYPE_ROW1);
+               oldmatchtyperow2 = request.getParameter(SELECT_MATCHTYPE_ROW2);
+               oldmatchtyperow3 = request.getParameter(SELECT_MATCHTYPE_ROW3);
+               oldconnectorrow2 = request.getParameter(SELECT_CONNECTOR_ROW2);
+               oldconnectorrow3 = request.getParameter(SELECT_CONNECTOR_ROW3);
+               oldconnectorrow4 = request.getParameter(SELECT_CONNECTOR_ROW4);
+               olddayrow4 = request.getParameter(SELECT_DAY_ROW4); 
+               olddayrow5 = request.getParameter(SELECT_DAY_ROW5); 
+               oldmonthrow4 = request.getParameter(SELECT_MONTH_ROW4);
+               oldmonthrow5 = request.getParameter(SELECT_MONTH_ROW5);
+               oldyearrow4 = request.getParameter(SELECT_YEAR_ROW4);
+               oldyearrow5 = request.getParameter(SELECT_YEAR_ROW5);
+               oldtimerow4 = request.getParameter(SELECT_TIME_ROW4);
+               oldtimerow5 = request.getParameter(SELECT_TIME_ROW5);              
+
+               int matchwithrow1 = (request.getParameter(SELECT_MATCHWITH_ROW1)==null?-1:Integer.parseInt(request.getParameter(SELECT_MATCHWITH_ROW1)));
+               int matchwithrow2 = (request.getParameter(SELECT_MATCHWITH_ROW2)==null?-1:Integer.parseInt(request.getParameter(SELECT_MATCHWITH_ROW2)));
+               int matchwithrow3 = (request.getParameter(SELECT_MATCHWITH_ROW3)==null?-1:Integer.parseInt(request.getParameter(SELECT_MATCHWITH_ROW3)));
+               int matchwithrow4 = (request.getParameter(SELECT_MATCHWITH_ROW4)==null?-1:Integer.parseInt(request.getParameter(SELECT_MATCHWITH_ROW4)));
+               int matchtyperow1 = (request.getParameter(SELECT_MATCHTYPE_ROW1)==null?-1:Integer.parseInt(request.getParameter(SELECT_MATCHTYPE_ROW1)));
+               int matchtyperow2 = (request.getParameter(SELECT_MATCHTYPE_ROW2)==null?-1:Integer.parseInt(request.getParameter(SELECT_MATCHTYPE_ROW2)));
+               int matchtyperow3 = (request.getParameter(SELECT_MATCHTYPE_ROW3)==null?-1:Integer.parseInt(request.getParameter(SELECT_MATCHTYPE_ROW3)));
+               int connectorrow2 = (request.getParameter(SELECT_CONNECTOR_ROW2)==null?-1:Integer.parseInt(request.getParameter(SELECT_CONNECTOR_ROW2)));
+               int connectorrow3 = (request.getParameter(SELECT_CONNECTOR_ROW3)==null?-1:Integer.parseInt(request.getParameter(SELECT_CONNECTOR_ROW3)));
+               int connectorrow4 = (request.getParameter(SELECT_CONNECTOR_ROW4)==null?-1:Integer.parseInt(request.getParameter(SELECT_CONNECTOR_ROW4)));
+               int dayrow4       = (request.getParameter(SELECT_DAY_ROW4)==null?-1:Integer.parseInt(request.getParameter(SELECT_DAY_ROW4)));
+               int dayrow5       = (request.getParameter(SELECT_DAY_ROW5)==null?-1:Integer.parseInt(request.getParameter(SELECT_DAY_ROW5)));
+               int monthrow4     = (request.getParameter(SELECT_MONTH_ROW4)==null?-1:Integer.parseInt(request.getParameter(SELECT_MONTH_ROW4)));
+               int monthrow5     = (request.getParameter(SELECT_MONTH_ROW5)==null?-1:Integer.parseInt(request.getParameter(SELECT_MONTH_ROW5)));
+               int yearrow4      = (request.getParameter(SELECT_YEAR_ROW4)==null?-1:Integer.parseInt(request.getParameter(SELECT_YEAR_ROW4)));
+               int yearrow5      = (request.getParameter(SELECT_YEAR_ROW5)==null?-1:Integer.parseInt(request.getParameter(SELECT_YEAR_ROW5)));
+               int timerow4      = (request.getParameter(SELECT_TIME_ROW4)==null?-1:Integer.parseInt(request.getParameter(SELECT_TIME_ROW4)));
+               int timerow5      = (request.getParameter(SELECT_TIME_ROW5)==null?-1:Integer.parseInt(request.getParameter(SELECT_TIME_ROW5)));
+               
+               String matchvaluerow1 = null;
+               String matchvaluerow2 = null;
+               String matchvaluerow3 = null;
+                
+               boolean matchadded = false; 
+
+               if(matchwithrow1 == UserMatch.MATCH_WITH_ENDENTITYPROFILE){
+                    oldmatchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
+                    matchvaluerow1 = Integer.toString(rabean.getEndEntityProfileId(request.getParameter(SELECT_MATCHVALUE_ROW1)));
+                    if(matchvaluerow1.equals("0")) matchvaluerow1 = null;
+               }else{
+                 if(matchwithrow1 == UserMatch.MATCH_WITH_CERTIFICATEPROFILE){   
+                    oldmatchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
+                    matchvaluerow1 = Integer.toString(rabean.getCertificateProfileId(request.getParameter(SELECT_MATCHVALUE_ROW1)));
+                    if(matchvaluerow1.equals("0")) matchvaluerow1 = null;
+                 }else{
+                    if(matchwithrow1 == UserMatch.MATCH_WITH_STATUS){
+                       matchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
+                    }else{
+                       matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1);
+                    }
+                 }
+               } 
+               if(matchwithrow2 == UserMatch.MATCH_WITH_ENDENTITYPROFILE){
+                    oldmatchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
+                    matchvaluerow2 = Integer.toString(rabean.getEndEntityProfileId(request.getParameter(SELECT_MATCHVALUE_ROW2)));
+                    if(matchvaluerow2.equals("0")) matchvaluerow2 = null;
+               }else{
+                 if(matchwithrow2 == UserMatch.MATCH_WITH_CERTIFICATEPROFILE){   
+                    oldmatchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
+                    matchvaluerow2 = Integer.toString(rabean.getCertificateProfileId(request.getParameter(SELECT_MATCHVALUE_ROW2)));
+                    if(matchvaluerow2.equals("0")) matchvaluerow2 = null;
+                 }else{
+                    if(matchwithrow2 == UserMatch.MATCH_WITH_STATUS){
+                       matchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
+                    }else{
+                       matchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW2);
+                    }
+                 }
+               }
+
+               if(matchwithrow3 == UserMatch.MATCH_WITH_ENDENTITYPROFILE){
+                  oldmatchvaluerow3 = request.getParameter(SELECT_MATCHVALUE_ROW3);
+                  matchvaluerow3 = Integer.toString(rabean.getEndEntityProfileId(request.getParameter(SELECT_MATCHVALUE_ROW3)));
+                  if(matchvaluerow3.equals("0")) matchvaluerow3 = null; 
+               }else{
+                 if(matchwithrow3 == UserMatch.MATCH_WITH_CERTIFICATEPROFILE){   
+                    oldmatchvaluerow3 = request.getParameter(SELECT_MATCHVALUE_ROW3);
+                    matchvaluerow3 = Integer.toString(rabean.getCertificateProfileId(request.getParameter(SELECT_MATCHVALUE_ROW3)));
+                    if(matchvaluerow3.equals("0")) matchvaluerow3 = null;
+                 }else{
+                    if(matchwithrow3 == UserMatch.MATCH_WITH_STATUS){
+                       matchvaluerow3 = request.getParameter(SELECT_MATCHVALUE_ROW3);
+                    }else{
+                       matchvaluerow3 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW3);
+                    }
+                 }
+              } 
+               if(oldmatchvaluerow1 == null)
+                 oldmatchvaluerow1=matchvaluerow1;
+               if(oldmatchvaluerow2 == null)
+                 oldmatchvaluerow2=matchvaluerow2;
+               if(oldmatchvaluerow3 == null)
+                 oldmatchvaluerow3=matchvaluerow3;    
+
+              Query query = new Query(Query.TYPE_USERQUERY);
+
+              if(matchwithrow1 != -1 && matchtyperow1 != -1 && matchvaluerow1 != null){
+                 if(!matchvaluerow1.trim().equals("")){
+                   query.add(matchwithrow1,matchtyperow1, matchvaluerow1);
+                   matchadded = true; 
+                 } 
+              }
+              if(connectorrow2 != -1 && matchwithrow2 != -1 && matchtyperow2 != -1 && matchvaluerow2 != null){
+                 if(!matchvaluerow2.trim().equals("")){
+                   query.add(connectorrow2);
+                   query.add(matchwithrow2,matchtyperow2, matchvaluerow2);
+                   matchadded = true; 
+                 } 
+              }
+              if(connectorrow3 != -1 && matchwithrow3 != -1 && matchtyperow3 != -1 && matchvaluerow3 != null){
+                 if(!matchvaluerow3.trim().equals("")){
+                   query.add(connectorrow3);
+                   query.add(matchwithrow3,matchtyperow3, matchvaluerow3);
+                   matchadded = true; 
+                 } 
+              }
+              Date startdate = null;
+              Date enddate = null;
+              Calendar querytime = Calendar.getInstance();
+              if( matchwithrow4 != -1 ){
+                querytime.set(yearrow4, monthrow4, dayrow4, timerow4, 0 ,0); 
+                startdate = querytime.getTime();
+                querytime.set(yearrow5, monthrow5, dayrow5, timerow5, 0 ,0); 
+                enddate = querytime.getTime();
+              }
+
+              if(connectorrow4 != -1 && matchwithrow4 != -1 ){
+                   query.add(connectorrow4);
+                   query.add(startdate, enddate);
+              }
+
+              if(connectorrow4 == -1 && !matchadded && matchwithrow4 != -1 ){
+                   query.add(startdate, enddate);
+              }
+
+              if(query.isLegalQuery()){
+                users = rabean.filterByQuery(query,record,size);  
+              }else{
+                 illegalquery = true;
+              }
+              if(users != null)
+                if(users.length >= RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
+                 largeresult = true; 
+              
+ 
+            }else{
+            users = rabean.getUsers(record,size);
+            }}}}}
+          }
+        }
+      }
+    }
+  }
+  if(users != null){ 
+    numcheckboxes= users.length;
+  }
+
+%>
+
+<%@ include file="listendentitieshtml.jsp" %>

@@ -30,7 +30,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.CertificateDataPK;
 import se.anatom.ejbca.ca.store.CertificateData;
 import se.anatom.ejbca.ca.store.CertificateDataHome;
-import se.anatom.ejbca.ca.store.certificatetypes.CertificateType;
+import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.IJobRunnerSessionHome;
 
@@ -48,7 +48,7 @@ import se.anatom.ejbca.log.Admin;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.8 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.9 2002-10-24 20:12:01 herrvendil Exp $
  */
 public class CAInterfaceBean   {
 
@@ -67,7 +67,7 @@ public class CAInterfaceBean   {
         certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
         certificatesession = certificatesessionhome.create(administrator);
       
-        certificatetypes = new CertificateTypeDataHandler(certificatesession); 
+        certificateprofiles = new CertificateProfileDataHandler(certificatesession); 
         initialized =true; 
       }    
     }
@@ -105,37 +105,37 @@ public class CAInterfaceBean   {
  
     // Methods dealing with certificate types.
 
-    public String[] getCertificateTypeNames() throws RemoteException{
-      return certificatetypes.getCertificateTypeNames();
+    public String[] getCertificateProfileNames() throws RemoteException{
+      return certificateprofiles.getCertificateProfileNames();
     }
     
-    public int getCertificateTypeId(String certificatetypename) throws RemoteException{
-      return certificatetypes.getCertificateTypeId(certificatetypename);   
+    public int getCertificateProfileId(String certificateprofilename) throws RemoteException{
+      return certificateprofiles.getCertificateProfileId(certificateprofilename);   
     }
 
-    /* Returns certificatetypes as a CertificateTypes object */
-    public CertificateTypeDataHandler getCertificateTypeDataHandler(){
-      return certificatetypes;
+    /* Returns certificateprofiles as a CertificateProfiles object */
+    public CertificateProfileDataHandler getCertificateProfileDataHandler(){
+      return certificateprofiles;
     }
 
-    public CertificateType getCertificateType(String name) throws RemoteException{
-      return certificatetypes.getCertificateType(name);
+    public CertificateProfile getCertificateProfile(String name) throws RemoteException{
+      return certificateprofiles.getCertificateProfile(name);
     }
 
-    public void addCertificateType(String name) throws CertificateTypeExistsException, RemoteException{
-       certificatetypes.addCertificateType(name, new CertificateType());
+    public void addCertificateProfile(String name) throws CertificateProfileExistsException, RemoteException{
+       certificateprofiles.addCertificateProfile(name, new CertificateProfile());
     }
 
-    public void addCertificateType(String name, CertificateType certificatetype) throws CertificateTypeExistsException, RemoteException {
-       certificatetypes.addCertificateType(name, certificatetype);
+    public void addCertificateProfile(String name, CertificateProfile certificateprofile) throws CertificateProfileExistsException, RemoteException {
+       certificateprofiles.addCertificateProfile(name, certificateprofile);
     }
 
-    public void changeCertificateType(String name, CertificateType certificatetype) throws CertificateTypeDoesntExistsException, RemoteException {
-       certificatetypes.changeCertificateType(name, certificatetype);
+    public void changeCertificateProfile(String name, CertificateProfile certificateprofile) throws CertificateProfileDoesntExistsException, RemoteException {
+       certificateprofiles.changeCertificateProfile(name, certificateprofile);
     }
     
     /** Returns false if certificate type is used by any user or in profiles. */
-    public boolean removeCertificateType(String name) throws Exception{
+    public boolean removeCertificateProfile(String name) throws Exception{
         InitialContext jndicontext = new InitialContext();              
         Object obj1 = jndicontext.lookup("UserAdminSession");
         IUserAdminSessionHome adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
@@ -147,25 +147,25 @@ public class CAInterfaceBean   {
         IRaAdminSessionRemote raadminsession = raadminsessionhome.create(administrator); 
         
         
-        boolean certificatetypeused = false;
-        int certificatetypeid = certificatesession.getCertificateTypeId(name);
+        boolean certificateprofileused = false;
+        int certificateprofileid = certificatesession.getCertificateProfileId(name);
         // Check if any users or profiles use the certificate id.
-        certificatetypeused = adminsession.checkForCertificateTypeId(certificatetypeid) 
-                            || raadminsession.existsCertificateTypeInProfiles(certificatetypeid); 
+        certificateprofileused = adminsession.checkForCertificateProfileId(certificateprofileid) 
+                            || raadminsession.existsCertificateProfileInEndEntityProfiles(certificateprofileid); 
 
-        if(!certificatetypeused){
-          certificatetypes.removeCertificateType(name);
+        if(!certificateprofileused){
+          certificateprofiles.removeCertificateProfile(name);
         }
         
-        return !certificatetypeused;       
+        return !certificateprofileused;       
     }
 
-    public void renameCertificateType(String oldname, String newname) throws CertificateTypeExistsException, RemoteException{
-       certificatetypes.renameCertificateType(oldname, newname);
+    public void renameCertificateProfile(String oldname, String newname) throws CertificateProfileExistsException, RemoteException{
+       certificateprofiles.renameCertificateProfile(oldname, newname);
     }
 
-    public void cloneCertificateType(String originalname, String newname) throws CertificateTypeExistsException, RemoteException{
-      certificatetypes.cloneCertificateType(originalname, newname);
+    public void cloneCertificateProfile(String originalname, String newname) throws CertificateProfileExistsException, RemoteException{
+      certificateprofiles.cloneCertificateProfile(originalname, newname);
     }
     
 
@@ -174,7 +174,7 @@ public class CAInterfaceBean   {
     // Private fields
     private ICertificateStoreSessionRemote    certificatesession;
     private ICertificateStoreSessionHome      certificatesessionhome;
-    private CertificateTypeDataHandler        certificatetypes;
+    private CertificateProfileDataHandler     certificateprofiles;
     private boolean                           initialized;
     private Admin                             administrator;
 

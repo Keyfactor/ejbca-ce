@@ -10,7 +10,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
-import se.anatom.ejbca.ca.store.certificatetypes.*;
+import se.anatom.ejbca.ca.store.certificateprofiles.*;
 
 /** The CertificateStoreSession is the primary storage
  * for certificates and CRL. The CA always puts certificates and CRLs in the
@@ -21,13 +21,14 @@ import se.anatom.ejbca.ca.store.certificatetypes.*;
  *
  * Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.6 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.7 2002-10-24 20:04:23 herrvendil Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote  {
         
     /** Constants defining range of id's reserved for fixed certificate types. Observe fixed certificates cannot have value 0. */
-    public final static int FIXED_CERTIFICATETYPE_BOUNDRY = 1000;
+    public final static int FIXED_CERTIFICATEPROFILE_BOUNDRY = 1000;
 
+    public final static int NO_CERTIFICATEPROFILE = LocalCertificateStoreSessionBean.NO_CERTIFICATEPROFILE;    
     public final static int FIXED_ENDUSER = LocalCertificateStoreSessionBean.FIXED_ENDUSER;
     public final static int FIXED_CA = LocalCertificateStoreSessionBean.FIXED_CA;
     public final static int FIXED_ROOTCA = LocalCertificateStoreSessionBean.FIXED_ROOTCA;  
@@ -126,99 +127,99 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     // Functions used for Certificate Types.
            
     /**
-     * Adds a certificatetype to the database.
+     * Adds a certificateprofile to the database.
      *
-     * @return false if certificatetypename already exists. 
+     * @return false if certificateprofilename already exists. 
      * @throws EJBException if a communication or other error occurs.
      */        
     
-    public boolean addCertificateType(String certificatetypename, CertificateType certificatetype) throws RemoteException;   
+    public boolean addCertificateProfile(String certificateprofilename, CertificateProfile certificateprofile) throws RemoteException;   
     
      /**
-     * Adds a certificatetype  with the same content as the original certificatetype, 
+     * Adds a certificateprofile  with the same content as the original certificateprofile, 
      *  
-     * @return false if the new certificatetypename already exists.
+     * @return false if the new certificateprofilename already exists.
      * @throws EJBException if a communication or other error occurs.     
      */ 
-    public boolean cloneCertificateType(String originalcertificatetypename, String newcertificatetypename) throws RemoteException;
+    public boolean cloneCertificateProfile(String originalcertificateprofilename, String newcertificateprofilename) throws RemoteException;
     
      /**
-     * Removes a certificatetype from the database. 
+     * Removes a certificateprofile from the database. 
      * 
      * @throws EJBException if a communication or other error occurs.   
      */ 
-    public void removeCertificateType(String certificatetypename) throws RemoteException;
+    public void removeCertificateProfile(String certificateprofilename) throws RemoteException;
     
      /**
-     * Renames a certificatetype.
+     * Renames a certificateprofile.
      *
      * @return false if new name already exists
      * @throws EJBException if a communication or other error occurs.           
      */ 
-    public boolean renameCertificateType(String oldcertificatetypename, String newcertificatetypename) throws RemoteException;   
+    public boolean renameCertificateProfile(String oldcertificateprofilename, String newcertificateprofilename) throws RemoteException;   
 
     /**
-     * Updates certificatetype data
+     * Updates certificateprofile data
      *
-     * @return false if certificatetypename doesn't exists
+     * @return false if certificateprofilename doesn't exists
      * @throws EJBException if a communication or other error occurs.
      */     
     
-    public boolean changeCertificateType(String certificatetypename, CertificateType certificatetype) throws RemoteException; 
+    public boolean changeCertificateProfile(String certificateprofilename, CertificateProfile certificateprofile) throws RemoteException; 
     
       /**
-       * Returns the available certificatetype names.
+       * Returns the available certificateprofile names.
        *
-       * @return a collection of certificatetypenames.
+       * @return a collection of certificateprofilenames.
        * @throws EJBException if a communication or other error occurs.
        */       
-    public Collection getCertificateTypeNames() throws RemoteException;
+    public Collection getCertificateProfileNames() throws RemoteException;
       /**
-       * Returns the available certificatetype.
+       * Returns the available certificateprofile.
        *
        * @return A collection of Profiles.
        * @throws EJBException if a communication or other error occurs.
        */        
-    public TreeMap getCertificateTypes() throws RemoteException;
+    public TreeMap getCertificateProfiles() throws RemoteException;
     
       /**
-       * Returns the specified certificatetype.
+       * Returns the specified certificateprofile.
        *
-       * @return the certificatetype data or null if profile doesn't exists.
+       * @return the certificateprofile data or null if profile doesn't exists.
        * @throws EJBException if a communication or other error occurs.
        */         
-    public CertificateType getCertificateType(String certificatetypename) throws RemoteException;
+    public CertificateProfile getCertificateProfile(String certificateprofilename) throws RemoteException;
     
        /**
-       * Returns the specified certificatetype.
+       * Returns the specified certificateprofile.
        *
-       * @return the certificatetype data or null if profile doesn't exists.
+       * @return the certificateprofile data or null if profile doesn't exists.
        * @throws EJBException if a communication or other error occurs.
        */         
-    public CertificateType getCertificateType(int id) throws RemoteException;
+    public CertificateProfile getCertificateProfile(int id) throws RemoteException;
 
       /**
-       * Returns the number of available certificatetypes.
+       * Returns the number of available certificateprofiles.
        *
-       * @return the number of available certificatetypes.
+       * @return the number of available certificateprofiles.
        * @throws EJBException if a communication or other error occurs.
        */             
-    public int getNumberOfCertificateTypes() throws RemoteException;
+    public int getNumberOfCertificateProfiles() throws RemoteException;
     
       /**
-       * Returns a certificatetype id given it큦 certificatetypename.
+       * Returns a certificateprofile id given it큦 certificateprofilename.
        *
-       * @return id number of certificatetype.
+       * @return id number of certificateprofile.
        * @throws EJBException if a communication or other error occurs.
        */    
-    public int getCertificateTypeId(String certificatetypename) throws RemoteException;
+    public int getCertificateProfileId(String certificateprofilename) throws RemoteException;
     
        /**
-       * Returns a certificatetype name given it큦 id.
+       * Returns a certificateprofile name given it큦 id.
        *
-       * @return the name of certificatetype.
+       * @return the name of certificateprofile.
        * @throws EJBException if a communication or other error occurs.
        */    
-    public String getCertificateTypeName(int id) throws RemoteException;    
+    public String getCertificateProfileName(int id) throws RemoteException;    
  
 }

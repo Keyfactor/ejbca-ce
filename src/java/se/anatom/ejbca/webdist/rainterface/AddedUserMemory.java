@@ -44,10 +44,10 @@ public class AddedUserMemory implements Serializable {
      *
      * @return the 'size' or available users in memory.
      */    
-    public String[][] getUsers(int size) {
+    public UserView[] getUsers(int size) {      
       int endindex =  memory.size() - size; 
       int tempsize = size;
-      String[][] returnval;
+      UserView[] returnval;
       
       if(endindex < 0)
         endindex = 0;
@@ -55,10 +55,10 @@ public class AddedUserMemory implements Serializable {
       if(size > memory.size())
         tempsize= memory.size(); 
         
-      returnval = new String[tempsize][UserView.NUMBEROF_USERFIELDS];  
+      returnval = new UserView[tempsize];  
       int j=0;
       for( int i = memory.size() -1; i >= endindex; i--){
-        returnval[j] = ((UserView) memory.elementAt(i)).getValues();   
+        returnval[j] = (UserView) memory.elementAt(i);   
         j++;
       }
       
@@ -75,7 +75,7 @@ public class AddedUserMemory implements Serializable {
       int i;  
         // Find user in memory.
       for(i = 0; i < memory.size(); i++){
-        if(((UserView) memory.elementAt(i)).getValue(UserView.USERNAME).equals(user.getValue(UserView.USERNAME))){
+        if(((UserView) memory.elementAt(i)).getUsername().equals(user.getUsername())){
            memory.set(i,user);  
           break;   
         }

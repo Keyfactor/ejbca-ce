@@ -14,7 +14,7 @@ package se.anatom.ejbca.exception;
  * }
  * </code>
  *
- * @version $Id: EjbcaException.java,v 1.3 2002-04-17 15:14:19 anatom Exp $
+ * @version $Id: EjbcaException.java,v 1.4 2002-10-24 20:05:09 herrvendil Exp $
  */
 public class EjbcaException extends Exception {
 

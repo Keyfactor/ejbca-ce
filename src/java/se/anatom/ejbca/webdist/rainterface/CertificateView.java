@@ -15,7 +15,7 @@ import java.security.interfaces.RSAPublicKey;
 
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
-import se.anatom.ejbca.ca.store.certificatetypes.CertificateType;
+import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 
 
@@ -26,15 +26,15 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  */
 public class CertificateView {
     
-   public static final int DIGITALSIGNATURE = CertificateType.DIGITALSIGNATURE;
-   public static final int NONREPUDATION    = CertificateType.NONREPUDATION;
-   public static final int KEYENCIPHERMENT  = CertificateType.KEYENCIPHERMENT;
-   public static final int DATAENCIPHERMENT = CertificateType.DATAENCIPHERMENT;
-   public static final int KEYAGREEMENT     = CertificateType.KEYAGREEMENT;
-   public static final int KEYCERTSIGN      = CertificateType.KEYCERTSIGN;
-   public static final int CRLSIGN          = CertificateType.CRLSIGN;
-   public static final int ENCIPHERONLY     = CertificateType.ENCIPHERONLY;
-   public static final int DECIPHERONLY     = CertificateType.DECIPHERONLY;
+   public static final int DIGITALSIGNATURE = CertificateProfile.DIGITALSIGNATURE;
+   public static final int NONREPUDATION    = CertificateProfile.NONREPUDATION;
+   public static final int KEYENCIPHERMENT  = CertificateProfile.KEYENCIPHERMENT;
+   public static final int DATAENCIPHERMENT = CertificateProfile.DATAENCIPHERMENT;
+   public static final int KEYAGREEMENT     = CertificateProfile.KEYAGREEMENT;
+   public static final int KEYCERTSIGN      = CertificateProfile.KEYCERTSIGN;
+   public static final int CRLSIGN          = CertificateProfile.CRLSIGN;
+   public static final int ENCIPHERONLY     = CertificateProfile.ENCIPHERONLY;
+   public static final int DECIPHERONLY     = CertificateProfile.DECIPHERONLY;
    
         
     /** Creates a new instance of CertificateView */
@@ -42,8 +42,8 @@ public class CertificateView {
       this.certificate=certificate;
       this.revokedinfo= revokedinfo;  
       
-      subjectdnfieldextractor = new DNFieldExtractor(certificate.getSubjectDN().toString()); 
-      issuerdnfieldextractor  = new DNFieldExtractor(certificate.getIssuerDN().toString());  
+      subjectdnfieldextractor = new DNFieldExtractor(certificate.getSubjectDN().toString(), DNFieldExtractor.TYPE_SUBJECTDN); 
+      issuerdnfieldextractor  = new DNFieldExtractor(certificate.getIssuerDN().toString(), DNFieldExtractor.TYPE_SUBJECTDN);  
     }
  
     
@@ -65,16 +65,16 @@ public class CertificateView {
       return certificate.getIssuerDN().toString();  
     }
     
-    public String getIssuerDNField(String field) { 
-      return issuerdnfieldextractor.getField(field);  
+    public String getIssuerDNField(int field, int number) { 
+      return issuerdnfieldextractor.getField(field, number);  
     }  
     
     public String getSubjectDN() {
       return certificate.getSubjectDN().toString();  
     }
     
-    public String getSubjectDNField(String field) {
-      return subjectdnfieldextractor.getField(field);  
+    public String getSubjectDNField(int field, int number) {
+      return subjectdnfieldextractor.getField(field, number);  
     }    
     
     public Date getValidFrom() {

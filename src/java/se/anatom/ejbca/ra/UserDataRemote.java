@@ -8,7 +8,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataRemote.java,v 1.2 2002-07-28 23:27:47 herrvendil Exp $
+ * @version $Id: UserDataRemote.java,v 1.3 2002-10-24 20:10:05 herrvendil Exp $
  **/
 
 public interface UserDataRemote extends javax.ejb.EJBObject {
@@ -27,6 +27,8 @@ public interface UserDataRemote extends javax.ejb.EJBObject {
     public void setUsername(String username) throws RemoteException;
     public String getSubjectDN() throws RemoteException;
     public void setSubjectDN(String subjectDN) throws RemoteException;
+    public String getSubjectAltName() throws RemoteException;
+    public void setSubjectAltName(String subjectAltName) throws RemoteException;     
     public String getSubjectEmail() throws RemoteException;
     public void setSubjectEmail(String subjectEmail) throws RemoteException;
     public int getStatus() throws RemoteException;
@@ -41,10 +43,14 @@ public interface UserDataRemote extends javax.ejb.EJBObject {
     public long getTimeCreated() throws RemoteException;    
     public long getTimeModified() throws RemoteException;  
     public void setTimeModified(long createtime) throws RemoteException;     
-    public int getProfileId() throws RemoteException;   
-    public void setProfileId(int profileid) throws RemoteException;  
-    public int getCertificateTypeId() throws RemoteException;
-    public void setCertificateTypeId(int certificatetypeid) throws RemoteException;   
+    public int getEndEntityProfileId() throws RemoteException;   
+    public void setEndEntityProfileId(int endentityprofileid) throws RemoteException;  
+    public int getCertificateProfileId() throws RemoteException;
+    public void setCertificateProfileId(int certificateprofileid) throws RemoteException;      
+    public int getTokenType() throws RemoteException;  
+    public void setTokenType(int tokentype) throws RemoteException;   
+    public int getHardTokenIssuerId() throws RemoteException;  
+    public void setHardTokenIssuerId(int hardtokenissuerid) throws RemoteException;   
 
     public void setPassword(String password) throws RemoteException, NoSuchAlgorithmException;
     public void setOpenPassword(String password) throws RemoteException, NoSuchAlgorithmException;

@@ -29,7 +29,7 @@ import se.anatom.ejbca.log.*;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.ra.authorization.UserInformation;
+import se.anatom.ejbca.ra.authorization.AdminInformation;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 import se.anatom.ejbca.util.query.*;
 
@@ -38,7 +38,7 @@ import se.anatom.ejbca.util.query.*;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.2 2002-09-18 11:31:49 herrvendil Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.3 2002-10-24 20:12:18 herrvendil Exp $
  */
 public class LogInterfaceBean {
 
@@ -57,7 +57,7 @@ public class LogInterfaceBean {
     public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
 
       if(!initialized){
-        userinformation = new UserInformation(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);  
+        admininformation = new AdminInformation(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);  
         admin           = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
         
         InitialContext jndicontext = new InitialContext();
@@ -268,7 +268,7 @@ public class LogInterfaceBean {
     private ICertificateStoreSessionRemote certificatesession;
     private ILogSessionRemote              logsession;
     private LogEntriesView                 logentriesview;
-    private UserInformation                userinformation;
+    private AdminInformation                admininformation;
     private Admin                          admin;
     private SubjectDNProxy                 dnproxy;  
     private boolean                        initialized=false;

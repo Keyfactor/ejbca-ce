@@ -13,6 +13,8 @@ import java.rmi.RemoteException;
 
 import se.anatom.ejbca.batch.*;
 import se.anatom.ejbca.ra.*;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.util.*;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.log.Admin;
@@ -23,7 +25,7 @@ import junit.framework.*;
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.11 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.12 2002-10-24 20:01:08 herrvendil Exp $
  */
 
 public class TestBatchMakeP12 extends TestCase {
@@ -91,8 +93,9 @@ public class TestBatchMakeP12 extends TestCase {
         data1 = home.create(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER));
         Object o = null;       
         try{
-          data1.addUser(username, "foo123", "C=SE, O=AnaTom, CN="+username, username+"@anatom.se", SecConst.USER_ENDUSER, false,
-                        UserAdminData.NO_PROFILE, UserAdminData.NO_CERTIFICATETYPE);
+          data1.addUser(username, "foo123", "C=SE, O=AnaTom, CN="+username, "", username+"@anatom.se",  false,
+                        IRaAdminSessionRemote.EMPTY_ENDENTITYPROFILEID, ICertificateStoreSessionRemote.NO_CERTIFICATEPROFILE,
+                        false, false, SecConst.TOKEN_SOFT_BROWSERGEN,0);
           data1.setClearTextPassword(username,"foo123");
           o = new String(""); 
         }catch(Exception e){
@@ -104,8 +107,9 @@ public class TestBatchMakeP12 extends TestCase {
         String username1 = genRandomUserName();
         o = null;
         try{
-          data1.addUser(username1, "foo123", "C=SE, O=AnaTom, CN="+username1, username1+"@anatom.se", SecConst.USER_ENDUSER,false,
-                        UserAdminData.NO_PROFILE, UserAdminData.NO_CERTIFICATETYPE);
+          data1.addUser(username1, "foo123", "C=SE, O=AnaTom, CN="+username1, "",username1+"@anatom.se", false,
+                        IRaAdminSessionRemote.EMPTY_ENDENTITYPROFILEID, ICertificateStoreSessionRemote.NO_CERTIFICATEPROFILE,
+                        false, false, SecConst.TOKEN_SOFT_BROWSERGEN,0);
           data1.setClearTextPassword(username1,"foo123");   
           o = new String("");
         }catch(Exception e){  

@@ -10,7 +10,7 @@ import java.util.Collection;
 
 public interface AccessRulesDataLocalHome extends javax.ejb.EJBLocalHome {
 
-    public AccessRulesDataLocal create(String usergroupname, String directory, AccessRule accessrule)
+    public AccessRulesDataLocal create(String usergroupname, String resource, AccessRule accessrule)
         throws CreateException;
 
 

@@ -6,13 +6,13 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.TreeMap;
 import se.anatom.ejbca.ra.GlobalConfiguration;
-import se.anatom.ejbca.ra.raadmin.UserPreference;
-import se.anatom.ejbca.ra.raadmin.Profile;
+import se.anatom.ejbca.ra.raadmin.AdminPreference;
+import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
 
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: IRaAdminSessionLocal.java,v 1.5 2002-08-27 12:41:07 herrvendil Exp $
+ * @version $Id: IRaAdminSessionLocal.java,v 1.6 2002-10-24 20:09:29 herrvendil Exp $
  * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
  */
 
@@ -20,100 +20,110 @@ public interface IRaAdminSessionLocal extends javax.ejb.EJBLocalObject
 
 {
 
-    public final static String EMPTY_PROFILE = LocalRaAdminSessionBean.EMPTY_PROFILE;
-    public final static int EMPTY_PROFILEID  = LocalRaAdminSessionBean.EMPTY_PROFILEID;    
+    public final static String EMPTY_ENDENTITYPROFILE = LocalRaAdminSessionBean.EMPTY_ENDENTITYPROFILE;
+    public final static int EMPTY_ENDENTITYPROFILEID  = LocalRaAdminSessionBean.EMPTY_ENDENTITYPROFILEID;    
     
-    public UserPreference getUserPreference(BigInteger serialnumber);
+    public AdminPreference getAdminPreference(BigInteger serialnumber);
 
     /**
      * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */
 
-    public boolean addUserPreference(BigInteger serialnumber, UserPreference userpreference);
+    public boolean addAdminPreference(BigInteger serialnumber, AdminPreference adminpreference);
 
     /**
      * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */
 
-    public boolean changeUserPreference(BigInteger serialnumber, UserPreference userpreference);
+    public boolean changeAdminPreference(BigInteger serialnumber, AdminPreference adminpreference);
 
     /**
      * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */
 
-    public boolean existsUserPreference(BigInteger serialnumber);
-
-
+    public boolean existsAdminPreference(BigInteger serialnumber);
 
     /**
      * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
-     */
-
-    public boolean addProfile(String profilename, Profile profile);
-
-    /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
-     */
-
-    public boolean cloneProfile(String originalprofilename, String newprofilename);
-
-    /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
-     */
-
-    public void removeProfile(String profilename);
-
-    /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
-     */
-
-    public boolean renameProfile(String oldprofilename, String newprofilename);
-
-     /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
-     */
-
-    public boolean changeProfile(String profilename, Profile profile);
-
-     /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
-     */
-    public Collection getProfileNames();
-     /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
-     */
-    public TreeMap getProfiles();
-
-     /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
-     */
-    public Profile getProfile(String profilename);
-
-     /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
-     */
-    public Profile getProfile(int id);
-
-     /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
-     */
-    public int getNumberOfProfiles();
-
-     /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
-     */
-    public int getProfileId(String profilename);
-
-     /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
-     */
-    public String getProfileName(int id);
+     */  
     
-     /**
+    public AdminPreference getDefaultAdminPreference();
+    
+    /**
      * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */
     
-    public boolean existsCertificateTypeInProfiles(int certificatetypeid);    
+    public void saveDefaultAdminPreference(AdminPreference defaultadminpreference);   
+
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */
+
+    public boolean addEndEntityProfile(String profilename, EndEntityProfile profile);
+
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */
+
+    public boolean cloneEndEntityProfile(String originalprofilename, String newprofilename);
+
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */
+
+    public void removeEndEntityProfile(String profilename);
+
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */
+
+    public boolean renameEndEntityProfile(String oldprofilename, String newprofilename);
+
+     /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */
+
+    public boolean changeEndEntityProfile(String profilename, EndEntityProfile profile);
+
+     /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */
+    public Collection getEndEntityProfileNames();
+     /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */
+    public TreeMap getEndEntityProfiles();
+
+     /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */
+    public EndEntityProfile getEndEntityProfile(String profilename);
+
+     /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */
+    public EndEntityProfile getEndEntityProfile(int id);
+
+     /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */
+    public int getNumberOfEndEntityProfiles();
+
+     /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */
+    public int getEndEntityProfileId(String profilename);
+
+     /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */
+    public String getEndEntityProfileName(int id);
+    
+     /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */
+    
+    public boolean existsCertificateProfileInEndEntityProfiles(int certificateprofileid);    
 
 }
 

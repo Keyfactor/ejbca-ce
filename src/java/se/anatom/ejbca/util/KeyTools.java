@@ -32,7 +32,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.9 2002-08-26 12:15:47 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.10 2002-10-24 20:11:26 herrvendil Exp $
  */
 public class KeyTools {
 

@@ -10,12 +10,12 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.util.query.Query;
 import se.anatom.ejbca.util.query.IllegalQueryException;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
-import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillProfile;
-import se.anatom.ejbca.ra.authorization.UserInformation;
+import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import se.anatom.ejbca.ra.authorization.AdminInformation;
 
 /**
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.9 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.10 2002-10-24 20:10:10 herrvendil Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
 
@@ -30,31 +30,42 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @param username the unique username.
     * @param password the password used for authentication.
     * @param dn the DN the subject is given in his certificate.
+    * @param subjectaltname the Subject Alternative Name to be used.
     * @param email the email of the subject or null.
-    * @param type the type of entity (from 'SecConst').
-    * @param profileid the id number of the profile bound to this user.
-    * @param certificatetypeid the id number of the certificate type that should be generated for the user.
+    * @param endentityprofileid the id number of the end entity profile bound to this user.
+    * @param certificateprofileid the id number of the certificate profile that should be generated for the user.
+    * @param administrator indicates if the user should be marked as administrator
+    * @param keyrecoverable indicates if the users token should be key recoverable
+    * @param tokentype the type of token to be generated, one of SecConst.TOKEN constants
+    * @param hardtokenissuerid, if token should be hard, the id of the hard token issuer, else 0.
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public void addUser(String username, String password, String dn, String email, int type, boolean clearpwd, int profileid, int certificatetypeid)
-                         throws AuthorizationDeniedException, UserDoesntFullfillProfile, RemoteException;
+    public void addUser(String username, String password, String dn, String subjectaltname, String email,  boolean clearpwd,
+                        int endentityprofileid, int certificateprofileid, boolean administrator, boolean keyrecoverable,
+                        int tokentype, int hardtokenissuerid)
+                         throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException;
     
     /**
     * Changes data for a user in the database speciefied by username.
     *
     * @param username the unique username.
-    * @param password the password used for authentication.
     * @param dn the DN the subject is given in his certificate.
+    * @param subjectaltname the Subject Alternative Name to be used.
     * @param email the email of the subject or null.
-    * @param type the type of entity (from 'SecConst').
-    * @param profileid the id number of the profile bound to this user.
-    * @param certificatetypeid the id number of the certificate type that should be generated for the user.
+    * @param endentityprofileid the id number of the end entity profile bound to this user.
+    * @param certificateprofileid the id number of the certificate profile that should be generated for the user.
+    * @param administrator indicates if the user should be marked as administrator
+    * @param keyrecoverable indicates if the users token should be key recoverable
+    * @param tokentype the type of token to be generated, one of SecConst.TOKEN constants
+    * @param hardtokenissuerid, if token should be hard, the id of the hard token issuer, else 0.
     *
     * @throws EJBException if a communication or other error occurs.
     */   
-    public void changeUser(String username,  String dn, String email, int type, int profileid, int certificatetypeid) 
-        throws AuthorizationDeniedException, UserDoesntFullfillProfile, RemoteException;    
+    public void changeUser(String username,  String dn, String subjectaltname, String email,  
+                        int endentityprofileid, int certificateprofileid, boolean administrator, boolean keyrecoverable,
+                        int tokentype, int hardtokenissuerid) 
+                        throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException;    
 
    /**
     * Deletes a user from the database. The users certificates must be revoked BEFORE this method is called.
@@ -90,7 +101,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public void setPassword(String username, String password) throws UserDoesntFullfillProfile, AuthorizationDeniedException,FinderException, RemoteException;
+    public void setPassword(String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,FinderException, RemoteException;
 
     /**
     * Sets a clear text password for a user.
@@ -100,7 +111,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public void setClearTextPassword(String username, String password) throws UserDoesntFullfillProfile, AuthorizationDeniedException,FinderException, RemoteException;
+    public void setClearTextPassword(String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,FinderException, RemoteException;
 
    /**
     * Finds a user.
@@ -178,22 +189,22 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      public Collection query(Query query) throws IllegalQueryException , RemoteException;    
      
     /** 
-     * Methods that checks if a user exists in the database having the given profileid. This function is mainly for avoiding 
-     * desyncronisation when profile is deleted.
+     * Methods that checks if a user exists in the database having the given endentityprofileid. This function is mainly for avoiding 
+     * desyncronisation when end entity profile is deleted.
      *
-     * @param profileid the id of profile to look for.
-     * @return true if profileid exists in userdatabase.
+     * @param endentityprofileid the id of profile to look for.
+     * @return true if endentityprofileid exists in userdatabase.
      */
-    public boolean checkForProfileId(int profileid)  throws RemoteException;        
+    public boolean checkForEndEntityProfileId(int endentityprofileid)  throws RemoteException;        
      
     /** 
-     * Methods that checks if a user exists in the database having the given certificatetypeid. This function is mainly for avoiding 
-     * desyncronisation when a certificatetype is deleted.
+     * Methods that checks if a user exists in the database having the given certificateprofileid. This function is mainly for avoiding 
+     * desyncronisation when a certificateprofile is deleted.
      *
-     * @param certificatetypeid the id of certificatetype to look for.
-     * @return true if certificatetypeid exists in userdatabase.
+     * @param certificateprofileid the id of certificateprofile to look for.
+     * @return true if certificaterofileid exists in userdatabase.
      */     
-    public boolean checkForCertificateTypeId(int certificatetypeid) throws RemoteException;   
+    public boolean checkForCertificateProfileId(int certificaterofileid) throws RemoteException;   
     
      // Functions used to save  Global Configuration
    /**
@@ -211,13 +222,6 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     public GlobalConfiguration loadGlobalConfiguration() throws RemoteException;
     
     
-    // Functions used by User Preferences
-     /**
-     * Finds the userpreference belonging to a certificate serialnumber
-     * 
-     * @return the users userpreferences.
-     * @throws EJBException if a communication or other error occurs.
-     */ 
-
+   
 }
 

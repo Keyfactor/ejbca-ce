@@ -7,10 +7,10 @@
 package se.anatom.ejbca.log;
 
 import java.security.cert.X509Certificate;
-import se.anatom.ejbca.ra.authorization.UserEntity;
-import se.anatom.ejbca.ra.authorization.UserInformation;
+import se.anatom.ejbca.ra.authorization.AdminEntity;
+import se.anatom.ejbca.ra.authorization.AdminInformation;
 /**
- *  This is a class containing information about the administrator or user preforming the event. 
+ *  This is a class containing information about the administrator or admin preforming the event. 
  *  Data contained in the class is preferbly
  *
  *  
@@ -32,9 +32,9 @@ public class Admin implements java.io.Serializable {
     
     public static final String[] ADMINTYPETEXTS = {"CLIENTCERT","PUBLICWEBUSER","RACMDLINE","CACMDLINE","BATCHCMDLINE", "INTERNALUSER"};
         
-    private int[] ADMINTYPETOADMINENTIRY = {0, UserEntity.SPECIALUSER_PUBLICWEBUSER, UserEntity.SPECIALUSER_CACOMMANDLINEADMIN, 
-                                               UserEntity.SPECIALUSER_RACOMMANDLINEADMIN, UserEntity.SPECIALUSER_BATCHCOMMANDLINEADMIN,
-                                               UserEntity.SPECIALUSER_INTERNALUSER};
+    private int[] ADMINTYPETOADMINENTIRY = {0, AdminEntity.SPECIALADMIN_PUBLICWEBUSER, AdminEntity.SPECIALADMIN_CACOMMANDLINEADMIN, 
+                                               AdminEntity.SPECIALADMIN_RACOMMANDLINEADMIN, AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN,
+                                               AdminEntity.SPECIALADMIN_INTERNALUSER};
                                                          
     
     // Public Constructors
@@ -64,12 +64,12 @@ public class Admin implements java.io.Serializable {
       return this.data;   
     }
         
-    // Method that takes the internal data and returns a UserInformation object required by the Authorization module.
-    public UserInformation getUserInformation(){
+    // Method that takes the internal data and returns a AdminInformation object required by the Authorization module.
+    public AdminInformation getAdminInformation(){
        if(type == TYPE_CLIENTCERT_USER)
-         return new UserInformation(certificate);
+         return new AdminInformation(certificate);
        
-       return new UserInformation( ADMINTYPETOADMINENTIRY[type]);
+       return new AdminInformation( ADMINTYPETOADMINENTIRY[type]);
     }
     
     

@@ -12,11 +12,11 @@ public final class AccessRulesPK implements java.io.Serializable {
     public int pK;
 
 
-    public AccessRulesPK(java.lang.String usergroupname, java.lang.String directory) {
+    public AccessRulesPK(java.lang.String usergroupname, java.lang.String resource) {
         this.pK =
         ((usergroupname==null?0:usergroupname.hashCode())
         ^
-        (directory==null?0:directory.hashCode()));
+        (resource==null?0:resource.hashCode()));
     }
 
     public AccessRulesPK() {

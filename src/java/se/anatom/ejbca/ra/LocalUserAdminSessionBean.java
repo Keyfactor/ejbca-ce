@@ -12,8 +12,9 @@ import javax.ejb.*;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ra.GlobalConfiguration;
-import se.anatom.ejbca.ra.authorization.ProfileAuthorizationProxy;
+import se.anatom.ejbca.ra.authorization.EndEntityProfileAuthorizationProxy;
 import se.anatom.ejbca.util.query.*;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
@@ -22,8 +23,8 @@ import se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
-import se.anatom.ejbca.ra.raadmin.Profile;
-import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillProfile;
+import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
+import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.ILogSessionHome;
@@ -33,7 +34,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.28 2002-09-19 08:30:01 primelars Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.29 2002-10-24 20:10:07 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -54,12 +55,12 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     
     private UserDataLocalHome home = null;
     /** Columns in the database used in select */
-    private final String USERDATA_COL = "username, subjectDN, subjectEmail, status, type, clearpassword, timeCreated, timeModified, profileId, certificateTypeId";
+    private final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId";
     /** Var holding JNDI name of datasource */
     private String dataSource = "java:/DefaultDS";
 
     /** Var optimizing authorization lookups. */
-    private ProfileAuthorizationProxy profileauthproxy;
+    private EndEntityProfileAuthorizationProxy profileauthproxy;
     
     /** Var containing iformation about administrator using the bean.*/
     private Admin admin = null;
@@ -90,7 +91,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
         ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome) lookup("java:comp/env/ejb/CertificateStoreSession", ICertificateStoreSessionHome.class);
         certificatesession = certificatesessionhome.create(administrator);        
-        profileauthproxy = new ProfileAuthorizationProxy(administrator.getUserInformation(), authorizationsession);        
+        profileauthproxy = new EndEntityProfileAuthorizationProxy(administrator.getAdminInformation(), authorizationsession);        
         debug("DataSource=" + dataSource);
 
       }catch(Exception e){
@@ -111,33 +112,43 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * Implements IUserAdminSession::addUser.
     * Implements a mechanism that uses UserDataEntity Bean.
     */
-    public void addUser(String username, String password, String dn, String email, int type, boolean clearpwd, int profileid, int certificatetypeid)
-                         throws AuthorizationDeniedException, UserDoesntFullfillProfile, RemoteException {
-        debug(">addUser("+username+", password, "+dn+", "+email+", "+type+")");
-        if(globalconfiguration.getUseStrongAuthorization()){
+    public void addUser(String username, String password, String dn, String subjectaltname, String email, boolean clearpwd, int endentityprofileid, int certificateprofileid, 
+                         boolean administrator, boolean keyrecoverable, int tokentype, int hardwaretokenissuerid)
+                         throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException {
+        debug(">addUser("+username+", password, "+dn+", "+email+")");
+        if(globalconfiguration.getEnableEndEntityProfileLimitations()){
           // Check if user fulfills it's profile.
-          Profile profile = raadminsession.getProfile(profileid);
-          if(!profile.doesUserFulfillProfile(username, password, dn, email, type,  certificatetypeid, clearpwd)){
-            logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDUSER,"Userdata didn'nt fulfill profile."); 
-            throw new UserDoesntFullfillProfile("Given userdata doesn't match it's profile.");   
+          EndEntityProfile profile = raadminsession.getEndEntityProfile(endentityprofileid);
+          try{
+            profile.doesUserFullfillEndEntityProfile(username, password, dn, subjectaltname, email, certificateprofileid, clearpwd, 
+                                                    administrator, keyrecoverable, tokentype, hardwaretokenissuerid);
+          }catch( UserDoesntFullfillEndEntityProfile udfp){ 
+            logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDENDENTITY,"Userdata didn'nt fullfill end entity profile. " + udfp.getMessage() ); 
+            throw new UserDoesntFullfillEndEntityProfile(udfp.getMessage());   
           }  
 
             // Check if administrator is authorized to add user.
-            if(!profileauthproxy.getProfileAuthorization(profileid,ProfileAuthorizationProxy.CREATE_RIGHTS)){
-              logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDUSER,"Administrator not authorized");   
+            if(!profileauthproxy.getEndEntityProfileAuthorization(endentityprofileid,EndEntityProfileAuthorizationProxy.CREATE_RIGHTS)){
+              logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDENDENTITY,"Administrator not authorized");   
               throw new AuthorizationDeniedException("Administrator not authorized to create user.");  
             }  
         }           
-
         try{
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1=null;
             data1 = home.create(username, password, dn);
-            if (email != null)
+            if(subjectaltname != null )
+                data1.setSubjectAltName(subjectaltname); 
+            
+            if(email != null)
                 data1.setSubjectEmail(email);
-            data1.setType(type);
-            data1.setProfileId(profileid);
-            data1.setCertificateTypeId(certificatetypeid);
+            
+            data1.setType(makeType(administrator, keyrecoverable));
+            data1.setEndEntityProfileId(endentityprofileid);
+            data1.setCertificateProfileId(certificateprofileid);
+            data1.setTokenType(tokentype);
+            data1.setHardTokenIssuerId(hardwaretokenissuerid);
+            
             if(clearpwd){
               try {
                 if (password == null){
@@ -152,33 +163,37 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                 throw new EJBException(nsae);
               }
             }
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_ADDEDUSER,""); 
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_ADDEDENDENTITY,""); 
 
         }catch (Exception e) {
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDUSER,""); 
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDENDENTITY,""); 
             throw new EJBException(e.getMessage());
         }
 
-        debug("<addUser("+username+", password, "+dn+", "+email+", "+type+")");
+        debug("<addUser("+username+", password, "+dn+", "+email+")");
     } // addUser
 
    /**
     * Implements IUserAdminSession::changeUser.
     * Implements a mechanism that uses UserDataEntity Bean.
     */
-    public void changeUser(String username,  String dn, String email, int type, int profileid, int certificatetypeid)
-        throws AuthorizationDeniedException, UserDoesntFullfillProfile, RemoteException {
-        debug(">changeUser("+username+", "+dn+", "+email+", "+type+")");
+    public void changeUser(String username,  String dn, String subjectaltname, String email, int endentityprofileid, int certificateprofileid,
+                           boolean administrator, boolean keyrecoverable, int tokentype, int hardwaretokenissuerid)
+                              throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException {
+        debug(">changeUser("+username+", "+dn+", "+email+")");
         // Check if user fulfills it's profile.
-        if(globalconfiguration.getUseStrongAuthorization()){
-        Profile profile = raadminsession.getProfile(profileid);
-        if(!profile.doesUserFulfillProfileWithoutPassword(username,  dn, email, type, certificatetypeid)){
-          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Userdata didn'nt fulfill profile.");                
-          throw new UserDoesntFullfillProfile("Given userdata doesn't match it's profile.");   
+        if(globalconfiguration.getEnableEndEntityProfileLimitations()){
+        EndEntityProfile profile = raadminsession.getEndEntityProfile(endentityprofileid);
+        try{
+          profile.doesUserFullfillEndEntityProfileWithoutPassword(username,  dn, subjectaltname, email, certificateprofileid,
+                                                                 administrator, keyrecoverable, tokentype, hardwaretokenissuerid);
+        }catch(UserDoesntFullfillEndEntityProfile udfp){  
+          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"Userdata didn'nt fullfill end entity profile. + " + udfp.getMessage());                
+          throw new UserDoesntFullfillEndEntityProfile(udfp.getMessage());   
         }  
         // Check if administrator is authorized to edit user. 
-          if(!profileauthproxy.getProfileAuthorization(profileid,ProfileAuthorizationProxy.EDIT_RIGHTS)){
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Administrator not authorized");               
+          if(!profileauthproxy.getEndEntityProfileAuthorization(endentityprofileid,EndEntityProfileAuthorizationProxy.EDIT_RIGHTS)){
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"Administrator not authorized");               
             throw new AuthorizationDeniedException("Administrator not authorized to edit user.");  
           }  
         }        
@@ -187,20 +202,27 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1= home.findByPrimaryKey(pk);
 
-            data1.setSubjectDN(dn);
-            if (email != null)
+            data1.setSubjectDN(CertTools.stringToBCDNString(dn));
+            if(subjectaltname != null )
+                data1.setSubjectAltName(subjectaltname); 
+            
+            if(email != null)
                 data1.setSubjectEmail(email);
-            data1.setType(type);
-            data1.setProfileId(profileid);
-            data1.setCertificateTypeId(certificatetypeid);
+            
+            data1.setType(makeType(administrator, keyrecoverable));
+            data1.setEndEntityProfileId(endentityprofileid);
+            data1.setCertificateProfileId(certificateprofileid);
+            data1.setTokenType(tokentype);
+            data1.setHardTokenIssuerId(hardwaretokenissuerid);
+            
             data1.setTimeModified((new java.util.Date()).getTime());
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDUSER,"");
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"");
         }
         catch (Exception e) {
-            logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,""); 
+            logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,""); 
             throw new EJBException(e.getMessage());
         }
-        debug("<changeUser("+username+", password, "+dn+", "+email+", "+type+")");
+        debug("<changeUser("+username+", password, "+dn+", "+email+")");
     } // changeUser
 
 
@@ -211,27 +233,27 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     public void deleteUser(String username) throws AuthorizationDeniedException, RemoteException{
         debug(">deleteUser("+username+")");
         // Check if administrator is authorized to delete user.
-        if(globalconfiguration.getUseStrongAuthorization()){
+        if(globalconfiguration.getEnableEndEntityProfileLimitations()){
           try{
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1 = home.findByPrimaryKey(pk);     
-            if(!profileauthproxy.getProfileAuthorization(data1.getProfileId(),ProfileAuthorizationProxy.DELETE_RIGHTS)){
-                logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEUSER,"Administrator not authorized");                     
+            if(!profileauthproxy.getEndEntityProfileAuthorization(data1.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.DELETE_RIGHTS)){
+                logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEENDENTITY,"Administrator not authorized");                     
                 throw new AuthorizationDeniedException("Administrator not authorized to delete user."); 
             }    
           }
           catch(FinderException e){
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEUSER,"Couldn't find username in database");               
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEENDENTITY,"Couldn't find username in database");               
             throw new EJBException(e.getMessage());            
           }    
         }  
         try {
             UserDataPK pk = new UserDataPK(username);
             home.remove(pk);
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_DELETEDUSER,"");
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_DELETEDENDENTITY,"");
         }
         catch (Exception e) {
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEUSER,"");
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEENDENTITY,"");
             throw new EJBException(e.getMessage());
         }
         debug("<deleteUser("+username+")");
@@ -244,17 +266,17 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     public void setUserStatus(String username, int status) throws AuthorizationDeniedException, FinderException, RemoteException {
         debug(">setUserStatus("+username+", "+status+")");
         // Check if administrator is authorized to edit user.
-        if(globalconfiguration.getUseStrongAuthorization()){         
+        if(globalconfiguration.getEnableEndEntityProfileLimitations()){         
           try{
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1 = home.findByPrimaryKey(pk);              
-            if(!profileauthproxy.getProfileAuthorization(data1.getProfileId(),ProfileAuthorizationProxy.EDIT_RIGHTS)){
-                logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Administrator not authorized to change status");                 
+            if(!profileauthproxy.getEndEntityProfileAuthorization(data1.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.EDIT_RIGHTS)){
+                logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"Administrator not authorized to change status");                 
                 throw new AuthorizationDeniedException("Administrator not authorized to edit user.");              
             }    
           }
           catch(FinderException e){
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Couldn't find username in database.");    
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"Couldn't find username in database.");    
             throw new EJBException(e.getMessage());            
           }    
         }      
@@ -264,7 +286,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         UserDataLocal data = home.findByPrimaryKey(pk);
         data.setStatus(status);
         data.setTimeModified((new java.util.Date()).getTime());        
-        logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDUSER,("New status : " + status));        
+        logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,("New status : " + status));        
         debug("<setUserStatus("+username+", "+status+")");
     } // setUserStatus
 
@@ -272,42 +294,42 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * Implements IUserAdminSession::setPassword.
     * Implements a mechanism that uses UserData Entity Bean.
     */
-    public void setPassword(String username, String password) throws UserDoesntFullfillProfile, AuthorizationDeniedException, FinderException, RemoteException{
+    public void setPassword(String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException, RemoteException{
         debug(">setPassword("+username+", hiddenpwd)");
         // Find user
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data = home.findByPrimaryKey(pk);
 
-        if(globalconfiguration.getUseStrongAuthorization()){
+        if(globalconfiguration.getEnableEndEntityProfileLimitations()){
           // Check if user fulfills it's profile.
-          Profile profile = raadminsession.getProfile(data.getProfileId());
+          EndEntityProfile profile = raadminsession.getEndEntityProfile(data.getEndEntityProfileId());
 
           boolean fullfillsprofile = true;
-          if(profile.isChangeable(Profile.PASSWORD)){
-            if(!password.equals(profile.getValue(Profile.PASSWORD)));
+          if(profile.isModifyable(EndEntityProfile.PASSWORD,0)){
+            if(!password.equals(profile.getValue(EndEntityProfile.PASSWORD,0)));
               fullfillsprofile=false;
           }
           else
-            if(profile.isRequired(Profile.PASSWORD)){
+            if(profile.isRequired(EndEntityProfile.PASSWORD,0)){
               if(password == null || password.trim().equals(""))
                 fullfillsprofile=false;
             }
           if(!fullfillsprofile){
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Password didn't fulfill users profile.");  
-            throw new UserDoesntFullfillProfile("Given userdata doesn't match it's profile.");  
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"Password didn't fulfill end entity profile.");  
+            throw new UserDoesntFullfillEndEntityProfile("Password didn't fulfill end entity profile.");  
           }  
 
           // Check if administrator is authorized to edit user.
 
-          if(!profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.EDIT_RIGHTS)){
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Administrator isn't authorized to change password.");               
+          if(!profileauthproxy.getEndEntityProfileAuthorization(data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.EDIT_RIGHTS)){
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"Administrator isn't authorized to change password.");               
             throw new AuthorizationDeniedException("Administrator not authorized to edit user.");          
           }  
         }
         try {
             data.setPassword(password);
             data.setTimeModified((new java.util.Date()).getTime());
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDUSER,"Password changed.");              
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"Password changed.");              
         } catch (java.security.NoSuchAlgorithmException nsae)
         {
             debug("NoSuchAlgorithmException while setting password for user "+username);
@@ -320,22 +342,22 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * Implements IUserAdminSession::setClearTextPassword.
     * Implements a mechanism that uses UserData Entity Bean.
     */
-    public void setClearTextPassword(String username, String password) throws UserDoesntFullfillProfile, AuthorizationDeniedException,FinderException, RemoteException{
+    public void setClearTextPassword(String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,FinderException, RemoteException{
         debug(">setClearTextPassword("+username+", hiddenpwd)");
         // Find user
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data = home.findByPrimaryKey(pk);
-        if(globalconfiguration.getUseStrongAuthorization()){
+        if(globalconfiguration.getEnableEndEntityProfileLimitations()){
           // Check if user fulfills it's profile.
-          Profile profile = raadminsession.getProfile(data.getProfileId());
+          EndEntityProfile profile = raadminsession.getEndEntityProfile(data.getEndEntityProfileId());
        
-          if(profile.isRequired(Profile.CLEARTEXTPASSWORD) && profile.getValue(Profile.CLEARTEXTPASSWORD).equals(Profile.FALSE)){
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Clearpassword didn't fulfill users profile.");                
-            throw new UserDoesntFullfillProfile("Given userdata doesn't match it's profile.");   
+          if(profile.isRequired(EndEntityProfile.CLEARTEXTPASSWORD,0) && profile.getValue(EndEntityProfile.CLEARTEXTPASSWORD,0).equals(EndEntityProfile.FALSE)){
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"Clearpassword didn't fullfill end entity profile.");                
+            throw new UserDoesntFullfillEndEntityProfile("Clearpassword didn't fullfill end entity profile.");   
           }  
           // Check if administrator is authorized to edit user.
-          if(!profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.EDIT_RIGHTS)){
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Administrator isn't authorized to change clearpassword.");               
+          if(!profileauthproxy.getEndEntityProfileAuthorization(data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.EDIT_RIGHTS)){
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"Administrator isn't authorized to change clearpassword.");               
             throw new AuthorizationDeniedException("Administrator not authorized to edit user.");          
           }  
         }                
@@ -343,12 +365,12 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             if (password == null){
                 data.setClearPassword("");
                 data.setTimeModified((new java.util.Date()).getTime());
-                logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDUSER,"Clearpassword changed.");                     
+                logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"Clearpassword changed.");                     
             }    
             else{
                 data.setOpenPassword(password);
                 data.setTimeModified((new java.util.Date()).getTime());
-                logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDUSER,"Clearpassword changed.");                     
+                logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"Clearpassword changed.");                     
             }    
         } catch (java.security.NoSuchAlgorithmException nsae)
         {
@@ -373,15 +395,15 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             throw new EJBException(oe);            
         }        
          
-        if(globalconfiguration.getUseStrongAuthorization()){ 
-          if(!profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.REVOKE_RIGHTS)){
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_REVOKEDUSER,"Administrator not authorized");           
+        if(globalconfiguration.getEnableEndEntityProfileLimitations()){ 
+          if(!profileauthproxy.getEndEntityProfileAuthorization(data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.REVOKE_RIGHTS)){
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY,"Administrator not authorized");           
             throw new AuthorizationDeniedException("Not authorized to revoke user : " + username + ".");
           }
         }  
         setUserStatus(username, UserDataRemote.STATUS_REVOKED);
         certificatesession.setRevokeStatus(data.getSubjectDN(), reason);
-        logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_REVOKEDUSER,"");    
+        logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_REVOKEDENDENTITY,"");    
         debug("<revokeUser()");
     } // revokeUser
 
@@ -398,15 +420,16 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             return null;
         }
 
-        if(globalconfiguration.getUseStrongAuthorization()){
+        if(globalconfiguration.getEnableEndEntityProfileLimitations()){
           // Check if administrator is authorized to view user.
-          if(!profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.VIEW_RIGHTS))
+          if(!profileauthproxy.getEndEntityProfileAuthorization(data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS))
             throw new AuthorizationDeniedException("Administrator not authorized to view user.");
         }
 
-        UserAdminData ret = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getStatus()
-                                              , data.getType(), data.getProfileId(), data.getCertificateTypeId()
-                                          , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified()) );
+        UserAdminData ret = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectAltName() ,data.getSubjectEmail(), data.getStatus()
+                                        , data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId()
+                                        , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
+                                        , data.getTokenType(), data.getHardTokenIssuerId());
         ret.setPassword(data.getClearPassword());
         debug("<findUser("+username+")");
         return ret;
@@ -427,16 +450,18 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         } catch( FinderException e) {
             cat.debug("Cannot find user with DN='"+dn+"'");
         }
-        if(globalconfiguration.getUseStrongAuthorization()){
+        if(globalconfiguration.getEnableEndEntityProfileLimitations()){
           // Check if administrator is authorized to view user.
-          if(!profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.VIEW_RIGHTS))
+          if(!profileauthproxy.getEndEntityProfileAuthorization(data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS))
              throw new AuthorizationDeniedException("Administrator not authorized to view user.");
           }
 
         if(data != null){
-          returnval = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getStatus()
-                                        , data.getType(), data.getProfileId(), data.getCertificateTypeId()
-                                        , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified()) );
+          returnval = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectAltName() ,data.getSubjectEmail(), data.getStatus()
+                                        , data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId()
+                                        , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
+                                        , data.getTokenType(), data.getHardTokenIssuerId());
+       
           returnval.setPassword(data.getClearPassword());
         }
         debug("<findUserBySubjectDN("+subjectdn+")");
@@ -457,16 +482,17 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         } catch( FinderException e) {
             cat.debug("Cannot find user with Email='"+email+"'");
         }
-        if(globalconfiguration.getUseStrongAuthorization()){
+        if(globalconfiguration.getEnableEndEntityProfileLimitations()){
           // Check if administrator is authorized to view user.
-          if(!profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.VIEW_RIGHTS))
+          if(!profileauthproxy.getEndEntityProfileAuthorization(data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS))
              throw new AuthorizationDeniedException("Administrator not authorized to view user.");
           }
 
         if(data != null){
-          returnval = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getStatus()
-                                        , data.getType(), data.getProfileId(), data.getCertificateTypeId()
-                                        , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified()) );
+          returnval =new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectAltName() ,data.getSubjectEmail(), data.getStatus()
+                                        , data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId()
+                                        , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
+                                        , data.getTokenType(), data.getHardTokenIssuerId());
           returnval.setPassword(data.getClearPassword());
         }
         debug("<findUserByEmail("+email+")");
@@ -492,7 +518,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
         if(data != null){
           int type = data.getType();
-          if( (type & 32)  == 0){ // Temporate RAADMIN.
+          if( (type & SecConst.USER_ADMINISTRATOR)  == 0){ 
             logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ADMINISTRATORLOGGEDIN,"Certificate didn't belong to an administrator."); 
             throw new  AuthorizationDeniedException("Your certificate do not belong to an administrator.");
           }  
@@ -518,13 +544,14 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         while (iter.hasNext())
         {
             UserDataLocal user = (UserDataLocal) iter.next();
-            UserAdminData userData = new UserAdminData(user.getUsername(),user.getSubjectDN(),user.getSubjectEmail(),user.getStatus()
-                                                       ,user.getType(), user.getProfileId(), user.getCertificateTypeId()
-                                                       , new java.util.Date(user.getTimeCreated()), new java.util.Date(user.getTimeModified()) );
+            UserAdminData userData = new UserAdminData(user.getUsername(), user.getSubjectDN(), user.getSubjectAltName() ,user.getSubjectEmail(), user.getStatus()
+                                        , user.getType(), user.getEndEntityProfileId(), user.getCertificateProfileId()
+                                        , new java.util.Date(user.getTimeCreated()), new java.util.Date(user.getTimeModified())
+                                        , user.getTokenType(), user.getHardTokenIssuerId());
             userData.setPassword(user.getClearPassword());
-            if(globalconfiguration.getUseStrongAuthorization()){
+            if(globalconfiguration.getEnableEndEntityProfileLimitations()){
               // Check if administrator is authorized to view user.
-              if(profileauthproxy.getProfileAuthorization(user.getProfileId(),ProfileAuthorizationProxy.VIEW_RIGHTS))
+              if(profileauthproxy.getEndEntityProfileAuthorization(user.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS))
                 ret.add(userData);
             }
             else
@@ -546,13 +573,14 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         while (iter.hasNext() && (ret.size() <= IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT ))
         {
             UserDataLocal user = (UserDataLocal) iter.next();
-            UserAdminData userData = new UserAdminData(user.getUsername(),user.getSubjectDN(),user.getSubjectEmail(),user.getStatus()
-                                                       ,user.getType(), user.getProfileId(), user.getCertificateTypeId()
-                                                       , new java.util.Date(user.getTimeCreated()), new java.util.Date(user.getTimeModified()) );
+            UserAdminData userData =  new UserAdminData(user.getUsername(), user.getSubjectDN(), user.getSubjectAltName() ,user.getSubjectEmail(), user.getStatus()
+                                        , user.getType(), user.getEndEntityProfileId(), user.getCertificateProfileId()
+                                        , new java.util.Date(user.getTimeCreated()), new java.util.Date(user.getTimeModified())
+                                        , user.getTokenType(), user.getHardTokenIssuerId());
             userData.setPassword(user.getClearPassword());
-            if(globalconfiguration.getUseStrongAuthorization()){
+            if(globalconfiguration.getEnableEndEntityProfileLimitations()){
               // Check if administrator is authorized to view user.
-              if(profileauthproxy.getProfileAuthorization(user.getProfileId(),ProfileAuthorizationProxy.VIEW_RIGHTS))
+              if(profileauthproxy.getEndEntityProfileAuthorization(user.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS))
                 ret.add(userData);
             }
             else
@@ -600,20 +628,21 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
           throw new IllegalQueryException();
         try{
            // Construct SQL query.
-            con = getConnection();
+            con = getConnection();        
             ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where " + query.getQueryString());
             // Execute query.
             rs = ps.executeQuery();
             // Assemble result.
             while(rs.next() && returnval.size() <= IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT){
-              UserAdminData data = new UserAdminData(rs.getString(1), rs.getString(2), rs.getString(3), rs.getInt(4), rs.getInt(5)
-                                               , rs.getInt(9), rs.getInt(10)
-                                               , new java.util.Date(rs.getLong(7)), new java.util.Date(rs.getLong(8)));
-              data.setPassword(rs.getString(6));
+              UserAdminData data = new UserAdminData(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
+                                               , rs.getInt(10), rs.getInt(11)
+                                               , new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9))
+                                               ,  rs.getInt(12), rs.getInt(13));            
+              data.setPassword(rs.getString(7));
 
-              if(globalconfiguration.getUseStrongAuthorization()){
+              if(globalconfiguration.getEnableEndEntityProfileLimitations()){
                 // Check if administrator is authorized to edit user.
-                if(profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.VIEW_RIGHTS))
+                if(profileauthproxy.getEndEntityProfileAuthorization(data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS))
                   returnval.add(data);
               }
               else
@@ -636,14 +665,14 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     } // query
 
     /**
-     * Methods that checks if a user exists in the database having the given profileid. This function is mainly for avoiding
-     * desyncronisation when profile is deleted.
+     * Methods that checks if a user exists in the database having the given endentityprofileid. This function is mainly for avoiding
+     * desyncronisation when a end entity profile is deleted.
      *
-     * @param profileid the id of profile to look for.
-     * @return true if profileid exists in userdatabase.
+     * @param endentityprofileid the id of end entity profile to look for.
+     * @return true if endentityprofileid exists in userdatabase.
      */
-    public boolean checkForProfileId(int profileid){
-        debug(">checkForProfileId()");
+    public boolean checkForEndEntityProfileId(int endentityprofileid){
+        debug(">checkForEndEntityProfileId()");
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -651,7 +680,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         int count = 1; // return true as default.
 
         Query query = new Query(Query.TYPE_USERQUERY);
-        query.add(UserMatch.MATCH_WITH_PROFILE, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(profileid));
+        query.add(UserMatch.MATCH_WITH_ENDENTITYPROFILE, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(endentityprofileid));
 
         try{
            // Construct SQL query.
@@ -663,7 +692,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             while(rs.next()){
               count = rs.getInt(1);
             }
-            debug("<checkForProfileId()");
+            debug("<checkForEndEntityProfileId()");
             return count > 0;
 
         }catch(Exception e){
@@ -682,14 +711,14 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     }
 
     /**
-     * Methods that checks if a user exists in the database having the given certificatetypeid. This function is mainly for avoiding
-     * desyncronisation when a certificatetype is deleted.
+     * Methods that checks if a user exists in the database having the given certificateprofileid. This function is mainly for avoiding
+     * desyncronisation when a certificateprofile is deleted.
      *
-     * @param certificatetypeid the id of certificatetype to look for.
-     * @return true if certificatetypeid exists in userdatabase.
+     * @param certificateprofileid the id of certificateprofile to look for.
+     * @return true if certificateproileid exists in userdatabase.
      */
-    public boolean checkForCertificateTypeId(int certificatetypeid){
-        debug(">checkForCertificateTypeId()");
+    public boolean checkForCertificateProfileId(int certificateprofileid){
+        debug(">checkForCertificateProfileId()");
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -697,7 +726,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         int count = 1; // return true as default.
 
         Query query = new Query(Query.TYPE_USERQUERY);
-        query.add(UserMatch.MATCH_WITH_CERTIFICATETYPE, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(certificatetypeid));
+        query.add(UserMatch.MATCH_WITH_CERTIFICATEPROFILE, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(certificateprofileid));
 
         try{
            // Construct SQL query.
@@ -709,7 +738,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             while(rs.next()){
               count = rs.getInt(1);
             }
-            debug("<checkForCertificateTypeId()");
+            debug("<checkForCertificateProfileId()");
             return count > 0;
 
         }catch(Exception e){
@@ -723,9 +752,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
               se.printStackTrace();
            }
         }
-
-
-    }
+    } // checkForCertificateProfileId
 
      /**
      * Loads the global configuration from the database.
@@ -780,5 +807,15 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         debug("<saveGlobalConfiguration()");
      } // saveGlobalConfiguration
 
+   private int makeType(boolean administrator, boolean keyrecoverable){
+     int returnval = SecConst.USER_ENDUSER;
+     if(administrator)
+       returnval += SecConst.USER_ADMINISTRATOR;
+     if(keyrecoverable)
+       returnval += SecConst.USER_KEYRECOVERABLE;
+       
+     return returnval;  
+   } // makeType
+    
 } // LocalUserAdminSessionBean
 

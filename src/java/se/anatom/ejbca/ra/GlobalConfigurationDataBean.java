@@ -2,8 +2,11 @@ package se.anatom.ejbca.ra;
 
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
+import java.util.Collection;
+import java.util.HashMap;
 import org.apache.log4j.*;
 import java.math.BigInteger;
+
 
 import se.anatom.ejbca.ra.GlobalConfiguration;
 
@@ -26,9 +29,25 @@ public abstract class GlobalConfigurationDataBean implements javax.ejb.EntityBea
 
     public abstract String getConfigurationId();
     public abstract void setConfigurationId(String id);
-    public abstract GlobalConfiguration getGlobalConfiguration();
-    public abstract void setGlobalConfiguration(GlobalConfiguration globalconfiguration);
+    public abstract HashMap getData();
+    public abstract void setData(HashMap data);
     
+    
+    /** 
+     * Method that returns the globalconfigurtation and updates it if nessesary.
+     */
+    public GlobalConfiguration getGlobalConfiguration(){
+      GlobalConfiguration returnval = new GlobalConfiguration();
+      returnval.loadData((Object) getData());
+      return returnval;
+    }
+    
+    /** 
+     * Method that saves the global configuration to database.
+     */
+    public void setGlobalConfiguration(GlobalConfiguration globalconfiguration){
+      setData((HashMap) globalconfiguration.saveData());   
+    }
     //
     // Fields required by Container
     //

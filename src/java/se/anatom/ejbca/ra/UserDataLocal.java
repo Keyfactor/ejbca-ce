@@ -8,7 +8,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataLocal.java,v 1.3 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: UserDataLocal.java,v 1.4 2002-10-24 20:10:14 herrvendil Exp $
  **/
 
 public interface UserDataLocal extends javax.ejb.EJBLocalObject {
@@ -29,6 +29,8 @@ public interface UserDataLocal extends javax.ejb.EJBLocalObject {
     public void setUsername(String username);
     public String getSubjectDN();
     public void setSubjectDN(String subjectDN);
+    public String getSubjectAltName();
+    public void setSubjectAltName(String subjectAltName);      
     public String getSubjectEmail();
     public void setSubjectEmail(String subjectEmail);
     public int getStatus();
@@ -43,10 +45,14 @@ public interface UserDataLocal extends javax.ejb.EJBLocalObject {
     public long getTimeCreated();    
     public long getTimeModified();  
     public void setTimeModified(long createtime);     
-    public int getProfileId();   
-    public void setProfileId(int profileid);  
-    public int getCertificateTypeId();
-    public void setCertificateTypeId(int certificatetypeid);    
+    public int getEndEntityProfileId();   
+    public void setEndEntityProfileId(int endentityprofileid);  
+    public int getCertificateProfileId();
+    public void setCertificateProfileId(int certificateprofileid);      
+    public int getTokenType();  
+    public void setTokenType(int tokentype);   
+    public int getHardTokenIssuerId();  
+    public void setHardTokenIssuerId(int hardtokenissuerid);     
 
     public void setPassword(String password) throws  NoSuchAlgorithmException;
     public void setOpenPassword(String password) throws  NoSuchAlgorithmException;

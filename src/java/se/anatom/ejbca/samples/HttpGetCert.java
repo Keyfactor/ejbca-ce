@@ -36,7 +36,7 @@ import se.anatom.ejbca.util.*;
  * <li>password - password for the above user.
  * </ul>
  *
- * @version $Id: HttpGetCert.java,v 1.4 2002-05-15 07:10:18 anatom Exp $
+ * @version $Id: HttpGetCert.java,v 1.5 2002-10-24 20:10:49 herrvendil Exp $
  *
  */
 public class HttpGetCert {

@@ -17,52 +17,31 @@ import java.io.Serializable;
 
 public class AccessTree implements Serializable {
     /** Creates a new instance of AccessTree */
-    public AccessTree(String[] opendirectories) {
-      // Remove '/' in the end of open direcories if they exists. And add one in the beginging if they doesn't.
-      if(opendirectories != null){
-        this.opendirectories=opendirectories;
-        for(int i=0; i < opendirectories.length; i++){
-          this.opendirectories[i]=this.opendirectories[i].replace('\\','/');
-          if(!this.opendirectories[i].startsWith("/")){
-            this.opendirectories[i]="/" + this.opendirectories[i];
-          }
-          if(this.opendirectories[i].endsWith("/") && this.opendirectories[i].length() > 1){
-            this.opendirectories[i]=this.opendirectories[i].substring(0,this.opendirectories[i].length()-1);
-          }
-        }
-      }
-    }
+    public AccessTree() {}
 
     // Public methods
-    /** Builds an accesstree out of the given usergroup data. */
-    public void buildTree(UserGroup[] ug, String[] opendirectories) {
+    /** Builds an accesstree out of the given admingroup data. */
+    public void buildTree(AdminGroup[] ug) {
         rootnode = new AccessTreeNode("/");
-
-        // Add open directories.
-        if(opendirectories != null ){
-          for(int i=0; i < opendirectories.length;i++){
-             rootnode.addOpenAccessRule(opendirectories[i]);
-          }
-        }
-
-        // Add all usergroups accessrules.
+        
+        // Add all admingroups accessrules.
         for(int i=0; i < ug.length;i++){
           AccessRule[] accessrules=ug[i].getAccessRules();
-          for(int j=0; j < accessrules.length; j++){
-            rootnode.addAccessRule(accessrules[j].getDirectory(),accessrules[j],ug[i]); // Without heading '/'
+          for(int j=0; j < accessrules.length; j++){ 
+              rootnode.addAccessRule(accessrules[j].getResource(),accessrules[j],ug[i]); // Without heading '/' 
           }
         }
     }
 
     /** A method to check if someone is athorized to view the given resource */
-    public boolean isAuthorized(UserInformation userinformation, String resource){
+    public boolean isAuthorized(AdminInformation admininformation, String resource){
           String checkresource = resource;
         // Must begin with '/'.
         if((checkresource.toCharArray())[0] != '/')
           checkresource = "/" + checkresource;
 
         // Check if user is athorized in the tree.
-        boolean retval = rootnode.isAuthorized(userinformation, checkresource);
+        boolean retval = rootnode.isAuthorized(admininformation, checkresource);
         return retval;
     }
 
@@ -70,6 +49,5 @@ public class AccessTree implements Serializable {
 
     // Private fields
     private AccessTreeNode rootnode = null;
-    private String[] opendirectories;
 
 }

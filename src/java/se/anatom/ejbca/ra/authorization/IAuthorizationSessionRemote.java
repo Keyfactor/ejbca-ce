@@ -9,7 +9,7 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
 
 /**
  *
- * @version $Id: IAuthorizationSessionRemote.java,v 1.5 2002-09-12 18:14:14 herrvendil Exp $
+ * @version $Id: IAuthorizationSessionRemote.java,v 1.6 2002-10-24 20:07:06 herrvendil Exp $
  */
 public interface IAuthorizationSessionRemote extends javax.ejb.EJBObject {
     
@@ -19,10 +19,10 @@ public interface IAuthorizationSessionRemote extends javax.ejb.EJBObject {
     /** 
      * Method to check if a user is authorized to a certain resource.
      *
-     * @param userinformation can be a certificate or special user, see UserInformation class.
+     * @param admininformation can be a certificate or special user, see AdminInformation class.
      * 
      */
-    public boolean isAuthorized(UserInformation userinformation, String resource) throws RemoteException, AuthorizationDeniedException;
+    public boolean isAuthorized(AdminInformation admininformation, String resource) throws RemoteException, AuthorizationDeniedException;
     
     /** 
      * Method to validate, verify and check revokation of a users certificate.
@@ -34,99 +34,99 @@ public interface IAuthorizationSessionRemote extends javax.ejb.EJBObject {
     public void authenticate(X509Certificate certificate) throws RemoteException, AuthenticationFailedException;    
     
    /** 
-    * Method to add an usergroup. 
+    * Method to add an admingroup. 
     *
-    * @return  False if usergroup already exists  
+    * @return  False if admingroup already exists  
     */
-    public boolean addUserGroup(String usergroupname) throws RemoteException;
+    public boolean addAdminGroup(String admingroupname) throws RemoteException;
     
     /** 
-     * Method to remove a usergroup.
+     * Method to remove a admingroup.
      */ 
-    public void removeUserGroup(String usergroupname) throws RemoteException;
+    public void removeAdminGroup(String admingroupname) throws RemoteException;
     
     /**
-     * Metod to rename a usergroup
+     * Metod to rename a admingroup
      *
-     * @return false if new usergroup already exists.
+     * @return false if new admingroup already exists.
      */
-    public boolean renameUserGroup(String oldname, String newname) throws RemoteException;
+    public boolean renameAdminGroup(String oldname, String newname) throws RemoteException;
  
     
     /** 
-     * Method to get a reference to a usergroup.
+     * Method to get a reference to a admingroup.
      */
     
-    public UserGroup getUserGroup(String name)  throws RemoteException;
+    public AdminGroup getAdminGroup(String name)  throws RemoteException;
         
     /** 
-     * Returns the number of usergroups
+     * Returns the number of admingroups
      */
-    public int getNumberOfUserGroups()  throws RemoteException;
+    public int getNumberOfAdminGroups()  throws RemoteException;
     
     /** 
-     *Returns an array containing all the usergroups names.
+     *Returns an array containing all the admingroups names.
      */
-     public String[] getUserGroupnames() throws RemoteException;
+     public String[] getAdminGroupnames() throws RemoteException;
     
     /** 
-     * Returns an array containing all the usergroups.
+     * Returns an array containing all the admingroups.
      */
-    public UserGroup[] getUserGroups() throws RemoteException;
+    public AdminGroup[] getAdminGroups() throws RemoteException;
 
      /**
-     * Removes an accessrule from the usergroup. 
+     * Removes an accessrule from the admingroup. 
      * 
      */ 
     
-    public void addAccessRule(String usergroupname, String directory, int rule, boolean recursive)  throws RemoteException;    
+    public void addAccessRule(String admingroupname, String resource, int rule, boolean recursive)  throws RemoteException;    
     
     
      /**
      * Removes an accessrule from the database. 
      * 
      */ 
-    public void removeAccessRule(String usergroupname, String directory)  throws RemoteException;
+    public void removeAccessRule(String admingroupname, String resource)  throws RemoteException;
     
      /**
-     * Returns the number of access rules in usergroup
+     * Returns the number of access rules in admingroup
      *
-     * @return the number of accessrules in the usergroup    
+     * @return the number of accessrules in the admingroup    
      */ 
-    public int getNumberOfAccessRules(String usergroupname)  throws RemoteException;
+    public int getNumberOfAccessRules(String admingroupname)  throws RemoteException;
     
      /**
-      * Returns all the accessrules in the usergroup as an array of AccessRule
+      * Returns all the accessrules in the admingroup as an array of AccessRule
       *
       */
-    public AccessRule[] getAccessRules(String usergroupname)  throws RemoteException;
+    public AccessRule[] getAccessRules(String admingroupname)  throws RemoteException;
     
      /**
-     * Adds a user entity to the usergroup. Changes it's values if it already exists
+     * Adds a user entity to the admingroup. Changes it's values if it already exists
      *
      */        
     
-    public void addUserEntity(String usergroupname, int matchwith, int matchtype, String matchvalue) throws RemoteException;    
+    public void addAdminEntity(String admingroupname, int matchwith, int matchtype, String matchvalue) throws RemoteException;    
     
     
      /**
-     * Removes a user entity from the usergroup. 
+     * Removes a user entity from the admingroup. 
      * 
      */ 
-    public void removeUserEntity(String usergroupname, int matchwith, int matchtype, String matchvalue) throws RemoteException;
+    public void removeAdminEntity(String admingroupname, int matchwith, int matchtype, String matchvalue) throws RemoteException;
     
      /**
-     * Returns the number of user entities in usergroup
+     * Returns the number of user entities in admingroup
      *
      * @return the number of user entities in the database for the specified group    
      */ 
-    public int getNumberOfUserEntities(String usergroupname) throws RemoteException;
+    public int getNumberOfAdminEntities(String admingroupname) throws RemoteException;
     
      /**
-      * Returns all the UserEntities as an array of UserEntities for the specified group.
+      * Returns all the AdminEntities as an array of AdminEntities for the specified group.
       *
       */
-    public UserEntity[] getUserEntities(String usergroupname) throws RemoteException;
+    public AdminEntity[] getAdminEntities(String admingroupname) throws RemoteException;
 
     /**
      * Method to add an access rule.
@@ -171,7 +171,7 @@ public interface IAuthorizationSessionRemote extends javax.ejb.EJBObject {
      * @return true if profile exists in any of the accessrules.
      */
     
-    public boolean existsProfileInRules(int profileid) throws RemoteException;
+    public boolean existsEndEntityProfileInRules(int profileid) throws RemoteException;
     
 }
 

@@ -28,7 +28,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.7 2002-09-17 09:19:46 herrvendil Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.8 2002-10-24 20:06:55 herrvendil Exp $
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
@@ -37,8 +37,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
     /** The home interface of  AvailableAccessRulesData entity bean */
     private AvailableAccessRulesDataLocalHome availableaccessruleshome = null;
-    /** The home interface of  UserGroupData entity bean */    
-    private UserGroupDataLocalHome usergrouphome = null;
+    /** The home interface of  AdminGroupData entity bean */    
+    private AdminGroupDataLocalHome admingrouphome = null;
 
     /** The remote interface of  log session bean */    
     private ILogSessionRemote logsession = null;
@@ -61,7 +61,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
           dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);  
           debug("DataSource=" + dataSource); 
           availableaccessruleshome = (AvailableAccessRulesDataLocalHome)lookup("java:comp/env/ejb/AvailableAccessRulesDataLocal");
-          usergrouphome = (UserGroupDataLocalHome)lookup("java:comp/env/ejb/UserGroupDataLocal");
+          admingrouphome = (AdminGroupDataLocalHome)lookup("java:comp/env/ejb/AdminGroupDataLocal");
           
            this.admin = administrator;
            ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
@@ -69,29 +69,29 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
         }catch(Exception e){
            throw new CreateException(e.getMessage());   
         }
-        // Check if usergroup table is empty, if so insert default superuser.
+        // Check if admingroup table is empty, if so insert default superuser.
        try{
-         Collection result = usergrouphome.findAll();
+         Collection result = admingrouphome.findAll();
          if(result.size()==0){
-          // Authorization table is empty, fill with default and special usergroups.
-           UserGroupDataLocal ugdl = usergrouphome.create("Default");
-           ugdl.addUserEntity(UserEntity.WITH_COMMONNAME,UserEntity.TYPE_EQUALCASEINS,"Walter");
+          // Authorization table is empty, fill with default and special admingroups.
+           AdminGroupDataLocal ugdl = admingrouphome.create("Default");
+           ugdl.addAdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,"Walter");
            ugdl.addAccessRule("/",AccessRule.RULE_ACCEPT,true);
            
-           ugdl = usergrouphome.create(UserGroup.SPECIALUSERGROUP_PUBLICWEBUSER);
-           ugdl.addUserEntity(0,UserEntity.SPECIALUSER_PUBLICWEBUSER,"");
+           ugdl = admingrouphome.create(AdminGroup.SPECIALADMINGROUP_PUBLICWEBADMIN);
+           ugdl.addAdminEntity(0,AdminEntity.SPECIALADMIN_PUBLICWEBUSER,"");
            ugdl.addAccessRule("/",AccessRule.RULE_DECLINE,true);   // Temporate
            
-           ugdl = usergrouphome.create(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN);
-           ugdl.addUserEntity(0,UserEntity.SPECIALUSER_CACOMMANDLINEADMIN,"");
+           ugdl = admingrouphome.create(AdminGroup.SPECIALADMINGROUP_CACOMMANDLINEADMIN);
+           ugdl.addAdminEntity(0,AdminEntity.SPECIALADMIN_CACOMMANDLINEADMIN,"");
            ugdl.addAccessRule("/",AccessRule.RULE_ACCEPT,true);          
            
-           ugdl = usergrouphome.create(UserGroup.SPECIALUSERGROUP_RACOMMANDLINEADMIN);
-           ugdl.addUserEntity(0,UserEntity.SPECIALUSER_RACOMMANDLINEADMIN,"");
+           ugdl = admingrouphome.create(AdminGroup.SPECIALADMINGROUP_RACOMMANDLINEADMIN);
+           ugdl.addAdminEntity(0,AdminEntity.SPECIALADMIN_RACOMMANDLINEADMIN,"");
            ugdl.addAccessRule("/",AccessRule.RULE_ACCEPT,true); 
            
-           ugdl = usergrouphome.create(UserGroup.SPECIALUSERGROUP_BATCHCOMMANDLINEADMIN);
-           ugdl.addUserEntity(0,UserEntity.SPECIALUSER_BATCHCOMMANDLINEADMIN,"");
+           ugdl = admingrouphome.create(AdminGroup.SPECIALADMINGROUP_BATCHCOMMANDLINEADMIN);
+           ugdl.addAdminEntity(0,AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN,"");
            ugdl.addAccessRule("/",AccessRule.RULE_ACCEPT,true);            
            
          }
@@ -102,27 +102,27 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
        }
        
        try{
-          authorization = new EjbcaAuthorization(getUserGroups(),globalconfiguration, logsession, admin, LogEntry.MODULE_RA); 
+          authorization = new EjbcaAuthorization(getAdminGroups(),globalconfiguration, logsession, admin, LogEntry.MODULE_RA); 
        }catch(NullPointerException f){
        }catch(Exception e){
            throw new EJBException(e.getMessage());   
        }       
-       this.profileprefix = globalconfiguration.getProfilePrefix();        
+       this.profileprefix = globalconfiguration.ENDENTITYPROFILEPREFIX;        
                 
        debug("<ejbCreate()");
     }
 
 
-    // Methods used with UserGroupData Entity Beans
+    // Methods used with AdminGroupData Entity Beans
     
      /** 
      * Method to check if a user is authorized to a certain resource.
      *
-     * @param userinformation can be a certificate or special user, see UserInformation class.
+     * @param admininformation can be a certificate or special user, see AdminInformation class.
      * 
      */
-    public boolean isAuthorized(UserInformation userinformation, String resource) throws  AuthorizationDeniedException{
-      return authorization.isAuthorized(userinformation, resource);  
+    public boolean isAuthorized(AdminInformation admininformation, String resource) throws  AuthorizationDeniedException{
+      return authorization.isAuthorized(admininformation, resource);  
     }
     
     /** 
@@ -137,20 +137,20 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     }
 
    /**
-    * Method to add an usergroup.
+    * Method to add an admingroup.
     *
-    * @return  False if usergroup already exists
+    * @return  False if admingroup already exists
     */
-    public boolean addUserGroup(String usergroupname){
+    public boolean addAdminGroup(String admingroupname){
       boolean returnval=true;
       try{
-        usergrouphome.findByPrimaryKey(usergroupname);
+        admingrouphome.findByPrimaryKey(admingroupname);
         returnval=false;
       }catch(FinderException e){
       }
       if(returnval){
         try{
-          usergrouphome.create(usergroupname);
+          admingrouphome.create(admingroupname);
           returnval=true;
         }catch(CreateException e){
            returnval=false;
@@ -159,62 +159,62 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
       
       try{
         if(returnval)
-          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEDGES,"Administratorgroup " + usergroupname + " added.");            
+          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Administratorgroup " + admingroupname + " added.");            
         else
-          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEDGES,"Error adding administratorgroup "  + usergroupname + ".");      
+          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES,"Error adding administratorgroup "  + admingroupname + ".");      
       }catch( RemoteException re){}
       
       return returnval;
-    } // addUserGroup
+    } // addAdminGroup
 
     /**
-     * Method to remove a usergroup.
+     * Method to remove a admingroup.
      */
-    public void removeUserGroup(String usergroupname){
+    public void removeAdminGroup(String admingroupname){
       try{
-         UserGroupDataLocal ugl = usergrouphome.findByPrimaryKey(usergroupname);          
+         AdminGroupDataLocal ugl = admingrouphome.findByPrimaryKey(admingroupname);          
         // Remove groups user entities.
-         UserEntity[] userentities = ugl.getUserEntitiesAsArray();      
-         for(int i=0; i < userentities.length;i++){
-           ugl.removeUserEntity(userentities[i].getMatchWith(),userentities[i].getMatchType(), userentities[i].getMatchValue());
+         AdminEntity[] adminentities = ugl.getAdminEntitiesAsArray();      
+         for(int i=0; i < adminentities.length;i++){
+           ugl.removeAdminEntity(adminentities[i].getMatchWith(),adminentities[i].getMatchType(), adminentities[i].getMatchValue());
          }
         // Remove groups accessrules.  
          AccessRule[] accessrules = ugl.getAccessRulesAsArray();          
          for(int i=0; i < accessrules.length;i++){
-           ugl.removeAccessRule(accessrules[i].getDirectory());
+           ugl.removeAccessRule(accessrules[i].getResource());
          }         
          
          ugl.remove();
-         logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEDGES,"Administratorgroup " + usergroupname + " removed.");         
+         logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Administratorgroup " + admingroupname + " removed.");         
       }catch(Exception e){
          try{
-           logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEDGES,"Error removing administratorgroup " + usergroupname + ".");      
+           logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES,"Error removing administratorgroup " + admingroupname + ".");      
          }catch(RemoteException re){}
       }
-    } // removeUserGroup
+    } // removeAdminGroup
 
     /**
-     * Metod to rename a usergroup
+     * Metod to rename a admingroup
      *
-     * @return false if new usergroup already exists.
+     * @return false if new admingroup already exists.
      */
-    public boolean renameUserGroup(String oldname, String newname){
+    public boolean renameAdminGroup(String oldname, String newname){
       boolean returnval = false;
-      UserGroupDataLocal ugl = null;
+      AdminGroupDataLocal ugl = null;
       try{
-        ugl = usergrouphome.findByPrimaryKey(newname);
+        ugl = admingrouphome.findByPrimaryKey(newname);
       }catch(FinderException e){
         returnval = true;
       }
       if(returnval){
         try{
-          ugl =  usergrouphome.findByPrimaryKey(oldname);
+          ugl =  admingrouphome.findByPrimaryKey(oldname);
           AccessRule[] accessrules = ugl.getAccessRulesAsArray();
-          UserEntity[] userentities = ugl.getUserEntitiesAsArray();
-          UserGroupDataLocal newugl = usergrouphome.create(newname);
+          AdminEntity[] adminentities = ugl.getAdminEntitiesAsArray();
+          AdminGroupDataLocal newugl = admingrouphome.create(newname);
           newugl.addAccessRules(accessrules);
-          newugl.addUserEntities(userentities);
-          removeUserGroup(oldname);
+          newugl.addAdminEntities(adminentities);
+          removeAdminGroup(oldname);
         }catch(Exception e){
           returnval=false;
         }
@@ -222,97 +222,97 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
       
       try{
         if(returnval)
-          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEDGES,"Renamed administratorgroup " + oldname + " to " + newname + ".");            
+          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Renamed administratorgroup " + oldname + " to " + newname + ".");            
         else
-          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEDGES,"Error renaming administratorgroup " + oldname + " to " + newname + ".");      
+          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES,"Error renaming administratorgroup " + oldname + " to " + newname + ".");      
       }catch( RemoteException re){}
       
       return returnval;
-    } // renameUserGroup
+    } // renameAdminGroup
 
 
     /**
-     * Method to get a reference to a usergroup.
+     * Method to get a reference to a admingroup.
      */
 
-    public UserGroup getUserGroup(String usergroupname){
-      UserGroup returnval = null;
+    public AdminGroup getAdminGroup(String admingroupname){
+      AdminGroup returnval = null;
       try{
-        returnval= (usergrouphome.findByPrimaryKey(usergroupname)).getUserGroup();
+        returnval= (admingrouphome.findByPrimaryKey(admingroupname)).getAdminGroup();
       }catch(Exception e){}
       return returnval;
-    } // getUserGroup
+    } // getAdminGroup
 
     /**
-     * Returns the number of usergroups
+     * Returns the number of admingroups
      */
-    public int getNumberOfUserGroups(){
+    public int getNumberOfAdminGroups(){
       int returnval=0;
       try{
-        returnval =  usergrouphome.findAll().size();
+        returnval =  admingrouphome.findAll().size();
       }catch(FinderException e){}
 
       return returnval;
-    } // getNumberOfUserGroups
+    } // getNumberOfAdminGroups
 
     /**
-     *Returns an array containing all the usergroups names.
+     *Returns an array containing all the admingroups names.
      */
-     public String[] getUserGroupnames(){
+     public String[] getAdminGroupnames(){
        TreeMap treemap = new TreeMap();
        String[] returnval = null;
        try{
-         Collection result = usergrouphome.findAll();
+         Collection result = admingrouphome.findAll();
          Iterator i = result.iterator();
          String[] dummy={};
 
          while(i.hasNext()){
-            UserGroupDataLocal ugdl = (UserGroupDataLocal) i.next();
-            treemap.put(ugdl.getUserGroupName(),null);
+            AdminGroupDataLocal ugdl = (AdminGroupDataLocal) i.next();
+            treemap.put(ugdl.getAdminGroupName(),null);
          }
          returnval =  (String[]) treemap.keySet().toArray(dummy);
        }catch(FinderException e){}
        return returnval;
-     } // getUserGroupnames
+     } // getAdminGroupnames
 
     /**
-     * Returns an array containing all the usergroups.
+     * Returns an array containing all the admingroups.
      */
-    public UserGroup[] getUserGroups(){
+    public AdminGroup[] getAdminGroups(){
        TreeMap treemap = new TreeMap();
-       UserGroup[] returnval= null;
+       AdminGroup[] returnval= null;
        try{
-         Collection result = usergrouphome.findAll();
+         Collection result = admingrouphome.findAll();
          Iterator i = result.iterator();
-         UserGroup[] dummy={};
+         AdminGroup[] dummy={};
 
          while(i.hasNext()){
-            UserGroupDataLocal ugdl = (UserGroupDataLocal) i.next();
-            treemap.put(ugdl.getUserGroupName(),ugdl.getUserGroup());
+            AdminGroupDataLocal ugdl = (AdminGroupDataLocal) i.next();
+            treemap.put(ugdl.getAdminGroupName(),ugdl.getAdminGroup());
          }
-         returnval = (UserGroup[]) treemap.values().toArray(dummy);
+         returnval = (AdminGroup[]) treemap.values().toArray(dummy);
        } catch(FinderException e){}
        return returnval;
-    } // getUserGroups
+    } // getAdminGroups
 
      /**
-     * Removes an accessrule from the usergroup.
+     * Removes an accessrule from the admingroup.
      *
      */
 
-    public void addAccessRule(String usergroupname, String directory, int rule, boolean recursive){
+    public void addAccessRule(String admingroupname, String resource, int rule, boolean recursive){
       String logrule = " accept ";
       if(rule == AccessRule.RULE_DECLINE)
         logrule = " decline ";
       if(recursive)
          logrule = logrule + " recursive"; 
       try{
-        (usergrouphome.findByPrimaryKey(usergroupname)).addAccessRule(directory,rule,recursive);
-        authorization.buildAccessTree(getUserGroups());       
-        logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEDGES,"Added accessrule : " + directory + logrule + " to administratorgroup " + usergroupname + ".");
+        (admingrouphome.findByPrimaryKey(admingroupname)).addAccessRule(resource,rule,recursive);
+        authorization.buildAccessTree(getAdminGroups());       
+        logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Added accessrule : " + resource + logrule + " to administratorgroup " + admingroupname + ".");
       }catch(Exception e){
         try{  
-          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEDGES,"Error adding accessrule : " + directory + logrule + " to administratorgroup " + usergroupname + "."); 
+          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES,"Error adding accessrule : " + resource + logrule + " to administratorgroup " + admingroupname + "."); 
         }catch( RemoteException re){}        
       }
     } // addAccessRule
@@ -322,104 +322,104 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      * Removes an accessrule from the database.
      *
      */
-    public void removeAccessRule(String usergroupname, String directory){
+    public void removeAccessRule(String admingroupname, String resource){
       try{
-        (usergrouphome.findByPrimaryKey(usergroupname)).removeAccessRule(directory);
-        authorization.buildAccessTree(getUserGroups());
-        logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEDGES,"Removed accessrule : " + directory + " from administratorgroup " + usergroupname + ".");        
+        (admingrouphome.findByPrimaryKey(admingroupname)).removeAccessRule(resource);
+        authorization.buildAccessTree(getAdminGroups());
+        logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Removed accessrule : " + resource + " from administratorgroup " + admingroupname + ".");        
       }catch(Exception e){
         try{  
-          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEDGES,"Error removing accessrule : " + directory + " from administratorgroup " + usergroupname + ".");    
+          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Error removing accessrule : " + resource + " from administratorgroup " + admingroupname + ".");    
         }catch( RemoteException re){}        
       }
     } // removeAccessRule
 
      /**
-     * Returns the number of access rules in usergroup
+     * Returns the number of access rules in admingroup
      *
-     * @return the number of accessrules in the usergroup
+     * @return the number of accessrules in the admingroup
      */
-    public int getNumberOfAccessRules(String usergroupname){
+    public int getNumberOfAccessRules(String admingroupname){
       int returnval=0;
       try{
-        returnval=(usergrouphome.findByPrimaryKey(usergroupname)).getNumberOfAccessRules();
+        returnval=(admingrouphome.findByPrimaryKey(admingroupname)).getNumberOfAccessRules();
       }catch(FinderException e){}
       return returnval;
     } // getNumberOfAccessRules
 
      /**
-      * Returns all the accessrules in the usergroup as an array of AccessRule
+      * Returns all the accessrules in the admingroup as an array of AccessRule
       *
       */
-    public AccessRule[] getAccessRules(String usergroupname){
+    public AccessRule[] getAccessRules(String admingroupname){
       AccessRule[] returnval=null;
       try{
-        returnval=(usergrouphome.findByPrimaryKey(usergroupname)).getAccessRulesAsArray();
-        authorization.buildAccessTree(getUserGroups());
+        returnval=(admingrouphome.findByPrimaryKey(admingroupname)).getAccessRulesAsArray();
+        authorization.buildAccessTree(getAdminGroups());
       }catch(FinderException e){}
 
       return returnval;
     } // getAccessRules
 
      /**
-     * Adds a user entity to the usergroup. Changes it's values if it already exists
+     * Adds a user entity to the admingroup. Changes it's values if it already exists
      *
      */
 
-    public void addUserEntity(String usergroupname, int matchwith, int matchtype, String matchvalue){         
+    public void addAdminEntity(String admingroupname, int matchwith, int matchtype, String matchvalue){         
       try{
-        (usergrouphome.findByPrimaryKey(usergroupname)).addUserEntity(matchwith, matchtype, matchvalue);
-        authorization.buildAccessTree(getUserGroups());
-        logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEDGES,"Added administrator entity " + matchvalue + " to administratorgroup " + usergroupname + ".");        
+        (admingrouphome.findByPrimaryKey(admingroupname)).addAdminEntity(matchwith, matchtype, matchvalue);
+        authorization.buildAccessTree(getAdminGroups());
+        logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Added administrator entity " + matchvalue + " to administratorgroup " + admingroupname + ".");        
       }catch(Exception e){
         try{  
-          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEDGES,"Error adding administrator entity " + matchvalue + " to administratorgroup " + usergroupname + ".");  
+          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES,"Error adding administrator entity " + matchvalue + " to administratorgroup " + admingroupname + ".");  
         }catch( RemoteException re){}        
       }
-    } // addUserEntity
+    } // addAdminEntity
 
 
      /**
-     * Removes a user entity from the usergroup.
+     * Removes a user entity from the admingroup.
      *
      */
-    public void removeUserEntity(String usergroupname, int matchwith, int matchtype, String matchvalue){
+    public void removeAdminEntity(String admingroupname, int matchwith, int matchtype, String matchvalue){
       try{
-        (usergrouphome.findByPrimaryKey(usergroupname)).removeUserEntity(matchwith, matchtype, matchvalue);
-        authorization.buildAccessTree(getUserGroups());
-        logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEDGES,"Removed administrator entity " + matchvalue + " from administratorgroup " + usergroupname + ".");        
+        (admingrouphome.findByPrimaryKey(admingroupname)).removeAdminEntity(matchwith, matchtype, matchvalue);
+        authorization.buildAccessTree(getAdminGroups());
+        logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Removed administrator entity " + matchvalue + " from administratorgroup " + admingroupname + ".");        
       }catch(Exception e){
         try{  
-          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEDGES,"Error removing administrator entity " + matchvalue + " from administratorgroup " + usergroupname + ".");  
+          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES,"Error removing administrator entity " + matchvalue + " from administratorgroup " + admingroupname + ".");  
         }catch( RemoteException re){}        
       }
-    } // removeUserEntity
+    } // removeAdminEntity
 
      /**
-     * Returns the number of user entities in usergroup
+     * Returns the number of user entities in admingroup
      *
      * @return the number of user entities in the database for the specified group
      */
-    public int getNumberOfUserEntities(String usergroupname){
+    public int getNumberOfAdminEntities(String admingroupname){
       int returnval=0;
       try{
-        returnval = (usergrouphome.findByPrimaryKey(usergroupname)).getNumberOfUserEntities();
+        returnval = (admingrouphome.findByPrimaryKey(admingroupname)).getNumberOfAdminEntities();
       }catch(FinderException e){}
 
       return returnval;
-    } // getNumberOfUserEntities
+    } // getNumberOfAdminEntities
 
      /**
-      * Returns all the UserEntities as an array of UserEntities for the specified group.
+      * Returns all the AdminEntities as an array of AdminEntities for the specified group.
       *
       */
-    public UserEntity[] getUserEntities(String usergroupname){
-      UserEntity[] returnval = null;
+    public AdminEntity[] getAdminEntities(String admingroupname){
+      AdminEntity[] returnval = null;
       try{
-        returnval = (usergrouphome.findByPrimaryKey(usergroupname)).getUserEntitiesAsArray();
+        returnval = (admingrouphome.findByPrimaryKey(admingroupname)).getAdminEntitiesAsArray();
       }catch(FinderException e){}
       return returnval;
-    } // getUserEntities
+    } // getAdminEntities
 
     // Methods used with AvailableAccessRulesData Entity beans.
 
@@ -431,11 +431,11 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
         debug(">addAvailableAccessRule(name : " + name + ")");
         try {
             AvailableAccessRulesDataLocal data= availableaccessruleshome.create(name);      
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEDGES,"Adding available access rule" + name + ".");              
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Adding available access rule" + name + ".");              
         }
         catch (Exception e) {
           try{    
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEDGES,"Error adding available access rule" + name + ".");  
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES,"Error adding available access rule" + name + ".");  
           }catch( RemoteException re){}  
         }
         debug("<addAvailableAccessRule");
@@ -454,11 +454,11 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
             try {
               AvailableAccessRulesDataLocal data= availableaccessruleshome.create(name);
-              logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEDGES,"Added available access rule" + name + ".");              
+              logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Added available access rule" + name + ".");              
             }
             catch (Exception e) {
               try{  
-                logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEDGES,"Error adding available access rule" + name + ".");                
+                logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES,"Error adding available access rule" + name + ".");                
               }catch( RemoteException re){}  
             }
           }
@@ -475,10 +475,10 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
       try{
         AvailableAccessRulesDataLocal data= availableaccessruleshome.findByPrimaryKey(name);
         data.remove();
-        logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEDGES,"Removed available access rule" + name + ".");          
+        logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Removed available access rule" + name + ".");          
       }catch(Exception e){
         try{  
-          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEDGES,"Error removing available access rule " + name + ".");  
+          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES,"Error removing available access rule " + name + ".");  
         }catch( RemoteException re){}  
       }
       debug("<removeAvailableAccessRule");
@@ -498,10 +498,10 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
             try{
               AvailableAccessRulesDataLocal data= availableaccessruleshome.findByPrimaryKey(name);
               data.remove();
-              logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEDGES,"Removed available access rule" + name + ".");                
+              logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Removed available access rule" + name + ".");                
             }catch(Exception e){
               try{  
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEDGES,"Error removing available access rule " + name + ".");
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES,"Error removing available access rule " + name + ".");
               }catch( RemoteException re){}  
             }
           }
@@ -547,25 +547,25 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     } // existsAvailableAccessRule
 
     /** 
-     * Method to check if a profile exists in any profile rules. Used to avoid desyncronization of profilerules.
+     * Method to check if an end entity profile exists in any end entity profile rules. Used to avoid desyncronization of profilerules.
      *
      * @param profileid the profile id to search for.
      * @return true if profile exists in any of the accessrules.
      */
     
-    public boolean existsProfileInRules(int profileid){
+    public boolean existsEndEntityProfileInRules(int profileid){
        boolean exists = false;
        String profilestring= this.profileprefix + Integer.toString(profileid);
        try{
-         Collection result = usergrouphome.findAll();
+         Collection result = admingrouphome.findAll();
          Iterator i = result.iterator();
          AccessRule[] accessrules = null; 
          
          while(i.hasNext() && !exists){
-            UserGroupDataLocal ugdl = (UserGroupDataLocal) i.next();
+            AdminGroupDataLocal ugdl = (AdminGroupDataLocal) i.next();
             accessrules=ugdl.getAccessRulesAsArray();
             for(int j=0; j < accessrules.length; j++){
-               exists = accessrules[j].getDirectory().startsWith(profilestring);
+               exists = accessrules[j].getResource().startsWith(profilestring);
                if(exists)
                  break;  
             }

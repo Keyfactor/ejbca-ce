@@ -1,31 +1,35 @@
-
 package se.anatom.ejbca.ra;
 
 import java.io.Serializable;
 
 import java.util.Date;
+import se.anatom.ejbca.SecConst;
 /**
  * Hols admin data collected from UserData in the database.
  *
- * @version $Id: UserAdminData.java,v 1.3 2002-07-28 23:27:47 herrvendil Exp $
+ * @version $Id: UserAdminData.java,v 1.4 2002-10-24 20:10:09 herrvendil Exp $
  */
 public class UserAdminData implements Serializable {
     
     // Public constants
-    static final public int NO_PROFILE         = 0;
-    static final public int NO_CERTIFICATETYPE = 0;
+    static final public int NO_ENDENTITYPROFILE    = 0;
+    static final public int NO_CERTIFICATEPROFILE  = 0;
+    
     
     private String username;
     private String subjectDN;
+    private String subjectAltName;
     private String subjectEmail;
     private String password;
     private int status;
     /** Type of user, from SecConst */
     private int type;
-    private int profileid;
-    private int certificatetypeid;
+    private int endentityprofileid;
+    private int certificateprofileid;
     private Date timecreated;
     private Date timemodified;
+    private int tokentype;
+    private int hardtokenissuerid;
 
     /** Creates new empty UserAdminData */
     public UserAdminData() {
@@ -34,23 +38,28 @@ public class UserAdminData implements Serializable {
      * All fields are almos required in this constructor. Password must be set amnually though.
      * This is so you should be sure what you do with the password.
      */
-    public UserAdminData(String user, String dn, String email, int status, int type, int profileid, int certificatetypeid,
-                         Date timecreated, Date timemodified) {
+    public UserAdminData(String user, String dn, String subjectaltname, String email, int status, int type, int endentityprofileid, int certificateprofileid,
+                         Date timecreated, Date timemodified, int tokentype, int hardtokenissuerid) {
         this.username=user;
         this.password=null;
         this.subjectDN=dn;
+        this.subjectAltName=subjectaltname;
         this.subjectEmail=email;
         this.status=status;
         this.type=type;
-        this.profileid=profileid;
-        this.certificatetypeid=certificatetypeid;
+        this.endentityprofileid=endentityprofileid;
+        this.certificateprofileid=certificateprofileid;
         this.timecreated=timecreated;
         this.timemodified=timemodified;
+        this.tokentype = tokentype;
+        this.hardtokenissuerid = hardtokenissuerid;
     }
     public void setUsername(String user) { this.username=user;}
     public String getUsername() {return username;}
     public void setDN(String dn) {this.subjectDN=dn;}
     public String getDN() {return subjectDN;}
+    public void setSubjectAltName( String subjectaltname) { this.subjectAltName=subjectaltname; }
+    public String getSubjectAltName() {return this.subjectAltName;}
     public void setEmail(String email) {this.subjectEmail = email;}
     public String getEmail() {return subjectEmail;}
     public void setPassword(String pwd) {this.password = pwd;}
@@ -59,12 +68,39 @@ public class UserAdminData implements Serializable {
     public int getStatus() {return status;}
     public void setType(int type) {this.type=type;}
     public int getType() {return type;} 
-    public void setProfileId(int profileid) { this.profileid=profileid; }
-    public int getProfileId(){ return this.profileid; }
-    public void setCertificateTypeId(int certificatetyepid) { this.certificatetypeid=certificatetypeid; }
-    public int getCertificateTypeId() {return this.certificatetypeid;}
+    public void setEndEntityProfileId(int endentityprofileid) { this.endentityprofileid=endentityprofileid; }
+    public int getEndEntityProfileId(){ return this.endentityprofileid; }
+    public void setCertificateProfileId(int certificateprofileid) { this.certificateprofileid=certificateprofileid; }
+    public int getCertificateProfileId() {return this.certificateprofileid;}
     public void setTimeCreated(Date timecreated) { this.timecreated=timecreated; }
     public Date getTimeCreated() {return this.timecreated;}    
     public void setTimeModified(Date timemodified) { this.timemodified=timemodified; }
-    public Date getTimeModified() {return this.timemodified;}        
+    public Date getTimeModified() {return this.timemodified;} 
+    public int getTokenType(){ return this.tokentype;}
+    public void setTokenType(int tokentype) {this.tokentype=tokentype;}
+    public int getHardTokenIssuerId() {return this.hardtokenissuerid;}
+    public void setHardTokenIssuerId(int hardtokenissuerid) { this.hardtokenissuerid=hardtokenissuerid;}
+    
+    public boolean getAdministrator(){
+      return (type & SecConst.USER_ADMINISTRATOR) == SecConst.USER_ADMINISTRATOR;  
+    }
+    
+    public void setAdministrator(boolean administrator){
+      if(administrator)
+        type = type | SecConst.USER_ADMINISTRATOR;  
+      else
+        type = type & (~SecConst.USER_ADMINISTRATOR);  
+    }
+    
+    public boolean getKeyRecoverable(){
+      return (type & SecConst.USER_KEYRECOVERABLE) == SecConst.USER_KEYRECOVERABLE;          
+    }
+    
+    public void setKeyRecoverable(boolean keyrecoverable){
+      if(keyrecoverable)
+        type = type | SecConst.USER_KEYRECOVERABLE;  
+      else
+        type = type & (~SecConst.USER_KEYRECOVERABLE);          
+    }
+    
 }
