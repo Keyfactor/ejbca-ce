@@ -131,19 +131,27 @@ For local interfaces to other beans:
     public Object lookup( String jndiName);
 
 
+Making entity beans
+--------------------
+
+All entity beans should inherit the class se.anatom.ejbca.BaseEntityBean.java.
+When doing this, the standard methods like setting the context are already in there. They 
+can however always be overriden. 
+
+
 CVS
 ---
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.7 2003-02-12 11:22:59 scop Exp $
+@version $Id: DEVELOP,v 1.8 2003-03-04 13:17:36 koen_serry Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.7 2003-02-12 11:22:59 scop Exp $
+ * @version $Id: DEVELOP,v 1.8 2003-03-04 13:17:36 koen_serry Exp $
  */
 
 CA KeyStore architecture/creating a custom CA Keystore
