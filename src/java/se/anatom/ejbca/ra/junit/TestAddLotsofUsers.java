@@ -15,7 +15,7 @@ import junit.framework.*;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestAddLotsofUsers.java,v 1.4 2003-03-07 15:38:34 anatom Exp $
+ * @version $Id: TestAddLotsofUsers.java,v 1.5 2003-03-07 15:47:01 anatom Exp $
  */
 public class TestAddLotsofUsers extends TestCase {
 
@@ -111,6 +111,7 @@ public class TestAddLotsofUsers extends TestCase {
             }
             cacheAdmin.addUser(administrator, username, pwd, CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid, certificatetypeid,
                                          type, token, hardtokenissuerid);
+            cacheAdmin.setClearTextPassword(administrator, username, pwd);
             if (i%100 == 0) {
                 log.debug("Created "+i+" users...");
             }
