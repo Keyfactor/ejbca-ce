@@ -9,7 +9,7 @@ if %4() == () goto error
 
 call ra adduser tomcat %2 %1 "" null 1 3
 
-call ra adduser superadmin %3 "CN=SuperUser" "" null 65 2
+call ra adduser superadmin %3 "CN=SuperAdmin" "" null 65 2
 
 call ra setclearpwd tomcat %2
 

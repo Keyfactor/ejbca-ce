@@ -27,7 +27,7 @@ fi
 
 ./ra.sh adduser tomcat $2 \"$1\" null null 1 3
 
-./ra.sh adduser superadmin $3 "CN=SuperUser" null null 65 2
+./ra.sh adduser superadmin $3 "CN=SuperAdmin" null null 65 2
 
 ./ra.sh setclearpwd tomcat $2
 
