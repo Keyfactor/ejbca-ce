@@ -1,7 +1,7 @@
 #!/bin/sh
 #-x
 
-KEYSTORE=src/ca/keyStore/server.p12
+KEYSTORE=src/ca/ca/keyStore/server.p12
 
 # Check for proper settings of environment variables
 if [ -f $JBOSS_HOME ]

@@ -1,6 +1,6 @@
 @echo off
 rem ----
-rem $Id: deploy.cmd,v 1.12 2002-05-21 13:42:52 anatom Exp $
+rem $Id: deploy.cmd,v 1.13 2002-05-24 08:09:11 anatom Exp $
 rem
 rem Deploy script for EJBCA
 rem
@@ -9,7 +9,7 @@ rem that the dependant files are properly installed.
 rem
 rem ----
 
-set KEYSTORE=src\ca\keyStore\server.p12
+set KEYSTORE=src\ca\ca\keyStore\server.p12
 
 rem Check for proper settings of environment variables
 if "%JBOSS_HOME%" == ""  goto error
