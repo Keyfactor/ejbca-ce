@@ -23,7 +23,7 @@
       </td>
       <td width="50%" valign="top"> 
         <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("configuration_help.html") + "#defaultuserpreference"%>")'>
-        <u><%= ejbcawebbean.getText("INFORMATIONANDHELP") %></u> </A></div>
+        <u><%= ejbcawebbean.getText("HELP") %></u> </A></div>
       </td>
     </tr>
     <tr  id="Row0"> 

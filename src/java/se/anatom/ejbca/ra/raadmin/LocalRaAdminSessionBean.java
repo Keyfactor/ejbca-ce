@@ -26,7 +26,7 @@ import se.anatom.ejbca.webdist.rainterface.Profile;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.7 2002-07-09 15:04:22 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.8 2002-07-10 15:59:51 anatom Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
@@ -57,15 +57,6 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         debug("<ejbCreate()");
 
     }
-
-    /** Gets connection to Datasource used for manual SQL searches
-     * @return Connection
-     */
-    private Connection getConnection() throws SQLException, NamingException {
-        DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
-        return ds.getConnection();
-    } //getConnection
-
 
     /**
      * Loads the global configuration from the database.

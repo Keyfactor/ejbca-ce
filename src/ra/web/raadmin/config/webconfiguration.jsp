@@ -25,7 +25,7 @@
       </td>
       <td width="50%" valign="top"> 
         <div align="right"><A  onclick='displayHelpWindow("/<%=gc.getRaAdminPath() %>/help/configuration_help.en.html#mainconfig")'>
-        <u>Information and help</u> </A> </div>
+        <u>Help</u> </A> </div>
       </td>
     </tr>
     <tr id="Row0"> 

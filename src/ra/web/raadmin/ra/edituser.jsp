@@ -246,7 +246,7 @@ function checksaveclose(){
 <body >
   <h2 align="center"><%= ejbcawebbean.getText("EDITUSER") %></h2>
   <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#edituser" %>")'>
-    <u><%= ejbcawebbean.getText("INFORMATIONANDHELP") %></u> </A>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
   </div>
   <%if(nouserparameter){%>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYUSERNAME") %></h4></div> 

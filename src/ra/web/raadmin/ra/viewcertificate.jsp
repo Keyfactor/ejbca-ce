@@ -88,7 +88,7 @@
 <body >
   <h2 align="center"><%= ejbcawebbean.getText("VIEWCERTIFICATE") %></h2>
   <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("viewcertificate_help.html") %>")'>
-    <u><%= ejbcawebbean.getText("INFORMATIONANDHELP") %></u> </A>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
   </div>
   <%if(nosubjectdnparameter){%>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYCERT") + "'" + SUBJECTDN_PARAMETER + "'"%></h4></div> 

@@ -530,7 +530,7 @@ function checkallfields(){
                    out.write("fillfromprofile()"); %>'>
   <h2 align="center"><%= ejbcawebbean.getText("ADDUSER") %></h2>
   <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#adduser"%>")'>
-    <u><%= ejbcawebbean.getText("INFORMATIONANDHELP") %></u> </A>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
   </div>
   <% if(userexists){ %>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("USERALREADYEXISTS") %></h4></div>

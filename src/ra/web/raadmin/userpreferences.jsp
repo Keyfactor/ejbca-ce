@@ -93,7 +93,7 @@
       </td>
       <td width="50%" valign="top"> 
         <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("userpreferences_help.html") %>")'>
-        <u><%= ejbcawebbean.getText("INFORMATIONANDHELP") %></u> </A></div>
+        <u><%= ejbcawebbean.getText("HELP") %></u> </A></div>
       </td>
     </tr>
     <tr  id="Row0"> 

@@ -17,7 +17,7 @@ import se.anatom.ejbca.util.CertTools;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.18 2002-07-09 15:04:22 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.19 2002-07-10 15:59:46 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -253,11 +253,6 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             throw new EJBException("Error starting external service", e);
         }
     } // startExternalService
-
-    private Connection getConnection() throws SQLException, NamingException {
-           DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
-           return ds.getConnection();
-    } //getConnection
 
 } // LocalUserAdminSessionBean
 

@@ -67,7 +67,7 @@
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ACCESSRULES %>'>
     <A href='javascript:document.toaccessrules.submit();'><u><%= ejbcawebbean.getText("EDITACCESSRULES") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("authorization_help.html") + "#users"%>")'>
-    <u><%= ejbcawebbean.getText("INFORMATIONANDHELP") %></u> </A>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
   </div>
   </form>
   <p align="center"></p>

@@ -108,7 +108,7 @@
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_USERENTITIES%>'>
     <A href='javascript:document.touserentities.submit();'><u><%= ejbcawebbean.getText("EDITUSERS") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("authorization_help.html") + "#accessrules" %>")'>
-    <u><%= ejbcawebbean.getText("INFORMATIONANDHELP") %></u> </A>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
   </div>
   </form>
   <form name="deleteaccessrules" method="post" action="<%=THIS_FILENAME %>">

@@ -58,7 +58,7 @@ function checkallfields(){
         <div align="right">
         <A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOPROFILES") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#profiles"%>")'>
-        <u><%= ejbcawebbean.getText("INFORMATIONANDHELP") %></u> </A></div>
+        <u><%= ejbcawebbean.getText("HELP") %></u> </A></div>
       </td>
     </tr>
     <tr  id="Row0"> 
