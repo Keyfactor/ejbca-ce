@@ -17,7 +17,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.53 2004-01-25 10:58:51 anatom Exp $
+ * @version $Id: CertTools.java,v 1.54 2004-03-04 10:36:58 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -64,14 +64,20 @@ public class CertTools {
         oids.put("emailaddress", X509Name.EmailAddress);
         oids.put("e", X509Name.EmailAddress);
         oids.put("email", X509Name.EmailAddress);
-    }
-    ;
+    };
 
-    private static final String[] dNObjects = {
+    private static final String[] dNObjectsForward = {
         "emailaddress", "e", "email", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
         "initials", "surname", "t", "ou", "o", "l", "st", "dc", "c"
     };
-
+    private static final String[] dNObjectsReverse = {
+        "c", "dc", "st", "l", "o", "ou", "t", "surname", "initials",
+        "givenname", "gn", "serialnumber", "sn", "cn", "uid", "email", "e", "emailaddress"
+    };
+    /** Change this if you want reverse order */
+    private static final String[] dNObjects = dNObjectsForward;    
+    
+    
     private static DERObjectIdentifier getOid(String o) {
         return (DERObjectIdentifier) oids.get(o.toLowerCase());
     } // getOid
@@ -80,6 +86,7 @@ public class CertTools {
      * Creates a (Bouncycastle) X509Name object from a string with a DN. Known OID (with order)
      * are: <code> EmailAddress, UID, CN, SN (SerialNumber), GivenName, Initials, SurName, T, OU,
      * O, L, ST, DC, C </code>
+     * To change order edit 'dnObjects' in this source file.
      *
      * @param dn String containing DN that will be transformed into X509Name, The DN string has the
      *        format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in the string will be silently
@@ -127,8 +134,7 @@ public class CertTools {
                     //log.debug("Added "+object+", "+oldvalues.elementAt(index));
                     ordering.add(oid);
 
-                    // remove from the old vectors, so we start clean the next
-                    // round
+                    // remove from the old vectors, so we start clean the next round
                     values.add(oldvalues.remove(index));
                     oldordering.remove(index);
                     index = -1;
