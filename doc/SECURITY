@@ -34,10 +34,6 @@ See www.jboss.org for a list of ports used in JBOSS, for information about
 See http://www.javaworld.com/javaworld/jw-08-2001/jw-0831-jaas_p.html for more
  examples about setting up role-permissions.
 
-For more advanced security configurations utilizing Bean permissions as defined
- below, security must be activated in JBoss. To activate security in JBoss see
- the JBoss manual.
-
 File permission
 ---------------
 The application server should be run as a special user. Files should be protected 
@@ -45,63 +41,4 @@ so the ONLY the user running the application server can access them.
 
 If PKCS12 files are generated for users, the subdirectory ('p12') where
 they are stored and the generated files should be protected in the same way.
-
-BEAN PERMISSIONS
-================
-
-Below is a list describing the access permissions that should apply on all beans
- and their methods.
-internalUser means that the method should not be available to the public, only
- internally to administrator interfaces and other beans and servlets running on
- the server.
-
-Bean permissions are set in the 'ejb-jar.xml' files.
-
-CA bean
-=======
-
-RSASignSession
---------------
-CreateCRL() must be protected and should only be possible to run from
- internalUser.
-All other methods are public.
-
-AuthenticationSession
----------------------
-All methods are protected and can only be accessed from the RSASignSession
- (internalUser).
-
-CertificateStoreSession
------------------------
-storeCertificate() is protected and can only be accessed from internalUser.
-storeCRL() is protected and can only be accessed from internalUser.
-All other methods are public.
-
-CreateCRLSession
-----------------
-All methods are protected and can only be accessed from the internalUser, i.e.
- cronjob running timely.
-
-CertificateData
----------------
-All methods are protected and can only be accessed from the internalUser.
-
-CRLData
--------
-All methods are protected and can only be accessed from the internalUser.
-
-RA bean
-=======
-
-UserAdminSession
-----------------
-All methods are protected and can only be accessed from the internalUser.
-
-UserData
---------
-All methods are protected and can only be accessed from the internalUser.
-
-Servlets
-========
-Servlets are available to the public.
 

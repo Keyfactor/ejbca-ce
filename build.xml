@@ -407,19 +407,6 @@ web.contentencoding    = ${web.contentencoding}
         </java>
     </target>
 
-    <!-- ============================================================================= -->
-    <!-- Batch generate certificates for users with clear text password and right type -->
-    <!-- ============================================================================= -->
-    <target name="batch" depends="build">
-        <java classname="se.anatom.ejbca.batch.BatchMakeP12" fork="true">
-            <classpath>
-                <fileset dir="${dist.dir}" includes="*.jar" />
-                <fileset dir="${jboss.home}/client" includes="**/*.jar" />
-                <fileset dir="${lib}" includes="**/*.jar" />
-            </classpath>
-        </java>
-    </target>
-
     <!-- =================================================================== -->
     <!-- Build Jboss Specific Services                       -->
     <!-- =================================================================== -->
