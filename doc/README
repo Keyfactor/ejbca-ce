@@ -5,6 +5,10 @@ The goal with EJBCA is to create a fully functional CA built in Java. EJBCA buil
 create a robust, high performance, transactional, platform independent, flexible, modular and component based 
 CA to be used either standalone or integrated into any J2EE application.
 
+EJBCA Homepage can be found at http://ejbca.sourceforge.net/
+Information about contacting the EJBCA team,  contibuting to EJBCA etc can
+be found throught the Homepage.
+
 FEATURES
 --------
 Built on the EJB 1.1 specification.
