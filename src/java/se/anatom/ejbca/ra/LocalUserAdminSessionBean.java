@@ -68,7 +68,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.89 2005-02-13 11:27:45 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.90 2005-02-13 17:51:06 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -1117,9 +1117,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                 // Assemble result.
                 while (rs.next() && returnval.size() <= IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT) {
                     UserAdminData data = new UserAdminData(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
-                            , rs.getInt(10), rs.getInt(11)
-                            , new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9))
-                            , rs.getInt(12), rs.getInt(13));
+                            , rs.getInt(10), rs.getInt(11), new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9)), rs.getInt(12), rs.getInt(13));
                     data.setPassword(rs.getString(7));
 
                     if (!onlybatchusers || (data.getPassword() != null && data.getPassword().length() > 0))

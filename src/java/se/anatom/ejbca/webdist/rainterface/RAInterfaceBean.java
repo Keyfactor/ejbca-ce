@@ -60,7 +60,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.50 2005-02-13 11:27:36 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.51 2005-02-13 17:51:06 anatom Exp $
  */
 public class RAInterfaceBean {
 
@@ -500,46 +500,38 @@ public class RAInterfaceBean {
     }
 
     public void loadCertificates(String username) throws Exception{
-        Collection certs = certificatesession.findCertificatesByUsername(administrator, username);
-        
-        if(!certs.isEmpty()) {
-            Iterator j = certs.iterator();
-            certificates = new CertificateView[certs.size()];
-            for(int i=0; i< certificates.length; i++){
-                RevokedInfoView revokedinfo = null;
-                X509Certificate cert = (X509Certificate) j.next();
-                RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
-                if(revinfo != null) {
-                    revokedinfo = new RevokedInfoView(revinfo);
-                }
-                certificates[i] = new CertificateView(cert, revokedinfo, username);
-            }
-        }
-        else {
-            certificates = null;
-        }
+        Collection certs = certificatesession.findCertificatesByUsername(administrator, username);    
+        loadCertificateView(certs, username);
     }
 
     public void loadTokenCertificates(String tokensn, String username) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
         Collection certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
-        
-        if(!certs.isEmpty()){
-            Iterator j = certs.iterator();
-            certificates = new CertificateView[certs.size()];
-            for(int i=0; i< certificates.length; i++){
-                RevokedInfoView revokedinfo = null;
-                X509Certificate cert = (X509Certificate) j.next();
-                RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
-                if(revinfo != null) {
-                    revokedinfo = new RevokedInfoView(revinfo);
-                }
-                certificates[i] = new CertificateView(cert, revokedinfo, username);
-            }
-        }
-        else{
-            certificates = null;
-        }
+        loadCertificateView(certs, username);
     }
+    
+    /** Helper method loading CertificateView and RevokedInfoView arrays given a collection of certificates.
+     * 
+     * @param certs certificates to process
+     * @param username user the certs belong to
+     */
+    private void loadCertificateView(Collection certs, String username) {
+    	if(!certs.isEmpty()){
+    		Iterator j = certs.iterator();
+    		certificates = new CertificateView[certs.size()];
+    		for(int i=0; i< certificates.length; i++){
+    			RevokedInfoView revokedinfo = null;
+    			X509Certificate cert = (X509Certificate) j.next();
+    			RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
+    			if(revinfo != null) {
+    				revokedinfo = new RevokedInfoView(revinfo);
+    			}
+    			certificates[i] = new CertificateView(cert, revokedinfo, username);
+    		}
+    	}
+    	else{
+    		certificates = null;
+    	}
+    } // loadCertificateView
 
     public boolean revokeTokenCertificates(String tokensn, String username, int reason) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
        boolean success = true;

@@ -60,7 +60,7 @@ import se.anatom.ejbca.util.CertTools;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.38 2005-02-11 13:12:16 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.39 2005-02-13 17:50:45 anatom Exp $
  */
 public class EjbcaWebBean {
 
@@ -111,104 +111,98 @@ public class EjbcaWebBean {
       raauthorized = new Boolean[AUTHORIZED_FIELD_LENGTH];
     }
 
-    // Public Methods.
 
-        /* Sets the current user and returns the global configuration */
+    private void commonInit() throws Exception {
+    	InitialContext jndicontext = new InitialContext();
+    	Object obj1 = jndicontext.lookup("java:comp/env/RaAdminSessionLocal");
+    	IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IRaAdminSessionLocalHome.class);
+    	IRaAdminSessionLocal raadminsession = raadminsessionhome.create();
+    	obj1 = jndicontext.lookup("java:comp/env/LogSessionLocal");
+    	ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ILogSessionLocalHome.class);
+    	logsession = logsessionhome.create();
+    	obj1 = jndicontext.lookup("java:comp/env/SignSessionLocal");
+    	ISignSessionLocalHome signsessionhome = (ISignSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ISignSessionLocalHome.class);
+    	ISignSessionLocal signsession = signsessionhome.create();
+    	obj1 = jndicontext.lookup("java:comp/env/CAAdminSessionLocal");
+    	ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICAAdminSessionLocalHome.class);
+    	ICAAdminSessionLocal caadminsession = caadminsessionhome.create();
+    	obj1 = jndicontext.lookup("java:comp/env/CertificateStoreSessionLocal");
+    	ICertificateStoreSessionLocalHome certificatestoresessionhome = (ICertificateStoreSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionLocalHome.class);
+    	ICertificateStoreSessionLocal certificatestoresession = certificatestoresessionhome.create();
+    	obj1 = jndicontext.lookup("java:comp/env/AuthorizationSessionLocal");
+    	IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IAuthorizationSessionLocalHome.class);
+    	IAuthorizationSessionLocal authorizationsession = authorizationsessionhome.create();
+    	obj1 = jndicontext.lookup("java:comp/env/HardTokenSessionLocal");
+    	IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IHardTokenSessionLocalHome.class);
+    	IHardTokenSessionLocal hardtokensession = hardtokensessionhome.create();
+    	IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/PublisherSessionLocal"), IPublisherSessionLocalHome.class);
+    	IPublisherSessionLocal publishersession = publishersessionhome.create();               		
+    	
+    	globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(administrator, raadminsession, authorizationsession);        
+    	globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();
+    	this.informationmemory = new InformationMemory(administrator, caadminsession, raadminsession, authorizationsession, signsession, certificatestoresession, hardtokensession, publishersession, globalconfiguration);
+    	
+    	authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, authorizationsession);
+    	
+    }
+    /* Sets the current user and returns the global configuration */
     public GlobalConfiguration initialize(HttpServletRequest request, String resource) throws Exception{
+    	
+    	certificates = (X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" );
+    	if(certificates == null) throw new AuthenticationFailedException("Client certificate required.");
 
-      String userdn = "";
+    	String userdn = "";
+    	
+    	if(!initialized){
+    		administrator = new Admin(certificates[0]) ;
+    		
+    		commonInit();
+    		InitialContext jndicontext = new InitialContext();
+    		Object obj1 = jndicontext.lookup("java:comp/env/UserAdminSessionLocal");
+    		IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionLocalHome.class);
+    		IUserAdminSessionLocal  adminsession = adminsessionhome.create();
+    		
+    		adminspreferences = new AdminPreferenceDataHandler(administrator);
+    		weblanguages = new WebLanguages(globalconfiguration);
+    		
+    		// Check if user certificate is revoked
+    		authorizedatahandler.authenticate(certificates[0]);
+    		
+    		// Check if certificate and user is an RA Admin
+    		userdn = CertTools.getSubjectDN(certificates[0]);
+    		log.debug("Verifying authorization of '"+userdn);    		
+    		adminsession.checkIfCertificateBelongToAdmin(administrator, certificates[0].getSerialNumber(), certificates[0].getIssuerDN().toString());        
+    		logsession.log(administrator, certificates[0], LogEntry.MODULE_ADMINWEB,  new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORLOGGEDIN,"");
+    	}
 
-      certificates =   (X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" );
-
-      if(certificates == null) throw new AuthenticationFailedException("Client certificate required.");
-      // Check if certificate is still valid
-      if(!initialized){
-        administrator = new Admin(certificates[0]) ;
-
-        InitialContext jndicontext = new InitialContext();
-        Object obj1 = jndicontext.lookup("java:comp/env/UserAdminSessionLocal");
-        IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionLocalHome.class);
-        IUserAdminSessionLocal  adminsession = adminsessionhome.create();
-        obj1 = jndicontext.lookup("java:comp/env/RaAdminSessionLocal");
-        IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IRaAdminSessionLocalHome.class);
-        IRaAdminSessionLocal raadminsession = raadminsessionhome.create();
-        obj1 = jndicontext.lookup("java:comp/env/LogSessionLocal");
-        ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ILogSessionLocalHome.class);
-        logsession = logsessionhome.create();
-        obj1 = jndicontext.lookup("java:comp/env/SignSessionLocal");
-        ISignSessionLocalHome signsessionhome = (ISignSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ISignSessionLocalHome.class);
-        ISignSessionLocal signsession = signsessionhome.create();
-        obj1 = jndicontext.lookup("java:comp/env/CAAdminSessionLocal");
-        ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICAAdminSessionLocalHome.class);
-        ICAAdminSessionLocal caadminsession = caadminsessionhome.create();
-        
-        obj1 = jndicontext.lookup("java:comp/env/CertificateStoreSessionLocal");
-        ICertificateStoreSessionLocalHome certificatestoresessionhome = (ICertificateStoreSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionLocalHome.class);
-        ICertificateStoreSessionLocal certificatestoresession = certificatestoresessionhome.create();
-        obj1 = jndicontext.lookup("java:comp/env/AuthorizationSessionLocal");
-        IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IAuthorizationSessionLocalHome.class);
-        IAuthorizationSessionLocal authorizationsession = authorizationsessionhome.create();
-
-		obj1 = jndicontext.lookup("java:comp/env/HardTokenSessionLocal");
-		IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IHardTokenSessionLocalHome.class);
-		IHardTokenSessionLocal hardtokensession = hardtokensessionhome.create();
-        
-		IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/PublisherSessionLocal"),
-				IPublisherSessionLocalHome.class);
-		IPublisherSessionLocal publishersession = publishersessionhome.create();               
-		
-        
-        globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(administrator, raadminsession, authorizationsession);        
-        globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();
-        this.informationmemory = new InformationMemory(administrator, caadminsession, raadminsession, authorizationsession, signsession, certificatestoresession, hardtokensession, publishersession, globalconfiguration);
-                
-        adminspreferences = new AdminPreferenceDataHandler(administrator);
-        weblanguages = new WebLanguages(globalconfiguration);
-
-        userdn = CertTools.getSubjectDN(certificates[0]);
-
-        // Check if user certificate is revoked
-        authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, authorizationsession);
-        authorizedatahandler.authenticate(certificates[0]);
-
-        // Check if certificate belongs to a RA Admin
-        log.debug("Verifying authoirization of '"+userdn);
-
-        // Check that user is administrator.
-        adminsession.checkIfCertificateBelongToAdmin(administrator, certificates[0].getSerialNumber(), certificates[0].getIssuerDN().toString());
-        
-        logsession.log(administrator, certificates[0], LogEntry.MODULE_ADMINWEB,  new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORLOGGEDIN,"");
-
-      }
-      try{
-        isAuthorized(URLDecoder.decode(resource,"UTF-8"));
-      }catch(AuthorizationDeniedException e){
-         throw new AuthorizationDeniedException("You are not authorized to view this page.");
-      }catch(java.io.UnsupportedEncodingException e) {}
-
-
-
-      if(!initialized){
-        certificatefingerprint = CertTools.getFingerprintAsString(certificates[0]);
-        
-        // Get current admin preference.
-        currentadminpreference=null;
-        if(certificatefingerprint != null){
-          currentadminpreference = adminspreferences.getAdminPreference(certificatefingerprint);
-        }
-        if(currentadminpreference == null){
-           currentadminpreference = adminspreferences.getDefaultAdminPreference();
-        }
-        adminsweblanguage = new WebLanguages( currentadminpreference.getPreferedLanguage()
-                                          ,currentadminpreference.getSecondaryLanguage());
-
-       // set User Common Name
-        DNFieldExtractor dn = new DNFieldExtractor(userdn, DNFieldExtractor.TYPE_SUBJECTDN);
-        usercommonname = dn.getField(DNFieldExtractor.CN,0);
-
-        initialized=true;
-      }
-      return globalconfiguration;
+    	try {
+    		isAuthorized(URLDecoder.decode(resource,"UTF-8"));
+    	} catch(AuthorizationDeniedException e) {
+    		throw new AuthorizationDeniedException("You are not authorized to view this page.");
+    	} catch(java.io.UnsupportedEncodingException e) {}
+    	
+    	
+    	if(!initialized){
+    		certificatefingerprint = CertTools.getFingerprintAsString(certificates[0]);
+    		
+    		// Get current admin preference.
+    		currentadminpreference=null;
+    		if(certificatefingerprint != null){
+    			currentadminpreference = adminspreferences.getAdminPreference(certificatefingerprint);
+    		}
+    		if(currentadminpreference == null){
+    			currentadminpreference = adminspreferences.getDefaultAdminPreference();
+    		}
+    		adminsweblanguage = new WebLanguages( currentadminpreference.getPreferedLanguage()
+    				,currentadminpreference.getSecondaryLanguage());
+    		
+    		// set User Common Name
+    		DNFieldExtractor dn = new DNFieldExtractor(userdn, DNFieldExtractor.TYPE_SUBJECTDN);
+    		usercommonname = dn.getField(DNFieldExtractor.CN,0);
+    		
+    		initialized=true;
+    	}
+    	return globalconfiguration;
     }
 
 
@@ -220,38 +214,7 @@ public class EjbcaWebBean {
           String remoteAddr = request.getRemoteAddr();
           administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
         }
-        InitialContext jndicontext = new InitialContext();
-        Object obj1 = jndicontext.lookup("java:comp/env/RaAdminSessionLocal");
-        IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IRaAdminSessionLocalHome.class);
-        IRaAdminSessionLocal  raadminsession = raadminsessionhome.create();        
-        obj1 = jndicontext.lookup("java:comp/env/AuthorizationSessionLocal");
-        IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IAuthorizationSessionLocalHome.class);
-        IAuthorizationSessionLocal authorizationsession = authorizationsessionhome.create();
-        obj1 = jndicontext.lookup("java:comp/env/SignSessionLocal");
-        ISignSessionLocalHome signsessionhome = (ISignSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ISignSessionLocalHome.class);
-        ISignSessionLocal signsession = signsessionhome.create();
-        obj1 = jndicontext.lookup("java:comp/env/CAAdminSessionLocal");
-        ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICAAdminSessionLocalHome.class);
-        ICAAdminSessionLocal caadminsession = caadminsessionhome.create();        
-        obj1 = jndicontext.lookup("java:comp/env/CertificateStoreSessionLocal");
-        ICertificateStoreSessionLocalHome certificatestoresessionhome = (ICertificateStoreSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionLocalHome.class);
-        ICertificateStoreSessionLocal certificatestoresession = certificatestoresessionhome.create();
-        
-		obj1 = jndicontext.lookup("java:comp/env/HardTokenSessionLocal");
-		IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IHardTokenSessionLocalHome.class);
-		IHardTokenSessionLocal hardtokensession = hardtokensessionhome.create();  
-		
-		IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/PublisherSessionLocal"),
-				IPublisherSessionLocalHome.class);
-		IPublisherSessionLocal publishersession = publishersessionhome.create();               
-		
-
-        globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(administrator, raadminsession, authorizationsession);        
-        globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();
-        this.informationmemory = new InformationMemory(administrator, caadminsession, raadminsession, authorizationsession, signsession, certificatestoresession, hardtokensession, publishersession, globalconfiguration);
-        
-        authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, authorizationsession);
- 
+        commonInit(); 
         
         adminspreferences = new AdminPreferenceDataHandler(administrator);
         weblanguages = new WebLanguages(globalconfiguration);

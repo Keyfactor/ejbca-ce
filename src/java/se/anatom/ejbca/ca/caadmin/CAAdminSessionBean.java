@@ -81,7 +81,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.33 2005-02-11 13:12:47 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.34 2005-02-13 17:51:06 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -405,20 +405,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
             	try{
             		CADataLocal signcadata = cadatahome.findByPrimaryKey(new Integer(cainfo.getSignedBy()));
             		CA signca = signcadata.getCA();
-            		// Check validity of signers certificate
-            		X509Certificate signcert = (X509Certificate) signca.getCACertificate();
-            		try{
-            			signcert.checkValidity();
-            		}catch(CertificateExpiredException ce){
-            			// Signers Certificate has expired.
-            			signcadata.setStatus(SecConst.CA_EXPIRED);
-            			getLogSession().log(admin, signcadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Signing CA " + signcadata.getSubjectDN() + " has expired",ce);
-            			throw new EJBException(ce);
-            		}catch(CertificateNotYetValidException cve){
-            			getLogSession().log(admin, signcadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Signing CA " + signcadata.getSubjectDN() + " is not yet valid",cve);
-            			throw new EJBException(cve);
-            		}
-
+            		//Check that the signer is valid
+            		checkSignerValidity(admin, signcadata);
             		// Create cacertificate
             		Certificate cacertificate = null;
 
@@ -910,26 +898,14 @@ public class CAAdminSessionBean extends BaseSessionBean {
     			CADataLocal signcadata = cadatahome.findByPrimaryKey(new Integer(cainfo.getSignedBy()));
     			CA signca = signcadata.getCA();
     			try{
-    				// Check validity of signers certificate
-    				X509Certificate signcert = (X509Certificate) signca.getCACertificate();
-    				try{
-    					signcert.checkValidity();
-    				}catch(CertificateExpiredException ce){
-    					// Signers Certificate has expired.
-    					signcadata.setStatus(SecConst.CA_EXPIRED);
-    					getLogSession().log(admin, signcadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Signing CA " + signcadata.getSubjectDN() + " has expired",ce);
-    					throw new EJBException(ce);
-    				}catch(CertificateNotYetValidException cve){
-    					getLogSession().log(admin, signcadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Signing CA " + signcadata.getSubjectDN() + " is not yet valid",cve);
-    					throw new EJBException(cve);
-    				}
+    				//Check that the signer is valid
+    				checkSignerValidity(admin, signcadata);
 
     				// Get public key from request
     				PublicKey publickey = requestmessage.getRequestPublicKey();
 
     				// Create cacertificate
     				Certificate cacertificate = null;
-
     				if(cainfo instanceof X509CAInfo){
     					UserAuthData cadata = new UserAuthData("nobody", null, cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), ((X509CAInfo) cainfo).getSubjectAltName(), null,
     							0,  cainfo.getCertificateProfileId(), null);
@@ -1020,19 +996,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     						// Create CA signed by other internal CA.
     						CADataLocal signcadata = cadatahome.findByPrimaryKey(new Integer(ca.getSignedBy()));
     						CA signca = signcadata.getCA();
-    						// Check validity of signers certificate
-    						X509Certificate signcert = (X509Certificate) signca.getCACertificate();
-    						try{
-    							signcert.checkValidity();
-    						}catch(CertificateExpiredException ce){
-    							// Signers Certificate has expired.
-    							signcadata.setStatus(SecConst.CA_EXPIRED);
-    							getLogSession().log(admin, signcadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Signing CA " + signcadata.getSubjectDN() + " has expired",ce);
-    							throw new EJBException(ce);
-    						}catch(CertificateNotYetValidException cve){
-    							getLogSession().log(admin, signcadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Signing CA " + signcadata.getSubjectDN() + " is not yet valid",cve);
-    							throw new EJBException(cve);
-    						}
+    						//Check that the signer is valid
+    						checkSignerValidity(admin, signcadata);
     						// Create cacertificate
     						if( ca instanceof X509CA){
     							UserAuthData cainfodata = new UserAuthData("nobody", null, ca.getSubjectDN(), ca.getSubjectDN().hashCode(), ((X509CA) ca).getSubjectAltName(), null,
@@ -1385,6 +1350,33 @@ public class CAAdminSessionBean extends BaseSessionBean {
       return returnval;
     }
 
+    //
+    // Private methods
+    //
+    
+    /** Checks the signer validity given a CADataLocal object, as a side-effect marks the signer as expired if it is expired, 
+     * and throws an EJBException to the caller. 
+     * 
+     * @param admin administrator calling the method
+     * @param signcadata a CADataLocal entity object of the signer to be checked
+     * @throws UnsupportedEncodingException if there is an error getting the CA from the CADataLocal
+     * @throws EJBException embedding a CertificateExpiredException or a CertificateNotYetValidException if the certificate has expired or is not yet valid 
+     */
+    private void checkSignerValidity(Admin admin, CADataLocal signcadata) throws UnsupportedEncodingException {
+    	// Check validity of signers certificate
+    	X509Certificate signcert = (X509Certificate) signcadata.getCA().getCACertificate();
+    	try{
+    		signcert.checkValidity();
+    	}catch(CertificateExpiredException ce){
+    		// Signers Certificate has expired.
+    		signcadata.setStatus(SecConst.CA_EXPIRED);
+    		getLogSession().log(admin, signcadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Signing CA " + signcadata.getSubjectDN() + " has expired",ce);
+    		throw new EJBException(ce);
+    	}catch(CertificateNotYetValidException cve){
+    		getLogSession().log(admin, signcadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Signing CA " + signcadata.getSubjectDN() + " is not yet valid",cve);
+    		throw new EJBException(cve);
+    	}
+    }
 
     /**
      * Method to create certificate path and to check it's validity from a list of certificates.
@@ -1468,7 +1460,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
    * @param certlist list of certificates to order.
    * @return Collection with certificatechain.
    */
-
   private Collection orderCertificateChain(Collection certlist) throws CertPathValidatorException{
   	 ArrayList returnval = new ArrayList();
      X509Certificate rootca = null;
