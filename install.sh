@@ -48,7 +48,7 @@ fi
 
 
 
-CP=.:./admin.jar:./lib/ldap.jar:$JBOSS_HOME/client/jnp-client.jar:$JBOSS_HOME/client/jboss-j2ee.jar:$JBOSS_HOME/client/jbossall-client.jar:$JBOSS_HOME/client/jboss-client.jar:$JBOSS_HOME/client/jbosssx-client.jar:$JBOSS_HOME/client/jboss-common-client.jar
+CP=.:./admin.jar:./lib/ldap.jar:$JBOSS_HOME/client/jnp-client.jar:$JBOSS_HOME/client/jboss-j2ee.jar:$JBOSS_HOME/client/jbossall-client.jar:$JBOSS_HOME/client/jboss-client.jar:$JBOSS_HOME/client/jbosssx-client.jar:$JBOSS_HOME/client/jboss-common-client.jar:lib/log4j-1.2.7.jar
 
 if java -cp $CP se.anatom.ejbca.admin.Install install unix en ejbca jboss
 then
@@ -68,11 +68,11 @@ then echo su failed. Please try again.
 fi
 echo and again...
 
-if ! eval 'su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -import -trustcacerts -file tmp/rootca.der -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass $JAVACACERTPASSWD"'
+if ! eval 'su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -import -trustcacerts -file tmp/rootca.der -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass $JAVACACERTPASSWD  -noprompt"'
 then echo su failed. Please try again.
-  if ! eval 'su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -import -trustcacerts -file tmp/rootca.der -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass $JAVACACERTPASSWD"'
+  if ! eval 'su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -import -trustcacerts -file tmp/rootca.der -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass $JAVACACERTPASSWD  -noprompt"'
   then echo su failed. Please try again.
-    if ! eval 'su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -import -trustcacerts -file tmp/rootca.der -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass $JAVACACERTPASSWD"'
+    if ! eval 'su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -import -trustcacerts -file tmp/rootca.der -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass $JAVACACERTPASSWD  -noprompt"'
     then echo Installation failed. Exiting...
          exit    
     fi

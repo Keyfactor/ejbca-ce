@@ -1,5 +1,6 @@
 3.0 beta 3
 ----------
+Fixed install script freeze when installing adminweb. Added -noprompt
 Added Sybase as target for 'ant replaceDS'
 Support for JBoss3.2.4/Tomcat5.0
 Fixed bugg in Administrative deligations where a CA administrator could edit an superadmin group.

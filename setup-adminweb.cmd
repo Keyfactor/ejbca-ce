@@ -25,7 +25,7 @@ copy p12\tomcat.jks %JBOSS_HOME%\bin\tomcat.jks
 call ca getrootcert %1 tmp\rootca.der -der
 
 keytool -alias EJBCA-CA -delete -keystore %JAVA_HOME%\jre\lib\security\cacerts -storepass %5
-keytool -alias EJBCA-CA -import -trustcacerts -file tmp\rootca.der -keystore %JAVA_HOME%\jre\lib\security\cacerts -storepass %5
+keytool -alias EJBCA-CA -import -trustcacerts -file tmp\rootca.der -keystore %JAVA_HOME%\jre\lib\security\cacerts -storepass %5  -noprompt
 
 del tmp\rootca.der
 
