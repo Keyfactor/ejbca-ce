@@ -21,7 +21,6 @@
 %>
 
 <%
-
   applybean.initialize(request);
 
   String THIS_FILENAME            =  "/ejbca/publicweb/apply/apply_main.jsp";
@@ -32,6 +31,7 @@
   String browser  = null;
   int[] availablekeylengths = null;
 
+try  {
    if( request.getParameter(ACTION) != null){
      if( request.getParameter(ACTION).equals(ACTION_GENERATETOKEN)){
        username = request.getParameter(TEXTFIELD_USERNAME);
@@ -41,7 +41,9 @@
          int tokentype = applybean.getTokenType(username);
          availablekeylengths = applybean.availableBitLengths(username);
          if(tokentype == 0){
-           throw new Exception("Token not specified for user : " + username); 
+            request.setAttribute("ErrorMessage","User does not exist : " + username);
+            request.getRequestDispatcher("error.jsp").forward(request, response);
+            return;
          }
          if(tokentype != SecConst.TOKEN_SOFT_BROWSERGEN)
            includefile = "apply_token.jsp";   
@@ -59,6 +61,9 @@
 
   if(availablekeylengths == null)
    availablekeylengths = defaultkeylengths;
+} catch(Exception ex) {
+    ex.printStackTrace();
+}                                             
 %>
 
 
