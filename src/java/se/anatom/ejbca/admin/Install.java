@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
 /** Class used as an install script of ejbca
  * 
  * @author philip
- * @version $Id: Install.java,v 1.16 2004-06-15 11:35:48 koen_serry Exp $
+ * @version $Id: Install.java,v 1.17 2004-06-28 07:38:29 anatom Exp $
  *
  * The main porpose of this program is to provide easy installment of EJBCA.
  */
@@ -397,7 +397,7 @@ public class Install extends BaseCommand {
 					System.exit(-1);
 				}
 
-				command = new String[]{"getrootcert",this.caname,"/tmp/rootca.der","-der"};
+				command = new String[]{"getrootcert",this.caname,"tmp/rootca.der","-der"};
 				ca.main(command);
 			} catch (Exception e) {
 				System.out.println(text.getProperty("ERRORSETTINGUPADMINWEB") + e);
