@@ -12,3 +12,4 @@ Karl-K?nig K?nigsson <karlkoenig@users.sourceforge.net>, better deployment scrip
 Thomas Karlsson <thomas.karlsson@planet.eu.org>, firewall script.
 Magnus Broqvist <magnus@han.pp.se>, initial P12toPEM implementation.
 Slava Sklarewski <Slava.Sklarewski@de.gi-de.com>, data flow diagram.
+Leonardo Souza Mario Bueno <isbueno@users.sourceforge.net>, patch for request template path
