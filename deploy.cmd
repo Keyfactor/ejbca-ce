@@ -1,6 +1,6 @@
 @echo off
 rem ----
-rem $Id: deploy.cmd,v 1.23 2002-10-11 10:31:21 anatom Exp $
+rem $Id: deploy.cmd,v 1.24 2002-11-29 15:43:30 herrvendil Exp $
 rem
 rem Deploy script for EJBCA
 rem
@@ -16,20 +16,20 @@ if "%JBOSS_HOME%" == ""  goto error
 
 rem Install keystore is 'keystore' is given as argument to deploy
 if not "%1%" == "keystore" goto install
-if exist %JBOSS_HOME%\server\default\conf\server.p12 goto ksexist
-xcopy %KEYSTORE% %JBOSS_HOME%\server\default\conf /Q /Y
+if exist "%JBOSS_HOME%\server\default\conf\server.p12" goto ksexist
+xcopy %KEYSTORE% "%JBOSS_HOME%\server\default\conf" /Q /Y
 echo Copied %KEYSTORE% to %JBOSS_HOME%\server\default\conf.
 goto install
 :ksexist
-echo %JBOSS_HOME%\server\default\conf\server.p12 already exist, no files copied.
+echo "%JBOSS_HOME%\server\default\conf\server.p12" already exist, no files copied.
 
 rem Install BouncyCastle provider and ldap.jar
 :install
 if exist %JBOSS_HOME%\server\default\lib\jce-jdk13-116.jar goto deploy
-xcopy lib\jce-jdk13-116.jar %JBOSS_HOME%\server\default\lib /Q /Y
-xcopy lib\bcmail-jdk13-116.jar %JBOSS_HOME%\server\default\lib /Q /Y
-xcopy lib\ldap.jar %JBOSS_HOME%\server\default\lib /Q /Y
-xcopy lib\regexp1_0_0.jar %JBOSS_HOME%\server\default\lib /Q /Y
+xcopy lib\jce-jdk13-116.jar "%JBOSS_HOME%\server\default\lib" /Q /Y
+xcopy lib\bcmail-jdk13-116.jar "%JBOSS_HOME%\server\default\lib" /Q /Y
+xcopy lib\ldap.jar "%JBOSS_HOME%\server\default\lib" /Q /Y
+xcopy lib\regexp1_0_0.jar "%JBOSS_HOME%\server\default\lib" /Q /Y
 echo Copied jce-jdk13-116.jar, bcmail-jdk13-116.jar and ldap.jar to %JBOSS_HOME%\lib. JBoss must be restared.
 
 rem Deploy jar and war files
@@ -37,9 +37,9 @@ rem Deploy jar and war files
 set CAEARSRC=dist\ejbca-ca.ear
 if "%1%" == "nora" set CAEARSRC=dist\ejbca-canora.ear
 echo Copying %CAEARSRC%...
-copy %CAEARSRC% %JBOSS_HOME%\server\default\deploy\ejbca-ca.ear /Y
+copy %CAEARSRC% "%JBOSS_HOME%\server\default\deploy\ejbca-ca.ear" /Y
 rem copy dist\ra.jar %JBOSS_HOME%\server\default\deploy /Y
-rem copy dist\raadmin.war %JBOSS_HOME%\server\default\deploy /Y
+rem copy dist\adminweb.war "%JBOSS_HOME%\server\default\deploy" /Y
 
 echo Deployed jar- and war-files in %JBOSS_HOME%\server\default\deploy
 goto end
