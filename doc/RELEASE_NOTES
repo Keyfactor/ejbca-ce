@@ -3,7 +3,7 @@ EJBCA V2.0B2
 
 Name of initial temporary super administrator changed from "CN=Walter" to "CN=SuperAdmin".
 All defined administrator priviledges must be redefined.
-Drop tables AdminGroupData, AdminEntityData and  AccessRulesData to flush administrator priviledges.
+Drop tables AdminGroupData, AdminEntityData, AccessRulesData and EndEntityProfileData to flush administrator priviledges.
 
 EJBCA V2.0
 ----------
