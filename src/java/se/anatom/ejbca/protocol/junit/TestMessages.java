@@ -85,6 +85,49 @@ public class TestMessages extends TestCase {
             "BPcw4NPIt4nMOFKSGg5oM1nGDPGFN7eorZV+/2uWiQfdtK4B4lzCTuNxWRT853dW" +
             "dRDzXBCGEArlG8ef+vDD/HP9SX3MQ0NJWym48VI9bTpP/mJlUKSsfgDYHohvUlVI" +
             "E5QFC6ILVLUmuWPGchUEAb8t30DDnmeXs8QxdqHfbQ==").getBytes());
+    static byte[] pixscep = Base64.decode(("MIAGCSqGSIb3DQEHAqCAMIACAQExDjAMBggqhkiG9w0CBQUAMIAGCSqGSIb3DQEH" +
+            "AaCAJIAEggOZMIAGCSqGSIb3DQEHA6CAMIACAQAxgDCCAYMCAQAwazBfMSYwJAYJ" +
+            "KoZIhvcNAQkBFhdwb3N0bWFzdGVyQHRkY29ubGluZS5kazEPMA0GA1UEAxMGdGRj" +
+            "b2NhMRYwFAYDVQQLEw1PbmxpbmUgUHJpdmF0MQwwCgYDVQQKEwNUREMCCD7fK8fm" +
+            "K2DpMA0GCSqGSIb3DQEBAQUABIIBABlqDG3Jx7NJ4VLTb38JxUB3hhpRx+TUMmjZ" +
+            "PG64gFDcK8aNSW5O8dIG09GcfD1dyaW1lwVRUpcFlraEWWCV3xjpM2wPARZ169dL" +
+            "j1K/Y+s4mZsqppm45d0KT7jQ/e0oBJUukJq67rtc90Qyst4W9eGYERulxiQTOILD" +
+            "x43IpHOGlr9ta1oTsxVKvB6mxdGSSdlkem6eozEkKe2cUbDPGVvc4/O5F/zK7jrb" +
+            "L6woflqhwOc+faEOnuCETlr9MUvyN0XdMUbp6Rc3YQkfZj0otgPQ4GjCKfwtui2R" +
+            "LT4eD4m0TOuwFlsV+E0YJJFMLxrhjowIeZap2HKSpZ6Qmhmv0EQAADCABgkqhkiG" +
+            "9w0BBwEwEQYFKw4DAgcECB3fKGT54qD/oIAEggHAA1e6sQ+qC5YZ0BsYz2tKpWHk" +
+            "+dTCsKvRByxTDTjz5xm21pVvyd5iM/k08S674uuxW+V91Rt4OJ13YOUuZ27dyfz8" +
+            "rf/1kRFI0Y8He8Ye5mwJ5beAHiv4gb2hlci8doPp8FkeerB/HM1JxBV0/GQWugyo" +
+            "b6Z3clqXa3WkTI1Pa8dIKql4a1QBi+iXiz+Tg8BR+yUIKHdmfc6HISOqGGmthB5+" +
+            "x7uOjqK4unI3LILauAfRbeQQalFn/PUxQuxNJWf2A0lOwxxtIEVBX0XwxKkejuX6" +
+            "CVxDKaTkt90g3zeZLYvsEdLieGPnw4NhC91/+NycQdjoOpEQCGHjgUGRwX2v0CKg" +
+            "hMSpFLTrsWB/o5X6G/Z5mdAKGKVIoBIj15BxesJAAx8KI3Rni8opie/EWjiXOEwb" +
+            "d6+Ie80jxxyccsXgpBLNnx8EUmQzU1RwWOq3jmzJCtDzKHljaqCxTi6uyFAbsCF9" +
+            "Okl2Qj1qc+rX9ah+F53BDHfXuV3WpCFBSCxi7/G48LXc7Lna6vcEY9eYR3alpUDW" +
+            "ciV7k92bQgBwwHuaXh4brb0MytCcgVUXEwHL6+GI9CHsMT6JlMezIsCTlqZlIwQI" +
+            "57+qPArzctYAAAAAAAAAAAAAAAAAAAAAoIAwggI0MIIBnQIgNzBiNDg2ZmZmMmYy" +
+            "ZWIxYzAzZmRiYjljOWFjNmE2MmEwDQYJKoZIhvcNAQEEBQAwUzFRMA8GA1UEBRMI" +
+            "MzAxYjJkODkwGwYDVQQDExRodWwudGVrbmV0Lm9wYXNpYS5kazAhBgkqhkiG9w0B" +
+            "CQIWFGh1bC50ZWtuZXQub3Bhc2lhLmRrMB4XDTA0MDMxMTA5MTQ1NFoXDTE0MDMw" +
+            "OTA5MTQ1NFowUzFRMA8GA1UEBRMIMzAxYjJkODkwGwYDVQQDExRodWwudGVrbmV0" +
+            "Lm9wYXNpYS5kazAhBgkqhkiG9w0BCQIWFGh1bC50ZWtuZXQub3Bhc2lhLmRrMIGf" +
+            "MA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC/AtkNDP14TWSkJqDCtPu3T3JeqvyY" +
+            "3Jqww+3ZNfUbs9njCycuiajHbbDVKEyffXCOtzE7GtkcSXJZKntbTICT7N4M+eot" +
+            "EHOtri3l9DkvXWqdvHw21d4i83q+NKPkaXmo6h5yIwmtDQEVIccLDwQydMb0XDgK" +
+            "PjCOm9MC33Pm2wIDAQABMA0GCSqGSIb3DQEBBAUAA4GBAAzXcoUUTmNV4UyxZ/01" +
+            "FHafeqQJmmq66+TrIXUAcwfWyvtgIRGDb/kif2NsjDtvFvnlXUiM57K/I+/qVqQm" +
+            "HF1Thx1L/sbvNwWqYZxyWJPm1TQaw2zvAu0Hpc53/T49dH8LgYYrwEOXRTyW5YE1" +
+            "9fMRCmp78VeN/nJyoOGcJKigAAAxgDCCAcICAQEwdzBTMVEwDwYDVQQFEwgzMDFi" +
+            "MmQ4OTAbBgNVBAMTFGh1bC50ZWtuZXQub3Bhc2lhLmRrMCEGCSqGSIb3DQEJAhYU" +
+            "aHVsLnRla25ldC5vcGFzaWEuZGsCIDcwYjQ4NmZmZjJmMmViMWMwM2ZkYmI5Yzlh" +
+            "YzZhNjJhMAwGCCqGSIb3DQIFBQCggaMwEgYKYIZIAYb4RQEJAjEEEwIxOTAYBgkq" +
+            "hkiG9w0BCQMxCwYJKoZIhvcNAQcBMB8GCSqGSIb3DQEJBDESBBCQVbLp6teJEWNq" +
+            "nBD/Kr1GMCAGCmCGSAGG+EUBCQUxEgQQbpDDbO95LE1U7ZbbEe2p8TAwBgpghkgB" +
+            "hvhFAQkHMSITIDcwYjQ4NmZmZjJmMmViMWMwM2ZkYmI5YzlhYzZhNjJhMA0GCSqG" +
+            "SIb3DQEBAQUABIGAfiGzBNxJiy4XI3DG13Osso4qV+7rvwg+CVbe0gqt01s1kd5A" +
+            "LxwTYVhXXKG1spaBnebu+T9xZDZqvF9eY1ANJVNSIpNygKmJdhjsJivKFkD9Jz2y" +
+            "F/BYZzv618HlvZQj9Sbv7PaODRU4xqGVifa6LllK/572uQdUQj3FTkssqFQAAAAA" +
+            "AAAAAA==").getBytes());
     static byte[] p12 = Base64.decode(("MIACAQMwgAYJKoZIhvcNAQcBoIAkgASCAy4wgDCABgkqhkiG9w0BBwGggCSABIID" +
             "FjCCAxIwggMOBgsqhkiG9w0BDAoBAqCCArEwggKtMCcGCiqGSIb3DQEMAQMwGQQU" +
             "VnhToLFkCvaqCu8OkXi6Jljy/Y8CAWQEggKAv4LDUWwUi7eZKiCoYsqevVUAEOwE" +
@@ -185,8 +228,32 @@ public class TestMessages extends TestCase {
         String pwd = msg.getPassword();
         log.debug("Pwd: " + pwd);
         assertEquals("foo123", pwd);
-        assertTrue("Failed to verify SCEP message.", ret);
+        assertTrue("Failed to verify SCEP message from OpenSCEP.", ret);
         log.debug("<test01TestOpenScep()");
+    }
+
+    /** Tests scep message from Cisco PIX
+     * @throws Exception error
+     */
+    public void test01TestPixScep() throws Exception {
+        log.debug(">test01TestPixScep()");
+        ScepRequestMessage msg = new ScepRequestMessage(pixscep);
+        // You should be able to get issuer DN before anything else
+        String issuerdn = msg.getIssuerDN();
+        log.debug("IssuerDN: "+issuerdn);
+        assertEquals("E=postmaster@tdconline.dk,CN=tdcoca,OU=Online Privat,O=TDC", issuerdn);
+        if (msg.requireKeyInfo()) {
+            msg.setKeyInfo(caCert, privateKey);
+        }
+        boolean ret = msg.verify();
+        String dn = msg.getRequestDN();
+        log.debug("DN: " + dn);
+        assertEquals("C=Se,O=PrimeKey,CN=Tomas G", dn);
+        String pwd = msg.getPassword();
+        log.debug("Pwd: " + pwd);
+        assertEquals("foo123", pwd);
+        assertTrue("Failed to verify SCEP message from PIX.", ret);
+        log.debug("<test01TestPixScep()");
     }
     
 }

@@ -32,7 +32,7 @@ import se.anatom.ejbca.util.Base64;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.29 2003-11-20 15:23:23 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.30 2004-03-11 10:12:00 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(ScepRequestMessage.class);
@@ -117,7 +117,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
         // Parse and verify the entegrity of the PKIOperation message PKCS#7
         /* If this would have been done using the newer CMS it would have made me so much happier... */
-        ASN1Sequence seq = (ASN1Sequence) new DERInputStream(new ByteArrayInputStream(scepmsg)).readObject();
+        ASN1Sequence seq = (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(scepmsg)).readObject();
         ContentInfo ci = new ContentInfo(seq);
         String ctoid = ci.getContentType().getId();
 
@@ -186,7 +186,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                     DEROctetString content = (DEROctetString) ci.getContent();
                     log.debug("envelopedData is " + content.getOctets().length + " bytes.");
 
-                    ASN1Sequence seq1 = (ASN1Sequence) new DERInputStream(new ByteArrayInputStream(
+                    ASN1Sequence seq1 = (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(
                                 content.getOctets())).readObject();
                     envEncData = new ContentInfo(seq1);
                     ctoid = envEncData.getContentType().getId();
