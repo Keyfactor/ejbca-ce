@@ -57,7 +57,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.22 2004-01-04 15:12:18 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.23 2004-01-04 17:37:26 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -83,6 +83,10 @@ public class OCSPServlet extends HttpServlet {
      * signing the OCSP response. Defined in web.xml
      */
     private boolean m_useCASigningCert;
+    /** Marks if the CAs certificate chain shoudl be included in the OCSP response or not 
+     * Defined in web.xml
+     */
+    private boolean m_includeChain;
     
     /** Loads cacertificates but holds a cache so it's reloaded only every five minutes is needed.
     */
@@ -192,7 +196,7 @@ public class OCSPServlet extends HttpServlet {
         BasicOCSPResp retval = null;
         {
             // Call extended CA services to get our OCSP stuff
-            OCSPCAServiceResponse caserviceresp = (OCSPCAServiceResponse)m_signsession.extendedService(m_adm,caid, new OCSPCAServiceRequest(basicRes, m_sigAlg, m_useCASigningCert));
+            OCSPCAServiceResponse caserviceresp = (OCSPCAServiceResponse)m_signsession.extendedService(m_adm,caid, new OCSPCAServiceRequest(basicRes, m_sigAlg, m_useCASigningCert, m_includeChain));
             // Now we can use the returned OCSPServiceResponse to get private key and cetificate chain to sign the ocsp response
             Collection coll = caserviceresp.getOCSPSigningCertificateChain();
             m_log.debug("Cert chain for OCSP signing is of size "+coll.size());
@@ -251,6 +255,19 @@ public class OCSPServlet extends HttpServlet {
                 if (initparam.equalsIgnoreCase("true") 
                     || initparam.equalsIgnoreCase("yes")) {
                         m_useCASigningCert = true;
+                }
+            }
+            initparam = config.getInitParameter("includeCertChain");
+            if (m_log.isDebugEnabled()) {
+                m_log.debug("Include certificate chain: '" 
+                            + (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
+                            + "'");
+            }
+            m_includeChain = true;
+            if (!StringUtils.isEmpty(initparam)) {
+                if (initparam.equalsIgnoreCase("false") 
+                    || initparam.equalsIgnoreCase("no")) {
+                        m_includeChain = false;
                 }
             }
             

@@ -70,7 +70,7 @@ import se.anatom.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.11 2004-01-02 15:34:35 anatom Exp $
+ * @version $Id: X509CA.java,v 1.12 2004-01-04 17:37:29 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -434,19 +434,22 @@ public class X509CA extends CA implements Serializable {
               BasicOCSPRespGenerator ocsprespgen = ((OCSPCAServiceRequest)request).getOCSPrespGenerator();
               String sigAlg = ((OCSPCAServiceRequest)request).getSigAlg();
               boolean useCACert = ((OCSPCAServiceRequest)request).useCACert();
+              boolean includeChain = ((OCSPCAServiceRequest)request).includeChain();
               PrivateKey pk = null;
               X509Certificate[] chain = null;
               try {
                   if (useCACert) {
                       pk = getCAToken().getPrivateSignKey();
-                      chain = (X509Certificate[])getCertificateChain().toArray(new X509Certificate[0]);
+                      if (includeChain) {
+                          chain = (X509Certificate[])getCertificateChain().toArray(new X509Certificate[0]);
+                      } 
                   } else {
                       // Super class handles signing with the OCSP signing certificate
                       log.debug("<extendedService(super)");
                       return super.extendedService(request);                      
                   }
                   BasicOCSPResp ocspresp = ocsprespgen.generate(sigAlg, pk, chain, new Date(), "BC" );
-                  returnval = new OCSPCAServiceResponse(ocspresp, Arrays.asList(chain));              
+                  returnval = new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));              
               } catch (IllegalKeyStoreException ike) {
                   throw new ExtendedCAServiceRequestException(ike);
               } catch (NoSuchProviderException nspe) {

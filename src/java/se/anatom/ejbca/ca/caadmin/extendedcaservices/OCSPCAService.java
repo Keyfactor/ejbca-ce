@@ -28,7 +28,7 @@ import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.KeyTools;
 /** Handles and maintains the CA -part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.4 2004-01-02 15:33:15 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.5 2004-01-04 17:37:29 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -211,10 +211,14 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
         ExtendedCAServiceResponse returnval = null;
         BasicOCSPRespGenerator ocsprespgen = ((OCSPCAServiceRequest)request).getOCSPrespGenerator();
         String sigAlg = ((OCSPCAServiceRequest)request).getSigAlg();
-        X509Certificate[] chain = (X509Certificate[])this.ocspcertificatechain.toArray(new X509Certificate[0]);
+        boolean includeChain = ((OCSPCAServiceRequest)request).includeChain();
+        X509Certificate[] chain = null;
+        if (includeChain) {
+            chain = (X509Certificate[])this.ocspcertificatechain.toArray(new X509Certificate[0]);
+        }
         try {
             BasicOCSPResp ocspresp = ocsprespgen.generate(sigAlg, this.ocspsigningkey, chain, new Date(), "BC" );
-            returnval = new OCSPCAServiceResponse(ocspresp, Arrays.asList(chain));             
+            returnval = new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));             
         } catch (OCSPException ocspe) {
             throw new ExtendedCAServiceRequestException(ocspe);
         } catch (NoSuchProviderException nspe) {

@@ -23,7 +23,14 @@
             <param-value>true</param-value>
             <description>
                 If set to true the OCSP reponses will be signed directly by the CAs certificate
-                instead of the CAs OCSP respnder.
+                instead of the CAs OCSP responder.
+            </description>
+        </init-param>
+        <init-param>
+            <param-name>includeCertChain</param-name>
+            <param-value>true</param-value>
+            <description>
+                If set to true the certificate chain will be returned with the OCSP response.
             </description>
         </init-param>
         <init-param>
