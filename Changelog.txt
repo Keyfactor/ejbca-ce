@@ -6,6 +6,8 @@ Better deployment scripts.
 Sample Linux firewall script.
 Added demo accept-all authentication module, NullAuthenticationSession.
 CA-certs can now be downloaded from webdist.
+Initial support for Weblogic.
+Function to rollover subCA with same key pair in ca.sh/cmd.
 Lots of minor cosmetic, architectural and GUI changes.
 
 1.2
@@ -51,7 +53,3 @@ Creates p12-files during test in real temporary dir.
 1.0b1
 -----
 Initial release
-
-
-
-
