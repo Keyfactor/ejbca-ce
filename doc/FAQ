@@ -1,10 +1,19 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.8 2002-07-21 12:10:05 anatom Exp $
+$Id: FAQ,v 1.9 2002-08-22 19:27:21 anatom Exp $
 ---------
+Q : I get the error "Object Class Violation : (65)" when publishing certificates
+in LDAP?
+
+A : You LDAP object class may require some fields in the DN that you have not 
+entered. Some schemas require the DN-attribute SN for instance.
+
+-----
 Q : What applications servers do EJBCA run on?
 
-A : As of version 1.3, EJBCA is tested in JBoss and Weblogic.
+A : Version 1.x of EJBCA has been known to run on JBoss, Weblogic and Orion.
+Version 2.x of EJBCA has only been tested on JBoss, but should run on any EJB2
+capable application server.
 
 -----
 Q : What databases do EJBCA support?
@@ -12,8 +21,8 @@ Q : What databases do EJBCA support?
 A : EJBCA supports in theory any database that works with the application
 server. The database must have support for long fields, a CRL can in theory
 become very large.
-EJBCA has as of version 1.3 been tested with MySQL, PostgreSQL, Oracle and
-InstantDB. Other databases should work woth simple configuration.
+EJBCA has been tested with MySQL, PostgreSQL, Oracle, InstantDB and SAPDD. 
+Other databases should work woth simple configuration.
 
 -----
 Q : When using JDK 1.4.x i get a java.io.InvalidClassException?
@@ -55,13 +64,12 @@ Status '10' is NEW. Just enter 'ra.sh/cmd setuserstatus' to see a list of all
  status codes.
 
 -----
-Q : How do I manipulate keystores using Suns 'keytool'?
+Q : How do I manipulate EJBCA-keystores using Suns 'keytool'?
 
 A : EJBCA use PKCS12 format for the keystore because it is a standard, and I
-like
- standards.
+like standards.
 Normally keytool (e.g. sun) can read PKCS12 file but not write, so the
- BouncyCastle JCE is needed to handle PKCS12 keystores.
+BouncyCastle JCE is needed to handle PKCS12 keystores.
 
 Put the BouncyCastle provider 'jce-jdk13-<version>.jar' in 'jre/lib/ext', the
  default classpath for extensions in java.
@@ -159,5 +167,4 @@ important information. Logging in JBoss is configured in 'log4j.properties' in
 the JBoss config directory.
 
 -----
-
 

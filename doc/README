@@ -555,7 +555,7 @@ keytool -import -trustcacerts -file ejbca-ca.pem -keystore
 $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 
 7. Create a user for EJBCA admin with CN=walter and the RAADMIN bit
-(temporarily CN=walter gives adminrights).
+(temporarily CN=walter gives admin rights).
 ./ra.sh adduser raadmin foo123 "C=SE,O=PrimeKey,CN=walter"
 walter@primekey.se 32
 
@@ -636,12 +636,3 @@ For IE to verify client certs, the ordering in the DN must be strictly the same
 
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
-
-
-
-
-
-
-
-
-
