@@ -423,7 +423,9 @@ public class CertReqServlet extends HttpServlet {
                 String endKey = "-----END CERTIFICATE REQUEST-----";
                 buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
             } catch (IOException e) {
-                buffer = Base64.decode(b64Encoded);
+                String beginKey = "-----BEGIN NEW CERTIFICATE REQUEST-----";
+                String endKey = "-----END NEW CERTIFICATE REQUEST-----";
+                buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
             }
             ISignSessionRemote ss = home.create();
             cert = (X509Certificate) ss.createCertificate(username, password, buffer);
