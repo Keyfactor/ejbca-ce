@@ -20,7 +20,6 @@ import javax.ejb.EJBException;
 import javax.ejb.ObjectNotFoundException;
 
 import se.anatom.ejbca.BaseSessionBean;
-import se.anatom.ejbca.util.ServiceLocator;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.log.Admin;
@@ -35,7 +34,7 @@ import se.anatom.ejbca.ra.UserDataPK;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.29 2004-07-13 08:49:43 sbailliez Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.30 2004-07-14 07:50:24 anatom Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"
