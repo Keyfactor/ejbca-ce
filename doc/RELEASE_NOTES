@@ -1,7 +1,7 @@
 EJBCA V3.0.5
 ------------
 
-This is a plugin-upgrade from 3.0.3. 
+This is a plugin-upgrade from 3.0.4. 
 Apply patch, build and redeploy.
 
 For users of MS SQL 2000 you should note the column name 'rule_' (earlier 'rule' which is 
