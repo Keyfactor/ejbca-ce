@@ -16,7 +16,7 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.18 2004-02-11 10:45:16 herrvendil Exp $
+ * @version $Id: EndEntityProfile.java,v 1.19 2004-03-14 14:32:02 herrvendil Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -110,7 +110,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         data.put(SUBJECTALTNAMEFIELDORDER,new ArrayList());
 
         for(int i=0; i < NUMBEROFPARAMETERS; i++){
-          if(i != SENDNOTIFICATION){	
+          if(i != SENDNOTIFICATION &&
+          	 i != OTHERNAME &&
+			 i != X400ADDRESS &&
+			 i != EDIPARTNAME &&
+			 i != REGISTEREDID &&
+			 i != DIRECTORYNAME ){	
              addField(i);
              setValue(i,0,"");
              setRequired(i,0,false);
