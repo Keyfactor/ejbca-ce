@@ -39,7 +39,7 @@ import org.bouncycastle.jce.interfaces.*;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.28 2004-11-08 19:48:39 sbailliez Exp $
+ * @version $Id: KeyTools.java,v 1.29 2004-11-08 20:10:13 sbailliez Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
