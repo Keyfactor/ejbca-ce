@@ -12,7 +12,7 @@ package se.anatom.ejbca;
  * types. Constants for Token Types Token type is constructed of integer constants since only one
  * token type can be generated.
  *
- * @version $Id: SecConst.java,v 1.14 2003-08-19 11:50:34 anatom Exp $
+ * @version $Id: SecConst.java,v 1.15 2003-09-03 14:27:43 herrvendil Exp $
  */
 public class SecConst extends Object {
     // User types
@@ -48,9 +48,9 @@ public class SecConst extends Object {
 */
 
     /** Constants used in certificate generation and publication. */
-    public static final int CERTTYPE_ENDENTITY = 0x1;
-    public static final int CERTTYPE_CA = 0x2;
-    public static final int CERTTYPE_ROOTCA = 0x8;
+    public static final int CERTTYPE_ENDENTITY  =     0x1;    
+    public static final int CERTTYPE_SUBCA      =     0x2;
+    public static final int CERTTYPE_ROOTCA     =     0x8;        
 
     /** All bits used by Type. */
     public static final int USER_MASK = 0xff;
@@ -80,20 +80,34 @@ public class SecConst extends Object {
 
     // Certificate profiles.
 
+    public final static int NO_HARDTOKENISSUER            = 0;
+    public final static int CERTPROFILE_FIXED_ENDUSER = 1;
+    public final static int CERTPROFILE_FIXED_SUBCA = 2;
+    public final static int CERTPROFILE_FIXED_ROOTCA = 3;
+    
+    public final static int EMPTY_ENDENTITYPROFILE = 1; 
+
+    public final static int ALLCAS = 1; 
+        
     /**
      * Constants defining range of id's reserved for fixed certificate types. Observe fixed
      * certificates cannot have value 0.
      */
     public static final int FIXED_CERTIFICATEPROFILE_BOUNDRY = 1000;
     public static final int PROFILE_NO_PROFILE = 0;
-    public static final int NO_HARDTOKENISSUER = 0;
-    public static final int CERTPROFILE_FIXED_ENDUSER = 1;
-    public static final int CERTPROFILE_FIXED_CA = 2;
-    public static final int CERTPROFILE_FIXED_ROOTCA = 3;
-    public static final int EMPTY_ENDENTITYPROFILE = 1;
+
 
     /** Constant used to determine the size of the result from SQL select queries */
-    public static final int MAXIMUM_QUERY_ROWCOUNT = 100;
+    public static final int MAXIMUM_QUERY_ROWCOUNT = 100; 
+    
+    
+    /** Constans used to indicate status of a CA. */
+    public static final int CA_ACTIVE = 1;
+    public static final int CA_WAITING_CERTIFICATE_RESPONSE = 2;
+    public static final int CA_EXPIRED = 3;
+    public static final int CA_REVOKED = 4;
+    public static final int CA_INACTIVE = 5;
+
 
     /**
      * Prevents creation of new SecConst

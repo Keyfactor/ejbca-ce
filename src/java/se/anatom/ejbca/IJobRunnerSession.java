@@ -9,7 +9,7 @@ import se.anatom.ejbca.log.Admin;
  * JobRunner session wraps around any class and is a general session bean that can be used to
  * launch a specified job.
  *
- * @version $Id: IJobRunnerSession.java,v 1.6 2003-07-24 08:43:29 anatom Exp $
+ * @version $Id: IJobRunnerSession.java,v 1.7 2003-09-03 14:27:43 herrvendil Exp $
  */
 public interface IJobRunnerSession {
     /**
@@ -19,5 +19,5 @@ public interface IJobRunnerSession {
      *
      * @throws RemoteException error
      */
-    public void run(Admin admin) throws RemoteException;
+    public void run(Admin admin,String issuerdn) throws RemoteException;
 }

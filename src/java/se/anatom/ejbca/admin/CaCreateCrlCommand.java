@@ -3,7 +3,7 @@ package se.anatom.ejbca.admin;
 /**
  * Issues a new CRL from the CA.
  *
- * @version $Id: CaCreateCrlCommand.java,v 1.4 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: CaCreateCrlCommand.java,v 1.5 2003-09-03 14:32:02 herrvendil Exp $
  */
 public class CaCreateCrlCommand extends BaseCaAdminCommand {
     /**
@@ -22,9 +22,13 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-        try {
-            // createCRL prints info about crl generation
-            createCRL();
+        try {            
+            if (args.length < 2) {
+	       throw new IllegalAdminCommandException("Usage: CA createcrl <caname>");
+	    }	
+            String caname = args[1];	    
+            // createCRL prints info about crl generation            
+            createCRL(getIssuerDN(caname));
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

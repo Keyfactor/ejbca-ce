@@ -13,7 +13,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Generates keys and creates a keystore (PKCS12) to be used by the CA.
  *
- * @version $Id: CaMakeReqCommand.java,v 1.6 2003-07-24 08:43:29 anatom Exp $
+ * @version $Id: CaMakeReqCommand.java,v 1.7 2003-09-03 14:32:02 herrvendil Exp $
  */
 public class CaMakeReqCommand extends BaseCaAdminCommand {
     /**
@@ -32,6 +32,10 @@ public class CaMakeReqCommand extends BaseCaAdminCommand {
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
+        System.out.println("TODO");
+        //TODO
+        
+        /*
         if (args.length < 7) {
             String msg = "Usage: CA makereq <DN> <keysize> <rootca-certificate> <request-file> <keystore-file> <storepassword>";
             msg += "\nGenerates a certification request for a subCA for sending to a RootCA.";
@@ -45,6 +49,8 @@ public class CaMakeReqCommand extends BaseCaAdminCommand {
         String ksfile = args[5];
         String storepwd = args[6];
 
+
+        
         System.out.println("Generating cert request (and keystore):");
         System.out.println("DN: " + dn);
         System.out.println("Keysize: " + keysize);
@@ -75,11 +81,14 @@ public class CaMakeReqCommand extends BaseCaAdminCommand {
 
             FileOutputStream os = new FileOutputStream(ksfile);
             ks.store(os, storepwd.toCharArray());
-            System.out.println("Keystore '" + ksfile + "' generated successfully.");
+            System.out.println("Keystore '"+ksfile+"' generated successfully.");
+         
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
-    }
+         */
+    } // execute
+
 
     // execute
 }

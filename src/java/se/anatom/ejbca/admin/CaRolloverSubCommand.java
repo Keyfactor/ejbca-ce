@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Creates a new root certificate with new validity, using the same key.
  *
- * @version $Id: CaRolloverSubCommand.java,v 1.6 2003-07-24 08:43:29 anatom Exp $
+ * @version $Id: CaRolloverSubCommand.java,v 1.7 2003-09-03 14:32:02 herrvendil Exp $
  */
 public class CaRolloverSubCommand extends BaseCaAdminCommand {
     /**
@@ -34,6 +34,10 @@ public class CaRolloverSubCommand extends BaseCaAdminCommand {
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
+        System.out.println("TODO");
+        //TODO
+        
+        /*
         try {
             if (args.length < 5) {
                 System.out.println(
@@ -135,7 +139,7 @@ public class CaRolloverSubCommand extends BaseCaAdminCommand {
             e.printStackTrace();
             throw new ErrorAdminCommandException(e);
         }
-    }
+         */
+    } // execute
 
-    // execute
 }

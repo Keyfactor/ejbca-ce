@@ -59,47 +59,40 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
             BigInteger certificatesn = new BigInteger(args[1], 16);
             String issuerdn = args[2];
 
-            boolean usekeyrecovery = getAdminSession().loadGlobalConfiguration(administrator)
-                                         .getEnableKeyRecovery();
+             boolean usekeyrecovery = getRaAdminSession().loadGlobalConfiguration(administrator).getEnableKeyRecovery();  
+             if(!usekeyrecovery){
+               System.out.println("Keyrecovery have to be enabled in the system configuration in order to use this command.");
+               return;                   
+             }   
+              
+             X509Certificate cert = (X509Certificate) certificatesession.findCertificateByIssuerAndSerno(
+                                                                             administrator, CertTools.stringToBCDNString(issuerdn), 
+                                                                             certificatesn);
+              
+             if(cert == null){
+               System.out.println("Certificate couldn't be found in database.");
+               return;              
+             }
+              
+             String username = certificatesession.findUsernameByCertSerno(administrator, certificatesn, issuerdn);
+              
+             if(!keyrecoverysession.existsKeys(administrator,cert)){
+               System.out.println("Specified keys doesn't exist in database.");
+               return;                  
+             }
+              
+             if(keyrecoverysession.isUserMarked(administrator,username)){
+               System.out.println("User is already marked for recovery.");
+               return;                     
+             }
+  
+             keyrecoverysession.markAsRecoverable(administrator, 
+                                                  cert);
+        
+             getAdminSession().setUserStatus(administrator, username, UserDataRemote.STATUS_KEYRECOVERY); 
+ 
+             System.out.println("Keys corresponding to given certificate has been marked for recovery.");                           
 
-            if (!usekeyrecovery) {
-                System.out.println(
-                    "Keyrecovery have to be enabled in the system configuration in order to use this command.");
-
-                return;
-            }
-
-            X509Certificate cert = (X509Certificate) certificatesession.findCertificateByIssuerAndSerno(administrator,
-                    CertTools.stringToBCDNString(issuerdn), certificatesn);
-
-            if (cert == null) {
-                System.out.println("Certificate couldn't be found in database.");
-
-                return;
-            }
-
-            String username = certificatesession.findUsernameByCertSerno(administrator,
-                    certificatesn);
-
-            if (!keyrecoverysession.existsKeys(administrator, cert)) {
-                System.out.println("Specified keys doesn't exist in database.");
-
-                return;
-            }
-
-            if (keyrecoverysession.isUserMarked(administrator, username)) {
-                System.out.println("User is already marked for recovery.");
-
-                return;
-            }
-
-            keyrecoverysession.markAsRecoverable(administrator, cert);
-
-            getAdminSession().setUserStatus(administrator, username,
-                UserDataRemote.STATUS_KEYRECOVERY);
-
-            System.out.println(
-                "Keys corresponding to given certificate has been marked for recovery.");
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

@@ -3,24 +3,39 @@ package se.anatom.ejbca.admin;
 import javax.ejb.FinderException;
 import javax.naming.*;
 
+import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.HashMap;
+
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.hardtoken.AvailableHardToken;
-import se.anatom.ejbca.hardtoken.IHardTokenSessionHome;
-import se.anatom.ejbca.hardtoken.IHardTokenSessionRemote;
-import se.anatom.ejbca.ra.GlobalConfiguration;
-import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
+import se.anatom.ejbca.ca.sign.ISignSessionHome;
+import se.anatom.ejbca.ca.sign.ISignSessionRemote;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
+
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
+import se.anatom.ejbca.authorization.IAuthorizationSessionRemote;
+import se.anatom.ejbca.authorization.IAuthorizationSessionHome;
+import se.anatom.ejbca.authorization.AuthorizationDeniedException;
+
 import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
+import se.anatom.ejbca.hardtoken.IHardTokenSessionRemote;
+import se.anatom.ejbca.hardtoken.IHardTokenSessionHome;
+import se.anatom.ejbca.hardtoken.AvailableHardToken;
+
 
 
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.25 2003-08-19 11:50:34 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.26 2003-09-03 14:32:02 herrvendil Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
     /**
@@ -47,41 +62,51 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                     ICertificateStoreSessionHome.class);
             ICertificateStoreSessionRemote certificatesession = certificatesessionhome.create();
 
-            obj1 = jndicontext.lookup("RaAdminSession");
+            IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"),
+                                                                                 IRaAdminSessionHome.class);
 
-            IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup(
-                        "RaAdminSession"), IRaAdminSessionHome.class);
             IRaAdminSessionRemote raadminsession = raadminsessionhome.create();
 
-            String[] certprofnames = (String[]) certificatesession.getCertificateProfileNames(administrator)
-                                                                  .toArray((Object[]) new String[0]);
-            String[] endentityprofilenames = (String[]) raadminsession.getEndEntityProfileNames(administrator)
-                                                                      .toArray((Object[]) new String[0]);
 
-            GlobalConfiguration globalconfiguration = getAdminSession().loadGlobalConfiguration(administrator);
+            ICAAdminSessionHome caadminsessionhome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("CAAdminSession"),
+                                                                                 ICAAdminSessionHome.class);
+            ICAAdminSessionRemote caadminsession = caadminsessionhome.create();                       
+
+            IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("AuthorizationSession"),
+                                                                                 IAuthorizationSessionHome.class);
+            IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();                       
+            
+            
+            GlobalConfiguration globalconfiguration = raadminsession.loadGlobalConfiguration(administrator);
             boolean usehardtokens = globalconfiguration.getIssueHardwareTokens();
             boolean usekeyrecovery = globalconfiguration.getEnableKeyRecovery();
             String[] hardtokenissueraliases = null;
             AvailableHardToken[] availabletokens = new AvailableHardToken[0];
-            IHardTokenSessionRemote hardtokensession = null;
 
-            if (usehardtokens) {
-                IHardTokenSessionHome hardtokensessionhome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup(
-                            "HardTokenSession"), IHardTokenSessionHome.class);
-                hardtokensession = hardtokensessionhome.create();
-                hardtokenissueraliases = (String[]) hardtokensession.getHardTokenIssuerAliases(administrator)
-                                                                    .toArray((Object[]) new String[0]);
-                availabletokens = hardtokensession.getAvailableHardTokens();
-            }
+            IHardTokenSessionRemote hardtokensession=null;
+            if(usehardtokens){  
+              IHardTokenSessionHome hardtokensessionhome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("HardTokenSession"),
+                                                                                 IHardTokenSessionHome.class);
+              hardtokensession = hardtokensessionhome.create();
+              hardtokenissueraliases = (String[]) hardtokensession.getHardTokenIssuerAliases(administrator).toArray((Object[]) new String[0]);
+              availabletokens = hardtokensession.getAvailableHardTokens();
+            }  
+            
+            if (args.length < 9) {
+                Collection certprofileids = certificatesession.getAuthorizedCertificateProfileIds(administrator, SecConst.CERTTYPE_ENDENTITY);
+                HashMap certificateprofileidtonamemap = certificatesession.getCertificateProfileIdToNameMap(administrator);
+                
+                Collection endentityprofileids =  raadminsession.getAuthorizedEndEntityProfileIds(administrator);
+                HashMap endentityprofileidtonamemap = raadminsession.getEndEntityProfileIdToNameMap(administrator);
+                
+                Collection caids = authorizationsession.getAuthorizedCAIds(administrator);
+                HashMap caidtonamemap = caadminsession.getCAIdToNameMap(administrator);
+                
+                if( usehardtokens)
+                  System.out.println("Usage: RA adduser <username> <password> <dn> <subjectAltName> <caname> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] [<hardtokenissuer>]");
+                else
+                  System.out.println("Usage: RA adduser <username> <password> <dn> <subjectAltName> <caname> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] ");
 
-            if (args.length < 8) {
-                if (usehardtokens) {
-                    System.out.println(
-                        "Usage: RA adduser <username> <password> <dn> <subjectAltName> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] [<hardtokenissuer>]");
-                } else {
-                    System.out.println(
-                        "Usage: RA adduser <username> <password> <dn> <subjectAltName> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] ");
-                }
 
                 System.out.println("");
                 System.out.println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
@@ -108,31 +133,51 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 }
 
                 System.out.print("\n");
-                System.out.print("Existing certificate profiles  : ");
-
-                for (int i = 0; i < (certprofnames.length - 1); i++) {
-                    System.out.print(certprofnames[i] + ", ");
+                
+                
+                System.out.print("Existing cas  : ");
+                boolean first = true;
+                Iterator iter = caids.iterator();
+                while(iter.hasNext()){
+                  if(first)                    
+                    first= false;
+                  else
+                    System.out.print(", ");                      
+                  System.out.print(caidtonamemap.get(iter.next()));
                 }
+                System.out.print("\n");
+                
+                System.out.print("Existing certificate profiles  : ");
+                first = true;
+                iter = certprofileids.iterator();
+                while(iter.hasNext()){
+                  if(first)                    
+                    first= false;
+                  else
+                    System.out.print(", ");                      
+                  System.out.print(certificateprofileidtonamemap.get(iter.next()));
+                }
+                System.out.print("\n");
 
-                System.out.print(certprofnames[certprofnames.length - 1] + "\n");
 
                 System.out.print("Existing endentity profiles  : ");
-
-                for (int i = 0; i < (endentityprofilenames.length - 1); i++) {
-                    System.out.print(endentityprofilenames[i] + ", ");
+                first = true;
+                iter = endentityprofileids.iterator();
+                while(iter.hasNext()){
+                  if(first)                    
+                    first= false;
+                  else
+                    System.out.print(", ");                      
+                  System.out.print(endentityprofileidtonamemap.get(iter.next()));
                 }
-
-                System.out.print(endentityprofilenames[endentityprofilenames.length - 1] + "\n");
-
-                if (usehardtokens && (hardtokenissueraliases.length > 0)) {
-                    System.out.print("Existing hardtoken issuers  : ");
-
-                    for (int i = 0; i < (hardtokenissueraliases.length - 1); i++) {
-                        System.out.print(hardtokenissueraliases[i] + ", ");
-                    }
-
-                    System.out.print(hardtokenissueraliases[hardtokenissueraliases.length - 1] +
-                        "\n");
+                
+                System.out.print("\n");
+                if( usehardtokens && hardtokenissueraliases.length > 0){                
+                  System.out.print("Existing hardtoken issuers  : ");
+                  for(int i=0; i < hardtokenissueraliases.length-1; i++){
+                    System.out.print(hardtokenissueraliases[i] + ", ");
+                  }
+                  System.out.print(hardtokenissueraliases[hardtokenissueraliases.length-1] + "\n");               
                 }
 
                 System.out.println(
@@ -145,37 +190,43 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             String password = args[2];
             String dn = args[3];
             String subjectaltname = args[4];
-            String email = args[5];
-            int type = Integer.parseInt(args[6]);
-            int token = Integer.parseInt(args[7]);
-            int profileid = SecConst.EMPTY_ENDENTITYPROFILE;
+            String caname  = args[5];
+            String email = args[6];
+            int type  = Integer.parseInt(args[7]);
+            int token = Integer.parseInt(args[8]);
+            int profileid =  SecConst.EMPTY_ENDENTITYPROFILE;
+
             int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
             int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
             boolean error = false;
             boolean usehardtokenissuer = false;
 
-            if (args.length == 9) {
-                // Use certificate type, no end entity profile.
-                certificatetypeid = certificatesession.getCertificateProfileId(administrator,
-                        args[8]);
+            int caid = 0;
+            try{
+              caid = caadminsession.getCAInfo(administrator, caname).getCAId();
+            }catch(Exception e){               
+            }
+            
+            if(args.length == 10){
+              // Use certificate type, no end entity profile.
+              certificatetypeid = certificatesession.getCertificateProfileId(administrator, args[9]);
+
             }
 
-            if (args.length == 10) {
-                // Use certificate type and end entity profile.
-                profileid = raadminsession.getEndEntityProfileId(administrator, args[9]);
-                certificatetypeid = certificatesession.getCertificateProfileId(administrator,
-                        args[8]);
+            if(args.length == 11){
+              // Use certificate type and end entity profile.
+              profileid = raadminsession.getEndEntityProfileId(administrator, args[10]);
+              certificatetypeid = certificatesession.getCertificateProfileId(administrator, args[9]);
             }
 
-            if ((args.length == 11) && usehardtokens) {
-                // Use certificate type, end entity profile and hardtokenisseur.
-                profileid = raadminsession.getEndEntityProfileId(administrator, args[9]);
-                certificatetypeid = certificatesession.getCertificateProfileId(administrator,
-                        args[8]);
-                hardtokenissuerid = hardtokensession.getHardTokenIssuerId(administrator, args[10]);
-                usehardtokenissuer = true;
+            if(args.length == 12 && usehardtokens){
+              // Use certificate type, end entity profile and hardtokenisseur.
+              profileid = raadminsession.getEndEntityProfileId(administrator, args[10]);
+              certificatetypeid = certificatesession.getCertificateProfileId(administrator, args[9]);
+              hardtokenissuerid = hardtokensession.getHardTokenIssuerId(administrator,args[11]);
+              usehardtokenissuer = true;
             }
-
+            
             if (!validToken(token, usehardtokens, availabletokens)) {
                 System.out.println("Error : Invalid token id.");
                 error = true;
@@ -186,15 +237,20 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 error = true;
             }
 
-            if (profileid == 0) { // End entity profile not found i database.
-                System.out.println("Error : Couldn't find end entity profile in database.");
-                error = true;
+            if(profileid == 0){ // End entity profile not found i database.
+              System.out.println("Error : Couldn't find end entity profile in database." );
+              error = true;
             }
-
-            if (usehardtokenissuer && (hardtokenissuerid == SecConst.NO_HARDTOKENISSUER)) {
-                System.out.println("Error : Couldn't find hard token issuer in database.");
-                error = true;
+            
+            if(caid == 0){ // CA not found i database.
+              System.out.println("Error : Couldn't find CA in database." );
+              error = true;
             }
+            
+            if(usehardtokenissuer && hardtokenissuerid == SecConst.NO_HARDTOKENISSUER){
+              System.out.println("Error : Couldn't find hard token issuer in database." );
+              error = true;       
+            }  
 
             if ((token > SecConst.TOKEN_SOFT) &&
                     (hardtokenissuerid == SecConst.NO_HARDTOKENISSUER)) {
@@ -220,42 +276,34 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             } catch (FinderException e) {
             }
 
-            if (!error) {
-                System.out.println("Trying to add user:");
-                System.out.println("Username: " + username);
-                System.out.println("Password (hashed only): " + password);
-                System.out.println("DN: " + dn);
-                System.out.println("SubjectAltName: " + subjectaltname);
-                System.out.println("Email: " + email);
-                System.out.println("Type: " + type);
-                System.out.println("Token: " + token);
-                System.out.println("Certificate profile: " + certificatetypeid);
-                System.out.println("End entity profile: " + profileid);
 
-                if (subjectaltname.toUpperCase().equals("NULL")) {
-                    subjectaltname = null;
-                }
-
-                if (email.toUpperCase().equals("NULL")) {
-                    email = null;
-                }
-
-                try {
-                    getAdminSession().addUser(administrator, username, password,
-                        CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid,
-                        certificatetypeid, type, token, hardtokenissuerid);
-                    System.out.println("User '" + username + "' has been added.");
-                    System.out.println();
-                    System.out.println(
-                        "Note: If batch processing should be possible, \nalso use 'ra setclearpwd " +
-                        username + " <pwd>'.");
-                } catch (AuthorizationDeniedException e) {
-                    System.out.println("Error : Not authorized to add user to given profile.");
-                } catch (UserDoesntFullfillEndEntityProfile e) {
-                    System.out.println(
-                        "Error : Given userdata doesn't fullfill end entity profile. : " +
-                        e.getMessage());
-                }
+            if(!error){
+              System.out.println("Trying to add user:");
+              System.out.println("Username: "+username);
+              System.out.println("Password (hashed only): "+password);
+              System.out.println("DN: "+dn);
+              System.out.println("CA Name: "+caname);
+              System.out.println("SubjectAltName: "+subjectaltname);
+              System.out.println("Email: "+email);
+              System.out.println("Type: "+type);
+              System.out.println("Token: "+token);
+              System.out.println("Certificate profile: "+certificatetypeid);
+              System.out.println("End entity profile: "+profileid);
+              if (subjectaltname.toUpperCase().equals("NULL"))
+                  subjectaltname = null;
+              if (email.toUpperCase().equals("NULL"))
+                  email = null;
+              try{
+                getAdminSession().addUser(administrator, username, password, CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid, certificatetypeid,
+                                         type, token, hardtokenissuerid, caid);
+                System.out.println("User '"+username+"' has been added.");
+                System.out.println();
+                System.out.println("Note: If batch processing should be possible, \nalso use 'ra setclearpwd "+username+" <pwd>'.");
+              }catch(AuthorizationDeniedException e){
+                  System.out.println("Error : " + e.getMessage());
+              }catch(UserDoesntFullfillEndEntityProfile e){
+                 System.out.println("Error : Given userdata doesn't fullfill end entity profile. : " +  e.getMessage());
+              }
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

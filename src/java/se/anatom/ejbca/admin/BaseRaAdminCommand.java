@@ -8,12 +8,16 @@ import javax.naming.*;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
+import se.anatom.ejbca.log.Admin;
+
 
 
 /**
  * Base for RA commands, contains comom functions for RA operations
  *
- * @version $Id: BaseRaAdminCommand.java,v 1.8 2003-07-24 08:43:29 anatom Exp $
+ * @version $Id: BaseRaAdminCommand.java,v 1.9 2003-09-03 14:32:02 herrvendil Exp $
  */
 public abstract class BaseRaAdminCommand extends BaseAdminCommand {
     /**
@@ -24,6 +28,12 @@ public abstract class BaseRaAdminCommand extends BaseAdminCommand {
 
     /** Handle to AdminSessionHome */
     private static IUserAdminSessionHome cacheHome;
+
+    /** RaAdminSession handle, not static since different object should go to different session beans concurrently */
+    private IRaAdminSessionRemote raadminsession;
+    /** Handle to RaAdminSessionHome */
+    private static IRaAdminSessionHome raadminHomesession;    
+    
     protected Admin administrator = null;
 
     /**
@@ -33,18 +43,15 @@ public abstract class BaseRaAdminCommand extends BaseAdminCommand {
      */
     public BaseRaAdminCommand(String[] args) {
         super(args);
-    }
-
-    /**
-     * Gets user admin session
-     *
-     * @return InitialContext
+        administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER);
+    }    
+    
+    /** Gets user admin session
+     *@return InitialContext
      */
     protected IUserAdminSessionRemote getAdminSession()
         throws CreateException, NamingException, RemoteException {
         debug(">getAdminSession()");
-        administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER);
-
         try {
             if (cacheAdmin == null) {
                 if (cacheHome == null) {
@@ -64,7 +71,29 @@ public abstract class BaseRaAdminCommand extends BaseAdminCommand {
             error("Can't get Admin session", e);
             throw e;
         }
-    }
+    } // getAdminSession
+    
+    /** Gets ra admin session
+     *@return InitialContext
+     */
+    protected IRaAdminSessionRemote getRaAdminSession() throws CreateException, NamingException, RemoteException {
+        debug(">getRaAdminSession()");
+        administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER);
+        try {
+            if( raadminsession == null ) {
+                if (raadminHomesession == null) {
+                    Context jndiContext = getInitialContext();
+                    Object obj1 = jndiContext.lookup("RaAdminSession");
+                    raadminHomesession = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IRaAdminSessionHome.class);
+                }
+                raadminsession = raadminHomesession.create();
+            }
+            debug("<getRaAdminSession()");
+            return  raadminsession;
+        } catch (NamingException e ) {
+            error("Can't get RaAdmin session", e);
+            throw e;
+        }
+    } // getRaAdminSession    
 
-    // getAdminSession
 }

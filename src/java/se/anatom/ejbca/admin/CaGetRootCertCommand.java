@@ -1,6 +1,8 @@
 package se.anatom.ejbca.admin;
 
 import java.io.*;
+
+import java.util.ArrayList;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
@@ -8,7 +10,7 @@ import java.security.cert.X509Certificate;
 /**
  * Export root CA certificate.
  *
- * @version $Id: CaGetRootCertCommand.java,v 1.4 2003-07-24 08:43:29 anatom Exp $
+ * @version $Id: CaGetRootCertCommand.java,v 1.5 2003-09-03 14:32:02 herrvendil Exp $
  */
 public class CaGetRootCertCommand extends BaseCaAdminCommand {
     /**
@@ -27,17 +29,19 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-        if (args.length < 2) {
+        if (args.length < 3) {
             String msg = "Save root CA certificate (DER-format) to file.\n";
-            msg += "Usage: CA rootcert <filename>";
+            msg += "Usage: CA rootcert <caname> <filename>";
             throw new IllegalAdminCommandException(msg);
         }
 
-        String filename = args[1];
-
+        String caname = args[1];
+        String filename = args[2];
+        
         try {
-            Certificate[] chain = getCertChain();
-            X509Certificate rootcert = (X509Certificate) chain[chain.length - 1];
+            ArrayList chain = new ArrayList(getCertChain(caname));
+            X509Certificate rootcert = (X509Certificate)chain.get(chain.size()-1);
+
             FileOutputStream fos = new FileOutputStream(filename);
             fos.write(rootcert.getEncoded());
             fos.close();

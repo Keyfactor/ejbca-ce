@@ -18,7 +18,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 /**
  * Export profiles from the databse to XML-files.
  *
- * @version $Id: CaImportProfilesCommand.java,v 1.3 2003-08-24 13:40:22 anatom Exp $
+ * @version $Id: CaImportProfilesCommand.java,v 1.4 2003-09-03 14:32:02 herrvendil Exp $
  */
 public class CaImportProfilesCommand extends BaseCaAdminCommand {
     /**
@@ -38,6 +38,9 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
+            System.out.println("TODO");
+            //TODO
+            /*
             InitialContext jndicontext = new InitialContext();
 
             Object obj1 = jndicontext.lookup("CertificateStoreSession");
@@ -145,6 +148,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                     }
                 }
             }
+            */
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.FileTools;
 /**
  * Receive certification request and create certificate to send back.
  *
- * @version $Id: CaProcessReqCommand.java,v 1.8 2003-07-24 08:43:29 anatom Exp $
+ * @version $Id: CaProcessReqCommand.java,v 1.9 2003-09-03 14:32:02 herrvendil Exp $
  */
 public class CaProcessReqCommand extends BaseCaAdminCommand {
     /**
@@ -34,6 +34,10 @@ public class CaProcessReqCommand extends BaseCaAdminCommand {
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
+        System.out.println("TODO");
+        //TODO
+        
+        /*        
         try {
             if (args.length < 5) {
                 System.out.println(
@@ -82,7 +86,9 @@ public class CaProcessReqCommand extends BaseCaAdminCommand {
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
-    }
+         */
+    } // execute
+
 
     // execute
 }
