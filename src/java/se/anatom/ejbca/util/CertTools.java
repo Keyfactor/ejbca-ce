@@ -12,6 +12,7 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERInputStream;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import org.apache.log4j.Logger;
 
@@ -19,7 +20,7 @@ import org.apache.log4j.Logger;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.32 2003-03-07 12:16:55 anatom Exp $
+ * @version $Id: CertTools.java,v 1.33 2003-03-07 12:52:34 anatom Exp $
  */
 public class CertTools {
 
@@ -211,9 +212,21 @@ public class CertTools {
      * @param cert X409Certificate
      * @return String containing the subjects DN.
      */
-    public static String getSubjectDN(X509Certificate cert) {
+    public static String getSubjectDN(X509Certificate cert) throws CertificateException {
         log.debug(">getSubjectDN:");
-        CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
+        CertificateFactory cf = null;
+        try {
+            cf = CertificateFactory.getInstance("X.509", "BC");
+        } catch (NoSuchProviderException nspe) {
+            // Bouncy Castle security provider
+            Security.addProvider(new BouncyCastleProvider());
+            try {
+                cf = CertificateFactory.getInstance("X.509", "BC");
+            } catch (NoSuchProviderException nse) {
+                log.error("NoSuchProvider: ",nse);
+                return null;
+            }
+        }
         X509Certificate x509cert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(cert.getEncoded()));
         log.debug("Created certificate of class: "+x509cert.getClass().getName());
         log.debug("<getSubjectDN:");
