@@ -17,7 +17,7 @@ package se.anatom.ejbca.admin;
 /**
  * Implements the setup command line interface
  *
- * @version $Id: setup.java,v 1.3 2004-06-28 12:03:52 sbailliez Exp $
+ * @version $Id: setup.java,v 1.4 2004-09-26 09:57:21 anatom Exp $
  */
 public class setup {
     /**
@@ -32,8 +32,7 @@ public class setup {
             if (cmd != null) {
                 cmd.execute();
             } else {
-                System.out.println(
-                    "Usage: SETUP setbaseurl");
+                System.out.println("Usage: SETUP setbaseurl <computername> <applicationpath>");
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());            
