@@ -1,4 +1,4 @@
-$Id: TODO,v 1.8 2002-03-05 10:58:17 anatom Exp $
+$Id: TODO,v 1.9 2002-03-06 10:11:17 anatom Exp $
 
 V 1.0
 -----
@@ -9,7 +9,7 @@ V 2.0
 -----
 - Batch create keystores in other formats, PKCS8/PEM. Apache compatible.
 - Better architecture for JSPs (MVC - ModelViewController?).
-- Correct <ejb-ref> fåor beans in ejb-jar.xml.
+- Correct <ejb-ref> and <transaction-xx> for beans in ejb-jar.xml.
 - Certificate update/rollover for CAs and clients.
 - Sample Iptables firewall sripts for CA.
 - Possibility to warn about certificates about to expire.
