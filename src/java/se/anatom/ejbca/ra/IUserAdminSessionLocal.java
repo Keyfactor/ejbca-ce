@@ -75,6 +75,14 @@ public interface IUserAdminSessionLocal
    public void setClearTextPassword( se.anatom.ejbca.log.Admin admin,java.lang.String username,java.lang.String password ) throws se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile, se.anatom.ejbca.authorization.AuthorizationDeniedException, javax.ejb.FinderException;
 
    /**
+    * Verifies a password for a user.
+    * @param admin the administrator pwrforming the action
+    * @param username the unique username.
+    * @param password the password to be verified.
+    */
+   public boolean verifyPassword( se.anatom.ejbca.log.Admin admin,java.lang.String username,java.lang.String password ) throws se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile, se.anatom.ejbca.authorization.AuthorizationDeniedException, javax.ejb.FinderException;
+
+   /**
     * Method that revokes a user.
     * @param username the username to revoke.
     */

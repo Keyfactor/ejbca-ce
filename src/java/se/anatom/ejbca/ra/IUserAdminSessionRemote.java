@@ -81,6 +81,15 @@ public interface IUserAdminSessionRemote
       throws se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile, se.anatom.ejbca.authorization.AuthorizationDeniedException, javax.ejb.FinderException, java.rmi.RemoteException;
 
    /**
+    * Verifies a password for a user.
+    * @param admin the administrator pwrforming the action
+    * @param username the unique username.
+    * @param password the password to be verified.
+    */
+   public boolean verifyPassword( se.anatom.ejbca.log.Admin admin,java.lang.String username,java.lang.String password )
+      throws se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile, se.anatom.ejbca.authorization.AuthorizationDeniedException, javax.ejb.FinderException, java.rmi.RemoteException;
+
+   /**
     * Method that revokes a user.
     * @param username the username to revoke.
     */
