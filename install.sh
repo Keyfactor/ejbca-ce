@@ -61,17 +61,21 @@ then
 echo
 echo Importing certs in the JAVA trust store requires root privileges
 echo Enter the root password when prompted:
-if ! eval 'su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -delete -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass $JAVACACERTPASSWD"'
-then echo su failed. Please try again.
-  if ! eval 'su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -delete -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass $JAVACACERTPASSWD"'
+if eval '$JAVA_HOME/bin/keytool -alias EJBCA-CA -list -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit > /dev/null'
+then
+  if ! eval 'su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -delete -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit"'
   then echo su failed. Please try again.
-    if ! eval 'su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -delete -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass $JAVACACERTPASSWD"'
-    then echo Installation failed. Exiting...
-         exit    
+    if ! eval 'su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -delete -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit"'
+    then echo su failed. Please try again.
+      if ! eval 'su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -delete -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit"'
+      then echo Installation failed. Exiting...
+         exit
+      fi
     fi
   fi
+
+  echo and again...
 fi
-echo and again...
 
 if ! eval 'su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -import -trustcacerts -file tmp/rootca.der -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass $JAVACACERTPASSWD  -noprompt"'
 then echo su failed. Please try again.

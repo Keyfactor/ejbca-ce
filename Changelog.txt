@@ -33,6 +33,7 @@ Fixed bug with extra commas in publishers when selected DN components don't exis
 Changed 'Batch' text in adminweb to be more descriptive.
 Changed 'Use fields in DN' in adminweb to be more descriptive.
 Added StaticRegistering to CA hard token manager.
+Fixed error during install when CA-cert does not exist in java truststore.
 
 3.0.4
 -----
