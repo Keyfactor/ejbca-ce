@@ -125,10 +125,10 @@
         <env-entry-value>false</env-entry-value>
      </env-entry>
      <env-entry>
-        <description>CertificatePolicyId to put in CertificatePolicies</description>
+        <description>CertificatePolicyId to put in CertificatePolicies, 2.5.29.32.0 is anyPolicy defined in RFC3280</description>
         <env-entry-name>CertificatePolicyId</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>0.0.0.0</env-entry-value>
+        <env-entry-value>2.5.29.32.0</env-entry-value>
      </env-entry>
      <env-entry>
         <description>Use CRLDistributionPoint?</description>
