@@ -15,10 +15,10 @@ import org.apache.log4j.Logger;
 import se.anatom.ejbca.apply.RequestHelper;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.util.Base64;
 
 /**
@@ -39,7 +39,7 @@ import se.anatom.ejbca.util.Base64;
  * 7. output the result as a der encoded block on stdout
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.19 2003-07-24 08:43:31 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.20 2003-09-04 08:15:29 herrvendil Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);
@@ -62,8 +62,8 @@ public class ScepServlet extends HttpServlet {
 
             // Get EJB context and home interfaces
             InitialContext ctx = new InitialContext();
-            signhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class);
-        } catch (Exception e) {
+            signhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
+        } catch( Exception e ) {
             throw new ServletException(e);
         }
     }
@@ -116,7 +116,8 @@ public class ScepServlet extends HttpServlet {
                 byte[] scepmsg = Base64.decode(message.getBytes());
                 ISignSessionRemote signsession = signhome.create();
                 ScepPkiOpHelper helper = new ScepPkiOpHelper(administrator, signsession);
-
+                // We are not ready yet, so lets deny all requests for now...
+                //response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
                 // Read the message end get the cert, this also checksauthorization
                 byte[] reply = helper.scepCertRequest(scepmsg);
 
@@ -132,8 +133,8 @@ public class ScepServlet extends HttpServlet {
                 // TODO: check CA_IDENT for this request if we have more than one CA
                 // Send back DER-encoded CA cert with content-type 'application/x-x509-ca-cert'
                 ISignSessionRemote signsession = signhome.create();
-                Certificate[] certs = signsession.getCertificateChain(administrator);
-
+                Certificate[] certs = null;
+                //signsession.getCertificateChain(administrator); // TODO
                 if (certs.length == 0) {
                     response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error getting CA certificate");
                 }
@@ -156,7 +157,7 @@ public class ScepServlet extends HttpServlet {
                 log.error("Invalid parameter '" + operation);
 
                 // TODO: Send back proper Failure Response
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameter: " + operation);
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameter: "+operation);
             }
         } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
             log.error("Empty or invalid request received.", ae);

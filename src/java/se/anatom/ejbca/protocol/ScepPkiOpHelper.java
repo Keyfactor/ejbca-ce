@@ -17,13 +17,13 @@ import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
+import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 
 
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version $Id: ScepPkiOpHelper.java,v 1.19 2003-07-24 08:43:31 anatom Exp $
+ * @version  $Id: ScepPkiOpHelper.java,v 1.20 2003-09-04 08:15:28 herrvendil Exp $
  */
 public class ScepPkiOpHelper {
     private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);
@@ -40,7 +40,7 @@ public class ScepPkiOpHelper {
     public ScepPkiOpHelper(Admin admin, ISignSessionRemote signsession) {
         log.debug(">ScepPkiOpHelper");
         this.admin = admin;
-        this.signsession = signsession;
+        this.signsession = signsession; 
         log.debug("<ScepPkiOpHelper");
     }
 
