@@ -847,7 +847,7 @@ function checkUseInBatch(){
         <input type="checkbox" name="<%=CHECKBOX_ADMINISTRATOR%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% 
                                                                                                                if(profile.isRequired(EndEntityProfile.ADMINISTRATOR,0))
                                                                                                                  out.write(" disabled='true'"); 
-                                                                                                               if(profile.isRequired(EndEntityProfile.ADMINISTRATOR,0) || userdata.getAdministrator())
+                                                                                                               if(userdata.getAdministrator())
                                                                                                                  out.write(" CHECKED ");
                                                                                                              %>>  
       </td>
@@ -862,7 +862,7 @@ function checkUseInBatch(){
         <input type="checkbox" name="<%=CHECKBOX_KEYRECOVERABLE%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% 
                                                                                                                if(profile.isRequired(EndEntityProfile.KEYRECOVERABLE,0))
                                                                                                                  out.write(" disabled='true'"); 
-                                                                                                               if(profile.isRequired(EndEntityProfile.KEYRECOVERABLE,0) || userdata.getKeyRecoverable())
+                                                                                                               if( userdata.getKeyRecoverable())
                                                                                                                  out.write(" CHECKED ");
                                                                                                              %>>  
       </td>
@@ -877,7 +877,7 @@ function checkUseInBatch(){
         <input type="checkbox" name="<%=CHECKBOX_SENDNOTIFICATION%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% 
                                                                                                                if(profile.isRequired(EndEntityProfile.SENDNOTIFICATION,0))
                                                                                                                  out.write(" disabled='true'"); 
-                                                                                                               if(profile.isRequired(EndEntityProfile.SENDNOTIFICATION,0) || userdata.getSendNotification())
+                                                                                                               if( userdata.getSendNotification())
                                                                                                                  out.write(" CHECKED ");
                                                                                                              %>>  
       </td>
