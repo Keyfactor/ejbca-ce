@@ -44,6 +44,7 @@ import se.anatom.ejbca.util.StringTools;
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="LogEntryDataBean"
+ *   primkey-field="id"
  *
  * @ejb.permission role-name="InternalUser"
  *
