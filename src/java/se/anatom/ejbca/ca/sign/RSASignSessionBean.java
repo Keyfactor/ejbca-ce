@@ -84,7 +84,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.81 2003-03-31 09:08:27 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.82 2003-06-11 12:10:49 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -374,8 +374,6 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
             throw new SignRequestSignatureException("Verification of signature (popo) on certificate failed.");
         }
-
-        // TODO: extract more extensions than just KeyUsage
         Certificate ret = createCertificate(admin, username, password, cert.getPublicKey(), cert.getKeyUsage());
         debug("<createCertificate(cert)");
         return ret;
@@ -384,7 +382,6 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::createCertificate
      */
-
     public Certificate createCertificate(Admin admin, String username, String password, IRequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException {
         return createCertificate(admin, username, password, req, -1 );
     }
@@ -392,9 +389,8 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::createCertificate
      */
-
     public Certificate createCertificate(Admin admin, String username, String password, IRequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException {
-        debug(">createCertificate(pkcs10)");
+        debug(">createCertificate(user,pwd,IRequestMessage)");
         Certificate ret = null;
         try {
             try {
@@ -405,7 +401,6 @@ public class RSASignSessionBean extends BaseSessionBean {
                     logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"POPO verification failed.");
                     throw new EJBException("Verification of signature (popo) on request failed.");
                 }
-                // TODO: extract more information or attributes
                 PublicKey reqpk = req.getRequestPublicKey();
                 if (reqpk == null)
                     throw new InvalidKeyException("Key is null!");
@@ -429,14 +424,29 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (RemoteException re) {
             throw new EJBException(re);
         }
-        debug("<createCertificate(pkcs10)");
+        debug("<createCertificate(user,pwd,IRequestMessage)");
+        return ret;
+    }
+
+    /**
+     * Implements ISignSession::createCertificate
+     */
+    public Certificate createCertificate(Admin admin, IRequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException {
+        debug(">createCertificate(IRequestMessage)");
+        Certificate ret = null;
+        if (req.requireKeyInfo()) {
+            req.setKeyInfo(caCert, signingDevice.getPrivateDecKey());
+        }
+        String username = req.getUsername();
+        String pwd = req.getPassword();
+        ret = createCertificate(admin,username,pwd,req,keyUsage);
+        debug("<createCertificate(IRequestMessage)");
         return ret;
     }
 
     /**
      * Implements ISignSession::createCRL
      */
-
     public X509CRL createCRL(Admin admin, Vector certs) {
         debug(">createCRL()");
         X509CRL crl = null;

@@ -25,15 +25,15 @@ import se.anatom.ejbca.log.Admin;
 /** Creates certificates.
  * Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.11 2003-01-12 17:26:40 anatom Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.12 2003-06-11 12:10:50 anatom Exp $
  */
-
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
 
    /**
     * Retrieves the certificate chain for the signer.
     * The returned certificate chain MUST have the RootCA certificate in the last position.
     *
+    * @param admin Information about the administrator or admin preforming the event.
     * @return The certificate chain, never null.
     * @throws EJBException if a communication or other error occurs.
     */
@@ -42,6 +42,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     /**
      * Creates a signed PKCS7 message containing the whole certificate chain, including the provided client certificate.
      *
+     * @param admin Information about the administrator or admin preforming the event.
      * @param cert client certificate which we want ancapsulated in a PKCS7 together with certificate chain. If null, a PKCS7 with only CA certificate chain is returned.
      * @return The DER-encoded PCS7 message.
      * @throws SignRequestSignatureException is the provided client certificate was not signed by the CA.
@@ -53,6 +54,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     * Requests for a certificate to be created for the passed public key with default key usage
     * The method queries the user database for authorization of the user.
     *
+    * @param admin Information about the administrator or admin preforming the event.
     * @param username unique username within the instance.
     * @param password password for the user.
     * @param pk the public key to be put in the created certificate.
@@ -63,7 +65,6 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     * @throws AuthLoginException If the password is incorrect.
     * @throws EJBException if a communication or other error occurs.
     */
-
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException;
 
    /**
@@ -71,6 +72,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     * The method queries the user database for authorization of the user. CAs are only allowed to have
     * certificateSign and CRLSign set.
     *
+    * @param admin Information about the administrator or admin preforming the event.
     * @param username unique username within the instance.
     * @param password password for the user.
     * @param pk the public key to be put in the created certificate.
@@ -95,7 +97,6 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     * @throws AuthLoginException If the password is incorrect.
     * @throws EJBException if a communication or other error occurs.
     */
-
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, boolean[] keyusage) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException;
 
    /**
@@ -103,6 +104,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     * The method queries the user database for authorization of the user. CAs are only allowed to have
     * certificateSign and CRLSign set.
     *
+    * @param admin Information about the administrator or admin preforming the event.
     * @param username unique username within the instance.
     * @param password password for the user.
     * @param pk the public key to be put in the created certificate.
@@ -118,13 +120,13 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     * @throws AuthLoginException If the password is incorrect.
     * @throws EJBException if a communication or other error occurs.
     */
-
     public Certificate createCertificate(Admin admin,  String username, String password, PublicKey pk, int keyusage) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException;
 
     /**
     * Requests for a certificate of the specified type to be created for the passed public key.
     * The method queries the user database for authorization of the user.
     *
+    * @param admin Information about the administrator or admin preforming the event.
     * @param username unique username within the instance.
     * @param password password for the user.
     * @param certType integer type of certificate taken from CertificateData.CERT_TYPE_XXX.
@@ -141,7 +143,6 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     * @throws AuthLoginException If the password is incorrect.
     * @throws EJBException if a communication or other error occurs.
     */
-
     public Certificate createCertificate(Admin admin, String username, String password, int certType, PublicKey pk) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException;
 
    /**
@@ -149,6 +150,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     * Verification of the signature (proof-of-possesion) on the request is performed, and an exception thrown if verification fails.
     * The method queries the user database for authorization of the user.
     *
+    * @param admin Information about the administrator or admin preforming the event.
     * @param username unique username within the instance.
     * @param password password for the user.
     * @param incert a certificate containing the public key to be put in the created certificate.
@@ -161,33 +163,35 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     * @throws AuthLoginException If the password is incorrect.
     * @throws EJBException if a communication or other error occurs.
     */
-
     public Certificate createCertificate(Admin admin, String username, String password, Certificate incert) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestSignatureException;
 
    /**
-    * Requests for a certificate to be created for the passed public key wrapped in a PKCS10 certification request.
+    * Requests for a certificate to be created for the passed public key wrapped in a certification request message (ex PKCS10).
     * Verification of the signature (proof-of-possesion) on the request is performed, and an exception thrown if verification fails.
     * The method queries the user database for authorization of the user.
     *
+    * @param admin Information about the administrator or admin preforming the event.
     * @param username unique username within the instance.
     * @param password password for the user.
     * @param req a Certification Request message, containing the public key to be put in the created certificate. Currently no additional parameters in requests are considered!
     * Currently no additional parameters in the PKCS10 request is considered!
     *
+    * @see se.anatom.ejbca.protocol.IRequestMessage
+    * 
     * @return The newly created certificate or null.
     * @throws ObjectNotFoundException if the user does not exist.
     * @throws AuthStatusException If the users status is incorrect.
     * @throws AuthLoginException If the password is incorrect.
     * @throws EJBException if a communication or other error occurs.
     */
-
     public Certificate createCertificate(Admin admin, String username, String password, IRequestMessage req) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException;
 
    /**
-    * Requests for a certificate to be created for the passed public key wrapped in a PKCS10 certification request.
+    * Requests for a certificate to be created for the passed public key wrapped in a certification request message (ex PKCS10).
     * Verification of the signature (proof-of-possesion) on the request is performed, and an exception thrown if verification fails.
     * The method queries the user database for authorization of the user.
     *
+    * @param admin Information about the administrator or admin preforming the event.
     * @param username unique username within the instance.
     * @param password password for the user.
     * @param req a Certification Request message, containing the public key to be put in the created certificate. Currently no additional parameters in requests are considered!
@@ -196,6 +200,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     * ex. int keyusage = CertificateData.keyCertSign | CertificateData.cRLSign; gives keyCertSign and cRLSign
     *
     * @see se.anatom.ejbca.ca.store.CertificateData
+     * @see se.anatom.ejbca.protocol.IRequestMessage
     *
     * @return The newly created certificate or null.
     * @throws ObjectNotFoundException if the user does not exist.
@@ -203,18 +208,39 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     * @throws AuthLoginException If the password is incorrect.
     * @throws EJBException if a communication or other error occurs.
     */
-
     public Certificate createCertificate(Admin admin, String username, String password, IRequestMessage req, int keyUsage) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException;
+    /**
+     * Requests for a certificate to be created for the passed public key wrapped in a certification request message (ex PKCS10). 
+     * The username and password used to authorize is taken from the request message.
+     * Verification of the signature (proof-of-possesion) on the request is performed, and an exception thrown if verification fails.
+     * The method queries the user database for authorization of the user.
+     *
+     * @param admin Information about the administrator or admin preforming the event.
+     * @param req a Certification Request message, containing the public key to be put in the created certificate. Currently no additional parameters in requests are considered!
+     * @param keyusage integer with bit mask describing desired keys usage. Bit mask is packed in in integer using contants from CertificateData.
+     * ex. int keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives digitalSignature and nonRepudiation.
+     * ex. int keyusage = CertificateData.keyCertSign | CertificateData.cRLSign; gives keyCertSign and cRLSign
+     *
+     * @see se.anatom.ejbca.ca.store.CertificateData
+     * @see se.anatom.ejbca.protocol.IRequestMessage
+     *
+     * @return The newly created certificate or null.
+     * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException If the users status is incorrect.
+     * @throws AuthLoginException If the password is incorrect.
+     * @throws EJBException if a communication or other error occurs.
+     */
+    public Certificate createCertificate(Admin admin, IRequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException;
 
    /**
     * Requests for a CRL to be created with the passed (revoked) certificates.
     *
+    * @param admin Information about the administrator or admin preforming the event.
     * @param certs vector of RevokedCertInfo object.
     *
     * @return The newly created CRL or null.
     * @throws EJBException if a communication or other error occurs.
     */
-
     public X509CRL createCRL(Admin admin, Vector certs) throws RemoteException;
 
 
