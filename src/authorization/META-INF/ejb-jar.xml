@@ -124,7 +124,7 @@
       <cmp-field><field-name>pK</field-name></cmp-field>
       <cmp-field><field-name>adminGroupName</field-name></cmp-field>
       <cmp-field><field-name>cAId</field-name></cmp-field>
-      <primkey-field>pK</primkey-field>      
+      <primkey-field>pK</primkey-field>
       <ejb-local-ref>
         <ejb-ref-name>ejb/AdminEntityDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
@@ -195,8 +195,15 @@
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>AccessRulesDataBean</abstract-schema-name>
       <cmp-field><field-name>adminGroupName</field-name></cmp-field>
-       <cmp-field><field-name>caId</field-name></cmp-field>
-      <cmp-field><field-name>accessRuleObject</field-name></cmp-field>
+      <cmp-field><field-name>caId</field-name></cmp-field>
+      <cmp-field><field-name>accessRule</field-name></cmp-field>
+      <cmp-field><field-name>rule</field-name></cmp-field>
+      <cmp-field><field-name>isrecursive</field-name></cmp-field>
+       <primkey-field>adminGroupName</primkey-field>
+       <primkey-field>caId</primkey-field>
+       <primkey-field>accessRule</primkey-field>
+       <primkey-field>rule</primkey-field>
+       <primkey-field>isrecursive</primkey-field>
    </entity>
    <entity>
       <description>
