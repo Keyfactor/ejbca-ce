@@ -23,24 +23,10 @@ import se.anatom.ejbca.util.StringTools;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.9 2003-11-17 10:32:34 anatom Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.10 2004-01-12 14:12:55 anatom Exp $
  */
 public abstract class KeyRecoveryDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(KeyRecoveryDataBean.class);
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-	public abstract int getPK();
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param pK DOCUMENT ME!
-	 */
-	public abstract void setPK(int pK);
 
 	/**
 	 * DOCUMENT ME!
@@ -147,7 +133,6 @@ public abstract class KeyRecoveryDataBean extends BaseEntityBean {
 	public KeyRecoveryDataPK ejbCreate(BigInteger certificatesn, String issuerdn, String username,
 		KeyPair keypair) throws CreateException {
 		KeyRecoveryDataPK pk = new KeyRecoveryDataPK(certificatesn, issuerdn);
-		setPK(pk.pK);
 		setCertificateSN(certificatesn);
 		setIssuerDN(issuerdn);
 		setUsername(StringTools.strip(username));

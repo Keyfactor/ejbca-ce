@@ -2,7 +2,7 @@ package se.anatom.ejbca;
 
 /** Compount primary key for property entities.
  *
- * @version $Id: PropertyEntityPK.java,v 1.3 2004-01-09 11:20:56 anatom Exp $
+ * @version $Id: PropertyEntityPK.java,v 1.4 2004-01-12 14:12:52 anatom Exp $
  */
 
 public final class PropertyEntityPK implements java.io.Serializable {
@@ -37,7 +37,7 @@ public final class PropertyEntityPK implements java.io.Serializable {
      * @see java.lang.Object#hashCode()
      */
     public int hashCode() {
-        return this.id;
+        return this.id+this.property.hashCode();
     }
 
 }

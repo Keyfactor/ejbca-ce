@@ -3,10 +3,11 @@ package se.anatom.ejbca.keyrecovery;
 /**
  * Primary key for key recovery data
  *
- * @version $Id: KeyRecoveryDataPK.java,v 1.3 2003-09-03 11:27:06 herrvendil Exp $
+ * @version $Id: KeyRecoveryDataPK.java,v 1.4 2004-01-12 14:12:55 anatom Exp $
  */
 public final class KeyRecoveryDataPK implements java.io.Serializable {
-	public int pK;
+	public String certSN;
+    public String issuerDN;
 
 	/**
 	 * Creates a new KeyRecoveryDataPK object.
@@ -14,9 +15,9 @@ public final class KeyRecoveryDataPK implements java.io.Serializable {
 	 * @param certificatesn certificate serial number
 	 * @param issuerdn dn of issuer of certificate
 	 */
-	public KeyRecoveryDataPK(java.math.BigInteger certificatesn, java.lang.String issuerdn) {
-		this.pK = (((certificatesn == null) ? 0 : certificatesn.hashCode()) ^
-			((issuerdn == null) ? 0 : issuerdn.hashCode()));
+	public KeyRecoveryDataPK(java.math.BigInteger certSN, java.lang.String issuerDN) {
+        this.certSN = certSN.toString(16);
+        this.issuerDN = issuerDN;
 	}
 
 	/**
@@ -24,25 +25,29 @@ public final class KeyRecoveryDataPK implements java.io.Serializable {
 	 */
 	public KeyRecoveryDataPK() {
 	}
+    public String getCertSN() {
+        return certSN;
+    }
+    public String getIssuerDN() {
+        return issuerDN;
+    }
 
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
-	public boolean equals(java.lang.Object otherOb) {
-		if (!(otherOb instanceof se.anatom.ejbca.keyrecovery.KeyRecoveryDataPK)) {
-			return false;
-		}
-
-		se.anatom.ejbca.keyrecovery.KeyRecoveryDataPK other = (se.anatom.ejbca.keyrecovery.KeyRecoveryDataPK) otherOb;
-
-		return (pK == other.pK);
+	public boolean equals(java.lang.Object other) {
+        if (other instanceof KeyRecoveryDataPK) {
+           return ( (certSN.equals(((KeyRecoveryDataPK)other).certSN)) &&
+               (issuerDN.equals(((KeyRecoveryDataPK)other).issuerDN)) );
+        }
+        return false;
 	}
 
 	/**
 	 * @see java.lang.Object#hashCode()
 	 */
 	public int hashCode() {
-		return this.pK;
+		return (this.certSN+this.issuerDN).hashCode();
 	}
 
 }
