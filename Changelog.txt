@@ -1,6 +1,7 @@
 3.0
 ---
-Cleaned system.out debug logs
+Cleaned system.out debug logs.
+Digital signature in default key usage to make ocsp work out of the box.
 
 3.0 beta 3
 ----------

@@ -18,7 +18,7 @@ import java.util.ArrayList;
 /**
  * RootCACertificateProfile is a class defining the fixed characteristics of a root ca certificate profile.
  *
- * @version $Id: RootCACertificateProfile.java,v 1.11 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: RootCACertificateProfile.java,v 1.12 2004-05-22 10:52:47 anatom Exp $
  */
 public class RootCACertificateProfile extends CertificateProfile{
 
@@ -60,6 +60,7 @@ public class RootCACertificateProfile extends CertificateProfile{
 
       setUseKeyUsage(true);
       setKeyUsage(new boolean[9]);
+      setKeyUsage(DIGITALSIGNATURE,true);
       setKeyUsage(KEYCERTSIGN,true);
       setKeyUsage(CRLSIGN,true);
       setKeyUsageCritical(true);

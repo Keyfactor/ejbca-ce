@@ -68,6 +68,7 @@ public class CACertificateProfile extends CertificateProfile{
 
       setUseKeyUsage(true);
       setKeyUsage(new boolean[9]);
+      setKeyUsage(DIGITALSIGNATURE,true);
       setKeyUsage(KEYCERTSIGN,true);
       setKeyUsage(CRLSIGN,true);
       setKeyUsageCritical(true);
