@@ -419,7 +419,7 @@ END LDAP Publisher -->
         <description>attribute for storing CRLs.</description>
         <env-entry-name>cRLAttribute</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>"certificateRevocationList;binary"</env-entry-value>
+        <env-entry-value>certificateRevocationList;binary</env-entry-value>
      </env-entry>
    </session>
 END LDAP Publisher -->
