@@ -63,7 +63,7 @@ import java.util.Random;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.80 2005-03-02 11:25:40 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.81 2005-03-05 10:13:10 anatom Exp $
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
  * view-type="both"
@@ -260,7 +260,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             CertificateDataLocal data1 = null;
             data1 = certHome.create(cert);
             data1.setUsername(username);
-            data1.setcAFingerprint(cafp);
+            data1.setCAFingerprint(cafp);
             data1.setStatus(status);
             data1.setType(type);
         } catch (Exception e) {
@@ -287,7 +287,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         try {
             X509CRL crl = CertTools.getCRLfromByteArray(incrl);
             CRLDataLocal data1 = crlHome.create(crl, number);
-            data1.setcAFingerprint(cafp);
+            data1.setCAFingerprint(cafp);
             getLogSession().log(admin, crl.getIssuerDN().toString().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECRL, "Number : " + number + " Fingerprint : " + CertTools.getFingerprintAsString(crl) + ".");
         } catch (Exception e) {
             getLogSession().log(admin, LogConstants.INTERNALCAID, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL, "Number : " + number + ".");
@@ -725,7 +725,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
         try {
             CertificateDataLocal res = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
-            ret = new CertificateInfo(res.getFingerprint(), res.getcAFingerprint(), res.getSerialNumber(), res.getIssuerDN(), res.getSubjectDN(),
+            ret = new CertificateInfo(res.getFingerprint(), res.getCAFingerprint(), res.getSerialNumber(), res.getIssuerDN(), res.getSubjectDN(),
                     res.getStatus(), res.getType(), res.getExpireDate(), res.getRevocationDate(), res.getRevocationReason());
             debug("<getCertificateInfo()");
         } catch (FinderException fe) {

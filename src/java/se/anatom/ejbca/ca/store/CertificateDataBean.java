@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.31 2005-03-01 14:34:35 anatom Exp $
+ * @version $Id: CertificateDataBean.java,v 1.32 2005-03-05 10:13:10 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a certificate with accompanying data"
  * display-name="CertificateDataEB"
@@ -225,7 +225,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * @ejb.persistence
      * @ejb.interface-method
      */
-    public abstract String getcAFingerprint();
+    public abstract String getCAFingerprint();
 
     /**
      * Fingerprint of CA certificate
@@ -234,7 +234,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * @ejb.persistence
      * @ejb.interface-method
      */
-    public abstract void setcAFingerprint(String cAFingerprint);
+    public abstract void setCAFingerprint(String cAFingerprint);
 
     /**
      * status of certificate, ex CertificateData.CERT_ACTIVE
@@ -518,7 +518,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
             // Default values for status and type
             setStatus(CERT_UNASSIGNED);
             setType(SecConst.USER_INVALID);
-            setcAFingerprint(null);
+            setCAFingerprint(null);
             setExpireDate(tmpcert.getNotAfter());
             setRevocationDate(-1L);
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);

@@ -54,7 +54,7 @@ import java.util.HashMap;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.32 2005-03-02 11:25:42 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.33 2005-03-05 10:13:15 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
  * display-name="UserDataEB"
@@ -84,7 +84,7 @@ import java.util.HashMap;
  *   description="findBySubjectDN"
  *   view-type="local"
  *   signature="se.anatom.ejbca.ra.UserDataLocal findBySubjectDN(java.lang.String username, int caId)"
- *   query="SELECT DISTINCT OBJECT(a) from UserDataBean a WHERE a.subjectDN=?1 AND a.CAId=?2"
+ *   query="SELECT DISTINCT OBJECT(a) from UserDataBean a WHERE a.subjectDN=?1 AND a.caId=?2"
  * @ejb.finder
  *   view-type="remote"
  *   signature="se.anatom.ejbca.ra.UserDataRemote findBySubjectDN(java.lang.String username, int caId)"

@@ -38,7 +38,7 @@ import se.anatom.ejbca.util.CertTools;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.21 2005-03-02 11:25:40 anatom Exp $
+ * @version $Id: CRLDataBean.java,v 1.22 2005-03-05 10:13:10 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CRLDataEB"
@@ -82,13 +82,13 @@ public abstract class CRLDataBean extends BaseEntityBean {
      * @ejb.persistence
      * @ejb.interface-method
      */
-    public abstract int getcRLNumber();
+    public abstract int getCRLNumber();
 
     /**
      * @ejb.persistence
      * @ejb.interface-method
      */
-    public abstract void setcRLNumber(int cRLNumber);
+    public abstract void setCRLNumber(int cRLNumber);
 
     /**
      * @ejb.persistence
@@ -121,13 +121,13 @@ public abstract class CRLDataBean extends BaseEntityBean {
      * @ejb.persistence
      * @ejb.interface-method
      */
-    public abstract String getcAFingerprint();
+    public abstract String getCAFingerprint();
 
     /**
      * @ejb.persistence
      * @ejb.interface-method
      */
-    public abstract void setcAFingerprint(String cAFingerprint);
+    public abstract void setCAFingerprint(String cAFingerprint);
 
     /**
      * @ejb.persistence
@@ -264,8 +264,8 @@ public abstract class CRLDataBean extends BaseEntityBean {
             log.debug("Creating crldata, issuer=" + getIssuerDN());
 
             // Default values for cafp
-            setcAFingerprint(null);
-            setcRLNumber(number);
+            setCAFingerprint(null);
+            setCRLNumber(number);
             setThisUpdate(incrl.getThisUpdate());
             setNextUpdate(incrl.getNextUpdate());
         } catch (CRLException ce) {

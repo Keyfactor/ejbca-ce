@@ -114,22 +114,22 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
     /**
      * @ejb.persistence
      */
-    public abstract long getcTime();
+    public abstract long getCTime();
 
     /**
      * @ejb.persistence
      */
-    public abstract void setcTime(long createtime);
+    public abstract void setCTime(long createtime);
 
     /**
      * @ejb.persistence
      */
-    public abstract long getmTime();
+    public abstract long getMTime();
 
     /**
      * @ejb.persistence
      */
-    public abstract void setmTime(long modifytime);
+    public abstract void setMTime(long modifytime);
 
     /**
      * @ejb.persistence
@@ -168,22 +168,22 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
     /**
      * @ejb.interface-method view-type="local"
      */
-    public Date getCreateTime(){ return new Date(getcTime()); }
+    public Date getCreateTime(){ return new Date(getCTime()); }
 
     /**
      * @ejb.interface-method view-type="local"
      */
-    public void setCreateTime(Date createtime){ setcTime(createtime.getTime()); }
+    public void setCreateTime(Date createtime){ setCTime(createtime.getTime()); }
 
     /**
      * @ejb.interface-method view-type="local"
      */
-    public Date getModifyTime(){ return new Date(getmTime()); }
+    public Date getModifyTime(){ return new Date(getCTime()); }
 
     /**
      * @ejb.interface-method view-type="local"
      */
-    public void setModifyTime(Date modifytime){ setmTime(modifytime.getTime()); }
+    public void setModifyTime(Date modifytime){ setMTime(modifytime.getTime()); }
 
     /**
      * Method that returns the hard token issuer data and updates it if nessesary.
@@ -236,8 +236,8 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
     public String ejbCreate(String tokensn, String username, Date createtime, Date modifytime, int tokentype, String significantissuerdn, HardToken tokendata) throws CreateException {
         setTokenSN(tokensn);
         setUsername(StringTools.strip(username));
-        setcTime(createtime.getTime());
-        setmTime(modifytime.getTime());
+        setCTime(createtime.getTime());
+        setMTime(modifytime.getTime());
         setTokenType(tokentype);
         setSignificantIssuerDN(significantissuerdn);
         setHardToken(tokendata);
