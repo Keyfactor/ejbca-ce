@@ -55,7 +55,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.68 2003-11-02 10:37:01 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.69 2003-11-02 14:28:21 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -386,7 +386,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * Implements IUserAdminSession::deleteUser.
     * Implements a mechanism that uses UserData Entity Bean.
     */
-    public void deleteUser(Admin admin, String username) throws AuthorizationDeniedException, NotFoundException, FinderException, RemoveException{
+    public void deleteUser(Admin admin, String username) throws AuthorizationDeniedException, NotFoundException, RemoveException {
         debug(">deleteUser("+username+")");
         // Check if administrator is authorized to delete user.
         int caid = ILogSessionLocal.INTERNALCAID;
@@ -407,16 +407,16 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             }
           }
         }catch(FinderException e){
-          logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEENDENTITY,"Couldn't find username in database");
-          throw new NotFoundException("Couldn't find '"+username+"' in database");
+          logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEENDENTITY,"Could not find username in database");
+          throw new NotFoundException("Could not find '"+username+"' in database");
         }  
         try {
             UserDataPK pk = new UserDataPK(username);
             home.remove(pk);
             logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_DELETEDENDENTITY,"");
         } catch(EJBException e) {
-            logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEENDENTITY,"Couldn't find username in database");
-            throw new NotFoundException("Couldn't find '"+username+"' in database");
+            logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEENDENTITY,"Could not remove user from database");
+            throw new RemoveException("Could not remove '"+username+"' from database");
         }
         debug("<deleteUser("+username+")");
     } // deleteUser

@@ -17,7 +17,7 @@ import se.anatom.ejbca.util.query.Query;
 
 /**
  *
- * @version $Id: IUserAdminSessionLocal.java,v 1.3 2003-11-02 10:37:01 anatom Exp $
+ * @version $Id: IUserAdminSessionLocal.java,v 1.4 2003-11-02 14:28:21 anatom Exp $
  */
 public interface IUserAdminSessionLocal extends javax.ejb.EJBLocalObject {
 
@@ -45,7 +45,7 @@ public interface IUserAdminSessionLocal extends javax.ejb.EJBLocalObject {
    /**
     * @see se.anatom.ejbca.ra.IUserAdminSessionRemote
     */
-    public void deleteUser(Admin admin, String username) throws AuthorizationDeniedException, NotFoundException, FinderException, RemoveException;
+    public void deleteUser(Admin admin, String username) throws AuthorizationDeniedException, NotFoundException, RemoveException;
 
    /**
     * @see se.anatom.ejbca.ra.IUserAdminSessionRemote

@@ -20,7 +20,7 @@ import se.anatom.ejbca.util.query.Query;
 /**
  * Interface for User admin session
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.25 2003-11-02 10:37:00 anatom Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.26 2003-11-02 14:28:20 anatom Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     // Public constants
@@ -80,9 +80,11 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @param username the unique username.
     *
+    * @throws NotFoundException if the user does not exist
+    * @throws RemoveException if the user could not be removed
     * @throws EJBException if a communication or other error occurs.
     */
-    public void deleteUser(Admin admin, String username) throws AuthorizationDeniedException, NotFoundException, FinderException, RemoveException, RemoteException;
+    public void deleteUser(Admin admin, String username) throws AuthorizationDeniedException, NotFoundException, RemoveException, RemoteException;
 
    /**
     * Changes status of a user.
