@@ -727,7 +727,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 version="true"
                 use="true"
                 windowtitle="EJBCA API"
-                bottom="Copyright &#169; 2003 PrimeKey Solutions AB.">
+                bottom="Copyright &#169; 2004 PrimeKey Solutions AB.">
         </javadoc>
   </target>
 
