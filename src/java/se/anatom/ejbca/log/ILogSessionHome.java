@@ -9,7 +9,7 @@ import javax.ejb.EJBHome;
 /**
  * DOCUMENT ME!
  *
- * @version $Id: ILogSessionHome.java,v 1.3 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: ILogSessionHome.java,v 1.4 2003-09-04 08:05:02 herrvendil Exp $
  */
 public interface ILogSessionHome extends EJBHome {
     /**
@@ -20,5 +20,8 @@ public interface ILogSessionHome extends EJBHome {
      * @throws CreateException
      * @throws RemoteException
      */
-    ILogSessionRemote create() throws RemoteException, CreateException, Exception;
+
+    ILogSessionRemote create() throws RemoteException, CreateException;
+
 }
+

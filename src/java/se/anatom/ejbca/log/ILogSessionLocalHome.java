@@ -1,17 +1,23 @@
 package se.anatom.ejbca.log;
 
+import javax.ejb.CreateException;
 /**
  * DOCUMENT ME!
  *
- * @version $Id: ILogSessionLocalHome.java,v 1.3 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: ILogSessionLocalHome.java,v 1.4 2003-09-04 08:05:01 herrvendil Exp $
  */
 public interface ILogSessionLocalHome extends javax.ejb.EJBLocalHome {
+
     /**
      * Default create method. Maps to ejbCreate in implementation.
      *
-     * @return IRaAdminSessionRemote interface
+     * @return ILogSessionRemote interface
      *
      * @throws CreateException
      */
-    ILogSessionLocal create() throws Exception;
+
+    ILogSessionLocal create() throws CreateException;
+
+
 }
+
