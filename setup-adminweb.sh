@@ -62,7 +62,7 @@ then
 	SERVER_XML=jetty.xml
 else if [ -f $JBOSS_HOME/server/default/deploy/jbossweb-jetty.sar/META-INF/jboss-service.xml ]
 then
-	SERVER_XML=jetty.xml
+	SERVER_XML=jetty32.xml
 fi
 
 java -cp $CP se.anatom.ejbca.util.TomcatServiceXMLPasswordReplace src/adminweb/WEB-INF/$SERVER_XML tmp/$SERVER_XML $2
