@@ -1,4 +1,4 @@
-$Id: README,v 1.104 2003-11-10 09:40:37 anatom Exp $
+$Id: README,v 1.105 2003-11-17 09:22:18 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -853,6 +853,28 @@ If a profiles with the same name as the one beeing imported already exist, the p
 Import of profiles try to keep the same profile id. If there already exist a profile with the same id in the database, 
 you might have to edit the filename to choose another id. This can only be done if it is a new profile. 
 The reason the id is kept is that there are references to the profile id from users beloinging to the profile.
+
+KEY RECOVERY
+============
+Key Recovery can be used to re-use or restore a users private key. To enable key recovery use the admin-GUI:
+1. Set 'Enable Key Recovery' in 'System Configuration'.
+2. Create a new End Entity Profile and set ot use 'Key Recoverable'.
+3. Add users with this End Entity Profile.
+
+The following is an example of a sequence of commands that can be used to generate a new certificate for a user using the
+same key pair:
+
+# First revoke <username>, with revocation reason <reason>
+ra.sh revokeuser $username $reason
+
+# then mark the certificate for keyrecovery,
+ra.sh keyrecovernewest $username
+
+# then set clear text password for Batch session to use
+ra.sh setclearpwd $username $userpass
+
+# and finally reissue the certificate.
+batch.sh
 
 INTERNATIONALIZATION
 ====================
