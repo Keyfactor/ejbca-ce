@@ -43,7 +43,7 @@ import se.anatom.ejbca.util.CertTools;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.25 2004-03-10 16:00:10 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.26 2004-03-10 20:47:53 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);
@@ -140,6 +140,7 @@ public class ScepServlet extends HttpServlet {
                 // For example: "Content-Type:application/x-x509-ca-cert\n\n"<BER-encoded X509>
                 
                 // CA_IDENT is the message for this request to indicate which CA we are talking about
+                log.debug("Got SCEP cert request for CA '"+message+"'");
                 ISignSessionRemote signsession = signhome.create();
                 Collection certs = null;
                 ICAAdminSessionRemote caadminsession = caadminhome.create();          
@@ -151,8 +152,10 @@ public class ScepServlet extends HttpServlet {
                     // CAs certificate is in the first position in the Collection
                     Iterator iter = certs.iterator();
                     X509Certificate cert = (X509Certificate)iter.next();
+                    log.debug("Sent certificate for CA '"+message+"' to SCEP client.");
                     RequestHelper.sendNewX509CaCert(cert.getEncoded(), response);
                 } else {
+                    log.error("SCEP cert request for unknown CA '"+message+"'");
                     response.sendError(HttpServletResponse.SC_NOT_FOUND,
                         "No CA certificates found.");
                 }
@@ -162,13 +165,16 @@ public class ScepServlet extends HttpServlet {
                 // Content-Type of application/x-x509-ca-ra-cert-chain.
                 
                 // CA_IDENT is the message for this request to indicate which CA we are talking about
+                log.debug("Got SCEP pkcs7 request for CA '"+message+"'");
                 ICAAdminSessionRemote caadminsession = caadminhome.create();          
                 CAInfo cainfo = caadminsession.getCAInfo(administrator, message);
                 ISignSessionRemote signsession = signhome.create();
                 byte[] pkcs7 = signsession.createPKCS7(administrator, cainfo.getCAId());
                 if ( (pkcs7 != null) && (pkcs7.length > 0) ) {
+                    log.debug("Sent PKCS7 for CA '"+message+"' to SCEP client.");
                     RequestHelper.sendBinaryBytes(pkcs7, response, "application/x-x509-ca-ra-cert-chain");
                 } else {
+                    log.error("SCEP pkcs7 request for unknown CA '"+message+"'");
                     response.sendError(HttpServletResponse.SC_NOT_FOUND,
                         "No CA certificates found.");
                 }
