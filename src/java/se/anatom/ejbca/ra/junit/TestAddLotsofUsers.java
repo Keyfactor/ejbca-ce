@@ -15,7 +15,7 @@ import junit.framework.*;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestAddLotsofUsers.java,v 1.3 2003-03-04 15:21:44 herrvendil Exp $
+ * @version $Id: TestAddLotsofUsers.java,v 1.4 2003-03-07 15:38:34 anatom Exp $
  */
 public class TestAddLotsofUsers extends TestCase {
 
@@ -95,8 +95,8 @@ public class TestAddLotsofUsers extends TestCase {
             data1 = home.create(username, pwd, "C=SE, O=AnaTom, CN="+username);
             assertNotNull("Error creating", data1);
             */
-            int type  = 1;
-            int token = 1;
+            int type  = SecConst.USER_ENDUSER;
+            int token = SecConst.TOKEN_SOFT_P12;
             int profileid =  SecConst.EMPTY_ENDENTITYPROFILE;
             int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
             int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
