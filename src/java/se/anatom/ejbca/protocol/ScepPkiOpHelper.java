@@ -12,7 +12,7 @@ import org.bouncycastle.asn1.*;
 
 /** Helper class to handle SCEP PKIOperation messages.
 *
-* @version  $Id: ScepPkiOpHelper.java,v 1.2 2002-09-21 16:12:54 anatom Exp $
+* @version  $Id: ScepPkiOpHelper.java,v 1.3 2002-09-21 17:11:12 anatom Exp $
 */
 public class ScepPkiOpHelper {
 
@@ -41,6 +41,7 @@ public class ScepPkiOpHelper {
     private String messageType = null;
         
 	public ScepPkiOpHelper(byte[] msg) throws IOException {
+        cat.debug(">ScepPkiOpHelper");
 		// Parse and verify the entegrity of the PKIOperation message PKCS#7
 		// TODO: 
         /*
@@ -73,6 +74,7 @@ public class ScepPkiOpHelper {
                         cat.debug("Messagetype = "+messageType);
                 }
             }
+       cat.debug("<ScepPkiOpHelper");
 		}
 
 	}
