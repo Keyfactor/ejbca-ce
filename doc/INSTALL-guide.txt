@@ -1,20 +1,19 @@
     My LINUX+JBOSS+EJBCA+MYSQL+OPENLDAP How To
-    contributed by <surd0007(at)yahoo.com.cn>
+    originally contributed by <surd0007(at)yahoo.com.cn>
  
 (This install guide is a complement to the guide present in README).
-$Id: INSTALL-guide.txt,v 1.1 2003-09-16 07:59:04 anatom Exp $
+$Id: INSTALL-guide.txt,v 1.2 2004-01-07 19:31:46 anatom Exp $
 
  
  Softwares needed:
  	redhat8.0
  	j2sdk-1_4_0_02-linux-i586.bin
  	jboss-3.0.8.zip
- 	ejbca_2_0_1.zip
+ 	ejbca_3_0.zip
  	mysql-3.23.52-3(included in redhat CDs)
  	mysql-connector-java-3.0.8-stable-bin.jar(JDBC driver)
  	openldap-2.1.12(support BDB type)
  	
- 
  
  Install JDK1.4
  	#cp j2sdk-1_4_0_02-linux-i586.bin /usr
@@ -30,6 +29,7 @@ $Id: INSTALL-guide.txt,v 1.1 2003-09-16 07:59:04 anatom Exp $
  	#unzip jboss-3.0.8.zip
  	#cd jboss-3.0.8
  
+ 
  Install ant
  	#cp apache-ant-1.5.4-bin.tar.gz /usr/j2ee/
  	#tar xvfz apache-ant-1.5.4-bin.tar.gz
@@ -44,6 +44,7 @@ $Id: INSTALL-guide.txt,v 1.1 2003-09-16 07:59:04 anatom Exp $
  	export CLASSPATH=/usr/java/jre/lib/ext/:$CLASSPATH
  
  	Notes: In order to make the environment variables valid, logout and login again!
+ 
  
  Install mysql
  	because there is a bug in mysql included in REDHAT8.0, we need fix it:
@@ -63,24 +64,9 @@ program can use JDBC driver to connect to ejbca database with user ocsper and it
  
  
  Install EJBCA
- 	#cp ejbca_2_0_1.zip /usr/j2ee
- 	#unzip ejbca_2_0_1.zip
+ 	#cp ejbca_3_0.zip /usr/j2ee
+ 	#unzip ejbca_3_0.zip
  	#cd ejbca
- 
- 	Using vi to edit build.xml according to the following:
- 
- 	......
-     <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on"
-encoding="ascii">
-         <exclude name="**/CVS/**"/>
-         <include name="**/*.java"/>
-     </javac>
- 	......
- 
- 
- 	Compile ejbca source:
- 	#ant
- 	
  
  	Configure mysql:
  	#cd /usr/j2ee/ejbca
@@ -91,16 +77,16 @@ encoding="ascii">
 src/hardtoken/META-INF/jbosscmp-jdbc.xml
  	#cp src/keyrecovery/META-INF/jbosscmp-jdbc-mysql.xml
 src/keyrecovery/META-INF/jbosscmp-jdbc.xml
- 	#ant
- 	#ant deploy
+
+ 	Compile ejbca source adn deploy to application server:
+ 	#ant deploy 
  
  
- 	Configure JBOSS:
+ Configure JBOSS:
  	#cp mysql-connector-java-3.0.8-stable.tar.gz /usr
  	#tar xvfz mysql-connector-java-3.0.8-stable.tar.gz
  	#cd mysql-connector-java-3.0.8-stable
- 	#cp mysql-connector-java-3.0.8-stable-bin.jar $JBOSS_HOME/server/default/lib/
- 
+ 	#cp mysql-connector-java-3.0.8-stable-bin.jar $JBOSS_HOME/server/default/lib/ 
  
  	#cd /usr/j2ee/ejbca
  	#cp doc/mysql-service.xml $JBOSS_HOME/server/default/deploy/
@@ -133,20 +119,11 @@ type="java.lang.String">123456</config-property>
       <type-mapping>mySQL</type-mapping>
  	......
  
- 	#cd /usr/j2ee/ejbca
- 	#ant
- 	#ant deploy
- 	#./ca.sh makeroot "C=CN,O=NISEC,CN=EJBCA" 1024 365 null
-$JBOSS_HOME/server/default/conf/server.p12 foo123
- 
- 	
  	#cd $JBOSS_HOME/bin/
- 	#./run.sh   (pay attention to log info)
- 
- 
+ 	#./run.sh   (pay attention to log info, ejbca should deploy without errors)
+
  	#cd /usr/j2ee/ejbca
- 	#./ca.sh init	
- 
+ 	#./ca.sh init TestCA "C=CN,O=NISEC,CN=EJBCA" 2048 365 null
  
  Configure LDAP
  	/usr/local/etc/openldap/slapd.conf as follows:
@@ -161,14 +138,19 @@ $JBOSS_HOME/server/default/conf/server.p12 foo123
  	......
  
  	/usr/j2ee/ejbca/src/ca/ca/META-INF/ejb-jar.xml as follows:
- 
- 
- 
+ 	
+ 	Uncomment parts that says: 
+ 	<!-- Uncomment to use LDAP publisher -->
+ 	
+ 	edit part:
+ 	<session>
+       <ejb-name>PublisherSession1</ejb-name>
+ 	Specifically ldapHost, loginDN, loginPassword and containerName
  
  
  	#cd /usr/j2ee/ejbca
- 	#ant;ant deploy
+ 	#ant deploy
  
  	#cd $JBOSS_HOME/bin
- 	#run.sh
+ 	#./run.sh (if not running already)
         
