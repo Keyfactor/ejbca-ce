@@ -24,7 +24,6 @@ import java.util.Iterator;
 
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 
-import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
@@ -37,6 +36,7 @@ import se.anatom.ejbca.ca.exception.CAExistsException;
 import se.anatom.ejbca.ca.exception.CATokenAuthenticationFailedException;
 import se.anatom.ejbca.ca.exception.CATokenOfflineException;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
+import se.anatom.ejbca.ca.store.CertificateDataBean;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.log.Admin;
@@ -212,9 +212,9 @@ public class CADataHandler implements Serializable {
  public void publishCA(int caid){
  	CAInfo cainfo = caadminsession.getCAInfo(administrator, caid);
  	CertificateProfile certprofile = certificatesession.getCertificateProfile(administrator, cainfo.getCertificateProfileId());
- 	int certtype = SecConst.CERTTYPE_SUBCA;
+ 	int certtype = CertificateDataBean.CERTTYPE_SUBCA;
  	if(cainfo.getSignedBy() == CAInfo.SELFSIGNED)
- 	  certtype = SecConst.CERTTYPE_ROOTCA;
+ 	  certtype = CertificateDataBean.CERTTYPE_ROOTCA;
  	signsession.publishCACertificate(administrator, cainfo.getCertificateChain(), certprofile.getPublisherList() , certtype);
  }
  

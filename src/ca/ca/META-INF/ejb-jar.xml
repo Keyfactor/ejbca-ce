@@ -524,8 +524,6 @@
             This enterprise bean entity represents a certificate with accompanying data.
       </description>
       <ejb-name>CertificateData</ejb-name>
-      <home>se.anatom.ejbca.ca.store.CertificateDataHome</home>
-      <remote>se.anatom.ejbca.ca.store.CertificateData</remote>
       <local-home>se.anatom.ejbca.ca.store.CertificateDataLocalHome</local-home>
       <local>se.anatom.ejbca.ca.store.CertificateDataLocal</local>
       <ejb-class>se.anatom.ejbca.ca.store.CertificateDataBean</ejb-class>

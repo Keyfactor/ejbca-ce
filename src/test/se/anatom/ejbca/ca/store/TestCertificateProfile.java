@@ -25,13 +25,12 @@ import se.anatom.ejbca.log.Admin;
 /**
  * Tests the certificate profile entity bean.
  *
- * @version $Id: TestCertificateProfile.java,v 1.1 2004-06-10 16:17:44 sbailliez Exp $
+ * @version $Id: TestCertificateProfile.java,v 1.2 2004-07-23 10:24:42 anatom Exp $
  */
 public class TestCertificateProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestCertificateProfile.class);
-    private ICertificateStoreSessionRemote cacheAdmin;
 
-
+    private static ICertificateStoreSessionRemote cacheAdmin;
     private static ICertificateStoreSessionHome cacheHome;
 
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
@@ -46,21 +45,15 @@ public class TestCertificateProfile extends TestCase {
     }
 
     protected void setUp() throws Exception {
-
         log.debug(">setUp()");
-
         if (cacheAdmin == null) {
             if (cacheHome == null) {
                 Context jndiContext = getInitialContext();
                 Object obj1 = jndiContext.lookup("CertificateStoreSession");
                 cacheHome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-
             }
-
             cacheAdmin = cacheHome.create();
         }
-
-
         log.debug("<setUp()");
     }
 
@@ -69,10 +62,8 @@ public class TestCertificateProfile extends TestCase {
 
     private Context getInitialContext() throws NamingException {
         log.debug(">getInitialContext");
-
         Context ctx = new javax.naming.InitialContext();
         log.debug("<getInitialContext");
-
         return ctx;
     }
 
@@ -88,9 +79,7 @@ public class TestCertificateProfile extends TestCase {
         try {
             CertificateProfile profile = new CertificateProfile();
             profile.setCRLDistributionPointURI("TEST");
-
             cacheAdmin.addCertificateProfile(admin, "TEST", profile);
-
             ret = true;
         } catch (CertificateProfileExistsException pee) {
         }
@@ -125,7 +114,6 @@ public class TestCertificateProfile extends TestCase {
      */
     public void test03CloneCertificateProfile() throws Exception {
         log.debug(">test03CloneCertificateProfile()");
-
         boolean ret = false;
         try {
             cacheAdmin.cloneCertificateProfile(admin, "TEST2", "TEST");
@@ -133,7 +121,6 @@ public class TestCertificateProfile extends TestCase {
         } catch (CertificateProfileExistsException pee) {
         }
         assertTrue("Cloning Certificate Profile failed", ret);
-
         log.debug("<test03CloneCertificateProfile()");
     }
 

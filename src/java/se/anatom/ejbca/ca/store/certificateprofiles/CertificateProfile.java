@@ -15,20 +15,20 @@ package se.anatom.ejbca.ca.store.certificateprofiles;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Collection;
 
 import org.apache.log4j.Logger;
 
+import se.anatom.ejbca.ca.store.CertificateDataBean;
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
-import se.anatom.ejbca.SecConst;
 
 /**
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.22 2004-05-15 11:15:45 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.23 2004-07-23 10:24:43 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static Logger log = Logger.getLogger(CertificateProfile.class);
@@ -65,9 +65,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final String TRUE  = "true";
     public static final String FALSE = "false";
 
-    public static final int TYPE_ENDENTITY  = SecConst.CERTTYPE_ENDENTITY;
-    public static final int TYPE_SUBCA      = SecConst.CERTTYPE_SUBCA;
-    public static final int TYPE_ROOTCA     = SecConst.CERTTYPE_ROOTCA;
+    public static final int TYPE_ENDENTITY  = CertificateDataBean.CERTTYPE_ENDENTITY;
+    public static final int TYPE_SUBCA      = CertificateDataBean.CERTTYPE_SUBCA;
+    public static final int TYPE_ROOTCA     = CertificateDataBean.CERTTYPE_ROOTCA;
     public static final int NUMBER_OF_TYPES = 3;
 
     /** Supported certificate versions. */

@@ -13,8 +13,10 @@
  
 package se.anatom.ejbca.protocol;
 
-import java.io.*;
-
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
@@ -30,6 +32,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERGeneralizedTime;
@@ -41,12 +45,18 @@ import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.ocsp.*;
+import org.bouncycastle.ocsp.BasicOCSPResp;
+import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
+import org.bouncycastle.ocsp.CertificateID;
+import org.bouncycastle.ocsp.CertificateStatus;
+import org.bouncycastle.ocsp.OCSPException;
+import org.bouncycastle.ocsp.OCSPReq;
+import org.bouncycastle.ocsp.OCSPResp;
+import org.bouncycastle.ocsp.OCSPRespGenerator;
+import org.bouncycastle.ocsp.Req;
+import org.bouncycastle.ocsp.RevokedStatus;
+import org.bouncycastle.ocsp.UnknownStatus;
 
-import org.apache.log4j.Logger;
-import org.apache.commons.lang.StringUtils;
-
-import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
@@ -60,20 +70,21 @@ import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
+import se.anatom.ejbca.ca.store.CertificateDataBean;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.exception.MalformedRequestException;
 import se.anatom.ejbca.protocol.exception.NotSupportedException;
-import se.anatom.ejbca.util.Hex;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.Hex;
 
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.31 2004-05-19 13:30:49 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.32 2004-07-23 10:24:41 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -108,12 +119,12 @@ public class OCSPServlet extends HttpServlet {
     */
     protected synchronized void loadCertificates() 
         throws IOException {
-        // Kolla om vi har en cachad collection och om den inte är för gammal
+        // Kolla om vi har en cachad collection och om den inte ?r f?r gammal
         if ( m_cacerts != null && m_certValidTo > new Date().getTime() ) {
             return;
         }
         try {
-            m_cacerts = m_certStore.findCertificatesByType(m_adm, SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ROOTCA, null);
+            m_cacerts = m_certStore.findCertificatesByType(m_adm, CertificateDataBean.CERTTYPE_SUBCA + CertificateDataBean.CERTTYPE_ROOTCA, null);
             m_certValidTo = new Date().getTime() + VALID_TIME;
         } catch (Exception e) {
             m_log.error("Unable to load CA certificates from CA store.", e);

@@ -47,7 +47,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.1 2004-06-10 16:17:44 sbailliez Exp $
+ * @version $Id: TestSignSession.java,v 1.2 2004-07-23 10:24:42 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -445,13 +445,13 @@ public class TestSignSession extends TestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            UserDataRemote createdata = userhome.create("swede", "foo123", "C=SE, O=���, CN=���", caid);
+            UserDataRemote createdata = userhome.create("swede", "foo123", "C=SE, O=?????????, CN=?????????", caid);
             assertNotNull("Failed to create user foo", createdata);
             createdata.setType(SecConst.USER_ENDUSER);
             createdata.setSubjectEmail("swede@anatom.se");
             createdata.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
             createdata.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
-            log.debug("created user: swede, foo123, C=SE, O=���, CN=���");
+            log.debug("created user: swede, foo123, C=SE, O=?????????, CN=?????????");
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
                 userExists = true;
@@ -474,7 +474,7 @@ public class TestSignSession extends TestCase {
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         assertEquals("Wrong DN med swedechars", CertTools.getSubjectDN(cert),
-                CertTools.stringToBCDNString("C=SE, O=���, CN=���"));
+                CertTools.stringToBCDNString("C=SE, O=?????????, CN=?????????"));
         //FileOutputStream fos = new FileOutputStream("swedecert.crt");
         //fos.write(cert.getEncoded());
         //fos.close();

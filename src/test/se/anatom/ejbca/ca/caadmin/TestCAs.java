@@ -32,7 +32,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.1 2004-06-10 16:17:43 sbailliez Exp $
+ * @version $Id: TestCAs.java,v 1.2 2004-07-23 10:24:42 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -146,6 +146,7 @@ public class TestCAs extends TestCase {
 
             ret = true;
         } catch (CAExistsException pee) {
+            log.info("CA exists.");
         }
 
         assertTrue("Creating CA failed", ret);

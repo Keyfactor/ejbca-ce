@@ -33,7 +33,7 @@ import se.anatom.ejbca.log.Admin;
  * check for revocation etc. the CertificateStoreSession implements the interface
  * ICertificateStoreSession. Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.28 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.29 2004-07-23 10:24:42 anatom Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject {
 
@@ -45,7 +45,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject {
      * @param chainfp Fingerprint (hex) of the CAs certificate.
      * @param username username of end entity owning the certificate.
      * @param status Status of the certificate (from CertificateData).
-     * @param type Type of certificate (from SecConst).
+     * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateDataBean).
      *
      * @return true if storage was successful.
      *
@@ -181,9 +181,22 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject {
 
 
     /**
+     * Finds certificate info with specified fingerprint.
+     *
+     * @param admin Administrator performing the operation
+     * @param fingerprint fingerprint of the searhced certifictae
+     * @return certificate or null if certificate doesn't exists
+     *
+     * @throws RemoteException if a communication or other error occurs.
+     */
+    public CertificateInfo getCertificateInfo(Admin admin, String fingerprint)
+        throws RemoteException;
+    
+    /**
      * Finds certificate with specified fingerprint.
      *
      * @param admin Administrator performing the operation
+     * @param fingerprint fingerprint of the searhced certifictae
      * @return certificate or null if certificate doesn't exists
      *
      * @throws RemoteException if a communication or other error occurs.
@@ -211,7 +224,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject {
 	 * given from a specific issuer.
 	 *
 	 * The type is the bitwise OR value of the types listed
-	 * int {@link se.anatom.ejbca.SecConst}:<br>
+	 * int {@link se.anatom.ejbca.ca.store.CertificateDataBean}:<br>
 	 * <ul>
 	 * <li><tt>CERTTYPE_ENDENTITY</tt><br>
 	 * An user or machine certificate, which identifies a subject.
@@ -232,7 +245,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject {
 	 * ...
 	 * ICertificateStoreSessionRemote itf = ...
 	 * Collection certs = itf.findCertificatesByType(adm,
-	 *                                               SecConst.CERTTYPE_ROOTCA,
+	 *                                               CertificateDataBean.CERTTYPE_ROOTCA,
 	 *                                               null);
 	 * ...
 	 * </code>
@@ -247,7 +260,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject {
 	 * Certficate rootCA = ...
 	 * String issuer = rootCA.getSubjectDN();
 	 * Collection certs = itf.findCertificatesByType(adm,
-	 *                                               SecConst.CERTTYPE_SUBCA,
+	 *                                               CertificateDataBean.CERTTYPE_SUBCA,
 	 *                                               issuer);
 	 * ...
 	 * </code>
@@ -258,7 +271,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject {
 	 * ...
 	 * ICertificateStoreSessionRemote itf = ...
 	 * Collection certs = itf.findCertificatesByType(adm,
-	 *                                               SecConst.CERTTYPE_SUBCA
+	 *                                               CertificateDataBean.CERTTYPE_SUBCA
 	 *                                               + CERTTYPE_ROOTCA,
 	 *                                               null);
 	 * ...
@@ -267,7 +280,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject {
 	 * </ol>
 	 *
      * @param admin Administrator performing the operation
-	 * @param type CERTTYPE_* types from SecConst 
+	 * @param type CERTTYPE_* types from CertificateDataBean
 	 * @param issuerDN get all certificates issued by a specific issuer.
 	 *                 If <tt>null</tt> or empty return certificates regardless of
 	 *                 the issuer.
@@ -460,7 +473,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject {
      * Retrives a Collection of id:s (Integer) to authorized profiles.
      *
      * @param admin Administrator performing the operation
-     * @param certprofiletype should be either SecConst.CERTTYPE_ENDENTITY, SecConst.CERTTYPE_SUBCA, SecConst.CERTTYPE_ROOTCA or 0 for all. 
+     * @param certprofiletype should be either CertificateDataBean.CERTTYPE_ENDENTITY, CertificateDataBean.CERTTYPE_SUBCA, CertificateDataBean.CERTTYPE_ROOTCA or 0 for all. 
      */
     public Collection getAuthorizedCertificateProfileIds(Admin admin, int certprofiletype) throws RemoteException;
     

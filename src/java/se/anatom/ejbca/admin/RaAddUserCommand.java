@@ -27,6 +27,7 @@ import se.anatom.ejbca.authorization.IAuthorizationSessionHome;
 import se.anatom.ejbca.authorization.IAuthorizationSessionRemote;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
+import se.anatom.ejbca.ca.store.CertificateDataBean;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.hardtoken.IHardTokenSessionHome;
@@ -43,7 +44,7 @@ import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.34 2004-05-30 17:44:34 herrvendil Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.35 2004-07-23 10:24:44 anatom Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 	
@@ -114,7 +115,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             }  
             
             if (args.length < 9) {
-                Collection certprofileids = certificatesession.getAuthorizedCertificateProfileIds(administrator, SecConst.CERTTYPE_ENDENTITY);
+                Collection certprofileids = certificatesession.getAuthorizedCertificateProfileIds(administrator, CertificateDataBean.CERTTYPE_ENDENTITY);
                 HashMap certificateprofileidtonamemap = certificatesession.getCertificateProfileIdToNameMap(administrator);
                 
                 Collection endentityprofileids =  raadminsession.getAuthorizedEndEntityProfileIds(administrator);

@@ -16,9 +16,9 @@ package se.anatom.ejbca.webdist.hardtokeninterface;
 import java.io.Serializable;
 import java.util.HashSet;
 
-import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
+import se.anatom.ejbca.ca.store.CertificateDataBean;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.hardtoken.HardTokenProfileExistsException;
 import se.anatom.ejbca.hardtoken.IHardTokenSessionLocal;
@@ -156,7 +156,7 @@ public class HardTokenProfileDataHandler implements Serializable {
           authorizationsession.isAuthorizedNoLog(administrator, "/hardtoken_functionality/edit_hardtoken_profiles");
           
         
-  	      HashSet authorizedcertprofiles = new HashSet(certificatesession.getAuthorizedCertificateProfileIds(administrator, SecConst.CERTTYPE_HARDTOKEN));	  	   	  
+  	      HashSet authorizedcertprofiles = new HashSet(certificatesession.getAuthorizedCertificateProfileIds(administrator, CertificateDataBean.CERTTYPE_HARDTOKEN));	  	   	  
         		  
 		  if(profile instanceof EIDProfile){		  	
 		  	if(authorizedcertprofiles.containsAll(((EIDProfile) profile).getAllCertificateProfileIds())){

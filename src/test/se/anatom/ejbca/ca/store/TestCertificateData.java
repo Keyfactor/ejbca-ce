@@ -13,6 +13,7 @@
 
 package se.anatom.ejbca.ca.store;
 
+import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
@@ -32,7 +33,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.1 2004-06-10 16:17:44 sbailliez Exp $
+ * @version $Id: TestCertificateData.java,v 1.2 2004-07-23 10:24:42 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -51,10 +52,11 @@ public class TestCertificateData extends TestCase {
 
     private static Logger log = Logger.getLogger(TestCertificateData.class);
     private static Context ctx;
-    private static CertificateDataHome home;
     private static ICertificateStoreSessionHome storehome;
     private static X509Certificate cert;
     private static long revDate;
+    private static Admin admin = null;
+    private static boolean certAlreadyExists = false;
 
     /**
      * Creates a new TestCertificateData object.
@@ -69,9 +71,8 @@ public class TestCertificateData extends TestCase {
         log.debug(">setUp()");
         CertTools.installBCProvider();
 
+        admin = new Admin(Admin.TYPE_INTERNALUSER);
         ctx = getInitialContext();
-        Object obj = ctx.lookup("CertificateData");
-        home = (CertificateDataHome) javax.rmi.PortableRemoteObject.narrow(obj, CertificateDataHome.class);
         Object obj2 = ctx.lookup("CertificateStoreSession");
         storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
         cert = CertTools.getCertfromByteArray(testcert);
@@ -97,20 +98,22 @@ public class TestCertificateData extends TestCase {
         log.debug(">test01CreateNewCert()");
         X509Certificate cert = CertTools.getCertfromByteArray(testcert);
         CertificateDataPK pk = new CertificateDataPK();
-        pk.fingerprint = CertTools.getFingerprintAsString(cert);
-        log.debug("keyed it! =" + pk);
+        String fp = CertTools.getFingerprintAsString(cert);
 
-        CertificateData data1 = null;
+        ICertificateStoreSessionRemote store = storehome.create();
         try {
-            data1 = home.create(cert);
-            assertNotNull("Failed to create", data1);
-            log.debug("created it!");
-        } catch (javax.ejb.DuplicateKeyException e) {
-            home.remove(pk);
-            log.debug("Removed it!");
-            data1 = home.create(cert);
-            assertNotNull("Failed to create", data1);
-            log.debug("created it!");
+            Certificate ce = store.findCertificateByFingerprint(admin,fp);
+            if (ce != null) {
+                log.info("Certificate with fp="+fp+" already exists in db, cannot add.");
+                certAlreadyExists = true;
+                return;
+            }
+        	boolean ret = store.storeCertificate(admin, cert, "foo", "1234", CertificateDataBean.CERT_INACTIVE, CertificateDataBean.CERT_TYPE_ENCRYPTION);
+            assertTrue("Failed to store", ret);
+            log.debug("stored it!");
+        } catch (RemoteException e) {
+            log.error("Error storing certificate: ",e);
+            assertTrue("Error storing certificate.", false);
             return;
         }
         log.debug("<test01CreateNewCert()");
@@ -123,28 +126,46 @@ public class TestCertificateData extends TestCase {
      */
     public void test02FindAndChange() throws Exception {
         log.debug(">test02FindAndChange()");
-        CertificateDataPK pk = new CertificateDataPK();
-        pk.fingerprint = CertTools.getFingerprintAsString(cert);
-        CertificateData data2 = home.findByPrimaryKey(pk);
-        assertNotNull("Failed to find cert", data2);
-        log.debug("found by key! =" + data2);
-        log.debug("fp=" + data2.getFingerprint());
-        log.debug("issuer=" + data2.getIssuerDN());
-        log.debug("subject=" + data2.getSubjectDN());
-        log.debug("cafp=" + data2.getCAFingerprint());
-        log.debug("status=" + data2.getStatus());
-        log.debug("type=" + data2.getType());
-        log.debug("serno=" + data2.getSerialNumber());
-        log.debug("expiredate=" + data2.getExpireDate());
-        log.debug("revocationdate=" + data2.getRevocationDate());
-        log.debug("revocationreason=" + data2.getRevocationReason());
-
-        data2.setCAFingerprint("12345");
-        data2.setStatus(CertificateData.CERT_REVOKED);
-        data2.setType(SecConst.USER_ENDUSER);
-        data2.setRevocationDate(new Date());
-        data2.setRevocationReason(RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
-        log.debug("Changed it");
+        String fp = CertTools.getFingerprintAsString(cert);
+        ICertificateStoreSessionRemote store = storehome.create();
+        try {
+            X509Certificate ce = (X509Certificate)store.findCertificateByFingerprint(admin,fp);
+            assertNotNull("Cannot find certificate with fp="+fp,ce);
+            CertificateInfo info = store.getCertificateInfo(admin, fp);
+            assertEquals("fingerprint does not match.",fp,info.getFingerprint());
+            assertEquals("CAfingerprint does not match.","1234",info.getCAFingerprint());
+            assertEquals("serialnumber does not match.",ce.getSerialNumber(),info.getSerialNumber());
+            assertEquals("issuerdn does not match.",CertTools.getIssuerDN(ce),info.getIssuerDN());
+            assertEquals("subjectdn does not match.",CertTools.getSubjectDN(ce),info.getSubjectDN());
+            // Om certet redan finns ?r status troligen 40, d? har vi k?rt testen tidigare
+            if (certAlreadyExists) {
+                assertEquals("status does not match.",CertificateDataBean.CERT_REVOKED,info.getStatus());
+            } else {
+                assertEquals("status does not match.",CertificateDataBean.CERT_INACTIVE,info.getStatus());                
+            }
+            assertEquals("type does not match.",CertificateDataBean.CERT_TYPE_ENCRYPTION,info.getType());
+            assertEquals("exiredate does not match.",ce.getNotAfter(),info.getExpireDate());
+            // Om certet redan finns ?r reason troligen 3, d? har vi k?rt testen tidigare
+            if (certAlreadyExists) {
+                assertEquals("revocation reason does not match.",RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED,info.getRevocationReason());
+            } else {
+                assertEquals("revocation reason does not match.",RevokedCertInfo.NOT_REVOKED,info.getRevocationReason());
+            }
+            log.info("revocationdate (before rev)=" + info.getRevocationDate());
+            store.revokeCertificate(admin,ce,null,RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+            CertificateInfo info1 = store.getCertificateInfo(admin, fp);
+            if (certAlreadyExists) {
+                assertEquals("revocation reason does not match.",RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED,info1.getRevocationReason());
+            } else {
+                assertEquals("revocation reason does not match.",RevokedCertInfo.NOT_REVOKED,info1.getRevocationReason());
+            }
+            log.info("revocationdate (after rev)=" + info1.getRevocationDate());
+            assertTrue("Revocation date in future.", new Date().compareTo(info1.getRevocationDate())>=0);
+        } catch (RemoteException e) {
+            log.error("Error getting or revoking certificate: ",e);
+            assertTrue("Error getting or revoking certificate.", false);
+            return;
+        }
         log.debug("<test02FindAndChange()");
     }
 
@@ -159,7 +180,7 @@ public class TestCertificateData extends TestCase {
         String issuerDN = CertTools.getIssuerDN(cert);
         String subjectDN = CertTools.getSubjectDN(cert);
         // List all certificates to see
-        Collection certfps = store.listAllCertificates(new Admin(Admin.TYPE_INTERNALUSER), issuerDN);
+        Collection certfps = store.listAllCertificates(admin, issuerDN);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
 
@@ -175,13 +196,9 @@ public class TestCertificateData extends TestCase {
         while (iter.hasNext()) {
             X509Certificate cert = (X509Certificate) iter.next();
             String fp = CertTools.getFingerprintAsString(cert);
-            log.debug(fp);
+            log.debug("revoking cert with fp="+fp);
             // Revoke all foos certificates
-            CertificateDataPK revpk = new CertificateDataPK(fp);
-            CertificateData rev = home.findByPrimaryKey(revpk);
-            rev.setStatus(CertificateData.CERT_REVOKED);
-            rev.setRevocationReason(RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED);
-            rev.setRevocationDate(revDate);
+            store.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED);
             log.debug("Revoked cert " + fp);
         }
         log.debug("<test03listAndRevoke()");
@@ -208,13 +225,10 @@ public class TestCertificateData extends TestCase {
         while (iter.hasNext()) {
             X509Certificate cert = (X509Certificate) iter.next();
             String fp = CertTools.getFingerprintAsString(cert);
-            CertificateDataPK revpk = new CertificateDataPK(fp);
-            CertificateData rev = home.findByPrimaryKey(revpk);
-            long date = rev.getRevocationDate();
-            String date1 = new Date(date).toString();
-            String date2 = new Date(revDate).toString();
-            assertEquals("Revocation date is not as expected: ", date2, date1);
-            assertTrue(rev.getStatus() == CertificateData.CERT_REVOKED);
+            CertificateInfo rev = store.getCertificateInfo(admin, fp);
+            log.info("revocationdate (after rev)=" + rev.getRevocationDate());
+            assertTrue("Revocation date in future.", new Date().compareTo(rev.getRevocationDate())>=0);
+            assertTrue(rev.getStatus() == CertificateDataBean.CERT_REVOKED);
         }
 
         log.debug("<test04CheckRevoked()");
@@ -228,10 +242,10 @@ public class TestCertificateData extends TestCase {
     public void test05FindAgain() throws Exception {
         log.debug(">test05FindAgain()");
 
-        CertificateDataPK pk = new CertificateDataPK();
-        pk.fingerprint = CertTools.getFingerprintAsString(cert);
+        String fp = CertTools.getFingerprintAsString(cert);
 
-        CertificateData data3 = home.findByPrimaryKey(pk);
+        ICertificateStoreSessionRemote store = storehome.create();
+        CertificateInfo data3 = store.getCertificateInfo(admin, fp);
         assertNotNull("Failed to find cert", data3);
         log.debug("found by key! =" + data3);
         log.debug("fp=" + data3.getFingerprint());
@@ -240,7 +254,7 @@ public class TestCertificateData extends TestCase {
         log.debug("cafp=" + data3.getCAFingerprint());
         assertNotNull("wrong CAFingerprint", data3.getCAFingerprint());
         log.debug("status=" + data3.getStatus());
-        assertTrue("wrong status", data3.getStatus() == CertificateData.CERT_REVOKED);
+        assertTrue("wrong status", data3.getStatus() == CertificateDataBean.CERT_REVOKED);
         log.debug("type=" + data3.getType());
         assertTrue("wrong type", (data3.getType() & SecConst.USER_ENDUSER) == SecConst.USER_ENDUSER);
         log.debug("serno=" + data3.getSerialNumber());
@@ -250,8 +264,7 @@ public class TestCertificateData extends TestCase {
         assertTrue("wrong reason", (data3.getRevocationReason() == RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED));
 
         log.debug("Looking for cert with DN=" + CertTools.getSubjectDN(cert));
-        ICertificateStoreSessionRemote store = storehome.create();
-        Collection certs = store.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getSubjectDN(cert), "TODO");
+        Collection certs = store.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getSubjectDN(cert), CertTools.getIssuerDN(cert));
         Iterator iter = certs.iterator();
         while (iter.hasNext()) {
             X509Certificate xcert = (X509Certificate) iter.next();
@@ -269,25 +282,24 @@ public class TestCertificateData extends TestCase {
     public void test06FindByExpireTime() throws Exception {
         log.debug(">test06FindByExpireTime()");
 
-        CertificateDataPK pk = new CertificateDataPK();
-        pk.fingerprint = CertTools.getFingerprintAsString(cert);
+        ICertificateStoreSessionRemote store = storehome.create();
+        String fp = CertTools.getFingerprintAsString(cert);
 
-        CertificateData data = home.findByPrimaryKey(pk);
+        CertificateInfo data = store.getCertificateInfo(admin, fp);
         assertNotNull("Failed to find cert", data);
         log.debug("expiredate=" + data.getExpireDate());
 
         // Seconds in a year
         long yearmillis = 365 * 24 * 60 * 60 * 1000;
-        long findDateSecs = data.getExpireDate() - (yearmillis * 100);
+        long findDateSecs = data.getExpireDate().getTime() - (yearmillis * 100);
         Date findDate = new Date(findDateSecs);
 
-        ICertificateStoreSessionRemote store = storehome.create();
         log.debug("1. Looking for cert with expireDate=" + findDate);
 
         Collection certs = store.findCertificatesByExpireTime(new Admin(Admin.TYPE_INTERNALUSER), findDate);
         log.debug("findCertificatesByExpireTime returned " + certs.size() + " certs.");
         assertTrue("No certs should have expired before this date", certs.size() == 0);
-        findDateSecs = data.getExpireDate() + 10000;
+        findDateSecs = data.getExpireDate().getTime() + 10000;
         findDate = new Date(findDateSecs);
         log.debug("2. Looking for cert with expireDate=" + findDate);
         certs = store.findCertificatesByExpireTime(new Admin(Admin.TYPE_INTERNALUSER), findDate);
@@ -316,16 +328,13 @@ public class TestCertificateData extends TestCase {
         log.debug(">test07FindByIssuerAndSerno()");
 
         String issuerDN = CertTools.getIssuerDN(cert);
-        CertificateDataPK pk = new CertificateDataPK();
-        pk.fingerprint = CertTools.getFingerprintAsString(cert);
-
-        CertificateData data3 = home.findByPrimaryKey(pk);
+        ICertificateStoreSessionRemote store = storehome.create();
+        String fp = CertTools.getFingerprintAsString(cert);
+        CertificateInfo data3 = store.getCertificateInfo(admin, fp);
         assertNotNull("Failed to find cert", data3);
 
         log.debug("Looking for cert with DN:" + CertTools.getIssuerDN(cert) + " and serno " +
                 cert.getSerialNumber());
-
-        ICertificateStoreSessionRemote store = storehome.create();
         Certificate fcert = store.findCertificateByIssuerAndSerno(new Admin(Admin.TYPE_INTERNALUSER), issuerDN, cert.getSerialNumber());
         assertNotNull("Cant find by issuer and serno", fcert);
 
@@ -340,9 +349,9 @@ public class TestCertificateData extends TestCase {
      */
     public void test08IsRevoked() throws Exception {
         log.debug(">test08IsRevoked()");
-        CertificateDataPK pk = new CertificateDataPK();
-        pk.fingerprint = CertTools.getFingerprintAsString(cert);
-        CertificateData data3 = home.findByPrimaryKey(pk);
+        ICertificateStoreSessionRemote store = storehome.create();
+        String fp = CertTools.getFingerprintAsString(cert);
+        CertificateInfo data3 = store.getCertificateInfo(admin, fp);
         assertNotNull("Failed to find cert", data3);
         log.debug("found by key! =" + data3);
         log.debug("fp=" + data3.getFingerprint());
@@ -351,9 +360,9 @@ public class TestCertificateData extends TestCase {
         log.debug("cafp=" + data3.getCAFingerprint());
         assertNotNull("wrong CAFingerprint", data3.getCAFingerprint());
         log.debug("status=" + data3.getStatus());
-        assertTrue("wrong status", data3.getStatus() == CertificateData.CERT_REVOKED);
+        assertTrue("wrong status", data3.getStatus() == CertificateDataBean.CERT_REVOKED);
         log.debug("type=" + data3.getType());
-        assertTrue("wrong type", (data3.getType() & SecConst.USER_ENDUSER) == SecConst.USER_ENDUSER);
+        assertTrue("wrong type", (data3.getType() == CertificateDataBean.CERTTYPE_ENDENTITY));
         log.debug("serno=" + data3.getSerialNumber());
         log.debug("expiredate=" + data3.getExpireDate());
         log.debug("revocationdate=" + data3.getRevocationDate());
@@ -361,14 +370,12 @@ public class TestCertificateData extends TestCase {
         assertTrue("wrong reason", (data3.getRevocationReason() == RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED));
 
         log.debug("Checking if cert is revoked DN:'" + CertTools.getIssuerDN(cert) + "', serno:'" + cert.getSerialNumber().toString() + "'.");
-        ICertificateStoreSessionRemote store = storehome.create();
         RevokedCertInfo revinfo = store.isRevoked(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getIssuerDN(cert), cert.getSerialNumber());
         assertNotNull("Certificate not found, it should be!", revinfo);
         int reason = revinfo.getReason();
         assertEquals("Certificate not revoked, it should be!", RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED, reason);
-        assertTrue("Wrong revocationDate!", revinfo.getRevocationDate().getTime() == data3.getRevocationDate());
+        assertTrue("Wrong revocationDate!", revinfo.getRevocationDate().compareTo(data3.getRevocationDate()) == 0);
         assertTrue("Wrong reason!", revinfo.getReason() == data3.getRevocationReason());
-        home.remove(pk);
         log.debug("Removed it!");
         log.debug("<test08IsRevoked()");
     }

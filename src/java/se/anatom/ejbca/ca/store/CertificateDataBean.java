@@ -37,7 +37,7 @@ import se.anatom.ejbca.util.CertTools;
  * Serial number (serialNumber)
  * SHA1 fingerprint (fingerprint)
  * Status (status)
- * Type (type, from SecConst)
+ * Type (type; endentity, ca etc)
  * CA SHA1 fingerprint (cAFingerprint)
  * Expiration date (expireDate)
  * Revocation date (revocationDate)
@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.26 2004-07-09 16:18:52 sbailliez Exp $
+ * @version $Id: CertificateDataBean.java,v 1.27 2004-07-23 10:24:41 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a certificate with accompanying data"
  * display-name="CertificateDataEB"
@@ -65,15 +65,15 @@ import se.anatom.ejbca.util.CertTools;
  * extends="java.lang.Object"
  * implements="java.io.Serializable"
  *
- * @ejb.home extends="javax.ejb.EJBHome"
+ * @ejb.home
+ * generate="local"
  * local-extends="javax.ejb.EJBLocalHome"
  * local-class="se.anatom.ejbca.ca.store.CertificateDataLocalHome"
- * remote-class="se.anatom.ejbca.ca.store.CertificateDataHome"
  *
- * @ejb.interface extends="javax.ejb.EJBObject"
+ * @ejb.interface
+ * generate="local"
  * local-extends="javax.ejb.EJBLocalObject"
  * local-class="se.anatom.ejbca.ca.store.CertificateDataLocal"
- * remote-class="se.anatom.ejbca.ca.store.CertificateData"
  *
  * @ejb.finder description="findByExpireDate"
  * signature="Collection findByExpireDate(int date)"
@@ -123,7 +123,6 @@ public abstract class CertificateDataBean extends BaseEntityBean {
     public static int CERT_ARCHIVED = 60;
 
     // Certificate types used to create certificates
-
     /** Certificate used for encryption. */
     public static final int CERT_TYPE_ENCRYPTION = 0x1;
 
@@ -133,8 +132,17 @@ public abstract class CertificateDataBean extends BaseEntityBean {
     /** Certificate used for both encryption and signatures. */
     public static final int CERT_TYPE_ENCSIGN = 0x3;
 
-    // Constants used to contruct KeyUsage
+    // Constants used in certificate generation and publication. */
+    /** Certificate belongs to an end entity. */
+    public static final int CERTTYPE_ENDENTITY  =     0x1;    
+    /** Certificate belongs to a sub ca. */
+    public static final int CERTTYPE_SUBCA      =     0x2;
+    /** Certificate belongs to a root ca. */
+    public static final int CERTTYPE_ROOTCA     =     0x8;        
+    /** Certificate belongs on a hard token. */
+    public static final int CERTTYPE_HARDTOKEN  =     0x16;
 
+    // Constants used to contruct KeyUsage
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
@@ -505,7 +513,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
             setSerialNumber(tmpcert.getSerialNumber().toString());
 
             // Default values for status and type
-            setStatus(CertificateData.CERT_UNASSIGNED);
+            setStatus(CertificateDataBean.CERT_UNASSIGNED);
             setType(SecConst.USER_INVALID);
             setCAFingerprint(null);
             setExpireDate(tmpcert.getNotAfter());

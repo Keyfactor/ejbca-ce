@@ -20,8 +20,8 @@ import javax.naming.NamingException;
 
 import junit.framework.TestCase;
 import org.apache.log4j.Logger;
-import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.exception.PublisherExistsException;
+import se.anatom.ejbca.ca.store.CertificateDataBean;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
@@ -30,7 +30,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.1 2004-06-10 16:17:44 sbailliez Exp $
+ * @version $Id: TestPublisher.java,v 1.2 2004-07-23 10:24:43 anatom Exp $
  */
 public class TestPublisher extends TestCase {
 
@@ -257,7 +257,7 @@ public class TestPublisher extends TestCase {
         ArrayList publishers = new ArrayList();
         publishers.add(new Integer(pub.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
 
-        boolean ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, se.anatom.ejbca.ca.store.CertificateData.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, null);
+        boolean ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, CertificateDataBean.CERT_ACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, null);
         assertTrue("Storing certificate to dummy publisher failed", ret);
         log.debug("<test07StoreCertToDummyr()");
     }

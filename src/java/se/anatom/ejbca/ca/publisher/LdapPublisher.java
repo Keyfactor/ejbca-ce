@@ -36,9 +36,9 @@ import org.bouncycastle.asn1.DERInputStream;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERTaggedObject;
 
-import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.exception.PublisherConnectionException;
 import se.anatom.ejbca.ca.exception.PublisherException;
+import se.anatom.ejbca.ca.store.CertificateDataBean;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.ExtendedInformation;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
@@ -57,7 +57,7 @@ import com.novell.ldap.LDAPModificationSet;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.5 2004-05-19 07:00:31 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.6 2004-07-23 10:24:42 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher{
 	 	
@@ -220,7 +220,7 @@ public class LdapPublisher extends BasePublisher{
         String attribute = null;
         String objectclass = null;
 
-        if (type == SecConst.CERTTYPE_ENDENTITY) {
+        if (type == CertificateDataBean.CERTTYPE_ENDENTITY) {
             log.debug("Publishing end user certificate to " + getHostname());
 
             if (oldEntry != null) {
@@ -252,7 +252,7 @@ public class LdapPublisher extends BasePublisher{
                 log.error("Error encoding certificate when storing in LDAP: ", e);
                 throw new PublisherException("Error encoding certificate when storing in LDAP.");                
             }
-        } else if ((type == SecConst.CERTTYPE_SUBCA) || (type == SecConst.CERTTYPE_ROOTCA)) {
+        } else if ((type == CertificateDataBean.CERTTYPE_SUBCA) || (type == CertificateDataBean.CERTTYPE_ROOTCA)) {
             log.debug("Publishing CA certificate to " + getHostname());
 
             if (oldEntry != null) {

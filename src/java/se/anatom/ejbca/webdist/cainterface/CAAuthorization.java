@@ -24,6 +24,7 @@ import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
+import se.anatom.ejbca.ca.store.CertificateDataBean;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.log.Admin;
@@ -31,7 +32,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * A class that looks up the which CA:s and certificate profiles the administrator is authorized to view.
  * 
- * @version $Id: CAAuthorization.java,v 1.7 2004-05-10 04:32:00 herrvendil Exp $
+ * @version $Id: CAAuthorization.java,v 1.8 2004-07-23 10:24:41 anatom Exp $
  */
 public class CAAuthorization implements Serializable {
     
@@ -69,9 +70,9 @@ public class CAAuthorization implements Serializable {
         profilenamesendentity = new TreeMap();  
         Iterator iter = null;
         if(usehardtokenprofiles)         
-          iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_HARDTOKEN).iterator();
+          iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, CertificateDataBean.CERTTYPE_HARDTOKEN).iterator();
         else         
-		  iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ENDENTITY).iterator();
+		  iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, CertificateDataBean.CERTTYPE_ENDENTITY).iterator();
         HashMap idtonamemap = certificatestoresession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
@@ -84,7 +85,7 @@ public class CAAuthorization implements Serializable {
     public TreeMap getAuthorizedSubCACertificateProfileNames(){
       if(profilenamessubca==null){
         profilenamessubca = new TreeMap();  
-        Iterator iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_SUBCA).iterator();      
+        Iterator iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, CertificateDataBean.CERTTYPE_SUBCA).iterator();      
         HashMap idtonamemap = certificatestoresession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
@@ -98,7 +99,7 @@ public class CAAuthorization implements Serializable {
     public TreeMap getAuthorizedRootCACertificateProfileNames(){
       if(profilenamesrootca==null){
         profilenamesrootca = new TreeMap();  
-        Iterator iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ROOTCA).iterator();      
+        Iterator iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, CertificateDataBean.CERTTYPE_ROOTCA).iterator();      
         HashMap idtonamemap = certificatestoresession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
@@ -122,9 +123,9 @@ public class CAAuthorization implements Serializable {
           iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, 0).iterator();
         }else{
           ArrayList certprofiles = new ArrayList();
-		  certprofiles.addAll(certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ENDENTITY));
-		  certprofiles.addAll(certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ROOTCA));
-		  certprofiles.addAll(certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_SUBCA));
+		  certprofiles.addAll(certificatestoresession.getAuthorizedCertificateProfileIds(admin, CertificateDataBean.CERTTYPE_ENDENTITY));
+		  certprofiles.addAll(certificatestoresession.getAuthorizedCertificateProfileIds(admin, CertificateDataBean.CERTTYPE_ROOTCA));
+		  certprofiles.addAll(certificatestoresession.getAuthorizedCertificateProfileIds(admin, CertificateDataBean.CERTTYPE_SUBCA));
 		  iter = certprofiles.iterator();
         }
         HashMap idtonamemap = certificatestoresession.getCertificateProfileIdToNameMap(admin);

@@ -33,7 +33,7 @@ import se.anatom.ejbca.ca.caadmin.X509CAInfo;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
 import se.anatom.ejbca.ca.store.CRLInfo;
-import se.anatom.ejbca.ca.store.CertificateData;
+import se.anatom.ejbca.ca.store.CertificateDataBean;
 import se.anatom.ejbca.ca.store.CertificateDataLocal;
 import se.anatom.ejbca.ca.store.CertificateDataLocalHome;
 import se.anatom.ejbca.ca.store.CertificateDataPK;
@@ -49,7 +49,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.22 2004-07-09 16:16:18 sbailliez Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.23 2004-07-23 10:24:43 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -200,10 +200,10 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
                 CertificateDataLocal data = certHome.findByPrimaryKey(pk);
                 // We want to include certificates that was revoked after the last CRL was issued, but before this one
                 // so the revoked certs are included in ONE CRL at least.
-                if ( (data.getStatus() == CertificateData.CERT_REVOKED) &&
+                if ( (data.getStatus() == CertificateDataBean.CERT_REVOKED) &&
                     (data.getExpireDate() < now.getTime()) )
                 {
-                        data.setStatus(CertificateData.CERT_ARCHIVED);
+                        data.setStatus(CertificateDataBean.CERT_ARCHIVED);
                 } else
                 {
                     if (data.getRevocationDate() == -1)

@@ -23,20 +23,15 @@ import java.security.KeyPairGenerator;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
+
 import javax.ejb.DuplicateKeyException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import com.meterware.httpunit.GetMethodWebRequest;
-import com.meterware.httpunit.HttpUnitOptions;
-import com.meterware.httpunit.PostMethodWebRequest;
-import com.meterware.httpunit.WebConversation;
-import com.meterware.httpunit.WebRequest;
-import com.meterware.httpunit.WebResponse;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.CertificateID;
@@ -47,6 +42,7 @@ import org.bouncycastle.ocsp.RespData;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.ocsp.UnknownStatus;
+
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
@@ -54,15 +50,22 @@ import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
-import se.anatom.ejbca.ca.store.CertificateData;
-import se.anatom.ejbca.ca.store.CertificateDataHome;
 import se.anatom.ejbca.ca.store.CertificateDataPK;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.UserDataHome;
 import se.anatom.ejbca.ra.UserDataPK;
 import se.anatom.ejbca.ra.UserDataRemote;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
+
+import com.meterware.httpunit.GetMethodWebRequest;
+import com.meterware.httpunit.HttpUnitOptions;
+import com.meterware.httpunit.PostMethodWebRequest;
+import com.meterware.httpunit.WebConversation;
+import com.meterware.httpunit.WebRequest;
+import com.meterware.httpunit.WebResponse;
 
 /** Tests http pages of ocsp and scep
  **/
@@ -126,8 +129,8 @@ public class ProtocolHttpTest extends TestCase {
     private static Context ctx;
     private static ISignSessionHome home;
     private static ISignSessionRemote remote;
+    private ICertificateStoreSessionHome storehome;
     private static UserDataHome userhome;
-    private static CertificateDataHome certhome;
     private static int caid = 0;
     private static Admin admin;
     private static X509Certificate cacert = null;
@@ -181,10 +184,10 @@ public class ProtocolHttpTest extends TestCase {
         obj = ctx.lookup("RSASignSession");
         home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
         remote = home.create();
+        Object obj2 = ctx.lookup("CertificateStoreSession");
+        storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
         obj = ctx.lookup("UserData");
         userhome = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj, UserDataHome.class);
-        obj = ctx.lookup("CertificateData");
-        certhome = (CertificateDataHome) javax.rmi.PortableRemoteObject.narrow(obj, CertificateDataHome.class);
 
         unknowncacert = CertTools.getCertfromByteArray(unknowncacertBytes);
         log.debug("<setUp()");
@@ -348,11 +351,8 @@ public class ProtocolHttpTest extends TestCase {
         // Now revoke the certificate and try again
         CertificateDataPK pk = new CertificateDataPK();
         pk.fingerprint = CertTools.getFingerprintAsString(ocspTestCert);
-        CertificateData data2 = certhome.findByPrimaryKey(pk);
-        assertNotNull("Failed to find cert", data2);
-        data2.setStatus(CertificateData.CERT_REVOKED);
-        data2.setRevocationDate(new Date());
-        data2.setRevocationReason(RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        ICertificateStoreSessionRemote store = storehome.create();
+        store.revokeCertificate(admin, ocspTestCert,null,RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));

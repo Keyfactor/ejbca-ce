@@ -63,7 +63,7 @@ import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.publisher.IPublisherSessionLocal;
 import se.anatom.ejbca.ca.publisher.IPublisherSessionLocalHome;
-import se.anatom.ejbca.ca.store.CertificateData;
+import se.anatom.ejbca.ca.store.CertificateDataBean;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
@@ -566,13 +566,13 @@ public class RSASignSessionBean extends BaseSessionBean {
         boolean[] keyusage = new boolean[9];
         Arrays.fill(keyusage, false);
         switch (certType) {
-            case CertificateData.CERT_TYPE_ENCRYPTION:
+            case CertificateDataBean.CERT_TYPE_ENCRYPTION:
                 // keyEncipherment
                 keyusage[2] = true;
                 // dataEncipherment
                 keyusage[3] = true;
                 break;
-            case CertificateData.CERT_TYPE_SIGNATURE:
+            case CertificateDataBean.CERT_TYPE_SIGNATURE:
                 // digitalSignature
                 keyusage[0] = true;
                 // non-repudiation
@@ -663,10 +663,10 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param req           a Certification Request message, containing the public key to be put in the
      *                      created certificate. Currently no additional parameters in requests are considered!
      * @param keyUsage      integer with bit mask describing desired keys usage. Bit mask is packed in
-     *                      in integer using contants from CertificateData. ex. int keyusage =
-     *                      CertificateData.digitalSignature | CertificateData.nonRepudiation; gives
-     *                      digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
-     *                      | CertificateData.cRLSign; gives keyCertSign and cRLSign. Keyusage < 0 means that default
+     *                      in integer using contants from CertificateDataBean. ex. int keyusage =
+     *                      CertificateDataBean.digitalSignature | CertificateDataBean.nonRepudiation; gives
+     *                      digitalSignature and nonRepudiation. ex. int keyusage = CertificateDataBean.keyCertSign
+     *                      | CertificateDataBean.cRLSign; gives keyCertSign and cRLSign. Keyusage < 0 means that default
      *                      keyUsage should be used.
      * @param responseClass The implementation class that will be used as the response message.
      * @return The newly created response or null.
@@ -680,7 +680,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      *                                       the CA.
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
-     * @see se.anatom.ejbca.ca.store.CertificateData
+     * @see se.anatom.ejbca.ca.store.CertificateDataBean
      * @see se.anatom.ejbca.protocol.IRequestMessage
      * @see se.anatom.ejbca.protocol.IResponseMessage
      * @see se.anatom.ejbca.protocol.X509ResponseMessage
@@ -1070,12 +1070,12 @@ public class RSASignSessionBean extends BaseSessionBean {
                 String fingerprint = CertTools.getFingerprintAsString((X509Certificate) cacert);
 
                 if (certificateStore.findCertificateByFingerprint(admin, fingerprint) == null) {
-                    certificateStore.storeCertificate(admin, cacert, "SYSTEMCA", fingerprint, CertificateData.CERT_ACTIVE, certtype);
+                    certificateStore.storeCertificate(admin, cacert, "SYSTEMCA", fingerprint, CertificateDataBean.CERT_ACTIVE, certtype);
                 }
                 // Store cert in ca cert publishers.
                 IPublisherSessionLocal pub = publishHome.create();
                 if (usedpublishers != null)
-                    pub.storeCertificate(admin, usedpublishers, cacert, fingerprint, null, fingerprint, CertificateData.CERT_ACTIVE, certtype, null);
+                    pub.storeCertificate(admin, usedpublishers, cacert, fingerprint, null, fingerprint, CertificateDataBean.CERT_ACTIVE, certtype, null);
             }
         } catch (javax.ejb.CreateException ce) {
             throw new EJBException(ce);
@@ -1221,11 +1221,11 @@ public class RSASignSessionBean extends BaseSessionBean {
 
                 // Store certificate in the database
                 String fingerprint = CertTools.getFingerprintAsString(cert);
-                certificateStore.storeCertificate(admin, cert, data.getUsername(), fingerprint, CertificateData.CERT_ACTIVE, certProfile.getType());
+                certificateStore.storeCertificate(admin, cert, data.getUsername(), fingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType());
                 // Store certificate in certificate profiles publishers.
                 IPublisherSessionLocal pub = publishHome.create();
                 if (certProfile.getPublisherList() != null)
-                    pub.storeCertificate(admin, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), fingerprint, CertificateData.CERT_ACTIVE, certProfile.getType(), data.getExtendedInformation());
+                    pub.storeCertificate(admin, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), fingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), data.getExtendedInformation());
 
                 debug("<createCertificate(pk, ku)");
                 return cert;

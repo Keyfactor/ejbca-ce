@@ -19,12 +19,14 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Vector;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
-import se.anatom.ejbca.SecConst;
+
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.Base64;
@@ -75,7 +77,6 @@ public class TestCertificateRetrival extends TestCase {
     private static Logger m_log = Logger.getLogger(TestCertificateRetrival.class);
 
     private Context m_ctx;
-    private CertificateDataHome m_home;
     private ICertificateStoreSessionHome m_storehome;
     private HashSet m_certs;
     private String rootCaFp = null;
@@ -124,15 +125,10 @@ public class TestCertificateRetrival extends TestCase {
         CertTools.installBCProvider();
 
         m_ctx = getInitialContext();
-        Object obj = m_ctx.lookup("CertificateData");
-        m_home = (CertificateDataHome) javax.rmi.PortableRemoteObject.narrow(obj,
-                CertificateDataHome.class);
 
         Object obj2 = m_ctx.lookup("CertificateStoreSession");
         m_storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2,
                 ICertificateStoreSessionHome.class);
-
-
         ICertificateStoreSessionRemote store = m_storehome.create();
         X509Certificate cert;
         Admin adm = new Admin(Admin.TYPE_INTERNALUSER);
@@ -147,8 +143,8 @@ public class TestCertificateRetrival extends TestCase {
                         , cert
                         , "o=AnaTom,c=SE"
                         , rootCaFp
-                        , CertificateData.CERT_ACTIVE
-                        , SecConst.CERTTYPE_ROOTCA);
+                        , CertificateDataBean.CERT_ACTIVE
+                        , CertificateDataBean.CERTTYPE_ROOTCA);
             }
             cert = CertTools.getCertfromByteArray(testcacert);
             m_certs.add(cert);
@@ -158,8 +154,8 @@ public class TestCertificateRetrival extends TestCase {
                         , cert
                         , "o=AnaTom,c=SE"
                         , subCaFp
-                        , CertificateData.CERT_ACTIVE
-                        , SecConst.CERTTYPE_SUBCA);
+                        , CertificateDataBean.CERT_ACTIVE
+                        , CertificateDataBean.CERTTYPE_SUBCA);
             }
             cert = CertTools.getCertfromByteArray(testcert);
             m_certs.add(cert);
@@ -169,8 +165,8 @@ public class TestCertificateRetrival extends TestCase {
                         , cert
                         , "o=AnaTom,c=SE"
                         , endEntityFp
-                        , CertificateData.CERT_ACTIVE
-                        , SecConst.CERTTYPE_ENDENTITY);
+                        , CertificateDataBean.CERT_ACTIVE
+                        , CertificateDataBean.CERTTYPE_ENDENTITY);
             }
         } catch (Exception e) {
             m_log.error("Error: ", e);
@@ -201,7 +197,7 @@ public class TestCertificateRetrival extends TestCase {
 
         // List all certificates to see
         Collection certfps = store.findCertificatesByType(admin
-                , SecConst.CERTTYPE_SUBCA
+                , CertificateDataBean.CERTTYPE_SUBCA
                 , null);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
@@ -229,7 +225,7 @@ public class TestCertificateRetrival extends TestCase {
 
         // List all certificates to see
         Collection certfps = store.findCertificatesByType(admin
-                , SecConst.CERTTYPE_ENDENTITY
+                , CertificateDataBean.CERTTYPE_ENDENTITY
                 , null);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
@@ -248,7 +244,7 @@ public class TestCertificateRetrival extends TestCase {
 
         // List all certificates to see
         Collection certfps = store.findCertificatesByType(admin
-                , SecConst.CERTTYPE_ROOTCA
+                , CertificateDataBean.CERTTYPE_ROOTCA
                 , null);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
@@ -309,7 +305,7 @@ public class TestCertificateRetrival extends TestCase {
 
         // List all certificates to see
         Collection certfps = store.findCertificatesByType(admin
-                , SecConst.CERTTYPE_ROOTCA + SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ENDENTITY
+                , CertificateDataBean.CERTTYPE_ROOTCA + CertificateDataBean.CERTTYPE_SUBCA + CertificateDataBean.CERTTYPE_ENDENTITY
                 , null);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() >= 2);
@@ -333,7 +329,7 @@ public class TestCertificateRetrival extends TestCase {
 
         // List all certificates to see
         Collection certfps = store.findCertificatesByType(admin
-                , SecConst.CERTTYPE_SUBCA
+                , CertificateDataBean.CERTTYPE_SUBCA
                 , rootcacert.getSubjectDN().getName());
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() >= 1);
