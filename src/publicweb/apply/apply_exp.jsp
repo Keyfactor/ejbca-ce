@@ -1,11 +1,8 @@
-<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,se.anatom.ejbca.ca.sign.*, se.anatom.ejbca.log.Admin"%>
-
-<HTML>
 <HEAD>
 <TITLE>EJBCA IE Certificate Enroll</TITLE>
 
  
-<link rel="stylesheet" href="indexmall.css" type="text/css">
+<link rel="stylesheet" href="../indexmall.css" type="text/css">
 <object
    classid="clsid:127698e4-e730-4e5c-a2b1-21490a70c8a1"
    CODEBASE="/CertControl/xenroll.cab#Version=5,131,3659,0"
@@ -115,8 +112,8 @@ try  {
  <hr>
  Please give your username and password, then click OK to fetch your certificate.<BR>
 
-        Username: <input type=text size=10 name=user value="foo"><br>
-        Password: <input type=text size=10 name=password value="foo123"><br>
+	<INPUT NAME=user TYPE="hidden" VALUE="<%=username%>">
+	<INPUT NAME=password TYPE="hidden"  VALUE="<%=password%>">
 
     <P>Please choose the CSP you wish to use from the list below (the default is probably good):</P>
     <SELECT NAME="CspProvider">

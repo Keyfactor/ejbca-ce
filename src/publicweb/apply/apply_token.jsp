@@ -2,12 +2,10 @@
 <BODY bgcolor="#ffffff" link="black" vlink="black" alink="black">
 
 <center>
-<FONT face=arial size="3"><strong>EJBCA Mozilla Certificate Enrollment
+<FONT face=arial size="3"><strong>EJBCA Certificate Enrollment
 </strong></FONT>
 </center>
 
-<HR>
-Welcome to certificate enrollment. <BR>
 <p>
 If you you want to, you can manually install the CA certificate(s) in your browser, otherwise this will be done automatically 
 when your certificate is retrieved.
@@ -36,7 +34,13 @@ Please choose keylength, then click OK to fetch your certificate.<BR>
 	<INPUT NAME=user TYPE="hidden" VALUE="<%=username%>">
 	<INPUT NAME=password TYPE="hidden"  VALUE="<%=password%>">
 Key length 
-	<KEYGEN TYPE="hidden" NAME="keygen" VALUE="challenge">
+        <SELECT name='keylength' size='1'>
+           <% for(int i=0; i<availablekeylengths.length;i++){ %>
+           <option  value="<%= availablekeylengths[i] %>">
+              <%=availablekeylengths[i]%> bits
+           </option>
+           <% } %>
+     
 <INPUT type="submit" value="OK">
 
 </FORM>

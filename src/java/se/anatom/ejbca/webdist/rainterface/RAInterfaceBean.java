@@ -59,7 +59,7 @@ import se.anatom.ejbca.SecConst;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.15 2002-10-24 20:13:06 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.16 2002-11-07 10:31:09 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -271,8 +271,9 @@ public class RAInterfaceBean {
                                                                                                    NamingException,
                                                                                                    NumberFormatException,
                                                                                                    CreateException{
-
-      serialnumber = serialnumber.replaceAll(" ","");
+      try{
+        serialnumber = new RegularExpression.RE(" ",false).replace(serialnumber,"");
+      }catch(Exception e){}  
       Collection certs =certificatesession.findCertificatesBySerno(new BigInteger(serialnumber,16));
       Vector uservector = new Vector();
       UserView[] returnval = null;
