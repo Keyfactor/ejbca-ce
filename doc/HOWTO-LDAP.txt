@@ -25,14 +25,11 @@ dc=bigcorp,dc=com,dc=se,cn=Mike Jackson
 EJBCA will reorder it incorrectly to forward order, so the publishing will be wrong.
 
 Therefore...
-USER FORWARD ORDER LIKE THIS:
+Use forward order like this:
 'cn=Mike Jackson,dc=se,dc=bigcorp,dc=com' if using the dc model
 or
 'cn=Mike Jackson,o=bigcorp,c=se' if using the o,c model.
 
-Attributes like uid, l, serialNumber etc will not work to publish to LDAP at the moment,
-there will be a 'naming vialoation'.
-To publish in LDAP, keep to simple DNs like the one above, only cn and the baseDN.
 
 CONFIGURE LDAP PUBLISHERS
 =========================
@@ -93,6 +90,15 @@ publisher by the CA. Default 'certificateRevocationList;binary'
 - 'ARL Attribute' is the attribute name, in the cAObjectClass, for ARLs (CA CRLs) 
 publisher by the CA. Default 'authorityRevocationList;binary' 
 (note that pure ARLs are not implemented yet in EJBCA)
+
+When configuring the LDAP publisher the BaseDN will be used as the base for the DN published in LDAP,
+and the DN components selected to be used when publishing will be appended to this.
+example: If the user DN in EJBCA is "cn=tomas gustavsson, uid=tomasg, O=PrimeKey Solutions AB, C=SE"
+and the BaseDN is "dc=PrimeKey,dc=SE" and the selected dn components are "CN". 
+The LDAP DN used for publishing will be "cn=tomas gustavsson, dc=PrimeKey, dc=SE", and the "uid=tomasg" 
+will be added as an attribute in LDAP. The certificate stored under "cn=tomas gustavsson, dc=PrimeKey, dc=SE"
+will have the subjectDN "cn=tomas gustavsson, uid=tomasg, O=PrimeKey Solutions AB, C=SE".
+
 
 Setting up certificate profiles
 -------------------------------
