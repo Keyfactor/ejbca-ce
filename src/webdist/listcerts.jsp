@@ -1,4 +1,4 @@
-<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,java.math.BigInteger,se.anatom.ejbca.ca.store.*"%>
+<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.net.*,java.security.cert.*,java.math.BigInteger,se.anatom.ejbca.ca.store.*,se.anatom.ejbca.util.Hex"%>
 <html>
 <head><title>EJBCA - List certificates</title></head>
 <body>
@@ -26,9 +26,9 @@ try  {
             out.println("Issuer:"+issuer);
             out.println("NotBefore:"+notBefore.toString());
             out.println("NotAfter:"+notAfter.toString());
-            out.println("Serial number:"+serno.toString());
+            out.println("Serial number:"+Hex.encode(serno.toByteArray()));
             out.println("</pre>");
-            out.println("<a href=\"revoked.jsp?issuer="+issuer+"&serno="+serno.toString()+"\">Check if certificate is revoked</a>");
+            out.println("<a href=\"revoked.jsp?issuer="+URLEncoder.encode(issuer)+"&serno="+Hex.encode(serno.toByteArray())+"\">Check if certificate is revoked</a>");
             out.println("<hr>");
         }
         if (certs.length == 0) {

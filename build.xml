@@ -200,6 +200,7 @@
                 <include name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
 		<include name="se/anatom/ejbca/util/**/Base64*.class"/>
 		<include name="se/anatom/ejbca/util/**/CertTools*.class"/>
+		<include name="se/anatom/ejbca/util/**/Hex*.class"/>
 		<exclude name="se/anatom/ejbca/**/*Test*"/>
 	</fileset>
     </copy>

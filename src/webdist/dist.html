@@ -41,9 +41,9 @@ Subject DN
 <FORM ACTION="http://127.0.0.1:8080/webdist/revoked.jsp" ENCTYPE=x-www-form-encoded METHOD="GET">
 Enter serialnumber of certificate and click 'Check revocation' to see if the certificate is revoked.
 <INPUT TYPE="hidden" NAME="cmd" VALUE="revoked"><BR>
-Subject DN
-	<INPUT NAME="issuer" TYPE=text SIZE=30 VALUE="c=SE, O=AnaTom, CN=foo"><br>
-Serial number
+Issuer DN
+	<INPUT NAME="issuer" TYPE=text SIZE=30 VALUE="c=SE, O=AnaTom, CN=EJBCA"><br>
+Serial number (hex)
 	<INPUT NAME="serno" TYPE=text SIZE=30 VALUE=""><br>
 <BR>
 <INPUT type="submit" value="Check revocation">
