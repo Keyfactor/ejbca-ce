@@ -48,7 +48,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.46 2002-10-13 11:40:23 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.47 2002-10-16 13:50:10 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -78,12 +78,12 @@ public class RSASignSessionBean extends BaseSessionBean {
 
     /* Home interface to Authentication session */
     private IAuthenticationSessionLocalHome authHome = null;
-    
+
     /** The remote interface of the log session bean */
-    private ILogSessionRemote logsession;    
-    
+    private ILogSessionRemote logsession;
+
     /** Var containing iformation about administrator using the bean.*/
-    private Admin admin = null;    
+    private Admin admin = null;
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -99,9 +99,9 @@ public class RSASignSessionBean extends BaseSessionBean {
             // get home interfaces to other session beans used
             storeHome = (ICertificateStoreSessionLocalHome)lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
             authHome = (IAuthenticationSessionLocalHome)lookup("java:comp/env/ejb/AuthenticationSessionLocal");
-            
+
             this.admin = administrator;
-            ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
+            ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);
             logsession = logsessionhome.create();
 
             // Init the publisher session beans
@@ -263,7 +263,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             debug("Authorized user " + username + " with DN='" + data.getDN()+"'.");
             debug("type="+ data.getType());
             if ((data.getType() & SecConst.USER_INVALID) !=0) {
-                logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"User type is invalid, cannot create certificate for this user.");                 
+                logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"User type is invalid, cannot create certificate for this user.");
             } else {
                 if ( ((data.getType() & SecConst.USER_CA) != 0) || ((data.getType() & SecConst.USER_ROOTCA) != 0) ) {
                     debug("Setting new keyusage...");
@@ -271,7 +271,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
                 }
                 X509Certificate cert = makeBCCertificate(data, caSubjectName, validity.longValue(), pk, keyusage);
-                logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, cert, LogEntry.EVENT_INFO_CREATECERTIFICATE,""); 
+                logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, cert, LogEntry.EVENT_INFO_CREATECERTIFICATE,"");
                 debug("Generated certificate with SerialNumber '" + Hex.encode(cert.getSerialNumber().toByteArray())+"' for user '"+username+"'.");
                 debug(cert.toString());
                 // Verify before returning
@@ -348,9 +348,9 @@ public class RSASignSessionBean extends BaseSessionBean {
             cert.verify(cert.getPublicKey());
         } catch (Exception e) {
             try{
-              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"POPO verification failed.");  
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"POPO verification failed.");
             }catch(RemoteException re){
-              throw new EJBException(re);   
+              throw new EJBException(re);
             }
             throw new SignRequestSignatureException("Verification of signature (popo) on certificate failed.");
         }
@@ -376,13 +376,16 @@ public class RSASignSessionBean extends BaseSessionBean {
     public Certificate createCertificate(String username, String password, RequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
         debug(">createCertificate(pkcs10)");
         Certificate ret = null;
-		try {
-			try {
+        try {
+            try {
                 if (req.verify() == false) {
-				    logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"POPO verification failed.");
-					throw new EJBException("Verification of signature (popo) on request failed.");
+                    logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"POPO verification failed.");
+                    throw new EJBException("Verification of signature (popo) on request failed.");
                 }
-				// TODO: extract more information or attributes
+                if (req.requireKeyInfo()) {
+                    req.setKeyInfo(caCert, signingDevice.getPrivateSignKey());
+                }
+                // TODO: extract more information or attributes
                 PublicKey reqpk = req.getRequestPublicKey();
                 if (reqpk == null)
                     throw new InvalidKeyException("Key is null!");
@@ -390,22 +393,22 @@ public class RSASignSessionBean extends BaseSessionBean {
                     ret =createCertificate(username,password,reqpk);
                 else
                     ret =createCertificate(username,password,reqpk,keyUsage);
-			} catch (IOException e) {
-				logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error reading PKCS10-request.");
-				throw new SignRequestException("Error reading PKCS10-request.");
-			} catch (NoSuchAlgorithmException e) {
-				logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error in PKCS10-request, no such algorithm.");
-				throw new SignRequestException("Error in PKCS10-request, no such algorithm.");
-			} catch (NoSuchProviderException e) {
-				logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Internal error processing PKCS10-request.");
-				throw new SignRequestException("Internal error processing PKCS10-request.");
-			} catch (InvalidKeyException e) {
-				logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error in PKCS10-request, invlid key.");
-				throw new SignRequestException("Error in PKCS10-request, invalid key.");
-			}
-		} catch (RemoteException re) {
-			throw new EJBException(re);
-		}
+            } catch (IOException e) {
+                logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error reading PKCS10-request.");
+                throw new SignRequestException("Error reading PKCS10-request.");
+            } catch (NoSuchAlgorithmException e) {
+                logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error in PKCS10-request, no such algorithm.");
+                throw new SignRequestException("Error in PKCS10-request, no such algorithm.");
+            } catch (NoSuchProviderException e) {
+                logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Internal error processing PKCS10-request.");
+                throw new SignRequestException("Internal error processing PKCS10-request.");
+            } catch (InvalidKeyException e) {
+                logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error in PKCS10-request, invlid key.");
+                throw new SignRequestException("Error in PKCS10-request, invalid key.");
+            }
+        } catch (RemoteException re) {
+            throw new EJBException(re);
+        }
         debug("<createCertificate(pkcs10)");
         return ret;
     }
@@ -425,10 +428,10 @@ public class RSASignSessionBean extends BaseSessionBean {
             // Verify before sending back
             crl.verify(caCert.getPublicKey());
             try{
-              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CREATECRL,"Number :" + number); 
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CREATECRL,"Number :" + number);
             }catch(RemoteException re){
-              throw new EJBException(re);                
-            } 
+              throw new EJBException(re);
+            }
             // Store CRL in the database
             certificateStore.storeCRL(crl.getEncoded(), CertTools.getFingerprintAsString(caCert), number);
             for (int i=0;i<publishers.size();i++) {
@@ -438,10 +441,10 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
         } catch (Exception e) {
             try{
-              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,"");       
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,"");
             }catch(RemoteException re){
-              throw new EJBException(re);                
-            }             
+              throw new EJBException(re);
+            }
             throw new EJBException(e);
         }
         debug("<createCRL()");

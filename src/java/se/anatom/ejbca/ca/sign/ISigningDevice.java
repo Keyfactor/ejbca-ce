@@ -9,7 +9,7 @@ import java.security.PublicKey;
  * using the getInstance() method.
  *
  *
- * @version $Id: ISigningDevice.java,v 1.5 2002-09-12 18:14:14 herrvendil Exp $
+ * @version $Id: ISigningDevice.java,v 1.6 2002-10-16 13:50:10 anatom Exp $
  */
 public interface ISigningDevice extends  java.io.Serializable{
 
@@ -30,6 +30,18 @@ public interface ISigningDevice extends  java.io.Serializable{
     * @return PublicKey object
     */
     public PublicKey getPublicSignKey();
+
+   /** Returns the private key (if possible) used for decryption.
+    *
+    * @return PrivateKey object
+    */
+    public PrivateKey getPrivateDecKey();
+
+   /** Returns the public key (if possible) used for encryption.
+    *
+    * @return PublicKey object
+    */
+    public PublicKey getPublicEncKey();
 
     /** Returns the signature Provider that should be used to sign things with
      *  the PrivateKey object returned by this signingdevice implementation.

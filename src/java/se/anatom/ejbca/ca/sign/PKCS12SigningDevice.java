@@ -19,7 +19,7 @@ import se.anatom.ejbca.util.KeyTools;
 
 /** Implements a signing device using PKCS12 keystore, implementes the Singleton pattern.
  *
- * @version $Id: PKCS12SigningDevice.java,v 1.5 2002-09-12 18:14:14 herrvendil Exp $
+ * @version $Id: PKCS12SigningDevice.java,v 1.6 2002-10-16 13:50:10 anatom Exp $
  */
 
 public class PKCS12SigningDevice implements ISigningDevice{
@@ -136,14 +136,29 @@ public class PKCS12SigningDevice implements ISigningDevice{
     public PublicKey getPublicSignKey() {
         return caCert.getPublicKey();
     }
-    
+
+   /** Returns the private key (if possible) used for decryption.
+    *
+    * @return PrivateKey object
+    */
+    public PrivateKey getPrivateDecKey() {
+        return privateKey;
+    }
+   /** Returns the public key (if possible) used for encryption.
+    *
+    * @return PublicKey object
+    */
+    public PublicKey getPublicEncKey() {
+        return caCert.getPublicKey();
+    }
+
     /** Weuse the BouncyCastle provider to sign stuff
      * @return String "BC"
      */
     public String getProvider() {
-    	return "BC";
+        return "BC";
     }
-    
+
 
 }
 

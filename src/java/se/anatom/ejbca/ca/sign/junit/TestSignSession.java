@@ -18,6 +18,7 @@ import java.rmi.RemoteException;
 import javax.ejb.DuplicateKeyException;
 
 import se.anatom.ejbca.protocol.PKCS10RequestMessage;
+import se.anatom.ejbca.protocol.PKCS7RequestMessage;
 import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.ca.sign.*;
 import se.anatom.ejbca.util.*;
@@ -33,7 +34,7 @@ import junit.framework.*;
 
 /** Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.11 2002-10-13 11:40:47 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.12 2002-10-16 13:50:12 anatom Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -71,6 +72,44 @@ public class TestSignSession extends TestCase {
     +"GJ/vRXt77Vcr4inx9M51iy87FNcGGsmyesBoDg73p06UxpIDhkL/WpPwZAfQhWGe"
     +"o/gWydmP/hl3uEfE0E4WG02UXtNwn3ziIiJM2pBCGQQIN2rFggyD+aTxwAwOU7Z2"
     +"fw==").getBytes());
+
+    static byte[] openscep = Base64.decode(
+    ("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").getBytes());
 
     static Category cat = Category.getInstance( TestSignSession.class.getName() );
     private static Context ctx;
@@ -217,5 +256,18 @@ public class TestSignSession extends TestCase {
         cat.debug("Cert="+cert.toString());
         cat.debug("<test05TestIEPKCS10()");
     }
+    /*
+    public void test06TestOpenScep() throws Exception {
+        cat.debug(">test06TestOpenScep()");
+        UserDataPK pk = new UserDataPK("foo");
+        UserDataRemote data = userhome.findByPrimaryKey(pk);
+        data.setStatus(UserDataRemote.STATUS_NEW);
+        cat.debug("Reset status of 'foo' to NEW");
+        X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", new PKCS7RequestMessage(openscep));
+        assertNotNull("Failed to create certificate", cert);
+        cat.debug("Cert="+cert.toString());
+        cat.debug("<test06TestOpenScep()");
+    }
+    */
 }
 
