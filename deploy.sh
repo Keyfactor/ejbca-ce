@@ -33,7 +33,7 @@ then
 fi
 if ! [ -f $JBOSS_HOME/server/default/lib/bcmail-jdk13-116.jar ]
 then
-  cp lib/jce-jdk13-116.jar $JBOSS_HOME/server/default/lib
+  cp lib/bcmail-jdk13-116.jar $JBOSS_HOME/server/default/lib
   echo Copied bcmail-jdk13-116.jar to $JBOSS_HOME/server/default/lib. JBoss must be restared.
 fi
 if ! [ -f $JBOSS_HOME/server/default/lib/ldap.jar ]
