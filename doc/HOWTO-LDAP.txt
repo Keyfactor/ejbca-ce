@@ -102,11 +102,19 @@ will have the subjectDN "cn=tomas gustavsson, uid=tomasg, O=PrimeKey Solutions A
 
 Setting up certificate profiles
 -------------------------------
+You MUST make a custom certificate profile to publish to LDAP!
+
 To publish in LDAP you must create a Certificate profile in EJBCA that publishes 
 to LDAP. If the above is configured, there will be a section for 'Publishers' available
 when creating/editing a certificate profile (with 'Edit Certificate Profiles'. 
 Choose this, and then when adding end-entities, make sure they use the new certificate 
 profile and voila, the certs will be published.
+
+Publishing to AD
+----------------
+If your DN is like "cn=Ejbca1,0=MyOrg,c=SE" and you think your base DN is like
+"DC=Security,DC=Software,DC=MyOrg".
+The publisher for AD should have base DN like "cn=Users,dc=security,dc=software,dc=MyOrg"
 
 CONFIGURE OpenLDAP
 ==================
