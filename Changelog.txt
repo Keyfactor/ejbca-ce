@@ -7,6 +7,7 @@ Alias in PKCS12 is now CN by default and username if CN does not exist.
 Added possibility to configure publishers (LDAP, AD) through administrative web interface.
 Implemented more SCEP functions, tested with Cisco VPN client.
 Compound primary key for HardTokenPropertyBean.
+Added junit tests of entity beans
 
 3.0 beta 1
 ----------

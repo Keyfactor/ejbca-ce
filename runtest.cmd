@@ -12,10 +12,14 @@ rem set TEST_CP=.;..\..\lib\weblogic.jar;..\..\lib\junit.jar;..\..\lib\log4j-1.2
 
 if "%1" == "web"  goto webtest
 
+echo Testing ca
+java -cp %TEST_CP% se.anatom.ejbca.ca.caadmin.junit.TestRunnerStart
 echo Testing utils
 java -cp %TEST_CP% se.anatom.ejbca.util.junit.TestRunner
 echo Testing messages
 rem java -cp %TEST_CP% se.anatom.ejbca.protocol.junit.TestRunner
+echo Testing raadmin
+java -cp %TEST_CP% se.anatom.ejbca.ra.raadmin.junit.TestRunner
 echo Testing ra
 java -cp %TEST_CP% se.anatom.ejbca.ra.junit.TestRunner
 echo Testing ca.auth
@@ -30,6 +34,14 @@ echo Testing ca.publisher
 java -cp %TEST_CP% se.anatom.ejbca.ca.publisher.junit.TestRunner
 echo Testing batch
 java -cp %TEST_CP% se.anatom.ejbca.batch.junit.TestRunner
+echo Testing log
+java -cp %TEST_CP% se.anatom.ejbca.log.junit.TestRunner
+echo Testing keyrecovery
+java -cp %TEST_CP% se.anatom.ejbca.keyrecovery.junit.TestRunner
+echo Testing hardtoken
+java -cp %TEST_CP% se.anatom.ejbca.hardtoken.junit.TestRunner
+
+java -cp %TEST_CP% se.anatom.ejbca.ca.caadmin.junit.TestRunnerEnd
 
 goto end
 
