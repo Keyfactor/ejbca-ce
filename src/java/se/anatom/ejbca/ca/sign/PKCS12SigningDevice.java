@@ -5,6 +5,7 @@ package se.anatom.ejbca.ca.sign;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.KeyStore;
 import java.util.Properties;
 import java.io.FileInputStream;
@@ -18,7 +19,7 @@ import se.anatom.ejbca.util.KeyTools;
 
 /** Implements a signing device using PKCS12 keystore, implementes the Singleton pattern.
  *
- * @version $Id: PKCS12SigningDevice.java,v 1.3 2002-07-21 12:12:12 anatom Exp $
+ * @version $Id: PKCS12SigningDevice.java,v 1.4 2002-09-10 18:53:41 anatom Exp $
  */
 
 public class PKCS12SigningDevice implements ISigningDevice {
@@ -127,6 +128,13 @@ public class PKCS12SigningDevice implements ISigningDevice {
     */
     public PrivateKey getPrivateSignKey() {
         return privateKey;
+    }
+   /** Returns the public key (if possible) used for signature verification.
+    *
+    * @return PublicKey object
+    */
+    public PublicKey getPublicSignKey() {
+        return caCert.getPublicKey();
     }
     
     /** Weuse the BouncyCastle provider to sign stuff

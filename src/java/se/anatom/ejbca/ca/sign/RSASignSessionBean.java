@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.40 2002-09-05 09:14:26 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.41 2002-09-10 18:53:41 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -176,12 +176,36 @@ public class RSASignSessionBean extends BaseSessionBean {
     public Certificate[] getCertificateChain() {
         debug(">getCertificateChain()");
         return signingDevice.getCertificateChain();
-    } // getCertificateChain
+    	} // getCertificateChain
 
-    /**
+	/**
+	 * Implements ISignSession::createPKCS7
+	 */
+	public byte[] createPKCS7(Certificate cert) throws SignRequestSignatureException {
+		debug(">createPKCS7()");
+        // First verify that we signed this certificate
+        try {
+            cert.verify(signingDevice.getPublicSignKey(), signingDevice.getProvider());
+        } catch (Exception e) {
+            throw new SignRequestSignatureException("Cannot verify certificate in createPKCS7(), did I sign this?");
+        }
+		try {
+			PKCS7SignedData pkcs7 =
+				new PKCS7SignedData(
+					signingDevice.getPrivateSignKey(),
+					getCertificateChain(),
+					"SHA1",
+					signingDevice.getProvider());
+			debug("<createPKCS7()");
+			return pkcs7.getEncoded();
+		} catch (Exception e) {
+			throw new EJBException(e);
+		}
+	} // createPKCS7
+    
+     /**
      * Implements ISignSession::createCertificate
      */
-
     public Certificate createCertificate(String username, String password, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">createCertificate(pk)");
         // Standard key usages for end users are: digitalSignature | keyEncipherment or nonRepudiation
