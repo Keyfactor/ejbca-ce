@@ -21,6 +21,7 @@ import javax.naming.InitialContext;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import java.rmi.RemoteException;
+import javax.ejb.CreateException;
 
 import org.bouncycastle.jce.*;
 import org.bouncycastle.asn1.*;
@@ -31,14 +32,22 @@ import se.anatom.ejbca.util.*;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSession;
+import se.anatom.ejbca.ca.store.IPublisherSessionHome;
+import se.anatom.ejbca.ca.store.IPublisherSession;
+import se.anatom.ejbca.ca.store.CertificateData;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSession;
 
 public class ca {
 
+    /** Pointer to main certificate store */
+    private static ICertificateStoreSession certificateStore = null;
+    /** A vector of publishers where certs and CRLs are stored */
+    private static Vector publishers = null;
+
     public static void main(String [] args){
         if (args.length < 1) {
-            System.out.println("Usage: CA makeroot | rootcert | makereq | recrep | processreq | createcrl | getcrl");
+            System.out.println("Usage: CA makeroot | rootcert | makereq | recrep | processreq | init | createcrl | getcrl");
             return;
         }
         try {
@@ -263,13 +272,8 @@ public class ca {
                 fos.close();
                 System.out.println("Wrote certificate to file " + outfile);
             } else if (args[0].equals("createcrl")) {
-                Context context = getInitialContext();
-                IJobRunnerSessionHome home  = (IJobRunnerSessionHome)javax.rmi.PortableRemoteObject.narrow( context.lookup("CreateCRLSession") , IJobRunnerSessionHome.class );
-                home.create().run();
-                ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class);
-                ICertificateStoreSession storeremote = storehome.create();
-                int number = storeremote.getLastCRLNumber();
-                System.out.println("CRL with number " + number+ " generated.");
+                // No arguments to creatcrl
+                createCRL();
             } else if (args[0].equals("getcrl")) {
                 if (args.length < 2) {
                     System.out.println("Usage: CA getcrl <outfile>");
@@ -278,14 +282,47 @@ public class ca {
                 String outfile = args[1];
                 Context context = getInitialContext();
                 ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class);
-                ICertificateStoreSession storeremote = storehome.create();
-                byte[] crl = storeremote.getLastCRL();
+                ICertificateStoreSession store = storehome.create();
+                byte[] crl = store.getLastCRL();
                 FileOutputStream fos = new FileOutputStream(outfile);
                 fos.write(crl);
                 fos.close();
                 System.out.println("Wrote latest CR to " + outfile+ ".");
+            } else if (args[0].equals("init")) {
+                // No arguments to init
+                
+                // First get and publish CA certificates
+                Context context = getInitialContext();
+                ISignSessionHome signhome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("RSASignSession"), ISignSessionHome.class);
+                ISignSession sign = signhome.create();
+                Certificate[] certs = sign.getCertificateChain();
+                initCertificateStore();
+                for (int j=0;j<certs.length;j++) {
+                    X509Certificate cert = (X509Certificate)certs[j];
+                    String cafingerprint = null;
+                    int type = SecConst.USER_CA;
+                    if ( (!CertTools.isSelfSigned(cert)) && ((j+1) < certs.length) )
+                        cafingerprint = CertTools.getFingerprintAsString((X509Certificate)certs[j+1]);
+                    else {
+                        cafingerprint = CertTools.getFingerprintAsString(cert);
+                        type = SecConst.USER_ROOTCA;
+                    }
+                    try {
+                        // We will get an exception if the entity already exist
+                        certificateStore.storeCertificate(cert, cafingerprint, CertificateData.CERT_ACTIVE, type);
+                    } catch (java.rmi.ServerException e) {
+                        System.out.println("Certificate for subject '"+cert.getSubjectDN()+"' already exist in the certificate store.");
+                    }
+                    // Call authentication session and tell that we are finished with this user
+                    for (int i=0;i<publishers.size();i++) {
+                        ((IPublisherSession)(publishers.get(i))).storeCertificate(cert, cafingerprint, CertificateData.CERT_ACTIVE, type);
+                    }
+                }
+                // Second create (and publish) CRL
+                createCRL();
+                
             } else {
-                System.out.println("Usage: CA makeroot | rootcert | makereq | recrep | processreq | createcrl | getcrl");
+                System.out.println("Usage: CA makeroot | rootcert | makereq | recrep | processreq | init | createcrl | getcrl");
             }
 
         } catch (Exception e) {
@@ -294,11 +331,69 @@ public class ca {
     }
  
 
-    static public Context getInitialContext() throws NamingException{
-        System.out.println(">GetInitialContext");
-        Context ctx = new javax.naming.InitialContext();
-        System.out.println("<GetInitialContext");
-    return ctx;
+    static private void createCRL() throws NamingException, CreateException, RemoteException {
+        Context context = getInitialContext();
+        IJobRunnerSessionHome home  = (IJobRunnerSessionHome)javax.rmi.PortableRemoteObject.narrow( context.lookup("CreateCRLSession") , IJobRunnerSessionHome.class );
+        home.create().run();
+        ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class);
+        ICertificateStoreSession storeremote = storehome.create();
+        int number = storeremote.getLastCRLNumber();
+        System.out.println("CRL with number " + number+ " generated.");
     }
 
+    static private Context getInitialContext() throws NamingException{
+        //System.out.println(">GetInitialContext");
+        Context ctx = new javax.naming.InitialContext();
+        //System.out.println("<GetInitialContext");
+        return ctx;
+    }
+
+    /**
+     * Creates the CertificateStore and Publishers so they are available.
+     */
+    static private void initCertificateStore() throws RemoteException {
+        System.out.println(">initCertificateStore()");
+        Context context = null;
+        try {
+            context = getInitialContext();
+            // First init main certificate store
+            if (certificateStore == null) {
+                ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class);
+                certificateStore = storehome.create();
+            }
+        } catch (NamingException e) {
+            // We could not find this publisher
+            System.out.println("Failed to find cert store.");
+            e.printStackTrace();
+        } catch (CreateException ce) {
+            // We could not find this publisher
+            System.out.println("Failed to create cert store.");
+            ce.printStackTrace();
+        }
+        // Init the publisher session beans
+        if (publishers == null) {
+            int i = 1;
+            publishers = new Vector(0);
+            try {
+                while (true) {
+                    String jndiName = "PublisherSession" + i;
+                    IPublisherSessionHome pubhome = (IPublisherSessionHome)javax.rmi.PortableRemoteObject.narrow(context.lookup(jndiName), IPublisherSessionHome.class);
+                    IPublisherSession pub = pubhome.create();
+                    publishers.add(pub);
+                    System.out.println("Added publisher class '"+pub.getClass().getName()+"'");
+                    i++;
+                }
+                
+            } catch (NamingException e) {
+                // We could not find this publisher
+                System.out.println("Failed to find publisher at index '"+i+"', no more publishers.");
+            } catch (CreateException ce) {
+                // We could not find this publisher
+                System.out.println("Failed to create publisher.");
+                ce.printStackTrace();
+            }
+        }
+        System.out.println("<initCertificateStore()");
+    } // initCertificateStore
+    
 } //ca

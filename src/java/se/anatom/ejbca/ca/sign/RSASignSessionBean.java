@@ -38,7 +38,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.9 2002-01-08 12:32:29 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.10 2002-01-13 10:51:54 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -387,11 +387,12 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             publishers = new Vector(0);
             try {
                 while (true) {
-                    String jndiName = "PublisherSession" + i++;
+                    String jndiName = "PublisherSession" + i;
                     IPublisherSessionHome pubhome = (IPublisherSessionHome) lookup(jndiName, IPublisherSessionHome.class);
                     IPublisherSessionRemote pubremote = pubhome.create();
                     publishers.add(pubremote);
                     info("Added publisher class '"+pubremote.getClass().getName()+"'");
+                    i++;
                 }
             } catch (EJBException e) {
                 // We could not find this publisher
