@@ -492,7 +492,7 @@ database.password    = ${database.password}
         <input message="Type of system:" validargs="unix,windows" addproperty="ejbca.OS" />
         <input message="Hostname for adminweb (default 127.0.0.1):" addproperty="ejbca.URL" defaultvalue="127.0.0.1" />
         <input message="Type of database:" validargs="mysql" addproperty="ejbca.DB" />
-        <!-- validargs="hsql,oracle,mssql,mysql,postgres,sapdb,hsqldb,sybase" -->
+        <!-- validargs="hsql,oracle,mssql,mysql,postgres,postgres8,sapdb,hsqldb,sybase" -->
         <input message="Data source (default java:/DefaultDS):" addproperty="ejbca.DS" defaultvalue="java:/DefaultDS" />
         <input message="CA name(default MyCA):" addproperty="ejbca.CA" defaultvalue="MyCA" />
         <input message="CA keystore filename (default $JBOSS_HOME/server/default/conf/server.p12):" addproperty="ejbca.KS" defaultvalue="${jboss.home}/server/default/conf/server.p12" />

@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.2 2004-08-16 21:11:45 sbailliez Exp $
+# $Id: ejbca.properties.sample,v 1.3 2005-01-24 16:33:13 anatom Exp $
 #
 # This is just a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -22,7 +22,7 @@ build.compiler=jikes
 
 # the database name selected for deployment
 # The J2EE server needs to be configured with the appropriate JDBC driver
-# database are: oracle,mssql,mysql,postgres,sapdb,hsqldb,sybase
+# database are: oracle,mssql,mysql,postgres,postgres8,sapdb,hsqldb,sybase
 # Default: hsqldb
 #database.name=mysql
 #database.name=postgres

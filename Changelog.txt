@@ -26,6 +26,7 @@ Possibility to set 2048 bit keys in Swedish hardtoken profile.
 Changed error message when unlimithed strengh policy files not installed during install.
 Handle double type encoding in install.en.properties for other languages.
 Tested with JBoss 4.0.1.
+Support for PostgreSQL 8.0 on JBoss 4.
 
 3.0.4
 -----
