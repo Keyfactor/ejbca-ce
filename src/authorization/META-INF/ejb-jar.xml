@@ -198,7 +198,7 @@
       <cmp-field><field-name>caId</field-name></cmp-field>
       <cmp-field><field-name>accessRule</field-name></cmp-field>
       <cmp-field><field-name>rule</field-name></cmp-field>
-      <cmp-field><field-name>isrecursive</field-name></cmp-field>
+      <cmp-field><field-name>isRecursive</field-name></cmp-field>
    </entity>
    <entity>
       <description>
