@@ -23,13 +23,16 @@ import se.anatom.ejbca.ca.sign.*;
 import se.anatom.ejbca.util.*;
 import se.anatom.ejbca.SecConst;
 
+import org.bouncycastle.jce.*;
+import org.bouncycastle.asn1.*;
+
 import org.apache.log4j.*;
 import junit.framework.*;
 
 
 /** Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.2 2001-12-03 19:27:26 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.3 2001-12-04 14:13:17 anatom Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -41,8 +44,8 @@ public class TestSignSession extends TestCase {
     +"hvcNAQEFBQADgYEAyJVobqn6wGRoEsdHxjoqPXw8fLrQyBGEwXccnVpI4kv9iIZ45Xres0LrOwtS"
     +"kFLbpn0guEzhxPBbL6mhhmDDE4hbbHJp1Kh6gZ4Bmbb5FrwpvUyrSjTIwwRC7GAT00A1kOjl9jCC"
     +"XCfJkJH2QleCy7eKANq+DDTXzpEOvL/UqN0=").getBytes());
-    
-    static byte[] bcp10 = Base64.decode(
+
+    static byte[] oldbcp10 = Base64.decode(
     ("MIIBbDCB1gIBADAtMQswCQYDVQQGEwJTRTEPMA0GA1UEChMGQW5hVG9tMQ0wCwYDVQQDEwRUZXN0"
     +"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCzN9nDdwmq23/RLGisvR3CRO9JSem2QZ7JC7nr"
     +"NlbxQBLVqlkypT/lxMMur+lTX1S+jBaqXjtirhZTVaV5C/+HObWZ5vrj30lmsCdgzFybSzVxBz0l"
@@ -67,18 +70,22 @@ public class TestSignSession extends TestCase {
     +"GJ/vRXt77Vcr4inx9M51iy87FNcGGsmyesBoDg73p06UxpIDhkL/WpPwZAfQhWGe"
     +"o/gWydmP/hl3uEfE0E4WG02UXtNwn3ziIiJM2pBCGQQIN2rFggyD+aTxwAwOU7Z2"
     +"fw==").getBytes());
-    
+
     static Category cat = Category.getInstance( TestSignSession.class.getName() );
     private static Context ctx;
     private static ISignSessionHome home;
     private static ISignSession remote;
     private static UserDataHome userhome;
+    private static KeyPair keys;
 
     public TestSignSession(String name) {
         super(name);
     }
     protected void setUp() throws Exception {
         cat.debug(">setUp()");
+        // Install BouncyCastle provider
+        Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
+        int result = Security.addProvider(BCJce);
 
         ctx = getInitialContext();
         Object obj = ctx.lookup("RSASignSession");
@@ -139,7 +146,7 @@ public class TestSignSession extends TestCase {
     }
     public void test02SignSession() throws Exception {
         cat.debug(">test02SignSession()");
-        KeyPair keys = genKeys();
+        keys = genKeys();
         // user that we know exists...
         X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", keys.getPublic());
         assertNotNull("Misslyckades skapa cert", cert);
@@ -156,7 +163,26 @@ public class TestSignSession extends TestCase {
         pk.username = "foo";
         UserData data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserData.STATUS_NEW);
-        System.out.println("Reset status of 'foo' to NEW");
+        cat.debug("Reset status of 'foo' to NEW");
+
+        // Create certificate request
+        PKCS10CertificationRequest req = new PKCS10CertificationRequest(
+            "SHA1WithRSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), keys.getPublic(), null, keys.getPrivate());
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream ();
+        DEROutputStream dOut = new DEROutputStream(bOut);
+        dOut.writeObject(req);
+        dOut.close();
+        ByteArrayInputStream bIn = new ByteArrayInputStream(bOut.toByteArray());
+        DERInputStream dIn = new DERInputStream(bIn);
+        PKCS10CertificationRequest req2 = new PKCS10CertificationRequest((DERConstructedSequence)dIn.readObject());
+        boolean verify = req2.verify();
+        System.out.println("Verify returned " + verify);
+        if (verify == false) {
+            System.out.println("Aborting!");
+            return;
+        }
+        cat.debug("CertificationRequest generated succefully.");
+        byte[] bcp10 = bOut.toByteArray();
         X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", bcp10);
         assertNotNull("Misslyckades skapa cert", cert);
         System.out.println("Cert="+cert.toString());
