@@ -253,11 +253,9 @@
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>HardTokenPropertyEntityBean</abstract-schema-name>
-      <cmp-field><field-name>pK</field-name></cmp-field>
       <cmp-field><field-name>id</field-name></cmp-field>
       <cmp-field><field-name>property</field-name></cmp-field>      
       <cmp-field><field-name>value</field-name></cmp-field>
-      <primkey-field>pK</primkey-field>
       
       <query>
       	<query-method>
