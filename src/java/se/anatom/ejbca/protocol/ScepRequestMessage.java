@@ -36,7 +36,7 @@ import se.anatom.ejbca.util.Base64;
 
 /** Class to handle SCEP request messages sent to the CA.
  *
-* @version  $Id: ScepRequestMessage.java,v 1.1 2002-10-17 15:22:57 anatom Exp $
+* @version  $Id: ScepRequestMessage.java,v 1.2 2002-10-18 15:35:56 anatom Exp $
  */
 public class ScepRequestMessage implements RequestMessage, Serializable {
 
@@ -185,7 +185,17 @@ public class ScepRequestMessage implements RequestMessage, Serializable {
                 String id = kti.getKeyEncryptionAlgorithm().getObjectId().getId();
                 if(id.equals(PKCSObjectIdentifiers.rsaEncryption.getId())) {
                     cat.debug("Found key encrypted with RSA inside message.");
-                    Cipher cipher = Cipher.getInstance("RSA/NONE/PKCS1Padding", "BC");
+                    //RecipientIdentifier rid = kti.getRecipientIdentifier();
+                    DEREncodable rid = kti.getRecipientIdentifier().getId();
+                    if (rid instanceof IssuerAndSerialNumber) {
+                        cat.debug("Issuer and serialnumer of recipient:");
+                        cat.debug("Issuer: "+((IssuerAndSerialNumber)rid).getName().toString());
+                        cat.debug("SerialNo: "+((IssuerAndSerialNumber)rid).getSerialNumber().getValue().toString());
+                        cat.debug("My key Issuer: "+cert.getIssuerDN().toString());
+                        cat.debug("My serialNo: "+cert.getSerialNumber().toString());
+                    }
+                    // At least OpenSCEP uses nopadding, go figure...
+                    Cipher cipher = Cipher.getInstance("RSA/NONE/NOPADDING", "BC");
                     cipher.init(Cipher.DECRYPT_MODE, privateKey);
                     byte[] cekBytes = cipher.doFinal(kti.getEncryptedKey().getOctets());
                     AlgorithmIdentifier aid = envData.getEncryptedContentInfo().getContentEncryptionAlgorithm();
@@ -334,17 +344,17 @@ public class ScepRequestMessage implements RequestMessage, Serializable {
         return _dec;
     }
 
-    private static AlgorithmParameterSpec getIv(String _alg, DEREncodable _tmp)
+    private static AlgorithmParameterSpec getIv(String alg, DEREncodable tmp)
         throws CMSException
     {
         // get 3des parameter spec
-
-        if(_alg.equals(PKCSObjectIdentifiers.des_EDE3_CBC.getId())) {
-            ASN1OctetString _iv = (ASN1OctetString)_tmp;
-            return new IvParameterSpec( _iv.getOctets() );
+        cat.debug("alg="+alg);
+        if(alg.equals(PKCSObjectIdentifiers.des_EDE3_CBC.getId())) {
+            ASN1OctetString iv = (ASN1OctetString)tmp;
+            return new IvParameterSpec( iv.getOctets() );
         }
         // get rc2 parameter spec
-        else if(_alg.equals(PKCSObjectIdentifiers.RC2_CBC.getId())) {
+        else if(alg.equals(PKCSObjectIdentifiers.RC2_CBC.getId())) {
             // retrieve key parameter version and spec bytes
             //TODO:
         }
