@@ -23,18 +23,18 @@ import org.apache.log4j.*;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.20 2002-12-05 19:42:07 anatom Exp $
+ * @version $Id: CertTools.java,v 1.21 2002-12-13 13:39:22 anatom Exp $
  */
 public class CertTools {
 
     private static Category cat = Category.getInstance(CertTools.class.getName());
 
-	public static final String EMAIL = "rfc822name";
-	public static final String EMAIL1 = "email";
-	public static final String EMAIL2 = "EmailAddress";
-	public static final String DNS = "dNSName";
-	public static final String URI = "uniformResourceIdentifier";
-	public static final String URI1 = "uri";
+    public static final String EMAIL = "rfc822name";
+    public static final String EMAIL1 = "email";
+    public static final String EMAIL2 = "EmailAddress";
+    public static final String DNS = "dNSName";
+    public static final String URI = "uniformResourceIdentifier";
+    public static final String URI1 = "uri";
 
     /** inhibits creation of new CertTools */
     private CertTools() {
@@ -68,6 +68,9 @@ public class CertTools {
         if (o.trim().equalsIgnoreCase("CN")) {
             return X509Name.CN;
         }
+        if (o.trim().equalsIgnoreCase("UID")) {
+            return X509Name.UID;
+        }
         if (o.trim().equalsIgnoreCase("EmailAddress")) {
             return X509Name.EmailAddress;
         }
@@ -81,7 +84,7 @@ public class CertTools {
      * Creates a (Bouncycastle) X509Name object from a string with a DN.
      * <p>Known OID (with order) are:
      * <pre>
-     * EmailAddress, CN, SN, T, OU, O, L, ST, DC, C
+     * EmailAddress, UID, CN, SN, T, OU, O, L, ST, DC, C
      *
      * @param dn String containing DN that will be transformed into X509Name, The DN string has the format
 "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in the string will be silently dropped.
@@ -111,7 +114,7 @@ public class CertTools {
         Vector ordering = new Vector();
         Vector values = new Vector();
         int index = -1;
-        String[] objects = { "EmailAddress", "E", "CN", "SN", "T", "OU", "O", "L", "ST", "DC", "C" };
+        String[] objects = { "EmailAddress", "E", "UID", "CN", "SN", "T", "OU", "O", "L", "ST", "DC", "C" };
         for (int i = 0;i<objects.length;i++) {
             //cat.debug("Looking for "+objects[i]);
             String object = objects[i].toLowerCase();
