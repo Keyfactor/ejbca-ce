@@ -104,7 +104,7 @@ try  {
 }                                             
 %>
 <HR align="center" width="550">
-<FORM NAME="CertReqForm" ACTION="/apply/certreq" ENCTYPE=x-www-form-encoded METHOD=POST>
+<FORM NAME="CertReqForm" ACTION="certreq" ENCTYPE=x-www-form-encoded METHOD=POST>
   <div align="center">PLEASE NOTE! Certificates issued by this CA comes with absolutely<br>
     NO WARRANTY whatsoever. NO AUTHENTICATION is<br>
     performed on the information entered below. </div>
