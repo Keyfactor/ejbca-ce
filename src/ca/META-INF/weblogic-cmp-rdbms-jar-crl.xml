@@ -6,7 +6,7 @@
 <weblogic-rdbms-bean>
 
   <pool-name>DefaultPool</pool-name>
-  <table-name>CERTIFICATEDATA</table-name>
+  <table-name>CRLDATA</table-name>
   <attribute-map>
     <object-link>
        <bean-field>b64Crl</bean-field>
