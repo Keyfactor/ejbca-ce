@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
-import javax.ejb.DuplicateKeyException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
@@ -24,7 +23,7 @@ import se.anatom.ejbca.ra.UserDataRemote;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.16 2003-11-02 10:36:40 anatom Exp $
+ * @version $Id: TestUserData.java,v 1.17 2003-11-02 14:30:46 anatom Exp $
  */
 public class TestUserData extends TestCase {
 
@@ -273,31 +272,5 @@ public class TestUserData extends TestCase {
         home.remove(pk);
         log.debug("Removed it!");
         log.debug("<test06RemoveUser()");
-    }
-    /**
-     * tests creation of new duplicate users
-     *
-     * @throws Exception error
-     */
-    public void test07DuplicateUser() throws Exception {
-        log.debug(">test07DuplicateUser()");
-
-        // Make user that we know later...
-        username = genRandomUserName();
-        pwd = genRandomPwd();
-        String email = username+"@anatom.se";
-        usersession.addUser(admin,username,pwd,"C=SE, O=AnaTom, CN="+username,"rfc822name="+email,email,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_P12,0,caid);
-        log.debug("created user: "+username+", "+pwd+", C=SE, O=AnaTom, CN="+username);
-        // Add the same user again
-        boolean userexists = false;
-        try {
-            usersession.addUser(admin,username,pwd,"C=SE, O=AnaTom, CN="+username,"rfc822name="+email,email,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_P12,0,caid);
-        } catch (DuplicateKeyException e) {
-            // This is what we want
-            userexists = true;
-        }
-        assertTrue("User already exist does not throw DuplicateKeyException", userexists);
-        
-        log.debug("<test07DuplicateUser()");
     }
 }

@@ -24,7 +24,7 @@ import se.anatom.ejbca.ra.UserDataRemote;
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.17 2003-11-02 10:15:21 anatom Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.18 2003-11-02 14:30:34 anatom Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthenticationSession.class);
@@ -180,5 +180,18 @@ public class TestAuthenticationSession extends TestCase {
         }
         assertTrue("Authentication succeeded when it should have failed.", authfailed);
         log.debug("<test04FailAuthenticateUser()");
+    }
+
+    /**
+     * Delete user after completed tests
+     *
+     * @throws Exception error
+     */
+    public void test05DeleteUser() throws Exception {
+        log.debug(">test01DeleteUser()");
+        String email = username+"@anatom.se";
+        usersession.deleteUser(admin,username);
+        log.debug("deleted user: "+username);
+        log.debug("<test01DeleteUser()");
     }
 }
