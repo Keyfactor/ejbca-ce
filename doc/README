@@ -172,7 +172,7 @@ in ca/META-INF/ejb-jar.xml (default 24 hours).
 Example crontab entry:
 
 PATH=$PATH:/usr/java/jdk1.3.1_01/bin
-@hourly cd /home/ejbca;/home/ejbca/jobrunner.sh CreateCRLSession;
+@daily cd /home/ejbca;/home/ejbca/jobrunner.sh CreateCRLSession;
 
 where '/usr/java/jdk1.3.1_01/bin' is the path to where 'java' can be found.
 '/home/ejbca' is where ejbca is installed and 'jobrunner.sh' located.
