@@ -1,52 +1,85 @@
 package se.anatom.ejbca.ca.sign;
 
-import java.rmi.*;
-
-import javax.ejb.*;
-
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.rmi.RemoteException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Provider;
+import java.security.PublicKey;
+import java.security.Security;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.security.cert.X509CRL;
-import java.security.*;
+import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
-import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Vector;
 
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+import javax.ejb.ObjectNotFoundException;
+
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DEREncodableVector;
+import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DERInputStream;
+import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.CRLNumber;
+import org.bouncycastle.asn1.x509.CertificatePolicies;
+import org.bouncycastle.asn1.x509.DistributionPoint;
+import org.bouncycastle.asn1.x509.DistributionPointName;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.jce.PKCS7SignedData;
+import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.X509V2CRLGenerator;
+import org.bouncycastle.jce.X509V3CertificateGenerator;
 import se.anatom.ejbca.BaseSessionBean;
-import se.anatom.ejbca.ca.auth.IAuthenticationSessionLocalHome;
-import se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal;
-import se.anatom.ejbca.ca.auth.UserAuthData;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
-import se.anatom.ejbca.ca.store.IPublisherSessionLocal;
-import se.anatom.ejbca.ca.store.IPublisherSessionLocalHome;
-import se.anatom.ejbca.ca.store.CertificateData;
-import se.anatom.ejbca.ca.store.certificateprofiles.*;
-import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.Hex;
-import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal;
+import se.anatom.ejbca.ca.auth.IAuthenticationSessionLocalHome;
+import se.anatom.ejbca.ca.auth.UserAuthData;
+import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
+import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.ca.exception.IllegalKeyException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
-import se.anatom.ejbca.ca.exception.IllegalKeyException;
+import se.anatom.ejbca.ca.store.CertificateData;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
+import se.anatom.ejbca.ca.store.IPublisherSessionLocal;
+import se.anatom.ejbca.ca.store.IPublisherSessionLocalHome;
+import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.ILogSessionHome;
+import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.protocol.IRequestMessage;
-
-import org.bouncycastle.jce.*;
-import org.bouncycastle.asn1.x509.*;
-import org.bouncycastle.asn1.*;
+import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.Hex;
 
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.73 2003-02-27 08:43:24 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.74 2003-02-28 00:41:12 koen_serry Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -74,86 +107,81 @@ public class RSASignSessionBean extends BaseSessionBean {
     private ILogSessionRemote logsession;
 
     /**
-     * Default create for SessionBean without any creation Arguments.
-     * @throws CreateException if bean instance can't be created
-     */
-    public void ejbCreate() throws CreateException {
-        debug(">ejbCreate()");
-        try {
-            // Install BouncyCastle provider
-            Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
-            int result = Security.addProvider(BCJce);
-
-            // get home interfaces to other session beans used
-            storeHome = (ICertificateStoreSessionLocalHome)lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
-            authHome = (IAuthenticationSessionLocalHome)lookup("java:comp/env/ejb/AuthenticationSessionLocal");
-
-            ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);
-            logsession = logsessionhome.create();
-
-            // Init the publisher session beans
-            int i = 1;
-            publishers = new ArrayList();
-            try {
-                while (true) {
-                    String jndiName = "java:comp/env/ejb/PublisherSession" + i;
-                    IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)lookup(jndiName);
-                    publishers.add(pubHome);
-                    debug("Added publisher class '"+pubHome.getClass().getName()+"'");
-                    i++;
-                }
-            } catch (EJBException e) {
-                // We could not find this publisher
-                debug("Failed to find publisher at index '"+i+"', no more publishers.");
-            }
-
-            // Create a Signing device of type pointed to by env variable using properties ot pass args
-            Properties p = new Properties();
-            String keyStoreFile = (String)lookup("java:comp/env/keyStore", java.lang.String.class);
-            p.setProperty("keyStore", keyStoreFile);
-            String keyStorePass = getPassword("java:comp/env/keyStorePass");
-            p.setProperty("keyStorePass", keyStorePass);
-            String privateKeyAlias= (String)lookup("java:comp/env/privateKeyAlias", java.lang.String.class);
-            p.setProperty("privateKeyAlias", privateKeyAlias);
-            String privateKeyPass = getPassword("java:comp/env/privateKeyPass");
-            p.setProperty("privateKeyPass", privateKeyPass);
-            String signingDeviceFactoryClass= (String)lookup("java:comp/env/signingDeviceFactory", java.lang.String.class);
-            debug("Creating SigningDeviceFactory of type "+signingDeviceFactoryClass);
-            Class implClass = Class.forName( signingDeviceFactoryClass );
-            Object fact = implClass.newInstance();
-            Class[] paramTypes = new Class[1];
-            paramTypes[0] = p.getClass();
-            Method method = implClass.getMethod("makeInstance", paramTypes);
-            Object[] params = new Object[1];
-            params[0] = p;
-            signingDevice = (ISigningDevice)method.invoke(fact, params);
-            //signingDevice = fact.makeInstance(p);
-            // We must keep the same order in the DN in the issuer field in created certificates as there
-            // is in the subject field of the CA-certificate.
-            Certificate[] certs = signingDevice.getCertificateChain();
-            caCert = (X509Certificate)certs[0];
-            caSubjectName = new X509Name(caCert.getSubjectDN().toString());
-
-            // Should extensions be used in CRLs? Critical or not?
-            if ((useaki = (Boolean)lookup("java:comp/env/AuthorityKeyIdentifier", java.lang.Boolean.class)).booleanValue() == true)
-                akicritical = (Boolean)lookup("java:comp/env/AuthorityKeyIdentifierCritical", java.lang.Boolean.class);
-            if ((usecrln = (Boolean)lookup("java:comp/env/CRLNumber", java.lang.Boolean.class)).booleanValue() == true)
-                crlncritical = (Boolean)lookup("java:comp/env/CRLNumberCritical", java.lang.Boolean.class);
-            // The period between CRL issue
-            crlperiod = (Long)lookup("java:comp/env/CRLPeriod", java.lang.Long.class);
-
-            // Use old style email address in DN? (really deprecated but old habits die hard...)
-            emailindn = (Boolean)lookup("java:comp/env/EmailInDN", java.lang.Boolean.class);
-            // Should we set user to finished state after generating certificate? Probably means onyl one cert can be issued
-            // without resetting users state in user DB
-            finishUser = (Boolean)lookup("java:comp/env/FinishUser", java.lang.Boolean.class);
-
-        } catch( Exception e ) {
-            debug("Caught exception in ejbCreate(): ", e);
-            throw new EJBException(e);
-        }
-        debug("<ejbCreate()");
-    }
+	 * Default create for SessionBean without any creation Arguments.
+	 * @throws CreateException if bean instance can't be created
+	 */
+	public void ejbCreate() throws CreateException {
+	    debug(">ejbCreate()");
+	    try {
+	        // Install BouncyCastle provider
+	        Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
+	        int result = Security.addProvider(BCJce);
+	
+	        // get home interfaces to other session beans used
+	        storeHome = (ICertificateStoreSessionLocalHome)lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
+	        authHome = (IAuthenticationSessionLocalHome)lookup("java:comp/env/ejb/AuthenticationSessionLocal");
+	
+	        ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);
+	        logsession = logsessionhome.create();
+	
+	        // Init the publisher session beans
+	        int i = 1;
+	        publishers = new ArrayList();
+	        try {
+	            while (true) {
+	                String jndiName = "java:comp/env/ejb/PublisherSession" + i;
+	                IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)lookup(jndiName);
+	                publishers.add(pubHome);
+	                debug("Added publisher class '"+pubHome.getClass().getName()+"'");
+	                i++;
+	            }
+	        } catch (EJBException e) {
+	            // We could not find this publisher
+	            debug("Failed to find publisher at index '"+i+"', no more publishers.");
+	        }
+	
+	        // Create a Signing device of type pointed to by env variable using properties ot pass args
+	        Properties p = new Properties();
+	        String keyStoreFile = (String)lookup("java:comp/env/keyStore", java.lang.String.class);
+	        p.setProperty("keyStore", keyStoreFile);
+	        String keyStorePass = getPassword("java:comp/env/keyStorePass");
+	        p.setProperty("keyStorePass", keyStorePass);
+	        String privateKeyAlias= (String)lookup("java:comp/env/privateKeyAlias", java.lang.String.class);
+	        p.setProperty("privateKeyAlias", privateKeyAlias);
+	        String privateKeyPass = getPassword("java:comp/env/privateKeyPass");
+	        p.setProperty("privateKeyPass", privateKeyPass);
+			String signingDeviceFactoryName = (String)lookup("java:comp/env/signingDeviceFactory");
+			ISigningDeviceFactory signingDeviceFactory = (ISigningDeviceFactory)Class.forName(signingDeviceFactoryName).newInstance();
+			debug("Creating SigningDeviceFactory of type "+signingDeviceFactoryName);
+	        signingDevice = signingDeviceFactory.makeInstance(p);
+	
+	        //signingDevice = fact.makeInstance(p);
+	        // We must keep the same order in the DN in the issuer field in created certificates as there
+	        // is in the subject field of the CA-certificate.
+	        Certificate[] certs = signingDevice.getCertificateChain();
+	        caCert = (X509Certificate)certs[0];
+	        caSubjectName = new X509Name(caCert.getSubjectDN().toString());
+	
+	        // Should extensions be used in CRLs? Critical or not?
+	        if ((useaki = (Boolean)lookup("java:comp/env/AuthorityKeyIdentifier", java.lang.Boolean.class)).booleanValue() == true)
+	            akicritical = (Boolean)lookup("java:comp/env/AuthorityKeyIdentifierCritical", java.lang.Boolean.class);
+	        if ((usecrln = (Boolean)lookup("java:comp/env/CRLNumber", java.lang.Boolean.class)).booleanValue() == true)
+	            crlncritical = (Boolean)lookup("java:comp/env/CRLNumberCritical", java.lang.Boolean.class);
+	        // The period between CRL issue
+	        crlperiod = (Long)lookup("java:comp/env/CRLPeriod", java.lang.Long.class);
+	
+	        // Use old style email address in DN? (really deprecated but old habits die hard...)
+	        emailindn = (Boolean)lookup("java:comp/env/EmailInDN", java.lang.Boolean.class);
+	        // Should we set user to finished state after generating certificate? Probably means onyl one cert can be issued
+	        // without resetting users state in user DB
+	        finishUser = (Boolean)lookup("java:comp/env/FinishUser", java.lang.Boolean.class);
+	
+	    } catch( Exception e ) {
+	        debug("Caught exception in ejbCreate(): ", e);
+	        throw new EJBException(e);
+	    }
+	    debug("<ejbCreate()");
+	}
 
     /**
      * Implements ISignSession::getCertificateChain
