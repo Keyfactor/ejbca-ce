@@ -1,4 +1,4 @@
-$Id: TODO,v 1.54 2003-01-25 16:43:12 anatom Exp $
+$Id: TODO,v 1.55 2003-02-20 15:58:13 anatom Exp $
 
 V 1.x
 -----
@@ -24,9 +24,9 @@ http://support.microsoft.com/default.aspx?scid=kb;EN-US;q281245
 - Test LDAP with mod_authz_ldap in apache
 - Import utility to get users from external datasources.
 - Multiple instances of EJBCA running within a singe JBoss.
-- Key recovery 
 - XML/Soap stuff.
 - Multiple CDPs, comma separated strings should give several CDPs. 
+- Better command line tools for batch stuff.
 
 Future
 ------
