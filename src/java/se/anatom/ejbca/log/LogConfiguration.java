@@ -8,7 +8,7 @@ import java.util.HashMap;
  * should be logged and if internal log database and/or external logging device
  * should be used.
  *
- * @version $Id: LogConfiguration.java,v 1.2 2003-02-14 08:39:46 scop Exp $
+ * @version $Id: LogConfiguration.java,v 1.3 2003-02-26 11:10:56 herrvendil Exp $
  */
 public class LogConfiguration implements java.io.Serializable {
 
@@ -25,7 +25,7 @@ public class LogConfiguration implements java.io.Serializable {
          configurationdata.put(new Integer(i), Boolean.TRUE);
       }
       for(int i = 0; i < LogEntry.EVENTNAMES_ERROR.length; i++){
-         configurationdata.put(new Integer(i + LogEntry.EVENT_ERROR_BOUNDRARY), Boolean.FALSE);
+         configurationdata.put(new Integer(i + LogEntry.EVENT_ERROR_BOUNDRARY), Boolean.TRUE);
       }
 
     }
