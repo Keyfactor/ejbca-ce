@@ -47,11 +47,14 @@ ALTER TABLE hardtokenissuerdata
     DROP certIssuerDN;
 
 ALTER TABLE keyrecoverydata
+    ADD keyData varchar(250) binary NULL DEFAULT NULL AFTER markedAsRecoverable,
     DROP pK,
     MODIFY certSN varchar(250) binary NOT NULL DEFAULT '',
     MODIFY issuerDN varchar(250) binary NOT NULL DEFAULT '',
+    DROP keyPair,
     DROP PRIMARY KEY,
     ADD PRIMARY KEY (certSN, issuerDN);
+    
 #
 #  Fieldformats of
 #    keyrecoverydata.certSN changed from varchar(250) binary NULL DEFAULT NULL to varchar(250) binary NOT NULL DEFAULT ''.
