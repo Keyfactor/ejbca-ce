@@ -44,7 +44,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.24 2005-02-13 17:09:53 anatom Exp $
+ * @version $Id: CACertServlet.java,v 1.25 2005-02-13 18:38:24 anatom Exp $
  *
  * @web.servlet name = "CACert"
  *              display-name = "CACertServlet"
@@ -54,7 +54,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * @web.servlet-mapping url-pattern = "/ca/cacert"
  *
  * @web.ejb-local-ref
- *  name="ejb/SignSessionLocal"
+ *  name="ejb/RSASignSessionLocal"
  *  type="Session"
  *  link="RSASignSession"
  *  home="se.anatom.ejbca.ca.sign.ISignSessionLocalHome"

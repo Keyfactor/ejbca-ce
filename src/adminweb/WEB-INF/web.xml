@@ -128,7 +128,7 @@
     <env-entry-type>java.lang.String</env-entry-type>
   </env-entry>
   <ejb-local-ref>
-    <ejb-ref-name>SignSessionLocal</ejb-ref-name>
+    <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
     <local-home>se.anatom.ejbca.ca.sign.ISignSessionLocalHome</local-home>
     <local>se.anatom.ejbca.ca.sign.ISignSessionLocal</local>
