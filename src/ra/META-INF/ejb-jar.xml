@@ -348,7 +348,6 @@
       <cmp-field><field-name>matchWith</field-name></cmp-field>
       <cmp-field><field-name>matchType</field-name></cmp-field>
       <cmp-field><field-name>matchValue</field-name></cmp-field>         
-      <primkey-field>pK</primkey-field>     
    </entity>   
    <entity>
       <description>
@@ -366,7 +365,6 @@
       <cmp-field><field-name>pK</field-name></cmp-field> 
       <cmp-field><field-name>directory</field-name></cmp-field>
       <cmp-field><field-name>accessRule</field-name></cmp-field>
-      <primkey-field>pK</primkey-field>  
    </entity>   
    
    <entity>

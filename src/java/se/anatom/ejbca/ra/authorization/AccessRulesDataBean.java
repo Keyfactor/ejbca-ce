@@ -21,15 +21,15 @@ public abstract class AccessRulesDataBean implements javax.ejb.EntityBean {
     private static Category log = Category.getInstance( AccessRulesDataBean.class.getName() );
     protected EntityContext  ctx;
 
-    public abstract AccessRulesPK getPK();
-    public abstract void setPK(AccessRulesPK pk);
-    
+    public abstract int getPK();
+    public abstract void setPK(int pK);
+
     public abstract String getDirectory();
     public abstract void setDirectory(String directory);
-    
+
     public abstract AccessRule getAccessRule();
     public abstract void setAccessRule(AccessRule accessrule);
-    
+
     //
     // Fields required by Container
     //
@@ -37,8 +37,8 @@ public abstract class AccessRulesDataBean implements javax.ejb.EntityBean {
 
     public AccessRulesPK ejbCreate(String usergroupname, String directory, AccessRule accessrule) throws CreateException {
         AccessRulesPK pk = new AccessRulesPK(usergroupname, directory);
-        
-        setPK(pk);
+
+        setPK(pk.hashCode());
         setDirectory(directory);
         setAccessRule(accessrule);
         log.debug("Created available accessrule "+ directory);

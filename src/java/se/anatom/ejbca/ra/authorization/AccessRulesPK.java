@@ -8,38 +8,36 @@ package se.anatom.ejbca.ra.authorization;
  */
 
 public final class AccessRulesPK implements java.io.Serializable {
-    
-    public int fingerprint;
 
-    
-    public AccessRulesPK(java.lang.String usergroupname, java.lang.String directory){
-        this.fingerprint =
-        ((usergroupname==null?0:usergroupname.hashCode()) 
+    public int pK;
+
+
+    public AccessRulesPK(java.lang.String usergroupname, java.lang.String directory) {
+        this.pK =
+        ((usergroupname==null?0:usergroupname.hashCode())
         ^
         (directory==null?0:directory.hashCode()));
     }
 
-    
+    public AccessRulesPK() {
+    }
+
     /**
      * @see java.lang.Object#equals(java.lang.Object)
      */
     public boolean equals(java.lang.Object otherOb) {
-        
-        if (this == otherOb) {
-            return true;
-        }
         if (!(otherOb instanceof se.anatom.ejbca.ra.authorization.AccessRulesPK)) {
             return false;
         }
         se.anatom.ejbca.ra.authorization.AccessRulesPK other = (se.anatom.ejbca.ra.authorization.AccessRulesPK) otherOb;
-        return (fingerprint==other.fingerprint);
+        return (pK==other.pK);
     }
-    
+
     /**
      * @see java.lang.Object#hashCode()
      */
     public int hashCode() {
-        return this.fingerprint;
+        return this.pK;
     }
-    
+
 }

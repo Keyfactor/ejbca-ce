@@ -15,7 +15,7 @@ import org.apache.log4j.*;
  *   matchvalue
  * </pre>
  *
- * @version $Id: UserEntityDataBean.java,v 1.2 2002-07-23 16:02:58 anatom Exp $
+ * @version $Id: UserEntityDataBean.java,v 1.3 2002-07-26 11:11:51 anatom Exp $
  **/
 
 public abstract class UserEntityDataBean implements javax.ejb.EntityBean {
@@ -23,12 +23,12 @@ public abstract class UserEntityDataBean implements javax.ejb.EntityBean {
     private static Category log = Category.getInstance( UserEntityDataBean.class.getName() );
     protected EntityContext  ctx;
 
-    public abstract UserEntityPK getPK();
+    public abstract int          getPK();
     public abstract Integer      getMatchWith();
     public abstract Integer      getMatchType();
     public abstract String       getMatchValue();
 
-    public abstract void setPK(UserEntityPK pk);
+    public abstract void setPK(int pK);
     public abstract void setMatchWith(Integer matchwith);
     public abstract void setMatchType(Integer matchtype);
     public abstract void setMatchValue(String matchvalue);
@@ -47,7 +47,7 @@ public abstract class UserEntityDataBean implements javax.ejb.EntityBean {
     public UserEntityPK ejbCreate(String usergroupname, int matchwith, int matchtype, String matchvalue) throws CreateException {
 
         UserEntityPK pk = new UserEntityPK(usergroupname, matchwith,matchtype,matchvalue);
-        setPK(pk);
+        setPK(pk.hashCode());
         setMatchWith(new Integer(matchwith));
         setMatchType(new Integer(matchtype));
         setMatchValue(matchvalue);

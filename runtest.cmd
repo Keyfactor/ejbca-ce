@@ -22,4 +22,4 @@ java -cp %TEST_CP% se.anatom.ejbca.ca.crl.junit.TestRunner
 echo Testing batch
 java -cp %TEST_CP% se.anatom.ejbca.batch.junit.TestRunner
 
-cd ../..
+cd ..\..
