@@ -64,12 +64,7 @@ public class Install {
 		
 		text = new Properties();
 		text.load(this.getClass().getResourceAsStream("/" + "install." + language.toLowerCase() + ".properties"));
-						
-		//text.load(new FileInputStream("install." + language.toLowerCase() + ".properties"));
-		if(version.equalsIgnoreCase("primeca")){
-			text.load(this.getClass().getResourceAsStream("/" + "installprimeca." + language.toLowerCase() + ".properties"));			
-		}
-   
+						   
 		if(osstring.equalsIgnoreCase("unix")){
 			this.os = OS_UNIX;
 		}
@@ -104,8 +99,8 @@ public class Install {
 			  if(args[Install.ARG_COMMAND].equalsIgnoreCase("displayendmessage")){		
 			  	install.displayEndMessage();    
 			  }else{
-				System.out.println("Usage: install install <unix|windows> <language> <ejbca|primeca> <jboss|weblogic>\n" +
-				" Or : install displayendmessage <unix|windows><language> <ejbca|primeca> <jboss|weblogic>");
+				System.out.println("Usage: install install <unix|windows> <language> <ejbca> <jboss|weblogic>\n" +
+				" Or : install displayendmessage <unix|windows><language> <ejbca> <jboss|weblogic>");
 				System.exit(-1);
 			  }
 		    }
@@ -305,7 +300,16 @@ public class Install {
         
 		if(this.os == OS_WINDOWS){
 			try {
-				Process runcainit = Runtime.getRuntime().exec("ca.cmd init " + this.caname + " \"" + this.cadn + "\" " + this.keysize + " " + this.validity + " " + this.policyid.trim());
+				String[] command = new String[7];
+				command[0] = "ca.cmd";
+				command[1] = "init";
+				command[2] = this.caname;
+				command[3] = "\"" + this.cadn + "\"";
+				command[4] = Integer.toString(this.keysize);
+				command[5] = Integer.toString(this.validity);
+				command[6] = this.policyid.trim();
+				Process runcainit = Runtime.getRuntime().exec(command);
+				
 				BufferedReader br = new BufferedReader(new InputStreamReader(runcainit.getInputStream()));
 				Thread.sleep(1000);
 				String line = "";
@@ -322,8 +326,16 @@ public class Install {
 			} 	
 			System.out.print(text.getProperty("SETUPOFADMINWEB"));
 			try {	
-				Process setupadminweb = Runtime.getRuntime().exec("setup-adminweb.cmd " + this.caname + "  \"" + this.servercertdn + "\" " + this.serverkeystorepasswd + " " + this.superadminpasswd + " dummy " + this.computername);
-
+				String[] command = new String[7];
+				command[0] = "setup-adminweb.cmd";
+				command[1] = this.caname;
+				command[2] = this.servercertdn;
+				command[3] = this.serverkeystorepasswd;
+				command[4] = this.superadminpasswd;
+				command[5] = "changeit";
+				command[6] = this.computername;
+				Process setupadminweb = Runtime.getRuntime().exec(command);											   			   			  
+				
 				BufferedReader br = new BufferedReader(new InputStreamReader(setupadminweb.getInputStream()));
 				Thread.sleep(1000);
 				String line = "";
@@ -332,7 +344,14 @@ public class Install {
 					System.out.println(text.getProperty("ERRORSETTINGUPADMINWEB"));
 					System.exit(-1);
 				}
-				Process getrootcert = Runtime.getRuntime().exec("ca.cmd getrootcert "+ this.caname + " tmp/rootca.der -der");			   			   				
+				command = new String[5];
+				command[0] = "ca.cmd";
+				command[1] = "getrootcert";
+				command[2] = this.caname;
+				command[3] = "tmp\rootca.der";
+				command[4] = "-der";
+				Process getrootcert = Runtime.getRuntime().exec(command);
+				
 				if(getrootcert.waitFor() != 0){
 					System.out.println(text.getProperty("ERRORSETTINGUPADMINWEB"));
 					System.exit(-1);
@@ -343,8 +362,16 @@ public class Install {
 			}
 		}
 		if(os == OS_UNIX){			
-			try {															
-				Process runcainit = Runtime.getRuntime().exec("./ca.sh init " + this.caname + " \"" + this.cadn + "\" " + this.keysize + " " + this.validity + " " + this.policyid.trim() );
+			try {
+				String[] command = new String[7];
+				command[0] = "./ca.sh";
+			    command[1] = "init";
+				command[2] = this.caname;
+				command[3] = this.cadn;
+				command[4] = Integer.toString(this.keysize);
+				command[5] = Integer.toString(this.validity);
+				command[6] = this.policyid.trim();
+				Process runcainit = Runtime.getRuntime().exec(command);
 			    								
 				BufferedReader br = new BufferedReader(new InputStreamReader(runcainit.getInputStream()));
 				Thread.sleep(1000);
@@ -362,14 +389,29 @@ public class Install {
 			} 
 			System.out.print(text.getProperty("SETUPOFADMINWEB"));
 			try {			  
-			   Process setupadminweb = Runtime.getRuntime().exec("./setup-adminweb.sh " + this.caname + "  \"" + this.servercertdn + "\" " + this.serverkeystorepasswd + " " + this.superadminpasswd + " changeit " + this.computername);			   			   
+				
+				String[] command = new String[7];
+				command[0] = "./setup-adminweb.sh";
+				command[1] = this.caname;
+				command[2] = this.servercertdn;
+				command[3] = this.serverkeystorepasswd;
+				command[4] = this.superadminpasswd;
+				command[5] = "changeit";
+				command[6] = this.computername;
+				Process setupadminweb = Runtime.getRuntime().exec(command);											   			   			  
 								
 				if(setupadminweb.waitFor() != 0){
 					System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB"));
 					System.exit(-1);
 				}
-												
-				Process getrootcert = Runtime.getRuntime().exec("./ca.sh getrootcert "+ this.caname + " tmp/rootca.der -der");			   			   
+
+				command = new String[5];
+				command[0] = "./ca.sh";
+				command[1] = "getrootcert";
+				command[2] = this.caname;
+				command[3] = "tmp/rootca.der";
+				command[4] = "-der";
+				Process getrootcert = Runtime.getRuntime().exec(command);											   			   
 											
 				if(getrootcert.waitFor() != 0){
 					System.out.println(text.getProperty("ERRORSETTINGUPADMINWEB"));
