@@ -64,7 +64,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.118 2003-12-12 10:15:04 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.119 2003-12-15 14:02:01 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -432,12 +432,14 @@ public class RSASignSessionBean extends BaseSessionBean {
             // See if we can get issuerDN directly from request
             if (req.getIssuerDN() != null) {
                 cadata = cadatahome.findByPrimaryKey(new Integer(req.getIssuerDN().hashCode()));
+                debug("Using CA (from issuerDN) with id: "+cadata.getCAId()+" and DN: "+cadata.getSubjectDN());
             } else if (req.getUsername() != null ){
                 // See if we can get username and password directly from request
                 String username = req.getUsername();
                 String password = req.getPassword();
                 data = authUser(admin, username, password);
                 cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
+                debug("Using CA (from username) with id: "+cadata.getCAId()+" and DN: "+cadata.getSubjectDN());
             } else {
                 throw new CADoesntExistsException();
             }
@@ -469,7 +471,8 @@ public class RSASignSessionBean extends BaseSessionBean {
 			}                
             
             if (req.requireKeyInfo()) {
-                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateDecKey());
+                // You go figure...scep encrypts message with the public CA-cert
+                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateSignKey());
             }
             // Create the response message and set all required fields
             try {
