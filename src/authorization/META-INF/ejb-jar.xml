@@ -293,6 +293,22 @@
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>*</method-name>
      </method>
+     <method>
+         <ejb-name>AdminGroupData</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
+         <ejb-name>AdminEntityData</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
+         <ejb-name>AccessRulesData</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationTreeUpdateData</ejb-name>
+         <method-name>*</method-name>
+     </method>
    </method-permission>
 
    <!--
@@ -301,7 +317,15 @@
        Required is used for mission critical methods, which cannot collide.
        Supports is used for methods which only read data.
    -->
-<!--    <container-transaction>
+   <container-transaction>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <trans-attribute>Required</trans-attribute>
+   </container-transaction>
+
+    <container-transaction>
     <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>isAuthorized</method-name>
@@ -317,6 +341,10 @@
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>isGroupAuthorizedNoLog</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>existsAdministratorInGroup</method-name>
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
@@ -336,60 +364,22 @@
      </method>  
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>existsEndEntityProfileInRules</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>existsCAInRules</method-name>
-     </method> 
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
          <method-name>getAuthorizedCAIds</method-name>
      </method>  
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>getAuthorizedEndEntityProfileIds</method-name>
      </method>               
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>existsEndEntityProfileInRules</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>existsCAInRules</method-name>
+     </method> 
      <trans-attribute>Supports</trans-attribute>
-   </container-transaction> -->
-
-   <container-transaction>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>initialize</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>addAdminGroup</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>removeAdminGroup</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>renameAdminGroup</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>addAccessRules</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>removeAccessRules</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>addAdminEntites</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>removeAdminEntities</method-name>
-     </method>
-
-     <trans-attribute>Required</trans-attribute>
    </container-transaction>
-
 
  </assembly-descriptor>
 </ejb-jar>

@@ -163,6 +163,10 @@
          <ejb-name>LogSession</ejb-name>
          <method-name>query</method-name>
      </method>
+     <method>
+         <ejb-name>LogSession</ejb-name>
+         <method-name>loadLogConfiguration</method-name>
+     </method>
      <trans-attribute>Supports</trans-attribute>
    </container-transaction>
 

@@ -151,50 +151,24 @@
        Required is used for mission critical methods, which cannot collide.
        Supports is used for methods which only read data.
    -->
+   <container-transaction>
+      <method>
+         <ejb-name>KeyRecoverySession</ejb-name>
+         <method-name>*</method-name>
+     </method>       
+     <trans-attribute>Required</trans-attribute>
+   </container-transaction>
+
     <container-transaction>
     <method>
          <ejb-name>KeyRecoverySession</ejb-name>
          <method-name>isUserMarked</method-name>
      </method>  
-
+    <method>
+         <ejb-name>KeyRecoverySession</ejb-name>
+         <method-name>existsKeys</method-name>
+     </method>  
      <trans-attribute>Supports</trans-attribute>
-   </container-transaction>
-
-   <container-transaction>
-      <method>
-         <ejb-name>KeyRecoverySession</ejb-name>
-         <method-name>addKeyRecoveryData</method-name>
-     </method>
-     <method>
-         <ejb-name>KeyRecoverySession</ejb-name>
-         <method-name>changeKeyRecoveryData</method-name>
-     </method>
-     <method>
-         <ejb-name>KeyRecoverySession</ejb-name>
-         <method-name>removeKeyRecoveryData</method-name>
-     </method>
-     <method>
-         <ejb-name>KeyRecoverySession</ejb-name>
-         <method-name>removeAllKeyRecoveryData</method-name>
-     </method>
-     <method>
-         <ejb-name>KeyRecoverySession</ejb-name>
-         <method-name>keyRecovery</method-name>
-     </method>
-     <method>
-         <ejb-name>KeyRecoverySession</ejb-name>
-         <method-name>markNewestAsRecoverable</method-name>
-     </method>
-     <method>
-         <ejb-name>KeyRecoverySession</ejb-name>
-         <method-name>markAsRecoverable</method-name>
-     </method>
-     <method>
-         <ejb-name>KeyRecoverySession</ejb-name>
-         <method-name>unmarkUser</method-name>
-     </method>
-       
-     <trans-attribute>Required</trans-attribute>
    </container-transaction>
 
  </assembly-descriptor>
