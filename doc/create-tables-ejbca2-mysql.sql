@@ -72,7 +72,7 @@ create table crldata (
 	issuerdn varchar(150),
 	thisupdate varchar(150),
 	crlnumber integer(10),
-	base64crl varchar(150)
+	base64crl longtext
 );
 
 drop table if exists endentityprofile;
