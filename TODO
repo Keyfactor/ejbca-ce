@@ -1,4 +1,4 @@
-$Id: TODO,v 1.65 2003-07-24 15:25:07 anatom Exp $
+$Id: TODO,v 1.66 2003-08-07 09:26:22 anatom Exp $
 
 V 1.x
 -----
@@ -7,6 +7,7 @@ V 1.x
 V 2.x
 -----
 - Make it possible to dynamically configure new OtherNames in subjectAltName.
+- XML format of profiles and konfig (see java.beans.XMLEncoder/XMLDecoder,http://www.fawcette.com/javapro/2003_06/magazine/features/chavener/default_pf.asp)
 - LDAPPublisherSession should remove cert from the store when revoked.
 - More automated testing, Junit as well as web-stuff.
 - Continue improving exceptions and error handling.
