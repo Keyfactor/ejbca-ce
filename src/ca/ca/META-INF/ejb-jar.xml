@@ -16,7 +16,12 @@
      <ejb-class>se.anatom.ejbca.ca.sign.RSASignSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
-     
+     <env-entry>
+        <description>Factory class for creating a SigningDevice</description>
+        <env-entry-name>signingDeviceFactory</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>se.anatom.ejbca.ca.sign.PKCS12SigningDeviceFactory</env-entry-value>
+     </env-entry>
      <env-entry>
         <description>Location of CA keystore</description>
         <env-entry-name>keyStore</env-entry-name>

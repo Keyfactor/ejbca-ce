@@ -14,6 +14,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.cert.X509CRL;
 import java.security.*;
+import java.lang.reflect.Method;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ca.auth.IAuthenticationSessionLocalHome;
@@ -41,13 +42,11 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.31 2002-06-04 14:42:04 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.32 2002-06-07 12:21:34 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
-    private PrivateKey privateKey;
-    private X509Certificate rootCert;
-    private X509Certificate caCert;
+    X509Certificate caCert;
     X509Name caSubjectName;
     private Long validity;
     private Long crlperiod;
@@ -62,6 +61,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     private Boolean emailindn;
     private Boolean finishUser;
     private SecureRandom random;
+    ISigningDevice signingDevice;
 
     /** Home interface to certificate store */
     private ICertificateStoreSessionLocalHome storeHome = null;
@@ -103,47 +103,32 @@ public class RSASignSessionBean extends BaseSessionBean {
                 debug("Failed to find publisher at index '"+i+"', no more publishers.");
             }
 
-            // Get env variables and read in nessecary data
-            KeyStore keyStore=KeyStore.getInstance("PKCS12", "BC");
+            // Create a Signing device of type pointed to by env variable using properties ot pass args
+            Properties p = new Properties();
             String keyStoreFile = (String)lookup("java:comp/env/keyStore", java.lang.String.class);
-            debug("keystore:" + keyStoreFile);
-            InputStream is = new FileInputStream(keyStoreFile);
-            char[] keyStorePass = getPassword("java:comp/env/keyStorePass");
-            //debug("keystorepass: " + keyStorePass);
-            keyStore.load(is, keyStorePass);
+            p.setProperty("keyStore", keyStoreFile);
+            String keyStorePass = getPassword("java:comp/env/keyStorePass");
+            p.setProperty("keyStorePass", keyStorePass);
             String privateKeyAlias= (String)lookup("java:comp/env/privateKeyAlias", java.lang.String.class);
-            debug("privateKeyAlias: " + privateKeyAlias);
-            char[] privateKeyPass = getPassword("java:comp/env/privateKeyPass");
-            if ((new String(privateKeyPass)).equals("null"))
-                privateKeyPass = null;
-            //debug("privateKeyPass: " + privateKeyPass);
-            privateKey = (PrivateKey)keyStore.getKey(privateKeyAlias, privateKeyPass);
-            if (privateKey == null) {
-                error("Cannot load key with alias '"+privateKeyAlias+"' from keystore '"+keyStoreFile+"'");
-                throw new Exception("Cannot load key with alias '"+privateKeyAlias+"' from keystore '"+keyStoreFile+"'");
-            }
-            Certificate[] certchain = KeyTools.getCertChain(keyStore, privateKeyAlias);
-            if (certchain.length < 1) {
-                error("Cannot load certificate chain with alias '"+privateKeyAlias+"' from keystore '"+keyStoreFile+"'");
-                throw new Exception("Cannot load certificate chain with alias '"+privateKeyAlias+"' from keystore '"+keyStoreFile+"'");
-            }
-            // We only support a ca hierarchy with depth 2.
-            caCert = (X509Certificate)certchain[0];
-            debug("cacertIssuer: " + caCert.getIssuerDN().toString());
-            debug("cacertSubject: " + caCert.getSubjectDN().toString());
-
+            p.setProperty("privateKeyAlias", privateKeyAlias);
+            String privateKeyPass = getPassword("java:comp/env/privateKeyPass");
+            p.setProperty("privateKeyPass", privateKeyPass);
+            String signingDeviceFactoryClass= (String)lookup("java:comp/env/signingDeviceFactory", java.lang.String.class);
+            debug("Creating SigningDeviceFactory of type "+signingDeviceFactoryClass);
+            Class implClass = Class.forName( signingDeviceFactoryClass );
+            Object fact = implClass.newInstance();
+            Class[] paramTypes = new Class[1];
+            paramTypes[0] = p.getClass();
+            Method method = implClass.getMethod("makeInstance", paramTypes);
+            Object[] params = new Object[1];
+            params[0] = p;
+            signingDevice = (ISigningDevice)method.invoke(fact, params);
+            //signingDevice = fact.makeInstance(p);
             // We must keep the same order in the DN in the issuer field in created certificates as there
             // is in the subject field of the CA-certificate.
+            Certificate[] certs = signingDevice.getCertificateChain();
+            caCert = (X509Certificate)certs[0];
             caSubjectName = new X509Name(caCert.getSubjectDN().toString());
-            //caSubjectName = CertTools.stringToBcX509Name(caCert.getSubjectDN().toString());
-
-            // root cert is last cert in chain
-            rootCert = (X509Certificate)certchain[certchain.length-1];
-            debug("rootcertIssuer: " + rootCert.getIssuerDN().toString());
-            debug("rootcertSubject: " + rootCert.getSubjectDN().toString());
-            // is root cert selfsigned?
-            if (!CertTools.isSelfSigned(rootCert))
-                throw new EJBException("Root certificate is not self signed!");
 
             // The validity in days is specified in environment
             validity = (Long)lookup("java:comp/env/validity", java.lang.Long.class);
@@ -213,18 +198,8 @@ public class RSASignSessionBean extends BaseSessionBean {
      */
     public Certificate[] getCertificateChain() {
         debug(">getCertificateChain()");
-        // TODO: should support more than 2 levels of CAs
-        Certificate[] chain;
-        if (CertTools.isSelfSigned(caCert)) {
-            chain = new Certificate[1];
-        } else {
-            chain = new Certificate[2];
-            chain[1] = rootCert;
-        }
-        chain[0] = caCert;
-        debug("<getCertificateChain()");
-        return chain;
-    } // getRootCertificate
+        return signingDevice.getCertificateChain();
+    } // getCertificateChain
 
     /**
      * Implements ISignSession::createCertificate
@@ -430,7 +405,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         return crl;
     } // createCRL
 
-    private char[] getPassword(String initKey) throws Exception {
+    private String getPassword(String initKey) throws Exception {
         String password;
         try {
             password = (String)lookup(initKey, java.lang.String.class);
@@ -441,9 +416,9 @@ public class RSASignSessionBean extends BaseSessionBean {
             debug(initKey+" password: ");
             BufferedReader in
             = new BufferedReader(new InputStreamReader(System.in));
-            return (in.readLine()).toCharArray();
+            return (in.readLine());
         } else
-            return password.toCharArray();
+            return password;
     }
 
     private int sunKeyUsageToBC(boolean[] sku) {
@@ -552,7 +527,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             certgen.addExtension(X509Extensions.CRLDistributionPoints.getId(), crldistcritical.booleanValue(), distp);
         }
 
-        X509Certificate cert = certgen.generateX509Certificate(privateKey);
+        X509Certificate cert = certgen.generateX509Certificate(signingDevice.getPrivateSignKey());
 
         debug("<makeBCCertificate()");
         return (X509Certificate)cert;
@@ -598,7 +573,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             CRLNumber crlnum = new CRLNumber(BigInteger.valueOf(crlnumber));
             crlgen.addExtension(X509Extensions.CRLNumber.getId(), crlncritical.booleanValue(), crlnum);
         }
-        X509CRL crl = crlgen.generateX509CRL(privateKey);
+        X509CRL crl = crlgen.generateX509CRL(signingDevice.getPrivateSignKey());
 
         debug("<makeBCCRL()");
         return (X509CRL)crl;

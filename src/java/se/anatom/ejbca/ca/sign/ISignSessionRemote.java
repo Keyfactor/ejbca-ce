@@ -17,11 +17,11 @@ import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 /** Creates certificates.
  * Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.2 2002-06-04 14:11:04 anatom Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.3 2002-06-07 12:21:34 anatom Exp $
  */
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
    /**
-    * Retrieves the certificate chainfor the signer.
+    * Retrieves the certificate chain for the signer.
     * The returned certificate chain MUST have the RootCA certificate in the last position.
     *
     *
