@@ -1,4 +1,4 @@
-$Id: TODO,v 1.37 2002-07-25 07:44:17 anatom Exp $
+$Id: TODO,v 1.38 2002-07-26 09:36:41 anatom Exp $
 
 V 1.x
 -----
@@ -7,19 +7,22 @@ V 1.x
 V 2.x
 -----
 - Installation procedure, including installation of Web-RA.
-- Put keystores in db to not break EJB contract.
+- Describe SSL-setup in server.
+- Fix user 'walter' in admin web-GUI.
+- Remote secure administration through browser CA-admin and RA-admin.
+- Make EJBCA handle DNs like "cn=jean,cn=EJBCA,dc=home,dc=jean" for
+ActiveDirectory.
+- Use properties instead to select Authentication and Publishers.
+- Use root /ejbca instead of / in web.
 - Make to work with JDK 1.3, problems with importing certificate chains in jks
 using keytool, as well as JDK 1.4 stuff.
-- Verify suppoer for different databases.
-- Verify support different app-servers (Weblogic).
+- Verify support for different databases.
+- Verify support for different app-servers (Weblogic).
 - More automated testing, Junit as well as web-stuff.
 - Make a database model similar to architecture model.
-- Describe SSL-setup in server.
 - Add a 'Service Locator' to concentrate code for lookups.
 - Use a 'Value List Handler' for listing of all certificates, clrs and users.
 - Better architecture for JSPs (MVC - ModelViewController?).
-- Add administration interface web-GUI (through servlets/JSP).
-- Remote secure administration through browser CA-admin and RA-admin.
 - Continue improving exceptions and error handling.
 - Return PKCS7 response to IE/Mozilla, response is PKCS7 with whole chain.
 ca.crt is also pkcs7 with whole chain.
@@ -36,5 +39,5 @@ Secure remote RA, RA authenticates requests.
 - Make CA/RA for off-line authorization of requests for high security
 environments.
 - RA with self registration for end-entities, RA approves registration.
-- XKMS specifications, and more XML/Soap stuff.
+- XKMS specifications, and other XML/Soap stuff.
 
