@@ -401,7 +401,7 @@ END LDAP Publisher -->
         <description>objectclass for storing CA entries.</description>
         <env-entry-name>cAObjectclass</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>certificateAuthority</env-entry-value>
+        <env-entry-value>certificationAuthority</env-entry-value>
      </env-entry>
      <env-entry>
         <description>attribute for storing user certificates.</description>
