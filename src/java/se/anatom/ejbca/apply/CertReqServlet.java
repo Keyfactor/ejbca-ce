@@ -20,7 +20,6 @@ import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
@@ -79,7 +78,7 @@ import se.anatom.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.48 2004-09-26 08:40:56 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.49 2005-02-11 13:12:28 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
@@ -478,7 +477,6 @@ public class CertReqServlet extends HttpServlet {
 
 
         // Make a certificate chain from the certificate and the CA-certificate
-        CertificateFactory cf = CertTools.getCertificateFactory();
         Certificate[] cachain = (Certificate[]) signsession.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
 
         // Verify CA-certificate

@@ -32,7 +32,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.2 2004-07-23 10:24:42 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.3 2005-02-11 13:12:14 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -182,14 +182,9 @@ public class TestCAs extends TestCase {
     public void test03EditCA() throws Exception {
         log.debug(">test03EditCA()");
 
-        boolean ret = false;
-
         X509CAInfo info = (X509CAInfo) cacheAdmin.getCAInfo(admin, "TEST");
-
         info.setCRLPeriod(33);
-
         cacheAdmin.editCA(admin, info);
-
         X509CAInfo info2 = (X509CAInfo) cacheAdmin.getCAInfo(admin, "TEST");
         assertTrue("Editing CA failed", info2.getCRLPeriod() == 33);
 

@@ -94,28 +94,24 @@ public class HardTokenInterfaceBean {
 
     /* Returns the first found hard token for the given username. */
     public HardTokenView getHardTokenViewWithUsername(String username) throws RemoteException{
-      HardTokenView  returnval = null;
-
       this.result=null;
 
       Collection res = hardtokensession.getHardTokens(admin, username);
       Iterator iter = res.iterator();
-
-      if(res.size() > 0){
+      if(res.size() > 0) {
         this.result = new HardTokenView[res.size()];
-        for(int i=0;iter.hasNext();i++){
+        for(int i=0;iter.hasNext();i++) {
           this.result[i]=new HardTokenView((HardTokenData) iter.next());
         }
-      }
-      else
+      } else {
         this.result = null;
+      }
 
-
-
-      if(this.result!= null && this.result.length > 0)
+      if(this.result!= null && this.result.length > 0) {
         return this.result[0];
-      else
+      } else {
         return null;
+      }
 
     }
 

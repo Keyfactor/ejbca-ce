@@ -145,7 +145,6 @@ public class HardTokenProfileDataHandler implements Serializable {
      */    
     private boolean authorizedToProfile(HardTokenProfile profile, boolean editcheck){
       boolean returnval = false;  
-      boolean allexists = false;  
       try{          
         try{
           authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");
@@ -154,10 +153,7 @@ public class HardTokenProfileDataHandler implements Serializable {
         
         if(editcheck)        
           authorizationsession.isAuthorizedNoLog(administrator, "/hardtoken_functionality/edit_hardtoken_profiles");
-          
-        
-  	      HashSet authorizedcertprofiles = new HashSet(certificatesession.getAuthorizedCertificateProfileIds(administrator, CertificateDataBean.CERTTYPE_HARDTOKEN));	  	   	  
-        		  
+  	      HashSet authorizedcertprofiles = new HashSet(certificatesession.getAuthorizedCertificateProfileIds(administrator, CertificateDataBean.CERTTYPE_HARDTOKEN));        		  
 		  if(profile instanceof EIDProfile){		  	
 		  	if(authorizedcertprofiles.containsAll(((EIDProfile) profile).getAllCertificateProfileIds())){
 		  	  returnval = true;			  	   
@@ -167,8 +163,7 @@ public class HardTokenProfileDataHandler implements Serializable {
 		  }		   		  	   	  	  
         
       }catch(AuthorizationDeniedException e){}
-    
-      
+          
       return returnval;  
     }    
    

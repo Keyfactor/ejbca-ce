@@ -25,7 +25,7 @@ import se.anatom.ejbca.webdist.webconfiguration.LanguageProperties;
 /** Class used as an install script of ejbca
  * 
  * @author philip
- * @version $Id: Install.java,v 1.19 2005-01-16 18:48:38 anatom Exp $
+ * @version $Id: Install.java,v 1.20 2005-02-11 13:12:18 anatom Exp $
  *
  * The main porpose of this program is to provide easy installment of EJBCA.
  */
@@ -292,7 +292,7 @@ public class Install extends BaseCommand {
 		this.superadminpasswd = answer;												
 	}
 	
-	private void getJavaCACertsPasswd(){
+/*	private void getJavaCACertsPasswd(){
 		System.out.print(text.getProperty("ENTERCACERTSPASSWORD"));
 		String answer = getAnswer();
 		while(!answerLegalPassword(answer)){
@@ -302,7 +302,7 @@ public class Install extends BaseCommand {
 		}
 		this.javacacertspasswd = answer;		
 	}
-	
+*/	
 	private boolean isDataCorrect(){
 		System.out.print(text.getProperty("YOUHAVEENTEREDTHEFOLLOWING"));
 		
@@ -319,7 +319,6 @@ public class Install extends BaseCommand {
 		System.out.println(text.getProperty("SERVERDN") + " " + this.servercertdn);		
 		System.out.println(text.getProperty("SUPERADMINPASSWORD") + " " + this.superadminpasswd);		
 																																			
-		 boolean correct = false;
 		 System.out.print(text.getProperty("ISTHISCORRECT"));
          String answer = getAnswer();
          while(!this.answerInBoolean(answer) && !answer.equalsIgnoreCase("e") && !answer.equalsIgnoreCase("exit")){
@@ -441,10 +440,6 @@ public class Install extends BaseCommand {
 	private boolean answerInDigits(String answer){
 		return ! nondigit.matcher(answer).find();
 	}
-	
-	private boolean answerInDigitsAndDots(String answer){
-	    return !nondigitordot.matcher(answer).find();
-    }
 	
 	private int getDigitAnswer(String answer){
 		return Integer.parseInt(answer);

@@ -13,6 +13,23 @@
 
 package se.anatom.ejbca.protocol;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -23,7 +40,6 @@ import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
 import org.bouncycastle.asn1.x509.CRLReason;
-import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.ocsp.BasicOCSPResp;
@@ -37,6 +53,7 @@ import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.bouncycastle.ocsp.Req;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.UnknownStatus;
+
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
@@ -60,29 +77,12 @@ import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
 import se.anatom.ejbca.util.ServiceLocator;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.security.PublicKey;
-import java.security.cert.X509Certificate;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
-
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.36 2004-12-31 14:20:05 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.37 2005-02-11 13:12:28 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -413,9 +413,8 @@ public class OCSPServlet extends HttpServlet {
                         m_log.info("OCSP request unsigned. Servlet enforces signing.");
                         throw new SignRequestException("OCSP request unsigned. Servlet enforces signing.");
                     }
-                    GeneralName requestor = req.getRequestorName();
+                    //GeneralName requestor = req.getRequestorName();
                     X509Certificate[] certs = req.getCerts("BC");
-                    PublicKey pk = null;
                     // We must find a cert to verify the signature with...
                     boolean verifyOK = false;
                     for (int i = 0; i < certs.length; i++) {
@@ -548,19 +547,19 @@ public class OCSPServlet extends HttpServlet {
                 m_log.info("MalformedRequestException caught : ", e);
                 // generate the signed response object
                 BasicOCSPResp basicresp = signOCSPResponse(basicRes, cacert);
-                ocspresp = res.generate(OCSPRespGenerator.MALFORMED_REQUEST, basicRes);
+                ocspresp = res.generate(OCSPRespGenerator.MALFORMED_REQUEST, basicresp);
             } catch (SignRequestException e) {
                 m_log.info("SignRequestException caught : ", e);
                 // generate the signed response object
                 BasicOCSPResp basicresp = signOCSPResponse(basicRes, cacert);
-                ocspresp = res.generate(OCSPRespGenerator.SIG_REQUIRED, basicRes);
+                ocspresp = res.generate(OCSPRespGenerator.SIG_REQUIRED, basicresp);
             } catch (Exception e) {
                 m_log.error("Unable to handle OCSP request.", e);
                 if (e instanceof ServletException)
                     throw (ServletException) e;
                 // generate the signed response object
                 BasicOCSPResp basicresp = signOCSPResponse(basicRes, cacert);
-                ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, basicRes);
+                ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, basicresp);
             }
             byte[] respBytes = ocspresp.getEncoded();
             response.setContentType("application/ocsp-response");

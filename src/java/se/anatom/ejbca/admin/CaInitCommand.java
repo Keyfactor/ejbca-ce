@@ -15,7 +15,6 @@ package se.anatom.ejbca.admin;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Vector;
 
 import javax.naming.Context;
 
@@ -29,7 +28,6 @@ import se.anatom.ejbca.ca.caadmin.SoftCATokenInfo;
 import se.anatom.ejbca.ca.caadmin.X509CAInfo;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.StringTools;
 
@@ -37,14 +35,9 @@ import se.anatom.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.31 2005-02-02 16:52:21 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.32 2005-02-11 13:12:18 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
-    /** Pointer to main certificate store */
-    private static ICertificateStoreSessionRemote certificateStore = null;
-
-    /** A vector of publishers where certs and CRLs are stored */
-    private static Vector publishers = null;
 
     /**
      * Creates a new instance of CaInitCommand

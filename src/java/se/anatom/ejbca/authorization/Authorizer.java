@@ -14,7 +14,6 @@
 package se.anatom.ejbca.authorization;
 
 import java.rmi.RemoteException;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,7 +36,7 @@ import se.anatom.ejbca.util.CertTools;
  *
  * The main metod are isAthorized and authenticate.
  *
- * @version $Id: Authorizer.java,v 1.10 2004-08-06 07:46:28 anatom Exp $
+ * @version $Id: Authorizer.java,v 1.11 2005-02-11 13:12:19 anatom Exp $
  */
 public class Authorizer extends Object implements java.io.Serializable{
     
@@ -261,7 +260,6 @@ public class Authorizer extends Object implements java.io.Serializable{
     
     // Private fields.
     private AccessTree            accesstree;
-    private Certificate[]         cacertificatechain;
     private int                   module;
     
     private ICertificateStoreSessionLocal  certificatesession;

@@ -27,7 +27,7 @@ import se.anatom.ejbca.ra.exception.NotFoundException;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserAdminSession.java,v 1.1 2004-06-10 16:17:44 sbailliez Exp $
+ * @version $Id: TestUserAdminSession.java,v 1.2 2005-02-11 13:12:16 anatom Exp $
  */
 public class TestUserAdminSession extends TestCase {
 
@@ -137,7 +137,6 @@ public class TestUserAdminSession extends TestCase {
     public void test01DeleteUser() throws Exception {
         log.debug(">test01DeleteUser()");
 
-        String email = username + "@anatom.se";
         usersession.deleteUser(admin, username);
         log.debug("deleted user: " + username);
         // Delete the the same user again

@@ -14,7 +14,7 @@
 package se.anatom.ejbca.authorization;
 
 import javax.ejb.CreateException;
-import org.apache.log4j.Logger;
+
 import se.anatom.ejbca.BaseEntityBean;
 
 /** Entity bean should not be used directly, use though Session beans.
@@ -61,8 +61,6 @@ import se.anatom.ejbca.BaseEntityBean;
  */
 public abstract class AccessRulesDataBean extends BaseEntityBean
 {
-
-    private static final Logger log = Logger.getLogger(AccessRulesDataBean.class);
 
     /**
      * @ejb.persistence

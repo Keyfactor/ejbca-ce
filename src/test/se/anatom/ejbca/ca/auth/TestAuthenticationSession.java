@@ -29,7 +29,7 @@ import se.anatom.ejbca.ra.UserDataLocal;
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.2 2004-08-08 11:02:45 anatom Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.3 2005-02-11 13:12:44 anatom Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthenticationSession.class);
@@ -156,6 +156,7 @@ public class TestAuthenticationSession extends TestCase {
         boolean authfailed = false;
         try {
             UserAuthData auth = remote.authenticateUser(admin, username, pwd);
+            log.debug("Authenticated user: "+auth.getUsername());
         } catch (Exception e) {
             authfailed = true;
         }
@@ -174,6 +175,7 @@ public class TestAuthenticationSession extends TestCase {
         boolean authfailed = false;
         try {
             UserAuthData auth = remote.authenticateUser(admin, username, "abc123");
+            log.debug("Authenticated user: "+auth.getUsername());
         } catch (Exception e) {
             authfailed = true;
         }
@@ -188,7 +190,6 @@ public class TestAuthenticationSession extends TestCase {
      */
     public void test05DeleteUser() throws Exception {
         log.debug(">test01DeleteUser()");
-        String email = username + "@anatom.se";
         usersession.deleteUser(admin, username);
         log.debug("deleted user: " + username);
         log.debug("<test01DeleteUser()");

@@ -13,12 +13,11 @@
  
 package se.anatom.ejbca.authorization;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.HashMap;
-import java.util.Set;
-import java.io.Serializable;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
@@ -26,7 +25,7 @@ import org.apache.log4j.Logger;
  * The building component of the AccessTree. All nodes consist of these objects.
  *
  * @author  Philip Vendil
- * @version $Id: AccessTreeNode.java,v 1.4 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: AccessTreeNode.java,v 1.5 2005-02-11 13:12:19 anatom Exp $
  */
 public class AccessTreeNode implements Serializable{
 
@@ -93,11 +92,6 @@ public class AccessTreeNode implements Serializable{
        log.debug("<addAccessRule: " + subresource);
      }
 
-    // Private methods
-    private boolean isLeaf(){
-      return leafs.size()==0;
-    }
-
     private boolean isAuthorizedRecursive(AdminInformation admininformation, String resource, int state){
        log.debug("isAuthorizedRecursive: " + " resource: " + resource + " name: "+ this.name + "," +state);
        int index;
@@ -105,10 +99,7 @@ public class AccessTreeNode implements Serializable{
        boolean returnval = false;
        AccessTreeNode next;
        String nextname = null;
-       boolean lastresource=false;
        String nextsubresource;
-       Set keys;
-       String matchname;
 
        internalstate = matchInformation(admininformation);    
        if(resource.equals(this.name)) {        

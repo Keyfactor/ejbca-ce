@@ -30,7 +30,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.67 2004-11-05 08:42:26 anatom Exp $
+ * @version $Id: CertTools.java,v 1.68 2005-02-11 13:12:27 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -486,7 +486,6 @@ public class CertTools {
             // Phweeew, were done, now decode the cert from file back to X509Certificate object
             CertificateFactory cf = CertTools.getCertificateFactory();
             X509Certificate x509cert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certbuf));
-            String dn=x509cert.getSubjectDN().toString();
             ret.add(x509cert);
         }
 

@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestStringTools.java,v 1.1 2004-06-10 16:17:45 sbailliez Exp $
+ * @version $Id: TestStringTools.java,v 1.2 2005-02-11 13:12:00 anatom Exp $
  */
 public class TestStringTools extends TestCase {
     private static Logger log = Logger.getLogger(TestStringTools.class);
@@ -60,9 +60,9 @@ public class TestStringTools extends TestCase {
         log.debug(">test02IpStringToOctets()");
         String ip = "23.34.45.167";
         byte[] octs = StringTools.ipStringToOctets(ip);
-        //for (int i=0;i<octs.length;i++) {
-        //    log.error("octs["+i+"]="+(int)octs[i]);
-        //}
+        for (int i=0;i<octs.length;i++) {
+            log.debug("octs["+i+"]="+(int)octs[i]);
+        }
         log.debug(">test02IpStringToOctets()");
 
     }

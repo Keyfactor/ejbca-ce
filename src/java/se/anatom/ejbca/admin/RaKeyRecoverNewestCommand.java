@@ -15,8 +15,6 @@ package se.anatom.ejbca.admin;
 
 import javax.naming.InitialContext;
 
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionHome;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote;
 import se.anatom.ejbca.ra.UserDataLocal;
@@ -55,12 +53,7 @@ public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
             InitialContext jndicontext = getInitialContext();
 
             Object obj1 = jndicontext.lookup("CertificateStoreSession");
-            ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
-                    ICertificateStoreSessionHome.class);
-            ICertificateStoreSessionRemote certificatesession = certificatesessionhome.create();
-
             obj1 = jndicontext.lookup("KeyRecoverySession");
-
             IKeyRecoverySessionHome keyrecoverysessionhome = (IKeyRecoverySessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup(
                         "KeyRecoverySession"), IKeyRecoverySessionHome.class);
             IKeyRecoverySessionRemote keyrecoverysession = keyrecoverysessionhome.create();

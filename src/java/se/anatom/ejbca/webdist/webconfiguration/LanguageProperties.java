@@ -20,12 +20,12 @@ import java.io.InputStreamReader;
 
 /** Properties bag that handles "double type encoding".
  * 
- * @version $Id: LanguageProperties.java,v 1.3 2005-01-16 18:48:48 anatom Exp $
+ * @version $Id: LanguageProperties.java,v 1.4 2005-02-11 13:12:17 anatom Exp $
  */
 public class LanguageProperties extends java.util.Properties {  
 	private static final String keyValueSeparators = "=: \t\r\n\f";  
 	private static final String strictKeyValueSeparators = "=:";
-	private static final String specialSaveChars = "=: \t\r\n\f#!";
+	//private static final String specialSaveChars = "=: \t\r\n\f#!";
 	private static final String whiteSpaceChars = " \t\r\n\f";
 	
 	public synchronized void load(InputStream inStream) throws IOException {   

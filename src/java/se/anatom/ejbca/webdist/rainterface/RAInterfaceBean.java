@@ -60,7 +60,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.48 2004-08-08 10:43:38 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.49 2005-02-11 13:12:30 anatom Exp $
  */
 public class RAInterfaceBean {
 
@@ -227,8 +227,6 @@ public class RAInterfaceBean {
     /* Changes the userdata  */
     public void changeUserData(UserView userdata) throws Exception {
         log.debug(">changeUserData()");
-        int profileid = userdata.getEndEntityProfileId();
-        int certificatetypeid =userdata.getCertificateProfileId();
 
         addedusermemory.changeUser(userdata);
         if(userdata.getPassword() != null && userdata.getPassword().trim().equals(""))
@@ -502,47 +500,45 @@ public class RAInterfaceBean {
     }
 
     public void loadCertificates(String username) throws Exception{
-      Collection certs = certificatesession.findCertificatesByUsername(administrator, username);
-
-      UserAdminData user = adminsession.findUser(administrator, username);
-      if(!certs.isEmpty()){
-
-        Iterator j = certs.iterator();
-        certificates = new CertificateView[certs.size()];
-        for(int i=0; i< certificates.length; i++){
-          RevokedInfoView revokedinfo = null;
-          X509Certificate cert = (X509Certificate) j.next();
-          RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
-          if(revinfo != null)
-            revokedinfo = new RevokedInfoView(revinfo);
-           certificates[i] = new CertificateView(cert, revokedinfo, username);
+        Collection certs = certificatesession.findCertificatesByUsername(administrator, username);
+        
+        if(!certs.isEmpty()) {
+            Iterator j = certs.iterator();
+            certificates = new CertificateView[certs.size()];
+            for(int i=0; i< certificates.length; i++){
+                RevokedInfoView revokedinfo = null;
+                X509Certificate cert = (X509Certificate) j.next();
+                RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
+                if(revinfo != null) {
+                    revokedinfo = new RevokedInfoView(revinfo);
+                }
+                certificates[i] = new CertificateView(cert, revokedinfo, username);
+            }
         }
-      }
-      else{
-        certificates = null;
-      }
+        else {
+            certificates = null;
+        }
     }
 
     public void loadTokenCertificates(String tokensn, String username) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
-      Collection certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
-
-      UserAdminData user = adminsession.findUser(administrator, username);
-
-      if(!certs.isEmpty()){
-        Iterator j = certs.iterator();
-        certificates = new CertificateView[certs.size()];
-        for(int i=0; i< certificates.length; i++){
-          RevokedInfoView revokedinfo = null;
-          X509Certificate cert = (X509Certificate) j.next();
-          RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
-          if(revinfo != null)
-            revokedinfo = new RevokedInfoView(revinfo);
-           certificates[i] = new CertificateView(cert, revokedinfo, username);
+        Collection certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
+        
+        if(!certs.isEmpty()){
+            Iterator j = certs.iterator();
+            certificates = new CertificateView[certs.size()];
+            for(int i=0; i< certificates.length; i++){
+                RevokedInfoView revokedinfo = null;
+                X509Certificate cert = (X509Certificate) j.next();
+                RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
+                if(revinfo != null) {
+                    revokedinfo = new RevokedInfoView(revinfo);
+                }
+                certificates[i] = new CertificateView(cert, revokedinfo, username);
+            }
         }
-      }
-      else{
-        certificates = null;
-      }
+        else{
+            certificates = null;
+        }
     }
 
     public boolean revokeTokenCertificates(String tokensn, String username, int reason) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
@@ -565,7 +561,6 @@ public class RAInterfaceBean {
     public boolean isAllTokenCertificatesRevoked(String tokensn, String username) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
       Collection certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
 
-      UserAdminData user = adminsession.findUser(administrator, username);
       boolean allrevoked = true;
 
       if(!certs.isEmpty()){
@@ -593,7 +588,6 @@ public class RAInterfaceBean {
       if(cert != null){
         RevokedInfoView revokedinfo = null;
         String username = certificatesession.findUsernameByCertSerno(administrator,serno, cert.getIssuerDN().toString());
-        UserAdminData user = adminsession.findUser(administrator, username);
 
         RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
         if(revinfo != null)
@@ -710,43 +704,11 @@ public class RAInterfaceBean {
        return parameter.equals(EndEntityProfile.TRUE);
     }
 
-    // Private methods.
-    private String calculateCardNumber(String tokensn, String sIIN) {
-
-        while( tokensn.length() + sIIN.length() < 18 )
-            tokensn = "0" + tokensn;
-        final int lengthByte = tokensn.length() + sIIN.length() + 1;
-        final long divider = pow(10,tokensn.length());
-        final long number = Long.parseLong(sIIN)*divider + Long.parseLong(tokensn);
-        final int chsum; {
-            int sum = 0;
-            for ( int i=0; i+1<lengthByte; i++ ) {
-                int digit=(int)(number/pow(10,i) % 10);
-                if ( i%2==0 ) {
-                    digit *= 2;
-                    sum += digit/10+digit%10;
-                } else
-                    sum += digit;
-            }
-            chsum = (10-sum%10)%10;
-        }
-        return (""+lengthByte+number+chsum+(lengthByte%2==1 ? "0": ""));
-    }
-
-    private long pow( int x, int y ) {
-        long result=1;
-        for ( int i=0; i<y; i++ )
-            result *= x;
-        return result;
-    }
-    
-    
     /**
      * Help function used to check end entity profile authorization.
      */
     public boolean endEntityAuthorization(Admin admin, int profileid, String rights, boolean log) throws RemoteException {
       boolean returnval = false;
-      String resource= null;
       String adm = null;
       
       // TODO FIX
@@ -775,6 +737,15 @@ public class RAInterfaceBean {
     public void setTemporaryEndEntityProfile(EndEntityProfile profile){
     	this.temporateendentityprofile = profile;
     }
+    
+    // Private methods.
+    private long pow( int x, int y ) {
+        long result=1;
+        for ( int i=0; i<y; i++ )
+            result *= x;
+        return result;
+    }
+    
     
     // Private fields.
 

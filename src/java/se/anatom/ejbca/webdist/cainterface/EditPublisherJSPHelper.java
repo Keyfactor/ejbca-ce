@@ -13,7 +13,6 @@
  
 package se.anatom.ejbca.webdist.cainterface;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,7 +31,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a publisher jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditPublisherJSPHelper.java,v 1.4 2004-09-07 12:25:14 anatom Exp $
+ * @version $Id: EditPublisherJSPHelper.java,v 1.5 2005-02-11 13:12:18 anatom Exp $
  */
 public class EditPublisherJSPHelper {
 	
@@ -123,13 +122,8 @@ public class EditPublisherJSPHelper {
       String includefile = "publisherspage.jsp"; 
 	  String publisher = null;
 	  PublisherDataHandler handler  = cabean.getPublisherDataHandler();
-	    
       String action = null;
-
-	  InputStream file = null;
-	  	  
-      boolean buttoncancel = false;      
-      
+      boolean buttoncancel = false;            
 
   	  action = request.getParameter(ACTION);
 	  if( action != null){

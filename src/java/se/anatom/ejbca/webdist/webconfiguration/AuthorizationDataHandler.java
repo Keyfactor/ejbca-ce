@@ -31,7 +31,7 @@ import se.anatom.ejbca.log.Admin;
  * A class handling the authorization data. 
  *
  * @author  Philip Vendil
- * @version $Id: AuthorizationDataHandler.java,v 1.18 2004-04-16 07:39:01 anatom Exp $
+ * @version $Id: AuthorizationDataHandler.java,v 1.19 2005-02-11 13:12:17 anatom Exp $
  */
 public class AuthorizationDataHandler {
 
@@ -234,7 +234,6 @@ public class AuthorizationDataHandler {
     // Private fields
     private IAuthorizationSessionLocal  authorizationsession;
     private Admin                       administrator;    
-    private Collection                  authorizedcaids;
     private Collection                  authorizedadmingroups;
     private InformationMemory           informationmemory;
 }

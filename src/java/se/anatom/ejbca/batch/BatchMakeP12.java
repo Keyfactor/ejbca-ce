@@ -55,13 +55,13 @@ import java.util.Iterator;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.51 2004-10-13 07:14:57 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.52 2005-02-11 13:12:15 anatom Exp $
  */
 public class BatchMakeP12 {
     /**
      * For logging
      */
-    private static Logger log = Logger.getLogger(BatchMakeP12.class);
+    private static final Logger log = Logger.getLogger(BatchMakeP12.class);
 
 
     /**
@@ -126,22 +126,6 @@ public class BatchMakeP12 {
 
         log.debug("<BatchMakeP12:");
     } // BatchMakeP12
-
-    /**
-     * Gets CA-certificate(s).
-     *
-     * @return X509Certificate
-     */
-    private X509Certificate getCACertificate(int caid)
-            throws Exception {
-        log.debug(">getCACertificate()");
-        ISignSessionRemote ss = signhome.create();
-        Certificate[] chain = (Certificate[]) ss.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
-        X509Certificate rootcert = (X509Certificate) chain[chain.length - 1];
-        log.debug("<getCACertificate()");
-
-        return rootcert;
-    } // getCACertificate
 
     /**
      * Gets full CA-certificate chain.

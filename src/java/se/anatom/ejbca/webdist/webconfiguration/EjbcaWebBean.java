@@ -16,7 +16,6 @@ package se.anatom.ejbca.webdist.webconfiguration;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.rmi.RemoteException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.Collection;
@@ -61,7 +60,7 @@ import se.anatom.ejbca.util.CertTools;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.37 2004-05-31 14:29:05 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.38 2005-02-11 13:12:16 anatom Exp $
  */
 public class EjbcaWebBean {
 
@@ -119,7 +118,6 @@ public class EjbcaWebBean {
 
       String userdn = "";
 
-      CertificateFactory certfact =  CertTools.getCertificateFactory();
       certificates =   (X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" );
 
       if(certificates == null) throw new AuthenticationFailedException("Client certificate required.");
@@ -223,10 +221,7 @@ public class EjbcaWebBean {
           administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
         }
         InitialContext jndicontext = new InitialContext();
-        Object obj1 = jndicontext.lookup("java:comp/env/UserAdminSessionLocal");
-        IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionLocalHome.class);
-        IUserAdminSessionLocal  adminsession = adminsessionhome.create();
-        obj1 = jndicontext.lookup("java:comp/env/RaAdminSessionLocal");
+        Object obj1 = jndicontext.lookup("java:comp/env/RaAdminSessionLocal");
         IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IRaAdminSessionLocalHome.class);
         IRaAdminSessionLocal  raadminsession = raadminsessionhome.create();        
         obj1 = jndicontext.lookup("java:comp/env/AuthorizationSessionLocal");
@@ -429,9 +424,6 @@ public class EjbcaWebBean {
 
       String preferedfilename = "/" + globalconfiguration.getHelpPath()+"/"
                                 + helpfile + "." + prefered + "." + postfix;
-
-      String secondaryfilename = "/" + globalconfiguration .getHelpPath()+"/"
-                                 + helpfile + "." + secondary + "." + postfix;
 
       String preferedurl = globalconfiguration .getBaseUrl() + globalconfiguration .getAdminWebPath()
                           + globalconfiguration .getHelpPath()+"/"

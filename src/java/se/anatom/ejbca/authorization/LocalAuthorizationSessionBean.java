@@ -46,7 +46,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.18 2004-08-06 07:07:30 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.19 2005-02-11 13:12:19 anatom Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -231,7 +231,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         customaccessrules = locator.getString("java:comp/env/CustomAvailableAccessRules").split(";");
 
         try {
-            authorizer = new Authorizer(getAdminGroups(new Admin(Admin.TYPE_INTERNALUSER)), admingrouphome,
+            authorizer = new Authorizer(getAdminGroups(), admingrouphome,
                     getLogSession(), getCertificateStoreSession(), getRaAdminSession(), getCAAdminSession(), new Admin(Admin.TYPE_INTERNALUSER), LogEntry.MODULE_AUTHORIZATION);
         } catch (Exception e) {
             throw new EJBException(e);
@@ -331,8 +331,6 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 String admingroupname = "Temporary Super Administrator Group";
                 addAdminGroup(admin, admingroupname, caid);
                 ArrayList adminentities = new ArrayList();
-                AdminEntity entity = new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, "SuperAdmin", caid);
-
                 adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, "SuperAdmin", caid));
                 addAdminEntities(admin, admingroupname, caid, adminentities);
                 ArrayList accessrules = new ArrayList();
@@ -425,7 +423,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      */
     public boolean isAuthorized(Admin admin, String resource) throws AuthorizationDeniedException {
         if (updateNeccessary())
-            updateAuthorizationTree(admin);
+            updateAuthorizationTree();
         return authorizer.isAuthorized(admin, resource);
     }
 
@@ -439,7 +437,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      */
     public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException {
         if (updateNeccessary())
-            updateAuthorizationTree(admin);
+            updateAuthorizationTree();
         return authorizer.isAuthorizedNoLog(admin, resource);
     }
 
@@ -451,7 +449,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      */
     public boolean isGroupAuthorized(Admin admin, int admingrouppk, String resource) throws AuthorizationDeniedException {
         if (updateNeccessary())
-            updateAuthorizationTree(admin);
+            updateAuthorizationTree();
         return authorizer.isGroupAuthorized(admin, admingrouppk, resource);
     }
 
@@ -463,7 +461,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      */
     public boolean isGroupAuthorizedNoLog(Admin admin, int admingrouppk, String resource) throws AuthorizationDeniedException {
         if (updateNeccessary())
-            updateAuthorizationTree(admin);
+            updateAuthorizationTree();
         return authorizer.isGroupAuthorizedNoLog(admin, admingrouppk, resource);
     }
 
@@ -476,7 +474,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
     public boolean existsAdministratorInGroup(Admin admin, int admingrouppk) {
         boolean returnval = false;
         if (updateNeccessary())
-            updateAuthorizationTree(admin);
+            updateAuthorizationTree();
 
         try {
             AdminGroupDataLocal agdl = admingrouphome.findByPrimaryKey(new Integer(admingrouppk));
@@ -628,7 +626,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
     /**
      * Returns the total number of admingroups
      */
-    private Collection getAdminGroups(Admin admin) {
+    private Collection getAdminGroups() {
         ArrayList returnval = new ArrayList();
         try {
             Iterator iter = admingrouphome.findAll().iterator();
@@ -1018,8 +1016,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
     /**
      * method updating authorization tree.
      */
-    private void updateAuthorizationTree(Admin admin) {
-        authorizer.buildAccessTree(getAdminGroups(admin));
+    private void updateAuthorizationTree() {
+        authorizer.buildAccessTree(getAdminGroups());
         this.authorizationtreeupdate = getAuthorizationTreeUpdateData().getAuthorizationTreeUpdateNumber();
         this.lastupdatetime = (new java.util.Date()).getTime();
     }

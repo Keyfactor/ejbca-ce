@@ -39,7 +39,7 @@ import java.util.Iterator;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.24 2004-11-20 22:43:30 sbailliez Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.25 2005-02-11 13:12:17 anatom Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -573,12 +573,11 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
         final String dn = CertTools.getIssuerDN(certificate);
         try {
             KeyRecoveryDataLocal krd = keyrecoverydatahome.findByPrimaryKey(new KeyRecoveryDataPK(hexSerial, dn));
+            debug("Found key for user: "+krd.getUsername());
             returnval = true;
         } catch (FinderException e) {
         }
-
         debug("<existsKeys(" + returnval + ")");
-
         return returnval;
     } // existsKeys
 

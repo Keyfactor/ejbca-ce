@@ -13,6 +13,28 @@
 
 package se.anatom.ejbca.ra;
 
+import java.math.BigInteger;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+
+import javax.ejb.CreateException;
+import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJBException;
+import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
+import javax.ejb.RemoveException;
+import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.JNDINames;
 import se.anatom.ejbca.SecConst;
@@ -42,33 +64,11 @@ import se.anatom.ejbca.util.query.IllegalQueryException;
 import se.anatom.ejbca.util.query.Query;
 import se.anatom.ejbca.util.query.UserMatch;
 
-import javax.ejb.CreateException;
-import javax.ejb.DuplicateKeyException;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import javax.ejb.ObjectNotFoundException;
-import javax.ejb.RemoveException;
-import javax.mail.Message;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import java.math.BigInteger;
-import java.security.cert.Certificate;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-
 /**
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.87 2005-02-07 17:24:57 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.88 2005-02-11 13:12:46 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -661,8 +661,6 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         UserDataLocal data = home.findByPrimaryKey(pk);
         int caid = data.getCAId();
 
-        EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, data.getEndEntityProfileId());
-
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to edit user.
             if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AvailableAccessRules.EDIT_RIGHTS)) {
@@ -753,10 +751,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             }
         }
         Collection publishers = this.certificatesession.getCertificateProfile(admin, data.getCertificateProfileId()).getPublisherList();
+        // revoke certificate in database and all publishers
         certificatesession.setRevokeStatus(admin, issuerdn, certserno, publishers, reason);
-        // Revoke certificate in publishers
-        Certificate cert = certificatesession.findCertificateByIssuerAndSerno(admin, issuerdn, certserno);
-
 
         if (certificatesession.checkIfAllRevoked(admin, username)) {
             setUserStatus(admin, username, UserDataLocal.STATUS_REVOKED);
@@ -904,7 +900,6 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     public void checkIfCertificateBelongToAdmin(Admin admin, BigInteger certificatesnr, String issuerdn) throws AuthorizationDeniedException {
         debug(">checkIfCertificateBelongToAdmin(" + certificatesnr + ")");
         String username = certificatesession.findUsernameByCertSerno(admin, certificatesnr, issuerdn);
-        UserAdminData returnval = null;
 
         UserDataLocal data = null;
         if (username != null) {
@@ -1060,9 +1055,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * If caauthorizationstring or endentityprofilestring are null then the method will retrieve the information
      * itself.
      */
-
     private Collection query(Admin admin, Query query, boolean withlimit, String caauthorizationstr, String endentityprofilestr, boolean onlybatchusers) throws IllegalQueryException {
-        debug(">query()");
+        debug(">query(): withlimit(not implemented)="+withlimit);
         boolean authorizedtoanyprofile = true;
         Connection con = null;
         PreparedStatement ps = null;
@@ -1302,18 +1296,6 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         }
     } // checkForHardTokenProfileId
 
-
-    private int makeType(boolean administrator, boolean keyrecoverable, boolean sendnotification) {
-        int returnval = SecConst.USER_ENDUSER;
-        if (administrator)
-            returnval += SecConst.USER_ADMINISTRATOR;
-        if (keyrecoverable)
-            returnval += SecConst.USER_KEYRECOVERABLE;
-        if (sendnotification)
-            returnval += SecConst.USER_SENDNOTIFICATION;
-
-        return returnval;
-    } // makeType
 
     private void sendNotification(Admin admin, EndEntityProfile profile, String username, String password, String dn, String subjectaltname, String email, int caid) {
         debug(">sendNotification: user="+username+", email="+email);

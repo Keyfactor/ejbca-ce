@@ -40,7 +40,7 @@ import se.anatom.ejbca.util.InitialContextBuilder;
 /**
  * Base for Commands, contains useful functions
  *
- * @version $Id: BaseCommand.java,v 1.6 2004-10-13 07:14:45 anatom Exp $
+ * @version $Id: BaseCommand.java,v 1.7 2005-02-11 13:12:18 anatom Exp $
  */
 public abstract class BaseCommand {
     /** Log4j instance for Base */
@@ -71,6 +71,7 @@ public abstract class BaseCommand {
 		try {
 	        Context ctx = getInitialContext();
 			ICAAdminSessionHome home = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"),ICAAdminSessionHome.class);
+            home.getClass(); // avoid PMD warning :)
 			return true;
 		} catch (Exception e) {
 			error("Appserver not running: ", e);

@@ -169,9 +169,6 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
     public static final int NO_ISSUER = 0;
 
-    /** Var holding JNDI name of datasource */
-    private String dataSource = "";
-
     /** The local home interface of hard token issuer entity bean. */
     private HardTokenIssuerDataLocalHome hardtokenissuerhome = null;
 
@@ -251,7 +248,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     /** Gets connection to authorization session bean
      * @return IAuthorizationSessionLocal
      */
-    private IAuthorizationSessionLocal getAuthorizationSession(Admin admin) {
+    private IAuthorizationSessionLocal getAuthorizationSession() {
         if(authorizationsession == null){
           try{
             IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
@@ -731,7 +728,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         try{
 
       	  int admingroupid = hardtokenissuerhome.findByAlias(alias).getAdminGroupId();
-		  returnval = getAuthorizationSession(admin).isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens");
+		  returnval = getAuthorizationSession().isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens");
       	  returnval = returnval && authorizationsession.existsAdministratorInGroup(admin, admingroupid);
         }catch(FinderException fe){}
           catch(AuthorizationDeniedException ade){}

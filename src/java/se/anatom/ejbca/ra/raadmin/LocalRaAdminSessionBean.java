@@ -39,7 +39,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.41 2004-11-20 23:06:11 sbailliez Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.42 2005-02-11 13:12:26 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="RaAdminSB"
@@ -215,7 +215,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         boolean ret = false;
         try {
             AdminPreferencesDataLocal apdata= adminpreferenceshome.create(certificatefingerprint, adminpreference);
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,"Administrator preference added.");
+            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,"Administrator preference with id "+apdata.getId()+" added");
             ret = true;
         }
         catch (Exception e) {
@@ -254,6 +254,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
        boolean ret = false;
         try {
             AdminPreferencesDataLocal apdata = adminpreferenceshome.findByPrimaryKey(certificatefingerprint);
+            debug("Found admin preferences with id "+apdata.getId());
             ret = true;
         } catch (javax.ejb.FinderException fe) {
              ret=false;
@@ -715,10 +716,10 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     	}catch (javax.ejb.FinderException fe) {
     		// Global configuration doesn't yet exists.
     		try{
-    			GlobalConfigurationDataLocal data1= globalconfigurationhome.create(pk,globalconfiguration);
-    			getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITSYSTEMCONFIGURATION,"");
+    			GlobalConfigurationDataLocal data1 = globalconfigurationhome.create(pk,globalconfiguration);
+    			getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITSYSTEMCONFIGURATION, "Global configuration with id "+data1.getConfigurationId()+" created.");
     		} catch(CreateException e){
-    			getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITSYSTEMCONFIGURATION,"");
+    			getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITSYSTEMCONFIGURATION,"Failed to create global configuration.");
     		}
     	}
     	this.globalconfiguration=globalconfiguration;
@@ -768,20 +769,23 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
             adminpreferenceshome.remove(certificatefingerprint);
             try{
                 AdminPreferencesDataLocal apdata2 = adminpreferenceshome.findByPrimaryKey(certificatefingerprint);
+                debug("Found admin preferences with id "+apdata2.getId());
             }  catch (javax.ejb.FinderException fe) {
             }
-            apdata= adminpreferenceshome.create(certificatefingerprint,adminpreference);
+            apdata = adminpreferenceshome.create(certificatefingerprint,adminpreference);
             try{
                 AdminPreferencesDataLocal apdata3 = adminpreferenceshome.findByPrimaryKey(certificatefingerprint);
+                debug("Found admin preferences with id "+apdata3.getId());
             }  catch (javax.ejb.FinderException fe) {
             }
-            if (dolog)
-              getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,"Administrator preference changed.");
+            if (dolog) {                
+                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,"Administrator preference changed.");
+            }
             ret = true;
         } catch (javax.ejb.FinderException fe) {
              ret=false;
-             if (dolog){
-               getLogSession().log(admin,admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED,"Administrator cannot be found i database.");
+             if (dolog) {
+                 getLogSession().log(admin,admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED,"Administrator preference cannot be found i database.");
              }
         } catch(Exception e){
           throw new EJBException(e);

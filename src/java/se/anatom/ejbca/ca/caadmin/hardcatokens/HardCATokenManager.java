@@ -94,7 +94,6 @@ public class HardCATokenManager {
 		} catch (ClassNotFoundException e) {
 	       log.error("Error registering " + classpath + " couldn't find classpath");
 		}			
-		
 		return retval;
 	}
 	
@@ -106,7 +105,6 @@ public class HardCATokenManager {
 	
 	public static Collection getAvailableHardCATokens(){
 	   return availablehardcatokens;	
-		
 	}
 
 	/**
@@ -126,13 +124,7 @@ public class HardCATokenManager {
         	  break;
         	}  
         }
-		
-		
 		return retval;	
-		
 	}
-	
-	
-	
 	
 }

@@ -28,7 +28,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestAddLotsofUsers.java,v 1.1 2004-06-10 16:17:44 sbailliez Exp $
+ * @version $Id: TestAddLotsofUsers.java,v 1.2 2005-02-11 13:12:16 anatom Exp $
  */
 public class TestAddLotsofUsers extends TestCase {
     private static Logger log = Logger.getLogger(TestAddLotsofUsers.class);
@@ -44,7 +44,6 @@ public class TestAddLotsofUsers extends TestCase {
     //private static UserDataHome home;
     private static String baseUsername;
     private static String pwd;
-    private static String pwd1;
     private static int userNo = 0;
     private static int caid;
 
@@ -140,7 +139,6 @@ public class TestAddLotsofUsers extends TestCase {
             int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
             int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
             boolean error = false;
-            boolean usehardtokenissuer = false;
             String dn = "C=SE, O=AnaTom, CN=" + username;
             String subjectaltname = "rfc822Name=" + username + "@foo.se";
             String email = username + "@foo.se";

@@ -243,14 +243,13 @@ public class ProtocolHttpTest extends TestCase {
      */
     public void test02OpenScep() throws Exception {
         log.debug(">test02OpenScep()");
-        ScepRequestMessage msg = new ScepRequestMessage(openscep);
         // send message to server and see what happens
         WebConversation wc = new WebConversation();
         WebRequest request = new GetMethodWebRequest(httpReqPath + '/' + resourceScep);
         request.setParameter("operation", "PKIOperation");
         request.setParameter("message", new String(Base64.encode(openscep)));
         WebResponse response = wc.getResponse(request);
-        // TODO: since we our request most certainly uses the wrong CA cert to encrypt the
+        // TODO: since our request most certainly uses the wrong CA cert to encrypt the
         // request, it will fail. If we get something back, we came a little bit at least :)
         assertEquals("Response code", 400, response.getResponseCode());
         // TODO: send crap message and get good error

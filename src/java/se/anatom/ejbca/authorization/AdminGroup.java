@@ -22,7 +22,7 @@ import java.io.Serializable;
 /**
  * A class that represents a group of users and their access rules.
  *
- * @version $Id: AdminGroup.java,v 1.3 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: AdminGroup.java,v 1.4 2005-02-11 13:12:19 anatom Exp $
  */
 public class AdminGroup implements Serializable, Comparable {
                                
@@ -80,7 +80,6 @@ public class AdminGroup implements Serializable, Comparable {
      * in use by the rule set. */
     public Collection nonUsedAccessRules(Collection availableaccessrules){
       ArrayList nonusedaccessrules = new ArrayList();
-      String[] dummy = {};
       int result;
       Collections.sort(accessrules);
       if(availableaccessrules != null){

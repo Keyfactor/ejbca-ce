@@ -26,7 +26,7 @@ import se.anatom.ejbca.util.query.Query;
 /**
  * Tests the log modules entity and session beans.
  *
- * @version $Id: TestLog.java,v 1.1 2004-06-10 16:17:44 sbailliez Exp $
+ * @version $Id: TestLog.java,v 1.2 2005-02-11 13:12:28 anatom Exp $
  */
 public class TestLog extends TestCase {
     private static Logger log = Logger.getLogger(TestLog.class);
@@ -93,8 +93,8 @@ public class TestLog extends TestCase {
         cacheAdmin.saveLogConfiguration(admin, "CN=TEST".hashCode(), logconf);
 
         LogConfiguration logconf2 = cacheAdmin.loadLogConfiguration("CN=TEST".hashCode());
-        assertTrue("Couldn't retrieve correct log confirguration data from database.", !logconf.getLogEvent(LogEntry.EVENT_INFO_DATABASE).booleanValue());
-        assertTrue("Couldn't retrieve correct log confirguration data from database.", logconf.getLogEvent(LogEntry.EVENT_ERROR_DATABASE).booleanValue());
+        assertTrue("Couldn't retrieve correct log confirguration data from database.", !logconf2.getLogEvent(LogEntry.EVENT_INFO_DATABASE).booleanValue());
+        assertTrue("Couldn't retrieve correct log confirguration data from database.", logconf2.getLogEvent(LogEntry.EVENT_ERROR_DATABASE).booleanValue());
 
         log.debug("<test01AddLogConfiguration()");
     }

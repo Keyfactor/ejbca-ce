@@ -13,9 +13,7 @@
 
 package se.anatom.ejbca.ca.sign;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -34,11 +32,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Vector;
+
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.ObjectNotFoundException;
 
 import org.bouncycastle.jce.X509KeyUsage;
+
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal;
@@ -302,7 +302,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      */
     public byte[] createPKCS7(Admin admin, Certificate cert) throws CADoesntExistsException, SignRequestSignatureException {
         Integer caid = new Integer(CertTools.getIssuerDN((X509Certificate) cert).hashCode());
-        return createPKCS7(admin, caid.intValue(), cert);
+        return createPKCS7(caid.intValue(), cert);
     } // createPKCS7
 
     /**
@@ -316,7 +316,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      */
     public byte[] createPKCS7(Admin admin, int caId) throws CADoesntExistsException {
         try {
-            return createPKCS7(admin, caId, null);
+            return createPKCS7(caId, null);
         } catch (SignRequestSignatureException e) {
             error("Unknown error, strange?", e);
             throw new EJBException(e);
@@ -333,7 +333,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @return The DER-encoded PKCS7 message.
      * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid cert
      */
-    private byte[] createPKCS7(Admin admin, int caId, Certificate cert) throws CADoesntExistsException, SignRequestSignatureException {
+    private byte[] createPKCS7(int caId, Certificate cert) throws CADoesntExistsException, SignRequestSignatureException {
         debug(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN((X509Certificate) cert) + ")");
         byte[] returnval = null;
         // get CA
@@ -1080,22 +1080,6 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (javax.ejb.CreateException ce) {
             throw new EJBException(ce);
         }
-    }
-
-    private String getPassword(String initKey) throws Exception {
-        String password;
-        try {
-            password = getLocator().getString(initKey);
-        } catch (Exception e) {
-            password = null;
-        }
-        if (password == null) {
-            debug(initKey + " password: ");
-            BufferedReader in
-                    = new BufferedReader(new InputStreamReader(System.in));
-            return (in.readLine());
-        } else
-            return password;
     }
 
     private int sunKeyUsageToBC(boolean[] sku) {

@@ -146,7 +146,10 @@ public class HardCATokenSample implements IHardCAToken {
     
     private boolean offline = false;
    
-	public HardCATokenSample(){
+	public HardCATokenSample() {
+        if (registered) {
+            log.debug("Registered HardCATokenSample sucessfully.");
+        }
 	}
 	
 	/**

@@ -50,7 +50,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.3 2004-08-08 11:03:54 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.4 2005-02-11 13:12:16 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -396,6 +396,7 @@ public class TestSignSession extends TestCase {
             IResponseMessage resp = remote.createCertificate(admin,
                     p10, Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
             X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+            log.info("cert with DN '"+cert.getSubjectDN().getName()+"' should not be issued?");
         } catch (Exception e) {
             // RSASignSession should throw an IllegalKeyException here.
             assertTrue("Expected IllegalKeyException: " + e.toString(),

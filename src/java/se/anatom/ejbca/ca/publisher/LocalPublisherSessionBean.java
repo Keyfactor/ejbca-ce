@@ -13,7 +13,19 @@
 
 package se.anatom.ejbca.ca.publisher;
 
-import org.apache.log4j.Logger;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Random;
+
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+import javax.ejb.FinderException;
+
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.AvailableAccessRules;
@@ -29,18 +41,6 @@ import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.ra.ExtendedInformation;
-
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Random;
 
 /**
  * Stores data used by web server clients.
@@ -110,8 +110,6 @@ import java.util.Random;
  */
 public class LocalPublisherSessionBean extends BaseSessionBean {
 
-    private static final Logger log = Logger.getLogger(LocalPublisherSessionBean.class);
-
     /**
      * The local home interface of publisher entity bean.
      */
@@ -166,7 +164,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      *
      * @return IAuthorizationSessionLocal
      */
-    private IAuthorizationSessionLocal getAuthorizationSession(Admin admin) {
+    private IAuthorizationSessionLocal getAuthorizationSession() {
         if (authorizationsession == null) {
             try {
                 IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
@@ -183,7 +181,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      *
      * @return ICAAdminSessionLocal
      */
-    private ICAAdminSessionLocal getCAAdminSession(Admin admin) {
+    private ICAAdminSessionLocal getCAAdminSession() {
         if (caadminsession == null) {
             try {
                 ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
@@ -434,11 +432,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
     public void clonePublisher(Admin admin, String oldname, String newname) throws PublisherExistsException {
         debug(">clonePublisher(name: " + oldname + ")");
         BasePublisher publisherdata = null;
-        boolean success = false;
         try {
             PublisherDataLocal htp = publisherhome.findByName(oldname);
             publisherdata = (BasePublisher) htp.getPublisher().clone();
-
             try {
                 addPublisher(admin, newname, publisherdata);
                 getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_PUBLISHERDATA, "New publisher " + newname + ", used publisher " + oldname + " as template.");
@@ -446,7 +442,6 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
                 getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_PUBLISHERDATA, "Error adding publisher " + newname + " using publisher " + oldname + " as template.");
                 throw f;
             }
-
         } catch (Exception e) {
             throw new EJBException(e);
         }
@@ -513,9 +508,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         HashSet returnval = new HashSet();
         Collection result = null;
         boolean superadmin = false;
-// If superadmin return all available publishers
+        // If superadmin return all available publishers
         try {
-            superadmin = getAuthorizationSession(admin).isAuthorized(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+            superadmin = getAuthorizationSession().isAuthorized(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
             result = this.publisherhome.findAll();
             Iterator i = result.iterator();
             while (i.hasNext()) {
@@ -527,11 +522,11 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         } catch (FinderException fe) {
         }
 
-// If ca admin return
+        // If ca admin return
         if (!superadmin) {
-            Iterator authorizedcas = this.getAuthorizationSession(admin).getAuthorizedCAIds(admin).iterator();
+            Iterator authorizedcas = this.getAuthorizationSession().getAuthorizedCAIds(admin).iterator();
             while (authorizedcas.hasNext()) {
-                returnval.addAll(this.getCAAdminSession(admin).getCAInfo(admin, ((Integer) authorizedcas.next()).intValue()).getCRLPublishers());
+                returnval.addAll(this.getCAAdminSession().getCAInfo(admin, ((Integer) authorizedcas.next()).intValue()).getCRLPublishers());
             }
         }
         return returnval;

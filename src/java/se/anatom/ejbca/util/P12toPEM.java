@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
  * a third file. The PEM files will have the names <i>common name</i>.pem, <i>common
  * name</i>Key.pem and <i>common name</i>CA.pem derived from the DN in user certificate.
  *
- * @version $Id: P12toPEM.java,v 1.14 2004-06-28 12:05:18 sbailliez Exp $
+ * @version $Id: P12toPEM.java,v 1.15 2005-02-11 13:12:27 anatom Exp $
  */
 public class P12toPEM {
     private static Logger log = Logger.getLogger(P12toPEM.class);
@@ -57,7 +57,6 @@ public class P12toPEM {
         CertTools.installBCProvider();
 
         P12toPEM p12 = null;
-        String pathAllP12 = null;
 
         try {
             if (args.length > 2) {

@@ -13,6 +13,26 @@
 
 package se.anatom.ejbca.protocol;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.security.GeneralSecurityException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Iterator;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -39,34 +59,15 @@ import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.security.GeneralSecurityException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.cert.X509Certificate;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
 
 /**
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.35 2004-11-20 22:54:28 sbailliez Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.36 2005-02-11 13:12:29 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = -235623330828902051L;
@@ -599,7 +600,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     //
     // Private helper methods
     //
-    private static boolean checkKeys(PublicKey pubK, PrivateKey privK) {
+/*    private static boolean checkKeys(PublicKey pubK, PrivateKey privK) {
         String in = "TheTopSecretTestString";
         byte[] text = in.getBytes();
 
@@ -618,7 +619,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         } catch (Exception e) {
             return false;
         }
-    }
-}
-
-// ScepRequestMessage
+    } */
+    
+} // ScepRequestMessage

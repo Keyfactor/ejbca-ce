@@ -26,13 +26,11 @@ import se.anatom.ejbca.util.ServiceLocator;
 /**
  * Base for Session Beans providing common features, new Session Beans should extend this.
  *
- * @version $Id: BaseSessionBean.java,v 1.12 2004-11-08 21:07:55 sbailliez Exp $
+ * @version $Id: BaseSessionBean.java,v 1.13 2005-02-11 13:12:14 anatom Exp $
  */
 public class BaseSessionBean implements SessionBean {
-    /** Log4j instance for Base */
-    private static transient Logger baseLog = Logger.getLogger(BaseSessionBean.class);
 
-    /** Log4j instance for actual class */
+    /** Log4j instance for actual implementation class */
     public transient Logger log;
     private transient SessionContext ctx;
 

@@ -131,7 +131,6 @@ public class CertificateProfileDataHandler implements Serializable {
      */    
     private boolean authorizedToProfile(CertificateProfile profile, boolean editcheck){
       boolean returnval = false;  
-      boolean allexists = false;  
       try{  
         boolean issuperadministrator = false;
         try{

@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.20 2004-12-22 09:00:42 anatom Exp $
+ * @version $Id: StringTools.java,v 1.21 2005-02-11 13:12:27 anatom Exp $
  */
 public class StringTools {
     private static Logger log = Logger.getLogger(StringTools.class);
@@ -35,8 +35,6 @@ public class StringTools {
     private static final char[] allowedEscapeChars = {
         ','
     };
-    
-    private static  Pattern[] escapepatterns = null;
     
     private static final Pattern WS = Pattern.compile("\\s+");
 

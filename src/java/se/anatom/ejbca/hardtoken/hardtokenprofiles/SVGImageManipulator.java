@@ -19,7 +19,6 @@ import java.awt.image.RenderedImage;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
@@ -29,8 +28,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.regex.Pattern;
-
-import javax.imageio.ImageIO;
 
 import org.apache.batik.dom.GenericText;
 import org.apache.batik.dom.svg.SAXSVGDocumentFactory;
@@ -51,8 +48,6 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.svg.SVGRectElement;
 import org.w3c.dom.svg.SVGTextElement;
 
-
-
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 
@@ -62,7 +57,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id: SVGImageManipulator.java,v 1.6 2004-04-16 07:39:00 anatom Exp $
+ * @version $Id: SVGImageManipulator.java,v 1.7 2005-02-11 13:12:18 anatom Exp $
  */
 public class SVGImageManipulator {
 
@@ -117,13 +112,13 @@ public class SVGImageManipulator {
     /**
      *  Constants reserved for future use.
      */
-	private static final Pattern CUSTOMTEXTROW1 = Pattern.compile("\\$CUSTOMTEXTROW1", Pattern.CASE_INSENSITIVE);      
-	private static final Pattern CUSTOMTEXTROW2 = Pattern.compile("\\$CUSTOMTEXTROW2", Pattern.CASE_INSENSITIVE);
-	private static final Pattern CUSTOMTEXTROW3 = Pattern.compile("\\$CUSTOMTEXTROW3", Pattern.CASE_INSENSITIVE);
-	private static final Pattern CUSTOMTEXTROW4 = Pattern.compile("\\$CUSTOMTEXTROW4", Pattern.CASE_INSENSITIVE);
-	private static final Pattern CUSTOMTEXTROW5 = Pattern.compile("\\$CUSTOMTEXTROW5", Pattern.CASE_INSENSITIVE);
-	private static final Pattern COPYOFSN = Pattern.compile("\\$COPYOFSN", Pattern.CASE_INSENSITIVE);
-	private static final Pattern COPYOFSNWITHOUTPREFIX = Pattern.compile("\\$COPYOFSNWITHOUTPREFIX", Pattern.CASE_INSENSITIVE);
+//	private static final Pattern CUSTOMTEXTROW1 = Pattern.compile("\\$CUSTOMTEXTROW1", Pattern.CASE_INSENSITIVE);      
+//	private static final Pattern CUSTOMTEXTROW2 = Pattern.compile("\\$CUSTOMTEXTROW2", Pattern.CASE_INSENSITIVE);
+//	private static final Pattern CUSTOMTEXTROW3 = Pattern.compile("\\$CUSTOMTEXTROW3", Pattern.CASE_INSENSITIVE);
+//	private static final Pattern CUSTOMTEXTROW4 = Pattern.compile("\\$CUSTOMTEXTROW4", Pattern.CASE_INSENSITIVE);
+//	private static final Pattern CUSTOMTEXTROW5 = Pattern.compile("\\$CUSTOMTEXTROW5", Pattern.CASE_INSENSITIVE);
+//	private static final Pattern COPYOFSN = Pattern.compile("\\$COPYOFSN", Pattern.CASE_INSENSITIVE);
+//	private static final Pattern COPYOFSNWITHOUTPREFIX = Pattern.compile("\\$COPYOFSNWITHOUTPREFIX", Pattern.CASE_INSENSITIVE);
 
     /**
      * Constructor for the SVGImageManipulator object
@@ -318,10 +313,10 @@ public class SVGImageManipulator {
     	  }  
     	
     	if(imgwidth != 0 && imgheight != 0){    	
-    	  // Special dravel for demo remove
-		  BufferedImage image = ImageIO.read(new FileInputStream("c:\\userpicture.jpg"));
-        // TODO get image.
-      
+    	// Special dravel for demo remove
+		// BufferedImage image = ImageIO.read(new FileInputStream("c:\\userpicture.jpg"));
+        // TODO: get image.
+        BufferedImage image = null;
       	
 	      SVGOMImageElement imageelement = new SVGOMImageElement("", svgdoc); 
 	      SimpleImageHandler imagehandler = new SimpleImageHandler(new ImageHandlerBase64Encoder());

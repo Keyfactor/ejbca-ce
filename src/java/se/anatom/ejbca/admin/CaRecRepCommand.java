@@ -30,7 +30,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Receive certificate reply as result of certificate request.
  *
- * @version $Id: CaRecRepCommand.java,v 1.11 2004-10-13 07:14:45 anatom Exp $
+ * @version $Id: CaRecRepCommand.java,v 1.12 2005-02-11 13:12:18 anatom Exp $
  */
 public class CaRecRepCommand extends BaseCaAdminCommand {
     /**
@@ -67,7 +67,6 @@ public class CaRecRepCommand extends BaseCaAdminCommand {
             getOutputStream().println("Protected with storepassword: " + storepwd);
 
             X509Certificate cert = CertTools.getCertfromByteArray(FileTools.readFiletoBuffer(certfile));
-            X509Certificate rootcert = null;
             KeyStore store = KeyStore.getInstance("PKCS12", "BC");
             FileInputStream fis = new FileInputStream(ksfile);
             store.load(fis, storepwd.toCharArray());

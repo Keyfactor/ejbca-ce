@@ -28,7 +28,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * List certificates that will expire within the given number of days.
  *
- * @version $Id: CaListExpiredCommand.java,v 1.11 2004-10-13 07:14:46 anatom Exp $
+ * @version $Id: CaListExpiredCommand.java,v 1.12 2005-02-11 13:12:18 anatom Exp $
  */
 public class CaListExpiredCommand extends BaseCaAdminCommand {
     /**
@@ -52,8 +52,6 @@ public class CaListExpiredCommand extends BaseCaAdminCommand {
             msg += "Usage: CA listexpired <days>";
             throw new IllegalAdminCommandException(msg);
         }
-
-        String filename = args[1];
 
         try {
             long days = Long.parseLong(args[1]);

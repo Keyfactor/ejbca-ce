@@ -33,15 +33,16 @@ import se.anatom.ejbca.ca.exception.CATokenOfflineException;
  * 
  */
 public class DummyHardCAToken implements IHardCAToken {
-    /** Log4j instance for Base */
-    private static transient Logger baseLog = Logger.getLogger(DummyHardCAToken.class);
-	private transient Logger log;
+    /** Log4j instance */
+	private static final Logger log = Logger.getLogger(DummyHardCAToken.class);
 	
 	// TODO set this right after testing.
 	private static boolean registered = HardCATokenManager.register("se.anatom.ejbca.ca.caadmin.hardcatokens.DummyHardCAToken", "DummyHardCAToken", false, false);
 	
 	public DummyHardCAToken(){
-		log = Logger.getLogger(this.getClass());
+        if (registered) {
+            log.debug("Registered DummyHardCAToken succesfully.");
+        }
 	}
 	
 	/**

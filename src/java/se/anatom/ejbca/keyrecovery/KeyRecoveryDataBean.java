@@ -34,7 +34,7 @@ import java.math.BigInteger;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.18 2004-11-20 22:43:30 sbailliez Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.19 2005-02-11 13:12:17 anatom Exp $
  *
  * @ejb.bean
  *   description="Stores key recovery data"
@@ -202,7 +202,7 @@ public abstract class KeyRecoveryDataBean extends BaseEntityBean {
         setKeyDataFromByteArray(keydata);
         KeyRecoveryDataPK pk = new KeyRecoveryDataPK(getCertSN(), issuerdn);
         log.debug("Created Key Recoverydata for user " + username);
-        return null;
+        return pk;
     }
 
     public void ejbPostCreate(BigInteger certificatesn, String issuerdn, String username,

@@ -30,7 +30,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.2 2004-07-23 10:24:43 anatom Exp $
+ * @version $Id: TestPublisher.java,v 1.3 2005-02-11 13:12:18 anatom Exp $
  */
 public class TestPublisher extends TestCase {
 
@@ -83,7 +83,6 @@ public class TestPublisher extends TestCase {
     private static Context ctx;
     private static IPublisherSessionRemote pub;
 
-    private static final String CertificateData = null;
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
     /**

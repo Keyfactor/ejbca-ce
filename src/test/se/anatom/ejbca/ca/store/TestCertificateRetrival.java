@@ -136,7 +136,6 @@ public class TestCertificateRetrival extends TestCase {
         cert = CertTools.getCertfromByteArray(testrootcert);
         m_certs.add(cert);
         rootCaFp = CertTools.getFingerprintAsString(cert);
-        boolean stored = false;
         try {
             if (store.findCertificateByFingerprint(adm, rootCaFp) == null) {
                 store.storeCertificate(adm
@@ -191,7 +190,6 @@ public class TestCertificateRetrival extends TestCase {
     public void test02FindCACertificates() throws Exception {
         m_log.debug(">test02FindCACertificates()");
         X509Certificate cert;
-        X509Certificate storecert;
         cert = CertTools.getCertfromByteArray(testrootcert);
         ICertificateStoreSessionRemote store = m_storehome.create();
 

@@ -32,7 +32,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 /**
  * Export profiles from the databse to XML-files.
  *
- * @version $Id: CaExportProfilesCommand.java,v 1.8 2004-10-13 07:14:45 anatom Exp $
+ * @version $Id: CaExportProfilesCommand.java,v 1.9 2005-02-11 13:12:18 anatom Exp $
  */
 public class CaExportProfilesCommand extends BaseCaAdminCommand {
     /**
@@ -80,7 +80,6 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
             }
 
             String outpath = args[1];
-            boolean error = false;
 
             getOutputStream().println("Exporting certificate profiles: ");
             Iterator iter = certprofids.iterator();

@@ -61,8 +61,8 @@ public class TestSimpleSequenceGenerator extends TestCase {
         for (int i = 0; i < IT; i++) {
             try {
                 Integer id = SimpleSequenceGenerator.getNextCount( home );
+                id.intValue();
             } catch (EJBException e){
-
             }
         }
     }

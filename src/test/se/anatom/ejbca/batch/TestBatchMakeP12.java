@@ -32,17 +32,13 @@ import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.1 2004-06-10 16:17:43 sbailliez Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.2 2005-02-11 13:12:14 anatom Exp $
  */
 
 public class TestBatchMakeP12 extends TestCase {
     private static Logger log = Logger.getLogger(TestBatchMakeP12.class);
     private static Context ctx;
     private static IUserAdminSessionHome home;
-    private static String username;
-    private static String username1;
-    private static String pwd;
-    private static String pwd1;
     private static int caid;
     private static Admin admin;
 
@@ -99,24 +95,6 @@ public class TestBatchMakeP12 extends TestCase {
 
         return username;
     } // genRandomUserName
-
-    private String genRandomPwd() throws Exception {
-        // Gen random pwd
-        Random rand = new Random(new Date().getTime() + 4812);
-
-        String password = "";
-
-        for (int i = 0; i < 8; i++) {
-            int randint = rand.nextInt(9);
-            password += (new Integer(randint)).toString();
-        }
-
-        log.debug("Generated random pwd: password=" + password);
-
-        return password;
-    }
-
-    // genRandomPwd
 
     /**
      * test creation of new user

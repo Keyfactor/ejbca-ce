@@ -13,20 +13,16 @@
  
 package se.anatom.ejbca.apply;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.Date;
 import java.util.Enumeration;
+
 import javax.ejb.CreateException;
 import javax.ejb.ObjectNotFoundException;
 import javax.naming.InitialContext;
 import javax.rmi.PortableRemoteObject;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,9 +30,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ra.*;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
@@ -46,11 +39,13 @@ import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.util.Base64;
-import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.FileTools;
-import se.anatom.ejbca.util.StringTools;
+import se.anatom.ejbca.ra.IUserAdminSessionHome;
+import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
+import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.StringTools;
 
 
 /**
@@ -91,7 +86,7 @@ import se.anatom.ejbca.ra.UserAdminData;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.36 2004-07-16 20:43:34 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.37 2005-02-11 13:12:28 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -285,7 +280,6 @@ public class DemoCertReqServlet extends HttpServlet {
       throw new ServletException("Error adding user: ", e);
     }
 
-    byte[] pkcs7;
     try {
         if (type == 1) {
               byte[] certs = helper.nsCertRequest(signsession, reqBytes, username, password);
@@ -359,66 +353,6 @@ public class DemoCertReqServlet extends HttpServlet {
   } // doGet
 
 
-private void sendNewCertToIEClient(byte[] b64cert, OutputStream out) throws Exception {
-    PrintStream ps = new PrintStream(out);
-    BufferedReader br = new BufferedReader(new InputStreamReader(getServletContext().getResourceAsStream(getInitParameter("responseTemplate"))));
-    while ( true ) {
-        String line=br.readLine();
-        if ( line==null )
-            break;
-        if ( line.indexOf("cert =")<0 )
-            ps.println(line);
-        else
-            RequestHelper.ieCertFormat(b64cert, ps);
-    }
-    ps.close();
-    log.info("Sent reply to IE client");
-    log.debug(new String(b64cert));
-}
-
-private void sendNewB64Cert(byte[] b64cert, HttpServletResponse out)
-    throws IOException
-  {
-    out.setContentType("application/octet-stream");
-    out.setHeader("Content-disposition", " attachment; filename=cert.crt");
-    out.setContentLength(b64cert.length +BEGIN_CERT_LENGTH + END_CERT_LENGTH + (3 *NL_LENGTH));
-    ServletOutputStream os = out.getOutputStream();
-    os.write(BEGIN_CERT);
-    os.write(NL);
-    os.write(b64cert);
-    os.write(NL);
-    os.write(END_CERT);
-    os.write(NL);
-    out.flushBuffer();
-  }
-
-
-  /**
-   *
-   */
-  private final static byte[] pkcs10Bytes(String pkcs10)
-  {
-    if (pkcs10 == null) return null;
-    byte[] reqBytes = pkcs10.getBytes();
-    byte[] bytes = null;
-    try {
-      // A real PKCS10 PEM request
-      String beginKey = "-----BEGIN CERTIFICATE REQUEST-----";
-      String endKey   = "-----END CERTIFICATE REQUEST-----";
-      bytes = FileTools.getBytesFromPEM(reqBytes, beginKey, endKey);
-    } catch (IOException e) {
-      try {
-        // Keytool PKCS10 PEM request
-        String beginKey = "-----BEGIN NEW CERTIFICATE REQUEST-----";
-        String endKey   = "-----END NEW CERTIFICATE REQUEST-----";
-        bytes = FileTools.getBytesFromPEM(reqBytes, beginKey, endKey);
-      } catch (IOException e2) {
-        // IE PKCS10 Base64 coded request
-        bytes = Base64.decode(reqBytes);
-      }
-    }
-    return bytes;
-  }
 
   /**
    * @return true if the username is ok (does not already exist), false otherwise

@@ -24,14 +24,6 @@ public class CRLCreateService implements CRLCreateServiceMBean
   public static final String POLLTIME_15MIN     = "15MIN";
   public static final String POLLTIME_1MIN       = "1MIN";
 
-  /** Constants used internally. */
-  private static final int CHECK_DAILY     = 1;
-  private static final int CHECK_HOURLY = 2;
-  private static final int CHECK_30MIN    = 3;
-  private static final int CHECK_15MIN    = 4;
-  private static final int CHECK_1MIN      = 5;
-  
-	
   private String polltime; 
   private CRLCreateThread crlcreatethread;
   

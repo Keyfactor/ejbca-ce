@@ -25,7 +25,6 @@ import java.util.StringTokenizer;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -57,7 +56,7 @@ import org.apache.log4j.Logger;
  * </p>
  *
  * @author Original code by Peter Neemeth
- * @version $Id: RemoteVerifyServlet.java,v 1.8 2004-06-19 15:34:34 anatom Exp $
+ * @version $Id: RemoteVerifyServlet.java,v 1.9 2005-02-11 13:12:45 anatom Exp $
  */
 public class RemoteVerifyServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(RemoteVerifyServlet.class);
@@ -273,6 +272,7 @@ public class RemoteVerifyServlet extends HttpServlet {
         // Also suitable for logging.
         String method = req.getMethod();
         String path = req.getServletPath();
+        log.debug("Received request: method="+method+", path="+path);
 
         out.print("You called from " + remoteAddr);
         out.println(" using " + method + " as method.");
@@ -369,15 +369,10 @@ public class RemoteVerifyServlet extends HttpServlet {
         // Also suitable for logging.
         String method = req.getMethod();
         String path = req.getServletPath();
+        log.debug("Received request: method="+method+", path="+path);
 
         //
-        // Extract the parameters passed to us using the utility
-        // HttpUtils.parsePostData available in the servlet package.
-        ServletInputStream in = req.getInputStream();
-        int len = req.getContentLength();
-
-        //
-        // Will this work with len == -1 ?? (Unknown length)
+        // Will this work with content length == -1 ?? (Unknown length)
         // Don't know, but -1 is possible only if we have a GET
         // and we KNOW this is a POST :-)
         Map params = req.getParameterMap();

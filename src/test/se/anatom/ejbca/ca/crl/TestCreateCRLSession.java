@@ -33,7 +33,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.1 2004-06-10 16:17:43 sbailliez Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.2 2005-02-11 13:12:46 anatom Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 
@@ -125,11 +125,6 @@ public class TestCreateCRLSession extends TestCase {
         byte[] crl = storeremote.getLastCRL(admin, cadn);
         assertNotNull("Could not get CRL", crl);
 
-        X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-
-        //FileOutputStream fos = new FileOutputStream("testcrl.der");
-        //fos.write(crl);
-        //fos.close();
         log.debug("<test02LastCRL()");
     }
 

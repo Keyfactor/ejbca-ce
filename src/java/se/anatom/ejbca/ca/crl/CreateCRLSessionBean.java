@@ -49,7 +49,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.24 2004-11-20 20:18:46 sbailliez Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.25 2005-02-11 13:12:19 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -206,6 +206,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
             }
             ISignSessionLocal sign = signHome.create();
             X509CRL crl = (X509CRL) sign.createCRL(admin, caid, certs);
+            debug("Created CRL with expire date: "+crl.getNextUpdate());
 
             //FileOutputStream fos = new FileOutputStream("srvtestcrl.der");
             //fos.write(crl.getEncoded());
