@@ -91,9 +91,13 @@
     </path>
 
     <!-- those are the default values used within JBoss for easy startup -->
-    <property name="datasource.jndi-name" value="DefaultDS"/>
+    <property name="datasource.jndi-name" value="ejbcaDS"/>
     <property name="database.name" value="hsqldb"/>
-    
+    <property name="database.url" value="jdbc:hsqldb:$${jboss.server.data.dir}$${/}hypersonic$${/}ejbcaDB"/>
+    <property name="database.driver" value="org.hsqldb.jdbcDriver"/>
+    <property name="database.username" value="sa"/>
+    <property name="database.password" value=""/>
+
     <!-- 
         ex: /my/path/myfile-postgres.xml -> /my/path/myfile.xml
     -->
@@ -112,6 +116,16 @@
   <!-- Create the time stamp and build directory -->
   <!-- =================================================================== -->
   <target name="init" depends="jboss:init">
+      <echo>
+---------- CONFIGURATION PROPERTIES ----------
+jboss.home           = ${jboss.home}
+datasource.jndi-name = ${datasource.jndi-name}
+database.name        = ${database.name}
+database.url         = ${database.url}
+database.driver      = ${database.driver}
+database.username    = ${database.username}
+database.password    = ${database.password}
+      </echo>
     <!-- Create the time stamp -->
     <tstamp/>
     <!-- Create the build directory structure used by compile -->
@@ -749,7 +763,14 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- ======================================================================= -->
   <!-- Deploy EJBCA ear to JBoss                                               -->
   <!-- ======================================================================= -->
-  <target name="deploy" depends="jboss:assert-run, ca.ear, admin.jar">
+    <target name="deploy" depends="jboss:assert-run, ca.ear, admin.jar">
+        <property name="deploy.dir" location="${jboss.home}/server/default/deploy"/>
+        <copy todir="${deploy.dir}" overwrite="true">
+            <fileset dir="src/appserver/jboss" includes="ejbca-ds.xml"/>
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </copy>
     <copy file="${caear}" tofile="${jboss.home}/server/default/deploy/ejbca-ca.ear" verbose="true"/>
   </target>
 
@@ -827,23 +848,23 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         <sequential>
 
         <!-- standard configuration.. should be modified with xdoclet -->
-        <copy todir="@{todir}">
+        <copy todir="@{todir}" overwrite="true">
             <fileset dir="@{dir}" includes="META-INF/ejb-jar.xml"/>
             <filterchain refid="datasource.filters"/>
         </copy>
         
         <!-- jboss configuration -->
-        <copy todir="@{todir}">
+        <copy todir="@{todir}" overwrite="true">
             <fileset dir="@{dir}" includes="META-INF/jbosscmp-jdbc*.xml"/>
             <filterchain refid="datasource.filters"/>
             <mapper refid="database.mapper"/>
         </copy>
-        <copy todir="@{todir}">
+        <copy todir="@{todir}" overwrite="true">
                 <fileset dir="@{dir}" includes="META-INF/jboss.xml"/>
         </copy>
         
         <!-- weblogic configuration -->     
-        <copy todir="@{todir}">
+        <copy todir="@{todir}" overwrite="true">
             <fileset dir="@{dir}" includes="META-INF/weblogic*.xml"/>
             <filterchain refid="datasource.filters"/>
         </copy>
