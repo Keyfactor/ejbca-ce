@@ -36,8 +36,11 @@ import org.apache.log4j.Logger;
 import se.anatom.ejbca.apply.RequestHelper;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
+import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
+import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.Base64;
+import se.anatom.ejbca.util.ServiceLocator;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 
 /**
@@ -50,12 +53,26 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.19 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: CACertServlet.java,v 1.20 2004-11-20 23:30:53 sbailliez Exp $
+ *
+ * @web.servlet name = "CACert"
+ *              display-name = "CACertServlet"
+ *              description="Returns the specified CA certificate"
+ *              load-on-startup = "99"
+ *
+ * @web.servlet-mapping url-pattern = "/ca/cacert"
+ *
+ * @web.ejb-local-ref
+ *  name="ejb/SignSessionLocal"
+ *  type="Session"
+ *  link="RSASignSession"
+ *  home="se.anatom.ejbca.ca.sign.ISignSessionLocalHome"
+ *  local="se.anatom.ejbca.ca.sign.ISignSessionLocal"
  *
  */
 public class CACertServlet extends HttpServlet {
 
-    private static Logger log = Logger.getLogger(CACertServlet.class);
+    private static final Logger log = Logger.getLogger(CACertServlet.class);
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
     private static final String COMMAND_NSCACERT = "nscacert";
@@ -65,16 +82,13 @@ public class CACertServlet extends HttpServlet {
     private static final String LEVEL_PROPERTY = "level";
     private static final String ISSUER_PROPERTY = "issuer";
 
-    private ISignSessionHome signhome = null;
+    private ISignSessionLocalHome signhome = null;
 
     public void init(ServletConfig config) throws ServletException {
     super.init(config);
        try {
-
-            // Get EJB context and home interfaces
-            InitialContext ctx = new InitialContext();
-
-		signhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
+           // FIXME this should be the remote home !
+		signhome = (ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
         } catch( Exception e ) {
             throw new ServletException(e);
         }
@@ -125,7 +139,7 @@ public class CACertServlet extends HttpServlet {
                 level = Integer.parseInt(lev);
             // Root CA is level 0, next below root level 1 etc etc
             try {
-                ISignSessionRemote ss = signhome.create();
+                ISignSessionLocal ss = signhome.create();
                 Admin admin = new Admin(((X509Certificate[]) req.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
                 Certificate[] chain = (Certificate[]) ss.getCertificateChain(admin, issuerdn.hashCode()).toArray(new Certificate[0]);
                                                             
@@ -185,8 +199,8 @@ public class CACertServlet extends HttpServlet {
      * Prints debug info back to browser client
      **/
     private class Debug {
-        final private ByteArrayOutputStream buffer;
-        final private PrintStream printer;
+        private final ByteArrayOutputStream buffer;
+        private final PrintStream printer;
         Debug( ){
             buffer=new ByteArrayOutputStream();
             printer=new PrintStream(buffer);

@@ -26,21 +26,17 @@ import java.util.Iterator;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.JNDINames;
 import se.anatom.ejbca.authorization.AdminGroupExistsException;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
-import se.anatom.ejbca.ca.publisher.IPublisherSessionLocal;
 import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.log.ILogSessionLocal;
-import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
@@ -50,7 +46,7 @@ import se.anatom.ejbca.util.SqlExecutor;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.20 2004-09-08 20:55:20 koen_serry Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.21 2004-11-20 23:26:27 sbailliez Exp $
  * @ejb.bean
  *   display-name="UpgradeSB"
  *   name="UpgradeSession"
@@ -58,6 +54,8 @@ import se.anatom.ejbca.util.SqlExecutor;
  *   type="Stateless"
  *   transaction-type="Container"
  *
+ * @ejb.transaction type="Required"
+ * 
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
@@ -94,30 +92,25 @@ import se.anatom.ejbca.util.SqlExecutor;
  *   link="RaAdminSession"
  *
  * @ejb.ejb-external-ref
- *   description="The Log session bean"
+ *   description="The CA Admin Session"
  *   view-type="local"
- *   ejb-name="LogSessionLocal"
+ *   ejb-name="CAAdminSessionLocal"
  *   type="Session"
- *   home="se.anatom.ejbca.log.ILogSessionLocalHome"
- *   business="se.anatom.ejbca.log.ILogSessionLocal"
- *   link="LogSession"
+ *   home="se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome"
+ *   business="se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal"
+ *   link="CAAdminSession"
+ * 
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
     /** Var holding JNDI name of datasource */
     private String dataSource = "";
 
-    /** The local interface of the log session bean */
-    private ILogSessionLocal logsession = null;
-
     /** The local interface of the ca admin session bean */
     private ICAAdminSessionLocal caadminsession = null;
 
     /** The local interface of the authorization session bean */
     private IAuthorizationSessionLocal authorizationsession = null;
-
-    /** The local interface of the publisher session bean */
-    private IPublisherSessionLocal publishersession = null;
 
     /** The local interface of the raadmin session bean */
     private IRaAdminSessionLocal raadminsession = null;
@@ -128,41 +121,16 @@ public class UpgradeSessionBean extends BaseSessionBean {
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() throws CreateException {
-        debug(">ejbCreate()");
-        dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
-        debug("DataSource=" + dataSource);
-        debug("<ejbCreate()");
+        dataSource = getLocator().getString(JNDINames.DATASOURCE);
     }
 
-    /** Gets connection to Datasource used for manual SQL searches
-     * @return Connection
-     */
-    private Connection getConnection() throws SQLException, NamingException {
-        DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
-        return ds.getConnection();
-    } //getConnection
-
-
-    /** Gets connection to log session bean
-     */
-    private ILogSessionLocal getLogSession() {
-        if(logsession == null){
-          try{
-            ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup(ILogSessionLocalHome.COMP_NAME,ILogSessionLocalHome.class);
-            logsession = logsessionhome.create();
-          }catch(Exception e){
-             throw new EJBException(e);
-          }
-        }
-        return logsession;
-    } //getLogSession
-
-    /** Gets connection to ca admin session bean
+    /** 
+     * Gets connection to ca admin session bean
      */
     private ICAAdminSessionLocal getCaAdminSession() {
         if(caadminsession == null){
           try{
-              ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome)lookup("java:comp/env/ejb/CAAdminSessionLocal", ICAAdminSessionLocalHome.class);
+              ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome)getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
               caadminsession = caadminsessionhome.create();
           }catch(Exception e){
              throw new EJBException(e);
@@ -176,7 +144,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
     private IAuthorizationSessionLocal getAuthorizationSession() {
         if(authorizationsession == null){
           try{
-            IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) lookup("java:comp/env/ejb/AuthorizationSessionLocal", IAuthorizationSessionLocalHome.class);
+            IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
             authorizationsession = authorizationsessionhome.create();
           }catch(Exception e){
              throw new EJBException(e);
@@ -190,7 +158,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
     private IRaAdminSessionLocal getRaAdminSession() {
         if(raadminsession == null){
           try{
-            IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) lookup("java:comp/env/ejb/RaAdminSessionLocal", IRaAdminSessionLocalHome.class);
+            IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) getLocator().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
             raadminsession = raadminsessionhome.create();
           }catch(Exception e){
              throw new EJBException(e);
@@ -201,9 +169,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
 
     /** Runs a preCheck to see if an upgrade is possible
      *
-     * @param admin
      * @return true if ok to upgrade or false if not
-     * @throws RemoteException
      */
     private boolean preCheck() {
         debug(">preCheck");
@@ -211,7 +177,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
         Connection con = null;
         PreparedStatement ps = null;
         try {
-            con = getConnection();
+            con = JDBCUtil.getDBConnection(dataSource);
             // Check if cAId in the table admingroupdata is present. It is present only in ejbca 3, not 2.
             ps = con.prepareStatement("select * from admingroupdata");
             ResultSet rs = ps.executeQuery();
@@ -235,7 +201,6 @@ public class UpgradeSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      * @param admin
      * @return true or false if upgrade was done or not
-     * @throws RemoteException
      */
     public boolean upgrade(Admin admin, String[] args) {
         debug(">upgrade("+admin.toString()+")");
@@ -288,12 +253,9 @@ public class UpgradeSessionBean extends BaseSessionBean {
         info("Start migration of database.");
         try {
             InputStreamReader inreader = new InputStreamReader(in);
-            con = getConnection();
+            con = JDBCUtil.getDBConnection(dataSource);
             SqlExecutor sqlex = new SqlExecutor(con, false);
             sqlex.runCommands(inreader);
-        } catch (NamingException e) {
-            error("Error during database migration: ", e);
-            return false;
         } catch (SQLException e) {
             error("SQL error during database migration: ", e);
             return false;
@@ -335,7 +297,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
         PreparedStatement ps2 = null;
         PreparedStatement ps3 = null;
         try {
-            con = getConnection();
+            con = JDBCUtil.getDBConnection(dataSource);
             ps1 = con.prepareStatement("update admingroupdata set caId=?");
             ps1.setInt(1, caId);
             ps1.executeUpdate();
@@ -349,9 +311,6 @@ public class UpgradeSessionBean extends BaseSessionBean {
             ps3.executeUpdate();
         } catch (SQLException sqle) {
             error("Error updating caId: ", sqle);
-            return false;
-        } catch (NamingException ne) {
-            error("Error getting connection: ", ne);
             return false;
         } finally {
             JDBCUtil.close(ps1);

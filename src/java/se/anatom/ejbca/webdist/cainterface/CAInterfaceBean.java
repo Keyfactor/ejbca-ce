@@ -55,6 +55,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.ServiceLocator;
 import se.anatom.ejbca.webdist.rainterface.CertificateView;
 import se.anatom.ejbca.webdist.rainterface.RevokedInfoView;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
@@ -65,7 +66,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.26 2004-05-13 15:38:58 herrvendil Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.27 2004-11-20 23:30:52 sbailliez Exp $
  */
 public class CAInterfaceBean   {
 
@@ -79,36 +80,29 @@ public class CAInterfaceBean   {
 
       if(!initialized){
         administrator = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
-        InitialContext jndicontext = new InitialContext();
-        Object obj1 = jndicontext.lookup("java:comp/env/CertificateStoreSessionLocal");
-        ICertificateStoreSessionLocalHome certificatesessionhome = (ICertificateStoreSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionLocalHome.class);
+        ServiceLocator locator = ServiceLocator.getInstance();
+        ICertificateStoreSessionLocalHome certificatesessionhome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
         certificatesession = certificatesessionhome.create();
         
-        obj1 = jndicontext.lookup("java:comp/env/CAAdminSessionLocal");
-        ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICAAdminSessionLocalHome.class);
+        ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
         caadminsession = caadminsessionhome.create();
         
-        IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/AuthorizationSessionLocal"),
-                                                                                 IAuthorizationSessionLocalHome.class);
+        IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) locator.getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
         authorizationsession = authorizationsessionhome.create();
         
-        obj1 = jndicontext.lookup("java:comp/env/UserAdminSessionLocal");
-        IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionLocalHome.class);
+        IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
         adminsession = adminsessionhome.create();
 
-        IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/RaAdminSessionLocal"),
-                                                                                 IRaAdminSessionLocalHome.class);
+        IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) locator.getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
         raadminsession = raadminsessionhome.create();               
         
-		ISignSessionLocalHome home = (ISignSessionLocalHome)javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/SignSessionLocal"), ISignSessionLocalHome.class );
+		ISignSessionLocalHome home = (ISignSessionLocalHome)locator.getLocalHome(ISignSessionLocalHome.COMP_NAME );
 	    signsession = home.create();
 	    
-	    IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/HardTokenSessionLocal"),
-	    		IHardTokenSessionLocalHome.class);
+	    IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome)locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
 	    hardtokensession = hardtokensessionhome.create();               
 	    
-	    IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/PublisherSessionLocal"),
-	    		IPublisherSessionLocalHome.class);
+	    IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) locator.getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
 	    publishersession = publishersessionhome.create();               
 	    
 	    
@@ -150,8 +144,17 @@ public class CAInterfaceBean   {
     
     public HashMap getCAIdToNameMap(){
       return informationmemory.getCAIdToNameMap();      
-    } 
-    
+    }
+
+    /**
+     * Return the name of the CA based on its ID
+     * @param caId the ca ID
+     * @return the name of the CA or null if it does not exists.
+     */
+    public String getName(Integer caId) {
+        return (String)informationmemory.getCAIdToNameMap().get(caId);
+    }
+
     public Collection getAuthorizedCAs(){
       return informationmemory.getAuthorizedCAIds();
     }  

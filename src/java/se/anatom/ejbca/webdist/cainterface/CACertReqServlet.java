@@ -39,6 +39,7 @@ import se.anatom.ejbca.apply.RequestHelper;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
+import se.anatom.ejbca.util.ServiceLocator;
 
 /**
  * Servlet used to distribute  CRLs.<br>
@@ -49,7 +50,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: CACertReqServlet.java,v 1.2 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: CACertReqServlet.java,v 1.3 2004-11-20 23:30:53 sbailliez Exp $
  */
 public class CACertReqServlet extends HttpServlet {
 
@@ -65,8 +66,7 @@ public class CACertReqServlet extends HttpServlet {
    private ISignSessionLocal getSignSession(){
    	  if(signsession == null){	
 		try {
-			InitialContext ctx = new InitialContext();
-		    ISignSessionLocalHome signhome = (ISignSessionLocalHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSessionLocal"), ISignSessionLocalHome.class);
+		    ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
 		    signsession = signhome.create();
 		}catch(Exception e){
 			throw new EJBException(e);      	  	    	  	
@@ -210,8 +210,8 @@ public class CACertReqServlet extends HttpServlet {
      * Prints debug info back to browser client
      **/
     private class Debug {
-        final private ByteArrayOutputStream buffer;
-        final private PrintStream printer;
+        private final ByteArrayOutputStream buffer;
+        private final PrintStream printer;
         Debug( ){
             buffer=new ByteArrayOutputStream();
             printer=new PrintStream(buffer);
