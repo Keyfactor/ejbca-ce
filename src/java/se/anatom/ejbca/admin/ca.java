@@ -133,16 +133,22 @@ public class ca {
                 kName.addObject(kSeq);
                 req.setAttributes(kName);
                 */
-                boolean verify = req.verify();
+                ByteArrayOutputStream bOut = new ByteArrayOutputStream ();
+                DEROutputStream dOut = new DEROutputStream(bOut);
+                dOut.writeObject(req);
+                dOut.close();
+                ByteArrayInputStream bIn = new ByteArrayInputStream(bOut.toByteArray());
+                DERInputStream dIn = new DERInputStream(bIn);
+                PKCS10CertificationRequest req2 = new PKCS10CertificationRequest((DERConstructedSequence)dIn.readObject());
+                boolean verify = req2.verify();
                 System.out.println("Verify returned " + verify);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                DEROutputStream dos = new DEROutputStream(baos);
-                dos.writeObject(req);
-                dos.close();
-                baos.close();
+                if (verify == false) {
+                    System.out.println("Aborting!");
+                    return;
+                }
                 FileOutputStream os1 = new FileOutputStream(reqfile);
                 os1.write("-----BEGIN CERTIFICATE REQUEST-----\n".getBytes());
-                os1.write(Base64.encode(baos.toByteArray()));
+                os1.write(Base64.encode(bOut.toByteArray()));
                 os1.write("\n-----END CERTIFICATE REQUEST-----\n".getBytes());
                 os1.close();
                 System.out.println("CertificationRequest '"+reqfile+"' generated succefully.");
