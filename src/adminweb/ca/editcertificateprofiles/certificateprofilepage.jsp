@@ -1,12 +1,13 @@
-<%               
+<%@ page import="se.anatom.ejbca.ca.store.CertificateDataBean"%>
+<%
   CertificateProfile certificateprofiledata = cabean.getCertificateProfile(certprofile.trim());
 
  
   String[] SUPERADMIN_TYPE_NAMES = {"ENDENTITY", "SUBCA", "ROOTCA"};
-  int[] SUPERADMIN_TYPE_IDS = {SecConst.CERTTYPE_ENDENTITY,SecConst.CERTTYPE_SUBCA , SecConst.CERTTYPE_ROOTCA};
+  int[] SUPERADMIN_TYPE_IDS = {CertificateDataBean.CERTTYPE_ENDENTITY,CertificateDataBean.CERTTYPE_SUBCA , CertificateDataBean.CERTTYPE_ROOTCA};
    
   String[] TYPE_NAMES = {"ENDENTITY"};
-  int[] TYPE_IDS = {SecConst.CERTTYPE_ENDENTITY};
+  int[] TYPE_IDS = {CertificateDataBean.CERTTYPE_ENDENTITY};
   if(issuperadministrator){
     TYPE_NAMES = SUPERADMIN_TYPE_NAMES;
     TYPE_IDS = SUPERADMIN_TYPE_IDS;
@@ -66,7 +67,7 @@ function typechanged(){
   var seltype = document.editcertificateprofile.<%=SELECT_TYPE %>.options.selectedIndex;
   var type = document.editcertificateprofile.<%=SELECT_TYPE %>.options[seltype].value; 
 
-  if(type == <%= SecConst.CERTTYPE_ENDENTITY %>){    
+  if(type == <%= CertificateDataBean.CERTTYPE_ENDENTITY %>){
     document.editcertificateprofile.<%=SELECT_AVAILABLEPUBLISHERS %>.disabled=false;
   }else{
     document.editcertificateprofile.<%=SELECT_AVAILABLEPUBLISHERS %>.disabled=true;
@@ -436,7 +437,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("PUBLISHERS") %> <br>&nbsp;
       </td>
       <td width="50%"> 
-        <select name="<%=SELECT_AVAILABLEPUBLISHERS%>" size="5" multiple  <% if(certificateprofiledata.getType() != SecConst.CERTTYPE_ENDENTITY) out.write(" disabled "); %>
+        <select name="<%=SELECT_AVAILABLEPUBLISHERS%>" size="5" multiple  <% if(certificateprofiledata.getType() != CertificateDataBean.CERTTYPE_ENDENTITY) out.write(" disabled "); %>
            <%   Collection usedpublishers = certificateprofiledata.getPublisherList(); 
                 iter = publisheridtonamemap.keySet().iterator(); 
                 while(iter.hasNext()){
