@@ -17,7 +17,7 @@
         <%= ejbcawebbean.getText("AUTHENTICATIONCODE") %>
       </td>
       <td width="50%"> 
-        <input type="text" name="<%=TEXTFIELD_AUTHENTICATIONCODE%>" size="40" maxlength="255">
+        <input type="password" name="<%=TEXTFIELD_AUTHENTICATIONCODE%>" size="40" maxlength="255">
       </td>
     </tr>
     <% }%>
