@@ -1,6 +1,16 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.24 2004-08-05 06:34:24 anatom Exp $
+$Id: FAQ,v 1.25 2004-09-18 11:13:36 anatom Exp $
+
+---------
+Q : I get a blank page on the admiweb after start.
+
+A : Either you entered a hostname that does not resolve to the machine where EJBCA is
+running during setup, or you changed the port that JBoss listens to.
+Make sure the hostname resolves to the machine ejbca is running on.
+If you need the change to url, use the command 'setup.sh/cmd setbaseurl'.
+If you changed port default public http=8080, private https=8443) you must edit 
+src/adminweb/WEB-INF/web.xml. Change env entries PUBLICPORT resp PRIVATEPORT.
 
 ---------
 Q : Installation hangs and the https server will not work.
