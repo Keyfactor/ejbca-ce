@@ -30,7 +30,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.63 2004-05-31 16:20:33 anatom Exp $
+ * @version $Id: CertTools.java,v 1.64 2004-06-01 19:38:26 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -88,7 +88,7 @@ public class CertTools {
         oids.put("email", X509Name.EmailAddress);
         oids.put("1.2.840.113549.1.9.2", unstructuredName); //unstructuredName 
         oids.put("1.2.840.113549.1.9.8", unstructuredAddress); //unstructuredAddress
-    };
+    }
 
     private static final String[] dNObjectsForward = {
         "1.2.840.113549.1.9.8", "1.2.840.113549.1.9.2", "emailaddress", "e", "email", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
