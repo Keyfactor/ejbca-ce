@@ -31,7 +31,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.72 2005-03-07 16:50:29 anatom Exp $
+ * @version $Id: CertTools.java,v 1.73 2005-03-16 09:47:22 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -121,10 +121,11 @@ public class CertTools {
      *        format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in the string will be silently
      *        dropped.
      *
-     * @return X509Name
+     * @return X509Name or null if input is null
      */
     public static X509Name stringToBcX509Name(String dn) {
         //log.debug(">stringToBcX509Name: " + dn);
+        if (dn == null) return null;
         // first make two vectors, one with all the C, O, OU etc specifying
         // the order and one holding the actual values
         ArrayList oldordering = new ArrayList();
@@ -963,6 +964,36 @@ public class CertTools {
 
         return null;
     } // generateMD5Fingerprint
+    
+    /** Converts Sun Key usage bits to Bouncy castle key usage kits
+     * 
+     * @param sku key usage bit fields according to java.security.cert.X509Certificate#getKeyUsage, must be a boolean aray of size 9.
+     * @return key usage int according to org.bouncycastle.jce.X509KeyUsage#X509KeyUsage.
+     * @see java.security.cert.X509Certificate#getKeyUsage
+     * @see org.bouncycastle.jce.X509KeyUsage#X509KeyUsage
+     */
+    public static int sunKeyUsageToBC(boolean[] sku) {
+        int bcku = 0;
+        if (sku[0] == true)
+            bcku = bcku | X509KeyUsage.digitalSignature;
+        if (sku[1] == true)
+            bcku = bcku | X509KeyUsage.nonRepudiation;
+        if (sku[2] == true)
+            bcku = bcku | X509KeyUsage.keyEncipherment;
+        if (sku[3] == true)
+            bcku = bcku | X509KeyUsage.dataEncipherment;
+        if (sku[4] == true)
+            bcku = bcku | X509KeyUsage.keyAgreement;
+        if (sku[5] == true)
+            bcku = bcku | X509KeyUsage.keyCertSign;
+        if (sku[6] == true)
+            bcku = bcku | X509KeyUsage.cRLSign;
+        if (sku[7] == true)
+            bcku = bcku | X509KeyUsage.encipherOnly;
+        if (sku[8] == true)
+            bcku = bcku | X509KeyUsage.decipherOnly;
+        return bcku;
+    }
     
     /**
      * class for breaking up an X500 Name into it's component tokens, ala

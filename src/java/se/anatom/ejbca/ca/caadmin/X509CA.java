@@ -101,7 +101,7 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.31 2005-03-04 12:20:36 anatom Exp $
+ * @version $Id: X509CA.java,v 1.32 2005-03-16 09:47:23 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -287,7 +287,7 @@ public class X509CA extends CA implements Serializable {
         if (certProfile.getAllowKeyUsageOverride() && (keyusage >= 0)) {
             newKeyUsage = keyusage;
         } else {
-            newKeyUsage = sunKeyUsageToBC(certProfile.getKeyUsage());
+            newKeyUsage = CertTools.sunKeyUsageToBC(certProfile.getKeyUsage());
         }
         if ( (certProfile.getUseKeyUsage() == true) && (newKeyUsage >=0) ){
             X509KeyUsage ku = new X509KeyUsage(newKeyUsage);
@@ -615,29 +615,6 @@ public class X509CA extends CA implements Serializable {
     
     
    // private help methods
-    private int sunKeyUsageToBC(boolean[] sku) {
-        int bcku = 0;
-        if (sku[0] == true)
-            bcku = bcku | X509KeyUsage.digitalSignature;
-        if (sku[1] == true)
-            bcku = bcku | X509KeyUsage.nonRepudiation;
-        if (sku[2] == true)
-            bcku = bcku | X509KeyUsage.keyEncipherment;
-        if (sku[3] == true)
-            bcku = bcku | X509KeyUsage.dataEncipherment;
-        if (sku[4] == true)
-            bcku = bcku | X509KeyUsage.keyAgreement;
-        if (sku[5] == true)
-            bcku = bcku | X509KeyUsage.keyCertSign;
-        if (sku[6] == true)
-            bcku = bcku | X509KeyUsage.cRLSign;
-        if (sku[7] == true)
-            bcku = bcku | X509KeyUsage.encipherOnly;
-        if (sku[8] == true)
-            bcku = bcku | X509KeyUsage.decipherOnly;
-        return bcku;
-    }
-    
     private X509Name getSubjectDNAsX509Name(){
       if(subjectx509name == null){
         subjectx509name = CertTools.stringToBcX509Name(getSubjectDN());  

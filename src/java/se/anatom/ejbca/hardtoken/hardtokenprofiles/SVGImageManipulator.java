@@ -42,6 +42,7 @@ import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.print.PrintTranscoder;
 import org.apache.batik.util.XMLResourceDescriptor;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -58,7 +59,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id: SVGImageManipulator.java,v 1.8 2005-02-13 11:27:45 anatom Exp $
+ * @version $Id: SVGImageManipulator.java,v 1.9 2005-03-16 09:47:24 anatom Exp $
  */
 public class SVGImageManipulator {
 	/**
@@ -283,6 +284,9 @@ public class SVGImageManipulator {
       //text = CUSTOMTEXTROW3.matcher(text).replaceAll(?);
       //text = CUSTOMTEXTROW4.matcher(text).replaceAll(?);
       //text = CUSTOMTEXTROW5.matcher(text).replaceAll(?);
+      if (StringUtils.isNotEmpty(copyoftokensn) || StringUtils.isNotEmpty(copyoftokensnwithoutprefix)) {
+          log.info("copyoftokensn: "+copyoftokensn+" and/or copyoftokensnwithoutprefix: "+copyoftokensnwithoutprefix+" is not used.");          
+      }
       //text = COPYOFSN.matcher(text).replaceAll(copyoftokensn);
       //text = COPYOFSNWITHOUTPREFIX.matcher(text).replaceAll(copyoftokensnwithoutprefix);
 

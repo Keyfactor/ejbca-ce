@@ -37,8 +37,6 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.ObjectNotFoundException;
 
-import org.bouncycastle.jce.X509KeyUsage;
-
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal;
@@ -405,7 +403,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, boolean[] keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
-        return createCertificate(admin, username, password, pk, sunKeyUsageToBC(keyusage));
+        return createCertificate(admin, username, password, pk, CertTools.sunKeyUsageToBC(keyusage));
     }
 
     /**
@@ -1047,29 +1045,6 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (javax.ejb.CreateException ce) {
             throw new EJBException(ce);
         }
-    }
-
-    private int sunKeyUsageToBC(boolean[] sku) {
-        int bcku = 0;
-        if (sku[0] == true)
-            bcku = bcku | X509KeyUsage.digitalSignature;
-        if (sku[1] == true)
-            bcku = bcku | X509KeyUsage.nonRepudiation;
-        if (sku[2] == true)
-            bcku = bcku | X509KeyUsage.keyEncipherment;
-        if (sku[3] == true)
-            bcku = bcku | X509KeyUsage.dataEncipherment;
-        if (sku[4] == true)
-            bcku = bcku | X509KeyUsage.keyAgreement;
-        if (sku[5] == true)
-            bcku = bcku | X509KeyUsage.keyCertSign;
-        if (sku[6] == true)
-            bcku = bcku | X509KeyUsage.cRLSign;
-        if (sku[7] == true)
-            bcku = bcku | X509KeyUsage.encipherOnly;
-        if (sku[8] == true)
-            bcku = bcku | X509KeyUsage.decipherOnly;
-        return bcku;
     }
 
     private UserAuthData authUser(Admin admin, String username, String password) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
