@@ -77,12 +77,10 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
       String resource= null;
       String adm = null;
       
-      //TODO REMOVE
-      int caid=0;
       
       if(admin.getAdminInformation().isSpecialUser()){
         adm = Integer.toString(admin.getAdminInformation().getSpecialUser());
-        // Temporary VERY UGLY
+        // TODO Fix
         return true;
       }
       else
@@ -93,10 +91,10 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
 
       if(returnval != null && log){
         if(returnval.booleanValue()){
-            getLogSessionBean().log(admin, caid, module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,
+            getLogSessionBean().log(admin, admin.getCAId(), module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,
                                     "Resource : " + AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
         }else{
-            getLogSessionBean().log(admin, caid, module, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
+            getLogSessionBean().log(admin, admin.getCAId(), module, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
                                     "Resource : " + AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
         }
       }

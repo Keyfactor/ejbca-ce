@@ -19,7 +19,7 @@ import se.anatom.ejbca.util.query.Query;
 /**
  * Interface for User admin session
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.23 2003-09-04 14:36:14 herrvendil Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.24 2003-10-01 11:12:14 herrvendil Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     // Public constants
@@ -255,6 +255,12 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      */
     public boolean checkForCertificateProfileId(Admin admin, int certificaterofileid) throws RemoteException;
 
+	/**
+	 *  Method checking if username already exists in database.
+	 * 
+	 *  @return true if username already exists.
+	 */
+	public boolean existsUser(Admin admin, String username) throws RemoteException;
 
 
 }

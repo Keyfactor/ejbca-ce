@@ -8,6 +8,7 @@ package se.anatom.ejbca.webdist.webconfiguration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeMap;
 
@@ -98,6 +99,27 @@ public class InformationMemory {
       return this.raauthorization.getAuthorizedEndEntityProfileNames();   
     }
     
+	/**
+	 * Returns end entity profile names with create rights as a treemap of name (String) -> id (Integer)
+	 */    
+    public TreeMap getCreateAuthorizedEndEntityProfileNames(){
+		if(globalconfiguration.getEnableEndEntityProfileLimitations())
+		  return this.raauthorization.getCreateAuthorizedEndEntityProfileNames();
+		  
+		return this.raauthorization.getAuthorizedEndEntityProfileNames(); 
+    }
+
+	/**
+	 * Returns end entity profile names with view rights as a treemap of name (String) -> id (Integer)
+	 */    
+	public TreeMap getViewAuthorizedEndEntityProfileNames(){
+		if(globalconfiguration.getEnableEndEntityProfileLimitations())
+		  return this.raauthorization.getViewAuthorizedEndEntityProfileNames();
+		  
+		return this.raauthorization.getAuthorizedEndEntityProfileNames();   
+	}
+
+    
     /**
      * Returns authorized end entity certificate profile names as a treemap of name (String) -> id (Integer)
      */
@@ -122,8 +144,8 @@ public class InformationMemory {
     /**
      * Returns all authorized certificate profile names as a treemap of name (String) -> id (Integer)
      */
-    public TreeMap getAuthorizedCertificateProfileNames(){
-      return this.caauthorization.getAuthorizedCertificateProfileNames();   
+    public TreeMap getEditCertificateProfileNames(){
+      return this.caauthorization.getEditCertificateProfileNames();   
     }     
     
     /**
@@ -145,6 +167,13 @@ public class InformationMemory {
      */
     public String getViewLogCAIdString(){
       return this.logauthorization.getCARights();
+    }
+    
+    /**
+     *  Returns a collection of module ids the administrator is authorized to view log of.
+     */
+    public Collection getAuthorizedModules(){
+        return this.logauthorization.getAuthorizedModules();       	
     }
     
     /**
@@ -197,7 +226,19 @@ public class InformationMemory {
     }
     
     /**
-     * Method that calculates them available cas to an end entity. Used in add/edit end entity pages.
+     *  Method returning the all available publishers id to name.
+     * 
+     * @return the publisheridtonamemap (HashMap)
+     */
+    public HashMap getPublisherIdToNameMap(){
+    	if(publisheridtonamemap == null)
+    	   publisheridtonamemap = signsession.getPublisherIdToNameMap(administrator);
+    	   
+    	 return publisheridtonamemap;   	
+    }
+        
+    /**
+     * Method that calculates the available cas to an end entity. Used in add/edit end entity pages.
      * It calculates a set of available CAs as an intersection of:
      * - The administrators authorized CAs
      * - The end entity profiles available CAs
@@ -261,7 +302,18 @@ public class InformationMemory {
       return (HashMap) endentityavailablecas.get(new Integer(endentityprofileid));      
     }
 
-    
+    /**
+     *  Returns a administrators set of authorized available accessrules.
+     * 
+     * @return A HashSet containing the administrators authorized available accessrules.
+     */
+
+    public HashSet getAuthorizedAccessRules(){
+      if(authorizedaccessrules == null)
+	    authorizedaccessrules = new HashSet(authorizationsession.getAuthorizedAvailableAccessRules(administrator));
+	    
+	   return authorizedaccessrules;
+    }
     
     /**
      * Method that should be called every time CA configuration is edited.
@@ -269,6 +321,7 @@ public class InformationMemory {
     public void cAsEdited(){
       caidtonamemap = null;   
       endentityavailablecas = null;
+	  authorizedaccessrules = null;
       logauthorization.clear();
       raauthorization.clear();
       caauthorization.clear();
@@ -282,6 +335,7 @@ public class InformationMemory {
       endentityprofileidtonamemap = null;   
       endentityprofilenameproxy = null;
       endentityavailablecas = null;
+	  authorizedaccessrules = null;
       raauthorization.clear();
     }    
     
@@ -332,6 +386,10 @@ public class InformationMemory {
     HashMap caidtonamemap = null;
     HashMap certificateprofileidtonamemap = null;    
     HashMap endentityavailablecas = null;
+    HashMap publisheridtonamemap = null;
+    
+    HashSet authorizedaccessrules = null;
+    
     GlobalConfiguration globalconfiguration = null;
     EndEntityProfileNameProxy endentityprofilenameproxy = null;
     CertificateProfileNameProxy certificateprofilenameproxy = null;

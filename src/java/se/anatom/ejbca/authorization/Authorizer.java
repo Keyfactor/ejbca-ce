@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
@@ -25,7 +24,7 @@ import se.anatom.ejbca.util.CertTools;
  *
  * The main metod are isAthorized and authenticate.
  *
- * @version $Id: Authorizer.java,v 1.2 2003-09-27 09:05:55 anatom Exp $
+ * @version $Id: Authorizer.java,v 1.3 2003-10-01 11:12:07 herrvendil Exp $
  */
 public class Authorizer extends Object implements java.io.Serializable{
 
@@ -39,13 +38,9 @@ public class Authorizer extends Object implements java.io.Serializable{
         authorizationproxy = new AuthorizationProxy(accesstree);
         buildAccessTree(admingroups);
         
-        
-
-        this.admin= admin;
+                
         this.logsession = logsession;
         this.module=module;
-        InitialContext jndicontext = new InitialContext();
-        Object obj1 = jndicontext.lookup("CertificateStoreSession");
         this.certificatesession = certificatestoresession;
         this.raadminsession = raadminsession;
         this.caadminsession = caadminsession;                 
@@ -62,8 +57,10 @@ public class Authorizer extends Object implements java.io.Serializable{
      * @return true if authorizes
      * @throws AuthorizationDeniedException when authorization is denied.
      */
-    public boolean isAuthorized(AdminInformation admininformation, String resource) throws AuthorizationDeniedException {
+    public boolean isAuthorized(Admin admin, String resource) throws AuthorizationDeniedException {
 
+       AdminInformation admininformation = admin.getAdminInformation();
+	   
        if(!authorizationproxy.isAuthorized(admininformation, resource)  && !authorizationproxy.isAuthorized(admininformation, "/super_administrator")){
          if(!admininformation.isSpecialUser())
            logsession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);
@@ -72,7 +69,7 @@ public class Authorizer extends Object implements java.io.Serializable{
          throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
        }
        if(!admininformation.isSpecialUser())
-         logsession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);
+         logsession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);       
        else
          logsession.log(admin, ILogSessionLocal.INTERNALCAID,  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);
            
@@ -88,9 +85,9 @@ public class Authorizer extends Object implements java.io.Serializable{
      * @return true if authorizes
      * @throws AuthorizationDeniedException when authorization is denied.
      */
-    public boolean isAuthorizedNoLog(AdminInformation admininformation, String resource) throws AuthorizationDeniedException {
+    public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException {
         // Check in accesstree.
-       if(!authorizationproxy.isAuthorized(admininformation, resource)  && !authorizationproxy.isAuthorized(admininformation, "/super_administrator")){
+       if(!authorizationproxy.isAuthorized(admin.getAdminInformation(), resource)  && !authorizationproxy.isAuthorized(admin.getAdminInformation(), "/super_administrator")){
          throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
        }
         return true;
@@ -127,7 +124,7 @@ public class Authorizer extends Object implements java.io.Serializable{
            throw new AuthenticationFailedException("Your certificate cannot be verified by CA certificate chain.");
 */
       // Check if certificate is revoked.
-        RevokedCertInfo revinfo = certificatesession.isRevoked(admin, CertTools.getIssuerDN(certificate),certificate.getSerialNumber());
+        RevokedCertInfo revinfo = certificatesession.isRevoked(new Admin(certificate), CertTools.getIssuerDN(certificate),certificate.getSerialNumber());
         if (revinfo == null) {
             // Certificate missing
             throw new AuthenticationFailedException("Your certificate cannot be found in database.");
@@ -151,7 +148,7 @@ public class Authorizer extends Object implements java.io.Serializable{
         Integer caid = (Integer) iter.next();
         try{
           System.out.println("Authorizer : getAuthorizedCAIds() : trying caid : " + caid.intValue());  
-          isAuthorizedNoLog(admin.getAdminInformation(), AvailableAccessRules.CAPREFIX + caid.toString());     
+          isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid.toString());     
           System.out.println("Authorizer : getAuthorizedCAIds() : Authorized to caid : " + caid.intValue());
           returnval.add(caid); 
         }catch(AuthorizationDeniedException e){}
@@ -178,7 +175,7 @@ public class Authorizer extends Object implements java.io.Serializable{
       while(iter.hasNext()){
         Integer profileid = (Integer) iter.next();
         try{
-          isAuthorizedNoLog(admin.getAdminInformation(), AvailableAccessRules.ENDENTITYPROFILEPREFIX + profileid + rapriviledge);     
+          isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + profileid + rapriviledge);     
           returnval.add(profileid); 
         }catch(AuthorizationDeniedException e){}
                    
@@ -200,7 +197,6 @@ public class Authorizer extends Object implements java.io.Serializable{
 
     private AccessTree            accesstree;
     private Certificate[]         cacertificatechain;
-    private Admin                 admin;
     private int                   module;
 
     private ICertificateStoreSessionLocal  certificatesession;

@@ -13,7 +13,7 @@ import se.anatom.ejbca.SecConst;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.18 2003-09-03 13:35:16 herrvendil Exp $
+ * @version $Id: CertificateProfile.java,v 1.19 2003-10-01 11:12:07 herrvendil Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values
@@ -346,6 +346,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     
     public void setAvailableCAs(Collection availablecas){
       data.put(AVAILABLECAS, availablecas);   
+    }
+    
+    public boolean isApplicableToAnyCA(){
+    	return ((Collection) data.get(AVAILABLECAS)).contains(new Integer(ANYCA));
     }
     
     /**

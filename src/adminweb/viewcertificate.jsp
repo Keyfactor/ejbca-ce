@@ -4,7 +4,7 @@
 <%@page contentType="text/html"%>
 <%@page errorPage="/errorpage.jsp"  import="java.math.BigInteger, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
                  se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.CertificateView, se.anatom.ejbca.webdist.rainterface.RevokedInfoView,
-                 javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.authorization.AuthorizationDeniedException" %>
+                 javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.authorization.AuthorizationDeniedException, se.anatom.ejbca.util.CertTools" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
 <jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
@@ -49,7 +49,7 @@
   boolean noparameter             = true;
   boolean notauthorized           = true;
   boolean cacerts                 = false;
-  boolean usekeyrecovery          = globalconfiguration.getEnableKeyRecovery() && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_KEYRECOVERY_RIGHTS);
+  boolean usekeyrecovery          = false;   
   CertificateView certificatedata = null;
   String certificateserno         = null;
   String issuerdn                 = null;
@@ -58,7 +58,12 @@
   int numberofcertificates        = 0;
   int currentindex                = 0;
   int caid                        = 0;
-  
+
+  try{
+    usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_KEYRECOVERY_RIGHTS);
+  }catch(AuthorizationDeniedException ade){}
+
+
   if( request.getParameter(HARDTOKENSN_PARAMETER) != null && request.getParameter(USER_PARAMETER ) != null){
      username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
      tokensn  = request.getParameter(HARDTOKENSN_PARAMETER);
@@ -82,7 +87,7 @@
      
      String[] certdata = java.net.URLDecoder.decode(request.getParameter(CERTSERNO_PARAMETER ),"UTF-8").split(",",2);
      certificateserno = certdata[0];
-     issuerdn = certdata[1];
+     issuerdn = CertTools.stringToBCDNString(certdata[1]);
 
      try{  
        rabean.loadCertificates(new BigInteger(certificateserno,16), issuerdn); 
@@ -94,7 +99,7 @@
      caid = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
      if(request.getParameter(BUTTON_VIEW_PREVIOUS) == null && request.getParameter(BUTTON_VIEW_NEXT) == null){
        try{  
-         ejbcawebbean.isAuthorizedNoLog("/ca_functionallity/basic_functions");
+         ejbcawebbean.isAuthorizedNoLog("/ca_functionality/basic_functions");
          ejbcawebbean.isAuthorized(se.anatom.ejbca.authorization.AvailableAccessRules.CAPREFIX + caid);
          rabean.loadCACertificates(cabean.getCACertificates(caid)); 
          numberofcertificates = rabean.getNumberOfCertificates();
@@ -451,7 +456,7 @@ function confirmkeyrecovery(){
          &nbsp;
           </td>
           <td>
-       <% 
+       <%  try{
             if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
                && !certificatedata.isRevoked()){ %>
         <input type="submit" name="<%=BUTTON_REVOKE %>" value="<%= ejbcawebbean.getText("REVOKE") %>"
@@ -461,9 +466,10 @@ function confirmkeyrecovery(){
                if(i!= 7){%>
                <option value='<%= i%>'><%= ejbcawebbean.getText(RevokedInfoView.reasontexts[i]) %></option>
           <%   } 
-             }
-           }%> 
+             }%>
         </select>
+         <% }
+         }catch(AuthorizationDeniedException ade){}%> 
           &nbsp;
           </td>
        </tr> 

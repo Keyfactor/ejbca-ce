@@ -23,7 +23,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.14 2003-09-21 10:54:59 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.15 2003-10-01 11:12:14 herrvendil Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
     /** Pointer to main certificate store */
@@ -82,7 +82,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
               System.out.println("Policy ID: "+policyId);
                             
               initAuthorizationModule(dn.hashCode());
-            
+              // TODO remove
+              System.out.println("Init Authorization with CAId" + dn.hashCode());
                        
               SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
               catokeninfo.setKeySize(keysize);
@@ -112,7 +113,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
               caadminsession.createCA(administrator, cainfo);
             
               int caid = caadminsession.getCAInfo(administrator, caname).getCAId();
-            
+			  System.out.println("CAId for created CA: " + caid);
+              
               // Second create (and publish) CRL
               createCRL(dn);
               System.out.println("-Created and published initial CRL.");

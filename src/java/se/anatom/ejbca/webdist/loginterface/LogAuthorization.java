@@ -1,6 +1,8 @@
 package se.anatom.ejbca.webdist.loginterface;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
@@ -14,7 +16,7 @@ import se.anatom.ejbca.log.LogEntry;
  * A class that looks up the which modules a administrator have right to view.
  * This is done by looking up an administrators privileges in the tree and returning a string to be used in SQL-queries.
  * 
- * @version $Id: LogAuthorization.java,v 1.6 2003-09-04 09:49:46 herrvendil Exp $
+ * @version $Id: LogAuthorization.java,v 1.7 2003-10-01 11:12:14 herrvendil Exp $
  */
 public class LogAuthorization implements Serializable {
     
@@ -90,21 +92,36 @@ public class LogAuthorization implements Serializable {
         }                
           
       }  
+      
       return caidstring;   
     }
     
     public void clear(){
       this.querystring = null;
       this.caidstring = null;
+      this.authorizedmodules = null;
     }
     
-        
+    public Collection getAuthorizedModules(){    
+       if(authorizedmodules == null){
+	     authorizedmodules = new ArrayList();
+	     
+	     for(int i=0; i < AvailableAccessRules.VIEWLOGACCESSRULES.length; i++){
+	     	 try{
+	     	 	this.authorizationsession.isAuthorizedNoLog(administrator,AvailableAccessRules.VIEWLOGACCESSRULES[i]);
+				authorizedmodules.add(new Integer(i));
+	         }catch(AuthorizationDeniedException ade){}  
+	     }	             
+      }    
+       return authorizedmodules;
+    }
  
     
     
     // Private fields.
     private String querystring = null;
     private String caidstring = null;
+    private Collection authorizedmodules = null;
     private IAuthorizationSessionLocal authorizationsession;
     private Admin administrator;
 

@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
  * A class used as an interface between Apply jsp pages and ejbca functions.
  *
  * @author Philip Vendil
- * @version $Id: ApplyBean.java,v 1.6 2003-08-19 11:50:34 anatom Exp $
+ * @version $Id: ApplyBean.java,v 1.7 2003-10-01 11:12:15 herrvendil Exp $
  */
 public class ApplyBean {
     /**
@@ -69,20 +69,52 @@ public class ApplyBean {
      */
     public int getTokenType(String username) throws Exception {
         int returnval = 0;
-        UserAdminData userdata = null;
         IUserAdminSessionRemote useradminsession = useradminhome.create();
 
-        try {
-            userdata = useradminsession.findUser(administrator, username);
-        } catch (FinderException fe) {
+		if(!username.equals(this.username) || this.useradmindata == null){        
+		  try {
+			this.useradmindata = useradminsession.findUser(administrator, username);
+		  } catch (FinderException fe) {
+		  }
+		}
+		
+        if (useradmindata != null) {
+            returnval = useradmindata.getTokenType();
         }
-
-        if (userdata != null) {
-            returnval = userdata.getTokenType();
-        }
-
+		this.username = username;
+		
         return returnval;
     }
+
+	/**
+	 * Method that returns a users tokentype defined in SecConst, if 0 is returned user couldn't be
+	 * found i database.
+	 *
+	 * @param username the user whose tokentype should be returned
+	 *
+	 * @return caid of user.
+	 *
+	 * @see se.anatom.ejbca.SecConst
+	 */
+	public int getCAId(String username) throws Exception {
+		int returnval = 0;		
+		IUserAdminSessionRemote useradminsession = useradminhome.create();
+
+		if(!username.equals(this.username) || this.useradmindata == null){        
+		  try {
+			this.useradmindata = useradminsession.findUser(administrator, username);
+		  } catch (FinderException fe) {
+		  }
+		}
+		
+		if (useradmindata != null) {
+			returnval = useradmindata.getCAId();
+		}
+		this.username = username;
+		
+		return returnval;
+	}
+
 
     /**
      * Method that returns a bitlengths available for the user. Returns null if user couldn't be
@@ -93,24 +125,26 @@ public class ApplyBean {
      * @return array of available bit lengths
      */
     public int[] availableBitLengths(String username) throws Exception {
-        int[] returnval = null;
-        UserAdminData userdata = null;
+        int[] returnval = null;        
         IUserAdminSessionRemote useradminsession = useradminhome.create();
 
-        try {
-            userdata = useradminsession.findUser(administrator, username);
-        } catch (FinderException fe) {
-        }
+        if(!username.equals(this.username) || this.useradmindata == null){        
+          try {
+            this.useradmindata = useradminsession.findUser(administrator, username);
+          } catch (FinderException fe) {
+          }
+        }  
 
-        if (userdata != null) {
+        if (useradmindata != null) {
             ICertificateStoreSessionRemote certstoresession = certificatesessionhome.create();
-            int certprofile = userdata.getCertificateProfileId();
+            int certprofile = useradmindata.getCertificateProfileId();
 
             if (certprofile != SecConst.PROFILE_NO_PROFILE) {
                 returnval = certstoresession.getCertificateProfile(administrator, certprofile)
                                             .getAvailableBitLengths();
             }
         }
+        this.username = username;
 
         return returnval;
     }
@@ -121,4 +155,6 @@ public class ApplyBean {
     private ICertificateStoreSessionHome certificatesessionhome;
     private boolean initialized;
     private Admin administrator;
+    private String username = "";
+    private UserAdminData useradmindata = null;
 }

@@ -44,7 +44,7 @@ import se.anatom.ejbca.util.CertTools;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.31 2003-09-04 14:38:10 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.32 2003-10-01 11:12:14 herrvendil Exp $
  */
 public class EjbcaWebBean {
 
@@ -537,7 +537,7 @@ public class EjbcaWebBean {
     }
   
     public Collection getAuthorizedCAIds(){;
-      return authorizedatahandler.getAuthorizedCAIds();
+      return this.informationmemory.getAuthorizedCAIds();
     }
     
     public void changeAdminPreference(AdminPreference ap) throws Exception{

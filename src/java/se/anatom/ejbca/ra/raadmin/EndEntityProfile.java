@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.13 2003-09-04 09:29:36 herrvendil Exp $
+ * @version $Id: EndEntityProfile.java,v 1.14 2003-10-01 11:12:10 herrvendil Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -126,7 +126,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         setRequired(DEFAULTCA,0,true);
         setRequired(AVAILCAS,0,true);
         setValue(DEFAULTCERTPROFILE,0,"1");
-        setValue(AVAILCERTPROFILES,0,"1;2;3");
+        setValue(AVAILCERTPROFILES,0,"1");
         setValue(DEFKEYSTORE,0, "" + SecConst.TOKEN_SOFT_BROWSERGEN);
         setValue(AVAILKEYSTORE,0, SecConst.TOKEN_SOFT_BROWSERGEN + ";" + SecConst.TOKEN_SOFT_P12 +  ";" + SecConst.TOKEN_SOFT_JKS + ";" + SecConst.TOKEN_SOFT_PEM);
         setValue(AVAILCAS,0, Integer.toString(SecConst.ALLCAS));

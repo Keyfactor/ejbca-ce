@@ -119,7 +119,7 @@
 %><%
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "log_functionality/view_log");  
-                                            logbean.initialize(request,ejbcawebbean, ejbcawebbean.getInformationMemory().getCAIdToNameMap());
+                                            logbean.initialize(request,ejbcawebbean);
                                             
 
   final String VIEWCERT_LINK            = "/" + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";

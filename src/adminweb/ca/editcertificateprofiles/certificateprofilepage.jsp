@@ -1,8 +1,17 @@
 <%               
   CertificateProfile certificateprofiledata = cabean.getCertificateProfile(certprofile.trim());
+
  
-  String[] TYPE_NAMES = {"ENDENTITY", "SUBCA", "ROOTCA"};
-  int[] TYPE_IDS = {SecConst.CERTTYPE_ENDENTITY,SecConst.CERTTYPE_SUBCA , SecConst.CERTTYPE_ROOTCA};
+  String[] SUPERADMIN_TYPE_NAMES = {"ENDENTITY", "SUBCA", "ROOTCA"};
+  int[] SUPERADMIN_TYPE_IDS = {SecConst.CERTTYPE_ENDENTITY,SecConst.CERTTYPE_SUBCA , SecConst.CERTTYPE_ROOTCA};
+   
+  String[] TYPE_NAMES = {"ENDENTITY"};
+  int[] TYPE_IDS = {SecConst.CERTTYPE_ENDENTITY};
+  if(issuperadministrator){
+    TYPE_NAMES = SUPERADMIN_TYPE_NAMES;
+    TYPE_IDS = SUPERADMIN_TYPE_IDS;
+  }
+
 
   Collection authorizedcas = cabean.getAuthorizedCAs();
   HashMap caidtonamemap = cabean.getCAIdToNameMap();
@@ -407,7 +416,7 @@ function checkallfields(){
       <td width="50%"> 
         <select name="<%=SELECT_TYPE%>" size="1" >
            <%  int type = certificateprofiledata.getType();
-                for(int i=0; i<certificateprofiledata.NUMBER_OF_TYPES;i++){ %>
+                for(int i=0; i<TYPE_IDS.length;i++){ %>
            <option  value="<%= TYPE_IDS[i] %>" 
               <%  if(TYPE_IDS[i] == type)
                     out.write(" selected ");

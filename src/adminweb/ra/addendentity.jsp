@@ -88,7 +88,7 @@
   int profileid = 0;
 
 
-  profilenames                  = (String[]) rabean.getCreateAuthorizedEndEntityProfileNames().keySet().toArray(new String[0]);
+  profilenames                  = (String[]) ejbcawebbean.getInformationMemory().getCreateAuthorizedEndEntityProfileNames().keySet().toArray(new String[0]);
 
 
   if(profilenames== null || profilenames.length == 0) 
@@ -381,52 +381,55 @@
          }
       }
     }
+
+    int numberofrows = ejbcawebbean.getEntriesPerPage();
+    UserView[] addedusers = rabean.getAddedUsers(numberofrows);
+    int row = 0;
+    int tabindex = 0;
   
     if(!noprofiles){
       if(!useoldprofile)
         profile = rabean.getEndEntityProfile(profileid);
       else
         profile = oldprofile;
-    } 
+    }else
+        profile = new EndEntityProfile();
 
-    int numberofrows = ejbcawebbean.getEntriesPerPage();
-    UserView[] addedusers = rabean.getAddedUsers(numberofrows);
-    int row = 0;
-    int tabindex = 0;
 
-   String[] tokentexts = RAInterfaceBean.tokentexts;
-   int[] tokenids = RAInterfaceBean.tokenids;
 
-   if(globalconfiguration.getIssueHardwareTokens()){
-      AvailableHardToken[] availabletokens = tokenbean.getAvailableHardTokens();
+     String[] tokentexts = RAInterfaceBean.tokentexts;
+     int[] tokenids = RAInterfaceBean.tokenids;
 
-      tokentexts = new String[RAInterfaceBean.tokentexts.length + availabletokens.length];
-      tokenids   = new int[tokentexts.length];
-      for(int i=0; i < RAInterfaceBean.tokentexts.length; i++){
-        tokentexts[i]= RAInterfaceBean.tokentexts[i];
-        tokenids[i] = RAInterfaceBean.tokenids[i];
+     if(globalconfiguration.getIssueHardwareTokens()){
+        AvailableHardToken[] availabletokens = tokenbean.getAvailableHardTokens();
+
+        tokentexts = new String[RAInterfaceBean.tokentexts.length + availabletokens.length];
+        tokenids   = new int[tokentexts.length];
+        for(int i=0; i < RAInterfaceBean.tokentexts.length; i++){
+          tokentexts[i]= RAInterfaceBean.tokentexts[i];
+          tokenids[i] = RAInterfaceBean.tokenids[i];
+        }
+        for(int i=0; i < availabletokens.length;i++){
+          tokentexts[i+RAInterfaceBean.tokentexts.length]= availabletokens[i].getName();
+          tokenids[i+RAInterfaceBean.tokentexts.length] = Integer.parseInt(availabletokens[i].getId());         
+        }
+     }
+
+      String[] availabletokens = profile.getValue(EndEntityProfile.AVAILKEYSTORE, 0).split(EndEntityProfile.SPLITCHAR);
+      String[] availablehardtokenissuers = profile.getValue(EndEntityProfile.AVAILTOKENISSUER, 0).split(EndEntityProfile.SPLITCHAR);
+      if(lastselectedhardtokenissuer==-1){
+        String value = profile.getValue(EndEntityProfile.DEFAULTTOKENISSUER,0);
+        if(value != null && !value.equals(""))
+          lastselectedhardtokenissuer = Integer.parseInt(value);
       }
-      for(int i=0; i < availabletokens.length;i++){
-        tokentexts[i+RAInterfaceBean.tokentexts.length]= availabletokens[i].getName();
-        tokenids[i+RAInterfaceBean.tokentexts.length] = Integer.parseInt(availabletokens[i].getId());         
-      }
-   }
+      ArrayList[] tokenissuers = null;
 
-    String[] availabletokens = profile.getValue(EndEntityProfile.AVAILKEYSTORE, 0).split(EndEntityProfile.SPLITCHAR);
-    String[] availablehardtokenissuers = profile.getValue(EndEntityProfile.AVAILTOKENISSUER, 0).split(EndEntityProfile.SPLITCHAR);
-    if(lastselectedhardtokenissuer==-1){
-      String value = profile.getValue(EndEntityProfile.DEFAULTTOKENISSUER,0);
-      if(value != null && !value.equals(""))
-        lastselectedhardtokenissuer = Integer.parseInt(value);
-    }
-    ArrayList[] tokenissuers = null;
-
-    usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && profile.getUse(EndEntityProfile.KEYRECOVERABLE,0);
-    usehardtokenissuers = globalconfiguration.getIssueHardwareTokens() && profile.getUse(EndEntityProfile.AVAILTOKENISSUER,0);
-    if(usehardtokenissuers){       
-       tokenissuers = new ArrayList[availabletokens.length];
-       for(int i=0;i < availabletokens.length;i++){
-         if(Integer.parseInt(availabletokens[i]) > SecConst.TOKEN_SOFT){
+      usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && profile.getUse(EndEntityProfile.KEYRECOVERABLE,0);
+      usehardtokenissuers = globalconfiguration.getIssueHardwareTokens() && profile.getUse(EndEntityProfile.AVAILTOKENISSUER,0);
+      if(usehardtokenissuers){       
+        tokenissuers = new ArrayList[availabletokens.length];
+        for(int i=0;i < availabletokens.length;i++){
+          if(Integer.parseInt(availabletokens[i]) > SecConst.TOKEN_SOFT){
             tokenissuers[i] = new ArrayList();
             for(int j=0; j < availablehardtokenissuers.length; j++){
               HardTokenIssuerData issuerdata = tokenbean.getHardTokenIssuerData(Integer.parseInt(availablehardtokenissuers[j]));
@@ -440,18 +443,19 @@
             }
           }  
         } 
-    }
+      }
 
-    HashMap availablecas = null;
-    Collection authcas = null;
+      HashMap availablecas = null;
+      Collection authcas = null;
 
-    if(issuperadministrator)
-      if(profileid == SecConst.EMPTY_ENDENTITYPROFILE)
-        authcas = ejbcawebbean.getAuthorizedCAIds();
+      if(issuperadministrator)
+        if(profileid == SecConst.EMPTY_ENDENTITYPROFILE)
+          authcas = ejbcawebbean.getAuthorizedCAIds();
+        else
+          authcas = profile.getAvailableCAs();
       else
-        authcas = profile.getAvailableCAs();
-    else
-      availablecas = ejbcawebbean.getInformationMemory().getEndEntityAvailableCAs(profileid);
+        availablecas = ejbcawebbean.getInformationMemory().getEndEntityAvailableCAs(profileid);
+  
 %>
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>

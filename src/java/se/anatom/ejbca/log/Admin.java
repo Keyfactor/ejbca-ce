@@ -10,6 +10,7 @@ import java.security.cert.X509Certificate;
 
 import se.anatom.ejbca.authorization.AdminEntity;
 import se.anatom.ejbca.authorization.AdminInformation;
+import se.anatom.ejbca.util.CertTools;
 /**
  *  This is a class containing information about the administrator or admin preforming the event. 
  *  Data contained in the class is preferbly
@@ -41,7 +42,7 @@ public class Admin implements java.io.Serializable {
     // Public Constructors
     public Admin(X509Certificate certificate){
       this.type=TYPE_CLIENTCERT_USER;
-      this.data= certificate.getSerialNumber().toString(16) + ", " + certificate.getIssuerDN().toString();        
+      this.data= certificate.getSerialNumber().toString(16) + ", " + CertTools.getIssuerDN(certificate);        
       this.certificate = certificate;
     }
     
@@ -81,7 +82,7 @@ public class Admin implements java.io.Serializable {
     public int getCAId(){
       int returnval = ILogSessionLocal.INTERNALCAID;
       if(type==TYPE_CLIENTCERT_USER)
-        returnval = this.certificate.getIssuerDN().toString().hashCode();
+        returnval = CertTools.getIssuerDN(certificate).hashCode();
       return returnval;  
     }
     

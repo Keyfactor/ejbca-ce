@@ -44,14 +44,13 @@ import se.anatom.ejbca.util.P12toPEM;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.40 2003-09-09 09:59:03 herrvendil Exp $
+ * @version $Id: BatchMakeP12.java,v 1.41 2003-10-01 11:12:15 herrvendil Exp $
  */
 public class BatchMakeP12 {
     /** For logging */
     private static Logger log = Logger.getLogger(BatchMakeP12.class);
 
-// TODO Remove
-   private static KeyPair rsaKeys = null; 
+
 
     /** Where created P12-files are stored, default username.p12 */
     private String mainStoreDir = "";
@@ -111,10 +110,7 @@ public class BatchMakeP12 {
           keyrecoveryhome = (IKeyRecoverySessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IKeyRecoverySessionHome.class);
         }
   
-    // TODO Remove
-       try{	
-		rsaKeys = KeyTools.genKeys(1024);
-       }catch(Exception e){}
+
        
         log.debug("<BatchMakeP12:");
     }
@@ -304,9 +300,8 @@ public class BatchMakeP12 {
             // Recover Keys
            IKeyRecoverySessionRemote keyrecoverysession = keyrecoveryhome.create();
            rsaKeys = ((KeyRecoveryData) keyrecoverysession.keyRecovery(administrator, data.getUsername())).getKeyPair();
-         }else{
-           // Generate keys // TODO remove comment          
-           // rsaKeys = KeyTools.genKeys(1024);
+         }else{                    
+           rsaKeys = KeyTools.genKeys(1024);
          }
          // Get certificate for user and create P12
          createUser(data.getUsername(), data.getPassword(), data.getCAId(), rsaKeys, createJKS, createPEM, data.getKeyRecoverable());

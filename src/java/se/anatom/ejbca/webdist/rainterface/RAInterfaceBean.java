@@ -6,7 +6,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
 
@@ -50,7 +49,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.41 2003-09-27 09:05:55 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.42 2003-10-01 11:12:12 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -253,16 +252,7 @@ public class RAInterfaceBean {
 
     /* Method used to check if user exists */
     public boolean userExist(String username) throws Exception{
-       log.debug(">userExist(" + username + ")");
-       UserAdminData user =null;
-       try{
-         user = adminsession.findUser(administrator, username);
-       }catch(AuthorizationDeniedException e){
-       }
-
-       boolean result = (user != null);
-       log.debug("<userExist(" + username + "): " + result);
-       return result;
+       return adminsession.existsUser(administrator, username);
     }
 
     /* Method to retrieve a user from the database without inserting it into users data, used by 'viewuser.jsp' and page*/
@@ -452,32 +442,6 @@ public class RAInterfaceBean {
       return this.informationmemory.getEndEntityProfileNameProxy().getEndEntityProfileName(profileid);
     }
 
-    public TreeMap getCreateAuthorizedEndEntityProfileNames()  throws Exception{
-      TreeMap returnval = new TreeMap();
-      HashMap profilemap = informationmemory.getEndEntityProfileIdToNameMap();
-      Iterator iter = profilemap.keySet().iterator();
-      while(iter.hasNext()){
-        Integer next = ((Integer) iter.next());  
-        if(this.endEntityAuthorization(administrator,next.intValue(), AvailableAccessRules.CREATE_RIGHTS, false)) 
-          returnval.put(profilemap.get(next), next);  
-      }
-      
-      return returnval;
-    }
-
-    public TreeMap getEditAuthorizedEndEntityProfileNames()  throws Exception{
-      TreeMap returnval = new TreeMap();
-      HashMap profilemap = informationmemory.getEndEntityProfileIdToNameMap();
-      Iterator iter = profilemap.keySet().iterator();
-      while(iter.hasNext()){
-        Integer next = ((Integer) iter.next());  
-        if(this.endEntityAuthorization(administrator,next.intValue(), AvailableAccessRules.EDIT_RIGHTS, false)) 
-          returnval.put(profilemap.get(next), next);  
-      }
-      
-      return returnval;
-    }
-
     public int getEndEntityProfileId(String profilename){
       return profiles.getEndEntityProfileId(profilename);
     }
@@ -549,9 +513,8 @@ public class RAInterfaceBean {
           RevokedInfoView revokedinfo = null;
           X509Certificate cert = (X509Certificate) j.next();
           RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
-          if ( (revinfo != null) && (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) ) {
-              revokedinfo = new RevokedInfoView(revinfo);
-          }
+          if(revinfo != null)
+            revokedinfo = new RevokedInfoView(revinfo);
            certificates[i] = new CertificateView(cert, revokedinfo, username);
         }
       }
@@ -572,10 +535,9 @@ public class RAInterfaceBean {
           RevokedInfoView revokedinfo = null;
           X509Certificate cert = (X509Certificate) j.next();
           RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
-          if ( (revinfo != null) && (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) ) {
-              revokedinfo = new RevokedInfoView(revinfo);
-          }
-          certificates[i] = new CertificateView(cert, revokedinfo, username);
+          if(revinfo != null)
+            revokedinfo = new RevokedInfoView(revinfo);
+           certificates[i] = new CertificateView(cert, revokedinfo, username);
         }
       }
       else{
@@ -611,9 +573,8 @@ public class RAInterfaceBean {
         while(j.hasNext()){
           X509Certificate cert = (X509Certificate) j.next();
           RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
-          if ( (revinfo == null) || (revinfo.getReason() == RevokedCertInfo.NOT_REVOKED) ) {
-              allrevoked = false;
-          }
+          if(revinfo == null)
+            allrevoked = false;
         }
       }
 
@@ -635,11 +596,12 @@ public class RAInterfaceBean {
         UserAdminData user = adminsession.findUser(administrator, username);
 
         RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
-        if ( (revinfo != null) && (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) ) {
-            revokedinfo = new RevokedInfoView(revinfo);
-        }        
+        if(revinfo != null)
+          revokedinfo = new RevokedInfoView(revinfo);
+        
         certificates = new CertificateView[1];
         certificates[0] = new CertificateView(cert, revokedinfo, username);
+              
       }
       else{
         certificates = null;
@@ -719,7 +681,7 @@ public class RAInterfaceBean {
 
     public String[] getCertificateProfileNames(){
       String[] dummy = {""};
-      Collection certprofilenames = (Collection) this.informationmemory.getAuthorizedCertificateProfileNames().keySet();
+      Collection certprofilenames = (Collection) this.informationmemory.getAuthorizedEndEntityCertificateProfileNames().keySet();
       if(certprofilenames == null)
         return new String[0];
       else
@@ -779,10 +741,9 @@ public class RAInterfaceBean {
       String resource= null;
       String adm = null;
       
-      // TODO REMOVE
+      // TODO FIX
       if(admin.getAdminInformation().isSpecialUser()){
         adm = Integer.toString(admin.getAdminInformation().getSpecialUser());
-        // Temporary VERY UGLY
         return true;
       }
       try{

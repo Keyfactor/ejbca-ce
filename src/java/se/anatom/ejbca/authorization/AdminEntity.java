@@ -5,6 +5,7 @@ import java.security.cert.X509Certificate;
 import java.util.regex.Pattern;
 
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
+import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.StringTools;
 
 /**
@@ -15,7 +16,7 @@ import se.anatom.ejbca.util.StringTools;
  * Matchtype constants tells under which contitions the match shall be performed.
  *
  * @author  Philip Vendil
- * @version $Id: AdminEntity.java,v 1.1 2003-09-04 14:26:37 herrvendil Exp $
+ * @version $Id: AdminEntity.java,v 1.2 2003-10-01 11:12:06 herrvendil Exp $
  */
 public class AdminEntity implements Serializable, Comparable {
     // Special Users. (Constants cannot have 0 value).
@@ -79,13 +80,16 @@ public class AdminEntity implements Serializable, Comparable {
       else{
         X509Certificate certificate = admininformation.getX509Certificate();
         String certstring = certificate.getSubjectDN().toString();
-        int admincaid = certificate.getIssuerDN().toString().hashCode();
+        int admincaid =  CertTools.getIssuerDN(certificate).hashCode();  //  certificate.getIssuerDN().toString().hashCode();
+        
         //String serialnumber = certificate.getSerialNumber().toString(16);
         certstring = serialPattern.matcher(certstring).replaceAll("SN=");
 
         int parameter;
         int size=0;
         String[] clientstrings=null;
+
+       System.out.println("AdminEntity, match : caid " + caid + " admincaid " + admincaid);
 
         // First check that issuers match.
         if(this.caid == admincaid){

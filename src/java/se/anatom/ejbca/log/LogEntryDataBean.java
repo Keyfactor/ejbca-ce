@@ -22,7 +22,7 @@ import se.anatom.ejbca.util.StringTools;
  *  comment an optional comment of the event.
  * </pre>
  *
- * @version $Id: LogEntryDataBean.java,v 1.8 2003-09-04 08:05:03 herrvendil Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.9 2003-10-01 11:12:07 herrvendil Exp $
  **/
 
 public abstract class LogEntryDataBean extends BaseEntityBean {
@@ -89,6 +89,9 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
         setCertificateSNR(certificatesnr);
         setEvent(event);
         setComment(comment);
+        
+        System.out.println("LogEntyDataBean : create : id =" + id + ", caid = " + caid + ", module = " + module + ", time= " + time.getTime());
+        
         return id;
     }
 

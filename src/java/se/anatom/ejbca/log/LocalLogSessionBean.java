@@ -21,6 +21,7 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.BaseSessionBean;
+import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.query.IllegalQueryException;
 import se.anatom.ejbca.util.query.Query;
 
@@ -29,7 +30,7 @@ import se.anatom.ejbca.util.query.Query;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalLogSessionBean.java,v 1.15 2003-09-04 08:05:03 herrvendil Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.16 2003-10-01 11:12:07 herrvendil Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean  {
 
@@ -127,21 +128,24 @@ public class LocalLogSessionBean extends BaseSessionBean  {
      */
     public void log(Admin admin, int caid, int module,  Date time, String username, X509Certificate certificate, int event, String comment){
       try{
-        LogConfiguration logconfiguration = loadLogConfiguration(caid);  
+        LogConfiguration logconfiguration = loadLogConfiguration(caid);
+        
+		System.out.println("LocalLogSessionBean : log  : caid = " + caid + " Use logdb" + logconfiguration.useLogDB());
+          
         // Get logging configuration
         if(logconfiguration.logEvent(event)){
           if(logconfiguration.useLogDB()){
             try{
                // Log to the local database.
                if(certificate != null){
-                 String uniquecertificatesnr =certificate.getSerialNumber().toString(16) + "," + certificate.getIssuerDN().toString();   
-                 logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username,
+                 String uniquecertificatesnr =certificate.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(certificate);   
+                 logentryhome.create(this.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username,
                                      uniquecertificatesnr, event, comment);
                }else
-                 logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username,
+                 logentryhome.create(this.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username,
                                      null, event, comment);
             }catch(javax.ejb.DuplicateKeyException dke){
-              logconfigurationdata.getAndIncrementRowCount();
+             this.getAndIncrementRowCount();
             }
           }
           if(logconfiguration.useExternalLogDevices()){
@@ -164,7 +168,7 @@ public class LocalLogSessionBean extends BaseSessionBean  {
      */
     
     public void log(Admin admin, X509Certificate caid, int module,  Date time, String username, X509Certificate certificate, int event, String comment){
-      log(admin, caid.getIssuerDN().toString().hashCode(), module, time, username, certificate, event, comment);
+       log(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment);
     } // log
 
     /**
@@ -175,7 +179,9 @@ public class LocalLogSessionBean extends BaseSessionBean  {
     */
     public void log(Admin admin, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception){
       try{
-        LogConfiguration logconfiguration = loadLogConfiguration(caid);    
+        LogConfiguration logconfiguration = loadLogConfiguration(caid);   
+         
+		System.out.println("LocalLogSessionBean : log  : caid = " + caid + " Use logdb" + logconfiguration.useLogDB());
         // Get logging configuration
         if(logconfiguration.logEvent(event)){
           if(logconfiguration.useLogDB()){
@@ -183,13 +189,13 @@ public class LocalLogSessionBean extends BaseSessionBean  {
                // Log to the local database.
                if(certificate != null){
                  String uniquecertificatesnr = certificate.getSerialNumber().toString(16) + "," + certificate.getIssuerDN().toString();                      
-                 logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username,
+                 logentryhome.create(this.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username,
                                      uniquecertificatesnr, event, comment);
                }else
-                 logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username,
+                 logentryhome.create(this.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username,
                                      null, event, comment);
-            }catch(javax.ejb.DuplicateKeyException dke){
-              logconfigurationdata.getAndIncrementRowCount();
+            }catch(javax.ejb.DuplicateKeyException dke){	
+              this.getAndIncrementRowCount();
             }
           }
           if(logconfiguration.useExternalLogDevices()){
@@ -210,7 +216,7 @@ public class LocalLogSessionBean extends BaseSessionBean  {
      * given certificate.
      */
     public void log(Admin admin, X509Certificate caid, int module,  Date time, String username, X509Certificate certificate, int event, String comment, Exception exception){
-      log(admin, caid.getIssuerDN().toString().hashCode(), module, time, username, certificate, event, comment, exception);
+      log(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment, exception);
     } // log    
     
     /**
@@ -240,13 +246,19 @@ public class LocalLogSessionBean extends BaseSessionBean  {
         try{
            // Construct SQL query.
             con = getConnection();
-            if(viewlogprivileges.equals(""))
-              ps = con.prepareStatement("select " + LOGENTRYDATA_COL + " from LogEntryData where ( " + query.getQueryString() + 
-                                         ") and (" + capriviledges + ")");
-            else
+            if(viewlogprivileges.equals("")){            
+				System.out.println("LocalLogSessionBean : query: select " + LOGENTRYDATA_COL + " from LogEntryData where (" + query.getQueryString() + ") and (" 
+				+ viewlogprivileges + ") and (" + capriviledges + ")");
+                ps = con.prepareStatement("select " + LOGENTRYDATA_COL + " from LogEntryData where ( " + query.getQueryString() + 
+                                    ") and (" + capriviledges + ")");
+			                                         
+            }else{
+              System.out.println("LocalLogSessionBean : query: select " + LOGENTRYDATA_COL + " from LogEntryData where (" + query.getQueryString() + ") and (" 
+			  + viewlogprivileges + ") and (" + capriviledges + ")");	            
               ps = con.prepareStatement("select " + LOGENTRYDATA_COL + " from LogEntryData where (" + query.getQueryString() + ") and (" 
                                          + viewlogprivileges + ") and (" + capriviledges + ")");
-
+                                       
+            }
             //ps.setFetchDirection(ResultSet.FETCH_REVERSE);
             ps.setFetchSize(MAXIMUM_QUERY_ROWCOUNT +1 );
             // Execute query.
@@ -258,6 +270,7 @@ public class LocalLogSessionBean extends BaseSessionBean  {
               returnval.add(data);
             }
             debug("<query()");
+			System.out.println("LocalLogSessionBean : query: result size : " + returnval.size());
             return returnval;
 
         }catch(Exception e){
@@ -280,14 +293,15 @@ public class LocalLogSessionBean extends BaseSessionBean  {
      */
     public LogConfiguration loadLogConfiguration(int caid){
         // Check if log configuration exists, else create one.
-      LogConfiguration logconfiguration = null;  
+      LogConfiguration logconfiguration = null;
+      LogConfigurationDataLocal logconfigdata = null;  
       try{
-        logconfigurationdata = logconfigurationhome.findByPrimaryKey(new Integer(caid));
-        logconfiguration = logconfigurationdata.loadLogConfiguration();
+		logconfigdata = logconfigurationhome.findByPrimaryKey(new Integer(caid));
+        logconfiguration = logconfigdata.loadLogConfiguration();
       }catch(FinderException e){
          try{
            logconfiguration = new LogConfiguration();
-           logconfigurationdata = logconfigurationhome.create(new Integer(caid),logconfiguration);
+		   logconfigdata = logconfigurationhome.create(new Integer(caid),logconfiguration);
          }catch(CreateException f){
            throw new EJBException(f);
          }
@@ -315,5 +329,22 @@ public class LocalLogSessionBean extends BaseSessionBean  {
          throw new EJBException(e);
       }
     } // saveLogConfiguration
+
+	private Integer getAndIncrementRowCount(){
+		if(this.logconfigurationdata == null){
+			try{
+				logconfigurationdata = logconfigurationhome.findByPrimaryKey(new Integer(0));
+			}catch(FinderException e){
+			   try{
+				 LogConfiguration logconfiguration = new LogConfiguration();
+				 this.logconfigurationdata = logconfigurationhome.create(new Integer(0),logconfiguration);
+			   }catch(CreateException f){
+				 throw new EJBException(f);
+			   }			
+		   }
+		}
+		
+		return this.logconfigurationdata.getAndIncrementRowCount();
+	}
 
 } // LocalLogSessionBean

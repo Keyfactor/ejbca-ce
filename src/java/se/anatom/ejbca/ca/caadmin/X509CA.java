@@ -54,7 +54,7 @@ import se.anatom.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.3 2003-09-04 10:54:33 anatom Exp $
+ * @version $Id: X509CA.java,v 1.4 2003-10-01 11:12:14 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -70,7 +70,7 @@ public class X509CA extends CA implements Serializable {
     protected static final String AUTHORITYKEYIDENTIFIERCRITICAL = "authoritykeyidentifiercritical";
     protected static final String USECRLNUMBER                   = "usecrlnumber";
     protected static final String CRLNUMBERCRITICAL              = "crlnumbercritical";
-    protected static final String FINISHUSER                     = "finishuser";
+
       
     // Public Methods
     /** Creates a new instance of CA, this constuctor should be used when a new CA is created */
@@ -119,22 +119,16 @@ public class X509CA extends CA implements Serializable {
     
     public boolean  getCRLNumberCritical(){return ((Boolean)data.get(CRLNUMBERCRITICAL)).booleanValue();}
     public void setCRLNumberCritical(boolean crlnumbercritical) {data.put(CRLNUMBERCRITICAL, new Boolean(crlnumbercritical));}
-
-    public boolean  getFinishUser(){return ((Boolean)data.get(FINISHUSER)).booleanValue();}
-    public void setFinishUser(boolean finishuser) {data.put(FINISHUSER, new Boolean(finishuser));}    
-    
     
     
     public void updateCA(CAInfo cainfo){
       super.updateCA(cainfo); 
       X509CAInfo info = (X509CAInfo) cainfo;
 
-      setCRLPeriod(info.getCRLPeriod());
       setUseAuthorityKeyIdentifier(info.getUseAuthorityKeyIdentifier());
       setAuthorityKeyIdentifierCritical(info.getAuthorityKeyIdentifierCritical()); 
       setUseCRLNumber(info.getUseCRLNumber());
       setCRLNumberCritical(info.getCRLNumberCritical());
-      setFinishUser(info.getFinishUser());
     }
     
     public CAInfo getCAInfo() throws Exception{                

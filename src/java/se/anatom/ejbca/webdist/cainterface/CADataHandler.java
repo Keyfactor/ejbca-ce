@@ -95,7 +95,7 @@ public class CADataHandler implements Serializable {
     CAInfoView cainfoview = null; 
     CAInfo cainfo = caadminsession.getCAInfo(administrator, name);
     if(cainfo != null)
-      cainfoview = new CAInfoView(cainfo, ejbcawebbean);
+      cainfoview = new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap());
     
     return cainfoview;
   }
@@ -108,7 +108,7 @@ public class CADataHandler implements Serializable {
     CAInfoView cainfoview = null; 
     CAInfo cainfo = caadminsession.getCAInfo(administrator, caid);
     if(cainfo != null)
-      cainfoview = new CAInfoView(cainfo, ejbcawebbean);
+      cainfoview = new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap());
     
     return cainfoview;  
   }

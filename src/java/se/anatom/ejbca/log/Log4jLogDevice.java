@@ -1,6 +1,7 @@
 package se.anatom.ejbca.log;
 
 import java.security.cert.X509Certificate;
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.Properties;
 
@@ -10,7 +11,7 @@ import org.apache.log4j.Logger;
 /**
  * Implements a log device using Log4j, implementes the Singleton pattern.
  *
- * @version $Id: Log4jLogDevice.java,v 1.6 2003-09-04 08:05:04 herrvendil Exp $
+ * @version $Id: Log4jLogDevice.java,v 1.7 2003-10-01 11:12:07 herrvendil Exp $
  */
 public class Log4jLogDevice implements ILogDevice, java.io.Serializable {
 
@@ -73,12 +74,12 @@ public class Log4jLogDevice implements ILogDevice, java.io.Serializable {
                
        if(event < LogEntry.EVENT_ERROR_BOUNDRARY){
          // Do Log4j Informational logging.             
-         log.info(time.toGMTString() + ", CAId : " + caid + ", " + LogEntry.MODULETEXTS[module] +  ", " + LogEntry.EVENTNAMES_INFO[event] + ", Administrator : " + 
+         log.info(DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).format(time) + ", CAId : " + caid + ", " + LogEntry.MODULETEXTS[module] +  ", " + LogEntry.EVENTNAMES_INFO[event] + ", Administrator : " + 
                   admin + ", User : " + user + ", Certificate : " + cert + ", Comment : " + comment);  
        }
        else{
          // Do Log4j error logging.   
-         log.error(time.toGMTString() + ", CAId : " + caid + ", " + LogEntry.MODULETEXTS[module] + ", " + LogEntry.EVENTNAMES_ERROR[event - LogEntry.EVENT_ERROR_BOUNDRARY] + ", Administrator : " + 
+         log.error(DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).format(time) + ", CAId : " + caid + ", " + LogEntry.MODULETEXTS[module] + ", " + LogEntry.EVENTNAMES_ERROR[event - LogEntry.EVENT_ERROR_BOUNDRARY] + ", Administrator : " + 
                    admin + ", User : " + user + ", Certificate : " + cert + ", Comment : " + comment);  
        }    
     }

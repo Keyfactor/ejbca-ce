@@ -45,7 +45,7 @@
   final String THIS_FILENAME                          =  "logconfiguration.jsp";
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/log_functionality/edit_log_configuration");                                              
-                                            logbean.initialize(request,ejbcawebbean, ejbcawebbean.getInformationMemory().getCAIdToNameMap());
+                                            logbean.initialize(request,ejbcawebbean);
 
   String forwardurl = "/" + globalconfiguration .getMainFilename();
  

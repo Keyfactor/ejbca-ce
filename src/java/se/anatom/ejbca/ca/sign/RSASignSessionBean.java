@@ -63,7 +63,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.102 2003-09-14 19:39:29 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.103 2003-10-01 11:12:14 herrvendil Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -201,7 +201,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         debug(">createPKCS7()");
         byte[] returnval = null; 
         
-        Integer caid = new Integer(((X509Certificate) cert).getSubjectDN().toString().hashCode());
+        Integer caid = new Integer(CertTools.getIssuerDN((X509Certificate) cert).hashCode());
         
          // get CA
          CADataLocal cadata = null; 

@@ -2,7 +2,6 @@ package se.anatom.ejbca.webdist.webconfiguration;
 
 import java.security.cert.X509Certificate;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 
 import se.anatom.ejbca.authorization.AccessRule;
@@ -19,16 +18,14 @@ import se.anatom.ejbca.log.Admin;
  * A class handling the authorization data. 
  *
  * @author  Philip Vendil
- * @version $Id: AuthorizationDataHandler.java,v 1.15 2003-09-04 14:38:10 herrvendil Exp $
+ * @version $Id: AuthorizationDataHandler.java,v 1.16 2003-10-01 11:12:14 herrvendil Exp $
  */
 public class AuthorizationDataHandler {
 
     /** Creates a new instance of ProfileDataHandler */
-    public AuthorizationDataHandler(Admin administrator, InformationMemory informationmemory, IAuthorizationSessionLocal authorizationsession){
-       
+    public AuthorizationDataHandler(Admin administrator, InformationMemory informationmemory, IAuthorizationSessionLocal authorizationsession){       
        this.authorizationsession = authorizationsession;
-       
-       authorizedaccessrules = new HashSet(authorizationsession.getAuthorizedAvailableAccessRules(administrator));
+              
        this.administrator = administrator;
        this.informationmemory = informationmemory;
    }
@@ -150,20 +147,9 @@ public class AuthorizationDataHandler {
      * @returns a Collection of String with available access rules.
      */
     public Collection getAvailableAccessRules(){
-      return authorizedaccessrules;
+      return this.informationmemory.getAuthorizedAccessRules();
     }
     
-    /**
-     * Method used to return an Collection of Integers indicating which CAids a administrator
-     * is authorized to access.
-     */    
-    public Collection getAuthorizedCAIds(){
-      if(authorizedcaids==null)
-        authorizedcaids = this.authorizationsession.getAuthorizedCAIds(administrator);
-      
-      return authorizedcaids;
-    }
-
       /** 
        * Method to add a Collection of AdminEntity to an admingroup.
        *
@@ -212,7 +198,7 @@ public class AuthorizationDataHandler {
     private void authorizedToAddAccessRules(Collection accessrules) throws AuthorizationDeniedException{
       Iterator iter = accessrules.iterator();
       while(iter.hasNext())
-        if(!this.authorizedaccessrules.contains(((AccessRule) iter.next()).getAccessRule()))  
+        if(!this.informationmemory.getAuthorizedAccessRules().contains(((AccessRule) iter.next()).getAccessRule()))  
           throw new AuthorizationDeniedException("Accessruleset contained non authorized access rules"); 
     }
    
@@ -221,8 +207,7 @@ public class AuthorizationDataHandler {
 
     // Private fields
     private IAuthorizationSessionLocal  authorizationsession;
-    private Admin                       administrator;
-    private HashSet                     authorizedaccessrules;
+    private Admin                       administrator;    
     private Collection                  authorizedcaids;
     private Collection                  authorizedadmingroups;
     private InformationMemory           informationmemory;

@@ -24,6 +24,7 @@ import javax.sql.DataSource;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
@@ -44,7 +45,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.51 2003-09-27 09:05:56 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.52 2003-10-01 11:12:15 herrvendil Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -901,9 +902,21 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
          getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificaterprofile " + newcertificateprofilename +  " using profile " + originalcertificateprofilename + " as template.");  
          throw new CertificateProfileExistsException();  
        }
-              
+                            
        try{         
          certificateprofile = (CertificateProfile)  getCertificateProfile(admin, originalcertificateprofilename).clone();
+         
+          boolean issuperadministrator= false; 
+          try{
+            issuperadministrator = getAuthorizationSession().isAuthorizedNoLog(admin, "/super_administrator");
+          }catch(AuthorizationDeniedException ade){}
+        
+          if(!issuperadministrator && certificateprofile.isApplicableToAnyCA()){
+             // Not superadministrator, do not use ANYCA;
+             Collection authcas = getAuthorizationSession().getAuthorizedCAIds(admin);
+             certificateprofile.setAvailableCAs(authcas);
+          }        	
+                  
          try{
            certprofilehome.findByCertificateProfileName(newcertificateprofilename);
            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificaterprofile " + newcertificateprofilename +  " using profile " + originalcertificateprofilename + " as template.");  

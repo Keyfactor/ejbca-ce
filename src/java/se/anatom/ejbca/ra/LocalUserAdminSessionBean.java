@@ -54,7 +54,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.63 2003-09-21 10:54:59 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.64 2003-10-01 11:12:14 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -164,7 +164,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     private boolean authorizedToEndEntityProfile(Admin admin, int profileid, String rights){
       boolean returnval = false;
       try{
-        returnval = authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + profileid + rights);
+      	if(profileid == SecConst.EMPTY_ENDENTITYPROFILE && (rights.equals(AvailableAccessRules.CREATE_RIGHTS) || rights.equals(AvailableAccessRules.EDIT_RIGHTS)))
+		  returnval = authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
+        else 
+          returnval = authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + profileid + rights);
       }catch(AuthorizationDeniedException e){}    
       return returnval;          
     }
@@ -1113,5 +1116,22 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
        }
      }
    } // sendNotification
+   
+   /**
+    *  Method checking if username already exists in database.
+    * 
+    *  @return true if username already exists.
+    */
+   public boolean existsUser(Admin admin, String username){
+      boolean returnval = true;
+      
+      try{
+		home.findByPrimaryKey(new UserDataPK(username));	
+      }catch(FinderException fe){
+      	  returnval = false;
+      }
+   	
+      return returnval;
+   }
 
 } // LocalUserAdminSessionBean

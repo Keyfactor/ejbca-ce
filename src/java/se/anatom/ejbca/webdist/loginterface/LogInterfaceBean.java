@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import java.security.cert.X509Certificate;
 import javax.servlet.http.HttpServletRequest;
@@ -24,7 +25,7 @@ import se.anatom.ejbca.util.query.*;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.11 2003-09-13 09:05:50 anatom Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.12 2003-10-01 11:12:14 herrvendil Exp $
  */
 public class LogInterfaceBean {
 
@@ -40,7 +41,7 @@ public class LogInterfaceBean {
      *
      * @param request is a reference to the http request.
      */  
-    public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean, HashMap caidtonamemap) throws  Exception{
+    public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
 
       if(!initialized){
         admininformation = new AdminInformation(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);  
@@ -59,7 +60,15 @@ public class LogInterfaceBean {
         
         initializeEventNameTables(ejbcawebbean);
                 
-        dnproxy = new SubjectDNProxy(admin, certificatesession);                 
+        dnproxy = new SubjectDNProxy(admin, certificatesession);           
+        
+		HashMap caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
+        
+        // Add Internal CA Name if it doesn't exists
+        if(caidtonamemap.get(new Integer(ILogSessionLocal.INTERNALCAID)) == null){
+			caidtonamemap.put(new Integer(ILogSessionLocal.INTERNALCAID),ejbcawebbean.getText("INTERNALCA"));
+        }
+              
         logentriesview = new LogEntriesView(dnproxy, localinfoeventnamesunsorted, localerroreventnamesunsorted, localmodulenamesunsorted,  caidtonamemap);
         initialized =true; 
       }
@@ -212,8 +221,17 @@ public class LogInterfaceBean {
      *
      * @return an array of all translated eventnames.
      */
-    public String[] getLocalModuleNames(){
-      return localmodulenames;  
+    public String[] getLocalModuleNames(EjbcaWebBean ejbcawebbean){
+      Collection authorizedmodules = this.informationmemory.getAuthorizedModules();	
+      String[] returnval = new String[authorizedmodules.size()];
+      Iterator iter = authorizedmodules.iterator();
+      int i = 0;
+      while(iter.hasNext()){
+          returnval[i] = ejbcawebbean.getText(LogEntry.MODULETEXTS[((Integer) iter.next()).intValue()]);
+          i++;
+      }
+      
+      return returnval;  
     }    
     
     // Private methods.

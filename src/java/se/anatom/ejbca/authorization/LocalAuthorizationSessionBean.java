@@ -32,7 +32,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.1 2003-09-04 14:26:37 herrvendil Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.2 2003-10-01 11:12:07 herrvendil Exp $
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
@@ -169,7 +169,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     // Methods used with AdminGroupData Entity Beans
 
     /**
-     * Method to initialize authorization bean, must be called directly after creation of bean.
+     * Method to initialize authorization bean, must be called directly after creation of bean. Should only be called once.
      */
     public void initialize(Admin admin, int caid) throws AdminGroupExistsException{
          // Check if admingroup table is empty, if so insert default superuser
@@ -195,7 +195,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
            accessrules.add(new AccessRule("/system_functionality",AccessRule.RULE_ACCEPT,true));
            accessrules.add(new AccessRule("/hardtoken_functionality",AccessRule.RULE_ACCEPT,true));           
            accessrules.add(new AccessRule("/ca",AccessRule.RULE_ACCEPT,true)); 
-           accessrules.add(new AccessRule("/endentityprofilerules",AccessRule.RULE_ACCEPT,true)); 
+           accessrules.add(new AccessRule("/endentityprofilesrules",AccessRule.RULE_ACCEPT,true)); 
            
            addAccessRules(admin, admingroupname, caid, accessrules);
            
@@ -217,7 +217,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
            agdl.addAdminEntities(adminentities);
          
            ArrayList accessrules = new ArrayList();
-           accessrules.add(new AccessRule("/administrator",AccessRule.RULE_ACCEPT,false));
+           accessrules.add(new AccessRule("/administrator",AccessRule.RULE_ACCEPT,true));
            accessrules.add(new AccessRule("/super_administrator",AccessRule.RULE_ACCEPT,false));
 
            accessrules.add(new AccessRule("/ca_functionality",AccessRule.RULE_ACCEPT,true));
@@ -226,14 +226,42 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
            accessrules.add(new AccessRule("/system_functionality",AccessRule.RULE_ACCEPT,true));
            accessrules.add(new AccessRule("/hardtoken_functionality",AccessRule.RULE_ACCEPT,true));           
            accessrules.add(new AccessRule("/ca",AccessRule.RULE_ACCEPT,true)); 
-           accessrules.add(new AccessRule("/endentityprofilerules",AccessRule.RULE_ACCEPT,true)); 
+           accessrules.add(new AccessRule("/endentityprofilesrules",AccessRule.RULE_ACCEPT,true)); 
           
            agdl.addAccessRules(accessrules);
            
            signalForAuthorizationTreeUpdate();
          }catch(CreateException ce){}
        }
-
+	   // Add Public Web Group
+	   this.removeAdminGroup(admin, "Public Web Users",  ILogSessionLocal.INTERNALCAID);
+	   try{
+		  admingrouphome.findByPrimaryKey(new AdminGroupPK("Public Web Users", ILogSessionLocal.INTERNALCAID));   
+	   }catch(FinderException e){	   
+	   	 System.out.println("Adding public web group");
+	     try{           	   	 
+		   AdminGroupDataLocal agdl = admingrouphome.create("Public Web Users",  ILogSessionLocal.INTERNALCAID);
+        
+		   ArrayList adminentities = new ArrayList();
+		   adminentities.add(new AdminEntity(AdminEntity.SPECIALADMIN_PUBLICWEBUSER));		 
+		   agdl.addAdminEntities(adminentities);
+         
+		   ArrayList accessrules = new ArrayList();
+		   accessrules.add(new AccessRule("/public_web_user",AccessRule.RULE_ACCEPT,false));
+		 
+		   accessrules.add(new AccessRule("/ca_functionality/basic_functions",AccessRule.RULE_ACCEPT,false));
+		   accessrules.add(new AccessRule("/ca_functionality/view_certificate",AccessRule.RULE_ACCEPT,false));
+		   accessrules.add(new AccessRule("/ca_functionality/create_certificate",AccessRule.RULE_ACCEPT,false));
+		   accessrules.add(new AccessRule("/ca_functionality/store_certificate",AccessRule.RULE_ACCEPT,false));
+		   accessrules.add(new AccessRule("/ra_functionality/view_end_entity",AccessRule.RULE_ACCEPT,false));			 
+		   accessrules.add(new AccessRule("/ca",AccessRule.RULE_ACCEPT,true)); 
+		   accessrules.add(new AccessRule("/endentityprofilesrules",AccessRule.RULE_ACCEPT,true)); 
+		                                                       
+		   agdl.addAccessRules(accessrules);
+           
+		  signalForAuthorizationTreeUpdate();
+	      }catch(CreateException ce){}	       
+	   }  
     }
 
 
@@ -246,7 +274,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     public boolean isAuthorized(Admin admin, String resource) throws  AuthorizationDeniedException{
         if(updateNeccessary())
           updateAuthorizationTree(admin);
-        return authorizer.isAuthorized(admin.getAdminInformation(), resource);
+        return authorizer.isAuthorized(admin, resource);
     }
 
      /**
@@ -258,7 +286,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException{
        if(updateNeccessary())
          updateAuthorizationTree(admin);
-       return authorizer.isAuthorizedNoLog(admin.getAdminInformation(), resource);
+       return authorizer.isAuthorizedNoLog(admin, resource);
     }
 
     /**

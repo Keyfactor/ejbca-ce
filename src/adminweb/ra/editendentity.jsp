@@ -103,7 +103,10 @@
       if(userdata != null){
         notauthorized = false;
         profileid=userdata.getEndEntityProfileId();
-        profile = rabean.getEndEntityProfile(profileid);
+        if(!issuperadministrator && profileid == SecConst.EMPTY_ENDENTITYPROFILE)
+          profile = null;
+        else   
+          profile = rabean.getEndEntityProfile(profileid);
 
         if( request.getParameter(ACTION) != null){
           if( request.getParameter(ACTION).equals(ACTION_EDITUSER)){
@@ -292,7 +295,7 @@
    String[] availablehardtokenissuers = null;
    ArrayList[] tokenissuers = null;
 
-   if( userdata != null ){
+   if( userdata != null && profile != null){
      if(globalconfiguration.getIssueHardwareTokens() ){
         AvailableHardToken[] availablehardtokens = tokenbean.getAvailableHardTokens();
 
@@ -692,7 +695,7 @@ function checkUseInBatch(){
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("ENDENTITYDOESNTEXIST") %></h4></div> 
     <% }
        else{
-         if(notauthorized){%>
+         if(notauthorized || profile == null){%>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOEDIT") %></h4></div> 
     <%   }
          else{ 
@@ -1066,7 +1069,7 @@ function checkUseInBatch(){
 
   <%// Include Footer 
       }
-    }
+    }    
    }
    String footurl =   globalconfiguration .getFootBanner(); %>
    

@@ -1,6 +1,8 @@
 package se.anatom.ejbca.webdist.cainterface;
 
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.HashMap;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
@@ -11,24 +13,27 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 /**
  * A class representing a view of a CA Information view..
  *
- * @version $Id: CAInfoView.java,v 1.1 2003-09-04 09:46:43 herrvendil Exp $
+ * @version $Id: CAInfoView.java,v 1.2 2003-10-01 11:12:14 herrvendil Exp $
  */
 public class CAInfoView implements java.io.Serializable, Cloneable {
     // Public constants.
 
-   public static int NAME           = 0;  
-   public static int SUBJECTDN      = 1;   
+   public static int NAME                    = 0;  
+   public static int SUBJECTDN           = 1;   
    public static int SUBJECTALTNAME = 2;
-   public static int CATYPE         = 3;
+   public static int CATYPE                 = 3;
    
-   public static int EXPIRETIME     = 5;
-   public static int STATUS         = 6;
-   public static int DESCRIPTION    = 7;
+   public static int EXPIRETIME          = 5;
+   public static int STATUS                = 6;
+   public static int DESCRIPTION       = 7;
+   
+   public static int CRLPERIOD          = 9;
+   public static int CRLPUBLISHERS   = 10;
    
   
     
    public static String[] X509CA_CAINFODATATEXTS = {"NAME","SUBJECTDN","SUBJECTALTNAME","CATYPE","",
-                                                    "EXPIRES","STATUS","DESCRIPTION"};
+                                                    "EXPIRES","STATUS","DESCRIPTION","", "CRLPERIOD", "CRLPUBLISHERS"};
    
    private String[] cainfodata = null;
    private String[] cainfodatatexts = null;
@@ -36,7 +41,7 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
    private CAInfo cainfo = null;
     
    
-    public CAInfoView(CAInfo cainfo, EjbcaWebBean ejbcawebbean){
+    public CAInfoView(CAInfo cainfo, EjbcaWebBean ejbcawebbean, HashMap publishersidtonamemap){
       this.cainfo = cainfo;  
         
       if(cainfo instanceof X509CAInfo){
@@ -77,7 +82,23 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
               break;              
         }        
         
+		cainfodata[8]          = "&nbsp;"; // blank line
+		  
         cainfodata[DESCRIPTION] = cainfo.getDescription();
+        cainfodata[CRLPERIOD] = Integer.toString(((X509CAInfo) cainfo).getCRLPeriod());
+        
+		cainfodata[CRLPUBLISHERS] = "";
+        Iterator iter = ((X509CAInfo) cainfo).getCRLPublishers().iterator();
+        if(iter.hasNext())
+		  cainfodata[CRLPUBLISHERS] = (String) publishersidtonamemap.get(iter.next()); 
+        else
+		cainfodata[CRLPUBLISHERS] = ejbcawebbean.getText("NONE");
+        
+        while(iter.hasNext())
+			cainfodata[CRLPUBLISHERS] = cainfodata[CRLPUBLISHERS] + ", " +
+			                                               (String) publishersidtonamemap.get(iter.next());
+        
+       
         
       }
    }

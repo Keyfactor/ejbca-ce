@@ -47,7 +47,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.1 2003-09-03 16:21:29 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.2 2003-10-01 11:12:14 herrvendil Exp $
  */
 public class CAAdminSessionBean extends BaseSessionBean {
     
@@ -458,13 +458,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
             Iterator iter = result.iterator();
             while(iter.hasNext()){                                
                 CADataLocal cadata = (CADataLocal) iter.next();                
-                returnval.put(cadata.getCAId(), cadata.getName());
-                /*try{
-                  this.removeCA(admin, cadata.getCAId().intValue());
-                  System.out.println("getCAIdToNameMap : CA removed ");
-                }catch(Exception e){} */
-                   
-                
+                returnval.put(cadata.getCAId(), cadata.getName());                                                   
             }
         }catch(javax.ejb.FinderException fe){}
         System.out.println("CAAdminSessionBean : <getCAIdToNameMap : size " + returnval.keySet().size());

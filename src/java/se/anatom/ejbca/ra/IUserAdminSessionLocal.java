@@ -16,7 +16,7 @@ import se.anatom.ejbca.util.query.Query;
 
 /**
  *
- * @version $Id: IUserAdminSessionLocal.java,v 1.1 2003-09-04 08:51:44 herrvendil Exp $
+ * @version $Id: IUserAdminSessionLocal.java,v 1.2 2003-10-01 11:12:14 herrvendil Exp $
  */
 public interface IUserAdminSessionLocal extends javax.ejb.EJBLocalObject {
 
@@ -131,6 +131,10 @@ public interface IUserAdminSessionLocal extends javax.ejb.EJBLocalObject {
     */
     public boolean checkForCertificateProfileId(Admin admin, int certificaterofileid);
 
+	/**
+    * @see se.anatom.ejbca.ra.IUserAdminSessionRemote
+    */
+	public boolean existsUser(Admin admin, String username);
 
 
 }

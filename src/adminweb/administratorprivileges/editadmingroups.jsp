@@ -90,7 +90,7 @@
         <td width="95%"> 
           <input type="text" name="<%=TEXTFIELD_GROUPNAME%>" size="40" maxlength="255">   
           <select name="<%=SELECT_CA%>" >
-            <% iter = adh.getAuthorizedCAIds().iterator(); 
+            <% iter = ejbcawebbean.getInformationMemory().getAuthorizedCAIds().iterator(); 
               while(iter.hasNext()){
                 Integer authorizedcaid = (Integer) iter.next();%>
               <option value="<%= authorizedcaid%>">

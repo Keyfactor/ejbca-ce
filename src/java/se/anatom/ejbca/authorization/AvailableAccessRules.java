@@ -16,7 +16,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 /**
  * 
  *
- * @version $Id: AvailableAccessRules.java,v 1.1 2003-09-04 14:26:37 herrvendil Exp $
+ * @version $Id: AvailableAccessRules.java,v 1.2 2003-10-01 11:12:07 herrvendil Exp $
  */
 public class AvailableAccessRules {
         
@@ -105,7 +105,7 @@ public class AvailableAccessRules {
       
       // Is Admin SuperAdministrator.
       try{
-        issuperadministrator = authorizer.isAuthorizedNoLog(admin.getAdminInformation(), "/super_administrator");
+        issuperadministrator = authorizer.isAuthorizedNoLog(admin, "/super_administrator");
       }catch(AuthorizationDeniedException e){
         issuperadministrator=false;
       }
@@ -187,19 +187,29 @@ public class AvailableAccessRules {
      */
     private void insertAvailableEndEntityProfileAccessRules(Admin admin, ArrayList accessrules){
         
-        // Add all authorized End Entity Profiles
-       
-        Iterator iter = endentityprofiles.keySet().iterator();
+        // Add most basic rule if authorized to it.
+		try{
+		  authorizer.isAuthorizedNoLog(admin, "/endentityprofilesrules");  
+		  accessrules.add("/endentityprofilesrules");
+		}catch(AuthorizationDeniedException e){
+          //  Add it to superadministrator anyway
+				 if(issuperadministrator)
+				   accessrules.add("/endentityprofilesrules");
+		}
+		
+        
+        // Add all authorized End Entity Profiles                    
+        Iterator iter = raadminsession.getAuthorizedEndEntityProfileIds(admin).iterator();
         while(iter.hasNext()){
             // Check if profiles available CAs is a subset of administrators authorized CAs
             int profileid = ((Integer) iter.next()).intValue();
-            if(issuperadministrator || authorizedcaids.containsAll(raadminsession.getEndEntityProfile(admin,profileid).getAvailableCAs())){
+            
               // Administrator is authorized to this End Entity Profile, add it.
                 try{
-                  authorizer.isAuthorizedNoLog(admin.getAdminInformation(), ENDENTITYPROFILEPREFIX + profileid);  
+                  authorizer.isAuthorizedNoLog(admin, ENDENTITYPROFILEPREFIX + profileid);  
                   addEndEntityProfile( profileid, accessrules);
                 }catch(AuthorizationDeniedException e){}
-            }
+            
         }
     }
     
@@ -243,7 +253,7 @@ public class AvailableAccessRules {
      */    
     private void addAuthorizedAccessRule(Admin admin, String accessrule, ArrayList accessrules){
       try{
-        authorizer.isAuthorizedNoLog(admin.getAdminInformation(), accessrule);
+        authorizer.isAuthorizedNoLog(admin, accessrule);
         accessrules.add(accessrule);
       }catch(AuthorizationDeniedException e){
       }

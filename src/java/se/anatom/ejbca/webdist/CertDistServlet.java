@@ -41,7 +41,7 @@ import se.anatom.ejbca.log.Admin;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.19 2003-09-27 09:05:55 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.20 2003-10-01 11:12:08 herrvendil Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -57,6 +57,7 @@ public class CertDistServlet extends HttpServlet {
     private static final String COMMAND_CACERT = "cacert";
     
     private static final String SUBJECT_PROPERTY = "subject";
+	private static final String CAID_PROPERTY = "caid";
     private static final String ISSUER_PROPERTY = "issuer";
     private static final String SERNO_PROPERTY = "serno";
     private static final String LEVEL_PROPERTY = "level";
@@ -121,7 +122,12 @@ public class CertDistServlet extends HttpServlet {
         String issuerdn = null; 
         if(req.getParameter(ISSUER_PROPERTY) != null){
           issuerdn = java.net.URLDecoder.decode(req.getParameter(ISSUER_PROPERTY),"UTF-8");
-        }        
+        }    
+        
+		int caid = 0; 
+		if(req.getParameter(CAID_PROPERTY) != null){
+		  caid = Integer.parseInt(req.getParameter(CAID_PROPERTY));
+		}    
         
         command = req.getParameter(COMMAND_PROPERTY_NAME);
         if (command == null)
@@ -146,7 +152,7 @@ public class CertDistServlet extends HttpServlet {
                 log.debug(e);
                 return;
             }
-        } else if ((command.equalsIgnoreCase(COMMAND_CERT) || command.equalsIgnoreCase(COMMAND_LISTCERT)) && issuerdn != null) {
+        } else if ((command.equalsIgnoreCase(COMMAND_CERT) || command.equalsIgnoreCase(COMMAND_LISTCERT)) &&  issuerdn != null ) {
             String dn = req.getParameter(SUBJECT_PROPERTY);
             if (dn == null) {
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=cert?subject=<subjectdn>&issuer=<issuerdn>.");
@@ -220,7 +226,7 @@ public class CertDistServlet extends HttpServlet {
                 log.debug(e);
                 return;
             }
-        } else if ((command.equalsIgnoreCase(COMMAND_NSCACERT) || command.equalsIgnoreCase(COMMAND_IECACERT) || command.equalsIgnoreCase(COMMAND_CACERT)) && issuerdn != null ) {
+        } else if ((command.equalsIgnoreCase(COMMAND_NSCACERT) || command.equalsIgnoreCase(COMMAND_IECACERT) || command.equalsIgnoreCase(COMMAND_CACERT)) && ( issuerdn != null || caid != 0)) {
             String lev = req.getParameter(LEVEL_PROPERTY);
             int level = 0;
             boolean pkcs7 = false;
@@ -231,7 +237,11 @@ public class CertDistServlet extends HttpServlet {
             // Root CA is level 0, next below root level 1 etc etc, -1 returns chain as PKCS7
             try {
                 ISignSessionRemote ss = signhome.create();
-                Certificate[] chain = (Certificate[]) ss.getCertificateChain(administrator, issuerdn.hashCode()).toArray(new Certificate[0]);
+                Certificate[] chain = null;
+                if(caid != 0)
+				chain = (Certificate[]) ss.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
+                else
+                  chain = (Certificate[]) ss.getCertificateChain(administrator, issuerdn.hashCode()).toArray(new Certificate[0]);
                 // chain.length-1 is last cert in chain (root CA)
                 if ( (chain.length-1-level) < 0 ) {
                     PrintStream ps = new PrintStream(res.getOutputStream());
@@ -245,7 +255,7 @@ public class CertDistServlet extends HttpServlet {
                     filename = "ca";
                 byte[] enccert = null;
                 if (pkcs7)
-                    enccert = ss.createPKCS7(administrator, null);
+                    enccert = ss.createPKCS7(administrator, cacert);
                 else
                     enccert = cacert.getEncoded();
                 if (command.equalsIgnoreCase(COMMAND_NSCACERT)) {
@@ -313,7 +323,7 @@ public class CertDistServlet extends HttpServlet {
                 PrintWriter pout = new PrintWriter(res.getOutputStream());
                 pout.println("<html><head><title>Check revocation</title></head>");
                 pout.println("<body><p>");
-                if ( (revinfo != null) && (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) ) {
+                if (revinfo != null) {
                     pout.println("<h1>REVOKED</h1>");
                     pout.println("Certificate with issuer '"+dn+"' and serial number '"+serno+"' is revoked");
                     pout.println("RevocationDate is '"+revinfo.getRevocationDate()+"' and reason '"+revinfo.getReason()+"'.");
@@ -333,7 +343,7 @@ public class CertDistServlet extends HttpServlet {
             }
         } else {
             res.setContentType("text/plain");
-            res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Commands=lastcert | listcerts | crl | revoked");
+            res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Commands=lastcert | listcerts | crl | revoked && issuer=<issuerdn>");
             return;
         }
 

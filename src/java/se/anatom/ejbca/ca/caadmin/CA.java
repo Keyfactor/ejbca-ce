@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.2 2003-09-04 19:52:45 anatom Exp $
+ * @version $Id: CA.java,v 1.3 2003-10-01 11:12:14 herrvendil Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -49,6 +49,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected static final String CERTIFICATEPROFILEID           = "certificateprofileid";
     protected static final String CRLPERIOD                      = "crlperiod";
     protected static final String CRLPUBLISHERS                  = "crlpublishers";
+	protected static final String FINISHUSER                     = "finishuser";
     
     // Public Methods
     /** Creates a new instance of CA, this constuctor should be used when a new CA is created */
@@ -65,6 +66,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
        data.put(CERTIFICATEPROFILEID, new Integer(cainfo.getCertificateProfileId()));
        setCRLPeriod(cainfo.getCRLPeriod());
        setCRLPublishers(cainfo.getCRLPublishers());
+       setFinishUser(cainfo.getFinishUser());
     }
     
     /** Constructor used when retrieving existing CA from database. */
@@ -172,10 +174,17 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
        return (Certificate) this.certificatechain.get(0);
     }
     
+	public boolean  getFinishUser(){return ((Boolean)data.get(FINISHUSER)).booleanValue();}
+	
+	public void setFinishUser(boolean finishuser) {data.put(FINISHUSER, new Boolean(finishuser));}    
+    
     public void updateCA(CAInfo cainfo){            
       data.put(VALIDITY, new Integer(cainfo.getValidity()));                 
       data.put(DESCRIPTION, cainfo.getDescription());      
+      data.put(CRLPERIOD, new Integer(cainfo.getCRLPeriod()));
+	  data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
       this.catoken.updateCATokenInfo(cainfo.getCATokenInfo());
+      setFinishUser(cainfo.getFinishUser());
     }
     
     public abstract CAInfo getCAInfo() throws Exception;

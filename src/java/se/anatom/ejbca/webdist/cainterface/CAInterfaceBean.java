@@ -41,7 +41,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.18 2003-09-27 09:05:56 anatom Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.19 2003-10-01 11:12:14 herrvendil Exp $
  */
 public class CAInterfaceBean   {
 
@@ -98,9 +98,8 @@ public class CAInterfaceBean   {
         Certificate next = (Certificate) iter.next();  
         RevokedInfoView revokedinfo = null;
         RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN((X509Certificate) next), ((X509Certificate) next).getSerialNumber());
-        if ( (revinfo != null) && (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) ) {
-            revokedinfo = new RevokedInfoView(revinfo);
-        }
+        if(revinfo != null)
+          revokedinfo = new RevokedInfoView(revinfo);
         returnval[i] = new CertificateView((X509Certificate) next, revokedinfo,null);
         i++;
       }
@@ -122,8 +121,8 @@ public class CAInterfaceBean   {
     }  
       
       
-    public TreeMap getAuthorizedCertificateProfileNames() {
-      return informationmemory.getAuthorizedCertificateProfileNames();
+    public TreeMap getEditCertificateProfileNames() {
+      return informationmemory.getEditCertificateProfileNames();
     }
 
     /** Returns the profile name from id proxied */

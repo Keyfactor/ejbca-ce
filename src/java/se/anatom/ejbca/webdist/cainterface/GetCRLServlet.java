@@ -35,7 +35,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java,v 1.16 2003-09-04 09:46:43 herrvendil Exp $
+ * @version $Id: GetCRLServlet.java,v 1.17 2003-10-01 11:12:14 herrvendil Exp $
  */
 public class GetCRLServlet extends HttpServlet {
 
@@ -87,7 +87,7 @@ public class GetCRLServlet extends HttpServlet {
         }
 
         try{
-          ejbcawebbean.initialize(req, "/ca_functionallity/basic_functions");
+          ejbcawebbean.initialize(req, "/ca_functionality/basic_functions");
         } catch(Exception e){
            throw new java.io.IOException("Authorization Denied");
         }

@@ -50,7 +50,7 @@ public class AccessRulesView implements java.io.Serializable {
         }
         
         // Check if rule is end entity profile access rule
-        if(accessrulestring.startsWith(AvailableAccessRules.ENDENTITYPROFILEPREFIX)){
+        if(accessrulestring.startsWith("/endentityprofilesrules")){
           this.endentityprofileaccessrules.add(accessrule);
           regular=false;
         }

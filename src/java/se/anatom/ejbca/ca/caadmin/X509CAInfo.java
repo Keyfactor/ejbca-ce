@@ -8,7 +8,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Holds nonsensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.1 2003-09-03 16:21:29 herrvendil Exp $
+ * @version $Id: X509CAInfo.java,v 1.2 2003-10-01 11:12:14 herrvendil Exp $
  */
 public class X509CAInfo extends CAInfo{
    
@@ -17,7 +17,6 @@ public class X509CAInfo extends CAInfo{
   boolean authoritykeyidentifiercritical;
   boolean usecrlnumber;
   boolean crlnumbercritical;
-  boolean finishuser;
   String subjectaltname;
     
     /**
@@ -91,8 +90,6 @@ public class X509CAInfo extends CAInfo{
   public void setAuthorityKeyIdentifierCritical(boolean authoritykeyidentifiercritical)
                 {this.authoritykeyidentifiercritical=authoritykeyidentifiercritical;}
   
-  public boolean getFinishUser(){ return finishuser;}
-  public void setFinishUser(boolean finishuser){ this.finishuser=finishuser;}
   
   public String getSubjectAltName(){ return subjectaltname; }
   

@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * Holds nonsensitive information about a CA.
  *
- * @version $Id: CAInfo.java,v 1.1 2003-09-03 16:21:29 herrvendil Exp $
+ * @version $Id: CAInfo.java,v 1.2 2003-10-01 11:12:14 herrvendil Exp $
  */
 public abstract class CAInfo implements Serializable {
 
@@ -42,7 +42,8 @@ public abstract class CAInfo implements Serializable {
     protected int revokationreason;
     protected int certificateprofileid;
     protected int crlperiod;
-    protected Collection crlpublishers;    
+    protected Collection crlpublishers;  
+	protected boolean finishuser;  
     
     public CAInfo(){}
     
@@ -72,6 +73,13 @@ public abstract class CAInfo implements Serializable {
     public int getCRLPeriod(){ return crlperiod;}
     public void setCRLPeriod(int crlperiod){ this.crlperiod=crlperiod;}
   
-    public Collection getCRLPublishers(){ return crlpublishers;}
-    public void setCRLPublishers(Collection crlpublishers){ this.crlpublishers=crlpublishers;}    
+    public Collection getCRLPublishers(){ 
+		System.out.println("CAInfo, g	etCRLPublishers size :" + crlpublishers.size());// TODO remove
+		return crlpublishers;}
+    public void setCRLPublishers(Collection crlpublishers){ 
+    	System.out.println("CAInfo, setCRLPublishers size :" + crlpublishers.size());// TODO remove
+    	this.crlpublishers=crlpublishers;}    
+    	
+	public boolean getFinishUser(){ return finishuser;}
+	public void setFinishUser(boolean finishuser){ this.finishuser=finishuser;}    	
 }

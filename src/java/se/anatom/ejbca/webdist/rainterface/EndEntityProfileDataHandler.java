@@ -12,7 +12,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
 /**
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
- * @version $Id: EndEntityProfileDataHandler.java,v 1.7 2003-09-04 14:38:11 herrvendil Exp $
+ * @version $Id: EndEntityProfileDataHandler.java,v 1.8 2003-10-01 11:12:13 herrvendil Exp $
  */
 public class EndEntityProfileDataHandler {
 
@@ -71,10 +71,9 @@ public class EndEntityProfileDataHandler {
     }    
     
       /** Method to get a reference to a end entity profile.*/ 
-    public EndEntityProfile getEndEntityProfile(int id) throws AuthorizationDeniedException{
-   /*   System.out.println("EndEntityProfileDataHandler : id " + id);	
+    public EndEntityProfile getEndEntityProfile(int id) throws AuthorizationDeniedException{  
       if(!authorizedToProfileId(id, false))
-        throw new AuthorizationDeniedException("Not authorized to end entity profile"); */            
+        throw new AuthorizationDeniedException("Not authorized to end entity profile");             
       
       return raadminsession.getEndEntityProfile(administrator, id); 
     }      
@@ -132,7 +131,12 @@ public class EndEntityProfileDataHandler {
         
         HashSet authorizedcaids = new HashSet(authorizationsession.getAuthorizedCAIds(administrator));
        
-        if(profile != null){
+       if(profile == null && editcheck){
+			authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");
+       }	
+       if(profile == null){  
+           returnval = true;                                           
+       }else{
           String availablecasstring = profile.getValue(EndEntityProfile.AVAILCAS, 0);   
           if(availablecasstring == null || availablecasstring.equals("")){
             allexists = true;  

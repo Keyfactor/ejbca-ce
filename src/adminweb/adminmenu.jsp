@@ -48,7 +48,7 @@
   final String HTEDITHARDTOKENISSUERS_RESOURCE        = "/hardtoken_functionality/edit_hardtoken_issuers";
   final String LOGVIEW_RESOURCE                       = "/log_functionality/view_log";
   final String LOGCONFIGURATION_RESOURCE              = "/log_functionality/edit_log_configuration";
-  final String SYSTEMCONFIGURATION_RESOURCE           = "/system_functionality/edit_system_configuration";
+  final String SYSTEMCONFIGURATION_RESOURCE           = "/super_administrator";
   final String ADMINPRIVILEGES_RESOURCE               = "/system_functionality/edit_administrator_privileges";
 
 
@@ -116,8 +116,7 @@
            raheaderprinted=true;%> 
            <br>  
            <%=ejbcawebbean.getText("RAFUNCTIONS")+"<br>" %>
-           &nbsp;&nbsp;<A href='<%= RA_EDITPROFILESLINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"> 
-           <%=ejbcawebbean.getText("EDITPROFILES") %></a><br>
+           &nbsp;&nbsp;<A href='<%= RA_EDITPROFILESLINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITPROFILES") %></a><br>
 
 <%   }
    }catch(AuthorizationDeniedException e){}
@@ -128,8 +127,7 @@
               out.write("<br>" + ejbcawebbean.getText("RAFUNCTIONS")+"<br>"); 
               raheaderprinted=true;
             }  %>
-           &nbsp;&nbsp;<A href='<%= RA_ADDENDENTITYLINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"> 
-           <%=ejbcawebbean.getText("ADDENDENTITY") %></a><br>
+           &nbsp;&nbsp;<A href='<%= RA_ADDENDENTITYLINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("ADDENDENTITY") %></a><br>
 <%   }
    }catch(AuthorizationDeniedException e){}
     // If authorized to use the ra then display related links. 
@@ -139,8 +137,7 @@
               out.write("<br>" + ejbcawebbean.getText("RAFUNCTIONS")+"<br>"); 
               raheaderprinted=true;
             }  %>
-           &nbsp;&nbsp;<A href='<%=RA_LISTENDENTITIESLINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"> 
-           <%=ejbcawebbean.getText("LISTEDITENDENTITIES") %></a><br>
+           &nbsp;&nbsp;<A href='<%=RA_LISTENDENTITIESLINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("LISTEDITENDENTITIES") %></a><br>
 <%   }
    }catch(AuthorizationDeniedException e){}
    if(globalconfiguration.getIssueHardwareTokens()){
@@ -150,8 +147,7 @@
            raheaderprinted=true;%> 
            <br>  
            <%=ejbcawebbean.getText("HARDTOKENFUNCTIONS")+"<br>" %>
-           &nbsp;&nbsp;<A href='<%= HT_EDITHARDTOKENISSUERS_LINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"> 
-           <%=ejbcawebbean.getText("EDITHARDTOKENISSUERS") %></a><br>
+           &nbsp;&nbsp;<A href='<%= HT_EDITHARDTOKENISSUERS_LINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITHARDTOKENISSUERS") %></a><br>
 
 <%     }
       }catch(AuthorizationDeniedException e){}

@@ -16,7 +16,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * logentryrownumber is the number of the last row number in the log entry database.
  * </pre>
  *
- * @version $Id: LogConfigurationDataBean.java,v 1.7 2003-07-24 08:43:31 anatom Exp $
+ * @version $Id: LogConfigurationDataBean.java,v 1.8 2003-10-01 11:12:07 herrvendil Exp $
  */
 public abstract class LogConfigurationDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(LogConfigurationDataBean.class);
@@ -103,9 +103,9 @@ public abstract class LogConfigurationDataBean extends BaseEntityBean {
      *
      * @return DOCUMENT ME!
      */
-    public Integer getAndIncrementRowCount() {
-        int returnval = getLogEntryRowNumber();
-        setLogEntryRowNumber(returnval + 1);
+    public Integer getAndIncrementRowCount() {    	
+        int returnval = getLogEntryRowNumber();               
+        setLogEntryRowNumber(returnval + 1);		
 
         return new Integer(returnval);
     }

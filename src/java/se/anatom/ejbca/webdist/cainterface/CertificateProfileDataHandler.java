@@ -66,7 +66,7 @@ public class CertificateProfileDataHandler implements Serializable {
     
 
     public void cloneCertificateProfile(String originalname, String newname) throws CertificateProfileExistsException, AuthorizationDeniedException{         
-      if(authorizedToProfileName(originalname, true)){
+      if(authorizedToProfileName(originalname, false)){
         certificatestoresession.cloneCertificateProfile(administrator, originalname,newname);
         this.info.certificateProfilesEdited();
       }else
@@ -125,17 +125,24 @@ public class CertificateProfileDataHandler implements Serializable {
           issuperadministrator = authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");  
         }catch(AuthorizationDeniedException ade){}
         
-        if(editcheck)  
+        if(editcheck)        
           authorizationsession.isAuthorizedNoLog(administrator, "/ca_functionality/edit_certificate_profiles");
+          
         HashSet authorizedcaids = new HashSet(authorizationsession.getAuthorizedCAIds(administrator));
-
+       
         if(profile != null){       
-          Collection availablecas = profile.getAvailableCAs();
-          if(availablecas.contains(new Integer(CertificateProfile.ANYCA))){
-            if(issuperadministrator)
-              returnval = true;  
-          }else
-            returnval = authorizedcaids.containsAll(availablecas);                       
+	      if(!issuperadministrator && profile.getType() != CertificateProfile.TYPE_ENDENTITY)
+	        returnval = false;
+	      else{          		      
+            Collection availablecas = profile.getAvailableCAs();
+            if(availablecas.contains(new Integer(CertificateProfile.ANYCA))){
+              if(issuperadministrator && editcheck)
+                returnval = true;  
+              if(!editcheck)
+                returnval = true;  
+            }else
+              returnval = authorizedcaids.containsAll(availablecas);
+	      }                           
         }
       }catch(AuthorizationDeniedException e){}
          

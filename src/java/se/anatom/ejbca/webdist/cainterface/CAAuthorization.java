@@ -7,15 +7,17 @@ import java.util.Iterator;
 import java.util.TreeMap;
 
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
+import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.log.Admin;
 
 /**
  * A class that looks up the which CA:s and certificate profiles the administrator is authorized to view.
  * 
- * @version $Id: CAAuthorization.java,v 1.1 2003-09-04 09:46:43 herrvendil Exp $
+ * @version $Id: CAAuthorization.java,v 1.2 2003-10-01 11:12:14 herrvendil Exp $
  */
 public class CAAuthorization implements Serializable {
     
@@ -88,15 +90,32 @@ public class CAAuthorization implements Serializable {
       return profilenamesrootca;  
     }
     
-    public TreeMap getAuthorizedCertificateProfileNames(){
+    public TreeMap getEditCertificateProfileNames(){
       if(allprofilenames==null){
+      	// check if administrator
+      	boolean superadministrator = false;
+		try{
+		  superadministrator = authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
+		}catch(AuthorizationDeniedException ade){}
+      	
         allprofilenames = new TreeMap();  
         Iterator iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, 0).iterator();      
         HashMap idtonamemap = certificatestoresession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
+        
           Integer id = (Integer) iter.next();
-          allprofilenames.put(idtonamemap.get(id),id);
-        }
+          CertificateProfile certprofile = certificatestoresession.getCertificateProfile(admin,id.intValue());
+ 
+          // If not superadministrator, then should only end entity profiles be added.
+          if(superadministrator || certprofile.getType() == CertificateProfile.TYPE_ENDENTITY){                      
+            // if default profiles, add fixed to name.
+            if(id.intValue() <= SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY || 
+               (!superadministrator && certprofile.isApplicableToAnyCA()))
+			  allprofilenames.put(idtonamemap.get(id) + " (FIXED)",id);   
+            else
+		      allprofilenames.put(idtonamemap.get(id),id);          
+          }
+        }  
       }
       return allprofilenames;  
     }    

@@ -82,9 +82,10 @@
 <body>
 
 <%  // Determine action 
+
   if( request.getParameter(ACTION) != null){
-    if( request.getParameter(ACTION).equals(ACTION_EDIT_GROUPS) && request.getParameter(SELECT_ADMINGROUPS) != null){
-      if( request.getParameter(BUTTON_EDIT_ADMINS) != null){
+    if( request.getParameter(ACTION).equals(ACTION_EDIT_GROUPS)){
+      if( request.getParameter(BUTTON_EDIT_ADMINS) != null && request.getParameter(SELECT_ADMINGROUPS) != null){
           // Display adminentity jsp page.
          admingroup = request.getParameter(SELECT_ADMINGROUPS).split(";");
          if(admingroup != null){
@@ -100,7 +101,7 @@
           includefile="editadmingroups.jsp";     
         }
       }
-      if( request.getParameter(BUTTON_EDIT_ACCESSRULES) != null) {
+      if( request.getParameter(BUTTON_EDIT_ACCESSRULES) != null && request.getParameter(SELECT_ADMINGROUPS) != null) {
           // Display access rules jsp page.
          admingroup = request.getParameter(SELECT_ADMINGROUPS).split(";");
          if(admingroup != null){
@@ -116,7 +117,7 @@
            includefile="editadmingroups.jsp";     
          }
       }
-      if( request.getParameter(BUTTON_DELETE_ADMINGROUP) != null) {
+      if( request.getParameter(BUTTON_DELETE_ADMINGROUP) != null && request.getParameter(SELECT_ADMINGROUPS) != null) {
           // Delete admingroup and display main group editing page. 
           admingroup = request.getParameter(SELECT_ADMINGROUPS).split(";");
           if(admingroup != null){
@@ -126,7 +127,7 @@
           }
           includefile="editadmingroups.jsp";             
       }
-      if( request.getParameter(BUTTON_RENAME_SELECTED) != null){ 
+      if( request.getParameter(BUTTON_RENAME_SELECTED) != null && request.getParameter(SELECT_ADMINGROUPS) != null){ 
          // Rename selected admingroup and display main group editing page.
        String newadmingroup = request.getParameter(TEXTFIELD_GROUPNAME);
        String[] oldadmingroup = request.getParameter(SELECT_ADMINGROUPS).split(";");
