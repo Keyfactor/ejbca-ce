@@ -34,7 +34,7 @@ import se.anatom.ejbca.ra.UserDataPK;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.25 2004-04-16 07:39:00 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.26 2004-05-13 15:34:40 herrvendil Exp $
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean {
     /** home interface to user entity bean */
@@ -92,8 +92,8 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
                   throw new AuthLoginException("Wrong password for user.");
                 }
                  
-                logsession.log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"Authenticated user: "+username);                
-                UserAuthData ret = new UserAuthData(data.getUsername(), data.getSubjectDN(), data.getCAId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getType(), data.getCertificateProfileId());
+                logsession.log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"Authenticated user: "+username);
+                UserAuthData ret = new UserAuthData(data.getUsername(), data.getClearPassword(), data.getSubjectDN(), data.getCAId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getType(), data.getCertificateProfileId(), data.getExtendedInformation());
                 debug("<authenticateUser("+username+", hiddenpwd)");
                 return ret;
             } else {               
