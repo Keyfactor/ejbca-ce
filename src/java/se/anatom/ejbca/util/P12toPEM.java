@@ -20,7 +20,7 @@ import org.apache.log4j.*;
  * The class exports the user certificate, user private key in seperated files and the chain of sub ca and ca certifikate in a third file.
  * The PEM files will have the names <i>common name</i>.pem, <i>common name</i>Key.pem and <i>common name</i>CA.pem derived from the DN in user certificate.
  *
- * @version $Id: P12toPEM.java,v 1.1 2002-03-24 10:47:23 anatom Exp $
+ * @version $Id: P12toPEM.java,v 1.2 2002-03-25 10:28:07 anatom Exp $
  */
 
 public class P12toPEM {
@@ -128,9 +128,7 @@ public class P12toPEM {
         X509Certificate userX509Certificate = (X509Certificate) chain[0];
         
         byte output[] = userX509Certificate.getEncoded();
-        String sn = userX509Certificate.getSubjectDN().toString();
-        int cnPos = sn.toUpperCase().indexOf("CN=");
-        
+        String sn = userX509Certificate.getSubjectDN().toString();        
         String userFile = CertTools.getPartFromDN(sn, "CN");
         String filetype = ".pem";
         

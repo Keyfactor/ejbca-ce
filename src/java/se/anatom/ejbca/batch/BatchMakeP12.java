@@ -43,7 +43,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.9 2002-03-24 10:47:23 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.10 2002-03-25 10:28:07 anatom Exp $
  *
  */
 
@@ -101,6 +101,20 @@ public class BatchMakeP12 {
         X509Certificate rootcert = (X509Certificate)chain[chain.length-1];
         cat.debug("<getCACertificate()");
         return rootcert;
+
+    } // getCACertificate
+    /**
+     * Gets full CA-certificate chain.
+     *
+     * @return Certificate[]
+     */
+    private Certificate[] getCACertChain()
+    throws Exception {
+        cat.debug(">getCACertChain()");
+        ISignSession ss = signhome.create();
+        Certificate[] chain = ss.getCertificateChain();
+        cat.debug("<getCACertChain()");
+        return chain;
 
     } // getCACertificate
 
@@ -168,13 +182,15 @@ public class BatchMakeP12 {
 
         // Make a certificate chain from the certificate and the CA-certificate
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        X509Certificate[] chain = new X509Certificate[2];
+        Certificate[] cachain = getCACertChain();
+        X509Certificate[] chain = new X509Certificate[cachain.length+1];
         chain[0] = cert;
+        for (int i=0;i<cachain.length;i++)
+            chain[i+1] = (X509Certificate)cachain[i];
         // CA-certificate
-        chain[1] = getCACertificate();
-        if (CertTools.isSelfSigned(chain[1])) {
+        if (CertTools.isSelfSigned(chain[chain.length-1])) {
             try {
-                chain[1].verify(chain[1].getPublicKey());
+                chain[chain.length-1].verify(chain[chain.length-1].getPublicKey());
             } catch (GeneralSecurityException se) {
                 throw new Exception("RootCA certificate does not verify");
             }

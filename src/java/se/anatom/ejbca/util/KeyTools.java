@@ -31,7 +31,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.4 2002-03-24 10:47:23 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.5 2002-03-25 10:28:07 anatom Exp $
  */
 public class KeyTools {
 
@@ -150,16 +150,20 @@ public class KeyTools {
             X509Certificate cert = (X509Certificate)array.get(array.size()-1);
             String ialias = CertTools.getPartFromDN(cert.getIssuerDN().toString(), "CN");
             Certificate[] chain1 = keyStore.getCertificateChain(ialias);
-            cat.debug("Loaded certificate chain with length "+ chain1.length+" with alias '"+ialias+"'.");
-            if (chain1.length == 0) {
-                cat.error("No RootCA certificate found!");
+            if (chain1 == null) {
                 stop = true;
-            }
-            for (int j=0;j<chain1.length;j++) {
-                array.add(chain1[j]);
-                // If one cert is slefsigned, we have found a root certificate, we don't need to go on anymore
-                if (CertTools.isSelfSigned((X509Certificate)chain1[j]))
+            } else {
+                cat.debug("Loaded certificate chain with length "+ chain1.length+" with alias '"+ialias+"'.");
+                if (chain1.length == 0) {
+                    cat.error("No RootCA certificate found!");
                     stop = true;
+                }
+                for (int j=0;j<chain1.length;j++) {
+                    array.add(chain1[j]);
+                    // If one cert is slefsigned, we have found a root certificate, we don't need to go on anymore
+                    if (CertTools.isSelfSigned((X509Certificate)chain1[j]))
+                        stop = true;
+                }
             }
         }
         Certificate[] ret = new Certificate[array.size()];
