@@ -61,7 +61,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.25 2004-01-06 13:11:51 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.26 2004-01-09 11:22:26 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -331,6 +331,7 @@ public class OCSPServlet extends HttpServlet {
         byte[] reqBytes = baos.toByteArray();
         // Do it...
         service(request, response, reqBytes); 
+        response.flushBuffer();
         m_log.debug("<doPost()");
     } //doPost
 
