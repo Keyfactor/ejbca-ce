@@ -10,13 +10,13 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.keyrecovery;
 
 /**
  * Primary key for key recovery data
  *
- * @version $Id: KeyRecoveryDataPK.java,v 1.5 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: KeyRecoveryDataPK.java,v 1.6 2004-06-08 18:02:29 sbailliez Exp $
  */
 public final class KeyRecoveryDataPK implements java.io.Serializable {
 	public String certSN;
@@ -25,11 +25,21 @@ public final class KeyRecoveryDataPK implements java.io.Serializable {
 	/**
 	 * Creates a new KeyRecoveryDataPK object.
 	 *
-	 * @param certificatesn certificate serial number
-	 * @param issuerdn dn of issuer of certificate
+	 * @param certSN certificate serial number
+	 * @param issuerDN dn of issuer of certificate
+     * @deprecated Use KeyRecovery(String, String) instead
 	 */
 	public KeyRecoveryDataPK(java.math.BigInteger certSN, java.lang.String issuerDN) {
-        this.certSN = certSN.toString(16);
+        this(certSN.toString(16), issuerDN);
+	}
+
+    /**
+     * Create a new key
+     * @param certSN the certificate sn in serial number in hexadecimal
+     * @param issuerDN issuer dn of the certificate
+     */
+	public KeyRecoveryDataPK(String certSN, java.lang.String issuerDN) {
+        this.certSN = certSN;
         this.issuerDN = issuerDN;
 	}
 

@@ -36,7 +36,7 @@ import se.anatom.ejbca.util.StringTools;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.14 2004-06-08 14:35:58 sbailliez Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.15 2004-06-08 18:02:29 sbailliez Exp $
  *
  * @ejb.bean
  *   description="Stores key recovery data"
@@ -69,12 +69,12 @@ import se.anatom.ejbca.util.StringTools;
  *
  * @ejb.finder
  *   description="findByUsername"
- *   signature="Collection findByUsername(java.lang.String)"
+ *   signature="Collection findByUsername(java.lang.String username)"
  *   query="SELECT DISTINCT OBJECT(a) from KeyRecoveryDataBean a WHERE a.username=?1"
  *
  * @ejb.finder
  *   description="findByUserMark"
- *   signature="Collection findByUserMark(java.lang.String)"
+ *   signature="Collection findByUserMark(java.lang.String usermark)"
  *   query="SELECT DISTINCT OBJECT(a) from KeyRecoveryDataBean a WHERE a.username=?1 AND a.markedAsRecoverable=TRUE"
  *
  * @jonas.bean
@@ -195,13 +195,12 @@ public abstract class KeyRecoveryDataBean extends BaseEntityBean {
 	 */
 	public KeyRecoveryDataPK ejbCreate(BigInteger certificatesn, String issuerdn, String username,
 		byte[] keydata) throws CreateException {
-		KeyRecoveryDataPK pk = new KeyRecoveryDataPK(certificatesn, issuerdn);
 		setCertificateSN(certificatesn);
 		setIssuerDN(issuerdn);
 		setUsername(StringTools.strip(username));
 		setMarkedAsRecoverable(false);
 		setKeyDataFromByteArray(keydata);
-
+        KeyRecoveryDataPK pk = new KeyRecoveryDataPK(getCertSN(), issuerdn);
 		log.debug("Created Key Recoverydata for user " + username);
 		return pk;
 	}
