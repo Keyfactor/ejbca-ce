@@ -14,7 +14,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
 
 /** Local interface of CAAdmin sessio bean for EJB. Manages CAs
  *
- * @version $Id: ICAAdminSessionLocal.java,v 1.4 2003-10-29 14:25:55 herrvendil Exp $
+ * @version $Id: ICAAdminSessionLocal.java,v 1.5 2003-11-02 08:45:37 anatom Exp $
  */
 public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
  
@@ -73,11 +73,17 @@ public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
 
   /**
    * Returns a value object containing nonsensitive information about a CA give it's name.
+   * @param admin administrator calling the method
+   * @param name human readable name of CA
+   * @return value object or null if CA does not exist
    */
   public CAInfo getCAInfo(Admin admin, String name);
 
   /**
    * Returns a value object containing nonsensitive information about a CA give it's CAId.
+   * @param admin administrator calling the method
+   * @param caid numerical id of CA
+   * @return value object or null if CA does not exist
    */  
   public CAInfo getCAInfo(Admin admin, int caid);
 
