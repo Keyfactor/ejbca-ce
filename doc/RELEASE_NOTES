@@ -1,6 +1,10 @@
 EJBCA V2.0B2
 ------------
 
+Name of initial temporary super administrator changed from "CN=Walter" to "CN=SuperAdmin".
+All defined administrator priviledges must be redefined.
+Drop tables AdminGroupData, AdminEntityData and  AccessRulesData to flush administrator priviledges.
+
 EJBCA V2.0
 ----------
 We have moved to EJB 2.0. JBoss 3 is now required.
