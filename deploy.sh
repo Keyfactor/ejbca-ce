@@ -26,10 +26,15 @@ then
 fi
 
 # Install BouncyCastle provider and ldap.jar
-if ! [ -f $JBOSS_HOME/server/default/lib/jce-jdk13-115.jar ]
+if ! [ -f $JBOSS_HOME/server/default/lib/jce-jdk13-116.jar ]
 then
-  cp lib/jce-jdk13-115.jar $JBOSS_HOME/server/default/lib
-  echo Copied jce-jdk13-115.jar to $JBOSS_HOME/server/default/lib. JBoss must be restared.
+  cp lib/jce-jdk13-116.jar $JBOSS_HOME/server/default/lib
+  echo Copied jce-jdk13-116.jar to $JBOSS_HOME/server/default/lib. JBoss must be restared.
+fi
+if ! [ -f $JBOSS_HOME/server/default/lib/bcmail-jdk13-116.jar ]
+then
+  cp lib/jce-jdk13-116.jar $JBOSS_HOME/server/default/lib
+  echo Copied bcmail-jdk13-116.jar to $JBOSS_HOME/server/default/lib. JBoss must be restared.
 fi
 if ! [ -f $JBOSS_HOME/server/default/lib/ldap.jar ]
 then
