@@ -1,3 +1,5 @@
+$Id: README,v 1.67 2003-02-10 09:20:57 anatom Exp $
+
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source Initiative.
 
@@ -275,13 +277,12 @@ Run the testprograms with 'runtests.sh/cmd' and watch the lovely debug output
 Create User certificates
 ------------------------
 To enroll for certificates using browsers, open
- http://127.0.0.1:8080/apply/index.html (assuming Tomcat/Jetty listens
- to port
- 8080) and use the links for your browser.
+ http://127.0.0.1:8080/ejbca/publicweb/apply/index.html (assuming Tomcat/Jetty
+ listens to port 8080) and use the links for your browser.
 
 To enroll for certificates using manual methods (for server certificates for
  example) open
-http://127.0.0.1:8080/apply/apply_man.html and fill in the form.
+http://127.0.0.1:8080/ejbca/publicweb/apply/apply_man.jsp and fill in the form.
 
 Use the 'ca.sh/cmd' and 'ra.sh/cmd' scripts to administer EJBCA.
 
@@ -598,7 +599,8 @@ null 65 2
 ./ra.sh setclearpwd raadmin foo123
 ./batch.sh
 
-8. Fetch the certificate using your browser at http://localhost:8080/apply
+8. Fetch the certificate using your browser a
+http://localhost:8080/ejbca/publicweb/apply
 
 Alternative:
 Install the generated PKCS12 (p12/walter.p12) file in the browser.
@@ -660,8 +662,9 @@ Programatically get certificate
 Example how a certificate can be fetched programmatically using HTTP/S. The
  sample generates a certificate request and uses POST to the same servlet
 as used from a browser through
-http://127.0.0.1:8080/apply/apply_man.jsp.
-The servlet url used in the example is http://127.0.0.1:8080/apply/certreq.
+http://127.0.0.1:8080/ejbca/publicweb/apply/apply_man.jsp.
+The servlet url used in the example is
+http://127.0.0.1:8080/ejbca/publicweb/apply/certreq.
 The certificate reply containing a PEM-formatted certificate is printed to the
  screen.
 
@@ -697,10 +700,4 @@ http://www.microsoft.com/windows2000/en/server/help/default.asp?url=
 
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
-
-
-
-
-
-
 
