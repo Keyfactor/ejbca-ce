@@ -1,4 +1,4 @@
-$Id: README,v 1.167 2004-11-04 15:48:05 anatom Exp $
+$Id: README,v 1.168 2004-11-09 15:33:42 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -994,6 +994,14 @@ Go to the AVAILABLELANGUAGES env-entry and add your language code to the value. 
 4. Now it should be possible to select CH in the system configuration as default language 
 and in the administrator preferences page. 
 The language will be changed next time the administrator logs in.
+
+
+ADDING YOUR OWN PUBLIC PAGES
+============================
+Put your files (static html is easy) under publicweb/root, do a full build and re-deploy. 
+The indexfile under publicweb/root is the one show on http://<ejbca host>:8080/ejbca, 
+so you can add a subdir under there.
+
 
 SAMPLES
 =======

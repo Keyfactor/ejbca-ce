@@ -1,6 +1,13 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.25 2004-09-18 11:13:36 anatom Exp $
+$Id: FAQ,v 1.26 2004-11-09 15:33:42 anatom Exp $
+
+---------
+Q : I want to add my own static pages under http://<myhost>:8080/ejbca/
+
+A : Put your files (static html is easy) under publicweb/root, do a full build and re-deploy. 
+The indexfile under publicweb/root is the one show on http://<ejbca host>:8080/ejbca, 
+so you can add a subdir under there.
 
 ---------
 Q : I get a blank page on the admiweb after start.
