@@ -1,9 +1,11 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.22 2004-05-14 06:13:36 anatom Exp $
+$Id: FAQ,v 1.23 2004-05-28 06:41:49 anatom Exp $
 
 ---------
 Q : After upgrading the version of Java, the Admin GUI no longer works.
+Or, the installation seems to work fine, superadmin.p12 is created but ssl connections are refused 
+without error messages in JBoss.
 
 A : Tomcat needs the CA-certificate relating to the server certificate in 
 javas trust-store. This is imported when running 'install.sh/cmd' and when
