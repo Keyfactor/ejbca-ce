@@ -308,6 +308,7 @@ public class ProtocolHttpTest extends TestCase {
         assertEquals( "Response code", 200, webresponse.getResponseCode() );
         assertEquals("Content-Type", "application/ocsp-response", webresponse.getContentType());
         // Extract the response
+        // BUG in httpunit 1.5.4,webresponse.getInputStream converts binary to ascii on windows-platform.
         InputStreamReader in = new InputStreamReader(webresponse.getInputStream());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // This works for small requests, and OCSP requests are small
