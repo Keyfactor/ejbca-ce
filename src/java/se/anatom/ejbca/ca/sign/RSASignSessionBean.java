@@ -63,7 +63,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.106 2003-10-21 13:48:48 herrvendil Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.107 2003-10-27 11:31:15 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -325,8 +325,9 @@ public class RSASignSessionBean extends BaseSessionBean {
             // Now finally after all these checks, get the certificate
             Certificate cert = createCertificate(admin, data, ca, pk, keyusage);
             // Call authentication session and tell that we are finished with this user
-            if (ca instanceof X509CA && ((X509CA) ca).getFinishUser() == true)
+            if (ca.getFinishUser() == true) {
                 finishUser(admin, username, password);
+            }
             debug("<createCertificate(pk, ku)");
             return cert;
         } catch (ObjectNotFoundException oe) {
@@ -343,7 +344,6 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::createCertificate
      */
-
     public Certificate createCertificate(Admin admin, String username, String password, int certType, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
         debug(">createCertificate(pk, certType)");
         // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
@@ -537,6 +537,10 @@ public class RSASignSessionBean extends BaseSessionBean {
                 }
             }
             ret.create();
+            // Call authentication session and tell that we are finished with this user
+            if (ca.getFinishUser() == true) {
+                finishUser(admin, req.getUsername(), req.getPassword());
+            }
             // TODO: handle returning errors as response message,
             // javax.ejb.ObjectNotFoundException and the others thrown...
         } catch (IllegalKeyStoreException e) {
@@ -645,11 +649,10 @@ public class RSASignSessionBean extends BaseSessionBean {
 		   if(certificateStore.findCertificateByFingerprint(admin, fingerprint) == null){		   		   		   		   
 		     certificateStore.storeCertificate(admin, cacert, "SYSTEMCA", fingerprint, CertificateData.CERT_ACTIVE, certtype);
 		   }  
-            // Store crl in ca CRL publishers.
+            // Store cert in ca cert publishers.
             Iterator iter = usedpublishers.iterator();
             while(iter.hasNext()){
               int publisherid = ((Integer) iter.next()).intValue();                                      
-            
               // Store CA certificate
               IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(publisherid);
               IPublisherSessionLocal pub = pubHome.create();
