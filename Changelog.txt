@@ -3,6 +3,8 @@
 ---
 Fixed bug with not returning correct content-length to browser when
 returning PEM-certificates.
+Updated docs.
+Added FAQ.
 
 1.0b2
 -----
