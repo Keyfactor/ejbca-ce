@@ -1,0 +1,45 @@
+#
+# $Id: .ejbca.properties.sample,v 1.1 2004-06-24 12:54:07 sbailliez Exp $
+#
+# This is just a sample file to override properties used
+# during development (or deployment) of EJBCA
+# 
+# You should copy and rename this file to .ejbca.properties
+# and customize at will.
+#
+
+# JBoss used during development
+# Default: ${env.JBOSS_HOME}
+jboss.home=${basedir}/../../jboss-3.2.4
+
+# which compiler to use
+# default: javac
+build.compiler=jikes
+
+# jndi name of the datasource to use in deployment descriptors of ejbs
+# default: ejbcaDS
+#datasource.jndi-name=ejbcaDS
+
+# the database name selected for deployment
+# The J2EE server needs to be configured with the appropriate JDBC driver
+# database are: oracle,mssql,mysql,postgres,sapdb,hsqldb,sybase
+# Default: hsqldb
+#database.name=postgres
+
+# ------------- database configuration ------------------------
+
+# Database connection url
+# Default: jdbc:hsqldb:${jboss.server.data.dir}${/}hypersonic${/}ejbcaDB
+#database.url=jdbc:postgresql://192.168.1.100/ejbca_dev
+
+# JDBC driver classname
+# Default: org.hsqldb.jdbcDriver
+#database.driver=org.postgresql.Driver
+
+# database username
+# Default: sa
+#database.username=postgres
+
+# database password
+# Default:
+#database.password=postgres
