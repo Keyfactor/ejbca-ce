@@ -11,6 +11,11 @@
  *                                                                       *
  *************************************************************************/
  
+/*
+ * DNFieldExtractor.java
+ *
+ * Created on den 1 maj 2002, 07:09
+ */
 package se.anatom.ejbca.ra.raadmin;
 
 import java.util.ArrayList;
@@ -25,7 +30,7 @@ import org.ietf.ldap.LDAPDN;
  * strings.
  *
  * @author Philip Vendil
- * @version $Id: DNFieldExtractor.java,v 1.19 2004-05-27 20:45:23 anatom Exp $
+ * @version $Id: DNFieldExtractor.java,v 1.20 2004-05-30 17:44:09 herrvendil Exp $
  */
 public class DNFieldExtractor {
     private static Logger log = Logger.getLogger(DNFieldExtractor.class);
@@ -48,35 +53,31 @@ public class DNFieldExtractor {
     public static final int ST = 11;
     public static final int DC = 12;
     public static final int C = 13;
-    //public static final int UNSTRUCTUREDNAME = 14;
-    //public static final int UNSTRUCTUREDADDRESS = 15;
-
-    // Subject Alternative Names.
-    public static final int OTHERNAME = 14;
-    public static final int RFC822NAME = 15;
-    public static final int DNSNAME = 16;
-    public static final int IPADDRESS = 17;
-    public static final int X400ADDRESS = 18;
-    public static final int DIRECTORYNAME = 19;
-    public static final int EDIPARTNAME = 20;
-    public static final int URI = 21;
-    public static final int REGISTEREDID = 22;
-    public static final int UPN = 23;
+    public static final int UNSTRUCTUREDADDRESS = 14;
+    public static final int UNSTRUCTUREDNAME = 15;
     
-    public static final int SUBJECTALTERNATIVENAMEBOUNDRARY = 14;
-    public static final int NUMBEROFFIELDS = 24;
-/*    public static final String[] SUBJECTDNFIELDS = {
-        "E=", "UID=", "CN=", "SN=", "GIVENNAME=", "INITIALS=", "SURNAME=", "T=", "OU=", "O=", "L=",
-        "ST=", "DC=", "C=", "1.2.840.113549.1.9.2", "1.2.840.113549.1.9.8"
-    };
-*/    
+    // Subject Alternative Names.
+    public static final int OTHERNAME = 16;
+    public static final int RFC822NAME = 17;
+    public static final int DNSNAME = 18;
+    public static final int IPADDRESS = 19;
+    public static final int X400ADDRESS = 20;
+    public static final int DIRECTORYNAME = 21;
+    public static final int EDIPARTNAME = 22;
+    public static final int URI = 23;
+    public static final int REGISTEREDID = 24;
+    public static final int UPN = 25;
+    public static final int GUID = 26;
+    public static final int SUBJECTALTERNATIVENAMEBOUNDRARY = 16;
+    public static final int NUMBEROFFIELDS = 27;
     public static final String[] SUBJECTDNFIELDS = {
-            "E=", "UID=", "CN=", "SN=", "GIVENNAME=", "INITIALS=", "SURNAME=", "T=", "OU=", "O=", "L=",
-            "ST=", "DC=", "C="
-        };
+        "E=", "UID=", "CN=", "SN=", "GIVENNAME=", "INITIALS=", "SURNAME=", "T=", "OU=", "O=", "L=",
+        "ST=", "DC=", "C=", "1.2.840.113549.1.9.8=", "1.2.840.113549.1.9.2="
+    };
+    
     public static final String[] SUBJECTALTNAME = {
         "OTHERNAME=", "RFC822NAME=", "DNSNAME=", "IPADDRESS=", "X400ADDRESS=", "DIRECTORYNAME=",
-        "EDIPARTNAME=", "UNIFORMRESOURCEIDENTIFIER=", "REGISTEREDID=", "UPN="
+        "EDIPARTNAME=", "UNIFORMRESOURCEIDENTIFIER=", "REGISTEREDID=", "UPN=",  "GUID="
     };
 
     // Constants used with field ordering
@@ -86,8 +87,8 @@ public class DNFieldExtractor {
     /**
      * Creates a new instance of DNFieldExtractor
      *
-     * @param dn DN
-     * @param type TYPE_SUBJECTDN or TYPE_SUBJECTALTNAME
+     * @param dn DOCUMENT ME!
+     * @param type DOCUMENT ME!
      */
     public DNFieldExtractor(String dn, int type) {
         dnfields = new HashMap();
@@ -97,15 +98,15 @@ public class DNFieldExtractor {
     /**
      * DOCUMENT ME!
      *
-     * @param dn DN
-     * @param type TYPE_SUBJECTDN or TYPE_SUBJECTALTNAME
+     * @param dn DOCUMENT ME!
+     * @param type DOCUMENT ME!
      */
-    public void setDN(String dn, int type) {
+    public void setDN(String dn, int type) {    	
         String[] fields;
         this.type = type;
         
         
-        if (type == TYPE_SUBJECTDN) {
+        if (type == TYPE_SUBJECTDN) {        	
             fieldnumbers = new int[SUBJECTDNFIELDS.length];
             fields = SUBJECTDNFIELDS;
         } else {
@@ -121,8 +122,7 @@ public class DNFieldExtractor {
                 String[] dnexploded = LDAPDN.explodeDN(dn, false);
 
                 for (int i = 0; i < dnexploded.length; i++) {
-                    boolean exists = false;
-
+                    boolean exists = false;                    
                     for (int j = 0; j < fields.length; j++) {
                         if (dnexploded[i].toUpperCase().startsWith(fields[j])) {
                             exists = true;
@@ -163,7 +163,7 @@ public class DNFieldExtractor {
     /**
      * DOCUMENT ME!
      *
-     * @return DN
+     * @return DOCUMENT ME!
      */
     public String getDN() {
         return dn;
@@ -191,7 +191,7 @@ public class DNFieldExtractor {
     /**
      * Function that returns true if non standard DN field exists id dn string.
      *
-     * @return true true if non standard DN field exists id dn string, flase otherwise.
+     * @return DOCUMENT ME!
      */
     public boolean existsOther() {
         return existsother;
@@ -200,9 +200,9 @@ public class DNFieldExtractor {
     /**
      * Returns the number of one kind of dn field.
      *
-     * @param field DNField
+     * @param field DOCUMENT ME!
      *
-     * @return number
+     * @return DOCUMENT ME!
      */
     public int getNumberOfFields(int field) {
         int returnval = 0;
@@ -220,7 +220,7 @@ public class DNFieldExtractor {
      * Returns the total number of fields in dn or subject alternative name. Primary use is when
      * checking user data with it's end entity profile.
      *
-     * @return total number of fields in dn
+     * @return DOCUMENT ME!
      */
     public int getFieldOrderLength() {
         return fieldorder.size();

@@ -37,7 +37,7 @@
                                 "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
                                 "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY",
                                 "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME",
-                                "EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN"};
+                                "EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN", "", "", "UNSTRUCTUREDADDRESS", "UNSTRUCTUREDNAME","GUID"};
    
    int[] statusids            = {UserDataRemote.STATUS_NEW ,UserDataRemote.STATUS_FAILED, UserDataRemote.STATUS_INITIALIZED, UserDataRemote.STATUS_INPROCESS
                                 , UserDataRemote.STATUS_GENERATED, UserDataRemote.STATUS_REVOKED , UserDataRemote.STATUS_HISTORICAL, UserDataRemote.STATUS_KEYRECOVERY};

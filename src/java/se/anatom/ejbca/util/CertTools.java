@@ -30,7 +30,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.60 2004-05-27 16:23:29 anatom Exp $
+ * @version $Id: CertTools.java,v 1.61 2004-05-30 17:44:32 herrvendil Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -82,17 +82,17 @@ public class CertTools {
         oids.put("emailaddress", X509Name.EmailAddress);
         oids.put("e", X509Name.EmailAddress);
         oids.put("email", X509Name.EmailAddress);
-        oids.put("unstructuredname", unstructuredName);
-        oids.put("unstructuredaddress", unstructuredAddress);
+        oids.put("1.2.840.113549.1.9.2", unstructuredName); //unstructuredName 
+        oids.put("1.2.840.113549.1.9.8", unstructuredAddress); //unstructuredAddress
     };
 
     private static final String[] dNObjectsForward = {
-        "unstructuredaddress", "unstructuredname", "emailaddress", "e", "email", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
+        "1.2.840.113549.1.9.8", "1.2.840.113549.1.9.2", "emailaddress", "e", "email", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
         "initials", "surname", "t", "ou", "o", "l", "st", "dc", "c"
     };
     private static final String[] dNObjectsReverse = {
         "c", "dc", "st", "l", "o", "ou", "t", "surname", "initials",
-        "givenname", "gn", "serialnumber", "sn", "cn", "uid", "email", "e", "emailaddress", "unstructuredname", "unstructuredaddress"
+        "givenname", "gn", "serialnumber", "sn", "cn", "uid", "email", "e", "emailaddress", "1.2.840.113549.1.9.2", "1.2.840.113549.1.9.8"
     };
     /** Change this if you want reverse order */
     private static final String[] dNObjects = dNObjectsForward;    

@@ -10,13 +10,13 @@
                                  "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
                                 "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY"
                                 , "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME"
-                                ,"EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN"};
+                                ,"EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN", "","", "UNSTRUCTUREDADDRESS", "UNSTRUCTUREDNAME","GUID"};
 
    int[] subjectdnfields = {EndEntityProfile.OLDDNE,EndEntityProfile.UID,EndEntityProfile.COMMONNAME,EndEntityProfile.SN
                            ,EndEntityProfile.GIVENNAME,EndEntityProfile.INITIALS,EndEntityProfile.SURNAME
                            ,EndEntityProfile.TITLE,EndEntityProfile.ORGANIZATIONUNIT,EndEntityProfile.ORGANIZATION
                            ,EndEntityProfile.LOCALE,EndEntityProfile.STATE,EndEntityProfile.DOMAINCOMPONENT
-                           ,EndEntityProfile.COUNTRY};
+                           ,EndEntityProfile.COUNTRY,EndEntityProfile.UNSTRUCTUREDADDRESS,EndEntityProfile.UNSTRUCTUREDNAME};
 
    int[] subjectaltnamefields = {EndEntityProfile.RFC822NAME
                                  ,EndEntityProfile.DNSNAME
@@ -27,7 +27,8 @@
                                  //,EndEntityProfile.DIRECTORYNAME
                                  //,EndEntityProfile.EDIPARTNAME
                                  //,EndEntityProfile.REGISTEREDID
-                                 ,EndEntityProfile.UPN};
+                                 ,EndEntityProfile.UPN
+                                 ,EndEntityProfile.GUID};
 
 
    String[] tokentexts = RAInterfaceBean.tokentexts;

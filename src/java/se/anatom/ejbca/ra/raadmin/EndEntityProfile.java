@@ -31,12 +31,12 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.24 2004-05-25 20:55:50 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.25 2004-05-30 17:44:09 herrvendil Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
     private static Logger log = Logger.getLogger(EndEntityProfile.class);
-    public static final float LATEST_VERSION = 3;
+    public static final float LATEST_VERSION = 4;
 
     // Public constants
     // Type of data constants.
@@ -85,9 +85,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public static final int UPN                = 36;
     public static final int DEFAULTCA          = 37;
     public static final int AVAILCAS           = 38;    
+    public static final int UNSTRUCTUREDADDRESS = 39;
+    public static final int UNSTRUCTUREDNAME    = 40;
+    public static final int GUID                = 41;
     
     
-    public static final int NUMBEROFPARAMETERS = 39;
+    public static final int NUMBEROFPARAMETERS = 42;
 
     public static final String SPLITCHAR       = ";";
 
@@ -213,12 +216,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       setRequired(parameter,size,false);
       setUse(parameter,size,true);
       setModifyable(parameter,size,true);
-      if(parameter >= OLDDNE && parameter <= COUNTRY){
+      if(parameter >= OLDDNE && parameter <= COUNTRY || parameter == UNSTRUCTUREDADDRESS || parameter == UNSTRUCTUREDNAME){
         ArrayList fieldorder = (ArrayList) data.get(SUBJECTDNFIELDORDER);
         fieldorder.add(new Integer((NUMBERBOUNDRARY*parameter) + size));
         Collections.sort(fieldorder);
       }
-      if((parameter >= RFC822NAME && parameter <= REGISTEREDID) || parameter == UPN){
+      if((parameter >= RFC822NAME && parameter <= REGISTEREDID) || parameter == UPN  || parameter == GUID){
         ArrayList fieldorder = (ArrayList) data.get(SUBJECTALTNAMEFIELDORDER);
         fieldorder.add(new Integer((NUMBERBOUNDRARY*parameter) + size));
       }
@@ -255,7 +258,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
           }
         }
 
-        if((parameter >= RFC822NAME && parameter <= REGISTEREDID) || parameter == UPN){
+        if((parameter >= RFC822NAME && parameter <= REGISTEREDID) || parameter == UPN || parameter == UNSTRUCTUREDADDRESS || parameter == UNSTRUCTUREDNAME || parameter == GUID){
           ArrayList fieldorder = (ArrayList) data.get(SUBJECTALTNAMEFIELDORDER);
           int value = (NUMBERBOUNDRARY*parameter) + number;
           for(int i=0; i < fieldorder.size(); i++){
@@ -458,19 +461,21 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
                                                                 int tokentype, int hardwaretokenissuerid, int caid) throws UserDoesntFullfillEndEntityProfile{
       DNFieldExtractor subjectdnfields = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
       if (subjectdnfields.isIllegal()) {
-          throw new UserDoesntFullfillEndEntityProfile("Subject DN is illegal.");
+          throw new UserDoesntFullfillEndEntityProfile("Subject IS is illegal.");
       }
       DNFieldExtractor subjectaltnames   = new DNFieldExtractor(subjectaltname, DNFieldExtractor.TYPE_SUBJECTALTNAME);
       if (subjectaltnames.isIllegal()) {
           throw new UserDoesntFullfillEndEntityProfile("Subject alt names are illegal.");
       }
+      String dnfield;
+      String[] values;
 
       // Check that no other than supported dn fields exists in the subject dn.
       if(subjectdnfields.existsOther())
-        throw new UserDoesntFullfillEndEntityProfile("Unsupported Subject DN Field found.");
+        throw new UserDoesntFullfillEndEntityProfile("Unsupported Subject DN Field found in:" + dn);
 
       if(subjectaltnames.existsOther())
-        throw new UserDoesntFullfillEndEntityProfile("Unsupported Subject Alternate Name Field found.");
+        throw new UserDoesntFullfillEndEntityProfile("Unsupported Subject Alternate Name Field found in:" + subjectaltname );
 
       checkIfAllRequiredFieldsExists(subjectdnfields, subjectaltnames,  username, email);
 
@@ -693,7 +698,16 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
                 setNotificationSubject("");
                 setNotificationSender("");
                 setNotificationMessage("");
-            }                 
+            }
+            
+            if(getVersion() < 4){
+                ArrayList numberoffields = new ArrayList(NUMBEROFPARAMETERS);                
+                for(int i =numberoffields.size(); i < NUMBEROFPARAMETERS; i++){
+                  numberoffields.add(new Integer(0));
+                }
+                data.put(NUMBERARRAY,numberoffields);                
+            }
+            
             data.put(VERSION, new Float(LATEST_VERSION));
         }
         log.debug("<upgrade");
@@ -794,7 +808,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
           for(int j = 0; j < size; j++){
             if(isRequired(SUBJECTALTNAMEFIELDS[i],j))
               if(subjectaltnames.getField(SUBJECTALTNAMEFIELDEXTRACTORNAMES[i],j).trim().equals(""))
-                throw new UserDoesntFullfillEndEntityProfile("Subject DN field '" + SUBJECTALTNAMEFIELDNAMES[i] + "' must exist.");
+                throw new UserDoesntFullfillEndEntityProfile("Subject Alterntive Name field '" + SUBJECTALTNAMEFIELDNAMES[i] + "' must exist.");
           }
         }
     }
@@ -833,33 +847,36 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     private static final int FIELDBOUNDRARY  = 10000;
     private static final int NUMBERBOUNDRARY = 100;
 
-    private static final int[] SUBJECTDNFIELDS              = {OLDDNE, UID, COMMONNAME, SN, GIVENNAME, INITIALS, SURNAME, TITLE, ORGANIZATIONUNIT, ORGANIZATION, LOCALE, STATE, DOMAINCOMPONENT, COUNTRY};
+    private static final int[] SUBJECTDNFIELDS              = {OLDDNE, UID, COMMONNAME, SN, GIVENNAME, INITIALS, SURNAME, TITLE, ORGANIZATIONUNIT, ORGANIZATION, LOCALE, STATE, DOMAINCOMPONENT, COUNTRY, UNSTRUCTUREDADDRESS, UNSTRUCTUREDNAME};
     private static final int[] SUBJECTDNFIELDEXTRACTORNAMES = { DNFieldExtractor.E,DNFieldExtractor.UID, DNFieldExtractor.CN, DNFieldExtractor.SN,
                                                                DNFieldExtractor.GIVENNAME,DNFieldExtractor.INITIALS,DNFieldExtractor.SURNAME, DNFieldExtractor.T,
                                                                DNFieldExtractor.OU, DNFieldExtractor.O, DNFieldExtractor.L,
-                                                               DNFieldExtractor.ST, DNFieldExtractor.DC, DNFieldExtractor.C};
+                                                               DNFieldExtractor.ST, DNFieldExtractor.DC, DNFieldExtractor.C,
+															   DNFieldExtractor.UNSTRUCTUREDADDRESS, DNFieldExtractor.UNSTRUCTUREDNAME};
     private static final String[] SUBJECTDNFIELDNAMES       = {"Email Address (E)", "UID","CommonName (CN)", "SerialNumber (SN)", "GivenName (GivenName)",
                                                                "Initials (Initials)", "SurName (SurName)", "Title (T)", "OrganizationUnit (OU)", "Organization (O)",
-                                                               "Location (L)", "State (ST)", "DomainComponent (DC)", "Country (C)"};
+                                                               "Location (L)", "State (ST)", "DomainComponent (DC)", "Country (C)", "Unstructured Address (IP)", "Unstructured Name (fqdn)"};
 
 
-    private static final int[] SUBJECTALTNAMEFIELDS              = {DNSNAME,IPADDRESS, OTHERNAME, UNIFORMRESOURCEID, X400ADDRESS, DIRECTORYNAME, EDIPARTNAME, REGISTEREDID, RFC822NAME, UPN};
+    private static final int[] SUBJECTALTNAMEFIELDS              = {DNSNAME,IPADDRESS, OTHERNAME, UNIFORMRESOURCEID, X400ADDRESS, DIRECTORYNAME, EDIPARTNAME, REGISTEREDID, RFC822NAME, UPN , GUID};
     private static final int[] SUBJECTALTNAMEFIELDEXTRACTORNAMES = {DNFieldExtractor.DNSNAME,DNFieldExtractor.IPADDRESS, DNFieldExtractor.OTHERNAME,
                                                                     DNFieldExtractor.URI, DNFieldExtractor.X400ADDRESS, DNFieldExtractor.DIRECTORYNAME,
-                                                                    DNFieldExtractor.EDIPARTNAME, DNFieldExtractor.REGISTEREDID, DNFieldExtractor.RFC822NAME, DNFieldExtractor.UPN};
+                                                                    DNFieldExtractor.EDIPARTNAME, DNFieldExtractor.REGISTEREDID, DNFieldExtractor.RFC822NAME, DNFieldExtractor.UPN, DNFieldExtractor.GUID};
     private static final String[] SUBJECTALTNAMEFIELDNAMES       = {"DNSName", "IPAddress", "OtherName", "UniformResourceId (uri)", "X400Address", "DirectoryName",
-                                                                    "EDIPartName","RegisteredId","RFC822Name", "UPN"};
+                                                                    "EDIPartName","RegisteredId","RFC822Name", "UPN", "Globally Unique Id"};
 
     // Used to map constants of DNFieldExtractor to end entity profile constants.
     private static final int[] DNEXTRATORTOPROFILEMAPPER      = {OLDDNE, UID, COMMONNAME, SN, GIVENNAME, INITIALS, SURNAME,
                                                                  TITLE, ORGANIZATIONUNIT, ORGANIZATION, LOCALE,
-                                                                 STATE, DOMAINCOMPONENT, COUNTRY, OTHERNAME, RFC822NAME, DNSNAME,
-                                                                 IPADDRESS, X400ADDRESS, DIRECTORYNAME, EDIPARTNAME, UNIFORMRESOURCEID, REGISTEREDID, UPN};
+                                                                 STATE, DOMAINCOMPONENT, COUNTRY, UNSTRUCTUREDADDRESS, UNSTRUCTUREDNAME, OTHERNAME, RFC822NAME, DNSNAME,
+                                                                 IPADDRESS, X400ADDRESS, DIRECTORYNAME, EDIPARTNAME, UNIFORMRESOURCEID, REGISTEREDID, UPN, GUID};
     private static final String[] DNEXTRATORTOPROFILEMAPPERTEXTS = {"Email Address (E)", "UID", "CommonName (CN)", "SerialNumber (SN)",
                                                                     "GivenName (GivenName)", "Initials (Initials)", "SurName (SurName)",
                                                                     "Title (T)", "OrganizationUnit (OU)", "Organization (O)", "Location (L)",
-                                                                    "State (ST)", "DomainComponent (DC)", "Country (C)", "OtherName", "RFC822Name", "DNSName",
-                                                                    "IPAddress", "X400Address", "DirectoryName", "EDIPartName", "UniformResourceId (uri)", "RegisteredId", "UPN"};
+                                                                    "State (ST)", "DomainComponent (DC)", "Country (C)", "Unstructured Address (IP)", 
+																	"Unstructured Name (fqdn)","OtherName", "RFC822Name", "DNSName",
+                                                                    "IPAddress", "X400Address", "DirectoryName", "EDIPartName", "UniformResourceId (uri)", "RegisteredId", "UPN", 
+																	"Globally Unique Id"};
 
     private static final int[] PROFILEIDTOUSERIDMAPPER        = {0,0,0, DNFieldExtractor.E, DNFieldExtractor.UID, DNFieldExtractor.CN, DNFieldExtractor.SN,
                                                                         DNFieldExtractor.GIVENNAME,DNFieldExtractor.INITIALS, DNFieldExtractor.SURNAME,
@@ -867,7 +884,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
                                                                         DNFieldExtractor.L ,DNFieldExtractor.ST,DNFieldExtractor.DC,
                                                                         DNFieldExtractor.C ,DNFieldExtractor.RFC822NAME ,DNFieldExtractor.DNSNAME,
                                                                         DNFieldExtractor.IPADDRESS ,DNFieldExtractor.OTHERNAME ,DNFieldExtractor.URI, DNFieldExtractor.X400ADDRESS,
-                                                                        DNFieldExtractor.DIRECTORYNAME ,DNFieldExtractor.EDIPARTNAME ,DNFieldExtractor.REGISTEREDID,0,0,0,0,0,0,0,0,0,0,DNFieldExtractor.UPN};
+                                                                        DNFieldExtractor.DIRECTORYNAME ,DNFieldExtractor.EDIPARTNAME ,DNFieldExtractor.REGISTEREDID,0,0,0,0,0,0,0,0,0,0,DNFieldExtractor.UPN,0,0,DNFieldExtractor.UNSTRUCTUREDADDRESS,DNFieldExtractor.UNSTRUCTUREDNAME, DNFieldExtractor.GUID};
 
 
     private static final String NUMBERARRAY               = "NUMBERARRAY";

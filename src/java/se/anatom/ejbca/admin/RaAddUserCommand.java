@@ -43,7 +43,7 @@ import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.33 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.34 2004-05-30 17:44:34 herrvendil Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 	
@@ -132,7 +132,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 System.out.println("");
                 System.out.println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
                 System.out.println(
-                    "SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>\"");
+                    "SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>, ipaddress=<address>, guid=<globally unique id>\"");
 
                 if (usekeyrecovery) {
                     System.out.println(

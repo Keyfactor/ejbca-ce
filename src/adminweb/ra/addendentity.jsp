@@ -72,7 +72,7 @@
                                 "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
                                 "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY",
                                 "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME",
-                                "EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN"};
+                                "EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN","","", "UNSTRUCTUREDADDRESS", "UNSTRUCTUREDNAME","GUID"};
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionality/create_end_entity"); 
                                             rabean.initialize(request, ejbcawebbean);
@@ -272,7 +272,7 @@
                if(!value.equals("")){
                  lastselectedsubjectdns[i] = value;
                  value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTDNFIELDS[oldprofile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE])] +value);
-                 if(subjectdn == null)
+                 if(subjectdn.equals(""))
                    subjectdn = value;
                  else
                    subjectdn += ", " + value;
@@ -313,7 +313,7 @@
                if(!value.equals("")){
                  lastselectedsubjectaltnames[i] = value;
                  value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTALTNAME[oldprofile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY] +value);
-                 if(subjectaltname == null)
+                 if(subjectaltname.equals(""))
                    subjectaltname = value;
                  else
                    subjectaltname += ", " + value;
@@ -714,7 +714,7 @@ function checkallfields(){
             fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){ // not implemented yet
            if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME){
              if(profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){
-               if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.IPADDRESS){ %>
+               if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.IPADDRESS ){ %>
     if(!checkfieldforipaddess("document.adduser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYNUMBERALSANDDOTS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
       illegalfields++;
            <%  }else{ %>
