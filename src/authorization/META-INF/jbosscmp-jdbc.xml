@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<jbosscmp-jdbc>
+
+<defaults>
+    <datasource>java:/DefaultDS</datasource>
+    <datasource-mapping>Hypersonic SQL</datasource-mapping>
+</defaults>
+
+</jbosscmp-jdbc>

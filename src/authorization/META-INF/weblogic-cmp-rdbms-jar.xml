@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE weblogic-rdbms-jar PUBLIC
+ '-//BEA Systems, Inc.//DTD WebLogic 7.0.0 EJB RDBMS Persistence//EN'
+ 'http://www.bea.com/servers/wls700/dtd/weblogic-rdbms20-persistence-700.dtd'>
+
+<weblogic-rdbms-jar>
+
+    <weblogic-rdbms-bean>
+        <ejb-name>AdminGroupData</ejb-name>
+        <data-source-name>DefaultDS</data-source-name>
+        <table-map>
+            <table-name>ADMINGROUP</table-name>
+            <field-map>
+                <cmp-field>adminGroupName</cmp-field>
+                <dbms-column>adminGroupName</dbms-column>
+            </field-map>
+        </table-map>
+    </weblogic-rdbms-bean>
+    
+    <weblogic-rdbms-bean>
+        <ejb-name>AdminEntityData</ejb-name>
+        <data-source-name>DefaultDS</data-source-name>
+        <table-map>
+            <table-name>ADMINENTITY</table-name>
+            <field-map>
+                <cmp-field>pK</cmp-field>
+                <dbms-column>pK</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>matchWith</cmp-field>
+                <dbms-column>matchWith</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>matchType</cmp-field>
+                <dbms-column>matchType</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>matchValue</cmp-field>
+                <dbms-column>matchValue</dbms-column>
+            </field-map>
+        </table-map>
+    </weblogic-rdbms-bean>    
+    
+    <weblogic-rdbms-bean>
+        <ejb-name>AccessRulesData</ejb-name>
+        <data-source-name>DefaultDS</data-source-name>
+        <table-map>
+            <table-name>ACCESSRULES</table-name>
+            <field-map>
+                <cmp-field>pK</cmp-field>
+                <dbms-column>pK</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>resource</cmp-field>
+                <dbms-column>resource</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>accessRule</cmp-field>
+                <dbms-column>accessRule</dbms-column>
+            </field-map>
+        </table-map>
+    </weblogic-rdbms-bean>    
+
+    <weblogic-rdbms-relation>
+      <relation-name>AdminGroupDataToAccessRules</relation-name>
+        <weblogic-relationship-role>
+          <relationship-role-name>AccessRulesData</relationship-role-name>
+          <relationship-role-map>
+                <column-map>
+                  <foreign-key-column>adminGroupName</foreign-key-column>
+                  <key-column>adminGroupName</key-column>
+                </column-map>
+          </relationship-role-map>
+        </weblogic-relationship-role>
+    </weblogic-rdbms-relation>
+
+    <weblogic-rdbms-relation>
+      <relation-name>AdminGroupDataToAdminEntities</relation-name>
+        <weblogic-relationship-role>
+          <relationship-role-name>AdminEntityData</relationship-role-name>
+          <relationship-role-map>
+                <column-map>
+                  <foreign-key-column>adminGroupName</foreign-key-column>
+                  <key-column>adminGroupName</key-column>
+                </column-map>
+          </relationship-role-map>
+        </weblogic-relationship-role>
+    </weblogic-rdbms-relation>
+
+    <create-default-dbms-tables>False</create-default-dbms-tables>
+</weblogic-rdbms-jar>
