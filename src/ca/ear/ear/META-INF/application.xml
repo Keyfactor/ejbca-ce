@@ -16,22 +16,22 @@ application for enrollment (apply) and distribution (webdist).
         </web>
     </module>
     <module>
-        <ejb>ca.jar</ejb>
+        <ejb>ca-ejb.jar</ejb>
     </module>
     <module>
-        <ejb>ra.jar</ejb>
+        <ejb>ra-ejb.jar</ejb>
     </module>
     <module>
-        <ejb>authorization.jar</ejb>
+        <ejb>authorization-ejb.jar</ejb>
     </module> 
     <module>
-        <ejb>log.jar</ejb>
+        <ejb>log-ejb.jar</ejb>
     </module>    
     <module>
-        <ejb>hardtoken.jar</ejb>
+        <ejb>hardtoken-ejb.jar</ejb>
     </module>
     <module>
-        <ejb>keyrecovery.jar</ejb>
+        <ejb>keyrecovery-ejb.jar</ejb>
     </module>            
     <module>
         <web>
