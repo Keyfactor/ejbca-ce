@@ -1,4 +1,4 @@
-$Id: README,v 1.109 2004-01-04 16:50:29 anatom Exp $
+$Id: README,v 1.110 2004-01-05 18:28:53 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -851,6 +851,12 @@ openssl ocsp -issuer Test-CA.pem -cert Test.pem -req_text -url http://localhost:
 If Mozilla should accept OCSP-responses from a CA, the CAs certificate should include the KeyUsage 'Digital Signature'.
 If using a dedicated OCSP responder certificate, this certificate must be imported in Mozilla as a Trusted CA certificate, so it
 can be set as OCSP signer in 'Privacy & Security->Validation'.
+Otherwise, just select 'Use OCSP to validate all certificates using this URL and signer' in 'Privace & Security->Validation', 
+choose the CA from EJBCA (which you should have made Trusted by right clicking in 
+'Privacy & Security->Certificates->Manage Certificates->Authorities' and checking the appropriate checkboxes.
+When the validation settings are set, Mozilla will query the OCSP server when for example double-clicking on a certificate in the 
+certificate manager.
+An appropriate URL for validation is: http://<hostname>:8080/ejbca/publicweb/status/ocsp
 
 EXPORT/IMPORT PROFILES
 =======================
