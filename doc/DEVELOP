@@ -1,15 +1,75 @@
 
-Error, info and debug logs
---------------------------
+Logging
+=======
 
 Straight console output (System.out) MUST not be used in EJBCA except in
 cases of console admin utilities.
 
-EJBCA uses the Apache Log4J package for logging. This means that any class that
-wants to do logging or console output MUST define:
+There are two types of logging in EJBCA:
 
-    /** Log4j instance for Base */
-    private static Logger log = Logger.getLogger(<class>.class.getName());
+1. CA logs, defining important events. These logs end up in the database and can
+be searched through the administration Web-GUI.
+
+2. Error and debug logs. These logs use Log4j and end up in a log file defined
+in JBoss.
+
+CA logs
+-------
+
+There are three important classes:
+Admin     : Defines the administrator that performed the action.
+LogEntry  : Represents a line in the log database. Only the contants defined
+here are used.
+ILogSessionRemote/Local : The log functionality itself.
+
+To perform logging, one must first aquire the remote interface to the log
+session:
+obj1 = jndicontext.lookup("LogSession");
+LogSessionHome logsessionhome = (ILogSessionHome
+javax.rmi.PortableRemoteObject.narrow(obj1, ILogSessionHome.class);
+logsession = logsessionhome.create();
+
+Next step is to log trough the function 'log', it's as easy as can be.
+
+Parameters to the log function are:
+admin : is of the class Admin and is created according to the following
+criteria:
+    1. In case a client certificate exists, new Admin(certificate)
+    2. In other cases one of the types defined in Admin.TYPE_...
+       ex: new Admin(Admin.TYPE_RACOMMANDLINE_USER, ip-adress).
+       If possible, the ip-adress should be passed.
+module : is one of the LogEntry.MODULE_ constants and defines in which module
+the event occured.
+    ex : LogEntry.MODULE_CA.
+time : the time of the event.
+username : describes which user (endentity) that is involved in the event.
+null in case no user can be considered to be involved.
+certificate : defines which certificate is involved in the event. null in case
+no certificate can be considered to be involved.
+event : is one of the LogEntry.EVENT_ constants and defines which type of event
+occured.
+comment : a comment to the event.
+
+If there are events that are not defined it is easy to add new ones, just follow
+these steps:
+1. Add an EVENT_INFO/ERROR constant to LogEntry
+2. Add corresponting text in the constant LogEntry.EVENTNAMES_INFO/ERROR
+3. Open the file src/ra/web/raadmin/languages/languagefile.en.properies i a text
+editor.
+Go through the contants until you come to the EVENT_INFO/ERROR... constants and
+add the english translation. Try to keep the list sorted in alphabetical order.
+
+If the three steps are followed the Web-GUI will be automagicaly updated and no
+changes need to be done to it.
+
+Error and debug logs
+--------------------
+
+EJBCA uses the Apache Log4J package for debug-logging. This means that any class
+that wants to do logging or console output MUST define:
+
+/** Log4j instance */
+private static Logger log = Logger.getLogger(<class>.class.getName());
 
 Logging is then done with:
 
@@ -77,26 +137,27 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.5 2002-07-21 12:10:36 anatom Exp $
+@version $Id: DEVELOP,v 1.6 2002-10-14 07:43:23 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.5 2002-07-21 12:10:36 anatom Exp $
+ * @version $Id: DEVELOP,v 1.6 2002-10-14 07:43:23 anatom Exp $
  */
 
 CA KeyStore architecture/creating a custom CA Keystore
 --------------------------------------------------------------------------
 
-The CA Keystore, where the CAs private key is stored and used is 
+The CA Keystore, where the CAs private key is stored and used is
 defined by the interface se.anatom.ejbca.ca.sign.ISigningDevice.
 
-By creating a new custom class and simply editing the property 
-'signingDeviceFactory' to point at the custom factory class that creates an 
-instance of the custom SigningDevice class in a thread-safe way. 
-It is recommended, but not required, that the Signing device implements a Singleton.
+By creating a new custom class and simply editing the property
+'signingDeviceFactory' to point at the custom factory class that creates an
+instance of the custom SigningDevice class in a thread-safe way.
+It is recommended, but not required, that the Signing device implements a
+Singleton.
 
 The SigningDeviceFactory class MUST contain the method:
 
@@ -104,10 +165,11 @@ The SigningDeviceFactory class MUST contain the method:
     * @prop Arguments needed fo?r the eventual creation of the object
     * @return An instance of the Signing device.
     */
-    public synchronized ISigningDevice makeInstance(Properties prop) throws Exception {
+    public synchronized ISigningDevice makeInstance(Properties prop) throws
+    Exception {
         return PKCS12SigningDevice.instance(prop);
     }
-    
+
 CertificateStore/Publisher architecture
 ---------------------------------------
 
@@ -143,5 +205,6 @@ This architecture gives us the choice of for example an SQL database aa
 CertificateStoreSession where we also publish certificates to an LDAP directory,
 or the LDAP directory as the primary CertificateStoreSession where we also
 publish certificates to a specific SQL database for a specific purpose.
+
 
 
