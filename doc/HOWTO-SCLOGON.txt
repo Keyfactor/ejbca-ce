@@ -13,7 +13,9 @@ Please note that [x] refers to one of the references listed in the end of the fi
    "Requesting Offline Domain Controller Certificates" in [0] describes how to.
    The request file will be called domaincert.req in the rest of this howto.
 
-4. Define a certificate that fulfils all the requirements of [2] on EJBCA ,(GUID in AltNames and 'Use Microsoft Template Value').
+4. Define a certificate that fulfils all the requirements of [2] on EJBCA ,
+   (Use Microsoft Template Value, CRL Distributions Point, KeyUsage, Enhanced KeyUsage 
+   and GUID as AltName).
    A new certificate profile has to be defined. Use the ENDUSER template.
    Create an end entity profile using the new certificate profile.
    Do "certutil -dump domaincert.req" (see [0]). The "Other Name" in the "Subject Alternative Names"
