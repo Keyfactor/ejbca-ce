@@ -57,7 +57,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.68 2004-05-15 14:53:09 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.69 2004-06-01 14:31:48 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -1228,7 +1228,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @return DOCUMENT ME!
      */
     public byte[] getLastCRL(Admin admin, String issuerdn) {
-        debug(">findLatestCRL()");
+        debug(">getLastCRL("+issuerdn+")");
 
         try {
             int maxnumber = getLastCRLNumber(admin, issuerdn);
@@ -1239,7 +1239,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             } catch (FinderException e) {
                 crl = null;
             }
-            debug("<findLatestCRL()");
+            debug("<getLastCRL()");
             if (crl == null)
                 return null;
 
@@ -1256,7 +1256,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * Implements ICertificateStoreSession::getLastCRLInfo.
      */
     public CRLInfo getLastCRLInfo(Admin admin, String issuerdn) {
-        debug(">findLatestCRL()");
+        debug(">getLastCRLInfo("+issuerdn+")");
         try {
             int maxnumber = getLastCRLNumber(admin, issuerdn);
             CRLInfo crlinfo = null;
@@ -1266,7 +1266,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             } catch (FinderException e) {
                 crlinfo = null;
             }
-            debug("<findLatestCRL()");
+            debug("<getLastCRLInfo()");
             if (crlinfo == null)
                 return null;
             
@@ -1283,7 +1283,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * Uses select directly from datasource.
      */
     public int getLastCRLNumber(Admin admin, String issuerdn) {
-        debug(">getLastCRLNumber()");
+        debug(">getLastCRLNumber("+issuerdn+")");
 
         Connection con = null;
         PreparedStatement ps = null;;
@@ -1297,7 +1297,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             int maxnumber = 0;
             if (result.next())
                 maxnumber = result.getInt(1);
-            debug("<getLastCRLNumber()");
+            debug("<getLastCRLNumber("+maxnumber+")");
 
             return maxnumber;
         }
