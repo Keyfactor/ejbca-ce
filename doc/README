@@ -1,4 +1,4 @@
-$Id: README,v 1.173 2005-02-01 08:57:19 anatom Exp $
+$Id: README,v 1.174 2005-02-07 16:29:47 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -602,8 +602,9 @@ The SMTP must be configured.
 
 You must create a new end-entity profile to be able to issue certificates 
 to end users. Under the RA functions, choose "Edit End Entity Profiles" 
-and use the EMPTY profile as a template for your profile. In this page 
-you can Enable Send Notifications and create the notification message. 
+and add a new profile profile. Select the profile and go into 
+'Edit End Entity profile'. In this page you can Enable Send Notifications 
+and create the notification message. 
 
 Enter the from-address, subject and message using the following variables 
 for dynamic substitution: $USERNAME, $PASSWORD, $CN, $O, $OU, $C, $DATE. 
