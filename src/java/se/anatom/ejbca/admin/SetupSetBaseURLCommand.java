@@ -22,7 +22,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 /**
  * Sets the base url of the web interface
  *
- * @version $Id: SetupSetBaseURLCommand.java,v 1.4 2004-10-13 07:14:46 anatom Exp $
+ * @version $Id: SetupSetBaseURLCommand.java,v 1.5 2005-02-03 16:59:50 anatom Exp $
  */
 public class SetupSetBaseURLCommand extends BaseAdminCommand {
     /**
@@ -31,7 +31,7 @@ public class SetupSetBaseURLCommand extends BaseAdminCommand {
      * @param args command line arguments
      */
     public SetupSetBaseURLCommand(String[] args) {
-        super(args);
+        super(args, Admin.TYPE_CACOMMANDLINE_USER);
     }
 
     /**

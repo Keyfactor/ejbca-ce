@@ -68,7 +68,7 @@ import java.util.Iterator;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.84 2004-11-20 23:14:06 sbailliez Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.85 2005-02-03 16:59:51 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -933,7 +933,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     /**
      * Finds all users with a specified status.
      *
-     * @param status the new status, from 'UserData'.
+     * @param status the status to look for, from 'UserData'.
      * @return Collection of UserAdminData
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
@@ -954,6 +954,30 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         debug("<findAllUsersByStatus(" + status + ")");
         return returnval;
     }
+    /**
+     * Finds all users registered to a specified ca.
+     *
+     * @param caid the caid of the CA, from 'UserData'.
+     * @return Collection of UserAdminData
+     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
+     */
+     public Collection findAllUsersByCaId(Admin admin, int caid) throws FinderException {
+         debug(">findAllUsersByCaId("+caid+")");
+         debug("Looking for users with caid: " + caid);
+         
+         Query query = new Query(Query.TYPE_USERQUERY);
+         query.add(UserMatch.MATCH_WITH_CA, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(caid));
+         Collection returnval = null;
+         
+         try{
+           returnval = query(admin, query, false, null, null, false);  
+         }catch(IllegalQueryException e){}
+         debug("found "+returnval.size()+" user(s) with caid="+caid);
+         debug("<findAllUsersByCaId("+caid+")");
+         return returnval;         
+     }
+
 
     /**
      * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.

@@ -32,10 +32,8 @@ import javax.naming.NamingException;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 
-import se.anatom.ejbca.ca.crl.ICreateCRLSessionHome;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
-import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
-import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
+import se.anatom.ejbca.ca.crl.ICreateCRLSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.log.Admin;
@@ -46,15 +44,12 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.19 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.20 2005-02-03 16:59:50 anatom Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
     /** Private key alias in PKCS12 keystores */
     protected String privKeyAlias = "privateKey";
     protected char[] privateKeyPass = null;
-    protected Admin administrator = null;
-
-    protected ICAAdminSessionRemote caadminsession = null;
     
     /**
      * Creates a new instance of BaseCaAdminCommand
@@ -62,10 +57,9 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
      * @param args command line arguments
      */
     public BaseCaAdminCommand(String[] args) {
-        super(args);
+        super(args, Admin.TYPE_CACOMMANDLINE_USER);
         // Install BouncyCastle provider
         CertTools.installBCProvider();
-        administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     }
     
     /** Retrieves the complete certificate chain from the CA
@@ -159,12 +153,4 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
       return cainfo.getSubjectDN();  
    }
    
-   protected ICAAdminSessionRemote getCAAdminSessionRemote() throws Exception{
-      if(caadminsession == null){
-        Context ctx = getInitialContext();
-        ICAAdminSessionHome home = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"), ICAAdminSessionHome.class );            
-        caadminsession = home.create();          
-      } 
-      return caadminsession;
-   }
 }

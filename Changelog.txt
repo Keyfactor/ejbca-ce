@@ -35,6 +35,7 @@ Changed 'Use fields in DN' in adminweb to be more descriptive.
 Added StaticRegistering to CA hard token manager.
 Fixed error during install when CA-cert does not exist in java truststore.
 Fixed weblink to force a browser type when using an unknown browser.
+Added cli method to re-publish a CA and all it's users to ldap.
 
 3.0.4
 -----
