@@ -1,4 +1,4 @@
-$Id: README,v 1.123 2004-03-10 16:03:21 anatom Exp $
+$Id: README,v 1.124 2004-03-11 08:39:31 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -757,6 +757,10 @@ $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 
 SCEP
 =====
+Since SCEP uses encryption, you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
+The policy files can be found at the same place as the JDK 1.4 download. Further information on this can be found in 
+the Sun documentation on the JCE.
+
 There is a SCEP servlet receiving requests on http://localhost:8080/ejbca/publicweb/apply/scep/pkiclient.exe
 
 Level of SCEP support:
@@ -771,10 +775,6 @@ authenticating the request in EJBCA. Create the Scep request with a challengePas
 
 The most common errors should be wrong username/password or wrong status (not NEW/10) on the user in EJBCA.
 
-Since SCEP uses encryption, you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
-The policy files can be found at the same place as the JDK 1.4 download. Further information on this can be found in 
-the Sun documentation on the JCE.
-
 To use the OpenScep (http://openscep.othello.ch/) client to request a certificate from this servlet, use the command:
 ./scep -k test.key -r test.pemreq -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
 rem ./scep -d -k test.key -r test.pemreq -2 -e test.req -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
@@ -787,6 +787,10 @@ openssl req -key test.key -new -days 30 -out test.pemreq -outform PEM -config ..
 
 When enrolling for certificate using SCEP with for example a Cisco PIX there is a 'ca_nickname'. This nickname 
 should be the CA-name as defined when creating the CA in EJBCA. For example TestCA.
+
+Tested with Cisco VPN client version 4.0.2:
+To enroll using the Cisco VPN client use 'CA URL'='http://127.0.0.1:8080/ejbca/publicweb/apply/scep/pkiclient.exe' 
+and the CA name as 'CA Domain'. In the DN screen simply enter the username (as added in EJBCA) as 'Name [CN]'.
 
 OCSP
 =====

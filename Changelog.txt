@@ -5,7 +5,7 @@ Fixed serious bug that caused certs to be signed by wrong CA after ejbPassivate.
 Made DN order configurable with switch in source.
 Alias in PKCS12 is now CN by default and username if CN does not exist.
 Added possibility to configure publishers (LDAP, AD) through administrative web interface.
-Implemented more SCEP functions.
+Implemented more SCEP functions, tested with Cisco VPN client.
 Compound primary key for HardTokenPropertyBean.
 
 3.0 beta 1
