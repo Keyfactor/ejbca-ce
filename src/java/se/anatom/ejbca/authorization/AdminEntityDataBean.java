@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.authorization;
 
 import javax.ejb.CreateException;
@@ -28,10 +28,10 @@ import se.anatom.ejbca.BaseEntityBean;
  * </pre>
  *
  * @ejb.bean
- *   generate="false"
- *   display-name="This enterprise bean entity represents a user entity"
+ *   description="This enterprise bean entity represents a user entity"
+ *   display-name="AdminEntityDataEB"
  *   name="AdminEntityData"
- *   local-jndi-name="AdminEntityData"
+ *   local-jndi-name="AdminEntityDataLocal"
  *   view-type="local"
  *   type="CMP"
  *   reentrant="false"
