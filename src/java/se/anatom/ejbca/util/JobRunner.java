@@ -19,7 +19,7 @@ import se.anatom.ejbca.log.Admin;
  * jnp://127.0.0.1:1099) - principal   (the user name is needed) - credentials (the password is
  * needed) - agent       (the JNDI-name of the agent session to start)
  *
- * @version $Id: JobRunner.java,v 1.6 2003-07-24 08:43:32 anatom Exp $
+ * @version $Id: JobRunner.java,v 1.7 2003-09-04 09:33:53 herrvendil Exp $
  */
 public class JobRunner extends java.lang.Object {
     private static Logger log = Logger.getLogger(JobRunner.class);
@@ -49,10 +49,12 @@ public class JobRunner extends java.lang.Object {
      *
      * @param jndiName jndi name of agent
      */
-    private void runJob(String jndiName) throws Exception {
-        IJobRunnerSessionHome home = (IJobRunnerSessionHome) PortableRemoteObject.narrow(context.lookup(
-                    jndiName), IJobRunnerSessionHome.class);
-        home.create().run(new Admin(Admin.TYPE_INTERNALUSER));
+
+    private void runJob(String jndiName, String issuerdn) throws Exception {
+        IJobRunnerSessionHome home  = (IJobRunnerSessionHome)PortableRemoteObject.narrow( context.lookup(jndiName) , 
+IJobRunnerSessionHome.class );
+        home.create().run(new Admin(Admin.TYPE_INTERNALUSER), issuerdn);
+
     }
 
     /**
@@ -60,13 +62,13 @@ public class JobRunner extends java.lang.Object {
      *
      * @param args see class description
      */
-    public static void main(String[] args) {
+    public static void main( String[] args ) {
+        String issuerdn = null;
         BasicConfigurator.configure();
 
-        if ((args.length != 4) && (args.length != 1)) {
-            log.error("Usage: JobRunner <providerurl> <username> <password> <jndiname>");
-            log.error("Usage: JobRunner <jndiname>");
-
+        if ( (args.length != 5) && (args.length != 2) ){
+            log.error( "Usage: JobRunner <providerurl> <username> <password> <jndiname>  <issuerdn>" );
+            log.error( "Usage: JobRunner <jndiname> <issuerdn>" );
             return;
         }
 
@@ -79,6 +81,7 @@ public class JobRunner extends java.lang.Object {
                 String principal = args[1];
                 String credentials = args[2];
                 job = args[3];
+                issuerdn = args[4];
 
                 Properties props = new Properties();
                 props.setProperty(JNDI_PROVIDER, provider);
@@ -87,11 +90,12 @@ public class JobRunner extends java.lang.Object {
                 runner = new JobRunner(props);
             } else {
                 job = args[0];
+                issuerdn = args[1];
                 runner = new JobRunner();
             }
 
             if (job != null) {
-                runner.runJob(job);
+                runner.runJob(job, issuerdn);
             }
         } catch (Exception e) {
             log.error("Error running job " + job, e);

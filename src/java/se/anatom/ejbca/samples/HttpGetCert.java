@@ -1,26 +1,25 @@
 package se.anatom.ejbca.samples;
 
-import java.io.*;
-import java.net.*;
-
-// Use for SSL connections
-
-/*
-import javax.net.ssl.*;
-import com.sun.net.ssl.*;
-*/
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.security.KeyPair;
 import java.security.Provider;
 import java.security.Security;
-import java.security.cert.*;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 
-import org.bouncycastle.asn1.*;
-import org.bouncycastle.jce.*;
-
-import se.anatom.ejbca.util.*;
+import se.anatom.ejbca.util.Base64;
+import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.KeyTools;
 
 
 /**
@@ -42,7 +41,7 @@ import se.anatom.ejbca.util.*;
  * </ul>
  * 
  *
- * @version $Id: HttpGetCert.java,v 1.10 2003-07-24 08:43:32 anatom Exp $
+ * @version $Id: HttpGetCert.java,v 1.11 2003-09-04 09:31:01 herrvendil Exp $
  */
 public class HttpGetCert {
     private static Logger log = Logger.getLogger(HttpGetCert.class);
