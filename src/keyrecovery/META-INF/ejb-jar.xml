@@ -84,7 +84,6 @@
       <cmp-field><field-name>username</field-name></cmp-field>
       <cmp-field><field-name>markedAsRecoverable</field-name></cmp-field>      
       <cmp-field><field-name>keyPair</field-name></cmp-field>
-      <primkey-field>pK</primkey-field>
       
       <query>
       	<query-method>
