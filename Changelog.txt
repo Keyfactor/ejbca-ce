@@ -31,6 +31,7 @@ Works with Java 1.5 and 4096 bit keys.
 Fixed bug checking in webpage checking for revocation.
 Added pageEncoding for jsp pages and removed explicit encoding tag in meta-inf for adminpages.
 Fixed bug with republishing CA certificates.
+Check execute permission on batch.sh from install script.
 Many clarifications in docs.
 
 3.0.2

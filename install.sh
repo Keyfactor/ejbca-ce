@@ -30,22 +30,27 @@ fi
 
 if [ ! -x ./ca.sh ]
 then
-        echo ca.sh, setup-adminweb.sh and setup.sh must have executive bit set.
+        echo ca.sh, setup-adminweb.sh, batch.sh and setup.sh must have executive bit set.
         exit
 fi
 
 if [ ! -x ./setup.sh ]
 then
-        echo ca.sh, setup-adminweb.sh and setup.sh must have executive bit set.
+        echo ca.sh, setup-adminweb.sh, batch.sh and setup.sh must have executive bit set.
         exit
 fi
 
 if [ ! -x ./setup-adminweb.sh ]
 then
-        echo ca.sh, setup-adminweb.sh and setup.sh must have executive bit set.
+        echo ca.sh, setup-adminweb.sh, batch.sh and setup.sh must have executive bit set.
         exit
 fi
 
+if [ ! -x ./batch.sh ]
+then
+        echo ca.sh, setup-adminweb.sh, batch.sh and setup.sh must have executive bit set.
+        exit
+fi
 
 
 CP=.:bin/classes:./admin.jar:./lib/ldap.jar:$JBOSS_HOME/client/jnp-client.jar:$JBOSS_HOME/client/jboss-j2ee.jar:$JBOSS_HOME/client/jbossall-client.jar:$JBOSS_HOME/client/jboss-client.jar:$JBOSS_HOME/client/jbosssx-client.jar:$JBOSS_HOME/client/jboss-common-client.jar:lib/log4j-1.2.7.jar:lib/bcprov-jdk14-122.jar:lib/bcmail-jdk14-122.jar
