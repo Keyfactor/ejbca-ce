@@ -46,7 +46,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.70 2003-02-20 10:35:27 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.71 2003-02-20 15:00:55 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -550,7 +550,12 @@ public class RSASignSessionBean extends BaseSessionBean {
         // Extended Key usage
         if (certProfile.getUseExtendedKeyUsage() == true) {
             // Get extended key usage from certificate profile
-            Vector usage = new Vector(certProfile.getExtendedKeyUsageAsOIDStrings());
+            Collection c = certProfile.getExtendedKeyUsageAsOIDStrings();
+            Vector usage = new Vector();
+            Iterator iter = c.iterator();
+            while (iter.hasNext()) {
+                usage.add(new DERObjectIdentifier((String)iter.next()));
+            }
             ExtendedKeyUsage eku = new ExtendedKeyUsage(usage);
             // Extended Key Usage may be either critical or non-critical
             certgen.addExtension(
