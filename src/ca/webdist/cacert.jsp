@@ -22,35 +22,35 @@ No CA certificates exist
     } else {
 %>
 <hr>In PEM format:<br>
-<li><a href="/webdist/certdist?cmd=cacert&level=0">Root CA</a></li>
+<li><a href="certdist?cmd=cacert&level=0">Root CA</a></li>
 <%
         int i = 0;
         if (chain.length > 1) {
             for (i=chain.length-1;i>0;i--) {
 %>
-<li><a href="/webdist/certdist?cmd=cacert&level=<%= i %>">CA</a></li>
+<li><a href="certdist?cmd=cacert&level=<%= i %>">CA</a></li>
 <%
             }
         }
 %>
 <hr>For Netscape/Mozilla:<br>
-<li><a href="/webdist/certdist?cmd=nscacert&level=0">Root CA</a></li>
+<li><a href="certdist?cmd=nscacert&level=0">Root CA</a></li>
 <%
         if (chain.length > 1) {
             for (i=chain.length-1;i>0;i--) {
 %>
-<li><a href="/webdist/certdist?cmd=nscacert&level=<%= i %>">CA</a></li>
+<li><a href="certdist?cmd=nscacert&level=<%= i %>">CA</a></li>
 <%
             }
         }
 %>
 <hr>For Internet Explorer:<br>
-<li><a href="/webdist/certdist?cmd=iecacert&level=0">Root CA</a></li>
+<li><a href="certdist?cmd=iecacert&level=0">Root CA</a></li>
 <%
         if (chain.length > 1) {
             for (i=chain.length-1;i>0;i--) {
 %>
-<li><a href="/webdist/certdist?cmd=iecacert&level=<%= i %>">CA</a></li>
+<li><a href="certdist?cmd=iecacert&level=<%= i %>">CA</a></li>
 <%
             }
         }
