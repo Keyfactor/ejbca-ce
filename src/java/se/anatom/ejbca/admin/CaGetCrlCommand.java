@@ -24,7 +24,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 /**
  * Retrieves the latest CRL from the CA.
  *
- * @version $Id: CaGetCrlCommand.java,v 1.12 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: CaGetCrlCommand.java,v 1.13 2004-10-13 07:14:45 anatom Exp $
  */
 public class CaGetCrlCommand extends BaseCaAdminCommand {
     /**
@@ -57,7 +57,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
 				FileOutputStream fos = new FileOutputStream(outfile);
 				fos.write(crl);
 				fos.close();
-				System.out.println("Wrote latest CRL to " + outfile + ".");
+				getOutputStream().println("Wrote latest CRL to " + outfile + ".");
 			} catch (Exception e) {
 				throw new ErrorAdminCommandException(e);
 			}

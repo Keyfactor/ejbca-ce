@@ -20,7 +20,7 @@ import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 /**
  * Find details of a user in the database.
  *
- * @version $Id: RaFindUserCommand.java,v 1.9 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: RaFindUserCommand.java,v 1.10 2004-10-13 07:14:46 anatom Exp $
  */
 public class RaFindUserCommand extends BaseRaAdminCommand {
     /**
@@ -41,7 +41,7 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
             if (args.length < 2) {
-                System.out.println("Usage: RA finduser <username>");
+                getOutputStream().println("Usage: RA finduser <username>");
 
                 return;
             }
@@ -52,25 +52,25 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
                 UserAdminData data = getAdminSession().findUser(administrator, username);
 
                 if (data != null) {
-                    System.out.println("Found user:");
-                    System.out.println("username=" + data.getUsername());
-                    System.out.println("password=" + data.getPassword());
-                    System.out.println("dn: \"" + data.getDN() + "\"");
-                    System.out.println("email=" + data.getEmail());
-                    System.out.println("status=" + data.getStatus());
-                    System.out.println("type=" + data.getType());
-                    System.out.println("token type=" + data.getTokenType());
-                    System.out.println("end entity profile id=" + data.getEndEntityProfileId());
-                    System.out.println("certificate entity profile id=" +
+                    getOutputStream().println("Found user:");
+                    getOutputStream().println("username=" + data.getUsername());
+                    getOutputStream().println("password=" + data.getPassword());
+                    getOutputStream().println("dn: \"" + data.getDN() + "\"");
+                    getOutputStream().println("email=" + data.getEmail());
+                    getOutputStream().println("status=" + data.getStatus());
+                    getOutputStream().println("type=" + data.getType());
+                    getOutputStream().println("token type=" + data.getTokenType());
+                    getOutputStream().println("end entity profile id=" + data.getEndEntityProfileId());
+                    getOutputStream().println("certificate entity profile id=" +
                         data.getCertificateProfileId());
-                    System.out.println("hard token issuer id=" + data.getHardTokenIssuerId());
-                    System.out.println("created=" + data.getTimeCreated());
-                    System.out.println("modified=" + data.getTimeModified());
+                    getOutputStream().println("hard token issuer id=" + data.getHardTokenIssuerId());
+                    getOutputStream().println("created=" + data.getTimeCreated());
+                    getOutputStream().println("modified=" + data.getTimeModified());
                 } else {
-                    System.out.println("User '" + username + "' does not exist.");
+                    getOutputStream().println("User '" + username + "' does not exist.");
                 }
             } catch (AuthorizationDeniedException e) {
-                System.out.println("Error : Not authorized to view user.");
+                getOutputStream().println("Error : Not authorized to view user.");
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

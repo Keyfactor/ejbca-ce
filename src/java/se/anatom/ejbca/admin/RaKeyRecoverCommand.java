@@ -48,12 +48,13 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
             if (args.length != 3) {
-                System.out.println("Usage: RA keyrecover <CertificateSN (HEX)> <IssuerDN>");
+                getOutputStream().println("Usage: RA keyrecover <CertificateSN (HEX)> <IssuerDN>");
 
                 return;
             }
 
-            InitialContext jndicontext = new InitialContext();
+            //InitialContext jndicontext = new InitialContext();
+            InitialContext jndicontext = getInitialContext();
 
             Object obj1 = jndicontext.lookup("CertificateStoreSession");
             ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
@@ -71,7 +72,7 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
 
              boolean usekeyrecovery = getRaAdminSession().loadGlobalConfiguration(administrator).getEnableKeyRecovery();  
              if(!usekeyrecovery){
-               System.out.println("Keyrecovery have to be enabled in the system configuration in order to use this command.");
+               getOutputStream().println("Keyrecovery have to be enabled in the system configuration in order to use this command.");
                return;                   
              }   
               
@@ -80,19 +81,19 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
                                                                              certificatesn);
               
              if(cert == null){
-               System.out.println("Certificate couldn't be found in database.");
+               getOutputStream().println("Certificate couldn't be found in database.");
                return;              
              }
               
              String username = certificatesession.findUsernameByCertSerno(administrator, certificatesn, issuerdn);
               
              if(!keyrecoverysession.existsKeys(administrator,cert)){
-               System.out.println("Specified keys doesn't exist in database.");
+               getOutputStream().println("Specified keys doesn't exist in database.");
                return;                  
              }
               
              if(keyrecoverysession.isUserMarked(administrator,username)){
-               System.out.println("User is already marked for recovery.");
+               getOutputStream().println("User is already marked for recovery.");
                return;                     
              }
   
@@ -101,7 +102,7 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
         
              getAdminSession().setUserStatus(administrator, username, UserDataLocal.STATUS_KEYRECOVERY); 
  
-             System.out.println("Keys corresponding to given certificate has been marked for recovery.");                           
+             getOutputStream().println("Keys corresponding to given certificate has been marked for recovery.");                           
 
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

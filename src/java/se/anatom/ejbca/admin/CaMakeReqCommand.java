@@ -26,7 +26,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Generates keys and creates a keystore (PKCS12) to be used by the CA.
  *
- * @version $Id: CaMakeReqCommand.java,v 1.10 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: CaMakeReqCommand.java,v 1.11 2004-10-13 07:14:46 anatom Exp $
  */
 public class CaMakeReqCommand extends BaseCaAdminCommand {
     /**
@@ -62,20 +62,20 @@ public class CaMakeReqCommand extends BaseCaAdminCommand {
 
 
         
-        System.out.println("Generating cert request (and keystore):");
-        System.out.println("DN: " + dn);
-        System.out.println("Keysize: " + keysize);
-        System.out.println("RootCA cert file: " + rootfile);
-        System.out.println("Storing CertificationRequest in: " + reqfile);
-        System.out.println("Storing KeyStore in: " + ksfile);
-        System.out.println("Protected with storepassword: " + storepwd);
+        getOutputStream().println("Generating cert request (and keystore):");
+        getOutputStream().println("DN: " + dn);
+        getOutputStream().println("Keysize: " + keysize);
+        getOutputStream().println("RootCA cert file: " + rootfile);
+        getOutputStream().println("Storing CertificationRequest in: " + reqfile);
+        getOutputStream().println("Storing KeyStore in: " + ksfile);
+        getOutputStream().println("Protected with storepassword: " + storepwd);
 
         try {
             // Read in RootCA certificate
             Collection rootcerts = CertTools.getCertsFromPEM(new FileInputStream(rootfile));
 
             // Generate keys
-            System.out.println("Generating keys, please wait...");
+            getOutputStream().println("Generating keys, please wait...");
 
             KeyPair rsaKeys = KeyTools.genKeys(keysize);
 
@@ -90,7 +90,7 @@ public class CaMakeReqCommand extends BaseCaAdminCommand {
 
             FileOutputStream os = new FileOutputStream(ksfile);
             ks.store(os, storepwd.toCharArray());
-            System.out.println("Keystore '"+ksfile+"' generated successfully.");
+            getOutputStream().println("Keystore '"+ksfile+"' generated successfully.");
          
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

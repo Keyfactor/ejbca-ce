@@ -44,7 +44,7 @@ import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.35 2004-07-23 10:24:44 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.36 2004-10-13 07:14:45 anatom Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 	
@@ -74,7 +74,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
-            InitialContext jndicontext = new InitialContext();
+            InitialContext jndicontext = getInitialContext();
 
             Object obj1 = jndicontext.lookup("CertificateStoreSession");
             ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
@@ -125,83 +125,83 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 HashMap caidtonamemap = caadminsession.getCAIdToNameMap(administrator);
                 
                 if( usehardtokens)
-                  System.out.println("Usage: RA adduser <username> <password> <dn> <subjectAltName> <caname> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] [<hardtokenissuer>]");
+                  getOutputStream().println("Usage: RA adduser <username> <password> <dn> <subjectAltName> <caname> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] [<hardtokenissuer>]");
                 else
-                  System.out.println("Usage: RA adduser <username> <password> <dn> <subjectAltName> <caname> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] ");
+                  getOutputStream().println("Usage: RA adduser <username> <password> <dn> <subjectAltName> <caname> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] ");
 
 
-                System.out.println("");
-                System.out.println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
-                System.out.println(
+                getOutputStream().println("");
+                getOutputStream().println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
+                getOutputStream().println(
                     "SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>, ipaddress=<address>, guid=<globally unique id>\"");
 
                 if (usekeyrecovery) {
-                    System.out.println(
+                    getOutputStream().println(
                         "Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64; KEYRECOVERABLE=128; SENDNOTIFICATION=256");
                 } else {
-                    System.out.println(
+                    getOutputStream().println(
                         "Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64; SENDNOTIFICATION=256");
                 }
 
-                System.out.print("Existing tokens      : " + USERGENERATED + ", " +
+                getOutputStream().print("Existing tokens      : " + USERGENERATED + ", " +
                                           P12 + ", "+ JKS + ", "  + PEM);
 
                 if (usehardtokens) {
                   Iterator iter = authorizedhardtokenprofiles.iterator();
                   while(iter.hasNext()){
-                    System.out.print(", " + hardtokenprofileidtonamemap.get(iter.next()));
+                    getOutputStream().print(", " + hardtokenprofileidtonamemap.get(iter.next()));
                   }
                 }
 
-                System.out.print("\n");
+                getOutputStream().print("\n");
                 
                 
-                System.out.print("Existing cas  : ");
+                getOutputStream().print("Existing cas  : ");
                 boolean first = true;
                 Iterator iter = caids.iterator();
                 while(iter.hasNext()){
                   if(first)                    
                     first= false;
                   else
-                    System.out.print(", ");                      
-                  System.out.print(caidtonamemap.get(iter.next()));
+                    getOutputStream().print(", ");                      
+                  getOutputStream().print(caidtonamemap.get(iter.next()));
                 }
-                System.out.print("\n");
+                getOutputStream().print("\n");
                 
-                System.out.print("Existing certificate profiles  : ");
+                getOutputStream().print("Existing certificate profiles  : ");
                 first = true;
                 iter = certprofileids.iterator();
                 while(iter.hasNext()){
                   if(first)                    
                     first= false;
                   else
-                    System.out.print(", ");                      
-                  System.out.print(certificateprofileidtonamemap.get(iter.next()));
+                    getOutputStream().print(", ");                      
+                  getOutputStream().print(certificateprofileidtonamemap.get(iter.next()));
                 }
-                System.out.print("\n");
+                getOutputStream().print("\n");
 
 
-                System.out.print("Existing endentity profiles  : ");
+                getOutputStream().print("Existing endentity profiles  : ");
                 first = true;
                 iter = endentityprofileids.iterator();
                 while(iter.hasNext()){
                   if(first)                    
                     first= false;
                   else
-                    System.out.print(", ");                      
-                  System.out.print(endentityprofileidtonamemap.get(iter.next()));
+                    getOutputStream().print(", ");                      
+                  getOutputStream().print(endentityprofileidtonamemap.get(iter.next()));
                 }
                 
-                System.out.print("\n");
+                getOutputStream().print("\n");
                 if( usehardtokens && hardtokenissueraliases.length > 0){                
-                  System.out.print("Existing hardtoken issuers  : ");
+                  getOutputStream().print("Existing hardtoken issuers  : ");
                   for(int i=0; i < hardtokenissueraliases.length-1; i++){
-                    System.out.print(hardtokenissueraliases[i] + ", ");
+                    getOutputStream().print(hardtokenissueraliases[i] + ", ");
                   }
-                  System.out.print(hardtokenissueraliases[hardtokenissueraliases.length-1] + "\n");               
+                  getOutputStream().print(hardtokenissueraliases[hardtokenissueraliases.length-1] + "\n");               
                 }
 
-                System.out.println(
+                getOutputStream().println(
                     "If the user does not have a SubjectAltName or an email address,\n or you want the password to be auto-generated use the value 'null'. ");
                 return;
             }
@@ -248,40 +248,40 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             
             int tokenid =getTokenId(administrator, tokenname, usehardtokens, hardtokensession);
             if (tokenid == 0) {
-                System.out.println("Error : Invalid token id.");
+                getOutputStream().println("Error : Invalid token id.");
                 error = true;
             }
 
             if (certificatetypeid == SecConst.PROFILE_NO_PROFILE) { // Certificate profile not found i database.
-                System.out.println("Error : Couldn't find certificate profile in database.");
+                getOutputStream().println("Error : Couldn't find certificate profile in database.");
                 error = true;
             }
 
             if(profileid == 0){ // End entity profile not found i database.
-              System.out.println("Error : Couldn't find end entity profile in database." );
+              getOutputStream().println("Error : Couldn't find end entity profile in database." );
               error = true;
             }
             
             if(caid == 0){ // CA not found i database.
-              System.out.println("Error : Couldn't find CA in database." );
+              getOutputStream().println("Error : Couldn't find CA in database." );
               error = true;
             }
             
             if(usehardtokenissuer && hardtokenissuerid == SecConst.NO_HARDTOKENISSUER){
-              System.out.println("Error : Couldn't find hard token issuer in database." );
+              getOutputStream().println("Error : Couldn't find hard token issuer in database." );
               error = true;       
             }  
 
             if ((tokenid > SecConst.TOKEN_SOFT) &&
                     (hardtokenissuerid == SecConst.NO_HARDTOKENISSUER)) {
-                System.out.println(
+                getOutputStream().println(
                     "Error : HardTokenIssuer has to be choosen when user with hard tokens is added.");
                 error = true;
             }
 
             if (email.equalsIgnoreCase("NULL") &&
                     ((type & SecConst.USER_SENDNOTIFICATION) == SecConst.USER_SENDNOTIFICATION)) {
-                System.out.println(
+                getOutputStream().println(
                     "Error : Email field cannot be null when send notification type is given.");
                 error = true;
             }
@@ -290,7 +290,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             try {
                 if (getAdminSession().findUser(administrator, username) != null) {
                     ;
-                    System.out.println("Error : User already exists in the database.");
+                    getOutputStream().println("Error : User already exists in the database.");
                     error = true;
                 }
             } catch (FinderException e) {
@@ -298,17 +298,17 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
 
             if(!error){
-              System.out.println("Trying to add user:");
-              System.out.println("Username: "+username);
-              System.out.println("Password (hashed only): "+password);
-              System.out.println("DN: "+dn);
-              System.out.println("CA Name: "+caname);
-              System.out.println("SubjectAltName: "+subjectaltname);
-              System.out.println("Email: "+email);
-              System.out.println("Type: "+type);
-              System.out.println("Token: "+tokenname);
-              System.out.println("Certificate profile: "+certificatetypeid);
-              System.out.println("End entity profile: "+profileid);
+              getOutputStream().println("Trying to add user:");
+              getOutputStream().println("Username: "+username);
+              getOutputStream().println("Password (hashed only): "+password);
+              getOutputStream().println("DN: "+dn);
+              getOutputStream().println("CA Name: "+caname);
+              getOutputStream().println("SubjectAltName: "+subjectaltname);
+              getOutputStream().println("Email: "+email);
+              getOutputStream().println("Type: "+type);
+              getOutputStream().println("Token: "+tokenname);
+              getOutputStream().println("Certificate profile: "+certificatetypeid);
+              getOutputStream().println("End entity profile: "+profileid);
 			  if (password.toUpperCase().equals("NULL"))
 				  password = null;
               if (subjectaltname.toUpperCase().equals("NULL"))
@@ -318,13 +318,13 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
               try{
                 getAdminSession().addUser(administrator, username, password, dn, subjectaltname, email, false, profileid, certificatetypeid,
                                          type, tokenid, hardtokenissuerid, caid);
-                System.out.println("User '"+username+"' has been added.");
-                System.out.println();
-                System.out.println("Note: If batch processing should be possible, \nalso use 'ra setclearpwd "+username+" <pwd>'.");
+                getOutputStream().println("User '"+username+"' has been added.");
+                getOutputStream().println();
+                getOutputStream().println("Note: If batch processing should be possible, \nalso use 'ra setclearpwd "+username+" <pwd>'.");
               }catch(AuthorizationDeniedException e){
-                  System.out.println("Error : " + e.getMessage());
+                  getOutputStream().println("Error : " + e.getMessage());
               }catch(UserDoesntFullfillEndEntityProfile e){
-                 System.out.println("Error : Given userdata doesn't fullfill end entity profile. : " +  e.getMessage());
+                 getOutputStream().println("Error : Given userdata doesn't fullfill end entity profile. : " +  e.getMessage());
               }
             }
         } catch (Exception e) {

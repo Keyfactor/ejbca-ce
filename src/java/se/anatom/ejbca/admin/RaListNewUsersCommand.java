@@ -23,7 +23,7 @@ import se.anatom.ejbca.ra.UserDataLocal;
 /**
  * List users with status NEW in the database.
  *
- * @version $Id: RaListNewUsersCommand.java,v 1.9 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: RaListNewUsersCommand.java,v 1.10 2004-10-13 07:14:45 anatom Exp $
  *
  * @see se.anatom.ejbca.ra.UserDataLocal
  */
@@ -51,7 +51,7 @@ public class RaListNewUsersCommand extends BaseRaAdminCommand {
 
             while (iter.hasNext()) {
                 UserAdminData data = (UserAdminData) iter.next();
-                System.out.println("New User: " + data.getUsername() + ", \"" + data.getDN() +
+                getOutputStream().println("New User: " + data.getUsername() + ", \"" + data.getDN() +
                     "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail() + ", " +
                     data.getStatus() + ", " + data.getType() + ", " + data.getTokenType());
             }

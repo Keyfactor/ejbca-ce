@@ -28,7 +28,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Creates a new root certificate with new validity, using the same key.
  *
- * @version $Id: CaRolloverSubCommand.java,v 1.10 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: CaRolloverSubCommand.java,v 1.11 2004-10-13 07:14:46 anatom Exp $
  */
 public class CaRolloverSubCommand extends BaseCaAdminCommand {
     /**
@@ -49,9 +49,9 @@ public class CaRolloverSubCommand extends BaseCaAdminCommand {
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
             if (args.length < 5) {
-                System.out.println(
+                getOutputStream().println(
                     "Usage: CA rolloversub <validity-days> <keystore filename> <storepassword> <certrequest filename>");
-                System.out.println(
+                getOutputStream().println(
                     "Rolloversub is used to generate a new subCA certificate using an existing keypair. This updates the current subCA keystore.");
 
                 return;
@@ -71,7 +71,7 @@ public class CaRolloverSubCommand extends BaseCaAdminCommand {
             Certificate[] chain = KeyTools.getCertChain(keyStore, privKeyAlias);
 
             if (chain.length > 2) {
-                System.out.println(
+                getOutputStream().println(
                     "Certificate chain too long, this keystore was not generated with EJBCA?");
 
                 return;
@@ -80,7 +80,7 @@ public class CaRolloverSubCommand extends BaseCaAdminCommand {
             X509Certificate rootcert = (X509Certificate) chain[chain.length - 1];
 
             if (!CertTools.isSelfSigned(rootcert)) {
-                System.out.println("Root certificate is not self signed???");
+                getOutputStream().println("Root certificate is not self signed???");
 
                 return;
             }
@@ -92,21 +92,21 @@ public class CaRolloverSubCommand extends BaseCaAdminCommand {
             }
 
             if (cacert == null) {
-                System.out.println(
+                getOutputStream().println(
                     "No subCA certificate found in keystore, this is not a subCA or keystore was not generated with EJBCA.");
 
                 return;
             }
 
             String subjectDN = CertTools.getSubjectDN(cacert);
-            System.out.println("Generating new certificate request for CA with DN '" + subjectDN +
+            getOutputStream().println("Generating new certificate request for CA with DN '" + subjectDN +
                 "'.");
 
             // Get private key
             PrivateKey privateKey = (PrivateKey) keyStore.getKey(privKeyAlias, privateKeyPass);
 
             if (privateKey == null) {
-                System.out.println("No private key with alias '" + privKeyAlias +
+                getOutputStream().println("No private key with alias '" + privKeyAlias +
                     "' in keystore, this keystore was not generated with EJBCA?");
 
                 return;
@@ -121,19 +121,19 @@ public class CaRolloverSubCommand extends BaseCaAdminCommand {
                     privateKey, cacert.getPublicKey(), true);
             String oldKeyId = Hex.encode(CertTools.getSubjectKeyId(cacert));
             String newKeyId = Hex.encode(CertTools.getSubjectKeyId(newselfcert));
-            System.out.println("Old key id: " + oldKeyId);
+            getOutputStream().println("Old key id: " + oldKeyId);
 
             if (oldKeyId == null) {
-                System.out.println("Old certificate does not contain SubjectKeyIdentifier.");
-                System.out.println("This is recommended, but decided by your CA.");
-                System.out.println("Continuing...");
+                getOutputStream().println("Old certificate does not contain SubjectKeyIdentifier.");
+                getOutputStream().println("This is recommended, but decided by your CA.");
+                getOutputStream().println("Continuing...");
             } else {
-                System.out.println("New key id: " + newKeyId);
+                getOutputStream().println("New key id: " + newKeyId);
 
                 if (oldKeyId.compareTo(newKeyId) != 0) {
-                    System.out.println(
+                    getOutputStream().println(
                         "Old key identifier and new key identifieras does not match, have the key pair changed?");
-                    System.out.println("Unable to rollover subCA.");
+                    getOutputStream().println("Unable to rollover subCA.");
 
                     return;
                 }
@@ -142,7 +142,7 @@ public class CaRolloverSubCommand extends BaseCaAdminCommand {
             // Generate the new certificate request
             makeCertRequest(subjectDN, keyPair, reqfile);
 
-            System.out.println(
+            getOutputStream().println(
                 "Submit certificare request to RootCA and when receiving reply run 'ca recrep'.");
         } catch (Exception e) {
             e.printStackTrace();

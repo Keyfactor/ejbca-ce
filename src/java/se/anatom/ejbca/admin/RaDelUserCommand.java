@@ -19,7 +19,7 @@ import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 /**
  * Deletes a user from the database.
  *
- * @version $Id: RaDelUserCommand.java,v 1.8 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: RaDelUserCommand.java,v 1.9 2004-10-13 07:14:45 anatom Exp $
  */
 public class RaDelUserCommand extends BaseRaAdminCommand {
     /**
@@ -44,20 +44,20 @@ public class RaDelUserCommand extends BaseRaAdminCommand {
 
         try {
             String username = args[1];
-            System.out.print("Have you revoked the user [y/N]? ");
+            getOutputStream().print("Have you revoked the user [y/N]? ");
 
             int inp = System.in.read();
 
             if ((inp == 121) || (inp == 89)) {
                 try {
                     getAdminSession().deleteUser(administrator, username);
-                    System.out.println("Deleted user " + username);
+                    getOutputStream().println("Deleted user " + username);
                 } catch (AuthorizationDeniedException e) {
-                    System.out.println("Error : Not authorized to remove user.");
+                    getOutputStream().println("Error : Not authorized to remove user.");
                 }
             } else {
-                System.out.println("Delete aborted!");
-                System.out.println("Please run 'ra revokeuser " + username + "'.");
+                getOutputStream().println("Delete aborted!");
+                getOutputStream().println("Please run 'ra revokeuser " + username + "'.");
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

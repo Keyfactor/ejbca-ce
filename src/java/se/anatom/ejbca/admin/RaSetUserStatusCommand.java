@@ -20,7 +20,7 @@ import se.anatom.ejbca.authorization.AuthorizationDeniedException;
  * Changes status for a user in the database, status is defined in
  * se.anatom.ejbca.ra.UserDataLocal.
  *
- * @version $Id: RaSetUserStatusCommand.java,v 1.8 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: RaSetUserStatusCommand.java,v 1.9 2004-10-13 07:14:45 anatom Exp $
  *
  * @see se.anatom.ejbca.ra.UserDataLocal
  */
@@ -43,8 +43,8 @@ public class RaSetUserStatusCommand extends BaseRaAdminCommand {
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
             if (args.length < 3) {
-                System.out.println("Usage: RA setuserstatus <username> <status>");
-                System.out.println(
+                getOutputStream().println("Usage: RA setuserstatus <username> <status>");
+                getOutputStream().println(
                     "Status: NEW=10; FAILED=11; INITIALIZED=20; INPROCESS=30; GENERATED=40; HISTORICAL=50");
 
                 return;
@@ -55,9 +55,9 @@ public class RaSetUserStatusCommand extends BaseRaAdminCommand {
 
             try {
                 getAdminSession().setUserStatus(administrator, username, status);
-                System.out.println("New status for user " + username + " is " + status);
+                getOutputStream().println("New status for user " + username + " is " + status);
             } catch (AuthorizationDeniedException e) {
-                System.out.println("Error : Not authorized to change userdata.");
+                getOutputStream().println("Error : Not authorized to change userdata.");
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

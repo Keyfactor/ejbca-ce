@@ -32,7 +32,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 /**
  * Export profiles from the databse to XML-files.
  *
- * @version $Id: CaExportProfilesCommand.java,v 1.7 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: CaExportProfilesCommand.java,v 1.8 2004-10-13 07:14:45 anatom Exp $
  */
 public class CaExportProfilesCommand extends BaseCaAdminCommand {
     /**
@@ -53,7 +53,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
                        
-            InitialContext jndicontext = new InitialContext();
+            //InitialContext jndicontext = new InitialContext();
+            InitialContext jndicontext = getInitialContext();
 
             Object obj1 = jndicontext.lookup("CertificateStoreSession");
             ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
@@ -72,29 +73,29 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                                                         
 
             if (args.length < 2) {
-                System.out.println(
+                getOutputStream().println(
                     "Usage: CA exportprofiles <outpath>");
-                System.out.print("\n");
+                getOutputStream().print("\n");
                 return;
             }
 
             String outpath = args[1];
             boolean error = false;
 
-            System.out.println("Exporting certificate profiles: ");
+            getOutputStream().println("Exporting certificate profiles: ");
             Iterator iter = certprofids.iterator();
             while (iter.hasNext()) {
             	int profileid = ((Integer) iter.next()).intValue();
                 if (profileid == SecConst.PROFILE_NO_PROFILE) { // Certificate profile not found i database.
-                    System.out.println("Error : Couldn't find certificate profile '"+profileid+"' in database.");
+                    getOutputStream().println("Error : Couldn't find certificate profile '"+profileid+"' in database.");
                 } else {
 					String profilename = certificatesession.getCertificateProfileName(administrator, profileid);									
                     CertificateProfile profile = certificatesession.getCertificateProfile(administrator,profileid);
                     if (profile == null) {
-                        System.out.println("Error : Couldn't find certificate profile '"+profilename+"'-"+profileid+" in database.");
+                        getOutputStream().println("Error : Couldn't find certificate profile '"+profilename+"'-"+profileid+" in database.");
                     } else {
                         String outfile = outpath+"/certprofile_"+profilename+"-"+profileid+".xml";
-                        System.out.println(outfile+".");
+                        getOutputStream().println(outfile+".");
                         XMLEncoder encoder = new XMLEncoder(new  FileOutputStream(outfile));
                         encoder.writeObject(profile.saveData());
                         encoder.close();
@@ -102,20 +103,20 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                 }
             }
 
-            System.out.println("Exporting end entity profiles: ");
+            getOutputStream().println("Exporting end entity profiles: ");
             iter = endentityprofids.iterator();
             while (iter.hasNext()){                
                 int profileid = ((Integer) iter.next()).intValue();
                 if (profileid == SecConst.PROFILE_NO_PROFILE) { // Entity profile not found i database.
-                    System.out.println("Error : Couldn't find entity profile '"+profileid+"' in database.");
+                    getOutputStream().println("Error : Couldn't find entity profile '"+profileid+"' in database.");
                 } else {
                 	String profilename = raadminsession.getEndEntityProfileName(administrator, profileid);
                     EndEntityProfile profile = raadminsession.getEndEntityProfile(administrator, profileid);
                     if (profile == null) {
-                        System.out.println("Error : Couldn't find entity profile '"+profilename+"'-"+profileid+" in database.");
+                        getOutputStream().println("Error : Couldn't find entity profile '"+profilename+"'-"+profileid+" in database.");
                     } else {
                         String outfile = outpath+"/entityprofile_"+profilename+"-"+profileid+".xml";
-                        System.out.println(outfile+".");
+                        getOutputStream().println(outfile+".");
                         XMLEncoder encoder = new XMLEncoder(new  FileOutputStream(outfile));
                         encoder.writeObject(profile.saveData());
                         encoder.close();

@@ -35,12 +35,12 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.KeyTools;
-
+import se.anatom.ejbca.util.InitialContextBuilder;
 
 /**
  * Base for Commands, contains useful functions
  *
- * @version $Id: BaseCommand.java,v 1.5 2004-05-09 09:07:22 anatom Exp $
+ * @version $Id: BaseCommand.java,v 1.6 2004-10-13 07:14:45 anatom Exp $
  */
 public abstract class BaseCommand {
     /** Log4j instance for Base */
@@ -50,7 +50,6 @@ public abstract class BaseCommand {
     private Logger log;
 
     /** Cached initial context to save JNDI lookups */
-    private static InitialContext cacheCtx = null;
     protected Admin administrator = null;
 
     /**
@@ -136,9 +135,7 @@ public abstract class BaseCommand {
     protected InitialContext getInitialContext() throws NamingException {
         baseLog.debug(">getInitialContext()");
         try {
-            if (cacheCtx == null) {
-                cacheCtx = new InitialContext();
-            }
+            InitialContext cacheCtx = InitialContextBuilder.getInstance().getInitialContext();
             baseLog.debug("<getInitialContext()");
             return cacheCtx;
         } catch (NamingException e) {

@@ -39,7 +39,7 @@ import se.anatom.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.29 2004-05-30 16:09:38 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.30 2004-10-13 07:14:45 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
     /** Pointer to main certificate store */
@@ -82,16 +82,16 @@ public class CaInitCommand extends BaseCaAdminCommand {
             if (policyId.equals("null"))
               policyId = null;
               
-            System.out.println("Initializing CA");            
+            getOutputStream().println("Initializing CA");            
             Context context = getInitialContext();
             ICAAdminSessionHome caadminsessionhome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CAAdminSession"), ICAAdminSessionHome.class);
             ICAAdminSessionRemote caadminsession = caadminsessionhome.create();
             
-            System.out.println("Generating rootCA keystore:");
-            System.out.println("DN: "+dn);
-            System.out.println("Keysize: "+keysize);
-            System.out.println("Validity (days): "+validity);
-            System.out.println("Policy ID: "+policyId);
+            getOutputStream().println("Generating rootCA keystore:");
+            getOutputStream().println("DN: "+dn);
+            getOutputStream().println("Keysize: "+keysize);
+            getOutputStream().println("Validity (days): "+validity);
+            getOutputStream().println("Policy ID: "+policyId);
                             
             initAuthorizationModule(dn.hashCode());
 
@@ -131,15 +131,15 @@ public class CaInitCommand extends BaseCaAdminCommand {
                                              true, // Finish User
                                              extendedcaservices);         
             
-            System.out.println("Creating CA...");
+            getOutputStream().println("Creating CA...");
             caadminsession.createCA(administrator, cainfo);
             
             int caid = caadminsession.getCAInfo(administrator, caname).getCAId();
-            System.out.println("CAId for created CA: " + caid);
+            getOutputStream().println("CAId for created CA: " + caid);
               
 
-            System.out.println("-Created and published initial CRL.");
-            System.out.println("CA initialized");
+            getOutputStream().println("-Created and published initial CRL.");
+            getOutputStream().println("CA initialized");
         } catch (Exception e) {
         	debug("An error occured: ", e);
             throw new ErrorAdminCommandException(e);
@@ -147,7 +147,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
     } // execute
     
     private void initAuthorizationModule(int caid) throws Exception{
-      System.out.println("Initalizing Temporary Authorization Module.");  
+      getOutputStream().println("Initalizing Temporary Authorization Module.");  
       Context context = getInitialContext();
       IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);   
       IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();  

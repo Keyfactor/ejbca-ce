@@ -30,7 +30,7 @@ import se.anatom.ejbca.util.FileTools;
 /**
  * Receive certification request and create certificate to send back.
  *
- * @version $Id: CaProcessReqCommand.java,v 1.11 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: CaProcessReqCommand.java,v 1.12 2004-10-13 07:14:45 anatom Exp $
  */
 public class CaProcessReqCommand extends BaseCaAdminCommand {
     /**
@@ -51,9 +51,9 @@ public class CaProcessReqCommand extends BaseCaAdminCommand {
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
             if (args.length < 5) {
-                System.out.println(
+                getOutputStream().println(
                     "Usage: CA processreq <username> <password> <request-file> <outfile>");
-                System.out.println(
+                getOutputStream().println(
                     "Used to receive certificate requests from subCAs and generate certificates to be sent back.");
 
                 return;
@@ -64,10 +64,10 @@ public class CaProcessReqCommand extends BaseCaAdminCommand {
             String reqfile = args[3];
             String outfile = args[4];
 
-            System.out.println("Processing cert request:");
-            System.out.println("Username: " + username);
-            System.out.println("Password: " + password);
-            System.out.println("Request file: " + reqfile);
+            getOutputStream().println("Processing cert request:");
+            getOutputStream().println("Username: " + username);
+            getOutputStream().println("Password: " + password);
+            getOutputStream().println("Request file: " + reqfile);
 
             byte[] b64Encoded = FileTools.readFiletoBuffer(reqfile);
             byte[] buffer;
@@ -96,7 +96,7 @@ public class CaProcessReqCommand extends BaseCaAdminCommand {
             fos.write(Base64.encode(cert.getEncoded()));
             fos.write("\n-----END CERTIFICATE-----\n".getBytes());
             fos.close();
-            System.out.println("Wrote certificate (PEM-format) to file " + outfile);
+            getOutputStream().println("Wrote certificate (PEM-format) to file " + outfile);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

@@ -46,12 +46,13 @@ public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
             if (args.length != 2) {
-                System.out.println("Usage: RA keyrecovernewest <username>");
+                getOutputStream().println("Usage: RA keyrecovernewest <username>");
 
                 return;
             }
 
-            InitialContext jndicontext = new InitialContext();
+            //InitialContext jndicontext = new InitialContext();
+            InitialContext jndicontext = getInitialContext();
 
             Object obj1 = jndicontext.lookup("CertificateStoreSession");
             ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
@@ -68,19 +69,19 @@ public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
 
              boolean usekeyrecovery = getRaAdminSession().loadGlobalConfiguration(administrator).getEnableKeyRecovery();  
              if(!usekeyrecovery){
-               System.out.println("Keyrecovery have to be enabled in the system configuration in order to use this command.");
+               getOutputStream().println("Keyrecovery have to be enabled in the system configuration in order to use this command.");
                return;                   
              }   
                
              if(keyrecoverysession.isUserMarked(administrator,username)){
-               System.out.println("User is already marked for recovery.");
+               getOutputStream().println("User is already marked for recovery.");
                return;                     
              }
              
              keyrecoverysession.markNewestAsRecoverable(administrator, username);
         
              getAdminSession().setUserStatus(administrator, username, UserDataLocal.STATUS_KEYRECOVERY); 
-             System.out.println("Key corresponding to users newest certificate has been marked for recovery.");             
+             getOutputStream().println("Key corresponding to users newest certificate has been marked for recovery.");             
  
 
         } catch (Exception e) {

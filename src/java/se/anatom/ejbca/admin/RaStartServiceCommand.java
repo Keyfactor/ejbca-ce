@@ -16,7 +16,7 @@ package se.anatom.ejbca.admin;
 /**
  * Starts an external service needed for user administrations, runs in the same JVM.
  *
- * @version $Id: RaStartServiceCommand.java,v 1.5 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: RaStartServiceCommand.java,v 1.6 2004-10-13 07:14:46 anatom Exp $
  */
 public class RaStartServiceCommand extends BaseRaAdminCommand {
     /**
@@ -37,7 +37,7 @@ public class RaStartServiceCommand extends BaseRaAdminCommand {
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
             getAdminSession().startExternalService(args);
-            System.out.println("External service started");
+            getOutputStream().println("External service started");
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

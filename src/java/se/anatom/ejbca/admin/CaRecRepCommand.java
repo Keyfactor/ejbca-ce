@@ -30,7 +30,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Receive certificate reply as result of certificate request.
  *
- * @version $Id: CaRecRepCommand.java,v 1.10 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: CaRecRepCommand.java,v 1.11 2004-10-13 07:14:45 anatom Exp $
  */
 public class CaRecRepCommand extends BaseCaAdminCommand {
     /**
@@ -49,11 +49,11 @@ public class CaRecRepCommand extends BaseCaAdminCommand {
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-        System.out.println("TODO");
+        getOutputStream().println("TODO");
         try {
             if (args.length < 4) {
-                System.out.println("Usage: CA recrep <certificate-file> <keystore-file> <storepassword>");
-                System.out.println("Used to receive certificates which has been produced as result of sending a certificate request to a CA.");
+                getOutputStream().println("Usage: CA recrep <certificate-file> <keystore-file> <storepassword>");
+                getOutputStream().println("Used to receive certificates which has been produced as result of sending a certificate request to a CA.");
                 return;
             }
 
@@ -61,10 +61,10 @@ public class CaRecRepCommand extends BaseCaAdminCommand {
             String ksfile = args[2];
             String storepwd = args[3];
 
-            System.out.println("Receiving cert reply:");
-            System.out.println("Cert reply file: " + certfile);
-            System.out.println("Storing KeyStore in: " + ksfile);
-            System.out.println("Protected with storepassword: " + storepwd);
+            getOutputStream().println("Receiving cert reply:");
+            getOutputStream().println("Cert reply file: " + certfile);
+            getOutputStream().println("Storing KeyStore in: " + ksfile);
+            getOutputStream().println("Protected with storepassword: " + storepwd);
 
             X509Certificate cert = CertTools.getCertfromByteArray(FileTools.readFiletoBuffer(certfile));
             X509Certificate rootcert = null;
@@ -72,15 +72,15 @@ public class CaRecRepCommand extends BaseCaAdminCommand {
             FileInputStream fis = new FileInputStream(ksfile);
             store.load(fis, storepwd.toCharArray());
             Certificate[] certchain = store.getCertificateChain(privKeyAlias);
-            System.out.println("Loaded certificate chain with length " + certchain.length + " with alias 'privateKey'.");
+            getOutputStream().println("Loaded certificate chain with length " + certchain.length + " with alias 'privateKey'.");
             if (certchain.length == 0) {
-                System.out.println("No certificate in chain with alias 'privateKey' in keystore '"+ksfile +"'");
-                System.out.println("Reply NOT received!");
+                getOutputStream().println("No certificate in chain with alias 'privateKey' in keystore '"+ksfile +"'");
+                getOutputStream().println("Reply NOT received!");
                 return;                
             }
             if (!CertTools.isSelfSigned((X509Certificate)certchain[0])) {
-                System.out.println("Certificate in chain with alias 'privateKey' in keystore '"+ksfile +"' is not selfsigned");
-                System.out.println("Reply NOT received!");
+                getOutputStream().println("Certificate in chain with alias 'privateKey' in keystore '"+ksfile +"' is not selfsigned");
+                getOutputStream().println("Reply NOT received!");
                 return;
             }
             PrivateKey privKey = (PrivateKey) store.getKey(privKeyAlias, null);
@@ -92,8 +92,8 @@ public class CaRecRepCommand extends BaseCaAdminCommand {
             sign.initVerify(cert.getPublicKey());
             sign.update("foooooooooooooooo".getBytes());
             if (sign.verify(signature) == false) {
-                System.out.println("Public key in received certificate does not match private key.");
-                System.out.println("Reply NOT received!");
+                getOutputStream().println("Public key in received certificate does not match private key.");
+                getOutputStream().println("Reply NOT received!");
                 return;
             }
             // Get the certificate chain
@@ -110,7 +110,7 @@ public class CaRecRepCommand extends BaseCaAdminCommand {
             KeyStore ks = KeyTools.createP12(privKeyAlias, privKey, cert, cacerts);
             FileOutputStream os = new FileOutputStream(ksfile);
             ks.store(os, storepwd.toCharArray());
-            System.out.println("Keystore '" + ksfile + "' generated successfully.");
+            getOutputStream().println("Keystore '" + ksfile + "' generated successfully.");
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

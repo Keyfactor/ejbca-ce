@@ -13,15 +13,18 @@
  
 package se.anatom.ejbca.admin;
 
-import javax.naming.*;
+import java.io.PrintStream;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 
+import se.anatom.ejbca.util.InitialContextBuilder;
 
 /**
  * Base for all AdminCommands, contains functions for getting initial context and logging
  *
- * @version $Id: BaseAdminCommand.java,v 1.10 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: BaseAdminCommand.java,v 1.11 2004-10-13 07:14:46 anatom Exp $
  */
 public abstract class BaseAdminCommand implements IAdminCommand {
     /** Log4j instance for Base */
@@ -30,11 +33,35 @@ public abstract class BaseAdminCommand implements IAdminCommand {
     /** Log4j instance for actual class */
     private Logger log;
 
-    /** Cached initial context to save JNDI lookups */
-    private static InitialContext cacheCtx = null;
+    /** Where print output of commands */
+    private PrintStream outStream = System.out;
 
     /** holder of argument array */
     protected String[] args = null;
+
+    /**
+     * Initialize a new instance of BaseAdminCommand
+     *
+     * @param args command line arguments
+     * @param outStream stream where commands write its output
+     */
+    private void Init(String[] args, PrintStream outStream) {
+        log = Logger.getLogger(this.getClass());
+        this.args = args;
+        if( outStream != null ) {
+          this.outStream = outStream;
+        }
+    }
+
+    /**
+     * Creates a new instance of BaseAdminCommand
+     *
+     * @param args command line arguments
+     * @param outStream stream where commands write its output
+     */
+    public BaseAdminCommand(String[] args, PrintStream outStream) {
+	Init(args,outStream);
+    }
 
     /**
      * Creates a new instance of BaseAdminCommand
@@ -42,8 +69,7 @@ public abstract class BaseAdminCommand implements IAdminCommand {
      * @param args command line arguments
      */
     public BaseAdminCommand(String[] args) {
-        log = Logger.getLogger(this.getClass());
-        this.args = args;
+	Init(args,null);
     }
 
     /**
@@ -55,16 +81,12 @@ public abstract class BaseAdminCommand implements IAdminCommand {
         baseLog.debug(">getInitialContext()");
 
         try {
-            if (cacheCtx == null) {
-                cacheCtx = new InitialContext();
-            }
-
-            baseLog.debug("<getInitialContext()");
-
-            return cacheCtx;
+        	InitialContext cacheCtx = InitialContextBuilder.getInstance().getInitialContext();
+        	baseLog.debug("<getInitialContext()");
+        	return cacheCtx;
         } catch (NamingException e) {
-            baseLog.error("Can't get InitialContext", e);
-            throw e;
+        	baseLog.error("Can't get InitialContext", e);
+        	throw e;
         }
     } // getInitialContext
 
@@ -124,6 +146,28 @@ public abstract class BaseAdminCommand implements IAdminCommand {
     public void error(String msg, Throwable t) {
         log.error(msg, t);
     }
+
+
+    /**
+     * Return the PrintStream used to print output of commands
+     *
+     */
+    public PrintStream getOutputStream() {
+	return outStream;
+    }
+
+    /**
+     * Set the PrintStream used to print output of commands
+     *
+     * @param outStream stream where commands write its output
+     */
+    public void setOutputStream(PrintStream outStream) {
+	if( outStream == null )
+		this.outStream = System.out;
+	else
+		this.outStream = outStream;
+    }	
+
 }
 
 

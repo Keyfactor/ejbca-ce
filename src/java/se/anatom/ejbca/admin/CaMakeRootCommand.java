@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * makeroot CA admin command, generates keys and creates a keystore (PKCS12) to be used by the CA
  *
- * @version $Id: CaMakeRootCommand.java,v 1.10 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: CaMakeRootCommand.java,v 1.11 2004-10-13 07:14:45 anatom Exp $
  */
 public class CaMakeRootCommand extends BaseCaAdminCommand {
     /**
@@ -59,29 +59,29 @@ public class CaMakeRootCommand extends BaseCaAdminCommand {
         if (policyId.equals("null"))
             policyId = null;
 
-        System.out.println("Generating rootCA keystore:");
-        System.out.println("DN: "+dn);
-        System.out.println("Keysize: "+keysize);
-        System.out.println("Validity (days): "+validity);
-        System.out.println("Policy ID: "+policyId);
-        System.out.println("Storing in: "+filename);
-        System.out.println("Protected with storepassword: "+storepwd);
+        getOutputStream().println("Generating rootCA keystore:");
+        getOutputStream().println("DN: "+dn);
+        getOutputStream().println("Keysize: "+keysize);
+        getOutputStream().println("Validity (days): "+validity);
+        getOutputStream().println("Policy ID: "+policyId);
+        getOutputStream().println("Storing in: "+filename);
+        getOutputStream().println("Protected with storepassword: "+storepwd);
 
         try {
             // Generate keys
-            System.out.println("Generating keys, please wait...");
+            getOutputStream().println("Generating keys, please wait...");
             KeyPair rsaKeys = KeyTools.genKeys(keysize);
             X509Certificate rootcert = CertTools.genSelfCert("CN=dummy", 36500, null, rsaKeys.getPrivate(), rsaKeys.getPublic(), true);
             //X509Certificate rootcert = CertTools.genSelfCert(dn, validity, policyId, rsaKeys.getPrivate(), rsaKeys.getPublic(), true);
             KeyStore ks = KeyTools.createP12(privKeyAlias, rsaKeys.getPrivate(), rootcert, (X509Certificate)null);
 
             FileOutputStream os = new FileOutputStream(filename);
-            System.out.println("Storing keystore '"+filename+"'.");
+            getOutputStream().println("Storing keystore '"+filename+"'.");
             ks.store(os, storepwd.toCharArray());
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
-        System.out.println("Keystore "+filename+" generated successfully.");         
+        getOutputStream().println("Keystore "+filename+" generated successfully.");         
     } // exceute
 
 }//CaMakeRootCommand

@@ -28,7 +28,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * List certificates that will expire within the given number of days.
  *
- * @version $Id: CaListExpiredCommand.java,v 1.10 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: CaListExpiredCommand.java,v 1.11 2004-10-13 07:14:46 anatom Exp $
  */
 public class CaListExpiredCommand extends BaseCaAdminCommand {
     /**
@@ -60,7 +60,7 @@ public class CaListExpiredCommand extends BaseCaAdminCommand {
             Date findDate = new Date();
             long millis = (days * 24 * 60 * 60 * 1000);
             findDate.setTime(findDate.getTime() + (long) millis);
-            System.out.println("Looking for certificates that expire before " + findDate + ".");
+            getOutputStream().println("Looking for certificates that expire before " + findDate + ".");
 
             Collection certs = getExpiredCerts(findDate);
             Iterator iter = certs.iterator();
@@ -70,7 +70,7 @@ public class CaListExpiredCommand extends BaseCaAdminCommand {
                 Date retDate = xcert.getNotAfter();
                 String subjectDN = CertTools.getSubjectDN(xcert);
                 String serNo = xcert.getSerialNumber().toString();
-                System.out.println("Certificate with subjectDN '" + subjectDN +
+                getOutputStream().println("Certificate with subjectDN '" + subjectDN +
                     "' and serialNumber '" + serNo + "' expires at " + retDate + ".");
             }
         } catch (Exception e) {

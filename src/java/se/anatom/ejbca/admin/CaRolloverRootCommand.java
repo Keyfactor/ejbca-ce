@@ -27,7 +27,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Creates a new root certificate with new validity, using the same key.
  *
- * @version $Id: CaRolloverRootCommand.java,v 1.11 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: CaRolloverRootCommand.java,v 1.12 2004-10-13 07:14:45 anatom Exp $
  */
 public class CaRolloverRootCommand extends BaseCaAdminCommand {
     /**
@@ -48,9 +48,9 @@ public class CaRolloverRootCommand extends BaseCaAdminCommand {
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
             if (args.length < 4) {
-                System.out.println(
+                getOutputStream().println(
                     "Usage: CA rolloverroot <validity-days> <keystore filename> <storepassword>");
-                System.out.println(
+                getOutputStream().println(
                     "Rolloverroot is used to generate a new RootCA certificate using an existing keypair. This updates the current RootCA keystore.");
 
                 return;
@@ -67,14 +67,14 @@ public class CaRolloverRootCommand extends BaseCaAdminCommand {
             // Get old root certificate
             Certificate[] chain = KeyTools.getCertChain(keyStore,privKeyAlias);
             if (chain.length > 2) {
-                System.out.println(
+                getOutputStream().println(
                     "Certificate chain too long, this P12 was not generated with EJBCA?");
 
                 return;
             }
             X509Certificate rootcert = (X509Certificate) chain[chain.length - 1];
             if (!CertTools.isSelfSigned(rootcert)) {
-                System.out.println("Root certificate is not self signed???");
+                getOutputStream().println("Root certificate is not self signed???");
 
                 return;
             }
@@ -87,7 +87,7 @@ public class CaRolloverRootCommand extends BaseCaAdminCommand {
             PrivateKey privateKey = (PrivateKey) keyStore.getKey(privKeyAlias, privateKeyPass);
 
             if (privateKey == null) {
-                System.out.println("No private key with alias '" + privKeyAlias +
+                getOutputStream().println("No private key with alias '" + privKeyAlias +
                     "' in keystore, this keystore was not generated with EJBCA?");
 
                 return;
@@ -95,7 +95,7 @@ public class CaRolloverRootCommand extends BaseCaAdminCommand {
 
             // Generate the new root certificate
             String policyId = CertTools.getCertificatePolicyId(rootcert, 0);
-            System.out.println("Certificate policy Id is '" + policyId + "'.");
+            getOutputStream().println("Certificate policy Id is '" + policyId + "'.");
 
             X509Certificate newrootcert = CertTools.genSelfCert(CertTools.getSubjectDN(rootcert),
                     validity, policyId, privateKey, rootcert.getPublicKey(), true);
@@ -103,13 +103,13 @@ public class CaRolloverRootCommand extends BaseCaAdminCommand {
             // verify that the old and new keyidentifieras are the same
             String oldKeyId = Hex.encode(CertTools.getAuthorityKeyId(rootcert));
             String newKeyId = Hex.encode(CertTools.getAuthorityKeyId(newrootcert));
-            System.out.println("Old key id: " + oldKeyId);
-            System.out.println("New key id: " + newKeyId);
+            getOutputStream().println("Old key id: " + oldKeyId);
+            getOutputStream().println("New key id: " + newKeyId);
 
             if (oldKeyId.compareTo(newKeyId) != 0) {
-                System.out.println(
+                getOutputStream().println(
                     "Old key identifier and new key identifieras does not match, have the key pair changed?");
-                System.out.println("Unable to rollover Root CA.");
+                getOutputStream().println("Unable to rollover Root CA.");
 
                 return;
             }
@@ -118,8 +118,8 @@ public class CaRolloverRootCommand extends BaseCaAdminCommand {
             KeyStore ks = KeyTools.createP12(privKeyAlias, privateKey, newrootcert, cacert);
             FileOutputStream os = new FileOutputStream(filename);
             ks.store(os, storepwd.toCharArray());
-            System.out.println("Keystore " + filename + " generated successfully.");
-            System.out.println(
+            getOutputStream().println("Keystore " + filename + " generated successfully.");
+            getOutputStream().println(
                 "Please put keystore in correct location, restart application server and run 'ca init'.");
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

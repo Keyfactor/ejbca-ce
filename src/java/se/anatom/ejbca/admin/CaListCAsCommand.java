@@ -22,7 +22,7 @@ import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
 /**
  * Lists the names of all available CAs.
  *
- * @version $Id: CaListCAsCommand.java,v 1.2 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: CaListCAsCommand.java,v 1.3 2004-10-13 07:14:46 anatom Exp $
  */
 public class CaListCAsCommand extends BaseCaAdminCommand {
     /**
@@ -53,13 +53,13 @@ public class CaListCAsCommand extends BaseCaAdminCommand {
             while (iter.hasNext()) {
                 int caid = ((Integer)iter.next()).intValue();
                 CAInfo ca = casession.getCAInfo(administrator,caid);
-                System.out.println();
-                System.out.println("CA Name: "+ca.getName());
-                System.out.println("Id: "+ca.getCAId());
-                System.out.println("DN: "+ca.getSubjectDN());
-                System.out.println("Type: "+ca.getCAType());
-                System.out.println("Expire time: "+ca.getExpireTime());
-                System.out.println("Signed by: "+ca.getSignedBy());
+                getOutputStream().println();
+                getOutputStream().println("CA Name: "+ca.getName());
+                getOutputStream().println("Id: "+ca.getCAId());
+                getOutputStream().println("DN: "+ca.getSubjectDN());
+                getOutputStream().println("Type: "+ca.getCAType());
+                getOutputStream().println("Expire time: "+ca.getExpireTime());
+                getOutputStream().println("Signed by: "+ca.getSignedBy());
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

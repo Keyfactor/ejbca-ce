@@ -30,6 +30,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.KeyTools;
 import se.anatom.ejbca.util.P12toPEM;
+import se.anatom.ejbca.util.InitialContextBuilder;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -54,7 +55,7 @@ import java.util.Iterator;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.50 2004-07-23 12:33:10 sbailliez Exp $
+ * @version $Id: BatchMakeP12.java,v 1.51 2004-10-13 07:14:57 anatom Exp $
  */
 public class BatchMakeP12 {
     /**
@@ -84,7 +85,7 @@ public class BatchMakeP12 {
         log.debug(">GetInitialContext");
 
         // jndi.properties must exist in classpath
-        Context ctx = new javax.naming.InitialContext();
+        Context ctx = InitialContextBuilder.getInstance().getInitialContext();
         log.debug("<GetInitialContext");
 
         return ctx;

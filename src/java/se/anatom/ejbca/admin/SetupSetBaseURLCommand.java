@@ -22,7 +22,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 /**
  * Sets the base url of the web interface
  *
- * @version $Id: SetupSetBaseURLCommand.java,v 1.3 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: SetupSetBaseURLCommand.java,v 1.4 2004-10-13 07:14:46 anatom Exp $
  */
 public class SetupSetBaseURLCommand extends BaseAdminCommand {
     /**
@@ -46,20 +46,21 @@ public class SetupSetBaseURLCommand extends BaseAdminCommand {
 	       		                                                               "Example: setup setbaseurl localhost ejbca \n\n");	       
 	    }	
         try {            
-        	InitialContext jndicontext = new InitialContext();
+        	//InitialContext jndicontext = new InitialContext();
+        	InitialContext jndicontext = getInitialContext();
         	
-            String computername = args[1];
-            String applicationpath = args[2];
-            IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"),
-            		IRaAdminSessionHome.class);
-
-            IRaAdminSessionRemote raadminsession = raadminsessionhome.create();
-            
-            raadminsession.initGlobalConfigurationBaseURL(new Admin(Admin.TYPE_CACOMMANDLINE_USER), computername, applicationpath);
-                        
-            
+        	String computername = args[1];
+        	String applicationpath = args[2];
+        	IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"),
+        			IRaAdminSessionHome.class);
+        	
+        	IRaAdminSessionRemote raadminsession = raadminsessionhome.create();
+        	
+        	raadminsession.initGlobalConfigurationBaseURL(new Admin(Admin.TYPE_CACOMMANDLINE_USER), computername, applicationpath);
+        	
+        	
         } catch (Exception e) {
-            throw new ErrorAdminCommandException(e);            
+        	throw new ErrorAdminCommandException(e);            
         }
     }
 
