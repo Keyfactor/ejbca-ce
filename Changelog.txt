@@ -6,6 +6,7 @@ Removed CA and ROOTCA types in "ra adduser" cmd, from now on use certificate
 profiles.
 Added allowOverrideKeyUsage in certifcate profiles.
 New fields in DN, givenname, surname, initials.
+ExtendedKeyUsage extension (for use in OutLook).
 New servlet in adminweb, AdminCertReqServlet that creates users out of PKCS10-
 requests.
 Bugfixes, cleanups.
