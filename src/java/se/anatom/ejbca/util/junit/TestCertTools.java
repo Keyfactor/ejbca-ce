@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.19 2003-12-01 12:18:46 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.20 2004-01-28 13:22:11 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -295,6 +295,25 @@ public class TestCertTools extends TestCase {
 //        fos.write(cert.getEncoded());
 //        fos.close();
         log.debug("<test06CertOps()");
+    }
+    /** Tests the handling of DC components
+     *
+     * @throws Exception if error...
+     */
+    public void test07TestDC() throws Exception {
+        log.debug(">test07TestDC()");
+        // We try to examine the that we handle modern dc components for ldap correctly
+        String dn1 = "dc=bigcorp,dc=com,dc=se,ou=users,cn=Mike Jackson";
+        String bcdn1 = CertTools.stringToBCDNString(dn1);
+        log.debug("dn1: " + dn1);
+        log.debug("bcdn1: " + bcdn1);
+        //assertEquals("CN=Mike Jackson,OU=users,DC=se,DC=bigcorp,DC=com", bcdn1);
+        String dn2 = "cn=Mike Jackson,ou=users,dc=se,dc=bigcorp,dc=com";
+        String bcdn2 = CertTools.stringToBCDNString(dn2);
+        log.debug("dn2: " + dn2);
+        log.debug("bcdn2: " + bcdn2);
+        assertEquals("CN=Mike Jackson,OU=users,DC=se,DC=bigcorp,DC=com", bcdn2);
+        log.debug("<test07TestDC()");
     }
 
 }
