@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-
-<!DOCTYPE web-app PUBLIC
-	"-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
-	"http://java.sun.com/dtd/web-app_2_3.dtd">
+<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
     <display-name>Web enrollment</display-name>
@@ -20,6 +17,17 @@
         <display-name>ScepServlet</display-name>
         <servlet-class>se.anatom.ejbca.protocol.ScepServlet</servlet-class>
     </servlet>
+<!--
+    <servlet>
+        <servlet-name>DemoCertReqServlet</servlet-name>
+        <display-name>DemoCertReqServlet</display-name>
+        <servlet-class>se.anatom.ejbca.apply.DemoCertReqServlet</servlet-class>
+        <init-param>
+            <param-name>responseTemplate</param-name>
+            <param-value>certInstT.html</param-value>
+        </init-param>
+    </servlet>
+-->
     <servlet-mapping>
 	<servlet-name>CertReqServlet</servlet-name>
 	<url-pattern>/certreq</url-pattern>
@@ -28,5 +36,10 @@
 	<servlet-name>ScepServlet</servlet-name>
 	<url-pattern>/scep/pkiclient.exe</url-pattern>
     </servlet-mapping>
-
+<!--
+    <servlet-mapping>
+        <servlet-name>DemoCertReqServlet</servlet-name>
+        <url-pattern>/democertreq</url-pattern>
+    </servlet-mapping>
+-->
 </web-app>
