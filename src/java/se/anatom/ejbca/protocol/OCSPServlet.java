@@ -48,7 +48,7 @@ import org.apache.log4j.Logger;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.3 2003-10-26 15:13:53 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.4 2003-11-01 14:20:49 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -168,6 +168,8 @@ public class OCSPServlet extends HttpServlet {
                             + "'");
             }
             
+            // TODO: get keystore from CA instead, when parsing request and finding out
+            // who the issuer is
             kspath = config.getInitParameter("keyStore").trim();
             if (null == kspath || kspath.length() <= 0) {
                 m_log.error("Path to keystore not defined in initialization parameters.");
@@ -273,6 +275,8 @@ public class OCSPServlet extends HttpServlet {
                 m_log.error(msg);
                 throw new ServletException(msg);
             }
+            // TODO: END of private signing key todo
+            
             initparam = config.getInitParameter("enforceRequestSigning").trim();
             if (m_log.isDebugEnabled()) {
                 m_log.debug("Enforce request signing : '" 
