@@ -29,7 +29,7 @@ import java.util.ArrayList;
 public class CACertificateProfile extends CertificateProfile{
 
     // Public Constants
-    public final static  String CERTIFICATEPROFILENAME =  "SUBCA";
+    public static final String CERTIFICATEPROFILENAME =  "SUBCA";
 
     // Public Methods
 

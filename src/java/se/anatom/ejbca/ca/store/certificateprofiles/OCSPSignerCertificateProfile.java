@@ -18,13 +18,13 @@ import java.util.ArrayList;
 /**
  * OCSPSignerCertificateProfile is a class defining the fixed characteristics of an enduser certificate type
  *
- * @version $Id: OCSPSignerCertificateProfile.java,v 1.2 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: OCSPSignerCertificateProfile.java,v 1.3 2004-11-20 20:59:42 sbailliez Exp $
  */
 public class OCSPSignerCertificateProfile extends CertificateProfile{
 
     // Public Constants
 
-    public final static String CERTIFICATEPROFILENAME =  "OCSPSIGNER";
+    public static final String CERTIFICATEPROFILENAME =  "OCSPSIGNER";
 
     // Public Methods
     /** Creates a certificate with the characteristics of an end user. */

@@ -19,13 +19,13 @@ import java.util.ArrayList;
  * HardTokenSignCertificateProfile is a class defining the fixed characteristics 
  * of a hard token sign certificate.
  *
- * @version $Id: HardTokenSignCertificateProfile.java,v 1.4 2004-11-08 09:07:03 herrvendil Exp $
+ * @version $Id: HardTokenSignCertificateProfile.java,v 1.5 2004-11-20 20:59:42 sbailliez Exp $
  */
 public class HardTokenSignCertificateProfile extends CertificateProfile{
 
     // Public Constants
 
-    public final static String CERTIFICATEPROFILENAME =  "HARDTOKEN_SIGN";
+    public static final String CERTIFICATEPROFILENAME =  "HARDTOKEN_SIGN";
 
     // Public Methods
     /** Creates a certificate with the characteristics of an end user. */

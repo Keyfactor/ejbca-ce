@@ -28,7 +28,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.25 2004-11-20 16:59:59 herrvendil Exp $
+ * @version $Id: CertificateProfile.java,v 1.26 2004-11-20 20:59:42 sbailliez Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static Logger log = Logger.getLogger(CertificateProfile.class);
@@ -76,11 +76,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int NUMBER_OF_TYPES = 3;
 
     /** Supported certificate versions. */
-    public final static String VERSION_X509V3 = "X509v3";
-    public final static String CERTIFICATEPROFILENAME =  "CUSTOM";
+    public static final String VERSION_X509V3 = "X509v3";
+    public static final String CERTIFICATEPROFILENAME =  "CUSTOM";
     
     /** Constant indicating that any CA can be used with this certificate profile.*/
-    public final static int ANYCA = -1;
+    public static final int ANYCA = -1;
 
     // protected fields.
     protected static final String CERTVERSION                    = "certversion";

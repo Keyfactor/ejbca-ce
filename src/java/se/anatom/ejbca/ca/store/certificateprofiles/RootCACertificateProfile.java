@@ -18,13 +18,13 @@ import java.util.ArrayList;
 /**
  * RootCACertificateProfile is a class defining the fixed characteristics of a root ca certificate profile.
  *
- * @version $Id: RootCACertificateProfile.java,v 1.13 2004-11-20 16:59:59 herrvendil Exp $
+ * @version $Id: RootCACertificateProfile.java,v 1.14 2004-11-20 20:59:42 sbailliez Exp $
  */
 public class RootCACertificateProfile extends CertificateProfile{
 
     // Public Constants
 
-    public final static String CERTIFICATEPROFILENAME =  "ROOTCA";
+    public static final String CERTIFICATEPROFILENAME =  "ROOTCA";
 
     // Public Methods
     /** Creates a certificate with the characteristics of an end user. */

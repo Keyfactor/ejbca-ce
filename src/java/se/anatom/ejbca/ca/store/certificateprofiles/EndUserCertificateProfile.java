@@ -18,13 +18,13 @@ import java.util.ArrayList;
 /**
  * EndUserCertificateProfile is a class defining the fixed characteristics of an enduser certificate type
  *
-* @version $Id: EndUserCertificateProfile.java,v 1.14 2004-11-20 17:00:00 herrvendil Exp $
+* @version $Id: EndUserCertificateProfile.java,v 1.15 2004-11-20 20:59:42 sbailliez Exp $
   */
 public class EndUserCertificateProfile extends CertificateProfile{
 
     // Public Constants
 
-    public final static String CERTIFICATEPROFILENAME =  "ENDUSER";
+    public static final String CERTIFICATEPROFILENAME =  "ENDUSER";
 
     // Public Methods
     /** Creates a certificate with the characteristics of an end user. */
