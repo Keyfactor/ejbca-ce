@@ -79,3 +79,9 @@ ALTER TABLE userdata
     ADD column cAId ineteger DEFAULT '0' NOT NULL AFTER subjectDN,
     ADD column extendedInformationData varbinary DEFAULT NULL AFTER keyStorePassword;
 
+# Delete preset profiles that is not in DB in ejbca 3
+DELETE from endentityprofiledata where profilename='EMPTY';
+DELETE from certificateprofiledata where profilename='ENDUSER';
+DELETE from certificateprofiledata where profilename='CA';
+DELETE from certificateprofiledata where profilename='ROOTCA';
+

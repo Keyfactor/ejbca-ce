@@ -79,3 +79,9 @@ UPDATE userdata set endentityprofileid=1 where endentityprofileid=0;
 ALTER TABLE userdata
     ADD cAId int(11) NOT NULL DEFAULT '0' AFTER subjectDN,
     ADD extendedInformationData longblob NULL DEFAULT NULL AFTER keyStorePassword;
+
+# Delete preset profiles that is not in DB in ejbca 3
+DELETE from endentityprofiledata where profilename='EMPTY';
+DELETE from certificateprofiledata where profilename='ENDUSER';
+DELETE from certificateprofiledata where profilename='CA';
+DELETE from certificateprofiledata where profilename='ROOTCA';

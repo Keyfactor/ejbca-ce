@@ -50,7 +50,7 @@ import se.anatom.ejbca.util.SqlExecutor;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.17 2004-05-15 14:12:47 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.18 2004-05-15 15:36:11 anatom Exp $
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
@@ -232,8 +232,6 @@ public class UpgradeSessionBean extends BaseSessionBean {
         	error("Can not read resource for database type '"+dbtype+"'");
         	return false;
         }
-        // TODO: export and import profiles?
-        // TODO: export and import key recovery keys?
         
         // Migrate database tables to new columns etc
         Connection con = null;
@@ -264,13 +262,13 @@ public class UpgradeSessionBean extends BaseSessionBean {
         // Change fields, i.e. CAId in database tables
         CAInfo cainfo = getCaAdminSession().getCAInfo(admin, caName);
         int caId = cainfo.getCAId();
-        
+        debug("Upgraded CAId="+caId);
         // Fix all End Entity Profiles
         HashMap profileidtonamemap = getRaAdminSession().getEndEntityProfileIdToNameMap(admin);
         Iterator iter = profileidtonamemap.keySet().iterator();
         while(iter.hasNext()){
         	int next = ((Integer) iter.next()).intValue();
-            debug("found entityprofile "+next);
+            debug("Found entityprofile "+next);
         	// Only upgrade nonfixed profiles.
         	if(next > SecConst.EMPTY_ENDENTITYPROFILE){
         		EndEntityProfile profile = getRaAdminSession().getEndEntityProfile(admin,next);   
