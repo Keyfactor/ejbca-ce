@@ -371,7 +371,10 @@ public class ProtocolHttpTest extends TestCase {
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
         assertTrue("Status is not RevokedStatus", status instanceof RevokedStatus);
-
+        RevokedStatus rev = (RevokedStatus)status;
+        assertTrue("Status does not have reason", rev.hasRevocationReason());
+        int reason = rev.getRevocationReason();
+        assertEquals("Wrong revocation reason", reason, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
         log.debug("<test04OcspRevoked()");
     }
     /** Tests ocsp message
