@@ -2,45 +2,45 @@
     originally contributed by <surd0007(at)yahoo.com.cn>
  
 (This install guide is a complement to the guide present in README).
-$Id: INSTALL-guide.txt,v 1.7 2004-09-01 09:02:15 anatom Exp $
+$Id: INSTALL-guide.txt,v 1.8 2004-09-02 10:35:18 anatom Exp $
 
  
  Softwares needed:
  	redhat8.0
- 	j2sdk-1_4_0_02-linux-i586.bin
- 	jboss-3.0.8.zip
- 	ejbca_3_0.zip
+ 	j2sdk-1_4_2_05-linux-i586.bin
+ 	jboss-3.2.5.zip
+ 	ejbca_3_0_2.zip
  	mysql-3.23.52-3(included in redhat CDs)
- 	mysql-connector-java-3.0.8-stable-bin.jar(JDBC driver)
+ 	mysql-connector-java-3.0.9-stable-bin.jar(JDBC driver)
  	openldap-2.1.12(support BDB type)
  	
  
  Install JDK1.4
- 	#cp j2sdk-1_4_0_02-linux-i586.bin /usr
+ 	#cp j2sdk-1_4_2_05-linux-i586.bin /usr
  	#cd /usr
- 	#chmod 777 j2sdk-1_4_0_02-linux-i586.bin
- 	#./j2sdk-1_4_0_02-linux-i586.bin
- 	#ln -s j2sdk1.4.0_02 java
+ 	#chmod 777 j2sdk-1_4_2_05-linux-i586.bin
+ 	#./j2sdk-1_4_2_05-linux-i586.bin
+ 	#ln -s j2sdk1.4.2_05 java
  
  
  Install jboss
- 	#cp jboss-3.0.8.zip /usr
+ 	#cp jboss-3.2.5.zip /usr
  	#cd /usr
- 	#unzip jboss-3.0.8.zip
- 	#cd jboss-3.0.8
+ 	#unzip jboss-3.2.5.zip
+ 	#cd jboss-3.2.5
  
  
  Install ant
- 	#cp apache-ant-1.5.4-bin.tar.gz /usr/j2ee/
- 	#tar xvfz apache-ant-1.5.4-bin.tar.gz
+ 	#cp apache-ant-1.6.2-bin.tar.gz /usr/j2ee/
+ 	#tar xvfz apache-ant-1.6.2-bin.tar.gz
  
  
  Configure environment variables
  	add the following text to the tail of /etc/profile:
  
  	export JAVA_HOME=/usr/java
- 	export JBOSS_HOME=/usr/jboss-3.0.8
- 	export PATH=/usr/java/bin:$PATH:/usr/j2ee/apache-ant-1.5.4/bin
+ 	export JBOSS_HOME=/usr/jboss-3.2.5
+ 	export PATH=/usr/java/bin:$PATH:/usr/j2ee/apache-ant-1.6.2/bin
  	export CLASSPATH=/usr/java/jre/lib/ext/:$CLASSPATH
  
  	Notes: In order to make the environment variables valid, logout and login again!
@@ -53,16 +53,18 @@ $Id: INSTALL-guide.txt,v 1.7 2004-09-01 09:02:15 anatom Exp $
  	skip-name-resolve
  	set-variable=thread_stack=256k
  
+ 	Make sure you don't have 'skip-networking' configured
+ 	
  	#/etc/rc.d/initd/mysqld restart
  
- 	add user "ocsper" with password "123456" and enough privileges. allow user ocsper to
-connect to mysql server.
- 	create ejbca database under user ocsper.
+ 	add user "ejbca" with password "ejbca" (you should choose a good password) and enough privileges. 
+ 	Allow user ejbca to connect to mysql server, not only from localhost.
+ 	create ejbca database under user ejbca.
  
  
  Install EJBCA
- 	#cp ejbca_3_0.zip /usr/j2ee
- 	#unzip ejbca_3_0.zip
+ 	#cp ejbca_3_0_2.zip /usr/j2ee
+ 	#unzip ejbca_3_0_2.zip
  	#cd ejbca
  
  	Configure mysql:
@@ -97,7 +99,7 @@ connect to mysql server.
     <datasources>
        <local-tx-datasource>
           <jndi-name>DefaultDS</jndi-name>
-          <connection-url>jdbc:mysql://localhost:3306/ejbca3</connection-url>
+          <connection-url>jdbc:mysql://localhost:3306/ejbca</connection-url>
           <driver-class>com.mysql.jdbc.Driver</driver-class>
           <user-name>ejbca</user-name>
           <password>ejbca</password>
