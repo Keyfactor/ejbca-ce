@@ -65,7 +65,7 @@ import se.anatom.ejbca.log.Admin;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.29 2003-02-20 09:01:41 herrvendil Exp $
+ * @version $Id: CertReqServlet.java,v 1.30 2003-02-23 12:03:01 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
@@ -397,7 +397,6 @@ public class CertReqServlet extends HttpServlet {
          
          ISignSessionRemote signsession = signsessionhome.create();
          X509Certificate cert = (X509Certificate)signsession.createCertificate(administrator, username, password, rsaKeys.getPublic());
-         System.out.println("issuer " + cert.getIssuerDN().toString() + ", " + cert.getClass().getName());         
 
         // Make a certificate chain from the certificate and the CA-certificate
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
