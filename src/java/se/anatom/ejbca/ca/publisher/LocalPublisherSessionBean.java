@@ -64,7 +64,7 @@ import se.anatom.ejbca.ra.ExtendedInformation;
  * @ejb.permission role-name="InternalUser"
  *
  * @ejb.env-entry
- *   name="Datasource"
+ *   name="DataSource"
  *   type="java.lang.String"
  *   value="java:/${datasource.jndi-name}"
  *

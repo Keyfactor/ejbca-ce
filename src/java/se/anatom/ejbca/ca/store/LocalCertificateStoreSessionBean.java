@@ -65,7 +65,7 @@ import java.util.Random;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.74 2004-07-23 12:01:05 sbailliez Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.75 2004-07-23 17:15:15 sbailliez Exp $
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
  * view-type="both"
@@ -77,7 +77,7 @@ import java.util.Random;
  * @ejb.permission role-name="InternalUser"
  *
  * @ejb.env-entry description="JDBC datasource to be used"
- * name="Datasource"
+ * name="DataSource"
  * type="java.lang.String"
  * value="java:/${datasource.jndi-name}"
  *
