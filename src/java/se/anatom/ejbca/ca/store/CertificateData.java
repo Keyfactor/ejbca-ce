@@ -8,6 +8,7 @@ import java.rmi.RemoteException;
 
 /**
  * For docs, see CertificateDataBean
+ * @see se.anatom.ejbca.ca.store.CertificateDataBean
  **/
 public interface CertificateData extends javax.ejb.EJBObject {
 
@@ -36,7 +37,7 @@ public interface CertificateData extends javax.ejb.EJBObject {
     public static final int CERT_TYPE_ENCSIGN       = 0x3;
 
     // Constants used to contruct KeyUsage
-    /** @see se.anatom.ejbca.ca.sign.ISignSession */
+    /** @see se.anatom.ejbca.ca.sign.ISignSessionRemote */
     public static final int        digitalSignature = (1 << 7);
     public static final int        nonRepudiation   = (1 << 6);
     public static final int        keyEncipherment  = (1 << 5);
@@ -69,7 +70,7 @@ public interface CertificateData extends javax.ejb.EJBObject {
     public String getBase64Cert() throws RemoteException;
     public void setBase64Cert(String base64Cert) throws RemoteException;
     public String getUsername() throws RemoteException;
-    public void setUsername(String username) throws RemoteException;    
+    public void setUsername(String username) throws RemoteException;
 
     // Public helper methods, not directly related to persistance
     public Certificate getCertificate() throws RemoteException;

@@ -37,13 +37,13 @@ public abstract class CertificateDataBean implements javax.ejb.EntityBean {
     protected EntityContext  ctx;
 
     public abstract String getIssuerDN();
-    /** Use setIssued instead
-     * @see setIssuer
+    /** Use setIssuer instead
+     * @see #setIssuer(String)
      */
     public abstract void setIssuerDN(String issuerDN);
     public abstract String getSubjectDN();
     /** Use setSubject instead
-     * @see setSubject
+     * @see #setSubject(String)
      */
     public abstract void setSubjectDN(String subjectDN);
     public abstract String getFingerprint();

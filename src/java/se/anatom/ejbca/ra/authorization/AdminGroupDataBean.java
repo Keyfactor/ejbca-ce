@@ -23,7 +23,7 @@ import org.apache.log4j.*;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.2 2003-01-12 17:16:30 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.3 2003-01-29 16:16:00 anatom Exp $
  **/
 
 public abstract class AdminGroupDataBean implements javax.ejb.EntityBean {
@@ -42,7 +42,7 @@ public abstract class AdminGroupDataBean implements javax.ejb.EntityBean {
     public abstract void setAccessRules(Collection accessrules);
 
      /**
-     * @see se.anatom.ejbca.ra.raadmin.AdminGroupDataLocal
+     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
      */
 
     public void addAccessRule(String resource, int rule, boolean recursive){
@@ -61,7 +61,7 @@ public abstract class AdminGroupDataBean implements javax.ejb.EntityBean {
          }
        }
        getAccessRules().add(data);
-     }catch(Exception e){    
+     }catch(Exception e){
      }
    } // addAccessRule
 
@@ -75,7 +75,7 @@ public abstract class AdminGroupDataBean implements javax.ejb.EntityBean {
    } // addAccessRules
 
      /**
-     * @see se.anatom.ejbca.ra.raadmin.AdminGroupDataLocal
+     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
      */
     public void removeAccessRule(String resource){
       Iterator i =  getAccessRules().iterator();
@@ -92,14 +92,14 @@ public abstract class AdminGroupDataBean implements javax.ejb.EntityBean {
     } // removeAccessRule
 
      /**
-     * @see se.anatom.ejbca.ra.raadmin.AdminGroupDataLocal
+     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
      */
     public int getNumberOfAccessRules(){
        return  getAccessRules().size();
     } // getNumberOfAccessRules
 
      /**
-     * @see se.anatom.ejbca.ra.raadmin.AdminGroupDataLocal
+     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
      */
     public AccessRule[] getAccessRulesAsArray(){
       AccessRule[] returnval = null;
@@ -118,7 +118,7 @@ public abstract class AdminGroupDataBean implements javax.ejb.EntityBean {
     } // getAccessRules
 
      /**
-     * @see se.anatom.ejbca.ra.raadmin.AdminGroupDataLocal
+     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
      */
 
     public void addAdminEntity(int matchwith, int matchtype, String matchvalue){
@@ -153,7 +153,7 @@ public abstract class AdminGroupDataBean implements javax.ejb.EntityBean {
     } // addAdminEntities
 
      /**
-     * @see se.anatom.ejbca.ra.raadmin.AdminGroupDataLocal
+     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
      */
     public void removeAdminEntity(int matchwith, int matchtype, String matchvalue){
       AdminEntityPK datapk = new AdminEntityPK(getAdminGroupName(), matchwith,matchtype,matchvalue);
@@ -173,14 +173,14 @@ public abstract class AdminGroupDataBean implements javax.ejb.EntityBean {
     } // removeAdminEntity
 
      /**
-     * @see se.anatom.ejbca.ra.raadmin.AdminGroupDataLocal
+     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
      */
     public int getNumberOfAdminEntities(){
       return getAdminEntities().size();
     } // getNumberOfAdminEntities
 
      /**
-     * @see se.anatom.ejbca.ra.raadmin.AdminGroupDataLocal
+     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
      */
     public AdminEntity[] getAdminEntitiesAsArray(){
       AdminEntity[] returnval = null;
@@ -199,7 +199,7 @@ public abstract class AdminGroupDataBean implements javax.ejb.EntityBean {
     } // getAdminEntities
 
      /**
-     * @see se.anatom.ejbca.ra.raadmin.AdminGroupDataLocal
+     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
      */
     public AdminGroup getAdminGroup(){
       Vector accessrules = new Vector();
@@ -294,7 +294,7 @@ public abstract class AdminGroupDataBean implements javax.ejb.EntityBean {
     }
 
     public void ejbRemove() {
-       
+
     }
 
     // Private Methods.

@@ -6,8 +6,8 @@ import se.anatom.ejbca.log.Admin;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see IPublicherSession for docs.
  *
- * @version $Id: IPublisherSessionLocal.java,v 1.6 2003-01-12 17:16:28 anatom Exp $
- * @see se.anatom.ejbca.ca.store.IPublisherSession
+ * @version $Id: IPublisherSessionLocal.java,v 1.7 2003-01-29 16:15:59 anatom Exp $
+ * @see se.anatom.ejbca.ca.store.IPublisherSessionRemote
  */
 public interface IPublisherSessionLocal extends javax.ejb.EJBLocalObject {
 

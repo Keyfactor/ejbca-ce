@@ -33,8 +33,8 @@ public abstract class CRLDataBean implements javax.ejb.EntityBean {
     public abstract int getCRLNumber();
     public abstract void setCRLNumber(int cRLNumber);
     public abstract String getIssuerDN();
-    /** Use setIssued instead
-     * @see setIssuer
+    /** Use setIssuer instead
+     * @see #setIssuer(String)
      */
     public abstract void setIssuerDN(String issuerDN);
     public abstract String getFingerprint();

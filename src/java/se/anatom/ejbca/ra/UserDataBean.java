@@ -27,7 +27,7 @@ import org.apache.log4j.*;
  * Subject Alternative Name (subjectAltName
  * Subject Email (subjectEmail)
  * Status (status)
- * Type (type, from SecConst)  
+ * Type (type, from SecConst)
  * End Entity Profile (endEntityProfileId)
  * Certificate Profile (certificateProfileId)
  * Token Type (tokenType)
@@ -40,7 +40,7 @@ import org.apache.log4j.*;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.15 2003-01-19 09:40:14 herrvendil Exp $
+ * @version $Id: UserDataBean.java,v 1.16 2003-01-29 16:15:59 anatom Exp $
  **/
 
 public abstract class UserDataBean implements javax.ejb.EntityBean {
@@ -56,8 +56,8 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
     public abstract void setSubjectDN(String subjectDN);
 
     public abstract String getSubjectAltName();
-    public abstract void setSubjectAltName(String subjectAltName);    
-    
+    public abstract void setSubjectAltName(String subjectAltName);
+
     public abstract String getSubjectEmail();
     public abstract void setSubjectEmail(String subjectEmail);
 
@@ -67,93 +67,101 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
     public abstract int getType();
     public abstract void setType(int type);
 
-    /** Returns clear text password or null. */
+    /** Returns clear text password or null.
+    */
     public abstract String getClearPassword();
 
     /** Sets clear text password, the preferred method is setOpenPassword().
-     * @see setOpenPassword
+     * @see #setOpenPassword(String)
      */
-
     public abstract void setClearPassword(String clearPassword);
-    /** Returns hashed password or null. */
 
+    /** Returns hashed password or null.
+    */
     public abstract String getPasswordHash();
 
     /** Sets hash of password, this is the normal way to store passwords, but use the method setPassword() instead.
-     * @see setPassword
+     * @see #setPassword(String)
      */
-
     public abstract void setPasswordHash(String passwordHash);
-    
+
     /**
      *  Returns the time when the user was created.
-     */    
+     */
     public abstract long getTimeCreated();
-    
+
     /**
      * Sets the time when the user was created.
      */
     public abstract void setTimeCreated(long createtime);
+
     /**
      *  Returns the time when the user was last modified.
-     */       
+     */
     public abstract long getTimeModified();
+
     /**
      * Sets the time when the user was last modified.
-     */   
+     */
     public abstract void setTimeModified(long createtime);
+
     /**
      *  Returns the end entity profile id the user belongs to.
-     */     
+     */
     public abstract int getEndEntityProfileId();
+
     /**
      *  Sets the end entity profile id the user should belong to. 0 if profileid is not applicable.
-     */     
+     */
     public abstract void setEndEntityProfileId(int endentityprofileid);
-    
+
     /**
      *  Returns the certificate profile id that should be generated for the user.
-     */     
+     */
     public abstract int getCertificateProfileId();
+
     /**
      *  Sets the certificate profile id that should be generated for the user. 0 if profileid is not applicable.
-     */     
+     */
     public abstract void setCertificateProfileId(int certificateprofileid);
-    
+
     /**
      *  Returns the token type id that should be generated for the user.
-     */     
+     */
     public abstract int getTokenType();
+
     /**
      *  Sets the token type  that should be generated for the user. Available token types can be found in SecConst.
-     */     
+     */
     public abstract void setTokenType(int tokentype);
+
     /**
      *  Returns the hard token issuer id that should genererate for the users hard token.
-     */     
+     */
     public abstract int getHardTokenIssuerId();
+
     /**
      *  Sets tthe hard token issuer id that should genererate for the users hard token. 0 if issuerid is not applicable.
-     */     
-    public abstract void setHardTokenIssuerId(int hardtokenissuerid);    
-    
-    
-    // Reserved for future use.    
+     */
+    public abstract void setHardTokenIssuerId(int hardtokenissuerid);
+
+
+    // Reserved for future use.
     public abstract String getKeyStorePassword();
     public abstract void setKeyStorePassword(String keystorepassword);
-    
+
 
     //
     // Public methods used to help us manage passwords
     //
 
-    /** 
+    /**
      * Function that sets the BCDN representation of the string.
-     */ 
+     */
     public void setDN(String dn){
-      setSubjectDN(CertTools.stringToBCDNString(dn));        
+      setSubjectDN(CertTools.stringToBCDNString(dn));
     }
-    
+
     /** Sets password in ahsed form in the database, this way it cannot be read in clear form */
     public void setPassword(String password) throws NoSuchAlgorithmException {
         String passwordHash = makePasswordHash(password);
@@ -236,12 +244,12 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
        throws CreateException, NoSuchAlgorithmException {
 
         long time = (new Date()).getTime();
-        
+
         setUsername(username);
         setClearPassword(null);
         setPasswordHash(makePasswordHash(password));
         setSubjectDN(CertTools.stringToBCDNString(dn));
-        setSubjectAltName(null);        
+        setSubjectAltName(null);
         setSubjectEmail(null);
         setStatus(UserDataLocal.STATUS_NEW);
         setType(SecConst.USER_INVALID);

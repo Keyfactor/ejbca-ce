@@ -4,7 +4,7 @@ package se.anatom.ejbca.util;
 
 /** This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.4 2003-01-12 17:16:32 anatom Exp $
+ * @version $Id: StringTools.java,v 1.5 2003-01-29 16:16:01 anatom Exp $
  */
 public class StringTools {
 
@@ -12,12 +12,9 @@ public class StringTools {
         '\'','\"','\n','\r','/','\\',';','&','|','!','\0','%','`','?','<','>','?','$',':','~'
     };
 
-    /** Strips all specialsigns from a String by replacing them with a forward slash, '/'.
-     *
-     *
+    /** Strips all special signs from a String by replacing them with a forward slash, '/'.
      *@param str the string whose contents will be stripped.
      *@return the stripped version of the input string.
-     *@see strip
      **/
     public static String strip(String str) {
         if (str == null)

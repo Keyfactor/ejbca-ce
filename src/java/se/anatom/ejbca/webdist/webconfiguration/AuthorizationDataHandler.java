@@ -17,7 +17,7 @@ import se.anatom.ejbca.log.ILogSessionRemote;
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
  * @author  Philip Vendil
- * @version $Id: AuthorizationDataHandler.java,v 1.11 2003-01-12 17:16:28 anatom Exp $
+ * @version $Id: AuthorizationDataHandler.java,v 1.12 2003-01-29 16:16:01 anatom Exp $
  */
 public class AuthorizationDataHandler {
 
@@ -56,56 +56,56 @@ public class AuthorizationDataHandler {
      *
      * @param admininformation information about the admin to be authorized.
      * @param resource the resource to look up.
-     * @returns true if authorizes
+     * @return true if authorizes
      * @throws AuthorizationDeniedException when authorization is denied.
      */
     public boolean isAuthorized(AdminInformation admininformation, String resource) throws AuthorizationDeniedException{
       return authorize.isAuthorized(admininformation, resource);
     }
-    
+
     /**
      * Method to check if a admin is authorized to a resource without performing any logging.
      *
      * @param admininformation information about the admin to be authorized.
      * @param resource the resource to look up.
-     * @returns true if authorizes
+     * @return true if authorizes
      * @throws AuthorizationDeniedException when authorization is denied.
      */
     public boolean isAuthorizedNoLog(AdminInformation admininformation, String resource) throws AuthorizationDeniedException{
       return authorize.isAuthorizedNoLog(admininformation, resource);
-    }    
-    
+    }
+
     /**
      * Method that authenticates a certificate by verifying signature, checking validity and lookup if certificate is revoked.
      *
-     * @param certificate the certificate to be authenticated. 
+     * @param certificate the certificate to be authenticated.
      *
-     * @throws AuthenticationFailedException if authentication failed. 
+     * @throws AuthenticationFailedException if authentication failed.
      */
     public void authenticate(X509Certificate certificate) throws AuthenticationFailedException {
       authorize.authenticate(certificate);
     }
-    
+
     // Methods used with admingroup data
         /** Method to add a new admingroup to the access control data.*/
     public void addAdminGroup(String name) throws AdmingroupExistsException, RemoteException{
         if(!authorizationsession.addAdminGroup(administrator, name))
           throw new AdmingroupExistsException();
-    
-        authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));        
+
+        authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));
     }
 
     /** Method to remove a admingroup.*/
     public void removeAdminGroup(String name) throws RemoteException{
         authorizationsession.removeAdminGroup(administrator, name);
-        authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));        
+        authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));
     }
 
     /** Method to rename a admingroup. */
     public void renameAdminGroup(String oldname, String newname) throws AdmingroupExistsException, RemoteException{
         if(!authorizationsession.renameAdminGroup(administrator, oldname,newname))
           throw new AdmingroupExistsException();
-        
+
          authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));
     }
 
@@ -127,7 +127,7 @@ public class AuthorizationDataHandler {
                                 java.lang.Integer.valueOf(accessrules[i][ACCESS_RULE_RULE]).intValue(),
                                 java.lang.Boolean.valueOf(accessrules[i][ACCESS_RULE_RECURSIVE]).booleanValue());
           }
-          authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));          
+          authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));
         }catch (Exception e){
             // Do not add erronios rules.
         }
@@ -140,8 +140,8 @@ public class AuthorizationDataHandler {
           for(int i=0; i < arraysize; i++){
             authorizationsession.removeAccessRule(administrator, groupname, accessrules[i][ACCESS_RULE_RESOURCE]);
           }
-          
-          authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));  
+
+          authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));
         }catch (Exception e){
             // Do not add erronios rules.
         }
@@ -161,7 +161,7 @@ public class AuthorizationDataHandler {
              returnarray[i][ACCESS_RULE_RECURSIVE] = String.valueOf(accessrules[i].isRecursive());
           }
         }
-        
+
         return returnarray;
     }
 
@@ -184,9 +184,9 @@ public class AuthorizationDataHandler {
                                 Integer.parseInt(adminentities[i][ADMIN_ENTITY_MATCHTYPE]),
                                 adminentities[i][ADMIN_ENTITY_MATCHVALUE]);
           }
-          authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));          
+          authorize.buildAccessTree(authorizationsession.getAdminGroups(administrator));
        }catch (Exception e){
-            // Do not add erronios rules.
+            // Do not add erroneous rules.
        }
     }
 

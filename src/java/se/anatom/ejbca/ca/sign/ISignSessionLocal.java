@@ -19,8 +19,8 @@ import se.anatom.ejbca.log.Admin;
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown.
  *  Creates certificates.
  *
- * @version $Id: ISignSessionLocal.java,v 1.8 2003-01-12 17:26:40 anatom Exp $
- * @see se.anatom.ejbca.ca.sign.ISignSession
+ * @version $Id: ISignSessionLocal.java,v 1.9 2003-01-29 16:15:54 anatom Exp $
+ * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
  */
 public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
 
