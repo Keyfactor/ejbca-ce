@@ -12,7 +12,6 @@ import javax.mail.Transport;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.InternetAddress;
 
-
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.StringTools;
@@ -37,7 +36,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.41 2003-02-23 17:55:29 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.42 2003-02-24 09:14:21 scop Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -61,7 +60,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     private final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId";
     /** Var holding JNDI name of datasource */
     private String dataSource = "java:/DefaultDS";
-    
+
     /** Class used to create notification messages.*/
     private NotificationCreator notificationcreator;
 
@@ -98,7 +97,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         certificatesession = certificatesessionhome.create();
         profileauthproxy = new EndEntityProfileAuthorizationProxy(authorizationsession);
         debug("DataSource=" + dataSource);
-        
+
         notificationcreator = new NotificationCreator((String)lookup("java:comp/env/sender", java.lang.String.class),
                                                       (String)lookup("java:comp/env/subject", java.lang.String.class),
                                                       (String)lookup("java:comp/env/message", java.lang.String.class));
@@ -194,6 +193,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     public void changeUser(Admin admin, String username, String password,  String subjectdn, String subjectaltname, String email,  boolean clearpwd, int endentityprofileid, int certificateprofileid,
                            int type, int tokentype, int hardwaretokenissuerid, int status)
                               throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException {
+        String bcdn = CertTools.stringToBCDNString(subjectdn);
         // String used in SQL so strip it
         String dn = StringTools.strip(bcdn);
         debug(">changeUser("+username+", "+dn+", "+email+")");
@@ -243,9 +243,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             data1.setStatus(status);
 
             data1.setTimeModified((new java.util.Date()).getTime());
-            
+
             if((type & SecConst.USER_SENDNOTIFICATION) != 0 && (status != oldstatus) && (status == UserDataLocal.STATUS_NEW || status == UserDataLocal.STATUS_KEYRECOVERY))
-              sendNotification(admin, username, password, dn, subjectaltname, email);            
+              sendNotification(admin, username, password, dn, subjectaltname, email);
             logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"New status: "+ status);
         }
         catch (Exception e) {
@@ -831,7 +831,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             ret = gcdata.getGlobalConfiguration();
           }
         }catch (javax.ejb.FinderException fe) {
-             // Create new configuration           
+             // Create new configuration
              ret = new GlobalConfiguration();
         }
         debug("<loadGlobalConfiguration()");
@@ -877,11 +877,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
      if(keyrecoverable)
        returnval += SecConst.USER_KEYRECOVERABLE;
      if(sendnotification)
-       returnval += SecConst.USER_SENDNOTIFICATION;         
+       returnval += SecConst.USER_SENDNOTIFICATION;
 
      return returnval;
    } // makeType
-   
+
    private void sendNotification(Admin admin, String username, String password, String dn, String subjectaltname, String email){
      try {
        if(email== null)
@@ -894,15 +894,15 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
        msg.setContent( notificationcreator.getMessage(username, password, dn, subjectaltname, email), "text/plain" );
        msg.setHeader( "X-Mailer", "JavaMailer" );
        msg.setSentDate( new java.util.Date() );
-       Transport.send( msg );         
+       Transport.send( msg );
        logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_NOTIFICATION,"Notification to " + email + " sent successfully.");
      }
      catch ( Exception e )
-     { 
-       try{  
+     {
+       try{
          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_NOTIFICATION, "Error when sending notification to " + email );
        }catch(Exception f){
-          throw new EJBException(f);   
+          throw new EJBException(f);
        }
      }
    } // sendNotification
