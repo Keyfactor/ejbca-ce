@@ -12,7 +12,7 @@ import se.anatom.ejbca.util.Base64;
 
 /** Receive certification request and create certificate to send back.
  *
- * @version $Id: CaProcessReqCommand.java,v 1.1 2002-04-13 18:11:27 anatom Exp $
+ * @version $Id: CaProcessReqCommand.java,v 1.2 2002-04-13 18:40:15 anatom Exp $
  */
 public class CaProcessReqCommand extends BaseCaAdminCommand {
 
@@ -58,7 +58,7 @@ public class CaProcessReqCommand extends BaseCaAdminCommand {
             fos.write(Base64.encode(cert.getEncoded()));
             fos.write("\n-----END CERTIFICATE-----\n".getBytes());
             fos.close();
-            System.out.println("Wrote certificate to file " + outfile);
+            System.out.println("Wrote certificate (PEM-format) to file " + outfile);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

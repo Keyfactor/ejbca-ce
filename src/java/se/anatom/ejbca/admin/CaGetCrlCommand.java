@@ -10,7 +10,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 
 /** Retrieves the latest CRL from the CA.
  *
- * @version $Id: CaGetCrlCommand.java,v 1.1 2002-04-13 18:11:27 anatom Exp $
+ * @version $Id: CaGetCrlCommand.java,v 1.2 2002-04-13 18:40:15 anatom Exp $
  */
 public class CaGetCrlCommand extends BaseCaAdminCommand {
 
@@ -33,7 +33,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
             FileOutputStream fos = new FileOutputStream(outfile);
             fos.write(crl);
             fos.close();
-            System.out.println("Wrote latest CR to " + outfile+ ".");
+            System.out.println("Wrote latest CRL to " + outfile+ ".");
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

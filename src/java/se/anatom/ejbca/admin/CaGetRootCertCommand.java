@@ -8,7 +8,7 @@ import java.security.cert.X509Certificate;
 
 /** Export root CA certificate.
  *
- * @version $Id: CaGetRootCertCommand.java,v 1.1 2002-04-07 09:55:29 anatom Exp $
+ * @version $Id: CaGetRootCertCommand.java,v 1.2 2002-04-13 18:40:15 anatom Exp $
  */
 public class CaGetRootCertCommand extends BaseCaAdminCommand {
 
@@ -19,7 +19,7 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
 
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         if (args.length < 2) {
-            String msg = "Save root CA certificate to file.\n";
+            String msg = "Save root CA certificate (DER-format) to file.\n";
             msg += "Usage: CA rootcert <filename>";
             throw new IllegalAdminCommandException(msg);
         }

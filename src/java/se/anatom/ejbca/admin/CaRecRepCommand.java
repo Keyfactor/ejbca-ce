@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.KeyTools;
 
 /** eceive certificate reply as result of certificate request.
  *
- * @version $Id: CaRecRepCommand.java,v 1.1 2002-04-13 18:11:27 anatom Exp $
+ * @version $Id: CaRecRepCommand.java,v 1.2 2002-04-13 18:40:15 anatom Exp $
  */
 public class CaRecRepCommand extends BaseCaAdminCommand {
 
@@ -51,12 +51,13 @@ public class CaRecRepCommand extends BaseCaAdminCommand {
                 // We have whole chain at once
                 if (!CertTools.isSelfSigned((X509Certificate)certchain[1])) {
                     System.out.println("Last certificate in chain with alias 'privateKey' in keystore '"+ksfile +"' is not root certificate (selfsigned)");
+                    System.out.println("Reply NOT received!");
                     return;
                 }
                 if (certchain.length > 2) {
                     System.out.println("Certificate chain length is larger than 2, only 2 is supported.");
-                    return;
-                    
+                    System.out.println("Reply NOT received!");
+                    return;                
                 }
                 rootcert = (X509Certificate)certchain[1];
             } else {
@@ -65,10 +66,12 @@ public class CaRecRepCommand extends BaseCaAdminCommand {
                 System.out.println("Loaded certificate chain with length "+ chain1.length+" with alias '"+ialias+"'.");
                 if (chain1.length == 0) {
                     System.out.println("No CA-certificate found!");
+                    System.out.println("Reply NOT received!");
                     return;
                 }
                 if (!CertTools.isSelfSigned((X509Certificate)chain1[0])) {
                     System.out.println("Certificate in chain with alias '"+ialias+"' in keystore '"+ksfile +"' is not root certificate (selfsigned)");
+                    System.out.println("Reply NOT received!");
                     return;
                 }
                 rootcert = (X509Certificate)chain1[0];
@@ -83,6 +86,7 @@ public class CaRecRepCommand extends BaseCaAdminCommand {
             sign.update("foooooooooooooooo".getBytes());
             if (sign.verify(signature) == false) {
                 System.out.println("Public key in received certificate does not match private key.");
+                System.out.println("Reply NOT received!");
                 return;
             }
             
