@@ -8,10 +8,12 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 
+import se.anatom.ejbca.BaseEntityBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
+
 
 /**
  * Entity Bean representing a certificate.
@@ -31,13 +33,11 @@ import se.anatom.ejbca.ca.crl.RevokedCertInfo;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.15 2003-02-27 08:43:24 anatom Exp $
+ * @version $Id: CertificateDataBean.java,v 1.16 2003-02-28 09:17:46 koen_serry Exp $
  */
-public abstract class CertificateDataBean implements javax.ejb.EntityBean {
+public abstract class CertificateDataBean extends BaseEntityBean{
 
     private static Logger log = Logger.getLogger(CertificateDataBean.class);
-
-    protected EntityContext  ctx;
 
     public abstract String getIssuerDN();
     /** Use setIssuer instead
@@ -179,26 +179,5 @@ public abstract class CertificateDataBean implements javax.ejb.EntityBean {
     }
     public void ejbPostCreate(Certificate incert) {
         // Do nothing. Required.
-    }
-    public void setEntityContext(EntityContext ctx){
-         this.ctx=ctx;
-    }
-    public void unsetEntityContext(){
-         this.ctx=null;
-    }
-    public void ejbActivate(){
-        // Not implemented.
-    }
-    public void ejbPassivate(){
-        // Not implemented.
-    }
-    public void ejbLoad(){
-        // Not implemented.
-    }
-    public void ejbStore(){
-        // Not implemented.
-    }
-    public void ejbRemove(){
-        // Not implemented.
     }
 }

@@ -32,12 +32,12 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.37 2003-02-27 08:43:24 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.38 2003-02-28 09:17:46 koen_serry Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
     /** Var holding JNDI name of datasource */
-    private String dataSource = "java:/DefaultDS";
+    private String dataSource = "";
 
     /** The home interface of Certificate entity bean */
     private CertificateDataLocalHome certHome = null;

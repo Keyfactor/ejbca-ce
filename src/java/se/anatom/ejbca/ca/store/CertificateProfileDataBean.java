@@ -3,6 +3,8 @@ package se.anatom.ejbca.ca.store;
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import org.apache.log4j.Logger;
+
+import se.anatom.ejbca.BaseEntityBean;
 import se.anatom.ejbca.ca.store.certificateprofiles.*;
 import java.util.HashMap;
 
@@ -18,14 +20,12 @@ import java.util.HashMap;
  *
  * @version $Id: ProfileDataBean.java,v 1.4 2002/07/22 10:38:48 anatom Exp $
  */
-public abstract class CertificateProfileDataBean implements javax.ejb.EntityBean {
+public abstract class CertificateProfileDataBean extends BaseEntityBean {
 
 
 
     private static Logger log = Logger.getLogger(CertificateProfileDataBean.class);
 
-
-    protected EntityContext  ctx;
     public abstract Integer getId();
     public abstract void setId(Integer id);
 
@@ -90,33 +90,4 @@ public abstract class CertificateProfileDataBean implements javax.ejb.EntityBean
     public void ejbPostCreate(Integer id, String certificateprofilename, CertificateProfile certificateprofile) {
         // Do nothing. Required.
     }
-
-    public void setEntityContext(EntityContext ctx) {
-        this.ctx = ctx;
-    }
-
-    public void unsetEntityContext() {
-        this.ctx = null;
-    }
-
-    public void ejbActivate() {
-        // Not implemented.
-    }
-
-    public void ejbPassivate() {
-        // Not implemented.
-    }
-
-    public void ejbLoad() {
-        // Not implemented.
-    }
-
-    public void ejbStore() {
-        // Not implemented.
-    }
-
-    public void ejbRemove() {
-        // Not implemented.
-    }
-
 }

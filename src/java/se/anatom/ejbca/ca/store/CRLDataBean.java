@@ -8,6 +8,7 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 
+import se.anatom.ejbca.BaseEntityBean;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Base64;
 
@@ -24,13 +25,11 @@ import se.anatom.ejbca.util.Base64;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.8 2003-02-12 11:23:17 scop Exp $
+ * @version $Id: CRLDataBean.java,v 1.9 2003-02-28 09:17:46 koen_serry Exp $
  */
-public abstract class CRLDataBean implements javax.ejb.EntityBean {
+public abstract class CRLDataBean extends BaseEntityBean {
 
     private static Logger log = Logger.getLogger(CRLDataBean.class);
-
-    protected EntityContext ctx;
 
     public abstract int getCRLNumber();
     public abstract void setCRLNumber(int cRLNumber);
@@ -134,26 +133,5 @@ public abstract class CRLDataBean implements javax.ejb.EntityBean {
     }
     public void ejbPostCreate(X509CRL incrl, int number) {
         // Do nothing. Required.
-    }
-    public void setEntityContext(EntityContext ctx){
-         this.ctx=ctx;
-    }
-    public void unsetEntityContext(){
-         this.ctx=null;
-    }
-    public void ejbActivate(){
-        // Not implemented.
-    }
-    public void ejbPassivate(){
-        // Not implemented.
-    }
-    public void ejbLoad(){
-        // Not implemented.
-    }
-    public void ejbStore(){
-        // Not implemented.
-    }
-    public void ejbRemove(){
-        // Not implemented.
     }
 }
