@@ -11,7 +11,7 @@ application for enrollment (apply) and distribution (webdist).
     </description>
     <module>
         <web>
-            <web-uri>caroot.war</web-uri>
+            <web-uri>publicwebroot.war</web-uri>
             <context-root>/ejbca</context-root>
         </web>
     </module>
@@ -27,13 +27,13 @@ application for enrollment (apply) and distribution (webdist).
     <module>
         <web>
             <web-uri>apply.war</web-uri>
-            <context-root>/ejbca/apply</context-root>
+            <context-root>/ejbca/publicweb/apply</context-root>
         </web>
     </module>
     <module>
         <web>
             <web-uri>webdist.war</web-uri>
-            <context-root>/ejbca/webdist</context-root>
+            <context-root>/ejbca/publicweb/webdist</context-root>
         </web>
     </module>
 </application>
