@@ -28,7 +28,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 /**
  * Tests the global configuration entity bean.
  *
- * @version $Id: TestGlobalConfiguration.java,v 1.2 2004-04-16 07:39:01 anatom Exp $
+ * @version $Id: TestGlobalConfiguration.java,v 1.3 2004-05-13 15:38:41 herrvendil Exp $
  */
 public class TestGlobalConfiguration extends TestCase {
 	private static Logger log = Logger.getLogger(TestGlobalConfiguration.class);
@@ -36,6 +36,8 @@ public class TestGlobalConfiguration extends TestCase {
     private IRaAdminSessionRemote cacheAdmin;
 
     private static IRaAdminSessionHome cacheHome;
+    
+    private static GlobalConfiguration original = null;
 
 
     /**
@@ -87,9 +89,12 @@ public class TestGlobalConfiguration extends TestCase {
      */
     public void test01AddGlobalConfiguration() throws Exception {
         log.debug(">test01AddGlobalConfiguration()");
-
+                
         Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
 
+        // First save the original
+        original = this.cacheAdmin.loadGlobalConfiguration(administrator);
+        
         GlobalConfiguration conf = new GlobalConfiguration();
         conf.setEjbcaTitle("TESTTITLE");       
         this.cacheAdmin.saveGlobalConfiguration(administrator,conf); 
@@ -113,6 +118,8 @@ public class TestGlobalConfiguration extends TestCase {
         conf.setEjbcaTitle("TESTTITLE2");       
         this.cacheAdmin.saveGlobalConfiguration(administrator,conf); 
                       
+        // Replace with original
+        this.cacheAdmin.saveGlobalConfiguration(administrator,original);
         
         log.debug("<test01ModifyGlobalConfiguration()");
     }
