@@ -31,7 +31,7 @@ del tmp\rootca.der
 
 
 
-set CP=.;.\admin.jar
+set CP=.;bin/classes;.\admin.jar
 
 set SERVER_XML=UNKNOWN
 Rem JBoss 3.0.x

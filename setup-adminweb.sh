@@ -63,7 +63,7 @@ su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -import -trustcacerts -file tmp/ro
 
 rm tmp/rootca.der
 
-export CP=.:./admin.jar
+export CP=.:bin/classes:./admin.jar
 
 # JBoss 3.0.x
 if [ -f $JBOSS_HOME/server/default/deploy/tomcat4-service.xml ]
