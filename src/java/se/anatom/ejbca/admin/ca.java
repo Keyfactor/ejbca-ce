@@ -68,7 +68,7 @@ public class ca {
 
                 // Generate keys
                 System.out.println("Generating keys, please wait...");
-                KeyPair rsaKeys = KeyTools.genKeys();
+                KeyPair rsaKeys = KeyTools.genKeys(keysize);
                 X509Certificate rootcert = CertTools.genSelfCert(dn, validity, rsaKeys.getPrivate(), rsaKeys.getPublic(), true);
                 KeyStore ks = KeyTools.createP12("privateKey", rsaKeys.getPrivate(), rootcert, null);
 
@@ -118,7 +118,7 @@ public class ca {
 
                 // Generate keys
                 System.out.println("Generating keys, please wait...");
-                KeyPair rsaKeys = KeyTools.genKeys();
+                KeyPair rsaKeys = KeyTools.genKeys(keysize);
                 // Create selfsigned cert...
                 X509Certificate selfcert = CertTools.genSelfCert(dn, 365, rsaKeys.getPrivate(), rsaKeys.getPublic(), true);
 

@@ -30,7 +30,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.1.1.1 2001-11-15 14:58:19 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.2 2001-11-24 14:53:59 anatom Exp $
  */
 public class KeyTools {
 
@@ -45,11 +45,11 @@ public class KeyTools {
      *
      * @return KeyPair the generated keypair
      */
-    static public KeyPair genKeys() throws NoSuchAlgorithmException, NoSuchProviderException {
+    static public KeyPair genKeys(int keysize) throws NoSuchAlgorithmException, NoSuchProviderException {
 
         cat.debug(">genKeys()");
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA", "BC");
-        keygen.initialize(1024);
+        keygen.initialize(keysize);
         KeyPair rsaKeys = keygen.generateKeyPair();
 
         cat.debug("Generated " + rsaKeys.getPublic().getAlgorithm() + " keys with length " + ((RSAPublicKey)rsaKeys.getPublic()).getPublicExponent().bitLength());

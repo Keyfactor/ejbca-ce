@@ -41,7 +41,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.1.1.1 2001-11-15 14:58:14 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.2 2001-11-24 14:53:59 anatom Exp $
  *
  */
 
@@ -190,7 +190,7 @@ public class BatchMakeP12 {
      */
      private void processUser(UserAdminData data) throws Exception {
          // Generate keys
-         KeyPair rsaKeys = KeyTools.genKeys();
+         KeyPair rsaKeys = KeyTools.genKeys(1024);
          // Get certificate for user and create P12
          createUser(data.getUsername(), data.getPassword(), rsaKeys);
      } //processUser
