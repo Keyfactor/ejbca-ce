@@ -1,4 +1,4 @@
-$Id: README,v 1.181 2005-03-21 11:57:15 anatom Exp $
+$Id: README,v 1.182 2005-03-30 10:39:35 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -612,6 +612,10 @@ When this is used, sub-certificates do not need to be resigned.
 given number of days.
 * exportprofiles - exports entity and certificate profiles to xml-files.
 * importprofiles - imports entity and certificate profiles from xml-files.
+When you export a profile that should be imported in another CA, make sure the 
+'Available CAs' is set to 'Any CA' for the profiles you export. Otherwise you
+can get into trouble with authorization if you don't have the same CAs with the same 
+caids (DNs) where you import the profiles.
 * importca - creates a new CA by importing keys from en existing PKCS12 file.
 A PKCS12 file can be generates from PEM files with openssl.
 
