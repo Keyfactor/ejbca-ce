@@ -46,7 +46,7 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionLocal;
 import se.anatom.ejbca.ra.IUserAdminSessionLocalHome;
 import se.anatom.ejbca.ra.UserAdminData;
-import se.anatom.ejbca.ra.UserDataRemote;
+import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
@@ -60,7 +60,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.47 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.48 2004-08-08 10:43:38 anatom Exp $
  */
 public class RAInterfaceBean {
 
@@ -683,7 +683,7 @@ public class RAInterfaceBean {
 
       if(authorized){
         keyrecoverysession.markAsRecoverable(administrator, certificatedata.getCertificate());
-        adminsession.setUserStatus(administrator, certificatedata.getUsername(),UserDataRemote.STATUS_KEYRECOVERY);
+        adminsession.setUserStatus(administrator, certificatedata.getUsername(),UserDataLocal.STATUS_KEYRECOVERY);
       }
     }
 
