@@ -17,7 +17,7 @@ import se.anatom.ejbca.BaseSessionBean;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.2 2002-01-03 12:10:55 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.3 2002-01-28 08:48:25 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserAdminSession {
 
@@ -47,7 +47,6 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
         debug(">addUser("+username+", password, "+dn+", "+email+", "+type+")");
 
         try {
-
             UserDataPK pk = new UserDataPK();
             pk.username = username;
 
@@ -74,10 +73,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
         debug(">deleteUser("+username+")");
 
         try {
-
             UserDataPK pk = new UserDataPK();
-            pk.username = username;
-
+            pk.username = username;            
             home.remove(pk);
             info("Deleted user "+pk.username);
         }

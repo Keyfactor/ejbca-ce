@@ -66,8 +66,13 @@ public class ra {
                     return;
                 }
                 String username = args[1];
-                System.out.println("Deleting user "+username);
-                admin.deleteUser(username);
+                System.out.print("Have you revoked the user [y/N]? ");
+                int inp = System.in.read();
+                if ( (inp == 121) || (inp==89) ) {
+                    System.out.println("Deleting user "+username);
+                    admin.deleteUser(username);
+                } else
+                    System.out.println("Delete aborted!");
             } else if (args[0].equals("setclearpwd"))
             {
                 if (args.length < 3) {
