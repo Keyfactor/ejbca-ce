@@ -46,7 +46,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.24 2002-11-17 14:01:40 herrvendil Exp $
+ * @version $Id: BatchMakeP12.java,v 1.25 2003-01-03 14:38:41 anatom Exp $
  *
  */
 
@@ -60,7 +60,7 @@ public class BatchMakeP12 {
 
     private IUserAdminSessionHome adminhome;
     private ISignSessionHome signhome;
-    
+
     private Admin administrator;
 
     static public Context getInitialContext() throws NamingException{
@@ -82,7 +82,7 @@ public class BatchMakeP12 {
     public BatchMakeP12() throws javax.naming.NamingException, javax.ejb.CreateException, java.rmi.RemoteException, java.io.IOException {
         cat.debug(">BatchMakeP12:");
         administrator = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
-        
+
         // Bouncy Castle security provider
         Security.addProvider(new BouncyCastleProvider());
 
@@ -276,12 +276,12 @@ public class BatchMakeP12 {
         cat.debug(">createAllWithStatus: "+status);
 
         IUserAdminSessionRemote admin = adminhome.create();
-        
+
         Collection result = admin.findAllUsersByStatus(administrator, status);
         Iterator it = result.iterator();
         boolean createJKS;
         boolean createPEM;
-        boolean createP12;        
+        boolean createP12;
         int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
         String failedusers = "";
         int failcount = 0;
@@ -292,16 +292,16 @@ public class BatchMakeP12 {
             createPEM = false;
             createP12 = false;
             UserAdminData data = (UserAdminData) it.next();
-            if (data.getPassword() != null) {
+            if ((data.getPassword() != null) && (data.getPassword().length() > 0)) {
                 try {
                     cat.info("Generating keys for " + data.getUsername());
                     cat.info("Password:" + data.getPassword());
                     // get users Token Type.
                     tokentype = data.getTokenType();
                     createP12 = tokentype == SecConst.TOKEN_SOFT_P12;
-                    createPEM = tokentype == SecConst.TOKEN_SOFT_PEM;                           
-                    createJKS = tokentype == SecConst.TOKEN_SOFT_JKS;  
-                    
+                    createPEM = tokentype == SecConst.TOKEN_SOFT_PEM;
+                    createJKS = tokentype == SecConst.TOKEN_SOFT_JKS;
+
                     // Only generate supported tokens
                     if(createP12 || createPEM || createJKS){
                       // Grab new user, set status to INPROCESS
@@ -313,9 +313,9 @@ public class BatchMakeP12 {
                       admin.setClearTextPassword(administrator, data.getUsername(), null);
                       successusers += ":" + data.getUsername();
                       successcount++;
-                    }  
+                    }
                     else
-                      cat.info("Cannot batchmake browser generated token for user - " + data.getUsername());                     
+                      cat.info("Cannot batchmake browser generated token for user - " + data.getUsername());
                 } catch (Exception e) {
                     // If things went wrong set status to FAILED
                     cat.error("An error happened, setting status to FAILED.");
@@ -344,22 +344,22 @@ public class BatchMakeP12 {
         cat.debug(">createUser("+username+")");
         boolean createJKS = false;
         boolean createPEM = false;
-        boolean createP12 = false; 
+        boolean createP12 = false;
         int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
-        
+
         IUserAdminSessionRemote admin = adminhome.create();
         UserAdminData data = admin.findUser(administrator, username);
-        if ((data != null) && (data.getPassword() != null)) {
+        if ((data != null) && (data.getPassword() != null) && (data.getPassword().length() > 0)) {
             try {
                 // get users Token Type.
                 tokentype = data.getTokenType();
                 createP12 = tokentype == SecConst.TOKEN_SOFT_P12;
-                createPEM = tokentype == SecConst.TOKEN_SOFT_PEM;                           
-                createJKS = tokentype == SecConst.TOKEN_SOFT_JKS;  
-                    
+                createPEM = tokentype == SecConst.TOKEN_SOFT_PEM;
+                createJKS = tokentype == SecConst.TOKEN_SOFT_JKS;
+
                 // Only generate supported tokens
-                if(createP12 || createPEM || createJKS){    
-                  cat.info("Generating keys for " + data.getUsername());                    
+                if(createP12 || createPEM || createJKS){
+                  cat.info("Generating keys for " + data.getUsername());
                   // Grab new user, set status to INPROCESS
                   admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_INPROCESS);
                   processUser(data, createJKS, createPEM);
@@ -367,10 +367,10 @@ public class BatchMakeP12 {
                   admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_GENERATED);
                   // Delete clear text password
                   admin.setClearTextPassword(administrator, data.getUsername(), null);
-                  cat.info("New user generated successfully - " + data.getUsername());                  
+                  cat.info("New user generated successfully - " + data.getUsername());
                 }
                 else
-                  cat.info("Cannot batchmake browser generated token for user - " + data.getUsername());                      
+                  cat.info("Cannot batchmake browser generated token for user - " + data.getUsername());
             } catch (Exception e) {
                 // If things went wrong set status to FAILED
                 cat.error("An error happened, setting status to FAILED.");
