@@ -37,7 +37,13 @@
      </env-entry>     
      <env-entry>
         <description>Password for OCSP keystores.</description>
-        <env-entry-name>OCSPkeyStorePass</env-entry-name>
+        <env-entry-name>OCSPKeyStorePass</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>foo123</env-entry-value>
+     </env-entry>
+     <env-entry>
+        <description>Password for OCSP keystores private key protection.</description>
+        <env-entry-name>privateOCSPKeyPass</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>foo123</env-entry-value>
      </env-entry>
@@ -214,7 +220,19 @@
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>null</env-entry-value>
      </env-entry>
-     <ejb-local-ref>
+     <env-entry>
+        <description>Password for OCSP keystores.</description>
+        <env-entry-name>OCSPKeyStorePass</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>foo123</env-entry-value>
+     </env-entry>
+      <env-entry>
+        <description>Password for OCSP keystores private key protection.</description>
+        <env-entry-name>privateOCSPKeyPass</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>foo123</env-entry-value>
+     </env-entry>
+     <ejb-local-ref> 
         <description>The CA entity bean.</description>
         <ejb-ref-name>ejb/CADataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>

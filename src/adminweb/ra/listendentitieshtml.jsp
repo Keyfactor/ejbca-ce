@@ -11,7 +11,7 @@ function viewuser(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    window.open(link, 'view_user',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+    window.open(link, 'view_user','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }
 
 function edituser(row){
@@ -19,7 +19,7 @@ function edituser(row){
     var username = hiddenusernamefield.value;
     var link = "<%= EDITUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    window.open(link, 'edit_user',config='height=600,width=550,scrollbars=yes,toolbar=no,resizable=1');
+    window.open(link, 'edit_user','height=600,width=550,scrollbars=yes,toolbar=no,resizable=1');
 }
 
 function viewhistory(row){
@@ -27,7 +27,7 @@ function viewhistory(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWHISTORY_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    window.open(link, 'view_history',config='height=600,width=800,scrollbars=yes,toolbar=no,resizable=1');
+    window.open(link, 'view_history','height=600,width=800,scrollbars=yes,toolbar=no,resizable=1');
 }
 
 function viewcert(row){
@@ -35,7 +35,7 @@ function viewcert(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWCERT_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    window.open(link, 'view_cert',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+    window.open(link, 'view_cert','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }
 
 function viewtoken(row){
@@ -43,7 +43,7 @@ function viewtoken(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWTOKEN_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    window.open(link, 'view_token',config='height=600,width=600,scrollbars=yes,toolbar=no,resizable=1');
+    window.open(link, 'view_token','height=600,width=600,scrollbars=yes,toolbar=no,resizable=1');
 }
 
 function confirmdelete(){

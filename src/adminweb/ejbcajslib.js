@@ -45,7 +45,7 @@ function onlyoneselected(checkboxlist,size,alerttext){
 }
 
 function displayHelpWindow(helplink) {
-  window.open(helplink, 'ejbca_helpwindow',config='height=600,width=500,scrollbars=yes,toolbar=yes,resizable=1');
+  window.open(helplink, 'ejbca_helpwindow','height=600,width=500,scrollbars=yes,toolbar=yes,resizable=1');
 }
 
 function checkfieldforlegalchars(thetextfield , alerttext){

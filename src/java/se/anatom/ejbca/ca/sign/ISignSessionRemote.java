@@ -24,7 +24,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * Creates certificates. Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.22 2003-10-20 07:56:43 anatom Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.23 2003-11-14 14:59:57 herrvendil Exp $
  */
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
 	/**
@@ -290,8 +290,13 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
    /**
     * Method that publishes the given CA certificate chain to the list of publishers.
     * Is mainly used by CAAdminSessionBean when CA is created.
+    * 
+    *  @param admin Information about the administrator or admin preforming the event.
+    *  @param certificatechain certchain of certificate to publish
+    *  @param publishers a collection if publisher id's (Integer) indicating which publisher that should be used.
+    *  @param certtype is one of SecConst.CERTTYPE_ constants
     */
-    public void publishCACertificate(Admin admin, Collection certificatechain, Collection publishers, boolean rootca) throws RemoteException;
+    public void publishCACertificate(Admin admin, Collection certificatechain, Collection publishers, int certtype) throws RemoteException;
 
     public HashMap getPublisherIdToNameMap(Admin admin) throws RemoteException;
 }

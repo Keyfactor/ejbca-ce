@@ -4,16 +4,21 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 
+import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
+import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.exception.CADoesntExistsException;
 import se.anatom.ejbca.ca.exception.CAExistsException;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
@@ -192,7 +197,21 @@ public class CADataHandler implements Serializable {
  public void publishCA(int caid){
  	CAInfo cainfo = caadminsession.getCAInfo(administrator, caid);
  	CertificateProfile certprofile = certificatesession.getCertificateProfile(administrator, cainfo.getCertificateProfileId());
- 	signsession.publishCACertificate(administrator, cainfo.getCertificateChain(), certprofile.getPublisherList() , cainfo.getSignedBy() == CAInfo.SELFSIGNED);
+ 	int certtype = SecConst.CERTTYPE_SUBCA;
+ 	if(cainfo.getSignedBy() == CAInfo.SELFSIGNED)
+ 	  certtype = SecConst.CERTTYPE_ROOTCA;
+ 	signsession.publishCACertificate(administrator, cainfo.getCertificateChain(), certprofile.getPublisherList() , certtype);
+ }
+ 
+ public void revokeOCSPCertificate(int caid){
+	Iterator iter = caadminsession.getCAInfo(administrator, caid).getExtendedCAServiceInfos().iterator();
+	while(iter.hasNext()){
+	  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
+	  if(next instanceof OCSPCAServiceInfo){
+	  	X509Certificate ocspcert = (X509Certificate)((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath().get(0);
+		certificatesession.revokeCertificate(administrator,ocspcert,RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);	  	 
+	  }
+	}  
  }
    
   private ICAAdminSessionLocal           caadminsession; 

@@ -62,7 +62,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.111 2003-11-03 20:06:18 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.112 2003-11-14 14:59:57 herrvendil Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -635,12 +635,9 @@ public class RSASignSessionBean extends BaseSessionBean {
     * Is mainly used by CAAdminSessionBean when CA is created.
     *  @see se.anatom.ejbca.ca.sign.ISignSessionRemote
     */
-   public void publishCACertificate(Admin admin, Collection certificatechain, Collection usedpublishers, boolean rootca){
+   public void publishCACertificate(Admin admin, Collection certificatechain, Collection usedpublishers, int certtype){
        try{
-           int certtype = CertificateProfile.TYPE_SUBCA;
-           if(rootca)
-             certtype = CertificateProfile.TYPE_ROOTCA;
-      
+                 
            ICertificateStoreSessionLocal certificateStore = storeHome.create();
       
            Iterator certificates = certificatechain.iterator();

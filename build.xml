@@ -607,7 +607,12 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </copy>
   
     <!-- Jar the ear package together -->
-    <jar basedir="${caear.earbuild}" jarfile="${caear}"/>    
+    <jar basedir="${caear.earbuild}" jarfile="${caear}">
+      <manifest>
+      <!--  <attribute name="Class-Path" value="lib/bcmail-jdk14-120.jar lib/bcprov-jdk14-120.jar lib/log4j-1.2.7.jar lib/ldap.jar,lib/commons-lang-1.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar"/> -->
+        
+      </manifest>
+     </jar>    
   </target>
 
   <!-- =================================================================== -->

@@ -14,6 +14,7 @@
 
   CAInfo cainfo = null;
   X509CAInfo x509cainfo = null;
+  
   String catokentext = null;
   CATokenInfo catokeninfo = null;
   
@@ -34,7 +35,23 @@
     signbyexternal = cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA;
     isexternal = cainfo.getStatus() == SecConst.CA_EXTERNAL;
     waitingresponse = cainfo.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE;
+
+    x509cainfo = (X509CAInfo) cainfo;
   }
+
+  OCSPCAServiceInfo ocspcainfo = null; 
+  java.security.cert.X509Certificate ocspcert = null; 
+  if(editca && !isexternal){
+    Iterator iter = x509cainfo.getExtendedCAServiceInfos().iterator();       
+    while(iter.hasNext()){
+      ExtendedCAServiceInfo serviceinfo = (ExtendedCAServiceInfo) iter.next();
+      if(serviceinfo instanceof OCSPCAServiceInfo){
+        ocspcainfo = (OCSPCAServiceInfo) serviceinfo;
+        if(ocspcainfo.getOCSPSignerCertificatePath() != null)
+          ocspcert = (java.security.cert.X509Certificate) ocspcainfo.getOCSPSignerCertificatePath().get(0);
+      }
+     }
+   }
 
 %>
 <SCRIPT language="JavaScript">
@@ -87,12 +104,14 @@ function fillCertProfileField(){
 
   <% if(!processrequest){ %>
 function isExternal(){
-   var makebutton     =  document.ca.<%= BUTTON_MAKEREQUEST %>; 
-   var createbutton   =  document.ca.<%= BUTTON_CREATE %>; 
-   var validityfield  =  document.ca.<%=TEXTFIELD_VALIDITY%>;
-   var certproffield  =  document.ca.<%=SELECT_CERTIFICATEPROFILE %>;
-   var subjectaltname =  document.ca.<%=TEXTFIELD_SUBJECTALTNAME%>;
-   var policyidfield  =  document.ca.<%=TEXTFIELD_POLICYID%>;
+   var makebutton      =  document.ca.<%= BUTTON_MAKEREQUEST %>; 
+   var createbutton    =  document.ca.<%= BUTTON_CREATE %>; 
+   var validityfield   =  document.ca.<%=TEXTFIELD_VALIDITY%>;
+   var certproffield   =  document.ca.<%=SELECT_CERTIFICATEPROFILE %>;
+   var subjectaltname  =  document.ca.<%=TEXTFIELD_SUBJECTALTNAME%>;
+   var policyidfield   =  document.ca.<%=TEXTFIELD_POLICYID%>;
+   var activateocsp    =  document.ca.<%=CHECKBOX_ACTIVATEOCSPSERVICE%>;
+   
 
    makebutton.disabled = true;
    createbutton.disabled = false; 
@@ -100,6 +119,8 @@ function isExternal(){
    certproffield.disabled = false; 
    subjectaltname.disabled = false; 
    policyidfield.disabled = false; 
+   activateocsp.disabled = false;
+   activateocsp.checked = true;   
 
    if(document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value == <%= CAInfo.SIGNEDBYEXTERNALCA %>){
       makebutton.disabled = false;   
@@ -108,6 +129,8 @@ function isExternal(){
       certproffield.disabled = true; 
       subjectaltname.disabled = true; 
       policyidfield.disabled = true;   
+      activateocsp.disabled = true;
+      activateocsp.checked = false;   
    } 
 }
 
@@ -134,7 +157,24 @@ function confirmrenewal(){
   return confirm("<%= ejbcawebbean.getText("AREYOUSURERENEWCA") %>") && checkallfields();     
 }
 
-<%  }  %>  
+  <% if(ocspcert != null){ %>
+function viewocspcert(){        
+    var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>=<%=ocspcert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(ocspcert)%>";
+    link = encodeURI(link);
+    window.open(link, 'view_cert','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+}
+ 
+function checkactivateocsp(){ 
+  if(document.ca.<%=CHECKBOX_ACTIVATEOCSPSERVICE%>.checked){
+    document.ca.<%=BUTTON_REVOKERENEWOCSPCERTIFICATE%>.disabled = false;
+  }
+  else{    
+    document.ca.<%=BUTTON_REVOKERENEWOCSPCERTIFICATE%>.disabled = true;
+  }
+}
+
+<% } 
+}  %>  
 
 function checkusefield(usefield, criticalfield){
   var usebox = eval("document.ca." + usefield);
@@ -389,7 +429,7 @@ function checkallfields(){
       </td>
     </tr>
    <% if(catype == CAInfo.CATYPE_X509){ 
-        x509cainfo = (X509CAInfo) cainfo;
+        
         %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
@@ -517,6 +557,22 @@ function checkallfields(){
     </tr>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("OCSPSERVICE") %>
+      </td>
+      <td width="50%"> <%= ejbcawebbean.getText("ACTIVE") %> 
+        <input type="checkbox" onclick="checkactivateocsp()" name="<%=CHECKBOX_ACTIVATEOCSPSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(waitingresponse) out.write(" disabled ");%>
+            <% if((editca && (ocspcainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)) || !editca)
+                 out.write("CHECKED");%>>
+         <% if(editca && ocspcert != null){ %> &nbsp;&nbsp;         
+         <input type="submit" name="<%= BUTTON_REVOKERENEWOCSPCERTIFICATE %>" <% if(ocspcainfo.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE || waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWOCSPCERT") %>" >
+         <br>         
+         <a  onClick="viewocspcert()"><u><%= ejbcawebbean.getText("VIEWOCSPCERTIFICATE")%></u></a>
+         <% } %>
+      </td>
+    </tr>    
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("FINISHUSER") %>
       </td>
       <td width="50%"> 
@@ -533,7 +589,7 @@ function checkallfields(){
         &nbsp;
       </td>
       <td width="50%"> 
-        <a  onClick="window.open('<%=VIEWCERTIFICATE_LINK%>?caid=<%=caid%>', 'view_cert',config='height=600,width=600,scrollbars=yes,toolbar=no,resizable=1')";><u><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></u></a>
+        <a  onClick="window.open('<%=VIEWCERT_LINK%>?caid=<%=caid%>', 'view_cert','height=600,width=600,scrollbars=yes,toolbar=no,resizable=1')";><u><%= ejbcawebbean.getText("VIEWCACERTIFICATE")%></u></a>
       </td>
     </tr>
     <% } %>
@@ -579,7 +635,7 @@ function checkallfields(){
       </td>
     </tr>
         <% } %>   
-       <% if(editca && !isexternal){ %>
+       <% if(editca && !isexternal && !waitingresponse){ %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top" align="right"></td>
       <td width="51%" valign="top">             
@@ -595,7 +651,7 @@ function checkallfields(){
       </td>
     </tr>
         <% } %>   
-       <% if(editca){ %>
+       <% if(editca && !isexternal && !waitingresponse){ %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top" align="right"></td>
       <td width="51%" valign="top">             

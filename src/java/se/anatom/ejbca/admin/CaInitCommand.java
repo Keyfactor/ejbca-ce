@@ -12,6 +12,8 @@ import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.caadmin.X509CAInfo;
 import se.anatom.ejbca.ca.caadmin.CATokenInfo;
 import se.anatom.ejbca.ca.caadmin.SoftCATokenInfo;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.authorization.IAuthorizationSessionHome;
 import se.anatom.ejbca.authorization.IAuthorizationSessionRemote;
@@ -23,7 +25,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.20 2003-11-10 09:25:44 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.21 2003-11-14 14:59:57 herrvendil Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
     /** Pointer to main certificate store */
@@ -87,6 +89,15 @@ public class CaInitCommand extends BaseCaAdminCommand {
               catokeninfo.setKeySize(keysize);
               catokeninfo.setAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
               catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA_WITH_RSA);
+			  // Create and active OSCP CA Service.
+			  ArrayList extendedcaservices = new ArrayList();
+			  extendedcaservices.add(
+				new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
+									  "CN=OCSPSignerCertificate, " + dn,
+									  "",
+									  2048,
+									  OCSPCAServiceInfo.KEYALGORITHM_RSA));
+              
             
               X509CAInfo cainfo = new X509CAInfo(dn, 
                                                caname, SecConst.CA_ACTIVE,
@@ -106,7 +117,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
                                                false, // Authority Key Identifier Critical
                                                true, // CRL Number
                                                false, // CRL Number Critical
-                                               true); // Finish User           
+                                               true, // Finish User
+				                               extendedcaservices);         
             
               System.out.println("Creating CA...");
               caadminsession.createCA(administrator, cainfo);

@@ -1,6 +1,7 @@
 package se.anatom.ejbca.ca.caadmin.extendedcaservices;
 
 import java.io.Serializable;
+import java.util.List;
 
 
 
@@ -9,14 +10,23 @@ import java.io.Serializable;
  * is neesed
  * 
  * 
- * @version $Id: OCSPCAServiceInfo.java,v 1.1 2003-11-02 15:51:37 herrvendil Exp $
+ * @version $Id: OCSPCAServiceInfo.java,v 1.2 2003-11-14 14:59:57 herrvendil Exp $
  */
 public class OCSPCAServiceInfo extends ExtendedCAServiceInfo implements Serializable {    
+       
+    public static final String KEYALGORITHM_RSA = "RSA";   
        
     private String subjectdn      = null;
     private String subjectaltname = null;   
 	private int    keysize        = 2048;
-    private String keyalgorithm   = "RSA"; // Currently not used.
+    private String keyalgorithm   = KEYALGORITHM_RSA; // Currently not used.
+    private List   ocspcertchain  = null;
+    
+    private boolean renew = false;
+           
+    /**
+     * Used when creating new service.
+     */
        
     public OCSPCAServiceInfo(int status,
                              String subjectdn, 
@@ -30,10 +40,39 @@ public class OCSPCAServiceInfo extends ExtendedCAServiceInfo implements Serializ
       this.keyalgorithm = keyalgorithm; 	 
     }
     
+	/**
+	 * Used when returning information from service
+	 */
+       
+	public OCSPCAServiceInfo(int status,
+							 String subjectdn, 
+							 String subjectaltname, 
+							 int keysize, 
+							 String keyalgorithm,
+							 List ocspcertpath){
+	  super(status);                       	
+	  this.subjectdn = subjectdn;
+	  this.subjectaltname = subjectaltname;    	
+	  this.keysize = keysize;
+	  this.keyalgorithm = keyalgorithm; 	 
+	  this.ocspcertchain = ocspcertpath;
+	}    
+    
+    /*
+     * Used when updating existing services, only status is used.
+     */
+    public OCSPCAServiceInfo(int status, boolean renew){
+      super(status);	
+      this.renew = renew;
+    }
+    
     public String getSubjectDN(){ return this.subjectdn; }
     public String getSubjectAltName(){ return this.subjectaltname; }
     public int getKeySize(){ return this.keysize; }
     public String getKeyAlgorithm(){ return this.keyalgorithm; }
+    public boolean getRenewFlag(){ return this.renew; } 
+    public List getOCSPSignerCertificatePath(){ return this.ocspcertchain;}   
+    
     
 
 }

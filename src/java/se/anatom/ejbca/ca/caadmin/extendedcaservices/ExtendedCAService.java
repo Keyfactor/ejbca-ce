@@ -6,13 +6,13 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /** 
  * ExtendedCAService base class.
  * 
- * @version $Id: ExtendedCAService.java,v 1.1 2003-11-02 15:51:37 herrvendil Exp $
+ * @version $Id: ExtendedCAService.java,v 1.2 2003-11-14 14:59:57 herrvendil Exp $
  */
 public abstract class ExtendedCAService extends UpgradeableDataHashMap implements java.io.Serializable{
     
     public static final String EXTENDEDCASERVICETYPE = "extendedcaservicetype";
 
-	public static final int TYPE_OCSPEXTENDEDSERVICE   = 1; 	
+	public final String SERVICENAME = "";  	
 		
 	public static final String STATUS = "status";
 	
@@ -25,23 +25,16 @@ public abstract class ExtendedCAService extends UpgradeableDataHashMap implement
 	 * 
 	 * @param info contains information used to activate the service.    
 	 */
-	public abstract void init(ExtendedCAServiceInfo info, CA ca) throws Exception;
+	public abstract void init(CA ca) throws Exception;
 	
 	
 	/**
-	 * Activates the ExtendedCAService
+	 * Update the ExtendedCAService data
 	 * 
 	 * @param info contains information used to activate the service.    
 	 */
-	public abstract void activate();
-	
-	/**
-	 * Deactivates the ExtendedCAService
-	 * 
-	 * @param info contains information used to activate the service.    
-	 */
-	public abstract void deactivate();
-	
+	public abstract void update(ExtendedCAServiceInfo info, CA ca) throws Exception;
+			
 
 	/** 
 	 * Method used to retrieve information about the service.

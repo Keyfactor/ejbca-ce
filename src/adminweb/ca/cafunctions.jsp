@@ -83,6 +83,7 @@
        <br>
        <H3><%= ejbcawebbean.getText("BASICFUNCTIONSFOR") + " : " + caname%> <a href="<%=THIS_FILENAME%>"  onClick="window.open('<%=VIEWCERTIFICATE_LINK%>?caid=<%=caid%>', 'view_cert','height=600,width=600,scrollbars=yes,toolbar=no,resizable=1')"><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;
                                                                             <a href="<%=THIS_FILENAME%>"  onClick="window.open('<%=VIEWINFO_LINK%>?caid=<%=caid%>', 'view_info','height=400,width=450,scrollbars=yes,toolbar=no,resizable=1')"><%= ejbcawebbean.getText("VIEWINFO")%></a></H3>    
+ 
         <table> 
           <% int row = 0;
              for(int j = chainsize-1; j >= 0; j--){

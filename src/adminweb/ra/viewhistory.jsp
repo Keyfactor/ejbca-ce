@@ -226,7 +226,7 @@ function viewuser(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    window.open(link, 'view_cert',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+    window.open(link, 'view_cert','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }
 
 function viewadmincert(row){
@@ -234,7 +234,7 @@ function viewadmincert(row){
     var certserno = hiddencertsernofield.value;
     var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>="+certserno;;
     link = encodeURI(link);
-    window.open(link, 'view_cert',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+    window.open(link, 'view_cert','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }
 
 function viewcert(row){
@@ -243,7 +243,7 @@ function viewcert(row){
  
     var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>="+certserno;
     link = encodeURI(link);
-    window.open(link, 'view_cert',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+    window.open(link, 'view_cert','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }
 
 

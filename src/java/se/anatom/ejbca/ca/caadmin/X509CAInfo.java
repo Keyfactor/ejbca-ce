@@ -8,7 +8,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Holds nonsensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.3 2003-10-03 14:34:20 herrvendil Exp $
+ * @version $Id: X509CAInfo.java,v 1.4 2003-11-14 14:59:57 herrvendil Exp $
  */
 public class X509CAInfo extends CAInfo{
    
@@ -26,7 +26,8 @@ public class X509CAInfo extends CAInfo{
                     int validity, Date expiretime, int catype, int signedby, Collection certificatechain, 
                     CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, String policyid, int crlperiod, Collection crlpublishers,
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
-                    boolean usecrlnumber, boolean crlnumbercritical, boolean finishuser) {
+                    boolean usecrlnumber, boolean crlnumbercritical, boolean finishuser,
+                    Collection extendedcaserviceinfos) {
         this.subjectdn = CertTools.stringToBCDNString(subjectdn);
         this.caid = this.subjectdn.hashCode();
         this.name = name;
@@ -50,6 +51,7 @@ public class X509CAInfo extends CAInfo{
         this.finishuser = finishuser;                     
         this.subjectaltname = subjectaltname;
         this.certificateprofileid = certificateprofileid;
+        this.extendedcaserviceinfos = extendedcaserviceinfos; 
     }
 
     /**
@@ -58,7 +60,7 @@ public class X509CAInfo extends CAInfo{
     public X509CAInfo(int caid, int validity, CATokenInfo catokeninfo, String description,
                       int crlperiod, Collection crlpublishers,
                       boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
-                      boolean usecrlnumber, boolean crlnumbercritical, boolean finishuser) {        
+                      boolean usecrlnumber, boolean crlnumbercritical, boolean finishuser, Collection extendedcaserviceinfos) {        
         this.caid = caid;
         this.validity=validity;
         this.catokeninfo = catokeninfo; 
@@ -70,6 +72,7 @@ public class X509CAInfo extends CAInfo{
         this.usecrlnumber = usecrlnumber;
         this.crlnumbercritical = crlnumbercritical;
         this.finishuser = finishuser;
+		this.extendedcaserviceinfos = extendedcaserviceinfos; 
     }  
   
   

@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * Holds nonsensitive information about a CA.
  *
- * @version $Id: CAInfo.java,v 1.3 2003-10-03 14:34:20 herrvendil Exp $
+ * @version $Id: CAInfo.java,v 1.4 2003-11-14 14:59:57 herrvendil Exp $
  */
 public abstract class CAInfo implements Serializable {
 
@@ -45,6 +45,7 @@ public abstract class CAInfo implements Serializable {
     protected int crlperiod;
     protected Collection crlpublishers;  
 	protected boolean finishuser;  
+	protected Collection extendedcaserviceinfos;
     
     public CAInfo(){}
     
@@ -79,5 +80,9 @@ public abstract class CAInfo implements Serializable {
     public void setCRLPublishers(Collection crlpublishers){this.crlpublishers=crlpublishers;}    
     	
 	public boolean getFinishUser(){ return finishuser;}
-	public void setFinishUser(boolean finishuser){ this.finishuser=finishuser;}    	
+	public void setFinishUser(boolean finishuser){ this.finishuser=finishuser;}
+	
+	public Collection getExtendedCAServiceInfos(){ return this.extendedcaserviceinfos;}
+	public void setExtendedCAServiceInfos(Collection extendedcaserviceinfos){ this.extendedcaserviceinfos = extendedcaserviceinfos;}     	
+	
 }

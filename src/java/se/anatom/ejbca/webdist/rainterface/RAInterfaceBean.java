@@ -49,7 +49,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.42 2003-10-01 11:12:12 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.43 2003-11-14 14:59:57 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -373,7 +373,8 @@ public class RAInterfaceBean {
            UserAdminData user = null;
            try{
              user = adminsession.findUser(administrator, (String) i.next());
-             userlist.add(user);
+             if(user != null)
+               userlist.add(user);
            }catch(AuthorizationDeniedException e){}
         }
         users.setUsers(userlist, informationmemory.getCAIdToNameMap());
@@ -645,7 +646,11 @@ public class RAInterfaceBean {
 
     public boolean authorizedToRevokeCert(String username) throws FinderException, RemoteException, AuthorizationDeniedException{
       boolean returnval=false;
-      int profileid = (adminsession.findUser(administrator, username)).getEndEntityProfileId();
+      UserAdminData data = adminsession.findUser(administrator, username);
+      if(data == null)
+        return false;
+              
+      int profileid = data.getEndEntityProfileId();
 
       if(informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations())
        returnval= endEntityAuthorization(administrator, profileid, AvailableAccessRules.REVOKE_RIGHTS, false);
@@ -659,8 +664,12 @@ public class RAInterfaceBean {
     public boolean keyRecoveryPossible(CertificateView certificatedata) throws Exception{
       boolean returnval = true;
       if(informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()){
-        int profileid = adminsession.findUser(administrator, certificatedata.getUsername()).getEndEntityProfileId();
-        returnval = endEntityAuthorization(administrator, profileid, AvailableAccessRules.KEYRECOVERY_RIGHTS, false);
+      	UserAdminData data = adminsession.findUser(administrator, certificatedata.getUsername());
+      	if(data != null){       	
+          int profileid = data.getEndEntityProfileId();
+		  returnval = endEntityAuthorization(administrator, profileid, AvailableAccessRules.KEYRECOVERY_RIGHTS, false);		  
+      	}else
+          returnval = false;         
       }
 
       return returnval && keyrecoverysession.existsKeys(administrator, certificatedata.getCertificate()) && !keyrecoverysession.isUserMarked(administrator,certificatedata.getUsername());

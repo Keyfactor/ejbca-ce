@@ -35,6 +35,13 @@
         <td width="35%"></td>
       </tr>
     <% } %>
+    <% if(ocsprenewed){ %> 
+      <tr> 
+        <td width="5%"></td>
+        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("OCSPCERTIFICATERENEWED") %></H4></td>
+        <td width="35%"></td>
+      </tr>
+    <% } %>
     <% if(illegaldnoraltname){ %> 
       <tr> 
         <td width="5%"></td>
@@ -72,15 +79,15 @@
         <td width="5%"></td>
         <td width="60%">
           <select name="<%=SELECT_CAS%>" size="15"  >
-            <% Iterator iter = canames.keySet().iterator();
-               while(iter.hasNext()){
-                 String nameofca = (String) iter.next();
-                 CAInfo cainfo = cabean.getCAInfo(((Integer) canames.get(nameofca)).intValue()).getCAInfo();
-                 String nameandstatus = nameofca + ", (" +ejbcawebbean.getText(statustexts[cainfo.getStatus()]) + ")"; %>
+            <% Iterator iter = canames.keySet().iterator();               
+               while(iter.hasNext()){                 
+                   String nameofca = (String) iter.next();
+                   CAInfo cainfo = cabean.getCAInfo(((Integer) canames.get(nameofca)).intValue()).getCAInfo();
+                   String nameandstatus = nameofca + ", (" +ejbcawebbean.getText(statustexts[cainfo.getStatus()]) + ")"; %>
               <option value="<%= canames.get(nameofca)%>"> 
                   <%= nameandstatus %>
                </option>
-            <%}%>
+               <%}%>
               <option value="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

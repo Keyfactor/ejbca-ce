@@ -20,11 +20,15 @@ import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.KeyTools;
 /** Handles and maintains the CA -part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.1 2003-11-02 15:51:37 herrvendil Exp $
+ * @version $Id: OCSPCAService.java,v 1.2 2003-11-14 14:59:57 herrvendil Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
     public static final float LATEST_VERSION = 1; 
+    
+    public static final String SERVICENAME = "OCSPCASERVICE";
+    public static final int TYPE = 1; 
+      
 
     private PrivateKey      ocspsigningkey        = null;
     private List            ocspcertificatechain  = null;
@@ -40,12 +44,18 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	private static final String PRIVATESIGNKEYALIAS = "privatesignkeyalias";   
     
             
-    public OCSPCAService(OCSPCAServiceInfo info,CA ca) throws Exception {
+    public OCSPCAService(ExtendedCAServiceInfo serviceinfo)  {
+		System.out.println("OCSPCAService : constuctor " + serviceinfo.getStatus()); 	
+	  // Currently only RSA keys are supported
+	  OCSPCAServiceInfo info = (OCSPCAServiceInfo) serviceinfo;	
       data = new HashMap();   
-      data.put(EXTENDEDCASERVICETYPE, new Integer(TYPE_OCSPEXTENDEDSERVICE));
-                  
-      if(info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)                        
-        init(info, ca);
+      data.put(EXTENDEDCASERVICETYPE, new Integer(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE));
+
+	  data.put(KEYSIZE, new Integer(info.getKeySize()));
+	  data.put(KEYALGORITHM, info.getKeyAlgorithm());
+	  data.put(SUBJECTDN, info.getSubjectDN());
+	  data.put(SUBJECTALTNAME, info.getSubjectAltName());                       
+	  setStatus(serviceinfo.getStatus());
         
       data.put(VERSION, new Float(LATEST_VERSION));
     }
@@ -81,13 +91,14 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
                                               (String) data.get(SUBJECTDN),
                                               (String) data.get(SUBJECTALTNAME), 
                                               ((Integer) data.get(KEYSIZE)).intValue(), 
-                                              (String) data.get(KEYALGORITHM));
+                                              (String) data.get(KEYALGORITHM),
+                                              this.ocspcertificatechain);
       
         } catch (Exception e) {
             throw new IllegalKeyStoreException(e);
         }
         
-        data.put(EXTENDEDCASERVICETYPE, new Integer(TYPE_OCSPEXTENDEDSERVICE));        
+        data.put(EXTENDEDCASERVICETYPE, new Integer(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE));        
      } 
    }
     
@@ -96,12 +107,13 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
    /* 
 	* @see se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAService#extendedService(se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest)
 	*/   
-   public void init(ExtendedCAServiceInfo serviceinfo, CA ca) throws Exception{
+   public void init(CA ca) throws Exception{
+   	 System.out.println("OCSPCAService : init ");
 	 // lookup keystore passwords      
 	 InitialContext ictx = new InitialContext();
 	 String keystorepass = (String) ictx.lookup("java:comp/env/OCSPKeyStorePass");      
 	 if (keystorepass == null)
-	   throw new IllegalArgumentException("Missing privateOCSPKeyPass property.");
+	   throw new IllegalArgumentException("Missing OCSPKeyPass property.");
         
 	 String privatekeypass = (String) ictx.lookup("java:comp/env/privateOCSPKeyPass");
 	 char[] pkpass = null;
@@ -111,7 +123,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	   pkpass = privatekeypass.toCharArray();       
        
 	  // Currently only RSA keys are supported
-	 OCSPCAServiceInfo info = (OCSPCAServiceInfo) serviceinfo;       
+	 OCSPCAServiceInfo info = (OCSPCAServiceInfo) getExtendedCAServiceInfo();       
                   
 	 // Create OSCP KeyStore	    
      int keysize = info.getKeySize();  
@@ -128,56 +140,53 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 											"NOEMAIL",
 											0,0)
 						   , ocspkeys.getPublic(),
-						   0, 
+						   -1, // KeyUsage
+						   ca.getValidity(), 
 						   new OCSPSignerCertificateProfile());
 	  
-     ArrayList oscpcertchain = new ArrayList();
-     oscpcertchain.add(ocspcertificate);
-     oscpcertchain.addAll(ca.getCertificateChain());
-      	  	 	  
+	 ocspcertificatechain = new ArrayList();
+	 ocspcertificatechain.add(ocspcertificate);
+	 ocspcertificatechain.addAll(ca.getCertificateChain());
+	 this.ocspsigningkey = ocspkeys.getPrivate(); 	  	 	  
 	  	  	  
-     keystore.setKeyEntry(PRIVATESIGNKEYALIAS,ocspkeys.getPrivate(),pkpass,(Certificate[]) oscpcertchain.toArray(new Certificate[oscpcertchain.size()]));              
+     keystore.setKeyEntry(PRIVATESIGNKEYALIAS,ocspkeys.getPrivate(),pkpass,(Certificate[]) ocspcertificatechain.toArray(new Certificate[ocspcertificatechain.size()]));              
      java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
      keystore.store(baos, keystorepass.toCharArray());
      data.put(OCSPKEYSTORE, new String(Base64.encode(baos.toByteArray())));      
      // Store OCSP KeyStore
       
-     data.put(KEYSIZE, new Integer(info.getKeySize()));
-     data.put(KEYALGORITHM, info.getKeyAlgorithm());
-	 data.put(SUBJECTDN, info.getSubjectDN());
-	 data.put(SUBJECTALTNAME, info.getSubjectAltName());
-	 setStatus(ExtendedCAServiceInfo.STATUS_ACTIVE);
-	 this.info = new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
+	 setStatus(info.getStatus());
+	 this.info = new OCSPCAServiceInfo(info.getStatus(),
 									  (String) data.get(SUBJECTDN),
 									  (String) data.get(SUBJECTALTNAME), 
 									  ((Integer) data.get(KEYSIZE)).intValue(), 
-									  (String) data.get(KEYALGORITHM));
+									  (String) data.get(KEYALGORITHM),
+	                                   ocspcertificatechain);
       
    }   
 
    /* 
 	* @see se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAService#extendedService(se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest)
 	*/   
-   public void activate(){
-	 setStatus(ExtendedCAServiceInfo.STATUS_ACTIVE);
-	 this.info = new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
+   public void update(ExtendedCAServiceInfo serviceinfo, CA ca) throws Exception{		   
+   	   OCSPCAServiceInfo info = (OCSPCAServiceInfo) serviceinfo; 
+	   System.out.println("OCSPCAService : update " + serviceinfo.getStatus());
+	   setStatus(serviceinfo.getStatus());
+   	   if(info.getRenewFlag()){  	 
+   	     // Renew The OCSP Signers certificate.	                            	       		 										  
+		this.init(ca);
+   	   }  
+   	    	 
+   	   // Only status is updated
+	   this.info = new OCSPCAServiceInfo(serviceinfo.getStatus(),
 										  (String) data.get(SUBJECTDN),
 										  (String) data.get(SUBJECTALTNAME), 
 										  ((Integer) data.get(KEYSIZE)).intValue(), 
-										  (String) data.get(KEYALGORITHM));
+										  (String) data.get(KEYALGORITHM),
+	                                      this.ocspcertificatechain);
+										         									    	 									  
    }   
 
-   /* 
-	* @see se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAService#extendedService(se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest)
-	*/   
-   public void deactivate(){
-   	 setStatus(ExtendedCAServiceInfo.STATUS_INACTIVE);
-	 this.info = new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
-									   (String) data.get(SUBJECTDN),
-									   (String) data.get(SUBJECTALTNAME), 
-									   ((Integer) data.get(KEYSIZE)).intValue(), 
-									   (String) data.get(KEYALGORITHM));
-   }   
 
 
 	/* 
@@ -186,6 +195,8 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) throws IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
 		if(!(request instanceof OCSPCAServiceRequest))
 		  throw new IllegalExtendedCAServiceRequestException();
+        if(this.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE)
+          throw new ExtendedCAServiceNotActiveException();  		  		
 		  		
 		return (ExtendedCAServiceResponse) new OCSPCAServiceResponse(this.ocspcertificatechain,this.ocspsigningkey);
 	}
@@ -207,6 +218,14 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	 * @see se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAService#getExtendedCAServiceInfo()
 	 */
 	public ExtendedCAServiceInfo getExtendedCAServiceInfo() {		
+		if(info == null)
+		  info = new OCSPCAServiceInfo(getStatus(),
+		                              (String) data.get(SUBJECTDN),
+		                              (String) data.get(SUBJECTALTNAME), 
+		                              ((Integer) data.get(KEYSIZE)).intValue(), 
+		                              (String) data.get(KEYALGORITHM),
+		                              this.ocspcertificatechain);
+		
 		return this.info;
 	}
     

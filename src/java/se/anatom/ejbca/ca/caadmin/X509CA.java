@@ -8,6 +8,7 @@ import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -54,7 +55,7 @@ import se.anatom.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.6 2003-10-21 13:48:45 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.7 2003-11-14 14:59:57 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -121,7 +122,7 @@ public class X509CA extends CA implements Serializable {
     public void setCRLNumberCritical(boolean crlnumbercritical) {data.put(CRLNUMBERCRITICAL, new Boolean(crlnumbercritical));}
     
     
-    public void updateCA(CAInfo cainfo){
+    public void updateCA(CAInfo cainfo) throws Exception{
       super.updateCA(cainfo); 
       X509CAInfo info = (X509CAInfo) cainfo;
 
@@ -131,12 +132,18 @@ public class X509CA extends CA implements Serializable {
       setCRLNumberCritical(info.getCRLNumberCritical());
     }
     
-    public CAInfo getCAInfo() throws Exception{                
+    public CAInfo getCAInfo() throws Exception{
+      ArrayList externalcaserviceinfos = new ArrayList();
+      Iterator iter = getExternalCAServiceTypes().iterator(); 	
+      while(iter.hasNext()){
+      	externalcaserviceinfos.add(this.getExtendedCAServiceInfo(((Integer) iter.next()).intValue()));  	
+      }
+    	                
       return new X509CAInfo(getSubjectDN(), getName(), getStatus(), getSubjectAltName() ,getCertificateProfileId(),  
                     getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(), 
                     getCAToken().getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicyId(), getCRLPeriod(), getCRLPublishers(),
                     getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
-                    getUseCRLNumber(), getCRLNumberCritical(), getFinishUser()); 
+                    getUseCRLNumber(), getCRLNumberCritical(), getFinishUser(), externalcaserviceinfos); 
     }
 
 
@@ -430,6 +437,7 @@ public class X509CA extends CA implements Serializable {
         
       return subjectx509name;  
     }
-   
+    
+          
     
 }

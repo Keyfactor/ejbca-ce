@@ -3,43 +3,48 @@ package se.anatom.ejbca.webdist.cainterface;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.HashMap;
+import java.security.cert.X509Certificate;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.caadmin.X509CAInfo;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import se.anatom.ejbca.webdist.rainterface.RevokedInfoView;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 
 /**
  * A class representing a view of a CA Information view..
  *
- * @version $Id: CAInfoView.java,v 1.4 2003-10-21 13:48:47 herrvendil Exp $
+ * @version $Id: CAInfoView.java,v 1.5 2003-11-14 14:59:58 herrvendil Exp $
  */
 public class CAInfoView implements java.io.Serializable, Cloneable {
     // Public constants.
 
    public static int NAME                    = 0;  
-   public static int SUBJECTDN           = 1;   
-   public static int SUBJECTALTNAME = 2;
-   public static int CATYPE                 = 3;
+   public static int SUBJECTDN               = 1;   
+   public static int SUBJECTALTNAME          = 2;
+   public static int CATYPE                  = 3;
    
-   public static int EXPIRETIME          = 5;
-   public static int STATUS                = 6;
-   public static int DESCRIPTION       = 7;
+   public static int EXPIRETIME              = 5;
+   public static int STATUS                  = 6;
+   public static int DESCRIPTION             = 7;
    
-   public static int CRLPERIOD          = 9;
-   public static int CRLPUBLISHERS   = 10;
+   public static int CRLPERIOD               = 9;
+   public static int CRLPUBLISHERS           = 10;
    
+   public static int OCSP                    = 12;
   
     
    public static String[] X509CA_CAINFODATATEXTS = {"NAME","SUBJECTDN","SUBJECTALTNAME","CATYPE","",
-                                                    "EXPIRES","STATUS","DESCRIPTION","", "CRLPERIOD", "CRLPUBLISHERS"};
+                                                    "EXPIRES","STATUS","DESCRIPTION","", "CRLPERIOD", 
+                                                    "CRLPUBLISHERS", "", "OCSPSERVICE"};
    
    private String[] cainfodata = null;
    private String[] cainfodatatexts = null;
    
-   private CAInfo cainfo = null;
-    
+   private CAInfo          cainfo   = null;
+   private X509Certificate ocspcert = null; 
    
     public CAInfoView(CAInfo cainfo, EjbcaWebBean ejbcawebbean, HashMap publishersidtonamemap){
       this.cainfo = cainfo;  
@@ -103,6 +108,27 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
 			cainfodata[CRLPUBLISHERS] = cainfodata[CRLPUBLISHERS] + ", " +
 			                                               (String) publishersidtonamemap.get(iter.next());
         
+		cainfodata[11]          = "&nbsp;"; // blank line
+		
+		boolean active = false;		
+		iter = ((X509CAInfo) cainfo).getExtendedCAServiceInfos().iterator();
+		while(iter.hasNext()){
+	      ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();
+	      if(next instanceof OCSPCAServiceInfo){
+	      	active = next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
+	      	if(((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath() != null)
+	      	  ocspcert = (X509Certificate) ((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath().get(0);		  
+	      }
+		}
+		
+		if(active){
+	      cainfodata[OCSP] = ejbcawebbean.getText("ACTIVE") + 
+                             "<br>" + "&nbsp;<a onClick='viewocspcert()'><u>" +
+			                 ejbcawebbean.getText("VIEWOCSPCERTIFICATE") + 
+			                 "</u></a>";	
+		}else{
+		  cainfodata[OCSP] = ejbcawebbean.getText("INACTIVE");	
+		}
        
         
       }
@@ -113,5 +139,8 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
 
    public CAInfo getCAInfo() { return cainfo;}
    public Collection getCertificateChain() { return cainfo.getCertificateChain(); }
+   
+   public X509Certificate getOCSPSignerCertificate() { return ocspcert;}
+   
    
 }

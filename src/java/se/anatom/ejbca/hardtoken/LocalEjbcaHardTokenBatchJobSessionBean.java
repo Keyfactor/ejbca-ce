@@ -24,7 +24,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from EJBCA RA.
  *
- * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.12 2003-11-04 12:59:30 herrvendil Exp $
+ * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.13 2003-11-14 14:59:58 herrvendil Exp $
  */
 public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
@@ -293,8 +293,8 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
             ps = con.prepareStatement("select COUNT(*) from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)");
             ps.setInt(1,issuerid);
             ps.setInt(2,SecConst.TOKEN_SOFT);
-			ps.setInt(2,UserDataLocal.STATUS_NEW);
-			ps.setInt(2,UserDataLocal.STATUS_KEYRECOVERY);
+			ps.setInt(3,UserDataLocal.STATUS_NEW);
+			ps.setInt(4,UserDataLocal.STATUS_KEYRECOVERY);
             // Execute query.
             rs = ps.executeQuery();
             // Assemble result.
@@ -366,8 +366,9 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
             ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)" );
             ps.setInt(1,issuerid);
             ps.setInt(2,SecConst.TOKEN_SOFT);
-			ps.setInt(2,UserDataLocal.STATUS_NEW);
-			ps.setInt(2,UserDataLocal.STATUS_KEYRECOVERY);
+			ps.setInt(3,UserDataLocal.STATUS_NEW);
+			ps.setInt(4,UserDataLocal.STATUS_KEYRECOVERY);
+			
             // Execute query.
             rs = ps.executeQuery();
             return rs;

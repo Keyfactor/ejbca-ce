@@ -3,7 +3,8 @@
 <%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, org.apache.commons.fileupload.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst, se.anatom.ejbca.util.FileTools, se.anatom.ejbca.util.CertTools, se.anatom.ejbca.authorization.AuthorizationDeniedException,
                se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.ca.caadmin.CAInfo, se.anatom.ejbca.ca.caadmin.X509CAInfo, se.anatom.ejbca.ca.caadmin.CATokenInfo, se.anatom.ejbca.ca.caadmin.SoftCATokenInfo, se.anatom.ejbca.webdist.cainterface.CADataHandler,
                se.anatom.ejbca.webdist.rainterface.RevokedInfoView, se.anatom.ejbca.ca.caadmin.CATokenInfo, se.anatom.ejbca.ca.caadmin.SoftCATokenInfo, se.anatom.ejbca.webdist.webconfiguration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.bouncycastle.jce.PKCS10CertificationRequest, 
-               se.anatom.ejbca.protocol.PKCS10RequestMessage, se.anatom.ejbca.ca.exception.CAExistsException, se.anatom.ejbca.ca.exception.CADoesntExistsException"%>
+               se.anatom.ejbca.protocol.PKCS10RequestMessage, se.anatom.ejbca.ca.exception.CAExistsException, se.anatom.ejbca.ca.exception.CADoesntExistsException, 
+               se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo, se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
@@ -42,15 +43,16 @@
   static final String HIDDEN_CATOKENTYPE                   = "hiddencatokentype";
  
 // Buttons used in editcapage.jsp
-  static final String BUTTON_SAVE              = "buttonsave";
-  static final String BUTTON_CREATE            = "buttoncreate";
-  static final String BUTTON_CANCEL            = "buttoncancel";
-  static final String BUTTON_MAKEREQUEST       = "buttonmakerequest";
-  static final String BUTTON_RECEIVEREQUEST    = "buttonreceiverequest";
-  static final String BUTTON_RENEWCA           = "buttonrenewca";
-  static final String BUTTON_REVOKECA          = "buttonrevokeca";  
-  static final String BUTTON_RECIEVEFILE       = "buttonrecievefile";     
-  static final String BUTTON_PUBLISHCA         = "buttonpublishca";     
+  static final String BUTTON_SAVE                       = "buttonsave";
+  static final String BUTTON_CREATE                     = "buttoncreate";
+  static final String BUTTON_CANCEL                     = "buttoncancel";
+  static final String BUTTON_MAKEREQUEST                = "buttonmakerequest";
+  static final String BUTTON_RECEIVEREQUEST             = "buttonreceiverequest";
+  static final String BUTTON_RENEWCA                    = "buttonrenewca";
+  static final String BUTTON_REVOKECA                   = "buttonrevokeca";  
+  static final String BUTTON_RECIEVEFILE                = "buttonrecievefile";     
+  static final String BUTTON_PUBLISHCA                  = "buttonpublishca";     
+  static final String BUTTON_REVOKERENEWOCSPCERTIFICATE = "checkboxrenewocspcertificate";
 
   static final String TEXTFIELD_SUBJECTDN           = "textfieldsubjectdn";
   static final String TEXTFIELD_SUBJECTALTNAME      = "textfieldsubjectaltname";  
@@ -64,6 +66,8 @@
   static final String CHECKBOX_USECRLNUMBER                       = "checkboxusecrlnumber";
   static final String CHECKBOX_CRLNUMBERCRITICAL                  = "checkboxcrlnumbercritical";
   static final String CHECKBOX_FINISHUSER                         = "checkboxfinishuser";
+  static final String CHECKBOX_ACTIVATEOCSPSERVICE                = "checkboxactivateocspservice";  
+  
   
   static final String HIDDEN_CATOKEN                              = "hiddencatoken";  
 
@@ -78,7 +82,9 @@
 
   static final String FILE_RECIEVEFILE                            = "filerecievefile";
   static final String FILE_CACERTFILE                             = "filecacertfile";
-  static final String FILE_REQUESTFILE                            = "filerequestfile";    
+  static final String FILE_REQUESTFILE                            = "filerequestfile";   
+
+  static final String CERTSERNO_PARAMETER       = "certsernoparameter"; 
 
   static final int    MAKEREQUESTMODE     = 0;
   static final int    RECIEVERESPONSEMODE = 1;
@@ -103,6 +109,8 @@
   boolean  cadeletefailed       = false;
   boolean  illegaldnoraltname   = false;
   boolean  errorrecievingfile   = false;
+  boolean  ocsprenewed          = false;
+  
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/super_administrator"); 
                                             cabean.initialize(request, ejbcawebbean); 
@@ -111,7 +119,7 @@
   String THIS_FILENAME            =  globalconfiguration.getCaPath()  + "/editcas/editcas.jsp";
   String action = "";
 
-  final String VIEWCERTIFICATE_LINK         = "/" +globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
+  final String VIEWCERT_LINK            = "/" + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
   
   boolean issuperadministrator = false;
   boolean editca = false;
@@ -332,9 +340,23 @@
                   crlpublishers.add(new Integer(values[i]));
                }
              }
+
+             int ocspactive = ExtendedCAServiceInfo.STATUS_INACTIVE;
+             value = request.getParameter(CHECKBOX_ACTIVATEOCSPSERVICE);
+             if(value != null && value.equals(CHECKBOX_VALUE))
+                ocspactive = ExtendedCAServiceInfo.STATUS_ACTIVE;             
               
              if(crlperiod != 0 && !illegaldnoraltname){
-               if(request.getParameter(BUTTON_CREATE) != null){
+               if(request.getParameter(BUTTON_CREATE) != null){           
+      
+		 // Create and active OSCP CA Service.
+		 ArrayList extendedcaservices = new ArrayList();
+		 extendedcaservices.add(
+		             new OCSPCAServiceInfo(ocspactive,
+						  "CN=OCSPSignerCertificate, " + subjectdn,
+			     		          "",
+						  2048,
+						  OCSPCAServiceInfo.KEYALGORITHM_RSA));
                  X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, 0, subjectaltname,
                                                         certprofileid, validity, 
                                                         null, catype, signedby,
@@ -344,7 +366,7 @@
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 
                                                         crlnumbercritical, 
-                                                        finishuser);
+                                                        finishuser, extendedcaservices);
                  try{
                    cadatahandler.createCA((CAInfo) x509cainfo);
                  }catch(CAExistsException caee){
@@ -354,6 +376,14 @@
                }
                if(request.getParameter(BUTTON_MAKEREQUEST) != null){
                  caid = CertTools.stringToBCDNString(subjectdn).hashCode();  
+		 // Create and OSCP CA Service.
+		 ArrayList extendedcaservices = new ArrayList();
+		 extendedcaservices.add(
+		             new OCSPCAServiceInfo(ocspactive,
+						  "CN=OCSPSignerCertificate, " + subjectdn,
+			     		          "",
+						  2048,
+						  OCSPCAServiceInfo.KEYALGORITHM_RSA));
                  X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, caid, subjectaltname,
                                                         certprofileid, validity,
                                                         null, catype, CAInfo.SIGNEDBYEXTERNALCA,
@@ -363,7 +393,7 @@
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 
                                                         crlnumbercritical, 
-                                                        finishuser);
+                                                        finishuser, extendedcaservices);
                  cabean.saveRequestInfo(x509cainfo);                
                  filemode = MAKEREQUESTMODE;
                  includefile="recievefile.jsp"; 
@@ -382,7 +412,8 @@
           request.getParameter(BUTTON_RECEIVEREQUEST)  != null || 
           request.getParameter(BUTTON_RENEWCA)  != null ||
           request.getParameter(BUTTON_REVOKECA)  != null ||
-          request.getParameter(BUTTON_PUBLISHCA) != null){
+          request.getParameter(BUTTON_PUBLISHCA) != null ||
+          request.getParameter(BUTTON_REVOKERENEWOCSPCERTIFICATE) != null){
          // Create and save CA                          
          caid = Integer.parseInt(request.getParameter(HIDDEN_CAID));
          caname = request.getParameter(HIDDEN_CANAME);
@@ -427,6 +458,7 @@
 
               boolean usecrlnumber = false;
               boolean crlnumbercritical = false;
+
               value = request.getParameter(CHECKBOX_USECRLNUMBER);
               if(value != null){
                  usecrlnumber = value.equals(CHECKBOX_VALUE);                 
@@ -451,6 +483,25 @@
                  }
               }
               
+              // Create extended CA Service updatedata.
+              int active = ExtendedCAServiceInfo.STATUS_INACTIVE;
+              value = request.getParameter(CHECKBOX_ACTIVATEOCSPSERVICE);
+              if(value != null && value.equals(CHECKBOX_VALUE))
+                active = ExtendedCAServiceInfo.STATUS_ACTIVE;             
+
+              boolean renew = false;
+              if(active == ExtendedCAServiceInfo.STATUS_ACTIVE && 
+                 request.getParameter(BUTTON_REVOKERENEWOCSPCERTIFICATE) != null){
+                 cadatahandler.revokeOCSPCertificate(caid);
+                 renew=true;
+                 ocsprenewed = true;             
+                 includefile="choosecapage.jsp"; 
+               }
+
+	      ArrayList extendedcaservices = new ArrayList();
+              extendedcaservices.add(
+		             new OCSPCAServiceInfo(active, renew));       
+
              if(crlperiod != 0){
                X509CAInfo x509cainfo = new X509CAInfo(caid, validity,
                                                       catoken, description, 
@@ -459,7 +510,7 @@
                                                       authoritykeyidentifiercritical,
                                                       usecrlnumber, 
                                                       crlnumbercritical, 
-                                                      finishuser);
+                                                      finishuser,extendedcaservices);
                  
                cadatahandler.editCA((CAInfo) x509cainfo);
                  
@@ -493,6 +544,7 @@
                  capublished = true;             
                  includefile="choosecapage.jsp"; 
                }
+
              }                          
            } 
          } 
@@ -514,14 +566,14 @@
              PKCS10CertificationRequest certreq = null;
              try{ 
                certreq=cadatahandler.makeRequest(caid, certchain, true);
+               cabean.savePKCS10RequestData(certreq);     
+               filemode = CERTREQGENMODE;
+               includefile = "displayresult.jsp";
              }catch(Exception e){  
                cadatahandler.removeCA(caid); 
-               errorrecievingfile = true; 
+               errorrecievingfile = true;
+               includefile="choosecapage.jsp";  
              }
-             cabean.savePKCS10RequestData(certreq);     
-             filemode = CERTREQGENMODE;
-             includefile = "displayresult.jsp";
-
            }catch(CAExistsException caee){
               caexists = true; 
            } 
@@ -644,7 +696,8 @@
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 
                                                         crlnumbercritical, 
-                                                        finishuser);
+                                                        finishuser, 
+                                                        new ArrayList());
                  try{
                    PKCS10CertificationRequest req = cabean.getPKCS10RequestData(); 
                    java.security.cert.Certificate result = cadatahandler.processRequest(x509cainfo, new PKCS10RequestMessage(req));
@@ -672,6 +725,7 @@
            includefile = "displayresult.jsp";
           }catch(Exception e){
            errorrecievingfile = true; 
+           includefile="choosecapage.jsp"; 
           } 
         }else{
           cabean.saveRequestInfo((CAInfo) null); 

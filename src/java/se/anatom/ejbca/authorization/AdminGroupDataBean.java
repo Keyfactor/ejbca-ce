@@ -23,7 +23,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.1 2003-09-04 14:26:37 herrvendil Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.2 2003-11-14 14:59:57 herrvendil Exp $
  */
 public abstract class AdminGroupDataBean extends BaseEntityBean {
 
@@ -225,8 +225,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      /**
      * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
      */
-    public AdminGroup getAdminGroupNames(){
-                 System.out.println(" Getting admingroup :  " + getAdminGroupName() + ", " + getCAId());   
+    public AdminGroup getAdminGroupNames(){                    
       return new AdminGroup(getAdminGroupName(), getCAId(), null, null);
     } // getAdminGroupNames
     //
