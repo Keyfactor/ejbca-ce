@@ -27,11 +27,11 @@ public class ra {
 
     public static void main(String [] args){
         if (args.length < 1) {
-            System.out.println("Usage: RA adduser|deluser|setclearpwd|setuserstatus|finduser|listnewusers|listusers|revokeuser");
+            System.out.println("Usage: RA adduser | deluser | setclearpwd | setuserstatus | finduser | listnewusers | listusers | revokeuser");
             return;
         }
         try {
-            org.apache.log4j.BasicConfigurator.configure();
+            org.apache.log4j.PropertyConfigurator.configure();
             Context jndiContext = getInitialContext();
 
             Object obj1 = jndiContext.lookup("UserAdminSession");
@@ -50,7 +50,7 @@ public class ra {
                 String email = args[4];
                 int type = Integer.parseInt(args[5]);
 
-                System.out.println("Adding user:");
+                System.out.println("Trying to add user:");
                 System.out.println("Username: "+username);
                 System.out.println("Password (hashed only): "+password);
                 System.out.println("DN: "+dn);
@@ -59,6 +59,9 @@ public class ra {
                 if (email.equals("null"))
                     email = null;
                 admin.addUser(username, password, dn, email, type);
+                System.out.println("User '"+username+"' has been added.");
+                System.out.println();
+                System.out.println("Note: If batch processing should be possible, \nalso use 'ra setclearpwd "+username+" <pwd>'.");
             } else if (args[0].equals("deluser"))
             {
                 if (args.length < 2) {
@@ -69,10 +72,12 @@ public class ra {
                 System.out.print("Have you revoked the user [y/N]? ");
                 int inp = System.in.read();
                 if ( (inp == 121) || (inp==89) ) {
-                    System.out.println("Deleting user "+username);
                     admin.deleteUser(username);
-                } else
+                    System.out.println("Deleted user "+username);
+                } else {
                     System.out.println("Delete aborted!");
+                    System.out.println("Please run 'ra deluser "+username+"'.");
+                }
             } else if (args[0].equals("setclearpwd"))
             {
                 if (args.length < 3) {
@@ -172,11 +177,12 @@ public class ra {
                     }
                 }
             } else {
-                System.out.println("Usage: RA adduser|deluser|setclearpwd|setuserstatus|finduser|listnewusers|listusers|revokeuser");
+                System.out.println("Usage: RA adduser | deluser | setclearpwd | setuserstatus | finduser | listnewusers | listusers | revokeuser");
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
+            //e.printStackTrace();
         }
     }
 

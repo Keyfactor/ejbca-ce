@@ -55,7 +55,7 @@ public class ca {
             return;
         }
         try {
-            org.apache.log4j.BasicConfigurator.configure();
+            org.apache.log4j.PropertyConfigurator.configure();
             // Install BouncyCastle provider
             Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
             int result = Security.addProvider(BCJce);
@@ -86,6 +86,7 @@ public class ca {
                 KeyStore ks = KeyTools.createP12(privKeyAlias, rsaKeys.getPrivate(), rootcert, null);
 
                 FileOutputStream os = new FileOutputStream(filename);
+                System.out.println("Storing keystore '"+filename+"'.");
                 ks.store(os, storepwd.toCharArray());
                 System.out.println("Keystore "+filename+" generated succefully.");
             } else if (args[0].equals("getrootcert")) {
@@ -309,7 +310,7 @@ public class ca {
                 System.out.println("Wrote latest CR to " + outfile+ ".");
             } else if (args[0].equals("init")) {
                 // No arguments to init
-                
+                System.out.println("Initializing CA");
                 // First get and publish CA certificates
                 Context context = getInitialContext();
                 ISignSessionHome signhome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("RSASignSession"), ISignSessionHome.class);
@@ -339,6 +340,7 @@ public class ca {
                 }
                 // Second create (and publish) CRL
                 createCRL();
+                System.out.println("CA initialized");
             } else if (args[0].equals("rolloverroot")) {
                 // Creates a new root certificate with new validity, using the same key
                 if (args.length < 4) {
@@ -393,7 +395,8 @@ public class ca {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
+            //e.printStackTrace();
         }
     }
  

@@ -422,6 +422,16 @@ EJBCA can be run with servlets and EJBs or only with EJBs. The servlets are only
 The sampleauth servlet (sampleauth.war) is only an example and should never be
 deployed in a real production environment.
 
+Troubleshooting
+===============
+Add Debug output from the console administration commands by replacing:
+
+    log4j.rootCategory=INFO, Console
+
+in the file 'log4j.properties' with:
+
+    log4j.rootCategory=DEBUG, Console
+
 SAMPLES
 =======
 A collection of samples are in the directory src/java/se/anatom/ejbca/samples.
