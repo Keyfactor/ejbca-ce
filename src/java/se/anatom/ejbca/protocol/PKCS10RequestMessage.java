@@ -11,12 +11,11 @@ import java.security.cert.X509Certificate;
 
 import org.apache.log4j.*;
 
-import org.bouncycastle.asn1.*;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 
 /** Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.7 2003-01-23 17:13:21 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.8 2003-02-09 15:02:17 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
 

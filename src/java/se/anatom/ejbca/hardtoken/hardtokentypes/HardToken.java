@@ -1,17 +1,9 @@
-/*
- * HardToken.java
- *
- * Created on den 19 januari 2003, 11:03
- */
 package se.anatom.ejbca.hardtoken.hardtokentypes;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
-import se.anatom.ejbca.SecConst;
+
 /**
  * HardToken is a base class that all HardToken classes is supposed to inherit. 
  * It function is to define the data the token is supposed contain.

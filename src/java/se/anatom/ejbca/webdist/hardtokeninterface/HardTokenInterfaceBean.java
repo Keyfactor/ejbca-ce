@@ -3,28 +3,16 @@ package se.anatom.ejbca.webdist.hardtokeninterface;
 import javax.naming.*;
 import java.rmi.RemoteException;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Iterator;
 import java.math.BigInteger;
 
 import java.security.cert.X509Certificate;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
 
 import se.anatom.ejbca.log.*;
 import se.anatom.ejbca.hardtoken.*;
-import se.anatom.ejbca.hardtoken.hardtokentypes.*;
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ra.authorization.AdminInformation;
-import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
-
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 
 /**
  * A java bean handling the interface between EJBCA hard token module and JSP pages.

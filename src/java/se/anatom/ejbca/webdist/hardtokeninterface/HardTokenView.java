@@ -1,7 +1,6 @@
 package se.anatom.ejbca.webdist.hardtokeninterface;
 
 import java.util.Date;
-import java.math.BigInteger;
 
 import se.anatom.ejbca.hardtoken.*;
 import se.anatom.ejbca.hardtoken.hardtokentypes.*;

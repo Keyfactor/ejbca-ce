@@ -2,7 +2,8 @@ package se.anatom.ejbca.hardtoken;
 
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
-import org.apache.log4j.*;
+
+import org.apache.log4j.Category;
 
 /** Entity bean should not be used directly, use though Session beans.
  *
@@ -13,7 +14,7 @@ import org.apache.log4j.*;
  *  tokensn 
  * </pre>
  *
- * @version $Id: HardTokenCertificateMapBean.java,v 1.2 2003-02-09 14:56:16 anatom Exp $
+ * @version $Id: HardTokenCertificateMapBean.java,v 1.3 2003-02-09 15:02:18 anatom Exp $
  **/
 
 public abstract class HardTokenCertificateMapBean implements javax.ejb.EntityBean {
