@@ -74,14 +74,13 @@ import com.novell.ldap.LDAPModificationSet;
  * </pre>
  * </p>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.27 2004-01-26 14:29:17 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.28 2004-01-27 11:36:59 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
     private String ldapHost = "localhost";
     private int ldapPort = LDAPConnection.DEFAULT_PORT;
     private String loginDN = "cn=Admin,o=AnaTom,c=SE";
     private String loginPassword = "foo123";
-    private String containerName = "o=AnaTom,c=SE";
     private String userObjectclass = "inetOrgPerson";
     private String cAObjectclass = "certificateAuthority";
     private String cRLAttribute = "certificateRevocationList;binary";
@@ -105,7 +104,6 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         ldapPort = ((Integer) lookup("java:comp/env/ldapPort", java.lang.Integer.class)).intValue();
         loginDN = (String) lookup("java:comp/env/loginDN", java.lang.String.class);
         loginPassword = (String) lookup("java:comp/env/loginPassword", java.lang.String.class);
-        containerName = (String) lookup("java:comp/env/containerName", java.lang.String.class);
         userObjectclass = (String) lookup("java:comp/env/userObjectclass", java.lang.String.class);
         cAObjectclass = (String) lookup("java:comp/env/cAObjectclass", java.lang.String.class);
         cRLAttribute = (String) lookup("java:comp/env/cRLAttribute", java.lang.String.class);
@@ -115,7 +113,6 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         debug("ldapHost=" + ldapHost);
         debug("loginDN=" + loginDN);
         debug("loginPassword=" + loginPassword);
-        debug("containerName=" + containerName);
         debug("userObjectclass=" + userObjectclass);
         debug("cAObjectclass=" + cAObjectclass);
         debug("<ejbCreate()");
@@ -496,6 +493,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         return true;
     } // storeCRL
     
+    /*
     private boolean checkContainerName(String dn) {
         // Match users DN with 'containerName'?
         // Normalize string lo BC DN format to avoide different case in o, C etc.
@@ -509,6 +507,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
 
         return true;
     } // checkContainerName
+    */
 
     /**
      * Creates an LDAPAttributeSet.
