@@ -35,6 +35,24 @@
 
       <Engine name="jboss.web" defaultHost="localhost">
 
+        <!-- The JAAS based authentication and authorization realm implementation
+         that is compatible with the jboss 3.2.x realm implementation.
+         - certificatePrincipal : the class name of the
+         org.jboss.security.auth.certs.CertificatePrincipal impl
+         used for mapping X509[] cert chains to a Princpal.
+         -->
+         <Realm className="org.jboss.web.tomcat.security.JBossSecurityMgrRealm"
+            certificatePrincipal="org.jboss.security.auth.certs.SubjectDNMapping"
+            />
+         <!-- A subclass of JBossSecurityMgrRealm that uses the authentication
+         behavior of JBossSecurityMgrRealm, but overrides the authorization
+         checks to use JACC permissions with the current java.security.Policy
+         to determine authorized access.
+         <Realm className="org.jboss.web.tomcat.security.JaccAuthorizationRealm"
+            certificatePrincipal="org.jboss.security.auth.certs.SubjectDNMapping"
+            />
+         -->
+
          <Logger className="org.jboss.web.tomcat.Log4jLogger"
             verbosityLevel="WARNING"
             category="org.jboss.web.localhost.Engine"/>
