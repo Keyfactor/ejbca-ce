@@ -6,12 +6,12 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import se.anatom.ejbca.ra.UserAdminData;
-import se.anatom.ejbca.ra.UserData;
+import se.anatom.ejbca.ra.UserDataLocal;
 
 /** List users with specified status in the database.
  *
- * @see se.anatom.ejbca.ra.UserData
- * @version $Id: RaListUsersCommand.java,v 1.1 2002-04-14 08:49:31 anatom Exp $
+ * @see se.anatom.ejbca.ra.UserDataLocal
+ * @version $Id: RaListUsersCommand.java,v 1.2 2002-07-05 23:43:18 herrvendil Exp $
  */
 public class RaListUsersCommand extends BaseRaAdminCommand {
 

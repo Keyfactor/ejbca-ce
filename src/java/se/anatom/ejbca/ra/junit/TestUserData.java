@@ -28,7 +28,7 @@ import junit.framework.*;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.6 2002-06-27 10:57:34 herrvendil Exp $
+ * @version $Id: TestUserData.java,v 1.7 2002-07-05 23:43:18 herrvendil Exp $
  */
 
 public class TestUserData extends TestCase {
@@ -93,7 +93,7 @@ public class TestUserData extends TestCase {
 
     public void test01CreateNewUser() throws Exception {
         cat.debug(">test01CreateNewUser()");
-        UserData data1=null;
+        UserDataRemote data1=null;
         username = genRandomUserName();
         pwd = genRandomPwd();
         data1 = home.create(username, pwd, "C=SE, O=AnaTom, CN="+username);
@@ -106,7 +106,7 @@ public class TestUserData extends TestCase {
         cat.debug(">test02LookupAndChangeUser()");
         UserDataPK pk = new UserDataPK(username);
         cat.debug("pk="+ pk);
-        UserData data2 = home.findByPrimaryKey(pk);
+        UserDataRemote data2 = home.findByPrimaryKey(pk);
         cat.debug("found by key! ="+ data2);
         cat.debug("username="+data2.getUsername());
         assertTrue( "wrong username", data2.getUsername().equals(username) );
@@ -115,14 +115,14 @@ public class TestUserData extends TestCase {
         cat.debug("email="+data2.getSubjectEmail());
         assertNull( "wrong email", data2.getSubjectEmail());
         cat.debug("status="+data2.getStatus());
-        assertTrue( "wrong status", data2.getStatus() == UserData.STATUS_NEW );
+        assertTrue( "wrong status", data2.getStatus() == UserDataRemote.STATUS_NEW );
         cat.debug("type="+data2.getType());
         assertTrue( "wrong type", data2.getType() == SecConst.USER_INVALID);
         cat.debug("password foo123 returned " + data2.comparePassword("foo123"));
         assertTrue( "wrong pwd (foo123 works)", data2.comparePassword("foo123")==false);
         cat.debug("password "+pwd+" returned " + data2.comparePassword(pwd));
         assertTrue( "wrong pwd "+pwd, data2.comparePassword(pwd));
-        data2.setStatus(UserData.STATUS_GENERATED);
+        data2.setStatus(UserDataRemote.STATUS_GENERATED);
         data2.setType(SecConst.USER_ENDUSER);
         data2.setPassword("foo123");
         data2.setSubjectEmail(username+"@anatom.se");
@@ -133,7 +133,7 @@ public class TestUserData extends TestCase {
     public void test03LookupChangedUser() throws Exception {
         cat.debug(">test03LookupChangedUser()");
         UserDataPK pk = new UserDataPK(username);
-        UserData data = home.findByPrimaryKey(pk);
+        UserDataRemote data = home.findByPrimaryKey(pk);
         cat.debug("found by key! ="+ data);
         cat.debug("username="+data.getUsername());
         assertTrue( "wrong username", data.getUsername().equals(username) );
@@ -143,7 +143,7 @@ public class TestUserData extends TestCase {
         assertNotNull("Email should not be null now.", data.getSubjectEmail());
         assertTrue( "wrong email", data.getSubjectEmail().equals(username+"@anatom.se"));
         cat.debug("status="+data.getStatus());
-        assertTrue( "wrong status", data.getStatus() == UserData.STATUS_GENERATED );
+        assertTrue( "wrong status", data.getStatus() == UserDataRemote.STATUS_GENERATED );
         cat.debug("type="+data.getType());
         assertTrue( "wrong type", data.getType() == SecConst.USER_ENDUSER);
         cat.debug("password foo123 returned " + data.comparePassword("foo123"));
@@ -157,7 +157,7 @@ public class TestUserData extends TestCase {
     public void test03LookupChangedUser2() throws Exception {
         cat.debug(">test03LookupChangedUser2()");
         UserDataPK pk = new UserDataPK(username);
-        UserData data = home.findByPrimaryKey(pk);
+        UserDataRemote data = home.findByPrimaryKey(pk);
         cat.debug("found by key! ="+ data);
         cat.debug("username="+data.getUsername());
         assertTrue( "wrong username", data.getUsername().equals(username) );
@@ -167,7 +167,7 @@ public class TestUserData extends TestCase {
         assertNotNull("Email should not be null now.", data.getSubjectEmail());
         assertTrue( "wrong email", data.getSubjectEmail().equals(username+"@anatom.se"));
         cat.debug("status="+data.getStatus());
-        assertTrue( "wrong status", data.getStatus() == UserData.STATUS_GENERATED );
+        assertTrue( "wrong status", data.getStatus() == UserDataRemote.STATUS_GENERATED );
         cat.debug("type="+data.getType());
         assertTrue( "wrong type", data.getType() == SecConst.USER_ENDUSER);
         cat.debug("password foo234 returned " + data.comparePassword("foo234"));
@@ -181,7 +181,7 @@ public class TestUserData extends TestCase {
 
     public void test04CreateNewUser() throws Exception {
         cat.debug(">test04CreateNewUser()");
-        UserData data4=null;
+        UserDataRemote data4=null;
         username1 = genRandomUserName();
         pwd1 = genRandomPwd();
         data4 = home.create(username1, pwd1, "C=SE, O=AnaTom, CN="+username);
@@ -195,17 +195,17 @@ public class TestUserData extends TestCase {
         Object obj1 = ctx.lookup("UserAdminSession");
         IUserAdminSessionHome adminhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
         IUserAdminSessionRemote admin = adminhome.create();
-        Collection coll = admin.findAllUsersByStatus(UserData.STATUS_NEW);
+        Collection coll = admin.findAllUsersByStatus(UserDataRemote.STATUS_NEW);
         Iterator iter = coll.iterator();
         while (iter.hasNext())
         {
 
             UserAdminData data = (UserAdminData)iter.next();
             cat.debug("New user: "+data.getUsername()+", "+data.getDN()+", "+data.getEmail()+", "+data.getStatus()+", "+data.getType());
-            admin.setUserStatus(data.getUsername(), UserData.STATUS_GENERATED);
+            admin.setUserStatus(data.getUsername(), UserDataRemote.STATUS_GENERATED);
         }
 
-        Collection coll1 = admin.findAllUsersByStatus(UserData.STATUS_NEW);
+        Collection coll1 = admin.findAllUsersByStatus(UserDataRemote.STATUS_NEW);
         assertTrue("found NEW users though there should be none!", coll1.isEmpty());
         cat.debug("<test05ListNewUser()");
     }

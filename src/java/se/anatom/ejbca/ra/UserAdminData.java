@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Hols admin data collected from UserData in the database.
  *
- * @version $Id: UserAdminData.java,v 1.1.1.1 2001-11-15 14:58:17 anatom Exp $
+ * @version $Id: UserAdminData.java,v 1.2 2002-07-05 23:43:18 herrvendil Exp $
  */
 public class UserAdminData implements Serializable {
 
@@ -43,6 +43,6 @@ public class UserAdminData implements Serializable {
     public void setStatus(int status) {this.status=status;}
     public int getStatus() {return status;}
     public void setType(int type) {this.type=type;}
-    public int getType() {return type;}
+    public int getType() {return type;} 
 
 }

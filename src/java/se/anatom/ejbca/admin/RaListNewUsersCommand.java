@@ -6,12 +6,12 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import se.anatom.ejbca.ra.UserAdminData;
-import se.anatom.ejbca.ra.UserData;
+import se.anatom.ejbca.ra.UserDataLocal;
 
 /** List users with status NEW in the database.
  *
- * @see se.anatom.ejbca.ra.UserData
- * @version $Id: RaListNewUsersCommand.java,v 1.1 2002-04-14 08:49:31 anatom Exp $
+ * @see se.anatom.ejbca.ra.UserDataLocal
+ * @version $Id: RaListNewUsersCommand.java,v 1.2 2002-07-05 23:43:18 herrvendil Exp $
  */
 public class RaListNewUsersCommand extends BaseRaAdminCommand {
 
@@ -22,7 +22,7 @@ public class RaListNewUsersCommand extends BaseRaAdminCommand {
 
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
-            Collection coll = getAdminSession().findAllUsersByStatus(UserData.STATUS_NEW);
+            Collection coll = getAdminSession().findAllUsersByStatus(UserDataLocal.STATUS_NEW);
             Iterator iter = coll.iterator();
             while (iter.hasNext()) {
                 UserAdminData data = (UserAdminData)iter.next();

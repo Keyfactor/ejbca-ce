@@ -7,7 +7,7 @@
 package se.anatom.ejbca.webdist.rainterface;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ra.UserAdminData;
-import se.anatom.ejbca.ra.UserData;
+import se.anatom.ejbca.ra.UserDataRemote;
 
 /**
  * A class representing an user in the ra user database.
@@ -77,35 +77,58 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
     /** Method that sets all the values in the userdata. */
     public void setValues(String[] values){
       System.arraycopy(values,0,userdata,0,NUMBEROF_USERFIELDS);  
-      userdata[STATUS] = Integer.toString(UserData.STATUS_NEW);
+      userdata[STATUS] = Integer.toString(UserDataRemote.STATUS_NEW);
     }
     
     /** Method to convert the user data model betwwen the one used in web interface and the one used internal*/
     public UserAdminData convertToUserAdminData(){
       String dn = "";
+      boolean first = true;
       if(userdata[COMMONNAME]!= null){
-        if(!userdata[COMMONNAME].trim().equals(""))
-          dn = dn +"CN="+ userdata[COMMONNAME] +", ";     
+        if(!userdata[COMMONNAME].trim().equals("")){
+          dn = dn +"CN="+ userdata[COMMONNAME];     
+          first=false;
+        }  
       }
       if(userdata[ORGANIZATIONUNIT]!= null){ 
-        if(!userdata[ORGANIZATIONUNIT].trim().equals(""))
-          dn = dn +", OU="+ userdata[ORGANIZATIONUNIT];     
+        if(!userdata[ORGANIZATIONUNIT].trim().equals("")){
+          if(!first)
+            dn = dn + ", ";     
+          dn = dn + "OU="+ userdata[ORGANIZATIONUNIT];
+          first = false;
+        }  
       }
       if(userdata[ORGANIZATION]!= null){
-        if(!userdata[ORGANIZATION].trim().equals(""))
-          dn = dn  + ", O="+ userdata[ORGANIZATION];     
+        if(!userdata[ORGANIZATION].trim().equals("")){
+          if(!first)
+            dn = dn + ", ";                 
+          dn = dn  + "O="+ userdata[ORGANIZATION]; 
+          first = false;
+        }  
       }      
       if(userdata[LOCALE]!= null){
-        if(!userdata[LOCALE].trim().equals(""))
-          dn = dn +", L="+ userdata[LOCALE];     
+        if(!userdata[LOCALE].trim().equals("")){
+          if(!first)
+            dn = dn + ", ";                
+          dn = dn +"L="+ userdata[LOCALE];    
+          first = false;          
+        }  
       } 
       if(userdata[STATE]!= null){
-        if(!userdata[STATE].trim().equals(""))
-          dn = dn +", ST="+ userdata[STATE];     
+        if(!userdata[STATE].trim().equals("")){
+          if(!first)
+            dn = dn + ", ";                 
+          dn = dn +"ST="+ userdata[STATE];   
+          first = false;           
+        }
       }
       if(userdata[COUNTRY]!= null){
-        if(!userdata[COUNTRY].trim().equals(""))
-          dn = dn +", C="+ userdata[COUNTRY].toUpperCase();     
+        if(!userdata[COUNTRY].trim().equals("")){
+          if(!first)
+            dn = dn + ", ";                 
+          dn = dn +"C="+ userdata[COUNTRY].toUpperCase();     
+          first = false;           
+        }  
       } 
       if(dn.length()>0){
         if(dn.charAt(0) == ','){
@@ -127,7 +150,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
        
        userdata[USERNAME] = newuserdata.getUsername();
        userdata[PASSWORD] = newuserdata.getPassword();
-       if(userdata[PASSWORD] == null){
+       if(userdata[PASSWORD] != null){
          userdata[CLEARTEXTPASSWORD]= UserView.TRUE;   
        }else{
          userdata[CLEARTEXTPASSWORD]= UserView.FALSE;      

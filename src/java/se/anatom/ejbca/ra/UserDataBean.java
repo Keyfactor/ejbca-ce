@@ -13,6 +13,9 @@ import se.anatom.ejbca.SecConst;
 import org.apache.log4j.*;
 
 
+
+
+
 /** Entity bean should not be used directly, use though Session beans.
  *
  * Entity Bean representing a User.
@@ -20,7 +23,7 @@ import org.apache.log4j.*;
  * <pre>
  * Username (username)
  * SHA1 hash of password (passwordHash)
- * Clear text password if neede (clearPassword)
+ * Clear text password if needed (clearPassword)
  * Subject DN (subjectDN)
  * Subject Email (subjectEmail)
  * Status (status)
@@ -32,37 +35,48 @@ import org.apache.log4j.*;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.10 2002-06-27 11:00:25 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.11 2002-07-05 23:43:18 herrvendil Exp $
  **/
+
 public abstract class UserDataBean implements javax.ejb.EntityBean {
 
     private static Category log = Category.getInstance( UserDataBean.class.getName() );
-
     protected EntityContext  ctx;
+
 
     public abstract String getUsername();
     public abstract void setUsername(String username);
+
     public abstract String getSubjectDN();
     public abstract void setSubjectDN(String subjectDN);
+
     public abstract String getSubjectEmail();
     public abstract void setSubjectEmail(String subjectEmail);
+
     public abstract int getStatus();
     public abstract void setStatus(int status);
+
     public abstract int getType();
     public abstract void setType(int type);
+
     /** Returns clear text password or null. */
     public abstract String getClearPassword();
+
     /** Sets clear text password, the preferred method is setOpenPassword().
      * @see setOpenPassword
      */
+
     public abstract void setClearPassword(String clearPassword);
     /** Returns hashed password or null. */
+
     public abstract String getPasswordHash();
+
     /** Sets hash of password, this is the normal way to store passwords, but use the method setPassword() instead.
      * @see setPassword
      */
-    public abstract void setPasswordHash(String passwordHash);
 
+    public abstract void setPasswordHash(String passwordHash);
+    
     //
     // Public methods used to help us manage passwords
     //
@@ -71,21 +85,28 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
     public void setPassword(String password) throws NoSuchAlgorithmException {
         String passwordHash = makePasswordHash(password);
         setPasswordHash(passwordHash);
+        setClearPassword(null);
     }
+
     /** Sets the password in clear form in the database, needed for machine processing,
      * also sets the hashed password to the same value
      */
+
     public void setOpenPassword(String password) throws NoSuchAlgorithmException {
+
         String passwordHash = makePasswordHash(password);
         setPasswordHash(passwordHash);
         setClearPassword(password);
     }
+
     /** Verifies password by verifying against passwordhash
      */
+
     public boolean comparePassword(String password) throws NoSuchAlgorithmException {
         log.debug(">comparePassword()");
         if (password == null)
             return false;
+
         log.debug("<comparePassword()");
         //log.debug("Newhash="+makePasswordHash(password)+", OldHash="+passwordHash);
         return (makePasswordHash(password).equals(getPasswordHash()));
@@ -96,12 +117,17 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
     // Helper functions
     //
 
+
+
     /** Creates the hashed password
     */
+
     private String makePasswordHash(String password) throws NoSuchAlgorithmException {
         log.debug(">makePasswordHash()");
+
         if (password == null)
             return null;
+
         String ret = null;
         try {
             MessageDigest md = MessageDigest.getInstance("SHA1");
@@ -111,6 +137,7 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
             log.error("SHA1 algorithm not supported.", nsae);
             throw nsae;
         }
+
         log.debug("<makePasswordHash()");
         return ret;
     }
@@ -131,6 +158,7 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
      * @return UserDataPK primary key
      *
      **/
+
     public UserDataPK ejbCreate(String username, String password, String dn) throws CreateException, NoSuchAlgorithmException {
 
         setUsername(username);
@@ -138,35 +166,46 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
         setPasswordHash(makePasswordHash(password));
         setSubjectDN(CertTools.stringToBCDNString(dn));
         setSubjectEmail(null);
-        setStatus(UserData.STATUS_NEW);
+        setStatus(UserDataLocal.STATUS_NEW);
         setType(SecConst.USER_INVALID);
-
+        
         UserDataPK pk = new UserDataPK(username);
         log.debug("Created user "+username);
+
         return pk;
     }
+
     public void ejbPostCreate(String username, String password, String dn) {
         // Do nothing. Required.
     }
+
     public void setEntityContext(EntityContext ctx) {
         this.ctx = ctx;
     }
+
     public void unsetEntityContext() {
         this.ctx = null;
     }
+
     public void ejbActivate() {
         // Not implemented.
     }
+
     public void ejbPassivate() {
         // Not implemented.
     }
+
     public void ejbLoad() {
         // Not implemented.
     }
+
     public void ejbStore() {
         // Not implemented.
     }
+
     public void ejbRemove() {
         // Not implemented.
     }
+
 }
+

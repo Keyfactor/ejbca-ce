@@ -17,11 +17,11 @@ import se.anatom.ejbca.util.CertTools;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.16 2002-06-23 10:11:45 primelars Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.17 2002-07-05 23:43:18 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
-    private UserDataHome home = null;
+    private UserDataLocalHome home = null;
     /** Columns in the database used in select */
     private final String USERDATA_COL = "username, subjectDN, subjectEmail, status, type, clearpassword";
     /** Var holding JNDI name of datasource */
@@ -33,7 +33,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
      */
     public void ejbCreate () throws CreateException {
         debug(">ejbCreate()");
-        home = (UserDataHome) lookup("java:comp/env/ejb/UserData", UserDataHome.class);
+        home = (UserDataLocalHome) lookup("java:comp/env/ejb/UserDataLocal", UserDataLocalHome.class);
         dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
         debug("DataSource=" + dataSource);
         debug("<ejbCreate()");
@@ -48,7 +48,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
         try {
             UserDataPK pk = new UserDataPK(username);
-            UserData data1=null;
+            UserDataLocal data1=null;
             data1 = home.create(username, password, dn);
             if (email != null)
                 data1.setSubjectEmail(email);
@@ -62,7 +62,31 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         debug("<addUser("+username+", password, "+dn+", "+email+", "+type+")");
     } // addUser
 
+   /**
+    * Implements IUserAdminSession::changeUser.
+    * Implements a mechanism that uses UserDataEntity Bean.
+    */
+    public void changeUser(String username, String dn, String email, int type) {
+        debug(">changeUser("+username+", "+dn+", "+email+", "+type+")");
 
+        try {
+            UserDataPK pk = new UserDataPK(username);
+            UserDataLocal data1= home.findByPrimaryKey(pk);
+       
+            data1.setSubjectDN(dn); 
+            if (email != null)
+                data1.setSubjectEmail(email);
+            data1.setType(type);
+            info("Changed user "+pk.username);            
+        }
+        catch (Exception e) {
+            error("change user failed.", e);
+            throw new EJBException(e.getMessage());
+        }
+        debug("<changeUser("+username+", password, "+dn+", "+email+", "+type+")");
+    } // changeUser
+    
+    
    /**
     * Implements IUserAdminSession::deleteUser.
     * Implements a mechanism that uses UserData Entity Bean.
@@ -86,11 +110,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * Implements IUserAdminSession::setUserStatus.
     * Implements a mechanism that uses UserData Entity Bean.
     */
-    public void setUserStatus(String username, int status) throws FinderException, RemoteException {
+    public void setUserStatus(String username, int status) throws FinderException{
         debug(">setUserStatus("+username+", "+status+")");
         // Find user
         UserDataPK pk = new UserDataPK(username);
-        UserData data = home.findByPrimaryKey(pk);
+        UserDataLocal data = home.findByPrimaryKey(pk);
         data.setStatus(status);
         debug("<setUserStatus("+username+", "+status+")");
     } // setUserStatus
@@ -99,11 +123,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * Implements IUserAdminSession::setPassword.
     * Implements a mechanism that uses UserData Entity Bean.
     */
-    public void setPassword(String username, String password) throws FinderException, RemoteException {
+    public void setPassword(String username, String password) throws FinderException{
         debug(">setPassword("+username+", hiddenpwd)");
         // Find user
         UserDataPK pk = new UserDataPK(username);
-        UserData data = home.findByPrimaryKey(pk);
+        UserDataLocal data = home.findByPrimaryKey(pk);
         try {
             data.setPassword(password);
         } catch (java.security.NoSuchAlgorithmException nsae)
@@ -118,14 +142,14 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * Implements IUserAdminSession::setClearTextPassword.
     * Implements a mechanism that uses UserData Entity Bean.
     */
-    public void setClearTextPassword(String username, String password) throws FinderException, RemoteException {
+    public void setClearTextPassword(String username, String password) throws FinderException{
         debug(">setClearTextPassword("+username+", hiddenpwd)");
         // Find user
         UserDataPK pk = new UserDataPK(username);
-        UserData data = home.findByPrimaryKey(pk);
+        UserDataLocal data = home.findByPrimaryKey(pk);
         try {
             if (password == null)
-                data.setClearPassword(null);
+                data.setClearPassword("");
             else
                 data.setOpenPassword(password);
         } catch (java.security.NoSuchAlgorithmException nsae)
@@ -139,10 +163,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     /**
     * Implements IUserAdminSession::findUser.
     */
-    public UserAdminData findUser(String username) throws FinderException, RemoteException {
+    public UserAdminData findUser(String username) throws FinderException {
         debug(">findUser("+username+")");
         UserDataPK pk = new UserDataPK(username);
-        UserData data;
+        UserDataLocal data;
         try {
             data = home.findByPrimaryKey(pk);
         } catch (ObjectNotFoundException oe) {
@@ -162,45 +186,22 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         debug("Looking for users with subjectdn: " + subjectdn);
         String dn = CertTools.stringToBCDNString(subjectdn);
         UserAdminData returnval = null;
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        ArrayList ret = new ArrayList();
+
+        UserDataLocal data = null;
         try{
-            con = getConnection();
-            ps = con.prepareStatement("select "+USERDATA_COL+ " from UserData where subjectDN=?");
-            ps.setString(1,dn);
-            rs = ps.executeQuery();
-            while(rs.next()){
-                UserAdminData data = new UserAdminData(rs.getString(1), rs.getString(2), rs.getString(3), rs.getInt(4), rs.getInt(5));
-                data.setPassword(rs.getString(6));
-                ret.add( data );
-            }
-            debug("found "+ret.size()+" user(s) with subjectdn="+subjectdn);
-            if( ret.size() > 0 )
-              returnval = (UserAdminData) ret.get(0);
-            debug("<findAllUsersBySubjectDN("+subjectdn+")");
-            return returnval;
+          data = home.findBySubjectDN(dn);
+        }catch( FinderException e){} 
+        if(data != null){  
+          returnval = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getStatus(), data.getType());
+          returnval.setPassword(data.getClearPassword());        
         }
-        catch (Exception e) {
-            throw new EJBException(e);
-        }
-        finally {
-            try {
-                if (rs != null) rs.close();
-                if (ps != null) ps.close();
-                if (con!= null) con.close();
-            } catch(SQLException se) {
-                error("SQL-fel vid sökning efter med DN='"+subjectdn+".", se);
-                throw new EJBException(se);
-            }
-        }
+        return returnval;
     } // findUserBySubjectDN
 
     /**
     * Implements IUserAdminSession::findAllUsersByStatus.
     */
-    public Collection findAllUsersByStatus(int status) throws FinderException, RemoteException {
+    public Collection findAllUsersByStatus(int status) throws FinderException {
         debug(">findAllUsersByStatus("+status+")");
         debug("Looking for users with status: " + status);
         Collection users = home.findByStatus(status);
@@ -208,7 +209,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         Iterator iter = users.iterator();
         while (iter.hasNext())
         {
-            UserData user = (UserData)iter.next();
+            UserDataLocal user = (UserDataLocal) iter.next();
             UserAdminData userData = new UserAdminData(user.getUsername(),user.getSubjectDN(),user.getSubjectEmail(),user.getStatus(),user.getType());
             userData.setPassword(user.getClearPassword());
             ret.add(userData);

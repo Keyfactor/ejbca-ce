@@ -1,7 +1,7 @@
 <html> 
 <%@page contentType="text/html"%>
 <%@page  errorPage="/errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration, se.anatom.ejbca.webdist.rainterface.UserView,
-                 se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.Profile, se.anatom.ejbca.webdist.rainterface.Profiles, se.anatom.ejbca.ra.UserData,
+                 se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.Profile, se.anatom.ejbca.webdist.rainterface.Profiles, se.anatom.ejbca.ra.UserDataRemote,
                  javax.ejb.CreateException, java.rmi.RemoteException" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 

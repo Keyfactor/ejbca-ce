@@ -2,7 +2,7 @@
 <%@page contentType="text/html"%>
 <%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration, 
                  se.anatom.ejbca.webdist.rainterface.UserView, se.anatom.ejbca.webdist.rainterface.SortBy,
-                 se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.ra.UserData,
+                 se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.ra.UserDataRemote,
                  javax.ejb.CreateException, java.rmi.RemoteException" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -38,6 +38,7 @@
   static final String BUTTON_LIST              = "buttonlist";
   static final String BUTTON_ISREVOKED         = "buttonisrevoked";
   static final String BUTTON_LISTEXPIRED       = "buttonlistexpired";
+  static final String BUTTON_RELOAD            = "buttonreload";
 
   static final String BUTTON_NEXT              = "buttonnext";
   static final String BUTTON_PREVIOUS          = "buttonprevious";
@@ -261,7 +262,7 @@
      record += ejbcawebbean.getEntriesPerPage();
    }
 
-   if( editbuttonpressed && oldaction.equals(OLD_ACTION_FINDUSER) ){
+   if( (editbuttonpressed || request.getParameter(BUTTON_RELOAD)!=null) && oldaction.equals(OLD_ACTION_FINDUSER) ){
         String user = oldactionvalue; 
        if(user != null){
          if(!user.trim().equals("")){
@@ -269,7 +270,7 @@
          }
        }
      }else{
-       if( editbuttonpressed && oldaction.equals(OLD_ACTION_LISTUSERS) ){
+       if( (editbuttonpressed || request.getParameter(BUTTON_RELOAD)!=null) && oldaction.equals(OLD_ACTION_LISTUSERS) ){
          String status = oldactionvalue;
          if(status != null){
            if(!status.trim().equals("")){
@@ -277,7 +278,7 @@
          }
        }
      }else{
-       if( editbuttonpressed && oldaction.equals(OLD_ACTION_ISREVOKED) ){
+       if( (editbuttonpressed || request.getParameter(BUTTON_RELOAD)!=null)&& oldaction.equals(OLD_ACTION_ISREVOKED) ){
          String serialnumber = oldactionvalue;
          if(serialnumber != null){
            if(!serialnumber.trim().equals("")){
@@ -285,7 +286,7 @@
          }
        }
      }else{
-       if( editbuttonpressed && oldaction.equals(OLD_ACTION_LISTEXPIRED) ){
+       if( (editbuttonpressed || request.getParameter(BUTTON_RELOAD)!=null) && oldaction.equals(OLD_ACTION_LISTEXPIRED) ){
          String days = oldactionvalue;
          if(days != null){
            if(!days.trim().equals("")){

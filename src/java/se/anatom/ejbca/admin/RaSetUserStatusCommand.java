@@ -3,10 +3,10 @@ package se.anatom.ejbca.admin;
 
 import java.io.*;
 
-/** Changes status for a user in the database, status is defined in se.anatom.ejbca.ra.UserData.
+/** Changes status for a user in the database, status is defined in se.anatom.ejbca.ra.UserDataLocal.
  *
- * @see se.anatom.ejbca.ra.UserData
- * @version $Id: RaSetUserStatusCommand.java,v 1.1 2002-04-14 08:49:31 anatom Exp $
+ * @see se.anatom.ejbca.ra.UserDataLocal
+ * @version $Id: RaSetUserStatusCommand.java,v 1.2 2002-07-05 23:43:18 herrvendil Exp $
  */
 public class RaSetUserStatusCommand extends BaseRaAdminCommand {
 

@@ -9,7 +9,7 @@ import se.anatom.ejbca.ra.UserAdminData;
 
 /**
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.3 2002-06-23 10:11:45 primelars Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.4 2002-07-05 23:43:18 herrvendil Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
 
@@ -25,6 +25,19 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     */
     public void addUser(String username, String password, String dn, String email, int type) throws RemoteException;
+    
+    /**
+    * Changes data for a user in the database speciefied by username.
+    *
+    * @param username the unique username.
+    * @param password the password used for authentication.
+    * @param dn the DN the subject is given in his certificate.
+    * @param email the email of the subject or null.
+    * @param type the type of entity (from 'SecConst').
+    *
+    * @throws EJBException if a communication or other error occurs.
+    */   
+    public void changeUser(String username, String dn, String email, int type) throws RemoteException;    
 
    /**
     * Deletes a user from the database. The users certificates must be revoked BEFORE this method is called.

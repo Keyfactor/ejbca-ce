@@ -32,7 +32,7 @@ import junit.framework.*;
 
 /** Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.8 2002-06-04 14:11:09 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.9 2002-07-05 23:43:18 herrvendil Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -130,7 +130,7 @@ public class TestSignSession extends TestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            UserData createdata = userhome.create("foo", "foo123", "C=SE, O=AnaTom, CN=foo");
+            UserDataRemote createdata = userhome.create("foo", "foo123", "C=SE, O=AnaTom, CN=foo");
             assertNotNull("Failed to create user foo", createdata);
             createdata.setType(SecConst.USER_ENDUSER);
             createdata.setSubjectEmail("foo@anatom.se");
@@ -145,8 +145,8 @@ public class TestSignSession extends TestCase {
         if (userExists) {
             cat.debug("user foo already exists.");
             UserDataPK pk = new UserDataPK("foo");
-            UserData data = userhome.findByPrimaryKey(pk);
-            data.setStatus(UserData.STATUS_NEW);
+            UserDataRemote data = userhome.findByPrimaryKey(pk);
+            data.setStatus(UserDataRemote.STATUS_NEW);
             cat.debug("Reset status to NEW");
         }
         cat.debug("<test01CreateNewUser()");
@@ -167,8 +167,8 @@ public class TestSignSession extends TestCase {
     public void test03TestBCPKCS10() throws Exception {
         cat.debug(">test03TestBCPKCS10()");
         UserDataPK pk = new UserDataPK("foo");
-        UserData data = userhome.findByPrimaryKey(pk);
-        data.setStatus(UserData.STATUS_NEW);
+        UserDataRemote data = userhome.findByPrimaryKey(pk);
+        data.setStatus(UserDataRemote.STATUS_NEW);
         cat.debug("Reset status of 'foo' to NEW");
 
         // Create certificate request
@@ -197,8 +197,8 @@ public class TestSignSession extends TestCase {
     public void test04TestKeytoolPKCS10() throws Exception {
         cat.debug(">test04TestKeytoolPKCS10()");
         UserDataPK pk = new UserDataPK("foo");
-        UserData data = userhome.findByPrimaryKey(pk);
-        data.setStatus(UserData.STATUS_NEW);
+        UserDataRemote data = userhome.findByPrimaryKey(pk);
+        data.setStatus(UserDataRemote.STATUS_NEW);
         cat.debug("Reset status of 'foo' to NEW");
         X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", keytoolp10);
         assertNotNull("Failed to create certificate", cert);
@@ -208,8 +208,8 @@ public class TestSignSession extends TestCase {
     public void test05TestIEPKCS10() throws Exception {
         cat.debug(">test05TestIEPKCS10()");
         UserDataPK pk = new UserDataPK("foo");
-        UserData data = userhome.findByPrimaryKey(pk);
-        data.setStatus(UserData.STATUS_NEW);
+        UserDataRemote data = userhome.findByPrimaryKey(pk);
+        data.setStatus(UserDataRemote.STATUS_NEW);
         cat.debug("Reset status of 'foo' to NEW");
         X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", iep10);
         assertNotNull("Failed to create certificate", cert);

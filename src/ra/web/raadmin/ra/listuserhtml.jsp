@@ -72,6 +72,14 @@ function viewcert(){
   return returnval;
 }
 
+function confirmdelete(){
+  var returnval;
+  returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREDELETE") %>");
+  returnval = returnval && confirm("<%= ejbcawebbean.getText("HAVEYOUREVOKEDTHEUSERS") %>");
+
+  return returnval;
+}
+
 -->
 </script>
 </head>
@@ -106,33 +114,33 @@ function viewcert(){
     <select name="<%=SELECT_LIST_STATUS %>">
       <option value=''>--</option> 
       <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserData.STATUS_NEW)))
+                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_NEW)))
                      out.write("selected"); %>
-              value='<%= Integer.toString(UserData.STATUS_NEW) %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
+              value='<%= Integer.toString(UserDataRemote.STATUS_NEW) %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
       <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserData.STATUS_FAILED)))
+                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_FAILED)))
                      out.write("selected"); %>
-              value='<%= Integer.toString(UserData.STATUS_FAILED) %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>
+              value='<%= Integer.toString(UserDataRemote.STATUS_FAILED) %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>
       <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserData.STATUS_INITIALIZED)))
+                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_INITIALIZED)))
                      out.write("selected"); %>
-              value='<%= Integer.toString(UserData.STATUS_INITIALIZED) %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>
+              value='<%= Integer.toString(UserDataRemote.STATUS_INITIALIZED) %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>
       <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserData.STATUS_INPROCESS)))
+                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_INPROCESS)))
                      out.write("selected"); %>
-              value='<%= Integer.toString(UserData.STATUS_INPROCESS) %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>
+              value='<%= Integer.toString(UserDataRemote.STATUS_INPROCESS) %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>
       <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserData.STATUS_GENERATED)))
+                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_GENERATED)))
                      out.write("selected"); %>
-              value='<%= Integer.toString(UserData.STATUS_GENERATED) %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>
+              value='<%= Integer.toString(UserDataRemote.STATUS_GENERATED) %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>
       <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserData.STATUS_REVOKED)))
+                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_REVOKED)))
                      out.write("selected"); %>
-              value='<%= Integer.toString(UserData.STATUS_REVOKED) %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>
+              value='<%= Integer.toString(UserDataRemote.STATUS_REVOKED) %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>
       <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserData.STATUS_HISTORICAL)))
+                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_HISTORICAL)))
                      out.write("selected"); %>
-              value='<%= Integer.toString(UserData.STATUS_HISTORICAL) %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
+              value='<%= Integer.toString(UserDataRemote.STATUS_HISTORICAL) %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
     </select>
     <input type="submit" name="<%=BUTTON_LIST %>" value="<%= ejbcawebbean.getText("LIST") %>">
   </p>
@@ -143,6 +151,9 @@ function viewcert(){
      > <%= ejbcawebbean.getText("DAYS") %>
     <input type="submit" name="<%=BUTTON_LISTEXPIRED %>" value="<%= ejbcawebbean.getText("LIST") %>"
            onclick='return checkfieldfordecimalnumbers("document.form.<%=TEXTFIELD_DAYS %>","<%= ejbcawebbean.getText("ONLYDECNUMBERS") %>")'>
+  </p>
+  <p>
+    <input type="submit" name="<%=BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>">
   </p>
   <br>
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
@@ -258,22 +269,25 @@ function viewcert(){
     <td width="15%"><%
                        if(users[i][UserView.STATUS] != null){
                         switch(Integer.parseInt(users[i][UserView.STATUS])){
-                          case UserData.STATUS_NEW :
+                          case UserDataRemote.STATUS_NEW :
                             out.write(ejbcawebbean.getText("STATUSNEW"));
                             break;
-                          case UserData.STATUS_INITIALIZED :
+                          case UserDataRemote.STATUS_FAILED :
+                            out.write(ejbcawebbean.getText("STATUSFAILED"));
+                            break;
+                          case UserDataRemote.STATUS_INITIALIZED :
                             out.write(ejbcawebbean.getText("STATUSINITIALIZED"));
                             break;
-                          case UserData.STATUS_INPROCESS :
+                          case UserDataRemote.STATUS_INPROCESS :
                             out.write(ejbcawebbean.getText("STATUSINPROCESS"));
                             break;
-                          case UserData.STATUS_GENERATED :
+                          case UserDataRemote.STATUS_GENERATED :
                             out.write(ejbcawebbean.getText("STATUSGENERATED"));
                             break;
-                          case UserData.STATUS_REVOKED :
+                          case UserDataRemote.STATUS_REVOKED :
                             out.write(ejbcawebbean.getText("STATUSREVOKED"));
                             break;
-                          case UserData.STATUS_HISTORICAL :
+                          case UserDataRemote.STATUS_HISTORICAL :
                             out.write(ejbcawebbean.getText("STATUSHISTORICAL"));
                             break;
                         }
@@ -322,7 +336,7 @@ function viewcert(){
                onClick='return viewcert()'>
         &nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%=BUTTON_DELETE_USERS %>" value="<%= ejbcawebbean.getText("DELETESELECTED") %>"
-               onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSUREDELETE") %>")'>
+               onClick='return confirmdelete()'>
         &nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%=BUTTON_REVOKE_USERS %>" value="<%= ejbcawebbean.getText("REVOKESELECTED") %>"
                onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKE") %>")'>
@@ -330,13 +344,13 @@ function viewcert(){
         <input type="submit" name="<%=BUTTON_CHANGESTATUS %>" value="<%= ejbcawebbean.getText("CHANGESTATUSTO") %>"
                onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSURECHANGE") %>")'>
         <select name="<%=SELECT_CHANGE_STATUS %>">
-         <option selected value='<%= Integer.toString(UserData.STATUS_NEW) %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
-         <option value='<%= Integer.toString(UserData.STATUS_FAILED) %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>
-         <option value='<%= Integer.toString(UserData.STATUS_INITIALIZED) %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>
-         <option value='<%= Integer.toString(UserData.STATUS_INPROCESS) %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>
-        <!--  <option value='<%= Integer.toString(UserData.STATUS_GENERATED) %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>  -->
-        <!--  <option value='<%= Integer.toString(UserData.STATUS_REVOKED) %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>  -->
-         <option value='<%= Integer.toString(UserData.STATUS_HISTORICAL) %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
+         <option selected value='<%= Integer.toString(UserDataRemote.STATUS_NEW) %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
+         <option value='<%= Integer.toString(UserDataRemote.STATUS_FAILED) %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>
+         <option value='<%= Integer.toString(UserDataRemote.STATUS_INITIALIZED) %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>
+         <option value='<%= Integer.toString(UserDataRemote.STATUS_INPROCESS) %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>
+        <!--  <option value='<%= Integer.toString(UserDataRemote.STATUS_GENERATED) %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>  -->
+        <!--  <option value='<%= Integer.toString(UserDataRemote.STATUS_REVOKED) %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>  -->
+         <option value='<%= Integer.toString(UserDataRemote.STATUS_HISTORICAL) %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
         </select>
       </td>
       <td>&nbsp;</td>

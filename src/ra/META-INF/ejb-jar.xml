@@ -56,14 +56,14 @@
      </env-entry>
      <!-- END Env-entries for starting an external RMI service using SSL --> 
 
-     <ejb-ref>
+     <ejb-local-ref>
         <description>The User entity bean</description>
-        <ejb-ref-name>ejb/UserData</ejb-ref-name>
+        <ejb-ref-name>ejb/UserDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
-        <home>se.anatom.ejbca.ra.UserDataHome</home>
-        <remote>se.anatom.ejbca.ra.UserData</remote>
+        <local-home>se.anatom.ejbca.ra.UserDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.UserDataLocal</local>
         <ejb-link>UserData</ejb-link>
-     </ejb-ref>
+     </ejb-local-ref>
  
    </session>
    
@@ -203,8 +203,10 @@
             This enterprise bean entity represents a User with accompanying data.
       </description>
       <ejb-name>UserData</ejb-name>
+      <local-home>se.anatom.ejbca.ra.UserDataLocalHome</local-home>
+      <local>se.anatom.ejbca.ra.UserDataLocal</local>
       <home>se.anatom.ejbca.ra.UserDataHome</home>
-      <remote>se.anatom.ejbca.ra.UserData</remote>
+      <remote>se.anatom.ejbca.ra.UserDataRemote</remote>
       <ejb-class>se.anatom.ejbca.ra.UserDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
       <prim-key-class>se.anatom.ejbca.ra.UserDataPK</prim-key-class>

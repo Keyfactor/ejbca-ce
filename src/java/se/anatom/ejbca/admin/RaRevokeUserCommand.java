@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import se.anatom.ejbca.ra.UserAdminData;
-import se.anatom.ejbca.ra.UserData;
+import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.CertificateDataPK;
@@ -20,7 +20,7 @@ import se.anatom.ejbca.util.Hex;
 
 /** Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaRevokeUserCommand.java,v 1.4 2002-06-04 14:42:04 anatom Exp $
+ * @version $Id: RaRevokeUserCommand.java,v 1.5 2002-07-05 23:43:18 herrvendil Exp $
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
 
@@ -41,8 +41,8 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
             System.out.println("username="+data.getUsername());
             System.out.println("dn=\""+data.getDN()+"\"");
             System.out.println("Old status="+data.getStatus());
-            getAdminSession().setUserStatus(username, UserData.STATUS_REVOKED);
-            System.out.println("New status="+UserData.STATUS_REVOKED);
+            getAdminSession().setUserStatus(username, UserDataLocal.STATUS_REVOKED);
+            System.out.println("New status="+UserDataLocal.STATUS_REVOKED);
 
             Object obj2 = getInitialContext().lookup("CertificateStoreSession");
             ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);

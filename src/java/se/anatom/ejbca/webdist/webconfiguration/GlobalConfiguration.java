@@ -127,6 +127,8 @@ public class GlobalConfiguration implements java.io.Serializable {
        setFootBanner(FOOTBANNER);
        
        config.put(P_POSSIBLEENTRIESPERPAGE,POSSIBLEENTRIESPERPAGE);
+       
+       defaultuserpreference.setTheme(getAvailableThemes()[0]);    
    
     }
     

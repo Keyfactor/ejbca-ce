@@ -2,7 +2,7 @@
 <%@page contentType="text/html"%>
 <%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration, 
                  se.anatom.ejbca.webdist.rainterface.UserView, se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, 
-                 se.anatom.ejbca.webdist.rainterface.Profile, se.anatom.ejbca.webdist.rainterface.Profiles, se.anatom.ejbca.ra.UserData,
+                 se.anatom.ejbca.webdist.rainterface.Profile, se.anatom.ejbca.webdist.rainterface.Profiles, se.anatom.ejbca.ra.UserDataRemote,
                  javax.ejb.CreateException, java.rmi.RemoteException" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -19,7 +19,6 @@
   static final String BUTTON_SAVEANDCLOSE      = "buttonsaveandclose";
   static final String BUTTON_CLOSE             = "buttonclose"; 
 
-  static final String TEXTFIELD_USERNAME          = "textfieldusername";
   static final String TEXTFIELD_PASSWORD          = "textfieldpassword";
   static final String TEXTFIELD_CONFIRMPASSWORD   = "textfieldconfirmpassword";
   static final String TEXTFIELD_COMMONNAME        = "textfieldcommonname";
@@ -61,19 +60,20 @@
       if( request.getParameter(BUTTON_SAVE) != null ||  request.getParameter(BUTTON_SAVEANDCLOSE) != null){
          String[] newuserdata = new String[UserView.NUMBEROF_USERFIELDS];
 
-         String value = request.getParameter(TEXTFIELD_USERNAME);
+         String value = username;
          if(value !=null){
            value=value.trim(); 
-           if(!value.equals("")){
-             newuserdata[UserView.USERNAME] = value;
-           }
+           newuserdata[UserView.USERNAME] = value;
          }
          value = request.getParameter(TEXTFIELD_PASSWORD);
          if(value !=null){
            value=value.trim(); 
-           if(!value.equals("")){
-             newuserdata[UserView.PASSWORD] = value;              
-           }
+             if(!value.equals("")){
+                newuserdata[UserView.PASSWORD] = value;           
+             }
+             else{
+                newuserdata[UserView.PASSWORD] = null;
+             }
          }
          value = request.getParameter(CHECKBOX_CLEARTEXTPASSWORD);
          if(value !=null){
@@ -87,51 +87,37 @@
            value = request.getParameter(TEXTFIELD_COMMONNAME);
            if(value !=null){
              value=value.trim(); 
-             if(!value.equals("")){
-               newuserdata[UserView.COMMONNAME] = value;
-             }
+             newuserdata[UserView.COMMONNAME] = value;
            }
            value = request.getParameter(TEXTFIELD_ORGANIZATIONUNIT);
            if(value !=null){
              value=value.trim(); 
-             if(!value.equals("")){
-               newuserdata[UserView.ORGANIZATIONUNIT] = value;
-             }
+             newuserdata[UserView.ORGANIZATIONUNIT] = value;
            }
            value = request.getParameter(TEXTFIELD_ORGANIZATION);
            if(value !=null){
              value=value.trim(); 
-             if(!value.equals("")){
-               newuserdata[UserView.ORGANIZATION] = value;
-             }
+             newuserdata[UserView.ORGANIZATION] = value;
            }
            value = request.getParameter(TEXTFIELD_LOCALE);
            if(value !=null){
              value=value.trim(); 
-             if(!value.equals("")){
-               newuserdata[UserView.LOCALE] = value;
-             }
+             newuserdata[UserView.LOCALE] = value;
            }
            value = request.getParameter(TEXTFIELD_STATE);
            if(value !=null){
              value=value.trim(); 
-             if(!value.equals("")){
-               newuserdata[UserView.STATE] = value;
-             }
+             newuserdata[UserView.STATE] = value;
            }
            value = request.getParameter(TEXTFIELD_COUNTRY);
            if(value !=null){
              value=value.trim(); 
-             if(!value.equals("")){
-               newuserdata[UserView.COUNTRY] = value;
-             }
+             newuserdata[UserView.COUNTRY] = value;
            }
            value = request.getParameter(TEXTFIELD_EMAIL);
            if(value !=null){
              value=value.trim(); 
-             if(!value.equals("")){
-               newuserdata[UserView.EMAIL] = value;
-             }
+             newuserdata[UserView.EMAIL] = value;
            }
            value = request.getParameter(CHECKBOX_TYPEENDUSER);
            if(value !=null){
@@ -188,6 +174,7 @@
              }
            }
            rabean.changeUserData(newuserdata);
+           userdata = newuserdata;
          }
       }
     }
@@ -201,9 +188,6 @@
  <!--
 function checkallfields(){
     var illegalfields = 0;
-
-    if(!checkfieldforlegalchars("document.adduser.<%=TEXTFIELD_USERNAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS2") %>"))
-      illegalfields++;
 
     if(!checkfieldforlegalchars("document.adduser.<%=TEXTFIELD_PASSWORD%>","<%= ejbcawebbean.getText("ONLYCHARACTERS2") %>"))
       illegalfields++;
@@ -235,6 +219,15 @@ function checkallfields(){
     } 
 
      return illegalfields == 0;  
+}
+
+function checkclearpassword(){
+  var returnval=true;
+  if( document.adduser.<%= TEXTFIELD_PASSWORD %>.value == "" ){
+    alert("<%= ejbcawebbean.getText("CHANGEOFCLEARTEXTMODE") %>");
+    returnval=false;
+  }
+  return returnval;
 }
 
 function checksaveclose(){
@@ -270,27 +263,26 @@ function checksaveclose(){
      <table border="0" cellpadding="0" cellspacing="2" width="400">
       <tr id="Row0">
 	<td align="right"><%= ejbcawebbean.getText("USERNAME") %></td>
-	<td><input type="text" name="<%= TEXTFIELD_USERNAME %>" size="40" maxlength="255" tabindex="1"
-             value='<% if(userdata[UserView.USERNAME] != null) out.write(userdata[UserView.USERNAME]); %>'>
+	<td>     <%=username %>
         </td>
       </tr>
       <tr id="Row1">
         <td align="right"><%= ejbcawebbean.getText("PASSWORD") %></td>
 	<td><input type="password" name="<%= TEXTFIELD_PASSWORD %>" size="40" maxlength="255" tabindex="2"
-                   value='<% if(userdata[UserView.PASSWORD] != null) out.write(userdata[UserView.PASSWORD]); %>'>
+                   value=''>
         </td>
       </tr>
       <tr id="Row0">
 	<td align="right"><%= ejbcawebbean.getText("CONFIRMPASSWORD") %></td>
 	<td><input type="password" name="<%= TEXTFIELD_CONFIRMPASSWORD %>" size="40" maxlength="255" tabindex="3"
-                   value='<% if(userdata[UserView.PASSWORD] != null) out.write(userdata[UserView.PASSWORD]); %>'>
+                   value=''>
         </td>
       </tr>
       <tr id="Row0">
 	<td align="right"><h4><%= ejbcawebbean.getText("CLEARTEXTPASSWORD") %></h4></td>
 	<td><input type="checkbox" name="<%= CHECKBOX_CLEARTEXTPASSWORD %>" value="<%= CHECKBOX_VALUE %>" tabindex="4"
                 <%if(userdata[UserView.CLEARTEXTPASSWORD] != null && userdata[UserView.CLEARTEXTPASSWORD].equals(UserView.TRUE))
-                   out.write("CHECKED");%>> 
+                   out.write("CHECKED");%> onchange='return checkclearpassword()'> 
         </td>
       </tr>
       <tr id="Row1">
