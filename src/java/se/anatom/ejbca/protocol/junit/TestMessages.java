@@ -174,21 +174,21 @@ public class TestMessages extends TestCase {
      */
     public void test01TestOpenScep() throws Exception {
         log.debug(">test01TestOpenScep()");
-
         ScepRequestMessage msg = new ScepRequestMessage(openscep);
-
+        // You should be able to get issuer DN before anything else
+        String issuerdn = msg.getIssuerDN();
+        log.debug("IssuerDN: "+issuerdn);
+        assertEquals("CN=TestCA,O=AnaTom,C=SE", issuerdn);
         if (msg.requireKeyInfo()) {
             msg.setKeyInfo(caCert, privateKey);
         }
-
         boolean ret = msg.verify();
         String dn = msg.getRequestDN();
         log.debug("DN: " + dn);
-        assertEquals(dn, "C=Se,O=PrimeKey,CN=Tomas G");
-
+        assertEquals("C=Se,O=PrimeKey,CN=Tomas G", dn);
         String pwd = msg.getPassword();
         log.debug("Pwd: " + pwd);
-        assertEquals(pwd, "foo123");
+        assertEquals("foo123", pwd);
         assertTrue("Failed to verify SCEP message.", ret);
         log.debug("<test01TestOpenScep()");
     }

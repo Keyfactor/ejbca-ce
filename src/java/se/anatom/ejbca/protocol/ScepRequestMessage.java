@@ -28,10 +28,10 @@ import se.anatom.ejbca.util.Base64;
 
 
 /**
- * Class to handle SCEP request messages sent to the CA. TODO: don't forget extensions, e.g.
- * KeyUsage requested by end entity  TODO: extract senderNonce  TODO: extract transactionId
+ * Class to handle SCEP request messages sent to the CA. 
+ * TODO: don't forget extensions, e.g. KeyUsage requested by end entity  
  *
- * @version $Id: ScepRequestMessage.java,v 1.26 2003-09-20 11:45:09 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.27 2003-09-21 08:29:01 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage,
     Serializable {
@@ -83,6 +83,10 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     /** Error text */
     private String errorText = null;
 
+    /** Issuer DN the message is sent to (CAs DN), contained in the 
+     * request as recipientInfo.issuerAndSerialNumber in EnvelopeData part */ 
+    private transient String issuerDN = null;
+    
     /** Signed data, the whole enchilada to to speak... */
     private transient SignedData sd = null;
 
@@ -199,6 +203,16 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
                     if (ctoid.equals(CMSObjectIdentifiers.envelopedData.getId())) {
                         envData = new EnvelopedData((ASN1Sequence) envEncData.getContent());
+                        ASN1Set recipientInfos = envData.getRecipientInfos();
+                        Enumeration e = recipientInfos.getObjects();
+                        while (e.hasMoreElements()) {
+                            RecipientInfo ri = RecipientInfo.getInstance(e.nextElement());
+                            KeyTransRecipientInfo recipientInfo = KeyTransRecipientInfo.getInstance(ri.getInfo());
+                            RecipientIdentifier rid = recipientInfo.getRecipientIdentifier();
+                            IssuerAndSerialNumber iasn = IssuerAndSerialNumber.getInstance(rid.getId());
+                            String issuerDN = iasn.getName().toString();
+                            log.debug("IssuerDN: "+issuerDN);
+                        }
                     } else {
                         errorText = "EncapsulatedContentInfo does not contain PKCS7 envelopedData: ";
                         log.error(errorText + ctoid);
@@ -277,32 +291,21 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      */
     public PublicKey getRequestPublicKey() {
         log.debug(">getRequestPublicKey()");
-
         PublicKey ret = null;
-
         try {
             if (envData == null) {
                 init();
                 decrypt();
             }
-
             ret = super.getRequestPublicKey();
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
-
-            return null;
         } catch (GeneralSecurityException e) {
             log.error("Error in PKCS7:", e);
-
-            return null;
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
-
-            return null;
         }
-
         log.debug("<getRequestPublicKey()");
-
         return ret;
     }
 
@@ -319,32 +322,21 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      */
     public boolean verify() {
         log.debug(">verify()");
-
         boolean ret = false;
-
         try {
             if (pkcs10 == null) {
                 init();
                 decrypt();
             }
-
             ret = super.verify();
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
-
-            return false;
         } catch (GeneralSecurityException e) {
             log.error("Error in PKCS7:", e);
-
-            return false;
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
-
-            return false;
         }
-
         log.debug("<verify()");
-
         return ret;
     }
 
@@ -355,32 +347,21 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      */
     public String getPassword() {
         log.debug(">getPassword()");
-
         String ret = null;
-
         try {
             if (pkcs10 == null) {
                 init();
                 decrypt();
             }
-
             ret = super.getPassword();
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
-
-            return null;
         } catch (GeneralSecurityException e) {
             log.error("Error in PKCS7:", e);
-
-            return null;
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
-
-            return null;
         }
-
         log.debug("<getPassword()");
-
         return ret;
     }
 
@@ -391,29 +372,22 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      * @return username, which is the CN field from the subject DN in certification request.
      */
     public String getUsername() {
+        log.debug(">getUsername()");
         String ret = null;
-
         try {
             if (pkcs10 == null) {
                 init();
                 decrypt();
             }
-
             ret = super.getUsername();
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
-
-            return null;
         } catch (GeneralSecurityException e) {
             log.error("Error in PKCS7:", e);
-
-            return null;
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
-
-            return null;
         }
-
+        log.debug("<getUsername(): "+ret);
         return ret;
     }
 
@@ -423,8 +397,18 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      * @return issuerDN of receiving CA or null.
      */
     public String getIssuerDN() {
-        // TODO:
-        return null;
+        log.debug(">getIssuerDN()");
+        String ret = null;
+        try {
+            if (envData == null) {
+                init();
+            }
+            ret = issuerDN;
+        } catch (IOException e) {
+            log.error("PKCS7 not inited!");
+        }
+        log.debug("<getIssuerDN(): "+ret);
+        return ret;
     }
 
     /**
@@ -434,32 +418,21 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      */
     public String getRequestDN() {
         log.debug(">getRequestDN()");
-
         String ret = null;
-
         try {
             if (pkcs10 == null) {
                 init();
                 decrypt();
             }
-
             ret = super.getRequestDN();
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
-
-            return null;
         } catch (GeneralSecurityException e) {
             log.error("Error in PKCS7:", e);
-
-            return null;
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
-
-            return null;
         }
-
-        log.debug("<getRequestDN()");
-
+        log.debug("<getRequestDN(): "+ret);
         return ret;
     }
 
