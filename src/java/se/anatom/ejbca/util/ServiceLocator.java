@@ -18,7 +18,7 @@ import javax.mail.Session;
  * {@link http://developer.java.sun.com/developer/restricted/patterns/ServiceLocator.html}
  *
  * It is used to look up JNDI related resources such as EJB homes, datasources, ...
- * @version $Id: ServiceLocator.java,v 1.2 2004-08-17 21:14:19 sbailliez Exp $
+ * @version $Id: ServiceLocator.java,v 1.3 2004-08-19 12:56:34 sbailliez Exp $
  */
 public class ServiceLocator {
 
@@ -66,12 +66,8 @@ public class ServiceLocator {
     public EJBLocalHome getLocalHome(String jndiHomeName) throws ServiceLocatorException {
         EJBLocalHome home = (EJBLocalHome)ejbHomes.get(jndiHomeName);
         if (home == null) {
-            try {
-                home = (EJBLocalHome) ctx.lookup(jndiHomeName);
-                ejbHomes.put(jndiHomeName, home);
-            } catch (NamingException e) {
-                throw new ServiceLocatorException(e);
-            }
+            home = (EJBLocalHome)getObject(jndiHomeName);
+            ejbHomes.put(jndiHomeName, home);
         }
         return home;
     }
@@ -85,13 +81,9 @@ public class ServiceLocator {
     public EJBHome getRemoteHome(String jndiHomeName, Class className) throws ServiceLocatorException {
         EJBHome home = (EJBHome)ejbHomes.get(className);
         if (home == null) {
-            try {
-                Object objref = ctx.lookup(jndiHomeName);
-                home = (EJBHome) PortableRemoteObject.narrow(objref, className);
-                ejbHomes.put(className, home);
-            } catch (NamingException e) {
-                throw new ServiceLocatorException(e);
-            }
+            Object objref = getObject(jndiHomeName);
+            home = (EJBHome) PortableRemoteObject.narrow(objref, className);
+            ejbHomes.put(className, home);
         }
         return home;
     }
@@ -102,11 +94,7 @@ public class ServiceLocator {
      * @throws ServiceLocatorException if the lookup fails
      */
     public DataSource getDataSource(String dataSourceName) throws ServiceLocatorException {
-        try {
-            return (DataSource)ctx.lookup(dataSourceName);
-        } catch (NamingException e) {
-            throw new ServiceLocatorException(e);
-        }
+        return (DataSource)getObject(dataSourceName);
     }
 
     /**
@@ -116,11 +104,7 @@ public class ServiceLocator {
      * @throws ServiceLocatorException if the lookup fails
      */
     public URL getUrl(String envName) throws ServiceLocatorException {
-        try {
-            return (URL)ctx.lookup(envName);
-        } catch (NamingException e) {
-            throw new ServiceLocatorException(e);
-        }
+        return (URL)getObject(envName);
     }
 
     /**
@@ -130,11 +114,7 @@ public class ServiceLocator {
      * @throws ServiceLocatorException if the lookup fails
      */
     public boolean getBoolean(String envName) throws ServiceLocatorException {
-        try {
-            return ((Boolean)ctx.lookup(envName)).booleanValue();
-        } catch (NamingException e) {
-            throw new ServiceLocatorException(e);
-        }
+        return ((Boolean)getObject(envName)).booleanValue();
     }
 
     /**
@@ -144,11 +124,7 @@ public class ServiceLocator {
      * @throws ServiceLocatorException if the lookup fails
      */
     public String getString(String envName) throws ServiceLocatorException {
-        try {
-            return (String)ctx.lookup(envName);
-        } catch (NamingException e) {
-            throw new ServiceLocatorException(e);
-        }
+        return (String)getObject(envName);
     }
 
     /**
@@ -158,8 +134,18 @@ public class ServiceLocator {
      * @throws ServiceLocatorException if the lookup fails
      */
     public Session getMailSession(String envName) throws ServiceLocatorException {
+        return (Session)getObject(envName);
+    }
+
+    /**
+     * return a known java object corresponding to the env entry
+     * @param envName the env entry name
+     * @return the java object corresponding to the env entry
+     * @throws ServiceLocatorException if the lookup fails
+     */
+    public Object getObject(String envName) throws ServiceLocatorException {
         try {
-            return (Session)ctx.lookup(envName);
+            return ctx.lookup(envName);
         } catch (NamingException e) {
             throw new ServiceLocatorException(e);
         }
