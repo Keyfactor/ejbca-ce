@@ -497,6 +497,7 @@ END LDAP Publisher -->
       <cmp-field><field-name>serialNumber</field-name></cmp-field>
       <cmp-field><field-name>status</field-name></cmp-field>
       <cmp-field><field-name>type</field-name></cmp-field>
+      <cmp-field><field-name>username</field-name></cmp-field>      
       <cmp-field><field-name>expireDate</field-name></cmp-field>
       <cmp-field><field-name>revocationDate</field-name></cmp-field>
       <cmp-field><field-name>revocationReason</field-name></cmp-field>
@@ -525,6 +526,17 @@ END LDAP Publisher -->
       </query>
       <query>
       	<query-method>
+      	  <method-name>findBySerialNumber</method-name>
+      	  <method-params>
+      	    <method-param>java.lang.String</method-param>
+      	  </method-params>
+      	</query-method>
+	<ejb-ql>
+	  <![CDATA[SELECT DISTINCT OBJECT(a) from CertificateDataBean a WHERE a.serialNumber=?1]]>
+	</ejb-ql>
+      </query>      
+      <query>
+      	<query-method>
       	  <method-name>findByIssuerDNSerialNumber</method-name>
       	  <method-params>
       	    <method-param>java.lang.String</method-param>
@@ -535,6 +547,17 @@ END LDAP Publisher -->
 	  <![CDATA[SELECT DISTINCT OBJECT(a) from CertificateDataBean a WHERE a.issuerDN=?1 AND a.serialNumber=?2]]>
         </ejb-ql>
       </query>
+      <query>
+      	<query-method>
+      	  <method-name>findByUsername</method-name>
+      	  <method-params>
+      	    <method-param>java.lang.String</method-param>
+      	  </method-params>
+      	</query-method>
+	<ejb-ql>
+	  <![CDATA[SELECT DISTINCT OBJECT(a) from CertificateDataBean a WHERE  a.username=?1]]>
+        </ejb-ql>
+      </query>      
    </entity>
 
    <entity>
@@ -586,11 +609,24 @@ END LDAP Publisher -->
       <prim-key-class>java.lang.Integer</prim-key-class>    
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>CertificateTypeDataBean</abstract-schema-name>
+      <abstract-schema-name>CertificateProfileDataBean</abstract-schema-name>
       <cmp-field><field-name>id</field-name></cmp-field>      
       <cmp-field><field-name>certificateProfileName</field-name></cmp-field>
       <cmp-field><field-name>data</field-name></cmp-field>
       <primkey-field>id</primkey-field>  
+      
+      
+      <query>
+      	<query-method>
+      	  <method-name>findByCertificateProfileName</method-name>
+      	  <method-params>
+      	    <method-param>java.lang.String</method-param>
+      	  </method-params>
+      	</query-method>
+	<ejb-ql>
+	  <![CDATA[SELECT DISTINCT OBJECT(a) from CertificateProfileDataBean a WHERE a.certificateProfileName=?1]]>
+	</ejb-ql>
+      </query>       
    </entity>   
   </enterprise-beans>
 
