@@ -2,7 +2,7 @@
     originally contributed by <surd0007(at)yahoo.com.cn>
  
 (This install guide is a complement to the guide present in README).
-$Id: INSTALL-guide.txt,v 1.6 2004-08-31 10:10:32 anatom Exp $
+$Id: INSTALL-guide.txt,v 1.7 2004-09-01 09:02:15 anatom Exp $
 
  
  Softwares needed:
@@ -67,8 +67,8 @@ connect to mysql server.
  
  	Configure mysql:
  	#cd /usr/j2ee/ejbca
-    #ant replaceDS -Dejbca.DS=java:/DefaultDS
-    choose database mysql.
+    #ant replaceDS
+    choose database mysql and your datasource.
     
     (this does the below that you don't have to do manually
  	#cp src/ca/ca/META-INF/jbosscmp-jdbc-mysql.xml src/ca/ca/META-INF/jbosscmp-jdbc.xml
