@@ -55,7 +55,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.16 2003-12-30 18:42:42 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.17 2003-12-30 19:29:42 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -166,13 +166,16 @@ public class OCSPServlet extends HttpServlet {
         }
         BasicOCSPRespGenerator res = new BasicOCSPRespGenerator(cacert.getPublicKey());
 		DERObjectIdentifier id_pkix_ocsp_nonce = new DERObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".2");
-        X509Extension ext = (X509Extension)req.getRequestExtensions().getExtension(id_pkix_ocsp_nonce);
-        if (null != ext) {
-            Hashtable table = new Hashtable();
-            Vector vec = null;
-            table.put(id_pkix_ocsp_nonce, ext);
-			X509Extensions exts = new X509Extensions(table); 
-            res.setResponseExtensions(exts);
+        X509Extensions reqexts = req.getRequestExtensions();
+        if (reqexts != null) {
+            X509Extension ext = (X509Extension)reqexts.getExtension(id_pkix_ocsp_nonce);
+            if (null != ext) {
+                Hashtable table = new Hashtable();
+                Vector vec = null;
+                table.put(id_pkix_ocsp_nonce, ext);
+                X509Extensions exts = new X509Extensions(table); 
+                res.setResponseExtensions(exts);
+            }            
         }
         return res;
     }
@@ -324,7 +327,7 @@ public class OCSPServlet extends HttpServlet {
                                 continue;
                             }
                             // Create a basic response using the first issuer we find
-                            if ( (cacert != null) && (basicRes == null) ) {
+                            if (cacert != null) {
                                 basicRes = createOCSPResponse(req, cacert);
                                 // Find the OCSP signing key and cert for the issuer
                                 String issuerdn = CertTools.stringToBCDNString(cacert.getSubjectDN().toString()); 
