@@ -1,4 +1,4 @@
-$Id: README,v 1.115 2004-01-08 11:34:56 anatom Exp $
+$Id: README,v 1.116 2004-01-08 11:59:21 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -942,6 +942,7 @@ REFERENCES
 Request for Comments: 3280 - Certificate and CRL profile
 Request for Comments: 2253 - DN string representation
 Request for Comments: 2560 - OCSP
+Request for Comments: 2256 - X.500(96) User Schema for use with LDAPv3
 
 
 MySQL:
