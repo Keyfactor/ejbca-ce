@@ -1,27 +1,31 @@
-$Id: TODO,v 1.14 2002-03-14 11:07:56 anatom Exp $
+$Id: TODO,v 1.15 2002-03-14 13:36:06 anatom Exp $
 
 V 1.0
 -----
 
 - NONE
 
-V 2.0
+V 1.x
 -----
 - Upgrade BC provider to latest version.
 - Batch create keystores in other formats, PKCS8/PEM. Apache compatible.
-- Better architecture for JSPs (MVC - ModelViewController?).
-- Certificate update/rollover for CAs and clients.
 - Make a database model similar to architecture model.
 - Possibility to warn about certificates about to expire.
 - Return PKCS7 response to IE/Mozilla, response is PKCS7 with whole chain.
 ca.crt is also pkcs7 with whole chain.
+- RA function to generate keystore for user.
+
+V 2.0
+-----
+- Update to EJB 2.0 spec (when JBoss is ready).
+- Better architecture for JSPs (MVC - ModelViewController?).
 - Add administration interface web-GUI (through servlets/JSP).
 - Remote secure administration through browser CA-admin and RA-admin.
+- Strategy for handling certificate issuance if notAfter is beyond CAs notAfter.
 - EJB best practices, performance meachurments and optimization.
 - Add Configuration (for some stuff) through database so changes can be made on-
 the-fly??
 - Invent strategy for handling multiple instances of CAs on the same app-server.
-- Strategy for handling certificate issuance if notAfter is beyond CAs notAfter.
 - Add support for deeper hierarchies than 2 levels of CAs (today only root and
 CA).
 - Make RA for large scale deployment, different orgunits for different admins.
@@ -29,11 +33,8 @@ Secure remote RA, RA authenticates requests.
 - Complete implementation of createCertificate() method in SignSessionBean.
 - Run on other appservers, ie Weblogic, Websphere etc.
 - Add smart card support (PKCS15) in CA for protection of private key.
-- Update to EJB 2.0 spec (when JBoss is ready).
 - Make CA/RA for off-line authorization of requests for high security
 environments.
 - RA with self registration for end-entities, RA approves registration.
-- RA function to generate keystore for user.
 - Describe SSL-setup in server.
 - XKMS specifications, and more XML/Soap stuff.
-

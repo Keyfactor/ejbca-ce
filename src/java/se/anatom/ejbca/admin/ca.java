@@ -14,6 +14,7 @@ import java.security.Security;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.InvalidKeyException;
 import java.security.interfaces.RSAPublicKey;
@@ -55,7 +56,7 @@ public class ca {
     
     public static void main(String [] args){
         if (args.length < 1) {
-            System.out.println("Usage: CA info | makeroot | getrootcert | makereq | recrep | processreq | init | createcrl | getcrl | rolloverroot");
+            System.out.println("Usage: CA info | makeroot | getrootcert | makereq | recrep | processreq | init | createcrl | getcrl | rolloverroot | rolloversub");
             return;
         }
         try {
@@ -128,7 +129,8 @@ public class ca {
             } else if (args[0].equals("makereq")) {
                 // Generates keys and creates a keystore (PKCS12) to be used by the CA
                 if (args.length < 7) {
-                    System.out.println("Usage: CA makereq <DN> <keysize> <rootca-cert> <reqfile> <ksfile> <storepassword>");
+                    System.out.println("Usage: CA makereq <DN> <keysize> <rootca-certificate> <request-file> <keystore-file> <storepassword>");
+                    System.out.println("Generates a certification request for a subCA for sending to a RootCA.");
                     return;
                 }
                 String dn = args[1];
@@ -156,35 +158,7 @@ public class ca {
                 X509Certificate selfcert = CertTools.genSelfCert(dn, 365, rsaKeys.getPrivate(), rsaKeys.getPublic(), true);
 
                 // Create certificate request
-                PKCS10CertificationRequest req = new PKCS10CertificationRequest(
-                    "SHA1WithRSA", CertTools.stringToBcX509Name(dn), rsaKeys.getPublic(), null, rsaKeys.getPrivate());
-                /* We don't use these uneccesary attributes
-                DERConstructedSequence kName = new DERConstructedSequence();
-                DERConstructedSet  kSeq = new DERConstructedSet();
-                kName.addObject(PKCSObjectIdentifiers.pkcs_9_at_emailAddress);
-                kSeq.addObject(new DERIA5String("foo@bar.se"));
-                kName.addObject(kSeq);
-                req.setAttributes(kName);
-                */
-                ByteArrayOutputStream bOut = new ByteArrayOutputStream ();
-                DEROutputStream dOut = new DEROutputStream(bOut);
-                dOut.writeObject(req);
-                dOut.close();
-                ByteArrayInputStream bIn = new ByteArrayInputStream(bOut.toByteArray());
-                DERInputStream dIn = new DERInputStream(bIn);
-                PKCS10CertificationRequest req2 = new PKCS10CertificationRequest((DERConstructedSequence)dIn.readObject());
-                boolean verify = req2.verify();
-                System.out.println("Verify returned " + verify);
-                if (verify == false) {
-                    System.out.println("Aborting!");
-                    return;
-                }
-                FileOutputStream os1 = new FileOutputStream(reqfile);
-                os1.write("-----BEGIN CERTIFICATE REQUEST-----\n".getBytes());
-                os1.write(Base64.encode(bOut.toByteArray()));
-                os1.write("\n-----END CERTIFICATE REQUEST-----\n".getBytes());
-                os1.close();
-                System.out.println("CertificationRequest '"+reqfile+"' generated succefully.");
+                makeCertRequest(dn, rsaKeys, reqfile);
 
                 // Create keyStore
                 KeyStore ks = KeyTools.createP12("privateKey", rsaKeys.getPrivate(), selfcert, rootcert);
@@ -195,7 +169,8 @@ public class ca {
             } else if (args[0].equals("recrep")) {
                 // Receive certificate reply as result of certificate request
                 if (args.length < 4) {
-                    System.out.println("Usage: CA recrep <cert-file> <ksfile> <storepassword>");
+                    System.out.println("Usage: CA recrep <certificate-file> <keystore-file> <storepassword>");
+                    System.out.println("Used to receive certificates which has been produced as result of sending a certificate request to a RootCA.");
                     return;
                 }
                 String certfile = args[1];
@@ -261,7 +236,8 @@ public class ca {
             } else if (args[0].equals("processreq")) {
                 // Receive certification request and create certificate to send back
                 if (args.length < 5) {
-                    System.out.println("Usage: CA processreq <username> <password> <req-file> <outfile>");
+                    System.out.println("Usage: CA processreq <username> <password> <request-file> <outfile>");
+                    System.out.println("Used to receive certificate requests from subCAs and generate certificates to be sent back.");
                     return;
                 }
                 String username = args[1];
@@ -377,7 +353,7 @@ public class ca {
                 keyStore.load(is, storepwd.toCharArray());
                 PrivateKey privateKey = (PrivateKey)keyStore.getKey(privKeyAlias, privateKeyPass);
                 if (privateKey == null) {
-                    System.out.println("No private key with alias '"+privKeyAlias+"' in keystore, this P12 was not generated with EJBCA?");
+                    System.out.println("No private key with alias '"+privKeyAlias+"' in keystore, this keystore was not generated with EJBCA?");
                     return;
                 }                
                 // Generate the new root certificate
@@ -398,8 +374,63 @@ public class ca {
                 ks.store(os, storepwd.toCharArray());
                 System.out.println("Keystore "+filename+" generated succefully.");
                 System.out.println("Please restart application server and run 'ca init'.");
+            } else if (args[0].equals("rolloversub")) {
+                // Creates a new root certificate with new validity, using the same key
+                if (args.length < 4) {
+                    System.out.println("Usage: CA rolloversub <validity-days> <keystore filename> <storepassword> <certrequest filename>");
+                    System.out.println("Rolloversub is used to generate a new subCA certificate using an existing keypair. This updates the current subCA keystore.");
+                    return;
+                }
+                int validity = Integer.parseInt(args[1]);
+                String ksfilename = args[2];
+                String storepwd = args[3];
+                String reqfile = args[4];
+                // Get old root certificate
+                Certificate[] chain = getCertChain();
+                if (chain.length > 2) {
+                    System.out.println("Certificate chain too long, this keystore was not generated with EJBCA?");
+                    return;
+                }
+                X509Certificate rootcert = (X509Certificate)chain[chain.length-1];
+                if (!CertTools.isSelfSigned(rootcert)) {
+                    System.out.println("Root certificate is not self signed???");
+                    return;
+                }
+                X509Certificate cacert = null;
+                if (chain.length > 1)
+                    cacert = (X509Certificate)chain[chain.length-2];
+                if (cacert == null) {
+                    System.out.println("No subCA certificate found in keystore, this is not a subCA or keystore was not generated with EJBCA?");
+                    return;
+                }                                    
+                // Get private key
+                KeyStore keyStore=KeyStore.getInstance("PKCS12", "BC");
+                InputStream is = new FileInputStream(ksfilename);
+                keyStore.load(is, storepwd.toCharArray());
+                PrivateKey privateKey = (PrivateKey)keyStore.getKey(privKeyAlias, privateKeyPass);
+                if (privateKey == null) {
+                    System.out.println("No private key with alias '"+privKeyAlias+"' in keystore, this keystore was not generated with EJBCA?");
+                    return;
+                }                
+                // Make a KeyPair
+                KeyPair keyPair = new KeyPair(cacert.getPublicKey(), privateKey);
+                // Generate the new certificate request
+                makeCertRequest(cacert.getSubjectDN().toString(), keyPair, reqfile);
+                // verify that the old and new keyidentifieras are the same
+                X509Certificate newselfcert = CertTools.genSelfCert(cacert.getSubjectDN().toString(), validity, privateKey, cacert.getPublicKey(), true);
+                String oldKeyId = Hex.encode(CertTools.getAuthorityKeyId(rootcert));
+                String newKeyId = Hex.encode(CertTools.getAuthorityKeyId(newselfcert));
+                System.out.println("Old key id: "+oldKeyId);
+                System.out.println("New key id: "+newKeyId);
+                if (oldKeyId.compareTo(newKeyId) != 0) {
+                    System.out.println("Old key identifier and new key identifieras does not match, have the key pair changed?");
+                    System.out.println("Unable to rollover subCA.");
+                    return;
+                }
+                
+                System.out.println("Submit certificare request to RootCA and when receiving reply run 'ca recrep'.");
             } else {
-                System.out.println("Usage: CA info | makeroot | getrootcert | makereq | recrep | processreq | init | createcrl | getcrl | rolloverroot");
+                System.out.println("Usage: CA info | makeroot | getrootcert | makereq | recrep | processreq | init | createcrl | getcrl | rolloverroot | rolloversub");
             }
 
         } catch (Exception e) {
@@ -408,6 +439,40 @@ public class ca {
         }
     }
  
+    static private void makeCertRequest(String dn, KeyPair rsaKeys, String reqfile) throws NoSuchAlgorithmException, IOException, NoSuchProviderException, InvalidKeyException, SignatureException {
+        cat.debug(">makeCertRequest: dn='"+dn+"', reqfile='"+reqfile+"'.");
+        PKCS10CertificationRequest req = new PKCS10CertificationRequest(
+        "SHA1WithRSA", CertTools.stringToBcX509Name(dn), rsaKeys.getPublic(), null, rsaKeys.getPrivate());
+        /* We don't use these uneccesary attributes
+        DERConstructedSequence kName = new DERConstructedSequence();
+        DERConstructedSet  kSeq = new DERConstructedSet();
+        kName.addObject(PKCSObjectIdentifiers.pkcs_9_at_emailAddress);
+        kSeq.addObject(new DERIA5String("foo@bar.se"));
+        kName.addObject(kSeq);
+        req.setAttributes(kName);
+         */
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        DEROutputStream dOut = new DEROutputStream(bOut);
+        dOut.writeObject(req);
+        dOut.close();
+        ByteArrayInputStream bIn = new ByteArrayInputStream(bOut.toByteArray());
+        DERInputStream dIn = new DERInputStream(bIn);
+        PKCS10CertificationRequest req2 = new PKCS10CertificationRequest((DERConstructedSequence)dIn.readObject());
+        boolean verify = req2.verify();
+        System.out.println("Verify returned " + verify);
+        if (verify == false) {
+            System.out.println("Aborting!");
+            return;
+        }
+        FileOutputStream os1 = new FileOutputStream(reqfile);
+        os1.write("-----BEGIN CERTIFICATE REQUEST-----\n".getBytes());
+        os1.write(Base64.encode(bOut.toByteArray()));
+        os1.write("\n-----END CERTIFICATE REQUEST-----\n".getBytes());
+        os1.close();
+        System.out.println("CertificationRequest '"+reqfile+"' generated succefully.");
+        cat.debug("<makeCertRequest: dn='"+dn+"', reqfile='"+reqfile+"'.");
+    } // makeCertRequest
+    
     static private void createCRL() throws NamingException, CreateException, RemoteException {
         Context context = getInitialContext();
         IJobRunnerSessionHome home  = (IJobRunnerSessionHome)javax.rmi.PortableRemoteObject.narrow( context.lookup("CreateCRLSession") , IJobRunnerSessionHome.class );

@@ -348,16 +348,17 @@ The CA has a command line interface ca.sh/cmd. Options are:
 * makeroot - creates a new Root CA keystore (only used by Root CA). 
 Quote the DN (") so it is treated as one argument.
 * getrootcert - exports the Root CA certificate to file.
-* makereq - generates a certification request to create a keystore for a
+* makereq - generates a certification request for a subCA for sending to a RootCA. Used to create a keystore for a
 subordinate CA. Quote the DN  so it is treated as one argument.
-* recrep - receives a certification reply (from another CA) for
-the above  generated request.
+* recrep - used to receive certificates which has been produced as result of sending a certificate request to a RootCA.
 * processreq - processes a certification request for
 a subordinate CA and creates  a certification reply.
 * createcrl - issues a CRL.
 * getcrl - retrieves the latest CRL.
 * rolloverroot - used to generate a new RootCA certificate using an existing keypair. This updates the current RootCA keystore.
 (only used by Root CA). When this is used, sub-certificates do not need to be resigned.
+* rolloversub - used to generate a new subCA certificate using an existing keypair. This updates the current subCA keystore.
+When this is used, sub-certificates do not need to be resigned.
 
 Configuring RA
 --------------
