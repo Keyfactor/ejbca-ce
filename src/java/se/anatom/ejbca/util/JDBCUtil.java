@@ -2,10 +2,11 @@ package se.anatom.ejbca.util;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 
 /**
- * @version $Id: JDBCUtil.java,v 1.1 2004-04-12 16:16:21 anatom Exp $
+ * @version $Id: JDBCUtil.java,v 1.2 2004-04-15 13:44:28 anatom Exp $
  */
 public class JDBCUtil {
 
@@ -28,4 +29,15 @@ public class JDBCUtil {
             // ignore
         }
     }
+
+    public static void close(ResultSet rs) {
+        try {
+            if (rs != null) {
+                rs.close(); 
+            }
+        } catch (Exception ex) {
+            // ignore
+        }
+    }
+    
 }
