@@ -232,6 +232,46 @@
      </env-entry>
    </session>
 
+   <session>
+     <ejb-name>LDAPPublisherSession</ejb-name>
+     <home>se.anatom.ejbca.ca.store.IPublisherSessionHome</home>
+     <remote>se.anatom.ejbca.ca.store.IPublisherSessionRemote</remote>
+     <ejb-class>se.anatom.ejbca.ca.store.LDAPPublisherSessionBean</ejb-class>
+     <session-type>Stateless</session-type>
+     <transaction-type>Container</transaction-type>     
+
+     <env-entry>
+     	<description>LDAP host</description>
+     	<env-entry-name>ldapHost</env-entry-name>
+     	<env-entry-type>java.lang.String</env-entry-type>
+     	<env-entry-value>localhost</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>LDAP port</description>
+     	<env-entry-name>ldapPort</env-entry-name>
+     	<env-entry-type>java.lang.Integer</env-entry-type>
+     	<env-entry-value>389</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>DN used to login to LDAP server</description>
+     	<env-entry-name>loginDN</env-entry-name>
+     	<env-entry-type>java.lang.String</env-entry-type>
+     	<env-entry-value>cn=Admin,o=AnaTom,c=SE</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>Password used to login to LDAP server.</description>
+     	<env-entry-name>loginPassword</env-entry-name>
+     	<env-entry-type>java.lang.String</env-entry-type>
+     	<env-entry-value>foo123</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>The base DN handled by the LDAP server.</description>
+     	<env-entry-name>containerName</env-entry-name>
+     	<env-entry-type>java.lang.String</env-entry-type>
+     	<env-entry-value>o=AnaTom,c=SE</env-entry-value>
+     </env-entry>
+   </session>
+
    <entity>
       <description>
             This enterprise bean entity represents a certificate with accompanying data.
