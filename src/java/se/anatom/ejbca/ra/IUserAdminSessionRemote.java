@@ -16,7 +16,7 @@ import se.anatom.ejbca.log.Admin;
 
 /**
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.14 2003-02-20 22:13:02 herrvendil Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.15 2003-02-23 17:55:29 anatom Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
 
@@ -41,10 +41,10 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public void addUser(Admin admin, String username, String password, String dn, String subjectaltname, String email,  boolean clearpwd,
+    public void addUser(Admin admin, String username, String password, String subjectdn, String subjectaltname, String email,  boolean clearpwd,
                         int endentityprofileid, int certificateprofileid, int type, int tokentype, int hardtokenissuerid)
                          throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException;
-    
+
     /**
     * Changes data for a user in the database speciefied by username.
     *
@@ -55,16 +55,16 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @param email the email of the subject or null.
     * @param endentityprofileid the id number of the end entity profile bound to this user.
     * @param certificateprofileid the id number of the certificate profile that should be generated for the user.
-    * @param type of user i.e administrator, keyrecoverable and/or sendnotification 
+    * @param type of user i.e administrator, keyrecoverable and/or sendnotification
     * @param tokentype the type of token to be generated, one of SecConst.TOKEN constants
     * @param hardtokenissuerid, if token should be hard, the id of the hard token issuer, else 0.
     *
     * @throws EJBException if a communication or other error occurs.
-    */   
-    public void changeUser(Admin admin, String username,  String password, String dn, String subjectaltname, String email, boolean clearpwd, 
+    */
+    public void changeUser(Admin admin, String username,  String password, String subjectdn, String subjectaltname, String email, boolean clearpwd,
                         int endentityprofileid, int certificateprofileid, int type,
-                        int tokentype, int hardtokenissuerid, int status) 
-                        throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException;    
+                        int tokentype, int hardtokenissuerid, int status)
+                        throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException;
 
    /**
     * Deletes a user from the database. The users certificates must be revoked BEFORE this method is called.

@@ -15,6 +15,7 @@ import javax.mail.internet.InternetAddress;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.StringTools;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ra.authorization.EndEntityProfileAuthorizationProxy;
 import se.anatom.ejbca.util.query.*;
@@ -36,7 +37,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.40 2003-02-20 22:13:00 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.41 2003-02-23 17:55:29 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -120,9 +121,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * Implements IUserAdminSession::addUser.
     * Implements a mechanism that uses UserDataEntity Bean.
     */
-    public void addUser(Admin admin, String username, String password, String dn, String subjectaltname, String email, boolean clearpwd, int endentityprofileid, int certificateprofileid,
+    public void addUser(Admin admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd, int endentityprofileid, int certificateprofileid,
                         int type, int tokentype, int hardwaretokenissuerid)
                          throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException {
+        // String used in SQL so strip it
+        String dn = StringTools.strip(subjectdn);
         debug(">addUser("+username+", password, "+dn+", "+email+")");
         if(globalconfiguration.getEnableEndEntityProfileLimitations()){
           // Check if user fulfills it's profile.
@@ -188,9 +191,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * Implements IUserAdminSession::changeUser.
     * Implements a mechanism that uses UserDataEntity Bean.
     */
-    public void changeUser(Admin admin, String username, String password,  String dn, String subjectaltname, String email,  boolean clearpwd, int endentityprofileid, int certificateprofileid,
+    public void changeUser(Admin admin, String username, String password,  String subjectdn, String subjectaltname, String email,  boolean clearpwd, int endentityprofileid, int certificateprofileid,
                            int type, int tokentype, int hardwaretokenissuerid, int status)
                               throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException {
+        // String used in SQL so strip it
+        String dn = StringTools.strip(bcdn);
         debug(">changeUser("+username+", "+dn+", "+email+")");
         int oldstatus;
         // Check if user fulfills it's profile.
@@ -198,7 +203,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, endentityprofileid);
         try{
           profile.doesUserFullfillEndEntityProfileWithoutPassword(username,  dn, subjectaltname, email, certificateprofileid,
-                                                                 (type & SecConst.USER_ADMINISTRATOR) != 0, (type & SecConst.USER_KEYRECOVERABLE) != 0, (type & SecConst.USER_SENDNOTIFICATION) != 0, 
+                                                                 (type & SecConst.USER_ADMINISTRATOR) != 0, (type & SecConst.USER_KEYRECOVERABLE) != 0, (type & SecConst.USER_SENDNOTIFICATION) != 0,
                                                                   tokentype, hardwaretokenissuerid);
         }catch(UserDoesntFullfillEndEntityProfile udfp){
           logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"Userdata didn'nt fullfill end entity profile. + " + udfp.getMessage());
@@ -214,15 +219,15 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         try {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1= home.findByPrimaryKey(pk);
-            
+
             if(password != null){
               if(clearpwd)
-                setClearTextPassword(admin, username, password);                  
+                setClearTextPassword(admin, username, password);
               else
-                setPassword(admin, username, password);                  
+                setPassword(admin, username, password);
             }
 
-            data1.setDN(CertTools.stringToBCDNString(dn));
+            data1.setDN(dn);
             if(subjectaltname != null )
                 data1.setSubjectAltName(subjectaltname);
 
@@ -497,7 +502,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     */
     public UserAdminData findUserBySubjectDN(Admin admin, String subjectdn) throws AuthorizationDeniedException, RemoteException {
         debug(">findUserBySubjectDN("+subjectdn+")");
-        String dn = CertTools.stringToBCDNString(subjectdn);
+        String bcdn = CertTools.stringToBCDNString(subjectdn);
+        // String used in SQL so strip it
+        String dn = StringTools.strip(bcdn);
         debug("Looking for users with subjectdn: " + dn);
         UserAdminData returnval = null;
 
