@@ -456,12 +456,6 @@
         <env-entry-value>foo123</env-entry-value>
      </env-entry>
      <env-entry>
-        <description>The base DN handled by the LDAP server.</description>
-        <env-entry-name>containerName</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>o=AnaTom,c=SE</env-entry-value>
-     </env-entry>
-     <env-entry>
         <description>objectclass for storing user entries, hierarchy separated by ;.</description>
         <env-entry-name>userObjectclass</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
