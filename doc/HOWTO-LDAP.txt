@@ -112,7 +112,11 @@ profile and voila, the certs will be published.
 
 Publishing to AD
 ----------------
-If your DN is like "cn=Ejbca1,0=MyOrg,c=SE" and you think your base DN is like
+When configuring Active Directory LDAP, Bind DN for the users are usually, 
+cn=<user>,cn=Users,dc=<domain-component>,dc=<domain-component>. 
+For example: cn=Philip Vendil,cn=Users,dc=primekey,dc=se
+
+If your DN is like "cn=Ejbca1,0=MyOrg,c=SE" and your base DN is like
 "DC=Security,DC=Software,DC=MyOrg".
 The publisher for AD should have base DN like "cn=Users,dc=security,dc=software,dc=MyOrg"
 
