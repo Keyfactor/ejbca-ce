@@ -215,7 +215,11 @@ public class CADataHandler implements Serializable {
  	int certtype = CertificateDataBean.CERTTYPE_SUBCA;
  	if(cainfo.getSignedBy() == CAInfo.SELFSIGNED)
  	  certtype = CertificateDataBean.CERTTYPE_ROOTCA;
- 	signsession.publishCACertificate(administrator, cainfo.getCertificateChain(), certprofile.getPublisherList() , certtype);
+ 	// A CA certificate is published where the CRL is published and if there is a publisher noted in the certificate profile 
+ 	// (which there is probably not) 
+ 	Collection publishers = cainfo.getCRLPublishers();
+ 	publishers.addAll(certprofile.getPublisherList());
+ 	signsession.publishCACertificate(administrator, cainfo.getCertificateChain(), publishers, certtype);
  }
  
  public void revokeOCSPCertificate(int caid){
