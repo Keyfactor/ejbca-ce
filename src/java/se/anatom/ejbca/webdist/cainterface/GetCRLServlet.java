@@ -30,6 +30,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
+ * @version $Id: GetCRLServlet.java,v 1.5 2002-06-27 12:14:03 anatom Exp $
  */
 public class GetCRLServlet extends HttpServlet {
 
@@ -48,8 +49,6 @@ public class GetCRLServlet extends HttpServlet {
 
             // Get EJB context and home interfaces
 
-           /* java.util.Properties jndienv = new java.util.Properties();
-            jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));*/
             ctx = new InitialContext();
 
         } catch( Exception e ) {

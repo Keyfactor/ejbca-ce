@@ -26,7 +26,7 @@ import se.anatom.ejbca.util.StringTools;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.11 2002-05-29 12:52:52 anatom Exp $
+ * @version $Id: CertTools.java,v 1.12 2002-06-27 12:10:15 anatom Exp $
  */
 public class CertTools {
 
@@ -251,6 +251,8 @@ public class CertTools {
     public static X509CRL getCRLfromByteArray(byte[] crl)
     throws IOException, CertificateException, CRLException {
         cat.debug(">getCRLfromByteArray:");
+        if (crl == null)
+            throw new IOException("Cannot read byte[] that is 'null'!");
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         X509CRL x509crl = (X509CRL)cf.generateCRL(new ByteArrayInputStream(crl));
         cat.debug("<getCRLfromByteArray:");

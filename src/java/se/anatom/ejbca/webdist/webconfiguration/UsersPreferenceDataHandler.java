@@ -23,50 +23,49 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
  * save to a database.
  *
  * @author  Philip Vendil
+ * @version $Id: UsersPreferenceDataHandler.java,v 1.5 2002-06-27 12:14:03 anatom Exp $
  */
 public class UsersPreferenceDataHandler {
-    
+
     /** Creates a new instance of UsersPreferences */
     public UsersPreferenceDataHandler()throws IOException, NamingException, FinderException, CreateException {
-     /* Properties jndienv = new Properties();
-        jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));  */   
         InitialContext jndicontext = new InitialContext();
-        IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"), 
-                                               IRaAdminSessionHome.class);  
+        IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"),
+                                               IRaAdminSessionHome.class);
         raadminsession = raadminsessionhome.create();
     }
-    
+
     /** Retrieves the user from the database or null if the user doesn't exists. */
     public UserPreference getUserPreference(BigInteger certificateserialnumber) throws RemoteException {
-     UserPreference returnvalue=null; 
+     UserPreference returnvalue=null;
 
       try{
          returnvalue = raadminsession.getUserPreference(certificateserialnumber);
       }catch(Exception e) {
          returnvalue=null;
       }
-      return returnvalue;  
+      return returnvalue;
     }
-    
+
     /** Adds a user preference to the database */
-    public void addUserPreference(BigInteger certificateserialnumber, UserPreference userpreference) 
-                                  throws UserExistsException, RemoteException {                             
+    public void addUserPreference(BigInteger certificateserialnumber, UserPreference userpreference)
+                                  throws UserExistsException, RemoteException {
       if(!raadminsession.addUserPreference(certificateserialnumber, userpreference))
         throw new UserExistsException("User already exists in the database.");
     }
-    
+
     /** Changes the user preference for the given user. */
-    public void changeUserPreference(BigInteger certificateserialnumber, UserPreference userpreference) 
-                              throws UserDoesntExistException, RemoteException {                        
+    public void changeUserPreference(BigInteger certificateserialnumber, UserPreference userpreference)
+                              throws UserDoesntExistException, RemoteException {
       if(!raadminsession.changeUserPreference(certificateserialnumber, userpreference))
-        throw new UserDoesntExistException("User doesn't exists in the database.");                 
-                                  
+        throw new UserDoesntExistException("User doesn't exists in the database.");
+
     }
-    
+
     /** Checks if user preference exists in database. */
     public boolean existsUserPreference(BigInteger certificateserialnumber) throws RemoteException {
-      return raadminsession.existsUserPreference(certificateserialnumber); 
-        
-    }    
+      return raadminsession.existsUserPreference(certificateserialnumber);
+
+    }
     private IRaAdminSessionRemote raadminsession;
 }

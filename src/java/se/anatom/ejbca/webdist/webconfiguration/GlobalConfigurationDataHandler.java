@@ -23,39 +23,37 @@ import java.math.BigInteger;
 /**
  * A class handling the saving and loading of global configuration data.
  * By default all data are saved to a database.
- * 
+ *
  * @author  Philip Vendil
+ * @version $Id: GlobalConfigurationDataHandler.java,v 1.6 2002-06-27 12:14:03 anatom Exp $
  */
 public class GlobalConfigurationDataHandler {
-    
+
     /** Creates a new instance of GlobalConfigurationDataHandler */
     public GlobalConfigurationDataHandler() throws IOException, FileNotFoundException, NamingException,
                                                    FinderException, CreateException{
-                                       
-      //  Properties jndienv = new Properties(); 
-      // jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));   
-      //  jndicontext = new InitialContext(jndienv); 
+
        InitialContext jndicontext = new InitialContext();
-       IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"), 
+       IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"),
                                                                                  IRaAdminSessionHome.class);
-       raadminsession = raadminsessionhome.create();         
-        
+       raadminsession = raadminsessionhome.create();
+
     }
-    
+
     public GlobalConfiguration loadGlobalConfiguration() throws RemoteException, NamingException{
         GlobalConfiguration ret = null;
 
-        ret = raadminsession.loadGlobalConfiguration();   
+        ret = raadminsession.loadGlobalConfiguration();
         if(ret == null){
-           ret = new GlobalConfiguration();    
+           ret = new GlobalConfiguration();
         }
         return ret;
     }
-    
+
     public void saveGlobalConfiguration(GlobalConfiguration gc) throws RemoteException {
-       raadminsession.saveGlobalConfiguration( gc);      
+       raadminsession.saveGlobalConfiguration( gc);
     }
- 
+
    // private IRaAdminSessionHome  raadminsessionhome;
     private IRaAdminSessionRemote raadminsession;
 }

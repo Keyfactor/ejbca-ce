@@ -33,11 +33,11 @@ import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
  * cacert - returns ca certificate in PEM-format
  * nscacert - returns ca certificate for Netscape/Mozilla
  * iecacert - returns ca certificate for Internet Explorer
- * 
+ *
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.2 2002-06-27 10:57:34 herrvendil Exp $
+ * @version $Id: CACertServlet.java,v 1.3 2002-06-27 12:14:02 anatom Exp $
  *
  */
 public class CACertServlet extends HttpServlet {
@@ -53,20 +53,18 @@ public class CACertServlet extends HttpServlet {
 
     private InitialContext ctx = null;
     ISignSessionHome signhome = null;
-    
+
     public void init(ServletConfig config) throws ServletException {
     super.init(config);
        try {
 
             // Get EJB context and home interfaces
-            /*Properties jndienv = new Properties();
-            jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));*/
             ctx = new InitialContext();
-           
+
             signhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
         } catch( Exception e ) {
             throw new ServletException(e);
-        } 
+        }
     }
 
     public void doPost(HttpServletRequest req, HttpServletResponse res)
@@ -82,7 +80,7 @@ public class CACertServlet extends HttpServlet {
         // Check if authorized
         EjbcaWebBean ejbcawebbean= (se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean)
                                    req.getSession().getAttribute("ejbcawebbean");
-        if ( ejbcawebbean == null ){ 
+        if ( ejbcawebbean == null ){
           try {
             ejbcawebbean = (se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), "se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean");
            } catch (ClassNotFoundException exc) {
@@ -92,11 +90,11 @@ public class CACertServlet extends HttpServlet {
            }
            req.getSession().setAttribute("ejbcawebbean", ejbcawebbean);
         }
-        
+
         try{
-          ejbcawebbean.initialize(req); 
+          ejbcawebbean.initialize(req);
         } catch(Exception e){
-           throw new java.io.IOException("Authorization Denied");  
+           throw new java.io.IOException("Authorization Denied");
         }
 
         String command;
@@ -156,7 +154,7 @@ public class CACertServlet extends HttpServlet {
                 cat.error("Error getting CA certificates.");
                 cat.error(e);
                 return;
-            }            
+            }
         }
         else {
             res.setContentType("text/plain");
