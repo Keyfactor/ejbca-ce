@@ -14,10 +14,16 @@
 package se.anatom.ejbca.admin;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.security.KeyFactory;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 
 import javax.naming.*;
@@ -34,7 +40,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Base for Commands, contains useful functions
  *
- * @version $Id: BaseCommand.java,v 1.4 2004-05-08 10:13:28 anatom Exp $
+ * @version $Id: BaseCommand.java,v 1.5 2004-05-09 09:07:22 anatom Exp $
  */
 public abstract class BaseCommand {
     /** Log4j instance for Base */
@@ -108,7 +114,7 @@ public abstract class BaseCommand {
      * 
      * @return true if strong crypto is installed.
      */
-    protected boolean strongCryptoInstalled() throws Exception {
+    protected boolean strongCryptoInstalled() throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         CertTools.installBCProvider();
         X509Certificate cert = CertTools.getCertfromByteArray(certbytes);
         PKCS8EncodedKeySpec pkKeySpec = new PKCS8EncodedKeySpec(keys1024bit);

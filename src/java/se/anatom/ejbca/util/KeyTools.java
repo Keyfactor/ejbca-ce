@@ -39,7 +39,7 @@ import org.bouncycastle.jce.interfaces.*;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.25 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.26 2004-05-09 09:07:09 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -87,8 +87,8 @@ public class KeyTools {
      *
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
-    public static KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert,
-        X509Certificate cacert) throws Exception {
+    public static KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, X509Certificate cacert) 
+    throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         Certificate[] chain;
 
         if (cacert == null) {
@@ -114,7 +114,7 @@ public class KeyTools {
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
     static public KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, Collection cacerts)
-    throws Exception {
+    throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         Certificate[] chain;
         if (cacerts == null)
             chain = null;
@@ -136,8 +136,8 @@ public class KeyTools {
      * @return KeyStore containing PKCS12-keystore
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
-    public static KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert,
-        Certificate[] cachain) throws Exception {
+    public static KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, Certificate[] cachain) 
+    throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         log.debug(">createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) +", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
 
         // Certificate chain
