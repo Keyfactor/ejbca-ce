@@ -53,7 +53,7 @@ then
 fi
 
 
-CP=.:bin/classes:./admin.jar:./lib/ldap.jar:$JBOSS_HOME/client/jnp-client.jar:$JBOSS_HOME/client/jboss-j2ee.jar:$JBOSS_HOME/client/jbossall-client.jar:$JBOSS_HOME/client/jboss-client.jar:$JBOSS_HOME/client/jbosssx-client.jar:$JBOSS_HOME/client/jboss-common-client.jar:lib/log4j-1.2.7.jar:lib/bcprov-jdk14-122.jar:lib/bcmail-jdk14-122.jar
+CP=.:bin/classes:./admin.jar:./lib/ldap.jar:$JBOSS_HOME/client/jnp-client.jar:$JBOSS_HOME/client/jboss-j2ee.jar:$JBOSS_HOME/client/jbossall-client.jar:$JBOSS_HOME/client/jboss-client.jar:$JBOSS_HOME/client/jbosssx-client.jar:$JBOSS_HOME/client/jboss-common-client.jar:lib/log4j-1.2.7.jar:lib/bcprov-jdk14-124.jar:lib/bcmail-jdk14-124.jar
 
 if java -cp $CP se.anatom.ejbca.admin.Install install unix en ejbca jboss tomcat
 then

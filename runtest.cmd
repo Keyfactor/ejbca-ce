@@ -5,10 +5,10 @@ rem Check for proper settings of environment variables
 if "%JBOSS_HOME%" == ""  goto error
 
 rem JBoss
-set TEST_CP=.;bin/classes;%JBOSS_HOME%\client\jnp-client.jar;%JBOSS_HOME%\client\jbossall-client.jar;%JBOSS_HOME%\client\jboss-client.jar;%JBOSS_HOME%\client\jboss-j2ee.jar;%JBOSS_HOME%\client\jbosssx-client.jar;%JBOSS_HOME%\client\jboss-common-client.jar;..\..\lib\junit.jar;..\..\lib\log4j-1.2.7.jar;..\..\lib\bcprov-jdk14-122.jar;..\..\lib\bcmail-jdk14-122.jar;..\..\lib\ldap.jar;..\..\lib\httpunit.jar
+set TEST_CP=.;bin/classes;%JBOSS_HOME%\client\jnp-client.jar;%JBOSS_HOME%\client\jbossall-client.jar;%JBOSS_HOME%\client\jboss-client.jar;%JBOSS_HOME%\client\jboss-j2ee.jar;%JBOSS_HOME%\client\jbosssx-client.jar;%JBOSS_HOME%\client\jboss-common-client.jar;..\..\lib\junit.jar;..\..\lib\log4j-1.2.7.jar;..\..\lib\bcprov-jdk14-124.jar;..\..\lib\bcmail-jdk14-124.jar;..\..\lib\ldap.jar;..\..\lib\httpunit.jar
 
 rem Weblogic
-rem set TEST_CP=.;..\..\lib\weblogic.jar;..\..\lib\junit.jar;..\..\lib\log4j-1.2.7.jar;..\..\lib\bcprov-jdk14-122.jar;..\..\lib\bcmail-jdk14-122.jar;..\..\lib\ldap.jar;..\..\lib\httpunit.jar
+rem set TEST_CP=.;..\..\lib\weblogic.jar;..\..\lib\junit.jar;..\..\lib\log4j-1.2.7.jar;..\..\lib\bcprov-jdk14-124.jar;..\..\lib\bcmail-jdk14-124.jar;..\..\lib\ldap.jar;..\..\lib\httpunit.jar
 
 if "%1" == "web"  goto webtest
 

@@ -11,7 +11,7 @@ set PATH=%PATH%;%JAVA_HOME%\bin
 set JAVA_OPTS=-server -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=8788,server=y,suspend=y %JAVA_OPTS%
 
 
-set CP=.;bin/classes;.\admin.jar;.\lib\ldap.jar;lib\log4j-1.2.7.jar;%JBOSS_HOME%\client\jnp-client.jar;%JBOSS_HOME%\client\jboss-j2ee.jar;%JBOSS_HOME%\client\jbossall-client.jar;%JBOSS_HOME%\client\jboss-client.jar;%JBOSS_HOME%\client\jbosssx-client.jar;%JBOSS_HOME%\client\jboss-common-client.jar;.\lib\bcprov-jdk14-122.jar;.\lib\bcmail-jdk14-122.jar
+set CP=.;bin/classes;.\admin.jar;.\lib\ldap.jar;lib\log4j-1.2.7.jar;%JBOSS_HOME%\client\jnp-client.jar;%JBOSS_HOME%\client\jboss-j2ee.jar;%JBOSS_HOME%\client\jbossall-client.jar;%JBOSS_HOME%\client\jboss-client.jar;%JBOSS_HOME%\client\jbosssx-client.jar;%JBOSS_HOME%\client\jboss-common-client.jar;.\lib\bcprov-jdk14-124.jar;.\lib\bcmail-jdk14-124.jar
 
 java %JAVA_OPTS% -cp %CP% se.anatom.ejbca.admin.Install install windows en ejbca jboss tomcat
 
