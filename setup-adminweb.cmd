@@ -28,14 +28,17 @@ del tmp\rootca.der
 
 set CP=.;.\admin.jar;.\lib\regexp1_0_0.jar
 
-set TOMCAT_XML=tomcat41-service.xml
-if exist "%JBOSS_HOME%\server\default\deploy\tomcat4-service.xml" set TOMCAT_XML=tomcat4-service.xml
+set SERVER_XML=tomcat41-service.xml
+if exist "%JBOSS_HOME%\server\default\deploy\tomcat4-service.xml" set SERVER_XML=tomcat4-service.xml
+if exist "%JBOSS_HOME%\server\default\deploy\jbossweb.sar\META-INF\jboss-service.xml" set SERVER_XML=jetty.xml
 
-java -cp %CP% se.anatom.ejbca.util.TomcatServiceXMLPasswordReplace src\adminweb\WEB-INF\%TOMCAT_XML% tmp\%TOMCAT_XML% %2
+java -cp %CP% se.anatom.ejbca.util.TomcatServiceXMLPasswordReplace src\adminweb\WEB-INF\%SERVER_XML% tmp\%SERVER_XML% %2
 
-copy tmp\%TOMCAT_XML% %JBOSS_HOME%\server\default\deploy\%TOMCAT_XML%
+if exist "%JBOSS_HOME%\server\default\deploy\tomcat4-service.xml" copy tmp\%SERVER_XML% %JBOSS_HOME%\server\default\deploy\%SERVER_XML%
+if exist "%JBOSS_HOME%\server\default\deploy\tomcat41-service.xml" copy tmp\%SERVER_XML% %JBOSS_HOME%\server\default\deploy\%SERVER_XML%
+if exist "%JBOSS_HOME%\server\default\deploy\jbossweb.sar\META-INF\jboss-service.xml" copy tmp\%SERVER_XML% %JBOSS_HOME%\server\default\deploy\jbossweb.sar\META-INF\jboss-service.xml
 
-del tmp\%TOMCAT_XML%
+del tmp\%SERVER_XML%
 
 goto end
 :error

@@ -2,26 +2,26 @@
 IFS=
 
 # This script sets up the administrative web interface with client cert authentication.
-# Usage: setup-adminweb <DN Tomcat Server Cert> <Tomcat keystore passwd> <java cacert keystore passwd>
+# Usage: setup-adminweb <DN Server Cert> <keystore passwd> <java cacert keystore passwd>
 
 if [ -f $1 ]
 then
-    echo "Usage: setup-adminweb <DN Tomcat Server Cert> <Tomcat keystore passwd> <SuperAdmin password> <java cacert keystore passwd>"
+    echo "Usage: setup-adminweb <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd>"
     exit
 fi
 if [ -f $2 ]
 then
-    echo "Usage: setup-adminweb <DN Tomcat Server Cert> <Tomcat keystore passwd> <SuperAdmin password> <java cacert keystore passwd>"
+    echo "Usage: setup-adminweb <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd>"
     exit
 fi
 if [ -f $3 ]
 then
-    echo "Usage: setup-adminweb <DN Tomcat Server Cert> <Tomcat keystore passwd> <SuperAdmin password> <java cacert keystore passwd>"
+    echo "Usage: setup-adminweb <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd>"
     exit
 fi
 if [ -f $4 ]
 then
-    echo "Usage: setup-adminweb <DN Tomcat Server Cert> <Tomcat keystore passwd> <SuperAdmin password> <java cacert keystore passwd>"
+    echo "Usage: setup-adminweb <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd>"
     exit
 fi
 
@@ -35,7 +35,7 @@ fi
 
 ./batch.sh
 
-cp p12/tomcat.jks $JBOSS_HOME/.keystore
+cp p12/tomcat.jks $JBOSS_HOME/bin/.keystore
 
 ./ca.sh getrootcert tmp/rootca.der
 
@@ -53,12 +53,22 @@ export CP=.:./admin.jar:./lib/regexp1_0_0.jar
 
 if [ -f $JBOSS_HOME/server/default/deploy/tomcat4-service.xml ]
 then
-	TOMCAT_XML=tomcat4-service.xml
-else
-	TOMCAT_XML=tomcat41-service.xml
+	SERVER_XML=tomcat4-service.xml
+else if [ -f $JBOSS_HOME/server/default/deploy/tomcat41-service.xml ]
+then
+	SERVER_XML=tomcat41-service.xml
+else if [ -f $JBOSS_HOME/server/default/deploy/jbossweb.sar/META-INF/jboss-service.xml ]
+then
+	SERVER_XML=jetty.xml
 fi
-java -cp $CP se.anatom.ejbca.util.TomcatServiceXMLPasswordReplace src/adminweb/WEB-INF/$TOMCAT_XML tmp/$TOMCAT_XML $2
 
-cp tmp/$TOMCAT_XML $JBOSS_HOME/server/default/deploy/$TOMCAT_XML
+java -cp $CP se.anatom.ejbca.util.TomcatServiceXMLPasswordReplace src/adminweb/WEB-INF/$SERVER_XML tmp/$SERVER_XML $2
 
-rm tmp/$TOMCAT_XML
+if [ -f $JBOSS_HOME/server/default/deploy/jbossweb.sar/META-INF/jboss-service.xml ]
+then
+	cp tmp/$SERVER_XML $JBOSS_HOME/server/default/deploy/jbossweb.sar/META-INF/jboss-service.xml
+else
+	cp tmp/$SERVER_XML $JBOSS_HOME/server/default/deploy/$SERVER_XML
+fi
+
+rm tmp/$SERVER_XML
