@@ -10,17 +10,14 @@
 </center>
 
 <HR>
-
-<p>
-Welcome to certificate enrollment. <BR>
-If you haven't done so already, you must first install the root certificate in your browser.
-
+Welcome to certificate enrollment. We support enrollment though different methods:
 <ol>
-  <li>Accept EJBCA as Certificate Authority:
-      <br><a href="/apply/certreq?command=nsrootcert">Netscape Navigator</a>
-          or <a href="/apply/certreq?command=ierootcert">Internet Explorer</a>
-  <li><a href="apply_unknown.html">Now fetch your personal certificate</a>
+<li>Mozilla/Netscape Navigator.
+<li>Internet Explorer.
+<li>Manual PKCS10 request.
 </ol>
+<P>
+If you are using a browser please <a href="apply_unknown.html">click</a> to fetch your personal certificate.
 
 <SCRIPT LANGUAGE="JavaScript">
 var browserName = navigator.appName;
@@ -28,15 +25,14 @@ var browserNum = parseInt(navigator.appVersion);
 linkSelector ();
 function linkSelector () {
         if(browserName == "Netscape") {
-                document.links[2].href = "apply_nav.html";
+                document.links[0].href = "apply_nav.jsp";
         }
     else if ((browserName == "Microsoft Internet Explorer") &&(browserNum>= 4)) {
-                document.links[2].href = "apply_exp.html";
+                document.links[0].href = "apply_exp.jsp";
         }
 }
 </SCRIPT>
-
-<HR>
-If you are not using a broswer, go to <a href="apply_man.html">this page</A>.
+<p>
+If you are not using a broswer, go to <a href="apply_man.jsp">this page</A>.
 </BODY>
 </HTML>

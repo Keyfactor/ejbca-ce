@@ -10,6 +10,8 @@ import java.security.PrivateKey;
 import java.security.KeyFactory;
 import java.util.*;
 
+import org.bouncycastle.jce.*;
+import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERConstructedSequence;
@@ -23,7 +25,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.1.1.1 2001-11-15 14:58:19 anatom Exp $
+ * @version $Id: CertTools.java,v 1.2 2001-11-17 18:12:11 anatom Exp $
  */
 public class CertTools {
 
@@ -256,7 +258,59 @@ public class CertTools {
         return ret;
     } // isSelfSigned
 
-     /**
+    public static X509Certificate genSelfCert(String dn, long validity, PrivateKey privKey, PublicKey pubKey, boolean isCA)
+    throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+        // Create self signed certificate
+        String sigAlg="SHA1WithRSA";
+        Date firstDate = new Date();
+        // Set back startdate ten minutes to avoid some problems with wrongly set clocks.
+        firstDate.setTime(firstDate.getTime() - 10*60*1000);
+        Date lastDate = new Date();
+        // validity in days = validity*24*60*60*1000 milliseconds
+        lastDate.setTime(lastDate.getTime() + (validity * (24 * 60 * 60 * 1000)));
+        X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
+        // Serialnumber is random bits, where random generator is initialized with Date.getTime() when this
+        // bean is created.
+        byte[] serno = new byte[8];
+        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+        random.setSeed((long)(new Date().getTime()));
+        random.nextBytes(serno);
+        certgen.setSerialNumber((new java.math.BigInteger(serno)).abs());
+        certgen.setNotBefore(firstDate);
+        certgen.setNotAfter(lastDate);
+        certgen.setSignatureAlgorithm(sigAlg);
+        certgen.setSubjectDN(CertTools.stringToBcX509Name(dn));
+        certgen.setIssuerDN(CertTools.stringToBcX509Name(dn));
+        certgen.setPublicKey(pubKey);
+        // Basic constranits is always critical
+        BasicConstraints bc = new BasicConstraints(isCA);
+        certgen.addExtension(X509Extensions.BasicConstraints.getId(), true, bc);
+
+        /*
+        // Subject and Authority key identifier is always non-critical
+        try {
+            if (isCA == true) {
+                SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((DERConstructedSequence)new DERInputStream(
+                new ByteArrayInputStream(pubKey.getEncoded())).readObject());
+                SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
+
+                SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((DERConstructedSequence)new DERInputStream(
+                new ByteArrayInputStream(pubKey.getEncoded())).readObject());
+                AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
+
+                certgen.addExtension(X509Extensions.SubjectKeyIdentifier.getId(), false, ski);
+                certgen.addExtension(X509Extensions.AuthorityKeyIdentifier.getId(), false, aki);
+            }
+        } catch (IOException e) {// do nothing
+        }
+         */
+         
+            
+        X509Certificate selfcert = certgen.generateX509Certificate(privKey);
+        return selfcert;
+    }
+
+    /**
       * Generate SHA1 fingerprint in string representation.
       *
       * @param cert Byte array containing DER encoded X509Certificate.

@@ -25,7 +25,6 @@ import java.rmi.RemoteException;
 import org.bouncycastle.jce.*;
 import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.pkcs.*;
-import org.bouncycastle.asn1.x509.*;
 
 import se.anatom.ejbca.*;
 import se.anatom.ejbca.util.*;
@@ -70,7 +69,7 @@ public class ca {
                 // Generate keys
                 System.out.println("Generating keys, please wait...");
                 KeyPair rsaKeys = KeyTools.genKeys();
-                X509Certificate rootcert = genSelfCert(dn, validity, rsaKeys.getPrivate(), rsaKeys.getPublic());
+                X509Certificate rootcert = CertTools.genSelfCert(dn, validity, rsaKeys.getPrivate(), rsaKeys.getPublic(), true);
                 KeyStore ks = KeyTools.createP12("privateKey", rsaKeys.getPrivate(), rootcert, null);
 
                 FileOutputStream os = new FileOutputStream(filename);
@@ -79,8 +78,8 @@ public class ca {
             } else if (args[0].equals("rootcert")) {
                 // Export root CA certificate
                 if (args.length < 2) {
-                    System.out.println(args.length);
-                    System.out.println("Usage: CA rootcert <rootca-cert>");
+                    System.out.println("Save root CA certificate to file.");
+                    System.out.println("Usage: CA rootcert <filename>");
                     System.exit(1);
                 }
                 String filename = args[1];
@@ -122,7 +121,7 @@ public class ca {
                 System.out.println("Generating keys, please wait...");
                 KeyPair rsaKeys = KeyTools.genKeys();
                 // Create selfsigned cert...
-                X509Certificate selfcert = genSelfCert(dn, 365, rsaKeys.getPrivate(), rsaKeys.getPublic());
+                X509Certificate selfcert = CertTools.genSelfCert(dn, 365, rsaKeys.getPrivate(), rsaKeys.getPublic(), true);
 
                 // Create certificate request
                 PKCS10CertificationRequest req = new PKCS10CertificationRequest(
@@ -270,33 +269,6 @@ public class ca {
         }
     }
  
-    public static X509Certificate genSelfCert(String dn, long validity, PrivateKey privKey, PublicKey pubKey)
-    throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
-        // Create self signed certificate
-        String sigAlg="SHA1WithRSA";
-        Date firstDate = new Date();
-        // Set back startdate ten minutes to avoid some problems with wrongly set clocks.
-        firstDate.setTime(firstDate.getTime() - 10*60*1000);
-        Date lastDate = new Date();
-        // validity in days = validity*24*60*60*1000 milliseconds
-        lastDate.setTime(lastDate.getTime() + (validity * (24 * 60 * 60 * 1000)));
-        X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
-        // Serialnumber is random bits, where random generator is initialized with Date.getTime() when this
-        // bean is created.
-        byte[] serno = new byte[8];
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-        random.setSeed((long)(new Date().getTime()));
-        random.nextBytes(serno);
-        certgen.setSerialNumber((new java.math.BigInteger(serno)).abs());
-        certgen.setNotBefore(firstDate);
-        certgen.setNotAfter(lastDate);
-        certgen.setSignatureAlgorithm(sigAlg);
-        certgen.setSubjectDN(CertTools.stringToBcX509Name(dn));
-        certgen.setIssuerDN(CertTools.stringToBcX509Name(dn));
-        certgen.setPublicKey(pubKey);
-        X509Certificate selfcert = certgen.generateX509Certificate(privKey);
-        return selfcert;
-    }
 
     static public Context getInitialContext() throws NamingException{
         System.out.println(">GetInitialContext");

@@ -1,3 +1,5 @@
+<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,se.anatom.ejbca.ca.sign.*"%>
+
 <HTML>
 <HEAD>
 <TITLE>EJBCA IE certificate enroll</TITLE>
@@ -51,16 +53,44 @@
 </HEAD>
 <BODY onLoad="GetProviderList()" bgcolor="#ffffff" link="black" vlink="black" alink="black">
 <center>
-<FONT face=arial size="3"><strong>EJBCA Certificate Enrollment
+<FONT face=arial size="3"><strong>EJBCA IE Certificate Enrollment
 </strong></FONT>
 </center>
 
 <HR>
+Welcome to certificate enrollment. <BR>
+If you haven't done so already, you must first install the CA certificate(s) in your browser.
+
+<P>Install CA certificates:
+
+<%
+try  {
+    InitialContext ctx = new InitialContext();
+    ISignSessionHome home = home = (ISignSessionHome) PortableRemoteObject.narrow(
+            ctx.lookup("RSASignSession"), ISignSessionHome.class );
+    ISignSession ss = home.create();
+    Certificate[] chain = ss.getCertificateChain();
+    if (chain.length == 0) {
+        out.println("No CA certificates exist");
+    } else {
+        X509Certificate rootcert = (X509Certificate)chain[chain.length-1];
+        out.println("<li><a href=\"/apply/certreq?command=iecacert&level=0\">Root CA</a></li>");
+        if (chain.length > 1) {
+            for (int i=chain.length-2;i>=0;i--) {
+                out.println("<li><a href=\"/apply/certreq?command=iecacert&level="+i+"\">CA</a></li>");
+            }
+        }
+    }
+} catch(Exception ex) {
+    ex.printStackTrace();
+}                                             
+%>
+<HR>
 <FORM NAME="CertReqForm" ACTION="/apply/certreq" ENCTYPE=x-www-form-encoded METHOD=POST>
  Please give your username and password, then click OK to fetch your certificate.<BR>
 
-        Username: <input type=text name=user value="foo"><br>
-        Password: <input type=text name=password value="foo123"><br>
+        Username: <input type=text size=10 name=user value="foo"><br>
+        Password: <input type=text size=10 name=password value="foo123"><br>
 
     <P>Please choose the CSP you wish to use from the list below (the default is probably good):</P>
     <SELECT NAME="CspProvider">

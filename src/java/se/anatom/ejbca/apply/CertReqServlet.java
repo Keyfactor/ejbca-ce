@@ -64,9 +64,10 @@ public class CertReqServlet extends HttpServlet {
     static private Category cat = Category.getInstance( CertReqServlet.class.getName() );
 
     private static final String COMMAND_PROPERTY_NAME = "command";
-    private static final String COMMAND_NSROOTCERT = "nsrootcert";
-    private static final String COMMAND_IEROOTCERT = "ierootcert";
-    private static final String COMMAND_ROOTCERT = "rootcert";
+    private static final String COMMAND_NSCACERT = "nscacert";
+    private static final String COMMAND_IECACERT = "iecacert";
+    private static final String COMMAND_CACERT = "cacert";
+    private static final String LEVEL_PROPERTY_NAME = "level";
 
     private InitialContext ctx = null;
     ISignSessionHome home = null;
@@ -142,26 +143,37 @@ public class CertReqServlet extends HttpServlet {
         command = req.getParameter(COMMAND_PROPERTY_NAME);
         if (command == null)
             command = "";
-        // TODO: we should install COMPLETE certificate chain here, could be more than just Root CA cert
+        // If we don't ask for any level of CA, assume root 
+        String lev = req.getParameter(LEVEL_PROPERTY_NAME);
+        int level = 0;
+        if (lev != null)
+            level = Integer.parseInt(lev);
+        // Root CA is level 0, next below root level 1 etc etc
         try {
             ISignSessionRemote ss = home.create();
             Certificate[] chain = ss.getCertificateChain();
-            X509Certificate rootcert = (X509Certificate)chain[chain.length-1];
-            if (command.equalsIgnoreCase(COMMAND_NSROOTCERT)) {
+            // chain.length-1 is last cert in chain (root CA)
+            if ( (chain.length-1-level) < 0 ) {
+                PrintStream ps = new PrintStream(res.getOutputStream());
+                ps.println("No CA certificate of level "+level+"exist.");
+                cat.error("No CA certificate of level "+level+"exist.");
+                return;
+            }                
+            X509Certificate cacert = (X509Certificate)chain[chain.length-1-level];
+            byte[] enccert = cacert.getEncoded();
+            if (command.equalsIgnoreCase(COMMAND_NSCACERT)) {
                     res.setContentType("application/x-x509-ca-cert");
-                    byte[] enccert = rootcert.getEncoded();
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);
-                    cat.debug("Sent root cert to NS client.");
-            } else if (command.equalsIgnoreCase(COMMAND_IEROOTCERT)) {
+                    cat.debug("Sent CA cert to NS client.");
+            } else if (command.equalsIgnoreCase(COMMAND_IECACERT)) {
                     res.setHeader("Content-disposition", "attachment; filename=ca.crt");
                     res.setContentType("application/octet-stream");
-                    byte[] enccert = rootcert.getEncoded();
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);
-                    cat.debug("Sent root cert to IE client.");
-            } else if (command.equalsIgnoreCase(COMMAND_ROOTCERT)) {
-                    byte[] b64cert = Base64.encode(rootcert.getEncoded());
+                    cat.debug("Sent CA cert to IE client.");
+            } else if (command.equalsIgnoreCase(COMMAND_CACERT)) {
+                    byte[] b64cert = Base64.encode(enccert);
                     res.setHeader("Content-disposition", "attachment; filename=ca.pem");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(b64cert.length+52);
@@ -170,17 +182,17 @@ public class CertReqServlet extends HttpServlet {
                     ps.println("-----BEGIN CERTIFICATE-----");
                     ps.println(new String(b64cert));
                     ps.println("-----END CERTIFICATE-----");
-                    cat.debug("Sent root cert to client.");
+                    cat.debug("Sent CA cert to client.");
             } else {
                 res.setContentType("text/plain");
-                res.getOutputStream().println("Commands=nsrootcert || isrootcert");
+                res.getOutputStream().println("Commands="+COMMAND_NSCACERT+" || "+COMMAND_IECACERT+" || "+COMMAND_CACERT);
                 return;
             }
         } catch (Exception e) {
             PrintStream ps = new PrintStream(res.getOutputStream());
-            ps.println("Error getting root certificate:");
+            ps.println("Error sending CA certificate:");
             e.printStackTrace(ps);
-            cat.error("Error sending root cert.");
+            cat.error("Error sending CA cert.");
             cat.debug(e);
             return;
         }
