@@ -10,12 +10,14 @@ import se.anatom.ejbca.ra.IUserAdminSession;
 
 /** Base for RA commands, contains comom functions for RA operations
  *
- * @version $Id: BaseRaAdminCommand.java,v 1.1 2002-04-13 19:00:56 anatom Exp $
+ * @version $Id: BaseRaAdminCommand.java,v 1.2 2002-04-14 08:49:31 anatom Exp $
  */
 public abstract class BaseRaAdminCommand extends BaseAdminCommand {
 
-    /** UserAdminSession handle */
-    IUserAdminSession cacheAdmin;
+    /** UserAdminSession handle, not static since different object should go to different session beans concurrently */
+    private IUserAdminSession cacheAdmin;
+    /** Handle to AdminSessionHome */
+    private static IUserAdminSessionHome cacheHome;
     
     /** Creates a new instance of BaseRaAdminCommand */
     public BaseRaAdminCommand(String[] args) {
@@ -30,10 +32,12 @@ public abstract class BaseRaAdminCommand extends BaseAdminCommand {
         debug(">getAdminSession()");
         try {
             if( cacheAdmin == null ) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup("UserAdminSession");
-                IUserAdminSessionHome adminhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-                cacheAdmin = adminhome.create();
+                if (cacheHome == null) {
+                    Context jndiContext = getInitialContext();
+                    Object obj1 = jndiContext.lookup("UserAdminSession");
+                    cacheHome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
+                }
+                cacheAdmin = cacheHome.create();
             }
             debug("<getAdminSession()");
             return  cacheAdmin;

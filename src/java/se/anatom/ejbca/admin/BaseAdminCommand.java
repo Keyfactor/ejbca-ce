@@ -7,7 +7,7 @@ import org.apache.log4j.*;
 
 /** Base for all AdminCommands, contains functions for getting initial context and logging
  *
- * @version $Id: BaseAdminCommand.java,v 1.3 2002-04-13 19:00:56 anatom Exp $
+ * @version $Id: BaseAdminCommand.java,v 1.4 2002-04-14 08:49:31 anatom Exp $
  */
 public abstract class BaseAdminCommand implements IAdminCommand {
 
@@ -20,7 +20,7 @@ public abstract class BaseAdminCommand implements IAdminCommand {
     private static InitialContext cacheCtx = null;
     
     /** holder of argument array */
-    String[] args = null;
+    protected String[] args = null;
     
     /** Creates a new instance of BaseAdminCommand */
     public BaseAdminCommand(String[] args) {
