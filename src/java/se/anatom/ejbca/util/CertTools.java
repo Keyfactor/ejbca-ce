@@ -30,7 +30,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.57 2004-05-08 10:12:28 anatom Exp $
+ * @version $Id: CertTools.java,v 1.58 2004-05-22 15:37:57 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -41,6 +41,7 @@ public class CertTools {
     public static final String DNS = "dNSName";
     public static final String URI = "uniformResourceIdentifier";
     public static final String URI1 = "uri";
+    public static final String IPADDR = "iPAddress";
 
     /** Microsoft altName for windows smart card logon */
     public static final String UPN = "upn";

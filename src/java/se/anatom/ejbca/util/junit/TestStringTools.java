@@ -23,7 +23,7 @@ import se.anatom.ejbca.util.StringTools;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestStringTools.java,v 1.4 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: TestStringTools.java,v 1.5 2004-05-22 15:37:55 anatom Exp $
  */
 public class TestStringTools extends TestCase {
     private static Logger log = Logger.getLogger(TestStringTools.class);
@@ -54,9 +54,19 @@ public class TestStringTools extends TestCase {
      */
     public void test01StripWhitespace() throws Exception {
         log.debug(">test01StripWhitespace()");
-
         String test = " foo \t bar \r\n\r\n \f\f\f quu x                  ";
         assertEquals("foobarquux", StringTools.stripWhitespace(test));
         log.debug(">test01StripWhitespace()");
+    }
+    
+    public void test02IpStringToOctets() throws Exception {
+        log.debug(">test02IpStringToOctets()");
+        String ip = "23.34.45.167";
+        byte[] octs = StringTools.ipStringToOctets(ip);
+        //for (int i=0;i<octs.length;i++) {
+        //    log.error("octs["+i+"]="+(int)octs[i]);
+        //}
+        log.debug(">test02IpStringToOctets()");
+        
     }
 }

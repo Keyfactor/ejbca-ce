@@ -46,6 +46,7 @@ import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERInputStream;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -94,12 +95,13 @@ import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.sign.SernoGenerator;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.StringTools;
 
 /**
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.24 2004-05-19 07:01:00 anatom Exp $
+ * @version $Id: X509CA.java,v 1.25 2004-05-22 15:37:58 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -357,6 +359,12 @@ public class X509CA extends CA implements Serializable {
                 GeneralName gn = new GeneralName(new DERIA5String(uri), 6);
                 vec.add(gn);
             }
+            String ipstr = CertTools.getPartFromDN(altName, CertTools.IPADDR);
+            if (ipstr != null) {
+                byte[] ipoctets = StringTools.ipStringToOctets(ipstr);
+                GeneralName gn = new GeneralName(new DEROctetString(ipoctets), 7);
+                vec.add(gn);
+            }
             String upn =  CertTools.getPartFromDN(altName, CertTools.UPN);
             if (upn != null) {
                 ASN1EncodableVector v = new ASN1EncodableVector();
@@ -365,7 +373,7 @@ public class X509CA extends CA implements Serializable {
                 //GeneralName gn = new GeneralName(new DERSequence(v), 0);
                 DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
                 vec.add(gn);
-            }
+            }            
             if (vec.size() > 0) {
                 GeneralNames san = new GeneralNames(new DERSequence(vec));
                 certgen.addExtension(X509Extensions.SubjectAlternativeName.getId(), certProfile.getSubjectAlternativeNameCritical(), san);

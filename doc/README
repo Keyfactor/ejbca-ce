@@ -1,4 +1,4 @@
-$Id: README,v 1.138 2004-05-22 12:58:20 anatom Exp $
+$Id: README,v 1.139 2004-05-22 15:37:57 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -454,16 +454,15 @@ may apply for a
 certificate. If email address is set to 'null', no email is put
 in certificates.
 Quote the DN (") so it is treated as one argument.
-Altnames is a string simlar to the DN string nut using
+Altnames is a string simlar to the DN string but using
 alternative names from
 RFC3280, i.e. "rfc822Name=<email>, dNSName=<host name>, uri=<
-http://<whatever>"
+http://<whatever>, iPAddress=10.56.32.245"
 The full list is: otherName, rfc822Name, dNSName, x400Address,
 directoryName,
 ediPartyName, uniformResourceIdentifier, iPAddress, registeredID
-Only rfc822Name, dNSName and uniformResourceIdentifier (uri) is
-supported at the
-moment.
+Only rfc822Name, dNSName, iPAddress and uniformResourceIdentifier (uri) is
+supported at the moment. Also the MS UPN is supported.
 * deluser - removes a user from the database, any issued
 certificates
 remain  active and present in the database.

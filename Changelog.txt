@@ -2,6 +2,7 @@
 ---
 Cleaned system.out debug logs.
 Digital signature in default key usage to make ocsp work out of the box.
+Added support for iPAddress alternative name.
 
 3.0 beta 3
 ----------

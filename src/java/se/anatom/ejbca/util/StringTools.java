@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.18 2004-05-06 16:34:39 anatom Exp $
+ * @version $Id: StringTools.java,v 1.19 2004-05-22 15:37:57 anatom Exp $
  */
 public class StringTools {
     private static Logger log = Logger.getLogger(StringTools.class);
@@ -97,5 +97,45 @@ public class StringTools {
         }
 
         return WS.matcher(str).replaceAll("");
+    }
+    
+    /** Converts an IP-address string to octets of binary ints. 
+     * ip is of form a.b.c.d, i.e. at least four octets
+     * @param str string form of ip-address
+     * @return octets, null if input format is invalid
+     */
+    public static byte[] ipStringToOctets(String str) {
+        String[] toks = str.split("[.:]");
+        if (toks.length == 4) {
+            // IPv4 address
+            byte[] ret = new byte[4];
+            for (int i = 0;i<toks.length;i++) {
+                int t = Integer.parseInt(toks[i]);
+                if (t>255) {
+                    log.error("IPv4 address '"+str+"' contains octet > 255.");
+                    return null;
+                }
+                ret[i] = (byte)t;
+            }
+            return ret;
+        }
+        if (toks.length == 8) {
+            // IPv6 address
+            byte[] ret = new byte[16];
+            int ind = 0;
+            for (int i = 0;i<toks.length;i++) {
+                int t = Integer.parseInt(toks[i]);
+                if (t>0xFFFF) {
+                    log.error("IPv6 address '"+str+"' contains part > 0xFFFF.");
+                    return null;
+                }
+                int b1 = t & 0x00FF;
+                ret[ind++] = (byte)b1;
+                int b2 = t & 0xFF00;
+                ret[ind++] = (byte)b2;
+            }
+        }
+        log.error("Not a IPv4 or IPv6 address.");
+        return null;
     }
 } // StringTools
