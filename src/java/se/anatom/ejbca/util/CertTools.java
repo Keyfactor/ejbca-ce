@@ -19,14 +19,11 @@ import org.bouncycastle.asn1.DERObjectIdentifier;
 
 import org.apache.log4j.*;
 
-import se.anatom.ejbca.util.Base64;
-import se.anatom.ejbca.util.Hex;
-import se.anatom.ejbca.util.StringTools;
 
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.14 2002-08-02 09:23:16 anatom Exp $
+ * @version $Id: CertTools.java,v 1.15 2002-08-11 18:08:47 anatom Exp $
  */
 public class CertTools {
 
@@ -36,11 +33,48 @@ public class CertTools {
     public CertTools() {
     }
 
+    private static DERObjectIdentifier getOid(String o) {
+    	if (o.trim().equalsIgnoreCase("C")) {
+    		return X509Name.C;
+    	}
+       if (o.trim().equalsIgnoreCase("DC")) {
+            return X509Name.DC;
+        }
+        if (o.trim().equalsIgnoreCase("ST")) {
+            return X509Name.ST;
+        }
+        if (o.trim().equalsIgnoreCase("L")) {
+            return X509Name.L;
+        }
+        if (o.trim().equalsIgnoreCase("O")) {
+            return X509Name.O;
+        }
+        if (o.trim().equalsIgnoreCase("OU")) {
+            return X509Name.OU;
+        }
+        if (o.trim().equalsIgnoreCase("T")) {
+            return X509Name.T;
+        }
+        if (o.trim().equalsIgnoreCase("SN")) {
+            return X509Name.SN;
+        }
+        if (o.trim().equalsIgnoreCase("CN")) {
+            return X509Name.CN;
+        }
+        if (o.trim().equalsIgnoreCase("EmailAddress")) {
+            return X509Name.EmailAddress;
+        }
+        if (o.trim().equalsIgnoreCase("E")) {
+            return X509Name.EmailAddress;
+        }
+        return null;
+    } // getOid
+    
     /**
      * Creates a (Bouncycastle) X509Name object from a string with a DN.
      * <p>Known OID (with order) are:
      * <pre>
-     * CN, SN, OU, O, L, ST, DC, C
+     * EmailAddress, CN, SN, T, OU, O, L, ST, DC, C
      *
      * @param dn String containing DN that will be transformed into X509Name, The DN string has the format
 "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in the string will be silently dropped.
@@ -53,71 +87,58 @@ public class CertTools {
         String stipeddn = StringTools.strip(dn);
         String trimmeddn = stipeddn.trim();
         StringTokenizer st = new StringTokenizer(trimmeddn, ",=");
-        Hashtable dntable = new Hashtable();
-        String o = null;
-        DERObjectIdentifier oid=null;
-        Collection coll = new ArrayList();
+        // first make two vectors, one with all the C, O, OU etc specifying the order
+        // and one holding the actual values
+        Vector oldordering = new Vector();
+        Vector oldvalues = new Vector();
         while (st.hasMoreTokens()) {
-            o = st.nextToken();
-            if (o.trim().equalsIgnoreCase("C")) {
-                oid = X509Name.C;
-                coll.add(X509Name.C);
+            // Assume this is a pair (CN=xx)
+            String order = st.nextToken().trim();
+            if (st.hasMoreTokens()) {
+                // make lower case so we can easily compare without bothering about case
+                oldordering.add(order.toLowerCase());
+                oldvalues.add(st.nextToken().trim());
             }
-            else if (o.trim().equalsIgnoreCase("DC")) {
-                oid = X509Name.DC;
-                coll.add(X509Name.DC);
-            }
-            else if (o.trim().equalsIgnoreCase("ST")) {
-                oid = X509Name.ST;
-                coll.add(X509Name.ST);
-            }
-            else if (o.trim().equalsIgnoreCase("L")) {
-                oid = X509Name.L;
-                coll.add(X509Name.L);
-            }
-            else if (o.trim().equalsIgnoreCase("O")) {
-                oid = X509Name.O;
-                coll.add(X509Name.O);
-            }
-            else if (o.trim().equalsIgnoreCase("OU")) {
-                oid = X509Name.OU;
-                coll.add(X509Name.OU);
-            }
-            else if (o.trim().equalsIgnoreCase("SN")) {
-                oid = X509Name.SN;
-                coll.add(X509Name.SN);
-            }
-            else if (o.trim().equalsIgnoreCase("CN")) {
-                oid = X509Name.CN;
-                coll.add(X509Name.CN);
-            }
-            else if (o.trim().equalsIgnoreCase("EmailAddress")) {
-                oid = X509Name.EmailAddress;
-                coll.add(X509Name.EmailAddress);
-            }
-            else
-                oid=null; // Just drop unknown entries in the DN
-            if (oid != null)
-                dntable.put(oid, st.nextToken());
         }
-        Vector order = new Vector();
-        order.add(X509Name.EmailAddress);
-        order.add(X509Name.CN);
-        order.add(X509Name.SN);
-        order.add(X509Name.OU);
-        order.add(X509Name.O);
-        order.add(X509Name.L);
-        order.add(X509Name.ST);
-        order.add(X509Name.DC);
-        order.add(X509Name.C);
-        order.retainAll(coll);
-
-        cat.debug(order.toString());
-        cat.debug(dntable.toString());
-
+        // Now in the specified order, move from oldordering to newordering, reshuffling as we go along
+        Vector ordering = new Vector();
+        Vector values = new Vector();
+        int index = -1;
+        String[] objects = { "EmailAddress", "E", "CN", "SN", "T", "OU", "O", "L", "ST", "DC", "C" };
+        for (int i = 0;i<objects.length;i++) {
+            //cat.debug("Looking for "+objects[i]);
+            String object = objects[i].toLowerCase();
+            while ((index = oldordering.indexOf(object)) != -1) {
+                //cat.debug("Found 1 "+object+" at index " + index);
+                if (getOid(object) != null) {
+                    //cat.debug("Added "+object+", "+oldvalues.elementAt(index));
+                    ordering.add(getOid(object));
+                    values.add(oldvalues.elementAt(index));
+                    // remove from the old vectors, so we start clean the next round
+                    boolean ret = oldordering.remove(object);
+                    //cat.debug("oldordering.remove "+ret);
+                    String foo = (String)oldvalues.remove(index);
+                    //cat.debug("oldvalues.remove "+foo);
+                    index = -1;
+                }
+            }
+        }
+        /*
+        if (cat.isDebugEnabled()) {
+            Iterator i1 = ordering.iterator();
+            Iterator i2 = values.iterator();
+            cat.debug("Order: ");
+            while (i1.hasNext()) {
+                cat.debug(((DERObjectIdentifier)i1.next()).getId());
+            }
+            cat.debug("Values: ");
+            while (i2.hasNext()) {
+                cat.debug((String)i2.next());
+            }
+        } */
         cat.debug("<stringToBcX509Name");
-        return new X509Name(order, dntable);
-    }
+        return new X509Name(ordering, values);
+    } // stringToBcX509Name
 
     /**
      * Every DN-string should look the same.
@@ -157,7 +178,7 @@ public class CertTools {
         StringTokenizer st = new StringTokenizer(trimmeddn, ",");
         while (st.hasMoreTokens()) {
             o = st.nextToken();
-            cat.debug("checking: "+o.trim().substring(0,dnpart.length()));
+            //cat.debug("checking: "+o.trim().substring(0,dnpart.length()));
             if (o.trim().substring(0,dnpart.length()).equalsIgnoreCase(dnpart)) {
                 part = o.trim().substring(dnpart.length());
                 break;

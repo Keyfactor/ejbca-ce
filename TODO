@@ -1,4 +1,4 @@
-$Id: TODO,v 1.41 2002-08-11 08:44:07 anatom Exp $
+$Id: TODO,v 1.42 2002-08-11 18:08:49 anatom Exp $
 
 V 1.x
 -----
@@ -11,8 +11,6 @@ V 2.x
 - Fix user 'walter' in admin web-GUI.
 - Remote secure administration through browser CA-admin and RA-admin.
 - Add new elements in DN (from BC 114) in CertTools.
-- Make EJBCA handle DNs like "cn=jean,cn=EJBCA,dc=home,dc=jean" for
-ActiveDirectory.
 - Make to work with JDK 1.3, problems with importing certificate chains in jks
 using keytool, as well as JDK 1.4 stuff.
 - Verify support for different databases.
