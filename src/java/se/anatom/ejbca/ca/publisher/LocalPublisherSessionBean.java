@@ -15,8 +15,6 @@ package se.anatom.ejbca.ca.publisher;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -27,8 +25,6 @@ import java.util.Random;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 

@@ -15,15 +15,12 @@ package se.anatom.ejbca.keyrecovery;
 
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Iterator;
+
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRequest;
@@ -43,7 +40,7 @@ import se.anatom.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.20 2004-06-10 15:05:45 sbailliez Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.21 2004-06-19 15:27:23 anatom Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"

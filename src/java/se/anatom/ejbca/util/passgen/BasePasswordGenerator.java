@@ -13,14 +13,13 @@
 
 package se.anatom.ejbca.util.passgen;
 import java.util.Random;
-import java.util.Date;
 
 /**
  * BasePasswordGenerator is a baseclass for generating random passwords.
  * Inheriting classes should overload the constants USEDCHARS, MIN_CHARS
  * and MAX_CHARS.
  *
- * @version $Id: BasePasswordGenerator.java,v 1.5 2004-06-10 15:10:46 sbailliez Exp $
+ * @version $Id: BasePasswordGenerator.java,v 1.6 2004-06-19 15:27:22 anatom Exp $
  */
 public abstract class BasePasswordGenerator implements IPasswordGenerator{
 

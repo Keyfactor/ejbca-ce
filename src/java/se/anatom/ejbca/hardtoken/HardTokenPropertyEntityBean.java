@@ -13,10 +13,7 @@
 
 package se.anatom.ejbca.hardtoken;
 
-import javax.ejb.CreateException;
-
 import se.anatom.ejbca.BasePropertyEntityBean;
-import se.anatom.ejbca.PropertyEntityPK;
 
 
 
