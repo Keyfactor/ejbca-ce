@@ -5,7 +5,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.3 2004-01-06 14:20:13 anatom Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.4 2004-01-07 13:28:30 anatom Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -21,7 +21,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private final  String[] DEFAULTPOSSIBLELOGENTRIESPERPAGE = {"10" , "25" , "50" , "100", "200", "400"};
 
     // Path added to baseurl used as default vaule in CRLDistributionPointURI field in Certificate Profile definitions.
-    private final  String   DEFAULTCRLDISTURIPATH  = "ejbca/webdist/certdist?cmd=crl";
+    private final  String   DEFAULTCRLDISTURIPATH  = "ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3DTestCA%2CO%3DAnaTom%2CC%3DSE";
 
     // Path added to baseurl used as default vaule in OCSP Service Locator URI field in Certificate Profile definitions.
 	private final  String   DEFAULTOCSPSERVICELOCATORURIPATH = "ejbca/publicweb/status/ocsp";

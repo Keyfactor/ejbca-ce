@@ -33,6 +33,7 @@ import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
+import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.CRLNumber;
 import org.bouncycastle.asn1.x509.DistributionPoint;
@@ -44,6 +45,7 @@ import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.X509ObjectIdentifiers; 
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.PKCS7SignedData;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -72,7 +74,7 @@ import se.anatom.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.13 2004-01-06 14:28:33 anatom Exp $
+ * @version $Id: X509CA.java,v 1.14 2004-01-07 13:28:30 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -359,12 +361,10 @@ public class X509CA extends CA implements Serializable {
          // Authority Information Access (OCSP url)
          if (certProfile.getUseOCSPServiceLocator() == true) {
              String ocspUrl = certProfile.getOCSPServiceLocatorURI();
-             DERObjectIdentifier authorityInfoAccess= new DERObjectIdentifier("1.3.6.1.5.5.7.1.1");
-             DERObjectIdentifier ocspAccessMethod = new DERObjectIdentifier("1.3.6.1.5.5.7.48.1");
              // OCSP access location is a URL (GeneralName no 6)
              GeneralName ocspLocation = new GeneralName(new DERIA5String(ocspUrl), 6);
-             certgen.addExtension(authorityInfoAccess.getId(),
-                 false, new AuthorityInformationAccess(ocspAccessMethod, ocspLocation));
+             certgen.addExtension(X509Extensions.AuthorityInfoAccess.getId(),
+                 false, new AuthorityInformationAccess(X509ObjectIdentifiers.ocspAccessMethod, ocspLocation));
          }
 		 
         X509Certificate cert =
@@ -509,98 +509,5 @@ public class X509CA extends CA implements Serializable {
         
       return subjectx509name;  
     }
-    
 
-// Inner class
-// TODO: remove when this is incorporated in BC
-   /**
-    * <pre>
-    * id-pe-authorityInfoAccess OBJECT IDENTIFIER ::= { id-pe 1 }
-    *
-    * AuthorityInfoAccessSyntax  ::=
-    *      SEQUENCE SIZE (1..MAX) OF AccessDescription
-    * AccessDescription  ::=  SEQUENCE {
-    *       accessMethod          OBJECT IDENTIFIER,
-    *       accessLocation        GeneralName  }
-    *
-    * id-ad OBJECT IDENTIFIER ::= { id-pkix 48 }
-    * id-ad-caIssuers OBJECT IDENTIFIER ::= { id-ad 2 }
-    * id-ad-ocsp OBJECT IDENTIFIER ::= { id-ad 1 }
-    * </pre>
-    *
-    */
-   public class AuthorityInformationAccess
-       implements DEREncodable
-   {
-       DERObjectIdentifier accessMethod=null;
-       GeneralName accessLocation=null;
-
-       public AuthorityInformationAccess getInstance(
-           Object  obj)
-       {
-           if (obj instanceof AuthorityInformationAccess)
-           {
-               return (AuthorityInformationAccess)obj;
-           }
-           else if (obj instanceof ASN1Sequence)
-           {
-               return new AuthorityInformationAccess((ASN1Sequence)obj);
-           }
-
-           throw new IllegalArgumentException("unknown object in factory");
-       }
-    
-       public AuthorityInformationAccess(
-           ASN1Sequence   seq)
-       {
-           Enumeration     e = seq.getObjects();
-
-           if (e.hasMoreElements())
-           {
-               DERSequence vec= (DERSequence)e.nextElement();
-               if (vec.size() != 2) {
-                   throw new IllegalArgumentException("wrong number of elements in inner sequence");                   
-               }
-               accessMethod = (DERObjectIdentifier)vec.getObjectAt(0);
-               accessLocation = (GeneralName)vec.getObjectAt(1);
-           }
-       }
-
-       /**
-        * create an AuthorityInformationAccess with the oid and location provided.
-        */
-       public AuthorityInformationAccess(
-           DERObjectIdentifier oid,
-           GeneralName location)
-       {
-           accessMethod = oid;
-           accessLocation = location;
-       }
-
-        /**
-        * <pre>
-        * AuthorityInfoAccessSyntax  ::=
-        *      SEQUENCE SIZE (1..MAX) OF AccessDescription
-        * AccessDescription  ::=  SEQUENCE {
-        *       accessMethod          OBJECT IDENTIFIER,
-        *       accessLocation        GeneralName  }
-        * </pre>
-        */
-       public DERObject getDERObject()
-       {
-           ASN1EncodableVector accessDescription  = new ASN1EncodableVector();
-           accessDescription.add(accessMethod);
-           accessDescription.add(accessLocation);
-           ASN1EncodableVector vec = new ASN1EncodableVector();
-           vec.add(new DERSequence(accessDescription));
-           return new DERSequence(vec);
-       }
-
-       public String toString()
-       {
-           return ("AuthorityInformationAccess: Oid(" + this.accessMethod.getId() + ")");
-       }
-   }
-          
-    
 }
