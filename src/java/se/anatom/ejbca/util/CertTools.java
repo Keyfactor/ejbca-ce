@@ -23,14 +23,14 @@ import org.apache.log4j.*;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.18 2002-09-16 15:21:23 anatom Exp $
+ * @version $Id: CertTools.java,v 1.19 2002-09-21 14:34:09 anatom Exp $
  */
 public class CertTools {
 
     private static Category cat = Category.getInstance(CertTools.class.getName());
 
-    /** Creates new CertTools */
-    public CertTools() {
+    /** inhibits creation of new CertTools */
+    private CertTools() {
     }
 
     private static DERObjectIdentifier getOid(String o) {
