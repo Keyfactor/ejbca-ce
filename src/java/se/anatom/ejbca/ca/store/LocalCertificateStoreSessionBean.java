@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.Base64;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.16 2002-05-26 14:25:59 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.17 2002-05-26 22:48:05 herrvendil Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean implements ICertificateStoreSession {
     
@@ -257,38 +257,23 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
     /**
      * Implements ICertificateStoreSession::findCertificatesBySerno.
      */
-    public Certificate[] findCertificatesBySerno(BigInteger serno) throws RemoteException{
+    public Collection findCertificatesBySerno(BigInteger serno) throws RemoteException{
         debug(">findCertificateBySerno(),  serno="+serno);
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet result = null;
-        try{
-            con = getConnection();
-            ps = con.prepareStatement("select b64cert from CertificateData where serno=?");
-            ps.setString(1, serno.toString());
-            result = ps.executeQuery();
-            Vector vect = new Vector();
-            while(result.next()){
-                vect.addElement(CertTools.getCertfromByteArray(Base64.decode(result.getString(1).getBytes())));
+        try {
+            Collection coll = certHome.findBySerialNumber(serno.toString());
+            Vector ret = new Vector();
+            if (coll != null) {
+                Iterator iter = coll.iterator();
+                while (iter.hasNext()) {
+                    ret.addElement(((CertificateDataLocal)iter.next()).getCertificate());
+                }
             }
-            debug("found "+vect.size()+" certificate(s) with Serno<"+serno);
-            X509Certificate[] returnArray = new X509Certificate[vect.size()];
-            vect.copyInto(returnArray);
-            debug("<findCertificatesBySerno(), Serno="+serno);
-            return returnArray;
+            debug("<findCertificateBySerno(), serno="+serno);
+            return ret;
+        } catch (javax.ejb.FinderException fe) {
+            cat.error(fe);
+            throw new EJBException(fe);
         }
-        catch (Exception e) {
-            throw new EJBException(e);
-        }
-        finally {
-            try {
-                if (result != null) result.close();
-                if (ps != null) ps.close();
-                if (con!= null) con.close();
-            } catch(SQLException se) {
-                se.printStackTrace();
-            }   
-        }        
     } // findCertificateBySerno
 
     /**

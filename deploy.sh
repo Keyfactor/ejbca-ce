@@ -40,5 +40,6 @@ fi
 # Deploy jar and war files
 cp dist/ejbca-ca.ear $JBOSS_HOME/server/default/deploy
 cp dist/ra.jar $JBOSS_HOME/server/default/deploy
+cp dist/raadmin.war $JBOSS_HOME/server/default/deploy
 echo Deployed jar- and war-files in $JBOSS_HOME/server/default/deploy
 

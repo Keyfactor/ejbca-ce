@@ -19,7 +19,7 @@ import se.anatom.ejbca.ca.crl.RevokedCertInfo;
  * retrieve CRLs, check for revocation etc. the CertificateStoreSession implements
  * the interface ICertificateStoreSession.
  *
- * @version $Id: ICertificateStoreSession.java,v 1.10 2002-05-26 14:25:59 anatom Exp $
+ * @version $Id: ICertificateStoreSession.java,v 1.11 2002-05-26 22:48:05 herrvendil Exp $
  */
 public interface ICertificateStoreSession extends IPublisherSession {
 
@@ -62,7 +62,7 @@ public interface ICertificateStoreSession extends IPublisherSession {
     * @throws EJBException if a communication or other error occurs.
     *
     */
-    public Certificate[] findCertificatesBySerno(BigInteger serno) throws RemoteException;
+    public Collection findCertificatesBySerno(BigInteger serno) throws RemoteException;
     
    /**
     * Finds certificate which expire within a specified time.

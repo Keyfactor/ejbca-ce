@@ -1,6 +1,6 @@
 @echo off
 rem ----
-rem $Id: deploy.cmd,v 1.13 2002-05-24 08:09:11 anatom Exp $
+rem $Id: deploy.cmd,v 1.14 2002-05-26 22:48:03 herrvendil Exp $
 rem
 rem Deploy script for EJBCA
 rem
@@ -36,6 +36,8 @@ rem Deploy jar and war files
 :deploy
 xcopy dist\ejbca-ca.ear %JBOSS_HOME%\server\default\deploy /Q /Y
 xcopy dist\ra.jar %JBOSS_HOME%\server\default\deploy /Q /Y
+xcopy dist\raadmin.war %JBOSS_HOME%\server\default\deploy /Q /Y
+
 echo Deployed jar- and war-files in %JBOSS_HOME%\server\default\deploy
 goto end
 

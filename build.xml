@@ -30,6 +30,10 @@
   <property name="ra.src" value="${src}/ra" />
   <property name="ra.build" value="${tmp}/ra" />
   <property name="rajar" value="${dist}/ra.jar" />
+  
+  <property name="raadmin.src" value="${src}/ra/web/raadmin" />
+  <property name="raadmin.build" value="${tmp}/ra/web/raadmin" />
+  <property name="raadminjar" value="${dist}/raadmin.war" />  
 
   <property name="caear.src" value="${src}/ca/ear" />
   <property name="caear.build" value="${tmp}/ca/ear" />
@@ -76,7 +80,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- Build ALL                                                           -->
   <!-- =================================================================== -->
   <target name="build" depends="compile, apply.war, webdist.war, ca.jar, 
-ca.ear, ra.jar, admin.jar, sampleauth.war">
+ca.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
   </target>
 
   <!-- =================================================================== -->
@@ -88,6 +92,7 @@ ca.ear, ra.jar, admin.jar, sampleauth.war">
 debug="on"> -->
     <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on">
         <exclude name="**/CVS/**"/>
+        <exclude name="**/raadmin/**"/>
         <include name="**/*.java"/>
     </javac>
     <copy todir="${javasrc}">
@@ -213,7 +218,7 @@ debug="on"> -->
     </copy>
     <copy todir="${webdist.build}/WEB-INF/classes">
         <fileset dir="${build}">
-                <include name="se/anatom/ejbca/webdist/**/*.class"/>
+                <include name="se/anatom/ejbca/webdist/*.class"/>
                 <include 
 name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
@@ -231,6 +236,39 @@ name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
   
     <!-- Jar the webdist.war package together -->
     <jar basedir="${webdist.build}" jarfile="${webdistjar}"/>    
+  </target>
+  
+    <!-- =================================================================== -->
+  <!-- Build raadmin web part                                                    
+-->
+  <!-- =================================================================== -->
+  <target name="raadmin.war" depends="compile">
+    <mkdir    dir="${raadmin.build}"/>
+    <copy todir="${raadmin.build}">
+        <fileset dir="${raadmin.src}"> 
+                <include name="**/*"/>
+        </fileset>
+    </copy>
+    <copy todir="${raadmin.build}/WEB-INF/classes">
+        <fileset dir="${build}">
+                <include name="se/anatom/ejbca/webdist/**/*.class"/>
+                <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
+                <include name="se/anatom/ejbca/ra/*.class"/>
+                <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
+                <include name="se/anatom/ejbca/ca/sign/ISign*.class"/>
+                <include name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
+                <include name="se/anatom/ejbca/util/**/Base64*.class"/>
+                <include name="se/anatom/ejbca/util/**/CertTools*.class"/>
+                <include name="se/anatom/ejbca/util/**/Hex*.class"/>
+                <include name="se/anatom/ejbca/exception/**/*.class"/>
+                <include name="se/anatom/ejbca/ca/exception/**/*.class"/>           
+                <exclude name="se/anatom/ejbca/**/*Test*"/>
+                <exclude name="se/anatom/ejbca/ra/*Bean.class"/>
+        </fileset>
+    </copy>
+  
+    <!-- Jar the webdist.war package together -->
+    <jar basedir="${raadmin.build}" jarfile="${raadminjar}"/>    
   </target>
 
   <!-- =================================================================== -->
