@@ -161,8 +161,8 @@
       <local>se.anatom.ejbca.ra.raadmin.GlobalWebConfigurationDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.raadmin.GlobalWebConfigurationDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
-      <prim-key-class>java.lang.Integer</prim-key-class>            
-      <reentrant>False</reentrant>      
+      <prim-key-class>java.lang.String</prim-key-class>            
+      <reentrant>True</reentrant>      
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>GlobalWebConfigurationDataBean</abstract-schema-name>
       <cmp-field><field-name>configurationId</field-name></cmp-field>

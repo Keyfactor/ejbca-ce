@@ -6,5 +6,6 @@
   ejbcawebbean.initialize(request); 
 %>
  <br>
-Detta är en footer
+ <br>
+<div align="center" id="footer"><i><%=ejbcawebbean.getText("MADEBYPRIMEKEY") %></i></div>
 

@@ -13,10 +13,11 @@ import javax.ejb.FinderException;
 import java.rmi.RemoteException;
 import java.util.Properties;
 import java.util.Collection;
-import java.io.FileInputStream;
 import java.rmi.RemoteException;
 import java.io.IOException;
-import java.io.FileNotFoundException;
+import java.io.Serializable;
+import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Date;
@@ -39,22 +40,25 @@ import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  * @author  Philip Vendil
  */
-public class CAInterfaceBean {
+public class CAInterfaceBean  implements Serializable {
     
     /** Creates a new instance of CaInterfaceBean */
-    public CAInterfaceBean() throws IOException, FileNotFoundException, NamingException, CreateException {
+    public CAInterfaceBean() throws IOException,  NamingException{
          // Get the UserSdminSession instance.
       Properties jndienv = new Properties();
       jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));
       jndicontext = new InitialContext(jndienv);
 
-      Object obj1 = jndicontext.lookup("CertificateStoreSession");
-      certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-      certificatesession = certificatesessionhome.create();       
+      certificatesession = null;       
     }
     
     // Public methods
     public CertificateView[] getCAInfo() throws RemoteException, NamingException, CreateException {
+      if(certificatesession == null){
+         Object obj1 = jndicontext.lookup("CertificateStoreSession");
+         certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
+         certificatesession = certificatesessionhome.create();     
+      }  
       CertificateView[] returnval = null;  
       ISignSessionHome home = (ISignSessionHome)javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RSASignSession"), ISignSessionHome.class );
       ISignSessionRemote ss = home.create();
@@ -79,16 +83,36 @@ public class CAInterfaceBean {
       home.create().run();      
     }
         
-    public int getLastCRLNumber() throws RemoteException  {
+    public int getLastCRLNumber() throws RemoteException, NamingException, CreateException   {
+      if(certificatesession == null){
+         Object obj1 = jndicontext.lookup("CertificateStoreSession");
+         certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
+         certificatesession = certificatesessionhome.create();     
+      }  
       return certificatesession.getLastCRLNumber();  
     }
     
     
     // Private methods
+     // Methods used with serialization
+    private void writeObject(ObjectOutputStream out) throws IOException{
+      // Nothing needs to be done.  
+    }
+      
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException{
+      try{  
+        Properties jndienv = new Properties();
+        jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));
+        jndicontext = new InitialContext(jndienv);
+        certificatesession = null;
+      }catch(Exception e){
+        throw new IOException(e.getMessage());   
+      }
+    }
     
     // Private fields
-    private InitialContext                     jndicontext; 
-    private ICertificateStoreSessionRemote     certificatesession; 
-    private ICertificateStoreSessionHome       certificatesessionhome;   
+    private transient InitialContext                    jndicontext; 
+    private transient ICertificateStoreSessionRemote    certificatesession; 
+    private transient ICertificateStoreSessionHome      certificatesessionhome;   
     
 }

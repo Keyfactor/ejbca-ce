@@ -16,8 +16,10 @@ import java.beans.*;
 import javax.naming.*;
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
+import java.io.Serializable;
+import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileInputStream;
 import java.util.Properties;
 import java.util.Date;
 import java.text.DateFormat;
@@ -43,25 +45,20 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
 public class EjbcaWebBean {
         
     /** Creates a new instance of EjbcaWebBean */
-    public EjbcaWebBean() throws IOException, FileNotFoundException, NamingException, CreateException,
-                                 FinderException, RemoteException{             
-      System.out.println("HERE1");                               
-      globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler();  
-            System.out.println("HERE2");  
+    public EjbcaWebBean() throws IOException, NamingException, CreateException, FileNotFoundException,
+                                 FinderException, RemoteException{              
+      globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler();   
       globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();    
-            System.out.println("HERE3");  
       userspreferences = new UsersPreferenceDataHandler();      
-            System.out.println("HERE4");  
       authorize = new EjbcaAthorization();
-            System.out.println("HERE5");  
-      weblanguages = new WebLanguages(); 
-            System.out.println("HERE6");  
+      weblanguages = new WebLanguages();                                
+      initialized=false;
     }
         
     // Public Methods.
     
         /* Sets the current user */
-    public void initialize(HttpServletRequest request) throws AuthorizationDeniedException, FileNotFoundException, IOException, 
+    public void initialize(HttpServletRequest request) throws AuthorizationDeniedException,  IOException, 
                                                               NamingException, CreateException, java.security.cert.CertificateException,
                                                               java.security.cert.CertificateExpiredException,  java.security.cert.CertificateNotYetValidException,
                                                               javax.ejb.FinderException{
@@ -313,6 +310,7 @@ public class EjbcaWebBean {
     }
     
     public void saveGlobalConfiguration() throws RemoteException{
+      System.out.println("saving global title : " +  globalconfiguration.getEjbcaTitle() );
       globaldataconfigurationdatahandler.saveGlobalConfiguration(globalconfiguration);       
     }
     
@@ -330,8 +328,23 @@ public class EjbcaWebBean {
     }
     
     // Private Methods
- 
+/*     // Methods used with serialization
+    private void writeObject(ObjectOutputStream out) throws IOException{
+      // Nothing needs to be done.  
+    }
       
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException{
+      try{  
+        globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler();   
+        globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();    
+        userspreferences = new UsersPreferenceDataHandler();      
+        authorize = new EjbcaAthorization();
+        weblanguages = new WebLanguages();      
+      }catch(Exception e){
+         throw new IOException(e.getMessage());   
+      }
+      initialized=false;
+    } */
     // Private Fields. 
     private UsersPreferenceDataHandler userspreferences;
     private UserPreference currentuserpreference;

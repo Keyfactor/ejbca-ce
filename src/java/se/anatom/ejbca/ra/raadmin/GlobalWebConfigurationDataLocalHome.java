@@ -16,18 +16,18 @@ import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
 
 public interface GlobalWebConfigurationDataLocalHome extends javax.ejb.EJBLocalHome {
 
-    public GlobalWebConfigurationDataLocal create(Integer id, GlobalConfiguration globalconfiguration)
+    public GlobalWebConfigurationDataLocal create(String id, GlobalConfiguration globalconfiguration)
 
         throws CreateException;
 
 
 
-    public GlobalWebConfigurationDataLocal findByPrimaryKey(Integer id)
+    public GlobalWebConfigurationDataLocal findByPrimaryKey(String id)
 
         throws FinderException;
 
 
-    public GlobalWebConfigurationDataLocal findByConfigurationId(Integer id)
+    public GlobalWebConfigurationDataLocal findByConfigurationId(String id)
 
         throws FinderException;
 

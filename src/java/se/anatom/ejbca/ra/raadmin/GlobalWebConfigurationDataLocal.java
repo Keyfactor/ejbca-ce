@@ -17,9 +17,9 @@ public interface GlobalWebConfigurationDataLocal extends javax.ejb.EJBLocalObjec
 
     // public methods
 
-    public Integer getConfigurationId();
+    public String getConfigurationId();
 
-    public void setConfigurationId(Integer id);
+    public void setConfigurationId(String id);
 
     public GlobalConfiguration getGlobalConfiguration();
 

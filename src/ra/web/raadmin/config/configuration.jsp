@@ -139,6 +139,7 @@
         request.getParameter(BUTTON_PREVIOUS) == null){
  
       // get current global configuration.
+        ejbcawebbean.reloadGlobalConfiguration();
 %>
            <%@ include file="webconfiguration.jsp" %>
 <%  }  %>

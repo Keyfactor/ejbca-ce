@@ -13,8 +13,6 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
  </head>
 <body>
-
-Ejbca huvud är här
-
+<img src="<%= ejbcawebbean.getImagefileInfix("ejbcaheader.jpg") %>" width="800" height="100" border="0">
 </body>
 </html>

@@ -29,26 +29,23 @@ public class GlobalConfigurationDataHandler {
     /** Creates a new instance of GlobalConfigurationDataHandler */
     public GlobalConfigurationDataHandler() throws IOException, FileNotFoundException, NamingException, CreateException,
                                                    FinderException{
-        System.out.println("GlobalConfigurationDataHandler()1");                                        
-        Properties jndienv = new Properties();
-               System.out.println("GlobalConfigurationDataHandler()2");      
+                                       
+        Properties jndienv = new Properties(); 
         jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));   
-               System.out.println("GlobalConfigurationDataHandler()3");      
         InitialContext jndicontext = new InitialContext(jndienv);
         Object obj1 = jndicontext.lookup("RaAdminSession");
-               System.out.println("GlobalConfigurationDataHandler()4");      
         IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, 
                                                                                  IRaAdminSessionHome.class);
-               System.out.println("GlobalConfigurationDataHandler()5");      
-        raadminsession = raadminsessionhome.create(); 
-               System.out.println("GlobalConfigurationDataHandler()6");      
+        raadminsession = raadminsessionhome.create();   
     }
     
     public GlobalConfiguration loadGlobalConfiguration() throws RemoteException, NamingException {
-        GlobalConfiguration ret;
-     
+        GlobalConfiguration ret = null;
+
         ret = raadminsession.loadGlobalConfiguration();  
+        System.out.println(" loadGlobalConfiguration" + ret.getEjbcaTitle()); 
         if(ret == null){
+           System.out.println("new global"); 
            ret = new GlobalConfiguration();    
         }
         return ret;

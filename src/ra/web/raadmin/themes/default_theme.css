@@ -2,14 +2,19 @@
 
 
 <!-- Tags used in main frame -->
-body {font: 8 pt Arial; color: black; margin-left: 0.5in; background: white}
+body { color: black; font-size: 12pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.5in; background-color: white}
 
-body#menu {background: yellow}
+body#menu {color: black; font-size: 12pt; font-weight: bold; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.5in; background-color: white}
+a#menu {color: black}
+a:link#menu {color: black}
+a:vlink#menu {color: black}
+a:active#menu {color: black}
+a:hover#menu {color: black}
 
-h4#alert {color: red}
+h4#alert {color: red font-size: 12pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular;  background-color: white}
 
-tr#Row0 {background: white}
-tr#Row1 {background: gray}
+#Row0 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
+#Row1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #e5ecff }
 
 <!-- Tags used in head frame -->
 

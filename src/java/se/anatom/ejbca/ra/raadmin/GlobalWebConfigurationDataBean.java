@@ -39,9 +39,9 @@ public abstract class GlobalWebConfigurationDataBean implements javax.ejb.Entity
 
 
 
-    public abstract Integer getConfigurationId();
+    public abstract String getConfigurationId();
 
-    public abstract void setConfigurationId(Integer id);
+    public abstract void setConfigurationId(String id);
 
     public abstract GlobalConfiguration getGlobalConfiguration();
 
@@ -72,7 +72,7 @@ public abstract class GlobalWebConfigurationDataBean implements javax.ejb.Entity
 
      **/
 
-    public Integer ejbCreate(Integer id, GlobalConfiguration globalconfiguration) throws CreateException {
+    public String ejbCreate(String id, GlobalConfiguration globalconfiguration) throws CreateException {
 
         setConfigurationId(id);
 
@@ -80,11 +80,11 @@ public abstract class GlobalWebConfigurationDataBean implements javax.ejb.Entity
 
         log.debug("Created global configuration "+id);
 
-        return id;
+        return null;
 
     }
 
-    public void ejbPostCreate(Integer id, GlobalConfiguration globalconfiguration) {
+    public void ejbPostCreate(String id, GlobalConfiguration globalconfiguration) {
 
         // Do nothing. Required.
 

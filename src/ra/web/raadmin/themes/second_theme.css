@@ -1,0 +1,17 @@
+
+
+
+<!-- Tags used in main frame -->
+body {font: 8 pt Arial; color: black; margin-left: 0.5in; background: white}
+
+body#menu {background: yellow}
+
+h4#alert {color: red}
+
+tr#Row0 {background: white}
+tr#Row1 {background: gray}
+
+<!-- Tags used in head frame -->
+
+<!-- Tags used in menu frame -->
+

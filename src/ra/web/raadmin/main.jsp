@@ -15,8 +15,9 @@
 <H3><%= ejbcawebbean.getText("WELCOME") + " " + ejbcawebbean.getUsersCommonName() + " " + ejbcawebbean.getText("TOEJBCA")%> </H3> 
 
 <br><br>
+<p><%= ejbcawebbean.getText("EJBCAISAFULLY") %></p>
+<p><%= ejbcawebbean.getText("WRITTENEXCLUSIVELY") %></p>
 
-Lite text
 
 <% // Include Footer 
    String footurl =   GlobalConfiguration.getFootBanner(); %>

@@ -15,10 +15,11 @@ import java.util.Properties;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Vector;
-import java.io.FileInputStream;
+import java.io.Serializable;
+import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
 import java.rmi.RemoteException;
 import java.io.IOException;
-import java.io.FileNotFoundException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Date;
@@ -45,7 +46,7 @@ public class RAInterfaceBean extends Object implements java.io.Serializable {
     // Public constants.
     
     /** Creates new RaInterfaceBean */
-    public RAInterfaceBean() throws FileNotFoundException, IOException, NamingException, CreateException  {
+    public RAInterfaceBean() throws  IOException, NamingException  {
       users = new UsersView();  
       this.profiledatahandler = new ProfileDataHandler();
       profiles = this.profiledatahandler.loadProfilesData();
@@ -55,18 +56,19 @@ public class RAInterfaceBean extends Object implements java.io.Serializable {
       jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));
       jndicontext = new InitialContext(jndienv);
 
-      Object obj1 = jndicontext.lookup("UserAdminSession");
-      adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-      adminsession = adminsessionhome.create(); 
-      obj1 = jndicontext.lookup("CertificateStoreSession");
-      certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-      certificatesession = certificatesessionhome.create();     
-
+      adminsession = null;
+      certificatesession = null;
+     
     }
     // Public methods.
     
     /* Adds a user to the database, the string array must be in format defined in class UserView. */
-    public void addUser(String[] stringuserdata) throws RemoteException, FinderException{
+    public void addUser(String[] stringuserdata) throws RemoteException, NamingException, FinderException, CreateException{
+        if(adminsession == null){
+          Object obj1 = jndicontext.lookup("UserAdminSession");
+          adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
+          adminsession = adminsessionhome.create(); 
+        }
         UserAdminData user = ( new UserView(stringuserdata)).convertToUserAdminData(); 
         adminsession.addUser(user.getUsername(), user.getPassword(), user.getDN(), user.getEmail(),user.getType());
         // if ra admin have chosen to store the password as cleartext.
@@ -76,13 +78,23 @@ public class RAInterfaceBean extends Object implements java.io.Serializable {
     }
     
     /* Removes a number of users from the database. */
-    public void deleteUsers(String[] usernames) throws RemoteException{
-       for(int i=0; i < usernames.length; i++){
+    public void deleteUsers(String[] usernames) throws RemoteException, NamingException, CreateException{
+      if(adminsession == null){
+        Object obj1 = jndicontext.lookup("UserAdminSession");
+        adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
+        adminsession = adminsessionhome.create(); 
+      } 
+      for(int i=0; i < usernames.length; i++){
          adminsession.deleteUser(usernames[i]);   
-       }
+      }
     }
     
-    public void setUserStatuses(String[] usernames, String status) throws RemoteException, FinderException{
+    public void setUserStatuses(String[] usernames, String status) throws RemoteException, NamingException, FinderException, CreateException{
+      if(adminsession == null){
+        Object obj1 = jndicontext.lookup("UserAdminSession");
+        adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
+        adminsession = adminsessionhome.create(); 
+      }
       int intstatus = 0; 
       try{
         intstatus = Integer.parseInt(status);
@@ -93,6 +105,16 @@ public class RAInterfaceBean extends Object implements java.io.Serializable {
     }
     
     public void revokeUsers(String[] usernames) throws  Exception{
+      if(adminsession == null){
+        Object obj1 = jndicontext.lookup("UserAdminSession");
+        adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
+        adminsession = adminsessionhome.create(); 
+      }
+      if(certificatesession == null){ 
+        Object obj1 = jndicontext.lookup("CertificateStoreSession");
+        certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
+        certificatesession = certificatesessionhome.create();     
+      }
       for(int i=0; i < usernames.length; i++){
         UserAdminData data = adminsession.findUser(usernames[i]);
         adminsession.setUserStatus(usernames[i], UserData.STATUS_REVOKED);
@@ -118,13 +140,23 @@ public class RAInterfaceBean extends Object implements java.io.Serializable {
     }
     
     /* Changes the userdata  */
-    public void changeUserData(String[] userdata) throws RemoteException, FinderException {
+    public void changeUserData(String[] userdata) throws RemoteException, NamingException, FinderException, CreateException {
+      if(adminsession == null){
+        Object obj1 = jndicontext.lookup("UserAdminSession");
+        adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
+        adminsession = adminsessionhome.create(); 
+      }
       adminsession.deleteUser(userdata[UserView.USERNAME]);
       addUser(userdata);
     }
     
     /* Method to filter out a user by it's username */
-    public String[][] filterByUsername(String username) throws RemoteException, FinderException{
+    public String[][] filterByUsername(String username) throws RemoteException, NamingException, FinderException, CreateException{
+       if(adminsession == null){
+         Object obj1 = jndicontext.lookup("UserAdminSession");
+         adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
+         adminsession = adminsessionhome.create(); 
+       }
        UserAdminData[] userarray = new UserAdminData[1];
        UserAdminData user = adminsession.findUser(username);
        
@@ -139,12 +171,22 @@ public class RAInterfaceBean extends Object implements java.io.Serializable {
     }
         
     /* Method used to check if user exists */
-    public boolean userExist(String username) throws RemoteException, FinderException{
+    public boolean userExist(String username) throws RemoteException, NamingException, FinderException, CreateException{
+      if(adminsession == null){
+        Object obj1 = jndicontext.lookup("UserAdminSession");
+        adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
+        adminsession = adminsessionhome.create(); 
+      }  
       return adminsession.findUser(username) != null;  
     }
     
     /* Method to retrieve a user from the database without inserting it into users data, used by 'viewuser.jsp' and 'edituser.jsp' pages*/ 
-    public String[] findUser(String username) throws RemoteException, FinderException{
+    public String[] findUser(String username) throws RemoteException, NamingException, FinderException, CreateException{
+       if(adminsession == null){
+         Object obj1 = jndicontext.lookup("UserAdminSession");
+         adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
+         adminsession = adminsessionhome.create(); 
+       } 
        UserAdminData user = adminsession.findUser(username);
        UserView UserView = new UserView(user);
        return UserView.getValues();
@@ -152,7 +194,12 @@ public class RAInterfaceBean extends Object implements java.io.Serializable {
     }
     
     /* Method to filter out a user by it's status */
-    public String[][] filterByStatus(String status, int index, int size) throws RemoteException, FinderException{
+    public String[][] filterByStatus(String status, int index, int size) throws RemoteException, NamingException, FinderException, CreateException{
+      if(adminsession == null){
+        Object obj1 = jndicontext.lookup("UserAdminSession");
+        adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
+        adminsession = adminsessionhome.create(); 
+      }
       Collection uservector = (Collection) adminsession.findAllUsersByStatus(Integer.parseInt(status));  
       
       users.setUsers(uservector);
@@ -163,7 +210,19 @@ public class RAInterfaceBean extends Object implements java.io.Serializable {
     /* Method that checks if a certificate serialnumber is revoked and returns the user(s), else a null value. */
     public String[][] filterByRevokedCertificates(String serialnumber, int index, int size) throws RemoteException, 
                                                                                                    FinderException, 
-                                                                                                   NumberFormatException{                                                                                            
+                                                                                                   NamingException, 
+                                                                                                   NumberFormatException,
+                                                                                                   CreateException{                                                                                            
+      if(adminsession == null){
+        Object obj1 = jndicontext.lookup("UserAdminSession");
+        adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
+        adminsession = adminsessionhome.create(); 
+      }
+      if(certificatesession == null){ 
+        Object obj1 = jndicontext.lookup("CertificateStoreSession");
+        certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
+        certificatesession = certificatesessionhome.create();     
+      }
       Collection certs =certificatesession.findCertificatesBySerno(new BigInteger(serialnumber,16)); 
       Vector uservector = new Vector();
       String[][] returnval = null;
@@ -185,7 +244,19 @@ public class RAInterfaceBean extends Object implements java.io.Serializable {
     /* Method that lists all users with certificate's that expires within given days. */
     public String[][] filterByExpiringCertificates(String days, int index, int size) throws RemoteException, 
                                                                                             FinderException, 
-                                                                                            NumberFormatException{
+                                                                                            NumberFormatException,
+                                                                                            NamingException,
+                                                                                            CreateException{
+      if(adminsession == null){
+        Object obj1 = jndicontext.lookup("UserAdminSession");
+        adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
+        adminsession = adminsessionhome.create(); 
+      }
+      if(certificatesession == null){ 
+        Object obj1 = jndicontext.lookup("CertificateStoreSession");
+        certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
+        certificatesession = certificatesessionhome.create();     
+      }
       Vector uservector = new Vector();
       String[][] returnval = null;
       
@@ -296,7 +367,12 @@ public class RAInterfaceBean extends Object implements java.io.Serializable {
       return profiles.getDefaultProfileAsString();  
     }
     
-    public void loadCertificates(String subjectdn) throws RemoteException{
+    public void loadCertificates(String subjectdn) throws RemoteException, NamingException, CreateException{
+      if(certificatesession == null){ 
+        Object obj1 = jndicontext.lookup("CertificateStoreSession");
+        certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
+        certificatesession = certificatesessionhome.create();     
+      }
       Collection certs = certificatesession.findCertificatesBySubject(subjectdn);
       
       if(!certs.isEmpty()){
@@ -335,18 +411,39 @@ public class RAInterfaceBean extends Object implements java.io.Serializable {
       return returnval;
     }
     // Private methods.
-    
+     // Methods used with serialization
+    private void writeObject(ObjectOutputStream out) throws IOException{
+      // Nothing needs to be done.  
+    }
+      
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException{
+      try{  
+        users = new UsersView();  
+        this.profiledatahandler = new ProfileDataHandler();
+        profiles = this.profiledatahandler.loadProfilesData();
+      
+        // Get the UserAdminSession instance.
+        Properties jndienv = new Properties(); 
+        jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));
+        jndicontext = new InitialContext(jndienv);
+
+        adminsession = null; 
+        certificatesession = null;  
+      }catch(Exception e){
+        throw new IOException(e.getMessage());   
+      }
+    }    
     // Private fields.
     
-    private Profiles                       profiles;
-    private ProfileDataHandler             profiledatahandler;
+    private transient Profiles                       profiles;
+    private transient ProfileDataHandler             profiledatahandler;
     
-    private InitialContext                 jndicontext; 
-    private IUserAdminSessionRemote        adminsession;
-    private IUserAdminSessionHome          adminsessionhome;
-    private ICertificateStoreSessionRemote certificatesession; 
-    private ICertificateStoreSessionHome   certificatesessionhome;
+    private transient InitialContext                 jndicontext; 
+    private transient IUserAdminSessionRemote        adminsession;
+    private transient IUserAdminSessionHome          adminsessionhome;
+    private transient ICertificateStoreSessionRemote certificatesession; 
+    private transient ICertificateStoreSessionHome   certificatesessionhome;
     
-    private UsersView                      users;
-    private CertificateView[]              certificates;
+    private transient UsersView                      users;
+    private transient CertificateView[]              certificates;
 }

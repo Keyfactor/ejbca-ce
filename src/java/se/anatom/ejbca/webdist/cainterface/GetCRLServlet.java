@@ -52,8 +52,6 @@ public class GetCRLServlet extends HttpServlet {
             jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));
             ctx = new InitialContext(jndienv);
             
-            /*storehome = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
-            ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );*/
         } catch( Exception e ) {
             throw new ServletException(e);
         }
@@ -90,13 +88,14 @@ public class GetCRLServlet extends HttpServlet {
            throw new java.io.IOException("Authorization Denied");  
         }
         
-        try {
-          storehome = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
-                     ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
-        }catch(Exception e){
-           throw new ServletException(e);
+        try{
+          if(storehome == null){
+            storehome = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
+              ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );           
+          }
+        } catch(Exception e){
+           throw new java.io.IOException("Authorization Denied");  
         }
-        
         String command;
         // Keep this for logging.
         String remoteAddr = req.getRemoteAddr();

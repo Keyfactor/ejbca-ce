@@ -47,7 +47,7 @@
    try{
      if(ejbcawebbean.isAuthorized(MAIN_LINK)){ %>
      <br>
-     <A href="<%=MAIN_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("MAINPAGE") %></A>     
+     <A href="<%=MAIN_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("MAINPAGE") %></A>     
      <br>
 
 <%    }
@@ -56,7 +56,7 @@
    try{
      if(ejbcawebbean.isAuthorized(CA_LINK)){ %>
      <br>
-     <A href='<%= CA_LINK %>' target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("CAFUNCTIONS") %></a>
+     <A href='<%= CA_LINK %>' target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("CAFUNCTIONS") %></a>
      <br>
 
 <%    }
@@ -66,9 +66,10 @@
     // If authorized to edit the ra profiles then display related links.
     try{
       if(ejbcawebbean.isAuthorized(RA_EDITPROFILESLINK)){ 
-           raheaderprinted=true;%>
+           raheaderprinted=true;%> 
+           <br>  
            <%=ejbcawebbean.getText("RAFUNCTIONS")+"<br>" %>
-           &nbsp;&nbsp;<A href='<%= RA_EDITPROFILESLINK %>' target="<%=GlobalConfiguration.MAINFRAME %>"> 
+           &nbsp;&nbsp;<A href='<%= RA_EDITPROFILESLINK %>' target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"> 
            <%=ejbcawebbean.getText("EDITPROFILES") %></a><br><br>
 
 <%   }
@@ -80,9 +81,9 @@
               out.write(ejbcawebbean.getText("RAFUNCTIONS")+"<br>"); 
               raheaderprinted=true;
             }  %>
-           &nbsp;&nbsp;<A href='<%= RA_ADDUSERLINK %>' target="<%=GlobalConfiguration.MAINFRAME %>"> 
+           &nbsp;&nbsp;<A href='<%= RA_ADDUSERLINK %>' target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"> 
            <%=ejbcawebbean.getText("ADDUSER") %></a><br>
-           &nbsp;&nbsp;<A href='<%=RA_LISTUSERSLINK %>' target="<%=GlobalConfiguration.MAINFRAME %>"> 
+           &nbsp;&nbsp;<A href='<%=RA_LISTUSERSLINK %>' target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"> 
            <%=ejbcawebbean.getText("LISTUSERS") %></a><br>
   
 <%   }
@@ -92,7 +93,7 @@
       if(ejbcawebbean.isAuthorized(CONFIGURATION_LINK)){ %>
    <br>
    <br>
-   <A href="<%= CONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("SYSTEMCONFIGURATION") %></A>
+   <A href="<%= CONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("SYSTEMCONFIGURATION") %></A>
    <br>
 <%   }
    }catch(AuthorizationDeniedException e){}
@@ -100,7 +101,7 @@
     try{
       if(ejbcawebbean.isAuthorized(AUTHORIZATION_LINK)){ %>
    
-   <A href="<%= AUTHORIZATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("AUTHORIZATION") %></A>
+   <A href="<%= AUTHORIZATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("AUTHORIZATION") %></A>
    <br>
 <%   }
    }catch(AuthorizationDeniedException e){}
@@ -109,7 +110,7 @@
       if(ejbcawebbean.isAuthorized(USERPREFERENCES_LINK)){ %>
      <br>
      <br>
-     <A href="<%= USERPREFERENCES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("USERPREFERENCES") %></A>
+     <A href="<%= USERPREFERENCES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("USERPREFERENCES") %></A>
      <br>
 <%   }
    }catch(AuthorizationDeniedException e){
@@ -119,7 +120,7 @@
    try{
      if(ejbcawebbean.isAuthorized(HELP_LINK)){ %>
      <br><br><br>
-     <u><A onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("index_help.html") %>")'><%=ejbcawebbean.getText("HELP") %></A></u>
+     <u><A onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("index_help.html") %>")' id="menu"><%=ejbcawebbean.getText("HELP") %></A></u>
 
 <%   }
     }catch(AuthorizationDeniedException e){}%>

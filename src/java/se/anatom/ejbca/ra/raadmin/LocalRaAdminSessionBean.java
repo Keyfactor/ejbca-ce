@@ -22,7 +22,7 @@ import se.anatom.ejbca.webdist.rainterface.Profile;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.2 2002-06-10 16:21:05 herrvendil Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.3 2002-06-11 01:15:56 herrvendil Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
     
@@ -66,11 +66,14 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * @throws EJBException if a communication or other error occurs.
      */
     public GlobalConfiguration loadGlobalConfiguration()  {
+        String pk = "0";
         debug(">loadGlobalConfiguration()");
         GlobalConfiguration ret = null;   
         try {
-            GlobalWebConfigurationDataLocal gcdata = globalconfigurationhome.findByConfigurationId(new Integer(0));
+            GlobalWebConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey(pk);
+            info("loading Global Configuration");
             ret = gcdata.getGlobalConfiguration();
+            info("Getting Global Configuration" + gcdata.getGlobalConfiguration().getEjbcaTitle());
         } catch (javax.ejb.FinderException fe) {
              // Create new configuration   
              ret = null;
@@ -88,11 +91,23 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * @throws EJBException if a communication or other error occurs.
      */
     public void saveGlobalConfiguration(GlobalConfiguration globalconfiguration)  {
+        String pk = "0";
         debug(">saveGlobalConfiguration()");
         try {
-            info("Storing Global Configuration");
-            globalconfigurationhome.remove(new Integer(0));
-            GlobalWebConfigurationDataLocal data1= globalconfigurationhome.create(new Integer(0),globalconfiguration);
+            info("Storing Global Configuration" + globalconfiguration.getEjbcaTitle());
+            try{
+
+               GlobalWebConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey(pk);
+               info("old Global Configuration" + gcdata.getGlobalConfiguration().getEjbcaTitle());
+               globalconfigurationhome.remove(pk);
+                                        
+            }catch (javax.ejb.FinderException fe) {
+ 
+            }  
+             catch(Exception e){
+               throw new EJBException(e);              
+             }
+              GlobalWebConfigurationDataLocal data1= globalconfigurationhome.create(pk,globalconfiguration);
         }
         catch (Exception e) {
             error("Storage of globalconfiguration failed.", e);
