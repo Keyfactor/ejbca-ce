@@ -11,9 +11,6 @@
     <property file="${user.home}/ejbca.properties" />
     <property file="ejbca.properties" />
 
-    <!-- Taken from the ejbca.properties 
-  <property name="jboss.home" value="${env.JBOSS_HOME}"/>
-  -->
     <import file="bin/jboss.xml" />
 
     <!-- set global properties for this build -->
@@ -90,23 +87,11 @@
     <!-- those are the default values used within JBoss for easy startup -->
     <property name="datasource.jndi-name" value="ejbcaDS" />
     <property name="database.name" value="hsqldb" />
+    <property name="datasource.mapping" value="Hypersonic SQL" />
     <property name="database.url" value="jdbc:hsqldb:$${jboss.server.data.dir}$${/}hypersonic$${/}ejbcaDB" />
     <property name="database.driver" value="org.hsqldb.jdbcDriver" />
     <property name="database.username" value="sa" />
     <property name="database.password" value="" />
-
-    <!-- 
-        ex: /my/path/myfile-postgres.xml -> /my/path/myfile.xml
-    -->
-    <mapper id="database.mapper" type="regexp" from="^(.*)-${database.name}\.(.*)$$" to="\1.\2" />
-    <!-- does some replace magic to change the datasource jndi name -->
-    <filterchain id="datasource.filters">
-        <tokenfilter>
-            <replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}" />
-            <!-- this is just for temporary compatibility -->
-            <replacestring from="DefaultDS" to="${datasource.jndi-name}" />
-        </tokenfilter>
-    </filterchain>
 
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
@@ -122,6 +107,7 @@
 jboss.home           = ${jboss.home}
 datasource.jndi-name = ${datasource.jndi-name}
 database.name        = ${database.name}
+datasource.mapping   = ${datasource.mapping}
 database.url         = ${database.url}
 database.driver      = ${database.driver}
 database.username    = ${database.username}
@@ -157,7 +143,9 @@ database.password    = ${database.password}
         <taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
             <classpath refid="xdoclet.classpath" />
         </taskdef>
-        <ejbdoclet destdir="${src.gen}" ejbspec="2.0" excludedtags="@version,@author">
+    	<!-- Copy XDoclet merge files to handle database specific settings -->
+        <ejb-merge-copy database="${database.name}" overwrite="true" />
+        <ejbdoclet force="false" destdir="${src.gen}" ejbspec="2.0" excludedtags="@version,@author">
             <fileset dir="${src.java}">
                 <include name="**/*Bean.java" />
                 <exclude name="**/BaseEntityBean.java" />
@@ -178,7 +166,7 @@ database.password    = ${database.password}
                 destdir="${src.dd}/META-INF" 
                 mergeDir="${ejbdd.src}/merge"
                 datasource="java:/${datasource.jndi-name}" 
-                datasourcemapping="Hypersonic SQL" />
+                datasourcemapping="${datasource.mapping}" />
             <jonas version="3.0" 
                 xmlencoding="UTF-8" 
                 destdir="${src.dd}/META-INF" 
@@ -448,36 +436,31 @@ database.password    = ${database.password}
         this macro is a specialized copy for deployment descriptors (dd).
         In the wonderful world of J2EE nothing it is always painful
         Basically it is copying the appropriate DD for each J2EE server
-        and does some magic replace for datasource jndi name:
-        @datasource.jndi-name@
+        and selected database:
+        @database.name
+    -->
+    <macrodef name="ejb-merge-copy">
+        <attribute name="database" />
+        <attribute name="overwrite" default="false" />
+        <sequential>
+            <!-- Remove old possible files -->
+        	<delete dir="${ejbdd.src}/merge/se"/>
+            <!-- jboss configuration -->
+            <copy todir="${ejbdd.src}/merge" overwrite="@{overwrite}" failonerror="false">
+                <fileset dir="${ejbdd.src}/merge/${database.name}" includes="**/*.xml" />
+            </copy>
+        </sequential>
+    </macrodef>
+
+	<!--
+        this macro is a specialized copy for deployment descriptors (dd).
+        In the wonderful world of J2EE nothing it is always painful
     -->
     <macrodef name="ejb-dd-copy">
         <attribute name="todir" />
         <attribute name="dir" />
         <attribute name="overwrite" default="false" />
         <sequential>
-
-            <!-- standard configuration.. should be modified with xdoclet -->
-            <copy todir="@{todir}" overwrite="@{overwrite}">
-                <fileset dir="@{dir}" includes="META-INF/ejb-jar.xml" />
-                <filterchain refid="datasource.filters" />
-            </copy>
-
-            <!-- jboss configuration -->
-            <copy todir="@{todir}" overwrite="@{overwrite}">
-                <fileset dir="@{dir}" includes="META-INF/jbosscmp-jdbc*.xml" />
-                <filterchain refid="datasource.filters" />
-                <mapper refid="database.mapper" />
-            </copy>
-            <copy todir="@{todir}" overwrite="@{overwrite}">
-                <fileset dir="@{dir}" includes="META-INF/jboss.xml" />
-            </copy>
-
-            <!-- weblogic configuration -->
-            <copy todir="@{todir}" overwrite="@{overwrite}">
-                <fileset dir="@{dir}" includes="META-INF/weblogic*.xml" />
-                <filterchain refid="datasource.filters" />
-            </copy>
         </sequential>
     </macrodef>
 
@@ -574,10 +557,10 @@ database.password    = ${database.password}
             <batchtest fork="yes" todir="${test.dir}/reports">
                 <fileset dir="${test.dir}">
                     <include name="**/util/Test*" />
-                    <!-- Messagestesten kräver vissa CA som vi inte kan göra automagisgt
+                    <!-- The Messagesteste demands some CAs that we can't create automagically
                     <include name="**/protocol/Test*" /> -->
                     <include name="**/ra/Test*" />
-                    <!-- LotsosUsers skapar MASSOR med använder, körs bara ibland -->
+                    <!-- LotsosUsers creates LOOOOTS of users, only run once in a while -->
                     <exclude name="**/ra/TestAddLotsofUsers*" />
                     <include name="**/raadmin/Test*" />
                     <include name="**/auth/Test*" />

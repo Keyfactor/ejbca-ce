@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.6 2005-02-23 15:27:00 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.7 2005-03-07 09:39:41 anatom Exp $
 #
 # This is just a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -17,25 +17,43 @@ jboss.home=${env.JBOSS_HOME}
 # default: javac
 #build.compiler=jikes
 
+# ------------- database configuration ------------------------
+
 # jndi name of the datasource to use in deployment descriptors of ejbs
 # default: ejbcaDS
 #datasource.jndi-name=ejbcaDS
 
 # the database name selected for deployment
-# The J2EE server needs to be configured with the appropriate JDBC driver
-# database are: oracle,mssql,mysql,postgres,postgres8,sapdb,hsqldb,sybase
+# All supported databases are defined below, others can easily be added
 # Default: hsqldb
 #database.name=mysql
 #database.name=postgres
+#database.name=mssql2000
+#database.name=oracle
+#database.name=sapdb
+#database.name=sybase
 
-# ------------- database configuration ------------------------
+# the datasource mapping selected for deployment
+# The J2EE server needs to be configured with the appropriate datasource mapping. 
+# For JBoss this maps to a setting in standardjbosscmp-jdbc.xml and must match the database chosen above.
+# All supported mappings are defined below, others can easily be added
+# Default: Hypersonic SQL
+#datasource.mapping=mySQL
+#datasource.mapping=PostgreSQL 7.2
+#datasource.mapping=PostgreSQL 8.0
+#datasource.mapping=MS SQLSERVER2000
+#datasource.mapping=Oracle8
+#datasource.mapping=SapDB
+#datasource.mapping=Sybase
 
 # Database connection url
+# This is the URL used to connect to the database, used to configure a new datasource in JBoss.
 # Default: jdbc:hsqldb:${jboss.server.data.dir}${/}hypersonic${/}ejbcaDB
 #database.url=jdbc:mysql://127.0.0.1:3306/ejbca
 #database.url=jdbc:postgresql://192.168.1.100/ejbca_dev
 
 # JDBC driver classname
+# The J2EE server needs to be configured with the appropriate JDBC driver for the selected database
 # Default: org.hsqldb.jdbcDriver
 #database.driver=com.mysql.jdbc.Driver
 #database.driver=org.postgresql.Driver
