@@ -21,7 +21,7 @@ import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version  $Id: ScepPkiOpHelper.java,v 1.14 2003-06-13 19:15:18 anatom Exp $
+ * @version  $Id: ScepPkiOpHelper.java,v 1.15 2003-06-13 19:55:41 anatom Exp $
  */
 public class ScepPkiOpHelper {
 
@@ -52,7 +52,7 @@ public class ScepPkiOpHelper {
         try {
             reqmsg = new ScepRequestMessage(msg);
             // Get the certificate
-            IResponseMessage resp = signsession.createCertificate(admin, reqmsg, -1, Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
+            IResponseMessage resp = signsession.createCertificate(admin, reqmsg, -1, Class.forName("se.anatom.ejbca.protocol.ScepResponseMessage"));
             if (resp != null) {
                 ret = resp.getResponseMessage();
             }
