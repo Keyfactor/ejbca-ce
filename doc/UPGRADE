@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.3 2004-05-09 09:14:16 anatom Exp $
+$Id: UPGRADE,v 1.4 2004-05-10 08:47:12 anatom Exp $
 
 UPGRADE
 =======
@@ -14,7 +14,7 @@ From EJBCA 2.x to EJBCA 3.x
 EJBCA 3 has several large database changes due to majur new features.
 
 The upgrade process typically consists of:
-1. ant ReplaceDS
+1. ant replaceDS
 2. ant deploy
 3. ant upgrade
 4. restart JBoss

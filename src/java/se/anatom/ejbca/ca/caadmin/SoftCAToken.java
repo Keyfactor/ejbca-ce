@@ -34,7 +34,7 @@ import se.anatom.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.7 2004-05-10 04:35:10 herrvendil Exp $
+ * @version $Id: SoftCAToken.java,v 1.8 2004-05-10 08:47:12 anatom Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
 
@@ -172,6 +172,7 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
        
        // Currently only RSA keys are supported
        KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
+       keystore.load(null,null);
      
        // import sign keys.
        int keysize = ((RSAPublicKey) p12publickey).getModulus().intValue();
