@@ -10,7 +10,7 @@ import javax.ejb.CreateException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
-import se.anatom.ejbca.ca.sign.ISignSession;
+import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.store.IPublisherSession;
 import se.anatom.ejbca.ca.store.IPublisherSessionHome;
@@ -22,7 +22,7 @@ import se.anatom.ejbca.util.CertTools;
 
 /** Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.1 2002-04-13 18:11:27 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.2 2002-06-04 14:12:01 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -30,7 +30,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
     private static ICertificateStoreSession certificateStore = null;
     /** A vector of publishers where certs and CRLs are stored */
     private static Vector publishers = null;
-    
+
     /** Creates a new instance of CaInitCommand */
     public CaInitCommand(String[] args) {
         super(args);
@@ -42,7 +42,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             // First get and publish CA certificates
             Context context = getInitialContext();
             ISignSessionHome signhome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("RSASignSession"), ISignSessionHome.class);
-            ISignSession sign = signhome.create();
+            ISignSessionRemote sign = signhome.create();
             Certificate[] certs = sign.getCertificateChain();
             initCertificateStore();
             for (int j=0;j<certs.length;j++) {
@@ -75,7 +75,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             throw new ErrorAdminCommandException(e);
         }
     } // execute
- 
+
     /**
      * Creates the CertificateStore and Publishers so they are available.
      */
@@ -111,7 +111,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                     debug("Added publisher class '"+pub.getClass().getName()+"'");
                     i++;
                 }
-                
+
             } catch (NamingException e) {
                 // We could not find this publisherm this is not an error
                 debug("Failed to find publisher at index '"+i+"', no more publishers.");
@@ -123,5 +123,5 @@ public class CaInitCommand extends BaseCaAdminCommand {
         }
         debug("<initCertificateStore()");
     } // initCertificateStore
-    
+
 }

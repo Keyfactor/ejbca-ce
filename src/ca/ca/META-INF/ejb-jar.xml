@@ -168,7 +168,7 @@
         <description>
              The Authentication session used to authenticate users when issuing certificates 
              alter this to enable a custom made authentication session implementing the 
-             IAuthenticationSession interface.
+             IAuthenticationSessionLocal interface.
         </description>
         <ejb-ref-name>ejb/AuthenticationSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>

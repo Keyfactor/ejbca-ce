@@ -28,12 +28,12 @@ fi
 # Install BouncyCastle provider and ldap.jar
 if ! [ -f $JBOSS_HOME/lib/jce-jdk13-112.jar ]
 then
-  cp lib/jce-jdk13-112.jar $JBOSS_HOME/lib
+  cp lib/jce-jdk13-112.jar $JBOSS_HOME/lib/server/default
   echo Copied jce-jdk13-112.jar to $JBOSS_HOME/lib. JBoss must be restared.
 fi
 if ! [ -f $JBOSS_HOME/lib/ldap.jar ]
 then
-  cp lib/ldap.jar $JBOSS_HOME/lib
+  cp lib/ldap.jar $JBOSS_HOME/lib/server/default
   echo Copied ldap.jar to $JBOSS_HOME/lib. JBoss must be restared.
 fi
 

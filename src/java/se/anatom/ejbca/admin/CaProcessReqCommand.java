@@ -5,14 +5,14 @@ import java.io.*;
 import javax.naming.Context;
 import java.security.cert.X509Certificate;
 
-import se.anatom.ejbca.ca.sign.ISignSession;
+import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.util.FileTools;
 import se.anatom.ejbca.util.Base64;
 
 /** Receive certification request and create certificate to send back.
  *
- * @version $Id: CaProcessReqCommand.java,v 1.2 2002-04-13 18:40:15 anatom Exp $
+ * @version $Id: CaProcessReqCommand.java,v 1.3 2002-06-04 14:12:01 anatom Exp $
  */
 public class CaProcessReqCommand extends BaseCaAdminCommand {
 
@@ -32,7 +32,7 @@ public class CaProcessReqCommand extends BaseCaAdminCommand {
             String password = args[2];
             String reqfile = args[3];
             String outfile = args[4];
-            
+
             System.out.println("Processing cert request:");
             System.out.println("Username: "+username);
             System.out.println("Password: "+password);
@@ -48,10 +48,10 @@ public class CaProcessReqCommand extends BaseCaAdminCommand {
                 String endKey = "-----END NEW CERTIFICATE REQUEST-----";
                 buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
             }
-            
+
             Context ctx = getInitialContext();
             ISignSessionHome home = (ISignSessionHome)javax.rmi.PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
-            ISignSession ss = home.create();
+            ISignSessionRemote ss = home.create();
             X509Certificate cert = (X509Certificate) ss.createCertificate(username, password, buffer);
             FileOutputStream fos = new FileOutputStream(outfile);
             fos.write("-----BEGIN CERTIFICATE-----\n".getBytes());
@@ -63,5 +63,5 @@ public class CaProcessReqCommand extends BaseCaAdminCommand {
             throw new ErrorAdminCommandException(e);
         }
     } // execute
-    
+
 }

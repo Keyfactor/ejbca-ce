@@ -32,7 +32,7 @@ import junit.framework.*;
 
 /** Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.7 2002-05-29 12:52:51 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.8 2002-06-04 14:11:09 anatom Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -74,7 +74,7 @@ public class TestSignSession extends TestCase {
     static Category cat = Category.getInstance( TestSignSession.class.getName() );
     private static Context ctx;
     private static ISignSessionHome home;
-    private static ISignSession remote;
+    private static ISignSessionRemote remote;
     private static UserDataHome userhome;
     private static KeyPair keys;
 

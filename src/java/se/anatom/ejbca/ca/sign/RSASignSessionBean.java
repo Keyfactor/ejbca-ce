@@ -42,9 +42,9 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.29 2002-05-26 13:28:53 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.30 2002-06-04 14:11:04 anatom Exp $
  */
-public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
+public class RSASignSessionBean extends BaseSessionBean {
 
     private PrivateKey privateKey;
     private X509Certificate rootCert;
@@ -133,7 +133,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             debug("cacertIssuer: " + caCert.getIssuerDN().toString());
             debug("cacertSubject: " + caCert.getSubjectDN().toString());
 
-			// We must keep the same order in the DN in the issuer field in created certificates as there
+            // We must keep the same order in the DN in the issuer field in created certificates as there
             // is in the subject field of the CA-certificate.
             caSubjectName = new X509Name(caCert.getSubjectDN().toString());
             //caSubjectName = CertTools.stringToBcX509Name(caCert.getSubjectDN().toString());

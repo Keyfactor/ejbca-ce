@@ -19,7 +19,7 @@ import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.pkcs.*;
 
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
-import se.anatom.ejbca.ca.sign.ISignSession;
+import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.IJobRunnerSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSession;
@@ -28,7 +28,7 @@ import se.anatom.ejbca.util.Base64;
 
 /** Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.3 2002-05-10 08:29:04 anatom Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.4 2002-06-04 14:12:01 anatom Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
 
@@ -54,7 +54,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         try {
             Context ctx = getInitialContext();
             ISignSessionHome home = (ISignSessionHome)javax.rmi.PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
-            ISignSession ss = home.create();
+            ISignSessionRemote ss = home.create();
             Certificate[] chain = ss.getCertificateChain();
             return chain;
         } catch (Exception e) {

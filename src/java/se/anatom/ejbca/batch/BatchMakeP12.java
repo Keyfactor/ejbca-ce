@@ -32,7 +32,7 @@ import se.anatom.ejbca.ra.IUserAdminSession;
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.UserData;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
-import se.anatom.ejbca.ca.sign.ISignSession;
+import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.KeyTools;
 import se.anatom.ejbca.util.P12toPEM;
@@ -43,7 +43,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.14 2002-05-21 08:52:29 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.15 2002-06-04 14:12:01 anatom Exp $
  *
  */
 
@@ -96,7 +96,7 @@ public class BatchMakeP12 {
     private X509Certificate getCACertificate()
     throws Exception {
         cat.debug(">getCACertificate()");
-        ISignSession ss = signhome.create();
+        ISignSessionRemote ss = signhome.create();
         Certificate[] chain = ss.getCertificateChain();
         X509Certificate rootcert = (X509Certificate)chain[chain.length-1];
         cat.debug("<getCACertificate()");
@@ -111,7 +111,7 @@ public class BatchMakeP12 {
     private Certificate[] getCACertChain()
     throws Exception {
         cat.debug(">getCACertChain()");
-        ISignSession ss = signhome.create();
+        ISignSessionRemote ss = signhome.create();
         Certificate[] chain = ss.getCertificateChain();
         cat.debug("<getCACertChain()");
         return chain;
@@ -177,7 +177,7 @@ public class BatchMakeP12 {
         cat.debug(">createUser: username=" + username + ", hiddenpwd, keys=" + rsaKeys.toString());
 
         // Send the certificate request to the CA
-        ISignSession ss = signhome.create();
+        ISignSessionRemote ss = signhome.create();
         X509Certificate cert = (X509Certificate)ss.createCertificate(username, password, rsaKeys.getPublic());
 
         // Make a certificate chain from the certificate and the CA-certificate

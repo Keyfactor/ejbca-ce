@@ -25,19 +25,19 @@ import se.anatom.ejbca.util.Base64;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.17 2002-05-26 22:48:05 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.18 2002-06-04 14:12:01 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean implements ICertificateStoreSession {
-    
+
     /** Var holding JNDI name of datasource */
     private String dataSource = "java:/DefaultDS";
-    
+
     /** The home interface of Certificate entity bean */
     private CertificateDataLocalHome certHome = null;
-    
+
     /** The home interface of CRL entity bean */
     private CRLDataLocalHome crlHome = null;
-    
+
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -50,7 +50,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         certHome = (CertificateDataLocalHome)lookup("java:comp/env/ejb/CertificateDataLocal");
         debug("<ejbCreate()");
     }
-    
+
     /** Gets connection to Datasource used for manual SQL searches
      * @return Connection
      */
@@ -58,7 +58,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
         return ds.getConnection();
     } //getConnection
-    
+
     /**
      * Implements ICertificateStoreSession::storeCertificate.
      * Implements a mechanism that uses Certificate Entity Bean.
@@ -106,7 +106,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
 
     /**
      * Implements ICertificateStoreSession::listAlLCertificates.
-     * Uses select directly from datasource.    
+     * Uses select directly from datasource.
      */
     public Collection listAllCertificates() {
         debug(">listAllCertificates()");
@@ -182,7 +182,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
      * Implements ICertificateStoreSession::findCertificatesBySubject.
      */
     public Collection findCertificatesBySubject(String subjectDN) {
-        debug(">findCertificatesBySubject(), dn="+subjectDN);        
+        debug(">findCertificatesBySubject(), dn="+subjectDN);
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(subjectDN);
         debug("Looking for cert with (transformed)DN: " + dn);
@@ -253,11 +253,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
             throw new EJBException(fe);
         }
     } //findCertificateByIssuerAndSerno
-    
+
     /**
      * Implements ICertificateStoreSession::findCertificatesBySerno.
      */
-    public Collection findCertificatesBySerno(BigInteger serno) throws RemoteException{
+    public Collection findCertificatesBySerno(BigInteger serno) {
         debug(">findCertificateBySerno(),  serno="+serno);
         try {
             Collection coll = certHome.findBySerialNumber(serno.toString());
@@ -296,16 +296,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
                     RevokedCertInfo revinfo = null;
                     CertificateDataLocal data = (CertificateDataLocal)iter.next();
                     if (data.getStatus() == CertificateData.CERT_REVOKED) {
-                        revinfo = new RevokedCertInfo(serno, new Date(data.getRevocationDate()), data.getRevocationReason());   
+                        revinfo = new RevokedCertInfo(serno, new Date(data.getRevocationDate()), data.getRevocationReason());
                     }
                     debug("<isRevoked() returned "+((data.getStatus() == CertificateData.CERT_REVOKED)?"yes":"no"));
-                    return revinfo;   
-                }   
+                    return revinfo;
+                }
             }
         } catch (Exception e) {
-            throw new EJBException(e);   
+            throw new EJBException(e);
         }
-        return null;        
+        return null;
     } //isRevoked
 
     /**
@@ -321,16 +321,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
                 CRLDataLocal data = crlHome.findByCRLNumber(maxnumber);
                 crl = data.getCRL();
             } catch (FinderException e) {
-                crl = null;   
+                crl = null;
             }
             debug("<findLatestCRL()");
             if (crl == null)
                 return null;
-            return crl.getEncoded();   
+            return crl.getEncoded();
         }
         catch (Exception e) {
-            throw new EJBException(e);   
-        }        
+            throw new EJBException(e);
+        }
     } //getLastCRL
 
     /**
@@ -351,10 +351,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
                 maxnumber = result.getInt(1);
             info("Last CRLNumber="+maxnumber);
             debug("<getLastCRLNumber()");
-            return maxnumber;   
+            return maxnumber;
         }
         catch (Exception e) {
-            throw new EJBException(e);   
+            throw new EJBException(e);
         }
         finally {
             try {
@@ -362,9 +362,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
                 if (ps != null) ps.close();
                 if (con!= null) con.close();
             } catch(SQLException se) {
-                se.printStackTrace();   
-            }   
-        }    
+                se.printStackTrace();
+            }
+        }
     } //getLastCRLNumber
-    
+
 } // CertificateStoreSessionBean
