@@ -1,4 +1,4 @@
-<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,java.math.BigInteger,se.anatom.ejbca.ca.store.*,se.anatom.ejbca.ca.crl.RevokedCertInfo,se.anatom.ejbca.util.Hex, se.anatom.ejbca.log.Admin"%>
+<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,java.math.BigInteger,se.anatom.ejbca.ca.store.*,se.anatom.ejbca.ca.crl.RevokedCertInfo,org.bouncycastle.util.encoders.Hex, se.anatom.ejbca.log.Admin"%>
 <html>
 <head><title>EJBCA - Check revocation</title>
 <link rel="stylesheet" href="indexmall.css" type="text/css">
