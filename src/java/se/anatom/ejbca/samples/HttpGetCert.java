@@ -11,9 +11,13 @@ import com.sun.net.ssl.*;
 */
 
 import java.security.KeyStore;
+import java.security.KeyPair;
 import java.security.cert.*;
 
 import org.apache.log4j.*;
+
+import org.bouncycastle.jce.*;
+import org.bouncycastle.asn1.*;
 
 import se.anatom.ejbca.util.*;
 
@@ -30,7 +34,7 @@ import se.anatom.ejbca.util.*;
  * <li>password - password for the above user.
  * </ul>
  *
- * @version: $Id: HttpGetCert.java,v 1.1 2001-12-11 11:30:25 anatom Exp $
+ * @version: $Id: HttpGetCert.java,v 1.2 2001-12-12 13:55:49 anatom Exp $
  *
  */
 public class HttpGetCert {
@@ -181,8 +185,36 @@ public class HttpGetCert {
         
     } // sendHttpReq
 
-    public static void main (String args[])  throws Exception {
+    public static void main(String args[])  throws Exception {
         
+        if (args.length < 2) {
+            System.out.println("Usage: HttpGetCert <requestUrl>");
+            return;
+        }
+        String dn = args[1];
+        int keysize = Integer.parseInt(args[2]);
+        // Generate keys (512 bit for sample purposes)
+        System.out.print("Generating 512 bit RSA keys.");
+        KeyPair rsaKeys = KeyTools.genKeys(512);
+        System.out.println("Keys generated.");
+        // Generate PKCS10 certificate request
+        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("C=SE,O=AnaTom,CN=HttpTest"), rsaKeys.getPublic(), null, rsaKeys.getPrivate());
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        DEROutputStream dOut = new DEROutputStream(bOut);
+        dOut.writeObject(req);
+        dOut.close();
+        ByteArrayOutputStream bos1 = new ByteArrayOutputStream();
+        bos1.write("-----BEGIN CERTIFICATE REQUEST-----\n".getBytes());
+        bos1.write(Base64.encode(bOut.toByteArray()));
+        bos1.write("\n-----END CERTIFICATE REQUEST-----\n".getBytes());
+        bos1.close();
+        System.out.println("CertificationRequest generated:");
+        System.out.println(new String(bos1.toByteArray()));
+        
+        // Now send the request
+        System.out.println("Trying to send request...");
+        HttpGetCert getter = new HttpGetCert();
+        getter.sendHttpReq("http://127.0.0.1:8080/apply/apply_man.jsp", new String(bos1.toByteArray()), "foo", "foo123");
     }
 
 }  // class CertRequest
