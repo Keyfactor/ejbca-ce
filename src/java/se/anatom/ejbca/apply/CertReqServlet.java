@@ -126,7 +126,7 @@ public class CertReqServlet extends HttpServlet {
             if (e.getMessage().indexOf("status") != -1) {
                 debug.printMessage("Wrong user status!");
                 debug.printMessage("To generate a certificate for a user the user must have status new, failed or inprocess.");
-                debug.printDebugInfo(response.getOutputStream());                
+                debug.printDebugInfo(response.getOutputStream());
             } else if (e.getMessage().indexOf("password") != -1) {
                 debug.printMessage("Wrong username or password!");
                 debug.printMessage("To generate a certificate a valid username and password must be entered.");
@@ -152,7 +152,7 @@ public class CertReqServlet extends HttpServlet {
         command = req.getParameter(COMMAND_PROPERTY_NAME);
         if (command == null)
             command = "";
-        // If we don't ask for any level of CA, assume root 
+        // If we don't ask for any level of CA, assume root
         String lev = req.getParameter(LEVEL_PROPERTY_NAME);
         int level = 0;
         if (lev != null)
@@ -167,34 +167,30 @@ public class CertReqServlet extends HttpServlet {
                 ps.println("No CA certificate of level "+level+"exist.");
                 cat.error("No CA certificate of level "+level+"exist.");
                 return;
-            }                
+            }
             X509Certificate cacert = (X509Certificate)chain[chain.length-1-level];
             byte[] enccert = cacert.getEncoded();
             if (command.equalsIgnoreCase(COMMAND_NSCACERT)) {
                     res.setContentType("application/x-x509-ca-cert");
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);
-                    cat.debug("Sent CA cert to NS client.");
+                    cat.debug("Sent CA cert to NS client, len="+enccert.length+".");
             } else if (command.equalsIgnoreCase(COMMAND_IECACERT)) {
                     res.setHeader("Content-disposition", "attachment; filename=ca.crt");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);
-                    cat.debug("Sent CA cert to IE client.");
+                    cat.debug("Sent CA cert to IE client, len="+enccert.length+".");
             } else if (command.equalsIgnoreCase(COMMAND_CACERT)) {
                     byte[] b64cert = Base64.encode(enccert);
-                    res.setContentType("application/octet-stream");
+		    String out = "-----BEGIN CERTIFICATE-----\n";
+		    out += new String(b64cert);
+                    out += "\n-----END CERTIFICATE-----\n";
                     res.setHeader("Content-disposition", "attachment; filename=ca.pem");
-                    String beg = "-----BEGIN CERTIFICATE-----\n";
-                    String end = "\n-----END CERTIFICATE-----\n";
-                    res.setContentLength(b64cert.length+beg.length()+end.length());
-                    // Print the certificate
-                    ServletOutputStream os = res.getOutputStream();
-                    os.write(beg.getBytes());
-                    os.write(b64cert);
-                    os.write(end.getBytes());
-                    res.flushBuffer();
-                    cat.debug("Sent CA cert to client.");
+                    res.setContentType("application/octet-stream");
+                    res.setContentLength(out.length());
+                    res.getOutputStream().write(out.getBytes());
+                    cat.debug("Sent CA cert to client, len="+out.length()+".");
             } else {
                 res.setContentType("text/plain");
                 res.getOutputStream().println("Commands="+COMMAND_NSCACERT+" || "+COMMAND_IECACERT+" || "+COMMAND_CACERT);
@@ -458,3 +454,4 @@ public class CertReqServlet extends HttpServlet {
     } //ieCertRequest
     
 } // CertReqServlet
+
