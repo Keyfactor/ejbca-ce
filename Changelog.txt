@@ -6,6 +6,7 @@
 3.0.1
 -----
 Fixed warning in SSL deployment with JBoss 3.2.4.
+Long timeout for ca creation in JBoss 3.2.4.
 
 3.0
 ---

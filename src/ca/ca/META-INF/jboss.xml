@@ -5,8 +5,10 @@
       <session>
         <ejb-name>CAAdminSession</ejb-name>
         <method-attributes>
-              <method-name>createCA</method-name>
-              <transaction-timeout>900</transaction-timeout>           
+              <method>
+                  <method-name>createCA</method-name>
+                  <transaction-timeout>900</transaction-timeout>           
+              </method>
         </method-attributes>
       </session>
     </enterprise-beans>
