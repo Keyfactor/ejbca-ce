@@ -47,7 +47,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.45 2004-02-11 10:45:35 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.46 2004-02-24 11:08:18 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -558,9 +558,9 @@ public class RAInterfaceBean {
       if(!certs.isEmpty()){
         Iterator j = certs.iterator();
         while(j.hasNext()){
-          X509Certificate cert = (X509Certificate) j.next();
-          RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
-          if(revinfo == null)
+          X509Certificate cert = (X509Certificate) j.next();        
+          RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());          
+          if(revinfo == null || revinfo.getReason()== RevokedCertInfo.NOT_REVOKED)
             allrevoked = false;
         }
       }
