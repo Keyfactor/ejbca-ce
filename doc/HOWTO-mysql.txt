@@ -1,0 +1,44 @@
+HOWTO set up mySQL as database in JBoss
+---------------------------------------
+
+NOTE: This document is work in progress. So far it only describes how to set
+up mySQL as DefaultDS. The default database HypersoniqDB should also be
+removed completely. The section "JBossCX setup" must probably be edited for
+this...
+
+Now on to the howto:
+
+1. Download and install mySQL.
+
+2. Download JDBC driver for mySQL from http://mmmysql.sourceforge.net/
+
+3. Put mm.mysql-<version>-bin.jar in jboss/lib/ext.
+
+4. Edit jboss.jcml. org.gjt.mm.mysql.Driver must be inluded as driver and
+mySQL set up as DefaultDS.
+
+The JDBC section should look something like:
+
+<!-- =================================================================-->
+<!-- JDBC-->
+<!-- =================================================================-->
+
+<mbean code="org.jboss.jdbc.JdbcProvider" name="DefaultDomain:service=JdbcProvider">
+     <attribute name="Drivers">org.gjt.mm.mysql.Driver,org.hsqldb.jdbcDriver</attribute>
+</mbean>
+
+<mbean code="org.jboss.jdbc.XADataSourceLoader" name="DefaultDomain:service=XADataSource,name=DefaultDS">
+  <attribute name="PoolName">DefaultDS</attribute>
+  <attribute name="DataSourceClass">org.jboss.pool.jdbc.xa.wrapper.XADataSourceImpl</attribute>
+  <attribute name="Properties"></attribute>
+  <attribute name="URL">jdbc:mysql://localhost/ejbca</attribute>
+  <attribute name="JDBCUser">root</attribute>
+  <attribute name="Password" />
+</mbean>
+
+5. Edit standardjaws.xml. Change typ-mapping to mySQL.
+
+<type-mapping>mySQL</type-mapping>
+
+6. DONE! Start JBoss. Use your favorite mySQL graphic editor to look at the beautiful tables.
+
