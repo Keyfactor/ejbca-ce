@@ -36,7 +36,7 @@ import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.27 2004-04-16 07:39:01 anatom Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.28 2004-04-21 19:25:42 anatom Exp $
  */
 
 public class TestBatchMakeP12 extends TestCase {
@@ -137,7 +137,7 @@ public class TestBatchMakeP12 extends TestCase {
         Object o = null;
         try{
           data1.addUser(admin, username, "foo123", "C=SE, O=AnaTom, CN="+username, "", username+"@anatom.se",  false,
-                        SecConst.EMPTY_ENDENTITYPROFILE, SecConst.PROFILE_NO_PROFILE,
+                        SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER,
                         SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12,0,caid);
           data1.setClearTextPassword(admin, username,"foo123");
           o = new String("");
@@ -151,7 +151,7 @@ public class TestBatchMakeP12 extends TestCase {
         o = null;
         try{
           data1.addUser(admin, username1, "foo123", "C=SE, O=AnaTom, CN="+username1, "",username1+"@anatom.se", false,
-                        SecConst.EMPTY_ENDENTITYPROFILE, SecConst.PROFILE_NO_PROFILE,
+                        SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER,
                         SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12,0,caid);
           data1.setClearTextPassword(admin, username1,"foo123");
           o = new String("");
