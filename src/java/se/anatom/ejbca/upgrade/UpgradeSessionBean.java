@@ -50,7 +50,7 @@ import se.anatom.ejbca.util.SqlExecutor;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.16 2004-05-15 11:15:45 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.17 2004-05-15 14:12:47 anatom Exp $
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
@@ -274,11 +274,11 @@ public class UpgradeSessionBean extends BaseSessionBean {
         	// Only upgrade nonfixed profiles.
         	if(next > SecConst.EMPTY_ENDENTITYPROFILE){
         		EndEntityProfile profile = getRaAdminSession().getEndEntityProfile(admin,next);   
-//        		profile.setValue(EndEntityProfile.DEFAULTCA,0,Integer.toString(caId));
-//        		profile.setRequired(EndEntityProfile.DEFAULTCA,0,true);
-//        		profile.setValue(EndEntityProfile.AVAILCAS,0,Integer.toString(caId));
-//        		profile.setRequired(EndEntityProfile.AVAILCAS,0,true);
                 profile.upgrade();
+                profile.setValue(EndEntityProfile.DEFAULTCA,0,Integer.toString(caId));
+                profile.setRequired(EndEntityProfile.DEFAULTCA,0,true);
+                profile.setValue(EndEntityProfile.AVAILCAS,0,Integer.toString(caId));
+                profile.setRequired(EndEntityProfile.AVAILCAS,0,true);
         		getRaAdminSession().changeEndEntityProfile(admin,(String) profileidtonamemap.get(new Integer(next)),profile);
         	}
         }

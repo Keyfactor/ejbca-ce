@@ -43,7 +43,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.35 2004-05-15 11:15:42 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.36 2004-05-15 14:12:49 anatom Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
@@ -338,35 +338,35 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * @throws EJBException if a communication or other error occurs.
      */
     public void removeEndEntityProfile(Admin admin, String profilename) {
-      try{
-        EndEntityProfileDataLocal pdl = profiledatahome.findByProfileName(profilename);
-        pdl.remove();
-        getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ENDENTITYPROFILE,"End entity profile " + profilename + " removed.");
-      }catch(Exception e){
-         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,"Error removing end entity profile " + profilename + ".");
-      }
+        try{
+            EndEntityProfileDataLocal pdl = profiledatahome.findByProfileName(profilename);
+            pdl.remove();
+            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ENDENTITYPROFILE,"End entity profile " + profilename + " removed.");
+        }catch(Exception e){
+            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,"Error removing end entity profile " + profilename + ".");
+        }
     } // removeEndEntityProfile
 
      /**
      * Renames a end entity profile
      */
     public void renameEndEntityProfile(Admin admin, String oldprofilename, String newprofilename) throws EndEntityProfileExistsException{
-       if(newprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME) || oldprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)){
-         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE," Error renaming end entity profile " + oldprofilename + " to " + newprofilename +  "." );  
-         throw new EndEntityProfileExistsException();     
-       } 
+        if(newprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME) || oldprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)){
+            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE," Error renaming end entity profile " + oldprofilename + " to " + newprofilename +  "." );  
+            throw new EndEntityProfileExistsException();     
+        } 
        try{
-          profiledatahome.findByProfileName(newprofilename);
-          getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE," Error renaming end entity profile " + oldprofilename + " to " + newprofilename +  "." );
-          throw new EndEntityProfileExistsException();
+           profiledatahome.findByProfileName(newprofilename);
+           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE," Error renaming end entity profile " + oldprofilename + " to " + newprofilename +  "." );
+           throw new EndEntityProfileExistsException();
        }catch(FinderException e){
-         try{
-           EndEntityProfileDataLocal pdl = profiledatahome.findByProfileName(oldprofilename);
-           pdl.setProfileName(newprofilename);
-           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ENDENTITYPROFILE,"End entity profile " + oldprofilename + " renamed to " + newprofilename +  "." );
-         }catch(FinderException f){
-           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE," Error renaming end entity profile " + oldprofilename + " to " + newprofilename +  "." );         
-         }
+           try{
+               EndEntityProfileDataLocal pdl = profiledatahome.findByProfileName(oldprofilename);
+               pdl.setProfileName(newprofilename);
+               getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ENDENTITYPROFILE,"End entity profile " + oldprofilename + " renamed to " + newprofilename +  "." );
+           }catch(FinderException f){
+             getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE," Error renaming end entity profile " + oldprofilename + " to " + newprofilename +  "." );         
+           }
        }
     } // renameProfile
 
@@ -374,13 +374,13 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Updates profile data
      */
     public void changeEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile){
-       try{
-         EndEntityProfileDataLocal pdl = profiledatahome.findByProfileName(profilename);
-         pdl.setProfile(profile);
-         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ENDENTITYPROFILE,"End entity profile " +  profilename + " edited.");
-       }catch(FinderException e){
-         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,"Error editing end entity profile " + profilename + ".");       
-       }
+        try{
+            EndEntityProfileDataLocal pdl = profiledatahome.findByProfileName(profilename);
+            pdl.setProfile(profile);
+            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ENDENTITYPROFILE,"End entity profile " +  profilename + " edited.");
+        }catch(FinderException e){
+            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,"Error editing end entity profile " + profilename + ".");       
+        }
     }// changeEndEntityProfile
 
     /**
@@ -391,30 +391,41 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
       Collection result = null;
       
       HashSet authorizedcaids = new HashSet(getAuthorizationSession().getAuthorizedCAIds(admin));
+      //debug("Admin authorized to "+authorizedcaids.size()+" CAs.");
       try{
-        if(getAuthorizationSession().isAuthorizedNoLog(admin, "/super_administrator"))
-          returnval.add(new Integer(SecConst.EMPTY_ENDENTITYPROFILE));
-      }catch(AuthorizationDeniedException e){}
+          if(getAuthorizationSession().isAuthorizedNoLog(admin, "/super_administrator"))
+              returnval.add(new Integer(SecConst.EMPTY_ENDENTITYPROFILE));
+        }catch(AuthorizationDeniedException e){}
           
       try{
-        result = profiledatahome.findAll();
-        Iterator i = result.iterator();
-        while(i.hasNext()){
-          EndEntityProfileDataLocal next = (EndEntityProfileDataLocal) i.next();
-          // Check if all profiles available CAs exists in authorizedcaids.
-          String[] availablecas = next.getProfile().getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
-          boolean allexists = true;
-          for(int j=0; j < availablecas.length; j++){
-            if(!authorizedcaids.contains( new Integer(availablecas[j]))){
-              allexists = false;
-              break;
-            }
+          result = profiledatahome.findAll();
+          Iterator i = result.iterator();
+          while(i.hasNext()){
+              EndEntityProfileDataLocal next = (EndEntityProfileDataLocal) i.next();
+              // Check if all profiles available CAs exists in authorizedcaids.
+              String value = next.getProfile().getValue(EndEntityProfile.AVAILCAS, 0);
+              //debug("AvailCAs: "+value);
+              if (value != null) {
+                  String[] availablecas = value.split(EndEntityProfile.SPLITCHAR);
+                  //debug("No of available CAs: "+availablecas.length);
+                  boolean allexists = true;
+                  for(int j=0; j < availablecas.length; j++){
+                      //debug("Available CA["+j+"]: "+availablecas[j]);
+                      if(!authorizedcaids.contains( new Integer(availablecas[j]))){
+                          allexists = false;
+                          //debug("Profile "+next.getId()+" not authorized");
+                          break;
+                      }
+                  }            
+                  if(allexists) {
+                      //debug("Adding "+next.getId());
+                      returnval.add(next.getId());
+                  }                  
+              }
           }
-          
-          if(allexists)
-            returnval.add(next.getId());
-        }
-      }catch(Exception e){}
+      }catch(Exception e){
+          error("Error getting authorized entity profile ids: ", e);
+      }
       return returnval;
     } // getAuthorizedEndEntityProfileNames
 
@@ -447,19 +458,19 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      */
     public EndEntityProfile getEndEntityProfile(Admin admin, int id){
         debug(">getEndEntityProfile(id)");
-       EndEntityProfile returnval=null;
-       try{
-         if(id==SecConst.EMPTY_ENDENTITYPROFILE) { 
-             returnval = new EndEntityProfile(true);
-         }
-         if(id!=0 && id != SecConst.EMPTY_ENDENTITYPROFILE) {
-             returnval = (profiledatahome.findByPrimaryKey(new Integer(id))).getProfile();
-         }
-       }catch(FinderException e){
-           // Ignore so we'll return null
-       }
-       debug("<getEndEntityProfile(id)");
-       return returnval;
+        EndEntityProfile returnval=null;
+        try{
+            if(id==SecConst.EMPTY_ENDENTITYPROFILE) { 
+                returnval = new EndEntityProfile(true);
+            }
+            if(id!=0 && id != SecConst.EMPTY_ENDENTITYPROFILE) {
+                returnval = (profiledatahome.findByPrimaryKey(new Integer(id))).getProfile();
+            }
+        }catch(FinderException e){
+            // Ignore so we'll return null
+        }
+        debug("<getEndEntityProfile(id)");
+        return returnval;
     } // getEndEntityProfile
 
      /**
