@@ -8,10 +8,7 @@ import java.util.*;
 
 import org.bouncycastle.jce.*;
 import org.bouncycastle.asn1.x509.*;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERInputStream;
-import org.bouncycastle.asn1.DERObjectIdentifier;
-import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import org.apache.log4j.Logger;
@@ -20,7 +17,7 @@ import org.apache.log4j.Logger;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.36 2003-03-26 19:56:15 anatom Exp $
+ * @version $Id: CertTools.java,v 1.37 2003-04-03 14:59:10 anatom Exp $
  */
 public class CertTools {
 
@@ -37,7 +34,7 @@ public class CertTools {
     public static final String UPN   = "upn";
     /** ObjectID for upn altName for windows smart card logon */
     public static final String UPN_OBJECTID  = "1.3.6.1.4.1.311.20.2.3";
-    
+
 
     private static final String[] EMAILIDS = { EMAIL, EMAIL1, EMAIL2, EMAIL3 };
 
@@ -513,6 +510,26 @@ public class CertTools {
         String id = cp.getPolicy(0);
         return id;
     } // getCertificatePolicyId
+
+    /** Gets the Microsoft specific UPN altName.
+     */
+    public static String getUPNAltName(X509Certificate cert) throws IOException, CertificateParsingException {
+        Collection altNames = cert.getSubjectAlternativeNames();
+        Iterator i = altNames.iterator();
+        while (i.hasNext()) {
+            List listitem = (List)i.next();
+            Integer no = (Integer)listitem.get(0);
+            if ( no.intValue()== 0) {
+                byte[] altName = (byte[])listitem.get(1);
+                DERObject oct = (DERObject)(new DERInputStream(new ByteArrayInputStream(altName)).readObject());
+                ASN1Sequence seq = ASN1Sequence.getInstance(oct);
+                ASN1TaggedObject obj = (ASN1TaggedObject)seq.getObjectAt(1);
+                DERUTF8String str = DERUTF8String.getInstance(obj.getObject());
+                return str.getString();
+            }
+        }
+        return null;
+    } // getUPNAltName
 
     /**
       * Generate SHA1 fingerprint in string representation.

@@ -1,5 +1,7 @@
 package se.anatom.ejbca.util.junit;
 
+import java.security.cert.X509Certificate;
+
 import se.anatom.ejbca.util.*;
 
 import org.apache.log4j.Logger;
@@ -8,11 +10,27 @@ import junit.framework.*;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.8 2003-03-13 12:13:41 scop Exp $
+ * @version $Id: TestCertTools.java,v 1.9 2003-04-03 14:59:26 anatom Exp $
  */
 public class TestCertTools extends TestCase {
 
     private static Logger log = Logger.getLogger(TestCertTools.class);
+
+    static byte[] testcert = Base64.decode(
+    ("MIICmjCCAgOgAwIBAgIIFKDXpk/2g0kwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
+    +"AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAzMDMz"
+    +"MTA4NTQxMVoXDTA1MDMzMDA5MDQxMVowKTEMMAoGA1UEAxMDdXBuMQwwCgYDVQQK"
+    +"EwNGb28xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQCP"
+    +"d6lpi+MaIr+f+tnlWfYqE6OMP24H0JlQxPoLqV2ElX2Yk00fHchicl6wPYxEwIhQ"
+    +"PMX7oP/j04gpLf3YuY47aajo/Nruibot+waIi+xWHZ0zONYgRnRez1DfWDPsmh5/"
+    +"6LS7jTe9A9FaU7Q3QVZ0iYy8zQsIDR+tL1A5jK6UmQIBEaOBxjCBwzAPBgNVHRMB"
+    +"Af8EBTADAQEAMA8GA1UdDwEB/wQFAwMHoAAwOwYDVR0lBDQwMgYIKwYBBQUHAwEG"
+    +"CCsGAQUFBwMCBggrBgEFBQcDBAYIKwYBBQUHAwUGCCsGAQUFBwMHMB0GA1UdDgQW"
+    +"BBRqt8tdCpOtaXxKyQHpdSvoTYGZIjAfBgNVHSMEGDAWgBRje/R2qFQkjqV0pXdE"
+    +"pvReD1eSUTAiBgNVHREEGzAZoBcGCisGAQQBgjcUAgOgCQwHZm9vQGZvbzANBgkq"
+    +"hkiG9w0BAQUFAAOBgQBc4zx+poGoO/5UdbcycL7YsU3a4fSxYfxkxBapRhsiC29a"
+    +"mr7aZJAjcrB9aEKgZWBQbvfM5TrmFbTKJExnmtWovBuLjxESQ0+v7LtJeSbpdqnd"
+    +"KASddFTjB6H1cweKOL64o+ZVYjfWQKXN/gG9Sd+fAb9zc5jKU5fT/NBvBgRfdg==").getBytes());
 
     public TestCertTools(String name) {
         super(name);
@@ -151,6 +169,11 @@ public class TestCertTools extends TestCase {
         assertEquals(CertTools.getPartFromDN(alt2, CertTools.URI), "http://www.primekey.se/ejbca");
         String alt3 = "EmailAddress=ejbca@primekey.se, dNSName=www.primekey.se, uniformResourceIdentifier=http://www.primekey.se/ejbca";
         assertEquals(CertTools.getPartFromDN(alt3, CertTools.EMAIL2), "ejbca@primekey.se");
+
+        X509Certificate cert = CertTools.getCertfromByteArray(testcert);
+        String upn = CertTools.getUPNAltName(cert);
+        log.debug("UPN="+upn);
+        assertEquals(upn,"foo@foo");
         log.debug("<test03AltNames()");
     }
 
