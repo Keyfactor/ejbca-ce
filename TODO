@@ -1,4 +1,4 @@
-$Id: TODO,v 1.74 2003-10-06 06:32:53 anatom Exp $
+$Id: TODO,v 1.75 2003-11-01 18:13:21 anatom Exp $
 
 V 1.x
 -----
@@ -15,7 +15,7 @@ V 3.x
 -----
 - Make it possible to dynamically configure new OtherNames in subjectAltName.
 - LDAPPublisherSession should remove cert from the store when revoked.
-- More automated testing, Junit as well as web-stuff.
+- More automated testing, Junit as well as web-stuff (httpjunit).
 - Continue improving exceptions and error handling.
 - Commands and status for certificate suspend (command for unrevoke, status for unrevoked).
 - Strategy for handling certificate issuance if notAfter is beyond CAs notAfter.
@@ -34,9 +34,12 @@ General
 - Test LDAP with mod_authz_ldap in apache
 - Implement XKMS specifications
 - XML/Soap stuff.
-- Make CA/RA for off-line authorization of requests for high security
-environments.
-- RA with self registration for end-entities, RA approves registration.
 - Check architecture for JSPs (MVC - ModelViewController?).
 - Make a database model similar to architecture model.
 - Add a 'Service Locator' to concentrate code for lookups?
+
+Discarded
+---------
+- Make CA/RA for off-line authorization of requests for high security
+environments.
+- RA with self registration for end-entities, RA approves registration.
