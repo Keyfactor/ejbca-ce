@@ -248,7 +248,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/ca/store/I*.class"/>  
                 <include name="se/anatom/ejbca/log/I*.class"/>
                 <include name="se/anatom/ejbca/log/Admin.class"/>  
-                <include name="se/anatom/ejbca/log/LogEntry.class"/>                                                                               
+                <include name="se/anatom/ejbca/log/LogEntry.class"/>
                 <include name="se/anatom/ejbca/util/CertTools.class"/> 
                 <include name="se/anatom/ejbca/SecConst.class"/>                                  
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
@@ -258,7 +258,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   </target>    
   
   <!-- =================================================================== -->
-  <!-- Build key recovery part                                                    -->
+  <!-- Build key recovery part                                             -->
   <!-- =================================================================== -->
   <target name="keyrecovery.jar" depends="compile">
     <mkdir    dir="${keyrecovery.build}"/>
@@ -274,7 +274,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/ca/store/I*.class"/>  
                 <include name="se/anatom/ejbca/log/I*.class"/>
                 <include name="se/anatom/ejbca/log/Admin.class"/>  
-                <include name="se/anatom/ejbca/log/LogEntry.class"/>                                                                               
+                <include name="se/anatom/ejbca/log/LogEntry.class"/>
                 <include name="se/anatom/ejbca/util/CertTools.class"/> 
                 <include name="se/anatom/ejbca/SecConst.class"/>                                  
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
@@ -286,7 +286,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
 
 
   <!-- =================================================================== -->
-  <!-- Build ra part                                                    -->
+  <!-- Build ra part                                                       -->
   <!-- =================================================================== -->
   <target name="ra.jar" depends="compile">
     <mkdir    dir="${ra.build}"/>
@@ -393,11 +393,6 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
-    <copy todir="${demoweb.build}/WEB-INF/lib">
-        <fileset dir="${lib}">
-                <include name="regexp1_0_0.jar"/>
-        </fileset>
-    </copy>     
     <!-- Jar the demoweb.war package together -->
     <jar basedir="${demoweb.build}" jarfile="${demowebjar}"/>    
   </target>
@@ -442,9 +437,8 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/hardtoken/HardTokenDoesntExistsException.class"/>         
                 <include name="se/anatom/ejbca/keyrecovery/IKeyRecoverySessionRemote.class"/>      
                 <include name="se/anatom/ejbca/keyrecovery/IKeyRecoverySessionHome.class"/> 
-                <include name="se/anatom/ejbca/keyrecovery/KeyRecoveryData.class"/>                                                                                                                                                                                                             
-                <include name="se/anatom/ejbca/ra/authorization/*Exception.class"/>
-                <include name="se/anatom/ejbca/ra/authorization/UserEntity.class"/>  
+                <include name="se/anatom/ejbca/keyrecovery/KeyRecoveryData.class"/>                                                                         <include name="se/anatom/ejbca/ra/authorization/*Exception.class"/>
+                <include name="se/anatom/ejbca/ra/authorization/UserEntity.class"/>
                 <include name="se/anatom/ejbca/ra/authorization/AdminInformation.class"/>      
                 <include name="se/anatom/ejbca/log/Admin.class"/>                                                                                                                                                                                                 
                 <include name="se/anatom/ejbca/protocol/IRequestMessage.class"/>                                                                                                                                                                                                 
@@ -531,7 +525,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   </target>
   
   <!-- =================================================================== -->
-  <!-- Build Javadoc part                                                -->
+  <!-- Build Javadoc part                                                  -->
   <!-- =================================================================== -->
   <target name="javadoc" depends="">
         <mkdir dir="${apidoc}"/>
@@ -544,7 +538,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 version="true"
                 use="true"
                 windowtitle="EJBCA API"
-                bottom="Copyright &#169; 2001 AnaTom.">
+                bottom="Copyright &#169; 2003 PrimeKey Solutions AB.">
         </javadoc>
   </target>
 
