@@ -83,7 +83,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.128 2004-05-22 12:58:52 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.129 2004-05-23 12:54:08 herrvendil Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -285,11 +285,24 @@ public class RSASignSessionBean extends BaseSessionBean {
      * Implements ISignSession::createCertificate
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
+        return createCertificate(admin, username, password, pk, keyusage, SecConst.PROFILE_NO_PROFILE);                    
+    }
+
+    
+    /**
+     * Implements ISignSession::createCertificate
+     */
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, int certificateprofileid) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
         debug(">createCertificate(pk, ku)");        
         try {
             // Authorize user and get DN
             UserAuthData data = authUser(admin, username, password);
             debug("Authorized user " + username + " with DN='" + data.getDN()+"'." + " with CA=" + data.getCAId());
+            if(certificateprofileid != SecConst.PROFILE_NO_PROFILE){
+            	debug("Overriding user certificate profile with :" + certificateprofileid);
+            	data.setCertProfileId(certificateprofileid);
+            }
+            
             
             debug("type="+ data.getType());
             // get CA

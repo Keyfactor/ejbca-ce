@@ -40,7 +40,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
 /**
  * Creates certificates. Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.29 2004-05-22 12:58:52 anatom Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.30 2004-05-23 12:54:23 herrvendil Exp $
  */
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
 	/**
@@ -165,6 +165,42 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
         throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, 
             IllegalKeyException, CADoesntExistsException;
 
+    /**
+     * Requests for a certificate to be created for the passed public key with the passed key
+     * usage and using the given certificate profile. This method is primarily intended to be used when 
+     * issueing hardtokens having multiple certificates per user.
+     * The method queries the user database for authorization of the user. CAs are only
+     * allowed to have certificateSign and CRLSign set.
+     *
+     * @param admin Information about the administrator or admin preforming the event.
+     * @param username unique username within the instance.
+     * @param password password for the user.
+     * @param pk the public key to be put in the created certificate.
+     * @param keyusage integer with bit mask describing desired keys usage, overrides keyUsage from
+     *        CertificateProfiles if allowed. Bit mask is packed in in integer using constants
+     *        from CertificateData. -1 means use default keyUsage from CertificateProfile. ex. int
+     *        keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives
+     *        digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
+     *        | CertificateData.cRLSign; gives keyCertSign and cRLSign
+     *@param certificateprofileid used to override the one set in userdata. 
+     *       Should be set to SecConst.PROFILE_NO_PROFILE if the regular certificateid shpuld be used
+     *
+     * @return The newly created certificate or null.
+     *
+     * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException If the users status is incorrect.
+     * @throws AuthLoginException If the password is incorrect.
+     * @throws IllegalKeyException if the public key is of wrong type.
+     * @throws RemoteException if a communication or other error occurs.
+     *
+     * @see se.anatom.ejbca.ca.store.CertificateData
+     */
+    public Certificate createCertificate(Admin admin, String username, String password,
+        PublicKey pk, int keyusage, int certificateprofileid)
+        throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, 
+            IllegalKeyException, CADoesntExistsException;
+
+    
     /**
      * Requests for a certificate of the specified type to be created for the passed public key.
      * The method queries the user database for authorization of the user.
