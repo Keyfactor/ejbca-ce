@@ -7,7 +7,7 @@ import junit.framework.*;
 
 /** Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.4 2002-12-05 19:42:07 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.5 2003-01-02 10:32:18 anatom Exp $
  */
 public class TestCertTools extends TestCase {
 
@@ -138,6 +138,19 @@ public class TestCertTools extends TestCase {
         String alt3 = "EmailAddress=ejbca@primekey.se, dNSName=www.primekey.se, uniformResourceIdentifier=http://www.primekey.se/ejbca";
         assertEquals(CertTools.getPartFromDN(alt3, CertTools.EMAIL2), "ejbca@primekey.se");
         cat.debug("<test03AltNames()");
+    }
+
+    public void test04DNComponents() throws Exception {
+        cat.debug(">test04DNComponents()");
+
+        // We try to examine the general case and som special cases, which we want to be able to handle
+        //String dn1 = "CN=CommonName, O=Org, OU=OrgUnit, SN=SerialNumber, SurName=SurName, GivenName=GivenName, Initial=Initial, C=SE";
+        String dn1 = "CN=CommonName, O=Org, OU=OrgUnit, SerialNumber=SerialNumber, C=SE";
+        String bcdn1 = CertTools.stringToBCDNString(dn1);
+        cat.debug("dn1: "+dn1);
+        cat.debug("bcdn1: "+bcdn1);
+        assertEquals(bcdn1, "CN=CommonName,SN=SerialNumber,OU=OrgUnit,O=Org,C=SE");
+        cat.debug("<test04DNComponents()");
     }
 }
 

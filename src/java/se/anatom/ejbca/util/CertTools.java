@@ -23,7 +23,7 @@ import org.apache.log4j.*;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.23 2002-12-29 15:58:02 anatom Exp $
+ * @version $Id: CertTools.java,v 1.24 2003-01-02 10:32:14 anatom Exp $
  */
 public class CertTools {
 
@@ -40,7 +40,7 @@ public class CertTools {
     private CertTools() {
     }
 
-    private static String[] dNObjects = { "EmailAddress", "E", "EMail", "UID", "CN", "SerialNumber", "Initials", "GN", "GivenName", "SN", "SurName", "T", "OU", "O", "L", "ST", "DC", "C" };
+    private static String[] dNObjects = { "EmailAddress", "E", "EMail", "UID", "CN", "SN", "SerialNumber", "Initials", "GN", "GivenName", "SurName", "T", "OU", "O", "L", "ST", "DC", "C" };
 
     private static DERObjectIdentifier getOid(String o) {
         if (o.trim().equalsIgnoreCase("C")) {
@@ -66,20 +66,20 @@ public class CertTools {
         }
         if (o.trim().equalsIgnoreCase("SurName")) {
             return X509Name.SURNAME;
-        } 
-        if (o.trim().equalsIgnoreCase("SN")) {
-            return X509Name.SURNAME;
-        } 
+        }
         if (o.trim().equalsIgnoreCase("GivenName")) {
             return X509Name.GIVENNAME;
-        } 
+        }
         if (o.trim().equalsIgnoreCase("GN")) {
             return X509Name.GIVENNAME;
-        } 
+        }
         if (o.trim().equalsIgnoreCase("Initials")) {
             return X509Name.INITIALS;
-        } 
+        }
         if (o.trim().equalsIgnoreCase("SerialNumber")) {
+            return X509Name.SN;
+        }
+        if (o.trim().equalsIgnoreCase("SN")) {
             return X509Name.SN;
         }
         if (o.trim().equalsIgnoreCase("CN")) {
