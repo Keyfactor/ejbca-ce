@@ -1,4 +1,4 @@
-$Id: TODO,v 1.23 2002-03-26 12:28:09 anatom Exp $
+$Id: TODO,v 1.24 2002-03-26 12:39:34 anatom Exp $
 
 V 1.0
 -----
@@ -11,7 +11,6 @@ V 1.x
 - Make a database model similar to architecture model.
 - Possibility to warn about certificates about to expire.
 - RA function to generate keystore for user.
-- RA function to change password for user.
 - Fix batch generation to put full chain when using on SubCA.
 
 V 2.0

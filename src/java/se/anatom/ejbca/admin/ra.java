@@ -27,7 +27,7 @@ public class ra {
 
     public static void main(String [] args){
         if (args.length < 1) {
-            System.out.println("Usage: RA adduser | deluser | setclearpwd | setuserstatus | finduser | listnewusers | listusers | revokeuser");
+            System.out.println("Usage: RA adduser | deluser | setpwd | setclearpwd | setuserstatus | finduser | listnewusers | listusers | revokeuser");
             return;
         }
         try {
@@ -78,6 +78,16 @@ public class ra {
                     System.out.println("Delete aborted!");
                     System.out.println("Please run 'ra revokeuser "+username+"'.");
                 }
+            } else if (args[0].equals("setpwd"))
+            {
+                if (args.length < 3) {
+                    System.out.println("Usage: RA setpwd <username> <password>");
+                    return;
+                }
+                String username = args[1];
+                String password = args[2];
+                System.out.println("Setting password "+password+" for user "+username);
+                admin.setPassword(username, password);
             } else if (args[0].equals("setclearpwd"))
             {
                 if (args.length < 3) {
@@ -177,7 +187,7 @@ public class ra {
                     }
                 }
             } else {
-                System.out.println("Usage: RA adduser | deluser | setclearpwd | setuserstatus | finduser | listnewusers | listusers | revokeuser");
+                System.out.println("Usage: RA adduser | deluser | setpwd | setclearpwd | setuserstatus | finduser | listnewusers | listusers | revokeuser");
             }
 
         } catch (Exception e) {

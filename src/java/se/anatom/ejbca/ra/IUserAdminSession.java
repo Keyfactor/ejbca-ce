@@ -10,7 +10,7 @@ import se.anatom.ejbca.ra.UserAdminData;
 
 /**
  *
- * @version $Id: IUserAdminSession.java,v 1.4 2002-02-01 09:09:31 anatom Exp $
+ * @version $Id: IUserAdminSession.java,v 1.5 2002-03-26 12:39:34 anatom Exp $
  */
 public interface IUserAdminSession {
 
@@ -47,6 +47,16 @@ public interface IUserAdminSession {
     public void setUserStatus(String username, int status) throws FinderException, RemoteException;
 
    /**
+    * Sets a new password for a user.
+    *
+    * @param username the unique username.
+    * @param password the new password for the user, NOT null.
+    *
+    * @throws EJBException if a communication or other error occurs.
+    */
+    public void setPassword(String username, String password) throws FinderException, RemoteException;
+
+    /**
     * Sets a clear text password for a user.
     *
     * @param username the unique username.

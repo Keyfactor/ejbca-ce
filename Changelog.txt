@@ -4,6 +4,7 @@ Configuration howto/support for Oracle.
 Tested on Weblogic.
 Function to batch-generate PEM-files for Apache etc.
 Function to rollover subCA with same key pair in ca.sh/cmd.
+Function to change password for user.
 Architectural overview in documentation.
 Better deployment scripts.
 Sample Linux firewall script.
