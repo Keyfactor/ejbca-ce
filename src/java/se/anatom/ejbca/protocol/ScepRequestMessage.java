@@ -31,7 +31,7 @@ import se.anatom.ejbca.util.Base64;
  * Class to handle SCEP request messages sent to the CA. TODO: don't forget extensions, e.g.
  * KeyUsage requested by end entity  TODO: extract senderNonce  TODO: extract transactionId
  *
- * @version $Id: ScepRequestMessage.java,v 1.25 2003-09-04 19:56:03 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.26 2003-09-20 11:45:09 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage,
     Serializable {
@@ -415,6 +415,16 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         }
 
         return ret;
+    }
+
+    /**
+     * Gets the issuer DN if contained in the request (the CA the request is targeted at).
+     *
+     * @return issuerDN of receiving CA or null.
+     */
+    public String getIssuerDN() {
+        // TODO:
+        return null;
     }
 
     /**
