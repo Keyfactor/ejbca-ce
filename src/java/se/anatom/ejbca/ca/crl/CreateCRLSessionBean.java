@@ -16,8 +16,10 @@ import se.anatom.ejbca.ca.exception.CADoesntExistsException;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
+import se.anatom.ejbca.ca.caadmin.X509CAInfo;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
+import se.anatom.ejbca.ca.store.CRLInfo;
 import se.anatom.ejbca.ca.store.CertificateData;
 import se.anatom.ejbca.ca.store.CertificateDataLocal;
 import se.anatom.ejbca.ca.store.CertificateDataLocalHome;
@@ -34,7 +36,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.18 2004-01-25 09:37:33 herrvendil Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.19 2004-02-11 10:44:12 herrvendil Exp $
  */
 public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerSession {
     
@@ -55,6 +57,8 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
     private ILogSessionLocal logsession;        
     
    
+     public static long  CRLOVERLAPTIME = 0;
+    
     
     /** Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -81,6 +85,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
 	 * CRL.
 	 *
 	 * @param admin administrator performing the task
+	 * @param issuerdn ofof the ca  
 	 *
 	 * @throws EJBException om ett kommunikations eller systemfel intr?ffar.
 	 */
@@ -135,6 +140,50 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
         }
         debug("<run()");
     }
+    
+    
+    /**
+     * Method that checks if there are any CRLs needed to be updated and then creates their
+     * CRLs. This method can be called by a scheduler or a service.
+     *
+     * @param admin administrator performing the task      
+     *
+     * @return the number of crls created.
+     * @throws EJBException om ett kommunikations eller systemfel intr?ffar.
+     */    
+    public int createCRLs(Admin admin)  {
+    	int createdcrls = 0;
+    	try {
+    		Date currenttime = new Date();    	
+    		ICAAdminSessionLocal caadmin = caadminHome.create();
+    		ICertificateStoreSessionLocal store = storeHome.create();
+    		
+    		Iterator iter = caadmin.getAvailableCAs(admin).iterator();
+    		while(iter.hasNext()){
+    			int caid = ((Integer) iter.next()).intValue();
+    			try{    			   	
+    			   CAInfo cainfo = caadmin.getCAInfo(admin, caid);
+    			   if(cainfo instanceof X509CAInfo){
+    			      CRLInfo crlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN());    			      
+    			      if((currenttime.getTime() + CRLOVERLAPTIME) >= crlinfo.getExpireDate().getTime()){
+    			      	 this.run(admin, cainfo.getSubjectDN());
+    			      	 
+    			      	 createdcrls++;
+    			      }
+    			   }    			       			      			
+    		    }catch(Exception e){
+    		    	logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,e.getMessage());                
+    		    	throw new EJBException(e);    		    	
+    		    }
+    		}	
+    	} catch (Exception e) {            
+    		logsession.log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,e.getMessage());                
+    		throw new EJBException(e);
+    	}    	        	
+    	
+    	return createdcrls;
+    }
+    
 }
 
 
