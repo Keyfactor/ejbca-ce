@@ -98,7 +98,7 @@ QUICK START GUIDE
 Build
 =====
 Needed to build and run are:
-JDK (1.3.1_x)
+JDK (1.3.1_x, or 1.4.x)
 JBOSS 2.4.x (with Tomcat or Jetty)
 Ant 1.4 to build (http://jakarta.apache.org/ant/)
 (Bouncycastle JCE provider, distributed with EJBCA see above)

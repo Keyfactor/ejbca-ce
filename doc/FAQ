@@ -1,7 +1,14 @@
 EJBCA FAQ
-$Id: FAQ,v 1.2 2002-01-10 07:25:32 anatom Exp $
+$Id: FAQ,v 1.3 2002-02-01 13:29:51 anatom Exp $
 ---------
- 
+Q: When using JDK 1.4.x i get a java.io.InvalidClassException.
+
+A: Since JDK 1.4 introduced incompatibilities dugin class serialization the PublicKey
+class used as parameter to some versions of the 'createCertificate' method can not be
+passed correctly.
+You must use JDK 1.4 on both server and client, then it works.
+
+-----
 Q: Why are there two versions of all commands, i.e. 'ra.sh' and 'ra.cmd'.
 
 A: 'ra.sh' is for UNIX and 'ra.cmd' for Windows.
