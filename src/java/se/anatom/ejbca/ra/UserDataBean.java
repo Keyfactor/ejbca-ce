@@ -52,7 +52,7 @@ public class UserDataBean implements javax.ejb.EntityBean {
 
         this.username = username;
         this.password = null;
-        this.passwordHash = getPasswordHash(password);
+        this.passwordHash = makePasswordHash(password);
         this.subjectDN = CertTools.stringToBCDNString(dn);
         this.subjectEmail = null;
         this.status = UserData.STATUS_NEW;
@@ -67,18 +67,6 @@ public class UserDataBean implements javax.ejb.EntityBean {
         // Do nothing. Required.
     }
 
-    private String getPasswordHash(String password) throws NoSuchAlgorithmException {
-        if (password == null)
-            return null;
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA1");
-            byte[] pwdhash = md.digest(password.getBytes());
-            return Hex.encode(pwdhash);
-        } catch (NoSuchAlgorithmException nsae) {
-            cat.error("SHA1 algorithm not supported.", nsae);
-            throw nsae;
-        }
-    }
     public String getUsername() {
         return username;
     }
@@ -90,12 +78,26 @@ public class UserDataBean implements javax.ejb.EntityBean {
     public boolean comparePassword(String password) throws NoSuchAlgorithmException {
         if (password == null)
             return false;
-        return (getPasswordHash(password).equals(passwordHash));
+        return (makePasswordHash(password).equals(passwordHash));
     }
     /** Returns the hashed password.
      */
     public String getPasswordHash() {
         return passwordHash;
+    }
+    /** Creates the hashed password
+    */
+    private String makePasswordHash(String password) throws NoSuchAlgorithmException {
+        if (password == null)
+            return null;
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA1");
+            byte[] pwdhash = md.digest(password.getBytes());
+            return Hex.encode(pwdhash);
+        } catch (NoSuchAlgorithmException nsae) {
+            cat.error("SHA1 algorithm not supported.", nsae);
+            throw nsae;
+        }
     }
     /** Returns password or null.
      * NOTE: To set clear text password setClearPassword() must be used.
@@ -106,13 +108,13 @@ public class UserDataBean implements javax.ejb.EntityBean {
     /** Sets passwordhash
     */
     public void setPassword(String password) throws NoSuchAlgorithmException {
-        this.passwordHash = getPasswordHash(password);
+        this.passwordHash = makePasswordHash(password);
     }
     /** Sets password AND passwordhash
     */
     public void setClearPassword(String password) throws NoSuchAlgorithmException {
         this.password = password;
-        this.passwordHash = getPasswordHash(password);
+        this.passwordHash = makePasswordHash(password);
     }
     public String getSubjectDN(){
         return subjectDN;
