@@ -67,6 +67,11 @@ import se.anatom.ejbca.BaseEntityBean;
  *   description="findByName"
  *   signature="Collection findByName(java.lang.String name)"
  *   query="SELECT DISTINCT OBJECT(a) from PublisherDataBean a WHERE a.name=?1"
+ *
+ * @ejb.finder
+ *   description="findAll"
+ *   signature="Collection findAll()"
+ *   query="SELECT DISTINCT OBJECT(a) from PublisherDataBean a"
  */
 public abstract class PublisherDataBean extends BaseEntityBean {
 
