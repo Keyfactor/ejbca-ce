@@ -27,7 +27,7 @@ import javax.servlet.http.*;
  * iecacert also takes optional parameter level=(int 1,2,...), where the level is which ca
  * certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.13 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: CACertServlet.java,v 1.14 2003-07-23 09:40:17 anatom Exp $
  */
 public class CACertServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CACertServlet.class);
@@ -187,7 +187,7 @@ public class CACertServlet extends HttpServlet {
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting CA certificates.");
                 log.error("Error getting CA certificates.");
                 log.error(e);
-
+                ps.close();
                 return;
             }
         } else {

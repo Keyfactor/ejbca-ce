@@ -1,5 +1,18 @@
 package se.anatom.ejbca.webdist.webconfiguration;
 
+import java.io.IOException;
+import java.math.BigInteger;
+import java.net.URLDecoder;
+import java.rmi.RemoteException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.util.Date;
+import javax.ejb.CreateException;
+import javax.ejb.FinderException;
+import javax.naming.*;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.log.Admin;
@@ -16,34 +29,11 @@ import se.anatom.ejbca.ra.raadmin.AdminPreference;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import se.anatom.ejbca.util.CertTools;
 
-import java.io.IOException;
-
-import java.math.BigInteger;
-
-import java.net.URLDecoder;
-
-import java.rmi.RemoteException;
-
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-
-import java.text.DateFormat;
-
-import java.util.Date;
-
-import javax.ejb.CreateException;
-import javax.ejb.FinderException;
-
-import javax.naming.*;
-
-import javax.servlet.http.HttpServletRequest;
-
-
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.28 2003-06-26 11:43:26 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.29 2003-07-23 09:40:17 anatom Exp $
  */
 public class EjbcaWebBean {
     private static Logger log = Logger.getLogger(EjbcaWebBean.class);

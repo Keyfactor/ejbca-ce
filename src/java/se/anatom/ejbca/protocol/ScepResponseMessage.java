@@ -44,7 +44,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.8 2003-07-22 10:26:24 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.9 2003-07-23 09:40:16 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage, Serializable {
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);
@@ -80,8 +80,6 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
     private transient Certificate cert = null;
     private transient X509Certificate signCert = null;
     private transient PrivateKey signKey = null;
-    private transient X509Certificate encCert = null;
-    private transient PrivateKey encKey = null;
 
     /**
      * Sets the complete certificate in the response message.
@@ -313,7 +311,7 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
      * @return True if public and private key is needed.
      */
     public boolean requireEncKeyInfo() {
-        return true;
+        return false;
     }
 
     /**
@@ -340,8 +338,7 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
      * @see #requireEncKeyInfo()
      */
     public void setEncKeyInfo(X509Certificate cert, PrivateKey key) {
-        encCert = cert;
-        encKey = key;
+        // We don't need these.
     }
 
     /**

@@ -34,21 +34,21 @@ import se.anatom.ejbca.util.Base64;
  * TODO: extract senderNonce 
  * TODO: extract transactionId
  *
- * @version $Id: ScepRequestMessage.java,v 1.22 2003-07-22 10:26:24 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.23 2003-07-23 09:40:16 anatom Exp $
  */
-public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage,
-    Serializable {
+public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(ScepRequestMessage.class);
-    public static String id_Verisign = "2.16.840.1.113733";
-    public static String id_pki = id_Verisign + ".1";
-    public static String id_attributes = id_pki + ".9";
-    public static String id_messageType = id_attributes + ".2";
-    public static String id_pkiStatus = id_attributes + ".3";
-    public static String id_failInfo = id_attributes + ".4";
-    public static String id_senderNonce = id_attributes + ".5";
-    public static String id_recipientNonce = id_attributes + ".6";
-    public static String id_transId = id_attributes + ".7";
-    public static String id_extensionReq = id_attributes + ".8";
+        
+    public static final String id_Verisign = "2.16.840.1.113733";
+    public static final String id_pki = id_Verisign + ".1";
+    public static final String id_attributes = id_pki + ".9";
+    public static final String id_messageType = id_attributes + ".2";
+    public static final String id_pkiStatus = id_attributes + ".3";
+    public static final String id_failInfo = id_attributes + ".4";
+    public static final String id_senderNonce = id_attributes + ".5";
+    public static final String id_recipientNonce = id_attributes + ".6";
+    public static final String id_transId = id_attributes + ".7";
+    public static final String id_extensionReq = id_attributes + ".8";
 
     /** Raw form of the Scep message */
     private byte[] scepmsg;
@@ -91,9 +91,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
     /** Enveloped data, carrying the 'beef' of the request */
     private transient ContentInfo envEncData = null;
-
-    /** Certificate used for decryption, verification */
-    private transient X509Certificate cert = null;
 
     /** Private key used for decryption. */
     private transient PrivateKey privateKey = null;
@@ -458,7 +455,8 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      * @see #requireKeyInfo()
      */
     public void setKeyInfo(X509Certificate cert, PrivateKey key) {
-        this.cert = cert;
+        // We don't need the public key 
+        // this.cert = cert;
         this.privateKey = key;
     }
 

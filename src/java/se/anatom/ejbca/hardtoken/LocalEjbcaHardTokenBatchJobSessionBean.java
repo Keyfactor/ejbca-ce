@@ -32,19 +32,16 @@ import javax.sql.DataSource;
  * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from
  * EJBCA RA.
  *
- * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.7 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.8 2003-07-23 09:40:16 anatom Exp $
  */
 public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean {
     private static Logger log = Logger.getLogger(LocalEjbcaHardTokenBatchJobSessionBean.class);
 
     /** Columns in the database used in select */
-    private final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId";
+    private final static String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId";
 
     /** Var holding JNDI name of datasource */
     private String dataSource = "";
-
-    /** The home interface of  User Admin entity bean */
-    private UserDataLocalHome useradminsession = null;
 
     /** The local interface of  hard token session bean */
     private IHardTokenSessionLocal hardtokensession = null;
@@ -63,10 +60,6 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean {
         try {
             dataSource = (String) lookup("java:comp/env/DataSource", java.lang.String.class);
             debug("DataSource=" + dataSource);
-
-            useradminsession = (UserDataLocalHome) lookup("java:comp/env/ejb/UserDataLocal",
-                    UserDataLocalHome.class);
-
             debug("<ejbCreate()");
         } catch (Exception e) {
             throw new EJBException(e);

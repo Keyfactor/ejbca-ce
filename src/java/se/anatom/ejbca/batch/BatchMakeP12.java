@@ -43,7 +43,7 @@ import javax.naming.NamingException;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.36 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.37 2003-07-23 09:40:16 anatom Exp $
  */
 public class BatchMakeP12 {
     /** For logging */
@@ -444,7 +444,7 @@ public class BatchMakeP12 {
                     }
                 }
 
-                if (failedusers != "") {
+                if (failedusers.length() > 0) {
                     throw new Exception("BatchMakeP12 failed for " + failcount + " users (" +
                         successcount + " succeeded) - " + failedusers);
                 }

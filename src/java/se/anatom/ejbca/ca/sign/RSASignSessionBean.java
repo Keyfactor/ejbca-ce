@@ -92,7 +92,7 @@ import javax.ejb.ObjectNotFoundException;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.90 2003-07-22 10:26:00 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.91 2003-07-23 09:40:16 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     transient X509Certificate caCert;
@@ -104,7 +104,6 @@ public class RSASignSessionBean extends BaseSessionBean {
     private Boolean akicritical;
     private Boolean usecrln;
     private Boolean crlncritical;
-    private Boolean emailindn;
     private Boolean finishUser;
     transient ISigningDevice signingDevice;
 
@@ -181,7 +180,6 @@ public class RSASignSessionBean extends BaseSessionBean {
             debug("Creating SigningDeviceFactory of type " + signingDeviceFactoryName);
             signingDevice = signingDeviceFactory.makeInstance(p);
 
-            //signingDevice = fact.makeInstance(p);
             // We must keep the same order in the DN in the issuer field in created certificates as there
             // is in the subject field of the CA-certificate.
             Certificate[] certs = signingDevice.getCertificateChain();
@@ -202,9 +200,6 @@ public class RSASignSessionBean extends BaseSessionBean {
 
             // The period between CRL issue
             crlperiod = (Long) lookup("java:comp/env/CRLPeriod", java.lang.Long.class);
-
-            // Use old style email address in DN? (really deprecated but old habits die hard...)
-            emailindn = (Boolean) lookup("java:comp/env/EmailInDN", java.lang.Boolean.class);
 
             // Should we set user to finished state after generating certificate? Probably means onyl one cert can be issued
             // without resetting users state in user DB

@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletRequest;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.7 2003-06-26 11:43:26 anatom Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.8 2003-07-23 09:40:17 anatom Exp $
  */
 public class LogInterfaceBean {
     // Public constants.
@@ -48,8 +48,6 @@ public class LogInterfaceBean {
     public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean)
         throws Exception {
         if (!initialized) {
-            admininformation = new AdminInformation(((X509Certificate[]) request.getAttribute(
-                        "javax.servlet.request.X509Certificate"))[0]);
             admin = new Admin(((X509Certificate[]) request.getAttribute(
                         "javax.servlet.request.X509Certificate"))[0]);
 
@@ -300,7 +298,6 @@ public class LogInterfaceBean {
     private ICertificateStoreSessionRemote certificatesession;
     private ILogSessionRemote logsession;
     private LogEntriesView logentriesview;
-    private AdminInformation admininformation;
     private Admin admin;
     private SubjectDNProxy dnproxy;
     private boolean initialized = false;

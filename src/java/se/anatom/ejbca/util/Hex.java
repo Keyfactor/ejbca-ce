@@ -13,7 +13,7 @@ import java.math.BigInteger;
 /**
  * This class implements a hex decoder, decoding a string with hex-characters into the binary form.
  *
- * @version $Id: Hex.java,v 1.3 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: Hex.java,v 1.4 2003-07-23 09:40:17 anatom Exp $
  */
 public class Hex {
     private static final char[] hex = {
@@ -56,7 +56,7 @@ public class Hex {
         }
 
         if ((dataStr.length() & 0x01) == 0x01) {
-            dataStr = new String(dataStr + "0");
+            dataStr = dataStr + "0";
         }
 
         BigInteger cI = new BigInteger(dataStr, 16);
@@ -76,19 +76,18 @@ public class Hex {
             System.out.println("Usage: HexStrToBin enc/dec <infileName> <outfilename>");
             System.exit(1);
         }
-
+        
+        ByteArrayOutputStream os = null;
+        InputStream in = null;
         try {
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            InputStream in = new FileInputStream(args[1]);
+            os = new ByteArrayOutputStream();
+            in = new FileInputStream(args[1]);
             int len = 0;
             byte[] buf = new byte[1024];
 
             while ((len = in.read(buf)) > 0) {
                 os.write(buf, 0, len);
             }
-
-            in.close();
-            os.close();
 
             byte[] data = null;
 
@@ -104,6 +103,11 @@ public class Hex {
             fos.close();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (in != null) in.close();
+                if (os != null) os.close();
+            } catch (IOException ioe) {}
         }
     }
      //main

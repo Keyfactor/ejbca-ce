@@ -44,11 +44,10 @@ import java.security.cert.*;
  * </ul>
  *
  *
- * @version $Id: HttpGetCert.java,v 1.8 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: HttpGetCert.java,v 1.9 2003-07-23 09:40:17 anatom Exp $
  */
 public class HttpGetCert {
     private static Logger log = Logger.getLogger(HttpGetCert.class);
-    private X509Certificate webcert = null;
 
     /**
      * Constructor

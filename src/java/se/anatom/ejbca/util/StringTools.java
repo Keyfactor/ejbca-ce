@@ -6,10 +6,10 @@ import java.util.regex.Pattern;
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.9 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: StringTools.java,v 1.10 2003-07-23 09:40:17 anatom Exp $
  */
 public class StringTools {
-    public static final char[] stripChars = {
+    private static final char[] stripChars = {
         '\'', '\"', '\n', '\r', '/', '\\', ';', '&', '|', '!', '\0', '%', '`', '?', '<', '>', '?',
         '$', ':', '~'
     };

@@ -65,7 +65,7 @@ import javax.servlet.http.*;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.36 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.37 2003-07-23 09:40:10 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
@@ -81,7 +81,6 @@ public class CertReqServlet extends HttpServlet {
     private byte[] beginPrivateKey = "-----BEGIN PRIVATE KEY-----".getBytes();
     private byte[] endPrivateKey = "-----END PRIVATE KEY-----".getBytes();
     private byte[] NL = "\n".getBytes();
-    private byte[] boundrary = "outer".getBytes();
 
     /**
      * Servlet init

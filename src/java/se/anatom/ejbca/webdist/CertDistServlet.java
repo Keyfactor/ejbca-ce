@@ -63,7 +63,7 @@ import javax.servlet.http.*;
  * cacert, nscacert and iecacert also takes optional parameter level=(int 1,2,...), where the level
  * is which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.15 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.16 2003-07-23 09:40:17 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertDistServlet.class);
@@ -165,7 +165,7 @@ public class CertDistServlet extends HttpServlet {
                 e.printStackTrace(ps);
                 log.debug("Error sending latest CRL to " + remoteAddr);
                 log.debug(e);
-
+                ps.close();
                 return;
             }
         } else if (command.equalsIgnoreCase(COMMAND_CERT) ||
@@ -176,7 +176,6 @@ public class CertDistServlet extends HttpServlet {
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST,
                     "Usage command=cert?subject=<subjectdn>.");
                 log.debug("Bad request, no 'dn' arg to 'lastcert' or 'listcert' command.");
-
                 return;
             }
 
@@ -244,7 +243,6 @@ public class CertDistServlet extends HttpServlet {
                     if (certs.length == 0) {
                         pout.println("No certificates exists for '" + dn + "'.");
                     }
-
                     pout.println("</body></html>");
                     pout.close();
                 }
@@ -254,7 +252,7 @@ public class CertDistServlet extends HttpServlet {
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting certificates.");
                 log.debug("Error getting certificates for '" + dn + "' for " + remoteAddr);
                 log.debug(e);
-
+                ps.close();
                 return;
             }
         } else if (command.equalsIgnoreCase(COMMAND_NSCACERT) ||
@@ -354,7 +352,7 @@ public class CertDistServlet extends HttpServlet {
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting CA certificates.");
                 log.debug("Error getting CA certificates.");
                 log.debug(e);
-
+                ps.close();
                 return;
             }
         } else if (command.equalsIgnoreCase(COMMAND_REVOKED)) {
@@ -409,14 +407,13 @@ public class CertDistServlet extends HttpServlet {
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error checking revocation.");
                 log.debug("Error checking revocation for '" + dn + "' with serno '" + serno + "'.");
                 log.debug(e);
-
+                ps.close();
                 return;
             }
         } else {
             res.setContentType("text/plain");
             res.sendError(HttpServletResponse.SC_BAD_REQUEST,
                 "Commands=lastcert | listcerts | crl | revoked");
-
             return;
         }
     }

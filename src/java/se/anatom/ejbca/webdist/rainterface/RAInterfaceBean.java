@@ -53,7 +53,7 @@ import javax.servlet.http.HttpServletRequest;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.37 2003-06-26 11:43:26 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.38 2003-07-23 09:40:17 anatom Exp $
  */
 public class RAInterfaceBean {
     private static Logger log = Logger.getLogger(RAInterfaceBean.class);
@@ -189,7 +189,7 @@ public class RAInterfaceBean {
 
         try {
             intstatus = Integer.parseInt(status);
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
         }
 
         for (int i = 0; i < usernames.length; i++) {

@@ -44,7 +44,7 @@ import javax.sql.DataSource;
  * Stores data used by web server clients. Uses JNDI name for datasource as defined in env
  * 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.11 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.12 2003-07-23 09:40:16 anatom Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean {
     private static Logger log = Logger.getLogger(LocalHardTokenSessionBean.class);
@@ -206,6 +206,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                         certissuerdn, issuerdata);
                     returnval = true;
                 } catch (Exception g) {
+                    error("Error adding hard token: ",g);
                 }
             }
         }
@@ -440,6 +441,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
             Collections.sort(returnval);
         } catch (Exception e) {
+            error("Error getting hard token issuer datas: ",e);
         }
 
         debug("<getHardTokenIssuerDatas()");
@@ -478,6 +480,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
             Collections.sort(returnval);
         } catch (Exception e) {
+            error("Error getting hard token issuer aliases: ",e);
         }
 
         debug("<getHardTokenIssuerAliases()");
@@ -547,6 +550,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                         htih.getCertSN(), htih.getCertIssuerDN(), htih.getHardTokenIssuer());
             }
         } catch (Exception e) {
+            error("Error getting hard token issuer data: ",e);
         }
 
         debug("<getHardTokenIssuerData()");
@@ -579,6 +583,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                         htih.getCertSN(), htih.getCertIssuerDN(), htih.getHardTokenIssuer());
             }
         } catch (Exception e) {
+            error("Error getting hard token issuer data: ",e);
         }
 
         debug("<getHardTokenIssuerData()");
@@ -613,6 +618,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                         htih.getCertSN(), htih.getCertIssuerDN(), htih.getHardTokenIssuer());
             }
         } catch (Exception e) {
+            error("Error getting hard token issuer data: ",e);
         }
 
         debug("<getHardTokenIssuerData()");
@@ -669,6 +675,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                 returnval = htih.getId().intValue();
             }
         } catch (Exception e) {
+            error("Error getting hard token issuer id: ",e);
         }
 
         debug("<getHardTokenIssuerId()");
@@ -702,6 +709,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                 returnval = htih.getId().intValue();
             }
         } catch (Exception e) {
+            error("Error getting hard token issuer id: ",e);
         }
 
         debug("<getHardTokenIssuerId()");
@@ -733,6 +741,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                 returnval = htih.getAlias();
             }
         } catch (Exception e) {
+            error("Error getting hard token issuer alias: ",e);
         }
 
         debug("<getHardTokenIssuerAlias()");
@@ -811,6 +820,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                 null, LogEntry.EVENT_INFO_HARDTOKENDATA,
                 "Hard token with serial number : " + tokensn + " added.");
         } catch (Exception e) {
+            error("Error adding hard token: ",e);
             try {
                 getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),
                     username, null, LogEntry.EVENT_ERROR_HARDTOKENDATA,
@@ -850,6 +860,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                 htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENDATA,
                 "Hard token with serial number : " + tokensn + " changed.");
         } catch (Exception e) {
+            error("Error changing hard token: ",e);
             try {
                 getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(), null,
                     null, LogEntry.EVENT_ERROR_HARDTOKENDATA,
@@ -884,6 +895,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
             getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(), null, null,
                 LogEntry.EVENT_INFO_HARDTOKENDATA, "Hard token with sn " + tokensn + " removed.");
         } catch (Exception e) {
+            error("Error removing hard token: ",e);
             try {
                 getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(), null,
                     null, LogEntry.EVENT_ERROR_HARDTOKENDATA,
@@ -920,6 +932,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
         } catch (javax.ejb.FinderException fe) {
             ret = false;
         } catch (Exception e) {
+            error("Error finding hard token: ",e);
             throw new EJBException(e);
         }
 
@@ -957,6 +970,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                     "Hard token with sn " + tokensn + " viewed.");
             }
         } catch (Exception e) {
+            error("Error getting hard token: ",e);
         }
 
         debug("<getHardToken()");
@@ -995,6 +1009,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                     "Hard token with sn " + htd.getTokenSN() + " viewed.");
             }
         } catch (Exception e) {
+            error("Error getting hard tokens: ",e);
         }
 
         debug("<getHardToken()");
@@ -1026,6 +1041,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                 "Certificate mapping added, certificatesn: " + certificatesn + ", tokensn: " +
                 tokensn + " added.");
         } catch (Exception e) {
+            error("Error adding hard token certificate mapping: ",e);
             try {
                 getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(), null,
                     null, LogEntry.EVENT_ERROR_HARDTOKENCERTIFICATEMAP,
@@ -1060,6 +1076,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                 LogEntry.EVENT_INFO_HARDTOKENCERTIFICATEMAP,
                 "Certificate mapping with certificatesn: " + certificatesn + " removed.");
         } catch (Exception e) {
+            error("Error removing hard token certificate mapping: ",e);
             try {
                 getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(), null,
                     null, LogEntry.EVENT_ERROR_HARDTOKENCERTIFICATEMAP,
@@ -1099,6 +1116,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                         htcm.getCertificateFingerprint()));
             }
         } catch (Exception e) {
+            error("Error finding certificates in hard token: ",e);
             throw new EJBException(e);
         }
 
@@ -1137,6 +1155,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                 hardtokensnames = hardtokensnamestring.split(";");
                 hardtokensids = hardtokensidstring.split(";");
             } catch (Exception e) {
+                error("Error getting available hard tokens: ",e);
                 throw new EJBException(e);
             }
 

@@ -49,7 +49,7 @@ import javax.sql.DataSource;
  * Administrates users in the database using UserData Entity Bean. Uses JNDI name for datasource as
  * defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.58 2003-07-21 08:17:55 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.59 2003-07-23 09:40:16 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean {
     /** The home interface of  GlobalConfiguration entity bean */
@@ -72,7 +72,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     private UserDataLocalHome home = null;
 
     /** Columns in the database used in select */
-    private final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId";
+    private static final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId";
 
     /** Var holding JNDI name of datasource */
     private String dataSource = "";
@@ -441,15 +441,16 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             try {
                 UserDataPK pk = new UserDataPK(username);
                 UserDataLocal data1 = home.findByPrimaryKey(pk);
-
-                if (!profileauthproxy.getEndEntityProfileAuthorization(admin,
-                            data1.getEndEntityProfileId(),
-                            EndEntityProfileAuthorizationProxy.EDIT_RIGHTS, LogEntry.MODULE_RA)) {
-                    logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(), username, null,
-                        LogEntry.EVENT_ERROR_CHANGEDENDENTITY,
-                        "Administrator not authorized to change status");
-                    throw new AuthorizationDeniedException(
-                        "Administrator not authorized to edit user.");
+                if (data1 != null) {
+                    if (!profileauthproxy.getEndEntityProfileAuthorization(admin,
+                                data1.getEndEntityProfileId(),
+                                EndEntityProfileAuthorizationProxy.EDIT_RIGHTS, LogEntry.MODULE_RA)) {
+                        logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(), username, null,
+                            LogEntry.EVENT_ERROR_CHANGEDENDENTITY,
+                            "Administrator not authorized to change status");
+                        throw new AuthorizationDeniedException(
+                            "Administrator not authorized to edit user.");
+                    }
                 }
             } catch (FinderException e) {
                 logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(), username, null,
@@ -485,7 +486,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         // Find user
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data = home.findByPrimaryKey(pk);
-
+        if (data == null) {
+            throw new FinderException("Can't find user "+username);
+        }
         if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
             // Check if user fulfills it's profile.
             EndEntityProfile profile = raadminsession.getEndEntityProfile(admin,

@@ -43,8 +43,6 @@ public class HardTokenInterfaceBean {
     public void initialize(HttpServletRequest request)
         throws Exception {
         if (!initialized) {
-            admininformation = new AdminInformation(((X509Certificate[]) request.getAttribute(
-                        "javax.servlet.request.X509Certificate"))[0]);
             admin = new Admin(((X509Certificate[]) request.getAttribute(
                         "javax.servlet.request.X509Certificate"))[0]);
 
@@ -367,7 +365,6 @@ public class HardTokenInterfaceBean {
     private IHardTokenSessionRemote hardtokensession;
     private IHardTokenBatchJobSessionRemote hardtokenbatchsession;
     private AvailableHardToken[] availablehardtokens;
-    private AdminInformation admininformation;
     private Admin admin;
     private boolean initialized = false;
     private HardTokenView[] result;

@@ -34,7 +34,7 @@ import javax.sql.DataSource;
  * Stores data used by web server clients. Uses JNDI name for datasource as defined in env
  * 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.26 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.27 2003-07-23 09:40:16 anatom Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean {
     private static Logger log = Logger.getLogger(LocalRaAdminSessionBean.class);
@@ -158,8 +158,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
                 "Administrator preference added.");
             ret = true;
         } catch (Exception e) {
+            error("Error adding admin preference: ", e);
             ret = false;
-
             try {
                 logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(), null, null,
                     LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,
@@ -284,6 +284,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
                 LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,
                 "Default administrator preference changed.");
         } catch (Exception e) {
+            error("Error saving default admin preference: ", e);
             try {
                 logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(), null, null,
                     LogEntry.EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED,
@@ -321,11 +322,12 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
                     LogEntry.EVENT_INFO_ENDENTITYPROFILE,
                     "End entity profile " + profilename + " added.");
             } catch (Exception f) {
+                error("Error adding end entity profile: ", e);
                 try {
                     logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(), null, null,
                         LogEntry.EVENT_ERROR_ENDENTITYPROFILE,
                         "Error adding end entity profile " + profilename);
-                } catch (Exception re) {
+                } catch (RemoteException re) {
                 }
             }
         }
@@ -366,6 +368,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
                     originalprofilename + " as template.");
             }
         } catch (Exception e) {
+            error("Error cloing end entity profile: ", e);
         }
 
         return returnval;
@@ -388,11 +391,12 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
                 LogEntry.EVENT_INFO_ENDENTITYPROFILE,
                 "End entity profile " + profilename + " removed.");
         } catch (Exception e) {
+            error("Error removing end entity profile: ", e);
             try {
                 logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(), null, null,
                     LogEntry.EVENT_ERROR_ENDENTITYPROFILE,
                     "Error removing end entity profile " + profilename + ".");
-            } catch (Exception re) {
+            } catch (RemoteException re) {
             }
         }
     }
@@ -500,6 +504,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
             Collections.sort(returnval);
         } catch (Exception e) {
+            error("Error getting end entity profile names: ", e);
         }
 
         return returnval;
@@ -672,6 +677,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
                 }
             }
         } catch (Exception e) {
+            error("Error ceching for certificate profile in end entity profiles: ", e);
         }
 
         return exists;

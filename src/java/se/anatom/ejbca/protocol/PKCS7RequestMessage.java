@@ -1,18 +1,16 @@
 package se.anatom.ejbca.protocol;
 
-import org.apache.log4j.Logger;
-
 import java.io.*;
-
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 
+import org.apache.log4j.Logger;
 
 /**
  * Class to handle PKCS7 request messages sent to the CA.
  *
- * @version $Id: PKCS7RequestMessage.java,v 1.11 2003-07-21 14:18:30 anatom Exp $
+ * @version $Id: PKCS7RequestMessage.java,v 1.12 2003-07-23 09:40:16 anatom Exp $
  */
 public class PKCS7RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(PKCS7RequestMessage.class);

@@ -64,10 +64,10 @@ import javax.naming.directory.*;
  * </pre>
  * </p>
  *
- * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.13 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.14 2003-07-23 09:40:16 anatom Exp $
  */
 public class LDAPActiveDirectoryPublisherSessionBean extends BaseSessionBean {
-    private static Logger log = Logger.getLogger(LDAPActiveDirectoryPublisherSessionBean.class);
+
     private String ldapHost = "10.1.1.1";
     private int ldapPort = 389;
     private String loginDN = "cn=user,cn=Users,dc=foo,dc=bar";
@@ -362,8 +362,8 @@ public class LDAPActiveDirectoryPublisherSessionBean extends BaseSessionBean {
                                 "se/anatom/ejbca/ca/store/ICertificateStoreSessionRemote"),
                             ICertificateStoreSessionHome.class);
                 } catch (NamingException exc) {
-                    System.out.println("Error retrieving the home of  CertificateData or CRLData.");
-                    exc.printStackTrace();
+                    error("Error retrieving the home of  CertificateData or CRLData.", exc);
+                    return false;
                 }
 
                 ICertificateStoreSessionRemote localstore = storeHome.create();
@@ -490,9 +490,7 @@ public class LDAPActiveDirectoryPublisherSessionBean extends BaseSessionBean {
                 signHome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(stctx.lookup(
                             "se/anatom/ejbca/ca/sign/ISignSessionRemote"), ISignSessionHome.class);
             } catch (NamingException exc) {
-                debug("Error retrieving the home of  CertificateData or CRLData.");
-                exc.printStackTrace();
-
+                error("Error retrieving the home of CertificateData or CRLData.", exc);
                 return false;
             }
 

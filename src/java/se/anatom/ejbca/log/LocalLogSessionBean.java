@@ -28,10 +28,9 @@ import javax.sql.DataSource;
  * Stores data used by web server clients. Uses JNDI name for datasource as defined in env
  * 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalLogSessionBean.java,v 1.12 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.13 2003-07-23 09:40:16 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
-    private static Logger log = Logger.getLogger(LocalLogSessionBean.class);
     public static final int MAXIMUM_QUERY_ROWCOUNT = 300;
 
     /** Var holding JNDI name of datasource */
@@ -54,7 +53,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
     private static final int LOGCONFIGURATION_ID = 0;
 
     /** Columns in the database used in select */
-    private final String LOGENTRYDATA_COL = "adminType, adminData, module, time, username, certificateSNR, event, comment";
+    private final static String LOGENTRYDATA_COL = "adminType, adminData, module, time, username, certificateSNR, event, comment";
 
     /**
      * Default create for SessionBean without any creation Arguments.

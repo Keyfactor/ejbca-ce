@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 /**
  * This class is used to create notification messages
  *
- * @version $Id: NotificationCreator.java,v 1.6 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: NotificationCreator.java,v 1.7 2003-07-23 09:40:16 anatom Exp $
  */
 public class NotificationCreator {
     /**
@@ -74,7 +74,7 @@ public class NotificationCreator {
      */
     public String getMessage(String username, String password, String dn, String subjectaltname,
         String email) throws Exception {
-        String returnval = new String(message);
+        String returnval = message;
         DNFieldExtractor dnfields = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
 
         // DNFieldExtractor subaltnamefields = new DNFieldExtractor(dn,DNFieldExtractor.TYPE_SUBJECTALTNAME);

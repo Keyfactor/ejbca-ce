@@ -33,7 +33,7 @@ import javax.servlet.http.*;
  * </p>
  *
  * @author Original code by Peter Neemeth
- * @version $Id: RemoteVerifyServlet.java,v 1.4 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: RemoteVerifyServlet.java,v 1.5 2003-07-23 09:40:17 anatom Exp $
  */
 public class RemoteVerifyServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(RemoteVerifyServlet.class);
@@ -120,13 +120,10 @@ public class RemoteVerifyServlet extends HttpServlet {
      * Can be controlled via properties file.
      * </p>
      */
-    protected static String LINE_COMMENT = ";";
+    protected static final String LINE_COMMENT = ";";
 
     /** What parameter to send when using GET to show status. */
-    protected static String STATUS_KEY = "status";
-
-    /** The OutputStream to send responses via. */
-    protected ServletOutputStream _out;
+    protected static final String STATUS_KEY = "status";
 
     /** Count total accesses */
     protected static int countAccess = 0;
@@ -244,7 +241,6 @@ public class RemoteVerifyServlet extends HttpServlet {
         res.setContentType("text/plain");
 
         ServletOutputStream out = res.getOutputStream();
-        _out = out;
 
         // Keep this for logging.
         String remoteAddr = req.getRemoteAddr();
