@@ -44,7 +44,7 @@ import org.apache.log4j.Logger;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.28 2003-02-26 19:55:18 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.29 2003-02-26 20:01:56 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -519,9 +519,9 @@ public class RAInterfaceBean {
       Collection certs = certificatesession.findCertificatesByUsername(administrator, username);
 
       UserAdminData user = adminsession.findUser(administrator, username);
-
+        System.out.println("found  " + certs.size());
       if(!certs.isEmpty()){
-        System.out.println("found  " + certs.size()); 
+ 
         Iterator j = certs.iterator();
         certificates = new CertificateView[certs.size()];
         for(int i=0; i< certificates.length; i++){
