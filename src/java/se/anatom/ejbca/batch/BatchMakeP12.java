@@ -40,7 +40,7 @@ import org.apache.log4j.PropertyConfigurator;
  * This class generates keys and request certificates for all users with
  * status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.30 2003-02-20 09:01:43 herrvendil Exp $
+ * @version $Id: BatchMakeP12.java,v 1.31 2003-02-21 09:35:42 anatom Exp $
  */
 public class BatchMakeP12 {
 
@@ -192,7 +192,7 @@ public class BatchMakeP12 {
         // Send the certificate request to the CA
         ISignSessionRemote ss = signhome.create();
         X509Certificate cert = (X509Certificate)ss.createCertificate(administrator, username, password, rsaKeys.getPublic());
-        System.out.println("issuer " + cert.getIssuerDN().toString() + ", " + cert.getClass().getName());
+        //System.out.println("issuer " + cert.getIssuerDN().toString() + ", " + cert.getClass().getName());
         // Make a certificate chain from the certificate and the CA-certificate
         Certificate[] cachain = getCACertChain();
         // Verify CA-certificate
