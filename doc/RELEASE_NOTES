@@ -1,10 +1,11 @@
-EJBCA V2.0B2
-------------
-
+EJBCA V2.0
+----------
 Name of initial temporary super administrator changed from "CN=Walter" to "CN=
-SuperAdmin".
+SuperAdmin". A new must be created.
 
 All defined administrator privileges must be redefined.
+
+Certificate profiles should be redefined.
 
 Drop tables AdminGroupData, AdminEntityData, AccessRulesData and
 EndEntityProfileData to flush administrator privileges (actually deleting the
@@ -52,4 +53,5 @@ subjectDN in table UserData.
 
 If a tool is needed to perform the migration, please contact us.
 See http://sourceforge.net/projects/ejbca
+
 

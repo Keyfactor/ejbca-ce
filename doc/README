@@ -1,4 +1,4 @@
-$Id: README,v 1.76 2003-03-19 09:38:48 anatom Exp $
+$Id: README,v 1.77 2003-03-19 09:40:36 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source Initiative.
@@ -139,11 +139,6 @@ Set the environment variable JBOSS_HOME to the directory where JBoss's root is
  (/jboss-<version>_Tomcat-<version>). This is done so the deploy script will
  know where files are to be
  copied, they are copied to the $JBOSS_HOME/server/default/deploy directory.
-
-Run 'ant deploy', this will copy the Bouncycastle JCE provider, the LDAP
-library and the regexp library to the directory $JBOSS_HOME/server/default/lib,
-it will be added to
-JBoss's classpath automatically when JBoss is started.
 
 You can also build javadoc on all APIs used with 'ant javadoc'.
 
