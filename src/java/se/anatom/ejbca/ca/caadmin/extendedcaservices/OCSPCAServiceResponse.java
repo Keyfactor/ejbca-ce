@@ -1,7 +1,6 @@
 package se.anatom.ejbca.ca.caadmin.extendedcaservices;
 
 import java.io.Serializable;
-import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.List;
@@ -11,7 +10,7 @@ import org.bouncycastle.ocsp.BasicOCSPResp;
 /**
  * Class used when delevering OCSP service response from a CA.  
  *
- * @version $Id: OCSPCAServiceResponse.java,v 1.2 2004-01-02 15:33:15 anatom Exp $
+ * @version $Id: OCSPCAServiceResponse.java,v 1.3 2004-01-02 15:34:35 anatom Exp $
  */
 public class OCSPCAServiceResponse extends ExtendedCAServiceResponse implements Serializable {    
              

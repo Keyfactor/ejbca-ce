@@ -57,7 +57,6 @@ import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
-import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAService;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
@@ -71,7 +70,7 @@ import se.anatom.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.10 2004-01-02 15:33:15 anatom Exp $
+ * @version $Id: X509CA.java,v 1.11 2004-01-02 15:34:35 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 

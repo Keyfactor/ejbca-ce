@@ -2,8 +2,6 @@ package se.anatom.ejbca.protocol;
 
 import java.io.*;
 
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
@@ -59,7 +57,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.20 2004-01-02 15:33:06 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.21 2004-01-02 15:34:35 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
