@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
+import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.ra.UserDataLocalHome;
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.log.Admin;
@@ -23,7 +24,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from EJBCA RA.
  *
- * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.11 2003-09-13 09:02:24 anatom Exp $
+ * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.12 2003-11-04 12:59:30 herrvendil Exp $
  */
 public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
@@ -81,7 +82,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
     private IHardTokenSessionLocal getHardTokenSession() {
         if(hardtokensession == null){
           try{
-            IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) lookup("java:comp/env/ejb/HardTokenSession",IHardTokenSessionLocalHome.class);
+            IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) lookup("java:comp/env/ejb/HardTokenSessionLocal",IHardTokenSessionLocalHome.class);
             hardtokensession = hardtokensessionhome.create();
           }catch(Exception e){
              throw new EJBException(e);
@@ -289,9 +290,11 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         try{
            // Construct SQL query.
             con = getConnection();
-            ps = con.prepareStatement("select COUNT(*) from UserData where hardTokenIssuerId=? and tokenType>?");
+            ps = con.prepareStatement("select COUNT(*) from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)");
             ps.setInt(1,issuerid);
             ps.setInt(2,SecConst.TOKEN_SOFT);
+			ps.setInt(2,UserDataLocal.STATUS_NEW);
+			ps.setInt(2,UserDataLocal.STATUS_KEYRECOVERY);
             // Execute query.
             rs = ps.executeQuery();
             // Assemble result.
@@ -360,9 +363,11 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         PreparedStatement ps = null;
         try {
             // Construct SQL query.
-            ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId=? and tokenType>?");
+            ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)" );
             ps.setInt(1,issuerid);
             ps.setInt(2,SecConst.TOKEN_SOFT);
+			ps.setInt(2,UserDataLocal.STATUS_NEW);
+			ps.setInt(2,UserDataLocal.STATUS_KEYRECOVERY);
             // Execute query.
             rs = ps.executeQuery();
             return rs;
