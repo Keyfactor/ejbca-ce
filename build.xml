@@ -65,11 +65,13 @@
     <path id="compile.classpath">
         <path refid="ext.classpath" />
         <fileset dir="lib" includes="*.jar" />
+        <path refid="j2ee.classpath" />
     </path>
 
     <path id="j2ee.classpath">
         <fileset dir="${jboss.home}/client">
             <include name="jbossall-client.jar" />
+            <include name="jboss-j2ee.jar" />
         </fileset>
     </path>
 
@@ -77,6 +79,9 @@
         <fileset dir="lib" includes="*.jar" />
         <fileset dir="lib/ext" includes="*.jar" />
         <fileset dir="lib/xdoclet/lib" includes="*.jar" />
+        <fileset dir="${jboss.home}/client">
+            <include name="jboss-j2ee.jar" />
+        </fileset>
     </path>
 
     <path id="test.compile.classpath">
@@ -97,6 +102,9 @@
     <property name="mail.from" value="ejbca-donotreply@domain.com" />
     <property name="mail.subject" value="Retrieve your certificate" />
     <property name="mail.message" value="Hello $CN$NL$NL This is a notification. $NL$NL Your username: $Username$NL password: $Password$NL$NL Your are NOT supposed to go and fetch your certificate, this is only a test." />
+    <property name="httpserver.pubhttp" value="8080" />
+    <property name="httpserver.pubhttps" value="8442" />
+    <property name="httpserver.privhttps" value="8443" />
     <property name="web.availablelanguages" value="EN" />
     <property name="web.contentencoding" value="ISO-8859-1" />
 
@@ -123,6 +131,9 @@ mail.jndi-name         = ${mail.jndi-name}
 mail.from              = ${mail.from}
 mail.subject           = ${mail.subject}
 mail.message           = ${mail.message}
+httpserver.pubhttp	   = ${httpserver.pubhttp}
+httpserver.pubhttps	   = ${httpserver.pubhttps}
+httpserver.privhttps   = ${httpserver.privhttps}
 web.availablelanguages = ${web.availablelanguages}
 web.contentencoding    = ${web.contentencoding}
 

@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.14 2005-03-29 15:14:08 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.15 2005-04-01 14:00:46 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -153,6 +153,18 @@ httpsserver.hostname=localhost
 # The Distinguished Name of the SSL server certificate used by the administrative web gui.
 # The CN part  should match your hosts DNS name to avoid browser warnings.
 httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
+
+# The public port JBoss will listen to http on
+# Default 8080
+httpserver.pubhttp=8080
+
+# The public port JBoss will listen to https on, no client cert required
+# Default 8442
+httpserver.pubhttps=8442
+
+# The private port JBoss will listen to https on, client cert required
+# Default 8443
+httpserver.privhttps=8443
 
 # Defines the available languages by languagecodes separated with a comma (example EN,CH).
 # Default: EN 

@@ -64,6 +64,9 @@
 			<tokenfilter>
 		    	<replacestring from="@keystore.file@" to="${keystore.file}"/>
 		    	<replacestring from="@keystore.password@" to="${keystore.password}"/>
+		    	<replacestring from="@httpserver.pubhttp@" to="${httpserver.pubhttp}"/>
+		    	<replacestring from="@httpserver.pubhttps@" to="${httpserver.pubhttps}"/>
+		    	<replacestring from="@httpserver.privhttps@" to="${httpserver.privhttps}"/>
 			</tokenfilter>
 			</filterchain>
         </copy>

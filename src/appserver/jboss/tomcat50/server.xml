@@ -9,7 +9,7 @@
       className="org.jboss.web.tomcat.tc5.StandardService">
 
       <!-- A HTTP/1.1 Connector on port 8080 -->
-      <Connector port="8080" address="${jboss.bind.address}"
+      <Connector port="@httpserver.pubhttp@" address="${jboss.bind.address}"
          maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
          enableLookups="false" redirectPort="8443" acceptCount="100"
          connectionTimeout="20000" disableUploadTimeout="true"/>
@@ -20,14 +20,14 @@
          protocol="AJP/1.3"/>
 
     <!-- A HTTPS Connector without client cert on port 8442 -->
-    <Connector port="8442" address="${jboss.bind.address}"
+    <Connector port="@httpserver.pubhttps@" address="${jboss.bind.address}"
          maxThreads="100" minSpareThreads="5" maxSpareThreads="15"
          scheme="https" secure="true" clientAuth="false"
          keystoreFile="${jboss.server.home.dir}/@keystore.file@"
          keystorePass="@keystore.password@" sslProtocol = "TLS" />
     
     <!-- HTTPS Connector requiring client cert on port 8443 -->
-    <Connector port="8443" address="${jboss.bind.address}"
+    <Connector port="@httpserver.privhttps@" address="${jboss.bind.address}"
          maxThreads="100" minSpareThreads="5" maxSpareThreads="15"
          scheme="https" secure="true" clientAuth="true"
          keystoreFile="${jboss.server.home.dir}/@keystore.file@"

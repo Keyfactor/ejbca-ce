@@ -91,7 +91,7 @@
 
                <!-- A HTTP/1.1 Connector on port 8080 -->
                <Connector className="org.apache.coyote.tomcat4.CoyoteConnector"
-                  address="${jboss.bind.address}" port="8080" minProcessors="5" maxProcessors="100"
+                  address="${jboss.bind.address}" port="@httpserver.pubhttp@" minProcessors="5" maxProcessors="100"
                   enableLookups="true" acceptCount="10" debug="0"
                   connectionTimeout="20000" useURIValidationHack="false"/>
 
@@ -105,22 +105,22 @@
 
                <!-- SSL/TLS Connector not requiring client cert on port 8442 -->
                <Connector className = "org.apache.coyote.tomcat4.CoyoteConnector"
-                 address="${jboss.bind.address}" port="8442" minProcessors="5" maxProcessors="75" 
+                 address="${jboss.bind.address}" port="@httpserver.pubhttps@" minProcessors="5" maxProcessors="75" 
                  enableLookups="true" acceptCount="10" debug="0" scheme="https" secure="true">
                  <Factory className = "org.apache.coyote.tomcat4.CoyoteServerSocketFactory"
-                   keystoreFile="${jboss.server.home.dir}/../../bin/tomcat.jks"
-                   keystorePass="foo123"
+                   keystoreFile="${jboss.server.home.dir}/@keystore.file@"
+                   keystorePass="@keystore.password@"
                    protocol = "TLS"
                    clientAuth="false"/>
                </Connector>
 
                <!-- SSL/TLS Connector requiring client cert on port 8443 -->
                <Connector className = "org.apache.coyote.tomcat4.CoyoteConnector"
-                 address="${jboss.bind.address}" port="8443" minProcessors="5" maxProcessors="75" 
+                 address="${jboss.bind.address}" port="@httpserver.privhttps@" minProcessors="5" maxProcessors="75" 
                  enableLookups="true" acceptCount="10" debug="0" scheme="https" secure="true">
                  <Factory className = "org.apache.coyote.tomcat4.CoyoteServerSocketFactory"
-                   keystoreFile="${jboss.server.home.dir}/../../bin/tomcat.jks"
-                   keystorePass="foo123"
+                   keystoreFile="${jboss.server.home.dir}/@keystore.file@"
+                   keystorePass="@keystore.password@"
                    protocol = "TLS"
                    clientAuth="true"/>
                </Connector>
