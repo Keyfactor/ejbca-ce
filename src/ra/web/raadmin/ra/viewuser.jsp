@@ -123,6 +123,12 @@
          </td>
        </tr>
        <tr id="Row1">
+	 <td align="right"><%= ejbcawebbean.getText("CERTIFICATETYPE") %></td>
+	 <td><% if(userdata[UserView.CERTIFICATETYPE] != null) out.write(userdata[UserView.CERTIFICATETYPE]); 
+                else out.write(ejbcawebbean.getText("NOCERTIFICATETYPEDEFINED"));%>
+         </td>
+       </tr>
+       <tr id="Row0">
 	 <td align="right"><%= ejbcawebbean.getText("TYPES") %></td>
 	 <td>
          </td>

@@ -342,10 +342,10 @@ function confirmdelete(){
                onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSURECHANGE") %>")'>
         <select name="<%=SELECT_CHANGE_STATUS %>">
          <option selected value='<%= Integer.toString(UserDataRemote.STATUS_NEW) %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
-         <option value='<%= Integer.toString(UserDataRemote.STATUS_FAILED) %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>
-         <option value='<%= Integer.toString(UserDataRemote.STATUS_INITIALIZED) %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>
-         <option value='<%= Integer.toString(UserDataRemote.STATUS_INPROCESS) %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>
-        <!--  <option value='<%= Integer.toString(UserDataRemote.STATUS_GENERATED) %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>  -->
+     <!--   <option value='<%= Integer.toString(UserDataRemote.STATUS_FAILED) %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>  -->
+       <!--  <option value='<%= Integer.toString(UserDataRemote.STATUS_INITIALIZED) %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>  -->
+       <!--  <option value='<%= Integer.toString(UserDataRemote.STATUS_INPROCESS) %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>  -->
+            <option value='<%= Integer.toString(UserDataRemote.STATUS_GENERATED) %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>  
         <!--  <option value='<%= Integer.toString(UserDataRemote.STATUS_REVOKED) %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>  -->
          <option value='<%= Integer.toString(UserDataRemote.STATUS_HISTORICAL) %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
         </select>

@@ -10,7 +10,7 @@ package se.anatom.ejbca.ra.raadmin;
  * The model representation of a profile, used in in the ra module of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: Profile.java,v 1.2 2002-07-22 10:38:48 anatom Exp $
+ * @version $Id: Profile.java,v 1.3 2002-08-05 01:57:06 herrvendil Exp $
  */
 public class Profile implements java.io.Serializable, Cloneable {
 
@@ -19,27 +19,29 @@ public class Profile implements java.io.Serializable, Cloneable {
     public static final int ISREQUIRED = 1;
     public static final int CHANGEABLE = 2;
 
-    public static final int USERNAME          = 0;
-    public static final int PASSWORD          = 1;
-    public static final int CLEARTEXTPASSWORD = 2;
-    public static final int COMMONNAME        = 3;
-    public static final int ORGANIZATIONUNIT  = 4;
-    public static final int ORGANIZATION      = 5;
-    public static final int LOCALE            = 6;
-    public static final int STATE             = 7;
-    public static final int COUNTRY           = 8;
-    public static final int EMAIL             = 9;
-    public static final int TYPE_ENDUSER     = 10;
-    public static final int TYPE_CA          = 11;
-    public static final int TYPE_RA          = 12;
-    public static final int TYPE_ROOTCA      = 13;
-    public static final int TYPE_CAADMIN     = 14;
-    public static final int TYPE_RAADMIN     = 15;
+    public static final int USERNAME           = 0;
+    public static final int PASSWORD           = 1;
+    public static final int CLEARTEXTPASSWORD  = 2;
+    public static final int COMMONNAME         = 3;
+    public static final int ORGANIZATIONUNIT   = 4;
+    public static final int ORGANIZATION       = 5;
+    public static final int LOCALE             = 6;
+    public static final int STATE              = 7;
+    public static final int COUNTRY            = 8;
+    public static final int EMAIL              = 9;
+    public static final int TYPE_ENDUSER       = 10;
+    public static final int TYPE_CA            = 11;
+    public static final int TYPE_RA            = 12;
+    public static final int TYPE_ROOTCA        = 13;
+    public static final int TYPE_CAADMIN       = 14;
+    public static final int TYPE_RAADMIN       = 15;
+    public static final int DEFAULTCERTTYPE    = 16;
+    public static final int AVAILABLECERTTYPES = 17;
 
     public static final String TRUE  = "true";
     public static final String FALSE = "false";
 
-    public static final int NUMBEROFPARAMETERS = 16;
+    public static final int NUMBEROFPARAMETERS = 18;
 
     // Public methods.
     /** Creates a new instance of Profile */
@@ -58,6 +60,8 @@ public class Profile implements java.io.Serializable, Cloneable {
       profiledata[COMMONNAME][ISREQUIRED]=TRUE;
       profiledata[TYPE_ENDUSER][VALUE]=TRUE;
       profiledata[TYPE_ENDUSER][ISREQUIRED]=TRUE;
+      profiledata[DEFAULTCERTTYPE][ISREQUIRED]=TRUE;
+      profiledata[AVAILABLECERTTYPES][ISREQUIRED]=TRUE;      
     }
 
     public Profile(String[][] values){

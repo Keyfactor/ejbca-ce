@@ -285,6 +285,17 @@ END LDAP Publisher -->
         <local>se.anatom.ejbca.ca.store.CRLDataLocal</local>
         <ejb-link>CRLData</ejb-link>
      </ejb-local-ref>
+     <ejb-local-ref>
+        <description>
+          The CertificateTypeData Entity bean 
+        </description>
+        <ejb-ref-name>ejb/CertificateTypeDataLocal</ejb-ref-name>
+        <ejb-ref-type>Entity</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ca.store.CertificateTypeDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.store.CertificateTypeDataLocal</local>
+        <ejb-link>CertificateTypeData</ejb-link>
+     </ejb-local-ref>         
+     
      
     <security-identity>
         <run-as>
@@ -492,7 +503,25 @@ END LDAP Publisher -->
 	</ejb-ql>
       </query>
    </entity>
-
+   
+   <entity>
+      <description>
+            This enterprise bean entity represents a certificate type.
+      </description>
+      <ejb-name>CertificateTypeData</ejb-name>
+      <local-home>se.anatom.ejbca.ca.store.CertificateTypeDataLocalHome</local-home>
+      <local>se.anatom.ejbca.ca.store.CertificateTypeDataLocal</local>
+      <ejb-class>se.anatom.ejbca.ca.store.CertificateTypeDataBean</ejb-class>
+      <persistence-type>Container</persistence-type>
+      <prim-key-class>java.lang.Integer</prim-key-class>    
+      <reentrant>False</reentrant>
+      <cmp-version>2.x</cmp-version>
+      <abstract-schema-name>CertificateTypeDataBean</abstract-schema-name>
+      <cmp-field><field-name>id</field-name></cmp-field>      
+      <cmp-field><field-name>certificateTypeName</field-name></cmp-field>
+      <cmp-field><field-name>certificateType</field-name></cmp-field>
+      <primkey-field>id</primkey-field>  
+   </entity>   
   </enterprise-beans>
 
  <assembly-descriptor>
@@ -627,6 +656,26 @@ END LDAP Publisher -->
          <ejb-name>CertificateStoreSession</ejb-name>
          <method-name>storeCRL</method-name>
      </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>addCertificateType</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>cloneCertificateType</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>removeCertificateType</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>renameCertificateType</method-name>
+     </method> 
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>changeCertificateType</method-name>
+     </method>                         
      <method>
          <ejb-name>CertificateData</ejb-name>
          <method-intf>Remote</method-intf>

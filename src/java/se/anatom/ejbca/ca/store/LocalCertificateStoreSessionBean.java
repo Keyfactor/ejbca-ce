@@ -6,7 +6,10 @@ import java.math.BigInteger;
 import java.util.Date;
 import java.util.Vector;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.TreeMap;
+import java.util.Random;
 import java.sql.*;
 import javax.sql.DataSource;
 import javax.naming.*;
@@ -16,6 +19,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.cert.X509CRL;
 
+import se.anatom.ejbca.ca.store.certificatetypes.*;
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.util.CertTools;
@@ -25,7 +29,7 @@ import se.anatom.ejbca.util.Base64;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.20 2002-07-09 15:04:22 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.21 2002-08-05 01:57:06 herrvendil Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -34,10 +38,18 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
     /** The home interface of Certificate entity bean */
     private CertificateDataLocalHome certHome = null;
+    
+    /** The home interface of Certificate Type entity bean */
+    private CertificateTypeDataLocalHome certtypehome = null;
 
     /** The home interface of CRL entity bean */
     private CRLDataLocalHome crlHome = null;
 
+    /** Constants used with fixed certificate types. All constants should have an integer value greater than 0 and less than 1000. */
+    public final static int FIXED_ENDUSER = 1;
+    public final static int FIXED_CA = 2;
+    public final static int FIXED_ROOTCA = 3;        
+    
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -48,7 +60,27 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         debug("DataSource=" + dataSource);
         crlHome = (CRLDataLocalHome)lookup("java:comp/env/ejb/CRLDataLocal");
         certHome = (CertificateDataLocalHome)lookup("java:comp/env/ejb/CertificateDataLocal");
-        debug("<ejbCreate()");
+        certtypehome = (CertificateTypeDataLocalHome)lookup("java:comp/env/ejb/CertificateTypeDataLocal");
+
+        
+        // Check if fixed certificates exists in database.
+       try{
+          certtypehome.findByPrimaryKey(new Integer(FIXED_ENDUSER));
+       }catch(FinderException e){
+          certtypehome.create(new Integer(FIXED_ENDUSER),EndUserCertificateType.CERTIFICATETYPENAME, (CertificateType) new EndUserCertificateType());         
+       }
+       try{
+          certtypehome.findByPrimaryKey(new Integer(FIXED_CA));
+       }catch(FinderException e){
+          certtypehome.create(new Integer(FIXED_CA),CACertificateType.CERTIFICATETYPENAME, (CertificateType) new CACertificateType());         
+       }
+       try{
+          certtypehome.findByPrimaryKey(new Integer(FIXED_ROOTCA));
+       }catch(FinderException e){
+          certtypehome.create(new Integer(FIXED_ROOTCA),RootCACertificateType.CERTIFICATETYPENAME, (CertificateType) new RootCACertificateType());         
+       }        
+        
+        debug("<ejbCreate()");        
     }
 
     /** Gets connection to Datasource used for manual SQL searches
@@ -366,5 +398,211 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             }
         }
     } //getLastCRLNumber
+    
+    
+     /**
+     * Adds a certificate type to the database.
+     */
+
+    public boolean addCertificateType(String certificatetypename, CertificateType certificatetype){
+       boolean returnval=false;
+       try{
+          certtypehome.findByCertificateTypeName(certificatetypename);
+       }catch(FinderException e){
+         try{  
+           certtypehome.create(findFreeCertificateTypeId(),certificatetypename,certificatetype);
+           returnval = true;
+         }catch(Exception f){}  
+       }
+       return returnval;
+    } // addCertificateType
+
+     /**
+     * Adds a certificate type with the same content as the original certificatetype,
+     */
+    public boolean cloneCertificateType(String originalcertificatetypename, String newcertificatetypename){
+       CertificateType certificatetype = null; 
+       boolean returnval = false;
+       try{
+         CertificateTypeDataLocal pdl = certtypehome.findByCertificateTypeName(originalcertificatetypename);
+         certificatetype = (CertificateType) pdl.getCertificateType().clone();
+         
+         returnval = addCertificateType(newcertificatetypename, certificatetype);
+       }catch(FinderException e){}
+        catch(CloneNotSupportedException f){}
+       
+       return returnval;
+    } // cloneCertificateType
+
+     /**
+     * Removes a certificatetype from the database.
+     * @throws EJBException if a communication or other error occurs.
+     */
+    public void removeCertificateType(String certificatetypename) {
+      try{
+        CertificateTypeDataLocal pdl = certtypehome.findByCertificateTypeName(certificatetypename);  
+        pdl.remove();
+      }catch(Exception e){}  
+    } // removeCertificateType
+
+     /**
+     * Renames a certificatetype
+     */
+    public boolean renameCertificateType(String oldcertificatetypename, String newcertificatetypename){
+       boolean returnvalue = false;   
+       try{
+          certtypehome.findByCertificateTypeName(newcertificatetypename); 
+       }catch(FinderException e){
+         try{
+           CertificateTypeDataLocal pdl = certtypehome.findByCertificateTypeName(oldcertificatetypename);   
+           pdl.setCertificateTypeName(newcertificatetypename);
+           returnvalue = true;
+         }catch(FinderException f){}
+       }  
+       return returnvalue;   
+    } // remameCertificateType
+
+    /**
+     * Updates certificatetype data
+     */
+
+    public boolean changeCertificateType(String certificatetypename, CertificateType certificatetype){
+       boolean returnvalue = false;
+       
+       try{
+         CertificateTypeDataLocal pdl = certtypehome.findByCertificateTypeName(certificatetypename);   
+         pdl.setCertificateType(certificatetype);
+         returnvalue = true;
+       }catch(FinderException e){}  
+       return returnvalue;   
+    }// changeCertificateType
+
+    /**
+     * Retrives certificate type names sorted.
+     */
+    public Collection getCertificateTypeNames(){
+      Vector returnval = new Vector();
+      Collection result = null;
+      try{
+        result = certtypehome.findAll();
+        if(result.size()>0){ 
+          Iterator i = result.iterator();
+          while(i.hasNext()){
+            returnval.add(((CertificateTypeDataLocal) i.next()).getCertificateTypeName());
+          }
+        }
+        Collections.sort(returnval);
+      }catch(Exception e){}
+      return returnval;      
+    } // getCertificateTypeNames
+    
+    /**
+     * Retrives certificate types sorted by name.
+     */
+    public TreeMap getCertificateTypes(){
+      TreeMap returnval = new TreeMap();
+      Collection result = null;
+      try{
+        result = certtypehome.findAll();
+        if(result.size()>0){
+          returnval = new TreeMap();  
+          Iterator i = result.iterator();
+          while(i.hasNext()){
+            CertificateTypeDataLocal pdl = (CertificateTypeDataLocal) i.next();
+            returnval.put(pdl.getCertificateTypeName(),pdl.getCertificateType());
+          }
+        }
+      }catch(FinderException e){}
+      return returnval;    
+    } // getCertificateTypes
+
+    /**
+     * Retrives a named certificate type.
+     */
+    public CertificateType getCertificateType(String certificatetypename){
+       CertificateType returnval=null;
+       try{
+         returnval = (certtypehome.findByCertificateTypeName(certificatetypename)).getCertificateType();
+       }catch(FinderException e){
+         throw new EJBException(e);
+       }
+       return returnval;  
+    } //  getCertificateType
+
+     /**
+     * Finds a certificate type by id.
+     */       
+    public CertificateType getCertificateType(int id){
+       CertificateType returnval=null;
+       try{
+         returnval = (certtypehome.findByPrimaryKey(new Integer(id))).getCertificateType();
+       }catch(FinderException e){
+         throw new EJBException(e);
+       }
+       return returnval;        
+    } // getCertificateType
+    
+     /**
+     * Retrives the numbers of certificatetypes.
+     */
+    public int getNumberOfCertificateTypes(){
+      int returnval =0;
+      try{
+        returnval = (certtypehome.findAll()).size();
+      }catch(FinderException e){}
+      
+      return returnval;                
+    }
+     
+     /**
+     * Returns a certificate types id, given it's certificate type name
+     *
+     * @return the id or 0 if certificatetype cannot be found.
+     */   
+    public int getCertificateTypeId(String certificatetypename){
+      int returnval = 0;  
+      try{  
+        Integer id = (certtypehome.findByCertificateTypeName(certificatetypename)).getId();
+        returnval = id.intValue();
+      }catch(FinderException e){}
+      
+      return returnval;        
+    } // getCertificateTypeId
+    
+     /**
+     * Returns a certificatetypes name given it's id. 
+     *
+     * @return certificatetypename or null if certificatetype id doesn't exists.
+     */    
+    public String getCertificateTypeName(int id){
+      String returnval = null;  
+      try{  
+        returnval = (certtypehome.findByPrimaryKey(new Integer(id))).getCertificateTypeName();
+      }catch(FinderException e){}
+      
+      return returnval;
+    } // getCertificateTypeName
+    
+    // Private methods
+    
+    private Integer findFreeCertificateTypeId(){
+      Random random = new Random((new Date()).getTime()); 
+      int id = random.nextInt();
+      boolean foundfree = false;
+      
+      while(!foundfree){
+        try{  
+          if(id > ICertificateStoreSessionRemote.FIXED_CERTIFICATETYPE_BOUNDRY){  
+            certtypehome.findByPrimaryKey(new Integer(id));
+          }else{      
+            id = random.nextInt();
+          }  
+        }catch(FinderException e){
+           foundfree = true;   
+        }
+      }      
+      return new Integer(id);
+    } // findFreeCertificateTypeId
+    
 
 } // CertificateStoreSessionBean

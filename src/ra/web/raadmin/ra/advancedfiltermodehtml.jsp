@@ -1,4 +1,5 @@
 <% String[] profilenames = rabean.getProfileNames(); 
+   String[] certificatetypenames = rabean.getCertificateTypeNames();
  
    String[] connectorreferences = {"AND","OR","ANDNOT","ORNOT"};
    String[] monthreferences     = {"MONTHJAN","MONTHFEB","MONTHMAR","MONTHAPR","MONTHMAY","MONTHJUN","MONTHJUL","MONTHAUG","MONTHSEP"
@@ -20,7 +21,11 @@
       profilenames[<%=i %>] = "<%=profilenames[i] %>";
 
     <% } %>
+   var certificatetypenames = new Array(<%= certificatetypenames.length %>);
+   <% for(int i = 0; i < certificatetypenames.length; i++){ %>
+      certificatetypenames[<%=i %>] = "<%=certificatetypenames[i] %>";
 
+    <% } %>
    
    var ID    = 0;
    var NAME  = 1;
@@ -104,46 +109,69 @@ function changematchfields(row){
      for( i = 0; i < profilenames.length; i++){
        menumatchvalue.options[i]= new Option(profilenames[i],profilenames[i]);       
      }
-      
     }
     else{
-      // if status remove beginswith and menu
-      if(matchwithvalue == <%= UserMatch.MATCH_WITH_STATUS %> ){
+      if(matchwithvalue == <%= UserMatch.MATCH_WITH_CERTIFICATETYPE %> ){
+  
         menumatchvalue.disabled = false;
         textmatchvalue.disabled = true;
         textmatchvalue.value= "";
         textmatchvalue.size=1;
 
-        numoftypes = matchtype.length;
+        var numoftypes = matchtype.length;
         for( i=numoftypes-1; i >= 0; i-- ){
           matchtype.options[i]=null;
         }
         matchtype.options[0]= new Option(matchtypefields[NAME][0],matchtypefields[ID][0]);
 
         numofvalues = menumatchvalue.length;
-        for( i=numofvalues-1; i >= 0; i--){
-          menumatchvalue.options[i]=null;
-        }  
-        for( i = 0; i < statusfields[ID].length ; i++){
-          menumatchvalue.options[i]= new Option(statusfields[NAME][i],statusfields[ID][i]);       
-        }
-      }
- // else equals and beginswith and textfield.
-      else{
-        var numoftypes = matchtype.length;
-        for(i=numoftypes-1; i >= 0; i-- ){
-          matchtype.options[i]=null;
-        }
-        matchtype.options[0]= new Option(matchtypefields[NAME][0],matchtypefields[ID][0]);
-        matchtype.options[1]= new Option(matchtypefields[NAME][1],matchtypefields[ID][1]);
-
-        numofvalues = menumatchvalue.length;
         for(i=numofvalues-1; i >= 0; i--){
-          menumatchvalue.options[i]=null;
-        }     
-        menumatchvalue.disabled = true;
-        textmatchvalue.disabled = false;
-        textmatchvalue.size=40;
+         menumatchvalue.options[i]=null;
+        }  
+        for( i = 0; i < certificatetypenames.length; i++){
+          menumatchvalue.options[i]= new Option(certificatetypenames[i],certificatetypenames[i]);       
+        }
+      
+     }
+     else{      
+        // if status remove beginswith and menu
+        if(matchwithvalue == <%= UserMatch.MATCH_WITH_STATUS %> ){
+          menumatchvalue.disabled = false;
+          textmatchvalue.disabled = true;
+          textmatchvalue.value= "";
+          textmatchvalue.size=1;
+
+          numoftypes = matchtype.length;
+          for( i=numoftypes-1; i >= 0; i-- ){
+            matchtype.options[i]=null;
+          }
+          matchtype.options[0]= new Option(matchtypefields[NAME][0],matchtypefields[ID][0]);
+
+          numofvalues = menumatchvalue.length;
+          for( i=numofvalues-1; i >= 0; i--){
+            menumatchvalue.options[i]=null;
+          }  
+          for( i = 0; i < statusfields[ID].length ; i++){
+            menumatchvalue.options[i]= new Option(statusfields[NAME][i],statusfields[ID][i]);       
+          }
+        }
+   // else equals and beginswith and textfield.
+        else{
+          var numoftypes = matchtype.length;
+          for(i=numoftypes-1; i >= 0; i-- ){
+            matchtype.options[i]=null;
+          }
+          matchtype.options[0]= new Option(matchtypefields[NAME][0],matchtypefields[ID][0]);
+          matchtype.options[1]= new Option(matchtypefields[NAME][1],matchtypefields[ID][1]);
+
+          numofvalues = menumatchvalue.length;
+          for(i=numofvalues-1; i >= 0; i--){
+            menumatchvalue.options[i]=null;
+          }     
+          menumatchvalue.disabled = true;
+          textmatchvalue.disabled = false;
+          textmatchvalue.size=40;
+        }
       }
     }
   }
@@ -203,10 +231,10 @@ function changematchfields(row){
                          out.write(" selected ");
                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_PROFILE) %>'><%= ejbcawebbean.getText("MATCHPROFILE") %>
           </option>
-  <!--        <option <%if(tempval == UserMatch.MATCH_WITH_CERTIFICATETYPE)
+          <option <%if(tempval == UserMatch.MATCH_WITH_CERTIFICATETYPE)
                          out.write(" selected ");
                      %> value='<%= Integer.toString(UserMatch.MATCH_WITH_CERTIFICATETYPE) %>'><%= ejbcawebbean.getText("MATCHCERTIFICATETYPE") %>
-          </option> -->
+          </option> 
         </select> &nbsp;&nbsp;
           <%
            tempval = -1;
@@ -255,6 +283,17 @@ function changematchfields(row){
                 <%  }
                   }
                   else{
+                   if(oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATETYPE))){ %>
+              >
+                <% for(int i=0; i < certificatetypenames.length; i++){ %>
+          <option <% if(oldmatchvaluerow1!= null){
+                       if(oldmatchvaluerow1.equals(certificatetypenames[i]))
+                         out.write(" selected ");
+                    } %> value='<%= certificatetypenames[i] %>'><%= certificatetypenames[i] %>
+          </option>                   
+                <%  }
+                  }
+                  else{
                     if(oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))){ %> 
               >
               <%
@@ -286,13 +325,13 @@ function changematchfields(row){
        <% } else{ %>
           disabled >
        <%  }
-         }
+         }}
         }else{ %>
           disabled > 
      <% } %>
        </select>
        <% if( oldmatchwithrow1!= null){
-           if( oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))){ %>
+           if( oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_PROFILE)) || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATETYPE))){ %>
        <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>"  size="1" maxlength="255" value='' disabled >    
            <% }else{ %>
               <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>" size="40" maxlength="255" value='<%=oldmatchvaluerow1 %>' >
@@ -366,10 +405,10 @@ function changematchfields(row){
                          out.write(" selected ");
                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_PROFILE) %>'><%= ejbcawebbean.getText("MATCHPROFILE") %>
           </option>
-  <!--        <option <%if(tempval == UserMatch.MATCH_WITH_CERTIFICATETYPE)
+          <option <%if(tempval == UserMatch.MATCH_WITH_CERTIFICATETYPE)
                          out.write(" selected ");
                      %> value='<%= Integer.toString(UserMatch.MATCH_WITH_CERTIFICATETYPE) %>'><%= ejbcawebbean.getText("MATCHCERTIFICATETYPE") %>
-          </option> -->
+          </option> 
         </select> &nbsp;&nbsp;
           <%
            tempval = -1;
@@ -409,6 +448,17 @@ function changematchfields(row){
                 <%  }
                   }
                   else{
+                   if(oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATETYPE))){ %>
+              >
+                <% for(int i=0; i < certificatetypenames.length; i++){ %>
+          <option <% if(oldmatchvaluerow2!= null){
+                       if(oldmatchvaluerow2.equals(certificatetypenames[i]))
+                         out.write(" selected ");
+                    } %> value='<%= certificatetypenames[i] %>'><%= certificatetypenames[i] %>
+          </option>                   
+                <%  }
+                  }
+                  else{
                     if(oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))){ %> 
               >
               <%
@@ -440,13 +490,13 @@ function changematchfields(row){
        <% } else{ %>
           disabled >
        <%  }
-         }
+         }}
         }else{ %>
           disabled > 
      <% } %>
        </select>
        <% if( oldmatchwithrow2!= null){
-           if( oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))){ %>
+           if( oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_PROFILE)) || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATETYPE))){ %>
        <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>"  size="1" maxlength="255" value='' disabled >    
            <% }else{ %>
               <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>" size="40" maxlength="255" value='<%=oldmatchvaluerow2 %>' >
@@ -520,10 +570,10 @@ function changematchfields(row){
                          out.write(" selected ");
                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_PROFILE) %>'><%= ejbcawebbean.getText("MATCHPROFILE") %>
           </option>
-  <!--        <option <%if(tempval == UserMatch.MATCH_WITH_CERTIFICATETYPE)
+          <option <%if(tempval == UserMatch.MATCH_WITH_CERTIFICATETYPE)
                          out.write(" selected ");
                      %> value='<%= Integer.toString(UserMatch.MATCH_WITH_CERTIFICATETYPE) %>'><%= ejbcawebbean.getText("MATCHCERTIFICATETYPE") %>
-          </option> -->
+          </option> 
         </select> &nbsp;&nbsp;
           <%
            tempval = -1;
@@ -563,6 +613,17 @@ function changematchfields(row){
                 <%  }
                   }
                   else{
+                   if(oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATETYPE))){ %>
+              >
+                <% for(int i=0; i < certificatetypenames.length; i++){ %>
+          <option <% if(oldmatchvaluerow3!= null){
+                       if(oldmatchvaluerow3.equals(certificatetypenames[i]))
+                         out.write(" selected ");
+                    } %> value='<%= certificatetypenames[i] %>'><%= certificatetypenames[i] %>
+          </option>                   
+                <%  }
+                  }
+                  else{
                     if(oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))){ %> 
               >
               <%
@@ -594,13 +655,13 @@ function changematchfields(row){
        <% } else{ %>
           disabled >
        <%  }
-         }
+         }}
         }else{ %>
           disabled > 
      <% } %>
        </select>
        <% if( oldmatchwithrow3!= null){
-           if( oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))){ %>
+           if( oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_PROFILE)) || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATETYPE))){ %>
        <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>"  size="1" maxlength="255" value='' disabled >    
            <% }else{ %>
               <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>" size="40" maxlength="255" value='<%=oldmatchvaluerow3 %>' >

@@ -14,6 +14,8 @@
 
   final String CA_LINK                  = "/" +globalconfiguration.getCaPath() 
                                                   + "/cafunctions.jsp";
+  final String CA_CERTIFICATETYPESLINK  = "/" +globalconfiguration.getCaPath() 
+                                                  + "/editcertificatetypes/editcertificatetypes.jsp";  
   final String RA_LINK                  = "/" +globalconfiguration.getRaPath() 
                                                   + "/adduser.jsp";
   final String RA_EDITPROFILESLINK      = "/" +globalconfiguration.getRaPath()+"/editprofiles/editprofiles.jsp";
@@ -60,9 +62,14 @@
      <br>
 
 <%    }
-    // Temporate
    }catch(AuthorizationDeniedException e){} 
+   try{
+     if(ejbcawebbean.isAuthorized(CA_CERTIFICATETYPESLINK)){ %>
+     &nbsp;&nbsp;<A href='<%= CA_CERTIFICATETYPESLINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITCERTIFICATETYPES") %></a>
+     <br>
 
+<%    }
+   }catch(AuthorizationDeniedException e){} 
     // If authorized to edit the ra profiles then display related links.
     try{
       if(ejbcawebbean.isAuthorized(RA_EDITPROFILESLINK)){ 

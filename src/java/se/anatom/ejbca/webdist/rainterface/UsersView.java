@@ -14,6 +14,7 @@ import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import javax.naming.NamingException;
 import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.webdist.cainterface.CertificateTypeNameProxy;
 /**
  * A class representing a set of users w
  * @author  philip
@@ -30,8 +31,9 @@ public class UsersView {
       users = new Vector();
       sortby = new SortBy();  
       ProfileNameProxy profilenameproxy = new ProfileNameProxy(); 
+      CertificateTypeNameProxy certificatetypenameproxy = new CertificateTypeNameProxy();
       
-      users.addElement(new UserView(importuser, profilenameproxy.getProfileName(importuser.getProfileId()),"NO_CERTIFICATE_TYPE" )); 
+      users.addElement(new UserView(importuser, profilenameproxy.getProfileName(importuser.getProfileId()),certificatetypenameproxy.getCertificateTypeName(importuser.getCertificateTypeId()))); 
       
       Collections.sort(users); 
     }
@@ -84,11 +86,12 @@ public class UsersView {
     
     public void setUsers(UserAdminData[] users) throws RemoteException, NamingException, FinderException, CreateException {
       ProfileNameProxy profilenameproxy = new ProfileNameProxy();  
+      CertificateTypeNameProxy certificatetypenameproxy = new CertificateTypeNameProxy();
       UserView user;  
       this.users.clear();
       if(users !=null && users.length > 0){ 
         for(int i=0; i< users.length; i++){
-          user = new UserView(users[i],profilenameproxy.getProfileName(users[i].getProfileId()),"NO_CERTIFICATE_TYPE"); // TEMPORATE.
+          user = new UserView(users[i],profilenameproxy.getProfileName(users[i].getProfileId()),certificatetypenameproxy.getCertificateTypeName(users[i].getCertificateTypeId())); 
           user.setSortBy(this.sortby);
           this.users.addElement(user);
         }
@@ -98,6 +101,7 @@ public class UsersView {
 
     public void setUsers(Collection importusers) throws RemoteException, NamingException, FinderException, CreateException{ 
       ProfileNameProxy profilenameproxy = new ProfileNameProxy();  
+      CertificateTypeNameProxy certificatetypenameproxy = new CertificateTypeNameProxy();      
       UserView user;  
       Iterator i;  
       this.users.clear();
@@ -105,7 +109,7 @@ public class UsersView {
         i=importusers.iterator();
         while(i.hasNext()){
           UserAdminData nextuser = (UserAdminData) i.next();  
-          user = new UserView(nextuser,profilenameproxy.getProfileName(nextuser.getProfileId()),"NO_CERTIFICATE_TYPE"); // TEMPORATE. 
+          user = new UserView(nextuser,profilenameproxy.getProfileName(nextuser.getProfileId()),certificatetypenameproxy.getCertificateTypeName(nextuser.getCertificateTypeId())); 
           user.setSortBy(this.sortby);
           users.addElement(user);
         }

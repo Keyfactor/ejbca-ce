@@ -30,7 +30,7 @@ public class GlobalConfiguration implements java.io.Serializable {
                                                       "/raadmin/themes","/raadmin/languages"};    
     // Rules available by default i authorization module.
     private final  String[]  DEFAULT_AVAILABLE_RULES = {"/", "/raadmin/", "/raadmin/authorization", "/raadmin/authorization/availablerules", 
-                                                       "/raadmin/ca", "/raadmin/ca/createcrl", "/raadmin/ca/getcrl", "/raadmin/config", 
+                                                       "/raadmin/ca", "/raadmin/ca/editcertificatetypes", "/raadmin/ca/createcrl", "/raadmin/ca/getcrl", "/raadmin/config", 
                                                        "/raadmin/ra", "/raadmin/ra/editprofiles"};
                                                       
     // Endings to add to profile authorizxation.                                                   
@@ -38,6 +38,20 @@ public class GlobalConfiguration implements java.io.Serializable {
     // Name of profile prefix directory in authorization module.
     private final String    PROFILEPREFIX          = "/profiles";
    
+    // Path added to baseurl used as default vaule in CRLDistributionPointURI field in Certificate Type definitions.
+    private final String    DEFAULTCRLDISTURIPATH  = "webdist/certdist?cmd=crl";
+    
+    // Port used by EJBCA public webcomponents. i.e that doesn't require client authentication
+    private final String    PUBLICPORT             = "8080";
+    
+    // Port  used by EJBCA private webcomponents. i.e that requires client authentication
+    private final String    PRIVATEPORT           = "8443";
+    
+    // Protocol used by EJBCA public webcomponents. i.e that doesn't require client authentication
+    private final String    PUBLICPROTOCOL        = "http";
+    // Protocol used by EJBCA private webcomponents. i.e that requires client authentication
+    private final String    PRIVATEPROTOCOL       = "https";
+    
     // Name of headbanner in web interface.
     private final  String   HEADBANNER             = "head_banner.jsp";
     // Name of footbanner page in web interface.
@@ -79,7 +93,7 @@ public class GlobalConfiguration implements java.io.Serializable {
        String tempavailablethemes = availablethemes.trim();        
         
        if(!tempbaseurl.endsWith("/")){
-         tempbaseurl = tempbaseurl + "/";   // Remove ending '/'
+         tempbaseurl = tempbaseurl + "/";   
        }
        if(tempraadminpath == null)
          tempraadminpath = "";
@@ -137,7 +151,15 @@ public class GlobalConfiguration implements java.io.Serializable {
     }
     
     
-    public   String getRaAdminPath(){return (String) config.get(P_RAADMINPATH);}
+    public String getRaAdminPath(){return (String) config.get(P_RAADMINPATH);}
+    
+    public String getStandardCRLDistributionPointURI(){ 
+        String retval = (String) config.get(P_BASEURL);
+        retval =retval.replaceFirst(PRIVATEPROTOCOL, PUBLICPROTOCOL);        
+        retval =retval.replaceFirst(PRIVATEPORT, PUBLICPORT);
+        retval+= DEFAULTCRLDISTURIPATH;
+        return retval;
+    }
 
     public   String[] getOpenDirectories() {return (String[]) config.get(P_OPENDIRECTORIES);} 
     // Returns all opendirectories as a comma-separated string.

@@ -60,7 +60,7 @@
   <env-entry>
     <description>Defines the raadmin directory</description>
     <env-entry-name>RAADMINDIRECTORY</env-entry-name>
-    <env-entry-value>raadmin/</env-entry-value>
+    <env-entry-value>ejbca/raadmin/</env-entry-value>
     <env-entry-type>java.lang.String</env-entry-type>
   </env-entry>
   <env-entry>

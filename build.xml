@@ -226,6 +226,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
         <fileset dir="${build}">
                 <include name="se/anatom/ejbca/webdist/*.class"/>
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
+                <include name="se/anatom/ejbca/ca/store/certificatetypes/*.class"/>                
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
                 <include name="se/anatom/ejbca/ca/sign/ISign*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
@@ -257,7 +258,8 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
         <fileset dir="${build}">
                 <include name="se/anatom/ejbca/webdist/**/*.class"/>
                 <include name="se/anatom/ejbca/ca/store/CertificateData*.class"/>                
-                <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>           
+                <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>         
+                <include name="se/anatom/ejbca/ca/store/certificatetypes/*.class"/>                        
                 <include name="se/anatom/ejbca/ra/*.class"/>
                 <include name="se/anatom/ejbca/ra/raadmin/*.class"/>
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
@@ -289,6 +291,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/admin/*.class"/>
                 <include name="se/anatom/ejbca/batch/*.class"/>
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
+                <include name="se/anatom/ejbca/ca/store/certificatetypes/*.class"/>                
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
                 <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/RevokedCertInfo*.class"/>

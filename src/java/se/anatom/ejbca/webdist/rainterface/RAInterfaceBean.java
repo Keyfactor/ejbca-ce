@@ -15,6 +15,7 @@ import java.util.Properties;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Vector;
+import java.util.HashMap;
 import java.io.Serializable;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
@@ -39,12 +40,13 @@ import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
 import se.anatom.ejbca.ra.raadmin.Profile;
 import se.anatom.ejbca.util.query.*;
+import se.anatom.ejbca.webdist.cainterface.CertificateTypeNameProxy;
 
 /**
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.10 2002-07-28 23:27:47 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.11 2002-08-05 01:57:05 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -82,7 +84,7 @@ public class RAInterfaceBean {
         if(stringuserdata[UserView.PROFILE] != null){
           if(stringuserdata[UserView.PROFILE].trim() != ""){
             int profileid =  raadminsession.getProfileId(stringuserdata[UserView.PROFILE].trim());
-            int certificatetypeid = UserAdminData.NO_CERTIFICATETYPE; // TEMPORARY
+            int certificatetypeid = certificatesession.getCertificateTypeId(stringuserdata[UserView.CERTIFICATETYPE].trim());
             if(profileid != 0){
               UserView userview =  new UserView(stringuserdata,null,null,profileid,certificatetypeid );
               addedusermemory.addUser(userview);
@@ -145,11 +147,16 @@ public class RAInterfaceBean {
     /* Changes the userdata  */
     public void changeUserData(String[] userdata) throws RemoteException, NamingException, FinderException, CreateException {
         int profileid = UserAdminData.NO_PROFILE;
-        int certificatetypeid = UserAdminData.NO_CERTIFICATETYPE; // TEMPORARY        
+        int certificatetypeid = UserAdminData.NO_CERTIFICATETYPE;    
         // lookup profileid and certificatetype id;
         if(userdata[UserView.PROFILE] != null){
           if(userdata[UserView.PROFILE].trim() != ""){
             profileid =  raadminsession.getProfileId(userdata[UserView.PROFILE].trim());
+          }
+        }
+        if(userdata[UserView.CERTIFICATETYPE] != null){
+          if(userdata[UserView.CERTIFICATETYPE].trim() != ""){
+             certificatetypeid = certificatesession.getCertificateTypeId(userdata[UserView.CERTIFICATETYPE].trim());
           }
         }
         
@@ -240,6 +247,7 @@ public class RAInterfaceBean {
                                                                                             NamingException,
                                                                                             CreateException{
       Vector uservector = new Vector();
+      HashMap addedusers = new HashMap();
       String[][] returnval = null;
 
       long d = Long.parseLong(days);
@@ -252,7 +260,8 @@ public class RAInterfaceBean {
         Iterator i = certs.iterator();
         while(i.hasNext() && uservector.size() <= MAXIMUM_QUERY_ROWCOUNT ){
            UserAdminData user = adminsession.findUserBySubjectDN(((X509Certificate) i.next()).getSubjectDN().toString());
-           if(user != null){
+           if(user != null && addedusers.get(user.getUsername()) == null){
+             addedusers.put(user.getUsername() ,new Boolean(true));  
              uservector.addElement(user);
            }
         }
@@ -398,6 +407,16 @@ public class RAInterfaceBean {
 
       return returnval;
     }
+    
+    public String[] getCertificateTypeNames() throws RemoteException{
+      String[] dummy = {""};
+      return (String[]) certificatesession.getCertificateTypeNames().toArray(dummy); 
+    }
+    
+    public int getCertificateTypeId(String certificatetypename) throws RemoteException{
+      return certificatesession.getCertificateTypeId(certificatetypename); 
+    }
+   
     // Private methods.
 
     // Private fields.

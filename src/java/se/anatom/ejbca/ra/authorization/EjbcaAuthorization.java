@@ -25,11 +25,11 @@ import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 
 /**
- * A java bean handling the athorization to JSP pages.
+ * A java bean handling the athorization to ejbca.
  * 
- * The main metod are isAthorized.
+ * The main metod are isAthorized and authenticate.
  *
- * @author  Philip Vendil
+ * @author  TomSelleck
  */
 public class EjbcaAuthorization extends Object implements java.io.Serializable{
        
@@ -82,8 +82,10 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
         boolean verified = false;
         for(int i=0; i < this.cacertificatechain.length; i++){
            try{ 
-             certificate.verify(cacertificatechain[i].getPublicKey());
-             verified = true;
+   //          if(certificate.getIssuerDN.equals(((X509Certificate) cacertificatechain[i]).getSubjectDN())){          
+               certificate.verify(cacertificatechain[i].getPublicKey());
+               verified = true;
+          //   }    
            }catch(Exception e){}   
         }
         if(!verified)

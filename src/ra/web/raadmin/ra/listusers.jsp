@@ -599,7 +599,8 @@
                     if(matchvaluerow1.equals("0")) matchvaluerow1 = null;
                }else{
                  if(matchwithrow1 == UserMatch.MATCH_WITH_CERTIFICATETYPE){   
-                       // todo
+                    matchvaluerow1 = Integer.toString(rabean.getCertificateTypeId(request.getParameter(SELECT_MATCHVALUE_ROW1)));
+                    if(matchvaluerow1.equals("0")) matchvaluerow1 = null;
                  }else{
                     if(matchwithrow1 == UserMatch.MATCH_WITH_STATUS){
                        matchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
@@ -614,7 +615,8 @@
                     if(matchvaluerow2.equals("0")) matchvaluerow2 = null;
                }else{
                  if(matchwithrow2 == UserMatch.MATCH_WITH_CERTIFICATETYPE){   
-                       // todo
+                    matchvaluerow2 = Integer.toString(rabean.getCertificateTypeId(request.getParameter(SELECT_MATCHVALUE_ROW2)));
+                    if(matchvaluerow2.equals("0")) matchvaluerow2 = null;
                  }else{
                     if(matchwithrow2 == UserMatch.MATCH_WITH_STATUS){
                        matchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
@@ -630,7 +632,8 @@
                     if(matchvaluerow3.equals("0")) matchvaluerow3 = null;
                }else{
                  if(matchwithrow3 == UserMatch.MATCH_WITH_CERTIFICATETYPE){   
-                       // todo
+                    matchvaluerow3 = Integer.toString(rabean.getCertificateTypeId(request.getParameter(SELECT_MATCHVALUE_ROW3)));
+                    if(matchvaluerow3.equals("0")) matchvaluerow3 = null;
                  }else{
                     if(matchwithrow3 == UserMatch.MATCH_WITH_STATUS){
                        matchvaluerow3 = request.getParameter(SELECT_MATCHVALUE_ROW3);

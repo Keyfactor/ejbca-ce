@@ -76,7 +76,8 @@
   static final String CHECKBOX_CHANGEABLE_COUNTRY           = "checkboxchangeablecountry";
   static final String CHECKBOX_CHANGEABLE_EMAIL             = "checkboxchangeableemail";
 
-
+  static final String SELECT_DEFAULTCERTTYPE                = "selectdefaultcerttype";
+  static final String SELECT_AVAILABLECERTTYPES             = "selectavailablecerttypes";
 
   static final String SELECT_TYPE                         = "selecttype";
   String profile = null;
@@ -149,7 +150,7 @@
          if(!newprofilename.trim().equals("") && !oldprofilename.trim().equals("")){
            if(!oldprofilename.equals(ProfileDataHandler.EMPTY_PROFILE)){ 
              try{
-               ejbcarabean.renameProfile(oldprofilename,newprofilename);
+               ejbcarabean.renameProfile(oldprofilename.trim(),newprofilename.trim());
              }catch( ProfileExistsException e){
                profileexists=true;
              }
@@ -166,7 +167,7 @@
          if(profile != null){
            if(!profile.trim().equals("")){
              try{
-               ejbcarabean.addProfile(profile);
+               ejbcarabean.addProfile(profile.trim());
              }catch( ProfileExistsException e){
                profileexists=true;
              }
@@ -181,7 +182,7 @@
        if(oldprofilename != null && newprofilename != null){
          if(!newprofilename.trim().equals("") && !oldprofilename.trim().equals("")){
              try{ 
-               ejbcarabean.cloneProfile(oldprofilename,newprofilename);
+               ejbcarabean.cloneProfile(oldprofilename.trim(),newprofilename.trim());
              }catch( ProfileExistsException e){
                profileexists=true;
              }
@@ -255,7 +256,26 @@
              profiledata.setValue(Profile.TYPE_ROOTCA ,request.getParameter(CHECKBOX_TYPEROOTCA));
              profiledata.setRequired(Profile.TYPE_ROOTCA ,request.getParameter(CHECKBOX_REQUIRED_TYPEROOTCA));
  
+             String defaultcerttype =  request.getParameter(SELECT_DEFAULTCERTTYPE);
+             profiledata.setValue(Profile.DEFAULTCERTTYPE, defaultcerttype);
+             profiledata.setRequired(Profile.DEFAULTCERTTYPE,Profile.TRUE);
 
+             String[] values = request.getParameterValues(SELECT_AVAILABLECERTTYPES);
+ 
+             if(defaultcerttype != null){
+               String availablecert =defaultcerttype;
+               if(values!= null){
+                 for(int i=0; i< values.length; i++){
+                     if(!values[i].equals(defaultcerttype))
+                       availablecert += "," + values[i];
+                 }
+               } 
+               profiledata.setValue(Profile.AVAILABLECERTTYPES, availablecert);
+               profiledata.setRequired(Profile.AVAILABLECERTTYPES,Profile.TRUE);    
+             }
+ 
+             
+          
              ejbcarabean.changeProfile(profile,profiledata);
            }
            if(request.getParameter(BUTTON_CANCEL) != null){
@@ -280,7 +300,7 @@
 <%}
 
    // Include Footer 
-   String footurl =   globalconfiguration .getFootBanner(); %>
+   String footurl =   globalconfiguration.getFootBanner(); %>
    
   <jsp:include page="<%= footurl %>" />
 

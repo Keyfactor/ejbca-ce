@@ -1,4 +1,5 @@
 <% String[][] profiledata = ejbcarabean.getProfileAsString(profile);
+   String[] certificatetypenames = ejbcarabean.getCertificateTypeNames();
    
 %>
 <SCRIPT language="JavaScript">
@@ -33,7 +34,11 @@ function checkallfields(){
 
     if(!checkfieldforlegalemailchars("document.editprofile.<%=TEXTFIELD_EMAIL%>","<%= ejbcawebbean.getText("ONLYEMAILCHARS") %>"))
       illegalfields++;
-   
+ 
+    if(document.editprofile.<%= SELECT_DEFAULTCERTTYPE %>.options.selectedIndex == -1){
+      alert("<%=  ejbcawebbean.getText("ADEFAULTCERTTYPE") %>");
+      illegalfields++;
+    }
      return illegalfields == 0;  
    } 
 -->
@@ -265,6 +270,60 @@ function checkallfields(){
            %>> 
       </td>
     </tr>
+    <tr  id="Row1"> 
+      <td width="50%" align="right"> 
+        <%= ejbcawebbean.getText("EMAIL") %> <br>&nbsp;
+      </td>
+      <td width="50%"> 
+        <input type="text" name="<%=TEXTFIELD_EMAIL%>" size="40" maxlength="255" 
+           value="<% if(profiledata[Profile.EMAIL][Profile.VALUE]!= null) out.write(profiledata[Profile.EMAIL][Profile.VALUE]); %>"><br>
+               <%= ejbcawebbean.getText("REQUIRED") %>
+        <input type="checkbox" name="<%=CHECKBOX_REQUIRED_EMAIL%>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(profiledata[Profile.EMAIL][Profile.ISREQUIRED]!= null)
+               if(profiledata[Profile.EMAIL][Profile.ISREQUIRED].equals(Profile.TRUE))
+                 out.write("CHECKED");
+           %>> 
+        &nbsp;&nbsp;<%= ejbcawebbean.getText("CHANGEABLE") %> 
+        <input type="checkbox" name="<%=CHECKBOX_CHANGEABLE_EMAIL  %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(profiledata[Profile.EMAIL][Profile.CHANGEABLE]!= null)
+               if(profiledata[Profile.EMAIL][Profile.CHANGEABLE].equals(Profile.TRUE))
+                 out.write("CHECKED");
+           %>> 
+      </td>
+    </tr>
+    <tr  id="Row0"> 
+      <td width="50%" align="right"> 
+        <%= ejbcawebbean.getText("DEFAULTCERTIFICATETYPE") %> <br>&nbsp;
+      </td>
+      <td width="50%"> 
+        <select name="<%=SELECT_DEFAULTCERTTYPE %>" size="1" >
+            <% for(int i=0; i < certificatetypenames.length;i++){ %>
+           <option <%  if(profiledata[Profile.DEFAULTCERTTYPE][Profile.VALUE] != null)
+                          if(profiledata[Profile.DEFAULTCERTTYPE][Profile.VALUE].equals(certificatetypenames[i]))
+                            out.write(" selected "); %>
+                    value='<%= certificatetypenames[i] %>'><%= certificatetypenames[i] %>
+           </option>
+            <% } %>
+        </select>
+      </td>
+    <tr  id="Row1"> 
+      <td width="50%" align="right"> 
+        <%= ejbcawebbean.getText("AVAILABLECERTIFICATETYPES") %> <br>&nbsp;
+      </td>
+      <td width="50%"> 
+        <select name="<%=SELECT_AVAILABLECERTTYPES %>" size="7" multiple >
+            <% String[] availablecerttypes = profiledata[Profile.AVAILABLECERTTYPES][Profile.VALUE].split(","); 
+               for(int i=0; i < certificatetypenames.length;i++){ %>
+           <option <% for(int j=0;j< availablecerttypes.length;j++){
+                         if(availablecerttypes[j].equals(certificatetypenames[i]))
+                            out.write(" selected "); 
+                      }%>
+                    value='<%= certificatetypenames[i] %>'><%= certificatetypenames[i] %>
+           </option>
+            <% } %>
+        </select>
+      </td>
+    </tr>
     <tr  id="Row0"> 
       <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("TYPES") %></td>
       <td width="50%" valign="top" align="right">&nbsp;</td>
@@ -278,7 +337,7 @@ function checkallfields(){
            <% if(profiledata[Profile.TYPE_ENDUSER][Profile.VALUE]!= null)
                if(profiledata[Profile.TYPE_ENDUSER][Profile.VALUE].equals(Profile.TRUE))
                  out.write("CHECKED");
-           %>> <br>         <%= ejbcawebbean.getText("REQUIRED") %>
+           %>> <br>        <%= ejbcawebbean.getText("REQUIRED") %>
 
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_TYPEENDUSER%>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.TYPE_ENDUSER][Profile.ISREQUIRED]!= null)

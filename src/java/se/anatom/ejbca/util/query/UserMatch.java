@@ -37,7 +37,7 @@ public class UserMatch extends BasicMatch {
 
     // Private Constants.
     private final static String[] MATCH_WITH_SQLNAMES = {"username", "subjectEmail", "status"
-                                                         , "profile", "certificateType"}; // Represents the column names in ra userdata table.
+                                                         , "profileId", "certificateTypeId"}; // Represents the column names in ra userdata table.
 
     private final static String MATCH_WITH_SUBJECTDN        = "subjectDN";
     private final static String[] MATCH_WITH_SUBJECTDN_NAMES  = {"CN=", "OU=", "O=", "L=", "ST=", "C="};        

@@ -15,6 +15,7 @@ import java.security.interfaces.RSAPublicKey;
 
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
+import se.anatom.ejbca.ca.store.certificatetypes.CertificateType;
 
 
 /**
@@ -24,15 +25,15 @@ import se.anatom.ejbca.util.Hex;
  */
 public class CertificateView {
     
-   public static final int DIGITALSIGNATURE = 0;
-   public static final int NONREPUDATION    = 1;
-   public static final int KEYENCIPHERMENT  = 2;
-   public static final int DATAENCIPHERMENT = 3;
-   public static final int KEYAGREEMENT     = 4;
-   public static final int KEYCERTSIGN      = 5;
-   public static final int CRLSIGN          = 6;
-   public static final int ENCIPHERONLY     = 7;
-   public static final int DECIPHERONLY     = 8;
+   public static final int DIGITALSIGNATURE = CertificateType.DIGITALSIGNATURE;
+   public static final int NONREPUDATION    = CertificateType.NONREPUDATION;
+   public static final int KEYENCIPHERMENT  = CertificateType.KEYENCIPHERMENT;
+   public static final int DATAENCIPHERMENT = CertificateType.DATAENCIPHERMENT;
+   public static final int KEYAGREEMENT     = CertificateType.KEYAGREEMENT;
+   public static final int KEYCERTSIGN      = CertificateType.KEYCERTSIGN;
+   public static final int CRLSIGN          = CertificateType.CRLSIGN;
+   public static final int ENCIPHERONLY     = CertificateType.ENCIPHERONLY;
+   public static final int DECIPHERONLY     = CertificateType.DECIPHERONLY;
    
         
     /** Creates a new instance of CertificateView */

@@ -28,6 +28,7 @@
   static final String TEXTFIELD_EMAIL             = "textfieldemail";
 
   static final String SELECT_PROFILE              = "selectprofile";
+  static final String SELECT_CERTIFICATETYPE      = "selectcertificatetype";
 
   static final String CHECKBOX_CLEARTEXTPASSWORD          = "checkboxcleartextpassword";
   static final String CHECKBOX_TYPEENDUSER                = "checkboxtypeenduser";
@@ -244,6 +245,10 @@
                oldprofile[Profile.TYPE_ROOTCA][Profile.VALUE] = Profile.FALSE;   
              }
            }
+           value = request.getParameter(SELECT_CERTIFICATETYPE);
+           newuser[UserView.CERTIFICATETYPE] = value;   
+           oldprofile[Profile.DEFAULTCERTTYPE][Profile.VALUE] = value;         
+     
 
 
            // See if user already exists
@@ -294,6 +299,8 @@
       var TYPE_ROOTCA       = <%= Profile.TYPE_ROOTCA %>;
       var TYPE_CAADMIN      = <%= Profile.TYPE_CAADMIN %>;
       var TYPE_RAADMIN      = <%= Profile.TYPE_RAADMIN %>;
+      var DEFAULTCERTTYPE   = <%= Profile.DEFAULTCERTTYPE %>
+      var AVAILABLECERTTYPES  = <%= Profile.AVAILABLECERTTYPES %>
       
       var profiles = new Array(<%= profilenames.length %>);
       <% for(int i = 0; i < profilenames.length; i++){ %>
@@ -379,6 +386,21 @@ function fillfromprofile(){
   document.adduser.<%= CHECKBOX_REQUIRED_STATE %>.checked = eval(profiles[index][STATE][ISREQUIRED]);
   document.adduser.<%= CHECKBOX_REQUIRED_COUNTRY%>.checked = eval(profiles[index][COUNTRY][ISREQUIRED]);
   document.adduser.<%= CHECKBOX_REQUIRED_EMAIL%>.checked = eval(profiles[index][EMAIL][ISREQUIRED]);
+
+  var availablecerttypes = profiles[index][AVAILABLECERTTYPES][VALUE].split(',');
+  var defaultcerttype = profiles[index][DEFAULTCERTTYPE][VALUE];
+  
+  var selectcert = document.adduser.<%=SELECT_CERTIFICATETYPE %>;
+  var numoftypes = selectcert.length;
+  var i;
+  for( i=numoftypes-1; i >= 0; i-- ){
+       selectcert.options[i]=null;
+  }
+  for( i=0;i< availablecerttypes.length; i++){
+    selectcert.options[i]= new Option(availablecerttypes[i],[i]);
+    if(availablecerttypes[i]==defaultcerttype)
+      selectcert.options[i].selected=true;      
+  }   
 }
 
 function fillfromoldprofile(){
@@ -427,6 +449,21 @@ function fillfromoldprofile(){
   document.adduser.<%= CHECKBOX_REQUIRED_STATE %>.checked = eval(oldprofile[STATE][ISREQUIRED]);
   document.adduser.<%= CHECKBOX_REQUIRED_COUNTRY%>.checked = eval(oldprofile[COUNTRY][ISREQUIRED]);
   document.adduser.<%= CHECKBOX_REQUIRED_EMAIL%>.checked = eval(oldprofile[EMAIL][ISREQUIRED]);
+
+  var availablecerttypes = oldprofile[AVAILABLECERTTYPES][VALUE].split(',');
+  var defaultcerttype = oldprofile[DEFAULTCERTTYPE][VALUE];
+  
+  var selectcert = document.adduser.<%=SELECT_CERTIFICATETYPE %>;
+  var numoftypes = selectcert.length;
+  var i;
+  for( i=numoftypes-1; i >= 0; i-- ){
+       selectcert.options[i]=null;
+  }
+  for( i=0;i< availablecerttypes.length; i++){
+    selectcert.options[i]= new Option(availablecerttypes[i],[i]);
+    if(availablecerttypes[i]==defaultcerttype)
+      selectcert.options[i].selected=true;      
+  }   
 
 }
 
@@ -511,6 +548,11 @@ function checkallfields(){
       alert("<%= ejbcawebbean.getText("PASSWORDSDOESNTMATCH") %>");
       illegalfields++;
     } 
+
+    if(document.adduser.<%=SELECT_CERTIFICATETYPE%>.options.selectedIndex == -1){
+      alert("<%=  ejbcawebbean.getText("CERTIFICATETYPEMUST") %>");
+      illegalfields++;
+    }
 
     if(illegalfields == 0){
       document.adduser.<%= TEXTFIELD_USERNAME %>.disabled = false;
@@ -673,6 +715,16 @@ function checkallfields(){
        </tr>
        <tr id="Row0">
 	 <td></td>
+	 <td align="right"><%= ejbcawebbean.getText("CERTIFICATETYPE") %></td>
+	 <td>
+         <select name="<%= SELECT_CERTIFICATETYPE %>" size="1" tabindex="13">
+         </select>
+         </td>
+	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>
+       </tr>
+
+       <tr id="Row1">
+	 <td></td>
 	 <td align="right"><%= ejbcawebbean.getText("TYPES") %></td>
 	 <td>
          </td>
@@ -684,7 +736,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("TYPEENDUSER") %> <br>
       </td>
       <td > 
-        <input type="checkbox" name="<%=CHECKBOX_TYPEENDUSER%>" value="<%=CHECKBOX_VALUE %>" tabindex="13"> 
+        <input type="checkbox" name="<%=CHECKBOX_TYPEENDUSER%>" value="<%=CHECKBOX_VALUE %>" tabindex="14"> 
       </td>
       <td></td>
     </tr>
@@ -694,7 +746,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("TYPERA") %> 
       </td>
       <td> 
-        <input type="checkbox" name="<%=CHECKBOX_TYPERA%>" value="<%=CHECKBOX_VALUE %>" tabindex="14"> 
+        <input type="checkbox" name="<%=CHECKBOX_TYPERA%>" value="<%=CHECKBOX_VALUE %>" tabindex="15"> 
       </td>
       <td></td>
     </tr>
@@ -704,7 +756,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("TYPERAADMIN") %> 
       </td>
       <td > 
-        <input type="checkbox" name="<%=CHECKBOX_TYPERAADMIN%>" value="<%=CHECKBOX_VALUE %>" tabindex="15"> 
+        <input type="checkbox" name="<%=CHECKBOX_TYPERAADMIN%>" value="<%=CHECKBOX_VALUE %>" tabindex="16"> 
       </td>
       <td></td>
     </tr>
@@ -714,7 +766,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("TYPECA") %> 
       </td>
       <td > 
-        <input type="checkbox" name="<%=CHECKBOX_TYPECA%>" value="<%=CHECKBOX_VALUE %>" tabindex="16"> 
+        <input type="checkbox" name="<%=CHECKBOX_TYPECA%>" value="<%=CHECKBOX_VALUE %>" tabindex="17"> 
       </td>
       <td></td>
     </tr>
@@ -724,7 +776,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("TYPECAADMIN") %> 
       </td>
       <td> 
-        <input type="checkbox" name="<%=CHECKBOX_TYPECAADMIN%>" value="<%=CHECKBOX_VALUE %>" tabindex="17"> 
+        <input type="checkbox" name="<%=CHECKBOX_TYPECAADMIN%>" value="<%=CHECKBOX_VALUE %>" tabindex="18"> 
       </td>
       <td></td>
     </tr>
@@ -734,16 +786,16 @@ function checkallfields(){
         <%= ejbcawebbean.getText("TYPEROOTCA") %> 
       </td>
       <td > 
-        <input type="checkbox" name="<%=CHECKBOX_TYPEROOTCA%>" value="<%=CHECKBOX_VALUE %>" tabindex="18"> 
+        <input type="checkbox" name="<%=CHECKBOX_TYPEROOTCA%>" value="<%=CHECKBOX_VALUE %>" tabindex="19"> 
       </td>
       <td></td>
     </tr>
        <tr id="Row1">
 	 <td></td>
 	 <td></td>
-	 <td><input type="submit" name="<%= BUTTON_ADDUSER %>" value="<%= ejbcawebbean.getText("ADDUSER") %>" tabindex="19"
+	 <td><input type="submit" name="<%= BUTTON_ADDUSER %>" value="<%= ejbcawebbean.getText("ADDUSER") %>" tabindex="20"
                     onClick='return checkallfields()'> 
-             <input type="reset" name="<%= BUTTON_RESET %>" value="<%= ejbcawebbean.getText("RESET") %>" tabindex="20"></td>
+             <input type="reset" name="<%= BUTTON_RESET %>" value="<%= ejbcawebbean.getText("RESET") %>" tabindex="21"></td>
          <td></td>
        </tr> 
      </table> 

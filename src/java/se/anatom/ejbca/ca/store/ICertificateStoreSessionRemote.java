@@ -3,12 +3,14 @@ package se.anatom.ejbca.ca.store;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.TreeMap;
 import java.rmi.RemoteException;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
+import se.anatom.ejbca.ca.store.certificatetypes.*;
 
 /** The CertificateStoreSession is the primary storage
  * for certificates and CRL. The CA always puts certificates and CRLs in the
@@ -19,9 +21,12 @@ import se.anatom.ejbca.ca.crl.RevokedCertInfo;
  *
  * Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.2 2002-06-04 14:37:07 anatom Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.3 2002-08-05 01:57:06 herrvendil Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote  {
+        
+    /** Constants defining range of id's reserved for fixed certificate types. Observe fixed certificates cannot have value 0. */
+    public final static int FIXED_CERTIFICATETYPE_BOUNDRY = 1000;
 
    /**
     * Lists fingerprint (primary key) of ALL certificates in the database.
@@ -106,5 +111,103 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     * @throws EJBException if a communication or other error occurs.
     */
     public int getLastCRLNumber() throws RemoteException;
+    
+    // Functions used for Certificate Types.
+           
+    /**
+     * Adds a certificatetype to the database.
+     *
+     * @return false if certificatetypename already exists. 
+     * @throws EJBException if a communication or other error occurs.
+     */        
+    
+    public boolean addCertificateType(String certificatetypename, CertificateType certificatetype) throws RemoteException;   
+    
+     /**
+     * Adds a certificatetype  with the same content as the original certificatetype, 
+     *  
+     * @return false if the new certificatetypename already exists.
+     * @throws EJBException if a communication or other error occurs.     
+     */ 
+    public boolean cloneCertificateType(String originalcertificatetypename, String newcertificatetypename) throws RemoteException;
+    
+     /**
+     * Removes a certificatetype from the database. 
+     * 
+     * @throws EJBException if a communication or other error occurs.   
+     */ 
+    public void removeCertificateType(String certificatetypename) throws RemoteException;
+    
+     /**
+     * Renames a certificatetype.
+     *
+     * @return false if new name already exists
+     * @throws EJBException if a communication or other error occurs.           
+     */ 
+    public boolean renameCertificateType(String oldcertificatetypename, String newcertificatetypename) throws RemoteException;   
 
+    /**
+     * Updates certificatetype data
+     *
+     * @return false if certificatetypename doesn't exists
+     * @throws EJBException if a communication or other error occurs.
+     */     
+    
+    public boolean changeCertificateType(String certificatetypename, CertificateType certificatetype) throws RemoteException; 
+    
+      /**
+       * Returns the available certificatetype names.
+       *
+       * @return a collection of certificatetypenames.
+       * @throws EJBException if a communication or other error occurs.
+       */       
+    public Collection getCertificateTypeNames() throws RemoteException;
+      /**
+       * Returns the available certificatetype.
+       *
+       * @return A collection of Profiles.
+       * @throws EJBException if a communication or other error occurs.
+       */        
+    public TreeMap getCertificateTypes() throws RemoteException;
+    
+      /**
+       * Returns the specified certificatetype.
+       *
+       * @return the certificatetype data or null if profile doesn't exists.
+       * @throws EJBException if a communication or other error occurs.
+       */         
+    public CertificateType getCertificateType(String certificatetypename) throws RemoteException;
+    
+       /**
+       * Returns the specified certificatetype.
+       *
+       * @return the certificatetype data or null if profile doesn't exists.
+       * @throws EJBException if a communication or other error occurs.
+       */         
+    public CertificateType getCertificateType(int id) throws RemoteException;
+
+      /**
+       * Returns the number of available certificatetypes.
+       *
+       * @return the number of available certificatetypes.
+       * @throws EJBException if a communication or other error occurs.
+       */             
+    public int getNumberOfCertificateTypes() throws RemoteException;
+    
+      /**
+       * Returns a certificatetype id given it´s certificatetypename.
+       *
+       * @return id number of certificatetype.
+       * @throws EJBException if a communication or other error occurs.
+       */    
+    public int getCertificateTypeId(String certificatetypename) throws RemoteException;
+    
+       /**
+       * Returns a certificatetype name given it´s id.
+       *
+       * @return the name of certificatetype.
+       * @throws EJBException if a communication or other error occurs.
+       */    
+    public String getCertificateTypeName(int id) throws RemoteException;    
+ 
 }
