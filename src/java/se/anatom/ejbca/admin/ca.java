@@ -169,7 +169,7 @@ public class ca {
                 String ksfile = args[2];
                 String storepwd= args[3];
 
-                System.out.println("Receiving cert reploy:");
+                System.out.println("Receiving cert reply:");
                 System.out.println("Cert reply file: "+certfile);
                 System.out.println("Storing KeyStore in: "+ksfile);
                 System.out.println("Protected with storepassword: "+storepwd);
@@ -241,9 +241,16 @@ public class ca {
                 System.out.println("Password: "+password);
                 System.out.println("Request file: "+reqfile);
                 byte[] b64Encoded = FileTools.readFiletoBuffer(reqfile);
-                String beginKey = "-----BEGIN CERTIFICATE REQUEST-----";
-                String endKey = "-----END CERTIFICATE REQUEST-----";
-                byte[] buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
+                byte[] buffer;
+                try {
+                    String beginKey = "-----BEGIN CERTIFICATE REQUEST-----";
+                    String endKey = "-----END CERTIFICATE REQUEST-----";
+                    buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
+                } catch (IOException e) {
+                    String beginKey = "-----BEGIN NEW CERTIFICATE REQUEST-----";
+                    String endKey = "-----END NEW CERTIFICATE REQUEST-----";
+                    buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
+                }
 
                 Context ctx = getInitialContext();
                 ISignSessionHome home = (ISignSessionHome)javax.rmi.PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
