@@ -79,7 +79,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.13 2003-01-31 09:37:43 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.14 2003-01-31 09:40:41 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -192,6 +192,7 @@ public class DemoCertReqServlet extends HttpServlet {
     if (username == null || username.trim().length() == 0) {
         username = CertTools.getPartFromDN(dn, "CN");
     }
+    username = username + "("+(new Date()).toString()+")";
     // need null check here?
     // Before doing anything else, check if the user name is unique and ok.
     boolean check = checkUsername(admin,username, useradminsession);
@@ -202,7 +203,6 @@ public class DemoCertReqServlet extends HttpServlet {
         debug.printDebugInfo();
         return;
     }
-    username = username + "("+(new Date()).toString()+")";
 
     String includeEmail = request.getParameter("includeemail");
     cat.debug("includeEmail="+includeEmail);
