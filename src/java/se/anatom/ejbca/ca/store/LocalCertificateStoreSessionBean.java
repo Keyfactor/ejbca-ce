@@ -57,7 +57,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.66 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.67 2004-05-13 15:37:07 herrvendil Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -875,6 +875,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @see CRLData
      */
     public void setRevokeStatus(Admin admin, String username, Collection publishers, int reason) {
+       debug(">setRevokeStatus(),  username=" + username);
        X509Certificate certificate = null;
        // Strip dangerous chars
        username = StringTools.strip(username);
@@ -909,6 +910,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
           throw new EJBException(e);
        }
+       debug("<setRevokeStatus(),  username=" + username);
     } // setRevokeStatus
 
     /**
@@ -922,6 +924,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @see CRLData
      */
     public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection publishers, int reason) {
+       debug(">setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno);
        X509Certificate certificate = null;
        try{
          certificate = (X509Certificate) this.findCertificateByIssuerAndSerno(admin, issuerdn, serno);
@@ -938,14 +941,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
               rev.setRevocationReason(reason);
               
               getLogSession().log(admin, issuerdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_REVOKEDCERT,("Reason :" + reason));
-              
-              // Revoke in all related publishers
-              if(publishers!= null){                                
-                  getPublisherSession().revokeCertificate(admin, publishers, certificate, reason);                 	                
-              }
-
-
+                
             }
+             // Revoke in all related publishers
+             if(publishers!= null){                                
+                 getPublisherSession().revokeCertificate(admin, publishers, certificate, reason);                 	                
+             }
+             
          }
 
        }catch(FinderException e){          
@@ -953,6 +955,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
           
           throw new EJBException(e);
        }
+       debug("<setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno);
     } // setRevokeStatus
 
     /**
@@ -967,8 +970,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @throws EJBException if a communication or other error occurs.
      */
      public void revokeCertificate(Admin admin, Certificate cert, Collection publishers, int reason) {
-         if (cert instanceof X509Certificate) {
-             setRevokeStatus(admin, ((X509Certificate)cert).getIssuerDN().toString(), ((X509Certificate)cert).getSerialNumber(), publishers, reason);
+         if (cert instanceof X509Certificate) {         	              
+               setRevokeStatus(admin, ((X509Certificate)cert).getIssuerDN().toString(), ((X509Certificate)cert).getSerialNumber(), publishers, reason);
          }
      } //revokeCertificate
      
@@ -983,7 +986,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
       */
      public void revokeAllCertByCA(Admin admin, String issuerdn, int reason){
 		Connection con = null;
-    	PreparedStatement ps = null;
+    	PreparedStatement ps  = null;
+    	PreparedStatement ps2 = null;
 		int temprevoked = 0;
 		int revoked = 0;
 		
@@ -1006,22 +1010,23 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 		    temprevoked = ps.executeUpdate();
 
             // Second SQL statement, revoking all non revoked certificates.
-			ps = con.prepareStatement(secondsqlstatement);				
-			ps.setInt(1, CertificateData.CERT_REVOKED); // first statusfield
-			ps.setLong(2, currentdate); // revokedate field
-			ps.setInt(3, reason); // revokation reason
-			ps.setString(4, bcdn); // issuer dn
-			ps.setInt(5, CertificateData.CERT_REVOKED); // second statusfield
+			ps2 = con.prepareStatement(secondsqlstatement);				
+			ps2.setInt(1, CertificateData.CERT_REVOKED); // first statusfield
+			ps2.setLong(2, currentdate); // revokedate field
+			ps2.setInt(3, reason); // revokation reason
+			ps2.setString(4, bcdn); // issuer dn
+			ps2.setInt(5, CertificateData.CERT_REVOKED); // second statusfield
 			
-			revoked = ps.executeUpdate();
+			revoked = ps2.executeUpdate();
 			
-			getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_REVOKEDCERT,("Revoked All CAs certificates successfully. Permantly revoked :" + (revoked + temprevoked) + "Certificates with reason: " + reason));
+			getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_REVOKEDCERT,("Revoked All CAs certificates successfully. Permantly revoked :" + (revoked + temprevoked) + " Certificates with reason: " + reason));
 		 } catch (Exception e) {
 			 getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT,"Error when trying to revoke a CA's all certificates", e);		 	
 			 throw new EJBException(e);
 		 } finally {
 			 try {				 
 				 if (ps != null) ps.close();
+				 if (ps2 != null) ps2.close();
 				 if (con!= null) con.close();
 			 } catch(SQLException se) {
 				 error("Error cleaning up: ", se);
