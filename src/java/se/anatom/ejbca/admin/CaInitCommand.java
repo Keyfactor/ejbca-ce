@@ -33,12 +33,13 @@ import se.anatom.ejbca.authorization.IAuthorizationSessionRemote;
 import se.anatom.ejbca.SecConst;
 
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.StringTools;
 
 
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.27 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.28 2004-05-06 16:27:19 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
     /** Pointer to main certificate store */
@@ -74,6 +75,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
         try {             	
             String caname = args[1];
             String dn = CertTools.stringToBCDNString(args[2]);
+            dn = StringTools.strip(dn);
             int keysize = Integer.parseInt(args[3]);
             int validity = Integer.parseInt(args[4]);
             String policyId = args[5];

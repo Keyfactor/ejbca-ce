@@ -21,14 +21,14 @@ import org.apache.log4j.Logger;
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.16 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: StringTools.java,v 1.17 2004-05-06 16:27:22 anatom Exp $
  */
 public class StringTools {
     private static Logger log = Logger.getLogger(StringTools.class);
 
-    // Characters that are bynot allowed in strings that may be passed to the db
+    // Characters that are not allowed in strings that may be passed to the db
     private static final char[] stripChars = {
-        '\'', '\"', '\n', '\r', '/', '\\', ';', '&', '|', '!', '\0', '%', '`', '?', '<', '>', '?',
+        '\'', '\"', '\n', '\r', '/', '\\', ';', '|', '!', '\0', '%', '`', '?', '<', '>', '?',
         '$', ':', '~'
     };
     // Characters that are allowed to escape in strings

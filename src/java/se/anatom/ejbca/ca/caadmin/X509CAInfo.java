@@ -17,11 +17,12 @@ import java.util.Collection;
 import java.util.Date;
 
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.StringTools;
 
 /**
  * Holds nonsensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.5 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: X509CAInfo.java,v 1.6 2004-05-06 16:27:22 anatom Exp $
  */
 public class X509CAInfo extends CAInfo{
    
@@ -41,7 +42,7 @@ public class X509CAInfo extends CAInfo{
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                     boolean usecrlnumber, boolean crlnumbercritical, boolean finishuser,
                     Collection extendedcaserviceinfos) {
-        this.subjectdn = CertTools.stringToBCDNString(subjectdn);
+        this.subjectdn = StringTools.strip(CertTools.stringToBCDNString(subjectdn));
         this.caid = this.subjectdn.hashCode();
         this.name = name;
         this.status = status;
