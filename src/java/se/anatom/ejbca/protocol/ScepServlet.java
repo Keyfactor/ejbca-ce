@@ -16,10 +16,29 @@ import org.apache.log4j.*;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.util.Base64;
 
 /** Servlet implementing server side of the Simple Certificate Enrollment Protocol (SCEP)
- * @version $Id: ScepServlet.java,v 1.1 2002-09-16 15:22:49 anatom Exp $
- */
+* snip from OpenSCEP
+* -----
+*This processes does the following:
+*
+* 1. decode a PKCS#7 signed data message from the standard input
+* 2. extract the signed attributes from the the message, which indicate
+*     the type of request
+* 3. decrypt the enveloped data PKCS#7 inside
+* 4. branch to different actions depending on the type of the message:
+*     - PKCSReq
+*     - GetCertInitial
+*     - GetCert
+*     - GetCRL
+*     - v2 PKCSReq or Proxy request
+* 5. envelop (PKCS#7) the reply data from the previous step
+* 6. sign the reply data (PKCS#7) from the previous step
+* 7. output the result as a der encoded block on stdout
+* -----
+* @version $Id: ScepServlet.java,v 1.2 2002-09-21 11:30:03 anatom Exp $
+*/
 public class ScepServlet extends HttpServlet {
 
     static private Category cat = Category.getInstance( ScepServlet.class.getName() );
@@ -69,6 +88,8 @@ public class ScepServlet extends HttpServlet {
 			debug.print("<h3>Operation: " + operation + "</h3>");
             ISignSessionRemote ss = home.create(administrator);
 			if (operation.equals("PKIOperation")) {
+                byte[] scepmsg = Base64.decode(message.getBytes());
+                ScepPkiOpHelper helper = new ScepPkiOpHelper(scepmsg);
 			} else if (operation.equals("GetCACert")) {
 			} else if (operation.equals("GetCACertChain")) {
 			} else {
