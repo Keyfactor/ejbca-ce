@@ -20,6 +20,10 @@ public interface CertificateDataHome extends javax.ejb.EJBHome {
     public CertificateData findByPrimaryKey(CertificateDataPK pk)
         throws FinderException, RemoteException;
 
-    public Collection findByExpireDate(Date expireDate)
+    /** Finds certificate which expire within a specified time.
+     * @param expireTime (Date.getTime()-format), all certificates that expires before this date will be listed.
+     * @return Collection of Certificates (java.security.cert.Certificate) in no specified order.
+     */
+    public Collection findByExpireDate(long expireDate)
         throws FinderException, RemoteException;
 }

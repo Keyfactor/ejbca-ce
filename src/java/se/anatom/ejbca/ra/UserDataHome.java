@@ -17,6 +17,10 @@ public interface UserDataHome extends javax.ejb.EJBHome {
     public UserData findByPrimaryKey(UserDataPK pk)
         throws FinderException, RemoteException;
 
+    /** Finds users with a specified status.
+     * @param status the status of the required users
+     * @return Collection of UserData in no specific order
+     */
     public Collection findByStatus(int status)
         throws FinderException, RemoteException;
 }

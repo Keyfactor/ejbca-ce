@@ -61,13 +61,13 @@ public abstract class CertificateDataBean implements javax.ejb.EntityBean {
     public abstract BigInteger getSerialNumber();
     public abstract void setSerialNumber(BigInteger serialNumber);
     /** Date formated as seconds since 1970 (== Date.getTime()) */
-    public abstract Date getExpireDate();
+    public abstract long getExpireDate();
     /** Date formated as seconds since 1970 (== Date.getTime()) */
-    public abstract void setExpireDate(Date expireDate);
+    public abstract void setExpireDate(long expireDate);
     /** Set to date when revocation occured if status== CERT_REVOKED. Format == Date.getTime() */
-    public abstract Date getRevocationDate();
+    public abstract long getRevocationDate();
     /** Set to date when revocation occured if status== CERT_REVOKED. Format == Date.getTime() */
-    public abstract void setRevocationDate(Date revocationDate);
+    public abstract void setRevocationDate(long revocationDate);
     /** Set to revocation reason if status== CERT_REVOKED */
     public abstract int getRevocationReason();
     /** Set to revocation reason if status== CERT_REVOKED */
@@ -105,11 +105,21 @@ public abstract class CertificateDataBean implements javax.ejb.EntityBean {
     public void setSubject(String dn) {
         setSubjectDN(CertTools.stringToBCDNString(dn));
     }
+    public void setExpireDate(Date expireDate) {
+        if (expireDate == null)
+            setExpireDate(-1L);
+        setExpireDate(expireDate.getTime());
+    }
+    public void setRevocationDate(Date revocationDate) {
+        if (revocationDate == null)
+            setRevocationDate(-1L);
+        setRevocationDate(revocationDate.getTime());
+    }
 
     //
     // Fields required by Container
     //
-    
+
     /**
      * Entity Bean holding info about a certficate.
      * Create by sending in the certificate, which extracts (from the cert)
@@ -144,7 +154,7 @@ public abstract class CertificateDataBean implements javax.ejb.EntityBean {
         setType(SecConst.USER_INVALID);
         setCAFingerprint(null);
         setExpireDate(tmpcert.getNotAfter());
-        setRevocationDate(null);
+        setRevocationDate(-1L);
         setRevocationReason(CRLData.REASON_UNUSED);
 
         CertificateDataPK pk = new CertificateDataPK(getFingerprint());

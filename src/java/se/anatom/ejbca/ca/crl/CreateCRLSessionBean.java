@@ -25,7 +25,7 @@ import se.anatom.ejbca.ca.sign.ISignSession;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.3 2002-05-20 17:52:59 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.4 2002-05-22 09:15:00 anatom Exp $
  */
 public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerSession {
 
@@ -83,15 +83,15 @@ lookup("java:comp/env/ejb/CertificateStoreSession", ICertificateStoreSessionHome
                 // We want to include certificates that was revoked after the last CRL was issued, but before this one
                 // so the revoked certs are included in ONE CRL at least.
                 if ( (data.getStatus() == CertificateData.CERT_REVOKED) &&
-                    (data.getExpireDate().before(now)) )
+                    (data.getExpireDate() < now.getTime()) )
                 {
                         data.setStatus(CertificateData.CERT_ARCHIVED);
                 } else
                 {
-                    if (data.getRevocationDate() == null)
-                        data.setRevocationDate(new Date());
+                    if (data.getRevocationDate() == -1)
+                        data.setRevocationDate((new Date()).getTime());
                     RevokedCertInfo certinfo = new RevokedCertInfo(data.getSerialNumber(),
-data.getRevocationDate(), data.getRevocationReason());
+new Date(data.getRevocationDate()), data.getRevocationReason());
                     certs.add(certinfo);
                 }
             }

@@ -63,18 +63,21 @@ public interface CertificateData extends javax.ejb.EJBObject {
     public void setStatus(int status) throws RemoteException;
     public int getType() throws RemoteException;
     public void setType(int type) throws RemoteException;
-    public Date getExpireDate() throws RemoteException;
-    public void setExpireDate(Date expireDate) throws RemoteException;
-    public Date getRevocationDate() throws RemoteException;
-    public void setRevocationDate(Date revocationDate) throws RemoteException;
+    public long getExpireDate() throws RemoteException;
+    public void setExpireDate(long expireDate) throws RemoteException;
+    public long getRevocationDate() throws RemoteException;
+    public void setRevocationDate(long revocationDate) throws RemoteException;
     public int getRevocationReason() throws RemoteException;
     public void setRevocationReason(int revocationReason) throws RemoteException;
     public String getBase64Cert() throws RemoteException;
     public void setBase64Cert(String base64Cert) throws RemoteException;
 
+    // Public helper methods, not directly related to persistance
     public Certificate getCertificate() throws RemoteException;
     public void setCertificate(Certificate certificate) throws RemoteException;
     public void setIssuer(String dn) throws RemoteException;
     public void setSubject(String dn) throws RemoteException;
-    
+    public void setExpireDate(Date expireDate) throws RemoteException;
+    public void setRevocationDate(Date revocationDate) throws RemoteException;
+
 }

@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import java.util.Date;
 import java.util.Vector;
 import java.util.Collection;
+import java.util.Iterator;
 import java.sql.*;
 import javax.sql.DataSource;
 import javax.naming.*;
@@ -27,7 +28,7 @@ import se.anatom.ejbca.util.Base64;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.9 2002-05-21 15:22:51 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.10 2002-05-22 09:15:00 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean implements ICertificateStoreSession {
 
@@ -239,9 +240,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         // First make expiretime in well know format
         debug("Looking for certs that expire before: " + expireTime);
         try {
-            Collection coll = certHome.findByExpireDate(expireTime);
+            Collection coll = certHome.findByExpireDate(expireTime.getTime());
+            Collection ret = new Vector();
+            if (coll != null) {
+                Iterator iter = coll.iterator();
+                while (iter.hasNext()) {
+                    ret.add( ((CertificateData)iter.next()).getCertificate() );
+                }
+            }
             debug("<findCertificatesByExpireTime(), time="+expireTime);
-            return coll;
+            return ret;
         } catch (javax.ejb.FinderException fe) {
             cat.error(fe);
             throw new EJBException(fe);
@@ -250,38 +258,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
             throw new EJBException(re);
         }
 
-/*
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet result = null;
-        try{
-            con = getConnection();
-            ps = con.prepareStatement("select base64Cert from CertificateData where expireDate<? ORDER BY expireDate DESC");
-            ps.setLong(1,expireSeconds);
-            result = ps.executeQuery();
-            Vector vect = new Vector();
-            while(result.next()){
-                vect.addElement(CertTools.getCertfromByteArray(Base64.decode(result.getString(1).getBytes())));
-            }
-            debug("found "+vect.size()+" certificate(s) with expireDate<"+expireSeconds);
-            X509Certificate[] returnArray = new X509Certificate[vect.size()];
-            vect.copyInto(returnArray);
-            debug("<findCertificatesByExpireTime(), time="+expireTime);
-            return returnArray;
-        }
-        catch (Exception e) {
-            throw new EJBException(e);
-        }
-        finally {
-            try {
-                if (result != null) result.close();
-                if (ps != null) ps.close();
-                if (con!= null) con.close();
-            } catch(SQLException se) {
-                se.printStackTrace();
-            }
-        }
-*/
     } //findCertificatesByExpireTime
 
    /**
@@ -370,7 +346,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
             CertificateData data = certHome.findByPrimaryKey(pk);
             RevokedCertInfo revinfo = null;
             if (data.getStatus() == CertificateData.CERT_REVOKED) {
-                revinfo = new RevokedCertInfo(serno, data.getRevocationDate(), data.getRevocationReason());
+                revinfo = new RevokedCertInfo(serno, new Date(data.getRevocationDate()), data.getRevocationReason());
             }
             debug("<isRevoked() returned "+((data.getStatus() == CertificateData.CERT_REVOKED)?"yes":"no"));
             return revinfo;

@@ -397,11 +397,11 @@
       	<query-method>
       	  <method-name>findByExpireDate</method-name>
       	  <method-params>
-      	    <method-param>java.util.Date</method-param>
+      	    <method-param>long</method-param>
       	  </method-params>
       	</query-method>
 	<ejb-ql>
-	  <![CDATA[SELECT a.base64Cert from CertificateDataBean a WHERE a.expireDate<?1]]>
+	  <![CDATA[SELECT OBJECT(a) from CertificateDataBean a WHERE a.expireDate<?1]]>
 	</ejb-ql>
       </query>
    </entity>

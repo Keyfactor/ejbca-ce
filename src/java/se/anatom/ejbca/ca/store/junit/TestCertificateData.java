@@ -24,7 +24,7 @@ import junit.framework.*;
 
 /** Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.6 2002-05-21 15:22:51 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.7 2002-05-22 09:15:00 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -199,7 +199,7 @@ public class TestCertificateData extends TestCase {
 
         // Seconds in a year
         long yearmillis = 365*24*60*60*1000;
-        long findDateSecs = data.getExpireDate().getTime() - (yearmillis*100);
+        long findDateSecs = data.getExpireDate() - (yearmillis*100);
         Date findDate = new Date(findDateSecs);
 
         ICertificateStoreSessionRemote store = storehome.create();
@@ -207,7 +207,7 @@ public class TestCertificateData extends TestCase {
         Collection certs = store.findCertificatesByExpireTime(findDate);
         cat.debug("findCertificatesByExpireTime returned "+ certs.size()+" certs.");
         assertTrue("No certs should have expired before this date", certs.size() == 0);
-        findDateSecs = data.getExpireDate().getTime() + 10000;
+        findDateSecs = data.getExpireDate() + 10000;
         findDate = new Date(findDateSecs);
         cat.debug("2. Looking for cert with expireDate="+findDate);
         certs = store.findCertificatesByExpireTime(findDate);
@@ -264,7 +264,7 @@ public class TestCertificateData extends TestCase {
         ICertificateStoreSessionRemote store = storehome.create();
         RevokedCertInfo revinfo = store.isRevoked(cert.getIssuerDN().toString(), cert.getSerialNumber());
         assertNotNull("Certificate not revoked, it should be!", revinfo);
-        assertTrue("Wrong revocationDate!", revinfo.getRevocationDate().getTime() == data3.getRevocationDate().getTime());
+        assertTrue("Wrong revocationDate!", revinfo.getRevocationDate().getTime() == data3.getRevocationDate());
         assertTrue("Wrong reason!", revinfo.getReason() == data3.getRevocationReason());
         home.remove(pk);
         cat.debug("Removed it!");
