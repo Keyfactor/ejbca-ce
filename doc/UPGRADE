@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.7 2004-05-17 07:29:34 anatom Exp $
+$Id: UPGRADE,v 1.8 2004-06-02 18:20:29 anatom Exp $
 
 UPGRADE
 =======
@@ -25,6 +25,11 @@ The upgrade process typically consists of:
 
 Some things are not upgraded from ejbca2, and needs to be rebuilt after the upgrade 
 (if you have used this function and customized).
+
+The (default) LDAP schema has been changed since EJBCA 2.1 to follow RFC 2256. If using LDAP, 
+the schema should be checked. You can configure the schema 
+(in ca/ca/META-INF/ejb-jar.xml) to be the same as before if needed.
+The LDAP schema in EJBCA 2.1.2 is the same as in EJBCA 3.0.
 
 Important data lost during upgrade from EJBCA 2.x to EJBCA 3.x
 --------------------------------------------------------------
