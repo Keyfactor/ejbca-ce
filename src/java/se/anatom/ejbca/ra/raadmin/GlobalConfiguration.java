@@ -5,7 +5,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.7 2004-01-31 14:24:59 herrvendil Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.8 2004-02-05 14:20:40 herrvendil Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -21,10 +21,10 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private final  String[] DEFAULTPOSSIBLELOGENTRIESPERPAGE = {"10" , "25" , "50" , "100", "200", "400"};
 
     // Path added to baseurl used as default vaule in CRLDistributionPointURI field in Certificate Profile definitions.
-    private final  String   DEFAULTCRLDISTURIPATH  = "ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN=TestCA,O=AnaTom,C=SE";
+    private final  String   DEFAULTCRLDISTURIPATH  = "publicweb/webdist/certdist?cmd=crl&issuer=CN=TestCA,O=AnaTom,C=SE";
 
     // Path added to baseurl used as default vaule in OCSP Service Locator URI field in Certificate Profile definitions.
-	private final  String   DEFAULTOCSPSERVICELOCATORURIPATH = "ejbca/publicweb/status/ocsp";
+	private final  String   DEFAULTOCSPSERVICELOCATORURIPATH = "publicweb/status/ocsp";
 
     // Default name of headbanner in web interface.
     private final  String   DEFAULTHEADBANNER             = "head_banner.jsp";
@@ -139,7 +139,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     public String getAdminWebPath(){return (String) data.get(ADMINPATH);}
 
     public String getStandardCRLDistributionPointURI(){
-        String retval = (String) data.get(BASEURL);
+        String retval = getBaseUrl();
         retval =retval.replaceFirst((String) data.get(PRIVATEPROTOCOL), (String) data.get(PUBLICPROTOCOL));
         retval =retval.replaceFirst((String) data.get(PRIVATEPORT), (String) data.get(PUBLICPORT));
         retval+= DEFAULTCRLDISTURIPATH;
@@ -147,7 +147,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     }
         
 	public String getStandardOCSPServiceLocatorURI(){
-		String retval = (String) data.get(BASEURL);
+		String retval = getBaseUrl();
 		retval =retval.replaceFirst((String) data.get(PRIVATEPROTOCOL), (String) data.get(PUBLICPROTOCOL));
 		retval =retval.replaceFirst((String) data.get(PRIVATEPORT), (String) data.get(PUBLICPORT));
 		retval+= DEFAULTOCSPSERVICELOCATORURIPATH;
