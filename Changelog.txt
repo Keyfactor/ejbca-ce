@@ -4,7 +4,8 @@ Command for batch processing, and other batch fixes.
 Better error messages when user applies for cert with browser.
 Fixed bug where NextUpdate in CRLs were incorrect.
 Fixed problem receiving certificate replies for subCAs.
-Function to rollover Root CA with same key pair.
+Function to rollover Root CA with same key pair in ca.sh/cmd.
+Listusers function in ra.sh/cmd.
 Minor improvements and bugfixes.
 
 1.1
