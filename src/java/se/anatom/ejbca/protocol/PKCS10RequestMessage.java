@@ -16,7 +16,7 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 
 /** Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.6 2003-01-12 17:24:01 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.7 2003-01-23 17:13:21 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
 
@@ -33,22 +33,20 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
      * @param msg The DER encoded PKCS10 request.
      * @throws IOException if the request can not be parsed.
      */
-    public PKCS10RequestMessage(byte[] msg) throws IOException {
+    public PKCS10RequestMessage(byte[] msg) {
         cat.debug(">PKCS10RequestMessage");
         this.msg = msg;
         init();
         cat.debug("<PKCS10RequestMessage");
     }
-    private void init() throws IOException {
-        DERObject derobj = new DERInputStream(new ByteArrayInputStream(msg)).readObject();
-        DERConstructedSequence seq = (DERConstructedSequence)derobj;
-        pkcs10 = new PKCS10CertificationRequest(seq);
+    private void init() {
+        pkcs10 = new PKCS10CertificationRequest(msg);
     }
     public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         try {
             if (pkcs10 == null)
                 init();
-        } catch (IOException e) {
+        } catch (IllegalArgumentException e) {
             cat.error("PKCS10 not inited!");
             return null;
         }
@@ -67,7 +65,7 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
             if (pkcs10 == null)
                 init();
             ret = pkcs10.verify();
-        } catch (IOException e) {
+        } catch (IllegalArgumentException e) {
             cat.error("PKCS10 not inited!");
         } catch (InvalidKeyException e) {
             cat.error("Error in PKCS10-request:", e);
