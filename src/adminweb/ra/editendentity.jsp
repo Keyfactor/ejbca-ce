@@ -278,47 +278,50 @@
   
    String[] tokentexts = RAInterfaceBean.tokentexts;
    int[] tokenids = RAInterfaceBean.tokenids;
+   String[] availabletokens = null;
+   String[] availablehardtokenissuers = null;
+   ArrayList[] tokenissuers = null;
 
-   if(globalconfiguration.getIssueHardwareTokens() && userdata != null){
-      AvailableHardToken[] availabletokens = tokenbean.getAvailableHardTokens();
+   if( userdata != null ){
+     if(globalconfiguration.getIssueHardwareTokens() ){
+        AvailableHardToken[] availablehardtokens = tokenbean.getAvailableHardTokens();
 
-      tokentexts = new String[RAInterfaceBean.tokentexts.length + availabletokens.length];
-      tokenids   = new int[tokentexts.length];
-      for(int i=0; i < RAInterfaceBean.tokentexts.length; i++){
-        tokentexts[i]= RAInterfaceBean.tokentexts[i];
-        tokenids[i] = RAInterfaceBean.tokenids[i];
-      }
-      for(int i=0; i < availabletokens.length;i++){
-        tokentexts[i+RAInterfaceBean.tokentexts.length]= availabletokens[i].getName();
-        tokenids[i+RAInterfaceBean.tokentexts.length] = Integer.parseInt(availabletokens[i].getId());         
-      }
-   }
+        tokentexts = new String[RAInterfaceBean.tokentexts.length + availablehardtokens.length];
+        tokenids   = new int[tokentexts.length];
+        for(int i=0; i < RAInterfaceBean.tokentexts.length; i++){
+          tokentexts[i]= RAInterfaceBean.tokentexts[i];
+          tokenids[i] = RAInterfaceBean.tokenids[i];
+        }
+        for(int i=0; i < availablehardtokens.length;i++){
+          tokentexts[i+RAInterfaceBean.tokentexts.length]= availablehardtokens[i].getName();
+          tokenids[i+RAInterfaceBean.tokentexts.length] = Integer.parseInt(availablehardtokens[i].getId());         
+        }
+     }
 
-    String[] availabletokens = new RE(EndEntityProfile.SPLITCHAR, false).split(profile.getValue(EndEntityProfile.AVAILKEYSTORE,0));
-    String[] availablehardtokenissuers = new RE(EndEntityProfile.SPLITCHAR, false).split(profile.getValue(EndEntityProfile.AVAILTOKENISSUER,0));
-    ArrayList[] tokenissuers = null;
+      availabletokens = new RE(EndEntityProfile.SPLITCHAR, false).split(profile.getValue(EndEntityProfile.AVAILKEYSTORE,0));
+      availablehardtokenissuers = new RE(EndEntityProfile.SPLITCHAR, false).split(profile.getValue(EndEntityProfile.AVAILTOKENISSUER,0));
 
-    usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && profile.getUse(EndEntityProfile.KEYRECOVERABLE,0);
-    usehardtokenissuers = globalconfiguration.getIssueHardwareTokens() && profile.getUse(EndEntityProfile.AVAILTOKENISSUER,0);
-    if(usehardtokenissuers){       
-       tokenissuers = new ArrayList[availabletokens.length];
-       for(int i=0;i < availabletokens.length;i++){
-         if(Integer.parseInt(availabletokens[i]) > SecConst.TOKEN_SOFT){
-            tokenissuers[i] = new ArrayList();
-            for(int j=0; j < availablehardtokenissuers.length; j++){
-              HardTokenIssuerData issuerdata = tokenbean.getHardTokenIssuerData(Integer.parseInt(availablehardtokenissuers[j]));
-              if(issuerdata !=null){
-                Iterator iter = issuerdata.getHardTokenIssuer().getAvailableHardTokens().iterator();
-                while(iter.hasNext()){
-                  if(Integer.parseInt(availabletokens[i]) == ((Integer) iter.next()).intValue())
-                    tokenissuers[i].add(new Integer(availablehardtokenissuers[j]));
+      usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && profile.getUse(EndEntityProfile.KEYRECOVERABLE,0);
+      usehardtokenissuers = globalconfiguration.getIssueHardwareTokens() && profile.getUse(EndEntityProfile.AVAILTOKENISSUER,0);
+      if(usehardtokenissuers){       
+         tokenissuers = new ArrayList[availabletokens.length];
+         for(int i=0;i < availabletokens.length;i++){
+           if(Integer.parseInt(availabletokens[i]) > SecConst.TOKEN_SOFT){
+              tokenissuers[i] = new ArrayList();
+              for(int j=0; j < availablehardtokenissuers.length; j++){
+                HardTokenIssuerData issuerdata = tokenbean.getHardTokenIssuerData(Integer.parseInt(availablehardtokenissuers[j]));
+                if(issuerdata !=null){
+                  Iterator iter = issuerdata.getHardTokenIssuer().getAvailableHardTokens().iterator();
+                  while(iter.hasNext()){
+                    if(Integer.parseInt(availabletokens[i]) == ((Integer) iter.next()).intValue())
+                      tokenissuers[i].add(new Integer(availablehardtokenissuers[j]));
+                  }
                 }
               }
-            }
-          }  
-        } 
+            }  
+          } 
+      }
     }
-    
 
     int row = 0;
     int tabindex = 0;
@@ -557,12 +560,12 @@ function checkUseInBatch(){
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYUSERNAME") %></h4></div> 
   <% } 
      else{
-       if(notauthorized){%>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOEDIT") %></h4></div> 
+       if(userdata == null){%>
+  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("ENDENTITYDOESNTEXIST") %></h4></div> 
     <% }
        else{
-         if(userdata == null){%>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("ENDENTITYDOESNTEXIST") %></h4></div> 
+         if(notauthorized){%>
+  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOEDIT") %></h4></div> 
     <%   }
          else{ 
            if(endentitysaved){%>
