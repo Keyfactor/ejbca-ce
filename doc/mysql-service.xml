@@ -48,7 +48,7 @@
         <attribute name="ManagedConnectionFactoryProperties">
           <properties>
             <config-property name="ConnectionURL" type="java.lang.String">jdbc:mysql://localhost:3306/ejbca</config-property>
-            <config-property name="DriverClass" type="java.lang.String">org.gjt.mm.mysql.Driver</config-property>
+            <config-property name="DriverClass" type="java.lang.String">com.mysql.jdbc.Driver</config-property>
             <!--set these only if you want only default logins, not through JAAS -->
             <config-property name="UserName" type="java.lang.String">ejbca</config-property>
             <config-property name="Password" type="java.lang.String">ejbca</config-property>
