@@ -16,6 +16,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.authorization.AdminInformation;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
+import se.anatom.ejbca.util.StringTools;
 import se.anatom.ejbca.util.query.*;
 
 
@@ -23,7 +24,7 @@ import se.anatom.ejbca.util.query.*;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.10 2003-09-04 09:49:46 herrvendil Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.11 2003-09-13 09:05:50 anatom Exp $
  */
 public class LogInterfaceBean {
 
@@ -89,9 +90,9 @@ public class LogInterfaceBean {
      */
     public LogEntriesView filterByUsername(String username, HashMap caidtonamemap) throws Exception {
       LogEntriesView returnval = new LogEntriesView(dnproxy, localinfoeventnamesunsorted, localerroreventnamesunsorted, localmodulenamesunsorted,  caidtonamemap);  
-        
+      String user = StringTools.strip(username);  
       Query query = new Query(Query.TYPE_LOGQUERY);
-      query.add(LogMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, username);
+      query.add(LogMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, user);
         
       Collection logentries = (Collection) logsession.query(query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
       returnval.setEntries(logentries);
