@@ -17,7 +17,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.52 2004-01-15 10:41:19 anatom Exp $
+ * @version $Id: CertTools.java,v 1.53 2004-01-25 10:58:51 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -270,7 +270,7 @@ public class CertTools {
             CertificateFactory cf = CertTools.getCertificateFactory();
             X509Certificate x509cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(
                         cert.getEncoded()));
-            log.debug("Created certificate of class: " + x509cert.getClass().getName());
+            //log.debug("Created certificate of class: " + x509cert.getClass().getName());
 
             if (which == 1) {
                 dn = x509cert.getSubjectDN().toString();
@@ -298,7 +298,7 @@ public class CertTools {
         try {
             CertificateFactory cf = CertTools.getCertificateFactory();
             X509CRL x509crl = (X509CRL) cf.generateCRL(new ByteArrayInputStream(crl.getEncoded()));
-            log.debug("Created certificate of class: " + x509crl.getClass().getName());
+            //log.debug("Created certificate of class: " + x509crl.getClass().getName());
             dn = x509crl.getIssuerDN().toString();
         } catch (CRLException ce) {
             log.error("CRLException: ", ce);
