@@ -40,8 +40,7 @@ import se.anatom.ejbca.util.Base64;
  */
 public class HardCATokenSample implements IHardCAToken {
     /** Log4j instance for Base */
-    private static transient Logger baseLog = Logger.getLogger(HardCATokenSample.class);
-	private transient Logger log;		
+    private static transient Logger log = Logger.getLogger(HardCATokenSample.class);
 	
 	// TODO set this right after testing.
 	private static boolean registered = HardCATokenManager.register("se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenSample", "HardCATokenSample", false, false);
@@ -148,7 +147,6 @@ public class HardCATokenSample implements IHardCAToken {
     private boolean offline = false;
    
 	public HardCATokenSample(){
-		log = Logger.getLogger(this.getClass());
 	}
 	
 	/**
@@ -187,7 +185,7 @@ public class HardCATokenSample implements IHardCAToken {
 		  publicenckey = enckeys.getPublic();
 		  		 		  		 
 		}catch(Exception e){
-			e.printStackTrace();
+			log.error("Error in init: ", e);
 		}				
 	}
 	
