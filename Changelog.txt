@@ -34,6 +34,7 @@ Changed 'Batch' text in adminweb to be more descriptive.
 Changed 'Use fields in DN' in adminweb to be more descriptive.
 Added StaticRegistering to CA hard token manager.
 Fixed error during install when CA-cert does not exist in java truststore.
+Fixed weblink to force a browser type when using an unknown browser.
 
 3.0.4
 -----

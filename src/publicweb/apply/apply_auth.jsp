@@ -27,7 +27,15 @@ Welcome to certificate enrollment. <BR>
         Password: <input type=password size=20 name="<%=TEXTFIELD_PASSWORD %>" value=""><br>
 
     <INPUT TYPE="hidden" NAME="<%=HIDDEN_BROWSER%>" VALUE="<%= BROWSER_UNKNOWN %>">
-
+<%
+//  Give the possibility to force a specific browser type
+String forcedBrowser = request.getParameter(FORCE_BROWSER);
+if (forcedBrowser != null) {
+%>
+     <INPUT TYPE="hidden" NAME="<%=FORCE_BROWSER%>" VALUE="<%= forcedBrowser %>">
+<%
+}
+%>
 <INPUT type="submit" value="OK" name="<%=BUTTON_SUBMIT_USERNAME%>">
 
 </FORM>

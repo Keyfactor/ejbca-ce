@@ -14,6 +14,7 @@
   static final String TEXTFIELD_PASSWORD                   = "textfieldpassword";
 
   static final String HIDDEN_BROWSER                       = "hiddenbrowser";
+  static final String FORCE_BROWSER                        = "forcebrowser";
 
   static final String BROWSER_NETSCAPE                     = "netscape";
   static final String BROWSER_EXPLORER                     = "explorer";
@@ -38,6 +39,10 @@ try  {
        username = request.getParameter(TEXTFIELD_USERNAME);
        password = request.getParameter(TEXTFIELD_PASSWORD);
        browser  = request.getParameter(HIDDEN_BROWSER);
+       String forcedBrowser = request.getParameter(FORCE_BROWSER);
+       if (forcedBrowser != null) {
+           browser = forcedBrowser;
+       }
 
        if(username != null && password != null && browser != null){
          int tokentype = applybean.getTokenType(username);
