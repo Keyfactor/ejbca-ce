@@ -2,6 +2,8 @@
 
 <jaws>
 
+<datasource>DefaultDS</datasource>
+
 <!-- Default setting for mySQL in EJBCA version > 1.0. 
      b64cert and b64crl fields is too long form default mapping with some databases. 
      If using another database (the default HypersonicDB for ex.), simply remove (or edit) 
