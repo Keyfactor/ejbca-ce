@@ -32,7 +32,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.3 2005-02-11 13:12:14 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.4 2005-03-22 13:51:36 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -103,7 +103,7 @@ public class TestCAs extends TestCase {
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setKeySize(2048);
             catokeninfo.setAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA_WITH_RSA);
+            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,

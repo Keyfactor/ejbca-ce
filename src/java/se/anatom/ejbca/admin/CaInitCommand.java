@@ -35,7 +35,7 @@ import se.anatom.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.32 2005-02-11 13:12:18 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.33 2005-03-22 13:51:37 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -88,7 +88,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setKeySize(keysize);
             catokeninfo.setAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA_WITH_RSA);
+            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
             extendedcaservices.add(
