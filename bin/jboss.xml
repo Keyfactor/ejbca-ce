@@ -42,7 +42,7 @@
 		<condition property="keystore.password.present">
 			<isset property="keystore.password"/> 
 		</condition>
-		<fail message="Missing JKS password '${keystore.password}'" property="keystore.password.present"/>
+		<fail message="Missing JKS password '${keystore.password}'" unless="keystore.password.present"/>
 
 		<copy file="p12/tomcat.jks" tofile="${jboss.server.home.dir}/${keystore.file}"/>
 
