@@ -58,7 +58,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.98 2003-09-04 19:52:48 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.99 2003-09-08 12:33:51 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -245,116 +245,40 @@ public class RSASignSessionBean extends BaseSessionBean {
         debug(">createCertificate(pk, ku)");
         try {
             // Authorize user and get DN
-            IAuthenticationSessionLocal authSession = authHome.create();
-            UserAuthData data = authSession.authenticateUser(admin, username, password);
+            UserAuthData data = authUser(admin, username, password);
             debug("Authorized user " + username + " with DN='" + data.getDN()+"'.");
             debug("type="+ data.getType());
-            // If the user is of type USER_INVALUD, it cannot have any other type (in the mask)
-            if (data.getType() == SecConst.USER_INVALID) {
-                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"User type is invalid, cannot create certificate for this user.");
-            } else {
-
-                ICertificateStoreSessionLocal certificateStore = storeHome.create();
-                // Retrieve the certificate profile this user should have
-                int certProfileId = data.getCertProfileId();
-                CertificateProfile certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
-                // What if certProfile == null?
-                if (certProfile == null) {
-                    certProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
-                    certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
-                }
-                
-                // Check that CAid is among available CAs
-                boolean caauthorized = false;
-                Iterator iter = certProfile.getAvailableCAs().iterator();
-                while(iter.hasNext()){
-                  int next = ((Integer) iter.next()).intValue();
-                  if(next == data.getCAId() || next == CertificateProfile.ANYCA){
-                    caauthorized = true;  
-                  }                    
-                }
-                
-                // Sign Session bean is only able to issue certificates with a end entity type certificate profile.
-                if(certProfile.getType() != CertificateProfile.TYPE_ENDENTITY){
-                  getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Wrong type of Certificate Profile for end entity. Only End Entity Certificate Profiles can be issued by signsession bean.");  
-                  throw new EJBException("Wrong type of Certificate Profile for end entity. Only End Entity Certificate Profiles can be issued by signsession bean.");  
-                }
-                
-                if(!caauthorized){
-                  getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"End Entity data contains a CA which the Certificate Profile isn't authorized to use.");  
-                  throw new EJBException("End Entity data contains a CA which the Certificate Profile isn't authorized to use.");
-                }
-                
-                // get CA
-                CADataLocal cadata = null; 
-                try{
-                  cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
-                }catch(javax.ejb.FinderException fe){
-                  getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Invalid CA Id",fe);  
-                  throw new EJBException(fe);                   
-                }
-                
-                CA ca = null;
-                try{
-                  ca = cadata.getCA();
-                }catch(java.io.UnsupportedEncodingException uee){
-                   throw new EJBException(uee);   
-                }
-                
-                // Check that CA hasn't expired.
-                X509Certificate cacert = (X509Certificate) ca.getCACertificate();                  
-                try{
-                  cacert.checkValidity();                   
-                }catch(Exception e){
+            // get CA
+            CADataLocal cadata = null; 
+            try{
+              cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
+            }catch(javax.ejb.FinderException fe){
+              getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Invalid CA Id",fe);  
+              throw new EJBException(fe);                   
+            }
+            CA ca = null;
+            try{
+              ca = cadata.getCA();
+            }catch(java.io.UnsupportedEncodingException uee){
+               throw new EJBException(uee);   
+            }
+            // Check that CA hasn't expired.
+            X509Certificate cacert = (X509Certificate) ca.getCACertificate();                  
+            try{
+                cacert.checkValidity();                   
+            }catch(Exception e){
                  // Signers Certificate has expired.   
                 cadata.setStatus(SecConst.CA_EXPIRED);  
-                  getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " has expired",e);
-                  throw new EJBException("Signing CA " + cadata.getSubjectDN() + " has expired");   
-                }                
-                                
-                
-                log.debug("Using certificate profile with id "+certProfileId);
-                int keyLength;
-                try {
-                  keyLength = ((RSAPublicKey)pk).getModulus().bitLength();
-                } catch (ClassCastException e) {
-                  throw new
-                    IllegalKeyException("Unsupported public key (" +
-                                        pk.getClass().getName() +
-                                        "), only RSA keys are supported.");
-                }
-                log.debug("Keylength = "+keyLength); // bitBength() will return 1 less bit if BigInt i negative
-                if ( (keyLength < (certProfile.getMinimumAvailableBitLength()-1))
-                    || (keyLength > (certProfile.getMaximumAvailableBitLength())) ) {
-                        String msg = "Illegal key length "+keyLength;
-                        log.error(msg);
-                        throw new IllegalKeyException(msg);
-                    }
-                
-                X509Certificate cert = (X509Certificate) ca.generateCertificate(data, pk, keyusage, certProfile);
-                                                
-                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, cert, LogEntry.EVENT_INFO_CREATECERTIFICATE,"");
-                debug("Generated certificate with SerialNumber '" + Hex.encode(cert.getSerialNumber().toByteArray())+"' for user '"+username+"'.");
-                debug(cert.toString());
-                
-                // Store certificate in the database
-                String fingerprint = CertTools.getFingerprintAsString(cert);
-                certificateStore.storeCertificate(admin, cert, username, fingerprint, CertificateData.CERT_ACTIVE, certProfile.getType());
-                // Store certificate in certificate profiles publishers.
-                iter = certProfile.getPublisherList().iterator();
-                while(iter.hasNext()){
-                  int publisherid = ((Integer) iter.next()).intValue();
-                  IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(publisherid);
-                  IPublisherSessionLocal pub = pubHome.create();
-                  pub.storeCertificate(admin, cert, username, fingerprint, CertificateData.CERT_ACTIVE, certProfile.getType());                    
-                }
-                                                
-                // Call authentication session and tell that we are finished with this user
-                if (ca instanceof X509CA && ((X509CA) ca).getFinishUser() == true)
-                    authSession.finishUser(admin, username, password);
-                debug("<createCertificate(pk, ku)");
-                return cert;
-            }
+                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " has expired",e);
+                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " has expired");   
+            }                
+            // Now finally after all these checks, get the certificate
+            Certificate cert = createCertificate(admin, data, ca, pk, keyusage);
+            // Call authentication session and tell that we are finished with this user
+            if (ca instanceof X509CA && ((X509CA) ca).getFinishUser() == true)
+                finishUser(admin, username, password);
+            debug("<createCertificate(pk, ku)");
+            return cert;
         } catch (ObjectNotFoundException oe) {
             throw oe;
         } catch (AuthStatusException se) {
@@ -363,13 +287,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             throw le;
         } catch (IllegalKeyException ke) {
             throw ke;
-        } catch (Exception e) {
-            log.error(e);
-            throw new EJBException(e);
-        }
-        debug("<createCertificate(pk, ku)");
-        log.error("Invalid user type for user "+username);
-        throw new EJBException("Invalid user type for user "+username);    
+        } 
     } // createCertificate
 
     /**
@@ -459,8 +377,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         Certificate ret = null;
         try {
             // Authorize user and get DN
-            IAuthenticationSessionLocal authSession = authHome.create();
-            UserAuthData data = authSession.authenticateUser(admin, username, password);
+            UserAuthData data = authUser(admin, username, password);
             // get CA
             CADataLocal cadata = null; 
             try{
@@ -508,11 +425,30 @@ public class RSASignSessionBean extends BaseSessionBean {
     public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException {
         debug(">createCertificate(IRequestMessage)");
         IResponseMessage ret = null;
-
-  // TODO      
-  /*
+/*
+        // See if we can get username and password directly from request
+        String username = req.getUsername();
+        String password = reg.getPassword()
+        
+        // If we can't get that, see ifwe can get issuerDN directly from request
+        // TODO:
+        
+        // If we can't get that, fail
+        // TODO:
+        UserAuthData data = authUser(admin, username, password);
+        
+        // get CA
+        CADataLocal cadata = null; 
+        try{
+            cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
+        }catch(javax.ejb.FinderException fe){
+            getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Invalid CA Id",fe);  
+            throw new EJBException(fe);                   
+        }
+        CA ca = cadata.getCA();
+        CAToken catoken = ca.getCAToken();
         if (req.requireKeyInfo()) {
-            req.setKeyInfo(caCert, signingDevice.getPrivateDecKey());
+            req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateDecKey());
         }
  
         String username = req.getUsername();
@@ -686,6 +622,126 @@ public class RSASignSessionBean extends BaseSessionBean {
         return bcku;
     }    
     
+    private UserAuthData authUser(Admin admin, String username, String password) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
+        // Authorize user and get DN
+        try {
+            IAuthenticationSessionLocal authSession = authHome.create();
+            return authSession.authenticateUser(admin, username, password);
+        } catch (CreateException e) {
+            log.error(e);
+            throw new EJBException(e);
+        }
+ 
+    } // authUser
+    private void finishUser(Admin admin, String username, String password) throws ObjectNotFoundException {
+        // Finnish user and set new status
+        try {
+            IAuthenticationSessionLocal authSession = authHome.create();
+            authSession.finishUser(admin, username, password);
+        } catch (CreateException e) {
+            log.error(e);
+            throw new EJBException(e);
+        }
+    } // finishUser
+
+    /** Creates the certificate, does NOT check any authorization on user, profiles or CA! 
+     * This must be done earlier
+     * 
+     * @param admin administrator performing this task
+     * @param data auth data for user to get the certificate
+     * @param ca the CA that will sign the certificate
+     * @param pk ther users public key to be put in the certificate
+     * @param keyusage requested key usage for the certificate, may be ignored by the CA
+     * @throws IllegalKeyException if the public key given is invalid
+     * @return Certificate that has been generated and signed by the CA
+     */
+    public Certificate createCertificate(Admin admin, UserAuthData data, CA ca, PublicKey pk, int keyusage) throws IllegalKeyException {
+        debug(">createCertificate(pk, ku)");
+        try {
+            // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
+            if (data.getType() == SecConst.USER_INVALID) {
+                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"User type is invalid, cannot create certificate for this user.");
+            } else {
+
+                ICertificateStoreSessionLocal certificateStore = storeHome.create();
+                // Retrieve the certificate profile this user should have
+                int certProfileId = data.getCertProfileId();
+                CertificateProfile certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
+                // What if certProfile == null?
+                if (certProfile == null) {
+                    certProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
+                    certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
+                }
+                
+                // Check that CAid is among available CAs
+                boolean caauthorized = false;
+                Iterator iter = certProfile.getAvailableCAs().iterator();
+                while(iter.hasNext()){
+                  int next = ((Integer) iter.next()).intValue();
+                  if(next == data.getCAId() || next == CertificateProfile.ANYCA){
+                    caauthorized = true;  
+                  }                    
+                }
+                
+                // Sign Session bean is only able to issue certificates with a end entity type certificate profile.
+                if(certProfile.getType() != CertificateProfile.TYPE_ENDENTITY){
+                  getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Wrong type of Certificate Profile for end entity. Only End Entity Certificate Profiles can be issued by signsession bean.");  
+                  throw new EJBException("Wrong type of Certificate Profile for end entity. Only End Entity Certificate Profiles can be issued by signsession bean.");  
+                }
+                
+                if(!caauthorized){
+                  getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"End Entity data contains a CA which the Certificate Profile isn't authorized to use.");  
+                  throw new EJBException("End Entity data contains a CA which the Certificate Profile isn't authorized to use.");
+                }
+                                                
+                log.debug("Using certificate profile with id "+certProfileId);
+                int keyLength;
+                try {
+                  keyLength = ((RSAPublicKey)pk).getModulus().bitLength();
+                } catch (ClassCastException e) {
+                  throw new
+                    IllegalKeyException("Unsupported public key (" +
+                                        pk.getClass().getName() +
+                                        "), only RSA keys are supported.");
+                }
+                log.debug("Keylength = "+keyLength); // bitBength() will return 1 less bit if BigInt i negative
+                if ( (keyLength < (certProfile.getMinimumAvailableBitLength()-1))
+                    || (keyLength > (certProfile.getMaximumAvailableBitLength())) ) {
+                        String msg = "Illegal key length "+keyLength;
+                        log.error(msg);
+                        throw new IllegalKeyException(msg);
+                    }
+                
+                X509Certificate cert = (X509Certificate) ca.generateCertificate(data, pk, keyusage, certProfile);
+                                                
+                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),data.getUsername(), cert, LogEntry.EVENT_INFO_CREATECERTIFICATE,"");
+                debug("Generated certificate with SerialNumber '" + Hex.encode(cert.getSerialNumber().toByteArray())+"' for user '"+data.getUsername()+"'.");
+                debug(cert.toString());
+                
+                // Store certificate in the database
+                String fingerprint = CertTools.getFingerprintAsString(cert);
+                certificateStore.storeCertificate(admin, cert, data.getUsername(), fingerprint, CertificateData.CERT_ACTIVE, certProfile.getType());
+                // Store certificate in certificate profiles publishers.
+                iter = certProfile.getPublisherList().iterator();
+                while(iter.hasNext()){
+                  int publisherid = ((Integer) iter.next()).intValue();
+                  IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(publisherid);
+                  IPublisherSessionLocal pub = pubHome.create();
+                  pub.storeCertificate(admin, cert, data.getUsername(), fingerprint, CertificateData.CERT_ACTIVE, certProfile.getType());                    
+                }                                                
+                debug("<createCertificate(pk, ku)");
+                return cert;
+            }
+        } catch (IllegalKeyException ke) {
+            throw ke;
+        } catch (Exception e) {
+            log.error(e);
+            throw new EJBException(e);
+        }
+        debug("<createCertificate(pk, ku)");
+        log.error("Invalid user type for user "+data.getUsername());
+        throw new EJBException("Invalid user type for user "+data.getUsername());    
+    } // createCertificate
     
     public HashMap getPublisherIdToNameMap(Admin admin){
       return publisheridtonamemap;   
