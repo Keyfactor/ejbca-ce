@@ -318,16 +318,16 @@ public class CertReqServlet extends HttpServlet {
         // Set content-type to general file
         out.setContentType("application/octet-stream");
         out.setHeader("Content-disposition", "attachment; filename=cert.pem");
-        String beg = "-----BEGIN CERTIFICATE-----";
-        String end = "-----END CERTIFICATE-----";
+        String beg = "-----BEGIN CERTIFICATE-----\n";
+        String end = "\n-----END CERTIFICATE-----\n";
+        int length = new String("\n").length();
         out.setContentLength(b64cert.length+beg.length()+end.length());
         // Print the certificate
-        PrintStream ps = new PrintStream(out.getOutputStream());
-        ps.println(beg);
-        ps.println(new String(b64cert));
-        ps.println(end);
-        ps.println();
-        ps.close();
+        ServletOutputStream os = out.getOutputStream();
+        os.write(beg.getBytes());
+        os.write(b64cert);
+        os.write(end.getBytes());
+        out.flushBuffer();
         cat.info("Sent reply to client");
         cat.debug(new String(b64cert));
     }
