@@ -33,7 +33,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.33 2003-01-19 09:40:14 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.34 2003-01-29 10:18:16 scop Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -56,7 +56,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     /** Columns in the database used in select */
     private final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId";
     /** Var holding JNDI name of datasource */
-    private String dataSource = "java:/DefaultDS";
+    private String dataSource = "java:/SecgoCaDS";
 
     /** Var optimizing authorization lookups. */
     private EndEntityProfileAuthorizationProxy profileauthproxy;
@@ -550,11 +550,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
           int type = data.getType();
           if( (type & SecConst.USER_ADMINISTRATOR)  == 0){ 
             logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ADMINISTRATORLOGGEDIN,"Certificate didn't belong to an administrator."); 
-            throw new  AuthorizationDeniedException("Your certificate do not belong to an administrator.");
+            throw new AuthorizationDeniedException("Your certificate does not belong to an administrator.");
           }  
         }else{
           logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ADMINISTRATORLOGGEDIN,"Certificate didn't belong to any user.");  
-          throw new  AuthorizationDeniedException("Your certificate do not belong to any user.");
+          throw new AuthorizationDeniedException("Your certificate does not belong to any user.");
         }
 
 
