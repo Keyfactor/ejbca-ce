@@ -1,4 +1,4 @@
-$Id: TODO,v 1.42 2002-08-11 18:08:49 anatom Exp $
+$Id: TODO,v 1.43 2002-08-11 18:11:07 anatom Exp $
 
 V 1.x
 -----
@@ -10,7 +10,6 @@ V 2.x
 - Describe SSL-setup in server.
 - Fix user 'walter' in admin web-GUI.
 - Remote secure administration through browser CA-admin and RA-admin.
-- Add new elements in DN (from BC 114) in CertTools.
 - Make to work with JDK 1.3, problems with importing certificate chains in jks
 using keytool, as well as JDK 1.4 stuff.
 - Verify support for different databases.
