@@ -109,10 +109,10 @@ public class ProtocolHttpTest extends TestCase {
 
         WebConversation wc   = new WebConversation();
         
-        // Hit ocsp, gives a 500: Internal server error (TODO)
+        // Hit with GET gives a 405 with OCSP: BAD_METHOD
         WebRequest request   = new GetMethodWebRequest( httpReqPath + '/' + resourceOcsp );
         WebResponse response = wc.getResponse( request );
-        assertEquals( "Response code", 500, response.getResponseCode() );
+        assertEquals( "Response code", 405, response.getResponseCode() );
         // Hit scep, gives a 400: Bad Request
         request   = new GetMethodWebRequest( httpReqPath + '/' + resourceScep );
         response = wc.getResponse( request );
