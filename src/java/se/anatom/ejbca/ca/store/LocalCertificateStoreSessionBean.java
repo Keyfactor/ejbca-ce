@@ -63,7 +63,7 @@ import java.util.Random;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.77 2004-11-20 22:33:20 sbailliez Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.78 2005-02-02 16:52:38 anatom Exp $
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
  * view-type="both"
@@ -689,7 +689,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      *
      * @param admin    Administrator performing the operation
      * @param username the usernaem of the certificate(s) that will be retrieved
-     * @return Certificate or null if none found.
+     * @return Collection of Certificates (in no specified order) or null if none found.
      * @ejb.interface-method
      */
     public Collection findCertificatesByUsername(Admin admin, String username) {
@@ -704,7 +704,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
             if (coll != null) {
                 Iterator iter = coll.iterator();
-
                 while (iter.hasNext()) {
                     ret.add(((CertificateDataLocal) iter.next()).getCertificate());
                 }

@@ -13,25 +13,23 @@
  
 package se.anatom.ejbca.admin;
 
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Vector;
 
 import javax.naming.Context;
 
-import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
-import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
+import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.authorization.IAuthorizationSessionHome;
+import se.anatom.ejbca.authorization.IAuthorizationSessionRemote;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
-import se.anatom.ejbca.ca.caadmin.X509CAInfo;
 import se.anatom.ejbca.ca.caadmin.CATokenInfo;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
 import se.anatom.ejbca.ca.caadmin.SoftCATokenInfo;
+import se.anatom.ejbca.ca.caadmin.X509CAInfo;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.authorization.IAuthorizationSessionHome;
-import se.anatom.ejbca.authorization.IAuthorizationSessionRemote;
-import se.anatom.ejbca.SecConst;
-
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.StringTools;
 
@@ -39,7 +37,7 @@ import se.anatom.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.30 2004-10-13 07:14:45 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.31 2005-02-02 16:52:21 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
     /** Pointer to main certificate store */
@@ -83,9 +81,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
               policyId = null;
               
             getOutputStream().println("Initializing CA");            
-            Context context = getInitialContext();
-            ICAAdminSessionHome caadminsessionhome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CAAdminSession"), ICAAdminSessionHome.class);
-            ICAAdminSessionRemote caadminsession = caadminsessionhome.create();
+            ICAAdminSessionRemote caadminsession = getCAAdminSessionRemote();
             
             getOutputStream().println("Generating rootCA keystore:");
             getOutputStream().println("DN: "+dn);
