@@ -3,6 +3,7 @@ package se.anatom.ejbca.log;
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import org.apache.log4j.Logger;
+import se.anatom.ejbca.BaseEntityBean;
 
 /**
  * Entity bean should not be used directly, use though Session beans.
@@ -15,12 +16,11 @@ import org.apache.log4j.Logger;
  * logentryrownumber is the number of the last row number in the log entry database.
  * </pre>
  *
- * @version $Id: LogConfigurationDataBean.java,v 1.3 2003-02-12 11:23:18 scop Exp $
+ * @version $Id: LogConfigurationDataBean.java,v 1.4 2003-02-28 09:26:12 koen_serry Exp $
  */
-public abstract class LogConfigurationDataBean implements javax.ejb.EntityBean {
+public abstract class LogConfigurationDataBean extends BaseEntityBean {
 
     private static Logger log = Logger.getLogger(LogConfigurationDataBean.class);
-    protected EntityContext ctx;
 
     public abstract Integer getId();
     public abstract void setId(Integer id);
@@ -88,33 +88,4 @@ public abstract class LogConfigurationDataBean implements javax.ejb.EntityBean {
     public void ejbPostCreate(Integer id, LogConfiguration logconfiguration) {
         // Do nothing. Required.
     }
-
-    public void setEntityContext(EntityContext ctx) {
-        this.ctx = ctx;
-    }
-
-    public void unsetEntityContext() {
-        this.ctx = null;
-    }
-
-    public void ejbActivate() {
-        // Not implemented.
-    }
-
-    public void ejbPassivate() {
-        // Not implemented.
-    }
-
-    public void ejbLoad() {
-        // Not implemented.
-    }
-
-    public void ejbStore() {
-        // Not implemented.
-    }
-
-    public void ejbRemove() {
-        // Not implemented.
-    }
-
 }

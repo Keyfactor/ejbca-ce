@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Date;
 import org.apache.log4j.Logger;
 import se.anatom.ejbca.hardtoken.hardtokentypes.*;
+import se.anatom.ejbca.BaseEntityBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.StringTools;
 
@@ -23,15 +24,14 @@ import se.anatom.ejbca.util.StringTools;
  *  data (Data saved concerning the hard token)
  * </pre>
  *
- * @version $Id: HardTokenDataBean.java,v 1.3 2003-02-27 08:43:24 anatom Exp $
+ * @version $Id: HardTokenDataBean.java,v 1.4 2003-02-28 09:25:16 koen_serry Exp $
  */
-public abstract class HardTokenDataBean implements javax.ejb.EntityBean {
+public abstract class HardTokenDataBean extends BaseEntityBean {
 
 
 
     private static Logger log = Logger.getLogger(HardTokenIssuerDataBean.class);
 
-    protected EntityContext ctx;
     public abstract String getTokenSN();
     public abstract void setTokenSN(String tokensn);
 
@@ -118,33 +118,4 @@ public abstract class HardTokenDataBean implements javax.ejb.EntityBean {
     public void ejbPostCreate(String tokensn, String username, Date createtime, Date modifytime, int tokentype, HardToken tokendata) {
         // Do nothing. Required.
     }
-
-    public void setEntityContext(EntityContext ctx) {
-        this.ctx = ctx;
-    }
-
-    public void unsetEntityContext() {
-        this.ctx = null;
-    }
-
-    public void ejbActivate() {
-        // Not implemented.
-    }
-
-    public void ejbPassivate() {
-        // Not implemented.
-    }
-
-    public void ejbLoad() {
-        // Not implemented.
-    }
-
-    public void ejbStore() {
-        // Not implemented.
-    }
-
-    public void ejbRemove() {
-        // Not implemented.
-    }
-
 }

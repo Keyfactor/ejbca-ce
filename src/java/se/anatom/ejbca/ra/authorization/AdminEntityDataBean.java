@@ -3,6 +3,7 @@ package se.anatom.ejbca.ra.authorization;
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import org.apache.log4j.Logger;
+import se.anatom.ejbca.BaseEntityBean;
 
 
 /** Entity bean should not be used directly, use though Session beans.
@@ -15,12 +16,11 @@ import org.apache.log4j.Logger;
  *   matchvalue
  * </pre>
  *
- * @version $Id: AdminEntityDataBean.java,v 1.2 2003-02-12 11:23:18 scop Exp $
+ * @version $Id: AdminEntityDataBean.java,v 1.3 2003-02-28 09:26:45 koen_serry Exp $
  */
-public abstract class AdminEntityDataBean implements javax.ejb.EntityBean {
+public abstract class AdminEntityDataBean extends BaseEntityBean {
 
     private static Logger log = Logger.getLogger(AdminEntityDataBean.class);
-    protected EntityContext  ctx;
 
     public abstract int          getPK();
     public abstract Integer      getMatchWith();
@@ -59,33 +59,4 @@ public abstract class AdminEntityDataBean implements javax.ejb.EntityBean {
     public void ejbPostCreate(String admingroupname, int matchwith, int matchtype, String matchvalue) {
         // Do nothing. Required.
     }
-
-    public void setEntityContext(EntityContext ctx) {
-        this.ctx = ctx;
-    }
-
-    public void unsetEntityContext() {
-        this.ctx = null;
-    }
-
-    public void ejbActivate() {
-        // Not implemented.
-    }
-
-    public void ejbPassivate() {
-        // Not implemented.
-    }
-
-    public void ejbLoad() {
-        // Not implemented.
-    }
-
-    public void ejbStore() {
-        // Not implemented.
-    }
-
-    public void ejbRemove() {
-        // Not implemented.
-    }
-
 }

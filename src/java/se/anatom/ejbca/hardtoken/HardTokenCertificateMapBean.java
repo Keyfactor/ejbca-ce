@@ -4,6 +4,7 @@ import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 
 import org.apache.log4j.Logger;
+import se.anatom.ejbca.BaseEntityBean;
 
 /** Entity bean should not be used directly, use though Session beans.
  *
@@ -14,16 +15,14 @@ import org.apache.log4j.Logger;
  *  tokensn 
  * </pre>
  *
- * @version $Id: HardTokenCertificateMapBean.java,v 1.4 2003-02-12 11:23:17 scop Exp $
+ * @version $Id: HardTokenCertificateMapBean.java,v 1.5 2003-02-28 09:25:16 koen_serry Exp $
  */
-public abstract class HardTokenCertificateMapBean implements javax.ejb.EntityBean {
+public abstract class HardTokenCertificateMapBean extends BaseEntityBean {
 
 
 
     private static Logger log = Logger.getLogger(HardTokenIssuerDataBean.class);
 
-    protected EntityContext  ctx;  
-    
     public abstract String getCertificateFingerprint();
     public abstract void setCertificateFingerprint(String certificatefingerprint);   
         
@@ -54,33 +53,4 @@ public abstract class HardTokenCertificateMapBean implements javax.ejb.EntityBea
     public void ejbPostCreate(String certificatefingerprint, String tokensn) {
         // Do nothing. Required.
     }
-
-    public void setEntityContext(EntityContext ctx) {
-        this.ctx = ctx;
-    }
-
-    public void unsetEntityContext() {
-        this.ctx = null;
-    }
-
-    public void ejbActivate() {
-        // Not implemented.
-    }
-
-    public void ejbPassivate() {
-        // Not implemented.
-    }
-
-    public void ejbLoad() {
-        // Not implemented.
-    }
-
-    public void ejbStore() {
-        // Not implemented.
-    }
-
-    public void ejbRemove() {
-        // Not implemented.
-    }
-
 }

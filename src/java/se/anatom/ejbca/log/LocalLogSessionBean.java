@@ -23,7 +23,7 @@ import se.anatom.ejbca.util.query.*;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalLogSessionBean.java,v 1.7 2003-02-12 11:23:17 scop Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.8 2003-02-28 09:26:12 koen_serry Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean  {
 
@@ -32,7 +32,7 @@ public class LocalLogSessionBean extends BaseSessionBean  {
     public static final int MAXIMUM_QUERY_ROWCOUNT = 500;
 
     /** Var holding JNDI name of datasource */
-    private String dataSource = "java:/DefaultDS";
+    private String dataSource = "";
 
     /** The home interface of  LogEntryData entity bean */
     private LogEntryDataLocalHome logentryhome=null;

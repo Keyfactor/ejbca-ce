@@ -4,6 +4,7 @@ import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import java.util.Date;
 
+import se.anatom.ejbca.BaseEntityBean;
 import se.anatom.ejbca.util.StringTools;
 
 
@@ -22,13 +23,11 @@ import se.anatom.ejbca.util.StringTools;
  *  comment an optional comment of the event.
  * </pre>
  *
- * @version $Id: LogEntryDataBean.java,v 1.3 2003-02-27 08:43:25 anatom Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.4 2003-02-28 09:26:11 koen_serry Exp $
  **/
 
-public abstract class LogEntryDataBean implements javax.ejb.EntityBean {
+public abstract class LogEntryDataBean extends BaseEntityBean {
 
-
-    protected EntityContext  ctx;
     public abstract Integer getId();
     public abstract void setId(Integer id);
 
@@ -87,34 +86,5 @@ public abstract class LogEntryDataBean implements javax.ejb.EntityBean {
     public void ejbPostCreate(Integer id, int admintype, String admindata, int module, Date time, String username, String certificatesnr, int event, String comment) {
         // Do nothing. Required.
     }
-
-    public void setEntityContext(EntityContext ctx) {
-        this.ctx = ctx;
-    }
-
-    public void unsetEntityContext() {
-        this.ctx = null;
-    }
-
-    public void ejbActivate() {
-        // Not implemented.
-    }
-
-    public void ejbPassivate() {
-        // Not implemented.
-    }
-
-    public void ejbLoad() {
-        // Not implemented.
-    }
-
-    public void ejbStore() {
-        // Not implemented.
-    }
-
-    public void ejbRemove() {
-        // Not implemented.
-    }
-
 }
 

@@ -18,12 +18,12 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.11 2003-01-19 09:40:14 herrvendil Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.12 2003-02-28 09:26:45 koen_serry Exp $
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
     /** Var holding JNDI name of datasource */
-    private String dataSource = "java:/DefaultDS";
+    private String dataSource = "";
 
     /** The home interface of  AvailableAccessRulesData entity bean */
     private AvailableAccessRulesDataLocalHome availableaccessruleshome = null;

@@ -6,6 +6,8 @@ import java.math.BigInteger;
 import java.util.Date;
 import java.security.KeyPair;
 import org.apache.log4j.*;
+
+import se.anatom.ejbca.BaseEntityBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.StringTools;
@@ -23,16 +25,15 @@ import se.anatom.ejbca.util.StringTools;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.3 2003-02-27 08:43:25 anatom Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.4 2003-02-28 09:25:57 koen_serry Exp $
  **/
 
-public abstract class KeyRecoveryDataBean implements javax.ejb.EntityBean {
+public abstract class KeyRecoveryDataBean extends BaseEntityBean {
 
 
 
     private static Category log = Category.getInstance(KeyRecoveryDataBean.class.getName() );
 
-    protected EntityContext  ctx;
     public abstract int getPK();
     public abstract void setPK(int pK);
 
@@ -85,34 +86,5 @@ public abstract class KeyRecoveryDataBean implements javax.ejb.EntityBean {
     public void ejbPostCreate(BigInteger certificatesn, String issuerdn, String username, KeyPair keypair) {
         // Do nothing. Required.
     }
-
-    public void setEntityContext(EntityContext ctx) {
-        this.ctx = ctx;
-    }
-
-    public void unsetEntityContext() {
-        this.ctx = null;
-    }
-
-    public void ejbActivate() {
-        // Not implemented.
-    }
-
-    public void ejbPassivate() {
-        // Not implemented.
-    }
-
-    public void ejbLoad() {
-        // Not implemented.
-    }
-
-    public void ejbStore() {
-        // Not implemented.
-    }
-
-    public void ejbRemove() {
-        // Not implemented.
-    }
-
 }
 

@@ -3,6 +3,7 @@ package se.anatom.ejbca.ra.authorization;
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import org.apache.log4j.Logger;
+import se.anatom.ejbca.BaseEntityBean;
 
 
 /** Entity bean should not be used directly, use though Session beans.
@@ -14,12 +15,12 @@ import org.apache.log4j.Logger;
  * Access rule
  * </pre>
  *
- * @version $Id: AccessRulesDataBean.java,v 1.4 2003-02-12 11:23:18 scop Exp $
+ * @version $Id: AccessRulesDataBean.java,v 1.5 2003-02-28 09:26:45 koen_serry Exp $
  */
-public abstract class AccessRulesDataBean implements javax.ejb.EntityBean {
+public abstract class AccessRulesDataBean extends BaseEntityBean
+{
 
     private static Logger log = Logger.getLogger(AccessRulesDataBean.class);
-    protected EntityContext  ctx;
 
     public abstract int getPK();
     public abstract void setPK(int pK);
@@ -33,8 +34,6 @@ public abstract class AccessRulesDataBean implements javax.ejb.EntityBean {
     //
     // Fields required by Container
     //
-
-
     public AccessRulesPK ejbCreate(String usergroupname, String resource, AccessRule accessrule) throws CreateException {
         AccessRulesPK pk = new AccessRulesPK(usergroupname, resource);
 
@@ -48,33 +47,4 @@ public abstract class AccessRulesDataBean implements javax.ejb.EntityBean {
     public void ejbPostCreate(String usergroupname, String resource, AccessRule accessrule) {
         // Do nothing. Required.
     }
-
-    public void setEntityContext(EntityContext ctx) {
-        this.ctx = ctx;
-    }
-
-    public void unsetEntityContext() {
-        this.ctx = null;
-    }
-
-    public void ejbActivate() {
-        // Not implemented.
-    }
-
-    public void ejbPassivate() {
-        // Not implemented.
-    }
-
-    public void ejbLoad() {
-        // Not implemented.
-    }
-
-    public void ejbStore() {
-        // Not implemented.
-    }
-
-    public void ejbRemove() {
-        // Not implemented.
-    }
-
 }

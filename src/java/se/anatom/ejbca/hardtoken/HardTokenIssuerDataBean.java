@@ -5,6 +5,7 @@ import javax.ejb.CreateException;
 import java.util.HashMap;
 import java.math.BigInteger;
 import org.apache.log4j.Logger;
+import se.anatom.ejbca.BaseEntityBean;
 
 /** Entity bean should not be used directly, use though Session beans.
  *
@@ -18,16 +19,15 @@ import org.apache.log4j.Logger;
  *  hardtokenissuer (Data saved concerning the hard token issuer)
  * </pre>
  *
- * @version $Id: HardTokenIssuerDataBean.java,v 1.2 2003-02-12 11:23:17 scop Exp $
+ * @version $Id: HardTokenIssuerDataBean.java,v 1.3 2003-02-28 09:25:16 koen_serry Exp $
  **/
 
-public abstract class HardTokenIssuerDataBean implements javax.ejb.EntityBean {
+public abstract class HardTokenIssuerDataBean extends BaseEntityBean {
 
 
 
     private static Logger log = Logger.getLogger(HardTokenIssuerDataBean.class);
 
-    protected EntityContext  ctx;
     public abstract Integer getId();
     public abstract void setId(Integer id);
 
@@ -92,33 +92,4 @@ public abstract class HardTokenIssuerDataBean implements javax.ejb.EntityBean {
     public void ejbPostCreate(Integer id, String alias, BigInteger certificatesn, String certissuerdn,  HardTokenIssuer issuerdata) {
         // Do nothing. Required.
     }
-
-    public void setEntityContext(EntityContext ctx) {
-        this.ctx = ctx;
-    }
-
-    public void unsetEntityContext() {
-        this.ctx = null;
-    }
-
-    public void ejbActivate() {
-        // Not implemented.
-    }
-
-    public void ejbPassivate() {
-        // Not implemented.
-    }
-
-    public void ejbLoad() {
-        // Not implemented.
-    }
-
-    public void ejbStore() {
-        // Not implemented.
-    }
-
-    public void ejbRemove() {
-        // Not implemented.
-    }
-
 }

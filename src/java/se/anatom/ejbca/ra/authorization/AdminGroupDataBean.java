@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Vector;
 import java.util.Iterator;
 import org.apache.log4j.Logger;
+import se.anatom.ejbca.BaseEntityBean;
 
 
 /** Entity bean should not be used directly, use though Session beans.
@@ -23,13 +24,11 @@ import org.apache.log4j.Logger;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.4 2003-02-12 11:23:18 scop Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.5 2003-02-28 09:26:46 koen_serry Exp $
  */
-public abstract class AdminGroupDataBean implements javax.ejb.EntityBean {
+public abstract class AdminGroupDataBean extends BaseEntityBean {
 
     private static Logger log = Logger.getLogger(AdminGroupDataBean.class);
-
-    protected EntityContext  ctx;
 
     public abstract String getAdminGroupName();
     public abstract void setAdminGroupName(String admingroupname);
@@ -253,46 +252,6 @@ public abstract class AdminGroupDataBean implements javax.ejb.EntityBean {
     public void ejbPostCreate(String admingroupname) {
 
         // Do nothing. Required.
-
-    }
-
-    public void setEntityContext(EntityContext ctx) {
-
-        this.ctx = ctx;
-
-    }
-
-    public void unsetEntityContext() {
-
-        this.ctx = null;
-
-    }
-
-    public void ejbActivate() {
-
-        // Not implemented.
-
-    }
-
-    public void ejbPassivate() {
-
-        // Not implemented.
-
-    }
-
-    public void ejbLoad() {
-
-        // Not implemented.
-
-    }
-
-    public void ejbStore() {
-
-        // Not implemented.
-
-    }
-
-    public void ejbRemove() {
 
     }
 

@@ -33,14 +33,14 @@ import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
  * Stores key recovery data.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.1 2003-02-12 13:21:30 herrvendil Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.2 2003-02-28 09:25:56 koen_serry Exp $
  */
 public class LocalKeyRecoverySessionBean extends BaseSessionBean  {
 
     private static Category cat = Category.getInstance(LocalKeyRecoverySessionBean.class.getName());
     
     /** Var holding JNDI name of datasource */
-    private String dataSource = "java:/DefaultDS";
+    private String dataSource = "";
  
     /** The local home interface of hard token issuer entity bean. */
     private KeyRecoveryDataLocalHome keyrecoverydatahome = null;

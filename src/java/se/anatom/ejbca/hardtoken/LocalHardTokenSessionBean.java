@@ -37,14 +37,14 @@ import se.anatom.ejbca.ra.IUserAdminSessionHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.4 2003-02-12 13:21:42 herrvendil Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.5 2003-02-28 09:25:16 koen_serry Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
     private static Logger log = Logger.getLogger(LocalHardTokenSessionBean.class);
     
     /** Var holding JNDI name of datasource */
-    private String dataSource = "java:/DefaultDS";
+    private String dataSource = "";
  
     /** The local home interface of hard token issuer entity bean. */
     private HardTokenIssuerDataLocalHome hardtokenissuerhome = null;
