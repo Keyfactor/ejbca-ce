@@ -8,11 +8,13 @@ import se.anatom.ejbca.util.StringTools;
 /**
  * Holds authentication data collected from an authentication source.
  *
- * @version $Id: UserAuthData.java,v 1.6 2003-07-24 08:43:30 anatom Exp $
+ * @version $Id: UserAuthData.java,v 1.7 2003-09-03 15:34:14 herrvendil Exp $
  */
 public class UserAuthData implements Serializable {
+      
     private String username;
     private String subjectDN;
+    private int caid = 0;
     private String subjectAltName;
     private String subjectEmail = null;
     private int certProfileId = 0;
@@ -25,24 +27,24 @@ public class UserAuthData implements Serializable {
      */
     public UserAuthData() {
     }
-
-    /**
-     * Creates a new UserAuthData object.
-     *
-     * @param user username
-     * @param dn DN for user
-     * @param altName subject alternative names to be put in certificate
-     * @param email email address
-     * @param type type of user from SecConst (EndEntity, CA etc)
-     * @param certProfileId the certificate profile the users certificate should be created with
-     */
-    public UserAuthData(String user, String dn, String altName, String email, int type,
-        int certProfileId) {
-        this.username = StringTools.strip(user);
-        this.subjectDN = dn;
-        this.subjectAltName = altName;
-        this.subjectEmail = email;
-        this.type = type;
+	/**
+	 * Creates a new UserAuthData object.
+	 *
+	 * @param user username
+	 * @param dn DN for user
+	 * @param caid of user
+	 * @param altName subject alternative names to be put in certificate
+	 * @param email email address
+	 * @param type type of user from SecConst (EndEntity, CA etc)
+	 * @param certProfileId the certificate profile the users certificate should be created with
+	 */
+    public UserAuthData(String user, String dn, int caid, String altName, String email, int type, int certProfileId) {
+        this.username=StringTools.strip(user);
+        this.subjectDN=dn;
+        this.caid=caid;
+        this.subjectAltName=altName;
+        this.subjectEmail=email;
+        this.type=type;
         this.certProfileId = certProfileId;
     }
 
@@ -82,6 +84,24 @@ public class UserAuthData implements Serializable {
      */
     public String getDN() {
         return subjectDN;
+    }
+    
+	    /**
+		 * setter
+		 *
+		 * @return CAId
+		 */
+	public void setCAId(int caid) {
+		this.caid=caid;
+    }
+    
+	    /**
+		 * getter
+		 *
+		 * @return CAId
+		 */
+	public int getCAId() {
+		 return caid;
     }
 
     /**

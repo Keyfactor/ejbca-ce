@@ -19,11 +19,14 @@ import se.anatom.ejbca.util.CertTools;
  * Approves all authentication requests that contain a DN as the username, password is ignored and
  * the username is returned as DN. Useful for demo purposes to give out certificates to anyone.
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.14 2003-08-19 11:50:31 anatom Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.15 2003-09-03 15:34:14 herrvendil Exp $
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean {
     /** The remote interface of the log session bean */
     private ILogSessionRemote logsession;
+    
+    //TODO REMOVE
+    private int caid=0;
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -65,28 +68,23 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
 
             if ((dn != null) && (dn.length() > 0)) {
                 String email = CertTools.getEmailFromDN(dn);
-
-                try {
-                    logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), username, null,
-                        LogEntry.EVENT_INFO_USERAUTHENTICATION, "NULL-Authenticated user");
-                } catch (RemoteException re) {
-                    throw new EJBException(re);
+                try{
+                  logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"NULL-Authenticated user");
+                }catch(RemoteException re){
+                  throw new EJBException(re);
                 }
 
                 String altName = (email == null) ? null : ("rfc822Name=" + email);
 
                 // Use default certificate profile 0
-                UserAuthData ret = new UserAuthData(username, dn, altName, email,
-                        SecConst.USER_ENDUSER, SecConst.PROFILE_NO_PROFILE);
-                debug("<authenticateUser(" + username + ", hiddenpwd)");
-
+                UserAuthData ret = new UserAuthData(username, dn, caid,  altName, email, SecConst.USER_ENDUSER, SecConst.PROFILE_NO_PROFILE);
+                debug("<authenticateUser("+username+", hiddenpwd)");
                 return ret;
             } else {
-                try {
-                    logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), username, null,
-                        LogEntry.EVENT_ERROR_USERAUTHENTICATION, "User does not contain a DN.");
-                } catch (RemoteException re) {
-                    throw new EJBException(re);
+                try{
+                  logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"User does not contain a DN.");
+                }catch(RemoteException re){
+                  throw new EJBException(re);
                 }
 
                 throw new AuthLoginException("User " + username + " does not contain a DN.");

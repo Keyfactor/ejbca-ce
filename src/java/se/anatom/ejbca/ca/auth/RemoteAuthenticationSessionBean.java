@@ -20,7 +20,7 @@ import se.anatom.ejbca.log.LogEntry;
 /**
  * Authenticates users towards a remote user database, using HTTP-based protocol.
  *
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.10 2003-07-24 08:43:30 anatom Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.11 2003-09-03 15:34:14 herrvendil Exp $
  */
 public class RemoteAuthenticationSessionBean extends BaseSessionBean {
     private static String REMOTE_PROTOCOL_VER = "1.0";
@@ -29,8 +29,10 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
     String remoteurl = null;
 
     /** The remote interface of the log session bean */
-    private ILogSessionRemote logsession;
+    private ILogSessionRemote logsession;         
+    
 
+    
     /**
      * Default create for SessionBean without any creation Arguments.
      *
@@ -78,16 +80,12 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
 
         // Only end users can be authenticated on remote database (so far...)
         ret.setType(SecConst.USER_ENDUSER);
-
-        try {
-            logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), username, null,
-                LogEntry.EVENT_INFO_USERAUTHENTICATION, "Autenticated user");
-        } catch (RemoteException re) {
-            throw new EJBException(re);
-        }
-
-        debug(">authenticateUser(" + username + ", hiddenpwd)");
-
+        try{
+          logsession.log(admin, ret.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"Autenticated user");       
+        }catch(RemoteException re){
+           throw new EJBException(re);                
+        }          
+        debug(">authenticateUser("+username+", hiddenpwd)");
         return ret;
     }
 
