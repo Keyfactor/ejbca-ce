@@ -1,11 +1,19 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.10 2002-08-22 19:48:18 anatom Exp $
+$Id: FAQ,v 1.11 2002-08-28 08:41:15 anatom Exp $
+---------
+Q : I get exceptions on the client side all the time when running
+'runtest.sh/cmd', or any of the command line tools.
+
+A : You may be using a newer (or older) version of JBoss than expected. Replace
+ejbca/lib/jboss-client.jar and ejbca/lib/jboss-common-client.jar with files from
+$JBOSS_HOME/client.
+
 ---------
 Q : I get the error "Object Class Violation : (65)" when publishing certificates
 in LDAP?
 
-A : You LDAP object class may require some fields in the DN that you have not 
+A : You LDAP object class may require some fields in the DN that you have not
 entered. Some schemas require the DN-attribute SN for instance.
 
 -----
@@ -22,7 +30,7 @@ A : EJBCA supports in theory any database that works with the application
 server. The database must have support for long fields, a CRL can in theory
 become very large.
 EJBCA has been known to work with MySQL, PostgreSQL, Oracle, Sybase,
-InstantDB and SAPDD. 
+InstantDB and SAPDD.
 Other databases should work woth simple configuration.
 
 -----
@@ -34,8 +42,9 @@ class used as parameter to some versions of the 'createCertificate' method can
 not be passed correctly.
 You must use JDK 1.4 on both server and client, then it works.
 
-Another problem that may occur is that JBoss have been upgraded since the 
-release of ejbca so the file 'lib/jboss-client.jar' must be replaced by one from JBoss.
+Another problem that may occur is that JBoss have been upgraded since the
+release of ejbca so the file 'lib/jboss-client.jar' must be replaced by one from
+JBoss.
 
 -----
 Q : Why are there two versions of all commands, i.e. 'ra.sh' and 'ra.cmd'?
@@ -168,4 +177,5 @@ important information. Logging in JBoss is configured in 'log4j.properties' in
 the JBoss config directory.
 
 -----
+
 
