@@ -20,22 +20,23 @@ try  {
         ICertificateStoreSessionHome home = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
         ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
         ICertificateStoreSessionRemote store = home.create();
-        try {
-            RevokedCertInfo revinfo = store.isRevoked(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()), dn, new BigInteger(Hex.decode(serno)));
-            if (revinfo != null) {
+        RevokedCertInfo revinfo = store.isRevoked(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()), dn, new BigInteger(Hex.decode(serno)));
+        if (revinfo != null) {
+            if (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) {
+
 %>
   <b>REVOKED</b><br>
   RevocationDate is '<%=revinfo.getRevocationDate()%>' and reason '<%=revinfo.getReason()%>'. 
-  <%
+<%
             } else {
 %>
   <b>NOT REVOKED</b> 
-  <%
+<%
             }
-        } catch (Exception e) {
+        } else {
 %>
   <b>Certificate does not exist</b> 
-  <%
+<%
         }
     }
 } catch(Exception ex) {
