@@ -1,14 +1,12 @@
 package se.anatom.ejbca;
 
 /**
- * @version $Id: PropertyEntityPK.java,v 1.1 2004-01-08 14:31:26 herrvendil Exp $
+ * @version $Id: PropertyEntityPK.java,v 1.2 2004-01-09 09:35:43 anatom Exp $
  */
 
 public final class PropertyEntityPK implements java.io.Serializable {
 
-
     public int pK;
-
 
     public PropertyEntityPK(int id, String property) {
         this.pK =
@@ -16,8 +14,6 @@ public final class PropertyEntityPK implements java.io.Serializable {
         ^
         ((int) id));
     }
-
-
 
     /**
      * @see java.lang.Object#equals(java.lang.Object)

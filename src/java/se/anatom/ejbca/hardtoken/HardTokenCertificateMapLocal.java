@@ -4,17 +4,14 @@ package se.anatom.ejbca.hardtoken;
 /**
  * For docs, see HardTokenCertificateMapBean
  *
- * @version $Id: HardTokenCertificateMapLocal.java,v 1.4 2003-09-03 20:05:28 herrvendil Exp $
+ * @version $Id: HardTokenCertificateMapLocal.java,v 1.5 2004-01-09 09:35:43 anatom Exp $
  **/
 
 public interface HardTokenCertificateMapLocal extends javax.ejb.EJBLocalObject {
 
     // Public methods
-    
-    public String getCertificateFingerprint();
-    
+    public String getCertificateFingerprint();    
     public String getTokenSN();
-
-    public void setTokenSN(String tokensn);
+    public void setTokenSN(String tokenSN);
 }
 

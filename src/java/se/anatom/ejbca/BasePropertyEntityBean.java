@@ -17,10 +17,9 @@ import javax.ejb.CreateException;
  */
 public abstract class BasePropertyEntityBean extends BaseEntityBean {
 
-	public abstract PropertyEntityPK getPK();
-	public abstract void setPK(PropertyEntityPK pk);
-
-
+    public abstract PropertyEntityPK getPK();
+	public abstract void setPK(PropertyEntityPK pK);
+    
 	public abstract int getId();
 	public abstract void setId(int id);
 
@@ -52,7 +51,7 @@ public abstract class BasePropertyEntityBean extends BaseEntityBean {
 	       throws CreateException {
 	       	
 	    PropertyEntityPK pk = new PropertyEntityPK(id,property); 
-	    setPK(pk);   	
+
 		setId(id);
 		setProperty(property);
 		setValue(value);
@@ -60,10 +59,8 @@ public abstract class BasePropertyEntityBean extends BaseEntityBean {
 		return pk;
 	}
 
-	
 	public void ejbPostCreate(int id, String property, String value) {
 		// Do nothing. Required.
-	}    
-    
+	}
 
 }

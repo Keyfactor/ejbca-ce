@@ -16,7 +16,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * logentryrownumber is the number of the last row number in the log entry database.
  * </pre>
  *
- * @version $Id: LogConfigurationDataBean.java,v 1.8 2003-10-01 11:12:07 herrvendil Exp $
+ * @version $Id: LogConfigurationDataBean.java,v 1.9 2004-01-09 09:35:43 anatom Exp $
  */
 public abstract class LogConfigurationDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(LogConfigurationDataBean.class);
@@ -47,7 +47,7 @@ public abstract class LogConfigurationDataBean extends BaseEntityBean {
      *
      * @param logconfiguration DOCUMENT ME!
      */
-    public abstract void setLogConfiguration(LogConfiguration logconfiguration);
+    public abstract void setLogConfiguration(LogConfiguration logConfiguration);
 
     /**
      * DOCUMENT ME!
@@ -61,7 +61,7 @@ public abstract class LogConfigurationDataBean extends BaseEntityBean {
      *
      * @param rownumber DOCUMENT ME!
      */
-    public abstract void setLogEntryRowNumber(int rownumber);
+    public abstract void setLogEntryRowNumber(int logEntryRowNumber);
 
     /**
      * DOCUMENT ME!
@@ -94,8 +94,8 @@ public abstract class LogConfigurationDataBean extends BaseEntityBean {
      *
      * @param logconfiguration DOCUMENT ME!
      */
-    public void saveLogConfiguration(LogConfiguration logconfiguration) {
-        setLogConfiguration(logconfiguration);
+    public void saveLogConfiguration(LogConfiguration logConfiguration) {
+        setLogConfiguration(logConfiguration);
     }
 
     /**
@@ -122,10 +122,10 @@ public abstract class LogConfigurationDataBean extends BaseEntityBean {
      *
      * @return the given id
      */
-    public Integer ejbCreate(Integer id, LogConfiguration logconfiguration)
+    public Integer ejbCreate(Integer id, LogConfiguration logConfiguration)
         throws CreateException {
         setId(id);
-        setLogConfiguration(logconfiguration);
+        setLogConfiguration(logConfiguration);
         setLogEntryRowNumber(0);
 
         return id;
@@ -137,7 +137,7 @@ public abstract class LogConfigurationDataBean extends BaseEntityBean {
      * @param id DOCUMENT ME!
      * @param logconfiguration DOCUMENT ME!
      */
-    public void ejbPostCreate(Integer id, LogConfiguration logconfiguration) {
+    public void ejbPostCreate(Integer id, LogConfiguration logConfiguration) {
         // Do nothing. Required.
     }
 }

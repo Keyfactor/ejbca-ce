@@ -14,25 +14,22 @@ import se.anatom.ejbca.BaseEntityBean;
  *  tokensn 
  * </pre>
  *
- * @version $Id: HardTokenCertificateMapBean.java,v 1.9 2003-09-03 20:05:28 herrvendil Exp $
+ * @version $Id: HardTokenCertificateMapBean.java,v 1.10 2004-01-09 09:35:43 anatom Exp $
  */
 public abstract class HardTokenCertificateMapBean extends BaseEntityBean {
 
-
-
-    private static Logger log = Logger.getLogger(HardTokenIssuerDataBean.class);
+    private static Logger log = Logger.getLogger(HardTokenCertificateMapBean.class);
 
     public abstract String getCertificateFingerprint();
-    public abstract void setCertificateFingerprint(String certificatefingerprint);   
+    public abstract void setCertificateFingerprint(String certificateFingerprint);   
         
     public abstract String getTokenSN();
-    public abstract void setTokenSN(String tokensn);
+    public abstract void setTokenSN(String tokenSN);
 
      
     //
     // Fields required by Container
     //
-
 
     /**
      * Entity Bean holding data of a certificate to hard token relation.
@@ -41,15 +38,15 @@ public abstract class HardTokenCertificateMapBean extends BaseEntityBean {
      *
      **/
 
-    public String ejbCreate(String certificatefingerprint, String tokensn) throws CreateException {        
-        setCertificateFingerprint(certificatefingerprint);   
-        setTokenSN(tokensn);
+    public String ejbCreate(String certificateFingerprint, String tokenSN) throws CreateException {        
+        setCertificateFingerprint(certificateFingerprint);   
+        setTokenSN(tokenSN);
         
-        log.debug("Created HardTokenCertificateMap for token SN: "+ tokensn );
-        return certificatefingerprint;
+        log.debug("Created HardTokenCertificateMap for token SN: "+ tokenSN );
+        return certificateFingerprint;
     }
 
-    public void ejbPostCreate(String certificatefingerprint, String tokensn) {
+    public void ejbPostCreate(String certificateFingerprint, String tokenSN) {
         // Do nothing. Required.
     }
 }
