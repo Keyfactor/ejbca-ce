@@ -80,7 +80,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.21 2003-03-01 14:49:13 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.22 2003-03-09 13:04:26 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -219,7 +219,7 @@ public class DemoCertReqServlet extends HttpServlet {
 
     String email = request.getParameter("email");
     if (email == null) email = CertTools.getPartFromDN(dn, "EMAILADDRESS");
-    if (email != null) {
+    if ((email != null) && (email.length() > 0)) {
       newuser.setEmail(email);
       if (includeEmail != null) {
           newuser.setSubjectAltName("email="+email);
