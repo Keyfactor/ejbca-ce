@@ -78,7 +78,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.11 2003-01-29 11:40:21 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.12 2003-01-29 11:53:20 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -222,16 +222,23 @@ public class DemoCertReqServlet extends HttpServlet {
       }
     }
 
+    String tmp = null;
     int eProfileId = SecConst.EMPTY_ENDENTITYPROFILE;
-    if (request.getParameter("entityprofile") != null) {
+    if ((tmp=request.getParameter("entityprofile")) != null) {
         eProfileId = raadminsession.getEndEntityProfileId(admin, request.getParameter("entityprofile"));
+        if (eProfileId == 0) {
+            throw new ServletException("No such end entity profile: " + tmp);
+        }
     }
     // TODO: check that we're authorized to use the profile
     newuser.setEndEntityProfileId(eProfileId);
 
     int cProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
-    if (request.getParameter("certificateprofile") != null) {
+    if ((tmp=request.getParameter("certificateprofile")) != null) {
         cProfileId = storesession.getCertificateProfileId(admin, request.getParameter("certificateprofile"));
+        if (cProfileId == 0) {
+            throw new ServletException("No such certificate profile: " + tmp);
+        }
     }
     // TODO: check that we're authorized to use the profile
     newuser.setCertificateProfileId(cProfileId);
