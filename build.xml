@@ -202,7 +202,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/*.class"/>
                 <include name="se/anatom/ejbca/util/**/*.class"/>
                 <include name="se/anatom/ejbca/util/query/*.class"/>                
-                <include name="se/anatom/ejbca/webdist/rainterface/Profile.class"/>
+                <include name="se/anatom/ejbca/webdist/rainterface/*.class"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>           
         </fileset>
     </copy>
