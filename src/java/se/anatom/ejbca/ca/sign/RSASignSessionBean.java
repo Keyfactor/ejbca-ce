@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.37 2002-08-19 11:04:01 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.38 2002-08-20 12:17:11 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -60,7 +60,6 @@ public class RSASignSessionBean extends BaseSessionBean {
     String crldisturi;
     private Boolean emailindn;
     private Boolean finishUser;
-    private SecureRandom random;
     ISigningDevice signingDevice;
 
     /** Home interface to certificate store */
@@ -158,34 +157,6 @@ public class RSASignSessionBean extends BaseSessionBean {
             // without resetting users state in user DB
             finishUser = (Boolean)lookup("java:comp/env/FinishUser", java.lang.Boolean.class);
 
-            // Init random number generator for random serialnumbers
-            random = SecureRandom.getInstance("SHA1PRNG");
-            // Using this seed we should get a different seed every time.
-            // We are not concerned about the security of the random bits, only that they are different every time.
-            // Extracting 64 bit random numbers out of this should give us 2^32 (4 294 967 296) serialnumbers before
-            // collisions (which are seriously BAD), well anyhow sufficien for pretty large scale installations.
-            // Design criteria: 1. No counter to keep track on. 2. Multiple thereads can generate numbers at once, in
-            // a clustered environment etc.
-            long seed = (new Date().getTime()) + this.hashCode();
-            random.setSeed(seed);
-            /* Another possibility is to use SecureRandom's default seeding which is designed to be secure:
-            * <p>The seed is produced by counting the number of times the VM
-            * manages to loop in a given period. This number roughly
-            * reflects the machine load at that point in time.
-            * The samples are translated using a permutation (s-box)
-            * and then XORed together. This process is non linear and
-            * should prevent the samples from "averaging out". The s-box
-            * was designed to have even statistical distribution; it's specific
-            * values are not crucial for the security of the seed.
-            * We also create a number of sleeper threads which add entropy
-            * to the system by keeping the scheduler busy.
-            * Twenty such samples should give us roughly 160 bits of randomness.
-            * <P> These values are gathered in the background by a daemon thread
-            * thus allowing the system to continue performing it's different
-            * activites, which in turn add entropy to the random seed.
-            * <p> The class also gathers miscellaneous system information, some
-            * machine dependent, some not. This information is then hashed together
-            * with the 20 seed bytes. */
         } catch( Exception e ) {
             error("Caught exception in ejbCreate(): ", e);
             throw new EJBException(e);
@@ -470,8 +441,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         // Serialnumber is random bits, where random generator is initialized with Date.getTime() when this
 
         // bean is created.
-        byte[] serno = new byte[8];
-        random.nextBytes(serno);
+        byte[] serno = SernoGenerator.instance().getSerno();
         certgen.setSerialNumber((new java.math.BigInteger(serno)).abs());
         certgen.setNotBefore(firstDate);
         certgen.setNotAfter(lastDate);
