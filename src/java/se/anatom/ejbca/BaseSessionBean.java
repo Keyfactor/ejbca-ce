@@ -13,7 +13,7 @@ import org.apache.log4j.*;
 
 /** Base for Session Beans providing common features, new Session Beans 'extends' BaseSessionBean.
  *
- * @version $Id: BaseSessionBean.java,v 1.1.1.1 2001-11-15 14:58:13 anatom Exp $
+ * @version $Id: BaseSessionBean.java,v 1.2 2002-01-01 11:08:09 anatom Exp $
  */
 public class BaseSessionBean implements SessionBean {
     
@@ -120,7 +120,7 @@ public class BaseSessionBean implements SessionBean {
             baseCat.debug("<lookup("+jndiName+")");
             return ret;
         } catch( NamingException e ) {
-            baseCat.error("Can't lookup '"+jndiName+"'", e);
+            baseCat.error("NamingException, can't lookup '"+jndiName+"'");
             throw new EJBException( e );
         }
         
