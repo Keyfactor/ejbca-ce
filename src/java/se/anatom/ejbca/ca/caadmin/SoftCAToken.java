@@ -36,7 +36,7 @@ import se.anatom.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.9 2004-05-10 09:24:06 anatom Exp $
+ * @version $Id: SoftCAToken.java,v 1.10 2004-11-08 21:35:45 sbailliez Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
 
@@ -45,7 +45,7 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
 
     public static final float LATEST_VERSION = 1; 
     
-    private final static String  PROVIDER = "BC";
+    private static final String  PROVIDER = "BC";
 
     private PrivateKey privateSignKey = null;
     private PrivateKey privateDecKey  = null;
