@@ -11,6 +11,8 @@ EJBCA Homepage can be found at http://ejbca.sourceforge.net/
 Information about contacting the EJBCA team, contributing to EJBCA, etc can
 be found throught the Homepage.
 
+All documentation can also be found on the homepage.
+
 FEATURES
 ========
 
@@ -134,9 +136,10 @@ Most important, to run the CA a keystore must be in the directory designated by
  the item 'keyStore' in src/ca/META-INF/ejb-jar.xml (default /tmp/server.p12). A
  test keyStore is provided in 'src/ca/keystore/server.p12'.
 
-NOTE: After running tests with 'runtest.sh/cmd', you might consider deleting the 
-database since some leftovers are left in the database. Also DO NOT run the 
-testscripts on a production database since it will revoke all certificates in the 
+NOTE: After running tests with 'runtest.sh/cmd', you might consider deleting the
+database since some leftovers are left in the database. Also DO NOT run the
+testscripts on a production database since it will revoke all certificates in
+the
 database.
 
 FOR THE IMPATIENT:
@@ -349,20 +352,26 @@ Administrating CA
 -----------------
 The CA has a command line interface ca.sh/cmd. Options are:
 
-* init - Iniitalizes a CA in the beginning or after a rollover. Stores CA certificates and publishes first CRL.
-* makeroot - creates a new Root CA keystore (only used by Root CA). 
+* init - Iniitalizes a CA in the beginning or after a rollover. Stores CA
+certificates and publishes first CRL.
+* makeroot - creates a new Root CA keystore (only used by Root CA).
 Quote the DN (") so it is treated as one argument.
 * getrootcert - exports the Root CA certificate to file.
-* makereq - generates a certification request for a subCA for sending to a RootCA. Used to create a keystore for a
+* makereq - generates a certification request for a subCA for sending to a
+RootCA. Used to create a keystore for a
 subordinate CA. Quote the DN  so it is treated as one argument.
-* recrep - used to receive certificates which has been produced as result of sending a certificate request to a RootCA.
+* recrep - used to receive certificates which has been produced as result of
+sending a certificate request to a RootCA.
 * processreq - processes a certification request for
 a subordinate CA and creates  a certification reply.
 * createcrl - issues a CRL.
 * getcrl - retrieves the latest CRL.
-* rolloverroot - used to generate a new RootCA certificate using an existing keypair. This updates the current RootCA keystore.
-(only used by Root CA). When this is used, sub-certificates do not need to be resigned.
-* rolloversub - used to generate a new subCA certificate using an existing keypair. This updates the current subCA keystore.
+* rolloverroot - used to generate a new RootCA certificate using an existing
+keypair. This updates the current RootCA keystore.
+(only used by Root CA). When this is used, sub-certificates do not need to be
+resigned.
+* rolloversub - used to generate a new subCA certificate using an existing
+keypair. This updates the current subCA keystore.
 When this is used, sub-certificates do not need to be resigned.
 
 Configuring RA
@@ -465,10 +474,11 @@ The sample remote authentication is deployes by deploying the file
 
 NullAuthenticationSession
 -------------------------
-Another sample included is the NullAuthentication (in package se.anatom.ejbca.ca.auth) 
-session. This authentication module can be used for demo purposes since it 
-authenticates any request sent to it and uses the passed in username as DN. 
-It is easily used simply by exchanging the default AuthenticationSession in 
+Another sample included is the NullAuthentication (in package
+se.anatom.ejbca.ca.auth)
+session. This authentication module can be used for demo purposes since it
+authenticates any request sent to it and uses the passed in username as DN.
+It is easily used simply by exchanging the default AuthenticationSession in
 ca/META-INF/ejb-jar.xml for the NullAuthenticationSession.
 
 Programatically get certificate
@@ -500,4 +510,5 @@ For IE to verify client certs, the ordering in the DN must be strictly the same
 
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
+
 

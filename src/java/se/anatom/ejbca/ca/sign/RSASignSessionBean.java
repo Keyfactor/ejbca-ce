@@ -27,9 +27,12 @@ import se.anatom.ejbca.ca.store.IPublisherSession;
 import se.anatom.ejbca.ca.store.CertificateData;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.SecConst;
-
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
+import se.anatom.ejbca.exception.AuthStatusException;
+import se.anatom.ejbca.exception.AuthLoginException;
+import se.anatom.ejbca.exception.SignRequestException;
+import se.anatom.ejbca.exception.SignRequestSignatureException;
 
 import org.bouncycastle.jce.*;
 import org.bouncycastle.asn1.x509.*;
@@ -38,7 +41,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.16 2002-03-21 11:49:08 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.17 2002-03-22 10:11:24 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -237,7 +240,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(String username, String password, PublicKey pk) throws RemoteException {
+    public Certificate createCertificate(String username, String password, PublicKey pk) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">createCertificate(pk)");
         // Standard key usages for end users are: digitalSignature | keyEncipherment or nonRepudiation
         // Default key usage is digitalSignature | keyEncipherment
@@ -256,7 +259,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(String username, String password, PublicKey pk, boolean[] keyusage) throws RemoteException {
+    public Certificate createCertificate(String username, String password, PublicKey pk, boolean[] keyusage) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">createCertificate(pk, ku)");
 
         try {
@@ -264,7 +267,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             IAuthenticationSession authSession = authHome.create();
 
             UserAuthData data = authSession.authenticateUser(username, password);
-            info("Authorized user " + username + " with DN=" + data.getDN());
+            info("Authorized user " + username + " with DN='" + data.getDN()+"'.");
             debug("type="+ data.getType());
             if ((data.getType() & SecConst.USER_INVALID) !=0) {
                 error("User type is invalid, cannot create certificate for this user.");
@@ -279,7 +282,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
                     keyusage[6] = true;
                 }
                 X509Certificate cert = makeBCCertificate(data, caSubjectName, validity.longValue(), pk, sunKeyUsageToBC(keyusage));
-                info("Generated certificate with SerialNumber " + Hex.encode(cert.getSerialNumber().toByteArray()));
+                info("Generated certificate with SerialNumber '" + Hex.encode(cert.getSerialNumber().toByteArray())+"' for user '"+username+"'.");
                 info(cert.toString());
                 // Verify before returning
                 cert.verify(caCert.getPublicKey());
@@ -297,6 +300,12 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
                 debug("<createCertificate(pk, ku)");
                 return cert;
             }
+        } catch (ObjectNotFoundException oe) {
+            throw oe;
+        } catch (AuthStatusException se) {
+            throw se;
+        } catch (AuthLoginException le) {
+            throw le;
         } catch (Exception e) {
             throw new EJBException(e.toString());
         }
@@ -307,14 +316,14 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(String username, String password, Certificate incert) throws RemoteException {
+    public Certificate createCertificate(String username, String password, Certificate incert) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestSignatureException {
         debug(">createCertificate(cert)");
         X509Certificate cert = (X509Certificate)incert;
         try {
             cert.verify(cert.getPublicKey());
         } catch (Exception e) {
-            error("POPO verification failed for "+username);
-            throw new EJBException("Verification of signature (popo) on certificate failed.", e);
+            error("POPO verification failed for "+username, e);
+            throw new SignRequestSignatureException("Verification of signature (popo) on certificate failed.");
         }
         // TODO: extract more extensions than just KeyUsage
         Certificate ret = createCertificate(username, password, cert.getPublicKey(), cert.getKeyUsage());
@@ -325,7 +334,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(String username, String password, byte[] pkcs10req) throws RemoteException {
+    public Certificate createCertificate(String username, String password, byte[] pkcs10req) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
         debug(">createCertificate(pkcs10)");
         Certificate ret = null;
         try {
@@ -340,19 +349,19 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             ret = createCertificate(username, password, pkcs10.getPublicKey());
         } catch (IOException e) {
             error("Error reading PKCS10-request.", e);
-            throw new EJBException("Error reading PKCS10-request.", e);
+            throw new SignRequestException("Error reading PKCS10-request.");
         } catch (NoSuchAlgorithmException e) {
             error("Error in PKCS10-request, no such algorithm.", e);
-            throw new EJBException("Error in PKCS10-request, no such algorithm.", e);
+            throw new SignRequestException("Error in PKCS10-request, no such algorithm.");
         } catch (NoSuchProviderException e) {
             error("Internal error processing PKCS10-request.", e);
-            throw new EJBException("Internal error processing PKCS10-request.", e);
+            throw new SignRequestException("Internal error processing PKCS10-request.");
         } catch (InvalidKeyException e) {
             error("Error in PKCS10-request, invlid key.", e);
-            throw new EJBException("Error in PKCS10-request, invalid key.", e);
+            throw new SignRequestException("Error in PKCS10-request, invalid key.");
         } catch (SignatureException e) {
             error("Error in PKCS10-signature.", e);
-            throw new EJBException("Error in PKCS10-signature.", e);
+            throw new SignRequestSignatureException("Error in PKCS10-signature.");
         }
         debug("<createCertificate(pkcs10)");
         return ret;

@@ -32,6 +32,10 @@ import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.FileTools;
+import se.anatom.ejbca.exception.AuthStatusException;
+import se.anatom.ejbca.exception.AuthLoginException;
+import se.anatom.ejbca.exception.SignRequestException;
+import se.anatom.ejbca.exception.SignRequestSignatureException;
 
 /**
  * Servlet used to install a private key with a corresponding certificate in a
@@ -58,7 +62,7 @@ import se.anatom.ejbca.util.FileTools;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.14 2002-02-28 20:55:10 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.15 2002-03-22 10:11:24 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
@@ -122,37 +126,41 @@ public class CertReqServlet extends HttpServlet {
                     sendNewB64Cert(b64cert, response);
                 }
             }
+        } catch (ObjectNotFoundException oe) {
+            debug.printMessage("Non existent username!");
+            debug.printMessage("To generate a certificate a valid username and password must be entered.");
+            debug.printDebugInfo(response.getOutputStream());
+            return;
+        } catch (AuthStatusException ase) {
+            debug.printMessage("Wrong user status!");
+            debug.printMessage("To generate a certificate for a user the user must have status new, failed or inprocess.");
+            debug.printDebugInfo(response.getOutputStream());
+            return;
+        } catch (AuthLoginException ale) {
+            debug.printMessage("Wrong username or password!");
+            debug.printMessage("To generate a certificate a valid username and password must be entered.");
+            debug.printDebugInfo(response.getOutputStream());
+            return;
+        } catch (SignRequestException re) {
+            cat.error("Invalid request!");
+            debug.printMessage("Invalid request!");
+            debug.printMessage("Please supply a correct request.");
+            debug.printDebugInfo(response.getOutputStream());
+            return;
+        } catch (SignRequestSignatureException se) {
+            cat.error("Invalid signature on certificate request!");
+            debug.printMessage("Invalid signature on certificate request!");
+            debug.printMessage("Please supply a correctly signed request.");
+            debug.printDebugInfo(response.getOutputStream());
+            return;
+        } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
+            cat.error("Empty or invalid request received.");
+            debug.printMessage("Empty or invalid request!");
+            debug.printMessage("Please supply a correct request.");
+            debug.printDebugInfo(response.getOutputStream());
+            return;
         } catch (Exception e) {
             cat.error(e);
-            if (e.getMessage() != null) {
-                if (e.getMessage().indexOf("status") != -1) {
-                    debug.printMessage("Wrong user status!");
-                    debug.printMessage("To generate a certificate for a user the user must have status new, failed or inprocess.");
-                    debug.printDebugInfo(response.getOutputStream());
-                    return;
-                } else if (e.getMessage().indexOf("password") != -1) {
-                    debug.printMessage("Wrong username or password!");
-                    debug.printMessage("To generate a certificate a valid username and password must be entered.");
-                    debug.printDebugInfo(response.getOutputStream());
-                    return;
-                } else if (e.getMessage().indexOf("ObjectNotFoundException") != -1) {
-                    debug.printMessage("Non existent username!");
-                    debug.printMessage("To generate a certificate a valid username and password must be entered.");
-                    debug.printDebugInfo(response.getOutputStream());
-                    return;
-                } else if ( (e.getMessage().indexOf("PKCS10") != -1) || (e.getMessage().indexOf("NetscapeCertRequest") != -1) ) {
-                    debug.printMessage("Invalid request!");
-                    debug.printMessage("Please supply a correct request.");
-                    debug.printDebugInfo(response.getOutputStream());
-                    return;
-                }
-            }
-            if (e instanceof java.lang.ArrayIndexOutOfBoundsException) {
-                debug.printMessage("Empty or invalid request!");
-                debug.printMessage("Please supply a correct request.");
-                debug.printDebugInfo(response.getOutputStream());
-                return;
-            }
             debug.print("<h3>parameter name and values: </h3>");
             Enumeration paramNames=request.getParameterNames();
             while (paramNames.hasMoreElements()) {
@@ -161,7 +169,7 @@ public class CertReqServlet extends HttpServlet {
                 debug.print("<h4>"+name+":</h4>"+parameter+"<br>");
             }
             debug.takeCareOfException(e);
-            debug.printDebugInfo(response.getOutputStream());            
+            debug.printDebugInfo(response.getOutputStream());
         }
     } //doPost
 
@@ -171,68 +179,6 @@ public class CertReqServlet extends HttpServlet {
         res.getOutputStream().println("The certificate request servlet only handles POST method.");
         cat.debug("<doGet()");
     } // doGet
-
-    /**
-     * Prints debug info back to browser client
-     **/
-    private class Debug {
-        final private ByteArrayOutputStream buffer;
-        final private PrintStream printer;
-        Debug( ){
-            buffer=new ByteArrayOutputStream();
-            printer=new PrintStream(buffer);
-
-            print("<html>");
-            print("<body>");
-            print("<head>");
-
-            String title = "EJBCA cert request servlet";
-            print("<title>" + title + "</title>");
-            print("</head>");
-            print("<body bgcolor=\"white\">");
-
-            print("<h2>" + title + "</h2>");
-        }
-
-        void printDebugInfo(OutputStream out) throws IOException {
-            print("</body>");
-            print("</html>");
-            out.write(buffer.toByteArray());
-        }
-
-        void print(Object o) {
-            printer.println(o);
-        }
-        void printMessage(String msg) {
-            print("<p>"+msg);
-        }
-        void printInsertLineBreaks( byte[] bA ) throws Exception {
-            BufferedReader br=new BufferedReader(
-                new InputStreamReader(new ByteArrayInputStream(bA)) );
-            while ( true ){
-                String line=br.readLine();
-                if (line==null)
-                    break;
-                print(line.toString()+"<br>");
-            }
-        }
-        void takeCareOfException(Throwable t ) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            t.printStackTrace(new PrintStream(baos));
-            print("<h4>Exception:</h4>");
-            try {
-                printInsertLineBreaks( baos.toByteArray() );
-            } catch (Exception e) {
-                e.printStackTrace(printer);
-            }
-        }
-        void ieCertFix(byte[] bA) throws Exception {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            PrintStream tmpPrinter=new PrintStream(baos);
-            ieCertFormat(bA, tmpPrinter);
-            printInsertLineBreaks(baos.toByteArray());
-        }
-    } // Debug
 
     private void ieCertFormat(byte[] bA, PrintStream out) throws Exception {
         BufferedReader br=new BufferedReader(
@@ -317,7 +263,7 @@ public class CertReqServlet extends HttpServlet {
      * </pre>
      *
      * PublicKey's encoded-format has to be RSA X.509.
-     * @return byte[] containing DER-encoded certificate. 
+     * @return byte[] containing DER-encoded certificate.
      */
     private byte[] nsCertRequest(byte[] reqBytes, String username, String password, Debug debug)
         throws Exception {
@@ -328,7 +274,7 @@ public class CertReqServlet extends HttpServlet {
             // Verify POPO, we don't care about the challenge, it's not important.
             nscr.setChallenge("challenge");
             if (nscr.verify("challenge") == false)
-                throw new SecurityException("Invalid signature in NetscapeCertRequest, popo-verification failed.");
+                throw new SignRequestSignatureException("Invalid signature in NetscapeCertRequest, popo-verification failed.");
             cat.debug("POPO verification succesful");
             ISignSessionRemote ss = home.create();
             X509Certificate cert = (X509Certificate) ss.createCertificate(username, password, nscr.getPublicKey());
@@ -417,6 +363,68 @@ public class CertReqServlet extends HttpServlet {
         debug.printInsertLineBreaks(cert.toString().getBytes());
         return Base64.encode(cert.getEncoded());
     } //ieCertRequest
-    
+
+    /**
+     * Prints debug info back to browser client
+     **/
+    private class Debug {
+        final private ByteArrayOutputStream buffer;
+        final private PrintStream printer;
+        Debug( ){
+            buffer=new ByteArrayOutputStream();
+            printer=new PrintStream(buffer);
+
+            print("<html>");
+            print("<body>");
+            print("<head>");
+
+            String title = "EJBCA cert request servlet";
+            print("<title>" + title + "</title>");
+            print("</head>");
+            print("<body bgcolor=\"white\">");
+
+            print("<h2>" + title + "</h2>");
+        }
+
+        void printDebugInfo(OutputStream out) throws IOException {
+            print("</body>");
+            print("</html>");
+            out.write(buffer.toByteArray());
+        }
+
+        void print(Object o) {
+            printer.println(o);
+        }
+        void printMessage(String msg) {
+            print("<p>"+msg);
+        }
+        void printInsertLineBreaks( byte[] bA ) throws Exception {
+            BufferedReader br=new BufferedReader(
+                new InputStreamReader(new ByteArrayInputStream(bA)) );
+            while ( true ){
+                String line=br.readLine();
+                if (line==null)
+                    break;
+                print(line.toString()+"<br>");
+            }
+        }
+        void takeCareOfException(Throwable t ) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            t.printStackTrace(new PrintStream(baos));
+            print("<h4>Exception:</h4>");
+            try {
+                printInsertLineBreaks( baos.toByteArray() );
+            } catch (Exception e) {
+                e.printStackTrace(printer);
+            }
+        }
+        void ieCertFix(byte[] bA) throws Exception {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintStream tmpPrinter=new PrintStream(baos);
+            ieCertFormat(bA, tmpPrinter);
+            printInsertLineBreaks(baos.toByteArray());
+        }
+    } // Debug
+
 } // CertReqServlet
 

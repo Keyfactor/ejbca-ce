@@ -58,7 +58,7 @@
     <delete dir="${apidoc}"/>
     <delete file="admin.jar"/>
     <delete>
-	<fileset dir="${javasrc}" includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
+        <fileset dir="${javasrc}" includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </delete>
     
   </target>
@@ -76,13 +76,13 @@
     <!-- Compile the java code from ${javasrc} into ${build} -->
     <!-- <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on"> -->
     <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="off">
-    	<exclude name="**/CVS/**"/>
-    	<include name="**/*.java"/>
+        <exclude name="**/CVS/**"/>
+        <include name="**/*.java"/>
     </javac>
     <copy todir="${javasrc}">
-    	<fileset dir="${build}">
-		<include name="**/*.class"/>
-	</fileset>
+        <fileset dir="${build}">
+                <include name="**/*.class"/>
+        </fileset>
     </copy>
 
   </target>
@@ -93,19 +93,20 @@
   <target name="apply.war" depends="compile">
     <mkdir    dir="${apply.build}"/>
     <copy todir="${apply.build}">
-    	<fileset dir="${apply.src}"> 
-		<include name="**/*"/>
-	</fileset>
+        <fileset dir="${apply.src}"> 
+                <include name="**/*"/>
+        </fileset>
     </copy>
     <copy todir="${apply.build}/WEB-INF/classes">
-    	<fileset dir="${build}">
-		<include name="se/anatom/ejbca/apply/**/*.class"/>
-		<include name="se/anatom/ejbca/ca/sign/**/ISign*.class"/>
-		<include name="se/anatom/ejbca/util/**/Base64*.class"/>
-		<include name="se/anatom/ejbca/util/**/CertTools*.class"/>
+        <fileset dir="${build}">
+                <include name="se/anatom/ejbca/apply/**/*.class"/>
+                <include name="se/anatom/ejbca/ca/sign/**/ISign*.class"/>
+                <include name="se/anatom/ejbca/util/**/Base64*.class"/>
+                <include name="se/anatom/ejbca/util/**/CertTools*.class"/>
                 <include name="se/anatom/ejbca/util/**/FileTools*.class"/>
-		<exclude name="se/anatom/ejbca/**/*Test*"/>
-	</fileset>
+                <include name="se/anatom/ejbca/exception/**/*.class"/>
+                <exclude name="se/anatom/ejbca/**/*Test*"/>
+        </fileset>
     </copy>
   
     <!-- Jar the apply.war package together -->
@@ -118,21 +119,21 @@
   <target name="sampleauth.war" depends="compile">
     <mkdir    dir="${sampleauth.build}"/>
     <copy todir="${sampleauth.build}">
-    	<fileset dir="${sampleauth.src}"> 
-		<include name="**/*"/>
-	</fileset>
+        <fileset dir="${sampleauth.src}"> 
+                <include name="**/*"/>
+        </fileset>
     </copy>
     <copy todir="${sampleauth.build}/WEB-INF/classes">
-    	<fileset dir="${build}">
-		<include name="se/anatom/ejbca/samples/AuthResult*.class"/>
-		<include name="se/anatom/ejbca/samples/RemoteVerify*.class"/>
-		<exclude name="se/anatom/ejbca/**/*Test*"/>
-	</fileset>
+        <fileset dir="${build}">
+                <include name="se/anatom/ejbca/samples/AuthResult*.class"/>
+                <include name="se/anatom/ejbca/samples/RemoteVerify*.class"/>
+                <exclude name="se/anatom/ejbca/**/*Test*"/>
+        </fileset>
     </copy>
     <copy todir="${sampleauth.build}/WEB-INF/lib">
-    	<fileset dir="${lib}">
-		<include name=""/>
-	</fileset>
+        <fileset dir="${lib}">
+                <include name=""/>
+        </fileset>
     </copy>
   
     <!-- Jar the sampleauth.war package together -->
@@ -145,15 +146,15 @@
   <target name="ca.jar" depends="compile">
     <mkdir    dir="${ca.build}"/>
     <copy todir="${ca.build}">
-    	<fileset dir="${ca.src}"> 
-		<include name="**/*"/>
-	</fileset>
+        <fileset dir="${ca.src}"> 
+                <include name="**/*"/>
+        </fileset>
     </copy>
     <copy todir="${ca.build}">
-    	<fileset dir="${build}">
-		<include name="se/anatom/ejbca/**/*.class"/>
-		<exclude name="se/anatom/ejbca/**/*Test*"/>
-	</fileset>
+        <fileset dir="${build}">
+                <include name="se/anatom/ejbca/**/*.class"/>
+                <exclude name="se/anatom/ejbca/**/*Test*"/>
+        </fileset>
     </copy>
     
     <!-- Jar the ca.jar package together -->
@@ -167,17 +168,17 @@
   <target name="ra.jar" depends="compile">
     <mkdir    dir="${ra.build}"/>
     <copy todir="${ra.build}">
-    	<fileset dir="${ra.src}"> 
-		<include name="**/*"/>
-	</fileset>
+        <fileset dir="${ra.src}"> 
+                <include name="**/*"/>
+        </fileset>
     </copy>
     <copy todir="${ra.build}">
-    	<fileset dir="${build}">
-		<include name="se/anatom/ejbca/ra/**/*.class"/>
-		<include name="se/anatom/ejbca/*.class"/>
-		<include name="se/anatom/ejbca/util/**/*.class"/>
-		<exclude name="se/anatom/ejbca/**/*Test*"/>
-	</fileset>
+        <fileset dir="${build}">
+                <include name="se/anatom/ejbca/ra/**/*.class"/>
+                <include name="se/anatom/ejbca/*.class"/>
+                <include name="se/anatom/ejbca/util/**/*.class"/>
+                <exclude name="se/anatom/ejbca/**/*Test*"/>
+        </fileset>
     </copy>
     
     <!-- Jar the ra.jar package together -->
@@ -190,22 +191,22 @@
   <target name="webdist.war" depends="compile">
     <mkdir    dir="${webdist.build}"/>
     <copy todir="${webdist.build}">
-    	<fileset dir="${webdist.src}"> 
-		<include name="**/*"/>
-	</fileset>
+        <fileset dir="${webdist.src}"> 
+                <include name="**/*"/>
+        </fileset>
     </copy>
     <copy todir="${webdist.build}/WEB-INF/classes">
-    	<fileset dir="${build}">
-		<include name="se/anatom/ejbca/webdist/**/*.class"/>
-		<include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
+        <fileset dir="${build}">
+                <include name="se/anatom/ejbca/webdist/**/*.class"/>
+                <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
-		<include name="se/anatom/ejbca/ca/sign/ISign*.class"/>
+                <include name="se/anatom/ejbca/ca/sign/ISign*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
-		<include name="se/anatom/ejbca/util/**/Base64*.class"/>
-		<include name="se/anatom/ejbca/util/**/CertTools*.class"/>
-		<include name="se/anatom/ejbca/util/**/Hex*.class"/>
-		<exclude name="se/anatom/ejbca/**/*Test*"/>
-	</fileset>
+                <include name="se/anatom/ejbca/util/**/Base64*.class"/>
+                <include name="se/anatom/ejbca/util/**/CertTools*.class"/>
+                <include name="se/anatom/ejbca/util/**/Hex*.class"/>
+                <exclude name="se/anatom/ejbca/**/*Test*"/>
+        </fileset>
     </copy>
   
     <!-- Jar the webdist.war package together -->
@@ -218,11 +219,11 @@
   <target name="admin.jar" depends="compile">
     <mkdir dir="${adminjar.build}"/>
     <copy todir="${adminjar.build}">
-    	<fileset dir="${build}">
-		<include name="se/anatom/ejbca/IJobRunner*.class"/>
+        <fileset dir="${build}">
+                <include name="se/anatom/ejbca/IJobRunner*.class"/>
                 <include name="se/anatom/ejbca/SecConst*.class"/>
-		<include name="se/anatom/ejbca/util/*.class"/>
-		<include name="se/anatom/ejbca/admin/*.class"/>
+                <include name="se/anatom/ejbca/util/*.class"/>
+                <include name="se/anatom/ejbca/admin/*.class"/>
                 <include name="se/anatom/ejbca/batch/*.class"/>
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
@@ -231,8 +232,8 @@
                 <include name="se/anatom/ejbca/ca/store/CertificateData*.class"/>
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="se/anatom/ejbca/ra/*.class"/>
-		<exclude name="se/anatom/ejbca/**/*Test*"/>
-	</fileset>
+                <exclude name="se/anatom/ejbca/**/*Test*"/>
+        </fileset>
     </copy>
   
     <!-- Jar the admin.jar package together -->
@@ -243,18 +244,18 @@
   <!-- Build Javadoc part                                                -->
   <!-- =================================================================== -->
   <target name="javadoc" depends="">
-    	<mkdir dir="${apidoc}"/>
-	<javadoc packagenames="se.anatom.*"
-		maxmemory="256m"
-           	sourcepath="${javasrc}"
-           	destdir="${apidoc}"
-           	extdirs="${lib}"
-           	author="true"
-           	version="true"
-           	use="true"
-           	windowtitle="EJBCA API"
-           	bottom="Copyright &#169; 2001 AnaTom.">
-  	</javadoc>
+        <mkdir dir="${apidoc}"/>
+        <javadoc packagenames="se.anatom.*"
+                maxmemory="256m"
+                sourcepath="${javasrc}"
+                destdir="${apidoc}"
+                extdirs="${lib}"
+                author="true"
+                version="true"
+                use="true"
+                windowtitle="EJBCA API"
+                bottom="Copyright &#169; 2001 AnaTom.">
+        </javadoc>
   </target>
 
   <!-- =================================================================== -->
@@ -262,15 +263,15 @@
   <!-- =================================================================== -->
 <!--
   <target name="test" depends="build">
-	<junit printsummary="yes" haltonfailure="yes">
-	  <formatter type="plain" />
-	  <batchtest fork="yes" todir=".">
-	    <fileset dir="${javasrc}">
-	      <include name="**/junit/**/Test*.java" />
-	      <exclude name="**/TestRunner.java" />
-	    </fileset>
-	  </batchtest>
-	</junit>
+        <junit printsummary="yes" haltonfailure="yes">
+          <formatter type="plain" />
+          <batchtest fork="yes" todir=".">
+            <fileset dir="${javasrc}">
+              <include name="**/junit/**/Test*.java" />
+              <exclude name="**/TestRunner.java" />
+            </fileset>
+          </batchtest>
+        </junit>
   </target>
 -->
 

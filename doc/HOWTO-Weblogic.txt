@@ -8,7 +8,7 @@ tables for the entity beans, CertificateData, CRLData and UserData.
 CREATE TABLE CERTIFICATEDATA
 (
 B64CERT          LONG,
-FP               VARCHAR2(45)      NOT NULL,            
+FP               VARCHAR2(45)      NOT NULL,
 SUBJECTDN        VARCHAR2(256),
 ISSUERDN         VARCHAR2(256),
 SERNO            VARCHAR2(32),
@@ -18,31 +18,31 @@ CAFP             VARCHAR(45),
 EXPIREDATE       NUMBER,
 REVOCATIONDATE   NUMBER,
 REVOCATIONREASON INTEGER,
-PRIMARY KEY("FP")       
+PRIMARY KEY("FP")
 );
 
 CREATE TABLE CRLDATA
 (
 B64CRL           LONG,
-FP               VARCHAR2(45)      NOT NULL,            
+FP               VARCHAR2(45)      NOT NULL,
 ISSUERDN         VARCHAR2(256),
 CRLNUMBER        VARCHAR2(32),
 CAFP             VARCHAR(45),
 THISUPDATE       NUMBER,
 NEXTUPDATE       NUMBER,
-PRIMARY KEY("FP")       
+PRIMARY KEY("FP")
 );
 
 CREATE TABLE USERDATA
 (
 USERNAME         VARCHAR2(32) NOT NULL,
-PASSWORD         VARCHAR2(32),          
-PASSWORDHASH     VARCHAR2(64),              
+PASSWORD         VARCHAR2(32),
+PASSWORDHASH     VARCHAR2(64),
 SUBJECTDN        VARCHAR2(256),
 SUBJECTEMAIL     VARCHAR2(128),
 STATUS           INTEGER,
 TYPE             INTEGER,
-PRIMARY KEY("USERNAME") 
+PRIMARY KEY("USERNAME")
 );
 
 
@@ -87,4 +87,8 @@ to:
 batch.cmd/sh, jobrunner.cmd/sh, runtest.cmd/sh. The files are commented so it
 should be obvious what needs to be changed.
 
-5. Run 'runtest.cmd/sh' to test the setup.
+5. Edit 'jndi.properties' in the directories 'ejbca' and 'ejbca/src/java' to
+call Weblogic instead of JBoss.
+
+6. Run 'runtest.cmd/sh' to test the setup.
+

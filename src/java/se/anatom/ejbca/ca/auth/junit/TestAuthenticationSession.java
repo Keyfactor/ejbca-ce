@@ -21,7 +21,7 @@ import junit.framework.*;
 
 /** Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.2 2002-03-21 11:49:08 anatom Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.3 2002-03-22 10:11:24 anatom Exp $
  */
 public class TestAuthenticationSession extends TestCase {
 
@@ -101,6 +101,7 @@ public class TestAuthenticationSession extends TestCase {
         UserDataPK pk = new UserDataPK();
         pk.username = "foo";
         UserData data = userhome.findByPrimaryKey(pk);
+        // Set status to GENERATED so authentication will fail
         data.setStatus(UserData.STATUS_GENERATED);
         boolean authfailed = false;
         try {
@@ -110,5 +111,17 @@ public class TestAuthenticationSession extends TestCase {
         }
         assertTrue("Authentication succeeded when it should have failed.", authfailed);
         cat.debug("<test03FailAuthenticateUser()");
+    }
+    public void test04FailAuthenticateUser() throws Exception {
+        cat.debug(">test04FailAuthenticateUser()");
+        // user that we know exists... but we issue wrong password
+        boolean authfailed = false;
+        try {
+            UserAuthData auth = remote.authenticateUser("foo", "abc123");
+        } catch (Exception e) {
+            authfailed = true;
+        }
+        assertTrue("Authentication succeeded when it should have failed.", authfailed);
+        cat.debug("<test04FailAuthenticateUser()");
     }
 }

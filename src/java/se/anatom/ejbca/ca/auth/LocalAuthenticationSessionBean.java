@@ -11,11 +11,13 @@ import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ra.UserDataPK;
 import se.anatom.ejbca.ra.UserData;
 import se.anatom.ejbca.ra.UserDataHome;
+import se.anatom.ejbca.exception.AuthStatusException;
+import se.anatom.ejbca.exception.AuthLoginException;
 
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.3 2002-03-07 15:00:36 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.4 2002-03-22 10:11:24 anatom Exp $
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean implements IAuthenticationSession {
 
@@ -38,7 +40,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean implements I
     * Implements a mechanism that queries a local database directly. Only allows authentication when user status is
     * STATUS_NEW, STATUS_FAILED or STATUS_INPROCESS.
     */
-    public UserAuthData authenticateUser(String username, String password) throws RemoteException {
+    public UserAuthData authenticateUser(String username, String password) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">authenticateUser("+username+", hiddenpwd)");
         try {
             // Find the user with username username
@@ -50,17 +52,24 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean implements I
                 info("Trying to authenticate user: username="+data.getUsername()+", dn="+data.getSubjectDN()+", email="+data.getSubjectEmail()+", status="+data.getStatus()+", type="+data.getType());
                 if (data.comparePassword(password) == false)
                 {
-                    error("Wrong password for user "+username);
-                    throw new SecurityException("Wrong password for user.");
+                    error("Got request for user '"+username+"' with invalid password.");
+                    throw new AuthLoginException("Wrong password for user.");
                 }
                 info("Authenticated user "+username);
                 UserAuthData ret = new UserAuthData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getType());
                 debug("<authenticateUser("+username+", hiddenpwd)");
                 return ret;
             } else {
-                error("User "+username+" has status '"+status+"', NEW, FAILED or INPROCESS required.");
-                throw new SecurityException("User "+username+" has status '"+status+"', NEW, FAILED or INPROCESS required.");
+                error("Got request for user '"+username+"' with status '"+status+"', NEW, FAILED or INPROCESS required.");
+                throw new AuthStatusException("User "+username+" has status '"+status+"', NEW, FAILED or INPROCESS required.");
             }
+        } catch (ObjectNotFoundException oe) {
+            error("Got request for nonexisting user '"+username+"'.");
+            throw oe;
+        } catch (AuthStatusException se) {
+            throw se;
+        } catch (AuthLoginException le) {
+            throw le;
         } catch (Exception e) {
             throw new EJBException(e.toString());
         }
@@ -70,7 +79,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean implements I
     * Implements IAuthenticationSession::finishUser.
     * Implements a mechanism that uses a local database directly to set users status to UserData.STATUS_GENERATED.
     */
-    public void finishUser(String username, String password) throws RemoteException {
+    public void finishUser(String username, String password) throws RemoteException, ObjectNotFoundException {
         debug(">finishUser("+username+", hiddenpwd)");
         try {
             // Find the user with username username
@@ -78,7 +87,11 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean implements I
             pk.username = username;
             UserData data = userHome.findByPrimaryKey(pk);
             data.setStatus(UserData.STATUS_GENERATED);
+            info("Changed status of user '"+username+"' to STATUS_GENERATED.");
             debug("<finishUser("+username+", hiddenpwd)");
+        } catch (ObjectNotFoundException oe) {
+            error("Got request for nonexisting user '"+username+"'.");
+            throw oe;
         } catch (Exception e) {
             throw new EJBException(e.toString());
         }

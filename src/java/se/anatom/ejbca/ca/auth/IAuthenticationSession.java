@@ -3,10 +3,13 @@ package se.anatom.ejbca.ca.auth;
 
 import java.util.*;
 import java.rmi.RemoteException;
+import javax.ejb.ObjectNotFoundException;
+import se.anatom.ejbca.exception.AuthStatusException;
+import se.anatom.ejbca.exception.AuthLoginException;
 
 /** Interface used for authenticating entities when issuing their certificates.
  *
- * @version $Id: IAuthenticationSession.java,v 1.1.1.1 2001-11-15 14:58:14 anatom Exp $
+ * @version $Id: IAuthenticationSession.java,v 1.2 2002-03-22 10:11:24 anatom Exp $
  */
 public interface IAuthenticationSession {
 
@@ -17,9 +20,12 @@ public interface IAuthenticationSession {
     * @param password password for the user
     *
     * @return UserAuthData, never returns null
-    * @throws EJBException if authentication fails or a communication or other error occurs.
+    * @throws ObjectNotFoundException if the user does not exist.
+    * @throws AuthStatusException If the users status is incorrect.
+    * @throws AuthLoginException If the password is incorrect.
+    * @EJBException if a communication or other error occurs.
     */
-    public UserAuthData authenticateUser(String username, String password) throws RemoteException;
+    public UserAuthData authenticateUser(String username, String password) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException;
 
    /**
     * Set the status of a user to finished, called when a user has been successfully processed.
@@ -29,7 +35,8 @@ public interface IAuthenticationSession {
     * @param username unique username within the instance
     * @param password password for the user
     *
+    * @throws ObjectNotFoundException if the user does not exist.
     * @throws EJBException if a communication or other error occurs.
     */
-    public void finishUser(String username, String password) throws RemoteException;
+    public void finishUser(String username, String password) throws RemoteException, ObjectNotFoundException;
 }

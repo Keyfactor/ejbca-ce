@@ -3,15 +3,21 @@ package se.anatom.ejbca.ca.sign;
 
 import java.util.*;
 import java.rmi.RemoteException;
+import javax.ejb.ObjectNotFoundException;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 import java.security.PublicKey;
 
+import se.anatom.ejbca.exception.AuthStatusException;
+import se.anatom.ejbca.exception.AuthLoginException;
+import se.anatom.ejbca.exception.SignRequestException;
+import se.anatom.ejbca.exception.SignRequestSignatureException;
+
 /**
  * Creates certificates.
  *
- * @version $Id: ISignSession.java,v 1.1.1.1 2001-11-15 14:58:14 anatom Exp $
+ * @version $Id: ISignSession.java,v 1.2 2002-03-22 10:11:24 anatom Exp $
  */
 public interface ISignSession {
 
@@ -34,9 +40,12 @@ public interface ISignSession {
     * @param pk the public key to be put in the created certificate.
     *
     * @return The newly created certificate or null.
+    * @throws ObjectNotFoundException if the user does not exist.
+    * @throws AuthStatusException If the users status is incorrect.
+    * @throws AuthLoginException If the password is incorrect.
     * @throws EJBException if a communication or other error occurs.
     */
-    public Certificate createCertificate(String username, String password, PublicKey pk) throws RemoteException;
+    public Certificate createCertificate(String username, String password, PublicKey pk) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException;
 
    /**
     * Requests for a certificate to be created for the passed public key with the passed key usage.
@@ -61,9 +70,12 @@ public interface ISignSession {
     *     decipherOnly            (8) }
     *
     * @return The newly created certificate or null.
+    * @throws ObjectNotFoundException if the user does not exist.
+    * @throws AuthStatusException If the users status is incorrect.
+    * @throws AuthLoginException If the password is incorrect.
     * @throws EJBException if a communication or other error occurs.
     */
-    public Certificate createCertificate(String username, String password, PublicKey pk, boolean[] keyusage) throws RemoteException;
+    public Certificate createCertificate(String username, String password, PublicKey pk, boolean[] keyusage) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException;
 
    /**
     * Requests for a certificate to be created for the passed public key wrapped in a self-signed certificate.
@@ -77,9 +89,12 @@ public interface ISignSession {
     * Currently only KeyUsage is considered!
     *
     * @return The newly created certificate or null.
+    * @throws ObjectNotFoundException if the user does not exist.
+    * @throws AuthStatusException If the users status is incorrect.
+    * @throws AuthLoginException If the password is incorrect.
     * @throws EJBException if a communication or other error occurs.
     */
-    public Certificate createCertificate(String username, String password, Certificate incert) throws RemoteException;
+    public Certificate createCertificate(String username, String password, Certificate incert) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestSignatureException;
 
    /**
     * Requests for a certificate to be created for the passed public key wrapped in a PKCS10 certification request.
@@ -92,9 +107,12 @@ public interface ISignSession {
     * Currently no additional parameters in the PKCS10 request is considered!
     *
     * @return The newly created certificate or null.
+    * @throws ObjectNotFoundException if the user does not exist.
+    * @throws AuthStatusException If the users status is incorrect.
+    * @throws AuthLoginException If the password is incorrect.
     * @throws EJBException if a communication or other error occurs.
     */
-    public Certificate createCertificate(String username, String password, byte[] pkcs10req) throws RemoteException;
+    public Certificate createCertificate(String username, String password, byte[] pkcs10req) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException;
 
    /**
     * Requests for a CRL to be created with the passed (revoked) certificates.
