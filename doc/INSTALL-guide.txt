@@ -2,7 +2,7 @@
     originally contributed by <surd0007(at)yahoo.com.cn>
  
 (This install guide is a complement to the guide present in README).
-$Id: INSTALL-guide.txt,v 1.2 2004-01-07 19:31:46 anatom Exp $
+$Id: INSTALL-guide.txt,v 1.3 2004-03-31 07:15:47 anatom Exp $
 
  
  Softwares needed:
@@ -59,9 +59,6 @@ $Id: INSTALL-guide.txt,v 1.2 2004-01-07 19:31:46 anatom Exp $
 connect to mysql server.
  	create ejbca database under user ocsper.
  
- 	I have written a java application program to ensure configuration above is good! This
-program can use JDBC driver to connect to ejbca database with user ocsper and its password.
- 
  
  Install EJBCA
  	#cp ejbca_3_0.zip /usr/j2ee
@@ -70,47 +67,50 @@ program can use JDBC driver to connect to ejbca database with user ocsper and it
  
  	Configure mysql:
  	#cd /usr/j2ee/ejbca
+    #ant replaceDS -Dejbca.DS=java:/DefaultDS
+    choose database mysql.
+    
+    (this does the below that you don't have to do manually
  	#cp src/ca/ca/META-INF/jbosscmp-jdbc-mysql.xml src/ca/ca/META-INF/jbosscmp-jdbc.xml
  	#cp src/ra/META-INF/jbosscmp-jdbc-mysql.xml src/ra/META-INF/jbosscmp-jdbc.xml
  	#cp src/log/META-INF/jbosscmp-jdbc-mysql.xml src/log/META-INF/jbosscmp-jdbc.xml
- 	#cp src/hardtoken/META-INF/jbosscmp-jdbc-mysql.xml
-src/hardtoken/META-INF/jbosscmp-jdbc.xml
- 	#cp src/keyrecovery/META-INF/jbosscmp-jdbc-mysql.xml
-src/keyrecovery/META-INF/jbosscmp-jdbc.xml
+ 	#cp src/hardtoken/META-INF/jbosscmp-jdbc-mysql.xml src/hardtoken/META-INF/jbosscmp-jdbc.xml
+ 	#cp src/keyrecovery/META-INF/jbosscmp-jdbc-mysql.xml src/keyrecovery/META-INF/jbosscmp-jdbc.xml
+    #cp src/authorization/META-INF/jbosscmp-jdbc-mysql.xml src/authorization/META-INF/jbosscmp-jdbc.xml
+    )
 
- 	Compile ejbca source adn deploy to application server:
+ 	Compile ejbca source and deploy to application server:
  	#ant deploy 
  
  
  Configure JBOSS:
- 	#cp mysql-connector-java-3.0.8-stable.tar.gz /usr
- 	#tar xvfz mysql-connector-java-3.0.8-stable.tar.gz
- 	#cd mysql-connector-java-3.0.8-stable
- 	#cp mysql-connector-java-3.0.8-stable-bin.jar $JBOSS_HOME/server/default/lib/ 
+ 	#cp mysql-connector-java-3.0.9-stable.tar.gz /usr
+ 	#tar xvfz mysql-connector-java-3.0.9-stable.tar.gz
+ 	#cd mysql-connector-java-3.0.9-stable
+ 	#cp mysql-connector-java-3.0.9-stable-bin.jar $JBOSS_HOME/server/default/lib/ 
  
  	#cd /usr/j2ee/ejbca
  	#cp doc/mysql-service.xml $JBOSS_HOME/server/default/deploy/
- 	#vi $JBOSS_HOME/server/default/deploy/mysql-service.xml
+ 	#vi $JBOSS_HOME/server/default/deploy/mysql-ds.xml
  	
  	......
-         <attribute name="JndiName">DefaultDS</attribute>
-         <attribute name="ManagedConnectionFactoryProperties">
-           <properties>
-             <config-property name="ConnectionURL"
-type="java.lang.String">jdbc:mysql://172.16.0.65:3306/ejbca</config-property>
-             <config-property name="DriverClass"
-type="java.lang.String">org.gjt.mm.mysql.Driver</config-property>
-             <!--set these only if you want only default logins, not through JAAS -->
-             <config-property name="UserName"
-type="java.lang.String">ocsper</config-property>
-             <config-property name="Password"
-type="java.lang.String">123456</config-property>
-           </properties>
-         </attribute>
+    <datasources>
+       <local-tx-datasource>
+          <jndi-name>DefaultDS</jndi-name>
+          <connection-url>jdbc:mysql://localhost:3306/ejbca3</connection-url>
+          <driver-class>com.mysql.jdbc.Driver</driver-class>
+          <user-name>ejbca</user-name>
+          <password>ejbca</password>
+          <min-pool-size>5</min-pool-size>
+          <max-pool-size>20</max-pool-size>
+          <idle-timeout-minutes>15</idle-timeout-minutes>
+          <track-statements>true</track-statements>
+       </local-tx-datasource>
+    </datasources>
  	......
  
  	#cd $JBOSS_HOME/server/default/deploy/
- 	#rm hsqldb-service.xml
+ 	#rm hsqldb-ds.xml
  	
  	#vi ../conf/standardjbosscmp-jdbc.xml
  
@@ -137,20 +137,5 @@ type="java.lang.String">123456</config-property>
  	index   objectClass     eq
  	......
  
- 	/usr/j2ee/ejbca/src/ca/ca/META-INF/ejb-jar.xml as follows:
- 	
- 	Uncomment parts that says: 
- 	<!-- Uncomment to use LDAP publisher -->
- 	
- 	edit part:
- 	<session>
-       <ejb-name>PublisherSession1</ejb-name>
- 	Specifically ldapHost, loginDN, loginPassword and containerName
- 
- 
- 	#cd /usr/j2ee/ejbca
- 	#ant deploy
- 
- 	#cd $JBOSS_HOME/bin
- 	#./run.sh (if not running already)
-        
+    Use the Admin-GUI to configure publishers to LDAP in EJBCA.
+    
