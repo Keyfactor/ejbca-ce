@@ -6,19 +6,29 @@ Please note that [x] refers to one of the references listed in the end of the fi
    choose to generate a first token.
    copy PrimeCard files to jboss after PrimeCA installation but before restart of jboss.
 
-2. generate the LDAPS p12
-Use "Add End Entity" with the following settings:
-    Profile. EMPTY
-    CN. the name of the domain controller. ex maud.int.primekey.se
-    Token. P12
+2. Add our root CA to the domain controller
+   Do step 1 and 2 of the configuration instructions described in [1].
 
-3. Do the following on the domain controller:
-   1. use mmc and add the snap-in "Certificates (Local Computer)"
-   2. import the key and certificate in the p12 file to the Personal store.
-   3. do step 1 and 2 of the configuration instructions described in [1].
-   4. execute gpupdate /force
+3. Generate the private key and create a certificate request on the domain controller.
+   "Requesting Offline Domain Controller Certificates" in [0] describes how to.
+   The request file will be called domaincert.req in the rest of this howto.
 
-4. define a publisher in "Edit Publishers"
+4. Define a certificate that fulfils all the requirements of [2] on EJBCA ,(GUID in AltNames and 'Use Microsoft Template Value').
+   A new certificate profile has to be defined. Use the ENDUSER template.
+   Create an end entity profile using the new certificate profile.
+   Do "certutil -dump domaincert.req" (see [0]). The "Other Name" in the "Subject Alternative Names"
+   defines GUID. But the the two first two bytes (tag and length) 4 and 10 should not be a part of the bytes in the web admin GUI.
+   Add the new end entity with the new end entity profile.
+   
+5. Issue the certificate 
+   Open the domincert.req in an editor. Go to the "Certificate Enrollment" page and choose "manually".
+   Paste the request into the GUI and select PKCS7. Save the result.
+
+6. Install the certificate on the domain controller and publish it. [0] tells how to do.
+   Execute "gpupdate /force" and "certutil -pulse"
+
+
+7. define a publisher in "Edit Publishers"
    The following fields must be modified. Do not touch any other field:
     * Type. use AD
     * Hostname
@@ -27,26 +37,26 @@ Use "Add End Entity" with the following settings:
     * Login Password. the password of the user above.
     * Use Fields in DN. Choose only CN
 
-5. Try "Save and test connection" in "Edit Publisher". If it is not working read the document [2]
+8. Try "Save and test connection" in "Edit Publisher". If it is not working read the document [2]
    and figure out what the problem is.
 
-6. Use "Add/remove win components" to install a "Enterprise root CA" on the domain controller.
-   Right click on the Personal folder in the snap-in of the local computer in msc and request a domain controller certificate.
+9. Import the CA certificate to "Enterprise NTAuth store" according to [3].
 
-7. Import the CA certificate to "Enterprise NTAuth store" according to [3].
+10. Define a certificate profile that fulfils the requirements of step 5 of [1].
+    The profile should also use the previous defined publisher. Use HARDTOKEN_AUTHENC as template.
 
-8. Define a certificate profile that fulfils the requirements of step 5 of [1].
-   The profile should also use the previous defined publisher. Use HARDTOKEN_AUTHENC as template.
+11. Edit the hard token profile so it uses the newly created certificate profile. But only for the "authenc" certificate.
 
-9. Edit the hard token profile so it uses the newly created certificate profile.
+12. Edit the end-entity profile for the Administration token so that it contains all fields needed according to step 5 of [1].
 
-10. Edit the end-entity profile for the Administration token so that it contains all fields needed according to step 5 of [1].
+13. Add a user with the administrator token end entity profile.
 
-11. Add a user with the administrator token end entity profile.
-
+14. On the client the root certifikate must be in the keystore of the machine (use the mmc snap-in for the local computer).
+    This might be possible to fix with some group policy.
 
 
 References
-[1] http://support.microsoft.com/default.aspx?scid=kb;en-us;281245
-[2] http://support.microsoft.com/default.aspx?scid=kb;en-us;321051
-[3] http://support.microsoft.com/default.aspx?scid=kb;en-us;295663
+[0] http://www.microsoft.com/technet/prodtechnol/windowsserver2003/technologies/security/advcert.mspx
+[1] http://support.microsoft.com/kb/281245
+[2] http://support.microsoft.com/kb/291010
+[3] http://support.microsoft.com/kb/295663
