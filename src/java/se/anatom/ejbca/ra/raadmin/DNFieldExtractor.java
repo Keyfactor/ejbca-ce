@@ -25,7 +25,7 @@ import org.ietf.ldap.LDAPDN;
  * strings.
  *
  * @author Philip Vendil
- * @version $Id: DNFieldExtractor.java,v 1.18 2004-05-27 16:23:18 anatom Exp $
+ * @version $Id: DNFieldExtractor.java,v 1.19 2004-05-27 20:45:23 anatom Exp $
  */
 public class DNFieldExtractor {
     private static Logger log = Logger.getLogger(DNFieldExtractor.class);
@@ -48,8 +48,8 @@ public class DNFieldExtractor {
     public static final int ST = 11;
     public static final int DC = 12;
     public static final int C = 13;
-    public static final int UNSTRUCTUREDNAME = 14;
-    public static final int UNSTRUCTUREDADDRESS = 15;
+    //public static final int UNSTRUCTUREDNAME = 14;
+    //public static final int UNSTRUCTUREDADDRESS = 15;
 
     // Subject Alternative Names.
     public static final int OTHERNAME = 14;
@@ -62,12 +62,18 @@ public class DNFieldExtractor {
     public static final int URI = 21;
     public static final int REGISTEREDID = 22;
     public static final int UPN = 23;
+    
     public static final int SUBJECTALTERNATIVENAMEBOUNDRARY = 14;
     public static final int NUMBEROFFIELDS = 24;
-    public static final String[] SUBJECTDNFIELDS = {
+/*    public static final String[] SUBJECTDNFIELDS = {
         "E=", "UID=", "CN=", "SN=", "GIVENNAME=", "INITIALS=", "SURNAME=", "T=", "OU=", "O=", "L=",
         "ST=", "DC=", "C=", "1.2.840.113549.1.9.2", "1.2.840.113549.1.9.8"
     };
+*/    
+    public static final String[] SUBJECTDNFIELDS = {
+            "E=", "UID=", "CN=", "SN=", "GIVENNAME=", "INITIALS=", "SURNAME=", "T=", "OU=", "O=", "L=",
+            "ST=", "DC=", "C="
+        };
     public static final String[] SUBJECTALTNAME = {
         "OTHERNAME=", "RFC822NAME=", "DNSNAME=", "IPADDRESS=", "X400ADDRESS=", "DIRECTORYNAME=",
         "EDIPARTNAME=", "UNIFORMRESOURCEIDENTIFIER=", "REGISTEREDID=", "UPN="
