@@ -23,7 +23,7 @@ import org.apache.log4j.*;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.16 2002-08-14 13:08:23 anatom Exp $
+ * @version $Id: CertTools.java,v 1.17 2002-08-22 15:22:14 anatom Exp $
  */
 public class CertTools {
 
@@ -177,9 +177,11 @@ public class CertTools {
         while (st.hasMoreTokens()) {
             o = st.nextToken();
             //cat.debug("checking: "+o.trim().substring(0,dnpart.length()));
-            if (o.trim().substring(0,dnpart.length()).equalsIgnoreCase(dnpart)) {
-                part = o.trim().substring(dnpart.length());
-                break;
+            if (o.length() > dnpart.length()) {
+                if (o.trim().substring(0,dnpart.length()).equalsIgnoreCase(dnpart)) {
+                    part = o.trim().substring(dnpart.length());
+                    break;
+                }
             }
         }
         cat.debug("<getpartFromDN: resulting DN part="+part);
