@@ -20,12 +20,12 @@ import java.security.KeyPair;
 /**
  * Class used when delevering key recovery service response from a CA.  
  *
- * @version $Id: KeyRecoveryCAServiceResponse.java,v 1.2 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: KeyRecoveryCAServiceResponse.java,v 1.3 2004-11-08 21:58:34 sbailliez Exp $
  */
 public class KeyRecoveryCAServiceResponse extends ExtendedCAServiceResponse implements Serializable {    
              
-	public final static int TYPE_ENCRYPTKEYSRESPONSE = 1;
-	public final static int TYPE_DECRYPTKEYSRESPONSE = 1;
+	public static final int TYPE_ENCRYPTKEYSRESPONSE = 1;
+	public static final int TYPE_DECRYPTKEYSRESPONSE = 1;
     
     private int type;
     private byte[] keydata;
