@@ -13,8 +13,15 @@ import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509Certificate;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DERPrintableString;
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.cms.Attribute;
+import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSException;
@@ -25,7 +32,7 @@ import org.bouncycastle.cms.CMSSignedDataGenerator;
 
 /** A response message for scep (pkcs7).
 *
-* @version  $Id: ScepResponseMessage.java,v 1.1 2003-06-13 19:54:19 anatom Exp $
+* @version  $Id: ScepResponseMessage.java,v 1.2 2003-06-14 11:29:10 anatom Exp $
 */
 public class  ScepResponseMessage implements IResponseMessage {
 
@@ -33,6 +40,8 @@ public class  ScepResponseMessage implements IResponseMessage {
 
     private transient Certificate cert = null;
     private transient int status = 0;
+    private transient String failInfo = "You suck Bruce";
+    private transient CMSSignedData signedData = null;
 
     private X509Certificate signCert = null;
     private PrivateKey signKey = null;
@@ -48,14 +57,20 @@ public class  ScepResponseMessage implements IResponseMessage {
     /** Gets the response message in the default encoding format.
      * @return the response message in the default encoding format.
      */
-    public byte[] getResponseMessage() throws CertificateEncodingException {
-            return cert.getEncoded();
+    public byte[] getResponseMessage() throws IOException, CertificateEncodingException {
+            return signedData.getEncoded();
     }
     /** Sets the status of the response message.
      * @param status status of the response.
      */
     public void setStatus(int status) {
         this.status = status;
+    }
+    /** Sets info about reason for failure.
+     * @param failInfo reason for failure.
+     */
+    public void setFailInfo(String failInfo) {
+        this.failInfo = failInfo;
     }
     /** Create encrypts and creates signatures as needed to produce a complete response message. 
      * If needed setSignKeyInfo and setEncKeyInfo must be called before this method.
@@ -76,7 +91,7 @@ public class  ScepResponseMessage implements IResponseMessage {
             certList.add(cert);
             certList.add(signCert);
             CertStore certs = CertStore.getInstance("Collection", new CollectionCertStoreParameters(certList), "BC");
-            // Create the signed CMS message
+            // Create the signed CMS message to be contained inside the envelope
             CMSProcessable msg = null;
             CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
             gen.addSigner(signKey, signCert, CMSSignedDataGenerator.DIGEST_SHA1);
@@ -87,6 +102,48 @@ public class  ScepResponseMessage implements IResponseMessage {
             edGen.addKeyTransRecipient((X509Certificate)cert);
             CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(s.getEncoded()), 
                     CMSEnvelopedDataGenerator.DES_EDE3_CBC, "BC");
+             // Create the outermost signed data
+            msg = new CMSProcessableByteArray(ed.getEncoded());
+            CMSSignedDataGenerator gen1 = new CMSSignedDataGenerator();
+            // add status, transactionId, sender- and recipientNonce
+            Hashtable attributes = new Hashtable();
+            // TransactionId
+            DERObjectIdentifier oid = new DERObjectIdentifier(ScepRequestMessage.id_transId);
+            DERSet value = new DERSet(new DERPrintableString("foo"));
+            Attribute attr = new Attribute(oid, value);
+            attributes.put(attr.getAttrType(), attr);
+            // status
+            oid = new DERObjectIdentifier(ScepRequestMessage.id_pkiStatus);
+            if (status == IResponseMessage.STATUS_OK) {
+                value = new DERSet(new DERPrintableString("SUCCESS"));
+            } else {
+                value = new DERSet(new DERPrintableString("FAILURE"));
+            }
+            attr = new Attribute(oid, value);
+            attributes.put(attr.getAttrType(), attr);
+            if (status == IResponseMessage.STATUS_FAILED) {
+                oid = new DERObjectIdentifier(ScepRequestMessage.id_failInfo);
+                value = new DERSet(new DERPrintableString(failInfo));
+                attr = new Attribute(oid, value);
+                attributes.put(attr.getAttrType(), attr);
+            } 
+            // senderNonce
+            oid = new DERObjectIdentifier(ScepRequestMessage.id_senderNonce);
+            value = new DERSet(new DEROctetString("1234567890123456".getBytes()));
+            attr = new Attribute(oid, value);
+            attributes.put(attr.getAttrType(), attr);
+            // recipientNonce
+            oid = new DERObjectIdentifier(ScepRequestMessage.id_recipientNonce);
+            value = new DERSet(new DEROctetString("1234567890123456".getBytes()));
+            attr = new Attribute(oid, value);
+            attributes.put(attr.getAttrType(), attr);
+            // Put our signer info and all newly generated attributes
+            gen1.addSigner(signKey, signCert, CMSSignedDataGenerator.DIGEST_SHA1, new AttributeTable(attributes), null);
+            
+            signedData = gen.generate(msg, true, "BC");
+            if (signedData != null) {
+                ret = true;
+            }
         } catch (InvalidAlgorithmParameterException e) {
             log.error("Error creating CertStore: ", e);
         } catch (CertStoreException e) {
@@ -95,7 +152,7 @@ public class  ScepResponseMessage implements IResponseMessage {
             log.error("Error creating CMS message: ", e);
         }
         
-        // TODO: done forget status and perhaps failInfo
+        // TODO: dont forget transactionId
         // TODO: don't forget sender- and recipientNonce
         
         return ret;

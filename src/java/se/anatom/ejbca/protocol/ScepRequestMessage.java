@@ -28,23 +28,24 @@ import org.bouncycastle.cms.*;
  * Class to handle SCEP request messages sent to the CA.
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity
  * TODO: extract senderNonce
+ * TODO: extract transactionId
  *
- * @version  $Id: ScepRequestMessage.java,v 1.16 2003-06-13 19:54:19 anatom Exp $
+ * @version  $Id: ScepRequestMessage.java,v 1.17 2003-06-14 11:29:10 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
 
     private static Logger log = Logger.getLogger(ScepRequestMessage.class);
 
-    private static String id_Verisign = "2.16.840.1.113733";
-    private static String id_pki = id_Verisign + ".1";
-    private static String id_attributes = id_pki + ".9";
-    private static String id_messageType = id_attributes + ".2";
-    private static String id_pkiStatus = id_attributes + ".3";
-    private static String id_failInfo = id_attributes + ".4";
-    private static String id_senderNonce = id_attributes + ".5";
-    private static String id_recipientNonce = id_attributes + ".6";
-    private static String id_transId = id_attributes + ".7";
-    private static String id_extensionReq = id_attributes + ".8";
+    public static String id_Verisign = "2.16.840.1.113733";
+    public static String id_pki = id_Verisign + ".1";
+    public static String id_attributes = id_pki + ".9";
+    public static String id_messageType = id_attributes + ".2";
+    public static String id_pkiStatus = id_attributes + ".3";
+    public static String id_failInfo = id_attributes + ".4";
+    public static String id_senderNonce = id_attributes + ".5";
+    public static String id_recipientNonce = id_attributes + ".6";
+    public static String id_transId = id_attributes + ".7";
+    public static String id_extensionReq = id_attributes + ".8";
 
     /** Raw form of the Scep message
      */
@@ -81,7 +82,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     private String sendeNonce = null;
     /** Type of error
      */
-    int error = 0;
+    private int error = 0;
 
     /** Constucts a new SCEP/PKCS7 message handler object.
      * @param msg The DER encoded PKCS7 request.
@@ -251,6 +252,9 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         this.privateKey = key;
     }
 
+    public int getError() {
+        return error;
+    }
     //
     // Private helper methods
     //

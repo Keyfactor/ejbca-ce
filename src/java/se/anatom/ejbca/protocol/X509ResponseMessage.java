@@ -11,7 +11,7 @@ import java.security.cert.Certificate;
 
 /** A response message consisting of a single X509 Certificate.
 *
-* @version  $Id: X509ResponseMessage.java,v 1.2 2003-06-13 19:54:19 anatom Exp $
+* @version  $Id: X509ResponseMessage.java,v 1.3 2003-06-14 11:29:10 anatom Exp $
 */
 public class  X509ResponseMessage implements IResponseMessage {
 
@@ -27,7 +27,7 @@ public class  X509ResponseMessage implements IResponseMessage {
     /** Gets the response message in the default encoding format.
      * @return the response message in the default encoding format.
      */
-    public byte[] getResponseMessage() throws CertificateEncodingException {
+    public byte[] getResponseMessage() throws IOException, CertificateEncodingException {
             return cert.getEncoded();
     }
     /** Sets the status of the response message.
@@ -35,6 +35,11 @@ public class  X509ResponseMessage implements IResponseMessage {
      */
     public void setStatus(int status) {
         this.status = status;
+    }
+    /** Sets info about reason for failure.
+     * @param failInfo reason for failure.
+     */
+    public void setFailInfo(String failInfo) {
     }
     /** Create encrypts and creates signatures as needed to produce a complete response message. 
      * If needed setSignKeyInfo and setEncKeyInfo must be called before this method.

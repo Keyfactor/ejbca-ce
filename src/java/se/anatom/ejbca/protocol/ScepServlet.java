@@ -41,7 +41,7 @@ import se.anatom.ejbca.util.Base64;
 * 6. sign the reply data (PKCS#7) from the previous step
 * 7. output the result as a der encoded block on stdout
 * -----
-* @version  $Id: ScepServlet.java,v 1.14 2003-06-11 13:27:39 anatom Exp $
+* @version  $Id: ScepServlet.java,v 1.15 2003-06-14 11:29:10 anatom Exp $
 */
 public class ScepServlet extends HttpServlet {
 
@@ -89,9 +89,10 @@ public class ScepServlet extends HttpServlet {
                 // We are not ready yet, so lets deny all requests for now...
                 response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
                 // Read the message end get the cert, this also checksauthorization
-                byte[] cert = helper.scepCertRequest(scepmsg);
-                // TODO: create the real Scep response message 
-                byte[] reply = cert;
+                byte[] reply = helper.scepCertRequest(scepmsg);
+                if (reply == null) {
+                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Fatal error processing Scep request");
+                }
                 // Send back Scep response, PKCS#7 which contains the end entity's certificate (or failure)
                 RequestHelper.sendBinaryBytes(reply, response, "application/x-pki-message");
             } else if (operation.equals("GetCACert")) {

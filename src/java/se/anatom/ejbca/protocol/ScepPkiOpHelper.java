@@ -21,7 +21,7 @@ import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version  $Id: ScepPkiOpHelper.java,v 1.15 2003-06-13 19:55:41 anatom Exp $
+ * @version  $Id: ScepPkiOpHelper.java,v 1.16 2003-06-14 11:29:10 anatom Exp $
  */
 public class ScepPkiOpHelper {
 
@@ -42,7 +42,7 @@ public class ScepPkiOpHelper {
      * Handles SCEP certificate request
      *
      * @param msg buffer holding the SCEP-request (DER encoded).
-     * @return byte[] containing DER-encoded certificate.
+     * @return byte[] containing response to be sent to client.
      */
     public  byte[] scepCertRequest(byte[] msg) 
     throws ObjectNotFoundException, AuthorizationDeniedException, AuthLoginException, SignRequestException, AuthStatusException, IllegalKeyException, SignRequestSignatureException, CertificateEncodingException 
@@ -51,6 +51,10 @@ public class ScepPkiOpHelper {
         log.debug(">getRequestMessage("+msg.length+" bytes)");
         try {
             reqmsg = new ScepRequestMessage(msg);
+            if (reqmsg.getError() != 0) {
+                log.error("Error '"+reqmsg.getError()+"' receiving Scep request message.");
+                return null;
+            }
             // Get the certificate
             IResponseMessage resp = signsession.createCertificate(admin, reqmsg, -1, Class.forName("se.anatom.ejbca.protocol.ScepResponseMessage"));
             if (resp != null) {

@@ -85,7 +85,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.84 2003-06-13 16:34:51 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.85 2003-06-14 11:29:13 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -444,13 +444,28 @@ public class RSASignSessionBean extends BaseSessionBean {
         Certificate cert = createCertificate(admin,username,pwd,req,keyUsage);
         try {
             ret = (IResponseMessage)responseClass.newInstance();
+            if (ret.requireSignKeyInfo()) {
+                ret.setSignKeyInfo(caCert, signingDevice.getPrivateSignKey());
+            }
+            if (ret.requireEncKeyInfo()) {
+                ret.setEncKeyInfo(caCert, signingDevice.getPrivateDecKey());
+            }
+            ret.setCertificate(cert);
+            ret.setStatus(IResponseMessage.STATUS_OK);
+            ret.create();
+        } catch (NoSuchProviderException e) {
+            log.error("Cannot create class for response message: ", e);
+        } catch (InvalidKeyException e) {
+            log.error("Cannot create class for response message: ", e);
+        } catch (IOException e) {
+            log.error("Cannot create class for response message: ", e);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("Cannot create class for response message: ", e);
         } catch (IllegalAccessException e) {
             log.error("Cannot create class for response message: ", e);
         } catch (InstantiationException e) {
             log.error("Cannot create class for response message: ", e);
         }
-        ret.setCertificate(cert);
-        ret.setStatus(IResponseMessage.STATUS_OK);
         debug("<createCertificate(IRequestMessage)");
         return ret;
     }
