@@ -30,7 +30,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.56 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: CertTools.java,v 1.57 2004-05-08 10:12:28 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -508,14 +508,14 @@ public class CertTools {
     /**
      * DOCUMENT ME!
      *
-     * @param dn DOCUMENT ME!
-     * @param validity DOCUMENT ME!
-     * @param policyId DOCUMENT ME!
-     * @param privKey DOCUMENT ME!
-     * @param pubKey DOCUMENT ME!
-     * @param isCA DOCUMENT ME!
+     * @param dn subject and issuer DN
+     * @param validity in days
+     * @param policyId policy string ('2.5.29.32.0') or null
+     * @param privKey private key
+     * @param pubKey public key
+     * @param isCA boolean true or false
      *
-     * @return DOCUMENT ME!
+     * @return X509Certificate, self signed
      *
      * @throws NoSuchAlgorithmException DOCUMENT ME!
      * @throws SignatureException DOCUMENT ME!
