@@ -70,6 +70,10 @@ then
 elif [ -f $JBOSS_HOME/server/default/deploy/jbossweb-jetty.sar/META-INF/jboss-service.xml ]
 then
 	SERVER_XML=jetty32.xml
+else
+    echo !!!!!
+    echo Unhandled version of JBoss, SSL support must be set up manually
+    echo !!!!!
 fi
 
 java -cp $CP se.anatom.ejbca.util.TomcatServiceXMLPasswordReplace src/adminweb/WEB-INF/$SERVER_XML tmp/$SERVER_XML $3
