@@ -13,19 +13,20 @@
 <%   // Initialize environment
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
 
-  final String THIS_FILENAME                = globalconfiguration .getCaPath() 
+  final String THIS_FILENAME                = globalconfiguration.getCaPath() 
                                                   + "/cafunctions.jsp";
 
-  final String CREATECRL_LINK               = globalconfiguration .getCaPath() 
+  final String CREATECRL_LINK               = globalconfiguration.getCaPath() 
                                                   + "/createcrl/createcrl.jsp";
   final String CREATECRL_PAGE               =  "createcrl/createcrl.jsp";
-  final String GETCRL_LINK                  =    globalconfiguration .getCaPath() 
+  final String GETCRL_LINK                  = globalconfiguration.getCaPath() 
                                                   + "/getcrl/getcrl.jsp";
   final String GETCRL_PAGE                  =    "getcrl/getcrl.jsp"; 
-  final String VIEWCERTIFICATE_LINK         =    "viewcertificate.jsp";
-  final String DOWNLOADCERTIFICATE_LINK     = globalconfiguration .getCaPath() 
+  final String VIEWCERTIFICATE_LINK         = globalconfiguration.getRaAdminPath()
+                                                  +"viewcertificate.jsp";
+  final String DOWNLOADCERTIFICATE_LINK     = globalconfiguration.getCaPath() 
                                                   + "/cacert";
-  final String DOWNLOADCRL_LINK             = globalconfiguration .getCaPath() 
+  final String DOWNLOADCRL_LINK             = globalconfiguration.getCaPath() 
                                                   + "/getcrl/getcrl";
 
   if( request.getParameter(BUTTON_CREATECRL) != null ){

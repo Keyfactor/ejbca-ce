@@ -1,3 +1,5 @@
+<!-- Version: $Id: viewcertificate.jsp,v 1.1 2002-07-16 08:35:23 anatom Exp $ -->
+
 <html>
 <%@page contentType="text/html"%>
 <%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration, 
@@ -32,11 +34,9 @@
   static final String HIDDEN_INDEX               = "hiddenindex";
 
 %><%
-
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
-
-  String THIS_FILENAME            =  globalconfiguration .getRaPath()  + "/viewcertificate.jsp";
+  String THIS_FILENAME            =  globalconfiguration.getRaAdminPath()  + "viewcertificate.jsp";
 
   boolean nosubjectdnparameter    = true;
   CertificateView certificatedata = null;
@@ -82,10 +82,10 @@
   }  
 %>
 <head>
-  <title><%= globalconfiguration .getEjbcaTitle() %></title>
+  <title><%= globalconfiguration.getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript src="<%= globalconfiguration .getRaAdminPath() %>ejbcajslib.js"></script>
+  <script language=javascript src="<%= globalconfiguration.getRaAdminPath() %>ejbcajslib.js"></script>
 </head>
 <body >
   <h2 align="center"><%= ejbcawebbean.getText("VIEWCERTIFICATE") %></h2>
