@@ -60,7 +60,7 @@
       <persistence>
         <persistence-use>
           <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-          <type-version>6.0</type-version>
+          <type-version>5.1.0</type-version>
         </persistence-use>
       </persistence>
     </entity-descriptor>
@@ -73,7 +73,7 @@
       <persistence>
         <persistence-use>
           <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-          <type-version>6.0</type-version>
+          <type-version>5.1.0</type-version>
         </persistence-use>
       </persistence>
     </entity-descriptor>

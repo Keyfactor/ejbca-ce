@@ -74,9 +74,6 @@ public class CRLDataBean implements javax.ejb.EntityBean {
     public void ejbPostCreate(X509CRL incrl, int number) {
         // Do nothing. Required.
     }
-    public String getB64Crl() {
-        return b64Crl;
-    }
     public X509CRL getCRL() {
         X509CRL crl = null;
         try {
@@ -112,17 +109,11 @@ public class CRLDataBean implements javax.ejb.EntityBean {
     public void setIssuerDN(String dn) {
         issuerDN = CertTools.stringToBCDNString(dn);
     }
-    public String getFp() {
-        return fp;
-    }
     public String getFingerprint() {
         return fp;
     }
     public void setFingerprint(String f) {
         fp = f;
-    }
-    public String getCafp() {
-        return cafp;
     }
     public String getCAFingerprint() {
         return cafp;

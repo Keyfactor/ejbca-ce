@@ -45,6 +45,7 @@
       <persistence-type>Container</persistence-type>
       <prim-key-class>se.anatom.ejbca.ra.UserDataPK</prim-key-class>
       <reentrant>False</reentrant>
+      <cmp-version>1.x</cmp-version>
 
       <cmp-field><field-name>username</field-name></cmp-field>
       <cmp-field><field-name>password</field-name></cmp-field>

@@ -91,9 +91,6 @@ public class CertificateDataBean implements javax.ejb.EntityBean {
     public void ejbPostCreate(Certificate incert) {
         // Do nothing. Required.
     }
-    public String getB64Cert() {
-        return b64Cert;
-    }
     public Certificate getCertificate() {
         X509Certificate cert = null;
         try {
@@ -126,17 +123,11 @@ public class CertificateDataBean implements javax.ejb.EntityBean {
     public void setSubjectDN(String dn) {
         subjectDN = CertTools.stringToBCDNString(dn);
     }
-    public String getFp() {
-        return fp;
-    }
     public String getFingerprint() {
         return fp;
     }
     public void setFingerprint(String f) {
         fp = f;
-    }
-    public String getCafp() {
-        return cafp;
     }
     public String getCAFingerprint() {
         return cafp;
@@ -155,9 +146,6 @@ public class CertificateDataBean implements javax.ejb.EntityBean {
     }
     public void setType(int t) {
         type = t;
-    }
-    public String getSerno() {
-        return serno;
     }
     public BigInteger getSerialNumber() {
         return new BigInteger(serno);

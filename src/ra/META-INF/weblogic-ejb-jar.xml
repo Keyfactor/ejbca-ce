@@ -9,12 +9,6 @@
     <transaction-descriptor>
       <trans-timeout-seconds>900</trans-timeout-seconds>
     </transaction-descriptor>
-    <reference-descriptor>
-        <ejb-reference-description>
-            <ejb-ref-name>ejb/UserData</ejb-ref-name>
-            <jndi-name>UserData</jndi-name>
-        </ejb-reference-description>
-    </reference-descriptor>
     <jndi-name>UserAdminSession</jndi-name>
   </weblogic-enterprise-bean>
 
@@ -22,9 +16,14 @@
     <ejb-name>UserData</ejb-name>   
     <entity-descriptor>
       <persistence>
+        <persistence-type>
+          <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
+          <type-version>5.1.0</type-version>
+          <type-storage>META-INF/weblogic-cmp-rdbms-jar.xml</type-storage>
+        </persistence-type>
         <persistence-use>
           <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-          <type-version>6.0</type-version>
+          <type-version>5.1.0</type-version>
         </persistence-use>
       </persistence>
     </entity-descriptor>

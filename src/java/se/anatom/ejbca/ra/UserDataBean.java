@@ -80,11 +80,6 @@ public class UserDataBean implements javax.ejb.EntityBean {
             return false;
         return (makePasswordHash(password).equals(passwordHash));
     }
-    /** Returns the hashed password.
-     */
-    public String getPasswordHash() {
-        return passwordHash;
-    }
     /** Creates the hashed password
     */
     private String makePasswordHash(String password) throws NoSuchAlgorithmException {

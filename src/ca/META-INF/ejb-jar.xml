@@ -376,6 +376,7 @@
       <persistence-type>Container</persistence-type>
       <prim-key-class>se.anatom.ejbca.ca.store.CertificateDataPK</prim-key-class>
       <reentrant>False</reentrant>
+      <cmp-version>1.x</cmp-version>
 
       <cmp-field><field-name>b64Cert</field-name></cmp-field>
       <cmp-field><field-name>fp</field-name></cmp-field>
@@ -401,6 +402,7 @@
       <persistence-type>Container</persistence-type>
       <prim-key-class>se.anatom.ejbca.ca.store.CRLDataPK</prim-key-class>
       <reentrant>False</reentrant>
+      <cmp-version>1.x</cmp-version>
 
       <cmp-field><field-name>b64Crl</field-name></cmp-field>
       <cmp-field><field-name>fp</field-name></cmp-field>
