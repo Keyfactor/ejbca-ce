@@ -43,7 +43,7 @@ import se.anatom.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.19 2004-06-08 18:06:05 sbailliez Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.20 2004-06-10 15:05:45 sbailliez Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -64,10 +64,12 @@ import se.anatom.ejbca.util.CertTools;
  *   type="java.lang.String"
  *   value="java:/DefaultDS"
  *
+ * @todo JNDI name is not 'standard'
  * @ejb.ejb-external-ref
  *   description="The key recovery data entity bean"
  *   view-type="local"
  *   ejb-name="KeyRecoveryData"
+ *   local-jndi-name="KeyRecoveryData"
  *   type="Entity"
  *   home="se.anatom.ejbca.keyrecovery.KeyRecoveryDataLocalHome"
  *   business="se.anatom.ejbca.keyrecovery.KeyRecoveryDataLocal"
@@ -118,9 +120,6 @@ import se.anatom.ejbca.util.CertTools;
  */
 public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
-    /** Var holding JNDI name of datasource */
-    private String dataSource = "";
-
     /** The local home interface of hard token issuer entity bean. */
     private KeyRecoveryDataLocalHome keyrecoverydatahome = null;
 
@@ -142,9 +141,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
         debug(">ejbCreate()");
 
         try {
-            dataSource = (String) lookup("java:comp/env/DataSource", java.lang.String.class);
-            debug("DataSource=" + dataSource);
-            keyrecoverydatahome = (KeyRecoveryDataLocalHome) lookup("java:comp/env/ejb/KeyRecoveryData",
+            keyrecoverydatahome = (KeyRecoveryDataLocalHome) lookup(KeyRecoveryDataLocalHome.COMP_NAME,
                     KeyRecoveryDataLocalHome.class);
 
             debug("<ejbCreate()");
@@ -154,17 +151,6 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
     }
 
     /**
-     * Gets connection to Datasource used for manual SQL searches
-     *
-     * @return Connection
-     */
-    private Connection getConnection() throws SQLException, NamingException {
-        DataSource ds = (DataSource) getInitialContext().lookup(dataSource);
-
-        return ds.getConnection();
-    } //getConnection
-
-    /**
      * Gets connection to log session bean
      *
      * @return Connection
@@ -172,7 +158,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
     private ILogSessionLocal getLogSession() {
         if (logsession == null) {
             try {
-                ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup("java:comp/env/ejb/LogSessionLocal",
+                ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup(ILogSessionLocalHome.COMP_NAME,
                         ILogSessionLocalHome.class);
                 logsession = logsessionhome.create();
             } catch (Exception e) {

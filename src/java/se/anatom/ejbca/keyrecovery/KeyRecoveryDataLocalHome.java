@@ -22,11 +22,11 @@ import javax.ejb.FinderException;
 /**
  * For docs, see KeyRecoveryDataBean
  *
- * @version $Id: KeyRecoveryDataLocalHome.java,v 1.8 2004-06-08 18:06:05 sbailliez Exp $
+ * @version $Id: KeyRecoveryDataLocalHome.java,v 1.9 2004-06-10 15:05:45 sbailliez Exp $
  */
 public interface KeyRecoveryDataLocalHome extends javax.ejb.EJBLocalHome {
 
-    public static final String COMP_NAME = "java:comp/env/ejb/KeyRecoveryDataLocal";
+    public static final String COMP_NAME = "java:comp/env/ejb/KeyRecoveryData";
     public static final String JNDI_NAME = "KeyRecoveryData";
 
 
