@@ -1,4 +1,4 @@
-$Id: README,v 1.117 2004-01-11 13:55:16 anatom Exp $
+$Id: README,v 1.118 2004-01-12 12:57:25 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -246,6 +246,10 @@ setuserstatus
  <username> <status>'. For a list of all available statuscodes
  run 'ra.sh/cmd
  setuserstatus'.
+ 
+Converting OpenSSL CA:
+You can convert a PEM-style CA key to a PKCS12file that can be imported in EJBCA.
+openssl pkcs12 -export -out server1.p12 -inkey cakey.pem -in ca.pem -name privateKey
 
 Deploy
 ======
