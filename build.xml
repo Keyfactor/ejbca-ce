@@ -7,7 +7,7 @@
   <property file=".ejbca.properties"/>
   <property file="${user.home}/.ejbca.properties"/>
   <property environment="env"/>
-  
+
   <!-- set global properties for this build -->
   <property name="src" value="./src"/>
   <property name="javasrc" value="${src}/java"/>
@@ -17,11 +17,11 @@
   <property name="test.dir" value="${tmp}/junit"/>
   <property name="dist"  value="./dist"/>
   <property name="apidoc" value="./doc/api"/>
-  
+
   <property name="apply.src" value="${src}/publicweb/apply" />
   <property name="apply.build" value="${tmp}/publicweb/apply.war" />
   <property name="applyjar" value="${dist}/apply.war" />
-  
+
   <property name="webdist.src" value="${src}/publicweb/webdist" />
   <property name="webdist.build" value="${tmp}/publicweb/webdist.war" />
   <property name="webdistjar" value="${dist}/webdist.war" />
@@ -31,40 +31,40 @@
   <property name="sampleauthjar" value="${dist}/sampleauth.war" />
 
   <property name="ca.src" value="${src}/ca/ca" />
-  <property name="ca.build" value="${tmp}/ca/ca.jar" />
-  <property name="cajar" value="${dist}/ca.jar" />
+  <property name="ca.build" value="${tmp}/ca/ca-ejb.jar" />
+  <property name="cajar" value="${dist}/ca-ejb.jar" />
 
   <property name="status.src" value="${src}/publicweb/status"/>
   <property name="status.build" value="${tmp}/publicweb/status.war"/>
   <property name="statusjar" value="${dist}/status.war"/>
 
   <property name="log.src" value="${src}/log" />
-  <property name="log.build" value="${tmp}/log.jar" />
-  <property name="logjar" value="${dist}/log.jar" />  
-  
+  <property name="log.build" value="${tmp}/log-ejb.jar" />
+  <property name="logjar" value="${dist}/log-ejb.jar" />
+
   <property name="authorization.src" value="${src}/authorization" />
-  <property name="authorization.build" value="${tmp}/authorization.jar" />
-  <property name="authorizationjar" value="${dist}/authorization.jar" />    
-  
+  <property name="authorization.build" value="${tmp}/authorization-ejb.jar" />
+  <property name="authorizationjar" value="${dist}/authorization-ejb.jar" />
+
   <property name="hardtoken.src" value="${src}/hardtoken" />
-  <property name="hardtoken.build" value="${tmp}/hardtoken.jar" />
-  <property name="hardtokenjar" value="${dist}/hardtoken.jar" />   
-  
+  <property name="hardtoken.build" value="${tmp}/hardtoken-ejb.jar" />
+  <property name="hardtokenjar" value="${dist}/hardtoken-ejb.jar" />
+
   <property name="keyrecovery.src" value="${src}/keyrecovery" />
-  <property name="keyrecovery.build" value="${tmp}/keyrecovery.jar" />
-  <property name="keyrecoveryjar" value="${dist}/keyrecovery.jar" />   
-   
+  <property name="keyrecovery.build" value="${tmp}/keyrecovery-ejb.jar" />
+  <property name="keyrecoveryjar" value="${dist}/keyrecovery-ejb.jar" />
+
   <property name="ra.src" value="${src}/ra" />
-  <property name="ra.build" value="${tmp}/ra.jar" />
-  <property name="rajar" value="${dist}/ra.jar" />
-  
+  <property name="ra.build" value="${tmp}/ra-ejb.jar" />
+  <property name="rajar" value="${dist}/ra-ejb.jar" />
+
   <property name="adminweb.src" value="${src}/adminweb" />
   <property name="adminweb.build" value="${tmp}/adminweb.war" />
-  <property name="adminwebjar" value="${dist}/adminweb.war" />  
-  
+  <property name="adminwebjar" value="${dist}/adminweb.war" />
+
   <property name="demoweb.src" value="${src}/demoweb" />
   <property name="demoweb.build" value="${tmp}/demoweb.war" />
-  <property name="demowebjar" value="${dist}/demoweb.war" />  
+  <property name="demowebjar" value="${dist}/demoweb.war" />
 
   <property name="caear.src" value="${src}/ca/ear" />
   <property name="caear.earsrc" value="${caear.src}/ear" />
@@ -89,7 +89,7 @@
   <property name="adminjar.build" value="${tmp}/adminjar" />
   <property name="adminjar" value="./admin.jar" />
 
-  <property name="jar.classpath" value="lib/bcmail-jdk14-122.jar lib/bcprov-jdk14-122.jar lib/log4j-1.2.7.jar lib/ldap.jar lib/commons-lang-2.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar"/>
+  <property name="jar.classpath" value="lib/ejb-utils.jar"/>
 
     <path id="compile.classpath">
         <fileset dir="lib" includes="*.jar"/>
@@ -100,13 +100,13 @@
             <include name="jbossall-client.jar"/>
         </fileset>
     </path>
-    
+
     <path id="test.compile.classpath">
         <path refid="compile.classpath"/>
         <path location="${build}"/>
         <path refid="j2ee.classpath"/>
     </path>
-  
+
   <!-- =================================================================== -->
   <!-- Create the time stamp and build directory -->
   <!-- =================================================================== -->
@@ -115,7 +115,7 @@
     <tstamp/>
     <!-- Create the build directory structure used by compile -->
     <mkdir dir="${build}"/>
-    <mkdir dir="${dist}"/> 
+    <mkdir dir="${dist}"/>
   </target>
 
   <!-- =================================================================== -->
@@ -129,10 +129,10 @@
     <delete dir="${apidoc}"/>
     <delete file="admin.jar"/>
     <delete>
-        <fileset dir="${javasrc}" 
+        <fileset dir="${javasrc}"
 includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </delete>
-    
+
   </target>
 
   <!-- =================================================================== -->
@@ -169,7 +169,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         <junit printsummary="yes" haltonfailure="no">
             <classpath>
                 <path refid="test.compile.classpath"/>
-                <path location="${test.dir}"/> 
+                <path location="${test.dir}"/>
             </classpath>
             <formatter type="xml"/>
             <batchtest fork="yes" todir="${test.dir}/reports">
@@ -186,7 +186,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
             <report format="frames" todir="${test.dir}/reports/html"/>
         </junitreport>
     </target>
-	
+
 
   <!-- =================================================================== -->
   <!-- Build apply part                                                    -->
@@ -200,26 +200,15 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         <jar jarfile="${apply.build}/WEB-INF/lib/apply.jar">
             <fileset dir="${build}">
                 <include name="se/anatom/ejbca/apply/**/*.class"/>
-                <include name="se/anatom/ejbca/ca/sign/**/ISign*.class"/>
-                <include name="se/anatom/ejbca/util/**/Base64*.class"/>
-                <include name="se/anatom/ejbca/util/**/CertTools*.class"/>
-                <include name="se/anatom/ejbca/util/**/FileTools*.class"/>
-                <include name="se/anatom/ejbca/protocol/*.class"/>
-                <include name="se/anatom/ejbca/exception/**/*.class"/>
-                <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
-                <include name="se/anatom/ejbca/log/Admin.class"/>
             </fileset>
         </jar>
 
         <war destfile="${dist}/apply.war" webxml="${apply.build}/WEB-INF/web.xml">
             <fileset dir="${apply.build}" excludes="WEB-INF/**"/>
             <lib dir="${apply.build}/WEB-INF/lib" includes="apply.jar"/>
-            <manifest>
-                <attribute name="Class-Path" value="${jar.classpath}"/>
-            </manifest>
         </war>
   </target>
-  
+
     <!-- =================================================================== -->
     <!-- Build status part                                                                                                                             -->
     <!-- =================================================================== -->
@@ -233,55 +222,58 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
             <fileset dir="${build}">
                 <include name="se/anatom/ejbca/protocol/OCSPServlet*.class"/>
                 <include name="se/anatom/ejbca/protocol/exception/MalformedRequestException*.class"/>
-                <include name="se/anatom/ejbca/SecConst*.class"/>
-                <include name="se/anatom/ejbca/ca/crl/RevokedCertInfo*.class"/>
-                <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
-                <include name="se/anatom/ejbca/ca/store/ICertificateStoreSessionLocalHome*.class"/>
-                <include name="se/anatom/ejbca/ca/store/ICertificateStoreSessionLocal*.class"/>
-                <include name="se/anatom/ejbca/log/Admin*.class"/>
-                <include name="se/anatom/ejbca/util/Hex*.class"/>
-                <include name="se/anatom/ejbca/util/**/CertTools*.class"/>
             </fileset>
         </jar>
-        
+
         <war destfile="${dist}/status.war" webxml="${apply.build}/WEB-INF/web.xml">
             <fileset dir="${status.build}" excludes="WEB-INF/**"/>
             <lib dir="${status.build}/WEB-INF/lib" includes="status.jar"/>
-            <manifest>
-                <attribute name="Class-Path" value="${jar.classpath}"/>
-            </manifest>
         </war>
     </target>
-  
+
   <!-- =================================================================== -->
   <!-- Build sampleauth part                                               -->
   <!-- =================================================================== -->
     <target name="sampleauth.war" depends="compile">
     <mkdir    dir="${sampleauth.build}"/>
     <copy todir="${sampleauth.build}">
-        <fileset dir="${sampleauth.src}"/> 
+        <fileset dir="${sampleauth.src}"/>
     </copy>
     <jar jarfile="${sampleauth.build}/WEB-INF/lib/sampleauth.jar">
         <fileset dir="${build}">
             <include name="se/anatom/ejbca/samples/AuthResult*.class"/>
             <include name="se/anatom/ejbca/samples/RemoteVerify*.class"/>
-            <include name="se/anatom/ejbca/exception/**/*.class"/>
-            <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
-            <include name="se/anatom/ejbca/log/Admin.class"/>
         </fileset>
     </jar>
     <copy todir="${sampleauth.build}/WEB-INF/lib">
         <fileset dir="${lib}"/>
     </copy>
-  
+
     <war destfile="${dist}/sampleauth.war" webxml="${apply.build}/WEB-INF/web.xml">
         <fileset dir="${sampleauth.build}" excludes="WEB-INF/**"/>
         <lib dir="${sampleauth.build}/WEB-INF/lib" includes="*.jar"/>
-        <manifest>
-            <attribute name="Class-Path" value="${jar.classpath}"/>
-        </manifest>
     </war>
   </target>
+
+    <property name="ejb-utils.jar.dir" location="${tmp}/ejb-utils.jar"/>
+    <property name="ejb-utils.jar" location="${dist}/ejb-utils.jar" description="Utilities used in EJBs"/>
+    <target name="jar:ejb-utils" depends="compile">
+        <mkdir dir="${ejb-utils.jar.dir}"/>
+        <copy todir="${ejb-utils.jar.dir}">
+            <fileset dir="${build}">
+            	<include name="se/anatom/ejbca/protocol/**"/> <!-- we've got more than necessary -->
+        		<include name="se/anatom/ejbca/exception/**"/>
+                <include name="se/anatom/ejbca/*.*"/>
+                <include name="se/anatom/ejbca/util/**/*.*"/>
+            </fileset>
+        </copy>
+        <jar basedir="${ejb-utils.jar.dir}" jarfile="${ejb-utils.jar}">
+            <manifest>
+            	<!-- todo: autogenerate this from a fileset -->
+                <attribute name="Class-Path" value="bcmail-jdk14-122.jar bcprov-jdk14-122.jar log4j-1.2.7.jar ldap.jar commons-lang-2.0.jar commons-collections.jar commons-fileupload-1.0.jar"/>
+            </manifest>
+        </jar>
+    </target>
 
   <!-- =================================================================== -->
   <!-- Build ca part                                                    -->
@@ -292,12 +284,15 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         <fileset dir="${ca.src}">
             <exclude name="keyStore/**"/>
         </fileset>
-        <fileset dir="${build}"/>
+        <fileset dir="${build}">
+            <include name="se/anatom/ejbca/ca/**"/>
+            <include name="se/anatom/ejbca/upgrade/**"/>
+        </fileset>
         <fileset dir="${src}">
             <include name="upgrade/**/*.sql"/>
         </fileset>
     </copy>
-    
+
     <!-- Jar the ca.jar package together -->
     <jar basedir="${ca.build}" jarfile="${cajar}">
         <manifest>
@@ -316,18 +311,17 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </copy>
     <copy todir="${log.build}">
         <fileset dir="${build}">
-            <include name="se/anatom/ejbca/log/*.class"/>
-            <include name="se/anatom/ejbca/util/query/*.class"/>
+            <include name="se/anatom/ejbca/log/**"/>
         </fileset>
     </copy>
-    
+
     <!-- Jar the log.jar package together -->
-    <jar basedir="${log.build}" jarfile="${logjar}">    
+    <jar basedir="${log.build}" jarfile="${logjar}">
         <manifest>
             <attribute name="Class-Path" value="${jar.classpath}"/>
         </manifest>
     </jar>
-  </target>  
+  </target>
 
   <!-- =================================================================== -->
   <!-- Build authorization part                                            -->
@@ -339,26 +333,16 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </copy>
     <copy todir="${authorization.build}">
         <fileset dir="${build}">
-            <include name="se/anatom/ejbca/authorization/*.class"/>
-            <include name="se/anatom/ejbca/ca/caadmin/I*.class"/>
-            <include name="se/anatom/ejbca/ca/caadmin/*Info.class"/>
-            <include name="se/anatom/ejbca/ra/I*.class"/>                                                              
-            <include name="se/anatom/ejbca/ra/raadmin/I*.class"/>                                                              
-            <include name="se/anatom/ejbca/ca/store/I*.class"/>  
-            <include name="se/anatom/ejbca/log/I*.class"/>
-            <include name="se/anatom/ejbca/log/Admin.class"/>  
-            <include name="se/anatom/ejbca/log/LogEntry.class"/>
-            <include name="se/anatom/ejbca/util/*.class"/> 
-            <include name="se/anatom/ejbca/*.class"/>
+            <include name="se/anatom/ejbca/authorization/**"/>
         </fileset>
     </copy>
-    <jar basedir="${authorization.build}" jarfile="${authorizationjar}">    
+    <jar basedir="${authorization.build}" jarfile="${authorizationjar}">
         <manifest>
             <attribute name="Class-Path" value="${jar.classpath}"/>
         </manifest>
     </jar>
-  </target>      
-  
+  </target>
+
   <!-- =================================================================== -->
   <!-- Build hard token part                                               -->
   <!-- =================================================================== -->
@@ -369,30 +353,16 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </copy>
     <copy todir="${hardtoken.build}">
         <fileset dir="${build}">
-            <include name="se/anatom/ejbca/hardtoken/*.class"/>
-            <include name="se/anatom/ejbca/ra/I*.class"/>
-            <include name="se/anatom/ejbca/ra/UserAdminData.class"/>  
-            <include name="se/anatom/ejbca/ra/UserDataLocal.class"/> 
-            <include name="se/anatom/ejbca/ra/UserDataLocalHome.class"/>                                                
-            <include name="se/anatom/ejbca/authorization/I*.class"/>                
-            <include name="se/anatom/ejbca/authorization/*Exception.class"/>
-            <include name="se/anatom/ejbca/ca/store/I*.class"/>  
-            <include name="se/anatom/ejbca/log/I*.class"/>
-            <include name="se/anatom/ejbca/log/Admin.class"/>  
-            <include name="se/anatom/ejbca/log/LogEntry.class"/>
-            <include name="se/anatom/ejbca/util/CertTools.class"/> 
-            <include name="se/anatom/ejbca/SecConst.class"/>                                  
-            <include name="se/anatom/ejbca/BaseProperty*.class"/>
-            <include name="se/anatom/ejbca/PropertyEntityPK.class"/>
+            <include name="se/anatom/ejbca/hardtoken/**"/>
         </fileset>
     </copy>
-    <jar basedir="${hardtoken.build}" jarfile="${hardtokenjar}">    
+    <jar basedir="${hardtoken.build}" jarfile="${hardtokenjar}">
         <manifest>
             <attribute name="Class-Path" value="${jar.classpath}"/>
         </manifest>
     </jar>
-  </target>    
-  
+  </target>
+
   <!-- =================================================================== -->
   <!-- Build key recovery part                                             -->
   <!-- =================================================================== -->
@@ -403,23 +373,16 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </copy>
     <copy todir="${keyrecovery.build}">
         <fileset dir="${build}">
-            <include name="se/anatom/ejbca/keyrecovery/*.class"/>                                               
-            <include name="se/anatom/ejbca/ca/sign/I*.class"/>                
-            <include name="se/anatom/ejbca/ca/store/I*.class"/>  
-            <include name="se/anatom/ejbca/log/I*.class"/>
-            <include name="se/anatom/ejbca/log/Admin.class"/>  
-            <include name="se/anatom/ejbca/log/LogEntry.class"/>
-            <include name="se/anatom/ejbca/util/CertTools.class"/> 
-            <include name="se/anatom/ejbca/SecConst.class"/>
+            <include name="se/anatom/ejbca/keyrecovery/**"/>
         </fileset>
     </copy>
-    
-    <jar basedir="${keyrecovery.build}" jarfile="${keyrecoveryjar}">    
+
+    <jar basedir="${keyrecovery.build}" jarfile="${keyrecoveryjar}">
         <manifest>
             <attribute name="Class-Path" value="${jar.classpath}"/>
         </manifest>
     </jar>
-  </target>      
+  </target>
 
 
   <!-- =================================================================== -->
@@ -432,18 +395,10 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </copy>
     <copy todir="${ra.build}">
         <fileset dir="${build}">
-            <include name="se/anatom/ejbca/ra/**/*.class"/>                
-            <include name="se/anatom/ejbca/ca/caadmin/I*.class"/>
-            <include name="se/anatom/ejbca/ca/caadmin/*Info.class"/>
-            <include name="se/anatom/ejbca/authorization/I*.class"/>
-            <include name="se/anatom/ejbca/authorization/*Exception.class"/>            
-            <include name="se/anatom/ejbca/*.class"/>
-            <include name="se/anatom/ejbca/util/**/*.class"/>
-            <include name="se/anatom/ejbca/util/query/*.class"/>   
-            <include name="se/anatom/ejbca/log/Admin.class"/>
+            <include name="se/anatom/ejbca/ra/**/*.class"/>
         </fileset>
     </copy>
-    
+
     <!-- Jar the ra.jar package together -->
     <jar  basedir="${ra.build}" jarfile="${rajar}">
         <manifest>
@@ -456,37 +411,23 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- Build webdist part                                                  -->
   <!-- =================================================================== -->
   <target name="webdist.war" depends="compile">
-    <mkdir    dir="${webdist.build}"/>
+    <mkdir dir="${webdist.build}/WEB-INF/lib"/>
     <copy todir="${webdist.build}">
-        <fileset dir="${webdist.src}"> 
-                <include name="**/**"/>
+        <fileset dir="${webdist.src}">
+        	<include name="**/**"/>
         </fileset>
     </copy>
-    <copy todir="${webdist.build}/WEB-INF/classes">
-        <fileset dir="${build}">
-                <include name="se/anatom/ejbca/webdist/*.class"/>                
-                <include name="se/anatom/ejbca/ca/caadmin/I*.class"/>
-                <include name="se/anatom/ejbca/ca/caadmin/*Info.class"/>
-                <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
-                <include name="se/anatom/ejbca/ca/store/certificatetypes/*.class"/>                
-                <include name="se/anatom/ejbca/ca/publisher/IPublisher*.class"/>
-                <include name="se/anatom/ejbca/ca/sign/ISign*.class"/>
-                <include name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
-                <include name="se/anatom/ejbca/util/**/Base64*.class"/>
-                <include name="se/anatom/ejbca/util/**/CertTools*.class"/>
-                <include name="se/anatom/ejbca/util/**/Hex*.class"/>
-                <include name="se/anatom/ejbca/exception/**/*.class"/>
-                <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
-                <include name="se/anatom/ejbca/log/Admin.class"/>
-        </fileset>
-    </copy>
-  
-    <!-- Jar the webdist.war package together -->
-    <jar basedir="${webdist.build}" jarfile="${webdistjar}">    
-        <manifest>
-            <attribute name="Class-Path" value="${jar.classpath}"/>
-        </manifest>
+
+    <jar jarfile="${webdist.build}/WEB-INF/lib/webdist.jar">
+      <fileset dir="${build}">
+        <include name="se/anatom/ejbca/webdist/**"/>
+      </fileset>
     </jar>
+    
+    <war basedir="${webdist.build}" destfile="${webdistjar}"
+        webxml="${webdist.build}/WEB-INF/web.xml"
+        excludes="WEB-INF/web.xml">
+    </war>
   </target>
 
   <!-- =================================================================== -->
@@ -502,16 +443,13 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
 
     <jar jarfile="${adminweb.build}/WEB-INF/lib/adminweb.jar">
       <fileset dir="${build}">
-        <include name="se/anatom/ejbca/util/**"/>
+        <include name="se/anatom/ejbca/webdist/**"/>
       </fileset>
     </jar>
-    
+
     <war basedir="${adminweb.build}" destfile="${dist}/adminweb.war"
         webxml="${adminweb.build}/WEB-INF/web.xml"
         excludes="WEB-INF/web.xml">
-        <manifest>
-            <attribute name="Class-Path" value="${jar.classpath}"/>
-        </manifest>
     </war>
   </target>
 
@@ -523,35 +461,16 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     <copy todir="${demoweb.build}">
         <fileset dir="${demoweb.src}"/>
     </copy>
-    
+
     <jar jarfile="${demoweb.build}/WEB-INF/lib/demoweb.jar">
         <fileset dir="${build}">
-            <include name="se/anatom/ejbca/webdist/**/*.class"/>                
-            <include name="se/anatom/ejbca/ca/caadmin/I*.class"/>
-            <include name="se/anatom/ejbca/ca/caadmin/*Info.class"/>
-            <include name="se/anatom/ejbca/ca/store/CertificateData*.class"/>                
-            <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>         
-            <include name="se/anatom/ejbca/ca/store/certificateprofiles/*.class"/>                        
-            <include name="se/anatom/ejbca/ra/*.class"/>
-            <include name="se/anatom/ejbca/authorization/*.class"/>      
-            <include name="se/anatom/ejbca/ra/raadmin/*.class"/>
-            <include name="se/anatom/ejbca/ca/publisher/IPublisher*.class"/>
-            <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
-            <include name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
-            <include name="se/anatom/ejbca/util/*.class"/>
-            <include name="se/anatom/ejbca/util/query/*.class"/>                
-            <include name="se/anatom/ejbca/exception/**/*.class"/>
-            <include name="se/anatom/ejbca/ca/exception/**/*.class"/>           
-            <include name="se/anatom/ejbca/log/Admin.class"/>
+            <include name="se/anatom/ejbca/webdist/**/*.class"/>
         </fileset>
     </jar>
 
     <war basedir="${demoweb.build}" destfile="${demowebjar}"
         webxml="${demoweb.build}/WEB-INF/web.xml"
         excludes="WEB-INF/web.xml">
-        <manifest>
-            <attribute name="Class-Path" value="${jar.classpath}"/>
-        </manifest>
     </war>
   </target>
 
@@ -562,73 +481,73 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     <mkdir dir="${adminjar.build}"/>
          <copy todir="${adminjar.build}">
         <fileset dir="${adminjar.cli}">
-            <include name="*.properties"/>                                
+            <include name="*.properties"/>
        </fileset>
       </copy>
      <copy todir="${adminjar.build}">
         <fileset dir="${build}">
             <include name="se/anatom/ejbca/IJobRunner*.class"/>
             <include name="se/anatom/ejbca/SecConst*.class"/>
-            <include name="se/anatom/ejbca/util/*.class"/> 
+            <include name="se/anatom/ejbca/util/*.class"/>
             <include name="se/anatom/ejbca/util/query/*.class"/>
             <include name="se/anatom/ejbca/util/passgen/*.class"/>
             <include name="se/anatom/ejbca/admin/*.class"/>
-            <include name="se/anatom/ejbca/batch/*.class"/>                
+            <include name="se/anatom/ejbca/batch/*.class"/>
             <include name="se/anatom/ejbca/ca/caadmin/I*.class"/>
             <include name="se/anatom/ejbca/ca/caadmin/*Info.class"/>
             <include name="se/anatom/ejbca/ca/store/*Info.class"/>
             <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
-            <include name="se/anatom/ejbca/ca/store/certificateprofiles/*.class"/>                
+            <include name="se/anatom/ejbca/ca/store/certificateprofiles/*.class"/>
             <include name="se/anatom/ejbca/ca/publisher/IPublisher*.class"/>
             <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
             <include name="se/anatom/ejbca/ca/crl/RevokedCertInfo*.class"/>
             <include name="se/anatom/ejbca/ca/crl/ICreateCRL*.class"/>
             <include name="se/anatom/ejbca/ca/store/CertificateData*.class"/>
-            <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/> 
-            <include name="se/anatom/ejbca/ra/*.class"/> 
+            <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
+            <include name="se/anatom/ejbca/ra/*.class"/>
             <include name="se/anatom/ejbca/exception/**/*.class"/>
-            <include name="se/anatom/ejbca/ca/exception/**/*.class"/> 
-            <include name="se/anatom/ejbca/ra/exception/**/*.class"/> 
-            <include name="se/anatom/ejbca/ra/raadmin/AdminPreference.class"/>   
-            <include name="se/anatom/ejbca/ra/raadmin/UserDoesntFullfillEndEntityProfile.class"/>   
-            <include name="se/anatom/ejbca/ra/raadmin/IRaAdminSessionHome.class"/>   
+            <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
+            <include name="se/anatom/ejbca/ra/exception/**/*.class"/>
+            <include name="se/anatom/ejbca/ra/raadmin/AdminPreference.class"/>
+            <include name="se/anatom/ejbca/ra/raadmin/UserDoesntFullfillEndEntityProfile.class"/>
+            <include name="se/anatom/ejbca/ra/raadmin/IRaAdminSessionHome.class"/>
             <include name="se/anatom/ejbca/ra/raadmin/IRaAdminSessionRemote.class"/>
-            <include name="se/anatom/ejbca/ra/raadmin/EndEntityProfile.class"/> 
+            <include name="se/anatom/ejbca/ra/raadmin/EndEntityProfile.class"/>
             <include name="se/anatom/ejbca/ra/raadmin/GlobalConfiguration.class"/>
-            <include name="se/anatom/ejbca/ra/raadmin/EndEntityProfileExistsException.class"/>                   
-            <include name="se/anatom/ejbca/authorization/IAuthorizationSessionHome.class"/>       
-            <include name="se/anatom/ejbca/authorization/IAuthorizationSessionRemote.class"/>                              
-            <include name="se/anatom/ejbca/authorization/AdminGroup.class"/>       
+            <include name="se/anatom/ejbca/ra/raadmin/EndEntityProfileExistsException.class"/>
+            <include name="se/anatom/ejbca/authorization/IAuthorizationSessionHome.class"/>
+            <include name="se/anatom/ejbca/authorization/IAuthorizationSessionRemote.class"/>
+            <include name="se/anatom/ejbca/authorization/AdminGroup.class"/>
             <include name="se/anatom/ejbca/authorization/*Exception.class"/>
             <include name="se/anatom/ejbca/authorization/UserEntity.class"/>
-            <include name="se/anatom/ejbca/authorization/AdminInformation.class"/>                 
-            <include name="se/anatom/ejbca/hardtoken/AvailableHardToken.class"/>  
-            <include name="se/anatom/ejbca/hardtoken/IHardTokenSessionHome.class"/> 
-            <include name="se/anatom/ejbca/hardtoken/IHardTokenSessionRemote.class"/>     
+            <include name="se/anatom/ejbca/authorization/AdminInformation.class"/>
+            <include name="se/anatom/ejbca/hardtoken/AvailableHardToken.class"/>
+            <include name="se/anatom/ejbca/hardtoken/IHardTokenSessionHome.class"/>
+            <include name="se/anatom/ejbca/hardtoken/IHardTokenSessionRemote.class"/>
             <include name="se/anatom/ejbca/hardtoken/IHardTokenBatchJobSessionHome.class"/>
             <include name="se/anatom/ejbca/hardtoken/IHardTokenBatchJobSessionRemote.class"/>
-            <include name="se/anatom/ejbca/hardtoken/HardTokenIssuer.class"/>   
-            <include name="se/anatom/ejbca/hardtoken/HardTokenIssuerData.class"/>   
+            <include name="se/anatom/ejbca/hardtoken/HardTokenIssuer.class"/>
+            <include name="se/anatom/ejbca/hardtoken/HardTokenIssuerData.class"/>
             <include name="se/anatom/ejbca/hardtoken/*Exception.class"/>
-            <include name="se/anatom/ejbca/hardtoken/hardtokentypes/*.class"/>   
-            <include name="se/anatom/ejbca/hardtoken/hardtokenprofiles/*.class"/>   
-            <include name="se/anatom/ejbca/hardtoken/HardTokenData.class"/>                 
+            <include name="se/anatom/ejbca/hardtoken/hardtokentypes/*.class"/>
+            <include name="se/anatom/ejbca/hardtoken/hardtokenprofiles/*.class"/>
+            <include name="se/anatom/ejbca/hardtoken/HardTokenData.class"/>
             <include name="se/anatom/ejbca/hardtoken/UnavailableTokenException.class"/>
-            <include name="se/anatom/ejbca/hardtoken/HardTokenExistsException.class"/> 
-            <include name="se/anatom/ejbca/hardtoken/HardTokenDoesntExistsException.class"/>         
-            <include name="se/anatom/ejbca/keyrecovery/IKeyRecoverySessionRemote.class"/>      
-            <include name="se/anatom/ejbca/keyrecovery/IKeyRecoverySessionHome.class"/> 
-            <include name="se/anatom/ejbca/keyrecovery/KeyRecoveryData.class"/>                                                                              
-            <include name="se/anatom/ejbca/log/Admin.class"/>                                                                                                                                                                                                 
+            <include name="se/anatom/ejbca/hardtoken/HardTokenExistsException.class"/>
+            <include name="se/anatom/ejbca/hardtoken/HardTokenDoesntExistsException.class"/>
+            <include name="se/anatom/ejbca/keyrecovery/IKeyRecoverySessionRemote.class"/>
+            <include name="se/anatom/ejbca/keyrecovery/IKeyRecoverySessionHome.class"/>
+            <include name="se/anatom/ejbca/keyrecovery/KeyRecoveryData.class"/>
+            <include name="se/anatom/ejbca/log/Admin.class"/>
             <include name="se/anatom/ejbca/protocol/IResponseMessage.class"/>
-            <include name="se/anatom/ejbca/protocol/IRequestMessage.class"/>                                                                                                                                                                                                 
-            <include name="se/anatom/ejbca/protocol/PKCS10RequestMessage.class"/>                                                                                                                                                                                                 
-            <include name="se/anatom/ejbca/protocol/IResponseMessage.class"/>                                                                                                                                                                                                 
-            <include name="se/anatom/ejbca/protocol/X509ResponseMessage.class"/>                                                                                                                                                                                                 
-            <include name="se/anatom/ejbca/ra/raadmin/DNFieldExtractor.class"/>                                                                                                                                                                                                 
-            <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceRequest.class"/>                                                                                                                                                                                                 
-            <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceResponse.class"/>                                                                                                                                                                                                 
-            <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/IllegalExtendedCAServiceRequestException.class"/>                                                                                                                                                                                                 
+            <include name="se/anatom/ejbca/protocol/IRequestMessage.class"/>
+            <include name="se/anatom/ejbca/protocol/PKCS10RequestMessage.class"/>
+            <include name="se/anatom/ejbca/protocol/IResponseMessage.class"/>
+            <include name="se/anatom/ejbca/protocol/X509ResponseMessage.class"/>
+            <include name="se/anatom/ejbca/ra/raadmin/DNFieldExtractor.class"/>
+            <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceRequest.class"/>
+            <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceResponse.class"/>
+            <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/IllegalExtendedCAServiceRequestException.class"/>
             <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceRequestException.class"/>
             <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceNotActiveException.class"/>
             <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/OCSPCAServiceInfo.class"/>
@@ -637,13 +556,13 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
        </fileset>
       </copy>
     <!-- Jar the admin.jar package together -->
-    <jar basedir="${adminjar.build}" jarfile="${adminjar}"/>    
+    <jar basedir="${adminjar.build}" jarfile="${adminjar}"/>
   </target>
 
   <!-- =================================================================== -->
   <!-- Build CA-ear                                                        -->
   <!-- =================================================================== -->
-  <target name="ca.ear" depends="apply.war, status.war, webdist.war, ca.jar, ra.jar, adminweb.war, log.jar, hardtoken.jar, keyrecovery.jar, authorization.jar">
+  <target name="ca.ear" depends="apply.war, status.war, webdist.war, ca.jar, ra.jar, adminweb.war, log.jar, hardtoken.jar, keyrecovery.jar, authorization.jar, jar:ejb-utils">
     <mkdir dir="${caear.build}"/>
     <copy todir="${caear.earbuild}">
         <fileset dir="${caear.earsrc}">
@@ -653,26 +572,21 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     <copy todir="${caear.warbuild}">
         <fileset dir="${caear.warsrc}"/>
     </copy>
-    
+
     <war basedir="${caear.warbuild}" destfile="${carootwar}"
         webxml="${caear.warbuild}/WEB-INF/web.xml"
-        excludes="WEB-INF/web.xml"/>    
+        excludes="WEB-INF/web.xml"/>
 
     <copy todir="${caear.earbuild}">
         <fileset dir="${dist}">
-            <include name="webdist.war"/>
-            <include name="apply.war"/>
-            <include name="status.war"/>
-            <include name="ca.jar"/>
-            <include name="ra.jar"/>
-            <include name="log.jar"/>         
-            <include name="authorization.jar"/>
-            <include name="hardtoken.jar"/>   
-            <include name="keyrecovery.jar"/>                                        
-            <include name="adminweb.war"/>
+            <include name="*-ejb.jar"/>
+            <include name="*.war"/>
         </fileset>
     </copy>
     <copy todir="${caear.earbuild}/lib">
+        <fileset dir="${dist}">
+            <include name="ejb-utils.jar"/>
+        </fileset>
         <fileset dir="${lib}">
             <include name="bcmail-jdk14-122.jar"/>
             <include name="bcprov-jdk14-122.jar"/>
@@ -683,7 +597,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
             <include name="commons-fileupload-1.0.jar"/>
         </fileset>
     </copy>
-  
+
     <ear destfile="${caear}" basedir="${caear.earbuild}"
         appxml="${caear.earbuild}/META-INF/application.xml"
         excludes="META-INF/application.xml"/>
@@ -702,15 +616,15 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     <copy todir="${caearnora.warbuild}">
         <fileset dir="${caear.warsrc}"/>
     </copy>
-    
+
     <!-- Rename application.xml without web-RA -->
     <copy file="${caearnora.build}/ear/META-INF/application-nora.xml"
         tofile="${caearnora.earbuild}/META-INF/application.xml"/>
-    
+
     <!-- Jar the ROOT war together -->
     <war basedir="${caearnora.warbuild}" destfile="${canorarootwar}"
         webxml="${caearnora.warbuild}/WEB-INF/web.xml"
-        excludes="WEB-INF/web.xml"/>    
+        excludes="WEB-INF/web.xml"/>
 
     <copy todir="${caearnora.earbuild}">
         <fileset dir="${dist}">
@@ -718,8 +632,8 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
             <include name="apply.war"/>
             <include name="status.war"/>
             <include name="ca.jar"/>
-            <include name="log.jar"/>   
-            <include name="authorization.jar"/>              
+            <include name="log.jar"/>
+            <include name="authorization.jar"/>
             <include name="ra.jar"/>
         </fileset>
     </copy>
@@ -733,13 +647,13 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
             <include name="commons-collections.jar"/>
         </fileset>
     </copy>
-  
+
     <!-- Jar the ear package together -->
     <ear basedir="${caearnora.earbuild}" destfile="${caearnora}"
         appxml="${caearnora.earbuild}/META-INF/application.xml"
-        excludes="META-INF/application.xml"/>    
+        excludes="META-INF/application.xml"/>
   </target>
-  
+
   <!-- =================================================================== -->
   <!-- Build Javadoc part                                                  -->
   <!-- =================================================================== -->
@@ -778,7 +692,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         <copy overwrite="true" file="src/ca/ca/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/ca/ca/META-INF/jbosscmp-jdbc.xml"/>
         <copy overwrite="true" file="src/ra/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/ra/META-INF/jbosscmp-jdbc.xml"/>
         <copy overwrite="true" file="src/log/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/log/META-INF/jbosscmp-jdbc.xml"/>
-        <copy overwrite="true" file="src/authorization/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/authorization/META-INF/jbosscmp-jdbc.xml"/>                
+        <copy overwrite="true" file="src/authorization/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/authorization/META-INF/jbosscmp-jdbc.xml"/>
         <copy overwrite="true" file="src/hardtoken/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/hardtoken/META-INF/jbosscmp-jdbc.xml"/>
         <copy overwrite="true" file="src/keyrecovery/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/keyrecovery/META-INF/jbosscmp-jdbc.xml"/>
 
@@ -810,7 +724,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         <waitfor maxwait="2" maxwaitunit="second" timeoutproperty="jboss.notrunning">
             <http url="http://localhost:8080/web-console/"/>
         </waitfor>
-        <fail message="Please execute JBoss server" if="jboss.notrunning"/>  
+        <fail message="Please execute JBoss server" if="jboss.notrunning"/>
   </target>
 
   <!-- ========================================================================== -->
@@ -892,8 +806,8 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
       <pathelement location="${jboss.home}/lib/jboss-common.jar"/>
       <pathelement location="${jboss.home}/lib/jboss-jmx.jar"/>
     </path>
-      <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">  
-        <exclude name="**/CVS/**"/>   
+      <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
+        <exclude name="**/CVS/**"/>
         <include name="**/appserver/**"/> <!-- appserver specific files are built separtely-->
         <classpath refid="jbossservices.classpath"/>
       </javac>
@@ -902,8 +816,8 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="**/appserver/*.class"/>
                 <include name="**/appserver/**/*.class"/>
         </fileset>
-    </copy> 
-  
+    </copy>
+
 
     <mkdir dir="${createcrlservice.build}"/>
     <copy todir="${createcrlservice.build}">
@@ -919,20 +833,20 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
-    <jar basedir="${createcrlservice.build}" jarfile="${createcrlservicejar}">    
+    <jar basedir="${createcrlservice.build}" jarfile="${createcrlservicejar}">
         <manifest>
             <attribute name="Class-Path" value="${jar.classpath}"/>
         </manifest>
     </jar>
   </target>
-  
+
   <!-- =================================================================== -->
   <!--Deploy Jboss Specific Services                       -->
   <!-- =================================================================== -->
   <target name="deployjbossservices" depends="jboss:assert-run,jbossservices, deploy">
 	<copy file="${createcrlservicejar}" tofile="${jboss.home}/server/default/deploy/createcrlservice.jar" verbose="true"/>
   </target>
-  
+
   <!-- ======================================================================= -->
   <!-- Deploy EJBCA ear to JBoss                                               -->
   <!-- ======================================================================= -->
@@ -946,7 +860,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <target name="deploy_nora" depends="jboss:assert-run,canora.ear">
 	<copy file="${caearnora}" tofile="${jboss.home}/server/default/deploy/ejbca-canora.ear" verbose="true"/>
   </target>
-  
+
   <!-- ==================================================================== -->
   <!-- Defines the project classpath                                        -->
   <!-- ==================================================================== -->
@@ -964,7 +878,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- ==================================================================== -->
   <target name="format" depends="compile">
 
-    <!--  
+    <!--
       Defines the Jalopy task
     -->
     <taskdef name="jalopy" classname="de.hunsicker.jalopy.plugin.ant.AntPlugin">
