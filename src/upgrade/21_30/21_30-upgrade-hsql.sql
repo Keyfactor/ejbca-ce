@@ -1,3 +1,6 @@
+
+# Format changed, so delete the data, must be REBUILT
+DELETE FROM accessrulesdata;
 ALTER TABLE accessrulesdata
     ADD column rule integer DEFAULT '0' NOT NULL AFTER accessRule,
     ADD column isRecursive bit DEFAULT '0' NOT NULL AFTER rule,
@@ -45,6 +48,8 @@ ALTER TABLE hardtokenissuerdata
     DROP column certificateSN,
     DROP column certIssuerDN;
 
+# Format changed, so delete the data, data is LOST
+DELETE FROM keyrecoverydata;
 ALTER TABLE keyrecoverydata
     ADD column keyData varbinary DEFAULT NULL AFTER markedAsRecoverable,
     DROP column pK,
