@@ -270,6 +270,18 @@
      	<env-entry-type>java.lang.String</env-entry-type>
      	<env-entry-value>o=AnaTom,c=SE</env-entry-value>
      </env-entry>
+     <env-entry>
+     	<description>objectclass for storing user entries.</description>
+     	<env-entry-name>userObjectclass</env-entry-name>
+     	<env-entry-type>java.lang.String</env-entry-type>
+     	<env-entry-value>inetOrgPerson</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>objectclass for storing CA entries.</description>
+     	<env-entry-name>cAObjectclass</env-entry-name>
+     	<env-entry-type>java.lang.String</env-entry-type>
+     	<env-entry-value>certificateAuthority</env-entry-value>
+     </env-entry>
    </session>
 
    <entity>

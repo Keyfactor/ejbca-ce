@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.*;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.4 2002-01-06 17:40:22 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.5 2002-01-08 10:40:30 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublisherSession {
 
@@ -54,6 +54,8 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
     private String loginDN        = "cn=Admin,o=AnaTom,c=SE";
     private String loginPassword  = "foo123";
     private String containerName  = "o=AnaTom,c=SE";
+    private String userObjectclass= "inetOrgPerson";
+    private String cAObjectclass= "certificateAuthority";
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -66,10 +68,14 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
         loginDN = (String)lookup("java:comp/env/loginDN", java.lang.String.class);
         loginPassword = (String)lookup("java:comp/env/loginPassword", java.lang.String.class);
         containerName = (String)lookup("java:comp/env/containerName", java.lang.String.class);
+        userObjectclass = (String)lookup("java:comp/env/userObjectclass", java.lang.String.class);
+        cAObjectclass = (String)lookup("java:comp/env/cAObjectclass", java.lang.String.class);
         debug("ldapHost=" + ldapHost);
         debug("loginDN=" + loginDN);
         debug("loginPassword=" + loginPassword);
         debug("containerName=" + containerName);
+        debug("userObjectclass=" + userObjectclass);
+        debug("cAObjectclass=" + cAObjectclass);
         debug("<ejbCreate()");
     }
 
@@ -85,9 +91,76 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
      */
     public boolean storeCRL(X509CRL incrl, String cafp, int number) throws RemoteException {
         
-        // TODO:
+        int ldapVersion  = LDAPConnection.LDAP_V3;
+        LDAPConnection lc = new LDAPConnection();
         
-        return false;
+        // Extract the users DN from the cert.
+        String dn = CertTools.stringToBCDNString(((X509CRL)incrl).getIssuerDN().toString());
+
+        if (checkContainerName(dn) == false)
+            return false;
+        
+        // Check if the entry is already present, we will update it with the new certificate.
+        LDAPEntry oldEntry = null;
+        try {
+            // connect to the server
+            lc.connect( ldapHost, ldapPort );
+            // authenticate to the server
+            lc.bind( ldapVersion, loginDN, loginPassword );
+            // try to read the old object
+            oldEntry = lc.read(dn);
+            // disconnect with the server
+            lc.disconnect();
+        } catch( LDAPException e ) {
+            if (e.getLDAPResultCode() == LDAPException.NO_SUCH_OBJECT) {
+                debug("No old entry exist for '"+dn+"'.");
+            } else {
+                error( "Error binding to and reading from LDAP server: ", e);
+                return false;
+            }
+        }
+        LDAPEntry newEntry = null;
+        LDAPModificationSet modSet = null;
+
+        LDAPAttributeSet attributeSet = null;
+        if (oldEntry != null)
+            modSet = getModificationSet(oldEntry, dn, false);
+        else
+            attributeSet = getAttributeSet(cAObjectclass, dn, false);
+        try {
+            LDAPAttribute crlAttr = new LDAPAttribute( "certificateRevocationList;binary", incrl.getEncoded() );
+            if (oldEntry != null)
+                modSet.add(LDAPModification.REPLACE, crlAttr);
+            else
+                attributeSet.add( crlAttr );
+        } catch (CRLException e) {
+            error("Error encoding CRL when storing in LDAP: ",e);
+            return false;
+        }
+        if (oldEntry == null)
+            newEntry = new LDAPEntry( dn, attributeSet );
+        try {            
+            // connect to the server
+            lc.connect( ldapHost, ldapPort );
+            // authenticate to the server
+            lc.bind( ldapVersion, loginDN, loginPassword );
+            // Add or modify the entry
+            if (oldEntry != null) {
+                lc.modify(dn, modSet);
+                info( "\nModified object: " + dn + " successfully." );
+            } else {
+                lc.add( newEntry );
+                info( "\nAdded object: " + dn + " successfully." );
+            }
+            // disconnect with the server
+            lc.disconnect();
+        }
+        catch( LDAPException e ) {
+            error( "Error storing CRL in LDAP: ", e);
+            return false;
+        }
+        
+        return true;        
     } // storeCRL
     
     /**
@@ -140,15 +213,10 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
             }            
         }
         
-        // Match users DN with 'containerName'?
-        // Normalize string lo BC DN format to avoide different case in o, C etc.
-        if (dn.indexOf(CertTools.stringToBCDNString(containerName)) == -1)
-        {
-            info("SubjectDN '"+dn+"' is not part of containerName '"+containerName+"' for LDAP server.");
+        if (checkContainerName(dn) == false)
             return false;
-        }
         
-        // TODO: Check if the entry is already present, we will update it with the new certificate.
+        // Check if the entry is already present, we will update it with the new certificate.
         LDAPEntry oldEntry = null;
         try {
             // connect to the server
@@ -178,7 +246,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
                 // TODO: Are we the correct type objectclass?
                 modSet = getModificationSet(oldEntry, dn, true);
             } else
-                attributeSet = getAttributeSet("inetOrgPerson", dn, true);
+                attributeSet = getAttributeSet(userObjectclass, dn, true);
             if (email != null) {
                 LDAPAttribute mailAttr = new LDAPAttribute( "mail", email );
                 if (oldEntry != null)
@@ -203,7 +271,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
             if (oldEntry != null)
                 modSet = getModificationSet(oldEntry, dn, false);
             else
-                attributeSet = getAttributeSet("certificationAuthority", dn, false);
+                attributeSet = getAttributeSet(cAObjectclass, dn, false);
             try {
                 LDAPAttribute certAttr = new LDAPAttribute( "cACertificate;binary", incert.getEncoded() );
                 if (oldEntry != null)
@@ -243,6 +311,19 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
         
         return true;
     } // storeCertificate
+    
+    private boolean checkContainerName(String dn) 
+    {
+        // Match users DN with 'containerName'?
+        // Normalize string lo BC DN format to avoide different case in o, C etc.
+        // TODO: if containerName consists of dc attributes?
+        if (dn.indexOf(CertTools.stringToBCDNString(containerName)) == -1)
+        {
+            info("SubjectDN '"+dn+"' is not part of containerName '"+containerName+"' for LDAP server.");
+            return false;
+        }
+        return true;
+    } // checkContainerName
     
     /** Creates an LDAPAttributeSet.
      * @param objectclass the objectclass the attribute set should be of.

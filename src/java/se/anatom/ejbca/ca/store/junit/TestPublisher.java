@@ -17,23 +17,38 @@ import junit.framework.*;
 
 /** Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.3 2002-01-06 17:40:22 anatom Exp $
+ * @version $Id: TestPublisher.java,v 1.4 2002-01-08 10:40:30 anatom Exp $
  */
 public class TestPublisher extends TestCase {
-
+    
     static byte[] testcert = Base64.decode(
-    ("MIICETCCAXqgAwIBAgIIEzy5vc2xpOIwDQYJKoZIhvcNAQEFBQAwLjEOMAwGA1UE"
-    +"AxMFZWpiY2ExDzANBgNVBAoTBkFuYVRvbTELMAkGA1UEBhMCU0UwHhcNMDExMTE0"
-    +"MTMxODU5WhcNMDMxMTE0MTMyODU5WjAsMQwwCgYDVQQDEwNmb28xDzANBgNVBAoT"
-    +"BkFuYVRvbTELMAkGA1UEBhMCU0UwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAqPX5"
-    +"YOgT76Tz5uDOmegzA6RRdOFR7/nyWc8Wu4FnU6litDqo1wQCD9Pqtq6XzWJ1smD5"
-    +"svNhscRcXPeiucisoQIDAQABo34wfDAPBgNVHRMBAf8EBTADAQEAMA8GA1UdDwEB"
-    +"/wQFAwMHoAAwHQYDVR0OBBYEFMrdBFmXrmAtP65uHZmF2Jc3shB1MB8GA1UdIwQY"
-    +"MBaAFHxNs2NoKyv7/ipWKfwRyGU6d6voMBgGA1UdEQQRMA+BDWZvb0BhbmF0b20u"
-    +"c2UwDQYJKoZIhvcNAQEFBQADgYEAH6AqvzaReZFMvYudIY6lCT5shodNTyjZBT0/"
-    +"kBMHp1csVVqJl80Ngr2QzKE55Xhok05i7q9oLcRSbnQ8ZfnTDa9lZaWiZzX7LxF/"
-    +"5fd74ol2m/J2LvVglqH9VEINI4RE+HxrMFy8QMROYbsOhl8Jk9TOsuDeQjEtgodm"
-    +"gY5ai2k=").getBytes());
+    ("MIICWzCCAcSgAwIBAgIIJND6Haa3NoAwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
+    +"AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw"
+    +"ODA5MTE1MloXDTA0MDEwODA5MjE1MlowLzEPMA0GA1UEAxMGMjUxMzQ3MQ8wDQYD"
+    +"VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB"
+    +"hwKBgQCQ3UA+nIHECJ79S5VwI8WFLJbAByAnn1k/JEX2/a0nsc2/K3GYzHFItPjy"
+    +"Bv5zUccPLbRmkdMlCD1rOcgcR9mmmjMQrbWbWp+iRg0WyCktWb/wUS8uNNuGQYQe"
+    +"ACl11SAHFX+u9JUUfSppg7SpqFhSgMlvyU/FiGLVEHDchJEdGQIBEaOBgTB/MA8G"
+    +"A1UdEwEB/wQFMAMBAQAwDwYDVR0PAQH/BAUDAwegADAdBgNVHQ4EFgQUyxKILxFM"
+    +"MNujjNnbeFpnPgB76UYwHwYDVR0jBBgwFoAUy5k/bKQ6TtpTWhsPWFzafOFgLmsw"
+    +"GwYDVR0RBBQwEoEQMjUxMzQ3QGFuYXRvbS5zZTANBgkqhkiG9w0BAQUFAAOBgQAS"
+    +"5wSOJhoVJSaEGHMPw6t3e+CbnEL9Yh5GlgxVAJCmIqhoScTMiov3QpDRHOZlZ15c"
+    +"UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+"
+    +"XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==").getBytes());
+    
+    static byte[] testcacert = Base64.decode(
+    ("MIICLDCCAZWgAwIBAgIISDzEq64yCAcwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
+    +"AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAxMTIw"
+    +"NDA5MzI1N1oXDTAzMTIwNDA5NDI1N1owLzEPMA0GA1UEAxMGVGVzdENBMQ8wDQYD"
+    +"VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB"
+    +"hwKBgQCnhOvkaj+9Qmt9ZseVn8Jhl6ewTrAOK3c9usxBhiGs+TalGjuAK37bbnbZ"
+    +"rlzCZpEsjSZYgXS++3NttiDbPzATkV/c33uIzBHjyk8/paOmTrkIux8hbIYMce+/"
+    +"WTYnAM3J41mSuDMy2yZxZ72Yntzqg4UUXiW+JQDkhGx8ZtcSSwIBEaNTMFEwDwYD"
+    +"VR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUy5k/bKQ6TtpTWhsPWFzafOFgLmswHwYD"
+    +"VR0jBBgwFoAUy5k/bKQ6TtpTWhsPWFzafOFgLmswDQYJKoZIhvcNAQEFBQADgYEA"
+    +"gHzQLoqLobU43lKvQCiZbYWEXHTf3AdzUd6aMOYOM80iKS9kgrMsnKjp61IFCZwr"
+    +"OcY1lOkpjADUTSqfVJWuF1z5k9c1bXnh5zu48LA2r2dlbHqG8twMQ+tPh1MYa3lV"
+    +"ugWhKqArGEawICRPUZJrLy/eDbCgVB4QT3rC7rOJOH0=").getBytes());
 
     static byte[] testcrl = Base64.decode(
     ("MIIDEzCCAnwCAQEwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UEAxMGVGVzdENBMQ8w"
@@ -85,20 +100,20 @@ public class TestPublisher extends TestCase {
         assertTrue("Storing certificate failed", ret);
         cat.debug("<test01AddCertificate()");
     }
-    /*
-    public void test02StoreCRL() throws Exception {
-        cat.debug(">test02StoreCRL()");
-        X509CRL crl = CertTools.getCRLfromByteArray(testcrl);
-        boolean ret = pub.storeCRL(crl, null, 1);
-        assertTrue("Storing CRL failed", ret);
-        cat.debug("<test02StoreCRL()");
-    }*/
-    public void test03AddCertAgain() throws Exception {
-        cat.debug(">test03AddCertAgain()");
+    public void test02AddCertAgain() throws Exception {
+        cat.debug(">test02AddCertAgain()");
         X509Certificate cert = CertTools.getCertfromByteArray(testcert);
         boolean ret = pub.storeCertificate(cert, null, CertificateData.CERT_ACTIVE, SecConst.USER_ENDUSER);
         assertTrue("Storing certificate failed", ret);
-        cat.debug("<test03AddCertAgain()");
+        cat.debug("<test02AddCertAgain()");
+    }
+    
+    public void test03StoreCRL() throws Exception {
+        cat.debug(">test03StoreCRL()");
+        X509CRL crl = CertTools.getCRLfromByteArray(testcrl);
+        boolean ret = pub.storeCRL(crl, null, 1);
+        assertTrue("Storing CRL failed", ret);
+        cat.debug("<test03StoreCRL()");
     }
     /*
     public void test04StoreCRLAgain() throws Exception {
@@ -108,6 +123,7 @@ public class TestPublisher extends TestCase {
         assertTrue("Storing CRL failed", ret);
         cat.debug("<test04StoreCRLAgain()");
     }
+     */
     public void test05AddCACert() throws Exception {
         cat.debug(">test05AddCACert()");
         X509Certificate cacert = CertTools.getCertfromByteArray(testcacert);
@@ -122,7 +138,6 @@ public class TestPublisher extends TestCase {
         assertTrue("Storing certificate failed", ret);
         cat.debug("<test06AddCACertAgain()");
     }
-     */
     
 }
 
