@@ -35,7 +35,7 @@ Added more extra attributes to LDAP publisher.
 Make o,ou,st selectable as 'Use Fields in DN' for publishers.
 Fixed publishing of CA certificates and CRLs.
 Works with Java 1.5 and 4096 bit keys.
-Fixed bug checking in webpage checking for revocation.
+Fixed bug in webpage checking for revocation.
 Added pageEncoding for jsp pages and removed explicit encoding tag in meta-inf for adminpages.
 Fixed bug with republishing CA certificates.
 Check execute permission on batch.sh from install script.
