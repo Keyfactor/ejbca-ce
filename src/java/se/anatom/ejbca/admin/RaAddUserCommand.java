@@ -18,7 +18,7 @@ import se.anatom.ejbca.SecConst;
 
 /** Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.12 2002-12-05 19:42:07 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.13 2002-12-16 16:07:35 anatom Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 
@@ -49,7 +49,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 System.out.println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
                 System.out.println("SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>\"");
                 System.out.println("Type (mask): INVALID=0; END-USER=1; CA=2;  ROOTCA=8; ADMINISTRATOR=64");
-                System.out.println("Token      : Browser Generated=" + SecConst.TOKEN_SOFT_BROWSERGEN + "; P12=" + SecConst.TOKEN_SOFT_P12 + "; JKS="
+                System.out.println("Token      : User Generated=" + SecConst.TOKEN_SOFT_BROWSERGEN + "; P12=" + SecConst.TOKEN_SOFT_P12 + "; JKS="
                                     + SecConst.TOKEN_SOFT_JKS + ";  PEM=" + SecConst.TOKEN_SOFT_PEM);
 
                 System.out.print("Existing certificate profiles  : ");
