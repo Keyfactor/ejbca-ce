@@ -4,7 +4,8 @@ Configuration howto/support for Oracle.
 CA-certs now downloaded from webdist.
 Better documentation with architectural overview.
 Better deployment scripts.
-Minor, mostly cosmetic and GUI changes.
+Sample Linux firewall script.
+Minor, mostly cosmetic, architectural and GUI changes.
 
 1.2
 ---

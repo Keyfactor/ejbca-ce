@@ -427,6 +427,15 @@
       <role-name>internalUser</role-name>
     </security-role>
 
+   <!-- 
+       Method permissions define who can access a given method on a bean.
+       Role name internalUser means that the bean methods shouln NOT be 
+       accessible from the outside.
+       Role name everyone means that the bean methods can be accessible from
+       the outside.
+       NOTE! Security must be enabled in the container for these settings 
+       to have any real meaning.
+   -->
    <method-permission>
      <role-name>internalUser</role-name>
      <method>
@@ -503,6 +512,64 @@
          <method-name>getLastCRLNumber</method-name>
      </method>
    </method-permission>
+
+   <!-- 
+       Transaction settings. Default setting i for *, which is overridden 
+       for methods with special transactionsal needs.
+       Required is used for mission critical methods, which cannot collide.
+       Supports is used for methods which only read data.
+   -->
+   <container-transaction>
+     <method>
+         <ejb-name>RSASignSession</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthenticationSession</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
+         <ejb-name>CreateCRLSession</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>storeCertificate</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>storeCRL</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateData</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
+         <ejb-name>CRLData</ejb-name>
+         <method-name>*</method-name>
+     </method>
+<!-- Uncomment for LDAP Publisher
+     <method>
+         <ejb-name>PublisherSession1</ejb-name>
+         <method-name>*</method-name>
+     </method>
+-->
+
+   <trans-attribute>Required</trans-attribute>
+   </container-transaction>       
+
+   <container-transaction>
+     <method>
+         <ejb-name>RSASignSession</ejb-name>
+         <method-name>getCertificateChain</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>*</method-name>
+     </method>
+
+   <trans-attribute>Supports</trans-attribute>
+   </container-transaction>       
 
  </assembly-descriptor>
 

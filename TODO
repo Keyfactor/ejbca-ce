@@ -1,4 +1,4 @@
-$Id: TODO,v 1.12 2002-03-08 15:49:09 anatom Exp $
+$Id: TODO,v 1.13 2002-03-11 08:49:42 anatom Exp $
 
 V 1.0
 -----
@@ -9,7 +9,6 @@ V 2.0
 -----
 - Batch create keystores in other formats, PKCS8/PEM. Apache compatible.
 - Better architecture for JSPs (MVC - ModelViewController?).
-- Correct <transaction-xx> for beans in ejb-jar.xml.
 - Certificate update/rollover for CAs and clients.
 - Make a database model similar to architecture model.
 - Possibility to warn about certificates about to expire.
@@ -36,3 +35,4 @@ environments.
 - RA function to generate keystore for user.
 - Describe SSL-setup in server.
 - XKMS specifications, and more XML/Soap stuff.
+
