@@ -48,7 +48,7 @@ import se.anatom.ejbca.util.CertTools;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.22 2004-02-19 16:04:19 herrvendil Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.23 2004-02-20 14:06:22 herrvendil Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
@@ -607,8 +607,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         try{
         	
       	  int admingroupid = hardtokenissuerhome.findByAlias(alias).getAdminGroupId();
-      	  System.out.println("admingroupid " +  admingroupid);
-		  returnval = authorizationsession.isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens");
+      	  System.out.println("admingroupid " +  admingroupid);      	  
+		  returnval = getAuthorizationSession(admin).isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens");
 		  System.out.println("isAuthorizedNoLog " +  returnval );
       	  returnval = returnval && authorizationsession.existsAdministratorInGroup(admin, admingroupid);      	 
       	  System.out.println("existsAdministratorInGroup " +  returnval );
