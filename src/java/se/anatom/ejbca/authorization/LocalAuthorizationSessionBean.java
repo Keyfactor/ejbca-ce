@@ -46,7 +46,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.20 2005-03-02 11:25:40 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.21 2005-03-11 09:59:13 anatom Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -126,24 +126,6 @@ import se.anatom.ejbca.util.ServiceLocator;
  *   home="se.anatom.ejbca.authorization.AdminGroupDataLocalHome"
  *   business="se.anatom.ejbca.authorization.AdminGroupDataLocal"
  *   link="AdminGroupData"
- *
- * @ejb.ejb-external-ref
- *   description="Access Rules"
- *   view-type="local"
- *   ejb-name="AccessRulesDataLocal"
- *   type="Entity"
- *   home="se.anatom.ejbca.authorization.AccessRulesDataLocalHome"
- *   business="se.anatom.ejbca.authorization.AccessRulesDataLocal"
- *   link="AccessRulesData"
- *
- * @ejb.ejb-external-ref
- *   description="Admin Entities"
- *   view-type="local"
- *   ejb-name="AdminEntityDataLocal"
- *   type="Entity"
- *   home="se.anatom.ejbca.authorization.AdminEntityDataLocalHome"
- *   business="se.anatom.ejbca.authorization.AdminEntityDataLocal"
- *   link="AdminEntityData"
  *
  * @ejb.security-identity
  *   description=""
@@ -875,7 +857,6 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
-
     public boolean existsEndEntityProfileInRules(Admin admin, int profileid) {
         debug(">existsEndEntityProfileInRules()");
         Connection con = null;
@@ -903,7 +884,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         } finally {
             JDBCUtil.close(con, ps, rs);
         }
-    }
+    } // existsEndEntityProfileInRules
 
     /**
      * Method to check if a ca exists in any ca specific rules. Used to avoid desyncronization of CA rules when ca is removed
@@ -981,7 +962,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         } finally {
             JDBCUtil.close(con, ps, rs);
         }
-    }
+    } // existsCAInAccessRules
 
     /**
      * Returns a reference to the AuthorizationTreeUpdateDataBean
@@ -1046,5 +1027,5 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         return id;
     } // findFreeCertificateProfileId
 
-} // LocalAvailableAccessRulesDataBean
+} // LocalAuthorizationSessionBean
 

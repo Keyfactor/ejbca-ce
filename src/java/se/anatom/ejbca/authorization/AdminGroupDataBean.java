@@ -39,7 +39,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.16 2005-03-10 13:36:06 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.17 2005-03-11 09:59:13 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
@@ -178,7 +178,6 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
             AccessRule accessrule = (AccessRule) iter.next();
             try {
                 AccessRulesDataLocal data = createAccessRule(accessrule);
-
                 Iterator i = getAccessRules().iterator();
                 while (i.hasNext()) {
                     AccessRulesDataLocal ar = (AccessRulesDataLocal) i.next();
@@ -192,9 +191,9 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
                         break;
                     }
                 }
-
                 getAccessRules().add(data);
             } catch (Exception e) {
+                log.error("Error adding AccessRules: ", e);
             }
         }
     } // addAccessRules
@@ -253,7 +252,6 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      * Adds a Collection of AdminEntity to the database. Changing their values if they already exists
      * @ejb.interface-method view-type="local"
      */
-
     public void addAdminEntities(Collection adminentities) {
         Iterator iter = adminentities.iterator();
         while (iter.hasNext()) {
