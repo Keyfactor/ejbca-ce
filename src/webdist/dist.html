@@ -5,7 +5,7 @@
 <p>A note on entering DNs below:<br>
 The order or case of element descriptors in the DN (C, O, CN, etc) is not important.<br>
 The case of elements themselves IS important, e.g. foo != FOO.
-<FORM ACTION="http://127.0.0.1:8080/webdist/certdist" ENCTYPE=x-www-form-encoded METHOD="GET">
+<FORM ACTION="certdist" ENCTYPE=x-www-form-encoded METHOD="GET">
 <P><HR>
 Give subject DN to fetch users latest certificate.<BR>
 
@@ -19,7 +19,7 @@ Subject DN
 </FORM>
 <HR>
 
-<FORM ACTION="http://127.0.0.1:8080/webdist/certdist" ENCTYPE=x-www-form-encoded METHOD="GET">
+<FORM ACTION="certdist" ENCTYPE=x-www-form-encoded METHOD="GET">
 
 Click 'Fetch CRL' to get latest CRL.
 <INPUT TYPE="hidden" NAME="cmd" VALUE="crl">
@@ -30,7 +30,7 @@ Click 'Fetch CRL' to get latest CRL.
 
 <HR>
 
-<FORM ACTION="http://127.0.0.1:8080/webdist/listcerts.jsp" ENCTYPE=x-www-form-encoded METHOD="GET">
+<FORM ACTION="listcerts.jsp" ENCTYPE=x-www-form-encoded METHOD="GET">
 Give subject DN to list users certificates.<BR>
 
 	<INPUT TYPE="hidden" NAME="cmd" VALUE="listcerts">
@@ -42,7 +42,7 @@ Subject DN
 
 <HR>
 
-<FORM ACTION="http://127.0.0.1:8080/webdist/revoked.jsp" ENCTYPE=x-www-form-encoded METHOD="GET">
+<FORM ACTION="revoked.jsp" ENCTYPE=x-www-form-encoded METHOD="GET">
 Enter serialnumber of certificate and click 'Check revocation' to see if the certificate is revoked.
 <INPUT TYPE="hidden" NAME="cmd" VALUE="revoked"><BR>
 Issuer DN
