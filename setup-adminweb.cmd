@@ -2,6 +2,12 @@
 rem This script sets up the administrative web interface with client cert authentication.
 rem Usage: setup-adminweb <DN Tomcat Server Cert> <Tomcat keystore passwd> <java cacert keystore passwd>
 
+echo %1
+echo %2
+
+if %1() == () goto error
+if %2() == () goto error
+
 call ra adduser tomcat %2 %1 "" null 1 3
 
 call ra adduser walter foo123 "CN=walter" "" null 65 2
@@ -27,3 +33,8 @@ java -cp %CP% se.anatom.ejbca.util.TomcatServiceXMLPasswordReplace src\adminweb\
 copy tmp\tomcat4-service.xml %JBOSS_HOME%\server\default\deploy\tomcat4-service.xml
 
 del tmp\tomcat4-service.xml
+
+goto end
+:error
+echo "Usage: setup-adminweb <DN Tomcat Server Cert> <Tomcat keystore passwd> <java cacert keystore passwd>"
+:end
