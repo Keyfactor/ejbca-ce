@@ -436,9 +436,17 @@ Configuring databases
 ---------------------
 The session beans use direct database communication (from a connection pool) in
 some cases. In these cases the JNDI name if the Datasource used is configured in
-ejb-jar.xml and jaws.xml, (default 'java:/DefaultDS').
+ejb-jar.xml and jbosscmp-jdbc.xml, (default 'java:/DefaultDS').
 
-Configuring Publishers (LDAP):
+To change the datasource to us a different datasource than DefaultDS, change all
+occurences of DefaultDS in:
+src/ca/ca/META-INF/ejb-jar.xml
+src/ca/ca/META-INF/jbosscmp-jdbc-xml
+src/ra/META-INF/ejb-jar.xml
+src/ra/META-INF/jbosscmp-jdbc-xml
+
+Configuring Publishers (LDAP)
+-----------------------------
 To publish certificates and CRLs in an LDAP directory, uncomment the section
 for the session bean 'PublisherSession1' in 'ca/ca/META-INF/ejb-jar.xml', and
 also the section for method permissions for the same session bean. This will
@@ -531,7 +539,7 @@ Set a clear text password for the tomcat:
 ./ra.sh setclearpwd tomcat foo123
 
 Generate a JKS-keystore for tomcat:
-./batch.sh tomcat -jks 
+./batch.sh tomcat -jks
 
 4. Name the generated keystore '.keystore' and put in $JBOSS_HOME.
 
@@ -628,6 +636,7 @@ For IE to verify client certs, the ordering in the DN must be strictly the same
 
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
+
 
 
 
