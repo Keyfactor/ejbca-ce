@@ -74,7 +74,8 @@
   
   <property environment="env"/>
   <!-- store to be copied to Jboss conf directory -->
-  <property name="keystore" value="src/ca/ca/keyStore/server.p12"/>
+  <property name="ksname" value="server.p12"/>
+  <property name="keystore" value="src/ca/ca/keyStore/${ksname}"/>
   
   <!-- libs to be copied to Jboss lib directory -->
   <property name="lib.bcmail" value="${lib}/bcmail-jdk13-117.jar"/>
@@ -645,7 +646,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- Deploy a keystore to JBOSS                                              -->
   <!-- ======================================================================= -->
   <target name="keystore">
-  	<copy file="${keystore}" tofile="${env.JBOSS_HOME}/server/default/conf" verbose="true"/>	
+  	<copy file="${keystore}" tofile="${env.JBOSS_HOME}/server/default/conf/${ksname}" verbose="true"/>	
   </target>
 
   <!-- =================================================================== -->
