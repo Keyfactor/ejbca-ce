@@ -1,4 +1,4 @@
-$Id: README,v 1.179 2005-03-13 15:15:18 anatom Exp $
+$Id: README,v 1.180 2005-03-14 08:18:29 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -845,9 +845,7 @@ See doc/LICENSE-BC for license conditions of the Bouncy Castle JCE.
 JBoss
 -----
 EJBCA is developed on the open source J2EE application server
-JBoss
-<http://www.jboss.org/>. We expect a JBoss with an integrated
-Servlet engine.
+JBoss <http://www.jboss.org/>. 
 
 JBoss and jars from JBoss are Copyright (c) 1999-2001 jboss.org.
 
@@ -891,6 +889,12 @@ Batik
 Batik is a part of the Apache project and can be obtained from 
 http://xml.apache.org/batik/index.html.
 See doc/LICENSE-APACHE for license conditions of Batik.
+
+XDoclet
+-------
+XDoclet can be obtained from http://xdoclet.sourceforge.net/.
+See doc/LICENSE-XDOCLET for license conditions of XDoclet.
+
 
 EXTRA ABOUT ADMIN-GUI
 ======================

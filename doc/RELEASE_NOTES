@@ -1,3 +1,32 @@
+EJBCA V3.1
+----------
+
+This is a plugin-upgrade from 3.0.6. 
+Remove JBOSS_HOME/server/default/deploy/ejbca-ca.ear first, since the ear file changed name.
+Since the changes are massive, no patch file is provided. 
+Configure according to you options, build and deploy.
+
+Optional migration:
+If you are using MySQL and:
+1. Issues hard tokens using the hard token functionality of EJBCA AND uses images larger than 64KB
+   in your card layouts.
+or
+2. Have CRLs that are larger than 64KB in size, or will become this large.
+
+Then you should apply the following SQL commands on your MySQL database:
+
+ALTER TABLE crldata MODIFY base64Crl longtext NULL DEFAULT NULL;
+ALTER TABLE hardtokenprofiledata MODIFY data longtext NULL DEFAULT NULL;
+
+EJBCA V3.0.6
+------------
+
+This is a plugin-upgrade from 3.0.5. 
+Apply patch, build and redeploy.
+
+If you are using the hard token stuff on MySQL (which you probably aren't or you would have noticed 
+this bug), you should drop the table HardTokenData and restart JBoss to recreate the table.
+
 EJBCA V3.0.5
 ------------
 
