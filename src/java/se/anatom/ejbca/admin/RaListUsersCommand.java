@@ -11,7 +11,7 @@ import se.anatom.ejbca.ra.UserDataLocal;
 /** List users with specified status in the database.
  *
  * @see se.anatom.ejbca.ra.UserDataLocal
- * @version $Id: RaListUsersCommand.java,v 1.2 2002-07-05 23:43:18 herrvendil Exp $
+ * @version $Id: RaListUsersCommand.java,v 1.3 2002-07-31 14:10:58 anatom Exp $
  */
 public class RaListUsersCommand extends BaseRaAdminCommand {
 
@@ -32,11 +32,11 @@ public class RaListUsersCommand extends BaseRaAdminCommand {
             Iterator iter = coll.iterator();
             while (iter.hasNext()) {
                 UserAdminData data = (UserAdminData)iter.next();
-                System.out.println("New user: "+data.getUsername()+", \""+data.getDN()+"\", "+data.getEmail()+", "+data.getStatus()+", "+data.getType());
+                System.out.println("User: "+data.getUsername()+", \""+data.getDN()+"\", "+data.getEmail()+", "+data.getStatus()+", "+data.getType());
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
     } // execute
-    
+
 }
