@@ -68,7 +68,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.93 2005-03-08 13:02:25 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.94 2005-03-13 15:16:12 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -92,7 +92,13 @@ import se.anatom.ejbca.util.query.UserMatch;
  *   value="se.walter.cardPersonalization.ra.ejbca.RMIFactoryImpl"
  *
  * @ejb.env-entry
- *   description="Defines de sender of the notification message"
+ *   description="Defines the JNDI name of the mail service used"
+ *   name="MailJNDIName"
+ *   type="java.lang.String"
+ *   value="${mail.jndi-name}"
+
+ *  * @ejb.env-entry
+ *   description="Defines the sender of the notification message"
  *   name="sender"
  *   type="java.lang.String"
  *   value="${mail.from}"
@@ -1302,7 +1308,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                 throw new Exception("Notification cannot be sent to user where email field is null");
             }
 
-            Session mailSession = getLocator().getMailSession(JNDINames.MAIL_SESSION);
+            String mailJndi = getLocator().getString("java:comp/env/MailJNDIName");
+            Session mailSession = getLocator().getMailSession(mailJndi);
             DNFieldExtractor dnfields = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
             HashMap params = new HashMap();
             params.put("USERNAME", username);

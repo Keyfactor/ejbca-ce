@@ -7,7 +7,7 @@ mail server.
 
 Customize at will as this is mainly for development.
 
-$Id: ejbca-mail-service.xml,v 1.1 2004-08-16 21:10:10 sbailliez Exp $
+$Id: ejbca-mail-service.xml,v 1.2 2005-03-13 15:16:12 anatom Exp $
 
  -->
 
@@ -20,7 +20,7 @@ $Id: ejbca-mail-service.xml,v 1.1 2004-08-16 21:10:10 sbailliez Exp $
   <mbean code="org.jboss.mail.MailService"
          name="jboss:service=ejbcaMail">
     <!-- Synchronize JNDI name with se.anatom.ejbca.ra.LocalUserAdminSessionBean -->
-    <attribute name="JNDIName">java:/DefaultMail</attribute>
+    <attribute name="JNDIName">${mail.jndi-name}</attribute>
     
     <attribute name="User">${mail.user}</attribute>
     <attribute name="Password">${mail.password}</attribute>

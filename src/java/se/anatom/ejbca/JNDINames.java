@@ -13,6 +13,4 @@ public interface JNDINames {
      */
     String DATASOURCE = "java:comp/env/DataSource";
 
-    /** mail session reference used throughout the app */
-    String MAIL_SESSION = "java:comp/env/mail/DefaultMail";
 }

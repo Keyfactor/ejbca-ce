@@ -92,6 +92,7 @@
     <property name="database.driver" value="org.hsqldb.jdbcDriver" />
     <property name="database.username" value="sa" />
     <property name="database.password" value="" />
+    <property name="mail.jndi-name" value="java:/EjbcaMail" />
     <property name="mail.from" value="ejbca-donotreply@domain.com" />
     <property name="mail.subject" value="Retrieve your certificate" />
     <property name="mail.message" value="Hello $CN$NL$NL This is a notification. $NL$NL Your username: $Username$NL password: $Password$NL$NL Your are NOT supposed to go and fetch your certificate, this is only a test." />
@@ -115,6 +116,7 @@ database.url         = ${database.url}
 database.driver      = ${database.driver}
 database.username    = ${database.username}
 database.password    = ${database.password}
+mail.jndi-name       = ${mail.jndi-name}
 mail.from            = ${mail.from}
 mail.subject         = ${mail.subject}
 mail.message         = ${mail.message}
@@ -188,6 +190,24 @@ mail.message         = ${mail.message}
                 destdir="${src.dd}/META-INF" 
                 validatexml="false" />
         </ejbdoclet>
+    </target>
+
+	<!--
+	  EJBCA need to be run before the app.server (or the webapp) is fully ssl configured with the keystore
+	  So we are 'bootstrapping' it, the 'j2ee.web-noconfigure' property will skip all the serverside
+	  -->
+    <target name="bootstrap" description="Bootstrap EJBCA application">
+        <ant target="deploy">
+        	<property name="j2ee.web-noconfigure" value="true"/>
+        </ant>
+    </target>
+
+	<!--
+	  Installs EJBCA by creating an initial CA, configuring the web container and generating certs for
+	  SSL and the super administrator.
+	  -->
+    <target name="install" description="Install EJBCA application">
+        <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:install" />
     </target>
 
     <!-- =================================================================== -->

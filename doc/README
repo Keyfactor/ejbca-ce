@@ -1,4 +1,4 @@
-$Id: README,v 1.178 2005-03-10 13:35:24 anatom Exp $
+$Id: README,v 1.179 2005-03-13 15:15:18 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -157,16 +157,16 @@ For production use you need to do this, don't forget to edit
 passwords to be secure and secret. Keep ejbca.properties as secret as possible.
 DO NOT forget the passwords, if you need to re-install the software sometime.
 
-3) Open another console (terminal) and start JBoss.
+3) Open a console (terminal) and start JBoss.
 You can start JBoss with 'ant j2ee:run' from EJBCA_HOME
 or the normal command 'run.sh/cmd' from JBOSS_HOME/bin.
 
-4) Switch to you other console and type 'ant -f bin/cli.xml ejbca:bootstrap'
+4) Open a console and type 'ant bootstrap'
 it will compile, jar, war, ear everything and deploy it JBoss, you should see JBoss
 picking up all the changes and deploying the ear
 
-5) Type 'ant -f bin/cli.xml ejbca:install' it will generate all certificate, keys, etc..
-You will find all keys in ${ejbca.home}/p12. (do not delete those files !)
+5) Type 'ant install' it will generate all certificate, keys, etc..
+You will find all keys in ${ejbca.home}/p12. (do not delete those files!)
 - tomcat.jks is for the servlet container (don't bother with it)
 - superadmin.p12 should be imported in your browser, that's your administration certificate.
 You will need administrative privileges (e.g. root) for the CA-certificate to be installed
@@ -181,6 +181,8 @@ container with the keystore file (this is why we needed to stop the container).
 8) Start JBoss again and go to https://localhost:8443/ejbca/ to access the admin-GUI, 
 or http://localhost:8080/ejbca for the public pages.
 
+RUNNING TESTS
+-------------
 If you want to run a thorough test of your new CA, run the automated tests with 'ant test:run'.
 To run the tests you must copy the file lib/ext/junti-1.5.8 to ANT_HOME/lib.
 
@@ -195,8 +197,8 @@ NOTE! Don't forget to configure JBoss for security! See
 'security.txt'.
 Security is CRITICAL for a CA.
 
-AFTER INSTALLTION
-=================
+AFTER INSTALLATION
+==================
 
 After installation, that creates a default admin CA
 you can create more CAs using the admin GUI.
@@ -282,42 +284,34 @@ error.
 Create server certificates
 --------------------------
 The best way to create server certificates is to generate a
-PKCS12/JKS/PEM file for the
-server.
+PKCS12/JKS/PEM file for the server.
 To do this:
 
-1. Create user with 'ra.sh/cmd'. DN for a server should have the
+1. Create user with 'bin/ejbca.sh ra'. DN for a server should have the
 domain name in
 CommonName (CN). Example DN for webserver: "C=SE,O=AnaTom,CN=
 www.anatom.se", or
 for mailserver "C=SE,O=AnaTom,OU=Engineering,CN=mail.anatom.se". Set the user type to match the kind of token that should be generated for your server.
 
 2. To be able to batch-generate certificates, the batch
-generation program must
-have access to the users (servers) password in order to request
-a certificate on
-behalf of the user. Normally the password is stored in hashed
-form, so the
-password must be stored in clear text form by:
-ra.sh/cmd setclearpwd <username> <password>
+generation program must have access to the users (servers) password in order to request
+a certificate on behalf of the user. Normally the password is stored in hashed
+form, so the password must be stored in clear text form by:
+bin/ejbca.sh ra setclearpwd <username> <password>
 
 3. Generate private keys and certificates  by:
-batch.sh/cmd
+bin/ejbca.sh batch
 
 4. Many servers (ex Apache, Tomcat) wants keys and certificates
 in PEM-format or
 SUN JKS.
 To generate PEM-files use user type 4. The PEM-files will be stored in a
-separate
-subdirectory, 'pem'. The generated PEM-files can be used with
-Apache etc,
-and are NOT protected by any password.
+separate subdirectory, 'pem'. The generated PEM-files can be used with
+Apache etc, and are NOT protected by any password.
 To generate JKS-files use user type 3. The JKS-files will be stored in the
 subdirectory, 'p12' instead of PKCS12-files. The generated JKS-
-files can be used
-with Tomcat etc, and are protected (both private key password
-and keystore
-password) by the users password.
+files can be used with Tomcat etc, and are protected (both private key password
+and keystore password) by the users password.
 
 Another way is to use openssl to transform a PKCS12 file to PEM-
 format.
@@ -325,21 +319,18 @@ format.
 openssl pkcs12 -in <pkcs12-file> -nodes
 
 copy and paste private key to key-file, first certificate to
-server cert-file
-and last certificate to CA cert-file (If your CA is a
-subordinate CA to another
-Root CA, the CA cert-file may need to contain the whole cert
-chain). Exactly how
-your server wants the files is server-dependent.
+server cert-file and last certificate to CA cert-file (If your CA is a
+subordinate CA to another Root CA, the CA cert-file may need to contain the whole cert
+chain). Exactly how your server wants the files is server-dependent.
 
 CRL GENERATION
 ========================
 There are at least two ways to have EJBCA to periodically create updated CRLs.
-The first way is to have a cron job or equivalent to call './ca.sh createcrl'.
+The first way is to have a cron job or equivalent to call 'bin/ejbca.sh ca createcrl'.
 The 'createcrl' command will then check all active CAs if there is a need to update their CRLs, 
 otherwise nothing is done. 
 
-If you want to force CRL generation for a CA, use './ca.sh createcrl <caname>'
+If you want to force CRL generation for a CA, use 'bin/ejbca.sh ca createcrl <caname>'
 
 The other way to have CRLs generated automatically is to build and deploy the JBOSS CRL Service.
  This is done with the commands 'ant jbossservices' and 'ant deployjbossservices'.
@@ -360,10 +351,8 @@ Example crontab entry:
 PATH=$PATH:/usr/java/jdk1.4.2_01/bin
 @daily cd /home/ejbca;/home/ejbca/ca.sh createcrl;
 
-where '/usr/java/jdk1.4.2_01/bin' is the path to where 'java'
-can be found.
-'/home/ejbca' is where ejbca is installed and 'ca.sh'
-located.
+where '/usr/java/jdk1.4.2_01/bin' is the path to where 'java' can be found.
+'/home/ejbca' is where ejbca is installed and 'ca.sh' located.
 
 Sample crontab to be installed with 'crontab -e':
 --
@@ -522,7 +511,7 @@ EXPORT/IMPORT PROFILES
 Certificate and End Entity profiles can be exported as XML files and imported in another instance of EJBCA,
 or in the same instance after removal of the old ones. 
 
-When exporting profiles (ca.sh exportprofiles), all profiles will be exported to the specified directory. The 
+When exporting profiles (bin/ejbca.sh ca exportprofiles), all profiles will be exported to the specified directory. The 
 exported files will be given unique names containing profile name and profile id.
 When importing profiles the profile name and id will be read from the filename. All profiles present in the specified
 directory will be imported.
@@ -545,22 +534,24 @@ The following is an example of a sequence of commands that can be used to genera
 same key pair:
 
 # First revoke <username>, with revocation reason <reason>
-ra.sh revokeuser $username $reason
+bin/ejbca.sh ra revokeuser $username $reason
 
 # then mark the certificate for keyrecovery,
-ra.sh keyrecovernewest $username
+bin/ejbca.sh ra keyrecovernewest $username
 
 # then set clear text password for Batch session to use
-ra.sh setclearpwd $username $userpass
+bin/ejbca.sh ra setclearpwd $username $userpass
 
 # and finally reissue the certificate.
-batch.sh
+bin/ejbca.sh batch
 
 EMAIL NOTIFICATIONS
 ===================
-First configure mail settings in jboss by editing
-JBOSS_HOME/server/default/deploy/mail-service.xml
-The SMTP must be configured.
+Mail settings in jboss is created when running the 'ant install' using the values
+specified in ejbca.properties (or default). If if configured in 
+$JBOSS_HOME/server/default/deploy/ejbca-mail-service.xml.
+For other containers you must create a mail service with the same JNDI name as specificed in 
+ejbca.properties.
 
 You must create a new end-entity profile to be able to issue certificates 
 to end users. Under the RA functions, choose "Edit End Entity Profiles" 
@@ -583,49 +574,12 @@ If the status is already NEW, set the status to GENERATED and then back to NEW.
 REFERENCE MANUAL
 ================
 
-Configuring CA
---------------
-Comments are provided in src/ca/ca/META-INT/ejb-jar.xml for all
-options available when configuring the CA. Things that can be configured are:
-The CA is modular in that all parts are different session beans
-which implement
- a specified interface. Another session bean implementing the
- same interface can
- replace any part ot the CA.
-Replaceable session beans are RSASession (interface
-ISignSession),
- AuthenticationSession (interface IAuthenticationSession),
- CertificateStoreSession (interface ICertificateStoreSession)
- and
- CreateCRLSession (interface IJobRunnerSession).
-
-
-Options in CreateCRLSession:
-none
-
-Options in AuthenticationSession:
--Authentication module. The CA authenticates certification
-requests with a
- specified bean implementing the IAuthenticationSession
- interface. The
- default authentication session authenticates towards a local
- databes held by
- the RA.
-An example is provided in sampleauth of a remoteely operated
-database where
- communication from the CA to the RA is done with a HTTP-based
- protocol.
-The Authentication module is configured by exchanging the
-session bean
- 'AuthenticationSession'.
-
-Options in CertificateStoreSession:
--Datasource to be used when finding things in the database. 
-Do not edit this one, use 'ant ReplaceDS' instead.
+All configuration options, JNDI names etc is configured through the use of an 
+ejbca.properties file. 
 
 Administrating CA
 -----------------
-The CA has a command line interface ca.sh/cmd. Options are:
+The CA has a command line interface 'bin/ejbca.sh ca. Options are:
 
 * init - Creates a new Root CA.
 Stores CA certificates and publishes first CRL.
@@ -661,14 +615,9 @@ given number of days.
 * importca - creates a new CA by importing keys from en existing PKCS12 file.
 A PKCS12 file can be generates from PEM files with openssl.
 
-Configuring RA
---------------
-Options in UserAdminSession:
--Datasource to be used when finding things in the database.
-
 Administrating RA
 -----------------
-The RA has a command line interface ra.sh/cmd. Options are:
+The RA has a command line interface 'bin/ejbca.sh ra'. Options are:
 
 * adduser - adds a user to the database, after addition a user
 may apply for a
@@ -709,26 +658,12 @@ user.
 
 Other Configuration
 ---------------------
-If you want to change the baseurl of the admin-web use the command:
-'setup setbaseurl <computername> <applicationpath>'
-Ex: ./setup.sh setbaseurl localhost ejbca
+If you want to change the baseurl of the admin-web after installation use the command:
+'bin/ejbca.sh setup setbaseurl <computername> <applicationpath>'
+Ex: bin/ejbca.sh setup setbaseurl localhost ejbca
 
 To change ports (default public http=8080, private https=8443) you must edit 
 src/adminweb/WEB-INF/web.xml. Change env entries PUBLICPORT resp PRIVATEPORT.
-
-Configuring databases
----------------------
-The session beans use direct database communication (from a
-connection pool) in some cases. 
-In these cases the JNDI name if the Datasource used is configured in
-ejb-jar.xml and jbosscmp-jdbc.xml, (default 'java:/DefaultDS').
-
-To change the datasource to us a different datasource than
-DefaultDS, change all occurences of DefaultDS using the command:
-
-ant replaceDS
-
-enter parameters when asked for.
 
 Configuring Publishers (LDAP)
 -----------------------------
@@ -738,57 +673,40 @@ Batch creation of certificates
 ------------------------------
 Certificates can be created batch-wise with EJBCA. The class
 se.anatom.ejbca.batch.BatchMakeP12 creates keystore files for
-all users
-designated as NEW or FAILED in the local RA database. To be able to batch
-generate
-certificates, the users must be registered with clear text
-passwords. To set a
-clear text password for a user use 'ra.sh/cmd setclearpwd
-<username>
-<password>'.
+all users designated as NEW or FAILED in the local RA database. 
+To be able to batch generate certificates, the users must be registered 
+with clear text passwords. To set a clear text password for a user use 
+'bin/ejbca.sh.sh ra setclearpwd <username> <password>'.
 To generate keystore files for all users with status NEW or
-FAILED, run
-'batch.sh/cmd'. This will generate files for users if their
-clear text passwords
-are NOT null.
+FAILED, run 'bin/ejbca.sh batch'. This will generate files for users if their
+clear text passwords are NOT null.
 Without arguments 'batch' generates keystore files for all NEW or
 FAILED users.
 To generate a keystore file for a specific user, enter command
-'batch.cmd/sh
-<username>'.
+'bin/ejbca.sh batch <username>'.
+
 Generates keystore files are stored in a subdirectory (to the
-current directory)
-called 'p12'. If the directory does not exist, it will be
-created.
+current directory) called 'p12'. If the directory does not exist, 
+it will be created.
 Make sure this directory is WELL protected, since the
-information contained
-in keystore files are secret (private keys).
+information contained in keystore files are secret (private keys).
 The format of keystores generated, PKCS12/JKS/PEM, is defined when adding the 
-user in the database (using 'ra adduser' or admin-GUI).
-
-The batch.sh/cmd command can also be executed for a specific
-user:
-
-batch.sh <username>
+user in the database (using 'bin/ejbca.sh ra adduser' or admin-GUI).
 
 Fetching certificates and CRLs
 ------------------------------
 Certificates and CRLs can be fetched through the web-interface
 as defined in
  'webdist/index.html'. They can also be fetched directly from
- the
- 'CertificateStoreSession' session bean. or using the command 'ca getcrl'
+ the 'CertificateStoreSession' session bean or using the command 
+ 'bin/ejbca.sh ca getcrl'
 
 Other deployment scenarios
 --------------------------
 EJBCA can be run with servlets and EJBs or only with EJBs. The
-servlets are only
- a publicly available front-end to the beans. If the CA is
- deployed integrated
- in another J2EE application, this front-end may not be needed.
-The sampleauth servlet (sampleauth.war) is only an example and
-should never be
-deployed in a real production environment.
+servlets are only a publicly available front-end to the beans. 
+If the CA is deployed integrated in another J2EE application, 
+this front-end may not be needed.
 
 Certificate- and EndEntity Profiles
 -----------------------------------
@@ -801,117 +719,6 @@ An EndEntityProfile can be connected to specific CertificateProfiles
 so users belonging to a specific EndEntityProfile can only get 
 certificates from the specified CertificateProfile.
 
-INSTALLING WEB ADMIN-GUI
-=======================
-If you had problems using the install script you can set it up with an alternative script, otherwise
-this shouldn't be necessary.
-
-Automatic method (preferred)
-----------------------------
-
-1. Run the script 'setup-adminweb.cmd/sh'
-2. Restart JBoss.
-3. Import the certificate from 'ejbca/p12/SuperAdmin.p12' in
-your browser and go to 'https://<hostname>:8443/ejbca
-
-Manual method (don't use, only provided as reference)
--------------
-0. Set the baseurl of the server with the command 'setup.sh/cmd setbaseurl <computername> <applicationpath>'
-Set the BASEURL to reflect your
-hostname, to be able to use the adminpages from external
-machines, this must be
-a real hostname or ip-address.
-Run 'ant deploy' to install the changes.
-
-1. Tomcat: Copy src/adminweb/WEB-INF/tomcat41-jboss32.xml (if using JBoss < 3.2.4) 
-to $JBOSS_HOME/server/default/deploy/jbossweb-tomcat41.sar/META-INF/jboss-service.xml.
-
-Edit the file so 'keyStorePass' is the
-same as the password you specify below for 'tomcat'.
-
-2. Edit parameters in src/adminweb/WEB-INF/web.xml.
-
-3. Create a tomcat server keystore with the batch.sh/cmd tool
-(this can also be done with Suns 'keytool' by creating a keystore and then
-generating a certificate request that is processed by EJBCA, and last import
-the returned certificate and the CA-certificate into the keystore).
-
-Create a user in EJBCA, DN="C=SE,O=PrimeKey,CN=<your-host-
-name>".
-./ra.sh adduser tomcat foo123 "C=SE,O=PrimeKey,CN=<your-host-
-name>" null <caname> null 1 3
-
-Set a clear text password for the tomcat:
-./ra.sh setclearpwd tomcat foo123
-
-Generate a JKS-keystore for tomcat:
-./batch.sh tomcat -jks
-
-4. Name the generated keystore 'tomcat.jks' and put in
-$JBOSS_HOME/bin.
-
-cp ./p12/tomcat.jks $JBOSS_HOME/bin/tomcat.jks
-
-5. Download the CA certificate in PEM-format from
-http://localhost:8080/ejbca/publicweb/webdist/cacert.jsp (call
-it ejbca-ca.pem).
-
-6. Add the EJBCA CA certificate to the Java trust-keystore in
-$JAVA_HOME/jre/lib/security/cacerts
-
-keytool -import -trustcacerts -file ejbca-ca.pem -keystore
-$JAVA_HOME/jre/lib/security/cacerts -storepass changeit
-
-7. Create a user for EJBCA admin with CN=SuperAdmin and the
-RAADMIN bit
-(temporarily CN=SuperAdmin gives admin rights).
-./ra.sh adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin"
-null <caname> null 65 1
-
-Alternative:
-Create a PKCS12 file with EJBCA for a user with CN=SuperAdmin
-and the RAADMIN
-bit (temporarily CN=SuperAdmin gives adminrights).
-./ra.sh adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin"
-null <caname> null65 2
-./ra.sh setclearpwd raadmin foo123
-./batch.sh
-
-8. Fetch the certificate using your browser a
-http://localhost:8080/ejbca/publicweb/apply
-
-Alternative:
-Install the generated PKCS12 (p12/superadmin.p12) file in the
-browser.
-In Mozilla this is done by Edit->Preferences->Privacy&Security->
-Certificates->Manage Certificates->Import
-In IE it is done by double-clicking on the .p12 file.
-
-9. Start JBoss.
-
-10. Go to https://<hostname>:8443/ejbca
-
-Reference: to generate a JKS with keytool
-keytool -genkey -alias tomcat -keystore tomcat.jks -keyalg RSA -
-dname "C=SE,O=
-AnaTom,CN=hostname" -storepass foo123
-keytool -certreq -alias tomcat -keystore tomcat.jks -sigalg
-SHA1WithRSA -
-storepass foo123 -file tomcat.req
-ra.sh adduser tomcat foo123 "C=SE,O=AnaTom,CN=hostname" null,
-<caname> null 1 1
-ca.sh processreq tomcat foo123 tomcat.req tomcat.pem
-ca.sh getrootcert ca.der -der
-keytool -import -trustcacerts -alias cacert -file ca.der -
-keystore tomcat.jks -
-storepass foo123
-keytool -import -alias tomcat -file tomcat.pem -keystore
-tomcat.jks -storepass
-foo123
-
-run as root:
-keytool -import -trustcacerts -file ca.der -keystore
-$JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 
 INTERNATIONALIZATION
 ====================
@@ -1084,6 +891,109 @@ Batik
 Batik is a part of the Apache project and can be obtained from 
 http://xml.apache.org/batik/index.html.
 See doc/LICENSE-APACHE for license conditions of Batik.
+
+EXTRA ABOUT ADMIN-GUI
+======================
+If you had problems using the install script this small part describes brefly 
+what the setup of the adminweb does. It's explained using older (pre ejbca 3.1) 
+notation so you must be fluent in that :-)
+
+0. Set the baseurl of the server with the command 'setup.sh/cmd setbaseurl <computername> <applicationpath>'
+Set the BASEURL to reflect your
+hostname, to be able to use the adminpages from external
+machines, this must be
+a real hostname or ip-address.
+Run 'ant deploy' to install the changes.
+
+1. Tomcat: Copy src/adminweb/WEB-INF/tomcat41-jboss32.xml (if using JBoss < 3.2.4) 
+to $JBOSS_HOME/server/default/deploy/jbossweb-tomcat41.sar/META-INF/jboss-service.xml.
+
+Edit the file so 'keyStorePass' is the
+same as the password you specify below for 'tomcat'.
+
+2. Edit parameters in src/adminweb/WEB-INF/web.xml.
+
+3. Create a tomcat server keystore with the batch.sh/cmd tool
+(this can also be done with Suns 'keytool' by creating a keystore and then
+generating a certificate request that is processed by EJBCA, and last import
+the returned certificate and the CA-certificate into the keystore).
+
+Create a user in EJBCA, DN="C=SE,O=PrimeKey,CN=<your-host-
+name>".
+./ra.sh adduser tomcat foo123 "C=SE,O=PrimeKey,CN=<your-host-
+name>" null <caname> null 1 3
+
+Set a clear text password for the tomcat:
+./ra.sh setclearpwd tomcat foo123
+
+Generate a JKS-keystore for tomcat:
+./batch.sh tomcat -jks
+
+4. Name the generated keystore 'tomcat.jks' and put in
+$JBOSS_HOME/bin.
+
+cp ./p12/tomcat.jks $JBOSS_HOME/bin/tomcat.jks
+
+5. Download the CA certificate in PEM-format from
+http://localhost:8080/ejbca/publicweb/webdist/cacert.jsp (call
+it ejbca-ca.pem).
+
+6. Add the EJBCA CA certificate to the Java trust-keystore in
+$JAVA_HOME/jre/lib/security/cacerts
+
+keytool -import -trustcacerts -file ejbca-ca.pem -keystore
+$JAVA_HOME/jre/lib/security/cacerts -storepass changeit
+
+7. Create a user for EJBCA admin with CN=SuperAdmin and the
+RAADMIN bit
+(temporarily CN=SuperAdmin gives admin rights).
+./ra.sh adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin"
+null <caname> null 65 1
+
+Alternative:
+Create a PKCS12 file with EJBCA for a user with CN=SuperAdmin
+and the RAADMIN
+bit (temporarily CN=SuperAdmin gives adminrights).
+./ra.sh adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin"
+null <caname> null65 2
+./ra.sh setclearpwd raadmin foo123
+./batch.sh
+
+8. Fetch the certificate using your browser a
+http://localhost:8080/ejbca/publicweb/apply
+
+Alternative:
+Install the generated PKCS12 (p12/superadmin.p12) file in the
+browser.
+In Mozilla this is done by Edit->Preferences->Privacy&Security->
+Certificates->Manage Certificates->Import
+In IE it is done by double-clicking on the .p12 file.
+
+9. Start JBoss.
+
+10. Go to https://<hostname>:8443/ejbca
+
+Reference: to generate a JKS with keytool
+keytool -genkey -alias tomcat -keystore tomcat.jks -keyalg RSA -
+dname "C=SE,O=
+AnaTom,CN=hostname" -storepass foo123
+keytool -certreq -alias tomcat -keystore tomcat.jks -sigalg
+SHA1WithRSA -
+storepass foo123 -file tomcat.req
+ra.sh adduser tomcat foo123 "C=SE,O=AnaTom,CN=hostname" null,
+<caname> null 1 1
+ca.sh processreq tomcat foo123 tomcat.req tomcat.pem
+ca.sh getrootcert ca.der -der
+keytool -import -trustcacerts -alias cacert -file ca.der -
+keystore tomcat.jks -
+storepass foo123
+keytool -import -alias tomcat -file tomcat.pem -keystore
+tomcat.jks -storepass
+foo123
+
+run as root:
+keytool -import -trustcacerts -file ca.der -keystore
+$JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 
 
 REFERENCES
