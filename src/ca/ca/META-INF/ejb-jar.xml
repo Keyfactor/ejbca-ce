@@ -583,8 +583,6 @@
             This enterprise bean entity represents a CRL with accompanying data.
       </description>
       <ejb-name>CRLData</ejb-name>
-      <home>se.anatom.ejbca.ca.store.CRLDataHome</home>
-      <remote>se.anatom.ejbca.ca.store.CRLData</remote>
       <local-home>se.anatom.ejbca.ca.store.CRLDataLocalHome</local-home>
       <local>se.anatom.ejbca.ca.store.CRLDataLocal</local>
       <ejb-class>se.anatom.ejbca.ca.store.CRLDataBean</ejb-class>

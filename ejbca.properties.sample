@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.4 2005-02-01 08:57:24 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.5 2005-02-13 18:26:09 anatom Exp $
 #
 # This is just a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -9,12 +9,13 @@
 #
 
 # JBoss used during development
-# Default: ${env.JBOSS_HOME}
-jboss.home=${basedir}/../../jboss-4.0.1
+# Default:
+#jboss.home=${basedir}/../../jboss-4.0.1
+jboss.home=${env.JBOSS_HOME}
 
 # which compiler to use
 # default: javac
-build.compiler=jikes
+#build.compiler=jikes
 
 # jndi name of the datasource to use in deployment descriptors of ejbs
 # default: ejbcaDS
@@ -40,12 +41,12 @@ build.compiler=jikes
 #database.driver=org.postgresql.Driver
 
 # database username
-# Default: sa
+# Default: sa (works with hsqldb)
 #database.username=ejbca
 #database.username=postgres
 
 # database password
-# Default:
+# Default: (works with hsqldb)
 #database.password=ejbca
 #database.password=postgres
 
@@ -80,14 +81,20 @@ ca.keysize=512
 
 ca.validity=365
 
+# Certificate Policy id, like '2.5.29.32.0' for any policy or 'NO' for no policy at all.
 ca.policy=null
 
+# Password for java trust keystore (JAVA_HOME/jre/lib/security/cacerts), default is changeit.
 java.trustpassword=changeit
 
+# CN should match your hosts DNS name to avoid browser warnings.
 httpsserver.dn=CN=localhost,O=PrimeKey Solutions AB,C=SE
 
+# Used to protect servers SSL keystore
 httpsserver.password=serverpwd
 
+# The servers DNS host name, must exist on client using the admin GUI.
 httpsserver.hostname=localhost
 
+# Used to protect super administrator P12 keystore (to be imported in browser)
 superadmin.password=primekey
