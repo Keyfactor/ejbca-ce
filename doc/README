@@ -1,4 +1,4 @@
-$Id: README,v 1.168 2004-11-09 15:33:42 anatom Exp $
+$Id: README,v 1.169 2004-11-18 08:24:06 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -133,6 +133,14 @@ This CA is only used to issue the initial superadmin certificate. Not published 
 2. Once installed, create all your REAL CAs using the admin-GUI. Now you can use the certificate 
 profiles etc that you like. These certificates can be published in LDAP.
 See HOWTO-multiplecas.txt for a detailed configuration guide.
+
+In a production environment you should use something else than the default Hypersonic database that comes 
+with JBoss for the reasons:
+1. Hypersonic database is in-memory, which means that over time it will consume more memory. If a large
+numer of certificates is issued, it will become an issue after a while.
+2. Hypersonic does not support full SQL, in particular ALTER statements. When a new version of EJBCA is 
+released we can not create scripts that updates the database if some tables changed. This will make 
+upgrades much much harder.
 
 FOR THE IMPATIENT:
 
