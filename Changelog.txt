@@ -14,6 +14,7 @@
   All fields of the PK are now persistent fields. This means that it is NOT backward compatible.
   ! No SQL migration file is available right now to do so !
 - Small text and spelling fixes.
+- LDAP object classes for devices.
 
 3.0.5
 -----
