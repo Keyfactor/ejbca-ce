@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.27 2004-07-23 10:24:41 anatom Exp $
+ * @version $Id: CertificateDataBean.java,v 1.28 2004-07-23 11:49:28 sbailliez Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a certificate with accompanying data"
  * display-name="CertificateDataEB"
@@ -76,7 +76,7 @@ import se.anatom.ejbca.util.CertTools;
  * local-class="se.anatom.ejbca.ca.store.CertificateDataLocal"
  *
  * @ejb.finder description="findByExpireDate"
- * signature="Collection findByExpireDate(int date)"
+ * signature="Collection findByExpireDate(long date)"
  * query="SELECT DISTINCT OBJECT(a) from CertificateDataBean a WHERE a.expireDate<?1"
  *
  * @ejb.finder description="findBySubjectDNAndIssuerDN"
@@ -89,7 +89,7 @@ import se.anatom.ejbca.util.CertTools;
   *
  * @ejb.finder description="findBySerialNumber"
  * signature="Collection findBySerialNumber(java.lang.String sn)"
- * query="SSELECT DISTINCT OBJECT(a) from CertificateDataBean a WHERE a.serialNumber=?1"
+ * query="SELECT DISTINCT OBJECT(a) from CertificateDataBean a WHERE a.serialNumber=?1"
   *
  * @ejb.finder description="findByIssuerDNSerialNumber"
  * signature="Collection findByIssuerDNSerialNumber(java.lang.String issuerDN, java.lang.String serialNumber)"
