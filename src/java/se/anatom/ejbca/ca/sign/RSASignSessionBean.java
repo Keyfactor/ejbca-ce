@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.38 2002-08-20 12:17:11 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.39 2002-08-31 11:51:08 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -56,6 +56,8 @@ public class RSASignSessionBean extends BaseSessionBean {
     private Boolean useaki, akicritical;
     private Boolean usecrln, crlncritical;
     private Boolean usesan, sancritical;
+    private Boolean usecertpol, certpolcritical;
+    private String certpolid;
     private Boolean usecrldist, crldistcritical;
     String crldisturi;
     private Boolean emailindn;
@@ -145,6 +147,10 @@ public class RSASignSessionBean extends BaseSessionBean {
                 crlncritical = (Boolean)lookup("java:comp/env/CRLNumberCritical", java.lang.Boolean.class);
             if ((usesan = (Boolean)lookup("java:comp/env/SubjectAlternativeName", java.lang.Boolean.class)).booleanValue() == true)
                 sancritical = (Boolean)lookup("java:comp/env/SubjectAlternativeNameCritical", java.lang.Boolean.class);
+            if ((usecertpol = (Boolean)lookup("java:comp/env/CertificatePolicies", java.lang.Boolean.class)).booleanValue() == true) {
+                certpolcritical = (Boolean)lookup("java:comp/env/CertificatePoliciesCritical", java.lang.Boolean.class);
+                certpolid = (String)lookup("java:comp/env/CertificatePolicyId", java.lang.String.class);
+            }
             if ((usecrldist = (Boolean)lookup("java:comp/env/CRLDistributionPoint", java.lang.Boolean.class)).booleanValue() == true) {
                 crldistcritical = (Boolean)lookup("java:comp/env/CRLDistributionPointCritical", java.lang.Boolean.class);
                 crldisturi = (String)lookup("java:comp/env/CRLDistURI", java.lang.String.class);
@@ -426,90 +432,131 @@ public class RSASignSessionBean extends BaseSessionBean {
 
 
 
-    private X509Certificate makeBCCertificate(UserAuthData subject, X509Name caname,
-    long validity, PublicKey publicKey, int keyusage)
-    throws Exception {
-        debug(">makeBCCertificate()");
-        final String sigAlg="SHA1WithRSA";
-        Date firstDate = new Date();
-        // Set back startdate ten minutes to avoid some problems with wrongly set clocks.
-        firstDate.setTime(firstDate.getTime() - 10*60*1000);
-        Date lastDate = new Date();
-        // validity in days = validity*24*60*60*1000 milliseconds
-        lastDate.setTime(lastDate.getTime() + (validity * 24 * 60 * 60 * 1000));
-        X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
-        // Serialnumber is random bits, where random generator is initialized with Date.getTime() when this
+	private X509Certificate makeBCCertificate(
+		UserAuthData subject,
+		X509Name caname,
+		long validity,
+		PublicKey publicKey,
+		int keyusage)
+		throws Exception {
+		debug(">makeBCCertificate()");
+		final String sigAlg = "SHA1WithRSA";
+		Date firstDate = new Date();
+		// Set back startdate ten minutes to avoid some problems with wrongly set clocks.
+		firstDate.setTime(firstDate.getTime() - 10 * 60 * 1000);
+		Date lastDate = new Date();
+		// validity in days = validity*24*60*60*1000 milliseconds
+		lastDate.setTime(lastDate.getTime() + (validity * 24 * 60 * 60 * 1000));
+		X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
+		// Serialnumber is random bits, where random generator is initialized with Date.getTime() when this
 
-        // bean is created.
-        byte[] serno = SernoGenerator.instance().getSerno();
-        certgen.setSerialNumber((new java.math.BigInteger(serno)).abs());
-        certgen.setNotBefore(firstDate);
-        certgen.setNotAfter(lastDate);
-        certgen.setSignatureAlgorithm(sigAlg);
-        // Make DNs
-        String dn=subject.getDN();
-        if ((subject.getEmail() != null) && (emailindn.booleanValue() == true))
-            dn=dn+", EmailAddress="+subject.getEmail();
+		// bean is created.
+		byte[] serno = SernoGenerator.instance().getSerno();
+		certgen.setSerialNumber((new java.math.BigInteger(serno)).abs());
+		certgen.setNotBefore(firstDate);
+		certgen.setNotAfter(lastDate);
+		certgen.setSignatureAlgorithm(sigAlg);
+		// Make DNs
+		String dn = subject.getDN();
+		if ((subject.getEmail() != null) && (emailindn.booleanValue() == true))
+			dn = dn + ", EmailAddress=" + subject.getEmail();
 
-        debug("Subject="+dn);
-        certgen.setSubjectDN(CertTools.stringToBcX509Name(dn));
-        debug("Issuer="+caname);
-        certgen.setIssuerDN(caname);
-        certgen.setPublicKey(publicKey);
+		debug("Subject=" + dn);
+		certgen.setSubjectDN(CertTools.stringToBcX509Name(dn));
+		debug("Issuer=" + caname);
+		certgen.setIssuerDN(caname);
+		certgen.setPublicKey(publicKey);
 
-        // Basic constranits, all subcerts are NOT CAs
-        if (usebc.booleanValue() == true) {
-            boolean isCA = false;
-            if ( ((subject.getType() & SecConst.USER_CA) == SecConst.USER_CA) ||
-                ((subject.getType() & SecConst.USER_ROOTCA) == SecConst.USER_ROOTCA) )
-                isCA=true;
-            BasicConstraints bc = new BasicConstraints(isCA);
-            certgen.addExtension(X509Extensions.BasicConstraints.getId(), bccritical.booleanValue(), bc);
-        }
-        // Key usage
-        if (useku.booleanValue() == true) {
-            X509KeyUsage ku = new X509KeyUsage(keyusage);
-            certgen.addExtension(X509Extensions.KeyUsage.getId(), kucritical.booleanValue(), ku);
-        }
-        // Subject key identifier
-        if (useski.booleanValue() == true) {
-            SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((DERConstructedSequence)new DERInputStream(
-                new ByteArrayInputStream(publicKey.getEncoded())).readObject());
-            SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
-            certgen.addExtension(X509Extensions.SubjectKeyIdentifier.getId(), skicritical.booleanValue(), ski);
-        }
-        // Authority key identifier
-        if (useaki.booleanValue() == true) {
-            SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((DERConstructedSequence)new DERInputStream(
-                new ByteArrayInputStream(caCert.getPublicKey().getEncoded())).readObject());
-            AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
-            certgen.addExtension(X509Extensions.AuthorityKeyIdentifier.getId(), akicritical.booleanValue(), aki);
-        }
-        // Subject Alternative name
-        if ((usesan.booleanValue() == true) && (subject.getEmail() != null)) {
-            GeneralName gn = new GeneralName(new DERIA5String(subject.getEmail()),1);
-            DERConstructedSequence seq = new DERConstructedSequence();
-            seq.addObject(gn);
-            GeneralNames san = new GeneralNames(seq);
-            certgen.addExtension(X509Extensions.SubjectAlternativeName.getId(), sancritical.booleanValue(), san);
-        }
-
-        // CRL Distribution point URI
-        if (usecrldist.booleanValue() == true) {
-            GeneralName gn = new GeneralName(new DERIA5String(crldisturi),6);
-            DERConstructedSequence seq = new DERConstructedSequence();
-            seq.addObject(gn);
-            GeneralNames gns = new GeneralNames(seq);
-            DistributionPointName dpn = new DistributionPointName(0, gns);
-            DistributionPoint distp = new DistributionPoint(dpn, null, null);
-            DERConstructedSequence ext = new DERConstructedSequence();
-            ext.addObject(distp);
-            certgen.addExtension(X509Extensions.CRLDistributionPoints.getId(), crldistcritical.booleanValue(), ext);
-        }
-        X509Certificate cert = certgen.generateX509Certificate(signingDevice.getPrivateSignKey(), signingDevice.getProvider());
-        debug("<makeBCCertificate()");
-        return (X509Certificate)cert;
-    } // makeBCCertificate
+		// Basic constranits, all subcerts are NOT CAs
+		if (usebc.booleanValue() == true) {
+			boolean isCA = false;
+			if (((subject.getType() & SecConst.USER_CA) == SecConst.USER_CA)
+				|| ((subject.getType() & SecConst.USER_ROOTCA)
+					== SecConst.USER_ROOTCA))
+				isCA = true;
+			BasicConstraints bc = new BasicConstraints(isCA);
+			certgen.addExtension(
+				X509Extensions.BasicConstraints.getId(),
+				bccritical.booleanValue(),
+				bc);
+		}
+		// Key usage
+		if (useku.booleanValue() == true) {
+			X509KeyUsage ku = new X509KeyUsage(keyusage);
+			certgen.addExtension(
+				X509Extensions.KeyUsage.getId(),
+				kucritical.booleanValue(),
+				ku);
+		}
+		// Subject key identifier
+		if (useski.booleanValue() == true) {
+			SubjectPublicKeyInfo spki =
+				new SubjectPublicKeyInfo(
+					(DERConstructedSequence) new DERInputStream(new ByteArrayInputStream(publicKey
+						.getEncoded()))
+						.readObject());
+			SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
+			certgen.addExtension(
+				X509Extensions.SubjectKeyIdentifier.getId(),
+				skicritical.booleanValue(),
+				ski);
+		}
+		// Authority key identifier
+		if (useaki.booleanValue() == true) {
+			SubjectPublicKeyInfo apki =
+				new SubjectPublicKeyInfo(
+					(DERConstructedSequence) new DERInputStream(new ByteArrayInputStream(caCert
+						.getPublicKey()
+						.getEncoded()))
+						.readObject());
+			AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
+			certgen.addExtension(
+				X509Extensions.AuthorityKeyIdentifier.getId(),
+				akicritical.booleanValue(),
+				aki);
+		}
+		// Subject Alternative name
+		if ((usesan.booleanValue() == true) && (subject.getEmail() != null)) {
+			GeneralName gn =
+				new GeneralName(new DERIA5String(subject.getEmail()), 1);
+			DERConstructedSequence seq = new DERConstructedSequence();
+			seq.addObject(gn);
+			GeneralNames san = new GeneralNames(seq);
+			certgen.addExtension(
+				X509Extensions.SubjectAlternativeName.getId(),
+				sancritical.booleanValue(),
+				san);
+		}
+		// Certificate Policies
+		if (usecertpol.booleanValue() == true) {
+			CertificatePolicies cp = new CertificatePolicies(certpolid);
+			certgen.addExtension(
+				X509Extensions.CertificatePolicies.getId(),
+				certpolcritical.booleanValue(),
+				cp);
+		}
+		// CRL Distribution point URI
+		if (usecrldist.booleanValue() == true) {
+			GeneralName gn = new GeneralName(new DERIA5String(crldisturi), 6);
+			DERConstructedSequence seq = new DERConstructedSequence();
+			seq.addObject(gn);
+			GeneralNames gns = new GeneralNames(seq);
+			DistributionPointName dpn = new DistributionPointName(0, gns);
+			DistributionPoint distp = new DistributionPoint(dpn, null, null);
+			DERConstructedSequence ext = new DERConstructedSequence();
+			ext.addObject(distp);
+			certgen.addExtension(
+				X509Extensions.CRLDistributionPoints.getId(),
+				crldistcritical.booleanValue(),
+				ext);
+		}
+		X509Certificate cert =
+			certgen.generateX509Certificate(
+				signingDevice.getPrivateSignKey(),
+				signingDevice.getProvider());
+		debug("<makeBCCertificate()");
+		return (X509Certificate) cert;
+	} // makeBCCertificate
 
     private X509CRL makeBCCRL(X509Name caname, long crlperiod, Vector certs, int crlnumber)
     throws Exception {

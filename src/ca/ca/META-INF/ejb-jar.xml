@@ -113,6 +113,24 @@
         <env-entry-value>false</env-entry-value>
      </env-entry>
      <env-entry>
+        <description>Use CertificatePolicies?</description>
+        <env-entry-name>CertificatePolicies</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>true</env-entry-value>
+     </env-entry>
+     <env-entry>
+        <description>CertificatePolicies critical? (RFC2459 says NO)</description>
+        <env-entry-name>CertificatePoliciesCritical</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>false</env-entry-value>
+     </env-entry>
+     <env-entry>
+        <description>CertificatePolicyId to put in CertificatePolicies</description>
+        <env-entry-name>CertificatePolicyId</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>0.0.0.0</env-entry-value>
+     </env-entry>
+     <env-entry>
         <description>Use CRLDistributionPoint?</description>
         <env-entry-name>CRLDistributionPoint</env-entry-name>
         <env-entry-type>java.lang.Boolean</env-entry-type>
