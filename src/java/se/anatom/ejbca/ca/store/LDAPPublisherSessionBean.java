@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.*;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.9 2002-08-23 09:11:48 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.10 2002-08-26 11:17:28 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
 
@@ -111,8 +111,10 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         // Extract the users DN from the cert.
         String dn = CertTools.stringToBCDNString(crl.getIssuerDN().toString());
 
-        if (checkContainerName(dn) == false)
+        if (checkContainerName(dn) == false) {
+            error("DN not part of containername, aborting store operation.");
             return false;
+        }
 
         // Check if the entry is already present, we will update it with the new certificate.
         LDAPEntry oldEntry = null;
@@ -170,7 +172,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
             lc.disconnect();
         }
         catch( LDAPException e ) {
-            error( "Error storing CRL in LDAP: ", e);
+            error( "Error storing CRL ("+cRLAttribute+") in LDAP ("+cAObjectclass+"): ", e);
             return false;
         }
 
@@ -227,8 +229,10 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
             }
         }
 
-        if (checkContainerName(dn) == false)
+        if (checkContainerName(dn) == false) {
+            error("DN not part of containername, aborting store operation.");
             return false;
+        }
 
         // Check if the entry is already present, we will update it with the new certificate.
         LDAPEntry oldEntry = null;
@@ -243,7 +247,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
             lc.disconnect();
         } catch( LDAPException e ) {
             if (e.getLDAPResultCode() == LDAPException.NO_SUCH_OBJECT) {
-                debug("No old entry exist for '"+dn+"'.");
+                info("No old entry exist for '"+dn+"'.");
             } else {
                 error( "Error binding to and reading from LDAP server: ", e);
                 return false;
@@ -252,14 +256,16 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
 
         LDAPEntry newEntry = null;
         LDAPModificationSet modSet = null;
+        LDAPAttributeSet attributeSet = null;
+        String attribute = null, objectclass = null;
         if ( ((type & SecConst.USER_ENDUSER) != 0) || ((type & SecConst.USER_CAADMIN) != 0) ||
         ((type & SecConst.USER_RAADMIN) != 0) || ((type & SecConst.USER_RA) != 0) ) {
-
-            LDAPAttributeSet attributeSet = null;
+            debug("Publishing end user certificate to "+ldapHost);
             if (oldEntry != null) {
                 // TODO: Are we the correct type objectclass?
                 modSet = getModificationSet(oldEntry, dn, true);
             } else
+                objectclass = userObjectclass;
                 attributeSet = getAttributeSet(userObjectclass, dn, true);
             if (email != null) {
                 LDAPAttribute mailAttr = new LDAPAttribute( "mail", email );
@@ -269,6 +275,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                     attributeSet.add( mailAttr );
             }
             try {
+                attribute = userCertAttribute;
                 LDAPAttribute certAttr = new LDAPAttribute( userCertAttribute, incert.getEncoded() );
                 if (oldEntry != null)
                     modSet.add(LDAPModification.REPLACE, certAttr);
@@ -278,28 +285,31 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                 error("Error encoding certificate when storing in LDAP: ",e);
                 return false;
             }
-            if (oldEntry == null)
-                newEntry = new LDAPEntry( dn, attributeSet );
         } else if ( ((type & SecConst.USER_CA) != 0) || ((type & SecConst.USER_ROOTCA) != 0) ) {
-            LDAPAttributeSet attributeSet = null;
+            debug("Publishing CA certificate to "+ldapHost);
             if (oldEntry != null)
                 modSet = getModificationSet(oldEntry, dn, false);
             else
+                objectclass = cAObjectclass;
                 attributeSet = getAttributeSet(cAObjectclass, dn, false);
             try {
+                attribute = cACertAttribute;
                 LDAPAttribute certAttr = new LDAPAttribute( cACertAttribute, incert.getEncoded() );
                 if (oldEntry != null)
                     modSet.add(LDAPModification.REPLACE, certAttr);
-                else
+                else {
                     attributeSet.add( certAttr );
+                    // Also create using the crlattribute, it may be required
+                    LDAPAttribute crlAttr = new LDAPAttribute( cRLAttribute, "" );
+                    attributeSet.add( crlAttr );
+                    debug("Added (fake) attribute for CRL.");
+                }
             } catch (CertificateEncodingException e) {
                 error("Error encoding certificate when storing in LDAP: ",e);
                 return false;
             }
-            if (oldEntry == null)
-                newEntry = new LDAPEntry( dn, attributeSet );
         } else {
-            info("Certificate of type '"+type+"' will not be published.");
+            error("Certificate of type '"+type+"' will not be published.");
             return false;
         }
         try {
@@ -312,6 +322,8 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                 lc.modify(dn, modSet);
                 info( "\nModified object: " + dn + " successfully." );
             } else {
+                if (oldEntry == null)
+                    newEntry = new LDAPEntry( dn, attributeSet );
                 lc.add( newEntry );
                 info( "\nAdded object: " + dn + " successfully." );
             }
@@ -319,7 +331,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
             lc.disconnect();
         }
         catch( LDAPException e ) {
-            error( "Error storing certificate in LDAP: ", e);
+            error( "Error storing certificate ("+attribute+") in LDAP ("+objectclass+"): ", e);
             return false;
         }
 

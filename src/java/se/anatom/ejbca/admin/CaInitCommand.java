@@ -22,7 +22,7 @@ import se.anatom.ejbca.util.CertTools;
 
 /** Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.3 2002-06-04 14:42:04 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.4 2002-08-26 11:17:28 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -61,9 +61,12 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 } catch (java.rmi.ServerException e) {
                     System.out.println("Certificate for subject '"+cert.getSubjectDN()+"' already exist in the certificate store.");
                 }
-                // Call authentication session and tell that we are finished with this user
                 for (int i=0;i<publishers.size();i++) {
-                    ((IPublisherSessionRemote)(publishers.get(i))).storeCertificate(cert, cafingerprint, CertificateData.CERT_ACTIVE, type);
+                    boolean ret = ((IPublisherSessionRemote)(publishers.get(i))).storeCertificate(cert, cafingerprint, CertificateData.CERT_ACTIVE, type);
+                    if (ret == true)
+                        System.out.println("Published certificate in publisher no "+i+1);
+                    else
+                        System.out.println("Failed to publish certificate in publisher no "+i+1);
                 }
                 System.out.println("-Stored CA certificates in certificate store(s).");
             }
@@ -108,7 +111,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                     IPublisherSessionHome pubhome = (IPublisherSessionHome)javax.rmi.PortableRemoteObject.narrow(context.lookup(jndiName), IPublisherSessionHome.class);
                     IPublisherSessionRemote pub = pubhome.create();
                     publishers.add(pub);
-                    debug("Added publisher class '"+pub.getClass().getName()+"'");
+                    debug("Added publisher class '"+pub.getClass().getName()+"' at position "+i);
                     i++;
                 }
 
