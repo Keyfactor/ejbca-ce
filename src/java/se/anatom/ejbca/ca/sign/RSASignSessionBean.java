@@ -85,7 +85,7 @@ import se.anatom.ejbca.util.Hex;
  *   display-name="RSASignSessionSB"
  *   name="RSASignSession"
  *   jndi-name="RSASignSession"
- *   local-jndi-name="RSASignSessionLocal"
+ *   local-jndi-name="SignSessionLocal"
  *   view-type="both"
  *   type="Stateless"
  *   transaction-type="Container"
@@ -219,15 +219,15 @@ public class RSASignSessionBean extends BaseSessionBean {
             CertTools.installBCProvider();
 
             // get home interfaces to other session beans used
-            storeHome = (ICertificateStoreSessionLocalHome) lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
-            authHome = (IAuthenticationSessionLocalHome) lookup("java:comp/env/ejb/AuthenticationSessionLocal");
+            storeHome = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+            authHome = (IAuthenticationSessionLocalHome) getLocator().getLocalHome(IAuthenticationSessionLocalHome.COMP_NAME);
 
-            cadatahome = (CADataLocalHome) lookup("java:comp/env/ejb/CADataLocal");
+            cadatahome = (CADataLocalHome) getLocator().getLocalHome(CADataLocalHome.COMP_NAME);
 
-            publishHome = (IPublisherSessionLocalHome) lookup("java:comp/env/ejb/PublisherSessionLocal");
+            publishHome = (IPublisherSessionLocalHome) getLocator().getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
 
             // Get a decent source of random data
-            String randomAlgorithm = (String) lookup("java:comp/env/randomAlgorithm");
+            String randomAlgorithm = (String) getLocator().getString("java:comp/env/randomAlgorithm");
             randomSource = SecureRandom.getInstance(randomAlgorithm);
             SernoGenerator.setAlgorithm(randomAlgorithm);
 
@@ -247,7 +247,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     private ILogSessionLocal getLogSession() {
         if (logsession == null) {
             try {
-                ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup(ILogSessionLocalHome.COMP_NAME, ILogSessionLocalHome.class);
+                ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
                 logsession = logsessionhome.create();
             } catch (Exception e) {
                 throw new EJBException(e);
@@ -1085,8 +1085,8 @@ public class RSASignSessionBean extends BaseSessionBean {
     private String getPassword(String initKey) throws Exception {
         String password;
         try {
-            password = (String) lookup(initKey, java.lang.String.class);
-        } catch (EJBException e) {
+            password = getLocator().getString(initKey);
+        } catch (Exception e) {
             password = null;
         }
         if (password == null) {
