@@ -6,8 +6,7 @@
 <application>
     <display-name>EJBCA-CA</display-name>
     <description>The EJBCA CA module consists of the CA beans and the web 
-application for 
-                enrollment (apply) and distribution (webdist).
+application for enrollment (apply) and distribution (webdist).
     </description>
     <module>
         <web>

@@ -26,7 +26,7 @@ import se.anatom.ejbca.util.Base64;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.7 2002-05-20 17:52:59 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.8 2002-05-21 08:52:30 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean implements ICertificateStoreSession {
 
@@ -201,7 +201,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         ResultSet result = null;
         try{
             con = getConnection();
-            ps = con.prepareStatement("select base64cert from CertificateData where subjectDN=? ORDER BY expireDate DESC");
+            ps = con.prepareStatement("select base64Cert from CertificateData where subjectDN=? ORDER BY expireDate DESC");
             ps.setString(1,dn);
             result = ps.executeQuery();
             Vector vect = new Vector();
@@ -244,13 +244,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         ResultSet result = null;
         try{
             con = getConnection();
-            ps = con.prepareStatement("select base64cert from CertificateData where expireDate<? ORDER BY expireDate DESC");
+            ps = con.prepareStatement("select base64Cert from CertificateData where expireDate<? ORDER BY expireDate DESC");
             ps.setLong(1,expireSeconds);
             result = ps.executeQuery();
             Vector vect = new Vector();
             while(result.next()){
                 vect.addElement(CertTools.getCertfromByteArray(Base64.decode(result.getString(1).getBytes())));
-            } 
+            }
             debug("found "+vect.size()+" certificate(s) with expireDate<"+expireSeconds);
             X509Certificate[] returnArray = new X509Certificate[vect.size()];
             vect.copyInto(returnArray);
@@ -270,7 +270,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
             }
         }
     } //findCertificatesByExpireTime
-    
+
    /**
     * Implements ICertificateStoreSession::findCertificateByIssuerAndSerno.
     * Uses select directly from datasource.
@@ -286,7 +286,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         ResultSet result = null;
         try{
             con = getConnection();
-            ps = con.prepareStatement("select base64cert from CertificateData where issuerDN=? and serialnumber=?");
+            ps = con.prepareStatement("select base64Cert from CertificateData where issuerDN=? and serialNumber=?");
             ps.setString(1,dn);
             ps.setString(2, serno.toString());
             result = ps.executeQuery();
@@ -387,7 +387,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
                 debug("No CRLs issued yet");
                 return null;
             }
-            ps = con.prepareStatement("select base64crl from CRLData where CRLNumber=?");
+            ps = con.prepareStatement("select base64Crl from CRLData where cRLNumber=?");
             ps.setInt(1, maxnumber);
             result = ps.executeQuery();
             X509CRL crl = null;
