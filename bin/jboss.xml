@@ -1,21 +1,51 @@
-<project name="jboss" basedir=".." default="deploy">
-	
+<project name="jboss" basedir=".." default="j2ee:deploy">
+	<property environment="env"/>
+
 	<property name="jboss.deploy.dir" location="${jboss.home}/server/default/deploy"/>
 	<property name="jboss.server.home.dir" location="${jboss.deploy.dir}/.."/>
 	<property name="keystore.file" value="conf/keystore/keystore.jks"/>
 	<property name="keystore.password" value="changeit"/>
-
-	<target name="j2ee:check">
-		<available file="p12/tomcat.jks" property="keystore.file.present"/>
-		<fail message="Missing JKS keystore file in '${basedir}/p12/tomcat.jks'" unless="keystore.file.present"/>
-		<fail message="Missing JKS keystore password 'keystore.password'" unless="keystore.password"/>
-	</target>
 	
-	<target name="j2ee:configure" depends="j2ee:check" description="Configure the J2EE server with appropriate settings">
+	<!--
+	 Do not configure the servlet container, deploys blindly ears
+	 This is ideally passed by the caller and is just here as a reminder
+	  -->
+	<!--property name="j2ee.web-noconfigure" value="true"/-->
+	
+	
+	<target name="j2ee:check" description="Check a few configuration settings">
+        <!--
+            we could have a dedicated jboss for ejbca, so give users a chance to override
+            otherwise, try to pick the one from environment if it exists
+            -->
+        <condition property="jboss.home" value="${env.JBOSS_HOME}">
+            <available file="${env.JBOSS_HOME}" type="dir"/>
+        </condition>
+        <fail message="Please set the property 'jboss.home' for this project" unless="jboss.home"/>
+        <available file="${jboss.home}/client/jboss-j2ee.jar" property="jboss.home.valid"/>
+        <fail message="'jboss.home' (${jboss.home}) does not seem to be a valid JBoss home directory" unless="jboss.home.valid"/>
+        <echo message="Using jboss.home : ${jboss.home}"/>
+	</target>
+
+
+
+	<target name="j2ee:configure" depends="j2ee:check, j2ee:web-configure" description="Configure the J2EE server with appropriate settings">
+		
+	</target>
+
+	<target name="j2ee:web-configure" depends="j2ee:check" unless="j2ee.web-noconfigure" description="Configure the servlet container">
         <echo message="Using JBoss deploy directory ${jboss.deploy.dir}"/>
 
 		<!-- copy the keystore file to the server -->
+		<available file="p12/tomcat.jks" property="keystore.file.present"/>
+		<fail message="Missing JKS keystore file in '${basedir}/p12/tomcat.jks'" unless="keystore.file.present"/>
+		<condition property="keystore.password.present">
+			<isset property="keystore.password"/> 
+		</condition>
+		<fail message="Missing JKS password '${keystore.password}'" property="keystore.password.present"/>
+
 		<copy file="p12/tomcat.jks" tofile="${jboss.server.home.dir}/${keystore.file}"/>
+
 		
         <!-- detect jboss web version -->
         <available file="${jboss.deploy.dir}/jbossweb-tomcat41.sar" type="dir" property="jboss.web" value="tomcat41"/>
@@ -36,7 +66,7 @@
         
         <!-- configure the jetty bundle -->	
 	</target>
-	
+
 	<target name="j2ee:deploy" description="Deploy the application" depends="j2ee:configure">
         <copy todir="${jboss.deploy.dir}" overwrite="true">
             <fileset dir="src/appserver/jboss" includes="ejbca-ds.xml"/>
@@ -48,7 +78,10 @@
     		<fileset dir="${dist.dir}" includes="*.ear"/>
     	</copy>
 	</target>
-	
+
+
+
+
 	<target name="j2ee:assert-run" description="Check that the server is running">
         <echo message="Checking that the J2EE server is up and running..."/>
         <waitfor maxwait="2" maxwaitunit="second" timeoutproperty="j2ee.notrunning">
@@ -56,7 +89,10 @@
         </waitfor>
         <fail message="Please start J2EE server before running this script" if="j2ee.notrunning"/>	
 	</target>
-	
+
+
+
+
 	<target name="j2ee:run" description="Start the J2EE server">
     	<j2ee-server classname="org.jboss.Main" classpath="${jboss.home}/bin/run.jar">
             <args>
@@ -77,7 +113,9 @@
             jboss.server.lib.url	${jboss.server.home.url}/lib
         -->		
 	</target>
-	
+
+
+    
 	<target name="j2ee:debug" description="Start the J2EE server in debug mode">
     	<property name="j2ee.debug.transport" value="dt_socket"/>
     	<property name="j2ee.debug.address" value="5005"/>
@@ -101,5 +139,6 @@
 		</java>
         </sequential>
     </macrodef>
+
 </project>
 

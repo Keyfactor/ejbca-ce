@@ -1,23 +1,18 @@
 <project name="cli" default="ejbca:install" basedir="." xmlns:ejbca="ejbca">
     <property name="ejbca.home" location=".."/>
-    <property name="jboss.home" location="${ejbca.home}/../../jboss-3.2.4"/>
     <property file="${user.home}/.ejbca.properties"/>
     <property file=".ejbca.properties"/>
     <property file="${ejbca.home}/.ejbca.properties"/>
 
     <property name="lib.dir" location="${ejbca.home}/lib"/>
 
-    <available file="${ejbca.home}/admin.jar" property="bootstrap.done"/>
+    <available file="${ejbca.home}/dist/admin.jar" property="bootstrap.done"/>
 
     <path id="classpath">
          <!-- need to pickup jndi.properties and log4j.properties -->
         <pathelement path="${ejbca.home}"/>
-        <pathelement path="${ejbca.home}/admin.jar"/>
-        <fileset dir="${lib.dir}">
-            <include name="ldap.jar"/>
-            <include name="log4j*.jar"/>
-            <include name="bcprov*.jar"/>
-        </fileset>
+        <fileset dir="${ejbca.home}/dist" includes="*.jar"/>
+        <fileset dir="${lib.dir}" includes="*.jar"/>
         <fileset dir="${jboss.home}/client" includes="*.jar"/>
     </path>
 
@@ -52,8 +47,14 @@
         <input message="Please enter the superadmin password (default: 'primekey') ?" addproperty="superadmin.password" defaultvalue="primekey"/>
     </target>
 
+	<!--
+	  EJBCA need to be run before the app.server (or the webapp) is fully ssl configured with the keystore
+	  So we are 'bootstrapping' it, the 'j2ee.web-noconfigure' property will skip all the serverside
+	  -->
     <target name="ejbca:bootstrap" unless="bootstrap.done" description="Bootstrap EJBCA application">
-        <ant dir="${ejbca.home}" target="deploy" />
+        <ant dir="${ejbca.home}" target="deploy">
+        	<property name="j2ee.web-noconfigure" value="true"/>
+        </ant>
     </target>
 
     <target name="ejbca:clean"  description="Cleanup EJBCA application">
@@ -61,6 +62,19 @@
     </target>
 
     <target name="ejbca:init" depends="ejbca:bootstrap,ejbca:noprompt,ejbca:prompt">
+    <echo>
+------------------- CA Properties ----------------
+ca.name             : ${ca.name}
+ca.dn               : ${ca.dn}
+ca.keysize          : ${ca.keysize}
+ca.validity         : ${ca.validity}
+ca.policy           : ${ca.policy}
+cacert.password     : ${cacert.password}
+server.dn           : ${server.dn}
+keystore.password   : ${keystore.password}
+hostname            : ${hostname}
+superadmin.password : ${superadmin.password}
+    </echo>
     </target>
     
     <target name="ejbca:install" depends="ejbca:init" description="Install">
@@ -86,10 +100,10 @@
 		<!--
 		this does not work for some reason, if I'm not forking the VM, I'm wondering
 		if it is not an issue with the Ant classloader
+		For in ejbca.home in order to have the p12 directory as a child of it.
 		-->
-		<java fork="true" classname="se.anatom.ejbca.batch.BatchMakeP12" classpathref="classpath"/>
-
-		<!-- do some magic here to customize the tomcat/jetty configuration -->
+		<java dir="${ejbca.home}" fork="true" classname="se.anatom.ejbca.batch.BatchMakeP12" classpathref="classpath"/>
+		
 	</target>
     
 	<target name="ejbca:cli" depends="ejbca:noprompt" description="Handy hook to run a command">
