@@ -2,12 +2,14 @@
 ----
 Virtual CAs, run a complete hierarchy in one instance of EJBCA.
 Completed support for OCSP.
+Added 'Authority Information Access' extension for OCSP service URL in certificates.
 
 2.1.1
 -----
 Improved error handing for batch generation.
 Fixed some SQL for PostgreSQL.
 Set Content-Type on OCSP responses.
+Setup-adminweb supports JBoss 3.2.3.
 Minor debug cleanups.
 
 2.1
