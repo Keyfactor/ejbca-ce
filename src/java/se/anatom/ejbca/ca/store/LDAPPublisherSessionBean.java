@@ -34,7 +34,7 @@ import se.anatom.ejbca.util.*;
  * userCertificate
  * </pre>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.2 2002-01-06 10:51:32 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.3 2002-01-06 11:43:22 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublisherSession {
 
@@ -110,12 +110,18 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
             try {
                 // Get extension value
                 ByteArrayInputStream bIn = new ByteArrayInputStream(subjAltNameValue);
-                DERConstructedSequence san = (DERConstructedSequence)new DERInputStream(bIn).readObject();
+                DEROctetString asn1 = (DEROctetString)new DERInputStream(bIn).readObject();
+                ByteArrayInputStream bIn1 = new ByteArrayInputStream(asn1.getOctets());
+                DERConstructedSequence san = (DERConstructedSequence)new DERInputStream(bIn1).readObject();
                 for (int i=0;i<san.getSize();i++) {
                     DERTaggedObject gn = (DERTaggedObject)san.getObjectAt(i);
                     if (gn.getTagNo() == 1) {
                         // This is rfc822Name!
-                        DERIA5String str = (DERIA5String)gn.getObject();
+                        DERIA5String str;
+                        if (gn.getObject() instanceof DERIA5String)
+                            str = (DERIA5String)gn.getObject();
+                        else
+                            str = new DERIA5String(((DEROctetString)gn.getObject()).getOctets());
                         email = str.getString();
                     }
                 }
@@ -128,7 +134,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
         // Match users DN with 'containerName'?
         // Normalize string lo lower case so we don't care about matching case (we are not THAT picky about
         // different case inside O,C etc, it will fail later in that case.
-        if (dn.toLowerCase().indexOf(containerName.toLowerCase()) == -1)
+        if (dn.indexOf(CertTools.stringToBCDNString(containerName)) == -1)
         {
             info("SubjectDN '"+dn+"' is not part of containerName '"+containerName+"' for LDAP server.");
             return false;

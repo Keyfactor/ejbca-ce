@@ -17,7 +17,7 @@ import junit.framework.*;
 
 /** Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.1 2002-01-05 15:50:11 anatom Exp $
+ * @version $Id: TestPublisher.java,v 1.2 2002-01-06 11:43:22 anatom Exp $
  */
 public class TestPublisher extends TestCase {
 
@@ -85,6 +85,7 @@ public class TestPublisher extends TestCase {
         assertTrue("Storing certificate failed", ret);
         cat.debug("<test01AddCertificate()");
     }
+    /*
     public void test02StoreCRL() throws Exception {
         cat.debug(">test02StoreCRL()");
         X509CRL crl = CertTools.getCRLfromByteArray(testcrl);
@@ -106,6 +107,7 @@ public class TestPublisher extends TestCase {
         assertTrue("Storing CRL failed", ret);
         cat.debug("<test04StoreCRLAgain()");
     }
+     */
     
     
 }

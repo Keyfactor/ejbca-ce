@@ -6,7 +6,7 @@ import junit.framework.*;
 
 /**
  *
- * @version $Id: TestRunner.java,v 1.1.1.1 2001-11-15 14:58:17 anatom Exp $
+ * @version $Id: TestRunner.java,v 1.2 2002-01-06 11:43:22 anatom Exp $
  */
 public class TestRunner extends Object {
 
@@ -27,9 +27,11 @@ public class TestRunner extends Object {
 
         TestSuite suite = new TestSuite();
         suite.addTest( new TestSuite( TestCertificateData.class ));
+        //suite.addTest( new TestSuite( TestPublisher.class ));
 
         cat.debug("<suite()");
         return suite;
     }
 }
+
 
