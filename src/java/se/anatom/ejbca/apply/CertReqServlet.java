@@ -174,15 +174,17 @@ public class CertReqServlet extends HttpServlet {
                     cat.debug("Sent CA cert to IE client.");
             } else if (command.equalsIgnoreCase(COMMAND_CACERT)) {
                     byte[] b64cert = Base64.encode(enccert);
-                    res.setHeader("Content-disposition", "attachment; filename=ca.pem");
                     res.setContentType("application/octet-stream");
-                    res.setContentLength(b64cert.length+52);
+                    res.setHeader("Content-disposition", "attachment; filename=ca.pem");
+                    String beg = "-----BEGIN CERTIFICATE-----\n";
+                    String end = "\n-----END CERTIFICATE-----\n";
+                    res.setContentLength(b64cert.length+beg.length()+end.length());
                     // Print the certificate
-                    PrintStream ps = new PrintStream(res.getOutputStream());
-                    ps.println("-----BEGIN CERTIFICATE-----");
-                    ps.println(new String(b64cert));
-                    ps.println("-----END CERTIFICATE-----");
-                    ps.close();
+                    ServletOutputStream os = res.getOutputStream();
+                    os.write(beg.getBytes());
+                    os.write(b64cert);
+                    os.write(end.getBytes());
+                    res.flushBuffer();
                     cat.debug("Sent CA cert to client.");
             } else {
                 res.setContentType("text/plain");
@@ -320,9 +322,8 @@ public class CertReqServlet extends HttpServlet {
         out.setHeader("Content-disposition", "attachment; filename=cert.pem");
         String beg = "-----BEGIN CERTIFICATE-----\n";
         String end = "\n-----END CERTIFICATE-----\n";
-        int length = new String("\n").length();
         out.setContentLength(b64cert.length+beg.length()+end.length());
-        // Print the certificate
+        // Write the certificate
         ServletOutputStream os = out.getOutputStream();
         os.write(beg.getBytes());
         os.write(b64cert);
