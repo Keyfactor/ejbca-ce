@@ -32,7 +32,7 @@
   <property name="rajar" value="${dist}/ra.jar" />
   
   <property name="raadmin.src" value="${src}/ra/web/raadmin" />
-  <property name="raadmin.build" value="${tmp}/ra/web/raadmin" />
+  <property name="raadmin.build" value="${tmp}/raadmin" />
   <property name="raadminjar" value="${dist}/raadmin.war" />  
 
   <property name="caear.src" value="${src}/ca/ear" />
@@ -88,18 +88,15 @@ ca.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
   <!-- =================================================================== -->
   <target name="compile" depends="init">
     <!-- Compile the java code from ${javasrc} into ${build} -->
-    <!-- <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" 
-debug="on"> -->
-    <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on">
-        <exclude name="**/CVS/**"/>
-        <exclude name="**/raadmin/**"/>
+    <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on" >
+        <exclude name="**/CVS/**"/>    
         <include name="**/*.java"/>
     </javac>
     <copy todir="${javasrc}">
         <fileset dir="${build}">
                 <include name="**/*.class"/>
         </fileset>
-    </copy>
+    </copy> 
 
   </target>
 
@@ -189,15 +186,20 @@ debug="on"> -->
     <mkdir    dir="${ra.build}"/>
     <copy todir="${ra.build}">
         <fileset dir="${ra.src}"> 
+                <exclude name="**web/raadmin/**"/>
                 <include name="**/*"/>
         </fileset>
     </copy>
     <copy todir="${ra.build}">
         <fileset dir="${build}">
-                <include name="se/anatom/ejbca/ra/**/*.class"/>
+                <include name="se/anatom/ejbca/ra/**/*.class"/>      
+                <include name="se/anatom/ejbca/ra/raadmin/*.class"/>       
                 <include name="se/anatom/ejbca/*.class"/>
                 <include name="se/anatom/ejbca/util/**/*.class"/>
-                <exclude name="se/anatom/ejbca/**/*Test*"/>
+                <include name="se/anatom/ejbca/webdist/webconfiguration/GlobalConfiguration.class"/>
+                <include name="se/anatom/ejbca/webdist/webconfiguration/UserPreference.class"/>
+                <include name="se/anatom/ejbca/webdist/rainterface/Profile.class"/>
+                <exclude name="se/anatom/ejbca/**/*Test*"/>           
         </fileset>
     </copy>
     
@@ -213,7 +215,7 @@ debug="on"> -->
     <mkdir    dir="${webdist.build}"/>
     <copy todir="${webdist.build}">
         <fileset dir="${webdist.src}"> 
-                <include name="**/*"/>
+                <include name="**/**"/>
         </fileset>
     </copy>
     <copy todir="${webdist.build}/WEB-INF/classes">
@@ -246,14 +248,15 @@ name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
     <mkdir    dir="${raadmin.build}"/>
     <copy todir="${raadmin.build}">
         <fileset dir="${raadmin.src}"> 
-                <include name="**/*"/>
+                <include name="**/**"/>
         </fileset>
     </copy>
     <copy todir="${raadmin.build}/WEB-INF/classes">
         <fileset dir="${build}">
                 <include name="se/anatom/ejbca/webdist/**/*.class"/>
-                <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
+                <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>           
                 <include name="se/anatom/ejbca/ra/*.class"/>
+                <include name="se/anatom/ejbca/ra/raadmin/*.class"/>
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
                 <include name="se/anatom/ejbca/ca/sign/ISign*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
@@ -266,7 +269,7 @@ name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
                 <exclude name="se/anatom/ejbca/ra/*Bean.class"/>
         </fileset>
     </copy>
-  
+     
     <!-- Jar the webdist.war package together -->
     <jar basedir="${raadmin.build}" jarfile="${raadminjar}"/>    
   </target>
