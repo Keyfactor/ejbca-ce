@@ -208,7 +208,7 @@
      <ejb-name>AuthenticationSession</ejb-name>
      <home>se.anatom.ejbca.ca.auth.IAuthenticationSessionHome</home>
      <remote>se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote</remote>
-     <ejb-class>se.anatom.ejbca.ca.auth.NullAuthenticationSessionBean</ejb-class>
+     <ejb-class>se.anatom.ejbca.ca.auth.LocalAuthenticationSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
 
