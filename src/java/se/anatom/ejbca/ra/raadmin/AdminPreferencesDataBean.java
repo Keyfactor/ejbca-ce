@@ -30,7 +30,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * AdminPreference
  * </pre>
  *
- * @version $Id: AdminPreferencesDataBean.java,v 1.9 2004-07-23 12:09:41 sbailliez Exp $
+ * @version $Id: AdminPreferencesDataBean.java,v 1.10 2004-08-11 00:09:07 sbailliez Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a ra admins user preference."
  * display-name="AdminPreferencesDataEB"
@@ -41,6 +41,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * cmp-version="2.x"
  * transaction-type="Container"
  * schema="AdminPreferencesDataBean"
+ * primkey-field="id"
  *
  * @ejb.pk class="java.lang.String"
  * generate="false"
@@ -65,7 +66,6 @@ public abstract class AdminPreferencesDataBean extends BaseEntityBean {
     public abstract String getId();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setId(String id);
@@ -74,10 +74,6 @@ public abstract class AdminPreferencesDataBean extends BaseEntityBean {
      * @ejb.persistence
      */
     public abstract HashMap getData();
-
-    /**
-     * @ejb.persistence
-     */
     public abstract void setData(HashMap data);
 
     /**

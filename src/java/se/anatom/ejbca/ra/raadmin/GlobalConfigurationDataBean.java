@@ -28,7 +28,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * GlobalConfiguration
  * </pre>
  *
- * @version $Id: GlobalConfigurationDataBean.java,v 1.3 2004-07-23 12:09:41 sbailliez Exp $
+ * @version $Id: GlobalConfigurationDataBean.java,v 1.4 2004-08-11 00:10:26 sbailliez Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents global configuration of ra administration"
  * display-name="GlobalConfigurationDataEB"
@@ -39,6 +39,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * cmp-version="2.x"
  * transaction-type="Container"
  * schema="GlobalConfigurationDataBean"
+ * primkey-field="configurationId"
  *
  * @ejb.pk class="java.lang.String"
  * generate="false"
@@ -70,7 +71,6 @@ public abstract class GlobalConfigurationDataBean extends BaseEntityBean {
     public abstract String getConfigurationId();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setConfigurationId(String id);
@@ -81,7 +81,6 @@ public abstract class GlobalConfigurationDataBean extends BaseEntityBean {
     public abstract HashMap getData();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setData(HashMap data);
 

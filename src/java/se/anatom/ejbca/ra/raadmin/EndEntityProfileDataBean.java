@@ -31,7 +31,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * Profile data
  * </pre>
  *
- * @version $Id: EndEntityProfileDataBean.java,v 1.8 2004-07-23 12:09:41 sbailliez Exp $
+ * @version $Id: EndEntityProfileDataBean.java,v 1.9 2004-08-11 00:09:50 sbailliez Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a profile"
  * display-name="EndEntityProfileDataEB"
@@ -42,6 +42,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * cmp-version="2.x"
  * transaction-type="Container"
  * schema="EndEntityProfileDataBean"
+ * primkey-field="id"
  *
  * @ejb.pk class="java.lang.Integer"
  * generate="false"
@@ -75,7 +76,6 @@ public abstract class EndEntityProfileDataBean extends BaseEntityBean {
     public abstract Integer getId();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setId(Integer id);
 
@@ -86,7 +86,6 @@ public abstract class EndEntityProfileDataBean extends BaseEntityBean {
     public abstract String getProfileName();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setProfileName(String profilename);
@@ -97,7 +96,6 @@ public abstract class EndEntityProfileDataBean extends BaseEntityBean {
     public abstract HashMap getData();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setData(HashMap data);
 
