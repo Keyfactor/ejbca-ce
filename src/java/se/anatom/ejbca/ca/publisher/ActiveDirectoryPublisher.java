@@ -20,7 +20,7 @@ import com.novell.ldap.LDAPModificationSet;
 /**
  * ActiveDirectoryPublisher is a class handling a publishing to Active Directory catalouges.  
  *
- * @version $Id: ActiveDirectoryPublisher.java,v 1.1 2004-03-07 12:08:50 herrvendil Exp $
+ * @version $Id: ActiveDirectoryPublisher.java,v 1.2 2004-03-14 13:49:21 herrvendil Exp $
  */
 public class ActiveDirectoryPublisher extends LdapPublisher{
 	
@@ -148,7 +148,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
 		String samaccountname = upn;
 		if(upn != null && upn.indexOf('@') != -1){
 		  // only use name part of UPN.
-		  samaccountname.substring(upn.indexOf('@'));	
+			samaccountname = samaccountname.substring(upn.indexOf('@'));	
 		}
 		
 		
