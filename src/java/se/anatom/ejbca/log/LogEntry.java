@@ -1,0 +1,163 @@
+/*
+ * LogEntry.java
+ *
+ * Created on den 28 aug 2002, 10:02
+ */
+
+package se.anatom.ejbca.log;
+
+import java.util.Date;
+
+/**
+ *  This is a  class containing information about one log event in the database. Used mainly during database queries by the web interface.
+ *
+ * @author  TomSelleck
+ */
+public class LogEntry implements java.io.Serializable {
+  
+    // Public constants
+    
+    /*Possible log events, all information events should have an id below 1000 and all error events should have a id above 1000 */
+    // Information events. Important all id:s should map to the array EVENTNAMES_INFO.
+    public static final int EVENT_INFO_UNKNOWN                        = 0;    
+    public static final int EVENT_INFO_ADDEDUSER                      = 1;
+    public static final int EVENT_INFO_CHANGEDUSER                    = 2;  
+    public static final int EVENT_INFO_REVOKEDUSER                    = 3;    
+    public static final int EVENT_INFO_REVOKEDCERT                    = 4;      
+    public static final int EVENT_INFO_DELETEDUSER                    = 5;
+    public static final int EVENT_INFO_EDITSYSTEMCONFIGURATION        = 6;  
+    public static final int EVENT_INFO_EDITEDADMINISTRATORPRIVILEDGES = 7;
+    public static final int EVENT_INFO_EDITLOGCONFIGURATION           = 8;
+    public static final int EVENT_INFO_ADMINISTRATORPREFERENCECHANGED = 9;
+    public static final int EVENT_INFO_USERPROFILE                    = 10;
+    public static final int EVENT_INFO_USERAUTHENTICATION             = 11;
+    public static final int EVENT_INFO_STORECERTIFICATE               = 12;
+    public static final int EVENT_INFO_STORECRL                       = 13;
+    public static final int EVENT_INFO_GETLASTCRL                     = 14;
+    public static final int EVENT_INFO_CERTPROFILE                    = 15;
+    public static final int EVENT_INFO_DATABASE                       = 16;
+    public static final int EVENT_INFO_CREATECERTIFICATE              = 17;
+    public static final int EVENT_INFO_CREATECRL                      = 18;
+    public static final int EVENT_INFO_ADMINISTRATORLOGGEDIN          = 19;
+    public static final int EVENT_INFO_AUTHORIZEDTORESOURCE           = 20;
+    public static final int EVENT_INFO_PUBLICWEBUSERCONNECTED         = 21;    
+    
+    
+    
+    // Error events. Important all id:s should map to the array EVENTNAMES_ERROR - EVENT_ERROR_BOUNDRARY.
+    public static final int EVENT_ERROR_UNKNOWN                        = 1000;      
+    public static final int EVENT_ERROR_ADDEDUSER                      = 1001;
+    public static final int EVENT_ERROR_CHANGEDUSER                    = 1002;  
+    public static final int EVENT_ERROR_REVOKEDUSER                    = 1003;    
+    public static final int EVENT_ERROR_REVOKEDCERT                    = 1004;  
+    public static final int EVENT_ERROR_DELETEUSER                     = 1005;
+    public static final int EVENT_ERROR_EDITSYSTEMCONFIGURATION        = 1006;      
+    public static final int EVENT_ERROR_EDITEDADMINISTRATORPRIVILEDGES = 1007;
+    public static final int EVENT_ERROR_EDITLOGCONFIGURATION           = 1008;    
+    public static final int EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED = 1009;
+    public static final int EVENT_ERROR_USERPROFILE                    = 1010;
+    public static final int EVENT_ERROR_USERAUTHENTICATION             = 1011;
+    public static final int EVENT_ERROR_STORECERTIFICATE               = 1012;
+    public static final int EVENT_ERROR_STORECRL                       = 1013;
+    public static final int EVENT_ERROR_GETLASTCRL                     = 1014;
+    public static final int EVENT_ERROR_CERTPROFILE                    = 1015;
+    public static final int EVENT_ERROR_DATABASE                       = 1016;
+    public static final int EVENT_ERROR_CREATECERTIFICATE              = 1017;
+    public static final int EVENT_ERROR_CREATECRL                      = 1018; 
+    public static final int EVENT_ERROR_ADMINISTRATORLOGGEDIN          = 1019;
+    public static final int EVENT_ERROR_NOTAUTHORIZEDTORESOURCE        = 1020;
+    public static final int EVENT_ERROR_PUBLICWEBUSERCONNECTED         = 1021;      
+    
+    
+    public static final int EVENT_ERROR_BOUNDRARY                = 1000;
+    
+    // Id -> String maps
+    public static final String[] EVENTNAMES_INFO = {"EVENT_INFO_UNKNOWN", "EVENT_INFO_ADDEDUSER", "EVENT_INFO_CHANGEDUSER" , "EVENT_INFO_REVOKEDUSER", "EVENT_INFO_REVOKEDCERT", 
+                                                    "EVENT_INFO_DELETEDUSER", "EVENT_INFO_EDITSYSTEMCONFIGURATION", "EVENT_INFO_EDITEDADMINISTRATORPRIVILEDGES",
+                                                    "EVENT_INFO_EDITLOGCONFIGURATION", "EVENT_INFO_ADMINISTRATORPREFERENCECHANGED", "EVENT_INFO_USERPROFILE", "EVENT_INFO_USERAUTHENTICATION",
+                                                    "EVENT_INFO_STORECERTIFICATE", "EVENT_INFO_STORECRL", "EVENT_INFO_GETLASTCRL", "EVENT_INFO_CERTPROFILE", "EVENT_INFO_DATABASE",
+                                                    "EVENT_INFO_CREATECERTIFICATE", "EVENT_INFO_CREATECRL", "EVENT_INFO_ADMINISTRATORLOGGEDIN", "EVENT_INFO_AUTHORIZEDTORESOURCE", "EVENT_INFO_PUBLICWEBUSERCONNECTED"};   
+    
+    public static final String[] EVENTNAMES_ERROR = {"EVENT_ERROR_UNKNOWN", "EVENT_ERROR_ADDEDUSER", "EVENT_ERROR_CHANGEDUSER" , "EVENT_ERROR_REVOKEDUSER", "EVENT_ERROR_REVOKEDCERT",
+                                                     "EVENT_ERROR_DELETEUSER", "EVENT_ERROR_EDITSYSTEMCONFIGURATION", "EVENT_ERROR_EDITEDADMINISTRATORPRIVILEDGES",
+                                                     "EVENT_ERROR_EDITLOGCONFIGURATION", "EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED", "EVENT_ERROR_USERPROFILE", "EVENT_ERROR_USERAUTHENTICATION",
+                                                     "EVENT_ERROR_STORECERTIFICATE", "EVENT_ERROR_STORECRL", "EVENT_ERROR_GETLASTCRL", "EVENT_ERROR_CERTPROFILE", "EVENT_ERROR_DATABASE",
+                                                     "EVENT_ERROR_CREATECERTIFICATE", "EVENT_ERROR_CREATECRL" ,"EVENT_ERROR_ADMINISTRATORLOGGEDIN", "EVENT_ERROR_NOTAUTHORIZEDTORESOURCE",
+                                                     "EVENT_ERROR_PUBLICWEBUSERCONNECTED"};    
+    
+   /** 
+    * Function used by EJBCA to log information.
+    *
+    * @param admintype is pricipally the type of data stored in the admindata field, should be one of se.anatom.ejbca.log.Admin.TYPE_ constants.
+    * @param admindata is the data identifying the administrator, should be certificate snr or ip-address when no certificate could be retrieved.
+    * @param time the time the event occured.
+    * @param username the name of the user involved or null if no user is involved.
+    * @param certificate the certificate involved in the event or null if no certificate is involved.
+    * @param event id of the event, should be one of the se.anatom.ejbca.log.LogEntry.EVENT_ constants.
+    * @param comment comment of the event.
+    */    
+    
+    public LogEntry(int admintype, String admindata, Date time, String username, String certificatesnr, int event, String comment){
+       this.admintype=admintype;
+       this.admindata=admindata;
+       this.time=time;
+       this.username=username;
+       this.certificatesnr=certificatesnr;
+       this.event=event;
+       this.comment=comment;
+    }
+    
+    // Public methods
+    
+    /**
+     * Method used to map between event id and a string representation of event
+     *
+     * @return a string representation of the event.
+     */
+    public String getEventName(){
+      if(this.event >= EVENT_ERROR_BOUNDRARY)
+        return EVENTNAMES_ERROR[this.event - EVENT_ERROR_BOUNDRARY];
+      else
+        return EVENTNAMES_INFO[this.event];                  
+    }
+    
+    
+    public int getAdminType(){
+      return this.admintype;   
+    }
+    
+    public String getAdminData(){
+      return this.admindata;   
+    }
+
+    public Date getTime(){
+      return this.time;   
+    }
+    
+    public String getUsername(){
+      return this.username;   
+    }    
+ 
+    public String getCertificateSNR(){
+      return this.certificatesnr;   
+    }    
+    
+    public int getEvent(){
+      return this.event;   
+    }
+  
+    public String getComment(){
+      return this.comment;   
+    }    
+    // Private methods 
+    
+    // Private fields
+    private    int    admintype;
+    private    String admindata;
+    private    Date   time;
+    private    String username;
+    private    String certificatesnr;
+    private    int    event;
+    private    String comment;
+    
+}
