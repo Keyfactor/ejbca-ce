@@ -534,6 +534,10 @@ INSTALLING WEB RA-ADMIN
 Preliminary documentation - TODO:
 Installation procedure will be enhanced eventually.
 
+0. Edit the file 'src/adminweb/WEB-INF/web.xml'. Change BASEURL to reflect your 
+hostname, to be able to use the adminpages from external machines, this must be 
+a real hostname or ip-address.
+Run 'ant' and 'deploy' to install the changes.
 
 1. Copy src/ra/web/raadmin/WEB-INF/tomcat4-service.xml to
 $JBOSS_HOME/server/default/deploy. Edit the file so 'keyStorePass' is the
@@ -594,13 +598,13 @@ In IE it is done by double-clicking on the .p12 file.
 10. Go to https://localhost:8443/raadmin
 
 Reference: to generate a JKS with keytool
-keytool -genkey -alias foo -keystore foo.jks -keyalg RSA -dname "C=SE,O=AnaTom,CN=foo" -storepass foo123
-keytool -certreq -alias foo -keystore foo.jks -sigalg SHA1WithRSA -storepass foo123 -file foo.req
-ra.sh adduser foo foo123 "C=SE,O=AnaTom,CN=foo" null, null 1 1
-ca.sh processreq foo foo123 foo.req foo.pem
+keytool -genkey -alias tomcat -keystore tomcat.jks -keyalg RSA -dname "C=SE,O=AnaTom,CN=hostname" -storepass foo123
+keytool -certreq -alias tomcat -keystore tomcat.jks -sigalg SHA1WithRSA -storepass foo123 -file tomcat.req
+ra.sh adduser tomcat foo123 "C=SE,O=AnaTom,CN=hostname" null, null 1 1
+ca.sh processreq tomcat foo123 tomcat.req tomcat.pem
 ca.sh getrootcert ca.der
-keytool -import -trustcacerts -alias cacert -file ca.der -keystore foo.jks -storepass foo123
-keytool -import -alias foo -file foo.pem -keystore foo.jks -storepass foo123
+keytool -import -trustcacerts -alias cacert -file ca.der -keystore tomcat.jks -storepass foo123
+keytool -import -alias tomcat -file tomcat.pem -keystore tomcat.jks -storepass foo123
 
 run as root:
 keytool -import -trustcacerts -file ca.der -keystore $JAVA_HOME/jre/lib/security/cacerta -storepass changeit
