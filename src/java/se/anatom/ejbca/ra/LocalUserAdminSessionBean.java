@@ -36,7 +36,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.42 2003-02-24 09:14:21 scop Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.43 2003-02-25 12:43:35 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -193,9 +193,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     public void changeUser(Admin admin, String username, String password,  String subjectdn, String subjectaltname, String email,  boolean clearpwd, int endentityprofileid, int certificateprofileid,
                            int type, int tokentype, int hardwaretokenissuerid, int status)
                               throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException {
-        String bcdn = CertTools.stringToBCDNString(subjectdn);
         // String used in SQL so strip it
-        String dn = StringTools.strip(bcdn);
+        String dn = StringTools.strip(subjectdn);
         debug(">changeUser("+username+", "+dn+", "+email+")");
         int oldstatus;
         // Check if user fulfills it's profile.
