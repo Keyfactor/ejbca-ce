@@ -56,6 +56,8 @@ public class ra {
                 System.out.println("DN: "+dn);
                 System.out.println("Email: "+email);
                 System.out.println("Type: "+type);
+                if (email.equals("null"))
+                    email = null;
                 admin.addUser(username, password, dn, email, type);
             } else if (args[0].equals("deluser"))
             {
