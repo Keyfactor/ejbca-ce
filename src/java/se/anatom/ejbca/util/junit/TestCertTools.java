@@ -13,24 +13,28 @@ import se.anatom.ejbca.util.*;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.14 2003-09-23 20:14:16 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.15 2003-09-24 08:17:28 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
-    static byte[] testcert = Base64.decode(("MIICmjCCAgOgAwIBAgIIFKDXpk/2g0kwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE" +
-            "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAzMDMz" +
-            "MTA4NTQxMVoXDTA1MDMzMDA5MDQxMVowKTEMMAoGA1UEAxMDdXBuMQwwCgYDVQQK" +
-            "EwNGb28xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQCP" +
-            "d6lpi+MaIr+f+tnlWfYqE6OMP24H0JlQxPoLqV2ElX2Yk00fHchicl6wPYxEwIhQ" +
-            "PMX7oP/j04gpLf3YuY47aajo/Nruibot+waIi+xWHZ0zONYgRnRez1DfWDPsmh5/" +
-            "6LS7jTe9A9FaU7Q3QVZ0iYy8zQsIDR+tL1A5jK6UmQIBEaOBxjCBwzAPBgNVHRMB" +
-            "Af8EBTADAQEAMA8GA1UdDwEB/wQFAwMHoAAwOwYDVR0lBDQwMgYIKwYBBQUHAwEG" +
-            "CCsGAQUFBwMCBggrBgEFBQcDBAYIKwYBBQUHAwUGCCsGAQUFBwMHMB0GA1UdDgQW" +
-            "BBRqt8tdCpOtaXxKyQHpdSvoTYGZIjAfBgNVHSMEGDAWgBRje/R2qFQkjqV0pXdE" +
-            "pvReD1eSUTAiBgNVHREEGzAZoBcGCisGAQQBgjcUAgOgCQwHZm9vQGZvbzANBgkq" +
-            "hkiG9w0BAQUFAAOBgQBc4zx+poGoO/5UdbcycL7YsU3a4fSxYfxkxBapRhsiC29a" +
-            "mr7aZJAjcrB9aEKgZWBQbvfM5TrmFbTKJExnmtWovBuLjxESQ0+v7LtJeSbpdqnd" +
-            "KASddFTjB6H1cweKOL64o+ZVYjfWQKXN/gG9Sd+fAb9zc5jKU5fT/NBvBgRfdg==").getBytes());
+    static byte[] testcert = Base64.decode(
+    ("MIIDATCCAmqgAwIBAgIIczEoghAwc3EwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
+    +"AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAzMDky"
+    +"NDA2NDgwNFoXDTA1MDkyMzA2NTgwNFowMzEQMA4GA1UEAxMHcDEydGVzdDESMBAG"
+    +"A1UEChMJUHJpbWVUZXN0MQswCQYDVQQGEwJTRTCBnTANBgkqhkiG9w0BAQEFAAOB"
+    +"iwAwgYcCgYEAnPAtfpU63/0h6InBmesN8FYS47hMvq/sliSBOMU0VqzlNNXuhD8a"
+    +"3FypGfnPXvjJP5YX9ORu1xAfTNao2sSHLtrkNJQBv6jCRIMYbjjo84UFab2qhhaJ"
+    +"wqJgkQNKu2LHy5gFUztxD8JIuFPoayp1n9JL/gqFDv6k81UnDGmHeFcCARGjggEi"
+    +"MIIBHjAPBgNVHRMBAf8EBTADAQEAMA8GA1UdDwEB/wQFAwMHoAAwOwYDVR0lBDQw"
+    +"MgYIKwYBBQUHAwEGCCsGAQUFBwMCBggrBgEFBQcDBAYIKwYBBQUHAwUGCCsGAQUF"
+    +"BwMHMB0GA1UdDgQWBBTnT1aQ9I0Ud4OEfNJkSOgJSrsIoDAfBgNVHSMEGDAWgBRj"
+    +"e/R2qFQkjqV0pXdEpvReD1eSUTAiBgNVHREEGzAZoBcGCisGAQQBgjcUAgOgCQwH"
+    +"Zm9vQGZvbzASBgNVHSAECzAJMAcGBSkBAQEBMEUGA1UdHwQ+MDwwOqA4oDaGNGh0"
+    +"dHA6Ly8xMjcuMC4wLjE6ODA4MC9lamJjYS93ZWJkaXN0L2NlcnRkaXN0P2NtZD1j"
+    +"cmwwDQYJKoZIhvcNAQEFBQADgYEAU4CCcLoSUDGXJAOO9hGhvxQiwjGD2rVKCLR4"
+    +"emox1mlQ5rgO9sSel6jHkwceaq4A55+qXAjQVsuy76UJnc8ncYX8f98uSYKcjxo/"
+    +"ifn1eHMbL8dGLd5bc2GNBZkmhFIEoDvbfn9jo7phlS8iyvF2YhC4eso8Xb+T7+BZ"
+    +"QUOBOvc=").getBytes());
 
     /**
      * Creates a new TestCertTools object.
@@ -273,12 +277,12 @@ public class TestCertTools extends TestCase {
     public void test06CertOps() throws Exception {
         log.debug(">test06CertOps()");
         X509Certificate cert = CertTools.getCertfromByteArray(testcert);
-        //TODO
         assertEquals("Wrong issuerDN",CertTools.getIssuerDN(cert),CertTools.stringToBCDNString("CN=TestCA,O=AnaTom,C=SE"));
-        assertEquals("Wrong subjectDN",CertTools.getSubjectDN(cert),CertTools.stringToBCDNString("CN=upn,O=Foo,C=SE"));
-        assertEquals("Wrong subject key id", new String(Hex.encode(CertTools.getSubjectKeyId(cert))),"6AB7CB5D0A93AD697C4AC901E9752BE84D819922".toLowerCase());
+        assertEquals("Wrong subjectDN",CertTools.getSubjectDN(cert),CertTools.stringToBCDNString("CN=p12test,O=PrimeTest,C=SE"));
+        assertEquals("Wrong subject key id", new String(Hex.encode(CertTools.getSubjectKeyId(cert))),"E74F5690F48D147783847CD26448E8094ABB08A0".toLowerCase());
         assertEquals("Wrong authority key id", new String(Hex.encode(CertTools.getAuthorityKeyId(cert))),"637BF476A854248EA574A57744A6F45E0F579251".toLowerCase());
         assertEquals("Wrong upn alt name", "foo@foo", CertTools.getUPNAltName(cert));
+        assertEquals("Wrong certificate policy", "1.1.1.1.1.1", CertTools.getCertificatePolicyId(cert));
 //        System.out.println(cert);
 //        FileOutputStream fos = new FileOutputStream("foo.cert");
 //        fos.write(cert.getEncoded());

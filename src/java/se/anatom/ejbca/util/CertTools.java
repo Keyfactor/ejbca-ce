@@ -16,7 +16,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.43 2003-09-23 20:14:14 anatom Exp $
+ * @version $Id: CertTools.java,v 1.44 2003-09-24 08:17:26 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -643,20 +643,15 @@ public class CertTools {
     public static String getCertificatePolicyId(X509Certificate cert)
         throws IOException {
         byte[] extvalue = cert.getExtensionValue("2.5.29.32");
-
         if (extvalue == null) {
             return null;
         }
-
         DEROctetString oct = (DEROctetString) (new DERInputStream(new ByteArrayInputStream(extvalue)).readObject());
         CertificatePolicies cp = new CertificatePolicies((ASN1Sequence) new DERInputStream(
                     new ByteArrayInputStream(oct.getOctets())).readObject());
         String id = cp.getPolicy(0);
-
         return id;
-    }
-
-    // getCertificatePolicyId
+    } // getCertificatePolicyId
 
     /**
      * Gets the Microsoft specific UPN altName.
@@ -668,27 +663,23 @@ public class CertTools {
     public static String getUPNAltName(X509Certificate cert)
         throws IOException, CertificateParsingException {
         Collection altNames = cert.getSubjectAlternativeNames();
-        Iterator i = altNames.iterator();
-
-        while (i.hasNext()) {
-            List listitem = (List) i.next();
-            Integer no = (Integer) listitem.get(0);
-
-            if (no.intValue() == 0) {
-                byte[] altName = (byte[]) listitem.get(1);
-                DERObject oct = (DERObject) (new DERInputStream(new ByteArrayInputStream(altName)).readObject());
-                ASN1Sequence seq = ASN1Sequence.getInstance(oct);
-                ASN1TaggedObject obj = (ASN1TaggedObject) seq.getObjectAt(1);
-                DERUTF8String str = DERUTF8String.getInstance(obj.getObject());
-
-                return str.getString();
+        if (altNames != null) {
+            Iterator i = altNames.iterator();
+            while (i.hasNext()) {
+                List listitem = (List) i.next();
+                Integer no = (Integer) listitem.get(0);
+                if (no.intValue() == 0) {
+                    byte[] altName = (byte[]) listitem.get(1);
+                    DERObject oct = (DERObject) (new DERInputStream(new ByteArrayInputStream(altName)).readObject());
+                    ASN1Sequence seq = ASN1Sequence.getInstance(oct);
+                    ASN1TaggedObject obj = (ASN1TaggedObject) seq.getObjectAt(1);
+                    DERUTF8String str = DERUTF8String.getInstance(obj.getObject());
+                    return str.getString();
+                }
             }
         }
-
         return null;
-    }
-
-    // getUPNAltName
+    } // getUPNAltName
 
     /**
      * Generate SHA1 fingerprint in string representation.
