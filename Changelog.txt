@@ -15,6 +15,7 @@
   ! No SQL migration file is available right now to do so !
 - Small text and spelling fixes.
 - LDAP object classes for devices.
+- New structure for the cli.
 
 3.0.5
 -----

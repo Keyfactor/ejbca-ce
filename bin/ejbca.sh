@@ -6,6 +6,13 @@ case "`uname`" in
   CYGWIN*) cygwin=true ;;
 esac
 
+# Check that JAVA_HOME is set
+if [ -f $JAVA_HOME ]; then
+    echo "You must set JAVA_HOME before running the EJBCA cli."
+    exit 1
+fi
+
+# Wich command are we running?
 if [ "$1" = "batch" ] ; then 
 	class_name=se.anatom.ejbca.batch.BatchMakeP12
 elif [ "$1" = "ca" ] ; then
@@ -19,7 +26,7 @@ elif [ "$1" = "setup" ] ; then
 elif [ "$1" = "template" ] ; then
 	class_name=se.anatom.ejbca.admin.SVGTemplatePrinter
 else
-	echo "Usage: $0 [batch|ca|ra|setup|template] options"
+	echo "Usage: $0 [batch|ca|ra|setup|template|jobrunner] options"
 	echo "For options information, specify a command directive"
 	exit 1
 fi
@@ -41,6 +48,12 @@ else
 fi
 
 EJBCA_HOME=..
+# Check that classes exist
+if [ ! -d ${EJBCA_HOME}/bin/classes ]
+then    
+        echo "You must build EJBCA before using the cli, use 'ant'."
+        exit 1
+fi
 
 # library classpath
 CP="$EJBCA_HOME"
