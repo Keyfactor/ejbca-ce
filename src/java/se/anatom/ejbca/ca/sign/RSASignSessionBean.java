@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.35 2002-07-21 12:12:12 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.36 2002-08-14 13:17:53 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -67,7 +67,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     private ICertificateStoreSessionLocalHome storeHome = null;
 
     /** A vector of publishers home interfaces where certs and CRLs are stored */
-    private Vector publishers = null;
+    private ArrayList publishers = null;
 
     /* Home interface to Authentication session */
     private IAuthenticationSessionLocalHome authHome = null;
@@ -89,7 +89,7 @@ public class RSASignSessionBean extends BaseSessionBean {
 
             // Init the publisher session beans
             int i = 1;
-            publishers = new Vector(0);
+            publishers = new ArrayList();
             try {
                 while (true) {
                     String jndiName = "java:comp/env/ejb/PublisherSession" + i;
@@ -480,7 +480,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         String dn=subject.getDN();
         if ((subject.getEmail() != null) && (emailindn.booleanValue() == true))
             dn=dn+", EmailAddress="+subject.getEmail();
-        
+
         debug("Subject="+dn);
         certgen.setSubjectDN(CertTools.stringToBcX509Name(dn));
         debug("Issuer="+caname);
