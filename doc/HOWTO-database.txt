@@ -75,7 +75,7 @@ MySQL specifics
 ---------------
 Jaws configuration file: jbosscmp-jdbc-mysql.xml
 
-JDBC driver: mysql-connector-java-3.0.x.jar.
+JDBC driver: mysql-connector-java-3.0.x.jar (preferably 3.0.7 or higher).
 
 Download JDBC driver for mySQL from http://www.mysql.com/
 
