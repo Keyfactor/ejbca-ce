@@ -35,7 +35,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.1.1.1 2001-11-15 14:58:15 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.2 2001-12-07 09:40:32 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -152,6 +152,9 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
 
             // Init random number generator for random serialnumbers
             random = SecureRandom.getInstance("SHA1PRNG");
+            //Using this seed we should get a different seed every time.
+            // We are not concerned about the security of the random bits, only that they are different every time.
+            // TODO: some maths on how likely a serial number collision is
             random.setSeed((long)(new Date().getTime()));
         } catch( Exception e ) {
             throw new EJBException(e);
