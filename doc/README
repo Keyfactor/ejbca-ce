@@ -1,6 +1,6 @@
 
 EJBCA
------
+=====
 The goal with EJBCA is to create a fully functional CA built in Java. EJBCA
  builds on the J2EE platform to 
 create a robust, high performance, transactional, platform independent,
@@ -12,7 +12,7 @@ Information about contacting the EJBCA team, contributing to EJBCA, etc can
 be found throught the Homepage.
  
 FEATURES
---------
+========
 Built on the EJB 1.1 specification.
 
 Flexible, component based architecture.
@@ -33,75 +33,89 @@ Existing publisher for LDAP (optional during configuration).
 Component based architecture for authorizing entities when issuing certificates.
 
 SECURITY
---------
+========
 Security is discussed below in the chapter about configuration and in
- 'security.txt'. 
+ *security.txt*. 
 Please take a minute to thorougly consider the security implications and make
  sure you know what you are doing when you are setting up a CA.
 
 DEPENDENCIES
-------------
+============
 
 For ease of installation most dependencies are distributed with EJBA.
 The minimal requirements to download and install are JBoss and Ant.
 
-EJBCA uses the OpenSource JCE crypto provider from Bouncycastle
- (www.bouncycastle.org). 
+Bouncycastle
+------------
+EJBCA uses the OpenSource JCE crypto provider from Bouncy Castle
+ (http://www.bouncycastle.org). 
 The provider is distributed with EJBCA as 'jce-jdk13-<version>.jar. The latest
- version of the JCE provider can always be obtained from www.bouncycastle.org.
+ version of the JCE provider can always be obtained from Bouncy Castle.
 jce-jdk13-<version>.jar is Copyright (c) 2000 The Legion Of The Bouncy Castle
  (http://www.bouncycastle.org).
 The version used in this release is 1.11. See doc/LICENSE-BC for license
 conditions of Bouncy Castle JCE.
 
+JBoss
+-----
 EJBCA is developed on the OpenSource J2EE application server JBoss
- (www.jboss.org).
+ (http://www.jboss.org). By default we expect a JBoss with an integrated Servlet
+engine, such as JBoss with Tomcat or Jetty.
 JBoss and jars from JBoss are Copyright (c) 1999-2001 jboss.org.
 Jar files needed to run EJBCA is distributed with EJBCA. The version of
 JBoss used with this release is 2.4.x. See doc/LICENSE-JBOSS for license
 conditions of JBoss.
 
+Ant and Log4J
+-------------
 Ant and Log4j is Copyright 1999-2001, Apache Software Foundation and can be
- obtained from jakarta.apache.org.
+ obtained from http://jakarta.apache.org.
 Jar file for Log4j is distributed with EJBCA. The version of Log4j used in
 this release is 1.1.3. See doc/LICENSE-APACHE for license conditions of Log4j.
 
-JUnit can be obtained from www.junit.org. Jar file needed to run JUnit tests is
+JUnit
+-----
+JUnit can be obtained from http://www.junit.org. Jar file needed to run JUnit tests is
 distributed with EJBCA. The version used in this release is 3.7. JUnit is
 released under the IBM Public License
  (http://oss.software.ibm.com/developerworks/opensource/license10.html).
 
-OpenLDAP can be obtained from www.openldap.org. Jar fil needed for EJBCA is
+OpenLDAP
+--------
+OpenLDAP can be obtained from http://www.openldap.org. Jar fil needed for EJBCA is
 redistributed with EJBCA. See doc/LICENSE-JLDAP for license conditions of
 OpenLDAP.
 
 PLATFORMS
----------
-EJBCA is completely written in Java and sould as such run on any platoform where
+=========
+EJBCA is completely written in Java and should as such run on any platform where
  a J2EE server runs.
 Development and testing is performed on Linux and Windows 2000 platforms.
 
-BUILD
------
+QUICK START GUIDE
+=================
+
+Build
+=====
 Needed to build and run are:
 JDK (1.3.1_x)
-JBOSS 2.4.x (with Tomcat) (www.jboss.org)
+JBOSS 2.4.x (with Tomcat or Jetty)
 Ant 1.4 to build (http://jakarta.apache.org/ant/)
 (Bouncycastle JCE provider, distributed with EJBCA see above)
 
 Simply unpack the archive in a directory and run "ant" to build everything.
 
-Copy the Bouncycastle JCE provider lib/jce-jdk13-<version>.jar to the directory
- jboss/lib/ext in, it will be added to JBoss's classpath 
-automatically when JBoss is started.
-
 Set the environment variable JBOSS_HOME to the directory where JBoss's root is
  (/jboss). This is done so the deploy script will know where files are to be
  copied, they are copied to the $JBOSS_HOME/deploy directory.
 
+Copy the Bouncycastle JCE provider 'lib/jce-jdk13-<version>.jar' and the LDAP 
+library 'lib/ldap.jar' to the directory $JBOSS_HOME/lib/ext, it will be added to JBoss's classpath 
+automatically when JBoss is started.
+
 You can also build javadoc on all APIs used with 'ant javadoc'.
 
-CONFIGURE
+Configure
 ---------
 
 Now when everything is installed, there are a few things to configure before
@@ -110,7 +124,8 @@ Most important, to run the CA a keystore must be in the directory designated by
  the item 'keyStore' in src/ca/META-INF/ejb-jar.xml (default /tmp/server.p12). A
  test keyStore is provided in 'src/ca/keystore/server.p12'.
 
-For the impatient:
+FOR THE IMPATIENT:
+
 1. Build everything with 'ant'.
 2. Deploy EJBCA to JBoss with 'deploy.sh/cmd'.
 3. Copy 'src/ca/keyStore/server.p12' to /tmp.
@@ -121,7 +136,7 @@ For the impatient:
 Please note that '/tmp' is often regularly cleaned on UNIX systems, so it might
 be wise to change the location of the keystore in 'src/ca/META-INF/ejb-jar.xml'.
 
-For the others:
+FOR THE OTHERS:
 
 If another database than the default Hypersonic database (for example mySQL)
  should be used, configure the database to be used in JBoss. 
@@ -195,33 +210,33 @@ PATH=$PATH:/usr/java/jdk1.3.1_01/bin
 where '/usr/java/jdk1.3.1_01/bin' is the path to where 'java' can be found.
 '/home/ejbca' is where ejbca is installed and 'jobrunner.sh' located.
 
-DEPLOY
-------
-After configuration, if you have edited the xml-files manually, please run "ant"
- to rebuild jars and wars. If youe are using a deployment tool, this may not be
- needed, consult your documentation for the tool.
+Deploy
+======
+After configuration, if you have edited the xml configuration files manually, 
+please run "ant" to rebuild jars and wars. If you are using a deployment tool, 
+this may not be needed, consult your documentation for the tool.
 
-Run deploy.sh/bat to install the EJBs and WARs (they are copied to the
+Run deploy.sh/cmd to install the EJBs and WARs (they are copied to the
  $JBOSS_HOME/deploy directory).
 
-RUN
----
+Run
+===
 
-Start JBoss with 'run_whith_tomcat.sh/bat'. JBOSS shoudl start up and deploy our
- beans and servlets without error messages.
+Start JBoss with 'run_whith_tomcat.sh/bat' (or run_with_jetty.sh/bat). JBoss 
+should start up and deploy our beans and servlets without error messages.
 
-Run the testprograms with 'runtests.sh/bat' and watch the lovely debug output
+Run the testprograms with 'runtests.sh/cmd' and watch the lovely debug output
  and logs in JBoss.
 
 To enroll for certificates using browsers, open
- http://127.0.0.1:8080/apply/request/index.html (assuming Tomcat listens to port
+ http://127.0.0.1:8080/apply/request/index.html (assuming Tomcat/Jetty listens to port
  8080) and use the links for your browser.
 
 To enroll for certificates using manual methods (for server certificates for
  example) open
 http://127.0.0.1:8080/apply/request/apply_man.html and fill in the form.
 
-Use the 'ra.sh/cmd' and 'ca.sh/cmd' scripts to administer EJBCA.
+Use the 'ca.sh/cmd' and 'ra.sh/cmd' scripts to administer EJBCA.
 
 Note that application for certificates only work when the status of a user is
 NEW (or FAILED or INPROCESS) (one time password thing). The status is set to 
@@ -244,11 +259,11 @@ job should be launched from CRON. There must be a 'jndi.properties' file in the
 A new CA should always issue an (empty) CRL. This can be done by running
  'ca.sh/cmd createcrl'.
 
-MANUAL
-------
+REFERENCE MANUAL
+================
 
-Configuring CA:
-
+Configuring CA
+--------------
 Comments are provided in src/ca/META-INT/ejb-jar.xml for all options available
  when configuring the CA. Things that can be configured are:
 The CA is modular in that all parts are different session beans which implement
@@ -270,7 +285,7 @@ Options in CreateCRLSession:
 
 Options in AuthenticationSession:
 -Authentication module. The CA authenticates certification requests with a
- specified bean defined in se.anatom.ejbca.ca.auth.IAuthenticationSession. The
+ specified bean implementing the IAuthenticationSession interface. The
  default authentication session authenticates towards a local databes held by
  the RA.
 An example is provided in sampleauth of a remoteely operated database where
@@ -281,38 +296,8 @@ The Authentication module is configured by exchanging the session bean
 Options in CertificateStoreSession:
 -Datasource to be used when finding things in the database.
 
-Configuring databases:
-The session beans use direct database communication (from a connection pool) in
-some cases. In these cases the JNDI name if the Datasource used is configured in
-ejb-jar.xml and jaws.xml, (default 'java:/DefaultDS').
-
-Configuring Publishers (LDAP):
-To publish certificates and CRLs in an LDAP directory, uncomment the section
-for the session bean 'PublisherSession1' in 'ca/META-INF/ejb-jar.xml', and
-also the section for method permissions for the same session bean. This will
-configure an LDAPPublisherSession so be deployed and when certificates and CRLs
-are created. Don't formget to edit parameters to 'PublisherSession1' to match
-your LDAP server.
-Additional Publishers can be configured by adding new session beans called
-'PublisherSession2', 'PublisherSession3', etc to ejb-jar.xml.
-
-Batch creation of certificates:
-Certificates can be created batch-wise with EJBCA. The class
-se.anatom.ejbca.batch.BatchMakeP12 creates PKCS12 keystores for all users
-designated as NEW in the local RA database. To be able to batch generate
-certificates, the users must be registered with clear text passwords. To set a
-clear text password for a user use 'ra.sh/cmd setclearpwd <username>
-<password>'.
-To generate PKCS12 files for all users with status NEW or FAILED, run
-'batch.sh/cmd'. This will generate files for users if their clear text passwords
-are NOT null.
-Generates PKCS12 files are stored in a subdirectory (to the current directory)
-called 'p12'. If the directory does not exist, it will be created.
-Make sure this directory is WELL protected, since the information contained
-in PCS12 files are secret (private keys).
-
-Administrating CA:
-
+Administrating CA
+-----------------
 The CA has a command line interface ca.sh/cmd. Options are:
 makeroot - creates a new Root CA keystore (only used by Root CA).
 getrootcert - exports the Root CA certificate to file.
@@ -326,13 +311,13 @@ createcrl - issues a CRL.
 getcrl - retrieves the latest CRL.
 rolloverrootcert - creates a new Root CA certificate using the same key pair (only used by Root CA).
 
-Configuring RA:
-
+Configuring RA
+--------------
 Options in UserAdminSession:
 -Datasource to be used when finding things in the database.
 
-Administrating RA:
-
+Administrating RA
+-----------------
 The RA has a command line interface ra.sh/cmd. Options are:
 adduser - adds a user to the database, after addition a user may apply for a
 certificate. If email address is set to 'null', no email is put in certificates.
@@ -347,23 +332,54 @@ listnewusers - lists all users with status NEW.
 listusers - lists users with specified status (give command to see list of status codes).
 revokeuser - revokes a user and all certificates issued to the user.
 
-Fetching certificates and CRLs:
+Configuring databases
+---------------------
+The session beans use direct database communication (from a connection pool) in
+some cases. In these cases the JNDI name if the Datasource used is configured in
+ejb-jar.xml and jaws.xml, (default 'java:/DefaultDS').
 
+Configuring Publishers (LDAP):
+To publish certificates and CRLs in an LDAP directory, uncomment the section
+for the session bean 'PublisherSession1' in 'ca/META-INF/ejb-jar.xml', and
+also the section for method permissions for the same session bean. This will
+configure an LDAPPublisherSession so be deployed and when certificates and CRLs
+are created. Don't formget to edit parameters to 'PublisherSession1' to match
+your LDAP server.
+Additional Publishers can be configured by adding new session beans called
+'PublisherSession2', 'PublisherSession3', etc to ejb-jar.xml.
+
+Batch creation of certificates
+------------------------------
+Certificates can be created batch-wise with EJBCA. The class
+se.anatom.ejbca.batch.BatchMakeP12 creates PKCS12 keystores for all users
+designated as NEW in the local RA database. To be able to batch generate
+certificates, the users must be registered with clear text passwords. To set a
+clear text password for a user use 'ra.sh/cmd setclearpwd <username>
+<password>'.
+To generate PKCS12 files for all users with status NEW or FAILED, run
+'batch.sh/cmd'. This will generate files for users if their clear text passwords
+are NOT null.
+Generates PKCS12 files are stored in a subdirectory (to the current directory)
+called 'p12'. If the directory does not exist, it will be created.
+Make sure this directory is WELL protected, since the information contained
+in PCS12 files are secret (private keys).
+
+Fetching certificates and CRLs
+------------------------------
 Certificates and CRLs can be fetched through the web-interface as defined in
  'webdist/dist.html'. They can also be fetched directly from the
  'CertificateStoreSession' session bean.
 
-Other deployment scenarios:
-
+Other deployment scenarios
+--------------------------
 EJBCA can be run with servlets and EJBs or only with EJBs. The servlets are only
- a publicly available front-end to the beans. It the CA is deployed integrated
- in another J2EE application,
-this front-end may not be needed.
-The sampleauth servlet is only an example and should never be deployed in a real
- production environment.
+ a publicly available front-end to the beans. If the CA is deployed integrated
+ in another J2EE application, this front-end may not be needed.
+The sampleauth servlet (sampleauth.war) is only an example and should never be 
+deployed in a real production environment.
 
 SAMPLES
--------
+=======
 A collection of samples are in the directory src/java/se/anatom/ejbca/samples.
 
 -AuthResult.java
@@ -381,16 +397,16 @@ The sample remote authentication is deployes by deploying the file
 -HttpGetCert.java
 Example how a certificate can be fetched programmatically using HTTP/S. The
  sample generates a certificate request and uses POST to the same servlet
-as used from a browser through
- (http://127.0.0.1:8080/apply/request/apply_man.jsp), the servlet url is
- http://127.0.0.1:8080/apply/certreq.
+as used from a browser through http://127.0.0.1:8080/apply/request/apply_man.jsp. 
+The servlet url use din the example is http://127.0.0.1:8080/apply/certreq.
 The certificate reply containing a PEM-formatted certificate is printed to the
  screen.
 
 
 REFERENCES
-----------
+==========
 
+Browser key generation:
 http://home.netscape.com/eng/security/comm4-keygen.html
 
 Note on Mozilla certs:
@@ -403,3 +419,5 @@ Note on IE certs:
 For IE to verify client certs, the ordering in the DN must be strictly the same
  in both client and CA certs. Possibly that it must also be in a specific order.
 
+To generate html code from textfiles, txt2html was used.
+txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
