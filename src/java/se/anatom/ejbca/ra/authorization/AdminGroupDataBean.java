@@ -1,385 +1,274 @@
-package se.anatom.ejbca.ra.authorization;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Vector;
+package se.anatom.ejbca.authorization;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.RemoveException;
 import javax.naming.InitialContext;
-
+import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Iterator;
 import org.apache.log4j.Logger;
-
 import se.anatom.ejbca.BaseEntityBean;
 
 
-/**
- * Entity bean should not be used directly, use though Session beans. Entity Bean representing
- * authorization admingroup. Information stored:
+/** Entity bean should not be used directly, use though Session beans.
+ *
+ * Entity Bean representing authorization admingroup.
+ * Information stored:
  * <pre>
- * Usergroupname
- *  AccessRules
+ * admingroupname
+ * caid
+ *
+ * AccessRules
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.8 2003-07-24 08:43:31 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.9 2003-09-03 14:49:55 herrvendil Exp $
  */
 public abstract class AdminGroupDataBean extends BaseEntityBean {
+
     private static Logger log = Logger.getLogger(AdminGroupDataBean.class);
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
+    public abstract int getPK();
+    public abstract void setPK(int pk);
+    
     public abstract String getAdminGroupName();
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param admingroupname DOCUMENT ME!
-     */
     public abstract void setAdminGroupName(String admingroupname);
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
+    public abstract int getCAId();
+    public abstract void setCAId(int caid);    
+    
     public abstract Collection getAdminEntities();
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param adminentities DOCUMENT ME!
-     */
     public abstract void setAdminEntities(Collection adminentities);
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public abstract Collection getAccessRules();
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param accessrules DOCUMENT ME!
-     */
     public abstract void setAccessRules(Collection accessrules);
 
-    /**
-     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
+     /**
+     * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
      */
-    public void addAccessRule(String resource, int rule, boolean recursive) {
-        try {
-            AccessRulesDataLocal data = createAccessRule(resource, rule, recursive);
 
-            Iterator i = getAccessRules().iterator();
-
-            while (i.hasNext()) {
-                AccessRulesDataLocal ar = (AccessRulesDataLocal) i.next();
-
-                if (ar.getResource().equals(resource)) {
-                    getAccessRules().remove(ar);
-
-                    try {
-                        ar.remove();
-                    } catch (RemoveException e) {
-                        throw new EJBException(e.getMessage());
-                    }
-
-                    break;
-                }
-            }
-
-            getAccessRules().add(data);
-        } catch (Exception e) {
-        }
-    }
-
-    // addAccessRule
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param accessrules DOCUMENT ME!
-     */
-    public void addAccessRules(AccessRule[] accessrules) {
-        if (accessrules != null) {
-            for (int i = 0; i < accessrules.length; i++) {
-                addAccessRule(accessrules[i].getResource(), accessrules[i].getRule(),
-                    accessrules[i].isRecursive());
-            }
-        }
-    }
-
-    // addAccessRules
-
-    /**
-     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
-     */
-    public void removeAccessRule(String resource) {
-        Iterator i = getAccessRules().iterator();
-
-        while (i.hasNext()) {
+    public void addAccessRules(Collection accessrules){
+      Iterator iter = accessrules.iterator();
+      while(iter.hasNext()){
+        AccessRule accessrule = (AccessRule) iter.next();  
+        try{
+          AccessRulesDataLocal data = createAccessRule(accessrule);
+         
+          Iterator i =  getAccessRules().iterator();
+          while(i.hasNext()){
             AccessRulesDataLocal ar = (AccessRulesDataLocal) i.next();
-
-            if (ar.getResource().equals(resource)) {
-                getAccessRules().remove(ar);
-
-                try {
-                    ar.remove();
-                } catch (RemoveException e) {
-                    throw new EJBException(e.getMessage());
-                }
-
-                break;
-            }
+            if(ar.getAccessRuleObject().getAccessRule().equals(accessrule.getAccessRule())){
+              getAccessRules().remove(ar);
+              try{
+                ar.remove();
+              }catch(RemoveException e){ throw new EJBException(e.getMessage());}
+              break;
+             }
+           }
+          
+          getAccessRules().add(data);
+        }catch(Exception e){
         }
-    }
+      } 
+    } // addAccessRules
 
-    // removeAccessRule
-
-    /**
-     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
+     /**
+     * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
      */
-    public int getNumberOfAccessRules() {
-        return getAccessRules().size();
-    }
-
-    // getNumberOfAccessRules
-
-    /**
-     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
-     */
-    public AccessRule[] getAccessRulesAsArray() {
-        AccessRule[] returnval = null;
-
-        if (getAccessRules() != null) {
-            returnval = new AccessRule[getAccessRules().size()];
-
-            Iterator i = getAccessRules().iterator();
-            int j = 0;
-
-            while (i.hasNext()) {
-                AccessRulesDataLocal ar = (AccessRulesDataLocal) i.next();
-                returnval[j] = ar.getAccessRule();
-                j++;
-            }
-
-            Arrays.sort(returnval);
+    public void removeAccessRules(Collection accessrules){
+      Iterator iter = accessrules.iterator();
+      while(iter.hasNext()){
+        String accessrule = (String) iter.next();  
+        
+        Iterator i =  getAccessRules().iterator();
+        while(i.hasNext()){
+          AccessRulesDataLocal ar = (AccessRulesDataLocal) i.next();
+          if(ar.getAccessRuleObject().getAccessRule().equals(accessrule)){
+            getAccessRules().remove(ar);
+            try{
+              ar.remove();
+            }catch(RemoveException e){ throw new EJBException(e.getMessage());}
+            break;
+          }
         }
+      }  
+    } // removeAccessRules
 
-        return returnval;
-    }
-
-    // getAccessRules
-
-    /**
-     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
+     /**
+     * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
      */
-    public void addAdminEntity(int matchwith, int matchtype, String matchvalue) {
-        try {
-            AdminEntityDataLocal data = createAdminEntity(matchwith, matchtype, matchvalue);
-            AdminEntityPK datapk = new AdminEntityPK(getAdminGroupName(), matchwith, matchtype,
-                    matchvalue);
+    public int getNumberOfAccessRules(){
+       return  getAccessRules().size();
+    } // getNumberOfAccessRules
 
-            Iterator i = getAdminEntities().iterator();
-
-            while (i.hasNext()) {
-                AdminEntityDataLocal ue = (AdminEntityDataLocal) i.next();
-                AdminEntityPK uepk = new AdminEntityPK(getAdminGroupName(),
-                        ue.getMatchWith().intValue(), ue.getMatchType().intValue(),
-                        ue.getMatchValue());
-
-                if (uepk.equals(datapk)) {
-                    getAdminEntities().remove(ue);
-
-                    try {
-                        ue.remove();
-                    } catch (RemoveException e) {
-                        throw new EJBException(e.getMessage());
-                    }
-
-                    break;
-                }
-            }
-
-            getAdminEntities().add(data);
-        } catch (Exception e) {
+     /**
+     * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
+     */
+    public Collection getAccessRuleObjects(){
+      ArrayList returnval = new ArrayList();
+      if(getAccessRules() != null){
+        Iterator i =  getAccessRules().iterator();
+        while(i.hasNext()){
+          AccessRulesDataLocal ar = (AccessRulesDataLocal) i.next();
+          returnval.add(ar.getAccessRuleObject());
         }
-    }
+      }
+      return returnval;
+    } // getAccessRules
 
-    // addAdminEntity
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param adminentities DOCUMENT ME!
+     /**
+     * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
      */
-    public void addAdminEntities(AdminEntity[] adminentities) {
-        if (adminentities != null) {
-            for (int i = 0; i < adminentities.length; i++) {
-                addAdminEntity(adminentities[i].getMatchWith(), adminentities[i].getMatchType(),
-                    adminentities[i].getMatchValue());
-            }
-        }
-    }
 
-    // addAdminEntities
+    public void addAdminEntities(Collection adminentities){
+      Iterator iter = adminentities.iterator();  
+      while(iter.hasNext()){  
+        AdminEntity adminentity = (AdminEntity) iter.next();  
+        try{
+          AdminEntityDataLocal data = createAdminEntity(adminentity);
+          AdminEntityPK datapk = new AdminEntityPK(getAdminGroupName(), getCAId(), adminentity.getMatchWith(), adminentity.getMatchType(), adminentity.getMatchValue());
 
-    /**
-     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
-     */
-    public void removeAdminEntity(int matchwith, int matchtype, String matchvalue) {
-        AdminEntityPK datapk = new AdminEntityPK(getAdminGroupName(), matchwith, matchtype,
-                matchvalue);
-
-        Iterator i = getAdminEntities().iterator();
-
-        while (i.hasNext()) {
+          Iterator i =  getAdminEntities().iterator();
+          while(i.hasNext()){
             AdminEntityDataLocal ue = (AdminEntityDataLocal) i.next();
-            AdminEntityPK uepk = new AdminEntityPK(getAdminGroupName(),
-                    ue.getMatchWith().intValue(), ue.getMatchType().intValue(), ue.getMatchValue());
+            AdminEntityPK uepk= new AdminEntityPK(getAdminGroupName(), getCAId(), ue.getMatchWith()
+                                                ,ue.getMatchType(),ue.getMatchValue());
+            if(uepk.equals(datapk)){
+              getAdminEntities().remove(ue);
+              try{
+                ue.remove();
+              }catch(RemoveException e){ throw new EJBException(e.getMessage());}
+              break;
+           }
+         }
+         getAdminEntities().add(data);
+         }catch(Exception e){}
+      }  
+    } // addAdminEntities
 
-            if (uepk.equals(datapk)) {
-                getAdminEntities().remove(ue);
 
-                try {
-                    ue.remove();
-                } catch (RemoveException e) {
-                    throw new EJBException(e.getMessage());
-                }
-
-                break;
-            }
-        }
-    }
-
-    // removeAdminEntity
-
-    /**
-     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
+     /**
+     * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
      */
-    public int getNumberOfAdminEntities() {
-        return getAdminEntities().size();
-    }
+    public void removeAdminEntities(Collection adminentities){
+      Iterator iter = adminentities.iterator();
 
-    // getNumberOfAdminEntities
+      while(iter.hasNext()){
+        AdminEntity adminentity = (AdminEntity) iter.next();
+        AdminEntityPK datapk = new AdminEntityPK(getAdminGroupName(), getCAId(), adminentity.getMatchWith(), adminentity.getMatchType(),adminentity.getMatchValue());
 
-    /**
-     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
+        Iterator i =  getAdminEntities().iterator();
+        while(i.hasNext()){
+          AdminEntityDataLocal ue = (AdminEntityDataLocal) i.next();
+          AdminEntityPK uepk= new AdminEntityPK(getAdminGroupName(), getCAId(), ue.getMatchWith(),ue.getMatchType(),ue.getMatchValue());
+          if(uepk.equals(datapk)){
+            getAdminEntities().remove(ue);
+            try{
+              ue.remove();
+            }catch(RemoveException e){ throw new EJBException(e.getMessage());}
+            break;
+          }
+        }  
+      }
+    } // removeAdminEntities
+
+     /**
+     * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
      */
-    public AdminEntity[] getAdminEntitiesAsArray() {
-        AdminEntity[] returnval = null;
+    public int getNumberOfAdminEntities(){
+      return getAdminEntities().size();
+    } // getNumberOfAdminEntities
 
-        if (getAdminEntities() != null) {
-            returnval = new AdminEntity[getAdminEntities().size()];
-
-            Iterator i = getAdminEntities().iterator();
-            int j = 0;
-
-            while (i.hasNext()) {
-                AdminEntityDataLocal ue = (AdminEntityDataLocal) i.next();
-                returnval[j] = ue.getAdminEntity();
-                j++;
-            }
-
-            Arrays.sort(returnval);
-        }
-
-        return returnval;
-    }
-
-    // getAdminEntities
-
-    /**
-     * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
+     /**
+     * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
      */
-    public AdminGroup getAdminGroup() {
-        Vector accessrules = new Vector();
-        Vector adminentities = new Vector();
-
-        Iterator i = null;
-
-        if (getAdminEntities() != null) {
-            i = getAdminEntities().iterator();
-
-            while (i.hasNext()) {
-                AdminEntityDataLocal ue = (AdminEntityDataLocal) i.next();
-                adminentities.addElement(ue.getAdminEntity());
-            }
+    public Collection getAdminEntityObjects(){
+      ArrayList returnval = new ArrayList();
+      if(getAdminEntities() != null){
+        Iterator i =  getAdminEntities().iterator();
+        while(i.hasNext()){
+          AdminEntityDataLocal ae = (AdminEntityDataLocal) i.next();
+          returnval.add(ae.getAdminEntity(getCAId()));
         }
+      }
+      return returnval;
+    } // getAdminEntityObjects
 
-        if (getAccessRules() != null) {
-            i = getAccessRules().iterator();
+     /**
+     * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
+     */
+    public AdminGroup getAdminGroup(){
+      ArrayList accessrules = new ArrayList();
+      ArrayList adminentities = new ArrayList();
 
-            while (i.hasNext()) {
-                AccessRulesDataLocal ar = (AccessRulesDataLocal) i.next();
-                accessrules.addElement(ar.getAccessRule());
-            }
+      Iterator i = null;
+      if(getAdminEntities()!=null){
+        i =  getAdminEntities().iterator();
+        while(i.hasNext()){
+          AdminEntityDataLocal ae = (AdminEntityDataLocal) i.next();
+          adminentities.add(ae.getAdminEntity(getCAId()));
         }
+      }
 
-        return new AdminGroup(accessrules, adminentities);
-    }
+      if(getAccessRules()!=null){
+        i =  getAccessRules().iterator();
+        while(i.hasNext()){
+          AccessRulesDataLocal ar = (AccessRulesDataLocal) i.next();
+          accessrules.add(ar.getAccessRuleObject());
+        }
+      }
 
-    // getAdminGroup
+      return new AdminGroup(getAdminGroupName(), getCAId(), accessrules, adminentities);
+    } // getAdminGroup
+
+     /**
+     * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
+     */
+    public AdminGroup getAdminGroupNames(){
+                 System.out.println(" Getting admingroup :  " + getAdminGroupName() + ", " + getCAId());   
+      return new AdminGroup(getAdminGroupName(), getCAId(), null, null);
+    } // getAdminGroupNames
     //
     // Fields required by Container
     //
 
     /**
      * Entity Bean holding data of raadmin profilegroups.
+     * @param admingroupname.
      *
-     * @param admingroupname
-     *
-     * @return DOCUMENT ME!
-     */
-    public String ejbCreate(String admingroupname) throws CreateException {
+     **/
+
+    public AdminGroupPK ejbCreate(String admingroupname, int caid) throws CreateException {
+        AdminGroupPK pk = new AdminGroupPK(admingroupname,caid);
+        setPK(pk.hashCode());
         setAdminGroupName(admingroupname);
+        setCAId(caid);
+        log.debug("Created admingroup : "+admingroupname);
 
-        log.debug("Created admingroup : " + admingroupname);
-
-        return null;
+        return pk;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param admingroupname DOCUMENT ME!
-     */
-    public void ejbPostCreate(String admingroupname) {
+    public void ejbPostCreate(String admingroupname, int caid) {
+
         // Do nothing. Required.
+
     }
 
     // Private Methods.
-    private AdminEntityDataLocal createAdminEntity(int matchwith, int matchtype, String matchvalue)
-        throws CreateException, javax.naming.NamingException {
-        AdminEntityDataLocal returnval = null;
-        InitialContext initial = new InitialContext();
-        AdminEntityDataLocalHome home = (AdminEntityDataLocalHome) initial.lookup(
-                "java:comp/env/ejb/AdminEntityDataLocal");
-        returnval = home.create(getAdminGroupName(), matchwith, matchtype, matchvalue);
+    private AdminEntityDataLocal createAdminEntity(AdminEntity adminentity) throws CreateException, javax.naming.NamingException{
+      AdminEntityDataLocal returnval = null;
+      InitialContext initial = new InitialContext();
+      AdminEntityDataLocalHome home = (AdminEntityDataLocalHome) initial.lookup("java:comp/env/ejb/AdminEntityDataLocal");
+      returnval= home.create(getAdminGroupName(), getCAId(), adminentity.getMatchWith(), adminentity.getMatchType(), adminentity.getMatchValue());
+      return returnval;
+    } // createAdminEntity
 
-        return returnval;
-    }
-
-    // createProfileData
-    private AccessRulesDataLocal createAccessRule(String resource, int rule, boolean recursive)
-        throws CreateException, javax.naming.NamingException {
-        AccessRulesDataLocal returnval = null;
-        InitialContext initial = new InitialContext();
-        AccessRulesDataLocalHome home = (AccessRulesDataLocalHome) initial.lookup(
-                "java:comp/env/ejb/AccessRulesDataLocal");
-        returnval = home.create(getAdminGroupName(), resource,
-                new AccessRule(resource, rule, recursive));
-
-        return returnval;
-    }
-
-    // createProfileData
+    private AccessRulesDataLocal createAccessRule(AccessRule accessrule) throws CreateException, javax.naming.NamingException{
+      AccessRulesDataLocal returnval = null;
+      InitialContext initial = new InitialContext();
+      AccessRulesDataLocalHome home = (AccessRulesDataLocalHome) initial.lookup("java:comp/env/ejb/AccessRulesDataLocal");
+      returnval= home.create(getAdminGroupName(), getCAId(), accessrule);
+      return returnval;
+    } // createAccessRule
 }

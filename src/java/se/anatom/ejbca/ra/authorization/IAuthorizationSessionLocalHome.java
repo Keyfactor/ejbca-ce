@@ -1,21 +1,21 @@
-package se.anatom.ejbca.ra.authorization;
+package se.anatom.ejbca.authorization;
 
 import javax.ejb.CreateException;
 
-
 /**
- * DOCUMENT ME!
- *
  * @version $Id: IAuthorizationSessionLocalHome.java
  */
+
 public interface IAuthorizationSessionLocalHome extends javax.ejb.EJBLocalHome {
+
     /**
      * Default create method. Maps to ejbCreate in implementation.
-     *
-     * @return ICertificateStoreSessionRemote interface
-     *
      * @throws CreateException
      * @throws RemoteException
+     * @return ICertificateStoreSessionRemote interface
      */
+
     IAuthorizationSessionLocal create() throws CreateException;
+
 }
+

@@ -1,90 +1,66 @@
-package se.anatom.ejbca.ra.authorization;
+package se.anatom.ejbca.authorization;
 
 import javax.ejb.CreateException;
-
 import org.apache.log4j.Logger;
-
 import se.anatom.ejbca.BaseEntityBean;
 
-
-/**
- * Entity bean should not be used directly, use though Session beans. Entity Bean representing
- * accessrules in EJBCA authorization module Information stored:
+/** Entity bean should not be used directly, use though Session beans.
+ *
+ * Entity Bean representing  accessrules in EJBCA authorization module
+ * Information stored:
  * <pre>
- * Resource
  * Access rule
+ * rule (accept of decline)
+ * isrecursive
+ * 
  * </pre>
  *
- * @version $Id: AccessRulesDataBean.java,v 1.8 2003-07-24 08:43:31 anatom Exp $
+ * @version $Id: AccessRulesDataBean.java,v 1.9 2003-09-03 14:49:55 herrvendil Exp $
  */
-public abstract class AccessRulesDataBean extends BaseEntityBean {
+public abstract class AccessRulesDataBean extends BaseEntityBean
+{
+
     private static Logger log = Logger.getLogger(AccessRulesDataBean.class);
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public abstract int getPK();
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param pK DOCUMENT ME!
-     */
     public abstract void setPK(int pK);
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public abstract String getResource();
+    public abstract String getAccessRule();
+    public abstract void setAccessRule(String accessrule);
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param resource DOCUMENT ME!
-     */
-    public abstract void setResource(String resource);
+    public abstract int getRule();
+    public abstract void setRule(int rule);
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public abstract AccessRule getAccessRule();
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param accessrule DOCUMENT ME!
-     */
-    public abstract void setAccessRule(AccessRule accessrule);
+    public abstract boolean getIsRecursive();
+    public abstract void setIsRecursive(boolean isrecursive);    
+    
 
     //
     // Fields required by Container
     //
-    public AccessRulesPK ejbCreate(String usergroupname, String resource, AccessRule accessrule)
-        throws CreateException {
-        AccessRulesPK pk = new AccessRulesPK(usergroupname, resource);
+    public AccessRulesPK ejbCreate(String admingroupname, int caid, AccessRule accessrule) throws CreateException {
+        AccessRulesPK pk = new AccessRulesPK(admingroupname, caid, accessrule);
 
         setPK(pk.hashCode());
-        setResource(resource);
-        setAccessRule(accessrule);
-        log.debug("Created available accessrule " + resource);
-
+        setAccessRule(accessrule.getAccessRule());
+        setRule(accessrule.getRule());
+        setIsRecursive(accessrule.isRecursive());
+        log.debug("Created accessrule : "+ accessrule.getAccessRule());
         return pk;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param usergroupname DOCUMENT ME!
-     * @param resource DOCUMENT ME!
-     * @param accessrule DOCUMENT ME!
-     */
-    public void ejbPostCreate(String usergroupname, String resource, AccessRule accessrule) {
-        // Do nothing. Required.
+    public void ejbPostCreate(String admingroupname, int caid, AccessRule accessrule) {
+        // Do nothing. Required method.
+    }
+    
+
+    public  AccessRule getAccessRuleObject(){
+      return new AccessRule(getAccessRule(), getRule(), getIsRecursive()); 
+    }
+    
+    public void setAccessRuleObject(AccessRule accessrule){
+      setAccessRule(accessrule.getAccessRule());
+      setRule(accessrule.getRule());  
+      setIsRecursive(accessrule.isRecursive());  
     }
 }

@@ -1,113 +1,97 @@
-package se.anatom.ejbca.ra.authorization;
+package se.anatom.ejbca.authorization;
 
-import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Vector;
-
+import java.util.Collection;
+import java.util.Iterator;
+import java.io.Serializable;
 
 /**
  * A class that represents a group of users and their access rules.
  *
- * @version $Id: AdminGroup.java,v 1.4 2003-07-24 08:43:31 anatom Exp $
+ * @version $Id: AdminGroup.java,v 1.5 2003-09-03 14:49:55 herrvendil Exp $
  */
-public class AdminGroup implements Serializable {
-/*    public static final String SPECIALADMINGROUP_PUBLICWEBADMIN        = "SPECIAL_PUBLIC_WEBADMIN";
-    public static final String SPECIALADMINGROUP_CACOMMANDLINEADMIN    = "SPECIAL_CA_COMMANDLINEADMIN";
-    public static final String SPECIALADMINGROUP_RACOMMANDLINEADMIN    = "SPECIAL_RA_COMMANDLINEADMIN";
-    public static final String SPECIALADMINGROUP_BATCHCOMMANDLINEADMIN = "SPECIAL_BATCH_COMMANDLINEADMIN"; */
-
-    /**
-     * Creates a new instance of AdminGroup
-     */
-    public AdminGroup() {
-        accessrules = new Vector();
-        adminentities = new Vector();
+public class AdminGroup implements Serializable, Comparable {
+                               
+    
+    /** Creates a new instance of AdminGroup */
+    public AdminGroup(String admingroupname, int caid) {
+      this.admingroupname=admingroupname;
+      this.caid=caid;  
+      accessrules = new ArrayList();
+      adminentities = new ArrayList();
     }
 
-    /**
-     * Creates a new AdminGroup object.
-     *
-     * @param accessrules DOCUMENT ME!
-     * @param adminentities DOCUMENT ME!
-     */
-    public AdminGroup(Vector accessrules, Vector adminentities) {
-        this.accessrules = accessrules;
-        this.adminentities = adminentities;
+    public AdminGroup(String admingroupname, int caid, ArrayList accessrules, ArrayList adminentities){
+      this.admingroupname=admingroupname;
+      this.caid=caid;
+      this.accessrules=accessrules;
+      this.adminentities=adminentities;
     }
 
     // Public methods
-
-    /**
-     * Returns the number of accessrules applied to this admingroup
-     *
-     * @return DOCUMENT ME!
-     */
+    /** Returns the number of accessrules applied to this admingroup */
     public int getNumberOfAccessRules() {
-        return accessrules.size();
+      return accessrules.size();
     }
 
-    /**
-     * Returns an array containing all the admingroup's accessrules.
-     *
-     * @return DOCUMENT ME!
-     */
-    public AccessRule[] getAccessRules() {
-        AccessRule[] dummy = {  };
-
-        return (AccessRule[]) accessrules.toArray(dummy);
+    /** Returns a ArrayList of AccessRule containing all the admingroup's accessrules.*/
+    public Collection getAccessRules() {
+      return accessrules;
     }
 
-    /**
-     * Returns the number of user entities in this admingroup
-     *
-     * @return DOCUMENT ME!
-     */
+    /** Returns the number of admin entities in this admingroup */
     public int getNumberAdminEntities() {
-        return adminentities.size();
+      return adminentities.size();
     }
 
-    /**
-     * Returns an array containing all the admingroup's user entities.
-     *
-     * @return DOCUMENT ME!
-     */
-    public AdminEntity[] getAdminEntities() {
-        AdminEntity[] dummy = {  };
-
-        return (AdminEntity[]) adminentities.toArray(dummy);
+    /** Returns an ArrayList of AdminEntity containing all the admingroup's admin entities.*/
+    public Collection getAdminEntities() {
+      return adminentities;
     }
-
-    /**
-     * Method that given an array of available resources returns which isn't already in use by the
-     * rule set.
-     *
-     * @param availableresources DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public String[] nonUsedResources(String[] availableresources) {
-        Vector nonusedresources = new Vector();
-        String[] dummy = {  };
-        int result;
-        Collections.sort(accessrules);
-
-        if (availableresources != null) {
-            for (int i = 0; i < availableresources.length; i++) {
-                result = java.util.Collections.binarySearch(accessrules,
-                        new AccessRule(availableresources[i], 0, false));
-
-                if (result < 0) {
-                    // Resource isn't in use.
-                    nonusedresources.addElement(availableresources[i]);
-                }
-            }
+    
+    public int getCAId(){
+      return this.caid;
+    }
+    
+    public String getAdminGroupName(){
+      return this.admingroupname;
+    }
+    
+    /** Method that given an array of available access rules returns which isn't already
+     * in use by the rule set. */
+    public Collection nonUsedAccessRules(Collection availableaccessrules){
+      ArrayList nonusedaccessrules = new ArrayList();
+      String[] dummy = {};
+      int result;
+      Collections.sort(accessrules);
+      if(availableaccessrules != null){
+        Iterator iter = availableaccessrules.iterator();
+        while(iter.hasNext()){
+          String availableaccessrule = (String) iter.next();   
+          result=java.util.Collections.binarySearch(accessrules,new AccessRule(availableaccessrule, 0, false));
+          if(result < 0){
+            // Access rule isn't in use.
+            nonusedaccessrules.add(availableaccessrule);
+          }
         }
-
-        return (String[]) nonusedresources.toArray(dummy);
+      }
+      return nonusedaccessrules;
     }
-
+    
+ 
+    public int compareTo(Object o) {
+      if(caid != ((AdminGroup) o).getCAId())
+        return caid - ((AdminGroup) o).getCAId();    
+      else  
+        return admingroupname.compareTo(((AdminGroup)o).getAdminGroupName());              
+    }
+    
     // Private methods
+
     // Private fields
-    private Vector accessrules;
-    private Vector adminentities;
-}
+    private String    admingroupname;
+    private int       caid;
+    private ArrayList accessrules;
+    private ArrayList adminentities;
+ }
