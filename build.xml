@@ -18,64 +18,47 @@
 
     <!-- set global properties for this build -->
     <property name="src" value="src" />
-    <property name="javasrc" value="${src}/java" />
-    <property name="lib" value="lib" />
-    <property name="bin" value="bin" />
-    <property name="src.gen" value="${bin}/gensrc" />
-    <property name="src.dd" value="${bin}/dd" />
+    <property name="src.java" value="${src}/java" />
+    <property name="src.gen" value="bin/gensrc" />
+    <property name="src.dd" value="bin/dd" />
+    
+    <property name="bin" value="./bin" />
     <property name="build" value="${bin}/classes" />
+    <property name="lib" value="lib" />
+
     <property name="test.dir" value="${bin}/junit" />
     <property name="test.src.dir" location="${src}/test" />
-    <property name="dist" value="./dist" />
-    <property name="dist.dir" location="${dist}" />
+    <property name="dist.dir" location="dist" />
     <property name="apidoc" value="./doc/api" />
 
     <property name="apply.src" value="${src}/publicweb/apply" />
-    <property name="apply.build" value="${tmp}/publicweb/apply.war" />
-    <property name="applyjar" value="${dist}/apply.war" />
+    <property name="applywar" value="${dist.dir}/apply.war" />
 
     <property name="webdist.src" value="${src}/publicweb/webdist" />
-    <property name="webdist.build" value="${tmp}/publicweb/webdist.war" />
-    <property name="webdistjar" value="${dist}/webdist.war" />
+    <property name="webdistwar" value="${dist.dir}/webdist.war" />
 
     <property name="sampleauth.src" value="${src}/ca/sampleauth" />
-    <property name="sampleauth.build" value="${tmp}/ca/sampleauth.war" />
-    <property name="sampleauthjar" value="${dist}/sampleauth.war" />
+    <property name="sampleauthwar" value="${dist.dir}/sampleauth.war" />
 
     <property name="status.src" value="${src}/publicweb/status" />
-    <property name="status.build" value="${tmp}/publicweb/status.war" />
-    <property name="statusjar" value="${dist}/status.war" />
+    <property name="statuswar" value="${dist.dir}/status.war" />
 
     <property name="adminweb.src" value="${src}/adminweb" />
-    <property name="adminweb.build" value="${tmp}/adminweb.war" />
-    <property name="adminwebjar" value="${dist}/adminweb.war" />
-
-    <property name="demoweb.src" value="${src}/demoweb" />
-    <property name="demoweb.build" value="${tmp}/demoweb.war" />
-    <property name="demowebjar" value="${dist}/demoweb.war" />
-
-    <property name="caear.src" value="${src}/ca/ear" />
-    <property name="caear.earsrc" value="${caear.src}/ear" />
-    <property name="caear.warsrc" value="${src}/publicweb/root" />
-    <property name="caear.build" value="${tmp}/ca/ear" />
-    <property name="caear.warbuild" value="${tmp}/publicweb/publicwebroot.war" />
-    <property name="caear.earbuild" value="${tmp}/ca/ear/ear" />
-    <property name="carootwar" value="${caear.earbuild}/publicwebroot.war" />
-    <property name="caear" value="${dist}/ejbca-ca.ear" />
-
-    <property name="caearnora.build" value="${tmp}/canora/ear" />
-    <property name="caearnora.warbuild" value="${tmp}/canora/ear/publicwebroot.war" />
-    <property name="caearnora.earbuild" value="${tmp}/canora/ear/ear" />
-    <property name="canorarootwar" value="${caearnora.earbuild}/publicwebroot.war" />
-    <property name="caearnora" value="${dist}/ejbca-canora.ear" />
-
-    <property name="createcrlservice.build" value="${tmp}/crlcreateservice.jar" />
-    <property name="createcrlservicejar" value="${dist}/crlcreateservice.jar" />
+    <property name="adminwebwar" value="${dist.dir}/adminweb.war" />
 
     <!-- Jar with class files needed for administration, i.e. ca, ra, jobrunner -->
     <property name="adminjar.cli" value="${src}/cli" />
-    <property name="adminjar.build" value="${tmp}/admin.jar" />
-    <property name="adminjar" value="${dist}/admin.jar" />
+    <property name="adminjar" value="${dist.dir}/admin.jar" />
+
+    <property name="root.warsrc" value="${src}/publicweb/root" />
+    <property name="rootwar" value="${dist.dir}/publicwebroot.war" />
+
+    <property name="caear.src" value="${src}/ca/ear" />
+    <property name="caear" value="${dist.dir}/ejbca-ca.ear" />
+    <property name="caearnora" value="${dist.dir}/ejbca-canora.ear" />
+
+    <property name="createcrlservice.build" value="${tmp}/crlcreateservice.jar" />
+    <property name="createcrlservicejar" value="${dist.dir}/crlcreateservice.jar" />
 
     <property name="jar.classpath" value="lib/ejb-utils.jar" />
 
@@ -127,6 +110,10 @@
         </tokenfilter>
     </filterchain>
 
+    <!-- =================================================================== -->
+    <!-- Build ALL                                                           -->
+    <!-- =================================================================== -->
+    <target name="build" depends="ca.ear"/>
 
     <!-- =================================================================== -->
     <!-- Create the time stamp and build directory -->
@@ -143,24 +130,25 @@ database.username    = ${database.username}
 database.password    = ${database.password}
       </echo>
         <!-- Create the time stamp -->
-        <tstamp />
+        <tstamp/>
         <!-- Create the build directory structure used by compile -->
-        <mkdir dir="${build}" />
-        <mkdir dir="${dist}" />
+        <mkdir dir="${build}"/>
+        <mkdir dir="${dist.dir}/${lib}"/>
     </target>
 
     <!-- =================================================================== -->
     <!-- Clean ALL                                                           -->
     <!-- =================================================================== -->
     <target name="clean">
-        <!-- Delete the ${build} and ${dist} directory trees -->
+        <!-- Delete the ${build} and ${dist.dir} directory trees -->
         <delete dir="${build}" />
-        <delete dir="${dist}" />
-        <delete dir="${tmp}" />
+        <delete dir="${dist.dir}" />
+        <delete dir="${src.gen}" />
+        <delete dir="${src.dd}" />
         <delete dir="${apidoc}" />
         <delete file="admin.jar" />
         <delete>
-            <fileset dir="${javasrc}" includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes" />
+            <fileset dir="${src.java}" includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes" />
         </delete>
     </target>
 
@@ -169,7 +157,7 @@ database.password    = ${database.password}
             <classpath refid="xdoclet.classpath" />
         </taskdef>
         <ejbdoclet destdir="${src.gen}" ejbspec="2.0" excludedtags="@version,@author">
-            <fileset dir="${javasrc}">
+            <fileset dir="${src.java}">
                 <include name="**/*Bean.java" />
                 <exclude name="**/BaseEntityBean.java" />
                 <exclude name="**/BaseSessionBean.java" />
@@ -210,105 +198,21 @@ database.password    = ${database.password}
         <javac destdir="${build}" debug="on" includeantruntime="no">
             <classpath refid="compile.classpath" />
             <exclude name="**/appserver/**" />
-            <src path="${javasrc}" />
+            <src path="${src.java}" />
             <src path="${src.gen}" />
         </javac>
-    </target>
-
-    <target name="test:compile" depends="compile" description="compile JUnit testcases">
-        <mkdir dir="${test.dir}" />
-        <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no">
-            <classpath refid="test.compile.classpath" />
-        </javac>
-        <!-- jndi.properties needs to be in the classpath -->
-        <copy file="${javasrc}/jndi.properties" todir="${test.dir}" />
-    </target>
-
-    <!-- =================================================================== -->
-    <!-- Build ALL                                                           -->
-    <!-- =================================================================== -->
-    <target name="build" depends="jar:ejb-utils, compile, log.jar, ra.jar, ca.jar, authorization.jar,
-  hardtoken.jar, keyrecovery.jar, ca.ear, adminweb.war, admin.jar, apply.war, status.war, webdist.war, test:compile">
-    </target>
-
-    <target name="test:run" depends="test:compile,j2ee:assert-run" description="run JUnit testcases">
-        <delete dir="${test.dir}/reports" />
-        <mkdir dir="${test.dir}/reports/html" />
-        <junit printsummary="yes" haltonfailure="no">
-            <classpath>
-                <path refid="test.compile.classpath" />
-                <path location="${test.dir}" />
-            </classpath>
-            <formatter type="xml" />
-            <batchtest fork="yes" todir="${test.dir}/reports">
-                <fileset dir="${test.dir}">
-                    <include name="**/caadmin/TestCAs*" />
-                    <exclude name="**/TestRunner*" />
-                </fileset>
-            </batchtest>
-            <batchtest fork="yes" todir="${test.dir}/reports">
-                <fileset dir="${test.dir}">
-                    <include name="**/util/Test*" />
-                    <!-- Messagestesten kräver vissa CA som vi inte kan göra automagisgt
-                    <include name="**/protocol/Test*" /> -->
-                    <include name="**/ra/Test*" />
-                    <!-- LotsosUsers skapar MASSOR med använder, körs bara ibland -->
-                    <exclude name="**/ra/TestAddLotsofUsers*" />
-                    <include name="**/raadmin/Test*" />
-                    <include name="**/auth/Test*" />
-                    <include name="**/store/Test*" />
-                    <include name="**/sign/Test*" />
-                    <include name="**/crl/Test*" />
-                    <include name="**/publisher/Test*" />
-                    <include name="**/batch/Test*" />
-                    <include name="**/log/Test*" />
-                    <include name="**/keyrecovery/Test*" />
-                    <include name="**/hardtoken/Test*" />
-                    <exclude name="**/TestRunner*" />
-                </fileset>
-            </batchtest>
-            <batchtest fork="yes" todir="${test.dir}/reports">
-                <fileset dir="${test.dir}">
-                    <include name="**/caadmin/TestRemoveCA*" />
-                    <exclude name="**/TestRunner*" />
-                </fileset>
-            </batchtest>
-        </junit>
-        <junitreport todir="${test.dir}/reports">
-            <fileset dir="${test.dir}/reports">
-                <include name="TEST-*.xml" />
-            </fileset>
-            <report format="frames" todir="${test.dir}/reports/html" />
-        </junitreport>
     </target>
 
     <!-- =================================================================== -->
     <!-- Build apply part                                                    -->
     <!-- =================================================================== -->
     <target name="apply.war" depends="compile" description="build the jar file">
-        <mkdir dir="${apply.build}" />
-        <copy todir="${apply.build}">
-            <fileset dir="${apply.src}" />
-        </copy>
-        <mkdir dir="${apply.build}/WEB-INF/lib" />
-        <patternset id="apply.pattern">
-            <include name="se/anatom/ejbca/protocol/ScepServlet*" />
-            <include name="se/anatom/ejbca/apply/**" />
-        </patternset>
-        <javac srcdir="${javasrc}" classpathref="compile.classpath" destdir="${build}" 
-            debug="on" includeantruntime="no">
-            <patternset refid="apply.pattern" />
-            <classpath path="${build}" />
-        </javac>
-        <jar jarfile="${apply.build}/WEB-INF/lib/apply.jar">
-            <fileset dir="${build}">
-                <patternset refid="apply.pattern" />
-            </fileset>
-        </jar>
-
-        <war destfile="${dist}/apply.war" webxml="${apply.build}/WEB-INF/web.xml">
-            <fileset dir="${apply.build}" excludes="WEB-INF/**" />
-            <lib dir="${apply.build}/WEB-INF/lib" includes="apply.jar" />
+        <war destfile="${applywar}" webxml="${apply.src}/WEB-INF/web.xml">
+            <fileset dir="${apply.src}" excludes="WEB-INF/web.xml" />
+            <classes dir="${build}">
+                <include name="se/anatom/ejbca/protocol/ScepServlet*" />
+                <include name="se/anatom/ejbca/apply/**" />
+         	</classes>
         </war>
     </target>
 
@@ -316,30 +220,11 @@ database.password    = ${database.password}
     <!-- Build status part                                                                                                                             -->
     <!-- =================================================================== -->
     <target name="status.war" depends="compile">
-        <mkdir dir="${status.build}" />
-        <copy todir="${status.build}">
-            <fileset dir="${status.src}" />
-        </copy>
-        <mkdir dir="${status.build}/WEB-INF/lib" />
-        <patternset id="status.pattern">
-            <include name="se/anatom/ejbca/protocol/OCSPServlet*.class" />
-        </patternset>
-        <javac srcdir="${javasrc}" 
-            classpathref="compile.classpath" 
-            destdir="${build}" debug="on" 
-            includeantruntime="no">
-            <patternset refid="status.pattern" />
-            <classpath path="${build}" />
-        </javac>
-        <jar jarfile="${status.build}/WEB-INF/lib/status.jar">
-            <fileset dir="${build}">
-                <patternset refid="status.pattern" />
-            </fileset>
-        </jar>
-
-        <war destfile="${dist}/status.war" webxml="${apply.build}/WEB-INF/web.xml">
-            <fileset dir="${status.build}" excludes="WEB-INF/**" />
-            <lib dir="${status.build}/WEB-INF/lib" includes="status.jar" />
+        <war destfile="${statuswar}" webxml="${status.src}/WEB-INF/web.xml">
+            <fileset dir="${status.src}" excludes="WEB-INF/web.xml" />
+            <classes dir="${build}">
+                <include name="se/anatom/ejbca/protocol/OCSPServlet*.class" />
+         	</classes>
         </war>
     </target>
 
@@ -347,23 +232,12 @@ database.password    = ${database.password}
     <!-- Build sampleauth part                                               -->
     <!-- =================================================================== -->
     <target name="sampleauth.war" depends="compile">
-        <mkdir dir="${sampleauth.build}" />
-        <copy todir="${sampleauth.build}">
-            <fileset dir="${sampleauth.src}" />
-        </copy>
-        <jar jarfile="${sampleauth.build}/WEB-INF/lib/sampleauth.jar">
-            <fileset dir="${build}">
+        <war destfile="${sampleauthwar}" webxml="${sampleauth.src}/WEB-INF/web.xml">
+            <fileset dir="${sampleauth.src}" excludes="WEB-INF/web.xml" />
+            <classes dir="${build}">
                 <include name="se/anatom/ejbca/samples/AuthResult*.class" />
                 <include name="se/anatom/ejbca/samples/RemoteVerify*.class" />
-            </fileset>
-        </jar>
-        <copy todir="${sampleauth.build}/WEB-INF/lib">
-            <fileset dir="${lib}" />
-        </copy>
-
-        <war destfile="${dist}/sampleauth.war" webxml="${apply.build}/WEB-INF/web.xml">
-            <fileset dir="${sampleauth.build}" excludes="WEB-INF/**" />
-            <lib dir="${sampleauth.build}/WEB-INF/lib" includes="*.jar" />
+         	</classes>
         </war>
     </target>
 
@@ -371,30 +245,11 @@ database.password    = ${database.password}
     <!-- Build webdist part                                                  -->
     <!-- =================================================================== -->
     <target name="webdist.war" depends="compile">
-        <mkdir dir="${webdist.build}/WEB-INF/lib" />
-        <copy todir="${webdist.build}">
-            <fileset dir="${webdist.src}">
-                <include name="**/**" />
-            </fileset>
-        </copy>
-        <patternset id="webdist.pattern">
-            <include name="se/anatom/ejbca/webdist/**" />
-        </patternset>
-        <javac srcdir="${javasrc}" classpathref="compile.classpath" 
-            destdir="${build}" debug="on" includeantruntime="no">
-            <patternset refid="webdist.pattern" />
-            <classpath path="${build}" />
-        </javac>
-        <jar jarfile="${webdist.build}/WEB-INF/lib/webdist.jar">
-            <fileset dir="${build}">
-                <patternset refid="webdist.pattern" />
-            </fileset>
-        </jar>
-
-        <war basedir="${webdist.build}" 
-            destfile="${webdistjar}" 
-            webxml="${webdist.build}/WEB-INF/web.xml" 
-            excludes="WEB-INF/web.xml">
+        <war destfile="${webdistwar}" webxml="${webdist.src}/WEB-INF/web.xml">
+            <fileset dir="${webdist.src}" excludes="WEB-INF/web.xml" />
+            <classes dir="${build}">
+                <include name="se/anatom/ejbca/webdist/**" />
+         	</classes>
         </war>
     </target>
 
@@ -402,51 +257,33 @@ database.password    = ${database.password}
     <!-- Build admin web part                                                -->
     <!-- =================================================================== -->
     <target name="adminweb.war" depends="compile">
-        <mkdir dir="${adminweb.build}/WEB-INF/lib" />
-        <copy todir="${adminweb.build}">
-            <fileset dir="${adminweb.src}">
-                <exclude name="**/tomcat*-service.xml" />
-                <!--exclude name="languages/**"/-->
-            </fileset>
-        </copy>
-        <copy todir="${adminweb.build}/WEB-INF/classes">
-            <fileset dir="${build}">
-                <include name="se/anatom/ejbca/webdist/**" />
-                <include name="se/anatom/ejbca/apply/**" />
-            </fileset>
-        </copy>
-
-
-        <jar basedir="${adminweb.build}" jarfile="${dist}/adminweb.war">
+        <war destfile="${adminwebwar}" webxml="${adminweb.src}/WEB-INF/web.xml">
             <manifest>
-                <!-- todo: autogenerate this from a fileset -->
                 <attribute name="Class-Path" value="lib/bcmail-jdk14-122.jar lib/bcprov-jdk14-122.jar lib/log4j-1.2.7.jar lib/ldap.jar lib/commons-lang-2.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar" />
             </manifest>
-        </jar>
-    </target>
-
-    <!-- =================================================================== -->
-    <!-- Build demo web part                                              -->
-    <!-- =================================================================== -->
-    <target name="demoweb.war" depends="compile">
-        <mkdir dir="${demoweb.build}/WEB-INF/lib" />
-        <copy todir="${demoweb.build}">
-            <fileset dir="${demoweb.src}" />
-        </copy>
-
-        <jar jarfile="${demoweb.build}/WEB-INF/lib/demoweb.jar">
-            <fileset dir="${build}">
-                <include name="se/anatom/ejbca/webdist/**/*.class" />
+            <fileset dir="${adminweb.src}">
+                <exclude name="WEB-INF/*-service.xml" />
+                <exclude name="WEB-INF/web.xml"/>
+                <!--exclude name="languages/**"/-->
             </fileset>
-        </jar>
-
-        <war basedir="${demoweb.build}" destfile="${demowebjar}" webxml="${demoweb.build}/WEB-INF/web.xml" excludes="WEB-INF/web.xml">
+            <classes dir="${build}">
+                <include name="se/anatom/ejbca/webdist/**" />
+                <include name="se/anatom/ejbca/apply/**" />
+         	</classes>
         </war>
     </target>
 
+    <!-- =================================================================== -->
+    <!-- Build public root web part                                              -->
+    <!-- =================================================================== -->
+    <target name="publicwebroot.war" depends="compile">
+        <war destfile="${rootwar}" webxml="${root.warsrc}/WEB-INF/web.xml">
+            <fileset dir="${root.warsrc}" excludes="WEB-INF/**" />
+        </war>
+    </target>   
 
     <target name="ejbca.jar" depends="compile" description="Creates master ejb.jar">
-        <jar jarfile="${dist}/ejbca.jar">
+        <jar jarfile="${dist.dir}/ejbca.jar">
             <manifest>
                 <!-- todo: autogenerate this from a fileset -->
                 <attribute name="Class-Path" value="bcmail-jdk14-122.jar bcprov-jdk14-122.jar log4j-1.2.7.jar ldap.jar commons-lang-2.0.jar commons-collections.jar commons-fileupload-1.0.jar" />
@@ -456,8 +293,8 @@ database.password    = ${database.password}
         </jar>
     </target>
     
-    <target name="jar:ejb-utils" depends="compile">
-        <jar basedir="${build}" jarfile="${dist}/ejb-utils.jar">
+    <target name="ejb-utils" depends="compile">
+        <jar jarfile="${dist.dir}/${lib}/ejb-utils.jar">
             <manifest>
                 <attribute name="Class-Path" value="bcmail-jdk14-122.jar bcprov-jdk14-122.jar log4j-1.2.7.jar ldap.jar commons-lang-2.0.jar commons-collections.jar commons-fileupload-1.0.jar" />
             </manifest>
@@ -477,11 +314,14 @@ database.password    = ${database.password}
     <!-- =================================================================== -->
     <target name="ca.jar" depends="compile">
         <!-- this one is a bit messy as the layout does not match the other one -->
-        <jar basedir="${build}" jarfile="${dist}/ca-ejb.jar">
+        <jar jarfile="${dist.dir}/ca-ejb.jar">
 	        <!-- that should be another ejb-jar, but keep it here for now -->
 	        <fileset dir="${build}" includes="se/anatom/ejbca/upgrade/**" />
 	        <fileset dir="${src}" includes="upgrade/**/*.sql" />
 	        <fileset dir="${src}/ca/ca"/>
+            <manifest>
+                <attribute name="Class-Path" value="${jar.classpath}" />
+            </manifest>
         </jar>
     </target>
 
@@ -489,9 +329,12 @@ database.password    = ${database.password}
     <!-- Build log part                                                    -->
     <!-- =================================================================== -->
     <target name="log.jar" depends="compile">
-        <jar basedir="${build}" jarfile="${dist}/log-ejb.jar">
+        <jar jarfile="${dist.dir}/log-ejb.jar">
             <fileset dir="${build}" includes="se/anatom/ejbca/log/**" />
             <fileset dir="${src}/log"/>
+            <manifest>
+                <attribute name="Class-Path" value="${jar.classpath}" />
+            </manifest>
         </jar>
     </target>
 
@@ -499,9 +342,12 @@ database.password    = ${database.password}
     <!-- Build authorization part                                            -->
     <!-- =================================================================== -->
     <target name="authorization.jar" depends="compile">
-        <jar basedir="${build}" jarfile="${dist}/authorization-ejb.jar">
+        <jar jarfile="${dist.dir}/authorization-ejb.jar">
             <fileset dir="${build}" includes="se/anatom/ejbca/authorization/**" />
             <fileset dir="${src}/authorization"/>
+            <manifest>
+                <attribute name="Class-Path" value="${jar.classpath}" />
+            </manifest>
         </jar>
     </target>
 
@@ -509,9 +355,12 @@ database.password    = ${database.password}
     <!-- Build hard token part                                               -->
     <!-- =================================================================== -->
     <target name="hardtoken.jar" depends="compile">
-        <jar basedir="${build}" jarfile="${dist}/hardtoken-ejb.jar">
+        <jar jarfile="${dist.dir}/hardtoken-ejb.jar">
             <fileset dir="${build}" includes="se/anatom/ejbca/hardtoken/**" />
             <fileset dir="${src}/hardtoken"/>
+            <manifest>
+                <attribute name="Class-Path" value="${jar.classpath}" />
+            </manifest>
         </jar>
     </target>
 
@@ -519,9 +368,14 @@ database.password    = ${database.password}
     <!-- Build key recovery part                                             -->
     <!-- =================================================================== -->
     <target name="keyrecovery.jar" depends="compile">
-        <jar basedir="${build}" jarfile="${dist}/keyrecovery-ejb.jar">
+        <jar jarfile="${dist.dir}/keyrecovery-ejb.jar">
             <fileset dir="${build}" includes="se/anatom/ejbca/keyrecovery/**" />
+            <!-- check what is exactly needed here!! -->
+            <fileset dir="${build}" includes="se/anatom/ejbca/ca/**"/>
             <fileset dir="${src}/keyrecovery"/>
+            <manifest>
+                <attribute name="Class-Path" value="${jar.classpath}" />
+            </manifest>
         </jar>
     </target>
 
@@ -530,9 +384,12 @@ database.password    = ${database.password}
     <!-- Build ra part                                                       -->
     <!-- =================================================================== -->
     <target name="ra.jar" depends="compile">
-        <jar basedir="${build}" jarfile="${dist}/ra-ejb.jar">
+        <jar jarfile="${dist.dir}/ra-ejb.jar">
             <fileset dir="${build}" includes="se/anatom/ejbca/ra/**" />
             <fileset dir="${src}/ra"/>
+            <manifest>
+                <attribute name="Class-Path" value="${jar.classpath}" />
+            </manifest>
         </jar>
     </target>
 
@@ -540,28 +397,15 @@ database.password    = ${database.password}
     <!-- Build admin jar                                                     -->
     <!-- =================================================================== -->
     <target name="admin.jar" depends="compile">
-        <mkdir dir="${adminjar.build}" />
-        <javac srcdir="${javasrc}" classpathref="compile.classpath" destdir="${build}" debug="on" includeantruntime="no">
-            <include name="se/anatom/ejbca/client/**" />
-            <include name="se/anatom/ejbca/admin/**" />
-            <include name="se/anatom/ejbca/batch/**" />
-            <classpath path="${build}" />
-        </javac>
-
-        <copy todir="${adminjar.build}">
-            <fileset dir="${adminjar.cli}">
-                <include name="*.properties" />
-            </fileset>
-        </copy>
-        <copy todir="${adminjar.build}">
+        <jar jarfile="${adminjar}">
             <fileset dir="${build}">
                 <include name="se/anatom/ejbca/client/**" />
                 <include name="se/anatom/ejbca/admin/**" />
                 <include name="se/anatom/ejbca/batch/**" />
             </fileset>
-        </copy>
-        <!-- Jar the admin.jar package together -->
-        <jar basedir="${adminjar.build}" jarfile="${adminjar}">
+            <fileset dir="${adminjar.cli}">
+                <include name="*.properties" />
+            </fileset>
             <manifest>
                 <attribute name="Class-Path" value="${jar.classpath}" />
             </manifest>
@@ -571,89 +415,53 @@ database.password    = ${database.password}
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-    <target name="ca.ear" depends="apply.war, status.war, webdist.war, ca.jar, ra.jar, adminweb.war, log.jar, hardtoken.jar, keyrecovery.jar, authorization.jar, jar:ejb-utils">
-        <mkdir dir="${caear.build}" />
-        <copy todir="${caear.earbuild}">
-            <fileset dir="${caear.earsrc}">
+    <target name="ca.ear" depends="apply.war, status.war, webdist.war, adminweb.war, publicwebroot.war, ca.jar, ra.jar, log.jar, hardtoken.jar, keyrecovery.jar, authorization.jar, ejb-utils">
+        <ear destfile="${caear}" appxml="${caear.src}/META-INF/application.xml"> 
+            <fileset dir="${caear.src}">
+                <exclude name="META-INF/application.xml" />
                 <exclude name="META-INF/application-nora.xml" />
             </fileset>
-        </copy>
-        <copy todir="${caear.warbuild}">
-            <fileset dir="${caear.warsrc}" />
-        </copy>
-
-        <war basedir="${caear.warbuild}" destfile="${carootwar}" webxml="${caear.warbuild}/WEB-INF/web.xml" excludes="WEB-INF/web.xml" />
-
-        <copy todir="${caear.earbuild}">
-            <fileset dir="${dist}">
+            <fileset dir=".">
+                <include name="${lib}/bcmail-jdk14-122.jar" />
+                <include name="${lib}/bcprov-jdk14-122.jar" />
+                <include name="${lib}/log4j-1.2.7.jar" />
+                <include name="${lib}/ldap.jar" />
+                <include name="${lib}/commons-lang-2.0.jar" />
+                <include name="${lib}/commons-collections.jar" />
+                <include name="${lib}/commons-fileupload-1.0.jar" />
+            </fileset>
+            <fileset dir="${dist.dir}">
+                <include name="${lib}/ejb-utils.jar" />
                 <include name="*-ejb.jar" />
                 <include name="*.war" />
             </fileset>
-        </copy>
-        <copy todir="${caear.earbuild}/lib">
-            <fileset dir="${dist}">
-                <include name="ejb-utils.jar" />
-            </fileset>
-            <fileset dir="${lib}">
-                <include name="bcmail-jdk14-122.jar" />
-                <include name="bcprov-jdk14-122.jar" />
-                <include name="log4j-1.2.7.jar" />
-                <include name="ldap.jar" />
-                <include name="commons-lang-2.0.jar" />
-                <include name="commons-collections.jar" />
-                <include name="commons-fileupload-1.0.jar" />
-            </fileset>
-        </copy>
-
-        <ear destfile="${caear}" basedir="${caear.earbuild}" 
-            appxml="${caear.earbuild}/META-INF/application.xml" 
-            excludes="META-INF/application.xml" />
+		</ear>
     </target>
 
     <!-- =================================================================== -->
     <!-- Build CA-ear without web-RA                                         -->
     <!-- =================================================================== -->
-    <target name="canora.ear" depends="apply.war, status.war, webdist.war, ca.jar, ra.jar, log.jar">
-        <mkdir dir="${caearnora.build}" />
-        <copy todir="${caearnora.earbuild}">
-            <fileset dir="${caear.earsrc}">
+    <target name="canora.ear" depends="apply.war, status.war, webdist.war, adminweb.war, publicwebroot.war, ca.jar, log.jar, hardtoken.jar, keyrecovery.jar, authorization.jar, ejb-utils">
+        <ear destfile="${caearnora}" appxml="${caear.src}/META-INF/application-nora.xml"> 
+            <fileset dir="${caear.src}">
                 <exclude name="META-INF/application.xml" />
+                <exclude name="META-INF/application-nora.xml" />
             </fileset>
-        </copy>
-        <copy todir="${caearnora.warbuild}">
-            <fileset dir="${caear.warsrc}" />
-        </copy>
-
-        <!-- Rename application.xml without web-RA -->
-        <copy file="${caearnora.build}/ear/META-INF/application-nora.xml" tofile="${caearnora.earbuild}/META-INF/application.xml" />
-
-        <!-- Jar the ROOT war together -->
-        <war basedir="${caearnora.warbuild}" destfile="${canorarootwar}" webxml="${caearnora.warbuild}/WEB-INF/web.xml" excludes="WEB-INF/web.xml" />
-
-        <copy todir="${caearnora.earbuild}">
-            <fileset dir="${dist}">
-                <include name="webdist.war" />
-                <include name="apply.war" />
-                <include name="status.war" />
-                <include name="ca.jar" />
-                <include name="log.jar" />
-                <include name="authorization.jar" />
-                <include name="ra.jar" />
+            <fileset dir=".">
+                <include name="${lib}/bcmail-jdk14-122.jar" />
+                <include name="${lib}/bcprov-jdk14-122.jar" />
+                <include name="${lib}/log4j-1.2.7.jar" />
+                <include name="${lib}/ldap.jar" />
+                <include name="${lib}/commons-lang-2.0.jar" />
+                <include name="${lib}/commons-collections.jar" />
+                <include name="${lib}/commons-fileupload-1.0.jar" />
             </fileset>
-        </copy>
-        <copy todir="${caearnora.earbuild}/lib">
-            <fileset dir="${lib}">
-                <include name="bcmail-jdk14-122.jar" />
-                <include name="bcprov-jdk14-122.jar" />
-                <include name="log4j-1.2.7.jar" />
-                <include name="ldap.jar" />
-                <include name="commons-lang-2.0.jar" />
-                <include name="commons-collections.jar" />
+            <fileset dir="${dist.dir}">
+                <include name="ejb-utils.jar" />
+                <include name="*-ejb.jar" />
+                <include name="*.war" />
             </fileset>
-        </copy>
-
-        <!-- Jar the ear package together -->
-        <ear basedir="${caearnora.earbuild}" destfile="${caearnora}" appxml="${caearnora.earbuild}/META-INF/application.xml" excludes="META-INF/application.xml" />
+		</ear>
     </target>
 
     <!-- =================================================================== -->
@@ -661,7 +469,7 @@ database.password    = ${database.password}
     <!-- =================================================================== -->
     <target name="javadoc" depends="">
         <mkdir dir="${apidoc}" />
-        <javadoc packagenames="se.anatom.*" maxmemory="256m" sourcepath="${javasrc}" destdir="${apidoc}" extdirs="${lib}" author="true" version="true" use="true" windowtitle="EJBCA API" bottom="Copyright &#169; 2004 PrimeKey Solutions AB.">
+        <javadoc packagenames="se.anatom.*" maxmemory="256m" sourcepath="${src.java}" destdir="${apidoc}" extdirs="${lib}" author="true" version="true" use="true" windowtitle="EJBCA API" bottom="Copyright &#169; 2004 PrimeKey Solutions AB.">
         </javadoc>
     </target>
 
@@ -701,7 +509,7 @@ database.password    = ${database.password}
     <target name="batch" depends="build">
         <java classname="se.anatom.ejbca.batch.BatchMakeP12" fork="true">
             <classpath>
-                <fileset dir="${dist}" includes="*.jar" />
+                <fileset dir="${dist.dir}" includes="*.jar" />
                 <fileset dir="${jboss.home}/client" includes="**/*.jar" />
                 <fileset dir="${lib}" includes="**/*.jar" />
             </classpath>
@@ -717,13 +525,13 @@ database.password    = ${database.password}
             <pathelement location="${jboss.home}/lib/jboss-common.jar" />
             <pathelement location="${jboss.home}/lib/jboss-jmx.jar" />
         </path>
-        <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on">
+        <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on">
             <exclude name="**/CVS/**" />
             <include name="**/appserver/**" />
             <!-- appserver specific files are built separtely-->
             <classpath refid="jbossservices.classpath" />
         </javac>
-        <copy todir="${javasrc}">
+        <copy todir="${src.java}">
             <fileset dir="${build}">
                 <include name="**/appserver/*.class" />
                 <include name="**/appserver/**/*.class" />
@@ -827,13 +635,13 @@ database.password    = ${database.password}
             <!-- generate xdoclet sources and dd -->
             <!-- FIXME: Comment this to use XDoclet generated DDs -->
             <property name="@{name}.tmp.dir" location="${tmp}/xdoclet/${@{name}.id}/META-INF" />
-            <ejb-doclet dir="${javasrc}" todir="${javasrc}" module="@{name}" />
+            <ejb-doclet dir="${src.java}" todir="${src.java}" module="@{name}" />
 
             <!-- copy/configure the dds -->
             <ejb-dd-copy todir="${@{name}.build.dir}" dir="${src}/@{name}" overwrite="true" />
 
             <!-- compile the module -->
-            <javac srcdir="${javasrc}" classpathref="compile.classpath" destdir="${build}" debug="on" includeantruntime="no">
+            <javac srcdir="${src.java}" classpathref="compile.classpath" destdir="${build}" debug="on" includeantruntime="no">
                 <include name="se/anatom/ejbca/@{name}/**" />
                 <classpath path="${build}" />
             </javac>
@@ -848,14 +656,14 @@ database.password    = ${database.password}
             </copy>
 
             <!-- jar all files -->
-            <jar basedir="${@{name}.build.dir}" jarfile="${dist}/${@{name}.id}">
+            <jar basedir="${@{name}.build.dir}" jarfile="${dist.dir}/${@{name}.id}">
                 <manifest>
                     <attribute name="Class-Path" value="${jar.classpath}" />
                 </manifest>
             </jar>
 
             <!-- add an extra step: ejb verifier -->
-            <ejb-verifier file="${dist}/${@{name}.id}" />
+            <ejb-verifier file="${dist.dir}/${@{name}.id}" />
         </sequential>
     </macrodef>
 
@@ -868,7 +676,7 @@ database.password    = ${database.password}
                     <fileset dir="${jboss.home}/server/default/lib" includes="*.jar" />
                     <fileset dir="${jboss.home}/client" includes="*.jar" />
                     <fileset dir="${jboss.home}/lib" includes="*.jar" />
-                    <fileset dir="${dist}" includes="*.jar" />
+                    <fileset dir="${dist.dir}" includes="*.jar" />
                     <pathelement location="${jboss.home}/server/default/conf" />
                 </classpath>
                 <arg value="@{file}" />
@@ -876,4 +684,63 @@ database.password    = ${database.password}
         </sequential>
     </macrodef>
 
+    <target name="test:compile" depends="compile" description="compile JUnit testcases">
+        <mkdir dir="${test.dir}" />
+        <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no">
+            <classpath refid="test.compile.classpath" />
+        </javac>
+        <!-- jndi.properties needs to be in the classpath -->
+        <copy file="${src.java}/jndi.properties" todir="${test.dir}" />
+    </target>
+
+    <target name="test:run" depends="test:compile,j2ee:assert-run" description="run JUnit testcases">
+        <delete dir="${test.dir}/reports" />
+        <mkdir dir="${test.dir}/reports/html" />
+        <junit printsummary="yes" haltonfailure="no">
+            <classpath>
+                <path refid="test.compile.classpath" />
+                <path location="${test.dir}" />
+            </classpath>
+            <formatter type="xml" />
+            <batchtest fork="yes" todir="${test.dir}/reports">
+                <fileset dir="${test.dir}">
+                    <include name="**/caadmin/TestCAs*" />
+                    <exclude name="**/TestRunner*" />
+                </fileset>
+            </batchtest>
+            <batchtest fork="yes" todir="${test.dir}/reports">
+                <fileset dir="${test.dir}">
+                    <include name="**/util/Test*" />
+                    <!-- Messagestesten kräver vissa CA som vi inte kan göra automagisgt
+                    <include name="**/protocol/Test*" /> -->
+                    <include name="**/ra/Test*" />
+                    <!-- LotsosUsers skapar MASSOR med använder, körs bara ibland -->
+                    <exclude name="**/ra/TestAddLotsofUsers*" />
+                    <include name="**/raadmin/Test*" />
+                    <include name="**/auth/Test*" />
+                    <include name="**/store/Test*" />
+                    <include name="**/sign/Test*" />
+                    <include name="**/crl/Test*" />
+                    <include name="**/publisher/Test*" />
+                    <include name="**/batch/Test*" />
+                    <include name="**/log/Test*" />
+                    <include name="**/keyrecovery/Test*" />
+                    <include name="**/hardtoken/Test*" />
+                    <exclude name="**/TestRunner*" />
+                </fileset>
+            </batchtest>
+            <batchtest fork="yes" todir="${test.dir}/reports">
+                <fileset dir="${test.dir}">
+                    <include name="**/caadmin/TestRemoveCA*" />
+                    <exclude name="**/TestRunner*" />
+                </fileset>
+            </batchtest>
+        </junit>
+        <junitreport todir="${test.dir}/reports">
+            <fileset dir="${test.dir}/reports">
+                <include name="TEST-*.xml" />
+            </fileset>
+            <report format="frames" todir="${test.dir}/reports/html" />
+        </junitreport>
+    </target>
 </project>
