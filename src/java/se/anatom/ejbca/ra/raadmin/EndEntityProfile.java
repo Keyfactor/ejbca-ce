@@ -1,12 +1,12 @@
 package se.anatom.ejbca.ra.raadmin;
 
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.util.UpgradeableDataHashMap;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.util.UpgradeableDataHashMap;
 
 
 /**
@@ -14,7 +14,7 @@ import java.util.Iterator;
  * interface.
  *
  * @author Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.11 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.12 2003-07-24 08:43:32 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable,
     Cloneable {

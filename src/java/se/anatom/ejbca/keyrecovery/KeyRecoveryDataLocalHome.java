@@ -1,9 +1,7 @@
 package se.anatom.ejbca.keyrecovery;
 
 import java.math.BigInteger;
-
 import java.security.KeyPair;
-
 import java.util.Collection;
 
 import javax.ejb.CreateException;
@@ -13,7 +11,7 @@ import javax.ejb.FinderException;
 /**
  * For docs, see KeyRecoveryDataBean
  *
- * @version $Id: KeyRecoveryDataLocalHome.java,v 1.2 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: KeyRecoveryDataLocalHome.java,v 1.3 2003-07-24 08:43:31 anatom Exp $
  */
 public interface KeyRecoveryDataLocalHome extends javax.ejb.EJBLocalHome {
     /**

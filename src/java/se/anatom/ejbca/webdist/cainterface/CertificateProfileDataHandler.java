@@ -1,17 +1,15 @@
 package se.anatom.ejbca.webdist.cainterface;
 
+import java.io.Serializable;
+import java.rmi.RemoteException;
+import java.util.TreeMap;
+
+import javax.ejb.FinderException;
+
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.log.Admin;
-
-import java.io.Serializable;
-
-import java.rmi.RemoteException;
-
-import java.util.TreeMap;
-
-import javax.ejb.FinderException;
 
 
 /**

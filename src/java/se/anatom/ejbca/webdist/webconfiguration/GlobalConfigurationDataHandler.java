@@ -1,12 +1,12 @@
 package se.anatom.ejbca.webdist.webconfiguration;
 
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.GlobalConfiguration;
-import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-
 import java.rmi.RemoteException;
 
 import javax.naming.*;
+
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ra.GlobalConfiguration;
+import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 
 
 /**
@@ -14,7 +14,7 @@ import javax.naming.*;
  * saved to a database.
  *
  * @author Philip Vendil
- * @version $Id: GlobalConfigurationDataHandler.java,v 1.14 2003-06-26 11:43:26 anatom Exp $
+ * @version $Id: GlobalConfigurationDataHandler.java,v 1.15 2003-07-24 08:43:33 anatom Exp $
  */
 public class GlobalConfigurationDataHandler {
     /**

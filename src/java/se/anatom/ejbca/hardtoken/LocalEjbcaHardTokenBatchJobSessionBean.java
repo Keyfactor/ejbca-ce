@@ -1,5 +1,15 @@
 package se.anatom.ejbca.hardtoken;
 
+import java.rmi.*;
+import java.security.cert.X509Certificate;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import javax.ejb.*;
+import javax.naming.*;
+import javax.sql.DataSource;
+
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.BaseSessionBean;
@@ -12,33 +22,18 @@ import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.UserDataLocalHome;
 import se.anatom.ejbca.util.CertTools;
 
-import java.rmi.*;
-
-import java.security.cert.X509Certificate;
-
-import java.sql.*;
-
-import java.util.ArrayList;
-import java.util.Collection;
-
-import javax.ejb.*;
-
-import javax.naming.*;
-
-import javax.sql.DataSource;
-
 
 /**
  * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from
  * EJBCA RA.
  *
- * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.8 2003-07-23 09:40:16 anatom Exp $
+ * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.9 2003-07-24 08:43:30 anatom Exp $
  */
 public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean {
     private static Logger log = Logger.getLogger(LocalEjbcaHardTokenBatchJobSessionBean.class);
 
     /** Columns in the database used in select */
-    private final static String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId";
+    private static final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId";
 
     /** Var holding JNDI name of datasource */
     private String dataSource = "";
@@ -76,7 +71,8 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean {
 
         return ds.getConnection();
     }
-     //getConnection
+
+    //getConnection
 
     /**
      * Gets connection to hard token session bean
@@ -96,7 +92,8 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean {
 
         return hardtokensession;
     }
-     //getHardTokenSession
+
+    //getHardTokenSession
 
     /**
      * Gets connection to log session bean
@@ -116,7 +113,8 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean {
 
         return logsession;
     }
-     //getLogSession
+
+    //getLogSession
 
     /**
      * Returns the next user scheduled for batch generation for the given issuer.
@@ -199,7 +197,8 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getNextHardTokenToGenerate
+
+    // getNextHardTokenToGenerate
 
     /**
      * Returns a Collection of users scheduled for batch generation for the given issuer. A maximum
@@ -286,7 +285,8 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getNextHardTokensToGenerate
+
+    // getNextHardTokensToGenerate
 
     /**
      * Returns the indexed user in queue scheduled for batch generation for the given issuer.
@@ -370,7 +370,8 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getNextHardTokenToGenerateInQueue
+
+    // getNextHardTokenToGenerateInQueue
 
     /**
      * Returns the number of users scheduled for batch generation for the given issuer.
@@ -432,7 +433,8 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean {
 
         return count;
     }
-     // getNumberOfHardTokensToGenerate
+
+    // getNumberOfHardTokensToGenerate
 
     /**
      * Methods that checks if a user exists in the database having the given hard token issuer id.
@@ -488,6 +490,9 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean {
             }
         }
     }
-     // checkForHardTokenIssuerId
+
+    // checkForHardTokenIssuerId
 }
- // LocalRaAdminSessionBean
+
+
+// LocalRaAdminSessionBean

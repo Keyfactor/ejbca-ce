@@ -1,15 +1,15 @@
 package se.anatom.ejbca.admin;
 
-import se.anatom.ejbca.ra.UserAdminData;
-
 import java.util.Collection;
 import java.util.Iterator;
+
+import se.anatom.ejbca.ra.UserAdminData;
 
 
 /**
  * List users with specified status in the database.
  *
- * @version $Id: RaListUsersCommand.java,v 1.7 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: RaListUsersCommand.java,v 1.8 2003-07-24 08:43:29 anatom Exp $
  *
  * @see se.anatom.ejbca.ra.UserDataLocal
  */

@@ -1,21 +1,20 @@
 package se.anatom.ejbca.admin;
 
-import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.Hex;
-import se.anatom.ejbca.util.KeyTools;
-
 import java.io.*;
-
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
+import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.Hex;
+import se.anatom.ejbca.util.KeyTools;
+
 
 /**
  * Creates a new root certificate with new validity, using the same key.
  *
- * @version $Id: CaRolloverRootCommand.java,v 1.6 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: CaRolloverRootCommand.java,v 1.7 2003-07-24 08:43:29 anatom Exp $
  */
 public class CaRolloverRootCommand extends BaseCaAdminCommand {
     /**

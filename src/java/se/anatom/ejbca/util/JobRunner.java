@@ -1,17 +1,16 @@
 package se.anatom.ejbca.util;
 
+import java.util.*;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.rmi.PortableRemoteObject;
+
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.IJobRunnerSessionHome;
 import se.anatom.ejbca.log.Admin;
-
-import java.util.*;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
-import javax.rmi.PortableRemoteObject;
 
 
 /**
@@ -20,7 +19,7 @@ import javax.rmi.PortableRemoteObject;
  * jnp://127.0.0.1:1099) - principal   (the user name is needed) - credentials (the password is
  * needed) - agent       (the JNDI-name of the agent session to start)
  *
- * @version $Id: JobRunner.java,v 1.5 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: JobRunner.java,v 1.6 2003-07-24 08:43:32 anatom Exp $
  */
 public class JobRunner extends java.lang.Object {
     private static Logger log = Logger.getLogger(JobRunner.class);

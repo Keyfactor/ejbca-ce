@@ -1,17 +1,17 @@
 package se.anatom.ejbca.admin;
 
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-
 import java.io.*;
 
 import javax.naming.Context;
+
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 
 
 /**
  * Retrieves the latest CRL from the CA.
  *
- * @version $Id: CaGetCrlCommand.java,v 1.7 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: CaGetCrlCommand.java,v 1.8 2003-07-24 08:43:29 anatom Exp $
  */
 public class CaGetCrlCommand extends BaseCaAdminCommand {
     /**

@@ -1,26 +1,23 @@
 package se.anatom.ejbca.webdist.loginterface;
 
+import java.math.BigInteger;
+import java.rmi.RemoteException;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.CertTools;
-
-import java.math.BigInteger;
-
-import java.rmi.RemoteException;
-
-import java.security.cert.X509Certificate;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 
 
 /**
  * A class used to improve performance by proxying certificatesnr to subjectdn mappings by
  * minimizing the number of needed lockups over rmi.
  *
- * @version $Id: SubjectDNProxy.java,v 1.5 2003-06-26 11:43:26 anatom Exp $
+ * @version $Id: SubjectDNProxy.java,v 1.6 2003-07-24 08:43:33 anatom Exp $
  */
 public class SubjectDNProxy {
     /**

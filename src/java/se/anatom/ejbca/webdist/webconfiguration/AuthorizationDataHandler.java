@@ -1,28 +1,25 @@
 package se.anatom.ejbca.webdist.webconfiguration;
 
+import java.rmi.RemoteException;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.Vector;
+
+import javax.ejb.CreateException;
+import javax.naming.*;
+
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.ra.authorization.*;
 
-import java.rmi.RemoteException;
-
-import java.security.cert.X509Certificate;
-
-import java.util.Collection;
-import java.util.Vector;
-
-import javax.ejb.CreateException;
-
-import javax.naming.*;
-
 
 /**
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
  * @author Philip Vendil
- * @version $Id: AuthorizationDataHandler.java,v 1.13 2003-06-26 11:43:26 anatom Exp $
+ * @version $Id: AuthorizationDataHandler.java,v 1.14 2003-07-24 08:43:33 anatom Exp $
  */
 public class AuthorizationDataHandler {
     public static final int ACCESS_RULE_RESOURCE = 0;
@@ -344,7 +341,8 @@ public class AuthorizationDataHandler {
     public void addAvailableAccessRule(String name) throws RemoteException {
         authorizationsession.addAvailableAccessRule(administrator, name);
     }
-     // addAvailableAccessRule
+
+    // addAvailableAccessRule
 
     /**
      * Method to add an Collection of access rules.
@@ -355,7 +353,8 @@ public class AuthorizationDataHandler {
         throws RemoteException {
         authorizationsession.addAvailableAccessRules(administrator, names);
     }
-     //  addAvailableAccessRules
+
+    //  addAvailableAccessRules
 
     /**
      * Method to remove an access rule.
@@ -366,7 +365,8 @@ public class AuthorizationDataHandler {
         throws RemoteException {
         authorizationsession.removeAvailableAccessRule(administrator, name);
     }
-     // removeAvailableAccessRule
+
+    // removeAvailableAccessRule
 
     /**
      * Method to remove an Collection of access rules.
@@ -377,7 +377,8 @@ public class AuthorizationDataHandler {
         throws RemoteException {
         authorizationsession.removeAvailableAccessRules(administrator, names);
     }
-     // removeAvailableAccessRules
+
+    // removeAvailableAccessRules
 
     /**
      * Method that returns a Collection of Strings containing all access rules.
@@ -387,7 +388,8 @@ public class AuthorizationDataHandler {
     public Collection getAvailableAccessRules() throws RemoteException {
         return authorizationsession.getAvailableAccessRules(administrator);
     }
-     // getAvailableAccessRules
+
+    // getAvailableAccessRules
 
     /**
      * Checks wheither an access rule exists in the database.
@@ -400,8 +402,8 @@ public class AuthorizationDataHandler {
         throws RemoteException {
         return authorizationsession.existsAvailableAccessRule(administrator, name);
     }
-     // existsAvailableAccessRule
 
+    // existsAvailableAccessRule
     // Private fields
     private IAuthorizationSessionRemote authorizationsession;
     private AvailableResources availableresources;

@@ -1,22 +1,21 @@
 package se.anatom.ejbca.admin;
 
+import java.io.*;
+import java.security.cert.X509Certificate;
+
+import javax.naming.Context;
+
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.FileTools;
 
-import java.io.*;
-
-import java.security.cert.X509Certificate;
-
-import javax.naming.Context;
-
 
 /**
  * Receive certification request and create certificate to send back.
  *
- * @version $Id: CaProcessReqCommand.java,v 1.7 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: CaProcessReqCommand.java,v 1.8 2003-07-24 08:43:29 anatom Exp $
  */
 public class CaProcessReqCommand extends BaseCaAdminCommand {
     /**

@@ -1,26 +1,24 @@
 package se.anatom.ejbca.webdist.rainterface;
 
-import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
-import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
-import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.Hex;
-
 import java.math.BigInteger;
-
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
-
 import java.util.Date;
+
+import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
+import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
+import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.Hex;
 
 
 /**
  * A class transforming X509 certificate data inte more readable form used by JSP pages.
  *
  * @author Philip Vendil
- * @version $Id: CertificateView.java,v 1.10 2003-06-26 11:43:26 anatom Exp $
+ * @version $Id: CertificateView.java,v 1.11 2003-07-24 08:43:33 anatom Exp $
  */
 public class CertificateView {
     public static final int DIGITALSIGNATURE = CertificateProfile.DIGITALSIGNATURE;

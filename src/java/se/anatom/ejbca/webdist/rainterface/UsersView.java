@@ -5,10 +5,7 @@
  */
 package se.anatom.ejbca.webdist.rainterface;
 
-import se.anatom.ejbca.ra.UserAdminData;
-
 import java.rmi.RemoteException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,8 +13,9 @@ import java.util.Iterator;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
-
 import javax.naming.NamingException;
+
+import se.anatom.ejbca.ra.UserAdminData;
 
 
 /**

@@ -1,7 +1,6 @@
 package se.anatom.ejbca.ra.authorization;
 
 import java.io.Serializable;
-
 import java.util.Collections;
 import java.util.Vector;
 
@@ -9,7 +8,7 @@ import java.util.Vector;
 /**
  * A class that represents a group of users and their access rules.
  *
- * @version $Id: AdminGroup.java,v 1.3 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: AdminGroup.java,v 1.4 2003-07-24 08:43:31 anatom Exp $
  */
 public class AdminGroup implements Serializable {
 /*    public static final String SPECIALADMINGROUP_PUBLICWEBADMIN        = "SPECIAL_PUBLIC_WEBADMIN";

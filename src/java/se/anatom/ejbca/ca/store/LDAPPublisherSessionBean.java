@@ -1,8 +1,14 @@
 package se.anatom.ejbca.ca.store;
 
-import com.novell.ldap.*;
+import java.io.*;
+import java.rmi.*;
+import java.security.cert.*;
+
+import javax.ejb.*;
 
 import org.bouncycastle.asn1.*;
+
+import com.novell.ldap.*;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
@@ -12,18 +18,10 @@ import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.util.*;
 
-import java.io.*;
-
-import java.rmi.*;
-
-import java.security.cert.*;
-
-import javax.ejb.*;
-
 
 /**
  * Stores certificates and CRL in an LDAP v3 directory.
- *
+ * 
  * <p>
  * LDAP schema required:<br>
  * Certificates for CERTTYPE_ENDENTITY are published as attribute 'userCertificate' in objectclass 'inetOrgPerson'.<br>
@@ -32,7 +30,7 @@ import javax.ejb.*;
  * CRLs are published as attribute 'certificateRevocationList' in objectclass
  * 'certificationAuthority'.
  * </p>
- *
+ * 
  * <p>
  * In 'inetOrgPerson' the following attributes are set if present in the certificate:
  * <pre>
@@ -46,7 +44,7 @@ import javax.ejb.*;
  * userCertificate
  * </pre>
  * </p>
- *
+ * 
  * <p>
  * In 'certificationAuthority' the only attributes set are:
  * <pre>
@@ -55,7 +53,7 @@ import javax.ejb.*;
  * </pre>
  * </p>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.22 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.23 2003-07-24 08:43:30 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
     private String ldapHost = "localhost";
@@ -391,7 +389,8 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
 
         return true;
     }
-     // storeCertificate
+
+    // storeCertificate
 
     /**
      * Revokes a certificate (already revoked by the CA), the Publisher decides what to do, if
@@ -406,7 +405,8 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
     public void revokeCertificate(Admin admin, Certificate cert, int reason) {
         // TODO: remove revoked certificate from LDAP
     }
-     //revokeCertificate
+
+    //revokeCertificate
 
     /**
      * Published a CRL to LDAP. Creates CA entry if it does not exist.
@@ -571,8 +571,8 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
 
         return true;
     }
-     // storeCRL
 
+    // storeCRL
     private boolean checkContainerName(String dn) {
         // Match users DN with 'containerName'?
         // Normalize string lo BC DN format to avoide different case in o, C etc.
@@ -586,7 +586,8 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
 
         return true;
     }
-     // checkContainerName
+
+    // checkContainerName
 
     /**
      * Creates an LDAPAttributeSet.
@@ -642,7 +643,8 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
 
         return attributeSet;
     }
-     // getAttributeSet
+
+    // getAttributeSet
 
     /**
      * Creates an LDAPModificationSet.
@@ -691,5 +693,6 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
 
         return modSet;
     }
-     // getModificationSet
+
+    // getModificationSet
 }

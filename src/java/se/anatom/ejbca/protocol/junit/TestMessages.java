@@ -1,20 +1,19 @@
 package se.anatom.ejbca.protocol.junit;
 
-import junit.framework.*;
-
-import org.apache.log4j.Logger;
-
-import se.anatom.ejbca.protocol.ScepRequestMessage;
-import se.anatom.ejbca.util.Base64;
-import se.anatom.ejbca.util.KeyTools;
-
 import java.io.*;
-
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.Security;
 import java.security.cert.*;
+
+import org.apache.log4j.Logger;
+
+import junit.framework.*;
+
+import se.anatom.ejbca.protocol.ScepRequestMessage;
+import se.anatom.ejbca.util.Base64;
+import se.anatom.ejbca.util.KeyTools;
 
 
 /**

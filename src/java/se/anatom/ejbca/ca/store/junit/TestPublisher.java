@@ -1,24 +1,24 @@
 package se.anatom.ejbca.ca.store.junit;
 
-import junit.framework.*;
+import java.security.cert.*;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
+
+import junit.framework.*;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.store.*;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.*;
 
-import java.security.cert.*;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 
 /**
  * Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.14 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: TestPublisher.java,v 1.15 2003-07-24 08:43:30 anatom Exp $
  */
 public class TestPublisher extends TestCase {
     static byte[] testcert = Base64.decode(("MIICWzCCAcSgAwIBAgIIJND6Haa3NoAwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE" +

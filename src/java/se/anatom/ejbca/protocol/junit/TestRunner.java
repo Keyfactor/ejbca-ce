@@ -1,9 +1,9 @@
 package se.anatom.ejbca.protocol.junit;
 
-import junit.framework.*;
-
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+
+import junit.framework.*;
 
 
 /**

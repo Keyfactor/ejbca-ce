@@ -1,16 +1,16 @@
 package se.anatom.ejbca.webdist.rainterface;
 
+import java.util.Date;
+
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import se.anatom.ejbca.util.StringTools;
-
-import java.util.Date;
 
 
 /**
  * A class representing a web interface view of a user in the ra user database.
  *
- * @version $Id: UserView.java,v 1.14 2003-06-26 11:43:26 anatom Exp $
+ * @version $Id: UserView.java,v 1.15 2003-07-24 08:43:33 anatom Exp $
  */
 public class UserView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.

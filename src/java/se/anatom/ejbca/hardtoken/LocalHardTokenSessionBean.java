@@ -1,5 +1,21 @@
 package se.anatom.ejbca.hardtoken;
 
+import java.math.BigInteger;
+import java.rmi.*;
+import java.security.cert.X509Certificate;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Random;
+import java.util.TreeMap;
+
+import javax.ejb.*;
+import javax.naming.*;
+import javax.sql.DataSource;
+
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.BaseSessionBean;
@@ -17,34 +33,12 @@ import se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.util.CertTools;
 
-import java.math.BigInteger;
-
-import java.rmi.*;
-
-import java.security.cert.X509Certificate;
-
-import java.sql.*;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.TreeMap;
-
-import javax.ejb.*;
-
-import javax.naming.*;
-
-import javax.sql.DataSource;
-
 
 /**
  * Stores data used by web server clients. Uses JNDI name for datasource as defined in env
  * 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.12 2003-07-23 09:40:16 anatom Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.13 2003-07-24 08:43:30 anatom Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean {
     private static Logger log = Logger.getLogger(LocalHardTokenSessionBean.class);
@@ -107,7 +101,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         return ds.getConnection();
     }
-     //getConnection
+
+    //getConnection
 
     /**
      * Gets connection to log session bean
@@ -127,7 +122,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         return logsession;
     }
-     //getLogSession
+
+    //getLogSession
 
     /**
      * Gets connection to certificate store session bean
@@ -147,7 +143,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         return certificatestoresession;
     }
-     //getCertificateStoreSession
+
+    //getCertificateStoreSession
 
     /**
      * Gets connection to authorization session bean
@@ -174,7 +171,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         return authorizationsession;
     }
-     //getAuthorizationSession
+
+    //getAuthorizationSession
 
     /**
      * Adds a hard token issuer to the database.
@@ -206,7 +204,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                         certissuerdn, issuerdata);
                     returnval = true;
                 } catch (Exception g) {
-                    error("Error adding hard token: ",g);
+                    error("Error adding hard token: ", g);
                 }
             }
         }
@@ -229,7 +227,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // addHardTokenIssuer
+
+    // addHardTokenIssuer
 
     /**
      * Updates hard token issuer data
@@ -272,7 +271,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         return returnvalue;
     }
-     // changeHardTokenIssuer
+
+    // changeHardTokenIssuer
 
     /**
      * Adds a hard token issuer with the same content as the original issuer,
@@ -320,7 +320,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // cloneHardTokenIssuer
+
+    // cloneHardTokenIssuer
 
     /**
      * Removes a hard token issuer from the database.
@@ -351,7 +352,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         debug("<removeHardTokenIssuer()");
     }
-     // removeHardTokenIssuer
+
+    // removeHardTokenIssuer
 
     /**
      * Renames a hard token issuer
@@ -408,7 +410,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         return returnvalue;
     }
-     // renameHardTokenIssuer
+
+    // renameHardTokenIssuer
 
     /**
      * Returns the available hard token issuers.
@@ -441,14 +444,15 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
             Collections.sort(returnval);
         } catch (Exception e) {
-            error("Error getting hard token issuer datas: ",e);
+            error("Error getting hard token issuer datas: ", e);
         }
 
         debug("<getHardTokenIssuerDatas()");
 
         return returnval;
     }
-     // getHardTokenIssuers
+
+    // getHardTokenIssuers
 
     /**
      * Returns the available hard token issuer alliases.
@@ -480,14 +484,15 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
             Collections.sort(returnval);
         } catch (Exception e) {
-            error("Error getting hard token issuer aliases: ",e);
+            error("Error getting hard token issuer aliases: ", e);
         }
 
         debug("<getHardTokenIssuerAliases()");
 
         return returnval;
     }
-     // getHardTokenIssuerAliases
+
+    // getHardTokenIssuerAliases
 
     /**
      * Returns the available hard token issuers.
@@ -524,7 +529,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getHardTokenIssuers
+
+    // getHardTokenIssuers
 
     /**
      * Returns the specified hard token issuer.
@@ -550,14 +556,15 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                         htih.getCertSN(), htih.getCertIssuerDN(), htih.getHardTokenIssuer());
             }
         } catch (Exception e) {
-            error("Error getting hard token issuer data: ",e);
+            error("Error getting hard token issuer data: ", e);
         }
 
         debug("<getHardTokenIssuerData()");
 
         return returnval;
     }
-     // getHardTokenIssuerData
+
+    // getHardTokenIssuerData
 
     /**
      * Returns the specified  hard token issuer.
@@ -583,14 +590,15 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                         htih.getCertSN(), htih.getCertIssuerDN(), htih.getHardTokenIssuer());
             }
         } catch (Exception e) {
-            error("Error getting hard token issuer data: ",e);
+            error("Error getting hard token issuer data: ", e);
         }
 
         debug("<getHardTokenIssuerData()");
 
         return returnval;
     }
-     // getHardTokenIssuerData
+
+    // getHardTokenIssuerData
 
     /**
      * Returns the specified  hard token issuer.
@@ -618,14 +626,15 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                         htih.getCertSN(), htih.getCertIssuerDN(), htih.getHardTokenIssuer());
             }
         } catch (Exception e) {
-            error("Error getting hard token issuer data: ",e);
+            error("Error getting hard token issuer data: ", e);
         }
 
         debug("<getHardTokenIssuerData()");
 
         return returnval;
     }
-     // getHardTokenIssuerData
+
+    // getHardTokenIssuerData
 
     /**
      * Returns the number of available hard token issuer.
@@ -650,7 +659,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getNumberOfHardTokenIssuers
+
+    // getNumberOfHardTokenIssuers
 
     /**
      * Returns a hard token issuer id given its alias.
@@ -675,14 +685,15 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                 returnval = htih.getId().intValue();
             }
         } catch (Exception e) {
-            error("Error getting hard token issuer id: ",e);
+            error("Error getting hard token issuer id: ", e);
         }
 
         debug("<getHardTokenIssuerId()");
 
         return returnval;
     }
-     // getNumberOfHardTokenIssuersId
+
+    // getNumberOfHardTokenIssuersId
 
     /**
      * Returns a hard token issuer id given the issuers certificate.
@@ -709,14 +720,15 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                 returnval = htih.getId().intValue();
             }
         } catch (Exception e) {
-            error("Error getting hard token issuer id: ",e);
+            error("Error getting hard token issuer id: ", e);
         }
 
         debug("<getHardTokenIssuerId()");
 
         return returnval;
     }
-     // getNumberOfHardTokenIssuersId
+
+    // getNumberOfHardTokenIssuersId
 
     /**
      * Returns a hard token issuer alias given its id.
@@ -741,14 +753,15 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                 returnval = htih.getAlias();
             }
         } catch (Exception e) {
-            error("Error getting hard token issuer alias: ",e);
+            error("Error getting hard token issuer alias: ", e);
         }
 
         debug("<getHardTokenIssuerAlias()");
 
         return returnval;
     }
-     // getHardTokenIssuerAlias
+
+    // getHardTokenIssuerAlias
 
     /**
      * Checks if a tokentype is among a hard tokens issuers available token types.
@@ -784,7 +797,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         debug("<getIsTokenTypeAvailableToIssuer()");
     }
-     // getIsTokenTypeAvailableToIssuer
+
+    // getIsTokenTypeAvailableToIssuer
 
     /**
      * Adds a hard token to the database
@@ -792,9 +806,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
      * @param admin the administrator calling the function
      * @param tokensn The serialnumber of token.
      * @param username the user owning the token.
+     * @param certificates DOCUMENT ME!
      * @param hardtokendata the hard token data
      * @param certificates a collection of certificates places in the hard token
-     * @param certificates DOCUMENT ME!
      *
      * @throws EJBException if a communication or other error occurs.
      * @throws HardTokenExistsException if tokensn already exists in databas.
@@ -820,7 +834,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                 null, LogEntry.EVENT_INFO_HARDTOKENDATA,
                 "Hard token with serial number : " + tokensn + " added.");
         } catch (Exception e) {
-            error("Error adding hard token: ",e);
+            error("Error adding hard token: ", e);
+
             try {
                 getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),
                     username, null, LogEntry.EVENT_ERROR_HARDTOKENDATA,
@@ -834,15 +849,16 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         debug("<addHardToken()");
     }
-     // addHardToken
+
+    // addHardToken
 
     /**
      * changes a hard token data in the database
      *
      * @param admin the administrator calling the function
      * @param tokensn The serialnumber of token.
-     * @param hardtokendata the hard token data
      * @param hardtokendata DOCUMENT ME!
+     * @param hardtokendata the hard token data
      *
      * @throws EJBException if a communication or other error occurs.
      * @throws HardTokenDoesntExistsException if tokensn doesn't exists in databas.
@@ -860,7 +876,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                 htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENDATA,
                 "Hard token with serial number : " + tokensn + " changed.");
         } catch (Exception e) {
-            error("Error changing hard token: ",e);
+            error("Error changing hard token: ", e);
+
             try {
                 getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(), null,
                     null, LogEntry.EVENT_ERROR_HARDTOKENDATA,
@@ -874,7 +891,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         debug("<changeHardToken()");
     }
-     // changeHardToken
+
+    // changeHardToken
 
     /**
      * removes a hard token data from the database
@@ -895,7 +913,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
             getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(), null, null,
                 LogEntry.EVENT_INFO_HARDTOKENDATA, "Hard token with sn " + tokensn + " removed.");
         } catch (Exception e) {
-            error("Error removing hard token: ",e);
+            error("Error removing hard token: ", e);
+
             try {
                 getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(), null,
                     null, LogEntry.EVENT_ERROR_HARDTOKENDATA,
@@ -909,7 +928,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         debug("<removeHardToken()");
     }
-     // removeHardToken
+
+    // removeHardToken
 
     /**
      * Checks if a hard token serialnumber exists in the database
@@ -932,7 +952,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
         } catch (javax.ejb.FinderException fe) {
             ret = false;
         } catch (Exception e) {
-            error("Error finding hard token: ",e);
+            error("Error finding hard token: ", e);
             throw new EJBException(e);
         }
 
@@ -940,7 +960,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         return ret;
     }
-     // existsHardToken
+
+    // existsHardToken
 
     /**
      * returns hard token data for the specified tokensn
@@ -970,14 +991,15 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                     "Hard token with sn " + tokensn + " viewed.");
             }
         } catch (Exception e) {
-            error("Error getting hard token: ",e);
+            error("Error getting hard token: ", e);
         }
 
         debug("<getHardToken()");
 
         return returnval;
     }
-     // getHardToken
+
+    // getHardToken
 
     /**
      * returns hard token data for the specified user
@@ -1009,14 +1031,15 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                     "Hard token with sn " + htd.getTokenSN() + " viewed.");
             }
         } catch (Exception e) {
-            error("Error getting hard tokens: ",e);
+            error("Error getting hard tokens: ", e);
         }
 
         debug("<getHardToken()");
 
         return returnval;
     }
-     // getHardTokens
+
+    // getHardTokens
 
     /**
      * Adds a mapping between a hard token and a certificate
@@ -1041,7 +1064,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                 "Certificate mapping added, certificatesn: " + certificatesn + ", tokensn: " +
                 tokensn + " added.");
         } catch (Exception e) {
-            error("Error adding hard token certificate mapping: ",e);
+            error("Error adding hard token certificate mapping: ", e);
+
             try {
                 getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(), null,
                     null, LogEntry.EVENT_ERROR_HARDTOKENCERTIFICATEMAP,
@@ -1054,7 +1078,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         debug("<addHardTokenCertificateMapping()");
     }
-     // addHardTokenCertificateMapping
+
+    // addHardTokenCertificateMapping
 
     /**
      * Removes a mapping between a hard token and a certificate
@@ -1076,7 +1101,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                 LogEntry.EVENT_INFO_HARDTOKENCERTIFICATEMAP,
                 "Certificate mapping with certificatesn: " + certificatesn + " removed.");
         } catch (Exception e) {
-            error("Error removing hard token certificate mapping: ",e);
+            error("Error removing hard token certificate mapping: ", e);
+
             try {
                 getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(), null,
                     null, LogEntry.EVENT_ERROR_HARDTOKENCERTIFICATEMAP,
@@ -1088,7 +1114,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         debug("<removeHardTokenCertificateMapping()");
     }
-     // removeHardTokenCertificateMapping
+
+    // removeHardTokenCertificateMapping
 
     /**
      * Returns all the X509Certificates places in a hard token.
@@ -1116,7 +1143,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                         htcm.getCertificateFingerprint()));
             }
         } catch (Exception e) {
-            error("Error finding certificates in hard token: ",e);
+            error("Error finding certificates in hard token: ", e);
             throw new EJBException(e);
         }
 
@@ -1124,7 +1151,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // findCertificatesInHardToken
+
+    // findCertificatesInHardToken
 
     /**
      * Retrieves an array of to the system avaliable hardware tokens defines in the hard token
@@ -1155,7 +1183,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
                 hardtokensnames = hardtokensnamestring.split(";");
                 hardtokensids = hardtokensidstring.split(";");
             } catch (Exception e) {
-                error("Error getting available hard tokens: ",e);
+                error("Error getting available hard tokens: ", e);
                 throw new EJBException(e);
             }
 
@@ -1171,7 +1199,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         return availablehardtokens;
     }
-     // getAvailableHardTokens
+
+    // getAvailableHardTokens
 
     /**
      * Method used to signal to the log that token was generated successfully.
@@ -1189,7 +1218,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
             throw new EJBException(e);
         }
     }
-     // tokenGenerated
+
+    // tokenGenerated
 
     /**
      * Method used to signal to the log that error occured when generating token.
@@ -1207,8 +1237,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
             throw new EJBException(e);
         }
     }
-     // errorWhenGeneratingToken
 
+    // errorWhenGeneratingToken
     private Integer findFreeHardTokenIssuerId() {
         int id = (new Random((new Date()).getTime())).nextInt();
         boolean foundfree = false;
@@ -1227,6 +1257,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean {
 
         return new Integer(id);
     }
-     // findFreeHardTokenIssuerId
+
+    // findFreeHardTokenIssuerId
 }
- // LocalRaAdminSessionBean
+
+
+// LocalRaAdminSessionBean

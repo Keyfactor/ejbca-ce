@@ -1,8 +1,8 @@
 package se.anatom.ejbca.util.junit;
 
-import junit.framework.*;
-
 import org.apache.log4j.Logger;
+
+import junit.framework.*;
 
 import se.anatom.ejbca.util.StringTools;
 
@@ -10,7 +10,7 @@ import se.anatom.ejbca.util.StringTools;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestStringTools.java,v 1.2 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: TestStringTools.java,v 1.3 2003-07-24 08:43:32 anatom Exp $
  */
 public class TestStringTools extends TestCase {
     private static Logger log = Logger.getLogger(TestStringTools.class);

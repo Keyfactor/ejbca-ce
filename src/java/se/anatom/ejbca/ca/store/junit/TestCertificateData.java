@@ -1,8 +1,14 @@
 package se.anatom.ejbca.ca.store.junit;
 
-import junit.framework.*;
+import java.security.cert.*;
+import java.util.*;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
+
+import junit.framework.*;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.crl.*;
@@ -10,18 +16,11 @@ import se.anatom.ejbca.ca.store.*;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.*;
 
-import java.security.cert.*;
-
-import java.util.*;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 
 /**
  * Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.18 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.19 2003-07-24 08:43:30 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
     static byte[] testcert = Base64.decode(("MIICETCCAXqgAwIBAgIIEzy5vc2xpOIwDQYJKoZIhvcNAQEFBQAwLjEOMAwGA1UE" +

@@ -1,9 +1,7 @@
 package se.anatom.ejbca.ra;
 
 import java.rmi.RemoteException;
-
 import java.security.NoSuchAlgorithmException;
-
 import java.util.Collection;
 
 import javax.ejb.CreateException;
@@ -13,7 +11,7 @@ import javax.ejb.FinderException;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataHome.java,v 1.9 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: UserDataHome.java,v 1.10 2003-07-24 08:43:31 anatom Exp $
  */
 public interface UserDataHome extends javax.ejb.EJBHome {
     /**

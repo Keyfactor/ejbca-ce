@@ -1,17 +1,15 @@
 package se.anatom.ejbca.webdist.webconfiguration;
 
+import java.math.BigInteger;
+import java.rmi.RemoteException;
+
+import javax.ejb.CreateException;
+import javax.naming.*;
+
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.raadmin.AdminPreference;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
-
-import java.math.BigInteger;
-
-import java.rmi.RemoteException;
-
-import javax.ejb.CreateException;
-
-import javax.naming.*;
 
 
 /**

@@ -1,18 +1,16 @@
 package se.anatom.ejbca.ca.sign;
 
-import org.apache.log4j.Logger;
-
 import java.math.BigInteger;
-
 import java.security.SecureRandom;
-
 import java.util.Date;
+
+import org.apache.log4j.Logger;
 
 
 /**
  * Implements a singleton serial number generator using SecureRandom.
  *
- * @version $Id: SernoGenerator.java,v 1.5 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: SernoGenerator.java,v 1.6 2003-07-24 08:43:30 anatom Exp $
  */
 public class SernoGenerator implements ISernoGenerator {
     /** Log4j instance */

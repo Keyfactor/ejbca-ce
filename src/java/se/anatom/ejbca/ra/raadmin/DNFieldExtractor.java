@@ -5,10 +5,10 @@
  */
 package se.anatom.ejbca.ra.raadmin;
 
-import org.ietf.ldap.LDAPDN;
-
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import org.ietf.ldap.LDAPDN;
 
 
 /**

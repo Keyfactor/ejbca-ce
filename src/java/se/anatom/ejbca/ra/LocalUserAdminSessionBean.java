@@ -1,5 +1,19 @@
 package se.anatom.ejbca.ra;
 
+import java.math.BigInteger;
+import java.rmi.*;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.sql.*;
+import java.util.*;
+
+import javax.ejb.*;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.naming.*;
+import javax.sql.DataSource;
+
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
@@ -23,33 +37,12 @@ import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.StringTools;
 import se.anatom.ejbca.util.query.*;
 
-import java.math.BigInteger;
-
-import java.rmi.*;
-
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-
-import java.sql.*;
-
-import java.util.*;
-
-import javax.ejb.*;
-
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-
-import javax.naming.*;
-
-import javax.sql.DataSource;
-
 
 /**
  * Administrates users in the database using UserData Entity Bean. Uses JNDI name for datasource as
  * defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.59 2003-07-23 09:40:16 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.60 2003-07-24 08:43:31 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean {
     /** The home interface of  GlobalConfiguration entity bean */
@@ -159,7 +152,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 
         return ds.getConnection();
     }
-     //getConnection
+
+    //getConnection
 
     /**
      * Implements IUserAdminSession::addUser. Implements a mechanism that uses UserDataEntity Bean.
@@ -171,14 +165,15 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @param subjectdn the DN the subject is given in his certificate.
      * @param subjectaltname the Subject Alternative Name to be used.
      * @param email the email of the subject or null.
-     * @param clearpwd true if the password will be stored in clear form in the db, otherwise it is hashed.
+     * @param clearpwd true if the password will be stored in clear form in the db, otherwise it is
+     *        hashed.
      * @param endentityprofileid the id number of the end entity profile bound to this user.
      * @param certificateprofileid the id number of the certificate profile that should be
      *        generated for the user.
      * @param type of user i.e administrator, keyrecoverable and/or sendnotification
      * @param tokentype the type of token to be generated, one of SecConst.TOKEN constants
-     * @param hardtokenissuerid , if token should be hard, the id of the hard token issuer, else 0.
-     *
+     * @param hardwaretokenissuerid , if token should be hard, the id of the hard token issuer,
+     *        else 0.
      */
     public void addUser(Admin admin, String username, String password, String subjectdn,
         String subjectaltname, String email, boolean clearpwd, int endentityprofileid,
@@ -262,7 +257,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 
         debug("<addUser(" + username + ", password, " + dn + ", " + email + ")");
     }
-     // addUser
+
+    // addUser
 
     /**
      * Implements IUserAdminSession::changeUser. Implements a mechanism that uses UserDataEntity
@@ -374,7 +370,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 
         debug("<changeUser(" + username + ", password, " + dn + ", " + email + ")");
     }
-     // changeUser
+
+    // changeUser
 
     /**
      * Implements IUserAdminSession::deleteUser. Implements a mechanism that uses UserData Entity
@@ -384,7 +381,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @param username DOCUMENT ME!
      */
     public void deleteUser(Admin admin, String username)
-        throws AuthorizationDeniedException, NotFoundException, FinderException, RemoveException,
+        throws AuthorizationDeniedException, NotFoundException, FinderException, RemoveException, 
             RemoteException {
         debug(">deleteUser(" + username + ")");
 
@@ -422,7 +419,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 
         debug("<deleteUser(" + username + ")");
     }
-     // deleteUser
+
+    // deleteUser
 
     /**
      * Implements IUserAdminSession::setUserStatus. Implements a mechanism that uses UserData
@@ -441,12 +439,13 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             try {
                 UserDataPK pk = new UserDataPK(username);
                 UserDataLocal data1 = home.findByPrimaryKey(pk);
+
                 if (data1 != null) {
                     if (!profileauthproxy.getEndEntityProfileAuthorization(admin,
                                 data1.getEndEntityProfileId(),
                                 EndEntityProfileAuthorizationProxy.EDIT_RIGHTS, LogEntry.MODULE_RA)) {
-                        logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(), username, null,
-                            LogEntry.EVENT_ERROR_CHANGEDENDENTITY,
+                        logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(), username,
+                            null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,
                             "Administrator not authorized to change status");
                         throw new AuthorizationDeniedException(
                             "Administrator not authorized to edit user.");
@@ -468,7 +467,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             LogEntry.EVENT_INFO_CHANGEDENDENTITY, ("New status : " + status));
         debug("<setUserStatus(" + username + ", " + status + ")");
     }
-     // setUserStatus
+
+    // setUserStatus
 
     /**
      * Implements IUserAdminSession::setPassword. Implements a mechanism that uses UserData Entity
@@ -479,16 +479,18 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @param password DOCUMENT ME!
      */
     public void setPassword(Admin admin, String username, String password)
-        throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException,
+        throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException, 
             RemoteException {
         debug(">setPassword(" + username + ", hiddenpwd)");
 
         // Find user
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data = home.findByPrimaryKey(pk);
+
         if (data == null) {
-            throw new FinderException("Can't find user "+username);
+            throw new FinderException("Can't find user " + username);
         }
+
         if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
             // Check if user fulfills it's profile.
             EndEntityProfile profile = raadminsession.getEndEntityProfile(admin,
@@ -540,7 +542,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 
         debug("<setPassword(" + username + ", hiddenpwd)");
     }
-     // setPassword
+
+    // setPassword
 
     /**
      * Implements IUserAdminSession::setClearTextPassword. Implements a mechanism that uses
@@ -551,7 +554,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @param password DOCUMENT ME!
      */
     public void setClearTextPassword(Admin admin, String username, String password)
-        throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException,
+        throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException, 
             RemoteException {
         debug(">setClearTextPassword(" + username + ", hiddenpwd)");
 
@@ -603,13 +606,14 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 
         debug("<setClearTextPassword(" + username + ", hiddenpwd)");
     }
-     // setClearTextPassword
+
+    // setClearTextPassword
 
     /**
      * Method that revokes a user.
      *
-     * @param username the username to revoke.
      * @param username DOCUMENT ME!
+     * @param username the username to revoke.
      * @param reason DOCUMENT ME!
      */
     public void revokeUser(Admin admin, String username, int reason)
@@ -642,15 +646,16 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             LogEntry.EVENT_INFO_REVOKEDENDENTITY, "");
         debug("<revokeUser()");
     }
-     // revokeUser
+
+    // revokeUser
 
     /**
      * Method that revokes a certificate.
      *
+     * @param reason DOCUMENT ME!
      * @param certserno the serno of certificate to revoke.
      * @param username the username to revoke.
      * @param reason the reason of revokation.
-     * @param reason DOCUMENT ME!
      */
     public void revokeCert(Admin admin, BigInteger certserno, String username, int reason)
         throws AuthorizationDeniedException, FinderException, RemoteException {
@@ -704,8 +709,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                 }
             }
         }
-         // if (publishers.size() > 0)
 
+        // if (publishers.size() > 0)
         if (certificatesession.checkIfAllRevoked(admin, username)) {
             setUserStatus(admin, username, UserDataRemote.STATUS_REVOKED);
             logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(), username, null,
@@ -714,7 +719,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 
         debug("<revokeCert()");
     }
-     // revokeUser
+
+    // revokeUser
 
     /**
      * Implements IUserAdminSession::findUser.
@@ -757,7 +763,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 
         return ret;
     }
-     // findUser
+
+    // findUser
 
     /**
      * Implements IUserAdminSession::findUserBySubjectDN.
@@ -811,7 +818,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // findUserBySubjectDN
+
+    // findUserBySubjectDN
 
     /**
      * Implements IUserAdminSession::findUserBySubjectDN.
@@ -859,7 +867,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // findUserBySubjectDN
+
+    // findUserBySubjectDN
 
     /**
      * Implements IUserAdminSession::checkIfCertificateBelongToAdmin.
@@ -905,7 +914,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 
         debug("<checkIfCertificateBelongToAdmin()");
     }
-     // checkIfCertificateBelongToAdmin
+
+    // checkIfCertificateBelongToAdmin
 
     /**
      * Implements IUserAdminSession::findAllUsersByStatus.
@@ -978,7 +988,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             }
         }
     }
-     // findAllUsersByStatus
+
+    // findAllUsersByStatus
 
     /**
      * Implements IUserAdminSession::findAllUsersWithLimit.
@@ -1143,7 +1154,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             throw new EJBException("Error starting external service", e);
         }
     }
-     // startExternalService
+
+    // startExternalService
 
     /**
      * Method to execute a customized query on the ra user data. The parameter query should be a
@@ -1225,7 +1237,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             }
         }
     }
-     // query
+
+    // query
 
     /**
      * Methods that checks if a user exists in the database having the given endentityprofileid.
@@ -1345,7 +1358,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             }
         }
     }
-     // checkForCertificateProfileId
+
+    // checkForCertificateProfileId
 
     /**
      * Loads the global configuration from the database.
@@ -1376,7 +1390,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 
         return ret;
     }
-     //loadGlobalConfiguration
+
+    //loadGlobalConfiguration
 
     /**
      * Saves global configuration to the database.
@@ -1423,8 +1438,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         this.globalconfiguration = globalconfiguration;
         debug("<saveGlobalConfiguration()");
     }
-     // saveGlobalConfiguration
 
+    // saveGlobalConfiguration
     private int makeType(boolean administrator, boolean keyrecoverable, boolean sendnotification) {
         int returnval = SecConst.USER_ENDUSER;
 
@@ -1442,8 +1457,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // makeType
 
+    // makeType
     private void sendNotification(Admin admin, String username, String password, String dn,
         String subjectaltname, String email) {
         try {
@@ -1476,6 +1491,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             }
         }
     }
-     // sendNotification
+
+    // sendNotification
 }
- // LocalUserAdminSessionBean
+
+
+// LocalUserAdminSessionBean

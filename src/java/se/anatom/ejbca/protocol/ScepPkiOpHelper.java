@@ -1,5 +1,11 @@
 package se.anatom.ejbca.protocol;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.cert.CertificateEncodingException;
+
+import javax.ejb.ObjectNotFoundException;
+
 import org.apache.log4j.Logger;
 
 import org.bouncycastle.cms.CMSException;
@@ -13,18 +19,11 @@ import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 
-import java.io.IOException;
-
-import java.security.GeneralSecurityException;
-import java.security.cert.CertificateEncodingException;
-
-import javax.ejb.ObjectNotFoundException;
-
 
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version $Id: ScepPkiOpHelper.java,v 1.18 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: ScepPkiOpHelper.java,v 1.19 2003-07-24 08:43:31 anatom Exp $
  */
 public class ScepPkiOpHelper {
     private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);
@@ -53,8 +52,8 @@ public class ScepPkiOpHelper {
      * @return byte[] containing response to be sent to client.
      */
     public byte[] scepCertRequest(byte[] msg)
-        throws ObjectNotFoundException, AuthorizationDeniedException, AuthLoginException,
-            SignRequestException, AuthStatusException, IllegalKeyException,
+        throws ObjectNotFoundException, AuthorizationDeniedException, AuthLoginException, 
+            SignRequestException, AuthStatusException, IllegalKeyException, 
             SignRequestSignatureException, CertificateEncodingException {
         byte[] ret = null;
         log.debug(">getRequestMessage(" + msg.length + " bytes)");

@@ -1,14 +1,13 @@
 package se.anatom.ejbca.keyrecovery;
 
 import java.math.BigInteger;
-
 import java.security.KeyPair;
 
 
 /**
  * For docs, see KeyRecoveryDataBean
  *
- * @version $Id: KeyRecoveryDataLocal.java,v 1.3 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: KeyRecoveryDataLocal.java,v 1.4 2003-07-24 08:43:31 anatom Exp $
  */
 public interface KeyRecoveryDataLocal extends javax.ejb.EJBLocalObject {
     // Public methods

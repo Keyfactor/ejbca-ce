@@ -1,21 +1,20 @@
 package se.anatom.ejbca.webdist.cainterface;
 
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.log.Admin;
-
 import java.rmi.RemoteException;
-
 import java.util.HashMap;
 
 import javax.naming.*;
+
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
+import se.anatom.ejbca.log.Admin;
 
 
 /**
  * A class used to improve performance by proxying certificateprofile id to certificate name
  * mappings by minimizing the number of needed lockups over rmi.
  *
- * @version $Id: CertificateProfileNameProxy.java,v 1.4 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: CertificateProfileNameProxy.java,v 1.5 2003-07-24 08:43:32 anatom Exp $
  */
 public class CertificateProfileNameProxy {
     /**

@@ -1,5 +1,12 @@
 package se.anatom.ejbca.ca.auth;
 
+import java.io.*;
+import java.net.*;
+import java.rmi.*;
+
+import javax.ejb.*;
+import javax.naming.*;
+
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
@@ -9,21 +16,11 @@ import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.LogEntry;
 
-import java.io.*;
-
-import java.net.*;
-
-import java.rmi.*;
-
-import javax.ejb.*;
-
-import javax.naming.*;
-
 
 /**
  * Authenticates users towards a remote user database, using HTTP-based protocol.
  *
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.9 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.10 2003-07-24 08:43:30 anatom Exp $
  */
 public class RemoteAuthenticationSessionBean extends BaseSessionBean {
     private static String REMOTE_PROTOCOL_VER = "1.0";

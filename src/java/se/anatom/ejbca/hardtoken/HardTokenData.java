@@ -1,9 +1,9 @@
 package se.anatom.ejbca.hardtoken;
 
+import java.util.Date;
+
 import se.anatom.ejbca.hardtoken.hardtokentypes.HardToken;
 import se.anatom.ejbca.util.StringTools;
-
-import java.util.Date;
 
 
 /**
@@ -11,7 +11,7 @@ import java.util.Date;
  * clients.
  *
  * @author TomSelleck
- * @version $Id: HardTokenData.java,v 1.3 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: HardTokenData.java,v 1.4 2003-07-24 08:43:30 anatom Exp $
  */
 public class HardTokenData implements java.io.Serializable {
     // Public Constructors

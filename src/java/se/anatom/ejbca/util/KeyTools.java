@@ -1,15 +1,6 @@
 package se.anatom.ejbca.util;
 
-import org.apache.log4j.Logger;
-
-import org.bouncycastle.asn1.*;
-import org.bouncycastle.asn1.pkcs.*;
-import org.bouncycastle.asn1.x509.*;
-
-import org.bouncycastle.jce.interfaces.*;
-
 import java.io.*;
-
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -22,14 +13,20 @@ import java.security.PublicKey;
 import java.security.cert.*;
 import java.security.interfaces.*;
 import java.security.spec.*;
-
 import java.util.*;
+
+import org.apache.log4j.Logger;
+
+import org.bouncycastle.asn1.*;
+import org.bouncycastle.asn1.pkcs.*;
+import org.bouncycastle.asn1.x509.*;
+import org.bouncycastle.jce.interfaces.*;
 
 
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.18 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.19 2003-07-24 08:43:32 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -63,7 +60,8 @@ public class KeyTools {
 
         return rsaKeys;
     }
-     // genKeys
+
+    // genKeys
 
     /**
      * Creates PKCS12-file that can be imported in IE or Netscape. The alias for the private key is
@@ -91,7 +89,8 @@ public class KeyTools {
 
         return createP12(alias, privKey, cert, chain);
     }
-     // createP12
+
+    // createP12
 
     /**
      * Creates PKCS12-file that can be imported in IE or Netscape. The alias for the private key is
@@ -183,7 +182,8 @@ public class KeyTools {
 
         return store;
     }
-     // createP12
+
+    // createP12
 
     /**
      * Creates JKS-file that can be used with JDK. The alias for the private key is set to
@@ -254,7 +254,8 @@ public class KeyTools {
 
         return store;
     }
-     // createJKS
+
+    // createJKS
 
     /**
      * Retrieves the certificate chain from a keystore.
@@ -342,7 +343,8 @@ public class KeyTools {
 
         return ret;
     }
-     // getCertChain
+
+    // getCertChain
 
     /**
      * create the subject key identifier.
@@ -363,4 +365,6 @@ public class KeyTools {
         }
     }
 }
- // KeyTools
+
+
+// KeyTools

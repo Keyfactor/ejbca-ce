@@ -1,5 +1,11 @@
 package se.anatom.ejbca.ra;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
+
+import javax.ejb.CreateException;
+
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.BaseEntityBean;
@@ -7,13 +13,6 @@ import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
 import se.anatom.ejbca.util.StringTools;
-
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import java.util.Date;
-
-import javax.ejb.CreateException;
 
 
 /**
@@ -39,7 +38,7 @@ import javax.ejb.CreateException;
  * both the hashed password and the clear text password. The method comparePassword() is used to
  * verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.22 2003-07-21 08:17:55 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.23 2003-07-24 08:43:31 anatom Exp $
  */
 public abstract class UserDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(UserDataBean.class);

@@ -1,10 +1,10 @@
 package se.anatom.ejbca.ca.auth;
 
+import javax.ejb.ObjectNotFoundException;
+
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.log.Admin;
-
-import javax.ejb.ObjectNotFoundException;
 
 
 /**
@@ -12,7 +12,7 @@ import javax.ejb.ObjectNotFoundException;
  * EJB, unforturnately this must be a copy of the remote interface except that RemoteException is
  * not thrown.
  *
- * @version $Id: IAuthenticationSessionLocal.java,v 1.6 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: IAuthenticationSessionLocal.java,v 1.7 2003-07-24 08:43:30 anatom Exp $
  *
  * @see se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote
  */

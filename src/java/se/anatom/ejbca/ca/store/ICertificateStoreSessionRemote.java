@@ -1,18 +1,15 @@
 package se.anatom.ejbca.ca.store;
 
-import se.anatom.ejbca.ca.crl.RevokedCertInfo;
-import se.anatom.ejbca.ca.store.certificateprofiles.*;
-import se.anatom.ejbca.log.Admin;
-
 import java.math.BigInteger;
-
 import java.rmi.RemoteException;
-
 import java.security.cert.Certificate;
-
 import java.util.Collection;
 import java.util.Date;
 import java.util.TreeMap;
+
+import se.anatom.ejbca.ca.crl.RevokedCertInfo;
+import se.anatom.ejbca.ca.store.certificateprofiles.*;
+import se.anatom.ejbca.log.Admin;
 
 
 /**
@@ -22,7 +19,7 @@ import java.util.TreeMap;
  * check for revocation etc. the CertificateStoreSession implements the interface
  * ICertificateStoreSession. Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.15 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.16 2003-07-24 08:43:30 anatom Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote {
     /**
@@ -120,6 +117,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      *
      * @return a collection of usernames (String) Implements
      *         ICertificateStoreSession::findCertificatesByExpireTimeWithLimit.
+     *
      * @throws RemoteException if a communication or other error occurs.
      */
     public Collection findCertificatesByExpireTimeWithLimit(Admin admin, Date expiretime)
@@ -165,6 +163,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      * @param username the username to check for.
      *
      * @return returns true if all certificates are revoked.
+     *
      * @throws RemoteException if a communication or other error occurs.
      */
     public boolean checkIfAllRevoked(Admin admin, String username)

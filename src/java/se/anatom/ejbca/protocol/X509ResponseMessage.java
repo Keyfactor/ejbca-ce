@@ -1,7 +1,6 @@
 package se.anatom.ejbca.protocol;
 
 import java.io.IOException;
-
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -14,7 +13,7 @@ import java.security.cert.X509Certificate;
 /**
  * A response message consisting of a single X509 Certificate.
  *
- * @version $Id: X509ResponseMessage.java,v 1.9 2003-07-22 10:26:24 anatom Exp $
+ * @version $Id: X509ResponseMessage.java,v 1.10 2003-07-24 08:43:31 anatom Exp $
  */
 public class X509ResponseMessage implements IResponseMessage {
     /** Certificate to be in response message, */
@@ -146,7 +145,7 @@ public class X509ResponseMessage implements IResponseMessage {
      */
     public void setEncKeyInfo(X509Certificate cert, PrivateKey key) {
     }
-    
+
     /**
      * Sets a senderNonce if it should be present in the response
      *
@@ -154,6 +153,7 @@ public class X509ResponseMessage implements IResponseMessage {
      */
     public void setSenderNonce(String senderNonce) {
     }
+
     /**
      * Sets a recipient if it should be present in the response
      *
@@ -171,11 +171,11 @@ public class X509ResponseMessage implements IResponseMessage {
     }
 
     /**
-     * Sets recipient key info, key id or similar. This is usually the request key info from the request message.
+     * Sets recipient key info, key id or similar. This is usually the request key info from the
+     * request message.
      *
-     * @param recipient key info
+     * @param recipientKeyInfo key info
      */
     public void setRecipientKeyInfo(byte[] recipientKeyInfo) {
     }
-    
 }

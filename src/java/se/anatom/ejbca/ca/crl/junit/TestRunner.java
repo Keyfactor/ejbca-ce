@@ -1,15 +1,15 @@
 package se.anatom.ejbca.ca.crl.junit;
 
-import junit.framework.*;
-
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+
+import junit.framework.*;
 
 
 /**
  * Main testclass
  *
- * @version $Id: TestRunner.java,v 1.4 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: TestRunner.java,v 1.5 2003-07-24 08:43:30 anatom Exp $
  */
 public class TestRunner extends Object {
     private static Logger log = Logger.getLogger(TestRunner.class);

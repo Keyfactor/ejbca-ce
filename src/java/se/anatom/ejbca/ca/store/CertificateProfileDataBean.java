@@ -1,13 +1,13 @@
 package se.anatom.ejbca.ca.store;
 
+import java.util.HashMap;
+
+import javax.ejb.CreateException;
+
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.BaseEntityBean;
 import se.anatom.ejbca.ca.store.certificateprofiles.*;
-
-import java.util.HashMap;
-
-import javax.ejb.CreateException;
 
 
 /**
@@ -110,8 +110,8 @@ public abstract class CertificateProfileDataBean extends BaseEntityBean {
     /**
      * Entity Bean holding data of a raadmin profile.
      *
-     * @param certificateprofilename
      * @param certificateprofilename DOCUMENT ME!
+     * @param certificateprofilename
      * @param certificateprofile is the CertificateProfile.
      *
      * @return null

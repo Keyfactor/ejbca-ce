@@ -1,9 +1,16 @@
 package se.anatom.ejbca.apply;
 
+import java.io.*;
+import java.security.cert.X509Certificate;
+import java.util.regex.Pattern;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.log4j.Logger;
 
 import org.bouncycastle.asn1.*;
-
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
@@ -12,16 +19,6 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.FileTools;
-
-import java.io.*;
-
-import java.security.cert.X509Certificate;
-
-import java.util.regex.Pattern;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
 
 
 /**
@@ -68,6 +65,7 @@ public class RequestHelper {
         DERInputStream in = new DERInputStream(new ByteArrayInputStream(buffer));
         ASN1Sequence spkac = (ASN1Sequence) in.readObject();
         in.close();
+
         NetscapeCertRequest nscr = new NetscapeCertRequest(spkac);
 
         // Verify POPO, we don't care about the challenge, it's not important.

@@ -8,6 +8,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.Date;
+
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import javax.naming.*;
@@ -29,11 +30,12 @@ import se.anatom.ejbca.ra.raadmin.AdminPreference;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import se.anatom.ejbca.util.CertTools;
 
+
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.29 2003-07-23 09:40:17 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.30 2003-07-24 08:43:33 anatom Exp $
  */
 public class EjbcaWebBean {
     private static Logger log = Logger.getLogger(EjbcaWebBean.class);
@@ -701,7 +703,8 @@ public class EjbcaWebBean {
         throws Exception {
         return adminspreferences.getDefaultAdminPreference();
     }
-     // getDefaultAdminPreference()
+
+    // getDefaultAdminPreference()
 
     /**
      * DOCUMENT ME!
@@ -724,5 +727,6 @@ public class EjbcaWebBean {
         adminsweblanguage = new WebLanguages(currentadminpreference.getPreferedLanguage(),
                 currentadminpreference.getSecondaryLanguage());
     }
-     // saveDefaultAdminPreference
+
+    // saveDefaultAdminPreference
 }

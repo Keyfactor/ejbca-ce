@@ -1,18 +1,18 @@
 package se.anatom.ejbca.hardtoken;
 
-import se.anatom.ejbca.hardtoken.hardtokentypes.HardToken;
-
 import java.util.Collection;
 import java.util.Date;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 
+import se.anatom.ejbca.hardtoken.hardtokentypes.HardToken;
+
 
 /**
  * For docs, see HardTokenDataBean
  *
- * @version $Id: HardTokenDataLocalHome.java,v 1.2 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: HardTokenDataLocalHome.java,v 1.3 2003-07-24 08:43:30 anatom Exp $
  */
 public interface HardTokenDataLocalHome extends javax.ejb.EJBLocalHome {
     /**

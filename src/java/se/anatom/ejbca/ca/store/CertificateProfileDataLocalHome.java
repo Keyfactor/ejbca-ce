@@ -1,11 +1,11 @@
 package se.anatom.ejbca.ca.store;
 
-import se.anatom.ejbca.ca.store.certificateprofiles.*;
-
 import java.util.Collection;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
+
+import se.anatom.ejbca.ca.store.certificateprofiles.*;
 
 
 /**

@@ -1,5 +1,16 @@
 package se.anatom.ejbca.keyrecovery;
 
+import java.rmi.*;
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
+import java.sql.*;
+import java.util.Collection;
+import java.util.Iterator;
+
+import javax.ejb.*;
+import javax.naming.*;
+import javax.sql.DataSource;
+
 import org.apache.log4j.*;
 
 import se.anatom.ejbca.BaseSessionBean;
@@ -13,28 +24,12 @@ import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.util.CertTools;
 
-import java.rmi.*;
-
-import java.security.KeyPair;
-import java.security.cert.X509Certificate;
-
-import java.sql.*;
-
-import java.util.Collection;
-import java.util.Iterator;
-
-import javax.ejb.*;
-
-import javax.naming.*;
-
-import javax.sql.DataSource;
-
 
 /**
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.5 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.6 2003-07-24 08:43:31 anatom Exp $
  */
 public class LocalKeyRecoverySessionBean extends BaseSessionBean {
     private static Category cat = Category.getInstance(LocalKeyRecoverySessionBean.class.getName());
@@ -84,7 +79,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
         return ds.getConnection();
     }
-     //getConnection
+
+    //getConnection
 
     /**
      * Gets connection to log session bean
@@ -104,7 +100,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
         return logsession;
     }
-     //getLogSession
+
+    //getLogSession
 
     /**
      * Gets connection to certificate store session bean
@@ -124,7 +121,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
         return certificatestoresession;
     }
-     //getCertificateStoreSession
+
+    //getCertificateStoreSession
 
     /**
      * Gets connection to sign session bean
@@ -144,7 +142,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
         return signsession;
     }
-     //getSignSession
+
+    //getSignSession
 
     /**
      * Adds a certificates keyrecovery data to the database.
@@ -190,7 +189,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // addKeyRecoveryData
+
+    // addKeyRecoveryData
 
     /**
      * Updates keyrecovery data
@@ -240,7 +240,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // changeKeyRecoveryData
+
+    // changeKeyRecoveryData
 
     /**
      * Removes a certificates keyrecovery data from the database.
@@ -279,7 +280,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
         debug("<removeKeyRecoveryData()");
     }
-     // removeKeyRecoveryData
+
+    // removeKeyRecoveryData
 
     /**
      * Removes a all keyrecovery data saved for a user from the database.
@@ -315,7 +317,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
         debug("<removeAllKeyRecoveryData()");
     }
-     // removeAllKeyRecoveryData
+
+    // removeAllKeyRecoveryData
 
     /**
      * Returns the keyrecovery data for a user. Observe only one certificates key can be recovered
@@ -377,7 +380,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // keyRecovery
+
+    // keyRecovery
 
     /**
      * Marks a users newest certificate for key recovery. Newest means certificate with latest not
@@ -444,7 +448,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // markNewestAsRecoverable
+
+    // markNewestAsRecoverable
 
     /**
      * Marks a users certificate for key recovery.
@@ -485,7 +490,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // markAsRecoverable
+
+    // markAsRecoverable
 
     /**
      * Resets keyrecovery mark for a user,
@@ -514,7 +520,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
         debug("<unmarkUser()");
     }
-     // unmarkUser
+
+    // unmarkUser
 
     /**
      * Returns true if a user is marked for key recovery.
@@ -554,7 +561,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // isUserMarked
+
+    // isUserMarked
 
     /**
      * Returns true if specified certificates keys exists in database.
@@ -582,6 +590,9 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // existsKeys
+
+    // existsKeys
 }
- // LocalKeyRecoverySessionBean
+
+
+// LocalKeyRecoverySessionBean

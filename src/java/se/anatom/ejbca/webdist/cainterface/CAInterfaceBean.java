@@ -1,5 +1,13 @@
 package se.anatom.ejbca.webdist.cainterface;
 
+import java.rmi.RemoteException;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+
+import javax.ejb.CreateException;
+import javax.naming.*;
+import javax.servlet.http.HttpServletRequest;
+
 import se.anatom.ejbca.IJobRunnerSessionHome;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
@@ -16,23 +24,12 @@ import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.webdist.rainterface.CertificateView;
 import se.anatom.ejbca.webdist.rainterface.RevokedInfoView;
 
-import java.rmi.RemoteException;
-
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-
-import javax.ejb.CreateException;
-
-import javax.naming.*;
-
-import javax.servlet.http.HttpServletRequest;
-
 
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.15 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.16 2003-07-24 08:43:32 anatom Exp $
  */
 public class CAInterfaceBean {
     /**

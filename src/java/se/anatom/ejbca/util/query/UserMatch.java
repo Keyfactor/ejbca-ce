@@ -96,7 +96,8 @@ public class UserMatch extends BasicMatch {
 
         return returnval;
     }
-     // getQueryString
+
+    // getQueryString
 
     /**
      * Checks if query data is ok.

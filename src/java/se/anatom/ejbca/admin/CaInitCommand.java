@@ -1,5 +1,13 @@
 package se.anatom.ejbca.admin;
 
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.Vector;
+
+import javax.ejb.CreateException;
+import javax.naming.Context;
+import javax.naming.NamingException;
+
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
@@ -10,21 +18,11 @@ import se.anatom.ejbca.ca.store.IPublisherSessionHome;
 import se.anatom.ejbca.ca.store.IPublisherSessionRemote;
 import se.anatom.ejbca.util.CertTools;
 
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-
-import java.util.Vector;
-
-import javax.ejb.CreateException;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.11 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.12 2003-07-24 08:43:29 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
     /** Pointer to main certificate store */

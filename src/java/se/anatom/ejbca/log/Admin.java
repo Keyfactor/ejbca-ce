@@ -5,10 +5,10 @@
  */
 package se.anatom.ejbca.log;
 
+import java.security.cert.X509Certificate;
+
 import se.anatom.ejbca.ra.authorization.AdminEntity;
 import se.anatom.ejbca.ra.authorization.AdminInformation;
-
-import java.security.cert.X509Certificate;
 
 
 /**

@@ -1,14 +1,14 @@
 package se.anatom.ejbca.hardtoken;
 
-import se.anatom.ejbca.hardtoken.HardTokenIssuer;
-
 import java.math.BigInteger;
+
+import se.anatom.ejbca.hardtoken.HardTokenIssuer;
 
 
 /**
  * For docs, see HardTokenIssuerDataBean
  *
- * @version $Id: HardTokenIssuerDataLocal.java,v 1.2 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: HardTokenIssuerDataLocal.java,v 1.3 2003-07-24 08:43:30 anatom Exp $
  */
 public interface HardTokenIssuerDataLocal extends javax.ejb.EJBLocalObject {
     // Public methods

@@ -1,21 +1,19 @@
 package se.anatom.ejbca.ra.raadmin;
 
+import java.math.BigInteger;
+import java.rmi.RemoteException;
+import java.util.Collection;
+import java.util.TreeMap;
+
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.raadmin.AdminPreference;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
-
-import java.math.BigInteger;
-
-import java.rmi.RemoteException;
-
-import java.util.Collection;
-import java.util.TreeMap;
 
 
 /**
  * DOCUMENT ME!
  *
- * @version $Id: IRaAdminSessionRemote.java,v 1.11 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: IRaAdminSessionRemote.java,v 1.12 2003-07-24 08:43:32 anatom Exp $
  */
 public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
     public static final String EMPTY_ENDENTITYPROFILE = LocalRaAdminSessionBean.EMPTY_ENDENTITYPROFILE;

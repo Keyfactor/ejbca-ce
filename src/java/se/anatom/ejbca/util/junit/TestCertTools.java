@@ -1,18 +1,18 @@
 package se.anatom.ejbca.util.junit;
 
-import junit.framework.*;
+import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
 
-import se.anatom.ejbca.util.*;
+import junit.framework.*;
 
-import java.security.cert.X509Certificate;
+import se.anatom.ejbca.util.*;
 
 
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.10 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.11 2003-07-24 08:43:32 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);

@@ -1,8 +1,8 @@
 package se.anatom.ejbca.hardtoken.hardtokentypes;
 
-import se.anatom.ejbca.util.UpgradeableDataHashMap;
-
 import java.io.Serializable;
+
+import se.anatom.ejbca.util.UpgradeableDataHashMap;
 
 
 /**

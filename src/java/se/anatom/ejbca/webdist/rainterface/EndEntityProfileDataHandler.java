@@ -1,5 +1,12 @@
 package se.anatom.ejbca.webdist.rainterface;
 
+import java.rmi.RemoteException;
+import java.util.TreeMap;
+
+import javax.ejb.CreateException;
+import javax.ejb.FinderException;
+import javax.naming.*;
+
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfileDoesntExistsException;
@@ -7,20 +14,11 @@ import se.anatom.ejbca.ra.raadmin.EndEntityProfileExistsException;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 
-import java.rmi.RemoteException;
-
-import java.util.TreeMap;
-
-import javax.ejb.CreateException;
-import javax.ejb.FinderException;
-
-import javax.naming.*;
-
 
 /**
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
- * @version $Id: EndEntityProfileDataHandler.java,v 1.4 2003-06-26 11:43:26 anatom Exp $
+ * @version $Id: EndEntityProfileDataHandler.java,v 1.5 2003-07-24 08:43:33 anatom Exp $
  */
 public class EndEntityProfileDataHandler {
     public static final String EMPTY_PROFILE = IRaAdminSessionRemote.EMPTY_ENDENTITYPROFILE;

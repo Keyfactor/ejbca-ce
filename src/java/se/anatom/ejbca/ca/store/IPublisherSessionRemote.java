@@ -1,10 +1,9 @@
 package se.anatom.ejbca.ca.store;
 
-import se.anatom.ejbca.log.Admin;
-
 import java.rmi.RemoteException;
-
 import java.security.cert.Certificate;
+
+import se.anatom.ejbca.log.Admin;
 
 
 /**
@@ -14,7 +13,7 @@ import java.security.cert.Certificate;
  * and can only be used to store certificates and CRLs. PublisherSession's implement the interface
  * IPublisherSession. Remote interface for EJB.
  *
- * @version $Id: IPublisherSessionRemote.java,v 1.9 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: IPublisherSessionRemote.java,v 1.10 2003-07-24 08:43:30 anatom Exp $
  */
 public interface IPublisherSessionRemote extends javax.ejb.EJBObject {
     /**

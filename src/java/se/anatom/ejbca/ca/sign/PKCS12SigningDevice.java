@@ -1,26 +1,24 @@
 package se.anatom.ejbca.ca.sign;
 
-import org.apache.log4j.Logger;
-
-import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.KeyTools;
-
 import java.io.FileInputStream;
 import java.io.InputStream;
-
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-
 import java.util.Properties;
+
+import org.apache.log4j.Logger;
+
+import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.KeyTools;
 
 
 /**
  * Implements a singleton signing device using PKCS12 keystore.
  *
- * @version $Id: PKCS12SigningDevice.java,v 1.9 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: PKCS12SigningDevice.java,v 1.10 2003-07-24 08:43:30 anatom Exp $
  */
 public class PKCS12SigningDevice implements ISigningDevice {
     /** Log4j instance for Base */

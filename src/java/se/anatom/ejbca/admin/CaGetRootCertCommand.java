@@ -1,7 +1,6 @@
 package se.anatom.ejbca.admin;
 
 import java.io.*;
-
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
@@ -9,7 +8,7 @@ import java.security.cert.X509Certificate;
 /**
  * Export root CA certificate.
  *
- * @version $Id: CaGetRootCertCommand.java,v 1.3 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: CaGetRootCertCommand.java,v 1.4 2003-07-24 08:43:29 anatom Exp $
  */
 public class CaGetRootCertCommand extends BaseCaAdminCommand {
     /**

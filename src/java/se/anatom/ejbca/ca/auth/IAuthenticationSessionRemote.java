@@ -1,20 +1,20 @@
 package se.anatom.ejbca.ca.auth;
 
-import se.anatom.ejbca.ca.exception.AuthLoginException;
-import se.anatom.ejbca.ca.exception.AuthStatusException;
-import se.anatom.ejbca.log.Admin;
-
 import java.rmi.RemoteException;
 
 import javax.ejb.EJBObject;
 import javax.ejb.ObjectNotFoundException;
+
+import se.anatom.ejbca.ca.exception.AuthLoginException;
+import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.log.Admin;
 
 
 /**
  * Interface used for authenticating entities when issuing their certificates. Remote interface for
  * EJB.
  *
- * @version $Id: IAuthenticationSessionRemote.java,v 1.5 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: IAuthenticationSessionRemote.java,v 1.6 2003-07-24 08:43:30 anatom Exp $
  */
 public interface IAuthenticationSessionRemote extends EJBObject {
     /**

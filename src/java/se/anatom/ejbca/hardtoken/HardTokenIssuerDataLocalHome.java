@@ -1,7 +1,6 @@
 package se.anatom.ejbca.hardtoken;
 
 import java.math.BigInteger;
-
 import java.util.Collection;
 
 import javax.ejb.CreateException;
@@ -11,7 +10,7 @@ import javax.ejb.FinderException;
 /**
  * For docs, see HardTokenIssuerDataBean
  *
- * @version $Id: HardTokenIssuerDataLocalHome.java,v 1.3 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: HardTokenIssuerDataLocalHome.java,v 1.4 2003-07-24 08:43:30 anatom Exp $
  */
 public interface HardTokenIssuerDataLocalHome extends javax.ejb.EJBLocalHome {
     /**

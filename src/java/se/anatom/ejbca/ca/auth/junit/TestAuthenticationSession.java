@@ -1,28 +1,26 @@
 package se.anatom.ejbca.ca.auth.junit;
 
-import junit.framework.*;
+import java.rmi.RemoteException;
+import java.util.*;
+
+import javax.ejb.DuplicateKeyException;
+import javax.naming.Context;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
+
+import junit.framework.*;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.auth.*;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.*;
 
-import java.rmi.RemoteException;
-
-import java.util.*;
-
-import javax.ejb.DuplicateKeyException;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.12 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.13 2003-07-24 08:43:30 anatom Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthenticationSession.class);

@@ -1,26 +1,24 @@
 package se.anatom.ejbca.ra.authorization;
 
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.GlobalConfiguration;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
-
 import java.rmi.RemoteException;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Vector;
 
 import javax.ejb.CreateException;
-
 import javax.naming.*;
+
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ra.GlobalConfiguration;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 
 
 /**
  * DOCUMENT ME!
  *
- * @version $Id: AvailableResources.java,v 1.5 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: AvailableResources.java,v 1.6 2003-07-24 08:43:31 anatom Exp $
  */
 public class AvailableResources {
     /**

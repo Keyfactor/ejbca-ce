@@ -1,10 +1,10 @@
 package se.anatom.ejbca.webdist.hardtokeninterface;
 
+import java.util.Date;
+
 import se.anatom.ejbca.hardtoken.*;
 import se.anatom.ejbca.hardtoken.hardtokentypes.*;
 import se.anatom.ejbca.util.StringTools;
-
-import java.util.Date;
 
 
 /**

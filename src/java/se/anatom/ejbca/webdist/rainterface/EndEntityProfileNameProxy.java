@@ -5,25 +5,23 @@
  */
 package se.anatom.ejbca.webdist.rainterface;
 
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
-
 import java.rmi.RemoteException;
-
 import java.util.HashMap;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
-
 import javax.naming.*;
+
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 
 
 /**
  * A class used to improve performance by proxying end entity profileid to profilename mappings by
  * minimizing the number of needed lockups over rmi.
  *
- * @version $Id: EndEntityProfileNameProxy.java,v 1.3 2003-06-26 11:43:26 anatom Exp $
+ * @version $Id: EndEntityProfileNameProxy.java,v 1.4 2003-07-24 08:43:33 anatom Exp $
  */
 public class EndEntityProfileNameProxy {
     /**

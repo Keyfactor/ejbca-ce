@@ -1,5 +1,21 @@
 package se.anatom.ejbca.apply;
 
+import java.io.*;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.Provider;
+import java.security.Security;
+import java.security.cert.*;
+import java.util.*;
+
+import javax.ejb.*;
+import javax.naming.InitialContext;
+import javax.rmi.PortableRemoteObject;
+import javax.servlet.*;
+import javax.servlet.http.*;
+
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.SecConst;
@@ -20,27 +36,6 @@ import se.anatom.ejbca.ra.UserDataRemote;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.KeyTools;
-
-import java.io.*;
-
-import java.security.GeneralSecurityException;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.PrivateKey;
-import java.security.Provider;
-import java.security.Security;
-import java.security.cert.*;
-
-import java.util.*;
-
-import javax.ejb.*;
-
-import javax.naming.InitialContext;
-
-import javax.rmi.PortableRemoteObject;
-
-import javax.servlet.*;
-import javax.servlet.http.*;
 
 
 /**
@@ -65,7 +60,7 @@ import javax.servlet.http.*;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.37 2003-07-23 09:40:10 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.38 2003-07-24 08:43:29 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);

@@ -5,12 +5,11 @@
  */
 package se.anatom.ejbca.webdist.rainterface;
 
-import se.anatom.ejbca.ca.crl.RevokedCertInfo;
-
 import java.math.BigInteger;
-
 import java.util.Date;
 import java.util.Vector;
+
+import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 
 
 /**

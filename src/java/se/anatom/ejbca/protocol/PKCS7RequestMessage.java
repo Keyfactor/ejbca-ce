@@ -7,10 +7,11 @@ import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
 
+
 /**
  * Class to handle PKCS7 request messages sent to the CA.
  *
- * @version $Id: PKCS7RequestMessage.java,v 1.12 2003-07-23 09:40:16 anatom Exp $
+ * @version $Id: PKCS7RequestMessage.java,v 1.13 2003-07-24 08:43:31 anatom Exp $
  */
 public class PKCS7RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(PKCS7RequestMessage.class);
@@ -151,7 +152,7 @@ public class PKCS7RequestMessage implements IRequestMessage, Serializable {
     public String getTransactionId() {
         return transactionId;
     }
-    
+
     /**
      * Returns requesters key info, key id or similar
      *
@@ -160,6 +161,7 @@ public class PKCS7RequestMessage implements IRequestMessage, Serializable {
     public byte[] getRequestKeyInfo() {
         return null;
     }
-
 }
- // PKCS7RequestMessage
+
+
+// PKCS7RequestMessage

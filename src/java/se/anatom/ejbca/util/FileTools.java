@@ -1,14 +1,14 @@
 package se.anatom.ejbca.util;
 
-import org.apache.log4j.Logger;
-
 import java.io.*;
+
+import org.apache.log4j.Logger;
 
 
 /**
  * Tools to handle some common file operations.
  *
- * @version $Id: FileTools.java,v 1.4 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: FileTools.java,v 1.5 2003-07-24 08:43:32 anatom Exp $
  */
 public class FileTools {
     private static Logger log = Logger.getLogger(FileTools.class);
@@ -66,7 +66,8 @@ public class FileTools {
 
         return bytes;
     }
-     // getBytesfromPEM
+
+    // getBytesfromPEM
 
     /**
      * Helpfunction to read a file to a byte array.
@@ -93,6 +94,9 @@ public class FileTools {
 
         return os.toByteArray();
     }
-     // readFiletoBuffer
+
+    // readFiletoBuffer
 }
- // FileTools
+
+
+// FileTools

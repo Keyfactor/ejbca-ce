@@ -1,5 +1,16 @@
 package se.anatom.ejbca.ca.store;
 
+import java.io.*;
+import java.rmi.*;
+
+//import com.novell.ldap.*;
+import java.security.cert.*;
+import java.util.*;
+
+import javax.ejb.*;
+import javax.naming.*;
+import javax.naming.directory.*;
+
 import org.apache.log4j.*;
 
 import org.bouncycastle.asn1.*;
@@ -13,26 +24,12 @@ import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.util.*;
 
-import java.io.*;
-
-import java.rmi.*;
-
-//import com.novell.ldap.*;
-import java.security.cert.*;
-
-import java.util.*;
-
-import javax.ejb.*;
-
-import javax.naming.*;
-import javax.naming.directory.*;
-
 
 /**
  * Stores certificates and CRL in an MS Active Directory (LDAP v3). This file is tested using IBMs
  * directory Factory from VisualAge, but should be possbile to get to work with other directory
  * factories as well.
- *
+ * 
  * <p>
  * LDAP schema required:<br>
  * Certificates for CERTTYPE_ENDENTITY are published as attribute 'userCertificate' in objectclass 'inetOrgPerson'.<br>
@@ -41,7 +38,7 @@ import javax.naming.directory.*;
  * CRLs are published as attribute 'certificateRevocationList' in objectclass
  * 'certificationAuthority'.
  * </p>
- *
+ * 
  * <p>
  * In 'inetOrgPerson' the following attributes are set if present in the certificate:
  * <pre>
@@ -55,7 +52,7 @@ import javax.naming.directory.*;
  * userCertificate
  * </pre>
  * </p>
- *
+ * 
  * <p>
  * In 'certificationAuthority' the only attributes set are:
  * <pre>
@@ -64,10 +61,9 @@ import javax.naming.directory.*;
  * </pre>
  * </p>
  *
- * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.14 2003-07-23 09:40:16 anatom Exp $
+ * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.15 2003-07-24 08:43:30 anatom Exp $
  */
 public class LDAPActiveDirectoryPublisherSessionBean extends BaseSessionBean {
-
     private String ldapHost = "10.1.1.1";
     private int ldapPort = 389;
     private String loginDN = "cn=user,cn=Users,dc=foo,dc=bar";
@@ -129,7 +125,8 @@ public class LDAPActiveDirectoryPublisherSessionBean extends BaseSessionBean {
 
         return true;
     }
-     // checkContainerName
+
+    // checkContainerName
 
     /**
      * DOCUMENT ME!
@@ -363,6 +360,7 @@ public class LDAPActiveDirectoryPublisherSessionBean extends BaseSessionBean {
                             ICertificateStoreSessionHome.class);
                 } catch (NamingException exc) {
                     error("Error retrieving the home of  CertificateData or CRLData.", exc);
+
                     return false;
                 }
 
@@ -396,7 +394,8 @@ public class LDAPActiveDirectoryPublisherSessionBean extends BaseSessionBean {
 
         return true;
     }
-     // storeCertificate
+
+    // storeCertificate
 
     /**
      * Revokes a certificate (already revoked by the CA), the Publisher decides what to do, if
@@ -410,7 +409,8 @@ public class LDAPActiveDirectoryPublisherSessionBean extends BaseSessionBean {
     public void revokeCertificate(Admin admin, Certificate cert) {
         // TODO: remove revoked certificate from LDAP
     }
-     //revokeCertificate
+
+    //revokeCertificate
 
     /**
      * DOCUMENT ME!
@@ -491,6 +491,7 @@ public class LDAPActiveDirectoryPublisherSessionBean extends BaseSessionBean {
                             "se/anatom/ejbca/ca/sign/ISignSessionRemote"), ISignSessionHome.class);
             } catch (NamingException exc) {
                 error("Error retrieving the home of CertificateData or CRLData.", exc);
+
                 return false;
             }
 

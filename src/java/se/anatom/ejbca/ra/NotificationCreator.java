@@ -1,17 +1,16 @@
 package se.anatom.ejbca.ra;
 
-import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
-
 import java.text.DateFormat;
-
 import java.util.Date;
 import java.util.regex.Pattern;
+
+import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 
 
 /**
  * This class is used to create notification messages
  *
- * @version $Id: NotificationCreator.java,v 1.7 2003-07-23 09:40:16 anatom Exp $
+ * @version $Id: NotificationCreator.java,v 1.8 2003-07-24 08:43:31 anatom Exp $
  */
 public class NotificationCreator {
     /**

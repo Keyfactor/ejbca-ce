@@ -1,15 +1,15 @@
 package se.anatom.ejbca.ca.store;
 
-import se.anatom.ejbca.log.Admin;
-
 import java.security.cert.Certificate;
+
+import se.anatom.ejbca.log.Admin;
 
 
 /**
  * Local interface for EJB, unforturnately this must be a copy of the remote interface except that
  * RemoteException is not thrown, see IPublicherSession for docs.
  *
- * @version $Id: IPublisherSessionLocal.java,v 1.10 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: IPublisherSessionLocal.java,v 1.11 2003-07-24 08:43:30 anatom Exp $
  *
  * @see se.anatom.ejbca.ca.store.IPublisherSessionRemote
  */

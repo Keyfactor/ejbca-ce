@@ -1,5 +1,14 @@
 package se.anatom.ejbca.ra.authorization;
 
+import java.rmi.*;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.TreeMap;
+import java.util.Vector;
+
+import javax.ejb.*;
+
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionHome;
@@ -8,23 +17,12 @@ import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.util.StringTools;
 
-import java.rmi.*;
-
-import java.security.cert.X509Certificate;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.TreeMap;
-import java.util.Vector;
-
-import javax.ejb.*;
-
 
 /**
  * Stores data used by web server clients. Uses JNDI name for datasource as defined in env
  * 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.16 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.17 2003-07-24 08:43:31 anatom Exp $
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean {
     /** Var holding JNDI name of datasource */
@@ -186,7 +184,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // addAdminGroup
+
+    // addAdminGroup
 
     /**
      * Method to remove a admingroup.
@@ -229,7 +228,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
             }
         }
     }
-     // removeAdminGroup
+
+    // removeAdminGroup
 
     /**
      * Metod to rename a admingroup
@@ -282,7 +282,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // renameAdminGroup
+
+    // renameAdminGroup
 
     /**
      * Method to get a reference to a admingroup.
@@ -303,7 +304,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getAdminGroup
+
+    // getAdminGroup
 
     /**
      * Returns the number of admingroups
@@ -322,7 +324,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getNumberOfAdminGroups
+
+    // getNumberOfAdminGroups
 
     /**
      * Returns an array containing all the admingroups names.
@@ -351,7 +354,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getAdminGroupnames
+
+    // getAdminGroupnames
 
     /**
      * Returns an array containing all the admingroups.
@@ -380,7 +384,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getAdminGroups
+
+    // getAdminGroups
 
     /**
      * Removes an accessrule from the admingroup.
@@ -424,7 +429,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
             }
         }
     }
-     // addAccessRule
+
+    // addAccessRule
 
     /**
      * Removes an accessrule from the database.
@@ -452,7 +458,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
             }
         }
     }
-     // removeAccessRule
+
+    // removeAccessRule
 
     /**
      * Returns the number of access rules in admingroup
@@ -472,7 +479,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getNumberOfAccessRules
+
+    // getNumberOfAccessRules
 
     /**
      * Returns all the accessrules in the admingroup as an array of AccessRule
@@ -493,7 +501,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getAccessRules
+
+    // getAccessRules
 
     /**
      * Adds a user entity to the admingroup. Changes it's values if it already exists
@@ -531,7 +540,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
             }
         }
     }
-     // addAdminEntity
+
+    // addAdminEntity
 
     /**
      * Removes a user entity from the admingroup.
@@ -565,7 +575,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
             }
         }
     }
-     // removeAdminEntity
+
+    // removeAdminEntity
 
     /**
      * Returns the number of user entities in admingroup
@@ -585,7 +596,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getNumberOfAdminEntities
+
+    // getNumberOfAdminEntities
 
     /**
      * Returns all the AdminEntities as an array of AdminEntities for the specified group.
@@ -605,8 +617,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getAdminEntities
 
+    // getAdminEntities
     // Methods used with AvailableAccessRulesData Entity beans.
 
     /**
@@ -637,7 +649,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
         debug("<addAvailableAccessRule");
     }
-     // addAvailableAccessRule
+
+    // addAvailableAccessRule
 
     /**
      * Method to add an Collection of access rules.
@@ -675,7 +688,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
         debug("<addAvailableAccessRules");
     }
-     //  addAvailableAccessRules
+
+    //  addAvailableAccessRules
 
     /**
      * Method to remove an access rule.
@@ -706,7 +720,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
         debug("<removeAvailableAccessRule");
     }
-     // removeAvailableAccessRule
+
+    // removeAvailableAccessRule
 
     /**
      * Method to remove an Collection of access rules.
@@ -745,7 +760,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
         debug("<removeAvailableAccessRules");
     }
-     // removeAvailableAccessRules
+
+    // removeAvailableAccessRules
 
     /**
      * Method that returns a Collection of Strings containing all access rules.
@@ -777,7 +793,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getAvailableAccessRules
+
+    // getAvailableAccessRules
 
     /**
      * Checks wheither an access rule exists in the database.
@@ -799,7 +816,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // existsAvailableAccessRule
+
+    // existsAvailableAccessRule
 
     /**
      * Method to check if an end entity profile exists in any end entity profile rules. Used to
@@ -837,4 +855,6 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         return exists;
     }
 }
- // LocalAvailableAccessRulesDataBean
+
+
+// LocalAvailableAccessRulesDataBean

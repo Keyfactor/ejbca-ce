@@ -1,16 +1,8 @@
 package se.anatom.ejbca.log;
 
-import org.apache.log4j.Logger;
-
-import se.anatom.ejbca.BaseSessionBean;
-import se.anatom.ejbca.util.query.*;
-
 import java.lang.reflect.Method;
-
 import java.security.cert.X509Certificate;
-
 import java.sql.*;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -18,17 +10,20 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import javax.ejb.*;
-
 import javax.naming.*;
-
 import javax.sql.DataSource;
+
+import org.apache.log4j.Logger;
+
+import se.anatom.ejbca.BaseSessionBean;
+import se.anatom.ejbca.util.query.*;
 
 
 /**
  * Stores data used by web server clients. Uses JNDI name for datasource as defined in env
  * 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalLogSessionBean.java,v 1.13 2003-07-23 09:40:16 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.14 2003-07-24 08:43:31 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
     public static final int MAXIMUM_QUERY_ROWCOUNT = 300;
@@ -53,7 +48,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
     private static final int LOGCONFIGURATION_ID = 0;
 
     /** Columns in the database used in select */
-    private final static String LOGENTRYDATA_COL = "adminType, adminData, module, time, username, certificateSNR, event, comment";
+    private static final String LOGENTRYDATA_COL = "adminType, adminData, module, time, username, certificateSNR, event, comment";
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -127,7 +122,8 @@ public class LocalLogSessionBean extends BaseSessionBean {
 
         return ds.getConnection();
     }
-     //getConnection
+
+    //getConnection
 
     /**
      * Session beans main function. Takes care of the logging functionality.
@@ -178,7 +174,8 @@ public class LocalLogSessionBean extends BaseSessionBean {
             throw new EJBException(e);
         }
     }
-     // log
+
+    // log
 
     /**
      * Overloaded function that also logs an exception See function above for more documentation.
@@ -307,7 +304,8 @@ public class LocalLogSessionBean extends BaseSessionBean {
             }
         }
     }
-     // query
+
+    // query
 
     /**
      * Loads the log configuration from the database.
@@ -332,7 +330,8 @@ public class LocalLogSessionBean extends BaseSessionBean {
 
         return logconfiguration;
     }
-     // loadLogConfiguration
+
+    // loadLogConfiguration
 
     /**
      * Saves the log configuration to the database.
@@ -359,6 +358,9 @@ public class LocalLogSessionBean extends BaseSessionBean {
             throw new EJBException(e);
         }
     }
-     // saveLogConfiguration
+
+    // saveLogConfiguration
 }
- // LocalLogSessionBean
+
+
+// LocalLogSessionBean

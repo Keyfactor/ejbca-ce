@@ -6,14 +6,13 @@
 package se.anatom.ejbca.util;
 
 import java.io.*;
-
 import java.math.BigInteger;
 
 
 /**
  * This class implements a hex decoder, decoding a string with hex-characters into the binary form.
  *
- * @version $Id: Hex.java,v 1.4 2003-07-23 09:40:17 anatom Exp $
+ * @version $Id: Hex.java,v 1.5 2003-07-24 08:43:32 anatom Exp $
  */
 public class Hex {
     private static final char[] hex = {
@@ -64,7 +63,8 @@ public class Hex {
 
         return data;
     }
-     //decode
+
+    //decode
 
     /**
      * Main
@@ -76,12 +76,14 @@ public class Hex {
             System.out.println("Usage: HexStrToBin enc/dec <infileName> <outfilename>");
             System.exit(1);
         }
-        
+
         ByteArrayOutputStream os = null;
         InputStream in = null;
+
         try {
             os = new ByteArrayOutputStream();
             in = new FileInputStream(args[1]);
+
             int len = 0;
             byte[] buf = new byte[1024];
 
@@ -105,11 +107,20 @@ public class Hex {
             e.printStackTrace();
         } finally {
             try {
-                if (in != null) in.close();
-                if (os != null) os.close();
-            } catch (IOException ioe) {}
+                if (in != null) {
+                    in.close();
+                }
+
+                if (os != null) {
+                    os.close();
+                }
+            } catch (IOException ioe) {
+            }
         }
     }
-     //main
+
+    //main
 }
- // Hex
+
+
+// Hex

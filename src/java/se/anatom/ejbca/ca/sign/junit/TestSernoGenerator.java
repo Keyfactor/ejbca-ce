@@ -1,20 +1,19 @@
 package se.anatom.ejbca.ca.sign.junit;
 
-import junit.framework.*;
+import java.math.BigInteger;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 
+import junit.framework.*;
+
 import se.anatom.ejbca.ca.sign.*;
-
-import java.math.BigInteger;
-
-import java.util.*;
 
 
 /**
  * Tests generation of serial numbers.
  *
- * @version $Id: TestSernoGenerator.java,v 1.6 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: TestSernoGenerator.java,v 1.7 2003-07-24 08:43:30 anatom Exp $
  */
 public class TestSernoGenerator extends TestCase {
     private static Logger log = Logger.getLogger(TestSernoGenerator.class);

@@ -1,14 +1,13 @@
 package se.anatom.ejbca.ra;
 
 import java.rmi.RemoteException;
-
 import java.security.NoSuchAlgorithmException;
 
 
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataRemote.java,v 1.7 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: UserDataRemote.java,v 1.8 2003-07-24 08:43:31 anatom Exp $
  */
 public interface UserDataRemote extends javax.ejb.EJBObject {
     // Constants for Status of user

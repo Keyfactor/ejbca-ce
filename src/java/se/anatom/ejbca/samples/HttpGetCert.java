@@ -1,16 +1,6 @@
 package se.anatom.ejbca.samples;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
-
-import org.bouncycastle.asn1.*;
-
-import org.bouncycastle.jce.*;
-
-import se.anatom.ejbca.util.*;
-
 import java.io.*;
-
 import java.net.*;
 
 // Use for SSL connections
@@ -24,12 +14,20 @@ import java.security.Provider;
 import java.security.Security;
 import java.security.cert.*;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
+
+import org.bouncycastle.asn1.*;
+import org.bouncycastle.jce.*;
+
+import se.anatom.ejbca.util.*;
+
 
 /**
  * NOTE: Support for SSL has been commented out in this sample, since it requires JSSE. This sample
  * class generates a PKCS10 request and POSTs to the CAs web interface. The reply is received and
  * printed to stdout. Takes arguments:
- *
+ * 
  * <ul>
  * <li>
  * requesturl - URL to the CA web (servlet where requests are POSTed),
@@ -42,9 +40,9 @@ import java.security.cert.*;
  * password - password for the above user.
  * </li>
  * </ul>
+ * 
  *
- *
- * @version $Id: HttpGetCert.java,v 1.9 2003-07-23 09:40:17 anatom Exp $
+ * @version $Id: HttpGetCert.java,v 1.10 2003-07-24 08:43:32 anatom Exp $
  */
 public class HttpGetCert {
     private static Logger log = Logger.getLogger(HttpGetCert.class);
@@ -62,7 +60,8 @@ public class HttpGetCert {
         */
         log.debug("<HttpGetCert:");
     }
-     // HttpGetCert
+
+    // HttpGetCert
 
     /**
      * Sets the CA certificate used to verify the web server's certificate. We only support a
@@ -214,7 +213,8 @@ public class HttpGetCert {
 
         log.debug("<sendHttpReq:");
     }
-     // sendHttpReq
+
+    // sendHttpReq
 
     /**
      * DOCUMENT ME!
@@ -262,4 +262,6 @@ public class HttpGetCert {
             "foo", "foo123");
     }
 }
- // class CertRequest
+
+
+// class CertRequest

@@ -3,7 +3,7 @@ package se.anatom.ejbca.admin;
 /**
  * Factory for RA Admin Commands.
  *
- * @version $Id: RaAdminCommandFactory.java,v 1.6 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: RaAdminCommandFactory.java,v 1.7 2003-07-24 08:43:29 anatom Exp $
  */
 public class RaAdminCommandFactory {
     /**
@@ -52,6 +52,9 @@ public class RaAdminCommandFactory {
             return null;
         }
     }
-     // getCommand
+
+    // getCommand
 }
- // RaAdminCommandFactory
+
+
+// RaAdminCommandFactory

@@ -1,7 +1,20 @@
 package se.anatom.ejbca.admin;
 
-import org.bouncycastle.asn1.*;
+import java.io.*;
+import java.rmi.RemoteException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Provider;
+import java.security.Security;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
 
+import javax.ejb.CreateException;
+import javax.naming.*;
+
+import org.bouncycastle.asn1.*;
 import org.bouncycastle.jce.*;
 
 import se.anatom.ejbca.IJobRunnerSessionHome;
@@ -13,28 +26,11 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 
-import java.io.*;
-
-import java.rmi.RemoteException;
-
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Provider;
-import java.security.Security;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-
-import javax.ejb.CreateException;
-
-import javax.naming.*;
-
 
 /**
  * Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.11 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.12 2003-07-24 08:43:29 anatom Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
     /** Private key alias in PKCS12 keystores */

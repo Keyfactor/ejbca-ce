@@ -1,20 +1,19 @@
 package se.anatom.ejbca.admin;
 
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.IUserAdminSessionHome;
-import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-
 import java.rmi.RemoteException;
 
 import javax.ejb.CreateException;
-
 import javax.naming.*;
+
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ra.IUserAdminSessionHome;
+import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 
 
 /**
  * Base for RA commands, contains comom functions for RA operations
  *
- * @version $Id: BaseRaAdminCommand.java,v 1.7 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: BaseRaAdminCommand.java,v 1.8 2003-07-24 08:43:29 anatom Exp $
  */
 public abstract class BaseRaAdminCommand extends BaseAdminCommand {
     /**

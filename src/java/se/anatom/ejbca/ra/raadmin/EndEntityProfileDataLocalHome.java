@@ -1,17 +1,17 @@
 package se.anatom.ejbca.ra.raadmin;
 
-import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
-
 import java.util.Collection;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 
+import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
+
 
 /**
  * For docs, see EndEntityProfileDataBean
  *
- * @version $Id: EndEntityProfileDataLocalHome.java,v 1.2 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: EndEntityProfileDataLocalHome.java,v 1.3 2003-07-24 08:43:32 anatom Exp $
  */
 public interface EndEntityProfileDataLocalHome extends javax.ejb.EJBLocalHome {
     /**

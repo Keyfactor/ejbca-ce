@@ -1,23 +1,23 @@
 package se.anatom.ejbca.ra.junit;
 
-import junit.framework.*;
-
-import org.apache.log4j.Logger;
-
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.*;
-
 import java.util.*;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import org.apache.log4j.Logger;
+
+import junit.framework.*;
+
+import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ra.*;
+
 
 /**
  * Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.13 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: TestUserData.java,v 1.14 2003-07-24 08:43:32 anatom Exp $
  */
 public class TestUserData extends TestCase {
     private static Logger log = Logger.getLogger(TestUserData.class);
@@ -72,8 +72,8 @@ public class TestUserData extends TestCase {
 
         return username;
     }
-     // genRandomUserName
 
+    // genRandomUserName
     private String genRandomPwd() throws Exception {
         // Gen random pwd
         Random rand = new Random(new Date().getTime() + 4812);
@@ -88,7 +88,8 @@ public class TestUserData extends TestCase {
 
         return password;
     }
-     // genRandomPwd
+
+    // genRandomPwd
 
     /**
      * DOCUMENT ME!

@@ -1,20 +1,17 @@
 package se.anatom.ejbca.ra.authorization;
 
+import java.io.Serializable;
+import java.rmi.RemoteException;
+import java.util.HashMap;
+
+import javax.ejb.*;
+import javax.naming.*;
+
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.ra.GlobalConfiguration;
-
-import java.io.Serializable;
-
-import java.rmi.RemoteException;
-
-import java.util.HashMap;
-
-import javax.ejb.*;
-
-import javax.naming.*;
 
 
 /**

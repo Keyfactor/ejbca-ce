@@ -1,5 +1,19 @@
 package se.anatom.ejbca.webdist.rainterface;
 
+import java.io.IOException;
+import java.math.BigInteger;
+import java.rmi.RemoteException;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Vector;
+
+import javax.ejb.CreateException;
+import javax.ejb.FinderException;
+import javax.naming.*;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.SecConst;
@@ -28,32 +42,12 @@ import se.anatom.ejbca.util.StringTools;
 import se.anatom.ejbca.util.query.*;
 import se.anatom.ejbca.webdist.cainterface.CertificateProfileNameProxy;
 
-import java.io.IOException;
-
-import java.math.BigInteger;
-
-import java.rmi.RemoteException;
-
-import java.security.cert.X509Certificate;
-
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Vector;
-
-import javax.ejb.CreateException;
-import javax.ejb.FinderException;
-
-import javax.naming.*;
-
-import javax.servlet.http.HttpServletRequest;
-
 
 /**
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.38 2003-07-23 09:40:17 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.39 2003-07-24 08:43:33 anatom Exp $
  */
 public class RAInterfaceBean {
     private static Logger log = Logger.getLogger(RAInterfaceBean.class);
@@ -324,7 +318,7 @@ public class RAInterfaceBean {
 
     /* Method to retrieve a user from the database without inserting it into users data, used by 'viewuser.jsp' and page*/
     public UserView findUser(String username)
-        throws RemoteException, NamingException, FinderException, CreateException,
+        throws RemoteException, NamingException, FinderException, CreateException, 
             AuthorizationDeniedException {
         log.debug(">findUser(" + username + ")");
 
@@ -342,7 +336,7 @@ public class RAInterfaceBean {
 
     /* Method to retrieve a user from the database without inserting it into users data, used by 'edituser.jsp' and page*/
     public UserView findUserForEdit(String username)
-        throws RemoteException, NamingException, FinderException, CreateException,
+        throws RemoteException, NamingException, FinderException, CreateException, 
             AuthorizationDeniedException {
         UserView userview = null;
 
@@ -365,7 +359,7 @@ public class RAInterfaceBean {
 
     /* Method to find all users in database */
     public UserView[] findAllUsers(int index, int size)
-        throws RemoteException, FinderException, NamingException, NumberFormatException,
+        throws RemoteException, FinderException, NamingException, NumberFormatException, 
             CreateException {
         users.setUsers(adminsession.findAllUsersWithLimit(administrator));
 
@@ -415,7 +409,7 @@ public class RAInterfaceBean {
 
     /* Method that checks if a certificate serialnumber is revoked and returns the user(s), else a null value. */
     public UserView[] filterByCertificateSerialNumber(String serialnumber, int index, int size)
-        throws RemoteException, FinderException, NamingException, NumberFormatException,
+        throws RemoteException, FinderException, NamingException, NumberFormatException, 
             CreateException {
         serialnumber = StringTools.stripWhitespace(serialnumber);
 
@@ -452,7 +446,7 @@ public class RAInterfaceBean {
 
     /* Method that lists all users with certificate's that expires within given days. */
     public UserView[] filterByExpiringCertificates(String days, int index, int size)
-        throws RemoteException, FinderException, NumberFormatException, NamingException,
+        throws RemoteException, FinderException, NumberFormatException, NamingException, 
             CreateException {
         Vector uservector = new Vector();
         UserView[] returnval = null;
@@ -796,7 +790,7 @@ public class RAInterfaceBean {
      * @throws FinderException DOCUMENT ME!
      */
     public void loadCertificates(String username)
-        throws RemoteException, NamingException, CreateException, AuthorizationDeniedException,
+        throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, 
             FinderException {
         Collection certs = certificatesession.findCertificatesByUsername(administrator, username);
 
@@ -836,7 +830,7 @@ public class RAInterfaceBean {
      * @throws FinderException DOCUMENT ME!
      */
     public void loadTokenCertificates(String tokensn, String username)
-        throws RemoteException, NamingException, CreateException, AuthorizationDeniedException,
+        throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, 
             FinderException {
         Collection certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
 
@@ -879,7 +873,7 @@ public class RAInterfaceBean {
      * @throws FinderException DOCUMENT ME!
      */
     public boolean revokeTokenCertificates(String tokensn, String username, int reason)
-        throws RemoteException, NamingException, CreateException, AuthorizationDeniedException,
+        throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, 
             FinderException {
         boolean success = true;
 
@@ -913,7 +907,7 @@ public class RAInterfaceBean {
      * @throws FinderException DOCUMENT ME!
      */
     public boolean isAllTokenCertificatesRevoked(String tokensn, String username)
-        throws RemoteException, NamingException, CreateException, AuthorizationDeniedException,
+        throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, 
             FinderException {
         Collection certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
 
@@ -958,7 +952,7 @@ public class RAInterfaceBean {
      * @throws FinderException DOCUMENT ME!
      */
     public void loadCertificates(BigInteger serno)
-        throws RemoteException, NamingException, CreateException, AuthorizationDeniedException,
+        throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, 
             FinderException {
         Collection certs = certificatesession.findCertificatesBySerno(administrator, serno);
         String username = certificatesession.findUsernameByCertSerno(administrator, serno);

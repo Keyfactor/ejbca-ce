@@ -1,17 +1,16 @@
 package se.anatom.ejbca.ra;
 
+import java.io.Serializable;
+import java.util.Date;
+
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.StringTools;
-
-import java.io.Serializable;
-
-import java.util.Date;
 
 
 /**
  * Hols admin data collected from UserData in the database.
  *
- * @version $Id: UserAdminData.java,v 1.7 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: UserAdminData.java,v 1.8 2003-07-24 08:43:31 anatom Exp $
  */
 public class UserAdminData implements Serializable {
     // Public constants

@@ -1,5 +1,12 @@
 package se.anatom.ejbca.ca.sign;
 
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
+import java.util.Vector;
+
+import javax.ejb.ObjectNotFoundException;
+
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
@@ -9,20 +16,12 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.IRequestMessage;
 import se.anatom.ejbca.protocol.IResponseMessage;
 
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
-
-import java.util.Vector;
-
-import javax.ejb.ObjectNotFoundException;
-
 
 /**
  * Local interface for EJB, unforturnately this must be a copy of the remote interface except that
  * RemoteException is not thrown. Creates certificates.
  *
- * @version $Id: ISignSessionLocal.java,v 1.12 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: ISignSessionLocal.java,v 1.13 2003-07-24 08:43:30 anatom Exp $
  *
  * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
  */

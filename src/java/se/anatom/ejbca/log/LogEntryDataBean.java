@@ -1,11 +1,11 @@
 package se.anatom.ejbca.log;
 
-import se.anatom.ejbca.BaseEntityBean;
-import se.anatom.ejbca.util.StringTools;
-
 import java.util.Date;
 
 import javax.ejb.CreateException;
+
+import se.anatom.ejbca.BaseEntityBean;
+import se.anatom.ejbca.util.StringTools;
 
 
 /**
@@ -22,7 +22,7 @@ import javax.ejb.CreateException;
  *  comment an optional comment of the event.
  * </pre>
  *
- * @version $Id: LogEntryDataBean.java,v 1.6 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.7 2003-07-24 08:43:31 anatom Exp $
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
     /**

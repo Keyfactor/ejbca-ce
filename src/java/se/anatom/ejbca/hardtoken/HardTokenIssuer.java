@@ -5,20 +5,19 @@
  */
 package se.anatom.ejbca.hardtoken;
 
-import se.anatom.ejbca.util.UpgradeableDataHashMap;
-
 import java.io.Serializable;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import se.anatom.ejbca.util.UpgradeableDataHashMap;
 
 
 /**
  * HardTokenIssuer is a class representing the data saved for each HardTokenIssuer.
  *
  * @author TomSelleck
- * @version $Id: HardTokenIssuer.java,v 1.3 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: HardTokenIssuer.java,v 1.4 2003-07-24 08:43:30 anatom Exp $
  */
 public class HardTokenIssuer extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values

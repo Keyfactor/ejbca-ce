@@ -1,5 +1,15 @@
 package se.anatom.ejbca.webdist.loginterface;
 
+import java.rmi.RemoteException;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+
+import javax.naming.*;
+import javax.servlet.http.HttpServletRequest;
+
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.log.*;
@@ -7,25 +17,12 @@ import se.anatom.ejbca.ra.authorization.AdminInformation;
 import se.anatom.ejbca.util.query.*;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 
-import java.rmi.RemoteException;
-
-import java.security.cert.X509Certificate;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-
-import javax.naming.*;
-
-import javax.servlet.http.HttpServletRequest;
-
 
 /**
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.8 2003-07-23 09:40:17 anatom Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.9 2003-07-24 08:43:33 anatom Exp $
  */
 public class LogInterfaceBean {
     // Public constants.

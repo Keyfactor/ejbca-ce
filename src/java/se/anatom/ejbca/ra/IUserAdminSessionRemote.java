@@ -1,5 +1,12 @@
 package se.anatom.ejbca.ra;
 
+import java.math.BigInteger;
+import java.rmi.RemoteException;
+import java.util.Collection;
+
+import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
+
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.GlobalConfiguration;
@@ -10,20 +17,11 @@ import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import se.anatom.ejbca.util.query.IllegalQueryException;
 import se.anatom.ejbca.util.query.Query;
 
-import java.math.BigInteger;
-
-import java.rmi.RemoteException;
-
-import java.util.Collection;
-
-import javax.ejb.FinderException;
-import javax.ejb.RemoveException;
-
 
 /**
  * Interface for User admin session
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.21 2003-07-21 08:17:55 anatom Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.22 2003-07-24 08:43:31 anatom Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     // Public constants
@@ -40,7 +38,8 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * @param subjectdn the DN the subject is given in his certificate.
      * @param subjectaltname the Subject Alternative Name to be used.
      * @param email the email of the subject or null.
-     * @param clearpwd true if the password will be stored in clear form in the db, otherwise it is hashed.
+     * @param clearpwd true if the password will be stored in clear form in the db, otherwise it is
+     *        hashed.
      * @param endentityprofileid the id number of the end entity profile bound to this user.
      * @param certificateprofileid the id number of the certificate profile that should be
      *        generated for the user.
@@ -64,7 +63,8 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * @param dn the DN the subject is given in his certificate.
      * @param subjectaltname the Subject Alternative Name to be used.
      * @param email the email of the subject or null.
-     * @param clearpwd true if the password will be stored in clear form in the db, otherwise it is hashed.
+     * @param clearpwd true if the password will be stored in clear form in the db, otherwise it is
+     *        hashed.
      * @param endentityprofileid the id number of the end entity profile bound to this user.
      * @param certificateprofileid the id number of the certificate profile that should be
      *        generated for the user.
@@ -89,7 +89,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * @throws EJBException if a communication or other error occurs.
      */
     public void deleteUser(Admin admin, String username)
-        throws AuthorizationDeniedException, NotFoundException, FinderException, RemoveException,
+        throws AuthorizationDeniedException, NotFoundException, FinderException, RemoveException, 
             RemoteException;
 
     /**
@@ -136,7 +136,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * @throws EJBException if a communication or other error occurs.
      */
     public void setPassword(Admin admin, String username, String password)
-        throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException,
+        throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException, 
             RemoteException;
 
     /**
@@ -150,7 +150,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * @throws EJBException if a communication or other error occurs.
      */
     public void setClearTextPassword(Admin admin, String username, String password)
-        throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException,
+        throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException, 
             RemoteException;
 
     /**
@@ -224,6 +224,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
      *
      * @param admin the administrator pwrforming the action
+     *
      * @return Collection of UserAdminData
      *
      * @throws EJBException if a communication or other error occurs.
@@ -303,6 +304,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      *
      * @param admin the administrator pwrforming the action
      * @param blobalconfiguration global configuration object
+     *
      * @throws EJBException if a communication or other error occurs.
      */
     public void saveGlobalConfiguration(Admin admin, GlobalConfiguration globalconfiguration)
@@ -312,6 +314,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * Loads the global configuration from the database.
      *
      * @param admin the administrator pwrforming the action
+     *
      * @return GlobalConfiguration
      *
      * @throws EJBException if a communication or other error occurs.

@@ -1,5 +1,23 @@
 package se.anatom.ejbca.apply;
 
+import java.beans.Beans;
+import java.io.IOException;
+import java.security.Provider;
+import java.security.Security;
+import java.security.cert.X509Certificate;
+
+import javax.ejb.CreateException;
+import javax.ejb.ObjectNotFoundException;
+import javax.naming.InitialContext;
+import javax.rmi.PortableRemoteObject;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.SecConst;
@@ -20,29 +38,6 @@ import se.anatom.ejbca.webdist.cainterface.CAInterfaceBean;
 import se.anatom.ejbca.webdist.rainterface.RAInterfaceBean;
 import se.anatom.ejbca.webdist.rainterface.UserView;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
-
-import java.beans.Beans;
-
-import java.io.IOException;
-
-import java.security.Provider;
-import java.security.Security;
-import java.security.cert.X509Certificate;
-
-import javax.ejb.CreateException;
-import javax.ejb.ObjectNotFoundException;
-
-import javax.naming.InitialContext;
-
-import javax.rmi.PortableRemoteObject;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 
 /**
@@ -97,7 +92,7 @@ import javax.servlet.http.HttpSession;
  * 
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.8 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.9 2003-07-24 08:43:29 anatom Exp $
  */
 public class AdminCertReqServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(AdminCertReqServlet.class);
@@ -350,8 +345,8 @@ public class AdminCertReqServlet extends HttpServlet {
     }
 
     /**
-           *
-           */
+               *
+               */
     private static final byte[] pkcs10Bytes(String pkcs10) {
         if (pkcs10 == null) {
             return null;
@@ -381,8 +376,8 @@ public class AdminCertReqServlet extends HttpServlet {
     }
 
     /**
-           *
-           */
+               *
+               */
     private final RAInterfaceBean getRaBean(HttpServletRequest req)
         throws ServletException {
         HttpSession session = req.getSession();
@@ -411,8 +406,8 @@ public class AdminCertReqServlet extends HttpServlet {
     }
 
     /**
-           *
-           */
+               *
+               */
     private final EjbcaWebBean getEjbcaWebBean(HttpServletRequest req)
         throws ServletException {
         HttpSession session = req.getSession();
@@ -437,8 +432,8 @@ public class AdminCertReqServlet extends HttpServlet {
     }
 
     /**
-           *
-           */
+               *
+               */
     private final CAInterfaceBean getCaBean(HttpServletRequest req)
         throws ServletException {
         HttpSession session = req.getSession();
@@ -467,8 +462,8 @@ public class AdminCertReqServlet extends HttpServlet {
     }
 
     /**
-           *
-           */
+               *
+               */
     private final String checkUsername(RAInterfaceBean rabean, String username)
         throws ServletException {
         if (username != null) {

@@ -1,14 +1,13 @@
 package se.anatom.ejbca.webdist.loginterface;
 
-import se.anatom.ejbca.log.LogEntry;
-import se.anatom.ejbca.webdist.rainterface.SortBy;
-
 import java.rmi.RemoteException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+
+import se.anatom.ejbca.log.LogEntry;
+import se.anatom.ejbca.webdist.rainterface.SortBy;
 
 
 /**

@@ -8,7 +8,7 @@ import java.io.FileWriter;
 /**
  * DOCUMENT ME!
  *
- * @version $Id: TomcatServiceXMLPasswordReplace.java,v 1.3 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: TomcatServiceXMLPasswordReplace.java,v 1.4 2003-07-24 08:43:32 anatom Exp $
  */
 public class TomcatServiceXMLPasswordReplace {
     /**
@@ -45,6 +45,9 @@ public class TomcatServiceXMLPasswordReplace {
             e.printStackTrace();
         }
     }
-     // main
+
+    // main
 }
- //  TomcatServiceXMLPasswordReplace
+
+
+//  TomcatServiceXMLPasswordReplace

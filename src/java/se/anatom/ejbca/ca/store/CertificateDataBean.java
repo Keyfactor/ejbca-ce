@@ -1,5 +1,11 @@
 package se.anatom.ejbca.ca.store;
 
+import java.io.IOException;
+import java.security.cert.*;
+import java.util.Date;
+
+import javax.ejb.CreateException;
+
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.BaseEntityBean;
@@ -7,14 +13,6 @@ import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
-
-import java.io.IOException;
-
-import java.security.cert.*;
-
-import java.util.Date;
-
-import javax.ejb.CreateException;
 
 
 /**
@@ -34,7 +32,7 @@ import javax.ejb.CreateException;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.19 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: CertificateDataBean.java,v 1.20 2003-07-24 08:43:30 anatom Exp $
  */
 public abstract class CertificateDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(CertificateDataBean.class);

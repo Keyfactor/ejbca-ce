@@ -1,19 +1,18 @@
 package se.anatom.ejbca.ra.authorization;
 
-import org.apache.log4j.Logger;
-
 import java.io.Serializable;
-
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Vector;
+
+import org.apache.log4j.Logger;
 
 
 /**
  * The building component of the AccessTree. All nodes consist of these objects.
  *
  * @author Philip Vendil
- * @version $Id: AccessTreeNode.java,v 1.8 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: AccessTreeNode.java,v 1.9 2003-07-24 08:43:31 anatom Exp $
  */
 public class AccessTreeNode implements Serializable {
     private static Logger log = Logger.getLogger(AccessTreeNode.class);

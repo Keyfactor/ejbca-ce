@@ -2,7 +2,6 @@ package se.anatom.ejbca.protocol;
 
 import java.io.IOException;
 import java.io.Serializable;
-
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -15,7 +14,6 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509Certificate;
-
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -29,7 +27,6 @@ import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.smime.SMIMECapability;
-
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSException;
@@ -41,10 +38,11 @@ import org.bouncycastle.cms.CMSSignedDataGenerator;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 
+
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.9 2003-07-23 09:40:16 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.10 2003-07-24 08:43:31 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage, Serializable {
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);
@@ -58,21 +56,21 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
     /** Possible fail information in the response. Defaults to 'badRequest (2)'. */
     private String failInfo = "2";
 
-    /**
-     * SenderNonce. This is base64 encoded bytes
-     */
+    /** SenderNonce. This is base64 encoded bytes */
     private String senderNonce = null;
+
     /**
-     * RecipientNonce in a response is the senderNonce from the request. This is base64 encoded bytes
+     * RecipientNonce in a response is the senderNonce from the request. This is base64 encoded
+     * bytes
      */
     private String recipientNonce = null;
-    
+
     /** transaction id */
     private String transactionId = null;
 
     /** recipient key identifier, usually IssuerAndSerialno in X509 world. */
     private byte[] recipientKeyInfo = null;
-    
+
     /** The un-encoded response message itself */
     private transient CMSSignedData signedData = null;
 
@@ -168,6 +166,7 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             }
 
             certList.add(signCert);
+
             CertStore certs = CertStore.getInstance("Collection",
                     new CollectionCertStoreParameters(certList), "BC");
 
@@ -185,8 +184,8 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             if (status == IResponseMessage.STATUS_OK) {
                 if (recipientKeyInfo != null) {
                     try {
-                    X509Certificate rec = CertTools.getCertfromByteArray(recipientKeyInfo);
-                    edGen.addKeyTransRecipient(rec);
+                        X509Certificate rec = CertTools.getCertfromByteArray(recipientKeyInfo);
+                        edGen.addKeyTransRecipient(rec);
                     } catch (CertificateException e) {
                         throw new IOException("Can not decode recipients self signed certificate!");
                     }
@@ -196,7 +195,7 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             }
 
             //CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(s.getEncoded()),
-              //      CMSEnvelopedDataGenerator.DES_EDE3_CBC, "BC");
+            //      CMSEnvelopedDataGenerator.DES_EDE3_CBC, "BC");
             CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(s.getEncoded()),
                     SMIMECapability.dES_CBC.getId(), "BC");
 
@@ -258,7 +257,7 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             // senderNonce
             if (senderNonce != null) {
                 oid = new DERObjectIdentifier(ScepRequestMessage.id_senderNonce);
-                log.debug("Added senderNonce: "+senderNonce);
+                log.debug("Added senderNonce: " + senderNonce);
                 value = new DERSet(new DEROctetString(Base64.decode(senderNonce.getBytes())));
                 attr = new Attribute(oid, value);
                 attributes.put(attr.getAttrType(), attr);
@@ -267,7 +266,7 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             // recipientNonce
             if (recipientNonce != null) {
                 oid = new DERObjectIdentifier(ScepRequestMessage.id_recipientNonce);
-                log.debug("Added recipientNonce: "+recipientNonce);                
+                log.debug("Added recipientNonce: " + recipientNonce);
                 value = new DERSet(new DEROctetString(Base64.decode(recipientNonce.getBytes())));
                 attr = new Attribute(oid, value);
                 attributes.put(attr.getAttrType(), attr);
@@ -349,6 +348,7 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
     public void setSenderNonce(String senderNonce) {
         this.senderNonce = senderNonce;
     }
+
     /**
      * Sets a recipient if it should be present in the response
      *
@@ -366,14 +366,14 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
     }
-    
+
     /**
-     * Sets recipient key info, key id or similar. This is the requestors self-signed cert from the request message.
+     * Sets recipient key info, key id or similar. This is the requestors self-signed cert from the
+     * request message.
      *
-     * @param recipient key info
+     * @param recipientKeyInfo key info
      */
     public void setRecipientKeyInfo(byte[] recipientKeyInfo) {
         this.recipientKeyInfo = recipientKeyInfo;
     }
-    
 }

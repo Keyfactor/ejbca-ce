@@ -1,22 +1,21 @@
 package se.anatom.ejbca.admin;
 
-import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.FileTools;
-import se.anatom.ejbca.util.KeyTools;
-
 import java.io.*;
-
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
+import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.FileTools;
+import se.anatom.ejbca.util.KeyTools;
+
 
 /**
  * Receive certificate reply as result of certificate request.
  *
- * @version $Id: CaRecRepCommand.java,v 1.5 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: CaRecRepCommand.java,v 1.6 2003-07-24 08:43:29 anatom Exp $
  */
 public class CaRecRepCommand extends BaseCaAdminCommand {
     /**

@@ -1,5 +1,13 @@
 package se.anatom.ejbca.webdist.cainterface;
 
+import java.io.*;
+import java.security.cert.*;
+
+import javax.naming.InitialContext;
+import javax.rmi.PortableRemoteObject;
+import javax.servlet.*;
+import javax.servlet.http.*;
+
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
@@ -7,17 +15,6 @@ import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
-
-import java.io.*;
-
-import java.security.cert.*;
-
-import javax.naming.InitialContext;
-
-import javax.rmi.PortableRemoteObject;
-
-import javax.servlet.*;
-import javax.servlet.http.*;
 
 
 /**
@@ -27,7 +24,7 @@ import javax.servlet.http.*;
  * iecacert also takes optional parameter level=(int 1,2,...), where the level is which ca
  * certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.14 2003-07-23 09:40:17 anatom Exp $
+ * @version $Id: CACertServlet.java,v 1.15 2003-07-24 08:43:32 anatom Exp $
  */
 public class CACertServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CACertServlet.class);
@@ -74,7 +71,8 @@ public class CACertServlet extends HttpServlet {
         doGet(req, res);
         log.debug("<doPost()");
     }
-     //doPost
+
+    //doPost
 
     /**
      * DOCUMENT ME!
@@ -188,6 +186,7 @@ public class CACertServlet extends HttpServlet {
                 log.error("Error getting CA certificates.");
                 log.error(e);
                 ps.close();
+
                 return;
             }
         } else {
@@ -198,7 +197,8 @@ public class CACertServlet extends HttpServlet {
             return;
         }
     }
-     // doGet
+
+    // doGet
 
     /**
      * Prints debug info back to browser client

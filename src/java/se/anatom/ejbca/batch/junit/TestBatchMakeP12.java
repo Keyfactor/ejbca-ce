@@ -1,26 +1,25 @@
 package se.anatom.ejbca.batch.junit;
 
-import junit.framework.*;
+import java.io.File;
+import java.util.*;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
+
+import junit.framework.*;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.batch.*;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.*;
 
-import java.io.File;
-
-import java.util.*;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 
 /**
  * Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.22 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.23 2003-07-24 08:43:29 anatom Exp $
  */
 public class TestBatchMakeP12 extends TestCase {
     private static Logger log = Logger.getLogger(TestBatchMakeP12.class);

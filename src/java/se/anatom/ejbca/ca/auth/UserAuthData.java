@@ -1,14 +1,14 @@
 package se.anatom.ejbca.ca.auth;
 
-import se.anatom.ejbca.util.StringTools;
-
 import java.io.Serializable;
+
+import se.anatom.ejbca.util.StringTools;
 
 
 /**
  * Holds authentication data collected from an authentication source.
  *
- * @version $Id: UserAuthData.java,v 1.5 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: UserAuthData.java,v 1.6 2003-07-24 08:43:30 anatom Exp $
  */
 public class UserAuthData implements Serializable {
     private String username;

@@ -1,9 +1,5 @@
 package se.anatom.ejbca.ra.authorization;
 
-import org.apache.log4j.Logger;
-
-import se.anatom.ejbca.BaseEntityBean;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -12,8 +8,11 @@ import java.util.Vector;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.RemoveException;
-
 import javax.naming.InitialContext;
+
+import org.apache.log4j.Logger;
+
+import se.anatom.ejbca.BaseEntityBean;
 
 
 /**
@@ -25,7 +24,7 @@ import javax.naming.InitialContext;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.7 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.8 2003-07-24 08:43:31 anatom Exp $
  */
 public abstract class AdminGroupDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(AdminGroupDataBean.class);
@@ -101,7 +100,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
         } catch (Exception e) {
         }
     }
-     // addAccessRule
+
+    // addAccessRule
 
     /**
      * DOCUMENT ME!
@@ -116,7 +116,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
             }
         }
     }
-     // addAccessRules
+
+    // addAccessRules
 
     /**
      * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
@@ -140,7 +141,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
             }
         }
     }
-     // removeAccessRule
+
+    // removeAccessRule
 
     /**
      * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
@@ -148,7 +150,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
     public int getNumberOfAccessRules() {
         return getAccessRules().size();
     }
-     // getNumberOfAccessRules
+
+    // getNumberOfAccessRules
 
     /**
      * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
@@ -173,7 +176,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
         return returnval;
     }
-     // getAccessRules
+
+    // getAccessRules
 
     /**
      * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
@@ -209,7 +213,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
         } catch (Exception e) {
         }
     }
-     // addAdminEntity
+
+    // addAdminEntity
 
     /**
      * DOCUMENT ME!
@@ -224,7 +229,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
             }
         }
     }
-     // addAdminEntities
+
+    // addAdminEntities
 
     /**
      * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
@@ -253,7 +259,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
             }
         }
     }
-     // removeAdminEntity
+
+    // removeAdminEntity
 
     /**
      * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
@@ -261,7 +268,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
     public int getNumberOfAdminEntities() {
         return getAdminEntities().size();
     }
-     // getNumberOfAdminEntities
+
+    // getNumberOfAdminEntities
 
     /**
      * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
@@ -286,7 +294,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
         return returnval;
     }
-     // getAdminEntities
+
+    // getAdminEntities
 
     /**
      * @see se.anatom.ejbca.ra.authorization.AdminGroupDataLocal
@@ -317,8 +326,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
         return new AdminGroup(accessrules, adminentities);
     }
-     // getAdminGroup
 
+    // getAdminGroup
     //
     // Fields required by Container
     //
@@ -358,8 +367,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
         return returnval;
     }
-     // createProfileData
 
+    // createProfileData
     private AccessRulesDataLocal createAccessRule(String resource, int rule, boolean recursive)
         throws CreateException, javax.naming.NamingException {
         AccessRulesDataLocal returnval = null;
@@ -371,5 +380,6 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
         return returnval;
     }
-     // createProfileData
+
+    // createProfileData
 }

@@ -1,10 +1,9 @@
 package se.anatom.ejbca.webdist.webconfiguration;
 
-import se.anatom.ejbca.ra.GlobalConfiguration;
-
 import java.io.IOException;
-
 import java.util.Properties;
+
+import se.anatom.ejbca.ra.GlobalConfiguration;
 
 
 /**
@@ -12,7 +11,7 @@ import java.util.Properties;
  * the presented text in the users prefered language.
  *
  * @author Philip Vendil
- * @version $Id: WebLanguages.java,v 1.7 2003-06-26 11:43:26 anatom Exp $
+ * @version $Id: WebLanguages.java,v 1.8 2003-07-24 08:43:33 anatom Exp $
  */
 public class WebLanguages {
     /**

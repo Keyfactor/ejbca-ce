@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.TreeMap;
+
 import javax.ejb.*;
 import javax.naming.*;
 import javax.sql.DataSource;
@@ -33,7 +34,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans. Uses
  * JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.44 2003-07-23 09:40:16 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.45 2003-07-24 08:43:30 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     /** Var holding JNDI name of datasource */
@@ -111,7 +112,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
         return ds.getConnection();
     }
-     //getConnection
+
+    //getConnection
 
     /**
      * Implements ICertificateStoreSession::storeCertificate. Implements a mechanism that uses
@@ -147,7 +149,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             data1.setStatus(status);
             data1.setType(type);
         } catch (Exception e) {
-            error("Error storing certificate: ",e);
+            error("Error storing certificate: ", e);
+
             try {
                 logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), username,
                     (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE, "");
@@ -161,7 +164,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
         return true;
     }
-     // storeCertificate
+
+    // storeCertificate
 
     /**
      * Implements ICertificateStoreSession::storeCRL. Implements a mechanism that uses CRL Entity
@@ -186,17 +190,22 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 "Number : " + number + " Fingerprint : " + CertTools.getFingerprintAsString(crl) +
                 ".");
         } catch (Exception e) {
-            error("Error storing CRL: ",e);
+            error("Error storing CRL: ", e);
+
             try {
                 logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null,
                     LogEntry.EVENT_ERROR_STORECRL, "Number : " + number + ".");
             } catch (RemoteException re) {
             }
+
             throw new EJBException(e);
         }
+
         debug("<storeCRL()");
+
         return true;
-    } // storeCRL
+    }
+     // storeCRL
 
     /**
      * Implements ICertificateStoreSession::listAlLCertificates. Uses select directly from
@@ -250,7 +259,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             }
         }
     }
-     // listAllCertificates
+
+    // listAllCertificates
 
     /**
      * Implements ICertificateStoreSession::listRevokedCertificates. Uses select directly from
@@ -308,7 +318,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             }
         }
     }
-     // listRevokedCertificates
+
+    // listRevokedCertificates
 
     /**
      * Implements ICertificateStoreSession::findCertificatesBySubject.
@@ -336,13 +347,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     ret.add(((CertificateDataLocal) iter.next()).getCertificate());
                 }
             }
+
             debug("<findCertificatesBySubject(), dn='" + subjectDN + "'");
+
             return ret;
         } catch (javax.ejb.FinderException fe) {
             throw new EJBException(fe);
         }
     }
-     //findCertificatesBySubject
+
+    //findCertificatesBySubject
 
     /**
      * Finds certificate which expire within a specified time. Implements
@@ -370,13 +384,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     ret.add(((CertificateDataLocal) iter.next()).getCertificate());
                 }
             }
+
             debug("<findCertificatesByExpireTime(), time=" + expireTime);
+
             return ret;
         } catch (javax.ejb.FinderException fe) {
             throw new EJBException(fe);
         }
     }
-     //findCertificatesByExpireTime
+
+    //findCertificatesByExpireTime
 
     /**
      * Finds usernames of users having certificate(s) expiring within a specified time and that has
@@ -423,9 +440,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 if (result != null) {
                     result.close();
                 }
+
                 if (ps != null) {
                     ps.close();
                 }
+
                 if (con != null) {
                     con.close();
                 }
@@ -434,7 +453,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             }
         }
     }
-     //findCertificatesByExpireTimeWithLimit
+
+    //findCertificatesByExpireTimeWithLimit
 
     /**
      * Implements ICertificateStoreSession::findCertificateByIssuerAndSerno.
@@ -471,6 +491,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     ret = ((CertificateDataLocal) iter.next()).getCertificate();
                 }
             }
+
             debug("<findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno);
 
             return ret;
@@ -478,7 +499,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             throw new EJBException(fe);
         }
     }
-     //findCertificateByIssuerAndSerno
+
+    //findCertificateByIssuerAndSerno
 
     /**
      * Implements ICertificateStoreSession::findCertificatesBySerno.
@@ -502,6 +524,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     ret.add(((CertificateDataLocal) iter.next()).getCertificate());
                 }
             }
+
             debug("<findCertificateBySerno(), serno=" + serno);
 
             return ret;
@@ -509,7 +532,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             throw new EJBException(fe);
         }
     }
-     // findCertificateBySerno
+
+    // findCertificateBySerno
 
     /**
      * Implements ICertificateStoreSession::findUsernameByCertSerno.
@@ -533,6 +557,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     ret = ((CertificateDataLocal) iter.next()).getUsername();
                 }
             }
+
             debug("<findUsernameByCertSerno(), serno=" + serno);
 
             return ret;
@@ -540,7 +565,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             throw new EJBException(fe);
         }
     }
-     // findUsernameByCertSerno
+
+    // findUsernameByCertSerno
 
     /**
      * Implements ICertificateStoreSession::findCertificatesByUsername.
@@ -567,6 +593,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     ret.add(((CertificateDataLocal) iter.next()).getCertificate());
                 }
             }
+
             debug("<findCertificateBySerno(), username=" + username);
 
             return ret;
@@ -574,7 +601,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             throw new EJBException(fe);
         }
     }
-     // findCertificateByUsername
+
+    // findCertificateByUsername
 
     /**
      * Implements ICertificateStoreSession::findCertificateByFingerprint.
@@ -597,7 +625,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             throw new EJBException(fe);
         }
     }
-     // findCertificateByFingerprint
+
+    // findCertificateByFingerprint
 
     /**
      * Set the status of certificates of given username to revoked.
@@ -650,10 +679,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             } catch (RemoteException f) {
                 throw new EJBException(f);
             }
+
             throw new EJBException(e);
         }
     }
-     // setRevokeStatus
+
+    // setRevokeStatus
 
     /**
      * Set the status of certificate of serno to revoked.
@@ -703,10 +734,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             } catch (RemoteException f) {
                 throw new EJBException(f);
             }
+
             throw new EJBException(e);
         }
     }
-     // setRevokeStatus
+
+    // setRevokeStatus
 
     /**
      * Revokes a certificate (already revoked by the CA), the Publisher decides what to do, if
@@ -723,7 +756,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             setRevokeStatus(admin, ((X509Certificate) cert).getSerialNumber(), reason);
         }
     }
-     //revokeCertificate
+
+    //revokeCertificate
 
     /**
      * Method that checks if a users all certificates have been revoked.
@@ -816,7 +850,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
 
         return null;
-    } //isRevoked
+    }
+     //isRevoked
 
     /**
      * Implements ICertificateStoreSession::getLastCRL. Uses select directly from datasource.
@@ -856,9 +891,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             } catch (RemoteException re) {
                 throw new EJBException(re);
             }
+
             throw new EJBException(e);
         }
-    } //getLastCRL
+    }
+     //getLastCRL
 
     /**
      * Implements ICertificateStoreSession::getLastCRLNumber. Uses select directly from datasource.
@@ -897,9 +934,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 if (result != null) {
                     result.close();
                 }
+
                 if (ps != null) {
                     ps.close();
                 }
+
                 if (con != null) {
                     con.close();
                 }
@@ -907,7 +946,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 error("Error cleaning up: ", se);
             }
         }
-    } //getLastCRLNumber
+    }
+     //getLastCRLNumber
 
     /**
      * Adds a certificate profile to the database.
@@ -948,7 +988,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
 
         return returnval;
-    } // addCertificateProfile
+    }
+     // addCertificateProfile
 
     /**
      * Adds a certificate profile with the same content as the original certificateprofile,
@@ -990,7 +1031,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
 
         return returnval;
-    } // cloneCertificateProfile
+    }
+     // cloneCertificateProfile
 
     /**
      * Removes a certificateprofile from the database.
@@ -1008,7 +1050,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 LogEntry.EVENT_INFO_CERTPROFILE,
                 "Removed certificateprofile " + certificateprofilename + ".");
         } catch (Exception e) {
-            error("Error removing certificate profile: ",e);
+            error("Error removing certificate profile: ", e);
+
             try {
                 logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null,
                     LogEntry.EVENT_ERROR_CERTPROFILE,
@@ -1016,7 +1059,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             } catch (RemoteException re) {
             }
         }
-    } // removeCertificateProfile
+    }
+     // removeCertificateProfile
 
     /**
      * Renames a certificateprofile
@@ -1059,7 +1103,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
 
         return returnvalue;
-    } // remameCertificateProfile
+    }
+     // remameCertificateProfile
 
     /**
      * Updates certificateprofile data
@@ -1094,8 +1139,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         } catch (RemoteException re) {
             throw new EJBException(re);
         }
+
         return returnvalue;
-    } // changeCertificateProfile
+    }
+     // changeCertificateProfile
 
     /**
      * Retrives certificate profile names sorted.
@@ -1118,13 +1165,15 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     returnval.add(((CertificateProfileDataLocal) i.next()).getCertificateProfileName());
                 }
             }
+
             Collections.sort(returnval);
         } catch (Exception e) {
-            error("Error getting certificate profile names: ",e);
+            error("Error getting certificate profile names: ", e);
         }
 
         return returnval;
-    } // getCertificateProfileNames
+    }
+     // getCertificateProfileNames
 
     /**
      * Retrives certificate profiles sorted by name.
@@ -1154,7 +1203,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
 
         return returnval;
-    } // getCertificateProfiles
+    }
+     // getCertificateProfiles
 
     /**
      * Retrives a named certificate profile.
@@ -1174,7 +1224,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
 
         return returnval;
-    } //  getCertificateProfile
+    }
+     //  getCertificateProfile
 
     /**
      * Finds a certificate profile by id.
@@ -1194,7 +1245,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
 
         return returnval;
-    } // getCertificateProfile
+    }
+     // getCertificateProfile
 
     /**
      * Retrives the numbers of certificateprofiles.
@@ -1212,7 +1264,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
 
         return returnval;
-    } // getNumberOfCertificateProfiles
+    }
+     // getNumberOfCertificateProfiles
 
     /**
      * Returns a certificate profile id, given it's certificate profile name
@@ -1232,7 +1285,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
 
         return returnval;
-    } // getCertificateProfileId
+    }
+     // getCertificateProfileId
 
     /**
      * Returns a certificateprofiles name given it's id.
@@ -1251,7 +1305,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
 
         return returnval;
-    } // getCertificateProfileName
+    }
+     // getCertificateProfileName
 
     // Private methods
     private Integer findFreeCertificateProfileId() {
@@ -1272,6 +1327,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
 
         return new Integer(id);
-    } // findFreeCertificateProfileId
-    
-} // CertificateStoreSessionBean
+    }
+     // findFreeCertificateProfileId
+}
+ // CertificateStoreSessionBean

@@ -1,5 +1,14 @@
 package se.anatom.ejbca.protocol;
 
+import java.io.Serializable;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.cert.X509Certificate;
+
 import org.apache.log4j.Logger;
 
 import org.bouncycastle.asn1.ASN1Set;
@@ -11,26 +20,15 @@ import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Name;
-
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 
 import se.anatom.ejbca.util.CertTools;
-
-import java.io.Serializable;
-
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.cert.X509Certificate;
 
 
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.17 2003-07-21 14:18:30 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.18 2003-07-24 08:43:31 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(PKCS10RequestMessage.class);
@@ -301,7 +299,7 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     public String getTransactionId() {
         return null;
     }
-    
+
     /**
      * Returns requesters key info, key id or similar
      *
@@ -311,4 +309,6 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
         return null;
     }
 }
- // PKCS10RequestMessage
+
+
+// PKCS10RequestMessage

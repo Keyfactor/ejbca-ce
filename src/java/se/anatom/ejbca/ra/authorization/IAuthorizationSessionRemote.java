@@ -1,19 +1,17 @@
 package se.anatom.ejbca.ra.authorization;
 
+import java.rmi.RemoteException;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.GlobalConfiguration;
-
-import java.rmi.RemoteException;
-
-import java.security.cert.X509Certificate;
-
-import java.util.Collection;
 
 
 /**
  * DOCUMENT ME!
  *
- * @version $Id: IAuthorizationSessionRemote.java,v 1.10 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: IAuthorizationSessionRemote.java,v 1.11 2003-07-24 08:43:31 anatom Exp $
  */
 public interface IAuthorizationSessionRemote extends javax.ejb.EJBObject {
     // Methods used with AvailableAccessRulesData Entity beans.

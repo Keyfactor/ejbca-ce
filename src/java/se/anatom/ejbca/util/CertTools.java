@@ -1,25 +1,22 @@
 package se.anatom.ejbca.util;
 
+import java.io.*;
+import java.security.*;
+import java.security.cert.*;
+import java.util.*;
+
 import org.apache.log4j.Logger;
 
 import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.x509.*;
-
 import org.bouncycastle.jce.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
-import java.io.*;
-
-import java.security.*;
-import java.security.cert.*;
-
-import java.util.*;
 
 
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.38 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: CertTools.java,v 1.39 2003-07-24 08:43:32 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -77,7 +74,8 @@ public class CertTools {
     private static DERObjectIdentifier getOid(String o) {
         return (DERObjectIdentifier) oids.get(o.toLowerCase());
     }
-     // getOid
+
+    // getOid
 
     /**
      * Creates a (Bouncycastle) X509Name object from a string with a DN. Known OID (with order)
@@ -156,7 +154,8 @@ public class CertTools {
         //log.debug("<stringToBcX509Name");
         return new X509Name(ordering, values);
     }
-     // stringToBcX509Name
+
+    // stringToBcX509Name
 
     /**
      * Every DN-string should look the same. Creates a name string ordered and looking like we want
@@ -239,7 +238,8 @@ public class CertTools {
 
         return part;
     }
-     //getCNFromDN
+
+    //getCNFromDN
 
     /**
      * Gets subject DN in the format we are sure about (BouncyCastle),supporting UTF8.
@@ -295,7 +295,8 @@ public class CertTools {
         //log.debug("<getDN("+which+"):"+dn);
         return stringToBCDNString(dn);
     }
-     // getDN
+
+    // getDN
 
     /**
      * Gets issuer DN for CRL in the format we are sure about (BouncyCastle),supporting UTF8.
@@ -322,8 +323,8 @@ public class CertTools {
         //log.debug("<getIssuerDN(crl):"+dn);
         return stringToBCDNString(dn);
     }
-     // getIssuerDN
 
+    // getIssuerDN
     private static CertificateFactory getCertificateFactory() {
         try {
             if (Security.getProvider("BC") == null) {
@@ -420,7 +421,8 @@ public class CertTools {
 
         return x509cert;
     }
-     // getCertfromPEM
+
+    // getCertfromPEM
 
     /**
      * Creates X509Certificate from byte[].
@@ -443,7 +445,8 @@ public class CertTools {
 
         return x509cert;
     }
-     // getCertfromByteArray
+
+    // getCertfromByteArray
 
     /**
      * Creates X509CRL from byte[].
@@ -470,7 +473,8 @@ public class CertTools {
 
         return x509crl;
     }
-     // getCRLfromByteArray
+
+    // getCRLfromByteArray
 
     /**
      * Checks if a certificate is self signed by verifying if subject and issuer are the same.
@@ -488,7 +492,8 @@ public class CertTools {
 
         return ret;
     }
-     // isSelfSigned
+
+    // isSelfSigned
 
     /**
      * DOCUMENT ME!
@@ -575,7 +580,8 @@ public class CertTools {
 
         return selfcert;
     }
-     //genselfCert
+
+    //genselfCert
 
     /**
      * DOCUMENT ME!
@@ -600,7 +606,8 @@ public class CertTools {
 
         return keyId.getKeyIdentifier();
     }
-     // getAuthorityKeyId
+
+    // getAuthorityKeyId
 
     /**
      * DOCUMENT ME!
@@ -624,7 +631,8 @@ public class CertTools {
 
         return keyId.getKeyIdentifier();
     }
-     // getSubjectKeyId
+
+    // getSubjectKeyId
 
     /**
      * DOCUMENT ME!
@@ -650,7 +658,8 @@ public class CertTools {
 
         return id;
     }
-     // getCertificatePolicyId
+
+    // getCertificatePolicyId
 
     /**
      * Gets the Microsoft specific UPN altName.
@@ -681,7 +690,8 @@ public class CertTools {
 
         return null;
     }
-     // getUPNAltName
+
+    // getUPNAltName
 
     /**
      * Generate SHA1 fingerprint in string representation.
@@ -763,7 +773,8 @@ public class CertTools {
 
         return null;
     }
-     // generateSHA1Fingerprint
+
+    // generateSHA1Fingerprint
 
     /**
      * Generate a MD5 fingerprint from a byte array containing a X.509 certificate
@@ -783,6 +794,9 @@ public class CertTools {
 
         return null;
     }
-     // generateMD5Fingerprint
+
+    // generateMD5Fingerprint
 }
- // CertTools
+
+
+// CertTools

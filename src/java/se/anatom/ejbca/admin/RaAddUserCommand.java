@@ -1,5 +1,8 @@
 package se.anatom.ejbca.admin;
 
+import javax.ejb.FinderException;
+import javax.naming.*;
+
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
@@ -13,15 +16,11 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import se.anatom.ejbca.util.CertTools;
 
-import javax.ejb.FinderException;
-
-import javax.naming.*;
-
 
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.23 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.24 2003-07-24 08:43:29 anatom Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
     /**

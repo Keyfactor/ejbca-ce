@@ -1,5 +1,13 @@
 package se.anatom.ejbca.webdist.cainterface;
 
+import java.io.*;
+import java.security.cert.*;
+
+import javax.naming.InitialContext;
+import javax.rmi.PortableRemoteObject;
+import javax.servlet.*;
+import javax.servlet.http.*;
+
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
@@ -8,25 +16,14 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 
-import java.io.*;
-
-import java.security.cert.*;
-
-import javax.naming.InitialContext;
-
-import javax.rmi.PortableRemoteObject;
-
-import javax.servlet.*;
-import javax.servlet.http.*;
-
 
 /**
  * Servlet used to distribute  CRLs.<br>
  * The servlet is called with method GET or POST and syntax <code>command=&lt;command&gt;</code>.
- *
+ * 
  * <p>
  * The follwing commands are supported:<br>
- *
+ * 
  * <ul>
  * <li>
  * crl - gets the latest CRL.
@@ -34,7 +31,7 @@ import javax.servlet.http.*;
  * </ul>
  * </p>
  *
- * @version $Id: GetCRLServlet.java,v 1.14 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: GetCRLServlet.java,v 1.15 2003-07-24 08:43:32 anatom Exp $
  */
 public class GetCRLServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(GetCRLServlet.class);
@@ -76,7 +73,8 @@ public class GetCRLServlet extends HttpServlet {
         doGet(req, res);
         log.debug("<doPost()");
     }
-     //doPost
+
+    //doPost
 
     /**
      * DOCUMENT ME!
@@ -159,7 +157,8 @@ public class GetCRLServlet extends HttpServlet {
             }
         }
     }
-     // doGet
+
+    // doGet
 
     /**
      * Prints debug info back to browser client

@@ -1,15 +1,15 @@
 package se.anatom.ejbca;
 
-import se.anatom.ejbca.log.Admin;
-
 import java.rmi.RemoteException;
+
+import se.anatom.ejbca.log.Admin;
 
 
 /**
  * JobRunner session wraps around any class and is a general session bean that can be used to
  * launch a specified job.
  *
- * @version $Id: IJobRunnerSession.java,v 1.5 2003-06-26 11:43:16 anatom Exp $
+ * @version $Id: IJobRunnerSession.java,v 1.6 2003-07-24 08:43:29 anatom Exp $
  */
 public interface IJobRunnerSession {
     /**

@@ -1,5 +1,10 @@
 package se.anatom.ejbca.ca.auth;
 
+import java.rmi.*;
+import java.util.Date;
+
+import javax.ejb.*;
+
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
@@ -11,17 +16,11 @@ import se.anatom.ejbca.ra.UserDataHome;
 import se.anatom.ejbca.ra.UserDataPK;
 import se.anatom.ejbca.ra.UserDataRemote;
 
-import java.rmi.*;
-
-import java.util.Date;
-
-import javax.ejb.*;
-
 
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.20 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.21 2003-07-24 08:43:30 anatom Exp $
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean {
     /** home interface to user entity bean */

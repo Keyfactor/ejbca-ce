@@ -1,7 +1,6 @@
 package se.anatom.ejbca.ca.crl;
 
 import java.math.BigInteger;
-
 import java.util.Date;
 
 
@@ -9,7 +8,7 @@ import java.util.Date;
  * Holds information about a revoked certificate. The information kept here is the information that
  * goes into a CRLEntry.
  *
- * @version $Id: RevokedCertInfo.java,v 1.3 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: RevokedCertInfo.java,v 1.4 2003-07-24 08:43:30 anatom Exp $
  */
 public class RevokedCertInfo extends java.lang.Object implements java.io.Serializable {
     /** Constants defining different revokation reasons. */

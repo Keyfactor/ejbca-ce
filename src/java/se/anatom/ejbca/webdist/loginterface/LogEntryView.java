@@ -1,15 +1,13 @@
 package se.anatom.ejbca.webdist.loginterface;
 
+import java.rmi.RemoteException;
+import java.text.DateFormat;
+import java.util.Date;
+
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import se.anatom.ejbca.webdist.rainterface.SortBy;
-
-import java.rmi.RemoteException;
-
-import java.text.DateFormat;
-
-import java.util.Date;
 
 
 /**

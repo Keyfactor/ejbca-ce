@@ -1,10 +1,10 @@
 package se.anatom.ejbca.hardtoken;
 
+import javax.ejb.CreateException;
+
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.BaseEntityBean;
-
-import javax.ejb.CreateException;
 
 
 /**
@@ -15,7 +15,7 @@ import javax.ejb.CreateException;
  *  tokensn
  * </pre>
  *
- * @version $Id: HardTokenCertificateMapBean.java,v 1.7 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: HardTokenCertificateMapBean.java,v 1.8 2003-07-24 08:43:30 anatom Exp $
  */
 public abstract class HardTokenCertificateMapBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(HardTokenIssuerDataBean.class);
@@ -55,7 +55,7 @@ public abstract class HardTokenCertificateMapBean extends BaseEntityBean {
     /**
      * Entity Bean holding data of a certificate to hard token relation.
      *
-     * @param certificatefingerprint$paramType$ DOCUMENT ME!
+     * @param certificatefingerprint DOCUMENT ME!
      * @param tokensn DOCUMENT ME!
      *
      * @return null

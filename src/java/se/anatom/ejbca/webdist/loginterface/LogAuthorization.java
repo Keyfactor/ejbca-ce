@@ -1,11 +1,11 @@
 package se.anatom.ejbca.webdist.loginterface;
 
+import java.io.Serializable;
+
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
-
-import java.io.Serializable;
 
 
 /**
@@ -13,7 +13,7 @@ import java.io.Serializable;
  * looking up an administrators privileges in the tree and returning a string to be used in
  * SQL-queries.
  *
- * @version $Id: LogAuthorization.java,v 1.4 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: LogAuthorization.java,v 1.5 2003-07-24 08:43:32 anatom Exp $
  */
 public class LogAuthorization implements Serializable {
     /**

@@ -1,20 +1,19 @@
 package se.anatom.ejbca.ca.store.certificateprofiles;
 
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.util.UpgradeableDataHashMap;
-
 import java.io.Serializable;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.util.UpgradeableDataHashMap;
 
 
 /**
  * CertificateProfile is a basic class used to customize a certificate configuration or be
  * inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.16 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.17 2003-07-24 08:43:30 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values

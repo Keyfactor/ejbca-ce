@@ -1,23 +1,19 @@
 package se.anatom.ejbca.webdist.hardtokeninterface;
 
-import se.anatom.ejbca.hardtoken.*;
-import se.anatom.ejbca.log.*;
-import se.anatom.ejbca.ra.authorization.AdminInformation;
-import se.anatom.ejbca.util.StringTools;
-
 import java.math.BigInteger;
-
 import java.rmi.RemoteException;
-
 import java.security.cert.X509Certificate;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.TreeMap;
 
 import javax.naming.*;
-
 import javax.servlet.http.HttpServletRequest;
+
+import se.anatom.ejbca.hardtoken.*;
+import se.anatom.ejbca.log.*;
+import se.anatom.ejbca.ra.authorization.AdminInformation;
+import se.anatom.ejbca.util.StringTools;
 
 
 /**

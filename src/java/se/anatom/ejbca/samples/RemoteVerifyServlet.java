@@ -1,20 +1,19 @@
 package se.anatom.ejbca.samples;
 
-import org.apache.log4j.Logger;
-
 import java.io.*;
-
 import java.util.*;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
+
+import org.apache.log4j.Logger;
 
 
 /**
  * Servlet to authenticate a user. Simple database using a file to keep users in format:
  * instance;username;password;DN DN is in form: dn-c:dn-o:dn-ou:dn-ln:dn-gn:dn-cn where parts can
  * be left out as desired. Expects these parameters when called: (error 500 if any missing)
- *
+ * 
  * <ul>
  * <li>
  * user=&lt;username&gt;
@@ -26,14 +25,14 @@ import javax.servlet.http.*;
  * version=&lt;major&gt;.&lt;minor&gt;
  * </li>
  * </ul>
- *
+ * 
  * <p>
  * Returns a logic token stating that user is authenticated followed by the information to use for
  * this user's certificate.
  * </p>
  *
  * @author Original code by Peter Neemeth
- * @version $Id: RemoteVerifyServlet.java,v 1.5 2003-07-23 09:40:17 anatom Exp $
+ * @version $Id: RemoteVerifyServlet.java,v 1.6 2003-07-24 08:43:32 anatom Exp $
  */
 public class RemoteVerifyServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(RemoteVerifyServlet.class);
@@ -88,7 +87,7 @@ public class RemoteVerifyServlet extends HttpServlet {
 
     /**
      * Delimiter between parts in DN
-     *
+     * 
      * <p>
      * Can be controlled via properties file.
      * </p>
@@ -97,7 +96,7 @@ public class RemoteVerifyServlet extends HttpServlet {
 
     /**
      * Separator between name and value in DN name = value
-     *
+     * 
      * <p>
      * Can be controlled via properties file.
      * </p>
@@ -106,7 +105,7 @@ public class RemoteVerifyServlet extends HttpServlet {
 
     /**
      * For easy export from Excel and others.
-     *
+     * 
      * <p>
      * Can be controlled via properties file.
      * </p>
@@ -115,7 +114,7 @@ public class RemoteVerifyServlet extends HttpServlet {
 
     /**
      * Ignored lines in DBUSER_file start with this character.
-     *
+     * 
      * <p>
      * Can be controlled via properties file.
      * </p>
@@ -284,11 +283,11 @@ public class RemoteVerifyServlet extends HttpServlet {
 
     /**
      * Accepts requests and dispatches to authenticateUser in this object.
-     *
+     * 
      * <p>
      * Returns one of the following cases. (Apart from status being the first line, order is not
      * specified.)
-     *
+     * 
      * <ul>
      * <li>
      * A granted reply:
@@ -598,4 +597,6 @@ public class RemoteVerifyServlet extends HttpServlet {
         users.put(username.toLowerCase(), userData);
     }
 }
- // RemoteVerifyServlet
+
+
+// RemoteVerifyServlet

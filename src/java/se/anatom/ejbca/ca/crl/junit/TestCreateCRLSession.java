@@ -1,26 +1,25 @@
 package se.anatom.ejbca.ca.crl.junit;
 
-import junit.framework.*;
+import java.security.cert.X509CRL;
+import java.util.*;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
+
+import junit.framework.*;
 
 import se.anatom.ejbca.*;
 import se.anatom.ejbca.ca.store.*;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.*;
 
-import java.security.cert.X509CRL;
-
-import java.util.*;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 
 /**
  * Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.9 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.10 2003-07-24 08:43:30 anatom Exp $
  */
 public class TestCreateCRLSession extends TestCase {
     private static Logger log = Logger.getLogger(TestCreateCRLSession.class);

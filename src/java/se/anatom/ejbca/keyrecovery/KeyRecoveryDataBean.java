@@ -1,15 +1,14 @@
 package se.anatom.ejbca.keyrecovery;
 
+import java.math.BigInteger;
+import java.security.KeyPair;
+
+import javax.ejb.CreateException;
+
 import org.apache.log4j.*;
 
 import se.anatom.ejbca.BaseEntityBean;
 import se.anatom.ejbca.util.StringTools;
-
-import java.math.BigInteger;
-
-import java.security.KeyPair;
-
-import javax.ejb.CreateException;
 
 
 /**
@@ -24,7 +23,7 @@ import javax.ejb.CreateException;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.6 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.7 2003-07-24 08:43:31 anatom Exp $
  */
 public abstract class KeyRecoveryDataBean extends BaseEntityBean {
     private static Category log = Category.getInstance(KeyRecoveryDataBean.class.getName());

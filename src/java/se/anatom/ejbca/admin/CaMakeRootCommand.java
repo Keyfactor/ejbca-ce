@@ -1,19 +1,18 @@
 package se.anatom.ejbca.admin;
 
-import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.KeyTools;
-
 import java.io.*;
-
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
+
+import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.KeyTools;
 
 
 /**
  * makeroot CA admin command, generates keys and creates a keystore (PKCS12) to be used by the CA
  *
- * @version $Id: CaMakeRootCommand.java,v 1.6 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: CaMakeRootCommand.java,v 1.7 2003-07-24 08:43:29 anatom Exp $
  */
 public class CaMakeRootCommand extends BaseCaAdminCommand {
     /**

@@ -86,7 +86,8 @@ public class TimeMatch extends BasicMatch {
 
         return returnval;
     }
-     // getQueryString
+
+    // getQueryString
 
     /**
      * DOCUMENT ME!

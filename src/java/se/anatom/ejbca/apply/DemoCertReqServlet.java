@@ -1,5 +1,26 @@
 package se.anatom.ejbca.apply;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.security.Provider;
+import java.security.Security;
+import java.util.Date;
+import java.util.Enumeration;
+
+import javax.ejb.CreateException;
+import javax.ejb.ObjectNotFoundException;
+import javax.naming.InitialContext;
+import javax.rmi.PortableRemoteObject;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.SecConst;
@@ -20,32 +41,6 @@ import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.FileTools;
 import se.anatom.ejbca.util.StringTools;
 import se.anatom.ejbca.webdist.rainterface.UserView;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
-
-import java.security.Provider;
-import java.security.Security;
-
-import java.util.Date;
-import java.util.Enumeration;
-
-import javax.ejb.CreateException;
-import javax.ejb.ObjectNotFoundException;
-
-import javax.naming.InitialContext;
-
-import javax.rmi.PortableRemoteObject;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 
 /**
@@ -99,7 +94,7 @@ import javax.servlet.http.HttpServletResponse;
  * </dl>
  * 
  *
- * @version $Id: DemoCertReqServlet.java,v 1.27 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.28 2003-07-24 08:43:29 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(DemoCertReqServlet.class);
@@ -465,8 +460,8 @@ public class DemoCertReqServlet extends HttpServlet {
     }
 
     /**
-           *
-           */
+               *
+               */
     private static final byte[] pkcs10Bytes(String pkcs10) {
         if (pkcs10 == null) {
             return null;

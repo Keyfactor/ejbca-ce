@@ -1,10 +1,9 @@
 package se.anatom.ejbca.keyrecovery;
 
-import se.anatom.ejbca.util.StringTools;
-
 import java.math.BigInteger;
-
 import java.security.KeyPair;
+
+import se.anatom.ejbca.util.StringTools;
 
 
 /**
@@ -12,7 +11,7 @@ import java.security.KeyPair;
  * between server and clients.
  *
  * @author TomSelleck
- * @version $Id: KeyRecoveryData.java,v 1.3 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: KeyRecoveryData.java,v 1.4 2003-07-24 08:43:31 anatom Exp $
  */
 public class KeyRecoveryData implements java.io.Serializable {
     // Public Constructors

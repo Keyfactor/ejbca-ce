@@ -1,5 +1,13 @@
 package se.anatom.ejbca.ca.sign;
 
+import java.rmi.RemoteException;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
+import java.util.Vector;
+
+import javax.ejb.ObjectNotFoundException;
+
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
@@ -9,21 +17,11 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.IRequestMessage;
 import se.anatom.ejbca.protocol.IResponseMessage;
 
-import java.rmi.RemoteException;
-
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
-
-import java.util.Vector;
-
-import javax.ejb.ObjectNotFoundException;
-
 
 /**
  * Creates certificates. Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.15 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.16 2003-07-24 08:43:30 anatom Exp $
  */
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
     /**

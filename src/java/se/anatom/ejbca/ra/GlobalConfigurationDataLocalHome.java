@@ -1,9 +1,9 @@
 package se.anatom.ejbca.ra;
 
-import se.anatom.ejbca.ra.GlobalConfiguration;
-
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
+
+import se.anatom.ejbca.ra.GlobalConfiguration;
 
 
 /**

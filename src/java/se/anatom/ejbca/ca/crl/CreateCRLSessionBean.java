@@ -1,5 +1,12 @@
 package se.anatom.ejbca.ca.crl;
 
+import java.math.BigInteger;
+import java.rmi.*;
+import java.security.cert.X509CRL;
+import java.util.*;
+
+import javax.ejb.*;
+
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.IJobRunnerSession;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
@@ -16,21 +23,11 @@ import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.LogEntry;
 
-import java.math.BigInteger;
-
-import java.rmi.*;
-
-import java.security.cert.X509CRL;
-
-import java.util.*;
-
-import javax.ejb.*;
-
 
 /**
  * Generates a new CRL by looking in the database for revoked certificates and generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.13 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.14 2003-07-24 08:43:30 anatom Exp $
  */
 public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerSession {
     private Long crlperiod;

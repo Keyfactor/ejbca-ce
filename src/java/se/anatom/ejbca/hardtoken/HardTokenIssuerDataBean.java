@@ -1,14 +1,13 @@
 package se.anatom.ejbca.hardtoken;
 
-import org.apache.log4j.Logger;
-
-import se.anatom.ejbca.BaseEntityBean;
-
 import java.math.BigInteger;
-
 import java.util.HashMap;
 
 import javax.ejb.CreateException;
+
+import org.apache.log4j.Logger;
+
+import se.anatom.ejbca.BaseEntityBean;
 
 
 /**
@@ -22,7 +21,7 @@ import javax.ejb.CreateException;
  *  hardtokenissuer (Data saved concerning the hard token issuer)
  * </pre>
  *
- * @version $Id: HardTokenIssuerDataBean.java,v 1.5 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: HardTokenIssuerDataBean.java,v 1.6 2003-07-24 08:43:30 anatom Exp $
  */
 public abstract class HardTokenIssuerDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(HardTokenIssuerDataBean.class);

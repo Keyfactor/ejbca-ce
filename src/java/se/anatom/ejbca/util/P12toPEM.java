@@ -1,12 +1,6 @@
 package se.anatom.ejbca.util;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-
-import org.bouncycastle.jce.provider.*;
-
 import java.io.*;
-
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -15,8 +9,12 @@ import java.security.PrivateKey;
 import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.*;
-
 import java.util.Enumeration;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+
+import org.bouncycastle.jce.provider.*;
 
 
 /**
@@ -25,7 +23,7 @@ import java.util.Enumeration;
  * a third file. The PEM files will have the names <i>common name</i>.pem, <i>common
  * name</i>Key.pem and <i>common name</i>CA.pem derived from the DN in user certificate.
  *
- * @version $Id: P12toPEM.java,v 1.8 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: P12toPEM.java,v 1.9 2003-07-24 08:43:32 anatom Exp $
  */
 public class P12toPEM {
     private static Logger log = Logger.getLogger(P12toPEM.class);
@@ -122,8 +120,8 @@ public class P12toPEM {
      * @throws UnrecoverableKeyException DOCUMENT ME!
      */
     public void createPEM()
-        throws KeyStoreException, FileNotFoundException, IOException, NoSuchProviderException,
-            NoSuchAlgorithmException, CertificateEncodingException, CertificateException,
+        throws KeyStoreException, FileNotFoundException, IOException, NoSuchProviderException, 
+            NoSuchAlgorithmException, CertificateEncodingException, CertificateException, 
             UnrecoverableKeyException {
         KeyStore ks = ks = KeyStore.getInstance("PKCS12", "BC");
         InputStream in = new FileInputStream(p12File);
@@ -243,6 +241,9 @@ public class P12toPEM {
             out.close();
         }
     }
-     // createPEM
+
+    // createPEM
 }
- // P12toPEM
+
+
+// P12toPEM

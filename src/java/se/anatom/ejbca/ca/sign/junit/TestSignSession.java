@@ -1,12 +1,25 @@
 package se.anatom.ejbca.ca.sign.junit;
 
-import junit.framework.*;
+import java.io.*;
+import java.rmi.RemoteException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.Provider;
+import java.security.Security;
+import java.security.cert.*;
+import java.security.interfaces.*;
+import java.util.*;
+
+import javax.ejb.DuplicateKeyException;
+import javax.naming.Context;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 
 import org.bouncycastle.asn1.*;
-
 import org.bouncycastle.jce.*;
+
+import junit.framework.*;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
@@ -18,29 +31,11 @@ import se.anatom.ejbca.protocol.ScepRequestMessage;
 import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.util.*;
 
-import java.io.*;
-
-import java.rmi.RemoteException;
-
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.Provider;
-import java.security.Security;
-import java.security.cert.*;
-import java.security.interfaces.*;
-
-import java.util.*;
-
-import javax.ejb.DuplicateKeyException;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.23 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.24 2003-07-24 08:43:30 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +

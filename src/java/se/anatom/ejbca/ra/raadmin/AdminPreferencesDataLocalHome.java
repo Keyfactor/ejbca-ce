@@ -1,15 +1,15 @@
 package se.anatom.ejbca.ra.raadmin;
 
-import se.anatom.ejbca.ra.raadmin.AdminPreference;
-
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
+
+import se.anatom.ejbca.ra.raadmin.AdminPreference;
 
 
 /**
  * For docs, see AdminPreferencesDataBean
  *
- * @version $Id: AdminPreferencesDataLocalHome.java,v 1.3 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: AdminPreferencesDataLocalHome.java,v 1.4 2003-07-24 08:43:32 anatom Exp $
  */
 public interface AdminPreferencesDataLocalHome extends javax.ejb.EJBLocalHome {
     /**

@@ -1,23 +1,21 @@
 package se.anatom.ejbca.ca.store;
 
-import se.anatom.ejbca.ca.crl.RevokedCertInfo;
-import se.anatom.ejbca.ca.store.certificateprofiles.*;
-import se.anatom.ejbca.log.Admin;
-
 import java.math.BigInteger;
-
 import java.security.cert.Certificate;
-
 import java.util.Collection;
 import java.util.Date;
 import java.util.TreeMap;
+
+import se.anatom.ejbca.ca.crl.RevokedCertInfo;
+import se.anatom.ejbca.ca.store.certificateprofiles.*;
+import se.anatom.ejbca.log.Admin;
 
 
 /**
  * Local interface for EJB, unforturnately this must be a copy of the remote interface except that
  * RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: ICertificateStoreSessionLocal.java,v 1.16 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: ICertificateStoreSessionLocal.java,v 1.17 2003-07-24 08:43:30 anatom Exp $
  *
  * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
  */

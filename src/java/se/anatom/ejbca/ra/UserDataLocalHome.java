@@ -1,7 +1,6 @@
 package se.anatom.ejbca.ra;
 
 import java.security.NoSuchAlgorithmException;
-
 import java.util.Collection;
 
 import javax.ejb.CreateException;
@@ -11,7 +10,7 @@ import javax.ejb.FinderException;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataLocalHome.java,v 1.5 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: UserDataLocalHome.java,v 1.6 2003-07-24 08:43:31 anatom Exp $
  */
 public interface UserDataLocalHome extends javax.ejb.EJBLocalHome {
     /**

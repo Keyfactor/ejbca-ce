@@ -1,7 +1,6 @@
 package se.anatom.ejbca.ca.store;
 
 import java.rmi.RemoteException;
-
 import java.security.cert.X509CRL;
 
 import javax.ejb.CreateException;

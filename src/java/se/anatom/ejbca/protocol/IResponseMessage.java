@@ -1,7 +1,6 @@
 package se.anatom.ejbca.protocol;
 
 import java.io.IOException;
-
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -9,6 +8,7 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+
 
 /**
  * Base interface for response messages sent from the CA. Implementors of this interface must also
@@ -18,7 +18,7 @@ import java.security.cert.X509Certificate;
  * (resp.requireEncKeyInfo()) { resp.setEncKeyInfo(enccert,enckey) }; resp.create(); byte[]
  * responseMessage = resp.getResponseMessage(); </code>
  *
- * @version $Id: IResponseMessage.java,v 1.8 2003-07-22 10:26:24 anatom Exp $
+ * @version $Id: IResponseMessage.java,v 1.9 2003-07-24 08:43:31 anatom Exp $
  */
 public interface IResponseMessage {
     public final int STATUS_OK = 0;
@@ -146,7 +146,8 @@ public interface IResponseMessage {
     public void setTransactionId(String transactionId);
 
     /**
-     * Sets recipient key info, key id or similar. This is usually the request key info from the request message.
+     * Sets recipient key info, key id or similar. This is usually the request key info from the
+     * request message.
      *
      * @param recipient key info
      */

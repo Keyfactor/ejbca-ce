@@ -1,20 +1,8 @@
 package se.anatom.ejbca.ra.raadmin;
 
-import org.apache.log4j.Logger;
-
-import se.anatom.ejbca.BaseSessionBean;
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.log.ILogSessionHome;
-import se.anatom.ejbca.log.ILogSessionRemote;
-import se.anatom.ejbca.log.LogEntry;
-
 import java.math.BigInteger;
-
 import java.rmi.*;
-
 import java.sql.*;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -24,17 +12,24 @@ import java.util.TreeMap;
 import java.util.Vector;
 
 import javax.ejb.*;
-
 import javax.naming.*;
-
 import javax.sql.DataSource;
+
+import org.apache.log4j.Logger;
+
+import se.anatom.ejbca.BaseSessionBean;
+import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.log.ILogSessionHome;
+import se.anatom.ejbca.log.ILogSessionRemote;
+import se.anatom.ejbca.log.LogEntry;
 
 
 /**
  * Stores data used by web server clients. Uses JNDI name for datasource as defined in env
  * 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.27 2003-07-23 09:40:16 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.28 2003-07-24 08:43:32 anatom Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean {
     private static Logger log = Logger.getLogger(LocalRaAdminSessionBean.class);
@@ -103,7 +98,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return ds.getConnection();
     }
-     //getConnection
+
+    //getConnection
 
     /**
      * Finds the admin preference belonging to a certificate serialnumber. Returns null if admin
@@ -133,7 +129,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return ret;
     }
-     // getAdminPreference
+
+    // getAdminPreference
 
     /**
      * Adds a admin preference to the database. Returns false if admin already exists.
@@ -160,6 +157,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
         } catch (Exception e) {
             error("Error adding admin preference: ", e);
             ret = false;
+
             try {
                 logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(), null, null,
                     LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,
@@ -172,7 +170,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return ret;
     }
-     // addAdminPreference
+
+    // addAdminPreference
 
     /**
      * Changes the admin preference in the database. Returns false if admin doesn't exists.
@@ -189,7 +188,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return updateAdminPreference(admin, serialnumber, adminpreference, true);
     }
-     // changeAdminPreference
+
+    // changeAdminPreference
 
     /**
      * Changes the admin preference in the database. Returns false if admin doesn't exists.
@@ -206,7 +206,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return updateAdminPreference(admin, serialnumber, adminpreference, false);
     }
-     // changeAdminPreference
+
+    // changeAdminPreference
 
     /**
      * Checks if a admin preference exists in the database.
@@ -234,7 +235,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return ret;
     }
-     // existsAdminPreference
+
+    // existsAdminPreference
 
     /**
      * Function that returns the default admin preference.
@@ -264,7 +266,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return ret;
     }
-     // getDefaultPreference()
+
+    // getDefaultPreference()
 
     /**
      * Function that saves the default admin preference.
@@ -285,6 +288,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
                 "Default administrator preference changed.");
         } catch (Exception e) {
             error("Error saving default admin preference: ", e);
+
             try {
                 logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(), null, null,
                     LogEntry.EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED,
@@ -298,7 +302,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         debug("<saveDefaultAdminPreference()");
     }
-     // ssaveDefaultAdminPreference
+
+    // ssaveDefaultAdminPreference
 
     /**
      * Adds a profile to the database.
@@ -323,6 +328,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
                     "End entity profile " + profilename + " added.");
             } catch (Exception f) {
                 error("Error adding end entity profile: ", e);
+
                 try {
                     logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(), null, null,
                         LogEntry.EVENT_ERROR_ENDENTITYPROFILE,
@@ -334,7 +340,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // addEndEntityProfile
+
+    // addEndEntityProfile
 
     /**
      * Adds a end entity profile to a group with the same content as the original profile.
@@ -373,7 +380,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // cloneEndEntityProfile
+
+    // cloneEndEntityProfile
 
     /**
      * Removes an end entity profile from the database.
@@ -392,6 +400,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
                 "End entity profile " + profilename + " removed.");
         } catch (Exception e) {
             error("Error removing end entity profile: ", e);
+
             try {
                 logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(), null, null,
                     LogEntry.EVENT_ERROR_ENDENTITYPROFILE,
@@ -400,7 +409,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
             }
         }
     }
-     // removeEndEntityProfile
+
+    // removeEndEntityProfile
 
     /**
      * Renames a end entity profile
@@ -441,7 +451,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return returnvalue;
     }
-     // remameProfile
+
+    // remameProfile
 
     /**
      * Updates profile data
@@ -467,8 +478,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
                 logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(), null, null,
                     LogEntry.EVENT_INFO_ENDENTITYPROFILE,
                     "End entity profile " + profilename + " edited.");
-            }
-            else {
+            } else {
                 logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(), null, null,
                     LogEntry.EVENT_ERROR_ENDENTITYPROFILE,
                     "Error editing end entity profile " + profilename + ".");
@@ -478,7 +488,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return returnvalue;
     }
-     // changeEndEntityProfile
+
+    // changeEndEntityProfile
 
     /**
      * Retrives profile names sorted.
@@ -509,7 +520,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getEndEntityProfileNames
+
+    // getEndEntityProfileNames
 
     /**
      * Retrives end entity profiles sorted by name.
@@ -540,7 +552,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getEndEntityProfiles
+
+    // getEndEntityProfiles
 
     /**
      * Retrives a named end entity profile.
@@ -561,7 +574,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     //  getEndEntityProfile
+
+    //  getEndEntityProfile
 
     /**
      * Finds a end entity profile by id.
@@ -584,7 +598,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getEndEntityrofile
+
+    // getEndEntityrofile
 
     /**
      * Retrives the numbers of end entity profiles.
@@ -623,7 +638,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getEndEntityrofileId
+
+    // getEndEntityrofileId
 
     /**
      * Returns a end entity profiles name given it's id.
@@ -643,7 +659,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return returnval;
     }
-     // getEndEntityProfileName
+
+    // getEndEntityProfileName
 
     /**
      * Method to check if a certificateprofile exists in any of the end entity profiles. Used to
@@ -702,7 +719,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return new Integer(id);
     }
-     // findFreeEndEntityProfileId
+
+    // findFreeEndEntityProfileId
 
     /**
      * Changes the admin preference in the database. Returns false if admin doesn't exist.
@@ -762,6 +780,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
 
         return ret;
     }
-     // changeAdminPreference
+
+    // changeAdminPreference
 }
- // LocalRaAdminSessionBean
+
+
+// LocalRaAdminSessionBean

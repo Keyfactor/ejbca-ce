@@ -1,10 +1,10 @@
 package se.anatom.ejbca.ra.authorization;
 
+import javax.ejb.CreateException;
+
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.BaseEntityBean;
-
-import javax.ejb.CreateException;
 
 
 /**
@@ -16,7 +16,7 @@ import javax.ejb.CreateException;
  *   matchvalue
  * </pre>
  *
- * @version $Id: AdminEntityDataBean.java,v 1.5 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: AdminEntityDataBean.java,v 1.6 2003-07-24 08:43:31 anatom Exp $
  */
 public abstract class AdminEntityDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(AdminEntityDataBean.class);

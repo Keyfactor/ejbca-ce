@@ -1,20 +1,18 @@
 package se.anatom.ejbca;
 
-import org.apache.log4j.Logger;
-
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
-
 import javax.naming.*;
-
 import javax.rmi.PortableRemoteObject;
+
+import org.apache.log4j.Logger;
 
 
 /**
  * Base for Session Beans providing common features, new Session Beans should extend this.
  *
- * @version $Id: BaseSessionBean.java,v 1.9 2003-06-26 11:43:16 anatom Exp $
+ * @version $Id: BaseSessionBean.java,v 1.10 2003-07-24 08:43:29 anatom Exp $
  */
 public class BaseSessionBean implements SessionBean {
     /** Log4j instance for Base */

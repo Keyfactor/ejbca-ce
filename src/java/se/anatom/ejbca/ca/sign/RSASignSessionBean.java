@@ -1,5 +1,34 @@
 package se.anatom.ejbca.ca.sign;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.math.BigInteger;
+import java.rmi.RemoteException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Provider;
+import java.security.PublicKey;
+import java.security.Security;
+import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Vector;
+
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+import javax.ejb.ObjectNotFoundException;
+
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEREncodableVector;
@@ -23,7 +52,6 @@ import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
-
 import org.bouncycastle.jce.PKCS7SignedData;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.X509V2CRLGenerator;
@@ -55,44 +83,11 @@ import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
-import java.math.BigInteger;
-
-import java.rmi.RemoteException;
-
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Provider;
-import java.security.PublicKey;
-import java.security.Security;
-import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPublicKey;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Vector;
-
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.ObjectNotFoundException;
-
 
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.91 2003-07-23 09:40:16 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.92 2003-07-24 08:43:30 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     transient X509Certificate caCert;
@@ -751,18 +746,23 @@ public class RSASignSessionBean extends BaseSessionBean {
 
             ret.setCertificate(cert);
             ret.setStatus(IResponseMessage.STATUS_OK);
+
             if (req.getSenderNonce() != null) {
                 ret.setRecipientNonce(req.getSenderNonce());
             }
+
             if (req.getTransactionId() != null) {
                 ret.setTransactionId(req.getTransactionId());
             }
+
             // Sendernonce is a random number
             ret.setSenderNonce(Hex.encode("PrimeKey Solutions".getBytes()));
+
             // If we have a specified request key info, use it in the reply
             if (req.getRequestKeyInfo() != null) {
                 ret.setRecipientKeyInfo(req.getRequestKeyInfo());
             }
+
             ret.create();
 
             // TODO: handle returning errors as response message,

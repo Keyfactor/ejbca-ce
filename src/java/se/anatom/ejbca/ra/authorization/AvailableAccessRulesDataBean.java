@@ -1,10 +1,10 @@
 package se.anatom.ejbca.ra.authorization;
 
+import javax.ejb.CreateException;
+
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.BaseEntityBean;
-
-import javax.ejb.CreateException;
 
 
 /**
@@ -14,7 +14,7 @@ import javax.ejb.CreateException;
  * Name
  * </pre>
  *
- * @version $Id: AvailableAccessRulesDataBean.java,v 1.5 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: AvailableAccessRulesDataBean.java,v 1.6 2003-07-24 08:43:31 anatom Exp $
  */
 public abstract class AvailableAccessRulesDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(AvailableAccessRulesDataBean.class);

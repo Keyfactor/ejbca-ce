@@ -1,18 +1,18 @@
 package se.anatom.ejbca.ra.raadmin;
 
+import java.util.HashMap;
+import java.util.Iterator;
+
 import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
 import se.anatom.ejbca.webdist.webconfiguration.WebLanguages;
-
-import java.util.HashMap;
-import java.util.Iterator;
 
 
 /**
  * A class representing a admins personal preferenses.
  *
  * @author Philip Vendil
- * @version $Id: AdminPreference.java,v 1.3 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: AdminPreference.java,v 1.4 2003-07-24 08:43:32 anatom Exp $
  */
 public class AdminPreference extends UpgradeableDataHashMap implements java.io.Serializable,
     Cloneable {

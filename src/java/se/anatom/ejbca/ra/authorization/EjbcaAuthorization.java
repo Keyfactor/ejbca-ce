@@ -3,9 +3,12 @@ package se.anatom.ejbca.ra.authorization;
 import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+
 import javax.ejb.CreateException;
 import javax.naming.*;
 import javax.rmi.PortableRemoteObject;
+
+import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
@@ -17,16 +20,15 @@ import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.util.CertTools;
 
-import org.apache.log4j.Logger;
 
 /**
  * A java bean handling the athorization to ejbca. The main metod are isAthorized and authenticate.
  *
- * @version $Id: EjbcaAuthorization.java,v 1.14 2003-07-23 09:40:16 anatom Exp $
+ * @version $Id: EjbcaAuthorization.java,v 1.15 2003-07-24 08:43:31 anatom Exp $
  */
 public class EjbcaAuthorization extends Object implements java.io.Serializable {
-
     private static Logger log = Logger.getLogger(EjbcaAuthorization.class);
+
     /**
      * Creates new EjbcaAthorization
      *
@@ -61,7 +63,7 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable {
 
             this.cacertificatechain = signsession.getCertificateChain(admin);
         } catch (Exception e) {
-            log.error("Error creating object: ",e);
+            log.error("Error creating object: ", e);
             throw new CreateException(e.getMessage());
         }
     }
@@ -149,7 +151,7 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable {
 
 //            }
             } catch (Exception e) {
-                log.error("Error authenticating: ",e);
+                log.error("Error authenticating: ", e);
             }
         }
 

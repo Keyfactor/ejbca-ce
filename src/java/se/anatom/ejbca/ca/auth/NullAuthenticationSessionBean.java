@@ -1,5 +1,9 @@
 package se.anatom.ejbca.ca.auth;
 
+import java.rmi.*;
+
+import javax.ejb.*;
+
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
@@ -10,16 +14,12 @@ import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.util.CertTools;
 
-import java.rmi.*;
-
-import javax.ejb.*;
-
 
 /**
  * Approves all authentication requests that contain a DN as the username, password is ignored and
  * the username is returned as DN. Useful for demo purposes to give out certificates to anyone.
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.12 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.13 2003-07-24 08:43:30 anatom Exp $
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean {
     /** The remote interface of the log session bean */

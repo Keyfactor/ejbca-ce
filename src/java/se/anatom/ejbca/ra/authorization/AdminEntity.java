@@ -1,13 +1,11 @@
 package se.anatom.ejbca.ra.authorization;
 
+import java.io.Serializable;
+import java.security.cert.X509Certificate;
+import java.util.regex.Pattern;
+
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import se.anatom.ejbca.util.CertTools;
-
-import java.io.Serializable;
-
-import java.security.cert.X509Certificate;
-
-import java.util.regex.Pattern;
 
 
 /**
@@ -18,7 +16,7 @@ import java.util.regex.Pattern;
  * contitions the match shall be performed.
  *
  * @author Philip Vendil
- * @version $Id: AdminEntity.java,v 1.10 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: AdminEntity.java,v 1.11 2003-07-24 08:43:31 anatom Exp $
  */
 public class AdminEntity implements Serializable, Comparable {
     // Special Users. (Constants cannot have 0 value).

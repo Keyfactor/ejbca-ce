@@ -1,23 +1,20 @@
 package se.anatom.ejbca.hardtoken;
 
+import java.math.BigInteger;
+import java.rmi.RemoteException;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.TreeMap;
+
 import se.anatom.ejbca.hardtoken.hardtokentypes.*;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.UserAdminData;
-
-import java.math.BigInteger;
-
-import java.rmi.RemoteException;
-
-import java.security.cert.X509Certificate;
-
-import java.util.Collection;
-import java.util.TreeMap;
 
 
 /**
  * Interface for hard token session
  *
- * @version $Id: IHardTokenSessionRemote.java,v 1.3 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: IHardTokenSessionRemote.java,v 1.4 2003-07-24 08:43:30 anatom Exp $
  */
 public interface IHardTokenSessionRemote extends javax.ejb.EJBObject {
     public static final int NO_ISSUER = 0;

@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.10 2003-07-23 09:40:17 anatom Exp $
+ * @version $Id: StringTools.java,v 1.11 2003-07-24 08:43:32 anatom Exp $
  */
 public class StringTools {
     private static final char[] stripChars = {
@@ -55,4 +55,6 @@ public class StringTools {
         return WS.matcher(str).replaceAll("");
     }
 }
- // StringTools
+
+
+// StringTools
