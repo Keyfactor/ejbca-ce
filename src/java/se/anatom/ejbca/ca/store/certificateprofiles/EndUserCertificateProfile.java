@@ -5,7 +5,7 @@ import java.util.ArrayList;
 /**
  * EndUserCertificateProfile is a class defining the fixed characteristics of an enduser certificate type
  *
-* @version $Id: EndUserCertificateProfile.java,v 1.11 2003-09-03 13:35:16 herrvendil Exp $
+* @version $Id: EndUserCertificateProfile.java,v 1.12 2003-10-31 14:41:24 herrvendil Exp $
   */
 public class EndUserCertificateProfile extends CertificateProfile{
 
@@ -76,31 +76,7 @@ public class EndUserCertificateProfile extends CertificateProfile{
       if(LATEST_VERSION != getVersion()){
         // New version of the class, upgrade
 
-        data.put(VERSION, new Float(LATEST_VERSION));
-        if(data.get(ALLOWKEYUSAGEOVERRIDE) == null)
-          data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
-        if(data.get(USEEXTENDEDKEYUSAGE) ==null)
-          data.put(USEEXTENDEDKEYUSAGE, Boolean.TRUE);
-        if(data.get(EXTENDEDKEYUSAGE) ==null){
-           ArrayList eku = new ArrayList();
-           eku.add(new Integer(SERVERAUTH));
-           eku.add(new Integer(CLIENTAUTH));
-           eku.add(new Integer(EMAILPROTECTION));
-           eku.add(new Integer(IPSECENDSYSTEM));
-           eku.add(new Integer(IPSECUSER));
-           data.put(EXTENDEDKEYUSAGE, eku);
-        }
-        if(data.get(EXTENDEDKEYUSAGECRITICAL) == null)
-          data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
-        
-        if(data.get(AVAILABLECAS) == null){
-          ArrayList availablecas = new ArrayList();
-          availablecas.add(new Integer(ANYCA));
-          data.put(AVAILABLECAS, availablecas);
-        }
-        if(data.get(USEDPUBLISHERS) == null){
-          data.put(USEDPUBLISHERS, new ArrayList());   
-        }        
+        super.upgrade();         
       }
     }
 

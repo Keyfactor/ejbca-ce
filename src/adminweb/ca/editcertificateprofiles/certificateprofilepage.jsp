@@ -50,6 +50,18 @@ function checkusecrldisturifield(){
 
 }
 
+function checkuseocspservicelocatorfield(){
+  if(document.editcertificateprofile.<%=CHECKBOX_USEOCSPSERVICELOCATOR %>.checked){    
+    document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.value = "<%= globalconfiguration.getStandardOCSPServiceLocatorURI() %>";
+  }
+  else{
+    document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.value = "";
+  }
+}
+
+
 function checkusecertificatepoliciesfield(){
   if(document.editcertificateprofile.<%=CHECKBOX_USECERTIFICATEPOLICIES %>.checked){
     document.editcertificateprofile.<%= CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>.disabled = false;
@@ -253,6 +265,25 @@ function checkallfields(){
                        out.write(" value=\"" + certificateprofiledata.getCRLDistributionPointURI() + "\""); 
                       else
                        out.write(" value=\"" + globalconfiguration.getStandardCRLDistributionPointURI()+ "\"");%>>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("OCSPSERVICELOCATOR") %> <br> <%= ejbcawebbean.getText("OCSPSERVICELOCATORURI") %>
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_USEOCSPSERVICELOCATOR %>" onClick="checkuseocspservicelocatorfield()" value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getUseOCSPServiceLocator())
+                 out.write("CHECKED");
+           %>> <br> 
+           <input type="text" name="<%=TEXTFIELD_OCSPSERVICELOCATOR%>" size="60" maxlength="255" 
+           <%       if(!certificateprofiledata.getUseOCSPServiceLocator())
+                      out.write(" disabled "); 
+                    else 
+                      if(!certificateprofiledata.getOCSPServiceLocatorURI().equals(""))
+                       out.write(" value=\"" + certificateprofiledata.getOCSPServiceLocatorURI() + "\""); 
+                      else
+                       out.write(" value=\"" + globalconfiguration.getStandardOCSPServiceLocatorURI()+ "\"");%>>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 

@@ -29,9 +29,10 @@
   static final String BUTTON_SAVE              = "buttonsave";
   static final String BUTTON_CANCEL            = "buttoncancel";
  
-  static final String TEXTFIELD_VALIDITY            = "textfieldvalidity";
-  static final String TEXTFIELD_CRLDISTURI          = "textfieldcrldisturi";
-  static final String TEXTFIELD_CERTIFICATEPOLICYID = "textfieldcertificatepolicyid";
+  static final String TEXTFIELD_VALIDITY              = "textfieldvalidity";
+  static final String TEXTFIELD_CRLDISTURI            = "textfieldcrldisturi";
+  static final String TEXTFIELD_CERTIFICATEPOLICYID   = "textfieldcertificatepolicyid";
+  static final String TEXTFIELD_OCSPSERVICELOCATOR    = "textfieldocspservicelocatoruri";
 
   static final String CHECKBOX_BASICCONSTRAINTS                   = "checkboxbasicconstraints";
   static final String CHECKBOX_BASICCONSTRAINTSCRITICAL           = "checkboxbasicconstraintscritical";
@@ -50,6 +51,7 @@
   static final String CHECKBOX_ALLOWKEYUSAGEOVERRIDE              = "checkallowkeyusageoverride";
   static final String CHECKBOX_USEEXTENDEDKEYUSAGE                = "checkuseextendedkeyusage";
   static final String CHECKBOX_EXTENDEDKEYUSAGECRITICAL           = "checkboxextendedkeyusagecritical";
+  static final String CHECKBOX_USEOCSPSERVICELOCATOR              = "checkuseocspservicelocator";
 
   static final String SELECT_AVAILABLEBITLENGTHS                  = "selectavailablebitlengths";
   static final String SELECT_KEYUSAGE                             = "selectkeyusage";
@@ -410,6 +412,23 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
                  }
               }
               certificateprofiledata.setPublisherList(availablepublishers);
+
+             use = false;
+             value = request.getParameter(CHECKBOX_USEOCSPSERVICELOCATOR);
+             if(value != null){
+                 use = value.equals(CHECKBOX_VALUE);
+                 certificateprofiledata.setUseOCSPServiceLocator(use);
+
+                 value = request.getParameter(TEXTFIELD_OCSPSERVICELOCATOR);
+                 if(value != null){
+                   value=value.trim();
+                   certificateprofiledata.setOCSPServiceLocatorURI(value);
+                 } 
+             }
+             else{
+                 certificateprofiledata.setUseOCSPServiceLocator(false);                 
+                 certificateprofiledata.setOCSPServiceLocatorURI("");
+             } 
 
               cabean.changeCertificateProfile(certprofile,certificateprofiledata);
            }

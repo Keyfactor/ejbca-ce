@@ -13,11 +13,11 @@ import se.anatom.ejbca.SecConst;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.19 2003-10-01 11:12:07 herrvendil Exp $
+ * @version $Id: CertificateProfile.java,v 1.20 2003-10-31 14:41:24 herrvendil Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values
-    public static final float LATEST_VERSION = 7;
+    public static final float LATEST_VERSION = 8;
 
     /** KeyUsage constants */
     public static final int DIGITALSIGNATURE = 0;
@@ -41,9 +41,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int IPSECUSER           = 7;
     public static final int TIMESTAMPING        = 8;
     public static final int SMARTCARDLOGON      = 9;
-
+	public static final int OCSPSIGNING         = 10;
+	
     public static final String[] EXTENDEDKEYUSAGEOIDSTRINGS = {"1.3.6.1.5.5.7.3.0", "1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2", "1.3.6.1.5.5.7.3.3", "1.3.6.1.5.5.7.3.4",
-                                                              "1.3.6.1.5.5.7.3.5", "1.3.6.1.5.5.7.3.6", "1.3.6.1.5.5.7.3.7", "1.3.6.1.5.5.7.3.8", "1.3.6.1.4.1.311.20.2.2"};
+                                                              "1.3.6.1.5.5.7.3.5", "1.3.6.1.5.5.7.3.6", "1.3.6.1.5.5.7.3.7", "1.3.6.1.5.5.7.3.8", "1.3.6.1.4.1.311.20.2.2", "1.3.6.1.5.5.7.3.9"};
 
     public static final String TRUE  = "true";
     public static final String FALSE = "false";
@@ -92,7 +93,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String EXTENDEDKEYUSAGECRITICAL       = "extendedkeyusagecritical";
     protected static final String AVAILABLECAS                   = "availablecas";
     protected static final String USEDPUBLISHERS                 = "usedpublishers";         
-    
+	protected static final String USEOCSPSERVICELOCATOR          = "useocspservicelocator";	
+	protected static final String OCSPSERVICELOCATORURI          = "ocspservicelocatoruri";   
+     
     // Public Methods
 
     /**
@@ -141,6 +144,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setAvailableCAs(availablecas);
       
       setPublisherList(new ArrayList());
+      
+	  setUseOCSPServiceLocator(false);	  
+	  setOCSPServiceLocatorURI("");
+
       
     }
 
@@ -371,7 +378,17 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setPublisherList(Collection publisher){
       data.put(USEDPUBLISHERS, publisher);   
     }   
-    
+    	
+	public boolean getUseOCSPServiceLocator(){ return ((Boolean) data.get(USEOCSPSERVICELOCATOR)).booleanValue(); }
+	public void setUseOCSPServiceLocator(boolean useocspservicelocator) { data.put(USEOCSPSERVICELOCATOR, Boolean.valueOf(useocspservicelocator));}
+
+	public String getOCSPServiceLocatorURI(){ return (String) data.get(OCSPSERVICELOCATORURI); }
+	public void setOCSPServiceLocatorURI(String ocspservicelocatoruri) {
+	  if(ocspservicelocatoruri==null)
+		data.put(OCSPSERVICELOCATORURI,"");
+	  else
+		data.put(OCSPSERVICELOCATORURI,ocspservicelocatoruri);
+	}
 
     public Object clone() throws CloneNotSupportedException {
       CertificateProfile clone = new CertificateProfile();
@@ -417,6 +434,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         if(data.get(USEDPUBLISHERS) == null){
           data.put(USEDPUBLISHERS, new ArrayList());   
         }
+        
+		if(data.get(USEOCSPSERVICELOCATOR) == null){
+	      setUseOCSPServiceLocator(false);  		  
+		  setOCSPServiceLocatorURI("");
+	    }
 
       }
     }

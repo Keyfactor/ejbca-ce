@@ -20,7 +20,7 @@ import se.anatom.ejbca.util.Hex;
  * by JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: CertificateView.java,v 1.13 2003-10-29 14:25:54 herrvendil Exp $
+ * @version $Id: CertificateView.java,v 1.14 2003-10-31 14:41:25 herrvendil Exp $
  */
 public class CertificateView {
 
@@ -38,7 +38,8 @@ public class CertificateView {
    
    public static final String[] EXTENDEDKEYUSAGETEXTS = {"ANYEXTENDEDKEYUSAGE","SERVERAUTH", "CLIENTAUTH", 
                                     "CODESIGNING", "EMAILPROTECTION", "IPSECENDSYSTEM", 
-                                    "IPSECTUNNEL", "IPSECUSER", "TIMESTAMPING", "SMARTCARDLOGON"};
+                                    "IPSECTUNNEL", "IPSECUSER", "TIMESTAMPING", "SMARTCARDLOGON",
+                                    "OCSPSIGNER"};
 
 
     /** Creates a new instance of CertificateView */

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 /**
  * RootCACertificateProfile is a class defining the fixed characteristics of a root ca certificate profile.
  *
- * @version $Id: RootCACertificateProfile.java,v 1.9 2003-09-03 13:35:16 herrvendil Exp $
+ * @version $Id: RootCACertificateProfile.java,v 1.10 2003-10-31 14:41:24 herrvendil Exp $
  */
 public class RootCACertificateProfile extends CertificateProfile{
 
@@ -66,24 +66,7 @@ public class RootCACertificateProfile extends CertificateProfile{
       if(LATEST_VERSION != getVersion()){
         // New version of the class, upgrade
 
-        data.put(VERSION, new Float(LATEST_VERSION));
-        if(data.get(ALLOWKEYUSAGEOVERRIDE) == null)
-          data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
-        if(data.get(USEEXTENDEDKEYUSAGE) ==null)
-          data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
-        if(data.get(EXTENDEDKEYUSAGE) ==null)
-          data.put(EXTENDEDKEYUSAGE, new ArrayList());
-        if(data.get(EXTENDEDKEYUSAGECRITICAL) == null)
-          data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
-                
-        if(data.get(AVAILABLECAS) == null){
-          ArrayList availablecas = new ArrayList();
-          availablecas.add(new Integer(ANYCA));
-          data.put(AVAILABLECAS, availablecas);
-        }     
-        if(data.get(USEDPUBLISHERS) == null){
-          data.put(USEDPUBLISHERS, new ArrayList());   
-        }        
+		super.upgrade();        
       }
     }
     // Private fields.

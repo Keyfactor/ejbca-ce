@@ -73,27 +73,10 @@ public class CACertificateProfile extends CertificateProfile{
     public void upgrade(){
       if(LATEST_VERSION != getVersion()){
         // New version of the class, upgrade
-
-        data.put(VERSION, new Float(LATEST_VERSION));
-        if(data.get(ALLOWKEYUSAGEOVERRIDE) == null)
-          data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
-        if(data.get(USEEXTENDEDKEYUSAGE) ==null)
-          data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
-        if(data.get(EXTENDEDKEYUSAGE) ==null)
-          data.put(EXTENDEDKEYUSAGE, new ArrayList());
-        if(data.get(EXTENDEDKEYUSAGECRITICAL) == null)
-          data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
-        
-        if(data.get(AVAILABLECAS) == null){
-          ArrayList availablecas = new ArrayList();
-          availablecas.add(new Integer(ANYCA));
-          data.put(AVAILABLECAS, availablecas);
-        }
-        
-        if(data.get(USEDPUBLISHERS) == null){
-          data.put(USEDPUBLISHERS, new ArrayList());   
-        }        
+		super.upgrade();
+		        
       }
+ 
     }
 
     // Private fields.

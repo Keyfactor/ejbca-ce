@@ -5,7 +5,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.1 2003-09-04 09:28:54 herrvendil Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.2 2003-10-31 14:41:25 herrvendil Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -20,8 +20,11 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     // Entries to choose from in view log part, defines the size of data to be displayed on one page.
     private final  String[] DEFAULTPOSSIBLELOGENTRIESPERPAGE = {"10" , "25" , "50" , "100", "200", "400"};
 
-    // Path added to baseurl used as default vaule in CRLDistributionPointURI field in Certificate Type definitions.
+    // Path added to baseurl used as default vaule in CRLDistributionPointURI field in Certificate Profile definitions.
     private final  String   DEFAULTCRLDISTURIPATH  = "ejbca/webdist/certdist?cmd=crl";
+
+    // Path added to baseurl used as default vaule in OCSP Service Locator URI field in Certificate Profile definitions.
+	private final  String   DEFAULTOCSPSERVICELOCATORURIPATH = "TODO";
 
     // Default name of headbanner in web interface.
     private final  String   DEFAULTHEADBANNER             = "head_banner.jsp";
@@ -129,6 +132,14 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
         retval+= DEFAULTCRLDISTURIPATH;
         return retval;
     }
+        
+	public String getStandardOCSPServiceLocatorURI(){
+		String retval = (String) data.get(BASEURL);
+		retval =retval.replaceFirst((String) data.get(PRIVATEPROTOCOL), (String) data.get(PUBLICPROTOCOL));
+		retval =retval.replaceFirst((String) data.get(PRIVATEPORT), (String) data.get(PUBLICPORT));
+		retval+= DEFAULTOCSPSERVICELOCATORURIPATH;
+		return retval;
+	}        
 
      /** Checks the themes paht for css files and returns an array of filenames
      *  without the ".css" ending. */
