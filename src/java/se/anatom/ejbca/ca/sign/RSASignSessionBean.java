@@ -51,7 +51,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.56 2002-12-05 19:42:07 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.57 2002-12-12 14:22:51 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -204,17 +204,9 @@ public class RSASignSessionBean extends BaseSessionBean {
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException {
         debug(">createCertificate(pk)");
-        // Standard key usages for end users are: digitalSignature | keyEncipherment or nonRepudiation
-        // Default key usage is digitalSignature | keyEncipherment
-        // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
-        boolean[] keyusage = new boolean[9];
-        Arrays.fill(keyusage, false);
-        // digitalSignature
-        keyusage[0] = true;
-        // keyEncipherment
-        keyusage[2] = true;
+        // Default key usage is defined in certificate profiles
         debug("<createCertificate(pk)");
-        return createCertificate(admin, username, password, pk, keyusage);
+        return createCertificate(admin, username, password, pk, -1);
     } // createCertificate
 
     /**
@@ -552,8 +544,14 @@ public class RSASignSessionBean extends BaseSessionBean {
                 bc);
         }
         // Key usage
-        if (certProfile.getUseKeyUsage() == true) {
-            X509KeyUsage ku = new X509KeyUsage(sunKeyUsageToBC(certProfile.getKeyUsage()));
+        int newKeyUsage = -1;
+        if (certProfile.getAllowKeyUsageOverride() && (keyusage >= 0)) {
+            newKeyUsage = keyusage;
+        } else {
+            newKeyUsage = sunKeyUsageToBC(certProfile.getKeyUsage());
+        }
+        if ( (certProfile.getUseKeyUsage() == true) && (newKeyUsage >=0) ){
+            X509KeyUsage ku = new X509KeyUsage(newKeyUsage);
             certgen.addExtension(
                 X509Extensions.KeyUsage.getId(),
                 certProfile.getKeyUsageCritical(),

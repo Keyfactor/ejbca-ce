@@ -18,6 +18,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiless.
  *
  * @author  TomSelleck
+ * @version $Id: CertificateProfile.java,v 1.4 2002-12-12 14:22:57 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
@@ -45,8 +46,35 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     /** Supported certificate versions. */
     public final static String VERSION_X509V3 = "X509v3";
-
     public final static String CERTIFICATEPROFILENAME =  "CUSTOM";
+
+    // protected fields.
+    protected static final String CERTVERSION                    = "certversion";
+    protected static final String VALIDITY                       = "validity";
+    protected static final String USEBASICCONSTRAINTS            = "usebasicconstrants";
+    protected static final String BASICCONSTRAINTSCRITICAL       = "basicconstraintscritical";
+    protected static final String USEKEYUSAGE                    = "usekeyusage";
+    protected static final String KEYUSAGECRITICAL               = "keyusagecritical";
+    protected static final String USESUBJECTKEYIDENTIFIER        = "usesubjectkeyidentifier";
+    protected static final String SUBJECTKEYIDENTIFIERCRITICAL   = "subjectkeyidentifiercritical";
+    protected static final String USEAUTHORITYKEYIDENTIFIER      = "useauthoritykeyidentifier";
+    protected static final String AUTHORITYKEYIDENTIFIERCRITICAL = "authoritykeyidentifiercritical";
+    protected static final String USECRLNUMBER                   = "usecrlnumber";
+    protected static final String CRLNUMBERCRITICAL              = "crlnumbercritical";
+    protected static final String USESUBJECTALTERNATIVENAME      = "usesubjectalternativename";
+    protected static final String SUBJECTALTERNATIVENAMECRITICAL = "subjectalternativenamecritical";
+    protected static final String USECRLDISTRIBUTIONPOINT        = "usecrldistributionpoint";
+    protected static final String CRLDISTRIBUTIONPOINTCRITICAL   = "crldistributionpointcritical";
+    protected static final String CRLDISTRIBUTIONPOINTURI        = "crldistributionpointuri";
+    protected static final String USECERTIFICATEPOLICIES         = "usecertificatepolicies";
+    protected static final String CERTIFICATEPOLICIESCRITICAL    = "certificatepoliciescritical";
+    protected static final String CERTIFICATEPOLICYID            = "certificatepolicyid";
+    protected static final String AVAILABLEBITLENGTHS            = "availablebitlengths";
+    protected static final String KEYUSAGE                       = "keyusage";
+    protected static final String MINIMUMAVAILABLEBITLENGTH      = "minimumavailablebitlength";
+    protected static final String MAXIMUMAVAILABLEBITLENGTH      = "maximumavailablebitlength";
+    protected static final String TYPE                           = "type";
+    protected static final String ALLOWKEYUSAGEOVERRIDE          = "allowkeyusageoverride";
 
     // Public Methods
     /** Creates a new instance of CertificateProfile */
@@ -83,6 +111,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setAvailableBitLengths(bitlengths);
 
       setKeyUsage(new boolean[9]);
+      setAllowKeyUsageOverride(true);
     }
 
     // Public Methods.
@@ -217,6 +246,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       ((ArrayList) data.get(KEYUSAGE)).set(keyusageconstant, new Boolean(value));
     }
 
+    public void setAllowKeyUsageOverride(boolean override) {
+        data.put(ALLOWKEYUSAGEOVERRIDE, new Boolean(override));
+    }
+    public boolean getAllowKeyUsageOverride() {
+        return ((Boolean) data.get(ALLOWKEYUSAGEOVERRIDE)).booleanValue();
+    }
 
     public Object clone() throws CloneNotSupportedException {
       CertificateProfile clone = new CertificateProfile();
@@ -246,33 +281,5 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(VERSION, new Float(LATEST_VERSION));
       }
     }
-
-    // protected fields.
-
-    protected static final String CERTVERSION                    = "certversion";
-    protected static final String VALIDITY                       = "validity";
-    protected static final String USEBASICCONSTRAINTS            = "usebasicconstrants";
-    protected static final String BASICCONSTRAINTSCRITICAL       = "basicconstraintscritical";
-    protected static final String USEKEYUSAGE                    = "usekeyusage";
-    protected static final String KEYUSAGECRITICAL               = "keyusagecritical";
-    protected static final String USESUBJECTKEYIDENTIFIER        = "usesubjectkeyidentifier";
-    protected static final String SUBJECTKEYIDENTIFIERCRITICAL   = "subjectkeyidentifiercritical";
-    protected static final String USEAUTHORITYKEYIDENTIFIER      = "useauthoritykeyidentifier";
-    protected static final String AUTHORITYKEYIDENTIFIERCRITICAL = "authoritykeyidentifiercritical";
-    protected static final String USECRLNUMBER                   = "usecrlnumber";
-    protected static final String CRLNUMBERCRITICAL              = "crlnumbercritical";
-    protected static final String USESUBJECTALTERNATIVENAME      = "usesubjectalternativename";
-    protected static final String SUBJECTALTERNATIVENAMECRITICAL = "subjectalternativenamecritical";
-    protected static final String USECRLDISTRIBUTIONPOINT        = "usecrldistributionpoint";
-    protected static final String CRLDISTRIBUTIONPOINTCRITICAL   = "crldistributionpointcritical";
-    protected static final String CRLDISTRIBUTIONPOINTURI        = "crldistributionpointuri";
-    protected static final String USECERTIFICATEPOLICIES         = "usecertificatepolicies";
-    protected static final String CERTIFICATEPOLICIESCRITICAL    = "certificatepoliciescritical";
-    protected static final String CERTIFICATEPOLICYID            = "certificatepolicyid";
-    protected static final String AVAILABLEBITLENGTHS            = "availablebitlengths";
-    protected static final String KEYUSAGE                       = "keyusage";
-    protected static final String MINIMUMAVAILABLEBITLENGTH      = "minimumavailablebitlength";
-    protected static final String MAXIMUMAVAILABLEBITLENGTH      = "maximumavailablebitlength";
-    protected static final String TYPE                           = "type";
 
 }

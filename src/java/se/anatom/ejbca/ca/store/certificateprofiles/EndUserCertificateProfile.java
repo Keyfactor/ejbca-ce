@@ -54,6 +54,9 @@ public class EndUserCertificateProfile extends CertificateProfile{
       int[] bitlengths = {512,1024,2048,4096};
       setAvailableBitLengths(bitlengths);
 
+      // Standard key usages for end users are: digitalSignature | keyEncipherment or nonRepudiation
+      // Default key usage is digitalSignature | keyEncipherment
+      // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
       setKeyUsage(new boolean[9]);
       setKeyUsage(DIGITALSIGNATURE,true);
       setKeyUsage(KEYENCIPHERMENT,true);

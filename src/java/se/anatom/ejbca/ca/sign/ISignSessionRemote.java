@@ -25,7 +25,7 @@ import se.anatom.ejbca.log.Admin;
 /** Creates certificates.
  * Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.9 2002-11-18 11:18:23 anatom Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.10 2002-12-12 14:22:50 anatom Exp $
  */
 
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
@@ -106,7 +106,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     * @param username unique username within the instance.
     * @param password password for the user.
     * @param pk the public key to be put in the created certificate.
-    * @param keyusage integer with bit mask describing desired keys usage. Bit mask is packed in in integer using constants from CertificateData.
+    * @param keyusage integer with bit mask describing desired keys usage, overrides keyUsage from CertificateProfiles if allowed. Bit mask is packed in in integer using constants from CertificateData. -1 means use default keyUsage from CertificateProfile.
     * ex. int keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives digitalSignature and nonRepudiation.
     * ex. int keyusage = CertificateData.keyCertSign | CertificateData.cRLSign; gives keyCertSign and cRLSign
     *
