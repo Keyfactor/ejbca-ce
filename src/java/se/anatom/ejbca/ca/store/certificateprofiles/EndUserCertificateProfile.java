@@ -5,7 +5,7 @@ import java.util.ArrayList;
 /**
  * EndUserCertificateProfile is a class defining the fixed characteristics of an enduser certificate type
  *
-* @version $Id: EndUserCertificateProfile.java,v 1.6 2003-02-20 10:28:39 herrvendil Exp $
+* @version $Id: EndUserCertificateProfile.java,v 1.7 2003-02-21 09:38:21 anatom Exp $
   */
 public class EndUserCertificateProfile extends CertificateProfile{
 
@@ -54,18 +54,18 @@ public class EndUserCertificateProfile extends CertificateProfile{
       setKeyUsage(new boolean[9]);
       setKeyUsage(DIGITALSIGNATURE,true);
       setKeyUsage(KEYENCIPHERMENT,true);
-      
+
       setUseExtendedKeyUsage(true);
       ArrayList eku = new ArrayList();
       eku.add(new Integer(CLIENTAUTH));
       eku.add(new Integer(EMAILPROTECTION));
-      eku.add(new Integer(IPSECUSER));  
+      eku.add(new Integer(IPSECUSER));
       setExtendedKeyUsage(eku);
-      
+
     }
 
     // Public Methods.
-    public void upgrade(){    
+    public void upgrade(){
       if(LATEST_VERSION != getVersion()){
         // New version of the class, upgrade
 
@@ -76,17 +76,19 @@ public class EndUserCertificateProfile extends CertificateProfile{
           data.put(USEEXTENDEDKEYUSAGE, Boolean.TRUE);
         if(data.get(EXTENDEDKEYUSAGE) ==null){
            ArrayList eku = new ArrayList();
+           eku.add(new Integer(SERVERAUTH));
            eku.add(new Integer(CLIENTAUTH));
            eku.add(new Integer(EMAILPROTECTION));
-           eku.add(new Integer(IPSECUSER));             
+           eku.add(new Integer(IPSECENDSYSTEM));
+           eku.add(new Integer(IPSECUSER));
            data.put(EXTENDEDKEYUSAGE, eku);
         }
         if(data.get(EXTENDEDKEYUSAGECRITICAL) == null)
-          data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);   
+          data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
       }
-    }    
+    }
 
 
     // Private fields.
-    
+
 }
