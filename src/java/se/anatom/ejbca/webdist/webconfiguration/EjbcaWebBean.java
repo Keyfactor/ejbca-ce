@@ -27,12 +27,13 @@ import se.anatom.ejbca.ra.authorization.AdminInformation;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.ra.raadmin.AdminPreference;
+import se.anatom.ejbca.util.CertTools;
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.25 2003-03-10 07:22:04 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.26 2003-03-11 12:17:54 anatom Exp $
  */
 public class EjbcaWebBean {
 
@@ -48,14 +49,14 @@ public class EjbcaWebBean {
     public static final int AUTHORIZED_HARDTOKEN_VIEW_RIGHTS = 6;
     public static final int AUTHORIZED_CA_VIEW_CERT          = 7;
     public static final int AUTHORIZED_RA_KEYRECOVERY_RIGHTS = 8;
-    
-    private static final int AUTHORIZED_FIELD_LENGTH     = 9; 
-    private static final String[] AUTHORIZED_RA_RESOURCES = {"/ra_functionallity/view_end_entity", "/ra_functionallity/edit_end_entity", 
+
+    private static final int AUTHORIZED_FIELD_LENGTH     = 9;
+    private static final String[] AUTHORIZED_RA_RESOURCES = {"/ra_functionallity/view_end_entity", "/ra_functionallity/edit_end_entity",
                                                              "/ra_functionallity/create_end_entity", "/ra_functionallity/delete_end_entity",
                                                              "/ra_functionallity/revoke_end_entity","/ra_functionallity/view_end_entity_history",
                                                              "/ra_functionallity/view_hardtoken","/ca_functionallity/view_certificate",
                                                              "/ra_functionallity/keyrecovery"};
-    
+
     // Private Fields.
     private ILogSessionRemote              logsession;
     private AdminPreferenceDataHandler     adminspreferences;
@@ -69,7 +70,7 @@ public class EjbcaWebBean {
     private BigInteger                     certificateserialnumber;
     private X509Certificate[]              certificates;
     private boolean                        initialized=false;
-    private boolean                        errorpage_initialized=false;    
+    private boolean                        errorpage_initialized=false;
     private Boolean[]                      raauthorized;
 
     /** Creates a new instance of EjbcaWebBean */
@@ -107,7 +108,7 @@ public class EjbcaWebBean {
         adminspreferences = new AdminPreferenceDataHandler(administrator);
         weblanguages = new WebLanguages(globalconfiguration);
 
-        userdn = certificates[0].getSubjectX500Principal().toString();
+        userdn = CertTools.getSubjectDN(certificates[0]);
 
         // Check if user certificate is revoked
         authorizedatahandler = new AuthorizationDataHandler(globalconfiguration, logsession, administrator);
@@ -151,7 +152,7 @@ public class EjbcaWebBean {
       }
       return globalconfiguration;
     }
-    
+
 
     public GlobalConfiguration initialize_errorpage(HttpServletRequest request) throws Exception{
 
@@ -163,7 +164,7 @@ public class EjbcaWebBean {
         Object obj1 = jndicontext.lookup("UserAdminSession");
         IUserAdminSessionHome adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
         IUserAdminSessionRemote  adminsession = adminsessionhome.create();
-        
+
         globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(adminsession, administrator);
         globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();
         adminspreferences = new AdminPreferenceDataHandler(administrator);
@@ -178,7 +179,7 @@ public class EjbcaWebBean {
         errorpage_initialized=true;
       }
       return globalconfiguration;
-    }    
+    }
 
     /** Returns the current users common name */
     public String getUsersCommonName(){
