@@ -4,7 +4,6 @@ import java.util.Random;
 import java.util.*;
 import java.lang.Integer;
 
-import javax.naming.InitialContext;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import java.rmi.RemoteException;
@@ -12,7 +11,6 @@ import javax.ejb.DuplicateKeyException;
 
 import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.ca.auth.*;
-import se.anatom.ejbca.util.*;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.log.Admin;
 
@@ -21,7 +19,7 @@ import junit.framework.*;
 
 /** Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.9 2002-11-17 14:01:40 herrvendil Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.10 2003-01-12 17:16:33 anatom Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     static Category cat = Category.getInstance( TestAuthenticationSession.class.getName() );

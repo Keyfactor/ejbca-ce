@@ -15,24 +15,20 @@ import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.KeyStoreException;
-import java.security.interfaces.RSAPublicKey;
 import java.util.*;
 
 import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.asn1.pkcs.*;
 import org.bouncycastle.jce.interfaces.*;
-import org.bouncycastle.jce.provider.*;
 
 import org.apache.log4j.*;
 
-import se.anatom.ejbca.util.Base64;
-import se.anatom.ejbca.util.Hex;
 
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.11 2002-12-17 16:44:09 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.12 2003-01-12 17:16:33 anatom Exp $
  */
 public class KeyTools {
 

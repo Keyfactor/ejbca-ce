@@ -12,12 +12,11 @@ import se.anatom.ejbca.util.query.Query;
 import se.anatom.ejbca.util.query.IllegalQueryException;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import se.anatom.ejbca.ra.authorization.AdminInformation;
 import se.anatom.ejbca.log.Admin;
 
 /**
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.12 2002-11-17 14:01:40 herrvendil Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.13 2003-01-12 17:16:28 anatom Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
 

@@ -1,13 +1,12 @@
 
 package se.anatom.ejbca.admin;
 
-import java.io.*;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /** Set the (hashed) password for a user in the database.
  *
- * @version $Id: RaSetPwdCommand.java,v 1.5 2002-11-17 14:01:38 herrvendil Exp $
+ * @version $Id: RaSetPwdCommand.java,v 1.6 2003-01-12 17:16:30 anatom Exp $
  */
 public class RaSetPwdCommand extends BaseRaAdminCommand {
 

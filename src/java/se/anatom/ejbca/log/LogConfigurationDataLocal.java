@@ -1,13 +1,8 @@
 package se.anatom.ejbca.log;
 
-
-import java.rmi.RemoteException;
-
-
 /**
  * For docs, see LogConfigurationDataBean
  **/
-
 public interface LogConfigurationDataLocal extends javax.ejb.EJBLocalObject {
     // public methods
 

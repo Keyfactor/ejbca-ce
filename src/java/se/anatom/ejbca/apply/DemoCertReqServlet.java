@@ -1,16 +1,12 @@
 package se.anatom.ejbca.apply;
 
-import java.beans.Beans;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.security.Provider;
 import java.security.Security;
-import java.security.cert.X509Certificate;
 import javax.ejb.CreateException;
 import javax.ejb.ObjectNotFoundException;
 import javax.naming.InitialContext;
@@ -21,7 +17,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Category;
 
@@ -35,12 +30,9 @@ import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.FileTools;
-import se.anatom.ejbca.util.KeyTools;
-import se.anatom.ejbca.webdist.rainterface.RAInterfaceBean;
 import se.anatom.ejbca.webdist.rainterface.UserView;
 
 
@@ -82,7 +74,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.3 2003-01-12 15:37:42 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.4 2003-01-12 17:16:32 anatom Exp $
  */
 public class DemoCertReqServlet
   extends HttpServlet {
@@ -251,12 +243,12 @@ public class DemoCertReqServlet
     try {
         if (type == 1) {
               byte[] certs = helper.nsCertRequest(reqBytes, username, password);
-              helper.sendNewCertToNSClient(certs, response);            
+			  RequestHelper.sendNewCertToNSClient(certs, response);            
         }
         if (type == 2) {
               byte[] b64cert=helper.pkcs10CertRequest(reqBytes, username, password);
               debug.ieCertFix(b64cert);
-              helper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"));            
+			  RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"));            
         }
 
     //} catch (java.security.cert.CertificateEncodingException e) {

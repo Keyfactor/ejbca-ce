@@ -1,27 +1,14 @@
-
-/*
- * RaInterfaceBean.java
- *
- * Created on den 12 april 2002, 14:36
- */
-
 package se.anatom.ejbca.webdist.rainterface;
 
-import java.beans.*;
 import javax.naming.*;
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import java.rmi.RemoteException;
-import java.util.Properties;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Vector;
 import java.util.HashMap;
-import java.io.Serializable;
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
 import java.io.IOException;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
@@ -31,21 +18,12 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
-import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.ca.store.CertificateDataPK;
-import se.anatom.ejbca.ca.store.CertificateData;
-import se.anatom.ejbca.ca.store.CertificateDataHome;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
-import se.anatom.ejbca.ra.UserDataRemote;
-import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.Hex;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfileExistsException;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfileDoesntExistsException;
-import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import se.anatom.ejbca.ra.authorization.AdminInformation;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ra.authorization.EndEntityProfileAuthorizationProxy;
 import se.anatom.ejbca.ra.authorization.IAuthorizationSessionHome;
@@ -61,7 +39,7 @@ import org.apache.log4j.Category;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.19 2002-12-17 08:54:34 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.20 2003-01-12 17:16:32 anatom Exp $
  */
 public class RAInterfaceBean {
 

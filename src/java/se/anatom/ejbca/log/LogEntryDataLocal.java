@@ -1,14 +1,12 @@
 package se.anatom.ejbca.log;
-import java.rmi.RemoteException;
 
 import java.util.Date;
 
 /**
  * For docs, see LogEntryDataBean
  *
- * @version $Id: LogEntryDataLocal.java,v 1.2 2002-09-17 09:19:46 herrvendil Exp $
+ * @version $Id: LogEntryDataLocal.java,v 1.3 2003-01-12 17:16:31 anatom Exp $
  **/
-
 public interface LogEntryDataLocal extends javax.ejb.EJBLocalObject {
 
     // Public methods

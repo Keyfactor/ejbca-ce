@@ -1,12 +1,6 @@
-/*
- * AdminEntity.java
- *
- * Created on den 16 mars 2002, 11:42
- */
-
 package se.anatom.ejbca.ra.authorization;
+
 import java.security.cert.X509Certificate;
-import javax.security.auth.x500.X500Principal;
 import java.io.Serializable;
 
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
@@ -18,7 +12,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * Matchtype constants tells under which contitions the match shall be performed.
  *
  * @author  Philip Vendil
- * @version $Id: AdminEntity.java,v 1.1 2002-10-24 20:07:17 herrvendil Exp $
+ * @version $Id: AdminEntity.java,v 1.2 2003-01-12 17:16:30 anatom Exp $
  */
 public class AdminEntity implements Serializable, Comparable {
     // Special Users. (Constants cannot have 0 value).

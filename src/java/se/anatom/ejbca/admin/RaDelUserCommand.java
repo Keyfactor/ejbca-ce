@@ -1,12 +1,11 @@
 
 package se.anatom.ejbca.admin;
 
-import java.io.*;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 
 /** Deletes a user from the database.
  *
- * @version $Id: RaDelUserCommand.java,v 1.4 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: RaDelUserCommand.java,v 1.5 2003-01-12 17:16:30 anatom Exp $
  */
 public class RaDelUserCommand extends BaseRaAdminCommand {
 

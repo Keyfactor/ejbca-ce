@@ -1,27 +1,21 @@
-/*
- * EndEntityProfile.java
- *
- * Created on den 12 april 2002, 11:27
- */
-
 package se.anatom.ejbca.ra.raadmin;
+
 import RegularExpression.RE;
 
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
-import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
+
 /**
  * The model representation of an end entity profile, used in in the ra module of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.1 2002-10-24 20:09:29 herrvendil Exp $
+ * @version $Id: EndEntityProfile.java,v 1.2 2003-01-12 17:16:33 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 

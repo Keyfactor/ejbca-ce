@@ -1,16 +1,12 @@
 package se.anatom.ejbca.ra;
 
-import java.rmi.RemoteException;
 import java.security.NoSuchAlgorithmException;
-
-
 
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataLocal.java,v 1.4 2002-10-24 20:10:14 herrvendil Exp $
+ * @version $Id: UserDataLocal.java,v 1.5 2003-01-12 17:16:28 anatom Exp $
  **/
-
 public interface UserDataLocal extends javax.ejb.EJBLocalObject {
 
     // Constants for Status of user

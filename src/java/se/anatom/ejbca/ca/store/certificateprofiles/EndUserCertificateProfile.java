@@ -1,18 +1,10 @@
-/*
- * EndUserCertificateProfile.java
- *
- * Created on den 29 juli 2002, 22:08
- */
 package se.anatom.ejbca.ca.store.certificateprofiles;
-
-import java.io.Serializable;
-import java.util.Vector;
 
 /**
  * EndUserCertificateProfile is a class defining the fixed characteristics of an enduser certificate type
  *
- * @author  TomSelleck
- */
+* @version $Id: EndUserCertificateProfile.java,v 1.4 2003-01-12 17:16:29 anatom Exp $
+  */
 public class EndUserCertificateProfile extends CertificateProfile{
 
     // Public Constants

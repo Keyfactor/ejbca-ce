@@ -5,15 +5,12 @@ import java.io.*;
 
 import java.security.*;
 import java.security.cert.*;
-import java.security.spec.*;
 import java.security.PrivateKey;
-import java.security.KeyFactory;
 import java.util.*;
 
 import org.bouncycastle.jce.*;
 import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.x509.*;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERConstructedSequence;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 
@@ -23,7 +20,7 @@ import org.apache.log4j.*;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.27 2003-01-12 15:10:48 anatom Exp $
+ * @version $Id: CertTools.java,v 1.28 2003-01-12 17:16:33 anatom Exp $
  */
 public class CertTools {
 

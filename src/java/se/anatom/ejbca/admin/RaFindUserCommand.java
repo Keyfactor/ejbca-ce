@@ -1,14 +1,12 @@
 
 package se.anatom.ejbca.admin;
 
-import java.io.*;
-
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 
 /** Find details of a user in the database.
  *
- * @version $Id: RaFindUserCommand.java,v 1.3 2002-11-17 14:01:38 herrvendil Exp $
+ * @version $Id: RaFindUserCommand.java,v 1.4 2003-01-12 17:16:31 anatom Exp $
  */
 public class RaFindUserCommand extends BaseRaAdminCommand {
 

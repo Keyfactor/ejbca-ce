@@ -1,5 +1,3 @@
-
-
 package se.anatom.ejbca.samples;
 
 import java.io.*;
@@ -10,7 +8,6 @@ import javax.net.ssl.*;
 import com.sun.net.ssl.*;
 */
 
-import java.security.KeyStore;
 import java.security.KeyPair;
 import java.security.cert.*;
 import java.security.Provider;
@@ -36,7 +33,7 @@ import se.anatom.ejbca.util.*;
  * <li>password - password for the above user.
  * </ul>
  *
- * @version $Id: HttpGetCert.java,v 1.5 2002-10-24 20:10:49 herrvendil Exp $
+ * @version $Id: HttpGetCert.java,v 1.6 2003-01-12 17:16:32 anatom Exp $
  *
  */
 public class HttpGetCert {

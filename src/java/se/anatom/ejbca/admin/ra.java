@@ -1,7 +1,5 @@
 package se.anatom.ejbca.admin;
 
-import java.io.*;
-
 public class ra {
 
     public static void main(String [] args){

@@ -1,42 +1,23 @@
-/*
- * CaInterfaceBean.java
- *
- * Created on den 7 maj 2002, 12:06
- */
-
 package se.anatom.ejbca.webdist.cainterface;
 
-import java.beans.*;
 import javax.naming.*;
 import javax.ejb.CreateException;
-import javax.ejb.FinderException;
 import java.rmi.RemoteException;
-import java.util.Properties;
-import java.util.Collection;
 import java.rmi.RemoteException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.ca.store.CertificateDataPK;
-import se.anatom.ejbca.ca.store.CertificateData;
-import se.anatom.ejbca.ca.store.CertificateDataHome;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.IJobRunnerSessionHome;
 
 import se.anatom.ejbca.webdist.rainterface.CertificateView;
 import se.anatom.ejbca.webdist.rainterface.RevokedInfoView;
-import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
@@ -48,7 +29,7 @@ import se.anatom.ejbca.log.Admin;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.11 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.12 2003-01-12 17:16:34 anatom Exp $
  */
 public class CAInterfaceBean   {
 

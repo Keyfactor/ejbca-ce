@@ -4,10 +4,7 @@ package se.anatom.ejbca.webdist.cainterface;
 import java.io.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
-import java.util.Date;
-import java.util.Properties;
 import java.security.cert.*;
-import java.math.BigInteger;
 
 import javax.rmi.PortableRemoteObject;
 import javax.naming.InitialContext;
@@ -16,17 +13,11 @@ import se.anatom.ejbca.util.Base64;
 
 import org.apache.log4j.*;
 
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
-import se.anatom.ejbca.ca.crl.RevokedCertInfo;
-import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.log.Admin;
 
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
-import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
-import se.anatom.ejbca.ra.GlobalConfiguration;
 /**
  * Servlet used to distribute ca certificates <br>
  *
@@ -38,7 +29,7 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.8 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: CACertServlet.java,v 1.9 2003-01-12 17:16:34 anatom Exp $
  *
  */
 public class CACertServlet extends HttpServlet {

@@ -1,13 +1,11 @@
 
 package se.anatom.ejbca.admin;
 
-import java.io.*;
 import java.util.Date;
 import java.util.Collection;
 import java.util.Iterator;
 import javax.naming.*;
 
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
@@ -15,7 +13,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 
 /** List certificates that will expire within the given number of days.
  *
- * @version $Id: CaListExpiredCommand.java,v 1.5 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: CaListExpiredCommand.java,v 1.6 2003-01-12 17:16:31 anatom Exp $
  */
 public class CaListExpiredCommand extends BaseCaAdminCommand {
 

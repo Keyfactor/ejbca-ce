@@ -1,17 +1,9 @@
-/*
- * RootCACertificateProfile.java
- *
- * Created on den 29 juli 2002, 22:08
- */
 package se.anatom.ejbca.ca.store.certificateprofiles;
-
-import java.io.Serializable;
-import java.util.Vector;
 
 /**
  * RootCACertificateProfile is a class defining the fixed characteristics of a root ca certificate profile.
  *
- * @author  TomSelleck
+ * @version $Id: RootCACertificateProfile.java,v 1.3 2003-01-12 17:16:29 anatom Exp $
  */
 public class RootCACertificateProfile extends CertificateProfile{
 

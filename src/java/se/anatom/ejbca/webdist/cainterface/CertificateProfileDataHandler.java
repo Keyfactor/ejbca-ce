@@ -1,25 +1,12 @@
-/*
- * CertificateProfileDataHandler.java
- *
- * Created on den 30 juli 2002, 13:03
- */
-
 package se.anatom.ejbca.webdist.cainterface;
 
-import java.io.IOException;
-import java.beans.*;
-import javax.naming.*;
-import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import java.rmi.RemoteException;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.TreeMap;
 import java.io.Serializable;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.log.Admin;
 /**

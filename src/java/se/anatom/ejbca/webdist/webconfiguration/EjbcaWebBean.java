@@ -1,31 +1,22 @@
 package se.anatom.ejbca.webdist.webconfiguration;
 
-import java.beans.*;
 import javax.naming.*;
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
-import javax.security.auth.x500.X500Principal;
 import javax.servlet.http.HttpServletRequest;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.net.URLDecoder;
 import java.math.BigInteger;
 import java.io.IOException;
-import java.io.Serializable;
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
-import java.util.Properties;
 import java.util.Date;
 import java.text.DateFormat;
 import java.rmi.RemoteException;
-import java.util.Collection;
 
 import org.apache.log4j.*;
 
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.UserAdminData;
-import se.anatom.ejbca.ra.authorization.EjbcaAuthorization;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.log.ILogSessionRemote;
@@ -34,7 +25,6 @@ import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ra.authorization.AuthenticationFailedException;
 import se.anatom.ejbca.ra.authorization.AdminInformation;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
-import se.anatom.ejbca.webdist.rainterface.UserView;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.ra.raadmin.AdminPreference;
 
@@ -42,7 +32,7 @@ import se.anatom.ejbca.ra.raadmin.AdminPreference;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.18 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.19 2003-01-12 17:16:28 anatom Exp $
  */
 public class EjbcaWebBean {
 

@@ -1,19 +1,9 @@
-/*
- * EndEntityProfileDataHandler.java
- *
- * Created on den 12 april 2002, 13:03
- */
-
 package se.anatom.ejbca.webdist.rainterface;
 
-import java.io.IOException;
-import java.beans.*;
 import javax.naming.*;
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import java.rmi.RemoteException;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.TreeMap;
 
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
@@ -25,7 +15,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
- * @author  Philip Vendil
+ * @version $Id: EndEntityProfileDataHandler.java,v 1.3 2003-01-12 17:16:31 anatom Exp $
  */
 public class EndEntityProfileDataHandler {
 

@@ -3,11 +3,8 @@ package se.anatom.ejbca.ca.auth;
 
 import java.rmi.*;
 
-import javax.naming.*;
-import javax.rmi.*;
 import javax.ejb.*;
 import java.util.Date;
-
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ra.UserDataPK;
@@ -23,7 +20,7 @@ import se.anatom.ejbca.log.LogEntry;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.17 2002-12-05 19:42:07 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.18 2003-01-12 17:16:31 anatom Exp $
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean {
 

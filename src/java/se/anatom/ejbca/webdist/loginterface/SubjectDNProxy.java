@@ -1,14 +1,6 @@
-/*
- * SubjectDNProxy.java
- *
- * Created on den 29 august 2002, 17:49
- */
-
 package se.anatom.ejbca.webdist.loginterface;
-import javax.ejb.CreateException;
-import javax.ejb.FinderException;
+
 import java.rmi.RemoteException;
-import javax.naming.*;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collection;
@@ -22,7 +14,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * A class used to improve performance by proxying certificatesnr to subjectdn mappings by minimizing the number of needed lockups over rmi.
  * 
- * @author  TomSelleck
+ * @version $Id: SubjectDNProxy.java,v 1.3 2003-01-12 17:16:20 anatom Exp $
  */
 public class SubjectDNProxy {
     

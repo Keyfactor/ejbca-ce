@@ -3,8 +3,6 @@ package se.anatom.ejbca.ca.sign;
 
 import java.rmi.*;
 
-import javax.naming.*;
-import javax.rmi.*;
 import javax.ejb.*;
 
 import java.io.*;
@@ -30,7 +28,6 @@ import se.anatom.ejbca.ca.store.certificateprofiles.*;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.KeyTools;
 import se.anatom.ejbca.util.Hex;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
@@ -41,7 +38,6 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.log.LogEntry;
-import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 import se.anatom.ejbca.protocol.RequestMessage;
 
 import org.bouncycastle.jce.*;
@@ -51,7 +47,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.60 2003-01-03 22:03:25 koen_serry Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.61 2003-01-12 17:16:35 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 

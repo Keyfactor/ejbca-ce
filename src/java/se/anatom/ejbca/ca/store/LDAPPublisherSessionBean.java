@@ -2,7 +2,6 @@
 package se.anatom.ejbca.ca.store;
 
 import java.rmi.*;
-import javax.rmi.*;
 import javax.ejb.*;
 import java.io.*;
 
@@ -11,7 +10,6 @@ import com.novell.ldap.*;
 import java.security.cert.*;
 
 import org.bouncycastle.asn1.*;
-import org.bouncycastle.asn1.x509.*;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
@@ -49,7 +47,7 @@ import se.anatom.ejbca.log.LogEntry;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.13 2002-12-03 16:50:49 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.14 2003-01-12 17:16:29 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
 

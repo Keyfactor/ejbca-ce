@@ -1,18 +1,12 @@
 package se.anatom.ejbca.ca.store.junit;
 
 import java.util.*;
-import java.lang.Integer;
-import java.io.*;
 
 import java.security.cert.*;
 
-import javax.naming.InitialContext;
 import javax.naming.Context;
 import javax.naming.NamingException;
-import java.rmi.RemoteException;
 
-import se.anatom.ejbca.ra.*;
-import se.anatom.ejbca.ca.sign.*;
 import se.anatom.ejbca.ca.store.*;
 import se.anatom.ejbca.ca.crl.*;
 import se.anatom.ejbca.util.*;
@@ -22,10 +16,9 @@ import se.anatom.ejbca.log.Admin;
 import org.apache.log4j.*;
 import junit.framework.*;
 
-
 /** Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.12 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: TestCertificateData.java,v 1.13 2003-01-12 17:16:35 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 

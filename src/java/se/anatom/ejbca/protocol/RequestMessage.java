@@ -1,14 +1,11 @@
 package se.anatom.ejbca.protocol;
 
-import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-
-import org.apache.log4j.*;
 
 /** Base interface for request messages sent to the CA.
 * Implementors of this interface must also implement Serializable if they are to be sent to any EJB bussiness methods.

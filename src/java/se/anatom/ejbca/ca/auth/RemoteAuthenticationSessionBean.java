@@ -6,7 +6,6 @@ import java.rmi.*;
 import java.io.*;
 
 import javax.naming.*;
-import javax.rmi.*;
 import javax.ejb.*;
 
 import se.anatom.ejbca.BaseSessionBean;
@@ -21,7 +20,7 @@ import se.anatom.ejbca.log.LogEntry;
 /**
  * Authenticates users towards a remote user database, using HTTP-based protocol.
  *
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.7 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.8 2003-01-12 17:16:31 anatom Exp $
  */
 public class RemoteAuthenticationSessionBean extends BaseSessionBean {
 

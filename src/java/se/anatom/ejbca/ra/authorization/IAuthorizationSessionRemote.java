@@ -1,16 +1,16 @@
 package se.anatom.ejbca.ra.authorization;
+
 import java.util.Collection;
 import java.security.cert.X509Certificate;
 
 import java.rmi.RemoteException;
-import javax.ejb.FinderException;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.log.Admin;
 
 
 /**
  *
- * @version $Id: IAuthorizationSessionRemote.java,v 1.7 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: IAuthorizationSessionRemote.java,v 1.8 2003-01-12 17:16:30 anatom Exp $
  */
 public interface IAuthorizationSessionRemote extends javax.ejb.EJBObject {
     

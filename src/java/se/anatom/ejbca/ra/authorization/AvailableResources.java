@@ -1,9 +1,3 @@
-/*
- * AvailableResources.java
- *
- * Created on den 16 mars 2002, 16:35
- */
-
 package se.anatom.ejbca.ra.authorization;
 
 import java.util.Vector;
@@ -12,7 +6,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import javax.naming.*;
 import javax.ejb.CreateException;
-import javax.ejb.FinderException;
 import java.rmi.RemoteException;
 
 import se.anatom.ejbca.ra.GlobalConfiguration;
@@ -23,14 +16,14 @@ import se.anatom.ejbca.log.Admin;
 /**
  * 
  *
- * @author  Philip Vendil
+ * @version $Id: AvailableResources.java,v 1.3 2003-01-12 17:16:30 anatom Exp $
  */
 public class AvailableResources {
         
     /** Creates a new instance of AvailableResources */
     public AvailableResources(GlobalConfiguration globalconfiguration) throws NamingException, CreateException, RemoteException {   
-      this.profileendings=globalconfiguration.ENDENTITYPROFILE_ENDINGS;
-      this.profileprefix= globalconfiguration.ENDENTITYPROFILEPREFIX;
+      this.profileendings=GlobalConfiguration.ENDENTITYPROFILE_ENDINGS;
+      this.profileprefix= GlobalConfiguration.ENDENTITYPROFILEPREFIX;
       this.usestrongauthentication = globalconfiguration.getEnableEndEntityProfileLimitations();
 
       InitialContext jndicontext = new InitialContext();     

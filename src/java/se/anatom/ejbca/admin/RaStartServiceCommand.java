@@ -1,11 +1,10 @@
 
 package se.anatom.ejbca.admin;
 
-import java.io.*;
 
 /** Starts an external service needed for user administrations, runs in the same JVM.
  *
- * @version $Id: RaStartServiceCommand.java,v 1.2 2002-06-23 10:11:43 primelars Exp $
+ * @version $Id: RaStartServiceCommand.java,v 1.3 2003-01-12 17:16:30 anatom Exp $
  */
 public class RaStartServiceCommand extends BaseRaAdminCommand {
 

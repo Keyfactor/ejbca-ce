@@ -1,7 +1,6 @@
 package se.anatom.ejbca.ra.raadmin;
 
 import java.util.HashMap;
-import java.util.Collection;
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import org.apache.log4j.*;
@@ -16,7 +15,7 @@ import se.anatom.ejbca.ra.raadmin.AdminPreference;
  * AdminPreference
  * </pre>
  *
- * @version $Id: AdminPreferencesDataBean.java,v 1.1 2002-10-24 20:09:32 herrvendil Exp $
+ * @version $Id: AdminPreferencesDataBean.java,v 1.2 2003-01-12 17:16:33 anatom Exp $
  **/
 
 public abstract class AdminPreferencesDataBean implements javax.ejb.EntityBean {

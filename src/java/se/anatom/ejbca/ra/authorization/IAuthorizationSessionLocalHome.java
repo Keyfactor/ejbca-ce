@@ -1,7 +1,6 @@
 package se.anatom.ejbca.ra.authorization;
 
 import javax.ejb.CreateException;
-import se.anatom.ejbca.ra.GlobalConfiguration;
 
 /**
  * @version $Id: IAuthorizationSessionLocalHome.java

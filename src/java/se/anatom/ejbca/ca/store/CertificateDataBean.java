@@ -2,7 +2,6 @@ package se.anatom.ejbca.ca.store;
 
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
-import java.math.BigInteger;
 import java.security.cert.*;
 import java.io.IOException;
 import java.util.Date;

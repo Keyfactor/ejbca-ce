@@ -1,10 +1,8 @@
 
 package se.anatom.ejbca.admin;
 
-import java.io.*;
 import java.util.Vector;
 import javax.naming.Context;
-import java.rmi.RemoteException;
 import javax.naming.NamingException;
 import javax.ejb.CreateException;
 import java.security.cert.Certificate;
@@ -22,7 +20,7 @@ import se.anatom.ejbca.util.CertTools;
 
 /** Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.7 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: CaInitCommand.java,v 1.8 2003-01-12 17:16:31 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 

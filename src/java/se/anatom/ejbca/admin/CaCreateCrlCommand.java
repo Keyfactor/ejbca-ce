@@ -1,11 +1,9 @@
 
 package se.anatom.ejbca.admin;
 
-import java.io.*;
-
 /** Issues a new CRL from the CA.
  *
- * @version $Id: CaCreateCrlCommand.java,v 1.2 2002-04-13 18:40:15 anatom Exp $
+ * @version $Id: CaCreateCrlCommand.java,v 1.3 2003-01-12 17:16:30 anatom Exp $
  */
 public class CaCreateCrlCommand extends BaseCaAdminCommand {
 

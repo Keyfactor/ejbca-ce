@@ -4,20 +4,15 @@ package se.anatom.ejbca.webdist.cainterface;
 import java.io.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
-import java.util.Date;
 import java.security.cert.*;
-import java.math.BigInteger;
 
 import javax.rmi.PortableRemoteObject;
 import javax.naming.InitialContext;
-
-import se.anatom.ejbca.util.Base64;
 
 import org.apache.log4j.*;
 
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.log.Admin;
 
@@ -31,7 +26,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java,v 1.8 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: GetCRLServlet.java,v 1.9 2003-01-12 17:16:34 anatom Exp $
  */
 public class GetCRLServlet extends HttpServlet {
 

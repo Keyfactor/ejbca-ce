@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.TreeMap;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
 
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.store.certificateprofiles.*;
@@ -14,7 +13,7 @@ import se.anatom.ejbca.log.Admin;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: ICertificateStoreSessionLocal.java,v 1.11 2002-11-17 14:01:21 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionLocal.java,v 1.12 2003-01-12 17:16:29 anatom Exp $
  * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
  */
 public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject, IPublisherSessionLocal {

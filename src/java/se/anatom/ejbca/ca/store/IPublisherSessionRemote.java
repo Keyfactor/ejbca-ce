@@ -4,7 +4,7 @@ package se.anatom.ejbca.ca.store;
 import java.rmi.RemoteException;
 
 import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
+
 import se.anatom.ejbca.log.Admin;
 
 /** Besides the CertificateStoreSession, certificates and CRLs can also be published
@@ -16,7 +16,7 @@ import se.anatom.ejbca.log.Admin;
  *
  * Remote interface for EJB.
  *
- * @version $Id: IPublisherSessionRemote.java,v 1.4 2002-11-17 14:01:21 herrvendil Exp $
+ * @version $Id: IPublisherSessionRemote.java,v 1.5 2003-01-12 17:16:28 anatom Exp $
  */
 public interface IPublisherSessionRemote extends javax.ejb.EJBObject {
 

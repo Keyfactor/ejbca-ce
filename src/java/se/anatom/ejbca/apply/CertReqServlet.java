@@ -1,11 +1,8 @@
 package se.anatom.ejbca.apply;
 
 import java.io.*;
-import java.net.*;
-import java.text.*;
 import java.util.*;
 import java.security.cert.*;
-import java.security.spec.X509EncodedKeySpec;
 import java.security.Provider;
 import java.security.Security;
 import java.security.KeyStore;
@@ -25,18 +22,10 @@ import se.anatom.ejbca.util.Base64;
 
 import org.apache.log4j.*;
 
-import org.bouncycastle.asn1.*;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.util.*;
-import org.bouncycastle.jce.*;
-import org.bouncycastle.jce.netscape.*;
-import org.bouncycastle.jce.provider.*;
-
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.KeyTools;
-import se.anatom.ejbca.util.FileTools;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
@@ -47,7 +36,6 @@ import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.SecConst;
 
 import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 
 /**
  * Servlet used to install a private key with a corresponding certificate in a
@@ -74,7 +62,7 @@ import se.anatom.ejbca.protocol.PKCS10RequestMessage;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.23 2003-01-12 15:37:07 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.24 2003-01-12 17:16:32 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
@@ -163,7 +151,7 @@ public class CertReqServlet extends HttpServlet {
                   cat.debug("Received NS request:"+new String(reqBytes));
                   if (reqBytes != null) {
                       byte[] certs = helper.nsCertRequest(reqBytes, username, password);
-                      helper.sendNewCertToNSClient(certs, response);
+                      RequestHelper.sendNewCertToNSClient(certs, response);
                   }
               } else if ( (request.getParameter("pkcs10") != null) || (request.getParameter("PKCS10") != null) ) {
                   // if not netscape, check if it's IE
@@ -175,7 +163,7 @@ public class CertReqServlet extends HttpServlet {
                       byte[] b64cert=helper.pkcs10CertRequest(
                           reqBytes, username, password);
                       debug.ieCertFix(b64cert);
-                      helper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"));
+                      RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"));
                   }
               } else if (request.getParameter("pkcs10req") != null) {
                   // if not IE, check if it's manual request
@@ -183,7 +171,7 @@ public class CertReqServlet extends HttpServlet {
                   if (reqBytes != null) {
                       byte[] b64cert=helper.pkcs10CertRequest(
                           reqBytes, username, password);
-                      helper.sendNewB64Cert(b64cert, response);
+					RequestHelper.sendNewB64Cert(b64cert, response);
                   }
               }
             }  

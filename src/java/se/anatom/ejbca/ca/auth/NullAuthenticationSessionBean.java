@@ -3,8 +3,6 @@ package se.anatom.ejbca.ca.auth;
 
 import java.rmi.*;
 
-import javax.naming.*;
-import javax.rmi.*;
 import javax.ejb.*;
 
 import se.anatom.ejbca.BaseSessionBean;
@@ -22,7 +20,7 @@ import se.anatom.ejbca.log.LogEntry;
  * the username is returned as DN.
  * Useful for demo purposes to give out certificates to anyone.
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.9 2002-12-05 19:42:07 anatom Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.10 2003-01-12 17:16:31 anatom Exp $
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean {
 

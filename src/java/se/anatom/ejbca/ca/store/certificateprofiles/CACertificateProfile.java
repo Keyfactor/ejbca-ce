@@ -5,9 +5,6 @@
  */
 package se.anatom.ejbca.ca.store.certificateprofiles;
 
-import java.io.Serializable;
-import java.util.Vector;
-
 /**
  * CACertificateProfile is a class defining the fixed characteristics of a CA certificate profile.
  *

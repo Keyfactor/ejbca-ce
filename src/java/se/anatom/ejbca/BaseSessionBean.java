@@ -1,7 +1,6 @@
 
 package se.anatom.ejbca;
 
-import javax.ejb.CreateException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.ejb.EJBException;
@@ -13,7 +12,7 @@ import org.apache.log4j.*;
 
 /** Base for Session Beans providing common features, new Session Beans 'extends' BaseSessionBean.
  *
- * @version $Id: BaseSessionBean.java,v 1.6 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: BaseSessionBean.java,v 1.7 2003-01-12 17:16:27 anatom Exp $
  */
 public class BaseSessionBean implements SessionBean{
     

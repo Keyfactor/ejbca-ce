@@ -1,13 +1,10 @@
 package se.anatom.ejbca.ra.authorization;
 
-import java.util.Collection;
-
 /**
  * For docs, see AdminGroupDataBean
  *
- * @version $Id: AdminGroupDataLocal.java,v 1.1 2002-10-24 20:06:50 herrvendil Exp $
+ * @version $Id: AdminGroupDataLocal.java,v 1.2 2003-01-12 17:16:30 anatom Exp $
  **/
-
 public interface AdminGroupDataLocal extends javax.ejb.EJBLocalObject {
 
     // public methods

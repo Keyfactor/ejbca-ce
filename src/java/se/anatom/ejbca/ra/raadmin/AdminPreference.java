@@ -1,15 +1,7 @@
-/*
- * AdminPreference.java
- *
- * Created on den 28 mars 2002, 12:36
- */
-
 package se.anatom.ejbca.ra.raadmin;
 
 import java.util.HashMap;
-import java.util.Set;
 import java.util.Iterator;
-import java.util.Collection;
 
 import se.anatom.ejbca.webdist.webconfiguration.WebLanguages;
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
@@ -19,7 +11,7 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
  * A class representing a admins personal preferenses.
  *
  * @author  Philip Vendil
- * @version $Id: AdminPreference.java,v 1.1 2002-10-24 20:09:26 herrvendil Exp $
+ * @version $Id: AdminPreference.java,v 1.2 2003-01-12 17:16:33 anatom Exp $
  */
 public class AdminPreference extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
     

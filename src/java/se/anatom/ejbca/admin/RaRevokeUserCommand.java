@@ -1,27 +1,13 @@
 
 package se.anatom.ejbca.admin;
 
-import java.io.*;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.util.Date;
-import java.util.Collection;
-import java.util.Iterator;
-
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.ca.store.CertificateDataPK;
-import se.anatom.ejbca.ca.store.CertificateData;
-import se.anatom.ejbca.ca.store.CertificateDataHome;
-import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.Hex;
 
 /** Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaRevokeUserCommand.java,v 1.9 2002-11-17 14:01:38 herrvendil Exp $
+ * @version $Id: RaRevokeUserCommand.java,v 1.10 2003-01-12 17:16:31 anatom Exp $
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
 

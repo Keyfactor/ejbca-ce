@@ -1,29 +1,14 @@
 package se.anatom.ejbca.ca.crl.junit;
 
-import java.util.Random;
+import java.security.cert.X509CRL;
 import java.util.*;
-import java.lang.Integer;
-import java.io.*;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.KeyPairGenerator;
-import java.security.cert.*;
-import java.security.interfaces.*;
-import java.security.Provider;
-import java.security.Security;
 
-import javax.naming.InitialContext;
 import javax.naming.Context;
 import javax.naming.NamingException;
-import java.rmi.RemoteException;
-import javax.ejb.DuplicateKeyException;
 
-import se.anatom.ejbca.ca.sign.*;
-import se.anatom.ejbca.ca.crl.*;
 import se.anatom.ejbca.ca.store.*;
 import se.anatom.ejbca.util.*;
 import se.anatom.ejbca.*;
-import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.log.Admin;
 
 import org.apache.log4j.*;
@@ -32,7 +17,7 @@ import junit.framework.*;
 
 /** Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.6 2002-11-17 14:01:40 herrvendil Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.7 2003-01-12 17:16:35 anatom Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 

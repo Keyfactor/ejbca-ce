@@ -1,25 +1,18 @@
 package se.anatom.ejbca.protocol.junit;
 
-import java.util.Random;
-import java.util.*;
 import java.io.*;
-import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PrivateKey;
-import java.security.KeyPairGenerator;
 import java.security.cert.*;
-import java.security.interfaces.*;
 import java.security.Provider;
 import java.security.Security;
 
-import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 import se.anatom.ejbca.protocol.ScepRequestMessage;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.KeyTools;
 
 import org.apache.log4j.*;
 import junit.framework.*;
-
 
 /** Tests signing session.
  *

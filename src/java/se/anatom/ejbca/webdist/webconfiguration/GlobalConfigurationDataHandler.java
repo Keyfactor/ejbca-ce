@@ -1,14 +1,9 @@
 package se.anatom.ejbca.webdist.webconfiguration;
 
-import java.beans.*;
 import javax.naming.*;
-import javax.ejb.CreateException;
-import javax.ejb.FinderException;
 import java.rmi.RemoteException;
-import java.io.IOException;
 
 import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 
@@ -17,7 +12,7 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
  * By default all data are saved to a database.
  *
  * @author  Philip Vendil
- * @version $Id: GlobalConfigurationDataHandler.java,v 1.12 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: GlobalConfigurationDataHandler.java,v 1.13 2003-01-12 17:16:28 anatom Exp $
  */
 public class GlobalConfigurationDataHandler {
 

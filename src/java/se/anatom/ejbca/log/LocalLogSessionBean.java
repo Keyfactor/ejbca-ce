@@ -1,11 +1,8 @@
 package se.anatom.ejbca.log;
 
-import java.rmi.*;
-import java.io.*;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
 import java.sql.*;
@@ -26,7 +23,7 @@ import se.anatom.ejbca.util.query.*;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalLogSessionBean.java,v 1.5 2002-12-10 07:46:01 herrvendil Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.6 2003-01-12 17:16:31 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean  {
 

@@ -1,9 +1,7 @@
 package se.anatom.ejbca.log;
 
-import javax.ejb.CreateException;
-
 /**
- * @version $Id: ILogSessionLocalHome.java,v 1.1 2002-09-12 17:12:13 herrvendil Exp $
+ * @version $Id: ILogSessionLocalHome.java,v 1.2 2003-01-12 17:16:31 anatom Exp $
  */
 
 public interface ILogSessionLocalHome extends javax.ejb.EJBLocalHome {

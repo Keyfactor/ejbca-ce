@@ -1,12 +1,4 @@
-/*
- * LogView.java
- *
- * Created on den 17 april 2002, 23:48
- */
-
 package se.anatom.ejbca.webdist.loginterface;
-
-import org.ietf.ldap.LDAPDN;
 
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.webdist.rainterface.SortBy;

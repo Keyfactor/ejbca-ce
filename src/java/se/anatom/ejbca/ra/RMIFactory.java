@@ -1,15 +1,13 @@
 package se.anatom.ejbca.ra;
 
-import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 
 /**
  * Implementations of this interface creates RMI objects to be used as an
  * alternative way to access ejbca.
  *
- * @version $Id: RMIFactory.java,v 1.4 2002-09-19 08:30:01 primelars Exp $
+ * @version $Id: RMIFactory.java,v 1.5 2003-01-12 17:16:28 anatom Exp $
  */
 public interface RMIFactory {
-
 
     /**
      * executes code that may be used to set up a RMI server.

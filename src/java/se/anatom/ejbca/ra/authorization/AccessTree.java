@@ -1,10 +1,6 @@
-/*
- * AccessTree.java
- *
- * Created on den 16 mars 2002, 20:39
- */
-
 package se.anatom.ejbca.ra.authorization;
+
+import java.io.Serializable;
 
 /**
  * A class that builds and maintains an accesstree. It should be used to check if a
@@ -12,9 +8,6 @@ package se.anatom.ejbca.ra.authorization;
  *
  * @author  Philip Vendil
  */
-import java.security.cert.X509Certificate;
-import java.io.Serializable;
-
 public class AccessTree implements Serializable {
     /** Creates a new instance of AccessTree */
     public AccessTree() {}

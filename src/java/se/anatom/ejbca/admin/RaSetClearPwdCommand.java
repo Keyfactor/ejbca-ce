@@ -1,14 +1,13 @@
 
 package se.anatom.ejbca.admin;
 
-import java.io.*;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /** Set the clear text password for a user in the database. 
  * Clear text passwords are used for batch generation of keystores (pkcs12/pem).
  *
- * @version $Id: RaSetClearPwdCommand.java,v 1.4 2002-11-17 14:01:38 herrvendil Exp $
+ * @version $Id: RaSetClearPwdCommand.java,v 1.5 2003-01-12 17:16:30 anatom Exp $
  */
 public class RaSetClearPwdCommand extends BaseRaAdminCommand {
 

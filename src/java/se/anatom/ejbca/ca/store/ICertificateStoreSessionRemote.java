@@ -7,7 +7,6 @@ import java.util.TreeMap;
 import java.rmi.RemoteException;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
 
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.store.certificateprofiles.*;
@@ -22,7 +21,7 @@ import se.anatom.ejbca.log.Admin;
  *
  * Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.10 2002-11-17 14:01:22 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.11 2003-01-12 17:16:29 anatom Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote  {
 
@@ -241,7 +240,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     
 
       /**
-       * Returns a certificateprofile id given it´s certificateprofilename.
+       * Returns a certificateprofile id given it?s certificateprofilename.
        *
        * @return id number of certificateprofile.
        * @throws EJBException if a communication or other error occurs.
@@ -249,7 +248,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     public int getCertificateProfileId(Admin admin, String certificateprofilename) throws RemoteException;
     
        /**
-       * Returns a certificateprofile name given it´s id.
+       * Returns a certificateprofile name given it?s id.
        *
        * @return the name of certificateprofile.
        * @throws EJBException if a communication or other error occurs.

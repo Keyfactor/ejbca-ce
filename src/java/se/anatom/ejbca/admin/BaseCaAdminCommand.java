@@ -16,7 +16,6 @@ import java.rmi.RemoteException;
 
 import org.bouncycastle.jce.*;
 import org.bouncycastle.asn1.*;
-import org.bouncycastle.asn1.pkcs.*;
 
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
@@ -29,7 +28,7 @@ import se.anatom.ejbca.log.Admin;
 
 /** Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.7 2002-11-17 14:01:38 herrvendil Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.8 2003-01-12 17:16:30 anatom Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
 

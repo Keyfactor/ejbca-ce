@@ -1,15 +1,13 @@
 
 package se.anatom.ejbca.admin;
 
-import java.io.*;
-
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 
 /** Gets and prints info about the CA.
  *
- * @version $Id: CaInfoCommand.java,v 1.1 2002-04-07 09:55:29 anatom Exp $
+ * @version $Id: CaInfoCommand.java,v 1.2 2003-01-12 17:16:31 anatom Exp $
  */
 public class CaInfoCommand extends BaseCaAdminCommand {
 

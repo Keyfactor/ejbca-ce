@@ -3,8 +3,6 @@ package se.anatom.ejbca.log;
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import org.apache.log4j.*;
-import java.math.BigInteger;
-
 
 /** Entity bean should not be used directly, use though Session beans.
  *

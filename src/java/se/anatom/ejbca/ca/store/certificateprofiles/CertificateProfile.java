@@ -9,8 +9,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Collection;
-
 
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
 
@@ -18,7 +16,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiless.
  *
  * @author  TomSelleck
- * @version $Id: CertificateProfile.java,v 1.5 2002-12-12 14:54:41 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.6 2003-01-12 17:16:29 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
 

@@ -1,28 +1,16 @@
-/*
- * EjbcaAthorization.java
- *
- * Created on den 23 mars 2002, 17:34
- */
-
 package se.anatom.ejbca.ra.authorization;
 
-import java.beans.*;
 import javax.naming.*;
-import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import javax.ejb.CreateException;
-import javax.ejb.FinderException;
 import java.rmi.RemoteException;
 import javax.rmi.PortableRemoteObject;
-
-import org.ietf.ldap.LDAPDN;
 
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
-import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.LogEntry;
@@ -34,7 +22,7 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
  * 
  * The main metod are isAthorized and authenticate.
  *
- * @author  TomSelleck
+ * @version $Id: EjbcaAuthorization.java,v 1.10 2003-01-12 17:16:30 anatom Exp $
  */
 public class EjbcaAuthorization extends Object implements java.io.Serializable{
        

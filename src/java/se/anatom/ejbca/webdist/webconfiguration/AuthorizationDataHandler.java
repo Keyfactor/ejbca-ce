@@ -1,12 +1,9 @@
 package se.anatom.ejbca.webdist.webconfiguration;
 
-import java.beans.*;
 import javax.naming.*;
 import javax.ejb.CreateException;
-import javax.ejb.FinderException;
 import java.rmi.RemoteException;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Vector;
 import java.security.cert.X509Certificate;
 
@@ -20,7 +17,7 @@ import se.anatom.ejbca.log.ILogSessionRemote;
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
  * @author  Philip Vendil
- * @version $Id: AuthorizationDataHandler.java,v 1.10 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: AuthorizationDataHandler.java,v 1.11 2003-01-12 17:16:28 anatom Exp $
  */
 public class AuthorizationDataHandler {
 

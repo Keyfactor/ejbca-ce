@@ -1,9 +1,7 @@
 package se.anatom.ejbca.webdist.webconfiguration;
 
-import java.beans.*;
 import javax.naming.*;
 import javax.ejb.CreateException;
-import javax.ejb.FinderException;
 import java.rmi.RemoteException;
 import java.math.BigInteger;
 

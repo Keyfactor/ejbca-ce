@@ -1,18 +1,16 @@
 
 package se.anatom.ejbca.admin;
 
-import java.io.*;
 import java.util.Collection;
 import java.util.Iterator;
 
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.UserDataLocal;
-import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 
 /** List users with status NEW in the database.
  *
  * @see se.anatom.ejbca.ra.UserDataLocal
- * @version $Id: RaListNewUsersCommand.java,v 1.4 2002-11-17 14:01:38 herrvendil Exp $
+ * @version $Id: RaListNewUsersCommand.java,v 1.5 2003-01-12 17:16:30 anatom Exp $
  */
 public class RaListNewUsersCommand extends BaseRaAdminCommand {
 

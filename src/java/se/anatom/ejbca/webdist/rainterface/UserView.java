@@ -1,23 +1,13 @@
-/*
- * UserView.java
- *
- * Created on den 17 april 2002, 23:48
- */
-
 package se.anatom.ejbca.webdist.rainterface;
 
-import org.ietf.ldap.LDAPDN;
-
-import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ra.UserAdminData;
-import se.anatom.ejbca.ra.UserDataRemote;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import java.util.Date;
 
 /**
  * A class representing a web interface view of a user in the ra user database.
  *
- * @author  Philip Vendil
+ * @version $Id: UserView.java,v 1.7 2003-01-12 17:16:32 anatom Exp $
  */
 public class UserView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.

@@ -6,16 +6,11 @@ import java.util.*;
 import java.lang.Integer;
 import java.io.File;
 
-import javax.naming.InitialContext;
 import javax.naming.Context;
 import javax.naming.NamingException;
-import java.rmi.RemoteException;
 
 import se.anatom.ejbca.batch.*;
 import se.anatom.ejbca.ra.*;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
-import se.anatom.ejbca.util.*;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.log.Admin;
 
@@ -25,7 +20,7 @@ import junit.framework.*;
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.17 2002-11-24 13:16:46 herrvendil Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.18 2003-01-12 17:16:34 anatom Exp $
  */
 
 public class TestBatchMakeP12 extends TestCase {

@@ -1,4 +1,3 @@
-
 package se.anatom.ejbca.util;
 
 import java.io.*;
@@ -6,12 +5,11 @@ import java.io.*;
 import org.apache.log4j.*;
 
 import se.anatom.ejbca.util.Base64;
-import se.anatom.ejbca.util.Hex;
 
 /**
  * Tools to handle some common file operations.
  *
- * @version $Id: FileTools.java,v 1.1.1.1 2001-11-15 14:58:19 anatom Exp $
+ * @version $Id: FileTools.java,v 1.2 2003-01-12 17:16:33 anatom Exp $
  */
 public class FileTools {
 

@@ -5,8 +5,6 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.RemoveException;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Arrays;
 import java.util.Vector;
@@ -25,7 +23,7 @@ import org.apache.log4j.*;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.1 2002-10-24 20:07:05 herrvendil Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.2 2003-01-12 17:16:30 anatom Exp $
  **/
 
 public abstract class AdminGroupDataBean implements javax.ejb.EntityBean {

@@ -4,12 +4,9 @@ import java.rmi.RemoteException;
 import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
 
-import se.anatom.ejbca.ra.GlobalConfiguration;
-
 /**
  * @version $Id: IAuthorizationSessionHome.java
  */
-
 public interface IAuthorizationSessionHome extends EJBHome {
 
     /**

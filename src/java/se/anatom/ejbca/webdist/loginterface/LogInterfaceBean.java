@@ -1,32 +1,16 @@
-/*
- * LogInterfaceBean.java
- *
- * Created on den 12 april 2002, 14:36
- */
-
 package se.anatom.ejbca.webdist.loginterface;
 
-import java.beans.*;
 import javax.naming.*;
-import javax.ejb.CreateException;
-import javax.ejb.FinderException;
 import java.rmi.RemoteException;
-import java.util.Properties;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.io.Serializable;
 
-import java.io.IOException;
 import java.security.cert.X509Certificate;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
-import java.math.BigInteger;
 
 import se.anatom.ejbca.log.*;
-import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ra.authorization.AdminInformation;
@@ -38,7 +22,7 @@ import se.anatom.ejbca.util.query.*;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.4 2002-11-17 14:01:40 herrvendil Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.5 2003-01-12 17:16:20 anatom Exp $
  */
 public class LogInterfaceBean {
 

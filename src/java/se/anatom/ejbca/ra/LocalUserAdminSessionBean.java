@@ -1,13 +1,11 @@
 package se.anatom.ejbca.ra;
 
-import java.io.*;
 import java.util.*;
 
 import java.sql.*;
 import javax.sql.DataSource;
 import javax.naming.*;
 import java.rmi.*;
-import javax.rmi.*;
 import javax.ejb.*;
 import java.math.BigInteger;
 
@@ -35,7 +33,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.31 2002-11-17 14:01:40 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.32 2003-01-12 17:16:28 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 

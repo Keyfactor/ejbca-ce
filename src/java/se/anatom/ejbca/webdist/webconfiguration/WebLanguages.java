@@ -1,14 +1,6 @@
-/*
- * WebLanguage.java
- *
- * Created on den 27 mars 2002, 21:09
- */
-
 package se.anatom.ejbca.webdist.webconfiguration;
 
 import java.util.Properties;
-import java.io.FileInputStream;
-import java.io.File;
 import java.io.IOException;
 
 import se.anatom.ejbca.ra.GlobalConfiguration;
@@ -18,7 +10,7 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
  * the presented text in the users prefered language.
  *
  * @author  Philip Vendil
- * @version $Id: WebLanguages.java,v 1.5 2002-07-20 18:40:08 herrvendil Exp $
+ * @version $Id: WebLanguages.java,v 1.6 2003-01-12 17:16:28 anatom Exp $
  */
 public class WebLanguages {
 
@@ -28,7 +20,7 @@ public class WebLanguages {
     public WebLanguages(GlobalConfiguration globalconfiguration) throws IOException {
       if(languages == null){
         // Get available languages.
-         this.availablelanguages=null;
+         availablelanguages=null;
 
          String availablelanguagesstring = globalconfiguration .getAvailableLanguagesAsString();
          availablelanguages =  availablelanguagesstring.split(",");

@@ -5,8 +5,6 @@ import java.security.Security;
 import java.security.cert.*;
 import java.security.KeyStore;
 import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -16,16 +14,10 @@ import java.io.*;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.naming.InitialContext;
 import javax.naming.Context;
 import javax.naming.NamingException;
-import java.rmi.RemoteException;
 
 import org.bouncycastle.jce.provider.*;
-import org.bouncycastle.asn1.pkcs.*;
-import org.bouncycastle.asn1.x509.*;
-import org.bouncycastle.asn1.*;
-import org.bouncycastle.jce.interfaces.*;
 
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
@@ -46,7 +38,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.25 2003-01-03 14:38:41 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.26 2003-01-12 17:16:29 anatom Exp $
  *
  */
 

@@ -1,41 +1,36 @@
 package se.anatom.ejbca.ra.raadmin;
 
 import java.rmi.*;
-import java.io.*;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.Vector;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.TreeMap;
-import java.util.Set;
 import java.util.Iterator;
 import java.util.Random;
 import java.sql.*;
 import javax.sql.DataSource;
 import javax.naming.*;
-import javax.rmi.*;
 import javax.ejb.*;
 
 import org.apache.log4j.*;
 import RegularExpression.RE;
 
 import se.anatom.ejbca.BaseSessionBean;
-import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.ra.raadmin.AdminPreference;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.LogEntry;
-import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.SecConst;
 
 /**
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.16 2002-11-24 13:16:46 herrvendil Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.17 2003-01-12 17:16:33 anatom Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 

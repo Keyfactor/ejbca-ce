@@ -1,16 +1,15 @@
 
 package se.anatom.ejbca.util;
 
-import java.io.*;
 
 /** This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.3 2002-09-25 11:39:44 anatom Exp $
+ * @version $Id: StringTools.java,v 1.4 2003-01-12 17:16:32 anatom Exp $
  */
 public class StringTools {
 
     static public final char stripChars[] = {
-        '\'','\"','\n','\r','/','\\',';','&','|','!','\0','%','`','´','<','>','?','$',':','~'
+        '\'','\"','\n','\r','/','\\',';','&','|','!','\0','%','`','?','<','>','?','$',':','~'
     };
 
     /** Strips all specialsigns from a String by replacing them with a forward slash, '/'.

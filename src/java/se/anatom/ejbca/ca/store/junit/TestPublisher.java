@@ -2,10 +2,8 @@ package se.anatom.ejbca.ca.store.junit;
 
 import java.security.cert.*;
 
-import javax.naming.InitialContext;
 import javax.naming.Context;
 import javax.naming.NamingException;
-import java.rmi.RemoteException;
 
 import se.anatom.ejbca.ca.store.*;
 import se.anatom.ejbca.util.*;
@@ -18,7 +16,7 @@ import junit.framework.*;
 
 /** Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.10 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: TestPublisher.java,v 1.11 2003-01-12 17:16:35 anatom Exp $
  */
 public class TestPublisher extends TestCase {
 

@@ -4,20 +4,16 @@ package se.anatom.ejbca.ra.authorization;
 import java.util.Vector;
 import java.util.HashMap;
 import java.util.Set;
-import java.util.Iterator;
 import java.io.Serializable;
-import java.security.cert.X509Certificate;
 
 import org.apache.log4j.*;
-
 
 /**
  * The building component of the AccessTree. All nodes consist of these objects.
  *
  * @author  Philip Vendil
- * @version $Id: AccessTreeNode.java,v 1.5 2002-10-24 20:07:00 herrvendil Exp $
+ * @version $Id: AccessTreeNode.java,v 1.6 2003-01-12 17:16:30 anatom Exp $
  */
-
 public class AccessTreeNode implements Serializable{
 
     private static Category cat = Category.getInstance(AccessTreeNode.class.getName());

@@ -1,18 +1,10 @@
-/*
- * LogEntriesView.java
- *
- * Created on den 18 april 2002, 23:00
- */
-
 package se.anatom.ejbca.webdist.loginterface;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Collection;
 import java.util.Iterator;
 import java.rmi.RemoteException;
-import javax.ejb.CreateException;
-import javax.ejb.FinderException;
-import javax.naming.NamingException;
 import se.anatom.ejbca.webdist.rainterface.SortBy;
 import se.anatom.ejbca.log.LogEntry;
 

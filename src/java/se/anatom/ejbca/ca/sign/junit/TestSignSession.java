@@ -1,24 +1,20 @@
 package se.anatom.ejbca.ca.sign.junit;
 
-import java.util.Random;
 import java.util.*;
 import java.io.*;
 import java.security.KeyPair;
-import java.security.PrivateKey;
 import java.security.KeyPairGenerator;
 import java.security.cert.*;
 import java.security.interfaces.*;
 import java.security.Provider;
 import java.security.Security;
 
-import javax.naming.InitialContext;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import java.rmi.RemoteException;
 import javax.ejb.DuplicateKeyException;
 
 import se.anatom.ejbca.protocol.PKCS10RequestMessage;
-import se.anatom.ejbca.protocol.ScepRequestMessage;
 import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.ca.sign.*;
 import se.anatom.ejbca.util.*;
@@ -34,7 +30,7 @@ import junit.framework.*;
 
 /** Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.16 2002-12-12 14:44:53 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.17 2003-01-12 17:16:27 anatom Exp $
  */
 public class TestSignSession extends TestCase {
 

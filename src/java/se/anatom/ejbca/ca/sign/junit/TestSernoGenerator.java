@@ -1,7 +1,6 @@
 package se.anatom.ejbca.ca.sign.junit;
 
 import se.anatom.ejbca.ca.sign.*;
-import se.anatom.ejbca.util.*;
 import java.util.*;
 import java.math.BigInteger;
 
@@ -11,10 +10,9 @@ import junit.framework.*;
 
 /** Tests generation of serial numbers.
  *
- * @version $Id: TestSernoGenerator.java,v 1.3 2002-09-05 09:14:33 anatom Exp $
+ * @version $Id: TestSernoGenerator.java,v 1.4 2003-01-12 17:16:27 anatom Exp $
  */
 public class TestSernoGenerator extends TestCase {
-
 
     static Category cat = Category.getInstance( TestSernoGenerator.class.getName() );
 

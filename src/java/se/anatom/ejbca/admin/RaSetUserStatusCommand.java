@@ -1,13 +1,12 @@
 
 package se.anatom.ejbca.admin;
 
-import java.io.*;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 
 /** Changes status for a user in the database, status is defined in se.anatom.ejbca.ra.UserDataLocal.
  *
  * @see se.anatom.ejbca.ra.UserDataLocal
- * @version $Id: RaSetUserStatusCommand.java,v 1.4 2002-11-17 14:01:38 herrvendil Exp $
+ * @version $Id: RaSetUserStatusCommand.java,v 1.5 2003-01-12 17:16:31 anatom Exp $
  */
 public class RaSetUserStatusCommand extends BaseRaAdminCommand {
 

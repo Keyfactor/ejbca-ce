@@ -1,24 +1,14 @@
 package se.anatom.ejbca.ra.authorization;
 
 import java.rmi.*;
-import java.io.*;
-import java.math.BigInteger;
-import java.util.Date;
 import java.util.Vector;
 import java.util.Collection;
 import java.util.TreeMap;
-import java.util.Set;
 import java.util.Iterator;
-import java.sql.*;
-import javax.sql.DataSource;
-import javax.naming.*;
-import javax.rmi.*;
 import javax.ejb.*;
 import java.security.cert.X509Certificate;
 
 import se.anatom.ejbca.BaseSessionBean;
-import se.anatom.ejbca.ra.IUserAdminSessionHome;
-import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.ILogSessionHome;
@@ -28,7 +18,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.9 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.10 2003-01-12 17:16:30 anatom Exp $
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
@@ -113,7 +103,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
        }catch(Exception e){
            throw new EJBException(e.getMessage());   
        }       
-       this.profileprefix = globalconfiguration.ENDENTITYPROFILEPREFIX;         
+       this.profileprefix = GlobalConfiguration.ENDENTITYPROFILEPREFIX;         
     }
     
     

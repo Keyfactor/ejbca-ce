@@ -1,23 +1,11 @@
-/*
- * GlobalConfiguration.java
- *
- * Created on den 28 mars 2002, 10:02
- */
-
 package se.anatom.ejbca.ra;
 
-import java.io.IOException;
-import javax.naming.InitialContext;
-import javax.naming.Context;
-
-import se.anatom.ejbca.ra.raadmin.AdminPreference;
-import se.anatom.ejbca.ra.authorization.EndEntityProfileAuthorizationProxy;
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
 
 /**
  *  This is a  class containing global configuration parameters.
  *
- * @author  TomSelleck
+ * @version $Id: GlobalConfiguration.java,v 1.6 2003-01-12 17:16:28 anatom Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
   

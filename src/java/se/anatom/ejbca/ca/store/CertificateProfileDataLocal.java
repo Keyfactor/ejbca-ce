@@ -1,5 +1,4 @@
 package se.anatom.ejbca.ca.store;
-import java.rmi.RemoteException;
 
 import se.anatom.ejbca.ca.store.certificateprofiles.*;
 

@@ -1,7 +1,6 @@
 package se.anatom.ejbca.ca.store;
 
 import java.rmi.*;
-import java.io.*;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.ArrayList;
@@ -13,7 +12,6 @@ import java.util.Random;
 import java.sql.*;
 import javax.sql.DataSource;
 import javax.naming.*;
-import javax.rmi.*;
 import javax.ejb.*;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -24,7 +22,6 @@ import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.ILogSessionHome;
@@ -34,7 +31,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.32 2002-11-24 13:16:46 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.33 2003-01-12 17:16:28 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 

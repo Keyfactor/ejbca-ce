@@ -4,19 +4,15 @@ import java.io.*;
 import java.security.PublicKey;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPrivateKey;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchProviderException;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.Provider;
-import java.security.Security;
 import java.security.spec.AlgorithmParameterSpec;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.RC2ParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.BadPaddingException;
@@ -24,24 +20,20 @@ import javax.crypto.BadPaddingException;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.Vector;
 
 import org.apache.log4j.*;
 
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.asn1.*;
-import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.smime.SMIMECapability;
 import org.bouncycastle.asn1.cms.*;
 import org.bouncycastle.cms.*;
 import org.bouncycastle.cms.CMSException;
 
-import se.anatom.ejbca.util.Base64;
-
 /** Class to handle SCEP request messages sent to the CA.
  *
-* @version  $Id: ScepRequestMessage.java,v 1.4 2002-11-12 13:24:47 anatom Exp $
+* @version  $Id: ScepRequestMessage.java,v 1.5 2003-01-12 17:16:32 anatom Exp $
  */
 public class ScepRequestMessage implements RequestMessage, Serializable {
 

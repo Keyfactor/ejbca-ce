@@ -8,12 +8,8 @@ package se.anatom.ejbca.util;
  *
  *  
  *
- * @version $Id: IUpgradeableData.java,v 1.1 2002-10-24 20:27:50 herrvendil Exp $
+ * @version $Id: IUpgradeableData.java,v 1.2 2003-01-12 17:16:33 anatom Exp $
  */
-
-
-import java.util.Collection;
-
 public interface IUpgradeableData {
     
     /** Should return a constant containing the latest available version of the class. */

@@ -1,13 +1,11 @@
 package se.anatom.ejbca.ca.store;
 
 import java.rmi.*;
-import javax.rmi.*;
 import javax.ejb.*;
 import java.io.*;
 import java.util.*;
 
 import javax.naming.*;
-import javax.naming.ldap.*;
 import javax.naming.directory.*;
 
 //import com.novell.ldap.*;
@@ -15,13 +13,11 @@ import javax.naming.directory.*;
 import java.security.cert.*;
 
 import org.bouncycastle.asn1.*;
-import org.bouncycastle.asn1.x509.*;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.sign.*;
 import se.anatom.ejbca.util.*;
-import java.util.Properties;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.ILogSessionHome;
@@ -59,10 +55,12 @@ import org.apache.log4j.*;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.4 2002-11-17 14:01:21 herrvendil Exp $
+ * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.5 2003-01-12 17:16:28 anatom Exp $
  */
 public class LDAPActiveDirectoryPublisherSessionBean
     extends BaseSessionBean {
+
+	private static Category cat = Category.getInstance( LDAPActiveDirectoryPublisherSessionBean.class.getName() );
 
     private String ldapHost = "10.1.1.1";
     private int ldapPort = 389;

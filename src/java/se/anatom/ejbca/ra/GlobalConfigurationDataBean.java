@@ -2,14 +2,10 @@ package se.anatom.ejbca.ra;
 
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
-import java.util.Collection;
 import java.util.HashMap;
 import org.apache.log4j.*;
-import java.math.BigInteger;
-
 
 import se.anatom.ejbca.ra.GlobalConfiguration;
-
 
 /** Entity bean should not be used directly, use though Session beans.
  *

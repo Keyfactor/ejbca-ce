@@ -4,8 +4,6 @@ import java.util.TreeMap;
 import java.math.BigInteger;
 
 import java.rmi.RemoteException;
-import javax.ejb.FinderException;
-
 
 import se.anatom.ejbca.ra.raadmin.AdminPreference;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
@@ -13,7 +11,7 @@ import se.anatom.ejbca.log.Admin;
 
 /**
  *
- * @version $Id: IRaAdminSessionRemote.java,v 1.8 2002-11-24 13:16:46 herrvendil Exp $
+ * @version $Id: IRaAdminSessionRemote.java,v 1.9 2003-01-12 17:16:33 anatom Exp $
  */
 public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
     
@@ -147,7 +145,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
     public int getNumberOfEndEntityProfiles(Admin admin) throws RemoteException;
     
       /**
-       * Returns a profiles id given it´s profilename.
+       * Returns a profiles id given it?s profilename.
        *
        * @return id number of profile.
        * @throws EJBException if a communication or other error occurs.
@@ -155,7 +153,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
     public int getEndEntityProfileId(Admin admin, String profilename) throws RemoteException;
     
        /**
-       * Returns a profiles name given it´s id.
+       * Returns a profiles name given it?s id.
        *
        * @return the name of profile.
        * @throws EJBException if a communication or other error occurs.

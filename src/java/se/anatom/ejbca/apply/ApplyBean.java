@@ -6,30 +6,24 @@
 
 package se.anatom.ejbca.apply;
 
-import java.beans.*;
 import javax.naming.*;
-import javax.ejb.CreateException;
 import javax.ejb.FinderException;
-import java.rmi.RemoteException;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import javax.servlet.http.HttpServletRequest;
 
-import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.SecConst;
 
 /**
  * A class used as an interface between Apply jsp pages and ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: ApplyBean.java,v 1.3 2002-11-17 14:01:40 herrvendil Exp $
+ * @version $Id: ApplyBean.java,v 1.4 2003-01-12 17:16:32 anatom Exp $
  */
 public class ApplyBean   {
 

@@ -5,32 +5,20 @@ import java.util.Random;
 import java.util.*;
 import java.lang.Integer;
 
-
-
-import javax.naming.InitialContext;
 import javax.naming.Context;
 import javax.naming.NamingException;
-import java.rmi.RemoteException;
-
-
 
 import se.anatom.ejbca.ra.*;
-import se.anatom.ejbca.util.*;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.log.Admin;
 
 import org.apache.log4j.*;
 import junit.framework.*;
 
-
-
-
-
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.10 2002-11-17 14:01:40 herrvendil Exp $
+ * @version $Id: TestUserData.java,v 1.11 2003-01-12 17:16:36 anatom Exp $
  */
-
 public class TestUserData extends TestCase {
 
     static Category cat = Category.getInstance( TestUserData.class.getName() );

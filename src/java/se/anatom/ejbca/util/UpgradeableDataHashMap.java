@@ -1,17 +1,14 @@
 package se.anatom.ejbca.util;
 
+import java.util.HashMap;
+
 /**
  *  UpgradeableDataHashMap is an class implementing the IUpgradeableData intended to be extended by classes
  *  saving it's data to a database in BLOB form. 
  *  
  * @see se.anatom.ejbca.util.IUpgradeableData
- * @version $Id: UpgradeableDataHashMap.java,v 1.2 2002-12-16 23:44:01 herrvendil Exp $
+ * @version $Id: UpgradeableDataHashMap.java,v 1.3 2003-01-12 17:16:33 anatom Exp $
  */
-
-
-import java.util.Collection;
-import java.util.HashMap;
-
 public abstract class UpgradeableDataHashMap implements IUpgradeableData {
         
     public UpgradeableDataHashMap(){

@@ -1,12 +1,5 @@
-/*
- * CertificateProfileNameProxy.java
- *
- * Created on den 23 juli 2002, 17:49
- */
-
 package se.anatom.ejbca.webdist.cainterface;
-import javax.ejb.CreateException;
-import javax.ejb.FinderException;
+
 import java.rmi.RemoteException;
 import javax.naming.*;
 import java.util.HashMap;
@@ -17,7 +10,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * A class used to improve performance by proxying certificateprofile id to certificate name mappings by minimizing the number of needed lockups over rmi.
  * 
- * @author  TomSelleck
+ * @version $Id: CertificateProfileNameProxy.java,v 1.3 2003-01-12 17:16:34 anatom Exp $
  */
 public class CertificateProfileNameProxy {
     
