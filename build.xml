@@ -57,6 +57,7 @@
   <property name="adminweb.src" value="${src}/adminweb" />
   <property name="adminweb.build" value="${tmp}/adminweb.war" />
   <property name="adminwebjar" value="${dist}/adminweb.war" />  
+  <property name="adminweb.classpath" value="lib/commons-fileupload-1.0.jar"/>
 
   <property name="demoweb.src" value="${src}/demoweb" />
   <property name="demoweb.build" value="${tmp}/demoweb.war" />
@@ -450,7 +451,11 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
       </fileset>
     </copy>
     <!-- Jar the adminweb.war package together -->
-    <jar basedir="${adminweb.build}" jarfile="${adminwebjar}"/>
+    <jar basedir="${adminweb.build}" jarfile="${adminwebjar}">
+        <manifest>
+            <attribute name="Class-Path" value="${adminweb.classpath}"/>
+        </manifest>
+    </jar>
   </target>
 
   <!-- =================================================================== -->
@@ -600,6 +605,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
             <include name="ldap.jar"/>
             <include name="commons-lang-1.0.jar"/>
             <include name="commons-collections.jar"/>
+            <include name="commons-fileupload-1.0.jar"/>
         </fileset>
     </copy>
   
