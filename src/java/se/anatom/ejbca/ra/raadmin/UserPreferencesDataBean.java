@@ -22,6 +22,7 @@ import se.anatom.ejbca.ra.raadmin.UserPreference;
  * UserPreference
  * </pre>
  *
+ * @version $Id: UserPreferencesDataBean.java,v 1.4 2002-07-22 10:38:48 anatom Exp $
  **/
 
 public abstract class UserPreferencesDataBean implements javax.ejb.EntityBean {
@@ -33,7 +34,7 @@ public abstract class UserPreferencesDataBean implements javax.ejb.EntityBean {
     public abstract void setId(BigInteger id);
     public abstract UserPreference getUserPreference();
     public abstract void setUserPreference(UserPreference userpreference);
-    
+
 
     //
     // Fields required by Container
@@ -50,7 +51,7 @@ public abstract class UserPreferencesDataBean implements javax.ejb.EntityBean {
      **/
 
     public BigInteger ejbCreate(BigInteger id, UserPreference userpreference) throws CreateException {
-        
+
         setId(id);
         setUserPreference(userpreference);
 

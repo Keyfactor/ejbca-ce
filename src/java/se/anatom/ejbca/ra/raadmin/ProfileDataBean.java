@@ -15,6 +15,7 @@ import se.anatom.ejbca.ra.raadmin.Profile;
  * Profile data
  * </pre>
  *
+ * @version $Id: ProfileDataBean.java,v 1.4 2002-07-22 10:38:48 anatom Exp $
  **/
 
 public abstract class ProfileDataBean implements javax.ejb.EntityBean {
@@ -27,10 +28,10 @@ public abstract class ProfileDataBean implements javax.ejb.EntityBean {
     protected EntityContext  ctx;
     public abstract Integer getId();
     public abstract void setId(Integer id);
-    
+
     public abstract String getProfileName();
     public abstract void setProfileName(String profilename);
-    
+
     public abstract Profile getProfile();
     public abstract void setProfile(Profile profile);
 

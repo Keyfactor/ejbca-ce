@@ -6,7 +6,7 @@ import javax.ejb.EJBHome;
 
 
 /**
- * @version $Id: IRaAdminSessionHome.java
+ * @version $Id: IRaAdminSessionHome.java,v 1.3 2002-07-22 10:38:48 anatom Exp $
  */
 
 public interface IRaAdminSessionHome extends EJBHome {
