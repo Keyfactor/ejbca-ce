@@ -49,7 +49,7 @@
 <body id="menu">
 <%  // If authorized to use the main page then display related links.
    try{
-     if(ejbcawebbean.isAuthorized(MAIN_LINK)){ %>
+     if(ejbcawebbean.isAuthorizedNoLog(MAIN_LINK)){ %>
      <br>
      <A href="<%=MAIN_LINK %>" target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("MAINPAGE") %></A>     
      <br>
@@ -58,7 +58,7 @@
    }catch(AuthorizationDeniedException e){} 
    // If authorized to use the ca then display related links.
    try{
-     if(ejbcawebbean.isAuthorized(CA_LINK)){ %>
+     if(ejbcawebbean.isAuthorizedNoLog(CA_LINK)){ %>
      <br>
      <A href='<%= CA_LINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("CAFUNCTIONS") %></a>
      <br>
@@ -66,7 +66,7 @@
 <%    }
    }catch(AuthorizationDeniedException e){} 
    try{
-     if(ejbcawebbean.isAuthorized(CA_CERTIFICATETYPESLINK)){ %>
+     if(ejbcawebbean.isAuthorizedNoLog(CA_CERTIFICATETYPESLINK)){ %>
      &nbsp;&nbsp;<A href='<%= CA_CERTIFICATETYPESLINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITCERTIFICATETYPES") %></a>
      <br>
 
@@ -74,7 +74,7 @@
    }catch(AuthorizationDeniedException e){} 
     // If authorized to edit the ra profiles then display related links.
     try{
-      if(ejbcawebbean.isAuthorized(RA_EDITPROFILESLINK)){ 
+      if(ejbcawebbean.isAuthorizedNoLog(RA_EDITPROFILESLINK)){ 
            raheaderprinted=true;%> 
            <br>  
            <%=ejbcawebbean.getText("RAFUNCTIONS")+"<br>" %>
@@ -85,7 +85,7 @@
    }catch(AuthorizationDeniedException e){}
     // If authorized to use the ra then display related links. 
     try{
-      if(ejbcawebbean.isAuthorized(RA_LINK)){ 
+      if(ejbcawebbean.isAuthorizedNoLog(RA_LINK)){ 
             if(!raheaderprinted){
               out.write(ejbcawebbean.getText("RAFUNCTIONS")+"<br>"); 
               raheaderprinted=true;
@@ -98,7 +98,7 @@
    }catch(AuthorizationDeniedException e){}
     // If authorized to view log then display related links.
     try{
-      if(ejbcawebbean.isAuthorized(LOG_LINK)){ %>
+      if(ejbcawebbean.isAuthorizedNoLog(LOG_LINK)){ %>
    <br>
    <br>
    <A href="<%= LOG_LINK %>" target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("VIEWLOG") %></A>
@@ -107,14 +107,14 @@
    }catch(AuthorizationDeniedException e){} 
    try{
     // If authorized to edit log configurationthen display related link.
-     if(ejbcawebbean.isAuthorized(LOG_CONFIGURATION_LINK)){ %>
+     if(ejbcawebbean.isAuthorizedNoLog(LOG_CONFIGURATION_LINK)){ %>
      &nbsp;&nbsp;<A href='<%= LOG_CONFIGURATION_LINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("LOGCONFIGURATION") %></a>
      <br>
 <%   }
    }catch(AuthorizationDeniedException e){}
     // If authorized to configure Ejbca then display related links.
     try{
-      if(ejbcawebbean.isAuthorized(CONFIGURATION_LINK)){ %>
+      if(ejbcawebbean.isAuthorizedNoLog(CONFIGURATION_LINK)){ %>
    <br>
    <br>
    <A href="<%= CONFIGURATION_LINK %>" target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("SYSTEMCONFIGURATION") %></A>
@@ -123,14 +123,14 @@
    }catch(AuthorizationDeniedException e){}
     // If authorized to edit authorizations then display related links.
     try{
-      if(ejbcawebbean.isAuthorized(AUTHORIZATION_LINK)){ %>
+      if(ejbcawebbean.isAuthorizedNoLog(AUTHORIZATION_LINK)){ %>
    <br>
    <A href="<%= AUTHORIZATION_LINK %>" target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("AUTHORIZATION") %></A>
 <%   }
    }catch(AuthorizationDeniedException e){}
     // If authorized to edit authorizations then display related links.
     try{
-      if(ejbcawebbean.isAuthorized(AVAILABLE_ACCESSRULES_LINK)){ %>
+      if(ejbcawebbean.isAuthorizedNoLog(AVAILABLE_ACCESSRULES_LINK)){ %>
    <br>
    &nbsp;&nbsp; <A href="<%= AVAILABLE_ACCESSRULES_LINK  %>" target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITAVAILABLERULES") %></A>
    <br>   
@@ -138,7 +138,7 @@
    }catch(AuthorizationDeniedException e){}
     // If authorized to edit user preferences then display related links.
     try{
-      if(ejbcawebbean.isAuthorized(USERPREFERENCES_LINK)){ %>
+      if(ejbcawebbean.isAuthorizedNoLog(USERPREFERENCES_LINK)){ %>
      <br>
      <br>
      <A href="<%= USERPREFERENCES_LINK %>" target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("USERPREFERENCES") %></A>
@@ -149,7 +149,7 @@
  } 
     // If authorized to view help pages then display related links.
    try{
-     if(ejbcawebbean.isAuthorized(HELP_LINK)){ %>
+     if(ejbcawebbean.isAuthorizedNoLog(HELP_LINK)){ %>
      <br><br><br>
      <u><A onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("index_help.html") %>")' id="menu"><%=ejbcawebbean.getText("HELP") %></A></u>
 

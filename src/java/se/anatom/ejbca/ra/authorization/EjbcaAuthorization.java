@@ -90,6 +90,23 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
         return true;
     }    
     
+    
+    /**
+     * Method to check if a user is authorized to a resource without performing any logging
+     *
+     * @param userinformation information about the user to be authorized.
+     * @param resource the resource to look up.
+     * @returns true if authorizes
+     * @throws AuthorizationDeniedException when authorization is denied.
+     */
+    public boolean isAuthorizedNoLog(UserInformation userinformation, String resource) throws AuthorizationDeniedException {
+        // Check in accesstree. 
+       if(accesstree.isAuthorized(userinformation, resource) == false){
+         throw  new AuthorizationDeniedException();  
+       }              
+        return true;
+    }      
+    
     /**
      * Method that authenticates a certificate by verifying signature, checking validity and lookup if certificate is revoked.
      *
