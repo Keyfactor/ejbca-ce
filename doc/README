@@ -1,4 +1,4 @@
-$Id: README,v 1.170 2004-12-31 14:29:59 anatom Exp $
+$Id: README,v 1.171 2005-01-21 08:26:14 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -100,8 +100,8 @@ The policy files can be found at the same place as the JDK 1.4 download.
 Further information on this can be found in the Sun documentation on the JCE.
 
 Needed to build and run are:
-JDK 1.4.x
-JBOSS 3.2.x or 3.0.x 
+JDK 1.4.x or 1.5.x
+JBOSS 3.2.x or 4.0.x 
 Ant 1.6.x to build (http://jakarta.apache.org/ant/)
 
 Simply unpack the archive in a directory and run "ant" to build
