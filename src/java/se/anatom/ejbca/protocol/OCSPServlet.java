@@ -2,18 +2,14 @@ package se.anatom.ejbca.protocol;
 
 import java.io.*;
 
-import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Iterator;
 
 import javax.naming.InitialContext;
-import javax.rmi.PortableRemoteObject;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -50,7 +46,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.7 2003-12-16 14:46:11 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.8 2003-12-17 18:42:26 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -63,9 +59,9 @@ public class OCSPServlet extends HttpServlet {
     private X509Certificate [] m_signcerts;
     private int m_responderIdx;
     private boolean m_reqMustBeSigned;
-    private Collection cacerts = null;
+    private Collection m_cacerts = null;
     /** Cache time counter */
-    private long certValidTo = 0;
+    private long m_certValidTo = 0;
     /** Cached list of cacerts is valid 5 minutes */
     private static final long VALID_TIME = 5 * 60 * 1000;
 
@@ -74,12 +70,12 @@ public class OCSPServlet extends HttpServlet {
     protected synchronized void loadCertificates() 
         throws IOException {
         // Kolla om vi har en cachad collection och om den inte är för gammal
-        if ( cacerts != null && certValidTo > new Date().getTime() ) {
+        if ( m_cacerts != null && m_certValidTo > new Date().getTime() ) {
             return;
         }
         try {
-            cacerts = m_certStore.findCertificatesByType(m_adm, SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ROOTCA, null);
-            certValidTo = new Date().getTime() + VALID_TIME;
+            m_cacerts = m_certStore.findCertificatesByType(m_adm, SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ROOTCA, null);
+            m_certValidTo = new Date().getTime() + VALID_TIME;
         } catch (Exception e) {
             m_log.error("Unable to load CA certificates from CA store.", e);
             throw new IOException(e.toString());
@@ -140,11 +136,11 @@ public class OCSPServlet extends HttpServlet {
         return -1;
     }
 
-    protected BasicOCSPRespGenerator createOCSPResponse(OCSPReq req) throws OCSPException {
+    protected BasicOCSPRespGenerator createOCSPResponse(OCSPReq req, X509Certificate cacert) throws OCSPException {
         if (null == req) {
             throw new IllegalArgumentException();
         }
-        BasicOCSPRespGenerator res = new BasicOCSPRespGenerator(m_signcerts[m_responderIdx].getPublicKey());
+        BasicOCSPRespGenerator res = new BasicOCSPRespGenerator(cacert.getPublicKey());
 		DERObjectIdentifier id_pkix_ocsp_nonce = new DERObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".2");
         X509Extension ext = (X509Extension)req.getRequestExtensions().getExtension(id_pkix_ocsp_nonce);
         if (null != ext) {
@@ -253,7 +249,7 @@ public class OCSPServlet extends HttpServlet {
             
                 if (m_log.isDebugEnabled()) {
                     StringBuffer certInfo = new StringBuffer();
-                    Iterator iter = cacerts.iterator();
+                    Iterator iter = m_cacerts.iterator();
                     while (iter.hasNext()) {
                         X509Certificate cert = (X509Certificate)iter.next();
                         certInfo.append(cert.getSubjectDN().getName());
@@ -265,7 +261,8 @@ public class OCSPServlet extends HttpServlet {
                                 + certInfo.toString());
                 }
 
-                basicRes = createOCSPResponse(req);
+                // TODO: create this after we find out which CA
+                // basicRes = createOCSPResponse(req);
             
                 /**
                  * check the signature if contained in request.
@@ -322,7 +319,7 @@ public class OCSPServlet extends HttpServlet {
                         RevokedCertInfo rci;
                     
                         try {
-                            cacert = findCAByHash(certId, cacerts);
+                            cacert = findCAByHash(certId, m_cacerts);
                         } catch (OCSPException e) {
                             m_log.info("Unable to generate CA certificate hash.", e);    
                             cacert = null;
