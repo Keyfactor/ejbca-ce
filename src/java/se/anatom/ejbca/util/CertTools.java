@@ -23,7 +23,7 @@ import org.apache.log4j.*;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.15 2002-08-11 18:08:47 anatom Exp $
+ * @version $Id: CertTools.java,v 1.16 2002-08-14 13:08:23 anatom Exp $
  */
 public class CertTools {
 
@@ -34,9 +34,9 @@ public class CertTools {
     }
 
     private static DERObjectIdentifier getOid(String o) {
-    	if (o.trim().equalsIgnoreCase("C")) {
-    		return X509Name.C;
-    	}
+        if (o.trim().equalsIgnoreCase("C")) {
+            return X509Name.C;
+        }
        if (o.trim().equalsIgnoreCase("DC")) {
             return X509Name.DC;
         }
@@ -69,7 +69,7 @@ public class CertTools {
         }
         return null;
     } // getOid
-    
+
     /**
      * Creates a (Bouncycastle) X509Name object from a string with a DN.
      * <p>Known OID (with order) are:
@@ -89,8 +89,8 @@ public class CertTools {
         StringTokenizer st = new StringTokenizer(trimmeddn, ",=");
         // first make two vectors, one with all the C, O, OU etc specifying the order
         // and one holding the actual values
-        Vector oldordering = new Vector();
-        Vector oldvalues = new Vector();
+        ArrayList oldordering = new ArrayList();
+        ArrayList oldvalues = new ArrayList();
         while (st.hasMoreTokens()) {
             // Assume this is a pair (CN=xx)
             String order = st.nextToken().trim();
@@ -113,12 +113,10 @@ public class CertTools {
                 if (getOid(object) != null) {
                     //cat.debug("Added "+object+", "+oldvalues.elementAt(index));
                     ordering.add(getOid(object));
-                    values.add(oldvalues.elementAt(index));
+                    values.add(oldvalues.get(index));
                     // remove from the old vectors, so we start clean the next round
-                    boolean ret = oldordering.remove(object);
-                    //cat.debug("oldordering.remove "+ret);
-                    String foo = (String)oldvalues.remove(index);
-                    //cat.debug("oldvalues.remove "+foo);
+                    oldordering.remove(index);
+                    oldvalues.remove(index);
                     index = -1;
                 }
             }
