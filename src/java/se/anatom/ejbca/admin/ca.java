@@ -16,6 +16,7 @@ import java.security.PublicKey;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.InvalidKeyException;
+import java.security.interfaces.RSAPublicKey;
 
 import javax.naming.InitialContext;
 import javax.naming.Context;
@@ -50,7 +51,7 @@ public class ca {
     
     public static void main(String [] args){
         if (args.length < 1) {
-            System.out.println("Usage: CA makeroot | getrootcert | makereq | recrep | processreq | init | createcrl | getcrl | rolloverroot");
+            System.out.println("Usage: CA info | makeroot | getrootcert | makereq | recrep | processreq | init | createcrl | getcrl | rolloverroot");
             return;
         }
         try {
@@ -101,6 +102,20 @@ public class ca {
                 fos.write(rootcert.getEncoded());
                 fos.close();
                 System.out.println("Wrote Root CA certificate to '"+filename+"'");
+            } else if (args[0].equals("info")) {
+                Certificate[] chain = getCertChain();
+                if (chain.length < 2)
+                    System.out.println("This is a Root CA.");
+                else
+                    System.out.println("This is a subordinate CA.");
+                X509Certificate rootcert = (X509Certificate)chain[chain.length-1];
+                System.out.println("Root CA DN: "+rootcert.getSubjectDN().toString());
+                System.out.println("Root CA keysize: "+((RSAPublicKey)rootcert.getPublicKey()).getModulus().bitLength());
+                if (chain.length > 1) {
+                    X509Certificate cacert = (X509Certificate)chain[chain.length-2];
+                    System.out.println("CA DN: "+cacert.getSubjectDN().toString());
+                    System.out.println("CA keysize: "+((RSAPublicKey)cacert.getPublicKey()).getModulus().bitLength());
+                }
             } else if (args[0].equals("makereq")) {
                 // Generates keys and creates a keystore (PKCS12) to be used by the CA
                 if (args.length < 7) {
@@ -370,7 +385,7 @@ public class ca {
                 ks.store(os, storepwd.toCharArray());
                 System.out.println("Keystore "+filename+" generated succefully.");
             } else {
-                System.out.println("Usage: CA makeroot | getrootcert | makereq | recrep | processreq | init | createcrl | getcrl | rolloverroot");
+                System.out.println("Usage: CA info | makeroot | getrootcert | makereq | recrep | processreq | init | createcrl | getcrl | rolloverroot");
             }
 
         } catch (Exception e) {
@@ -378,7 +393,6 @@ public class ca {
         }
     }
  
-
     static private void createCRL() throws NamingException, CreateException, RemoteException {
         Context context = getInitialContext();
         IJobRunnerSessionHome home  = (IJobRunnerSessionHome)javax.rmi.PortableRemoteObject.narrow( context.lookup("CreateCRLSession") , IJobRunnerSessionHome.class );
