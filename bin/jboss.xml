@@ -71,7 +71,10 @@
 
 	<target name="j2ee:deploy" description="Deploy the application" depends="j2ee:configure">
         <copy todir="${jboss.deploy.dir}" overwrite="true">
-            <fileset dir="src/appserver/jboss" includes="ejbca-ds.xml"/>
+            <fileset dir="src/appserver/jboss">
+            	<include name="ejbca-ds.xml"/>
+            	<include name="ejbca-mail-service.xml"/>
+            </fileset>
             <filterchain>
                 <expandproperties/>
             </filterchain>

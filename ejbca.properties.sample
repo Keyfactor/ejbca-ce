@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.1 2004-07-23 13:05:05 sbailliez Exp $
+# $Id: ejbca.properties.sample,v 1.2 2004-08-16 21:11:45 sbailliez Exp $
 #
 # This is just a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -48,6 +48,25 @@ build.compiler=jikes
 # Default:
 #database.password=ejbca
 #database.password=postgres
+
+# ------------ mail configuration ---------------------
+# Used to send notification email from the RA
+# See ${ejbca.home}/src/appserver/ejbca-mail-service.xml
+# It will be copied in ${jboss.server.dir}/deploy/ejbca-mail-service.xml
+
+# user/password to connect to server
+mail.user=ejbca_user
+mail.password=primekey
+
+# POP3 and SMTP servers
+mail.pop3.host=pop3.domain.com
+mail.smtp.host=smtp.domain.com
+
+# email address used to send emails
+mail.from=ejbca-donotreply@domain.com
+
+# JavaMail debug info
+mail.debug=true
 
 
 # ------------ certificate configuration ---------------------
