@@ -1,4 +1,4 @@
-$Id: README,v 1.152 2004-06-18 10:55:45 herrvendil Exp $
+$Id: README,v 1.153 2004-08-03 19:09:40 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -131,7 +131,9 @@ FOR THE IMPATIENT:
 4. Restart JBoss.
 5. Import p12/superadmin.p12 in your browser and go to https://localhost:8443/ejbca
  to access the admin GUI of EJBCA.
- 
+
+Note the installation must be done with a user with privileges to write to JBOSS_HOME and subdirs. 
+
 If you want to run a thorough test of your new CA, run the automated tests with 'runtest.sh/cmd'.
 
 NOTE-1: After running tests with 'runtest.sh/cmd', you might
