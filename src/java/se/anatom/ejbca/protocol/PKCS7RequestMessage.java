@@ -4,22 +4,12 @@ import java.io.*;
 import java.security.PublicKey;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.security.GeneralSecurityException;
-import java.util.Enumeration;
-import java.util.Iterator;
 
 import org.apache.log4j.*;
 
-import org.bouncycastle.jce.PKCS7SignedData;
-import org.bouncycastle.asn1.*;
-import org.bouncycastle.cms.asn1.*;
-import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.cms.parsers.SignedDataParser;
-import org.bouncycastle.cms.parsers.EnvelopedDataParser;
-
 /** Class to handle PKCS7 request messages sent to the CA.
  *
-* @version  $Id: PKCS7RequestMessage.java,v 1.3 2002-10-17 15:22:57 anatom Exp $
+* @version  $Id: PKCS7RequestMessage.java,v 1.4 2002-11-08 14:43:24 anatom Exp $
  */
 public class PKCS7RequestMessage implements RequestMessage, Serializable {
 
@@ -28,13 +18,6 @@ public class PKCS7RequestMessage implements RequestMessage, Serializable {
     /** Raw form of the PKCS7 message
      */
     private byte[] msg;
-
-    /** Signed data, the whole enchilada to to speak...
-     */
-    private transient SignedData sd = null;
-    /** Enveloped data, carrying the 'beef' of the request
-     */
-    private transient EnvelopedData envData = null;
 
 
     /** Constucts a new PKCS7 message handler object.
