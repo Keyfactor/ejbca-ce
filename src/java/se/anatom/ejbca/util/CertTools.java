@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.34 2003-03-11 09:47:42 anatom Exp $
+ * @version $Id: CertTools.java,v 1.35 2003-03-13 12:13:25 scop Exp $
  */
 public class CertTools {
 
@@ -29,9 +29,12 @@ public class CertTools {
     public static final String EMAIL  = "rfc822name";
     public static final String EMAIL1 = "email";
     public static final String EMAIL2 = "EmailAddress";
+    public static final String EMAIL3 = "E";
     public static final String DNS    = "dNSName";
     public static final String URI    = "uniformResourceIdentifier";
     public static final String URI1   = "uri";
+
+    private static final String[] EMAILIDS = { EMAIL, EMAIL1, EMAIL2, EMAIL3 };
 
     /** inhibits creation of new CertTools */
     private CertTools() {
@@ -175,6 +178,27 @@ public class CertTools {
         //log.debug("<stringToBcDNString: "+name);
         return name;
      }
+
+
+    /**
+     * Convenience method for getting an email address from a DN.
+     * Uses {@link getPartFromDN(String,String)} internally, and searches
+     * for {@link EMAIL}, {@link EMAIL1}, {@link EMAIL2}, {@link EMAIL3} and
+     * returns the first one found.
+     *
+     * @param dn the DN
+     * @return the found email address, or <code>null</code> if none is found
+     */
+    public static String getEmailFromDN(String dn)
+    {
+      log.debug(">getEmailFromDN(" + dn + ")");
+      String email = null;
+      for (int i = 0; i < EMAILIDS.length && email == null; i++) {
+        email = getPartFromDN(dn, EMAILIDS[i]);
+      }
+      log.debug("<getEmailFromDN(" + dn + "): " + email);
+      return email;
+    }
 
 
     /**

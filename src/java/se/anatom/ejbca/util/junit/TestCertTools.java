@@ -8,7 +8,7 @@ import junit.framework.*;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.7 2003-02-12 10:39:32 scop Exp $
+ * @version $Id: TestCertTools.java,v 1.8 2003-03-13 12:13:41 scop Exp $
  */
 public class TestCertTools extends TestCase {
 
@@ -75,6 +75,12 @@ public class TestCertTools extends TestCase {
         assertEquals(CertTools.getPartFromDN(dn12, "CN"), "foo, OU=bar");
         assertEquals(CertTools.getPartFromDN(dn12, "O"), "baz\\, quux");
         assertNull(CertTools.getPartFromDN(dn12, "OU"));
+        String dn13 = "C=SE, O=PrimeKey, EmailAddress=foo@primekey.se";
+        assertEquals(CertTools.getEmailFromDN(dn13), "foo@primekey.se");
+        String dn14 = "C=SE, E=foo@primekey.se, O=PrimeKey";
+        assertEquals(CertTools.getEmailFromDN(dn14), "foo@primekey.se");
+        String dn15 = "C=SE, E=foo@primekey.se, O=PrimeKey, EmailAddress=bar@primekey.se";
+        assertEquals(CertTools.getEmailFromDN(dn15), "bar@primekey.se");
 
         log.debug("<test01GetPartFromDN()");
     }
@@ -159,4 +165,5 @@ public class TestCertTools extends TestCase {
         assertEquals(bcdn1, "CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE");
         log.debug("<test04DNComponents()");
     }
+
 }
