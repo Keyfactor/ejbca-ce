@@ -41,6 +41,7 @@ End-entity:
 	End-entity sends cert request
 	End-entity receives cert reply
 	End-entity does all in one step
+
 4. End-entity gets cert from browser
 	End-entity sends cert request
 		Netscape4
