@@ -61,7 +61,7 @@ import se.anatom.ejbca.util.*;
  * </pre>
  * </p>
  *
- * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.15 2003-07-24 08:43:30 anatom Exp $
+ * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.16 2003-09-01 08:10:53 anatom Exp $
  */
 public class LDAPActiveDirectoryPublisherSessionBean extends BaseSessionBean {
     private String ldapHost = "10.1.1.1";
@@ -141,15 +141,11 @@ public class LDAPActiveDirectoryPublisherSessionBean extends BaseSessionBean {
      *
      * @throws RemoteException DOCUMENT ME!
      */
-    public boolean storeCertificate(Admin admin, byte[] byte_incert, String cafp, int status,
-        int type) throws RemoteException {
-        Certificate incert = null;
+    public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp, int status, int type) 
+        throws RemoteException {
         String dn = null;
         String cn = null;
-
         try {
-            incert = CertTools.getCertfromByteArray(Base64.decode(byte_incert));
-
             // Extract the users DN from the cert.
             dn = CertTools.getSubjectDN((X509Certificate) incert);
             cn = CertTools.getPartFromDN(dn, "CN");
