@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
 /** Class used as an install script of ejbca
  * 
  * @author philip
- * @version $Id: Install.java,v 1.17 2004-06-28 07:38:29 anatom Exp $
+ * @version $Id: Install.java,v 1.18 2004-11-20 19:54:16 sbailliez Exp $
  *
  * The main porpose of this program is to provide easy installment of EJBCA.
  */
@@ -38,12 +38,12 @@ public class Install extends BaseCommand {
 	public static int ARG_APPSERVER =  4;
 	public static int ARG_WEBSERVER =  5;
 	
-	private final static int OS_UNIX     = 0; 
-	private final static int OS_WINDOWS  = 1;
+	private static final int OS_UNIX     = 0;
+	private static final int OS_WINDOWS  = 1;
 		
-	private final static int APPSERVER_JBOSS_TOMCAT = 0; 
-	private final static int APPSERVER_JBOSS_JETTY = 1; 
-	private final static int APPSERVER_WEBLOGIC     = 2;
+	private static final int APPSERVER_JBOSS_TOMCAT = 0;
+	private static final int APPSERVER_JBOSS_JETTY = 1;
+	private static final int APPSERVER_WEBLOGIC     = 2;
 	
     private int appserver = APPSERVER_JBOSS_TOMCAT;
 

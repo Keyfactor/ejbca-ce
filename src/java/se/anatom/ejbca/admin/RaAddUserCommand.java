@@ -44,14 +44,14 @@ import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.36 2004-10-13 07:14:45 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.37 2004-11-20 19:55:14 sbailliez Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 	
-	private final static String USERGENERATED = "USERGENERATED"; 
-	private final static String P12           = "P12";
-	private final static String JKS           = "JKS";
-	private final static String PEM           = "PEM";
+	private static final String USERGENERATED = "USERGENERATED"; 
+	private static final String P12           = "P12";
+	private static final String JKS           = "JKS";
+	private static final String PEM           = "PEM";
 	
 	private final String[] softtokennames = {USERGENERATED,P12,JKS,PEM};
 	private final int[] softtokenids = {SecConst.TOKEN_SOFT_BROWSERGEN,
