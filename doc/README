@@ -1,4 +1,4 @@
-$Id: README,v 1.150 2004-06-02 06:20:17 anatom Exp $
+$Id: README,v 1.151 2004-06-07 12:16:11 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -203,7 +203,7 @@ setuserstatus
 Converting OpenSSL CA:
 You can convert a PEM-style CA key to a PKCS12file that can be imported in EJBCA.
 openssl pkcs12 -export -out server1.p12 -inkey cakey.pem -in ca.pem -name privateKey
-(note improt of pkcs12 files is not supported in ejbca 3.0)
+(note import of pkcs12 files is not supported in ejbca 3.0)
 
 Deploy
 ======
@@ -361,6 +361,170 @@ A CRLDistributionPoint for a CA in EJBCA could look like:
 http://<host:port>/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=<url-encoded-issuerDN>
 (such as the link from the webdist pages)
 
+SCEP
+=====
+Since SCEP uses encryption, you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
+The policy files can be found at the same place as the JDK 1.4 download. Further information on this can be found in 
+the Sun documentation on the JCE.
+
+There is a SCEP servlet receiving requests on http://localhost:8080/ejbca/publicweb/apply/scep/pkiclient.exe
+
+Level of SCEP support:
+EJBCA does succesfully receive SCEP 'PKCSReq' requests and send back the certifificate/CRL immediately in a proper SCEP reply message.
+EJBCA does not support the 'polling' model, EJBCA uses the direct method, where a request is granted or denied immediately.
+EJBCA will not send back proper SCEP error messages in all cases of failure, the error messages are not completely implemented.
+
+The CN part of the DN in the PKCS#10 request, which is part of the Scep request, will be used as the 'username' when 
+authenticating the request in EJBCA. Create the Scep request with a CN mathing the username registered in EJBCA.
+The challengePassword in the PKCS#10 request, which is part of the Scep request, will be used as the 'password' when 
+authenticating the request in EJBCA. Create the Scep request with a challengePassword mathing the password registered in EJBCA.
+
+The most common errors should be wrong username/password or wrong status (not NEW/10) on the user in EJBCA.
+
+Tested with OpenScep:
+To use the OpenScep (http://openscep.othello.ch/) client to request a certificate from this servlet, use the command:
+./scep -k test.key -r test.pemreq -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
+rem ./scep -d -k test.key -r test.pemreq -2 -e test.req -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
+Where test.key is generated with:
+openssl genrsa -out test.key
+test1.req is generated with:
+openssl req -key test.key -new -days 30 -out test.req -outform DER -config ../openssl/openscep.cnf
+and test1.pemreq is generated with:
+openssl req -key test.key -new -days 30 -out test.pemreq -outform PEM -config ../openssl/openscep.cnf
+
+Tested with Simple Scep Client (http://www.klake.org/~jt/sscep/):
+You should only use CN in the users DN (same as for PIX below).
+
+Tested with Cisco VPN client version 4.0.2:
+To enroll using the Cisco VPN client use 'CA URL'='http://127.0.0.1:8080/ejbca/publicweb/apply/scep/pkiclient.exe' 
+and the CA name as 'CA Domain'. In the DN screen simply enter the username (as added in EJBCA) as 'Name [CN]'.
+
+Cisco PIX (not working):
+- You must configure JBoss to use port 80 to enroll with PIX, this is done in 
+JBOSS_HOME/server/default/deploy/jbossweb-tomcat41.sar/META-INF/jboss-service.xml (or similar depending on version).
+- EJBCA supports the 'ca' mode of enrollment for pix, not 'ra'.
+- The certificate profile used by the SCEP CA must include the key usages KeyEncipherment and DataEncipherment, otherwise PIX will 
+not be able to verify/decrypt encrypted SCEP messages. This is not in the default certificate profile for CAs.
+- When enrolling for certificate using SCEP with for example a Cisco PIX there is a 'ca_nickname'. This nickname 
+should be the CA-name as defined when creating the CA in EJBCA. For example 'vpnca'. 
+- The username in EJBCA must be the name the PIX identifies itself with <name>.<domain>, example pix.primekey.se. 
+- Only use lower-case names when creating the CA in EJBCA, since PIX will change the CA name VpnCA to vpnca when enrolling.
+- The end-entity DN should only include the DN component CN plus unstructuredXX, ex "CN=pix.primekey.se, unstructuredName=pix.primekey.se",
+no O or C should be in the certificate.
+- Certificates used for PIX must include the DN component unstructuredName (fqdn) and could also include unstructuredAddress (ip).
+- Certificates used for PIX must include the SubjectAltName dNSName beeing the fqdn of the pix, eg <name>.<domain>, 
+iPAddress can also be useful. If unstructuredAddress is used iPAddress should be used.
+- Cisco does not support use of the 'Domain Component', DC, attribute in DNs, don't use it.
+- The PIX user should have a DN like "unstructuredName=pix.primekey.se/unstructuredAddress=192.168.1.33, CN=pix.primekey.se", 
+KeyUsage "Digital Signature, Key Encipherment", SubjectAltName "DNS:pix.primekey.se, IP Address:192.168.1.33".
+- When the VPN-client (above) connects to the PIX, the 'ou' part of the clients DN must match a Vpngroup you have specified, 
+otherwise the connection will fail.
+
+Please notice this Cisco note:
+Be sure that the PIX Firewall clock is set to GMT, month, day, and year before configuring CA. 
+Otherwise, the CA may reject or allow certificates based on an incorrect timestamp. 
+Cisco's PKI protocol uses the clock to make sure that a CRL is not expired.
+Set timezone firs, the set time, then check time with 'show clock'.
+
+OCSP
+=====
+There is an OCSP servlet receiving requests on http://localhost:8080/ejbca/publicweb/status/ocsp. The 
+servlet can process requests for certificates signed by a CA running in EJBCA, as long as the CAs OCSP 
+service has not been deactivated. 
+
+The OCSP servlet receives OCSP request by http(s) and send back a status response signed by the CA, or 
+with a dedicated responder certificate.
+
+For a CA to be valid as an OCSP-responder it must have the KeyUsage 'Digital Signature'. 
+In the certificate profile used to create the CA, this KeyUsage should be included if the CA is to sign OCSP-responses.
+The default certificate profiles for CAs includes the key usage 'Digital Signature'.
+
+There are a few one-time parameters affecting the OCSP service in the file src/publicweb/status/WEB-INF/web.xml:
+'useCASigningCert' - If set to true (default) the OCSP reponses will be signed directly by the CAs certificate instead 
+of the CAs OCSP responder. If set to false, the CAs special OCSP responder certificate is used to sign the
+OCSP responses. The OCSP responder certificate is signed directly by the CA.
+'defaultResponderID' - Specifies the subject of a CA which will 
+generate responses when no real CA can be found from the request. This is used to generate 'unknown' 
+responses when a request is received for a certificate that is not signed by any CA on this server.
+
+These values should be set during deployment of PrimeCA. After the values have been edited, they are installed 
+with the 'ant deploy' command.
+
+Example to generate OCSP request using OpenSSL:
+openssl ocsp -issuer Test-CA.pem -CAfile Test-CA.pem -cert Test.pem -req_text -url http://localhost:8080/ejbca/publicweb/status/ocsp
+
+If Mozilla is to request and accept OCSP-responses from a CA it must be configured:
+
+1. 'Use OCSP to validate all certificates using this URL and signer' in 'Privace & Security->Validation'.
+Choose the CA from EJBCA (which you should have made Trusted by right clicking in 
+'Privacy & Security->Certificates->Manage Certificates->Authorities' and checking the appropriate checkboxes).
+
+2. If using a Certificate Profile that includes a OCSP Service URL for client certificates, the Validation option in Mozilla 
+'Use OCSP to validate only certificates that specify an OCSP service URL' also works fine. When this option is checked you may need to restart Mozilla.
+
+When the validation settings are set, Mozilla will query the OCSP server when for example double-clicking on a certificate in the 
+certificate manager.
+An appropriate URL for validation is: http://<hostname>:8080/ejbca/publicweb/status/ocsp
+
+If using a dedicated OCSP responder certificate, this certificate must be imported in Mozilla as a Trusted CA certificate, so it
+can be set as OCSP signer in 'Privacy & Security->Validation'. You can do this through 'View Certificates' in EJBCA 
+(http://localhost:8080/ejbca/publicweb/webdist/cacert.jsp).
+
+EXPORT/IMPORT PROFILES
+=======================
+Certificate and End Entity profiles can be exported as XML files and imported in another instance of EJBCA,
+or in the same instance after removal of the old ones. 
+
+When exporting profiles (ca.sh exportprofiles), all profiles will be exported to the specified directory. The 
+exported files will be given unique names containing profile name and profile id.
+When importing profiles the profile name and id will be read from the filename. All profiles present in the specified
+directory will be imported.
+
+Fixed profiles will not be imported, they will simply be skipped during import.
+If a profiles with the same name as the one beeing imported already exist, the profiles will not be imported.
+
+Import of profiles try to keep the same profile id. If there already exist a profile with the same id in the database, 
+you might have to edit the filename to choose another id. This can only be done if it is a new profile. 
+The reason the id is kept is that there are references to the profile id from users beloinging to the profile.
+
+KEY RECOVERY
+============
+Key Recovery can be used to re-use or restore a users private key. To enable key recovery use the admin-GUI:
+1. Set 'Enable Key Recovery' in 'System Configuration'.
+2. Create a new End Entity Profile and set ot use 'Key Recoverable'.
+3. Add users with this End Entity Profile.
+
+The following is an example of a sequence of commands that can be used to generate a new certificate for a user using the
+same key pair:
+
+# First revoke <username>, with revocation reason <reason>
+ra.sh revokeuser $username $reason
+
+# then mark the certificate for keyrecovery,
+ra.sh keyrecovernewest $username
+
+# then set clear text password for Batch session to use
+ra.sh setclearpwd $username $userpass
+
+# and finally reissue the certificate.
+batch.sh
+
+EMAIL NOTIFICATIONS
+===================
+First configure mail settings in jboss by editing
+JBOSS_HOME/server/default/deploy/mail-service.xml
+
+Then configure send notifications options in the end entity profiles.
+
+In the message and subject fields you can use
+$USERNAME, $PASSWORD, $CN,$O,$OU,$C,$DATE
+variabels to customize the mail for the user.
+
+Use  $NL for new line in the mail
+
+Tip: If you configure autogenerated password in end entity profile you don´t
+need to enter one in the adduser page. A generated one will automatically be
+sent with the email.
 
 REFERENCE MANUAL
 ================
@@ -489,7 +653,6 @@ user.
 
 Other Configuration
 ---------------------
-
 If you want to change the baseurl of the admin-web use the command:
 'setup setbaseurl <computername> <applicationpath>'
 Ex: ./setup.sh setbaseurl localhost ejbca
@@ -497,35 +660,21 @@ Ex: ./setup.sh setbaseurl localhost ejbca
 Configuring databases
 ---------------------
 The session beans use direct database communication (from a
-connection pool) in
-some cases. In these cases the JNDI name if the Datasource used
-is configured in
+connection pool) in some cases. 
+In these cases the JNDI name if the Datasource used is configured in
 ejb-jar.xml and jbosscmp-jdbc.xml, (default 'java:/DefaultDS').
 
 To change the datasource to us a different datasource than
-DefaultDS, change all
-occurences of DefaultDS via:
+DefaultDS, change all occurences of DefaultDS using the command:
 
-ant replaceDS -Dejbca.DS=<your DS>
+ant replaceDS
 
-with <your DS> something like java:/DefaultDS
+enter parameters when asked for.
 
 Configuring Publishers (LDAP)
 -----------------------------
-To publish certificates and CRLs in an LDAP directory, uncomment
-the section
-for the session bean 'PublisherSession1' in 'ca/ca/META-INF/ejb-
-jar.xml', and
-also the section for method permissions for the same session
-bean. This will
-configure an LDAPPublisherSession so be deployed and when
-certificates and CRLs
-are created. Don't formget to edit parameters to
-'PublisherSession1' to match
-your LDAP server.
-Additional Publishers can be configured by adding new session
-beans called
-'PublisherSession2', 'PublisherSession3', etc to ejb-jar.xml.
+To publish certificates and CRLs in an LDAP directory, configure Publishers 
+in the adminGUI.
 
 Batch creation of certificates
 ------------------------------
@@ -705,155 +854,6 @@ foo123
 run as root:
 keytool -import -trustcacerts -file ca.der -keystore
 $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
-
-SCEP
-=====
-Since SCEP uses encryption, you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
-The policy files can be found at the same place as the JDK 1.4 download. Further information on this can be found in 
-the Sun documentation on the JCE.
-
-There is a SCEP servlet receiving requests on http://localhost:8080/ejbca/publicweb/apply/scep/pkiclient.exe
-
-Level of SCEP support:
-EJBCA does succesfully receive SCEP 'PKCSReq' requests and send back the certifificate/CRL immediately in a proper SCEP reply message.
-EJBCA does not support the 'polling' model, EJBCA uses the direct method, where a request is granted or denied immediately.
-EJBCA will not send back proper SCEP error messages in all cases of failure, the error messages are not completely implemented.
-
-The CN part of the DN in the PKCS#10 request, which is part of the Scep request, will be used as the 'username' when 
-authenticating the request in EJBCA. Create the Scep request with a CN mathing the username registered in EJBCA.
-The challengePassword in the PKCS#10 request, which is part of the Scep request, will be used as the 'password' when 
-authenticating the request in EJBCA. Create the Scep request with a challengePassword mathing the password registered in EJBCA.
-
-The most common errors should be wrong username/password or wrong status (not NEW/10) on the user in EJBCA.
-
-Tested with OpenScep:
-To use the OpenScep (http://openscep.othello.ch/) client to request a certificate from this servlet, use the command:
-./scep -k test.key -r test.pemreq -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
-rem ./scep -d -k test.key -r test.pemreq -2 -e test.req -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
-Where test.key is generated with:
-openssl genrsa -out test.key
-test1.req is generated with:
-openssl req -key test.key -new -days 30 -out test.req -outform DER -config ../openssl/openscep.cnf
-and test1.pemreq is generated with:
-openssl req -key test.key -new -days 30 -out test.pemreq -outform PEM -config ../openssl/openscep.cnf
-
-Tested with Simple Scep Client (http://www.klake.org/~jt/sscep/):
-You should only use CN in the users DN (same as for PIX below).
-
-Tested with Cisco VPN client version 4.0.2:
-To enroll using the Cisco VPN client use 'CA URL'='http://127.0.0.1:8080/ejbca/publicweb/apply/scep/pkiclient.exe' 
-and the CA name as 'CA Domain'. In the DN screen simply enter the username (as added in EJBCA) as 'Name [CN]'.
-
-Cisco PIX (not working):
-- You must configure JBoss to use port 80 to enroll with PIX, this is done in 
-JBOSS_HOME/server/default/deploy/jbossweb-tomcat41.sar/META-INF/jboss-service.xml (or similar depending on version).
-- EJBCA supports the 'ca' mode of enrollment for pix, not 'ra'.
-- The certificate profile used by the SCEP CA must include the key usages KeyEncipherment and DataEncipherment, otherwise PIX will 
-not be able to verify/decrypt encrypted SCEP messages. This is not in the default certificate profile for CAs.
-- When enrolling for certificate using SCEP with for example a Cisco PIX there is a 'ca_nickname'. This nickname 
-should be the CA-name as defined when creating the CA in EJBCA. For example 'vpnca'. 
-- The username in EJBCA must be the name the PIX identifies itself with <name>.<domain>, example pix.primekey.se. 
-- Only use lower-case names when creating the CA in EJBCA, since PIX will change the CA name VpnCA to vpnca when enrolling.
-- The end-entity DN should only include the DN component CN plus unstructuredXX, ex "CN=pix.primekey.se, unstructuredName=pix.primekey.se",
-no O or C should be in the certificate.
-- Certificates used for PIX must include the DN component unstructuredName (fqdn) and could also include unstructuredAddress (ip).
-- Certificates used for PIX must include the SubjectAltName dNSName beeing the fqdn of the pix, eg <name>.<domain>, 
-iPAddress can also be useful. If unstructuredAddress is used iPAddress should be used.
-- Cisco does not support use of the 'Domain Component', DC, attribute in DNs, don't use it.
-- The PIX user should have a DN like "unstructuredName=pix.primekey.se/unstructuredAddress=192.168.1.33, CN=pix.primekey.se", 
-KeyUsage "Digital Signature, Key Encipherment", SubjectAltName "DNS:pix.primekey.se, IP Address:192.168.1.33".
-- When the VPN-client (above) connects to the PIX, the 'ou' part of the clients DN must match a Vpngroup you have specified, 
-otherwise the connection will fail.
-
-Please notice this Cisco note:
-Be sure that the PIX Firewall clock is set to GMT, month, day, and year before configuring CA. 
-Otherwise, the CA may reject or allow certificates based on an incorrect timestamp. 
-Cisco's PKI protocol uses the clock to make sure that a CRL is not expired.
-Set timezone firs, the set time, then check time with 'show clock'.
-
-OCSP
-=====
-There is an OCSP servlet receiving requests on http://localhost:8080/ejbca/publicweb/status/ocsp. The 
-servlet can process requests for certificates signed by a CA running in EJBCA, as long as the CAs OCSP 
-service has not been deactivated. 
-
-The OCSP servlet receives OCSP request by http(s) and send back a status response signed by the CA, or 
-with a dedicated responder certificate.
-
-For a CA to be valid as an OCSP-responder it must have the KeyUsage 'Digital Signature'. 
-In the certificate profile used to create the CA, this KeyUsage should be included if the CA is to sign OCSP-responses.
-The default certificate profiles for CAs includes the key usage 'Digital Signature'.
-
-There are a few one-time parameters affecting the OCSP service in the file src/publicweb/status/WEB-INF/web.xml:
-'useCASigningCert' - If set to true (default) the OCSP reponses will be signed directly by the CAs certificate instead 
-of the CAs OCSP responder. If set to false, the CAs special OCSP responder certificate is used to sign the
-OCSP responses. The OCSP responder certificate is signed directly by the CA.
-'defaultResponderID' - Specifies the subject of a CA which will 
-generate responses when no real CA can be found from the request. This is used to generate 'unknown' 
-responses when a request is received for a certificate that is not signed by any CA on this server.
-
-These values should be set during deployment of PrimeCA. After the values have been edited, they are installed 
-with the 'ant deploy' command.
-
-Example to generate OCSP request using OpenSSL:
-openssl ocsp -issuer Test-CA.pem -CAfile Test-CA.pem -cert Test.pem -req_text -url http://localhost:8080/ejbca/publicweb/status/ocsp
-
-If Mozilla is to request and accept OCSP-responses from a CA it must be configured:
-
-1. 'Use OCSP to validate all certificates using this URL and signer' in 'Privace & Security->Validation'.
-Choose the CA from EJBCA (which you should have made Trusted by right clicking in 
-'Privacy & Security->Certificates->Manage Certificates->Authorities' and checking the appropriate checkboxes).
-
-2. If using a Certificate Profile that includes a OCSP Service URL for client certificates, the Validation option in Mozilla 
-'Use OCSP to validate only certificates that specify an OCSP service URL' also works fine. When this option is checked you may need to restart Mozilla.
-
-When the validation settings are set, Mozilla will query the OCSP server when for example double-clicking on a certificate in the 
-certificate manager.
-An appropriate URL for validation is: http://<hostname>:8080/ejbca/publicweb/status/ocsp
-
-If using a dedicated OCSP responder certificate, this certificate must be imported in Mozilla as a Trusted CA certificate, so it
-can be set as OCSP signer in 'Privacy & Security->Validation'. You can do this through 'View Certificates' in EJBCA 
-(http://localhost:8080/ejbca/publicweb/webdist/cacert.jsp).
-
-
-EXPORT/IMPORT PROFILES
-=======================
-Certificate and End Entity profiles can be exported as XML files and imported in another instance of EJBCA,
-or in the same instance after removal of the old ones. 
-
-When exporting profiles (ca.sh exportprofiles), all profiles will be exported to the specified directory. The 
-exported files will be given unique names containing profile name and profile id.
-When importing profiles the profile name and id will be read from the filename. All profiles present in the specified
-directory will be imported.
-
-Fixed profiles will not be imported, they will simply be skipped during import.
-If a profiles with the same name as the one beeing imported already exist, the profiles will not be imported.
-
-Import of profiles try to keep the same profile id. If there already exist a profile with the same id in the database, 
-you might have to edit the filename to choose another id. This can only be done if it is a new profile. 
-The reason the id is kept is that there are references to the profile id from users beloinging to the profile.
-
-KEY RECOVERY
-============
-Key Recovery can be used to re-use or restore a users private key. To enable key recovery use the admin-GUI:
-1. Set 'Enable Key Recovery' in 'System Configuration'.
-2. Create a new End Entity Profile and set ot use 'Key Recoverable'.
-3. Add users with this End Entity Profile.
-
-The following is an example of a sequence of commands that can be used to generate a new certificate for a user using the
-same key pair:
-
-# First revoke <username>, with revocation reason <reason>
-ra.sh revokeuser $username $reason
-
-# then mark the certificate for keyrecovery,
-ra.sh keyrecovernewest $username
-
-# then set clear text password for Batch session to use
-ra.sh setclearpwd $username $userpass
-
-# and finally reissue the certificate.
-batch.sh
 
 INTERNATIONALIZATION
 ====================
