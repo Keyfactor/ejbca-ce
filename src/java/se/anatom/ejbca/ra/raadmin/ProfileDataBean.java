@@ -16,9 +16,9 @@ import se.anatom.ejbca.webdist.rainterface.Profile;
  * Information stored:
 
  * <pre>
- 
+
  * Profile name
- 
+
  * Profile data
 
  * </pre>
@@ -31,19 +31,19 @@ public abstract class ProfileDataBean implements javax.ejb.EntityBean {
 
 
 
-    private static Category log = Category.getInstance(UserPreferencesDataBean.class.getName() );
+    private static Category log = Category.getInstance(ProfileDataBean.class.getName() );
 
 
     protected EntityContext  ctx;
 
-    public abstract String getProfileName(); 
-    
-    public abstract void setProfileName(String profilename); 
-    
+    public abstract String getProfileName();
+
+    public abstract void setProfileName(String profilename);
+
     public abstract Profile getProfile();
 
     public abstract void setProfile(Profile profile);
-    
+
 
     //
 
@@ -58,7 +58,7 @@ public abstract class ProfileDataBean implements javax.ejb.EntityBean {
      * Entity Bean holding data of a raadmin profile.
 
      * @param profilename.
-     
+
      * @param profile is the Profile.
 
      * @return null
@@ -68,9 +68,9 @@ public abstract class ProfileDataBean implements javax.ejb.EntityBean {
      **/
 
     public String ejbCreate(String profilename, Profile profile) throws CreateException {
-        
+
         setProfileName(profilename);
-        
+
         setProfile(profile);
 
         log.debug("Created profile "+ profilename );
