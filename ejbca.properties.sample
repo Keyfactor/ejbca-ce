@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.5 2005-02-13 18:26:09 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.6 2005-02-23 15:27:00 anatom Exp $
 #
 # This is just a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -75,7 +75,7 @@ mail.debug=true
 #
 ca.name=AdminCA1
 
-ca.dn=CN=AdminCA1,O=PrimeKey Solutions AB,C=SE
+ca.dn=CN=AdminCA1,O=EJBCA Sample,C=SE
 
 ca.keysize=512
 
@@ -88,7 +88,7 @@ ca.policy=null
 java.trustpassword=changeit
 
 # CN should match your hosts DNS name to avoid browser warnings.
-httpsserver.dn=CN=localhost,O=PrimeKey Solutions AB,C=SE
+httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 
 # Used to protect servers SSL keystore
 httpsserver.password=serverpwd
@@ -97,4 +97,4 @@ httpsserver.password=serverpwd
 httpsserver.hostname=localhost
 
 # Used to protect super administrator P12 keystore (to be imported in browser)
-superadmin.password=primekey
+superadmin.password=ejbca

@@ -48,21 +48,16 @@
     <property name="adminweb.build" value="${tmp}/adminweb.war" />    
     <property name="adminwebwar" value="${dist.dir}/adminweb.war" />
 
-    <!-- Jar with class files needed for administration, i.e. ca, ra, jobrunner -->
-    <property name="adminjar.cli" value="${src}/cli" />
-    <property name="adminjar" value="${dist.dir}/admin.jar" />
-
     <property name="root.warsrc" value="${src}/publicweb/root" />
     <property name="rootwar" value="${dist.dir}/publicwebroot.war" />
 
     <property name="caear.src" value="${src}/ca/ear" />
-    <property name="caear" value="${dist.dir}/ejbca-ca.ear" />
-    <property name="caearnora" value="${dist.dir}/ejbca-canora.ear" />
+    <property name="caear" value="${dist.dir}/ejbca.ear" />
 
     <property name="createcrlservice.build" value="${tmp}/crlcreateservice.jar" />
     <property name="createcrlservicejar" value="${dist.dir}/crlcreateservice.jar" />
 
-    <property name="jar.classpath" value="lib/ejb-utils.jar" />
+    <property name="jar.extclasspath" value="lib/bcmail-jdk14-124.jar lib/bcprov-jdk14-124.jar lib/log4j-1.2.7.jar lib/ldap.jar lib/commons-lang-2.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar"/>
 
     <path id="ext.classpath">
         <fileset dir="lib/ext" includes="*.jar" />
@@ -148,13 +143,15 @@ database.password    = ${database.password}
         <delete dir="${src.gen}" />
         <delete dir="${src.dd}" />
         <delete dir="${apidoc}" />
-        <delete file="admin.jar" />
         <delete>
             <fileset dir="${src.java}" includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes" />
         </delete>
         <delete dir="${tmp}"/>
     </target>
 
+    <!-- =================================================================== -->
+    <!-- Autogenerate all ejb interfaces and deployment descriptors          -->
+    <!-- =================================================================== -->
     <target name="run-xdoc" depends="init">
         <taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
             <classpath refid="xdoclet.classpath" />
@@ -270,7 +267,7 @@ database.password    = ${database.password}
     	<jsp-compile uriroot="${adminweb.build}" classpathref="compile.classpath"/>
         <war destfile="${adminwebwar}" webxml="${adminweb.build}/WEB-INF/web.xml">
             <manifest>
-                <attribute name="Class-Path" value="lib/bcmail-jdk14-124.jar lib/bcprov-jdk14-124.jar lib/log4j-1.2.7.jar lib/ldap.jar lib/commons-lang-2.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar" />
+                <attribute name="Class-Path" value="${jar.extclasspath}" />
             </manifest>
             <fileset dir="${adminweb.build}">
                 <exclude name="WEB-INF/*-service.xml" />
@@ -292,145 +289,29 @@ database.password    = ${database.password}
         </war>
     </target>   
 
-    <target name="ejbca.jar" depends="compile" description="Creates master ejb.jar">
-        <jar jarfile="${dist.dir}/ejbca.jar">
+    <!-- =================================================================== -->
+    <!-- Build ca ejb part                                                    -->
+    <!-- =================================================================== -->
+    <target name="ejbca-ejb.jar" depends="compile" description="Creates master ejb.jar">
+        <jar jarfile="${dist.dir}/ejbca-ejb.jar">
             <manifest>
                 <!-- todo: autogenerate this from a fileset -->
-                <attribute name="Class-Path" value="bcmail-jdk14-124.jar bcprov-jdk14-124.jar log4j-1.2.7.jar ldap.jar commons-lang-2.0.jar commons-collections.jar commons-fileupload-1.0.jar" />
+                <attribute name="Class-Path" value="${jar.extclasspath}" />
             </manifest>
             <fileset dir="${src.dd}"/>
             <fileset dir="${build}"/>
+            <fileset dir="${src}/log"/>
+            <fileset dir="${src}/upgrade"/>
         </jar>
     </target>
     
-    <target name="ejb-utils" depends="compile">
-        <jar jarfile="${dist.dir}/${lib}/ejb-utils.jar">
-            <manifest>
-                <attribute name="Class-Path" value="bcmail-jdk14-124.jar bcprov-jdk14-124.jar log4j-1.2.7.jar ldap.jar commons-lang-2.0.jar commons-collections.jar commons-fileupload-1.0.jar" />
-            </manifest>
-            <fileset dir="${build}">
-                <include name="se/anatom/ejbca/protocol/**" />
-                <exclude name="se/anatom/ejbca/protocol/ScepServlet*" />
-                <exclude name="se/anatom/ejbca/protocol/OCSPServlet*" />
-                <include name="se/anatom/ejbca/exception/**" />
-                <include name="se/anatom/ejbca/*.*" />
-                <include name="se/anatom/ejbca/util/**" />
-            </fileset>
-        </jar> 
-    </target>
-
-    <!-- =================================================================== -->
-    <!-- Build ca part                                                    -->
-    <!-- =================================================================== -->
-    <target name="ca.jar" depends="compile">
-        <!-- this one is a bit messy as the layout does not match the other one -->
-        <jar jarfile="${dist.dir}/ca-ejb.jar">
-	        <!-- that should be another ejb-jar, but keep it here for now -->
-	        <fileset dir="${build}" includes="se/anatom/ejbca/upgrade/**" />
-            <fileset dir="${adminweb.src}" includes="languages/*.properties" />
-	        <fileset dir="${src}" includes="upgrade/**/*.sql" />
-	        <fileset dir="${src}/ca/ca"/>
-            <manifest>
-                <attribute name="Class-Path" value="${jar.classpath}" />
-            </manifest>
-        </jar>
-    </target>
-
-    <!-- =================================================================== -->
-    <!-- Build log part                                                    -->
-    <!-- =================================================================== -->
-    <target name="log.jar" depends="compile">
-        <jar jarfile="${dist.dir}/log-ejb.jar">
-            <fileset dir="${build}" includes="se/anatom/ejbca/log/**" />
-            <fileset dir="${src}/log"/>
-            <manifest>
-                <attribute name="Class-Path" value="${jar.classpath}" />
-            </manifest>
-        </jar>
-    </target>
-
-    <!-- =================================================================== -->
-    <!-- Build authorization part                                            -->
-    <!-- =================================================================== -->
-    <target name="authorization.jar" depends="compile">
-        <jar jarfile="${dist.dir}/authorization-ejb.jar">
-            <fileset dir="${build}" includes="se/anatom/ejbca/authorization/**" />
-            <fileset dir="${src}/authorization"/>
-            <manifest>
-                <attribute name="Class-Path" value="${jar.classpath}" />
-            </manifest>
-        </jar>
-    </target>
-
-    <!-- =================================================================== -->
-    <!-- Build hard token part                                               -->
-    <!-- =================================================================== -->
-    <target name="hardtoken.jar" depends="compile">
-        <jar jarfile="${dist.dir}/hardtoken-ejb.jar">
-            <fileset dir="${build}" includes="se/anatom/ejbca/hardtoken/**" />
-            <fileset dir="${src}/hardtoken"/>
-            <manifest>
-                <attribute name="Class-Path" value="${jar.classpath}" />
-            </manifest>
-        </jar>
-    </target>
-
-    <!-- =================================================================== -->
-    <!-- Build key recovery part                                             -->
-    <!-- =================================================================== -->
-    <target name="keyrecovery.jar" depends="compile">
-        <jar jarfile="${dist.dir}/keyrecovery-ejb.jar">
-            <fileset dir="${build}" includes="se/anatom/ejbca/keyrecovery/**" />
-            <!-- check what is exactly needed here!! -->
-            <fileset dir="${build}" includes="se/anatom/ejbca/ca/**"/>
-            <fileset dir="${src}/keyrecovery"/>
-            <manifest>
-                <attribute name="Class-Path" value="${jar.classpath}" />
-            </manifest>
-        </jar>
-    </target>
-
-
-    <!-- =================================================================== -->
-    <!-- Build ra part                                                       -->
-    <!-- =================================================================== -->
-    <target name="ra.jar" depends="compile">
-        <jar jarfile="${dist.dir}/ra-ejb.jar">
-            <fileset dir="${build}" includes="se/anatom/ejbca/ra/**" />
-            <fileset dir="${src}/ra"/>
-            <manifest>
-                <attribute name="Class-Path" value="${jar.classpath}" />
-            </manifest>
-        </jar>
-    </target>
-
-    <!-- =================================================================== -->
-    <!-- Build admin jar                                                     -->
-    <!-- =================================================================== -->
-    <target name="admin.jar" depends="compile">
-        <jar jarfile="${adminjar}">
-            <fileset dir="${build}">
-                <include name="se/anatom/ejbca/client/**" />
-                <include name="se/anatom/ejbca/admin/**" />
-                <include name="se/anatom/ejbca/batch/**" />
-            </fileset>
-            <fileset dir="${adminjar.cli}">
-                <include name="*.properties" />
-            </fileset>
-            <manifest>
-                <attribute name="Class-Path" value="${jar.classpath}" />
-            </manifest>
-        </jar>
-    </target>
-
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-    <target name="ca.ear" depends="apply.war, status.war, webdist.war, adminweb.war, publicwebroot.war, ca.jar, ra.jar, log.jar, hardtoken.jar, keyrecovery.jar, authorization.jar, ejb-utils">
+    <target name="ca.ear" depends="apply.war, status.war, webdist.war, adminweb.war, publicwebroot.war, ejbca-ejb.jar">
         <ear destfile="${caear}" appxml="${caear.src}/META-INF/application.xml"> 
             <fileset dir="${caear.src}">
                 <exclude name="META-INF/application.xml" />
-                <exclude name="META-INF/application-nora.xml" />
             </fileset>
             <fileset dir=".">
                 <include name="${lib}/bcmail-jdk14-124.jar" />
@@ -442,33 +323,6 @@ database.password    = ${database.password}
                 <include name="${lib}/commons-fileupload-1.0.jar" />
             </fileset>
             <fileset dir="${dist.dir}">
-                <include name="${lib}/ejb-utils.jar" />
-                <include name="*-ejb.jar" />
-                <include name="*.war" />
-            </fileset>
-		</ear>
-    </target>
-
-    <!-- =================================================================== -->
-    <!-- Build CA-ear without web-RA                                         -->
-    <!-- =================================================================== -->
-    <target name="canora.ear" depends="apply.war, status.war, webdist.war, adminweb.war, publicwebroot.war, ca.jar, log.jar, hardtoken.jar, keyrecovery.jar, authorization.jar, ejb-utils">
-        <ear destfile="${caearnora}" appxml="${caear.src}/META-INF/application-nora.xml"> 
-            <fileset dir="${caear.src}">
-                <exclude name="META-INF/application.xml" />
-                <exclude name="META-INF/application-nora.xml" />
-            </fileset>
-            <fileset dir=".">
-                <include name="${lib}/bcmail-jdk14-124.jar" />
-                <include name="${lib}/bcprov-jdk14-124.jar" />
-                <include name="${lib}/log4j-1.2.7.jar" />
-                <include name="${lib}/ldap.jar" />
-                <include name="${lib}/commons-lang-2.0.jar" />
-                <include name="${lib}/commons-collections.jar" />
-                <include name="${lib}/commons-fileupload-1.0.jar" />
-            </fileset>
-            <fileset dir="${dist.dir}">
-                <include name="ejb-utils.jar" />
                 <include name="*-ejb.jar" />
                 <include name="*.war" />
             </fileset>
@@ -583,13 +437,6 @@ database.password    = ${database.password}
     <!-- ======================================================================= -->
     <target name="deploy" depends="build">
         <antcall target="j2ee:deploy" />
-    </target>
-
-    <!-- ======================================================================= -->
-    <!-- Deploy ear without Admin Web-GUI to JBoss                               -->
-    <!-- ======================================================================= -->
-    <target name="deploy_nora" depends="j2ee:assert-run,canora.ear">
-        <copy file="${caearnora}" tofile="${jboss.home}/server/default/deploy/ejbca-canora.ear" verbose="true" />
     </target>
 
     <!--

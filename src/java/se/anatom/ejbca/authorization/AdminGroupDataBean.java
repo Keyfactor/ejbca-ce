@@ -39,7 +39,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.11 2004-08-06 07:00:13 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.12 2005-02-23 15:26:56 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
@@ -51,10 +51,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="AdminGroupDataBean"
- *
- * @ejb.pk
- *   generate="false"
- *   class="java.lang.Integer"
+ *   primkey-field="PK"
  *
  * @ejb.permission role-name="InternalUser"
  *
@@ -114,7 +111,6 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
-     * @ejb.pk-field
      * @ejb.interface-method view-type="local"
      */
     public abstract String getAdminGroupName();
@@ -127,7 +123,6 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
-     * @ejb.pk-field
      * @ejb.interface-method view-type="local"
      */
     public abstract int getCAId();
@@ -141,6 +136,18 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
     /**
      * @ejb.relation name="AdminGroupDataToAdminEntities" role-name="AdminGroupData"
      * target-role-name="AdminEntityData" target-ejb="AdminEntityData"
+     * 
+     * @jboss.target-relation
+     * related-pk-field="PK"
+     * fk-column="AdminGroup_AdminEntities"  
+     * 
+     * @weblogic.target-column-map
+     * key-column="PK"
+     * foreign-key-column="AdminGroup_AdminEntities"
+     * 
+     * @sunone.relation
+     * column="PK"
+     * target="AdminGroup_AdminEntities"
      */
     public abstract Collection getAdminEntities();
     public abstract void setAdminEntities(Collection adminentities);
@@ -149,6 +156,18 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      * @ejb.relation
      * name="AdminGroupDataToAccessRules" role-name="AdminGroupData"
      * target-role-name="AccessRulesData" target-ejb="AccessRulesData"
+     * 
+     * @jboss.target-relation
+     * related-pk-field="PK"
+     * fk-column="AdminGroup_AccessRules"
+     *      
+     * @weblogic.target-column-map
+     * key-column="PK"
+     * foreign-key-column="AdminGroup_AccessRules"
+     * 
+     * @sunone.relation
+     * column="PK"
+     * target="AdminGroup_AccessRules"
      */
     public abstract Collection getAccessRules();
     public abstract void setAccessRules(Collection accessrules);
@@ -157,7 +176,6 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      * Adds a Collection of AccessRule to the database. Changing their values if they already exists
      * @ejb.interface-method view-type="local"
      */
-
     public void addAccessRules(Collection accessrules) {
         Iterator iter = accessrules.iterator();
         while (iter.hasNext()) {

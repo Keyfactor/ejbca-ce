@@ -51,6 +51,7 @@ import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.ServiceLocator;
 import se.anatom.ejbca.util.StringTools;
 import se.anatom.ejbca.util.query.Query;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
@@ -60,7 +61,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.51 2005-02-13 17:51:06 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.52 2005-02-23 15:27:00 anatom Exp $
  */
 public class RAInterfaceBean {
 
@@ -89,35 +90,28 @@ public class RAInterfaceBean {
         // Get the UserAdminSession instance.
         this.informationmemory = ejbcawebbean.getInformationMemory();
         
-        jndicontext = new InitialContext();
-        Object obj1 = jndicontext.lookup("java:comp/env/UserAdminSessionLocal");
-        adminsessionhome = (IUserAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionLocalHome.class);
+        ServiceLocator locator = ServiceLocator.getInstance();
+        adminsessionhome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
         adminsession = adminsessionhome.create();
 
-        raadminsessionhome = (IRaAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/RaAdminSessionLocal"),
-                                                                                 IRaAdminSessionLocalHome.class);
+        raadminsessionhome = (IRaAdminSessionLocalHome) locator.getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
         raadminsession = raadminsessionhome.create();
         
 
-        obj1 =  jndicontext.lookup("java:comp/env/CertificateStoreSessionLocal");
-        certificatesessionhome = (ICertificateStoreSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionLocalHome.class);
+        certificatesessionhome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
         certificatesession = certificatesessionhome.create();
 
-        IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/AuthorizationSessionLocal"),
-                                                                                 IAuthorizationSessionLocalHome.class);
+        IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) locator.getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
         authorizationsession = authorizationsessionhome.create();
 
         this.profiles = new EndEntityProfileDataHandler(administrator,raadminsession,authorizationsession,informationmemory);
         
-        IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/HardTokenSessionLocal"),
-                                                                                 IHardTokenSessionLocalHome.class);
+        IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
         hardtokensession = hardtokensessionhome.create();
 
-        IKeyRecoverySessionLocalHome keyrecoverysessionhome = (IKeyRecoverySessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/KeyRecoverySessionLocal"),
-                                                                                 IKeyRecoverySessionLocalHome.class);
+        IKeyRecoverySessionLocalHome keyrecoverysessionhome = (IKeyRecoverySessionLocalHome) locator.getLocalHome(IKeyRecoverySessionLocalHome.COMP_NAME);
         keyrecoverysession = keyrecoverysessionhome.create();
 
-        
         initialized =true;
       } else {
           log.debug("=initialize(): already initialized");

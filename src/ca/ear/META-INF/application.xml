@@ -5,30 +5,12 @@
 	"http://java.sun.com/dtd/application_1_3.dtd">
 
 <application>
-    <display-name>EJBCA-CA</display-name>
-    <description>The EJBCA CA module consists of the CA beans and the web
-application for enrollment (apply) and distribution (webdist).
+    <display-name>EJBCA</display-name>
+    <description>The EJBCA module consists of the CA beans and the web
+applications for enrollment, distribution and administration.
     </description>
     <module>
-        <ejb>log-ejb.jar</ejb>
-    </module>
-    <module>
-        <ejb>ca-ejb.jar</ejb>
-    </module>
-    <module>
-        <ejb>ra-ejb.jar</ejb>
-    </module>
-    <module>
-        <ejb>authorization-ejb.jar</ejb>
-    </module>
-    <module>
-        <ejb>hardtoken-ejb.jar</ejb>
-    </module>
-	<module>
-        <ejb>log-ejb.jar</ejb>
-    </module>    
-    <module>
-        <ejb>keyrecovery-ejb.jar</ejb>
+        <ejb>ejbca-ejb.jar</ejb>
     </module>
     <module>
         <web>

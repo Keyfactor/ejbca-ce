@@ -1,3 +1,0 @@
-foo;foo123;dn-c=se:dn-o=AnaTom:dn-cn=Foo:dn-email=foo@anatom.se
-foobar;foo123;dn-c=se:dn-o=AnaTom:dn-ln=Foo:dn-gn=Bar
-Shredder;passWord;dn-c=se:dc-o=AnaTom:dn-cn=Shredder Shreddson

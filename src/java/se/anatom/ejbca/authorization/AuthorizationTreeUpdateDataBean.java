@@ -38,6 +38,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="AuthorizationTreeUpdateDataBean"
+ *   primkey-field="PK"
  *
  * @ejb.permission role-name="InternalUser"
  *
