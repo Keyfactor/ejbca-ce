@@ -544,7 +544,6 @@ END LDAP Publisher -->
       <cmp-field><field-name>data</field-name></cmp-field>
       <primkey-field>id</primkey-field>
 
-
       <query>
       	<query-method>
       	  <method-name>findByCertificateProfileName</method-name>
@@ -552,10 +551,19 @@ END LDAP Publisher -->
       	    <method-param>java.lang.String</method-param>
       	  </method-params>
       	</query-method>
-	<ejb-ql>
-	  <![CDATA[SELECT DISTINCT OBJECT(a) from CertificateProfileDataBean a WHERE a.certificateProfileName=?1]]>
-	</ejb-ql>
-      </query>
+        <ejb-ql>
+          <![CDATA[SELECT DISTINCT OBJECT(a) from CertificateProfileDataBean a WHERE a.certificateProfileName=?1]]>
+        </ejb-ql>
+       </query>
+       <query>
+         <query-method>
+           <method-name>findAll</method-name>
+           <method-params/>
+         </query-method>
+         <ejb-ql>
+           <![CDATA[SELECT DISTINCT OBJECT(a) from CertificateProfileDataBean AS a]]>
+         </ejb-ql>
+       </query>
    </entity>
 
   </enterprise-beans>
@@ -694,23 +702,23 @@ END LDAP Publisher -->
      </method>
      <method>
          <ejb-name>CertificateStoreSession</ejb-name>
-         <method-name>addCertificateType</method-name>
+         <method-name>addCertificateProfile</method-name>
      </method>
      <method>
          <ejb-name>CertificateStoreSession</ejb-name>
-         <method-name>cloneCertificateType</method-name>
+         <method-name>cloneCertificateProfile</method-name>
      </method>
      <method>
          <ejb-name>CertificateStoreSession</ejb-name>
-         <method-name>removeCertificateType</method-name>
+         <method-name>removeCertificateProfile</method-name>
      </method>
      <method>
          <ejb-name>CertificateStoreSession</ejb-name>
-         <method-name>renameCertificateType</method-name>
+         <method-name>renameCertificateProfile</method-name>
      </method>
      <method>
          <ejb-name>CertificateStoreSession</ejb-name>
-         <method-name>changeCertificateType</method-name>
+         <method-name>changeCertificateProfile</method-name>
      </method>
      <method>
          <ejb-name>CertificateStoreSession</ejb-name>

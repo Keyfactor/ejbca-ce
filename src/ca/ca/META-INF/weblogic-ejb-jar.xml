@@ -63,12 +63,12 @@
       <persistence>
         <persistence-type>
           <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-          <type-version>5.1.0</type-version>
-          <type-storage>META-INF/weblogic-cmp-rdbms-jar-cert.xml</type-storage>
+          <type-version>7.0</type-version>
+          <type-storage>META-INF/weblogic-cmp-rdbms-jar.xml</type-storage>
         </persistence-type>
         <persistence-use>
           <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-          <type-version>5.1.0</type-version>
+          <type-version>7.0</type-version>
         </persistence-use>
       </persistence>
     </entity-descriptor>
@@ -84,17 +84,38 @@
       <persistence>
         <persistence-type>
           <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-          <type-version>5.1.0</type-version>
-          <type-storage>META-INF/weblogic-cmp-rdbms-jar-crl.xml</type-storage>
+          <type-version>7.0</type-version>
+          <type-storage>META-INF/weblogic-cmp-rdbms-jar.xml</type-storage>
         </persistence-type>
         <persistence-use>
           <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-          <type-version>5.1.0</type-version>
+          <type-version>7.0</type-version>
         </persistence-use>
       </persistence>
     </entity-descriptor>
     <jndi-name>CRLData</jndi-name>
   </weblogic-enterprise-bean>
+
+    <weblogic-enterprise-bean>
+      <ejb-name>CertificateProfileData</ejb-name>
+      <entity-descriptor>
+        <entity-cache>
+          <max-beans-in-cache>1</max-beans-in-cache>
+        </entity-cache>
+        <persistence>
+          <persistence-type>
+            <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
+            <type-version>7.0</type-version>
+            <type-storage>META-INF/weblogic-cmp-rdbms-jar.xml</type-storage>
+          </persistence-type>
+          <persistence-use>
+            <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
+            <type-version>7.0</type-version>
+          </persistence-use>
+        </persistence>
+      </entity-descriptor>
+      <jndi-name>CertificateProfileData</jndi-name>
+    </weblogic-enterprise-bean>
 
    <security-role-assignment>
       <role-name>InternalUser</role-name>
