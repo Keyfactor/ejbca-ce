@@ -58,17 +58,11 @@ import se.anatom.ejbca.util.FileTools;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.13 2002-02-27 16:32:10 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.14 2002-02-28 20:55:10 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
     static private Category cat = Category.getInstance( CertReqServlet.class.getName() );
-
-    private static final String COMMAND_PROPERTY_NAME = "command";
-    private static final String COMMAND_NSCACERT = "nscacert";
-    private static final String COMMAND_IECACERT = "iecacert";
-    private static final String COMMAND_CACERT = "cacert";
-    private static final String LEVEL_PROPERTY_NAME = "level";
 
     private InitialContext ctx = null;
     ISignSessionHome home = null;
@@ -173,64 +167,9 @@ public class CertReqServlet extends HttpServlet {
 
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
         cat.debug(">doGet()");
-
-        String command;
-        command = req.getParameter(COMMAND_PROPERTY_NAME);
-        if (command == null)
-            command = "";
-        // If we don't ask for any level of CA, assume root
-        String lev = req.getParameter(LEVEL_PROPERTY_NAME);
-        int level = 0;
-        if (lev != null)
-            level = Integer.parseInt(lev);
-        // Root CA is level 0, next below root level 1 etc etc
-        try {
-            ISignSessionRemote ss = home.create();
-            Certificate[] chain = ss.getCertificateChain();
-            // chain.length-1 is last cert in chain (root CA)
-            if ( (chain.length-1-level) < 0 ) {
-                PrintStream ps = new PrintStream(res.getOutputStream());
-                ps.println("No CA certificate of level "+level+"exist.");
-                cat.error("No CA certificate of level "+level+"exist.");
-                return;
-            }
-            X509Certificate cacert = (X509Certificate)chain[chain.length-1-level];
-            byte[] enccert = cacert.getEncoded();
-            if (command.equalsIgnoreCase(COMMAND_NSCACERT)) {
-                    res.setContentType("application/x-x509-ca-cert");
-                    res.setContentLength(enccert.length);
-                    res.getOutputStream().write(enccert);
-                    cat.debug("Sent CA cert to NS client, len="+enccert.length+".");
-            } else if (command.equalsIgnoreCase(COMMAND_IECACERT)) {
-                    res.setHeader("Content-disposition", "attachment; filename=ca.crt");
-                    res.setContentType("application/octet-stream");
-                    res.setContentLength(enccert.length);
-                    res.getOutputStream().write(enccert);
-                    cat.debug("Sent CA cert to IE client, len="+enccert.length+".");
-            } else if (command.equalsIgnoreCase(COMMAND_CACERT)) {
-                    byte[] b64cert = Base64.encode(enccert);
-		    String out = "-----BEGIN CERTIFICATE-----\n";
-		    out += new String(b64cert);
-                    out += "\n-----END CERTIFICATE-----\n";
-                    res.setHeader("Content-disposition", "attachment; filename=ca.pem");
-                    res.setContentType("application/octet-stream");
-                    res.setContentLength(out.length());
-                    res.getOutputStream().write(out.getBytes());
-                    cat.debug("Sent CA cert to client, len="+out.length()+".");
-            } else {
-                res.setContentType("text/plain");
-                res.getOutputStream().println("Commands="+COMMAND_NSCACERT+" || "+COMMAND_IECACERT+" || "+COMMAND_CACERT);
-                return;
-            }
-        } catch (Exception e) {
-            PrintStream ps = new PrintStream(res.getOutputStream());
-            ps.println("Error sending CA certificate:");
-            e.printStackTrace(ps);
-            cat.error("Error sending CA cert.");
-            cat.debug(e);
-            return;
-        }
-
+        res.setContentType("text/html");
+        res.getOutputStream().println("The certificate request servlet only handles POST method.");
+        cat.debug("<doGet()");
     } // doGet
 
     /**

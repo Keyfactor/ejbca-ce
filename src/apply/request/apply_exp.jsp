@@ -73,11 +73,10 @@ try  {
     if (chain.length == 0) {
         out.println("No CA certificates exist");
     } else {
-        X509Certificate rootcert = (X509Certificate)chain[chain.length-1];
-        out.println("<li><a href=\"/apply/certreq?command=iecacert&level=0\">Root CA</a></li>");
+        out.println("<li><a href=\"/webdist/certdist?cmd=iecacert&level=0\">Root CA</a></li>");
         if (chain.length > 1) {
             for (int i=chain.length-2;i>=0;i--) {
-                out.println("<li><a href=\"/apply/certreq?command=iecacert&level="+i+"\">CA</a></li>");
+                out.println("<li><a href=\"/webdist/certdist?cmd=iecacert&level="+i+"\">CA</a></li>");
             }
         }
     }

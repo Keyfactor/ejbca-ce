@@ -17,6 +17,8 @@ import org.apache.log4j.*;
 
 import se.anatom.ejbca.ca.store.ICertificateStoreSession;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
+import se.anatom.ejbca.ca.sign.ISignSessionHome;
+import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.util.CertTools;
 
@@ -30,9 +32,14 @@ import se.anatom.ejbca.util.CertTools;
  * <li>lastcert - gets latest certificate of a user, takes argument 'subject=<subjectDN>'.
  * <li>listcerts - lists all certificates of a user, takes argument 'subject=<subjectDN>'.
  * <li>revoked - checks if a certificate is revoked, takes arguments 'subject=<subjectDN>&serno=<serial number>'.
+ * <li>cacert - returns ca certificate in PEM-format
+ * <li>nscacert - returns ca certificate for Netscape/Mozilla
+ * <li>iecacert - returns ca certificate for Internet Explorer
  * </ul>
+ * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
+ * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.2 2002-01-06 10:51:32 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.3 2002-02-28 20:55:10 anatom Exp $
  *
  */
 public class CertDistServlet extends HttpServlet {
@@ -44,12 +51,18 @@ public class CertDistServlet extends HttpServlet {
     private static final String COMMAND_REVOKED = "revoked";
     private static final String COMMAND_CERT = "lastcert";
     private static final String COMMAND_LISTCERT = "listcerts";
+    private static final String COMMAND_NSCACERT = "nscacert";
+    private static final String COMMAND_IECACERT = "iecacert";
+    private static final String COMMAND_CACERT = "cacert";
+
     private static final String SUBJECT_PROPERTY = "subject";
     private static final String ISSUER_PROPERTY = "issuer";
     private static final String SERNO_PROPERTY = "serno";
+    private static final String LEVEL_PROPERTY = "level";
 
     private InitialContext ctx = null;
-    ICertificateStoreSessionHome home = null;
+    ICertificateStoreSessionHome storehome = null;
+    ISignSessionHome signhome = null;
 
     public void init(ServletConfig config) throws ServletException {
     super.init(config);
@@ -57,8 +70,9 @@ public class CertDistServlet extends HttpServlet {
 
             // Get EJB context and home interfaces
             ctx = new InitialContext();
-            home = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
+            storehome = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
             ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
+            signhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
         } catch( Exception e ) {
             throw new ServletException(e);
         }
@@ -83,7 +97,7 @@ public class CertDistServlet extends HttpServlet {
             command = "";
         if (command.equalsIgnoreCase(COMMAND_CRL)) {
             try {
-                ICertificateStoreSession store = home.create();
+                ICertificateStoreSession store = storehome.create();
                 byte[] crl = store.getLastCRL();
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = x509crl.getIssuerDN().toString();
@@ -110,7 +124,7 @@ public class CertDistServlet extends HttpServlet {
             }
             try {
                 cat.debug("Looking for certificates for '"+dn+"'.");
-                ICertificateStoreSession store = home.create();
+                ICertificateStoreSession store = storehome.create();
                 Certificate[] certs = store.findCertificatesBySubject(dn);
                 int latestcertno = -1;
                 if (command.equalsIgnoreCase(COMMAND_CERT)) {
@@ -174,7 +188,58 @@ public class CertDistServlet extends HttpServlet {
                 cat.error(e);
                 return;
             }
-
+        } else if (command.equalsIgnoreCase(COMMAND_NSCACERT) || command.equalsIgnoreCase(COMMAND_IECACERT) || command.equalsIgnoreCase(COMMAND_CACERT) ) {
+            String lev = req.getParameter(LEVEL_PROPERTY);
+            int level = 0;
+            if (lev != null)
+                level = Integer.parseInt(lev);
+            // Root CA is level 0, next below root level 1 etc etc
+            try {
+                ISignSessionRemote ss = signhome.create();
+                Certificate[] chain = ss.getCertificateChain();
+                // chain.length-1 is last cert in chain (root CA)
+                if ( (chain.length-1-level) < 0 ) {
+                    PrintStream ps = new PrintStream(res.getOutputStream());
+                    ps.println("No CA certificate of level "+level+"exist.");
+                    cat.error("No CA certificate of level "+level+"exist.");
+                    return;
+                }
+                X509Certificate cacert = (X509Certificate)chain[chain.length-1-level];
+                byte[] enccert = cacert.getEncoded();
+                if (command.equalsIgnoreCase(COMMAND_NSCACERT)) {
+                    res.setContentType("application/x-x509-ca-cert");
+                    res.setContentLength(enccert.length);
+                    res.getOutputStream().write(enccert);
+                    cat.debug("Sent CA cert to NS client, len="+enccert.length+".");
+                } else if (command.equalsIgnoreCase(COMMAND_IECACERT)) {
+                    res.setHeader("Content-disposition", "attachment; filename=ca.crt");
+                    res.setContentType("application/octet-stream");
+                    res.setContentLength(enccert.length);
+                    res.getOutputStream().write(enccert);
+                    cat.debug("Sent CA cert to IE client, len="+enccert.length+".");
+                } else if (command.equalsIgnoreCase(COMMAND_CACERT)) {
+                    byte[] b64cert = Base64.encode(enccert);
+                    String out = "-----BEGIN CERTIFICATE-----\n";
+                    out += new String(b64cert);
+                    out += "\n-----END CERTIFICATE-----\n";
+                    res.setHeader("Content-disposition", "attachment; filename=ca.pem");
+                    res.setContentType("application/octet-stream");
+                    res.setContentLength(out.length());
+                    res.getOutputStream().write(out.getBytes());
+                    cat.debug("Sent CA cert to client, len="+out.length()+".");
+                } else {
+                    res.setContentType("text/plain");
+                    res.getOutputStream().println("Commands="+COMMAND_NSCACERT+" || "+COMMAND_IECACERT+" || "+COMMAND_CACERT);
+                    return;
+                }
+            } catch (Exception e) {
+                PrintStream ps = new PrintStream(res.getOutputStream());
+                e.printStackTrace(ps);
+                res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting CA certificates.");
+                cat.error("Error getting CA certificates.");
+                cat.error(e);
+                return;
+            }            
         } else if (command.equalsIgnoreCase(COMMAND_REVOKED)) {
             String dn = req.getParameter(ISSUER_PROPERTY);
             if (dn == null) {
@@ -190,7 +255,7 @@ public class CertDistServlet extends HttpServlet {
             }
             cat.debug("Looking for certificate for '"+dn+"' and serno='"+serno+"'.");
             try {
-                ICertificateStoreSession store = home.create();
+                ICertificateStoreSession store = storehome.create();
                 RevokedCertInfo revinfo = store.isRevoked(dn, new BigInteger(serno));
                 res.setContentType("text/html");
                 PrintWriter pout = new PrintWriter(res.getOutputStream());

@@ -199,6 +199,7 @@
 		<include name="se/anatom/ejbca/webdist/**/*.class"/>
 		<include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
+		<include name="se/anatom/ejbca/ca/sign/ISign*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
 		<include name="se/anatom/ejbca/util/**/Base64*.class"/>
 		<include name="se/anatom/ejbca/util/**/CertTools*.class"/>
