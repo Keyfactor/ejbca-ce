@@ -3,6 +3,7 @@ package se.anatom.ejbca.ra;
 import java.math.BigInteger;
 import java.util.Collection;
 
+import javax.ejb.DuplicateKeyException;
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
@@ -16,7 +17,7 @@ import se.anatom.ejbca.util.query.Query;
 
 /**
  *
- * @version $Id: IUserAdminSessionLocal.java,v 1.2 2003-10-01 11:12:14 herrvendil Exp $
+ * @version $Id: IUserAdminSessionLocal.java,v 1.3 2003-11-02 10:37:01 anatom Exp $
  */
 public interface IUserAdminSessionLocal extends javax.ejb.EJBLocalObject {
 
@@ -30,7 +31,7 @@ public interface IUserAdminSessionLocal extends javax.ejb.EJBLocalObject {
     */
     public void addUser(Admin admin, String username, String password, String subjectdn, String subjectaltname, String email,  boolean clearpwd,
                         int endentityprofileid, int certificateprofileid, int type, int tokentype, int hardtokenissuerid, int caid)
-                         throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile;
+                         throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException;
 
 
    /**

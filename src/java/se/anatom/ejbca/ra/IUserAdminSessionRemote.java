@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.util.Collection;
 
+import javax.ejb.DuplicateKeyException;
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
@@ -19,7 +20,7 @@ import se.anatom.ejbca.util.query.Query;
 /**
  * Interface for User admin session
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.24 2003-10-01 11:12:14 herrvendil Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.25 2003-11-02 10:37:00 anatom Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     // Public constants
@@ -43,11 +44,14 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @param hardtokenissuerid, if token should be hard, the id of the hard token issuer, else 0.
     * @param caid, the id of the CA that should be used to issue the users certificate
     *
+    * @throws AuthorizationDeniedException if admin is not allowed to add user.
+    * @throws UserDoesntFullfillEndEntityProfile if user info does not fulfill requirements from the users end entity profile.
+    * @throws DuplicateKeyException if a user with this username already exist.
     * @throws EJBException if a communication or other error occurs.
     */
     public void addUser(Admin admin, String username, String password, String subjectdn, String subjectaltname, String email,  boolean clearpwd,
                         int endentityprofileid, int certificateprofileid, int type, int tokentype, int hardtokenissuerid, int caid)
-                         throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException;
+                         throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException, RemoteException;
 
     /**
     * Changes data for a user in the database speciefied by username.

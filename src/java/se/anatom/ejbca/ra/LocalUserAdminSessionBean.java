@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
+import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
@@ -54,7 +55,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.67 2003-10-29 14:25:54 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.68 2003-11-02 10:37:01 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -193,7 +194,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     */
     public void addUser(Admin admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd, int endentityprofileid, int certificateprofileid,
                         int type, int tokentype, int hardwaretokenissuerid, int caid)
-                         throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
+                         throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException {
         // String used in SQL so strip it
         String dn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
         String newpassword = password;
@@ -260,12 +261,16 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                 throw new EJBException(nsae);
               }
             }
-            if((type & SecConst.USER_SENDNOTIFICATION) != 0)
-              sendNotification(admin, username, newpassword, dn, subjectaltname, email, caid);
+            if((type & SecConst.USER_SENDNOTIFICATION) != 0) {
+                sendNotification(admin, username, newpassword, dn, subjectaltname, email, caid);                
+            }
             logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_ADDEDENDENTITY,"");
 
-        }catch (Exception e) {
-            logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDENDENTITY,"");
+        } catch (DuplicateKeyException e) {
+            logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDENDENTITY,"Entity already exists.");
+            throw e;
+        } catch (Exception e) {
+            logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDENDENTITY,e.getMessage());
             error("AddUser:",e);
             throw new EJBException(e);
         }
