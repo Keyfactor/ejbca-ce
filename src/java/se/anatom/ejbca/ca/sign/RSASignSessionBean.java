@@ -83,7 +83,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.129 2004-05-23 12:54:08 herrvendil Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.130 2004-05-24 20:04:54 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -633,7 +633,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
         }catch(javax.ejb.FinderException fe) {
             error("Can not find CA Id from issuerDN: "+req.getIssuerDN() + " or username: "+req.getUsername());
-            getLogSession().log(admin, -1, LogEntry.MODULE_CA, new java.util.Date(),req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Invalid CA Id",fe);  
+            getLogSession().log(admin, -1, LogEntry.MODULE_CA, new java.util.Date(),req.getUsername(), null, LogEntry.EVENT_ERROR_GETLASTCRL,"Invalid CA Id",fe);  
             throw new CADoesntExistsException(fe);                   
         }
         try {
@@ -641,7 +641,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             CAToken catoken = ca.getCAToken();
             
             if(ca.getStatus() != SecConst.CA_ACTIVE){
-              getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " isn't active.");
+              getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL,"Signing CA " + cadata.getSubjectDN() + " isn't active.");
               throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");             
             }
             
@@ -652,7 +652,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             }catch(CertificateExpiredException cee){
                  // Signers Certificate has expired.   
                 cadata.setStatus(SecConst.CA_EXPIRED);  
-                getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " has expired",cee);
+                getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL,"Signing CA " + cadata.getSubjectDN() + " has expired",cee);
                 throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " has expired");   
             } catch (CertificateNotYetValidException cve) {
                 throw new CADoesntExistsException(cve); 
@@ -694,11 +694,6 @@ public class RSASignSessionBean extends BaseSessionBean {
             if (req.getRequestKeyInfo() != null) {
                 ret.setRecipientKeyInfo(req.getRequestKeyInfo());
             }
-            // Verify the request
-            if (req.verify() == false) {
-                getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA,new java.util.Date(),req.getUsername(),null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"POPO verification failed.");
-                throw new SignRequestSignatureException("Verification of signature (popo) on request failed.");
-            }
             // Get the CRL, don't even bother digging into the encrypted CRLIssuerDN...since we already 
             // know that we are the CA (SCEP is soooo stupid!)
             byte[] crl = certificateStore.getLastCRL(admin, req.getIssuerDN());
@@ -731,7 +726,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (CATokenOfflineException ctoe) {
             log.error("CA Token is Offline: ", ctoe);
             cadata.setStatus(SecConst.CA_OFFLINE);  
-            getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " is offline.",ctoe);
+            getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL,"Signing CA " + cadata.getSubjectDN() + " is offline.",ctoe);
             throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " is offline.");   
         } 
         debug("<getCRL(IRequestMessage)");
