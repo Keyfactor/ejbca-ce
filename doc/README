@@ -515,27 +515,27 @@ Installation procedure will be enhanced eventually.
 
 1. Copy src/ra/web/raadmin/WEB-INF/tomcat4-service.xml to
 $JBOSS_HOME/server/default/deploy. Edit the file so 'keyStorePass' is the
-same as the password you specify below for 'tomcat-user'.
+same as the password you specify below for 'tomcat'.
 
 2. Edit parameters in src/ra/web/raadmin/WEB-INF/web.xml.
 
 3. Create a tomcat server keystore with the batch.sh/cmd tool (this can also be
 done with Suns 'keytool' by creating a keystore and then generating a
 certificate request that is processed by EJBCA, and last import the returned
-certificate).
+certificate and the CA-certificate into the keystore).
 
 Create a user in EJBCA, DN="C=SE,O=PrimeKey,CN=<your-host-name>".
-./ra.sh adduser tomcat-user foo123 "C=SE,O=PrimeKey,CN=<your-host-name>" null 1
+./ra.sh adduser tomcat foo123 "C=SE,O=PrimeKey,CN=<your-host-name>" null 1
 
-Set a clear text password for the tomcat-user:
-./ra.sh setclearpwd tomcat-user foo123
+Set a clear text password for the tomcat:
+./ra.sh setclearpwd tomcat foo123
 
-Generate a JKS-keystore for tomcat-user:
-./batch.sh tomcat-user -jks 
+Generate a JKS-keystore for tomcat:
+./batch.sh tomcat -jks 
 
 4. Name the generated keystore '.keystore' and put in $JBOSS_HOME.
 
-cp ./p12/tomcat-user.jks $JBOSS_HOME/.keystore
+cp ./p12/tomcat.jks $JBOSS_HOME/.keystore
 
 5. Download the CA certificate in PEM-format from
 http://localhost:8080/webdist/cacert.jsp (call it ejbca-ca.pem).
@@ -548,15 +548,15 @@ $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 
 7. Create a user for EJBCA admin with CN=walter and the RAADMIN bit
 (temporarily CN=walter gives adminrights).
-./ra.sh adduser raadmin-user foo123 "C=SE,O=PrimeKey,CN=walter"
+./ra.sh adduser raadmin foo123 "C=SE,O=PrimeKey,CN=walter"
 walter@primekey.se 32
 
 Alternative:
 Create a PKCS12 file with EJBCA for a user with CN=walter and the RAADMIN bit
 (temporarily CN=walter gives adminrights).
-./ra.sh adduser raadmin-user foo123 "C=SE,O=PrimeKey,CN=walter"
+./ra.sh adduser raadmin foo123 "C=SE,O=PrimeKey,CN=walter"
 walter@primekey.se 32
-./ra.sh setclearpwd raadmin-user foo123
+./ra.sh setclearpwd raadmin foo123
 ./batch.sh
 
 8. Fetch the certificate using your browser at http://localhost:8080/apply
