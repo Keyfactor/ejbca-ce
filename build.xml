@@ -26,12 +26,10 @@
   <property name="ca.src" value="${src}/ca/ca" />
   <property name="ca.build" value="${tmp}/ca/ca.jar" />
   <property name="cajar" value="${dist}/ca.jar" />
-  <property name="ca.classpath" value="lib/bcmail-jdk14-120.jar lib/bcprov-jdk14-120.jar lib/log4j-1.2.7.jar lib/ldap.jar"/>
 
   <property name="status.src" value="${src}/publicweb/status"/>
   <property name="status.build" value="${tmp}/publicweb/status.war"/>
   <property name="statusjar" value="${dist}/status.war"/>
-  <property name="status.classpath" value="${ca.classpath} lib/commons-lang-1.0.jar lib/commons-collections.jar"/>
 
   <property name="log.src" value="${src}/log" />
   <property name="log.build" value="${tmp}/log.jar" />
@@ -52,12 +50,10 @@
   <property name="ra.src" value="${src}/ra" />
   <property name="ra.build" value="${tmp}/ra.jar" />
   <property name="rajar" value="${dist}/ra.jar" />
-  <property name="ra.classpath" value="lib/bcmail-jdk14-120.jar lib/bcprov-jdk14-120.jar lib/log4j-1.2.7.jar lib/ldap.jar"/>
   
   <property name="adminweb.src" value="${src}/adminweb" />
   <property name="adminweb.build" value="${tmp}/adminweb.war" />
   <property name="adminwebjar" value="${dist}/adminweb.war" />  
-  <property name="adminweb.classpath" value="lib/commons-fileupload-1.0.jar"/>
   
   <property name="demoweb.src" value="${src}/demoweb" />
   <property name="demoweb.build" value="${tmp}/demoweb.war" />
@@ -81,6 +77,8 @@
   <!-- Jar with class files needed for administration, i.e. ca, ra, jobrunner -->
   <property name="adminjar.build" value="${tmp}/adminjar" />
   <property name="adminjar" value="./admin.jar" />
+
+  <property name="jar.classpath" value="lib/bcmail-jdk14-120.jar lib/bcprov-jdk14-120.jar lib/log4j-1.2.7.jar lib/ldap.jar lib/commons-lang-1.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar"/>
   
   <property environment="env"/>
   
@@ -192,7 +190,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         <!-- Jar the status.war package together -->
         <jar basedir="${status.build}" jarfile="${statusjar}">
             <manifest>
-                <attribute name="Class-Path" value="${status.classpath}"/>
+                <attribute name="Class-Path" value="${jar.classpath}"/>
             </manifest>
         </jar>
     </target>
@@ -248,7 +246,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     <!-- Jar the ca.jar package together -->
     <jar basedir="${ca.build}" jarfile="${cajar}">
         <manifest>
-            <attribute name="Class-Path" value="${ca.classpath}"/>
+            <attribute name="Class-Path" value="${jar.classpath}"/>
         </manifest>
     </jar>
   </target>
@@ -291,12 +289,13 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/ca/caadmin/I*.class"/>
                 <include name="se/anatom/ejbca/ca/caadmin/*Info.class"/>
                 <include name="se/anatom/ejbca/ra/I*.class"/>                                                              
+                <include name="se/anatom/ejbca/ra/raadmin/I*.class"/>                                                              
                 <include name="se/anatom/ejbca/ca/store/I*.class"/>  
                 <include name="se/anatom/ejbca/log/I*.class"/>
                 <include name="se/anatom/ejbca/log/Admin.class"/>  
                 <include name="se/anatom/ejbca/log/LogEntry.class"/>
                 <include name="se/anatom/ejbca/util/*.class"/> 
-                <include name="se/anatom/ejbca/SecConst.class"/>                                  
+                <include name="se/anatom/ejbca/*.class"/>                                  
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
@@ -391,7 +390,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     <!-- Jar the ra.jar package together -->
     <jar  basedir="${ra.build}" jarfile="${rajar}">
         <manifest>
-            <attribute name="Class-Path" value="${ra.classpath}"/>
+            <attribute name="Class-Path" value="${jar.classpath}"/>
         </manifest>
     </jar>
   </target>
@@ -450,7 +449,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     <!-- Jar the adminweb.war package together -->
     <jar basedir="${adminweb.build}" jarfile="${adminwebjar}">
         <manifest>
-            <attribute name="Class-Path" value="${adminweb.classpath}"/>
+            <attribute name="Class-Path" value="${jar.classpath}"/>
         </manifest>
     </jar>
   </target>
