@@ -32,10 +32,10 @@ import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.FileTools;
-import se.anatom.ejbca.exception.AuthStatusException;
-import se.anatom.ejbca.exception.AuthLoginException;
-import se.anatom.ejbca.exception.SignRequestException;
-import se.anatom.ejbca.exception.SignRequestSignatureException;
+import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.ca.exception.AuthLoginException;
+import se.anatom.ejbca.ca.exception.SignRequestException;
+import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 
 /**
  * Servlet used to install a private key with a corresponding certificate in a
@@ -62,7 +62,7 @@ import se.anatom.ejbca.exception.SignRequestSignatureException;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.15 2002-03-22 10:11:24 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.16 2002-03-22 11:21:47 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
 

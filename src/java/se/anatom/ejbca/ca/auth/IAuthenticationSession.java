@@ -4,12 +4,12 @@ package se.anatom.ejbca.ca.auth;
 import java.util.*;
 import java.rmi.RemoteException;
 import javax.ejb.ObjectNotFoundException;
-import se.anatom.ejbca.exception.AuthStatusException;
-import se.anatom.ejbca.exception.AuthLoginException;
+import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.ca.exception.AuthLoginException;
 
 /** Interface used for authenticating entities when issuing their certificates.
  *
- * @version $Id: IAuthenticationSession.java,v 1.2 2002-03-22 10:11:24 anatom Exp $
+ * @version $Id: IAuthenticationSession.java,v 1.3 2002-03-22 11:21:49 anatom Exp $
  */
 public interface IAuthenticationSession {
 

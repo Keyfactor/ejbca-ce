@@ -1,11 +1,13 @@
-package se.anatom.ejbca.exception;
+package se.anatom.ejbca.ca.exception;
+
+import se.anatom.ejbca.exception.EjbcaException;
 
 /**
  * Error due to invlid signature on certificate request.
  *
- * @version $Id: SignRequestSignatureException.java,v 1.1 2002-03-22 10:11:24 anatom Exp $
+ * @version $Id: SignRequestSignatureException.java,v 1.1 2002-03-22 11:21:49 anatom Exp $
  */
-public class SignRequestSignatureException extends Exception {
+public class SignRequestSignatureException extends EjbcaException {
 
    /**
     * Constructor used to create exception with an errormessage.

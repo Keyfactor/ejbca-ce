@@ -29,10 +29,10 @@ import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
-import se.anatom.ejbca.exception.AuthStatusException;
-import se.anatom.ejbca.exception.AuthLoginException;
-import se.anatom.ejbca.exception.SignRequestException;
-import se.anatom.ejbca.exception.SignRequestSignatureException;
+import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.ca.exception.AuthLoginException;
+import se.anatom.ejbca.ca.exception.SignRequestException;
+import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 
 import org.bouncycastle.jce.*;
 import org.bouncycastle.asn1.x509.*;
@@ -41,7 +41,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.17 2002-03-22 10:11:24 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.18 2002-03-22 11:21:49 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 

@@ -11,13 +11,13 @@ import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ra.UserDataPK;
 import se.anatom.ejbca.ra.UserData;
 import se.anatom.ejbca.ra.UserDataHome;
-import se.anatom.ejbca.exception.AuthStatusException;
-import se.anatom.ejbca.exception.AuthLoginException;
+import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.ca.exception.AuthLoginException;
 
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.4 2002-03-22 10:11:24 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.5 2002-03-22 11:21:49 anatom Exp $
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean implements IAuthenticationSession {
 

@@ -9,15 +9,15 @@ import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 import java.security.PublicKey;
 
-import se.anatom.ejbca.exception.AuthStatusException;
-import se.anatom.ejbca.exception.AuthLoginException;
-import se.anatom.ejbca.exception.SignRequestException;
-import se.anatom.ejbca.exception.SignRequestSignatureException;
+import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.ca.exception.AuthLoginException;
+import se.anatom.ejbca.ca.exception.SignRequestException;
+import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 
 /**
  * Creates certificates.
  *
- * @version $Id: ISignSession.java,v 1.2 2002-03-22 10:11:24 anatom Exp $
+ * @version $Id: ISignSession.java,v 1.3 2002-03-22 11:21:49 anatom Exp $
  */
 public interface ISignSession {
 
