@@ -11,7 +11,6 @@ Fixed bug in 'ca makereq' when rootCA has no CN
 Added encoding=iso8859-1 to javac to fix compile on strange locales
 Fixed API for active directory publisher
 Support for more than two levels of CAs
-Initial support for OCSP
 Fixed small bug if using null revocation date
 Default revocation reason to new reason NOT_REVOKED
 Fixed utitlity method that returned wrong subject key id
