@@ -1,77 +1,58 @@
 package se.anatom.ejbca.ca.sign;
 
-import java.rmi.RemoteException;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
+import java.util.HashMap;
 import java.util.Vector;
+import java.util.Collection;
+import java.rmi.RemoteException;
 
 import javax.ejb.ObjectNotFoundException;
 
-import se.anatom.ejbca.ca.exception.AuthLoginException;
+import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
+import java.security.PublicKey;
+
 import se.anatom.ejbca.ca.exception.AuthStatusException;
-import se.anatom.ejbca.ca.exception.IllegalKeyException;
+import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
-import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ca.exception.IllegalKeyException;
 import se.anatom.ejbca.protocol.IRequestMessage;
 import se.anatom.ejbca.protocol.IResponseMessage;
-
+import se.anatom.ejbca.log.Admin;
 
 /**
  * Creates certificates. Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.16 2003-07-24 08:43:30 anatom Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.17 2003-09-03 17:36:44 herrvendil Exp $
  */
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
-    /**
-     * Retrieves the certificate chain for the signer. The returned certificate chain MUST have the
-     * RootCA certificate in the last position.
-     *
-     * @param admin Information about the administrator or admin preforming the event.
-     *
-     * @return The certificate chain, never null.
-     *
-     * @throws RemoteException if a communication or other error occurs.
-     */
-    public Certificate[] getCertificateChain(Admin admin)
-        throws RemoteException;
+	/**
+	 * Retrieves the certificate chain for the signer. The returned certificate chain MUST have the
+	 * RootCA certificate in the last position.
+	 *
+	 * @param admin Information about the administrator or admin preforming the event.
+	 *
+	 * @return The certificate chain, never null.
+	 *
+	 * @throws RemoteException if a communication or other error occurs.
+	 */
+    public Collection getCertificateChain(Admin admin, int caid) throws RemoteException;
 
-    /**
-     * Creates a signed PKCS7 message containing the whole certificate chain, including the
-     * provided client certificate.
-     *
-     * @param admin Information about the administrator or admin preforming the event.
-     * @param cert client certificate which we want ancapsulated in a PKCS7 together with
-     *        certificate chain. If null, a PKCS7 with only CA certificate chain is returned.
-     *
-     * @return The DER-encoded PKCS7 message.
-     *
-     * @throws SignRequestSignatureException if the provided client certificate was not signed by
-     *         the CA.
-     * @throws IllegalKeyException if the public key is of wrong type.
-     * @throws RemoteException if a communication or other error occurs.
-     */
-    public byte[] createPKCS7(Admin admin, Certificate cert)
-        throws RemoteException, SignRequestSignatureException;
-
-    /**
-     * Requests for a certificate to be created for the passed public key with default key usage
-     * The method queries the user database for authorization of the user.
-     *
-     * @param admin Information about the administrator or admin preforming the event.
-     * @param username unique username within the instance.
-     * @param password password for the user.
-     * @param pk the public key to be put in the created certificate.
-     *
-     * @return The newly created certificate or null.
-     *
-     * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthStatusException If the users status is incorrect.
-     * @throws AuthLoginException If the password is incorrect.
-     * @throws IllegalKeyException if the public key is of wrong type.
-     * @throws RemoteException if a communication or other error occurs.
-     */
+	/**
+	 * Creates a signed PKCS7 message containing the whole certificate chain, including the
+	 * provided client certificate.
+	 *
+	 * @param admin Information about the administrator or admin preforming the event.
+	 * @param cert client certificate which we want ancapsulated in a PKCS7 together with
+	 *        certificate chain. If null, a PKCS7 with only CA certificate chain is returned.
+	 *
+	 * @return The DER-encoded PKCS7 message.
+	 *
+	 * @throws SignRequestSignatureException if the provided client certificate was not signed by
+	 *         the CA.
+	 * @throws IllegalKeyException if the public key is of wrong type.
+	 * @throws RemoteException if a communication or other error occurs.
+	 */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk)
         throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, 
             IllegalKeyException;
@@ -298,16 +279,26 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
         throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, 
             IllegalKeyException, SignRequestException, SignRequestSignatureException;
 
-    /**
-     * Requests for a CRL to be created with the passed (revoked) certificates.
-     *
-     * @param admin Information about the administrator or admin preforming the event.
-     * @param certs vector of RevokedCertInfo object.
-     *
-     * @return The newly created CRL or null.
-     *
-     * @throws RemoteException if a communication or other error occurs.
-     */
-    public X509CRL createCRL(Admin admin, Vector certs)
-        throws RemoteException;
+	/**
+	 * Requests for a CRL to be created with the passed (revoked) certificates.
+	 *
+	 * @param admin Information about the administrator or admin preforming the event.
+	 * @param certs vector of RevokedCertInfo object.
+	 *
+	 * @return The newly created CRL or null.
+	 *
+	 * @throws RemoteException if a communication or other error occurs.
+	 */
+    public X509CRL createCRL(Admin admin, int caid, Vector certs) throws RemoteException;
+    
+   /**
+    * Method that publishes the given CA certificate chain to the list of publishers.
+    * Is mainly used by CAAdminSessionBean when CA is created.
+    */
+    public void publishCACertificate(Admin admin, Collection certificatechain, Collection publishers, boolean rootca) throws RemoteException;
+
+    public HashMap getPublisherIdToNameMap(Admin admin) throws RemoteException;
 }
+
+
+
