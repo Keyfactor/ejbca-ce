@@ -1,6 +1,6 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.16 2003-03-20 15:39:34 anatom Exp $
+$Id: FAQ,v 1.17 2003-03-20 15:40:56 anatom Exp $
 
 ---------
 Q : How do I connect to, and alter data in the built-in 'Hypersonic SQL'
@@ -60,8 +60,8 @@ A : EJBCA supports in theory any database that works with the application
 server. The database must have support for long fields, a CRL can in theory
 become very large.
 EJBCA has been known to work with MySQL, PostgreSQL, Oracle, Sybase,
-InstantDB and SAPDD.
-Other databases should work woth simple configuration.
+InstantDB, SAPDB and MSSQL 2000.
+Other databases should work with simple configuration.
 
 -----
 Q : When using JDK 1.4.x i get a java.io.InvalidClassException?
