@@ -1,6 +1,5 @@
 package se.anatom.ejbca.ra.authorization;
 
-import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import org.apache.log4j.Logger;
 import se.anatom.ejbca.BaseEntityBean;
@@ -13,7 +12,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * Name
  * </pre>
  *
- * @version $Id: AvailableAccessRulesDataBean.java,v 1.3 2003-02-28 09:26:46 koen_serry Exp $
+ * @version $Id: AvailableAccessRulesDataBean.java,v 1.4 2003-03-01 14:48:56 anatom Exp $
  */
 
 public abstract class AvailableAccessRulesDataBean extends BaseEntityBean {

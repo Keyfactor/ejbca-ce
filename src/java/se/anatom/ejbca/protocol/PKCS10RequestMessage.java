@@ -1,6 +1,5 @@
 package se.anatom.ejbca.protocol;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -17,7 +16,7 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.10 2003-02-17 11:39:22 scop Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.11 2003-03-01 14:49:13 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
 

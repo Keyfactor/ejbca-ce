@@ -34,18 +34,18 @@ public class EIDHardToken extends HardToken{
     
     // Public Overloaded Methods.
     public int getNumberOfFields(){
-      return this.FIELDS.length;  
+      return EIDHardToken.FIELDS.length;  
     }
     public String getFieldText(int index){
-      return this.FIELDTEXTS[index];   
+      return EIDHardToken.FIELDTEXTS[index];   
     }
     
     public String getFieldPointer(int index){
-      return this.FIELDS[index];  
+      return EIDHardToken.FIELDS[index];  
     }
     
     public int getFieldDataType(int index){
-      return this.DATATYPES[index];   
+      return EIDHardToken.DATATYPES[index];   
     }
     
 

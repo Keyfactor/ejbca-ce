@@ -3,7 +3,6 @@ package se.anatom.ejbca.webdist.cainterface;
 import javax.naming.*;
 import javax.ejb.CreateException;
 import java.rmi.RemoteException;
-import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import javax.servlet.http.HttpServletRequest;
@@ -29,7 +28,7 @@ import se.anatom.ejbca.log.Admin;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.12 2003-01-12 17:16:34 anatom Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.13 2003-03-01 14:48:56 anatom Exp $
  */
 public class CAInterfaceBean   {
 

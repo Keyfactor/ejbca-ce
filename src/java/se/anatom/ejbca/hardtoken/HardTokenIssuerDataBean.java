@@ -1,6 +1,5 @@
 package se.anatom.ejbca.hardtoken;
 
-import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import java.util.HashMap;
 import java.math.BigInteger;
@@ -19,7 +18,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *  hardtokenissuer (Data saved concerning the hard token issuer)
  * </pre>
  *
- * @version $Id: HardTokenIssuerDataBean.java,v 1.3 2003-02-28 09:25:16 koen_serry Exp $
+ * @version $Id: HardTokenIssuerDataBean.java,v 1.4 2003-03-01 14:48:55 anatom Exp $
  **/
 
 public abstract class HardTokenIssuerDataBean extends BaseEntityBean {

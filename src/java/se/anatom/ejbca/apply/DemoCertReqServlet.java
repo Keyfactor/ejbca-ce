@@ -28,7 +28,6 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
-import se.anatom.ejbca.ca.exception.IllegalKeyException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
@@ -81,7 +80,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.20 2003-02-27 13:01:24 koen_serry Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.21 2003-03-01 14:49:13 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 

@@ -1,12 +1,10 @@
 package se.anatom.ejbca.log;
 
-import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import java.util.Date;
 
 import se.anatom.ejbca.BaseEntityBean;
 import se.anatom.ejbca.util.StringTools;
-
 
 /** Entity bean should not be used directly, use though Session beans.
  *
@@ -23,7 +21,7 @@ import se.anatom.ejbca.util.StringTools;
  *  comment an optional comment of the event.
  * </pre>
  *
- * @version $Id: LogEntryDataBean.java,v 1.4 2003-02-28 09:26:11 koen_serry Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.5 2003-03-01 14:48:56 anatom Exp $
  **/
 
 public abstract class LogEntryDataBean extends BaseEntityBean {

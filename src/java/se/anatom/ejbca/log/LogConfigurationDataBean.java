@@ -1,6 +1,5 @@
 package se.anatom.ejbca.log;
 
-import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import org.apache.log4j.Logger;
 import se.anatom.ejbca.BaseEntityBean;
@@ -16,7 +15,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * logentryrownumber is the number of the last row number in the log entry database.
  * </pre>
  *
- * @version $Id: LogConfigurationDataBean.java,v 1.4 2003-02-28 09:26:12 koen_serry Exp $
+ * @version $Id: LogConfigurationDataBean.java,v 1.5 2003-03-01 14:48:56 anatom Exp $
  */
 public abstract class LogConfigurationDataBean extends BaseEntityBean {
 

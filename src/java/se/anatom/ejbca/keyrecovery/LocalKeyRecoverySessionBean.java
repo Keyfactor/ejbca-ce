@@ -1,12 +1,8 @@
 package se.anatom.ejbca.keyrecovery;
 
 import java.rmi.*;
-import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.Date;
 import java.sql.*;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -15,7 +11,6 @@ import javax.naming.*;
 import javax.ejb.*;
 
 import org.apache.log4j.*;
-import RegularExpression.RE;
 
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.BaseSessionBean;
@@ -23,7 +18,6 @@ import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.LogEntry;
-import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
@@ -33,7 +27,7 @@ import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
  * Stores key recovery data.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.2 2003-02-28 09:25:56 koen_serry Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.3 2003-03-01 14:48:56 anatom Exp $
  */
 public class LocalKeyRecoverySessionBean extends BaseSessionBean  {
 

@@ -3,15 +3,12 @@ package se.anatom.ejbca.admin;
 
 
 import javax.naming.*;
-import javax.ejb.FinderException;
 
 import se.anatom.ejbca.ra.UserDataRemote;
-import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.util.CertTools;
 
 /** Find details of a user in the database.
  *

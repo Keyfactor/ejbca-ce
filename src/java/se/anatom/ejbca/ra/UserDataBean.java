@@ -1,10 +1,7 @@
 package se.anatom.ejbca.ra;
 
-import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
-
 import java.util.Date;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -15,7 +12,6 @@ import se.anatom.ejbca.BaseEntityBean;
 import se.anatom.ejbca.SecConst;
 
 import org.apache.log4j.Logger;
-
 
 /** Entity bean should not be used directly, use though Session beans.
  *
@@ -42,7 +38,7 @@ import org.apache.log4j.Logger;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.19 2003-02-28 09:32:29 koen_serry Exp $
+ * @version $Id: UserDataBean.java,v 1.20 2003-03-01 14:48:55 anatom Exp $
  */
 public abstract class UserDataBean extends BaseEntityBean {
 

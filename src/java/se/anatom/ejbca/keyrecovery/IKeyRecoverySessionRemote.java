@@ -1,15 +1,13 @@
 package se.anatom.ejbca.keyrecovery;
-import java.util.Collection;
-import java.math.BigInteger;
+
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.rmi.RemoteException;
 import se.anatom.ejbca.log.Admin;
 
-
 /**
  *
- * @version $Id: IKeyRecoverySessionRemote.java,v 1.1 2003-02-12 13:21:30 herrvendil Exp $
+ * @version $Id: IKeyRecoverySessionRemote.java,v 1.2 2003-03-01 14:48:56 anatom Exp $
  */
 public interface IKeyRecoverySessionRemote extends javax.ejb.EJBObject {
                

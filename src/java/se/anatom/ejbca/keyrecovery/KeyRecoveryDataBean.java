@@ -1,15 +1,11 @@
 package se.anatom.ejbca.keyrecovery;
 
-import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import java.math.BigInteger;
-import java.util.Date;
 import java.security.KeyPair;
 import org.apache.log4j.*;
 
 import se.anatom.ejbca.BaseEntityBean;
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.StringTools;
 
 /** Entity bean should not be used directly, use though Session beans.
@@ -25,7 +21,7 @@ import se.anatom.ejbca.util.StringTools;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.4 2003-02-28 09:25:57 koen_serry Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.5 2003-03-01 14:48:55 anatom Exp $
  **/
 
 public abstract class KeyRecoveryDataBean extends BaseEntityBean {

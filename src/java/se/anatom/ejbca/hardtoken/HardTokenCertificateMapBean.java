@@ -1,6 +1,5 @@
 package se.anatom.ejbca.hardtoken;
 
-import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 
 import org.apache.log4j.Logger;
@@ -15,7 +14,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *  tokensn 
  * </pre>
  *
- * @version $Id: HardTokenCertificateMapBean.java,v 1.5 2003-02-28 09:25:16 koen_serry Exp $
+ * @version $Id: HardTokenCertificateMapBean.java,v 1.6 2003-03-01 14:48:55 anatom Exp $
  */
 public abstract class HardTokenCertificateMapBean extends BaseEntityBean {
 

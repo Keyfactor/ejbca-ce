@@ -1,6 +1,5 @@
 package se.anatom.ejbca.ra.raadmin;
 
-import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import java.util.HashMap;
 import org.apache.log4j.Logger;
@@ -16,7 +15,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * Profile data
  * </pre>
  *
- * @version $Id: EndEntityProfileDataBean.java,v 1.3 2003-02-28 09:32:17 koen_serry Exp $
+ * @version $Id: EndEntityProfileDataBean.java,v 1.4 2003-03-01 14:48:56 anatom Exp $
  */
 public abstract class EndEntityProfileDataBean extends BaseEntityBean {
 

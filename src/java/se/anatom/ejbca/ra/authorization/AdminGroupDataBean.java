@@ -1,6 +1,5 @@
 package se.anatom.ejbca.ra.authorization;
 
-import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.RemoveException;
@@ -24,7 +23,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.5 2003-02-28 09:26:46 koen_serry Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.6 2003-03-01 14:48:56 anatom Exp $
  */
 public abstract class AdminGroupDataBean extends BaseEntityBean {
 

@@ -1,6 +1,5 @@
 package se.anatom.ejbca.hardtoken;
 
-import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import java.util.HashMap;
 import java.util.Date;
@@ -24,7 +23,7 @@ import se.anatom.ejbca.util.StringTools;
  *  data (Data saved concerning the hard token)
  * </pre>
  *
- * @version $Id: HardTokenDataBean.java,v 1.4 2003-02-28 09:25:16 koen_serry Exp $
+ * @version $Id: HardTokenDataBean.java,v 1.5 2003-03-01 14:48:55 anatom Exp $
  */
 public abstract class HardTokenDataBean extends BaseEntityBean {
 

@@ -1,6 +1,5 @@
 package se.anatom.ejbca.ra;
 
-import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import java.util.HashMap;
 import org.apache.log4j.Logger;
@@ -16,7 +15,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * GlobalConfiguration
  * </pre>
  *
- * @version $Id: GlobalConfigurationDataBean.java,v 1.5 2003-02-28 09:32:29 koen_serry Exp $
+ * @version $Id: GlobalConfigurationDataBean.java,v 1.6 2003-03-01 14:48:55 anatom Exp $
  */
 public abstract class GlobalConfigurationDataBean extends BaseEntityBean {
 

@@ -1,6 +1,5 @@
 package se.anatom.ejbca.ca.store;
 
-import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import java.security.cert.*;
 import java.io.IOException;
@@ -25,7 +24,7 @@ import se.anatom.ejbca.util.Base64;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.9 2003-02-28 09:17:46 koen_serry Exp $
+ * @version $Id: CRLDataBean.java,v 1.10 2003-03-01 14:48:55 anatom Exp $
  */
 public abstract class CRLDataBean extends BaseEntityBean {
 

@@ -1,6 +1,5 @@
 package se.anatom.ejbca.ca.store;
 
-import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import java.security.cert.*;
 import java.io.IOException;
@@ -33,7 +32,7 @@ import se.anatom.ejbca.ca.crl.RevokedCertInfo;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.16 2003-02-28 09:17:46 koen_serry Exp $
+ * @version $Id: CertificateDataBean.java,v 1.17 2003-03-01 14:48:55 anatom Exp $
  */
 public abstract class CertificateDataBean extends BaseEntityBean{
 

@@ -1,6 +1,5 @@
 package se.anatom.ejbca.ca.store;
 
-import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import org.apache.log4j.Logger;
 

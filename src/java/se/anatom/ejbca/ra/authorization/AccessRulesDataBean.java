@@ -1,10 +1,8 @@
 package se.anatom.ejbca.ra.authorization;
 
-import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import org.apache.log4j.Logger;
 import se.anatom.ejbca.BaseEntityBean;
-
 
 /** Entity bean should not be used directly, use though Session beans.
  *
@@ -15,7 +13,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * Access rule
  * </pre>
  *
- * @version $Id: AccessRulesDataBean.java,v 1.5 2003-02-28 09:26:45 koen_serry Exp $
+ * @version $Id: AccessRulesDataBean.java,v 1.6 2003-03-01 14:48:56 anatom Exp $
  */
 public abstract class AccessRulesDataBean extends BaseEntityBean
 {
