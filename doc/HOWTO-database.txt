@@ -10,11 +10,12 @@ The following databases have been tested with EJBCA:
 
 NOTE:
 
-To use the default database, HypersonicDB, nothing should be done, just install 
+To use the default database, HypersonicDB, nothing should be done, just install
 JBoss and run. Read this HOWTO if you want to replace the default database with
 another.
 
-When using another database the default database, HypersoniqDB, should be removed 
+When using another database the default database, HypersoniqDB, should be
+removed
 completely. The section "JBossCX setup" must be edited for this.
 
 NOW ON TO THE HOWTO!
@@ -22,7 +23,7 @@ NOW ON TO THE HOWTO!
 Configuring EJBCA
 -----------------
 
-1. Rename src/ca/META-INF/jaws-<database>.xml to jaws.xml. If no specific 
+1. Rename src/ca/META-INF/jaws-<database>.xml to jaws.xml. If no specific
 jaws-<database>.xml file is supplied the default jaws.xml is used.
    Make sure src/ca/META-INF/jaws.xml contains entries to set the correct type-
    mappings for 'b64cert' and 'b64crl' for the database used.
@@ -32,26 +33,29 @@ jaws-<database>.xml file is supplied the default jaws.xml is used.
 Configuring JBoss
 -----------------
 
-The description given here is for JBoss 2.4.x, for JBoss 3.x please consult the 
+The description given here is for JBoss 2.4.x, for JBoss 3.x please consult the
 official JBoss documentation.
 
-First comes the general description and in the end database specific configurations 
+First comes the general description and in the end database specific
+configurations
 are given in sections for the specific databases.
 
-Configuration files in JBoss (with Tomcat or Jetty) is located in the jboss/conf/Tomcat 
+Configuration files in JBoss (with Tomcat or Jetty) is located in the
+jboss/conf/Tomcat
 or Jetty directory.
 
 1. Install and setup the database.
 
-2. Create a database for EJBCA, eg: ejbca
+2. Create a database for EJBCA, for example 'ejbca'.
 
 2. Put the JDBC driver for the database in jboss/lib/ext.
 
-4. Edit jboss.jcml. The JDBC-driver must be inluded and the database set up as DefaultDS.
+4. Edit jboss.jcml. The JDBC-driver must be inluded and the database set up as
+DefaultDS.
 Edit the JDBC section to look like one of the sample configuration given below.
 
-6. Edit standardjaws.xml. Change the default type-mapping to match the chosen 
-database (see below). 
+6. Edit standardjaws.xml. Change the default type-mapping to match the chosen
+database (see below).
 
 7. DONE! Start JBoss. Run all tests with 'runtest.sh/cmd'.
    Use your favorite database graphic editor to look at the beautiful tables.
@@ -70,13 +74,17 @@ The JDBC section should look something like:
      <!-- JDBC-->
      <!-- =======================================================-->
 
-     <mbean code="org.jboss.jdbc.JdbcProvider" name="DefaultDomain:service=JdbcProvider">
-          <attribute name="Drivers">org.gjt.mm.mysql.Driver,org.hsqldb.jdbcDriver</attribute>
+     <mbean code="org.jboss.jdbc.JdbcProvider" name="DefaultDomain:service=
+     JdbcProvider">
+          <attribute name="Drivers">
+          org.gjt.mm.mysql.Driver,org.hsqldb.jdbcDriver</attribute>
      </mbean>
 
-     <mbean code="org.jboss.jdbc.XADataSourceLoader" name="DefaultDomain:service=XADataSource,name=DefaultDS">
+     <mbean code="org.jboss.jdbc.XADataSourceLoader"
+     name="DefaultDomain:service=XADataSource,name=DefaultDS">
        <attribute name="PoolName">DefaultDS</attribute>
-       <attribute name="DataSourceClass">org.jboss.pool.jdbc.xa.wrapper.XADataSourceImpl</attribute>
+       <attribute name="DataSourceClass">
+       org.jboss.pool.jdbc.xa.wrapper.XADataSourceImpl</attribute>
        <attribute name="Properties"></attribute>
        <attribute name="URL">jdbc:mysql://localhost/ejbca</attribute>
        <attribute name="JDBCUser">root</attribute>
@@ -91,9 +99,9 @@ The JDBC section should look something like:
      </mbean>
 
 Type mapping:
-     
+
      <datasource>java:/DefaultDS</datasource>
-     <type-mapping>mySQL</type-mapping>     
+     <type-mapping>mySQL</type-mapping>
 
 PostgreSQL specifics
 --------------------
@@ -109,13 +117,16 @@ The JDBC section should look something like:
      <!-- JDBC-->
      <!-- =======================================================-->
 
-     <mbean code="org.jboss.jdbc.JdbcProvider" name="DefaultDomain:service=JdbcProvider">
+     <mbean code="org.jboss.jdbc.JdbcProvider" name="DefaultDomain:service=
+     JdbcProvider">
           <attribute name="Drivers">org.postgresql.Driver</attribute>
      </mbean>
 
-     <mbean code="org.jboss.jdbc.XADataSourceLoader" name="DefaultDomain:service=XADataSource,name=DefaultDS">
+     <mbean code="org.jboss.jdbc.XADataSourceLoader"
+     name="DefaultDomain:service=XADataSource,name=DefaultDS">
        <attribute name="PoolName">DefaultDS</attribute>
-       <attribute name="DataSourceClass">org.jboss.pool.jdbc.xa.wrapper.XADataSourceImpl</attribute>
+       <attribute name="DataSourceClass">
+       org.jboss.pool.jdbc.xa.wrapper.XADataSourceImpl</attribute>
        <attribute name="Properties"></attribute>
        <attribute name="URL">jdbc:postgresql://localhost/ejbca</attribute>
        <attribute name="JDBCUser">postgres</attribute>
@@ -175,3 +186,4 @@ Type Mapping:
 
 (Configure JBoss to create primary key in db if you like, see
 http://www.jboss.org/online-manual/HTML/ch06s03.html)
+
