@@ -4,6 +4,7 @@ We have moved to EJB 2.0. JBoss 3 is now required.
 A complete reinstall from EJBCA 1.x is required, old jars, wars and ears must be
 deleted.
 Database schema has changed, old data in the database must be migrated.
+A Web GUI for administration is available through https, see doc/README for installation instructions.
 
 EJBCA V1.3
 ----------

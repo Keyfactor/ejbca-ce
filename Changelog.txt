@@ -2,6 +2,7 @@
 ---
 Moved to EJB 2.0 (JBoss 3 now required).
 Changed Entity beans and database schema slightly, for EJB 2.0
+Web GUI for administration.
 Uses EJB Local interfaces for greatly improved speed.
 Made type of signing device completely soft configurable.
 Many small improvements.
