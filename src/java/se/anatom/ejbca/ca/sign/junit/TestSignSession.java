@@ -1,41 +1,43 @@
 package se.anatom.ejbca.ca.sign.junit;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.Provider;
 import java.security.Security;
-import java.security.cert.*;
-import java.security.interfaces.*;
-import java.util.*;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPrivateKey;
+import java.util.Arrays;
+import java.util.Iterator;
 
 import javax.ejb.DuplicateKeyException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
-
-import org.bouncycastle.asn1.*;
-import org.bouncycastle.jce.*;
-
-import junit.framework.*;
+import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
-import se.anatom.ejbca.ca.sign.*;
+import se.anatom.ejbca.ca.sign.ISignSessionHome;
+import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.protocol.PKCS10RequestMessage;
-import se.anatom.ejbca.protocol.ScepRequestMessage;
-import se.anatom.ejbca.ra.*;
-import se.anatom.ejbca.util.*;
+import se.anatom.ejbca.ra.UserDataHome;
+import se.anatom.ejbca.ra.UserDataPK;
+import se.anatom.ejbca.ra.UserDataRemote;
+import se.anatom.ejbca.util.Base64;
+import se.anatom.ejbca.util.CertTools;
 
 
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.24 2003-07-24 08:43:30 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.25 2003-09-03 17:44:29 herrvendil Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -111,6 +113,7 @@ public class TestSignSession extends TestCase {
     private static ISignSessionRemote remote;
     private static UserDataHome userhome;
     private static KeyPair keys;
+    private static int caid;
 
     /**
      * Creates a new TestSignSession object.
@@ -133,7 +136,9 @@ public class TestSignSession extends TestCase {
         Object obj = ctx.lookup("RSASignSession");
         home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
         remote = home.create();
-
+        Iterator certs = remote.getCertificateChain(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), "TODO".hashCode()).iterator();
+        caid = ((X509Certificate) certs.next()).getIssuerDN().toString().hashCode();           
+        
         Object obj1 = ctx.lookup("UserData");
         userhome = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj1, UserDataHome.class);
 
@@ -186,7 +191,7 @@ public class TestSignSession extends TestCase {
         boolean userExists = false;
 
         try {
-            UserDataRemote createdata = userhome.create("foo", "foo123", "C=SE, O=AnaTom, CN=foo");
+            UserDataRemote createdata = userhome.create("foo", "foo123", "C=SE, O=AnaTom, CN=foo", caid);
             assertNotNull("Failed to create user foo", createdata);
             createdata.setType(SecConst.USER_ENDUSER);
             createdata.setSubjectEmail("foo@anatom.se");
@@ -411,7 +416,7 @@ public class TestSignSession extends TestCase {
         boolean userExists = false;
 
         try {
-            UserDataRemote createdata = userhome.create("swede", "foo123", "C=SE, O=ÅÄÖ, CN=åäö");
+            UserDataRemote createdata = userhome.create("swede", "foo123", "C=SE, O=ÅÄÖ, CN=åäö", caid);
             assertNotNull("Failed to create user foo", createdata);
             createdata.setType(SecConst.USER_ENDUSER);
             createdata.setSubjectEmail("swede@anatom.se");
