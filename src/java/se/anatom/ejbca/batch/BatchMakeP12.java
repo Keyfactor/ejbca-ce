@@ -40,7 +40,7 @@ import se.anatom.ejbca.util.P12toPEM;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.45 2003-11-23 09:47:53 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.46 2004-03-04 11:08:29 anatom Exp $
  */
 public class BatchMakeP12 {
     /** For logging */
@@ -259,8 +259,9 @@ public class BatchMakeP12 {
             keyrecoverysession.addKeyRecoveryData(administrator, cert, username, rsaKeys);
         }
 
-        // Use username as alias in the keystore
-        String alias = username;
+        // Use CN if as alias in the keystore, if CN is not present use username
+        String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
+        if (alias == null) alias = username;
 
         // Store keys and certificates in keystore.
         KeyStore ks = null;
@@ -274,9 +275,7 @@ public class BatchMakeP12 {
         storeKeyStore(ks, username, password, createJKS, createPEM);
         log.info("Created Keystore for " + username + ".");
         log.debug("<createUser: username=" + username);
-    }
-
-    // createUser
+    } // createUser
 
     /**
      * Does the deed with one user...

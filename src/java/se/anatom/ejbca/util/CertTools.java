@@ -17,7 +17,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.54 2004-03-04 10:36:58 anatom Exp $
+ * @version $Id: CertTools.java,v 1.55 2004-03-04 11:08:46 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -234,7 +234,7 @@ public class CertTools {
         log.debug("<getpartFromDN: resulting DN part=" + part);
 
         return part;
-    } //getCNFromDN
+    } //getPartFromDN
 
     /**
      * Gets subject DN in the format we are sure about (BouncyCastle),supporting UTF8.
