@@ -28,7 +28,7 @@ surd0007(at)yahoo.com.cn, install guide.
 Mike Jackson <mj(at)sci.fi>, Proper LDAP schema. Device certificate schemas.
 Stephane Bailliez <sbailliez(at)linagora.com>, patches all over, XDoclet.
 Yannick Quenec'hdu <yquenechdu(at)linagora.com> french translation.
-James A. Rome <jar(at)ornl.gov>, additional 'Use fields in DN' for publisher.
+James A. Rome <jar(at)ornl.gov>, additional 'Use fields in DN' for publisher, JKStoPEM, lots of testing and input.
 Manuel Ruiz <mruiz(at)safa.es>, make admin commands flexible and usable from within java-code.
 Risto Laanoja <risto.laanoja(at)eyp.ee>, fix for integer overflow when setting CRLPeriod longer than 596 hours.
 Giampaolo Tomassoni <Giampaolo(at)Tomassoni.biz>, PostgresSQL 8.0.
