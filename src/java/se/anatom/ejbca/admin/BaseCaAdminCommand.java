@@ -1,4 +1,3 @@
-
 package se.anatom.ejbca.admin;
 
 import java.io.*;
@@ -28,7 +27,7 @@ import se.anatom.ejbca.log.Admin;
 
 /** Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.8 2003-01-12 17:16:30 anatom Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.9 2003-01-27 13:46:50 scop Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
 
@@ -84,9 +83,9 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         DEROutputStream dOut = new DEROutputStream(bOut);
         dOut.writeObject(req);
         dOut.close();
-        ByteArrayInputStream bIn = new ByteArrayInputStream(bOut.toByteArray());
-        DERInputStream dIn = new DERInputStream(bIn);
-        PKCS10CertificationRequest req2 = new PKCS10CertificationRequest((DERConstructedSequence)dIn.readObject());
+
+        PKCS10CertificationRequest req2 =
+          new PKCS10CertificationRequest(bOut.toByteArray());
         boolean verify = req2.verify();
         System.out.println("Verify returned " + verify);
         if (verify == false) {

@@ -31,7 +31,7 @@ import junit.framework.*;
 
 /** Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.18 2003-01-24 09:04:03 scop Exp $
+ * @version $Id: TestSignSession.java,v 1.19 2003-01-27 13:47:02 scop Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -229,9 +229,9 @@ public class TestSignSession extends TestCase {
         DEROutputStream dOut = new DEROutputStream(bOut);
         dOut.writeObject(req);
         dOut.close();
-        ByteArrayInputStream bIn = new ByteArrayInputStream(bOut.toByteArray());
-        DERInputStream dIn = new DERInputStream(bIn);
-        PKCS10CertificationRequest req2 = new PKCS10CertificationRequest((DERConstructedSequence)dIn.readObject());
+
+        PKCS10CertificationRequest req2 =
+          new PKCS10CertificationRequest(bOut.toByteArray());
         boolean verify = req2.verify();
         cat.debug("Verify returned " + verify);
         if (verify == false) {
