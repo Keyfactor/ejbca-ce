@@ -1,4 +1,4 @@
-$Id: README,v 1.78 2003-03-26 08:56:44 anatom Exp $
+$Id: README,v 1.79 2003-03-28 08:44:18 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source Initiative.
@@ -128,8 +128,8 @@ QUICK START GUIDE
 Build
 =====
 Needed to build and run are:
-JDK (1.4.x, also works with 1.3.1_x)
-JBOSS 3.0.x (with Tomcat 4.1.x, Jetty does not support CLIENT-CERT yet)
+JDK 1.4.x
+JBOSS 3.0.x (with Tomcat 4.1.x or Jetty)
 Ant 1.4.x/1.5.x to build (http://jakarta.apache.org/ant/)
 (Bouncycastle JCE provider, distributed with EJBCA see above)
 
