@@ -74,7 +74,7 @@ import se.anatom.ejbca.protocol.PKCS10RequestMessage;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.22 2002-11-17 14:01:40 herrvendil Exp $
+ * @version $Id: CertReqServlet.java,v 1.23 2003-01-12 15:37:07 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
@@ -117,7 +117,7 @@ public class CertReqServlet extends HttpServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
 
-        Debug debug = new Debug(request,response);
+        ServletDebug debug = new ServletDebug(request,response);
         try {
             String username        = request.getParameter("user");
             String password        = request.getParameter("password");
@@ -128,6 +128,8 @@ public class CertReqServlet extends HttpServlet {
               keylength = Integer.parseInt(keylengthstring);  
             
             administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
+            RequestHelper helper = new RequestHelper(home, administrator, debug);
+            
             cat.debug("Got request for " + username + "/" + password);
             debug.print("<h3>username: "+username+"</h3>");
             
@@ -160,8 +162,8 @@ public class CertReqServlet extends HttpServlet {
                   byte[] reqBytes=request.getParameter("keygen").getBytes();
                   cat.debug("Received NS request:"+new String(reqBytes));
                   if (reqBytes != null) {
-                      byte[] certs = nsCertRequest(reqBytes, username, password, debug);
-                      sendNewCertToNSClient(certs, response);
+                      byte[] certs = helper.nsCertRequest(reqBytes, username, password);
+                      helper.sendNewCertToNSClient(certs, response);
                   }
               } else if ( (request.getParameter("pkcs10") != null) || (request.getParameter("PKCS10") != null) ) {
                   // if not netscape, check if it's IE
@@ -170,18 +172,18 @@ public class CertReqServlet extends HttpServlet {
                       reqBytes=request.getParameter("PKCS10").getBytes();
                   cat.debug("Received IE request:"+new String(reqBytes));
                   if (reqBytes != null) {
-                      byte[] b64cert=pkcs10CertRequest(
-                          reqBytes, username, password, debug);
+                      byte[] b64cert=helper.pkcs10CertRequest(
+                          reqBytes, username, password);
                       debug.ieCertFix(b64cert);
-                      sendNewCertToIEClient(b64cert, response.getOutputStream());
+                      helper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"));
                   }
               } else if (request.getParameter("pkcs10req") != null) {
                   // if not IE, check if it's manual request
                   byte[] reqBytes=request.getParameter("pkcs10req").getBytes();
                   if (reqBytes != null) {
-                      byte[] b64cert=pkcs10CertRequest(
-                          reqBytes, username, password, debug);
-                      sendNewB64Cert(b64cert, response);
+                      byte[] b64cert=helper.pkcs10CertRequest(
+                          reqBytes, username, password);
+                      helper.sendNewB64Cert(b64cert, response);
                   }
               }
             }  
@@ -237,83 +239,11 @@ public class CertReqServlet extends HttpServlet {
 
     public void doGet(HttpServletRequest request,  HttpServletResponse response) throws java.io.IOException, ServletException {
         cat.debug(">doGet()");
-        Debug debug = new Debug(request,response);
+        ServletDebug debug = new ServletDebug(request,response);
         debug.print("The certificate request servlet only handles POST method.");
         debug.printDebugInfo();
         cat.debug("<doGet()");
     } // doGet
-
-    private void ieCertFormat(byte[] bA, PrintStream out) throws Exception {
-        BufferedReader br=new BufferedReader(
-            new InputStreamReader(new ByteArrayInputStream(bA)) );
-        int rowNr=0;
-        while ( true ){
-            String line=br.readLine();
-            if (line==null)
-                break;
-            if ( line.indexOf("END CERT")<0 ) {
-                if ( line.indexOf(" CERT")<0 ) {
-                    if ( ++rowNr>1 )
-                        out.println(" & _ ");
-                    else
-                        out.print("    cert = ");
-                    out.print('\"'+line+'\"');
-                }
-            } else
-                break;
-        }
-        out.println();
-    }
-
-    private void sendNewCertToIEClient(byte[] b64cert, OutputStream out)
-        throws Exception {
-        PrintStream ps = new PrintStream(out);
-        BufferedReader br = new BufferedReader(
-            new InputStreamReader(
-                getServletContext().getResourceAsStream(
-                    getInitParameter("responseTemplate"))
-                    ));
-        while ( true ){
-            String line=br.readLine();
-            if ( line==null )
-                break;
-            if ( line.indexOf("cert =")<0 )
-                ps.println(line);
-            else
-                ieCertFormat(b64cert, ps);
-        }
-        ps.close();
-        cat.debug("Sent reply to IE client");
-        cat.debug(new String(b64cert));
-    }
-
-    private void sendNewCertToNSClient(byte[] certs, HttpServletResponse out)
-        throws Exception {
-        // Set content-type to what NS wants
-        out.setContentType("application/x-x509-user-cert");
-        out.setContentLength(certs.length);
-        // Print the certificate
-        out.getOutputStream().write(certs);
-        cat.debug("Sent reply to NS client");
-        cat.debug(new String(Base64.encode(certs)));
-    }
-    private void sendNewB64Cert(byte[] b64cert, HttpServletResponse out)
-        throws Exception {
-        // Set content-type to general file
-        out.setContentType("application/octet-stream");
-        out.setHeader("Content-disposition", "filename=cert.pem");
-        String beg = "-----BEGIN CERTIFICATE-----\n";
-        String end = "\n-----END CERTIFICATE-----\n";
-        out.setContentLength(b64cert.length+beg.length()+end.length());
-        // Write the certificate
-        ServletOutputStream os = out.getOutputStream();
-        os.write(beg.getBytes());
-        os.write(b64cert);
-        os.write(end.getBytes());
-        out.flushBuffer();
-        cat.debug("Sent reply to client");
-        cat.debug(new String(b64cert));
-    }
     
     private void sendP12Token(KeyStore ks, String username, String kspassword, HttpServletResponse out)
        throws Exception {              
@@ -485,149 +415,6 @@ public class CertReqServlet extends HttpServlet {
         return ks;
     }
 
-    /**
-     * Handles NetScape certificate request (KEYGEN), these are constructed as:
-     * <pre><code>
-     *   SignedPublicKeyAndChallenge ::= SEQUENCE {
-     *     publicKeyAndChallenge    PublicKeyAndChallenge,
-     *     signatureAlgorithm   AlgorithmIdentifier,
-     *     signature        BIT STRING
-     *   }
-     * </pre>
-     *
-     * PublicKey's encoded-format has to be RSA X.509.
-     * @return byte[] containing DER-encoded certificate.
-     */
-    private byte[] nsCertRequest(byte[] reqBytes, String username, String password, Debug debug)
-        throws Exception {
-            byte[] buffer = Base64.decode(reqBytes);
-            DERInputStream  in = new DERInputStream(new ByteArrayInputStream(buffer));
-            DERConstructedSequence spkac = (DERConstructedSequence)in.readObject();
-            NetscapeCertRequest nscr = new NetscapeCertRequest (spkac);
-            // Verify POPO, we don't care about the challenge, it's not important.
-            nscr.setChallenge("challenge");
-            if (nscr.verify("challenge") == false)
-                throw new SignRequestSignatureException("Invalid signature in NetscapeCertRequest, popo-verification failed.");
-            cat.debug("POPO verification succesful");
-            ISignSessionRemote ss = home.create();
-            X509Certificate cert = (X509Certificate) ss.createCertificate(administrator, username, password, nscr.getPublicKey());
-            //Certificate[] chain = ss.getCertificateChain();
 
-            byte[] pkcs7 = ss.createPKCS7(administrator, cert);
-            cat.debug("Created certificate (PKCS7) for "+ username);
-            debug.print("<h4>Generated certificate:</h4>");
-            debug.printInsertLineBreaks(cert.toString().getBytes());
-            return pkcs7;
-    } //nsCertRequest
-
-    /**
-     * Handles PKCS10 certificate request, these are constructed as:
-     * <pre><code>
-     * CertificationRequest ::= SEQUENCE {
-     * certificationRequestInfo  CertificationRequestInfo,
-     * signatureAlgorithm          AlgorithmIdentifier{{ SignatureAlgorithms }},
-     * signature                       BIT STRING
-     * }
-     * CertificationRequestInfo ::= SEQUENCE {
-     * version             INTEGER { v1(0) } (v1,...),
-     * subject             Name,
-     * subjectPKInfo   SubjectPublicKeyInfo{{ PKInfoAlgorithms }},
-     * attributes          [0] Attributes{{ CRIAttributes }}
-     * }
-     * SubjectPublicKeyInfo { ALGORITHM : IOSet} ::= SEQUENCE {
-     * algorithm           AlgorithmIdentifier {{IOSet}},
-     * subjectPublicKey    BIT STRING
-     * }
-     * </pre>
-     *
-     * PublicKey's encoded-format has to be RSA X.509.
-     */
-    private byte[] pkcs10CertRequest(byte[] b64Encoded, String username, String password, Debug debug)
-        throws Exception {
-        X509Certificate cert;
-        byte[] buffer;
-        try {
-            // A real PKCS10 PEM request
-            String beginKey = "-----BEGIN CERTIFICATE REQUEST-----";
-            String endKey = "-----END CERTIFICATE REQUEST-----";
-            buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
-        } catch (IOException e) {
-            try {
-                // Keytool PKCS10 PEM request
-                String beginKey = "-----BEGIN NEW CERTIFICATE REQUEST-----";
-                String endKey = "-----END NEW CERTIFICATE REQUEST-----";
-                buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
-            } catch (IOException ioe) {
-                // IE PKCS10 Base64 coded request
-                buffer = Base64.decode(b64Encoded);
-            }
-            /*
-            ISignSessionRemote ss = home.create();
-            cert = (X509Certificate) ss.createCertificate(administrator, username, password, new PKCS10RequestMessage(buffer));
-            */
-        }
-        ISignSessionRemote ss = home.create();
-        cert = (X509Certificate) ss.createCertificate(administrator, username, password, new PKCS10RequestMessage(buffer));
-        byte[] pkcs7 = ss.createPKCS7(administrator, cert);
-        cat.debug("Created certificate (PKCS7) for " + username);
-        debug.print("<h4>Generated certificate:</h4>");
-        debug.printInsertLineBreaks(cert.toString().getBytes());
-        return Base64.encode(pkcs7);
-    } //ieCertRequest
-
-    /**
-     * Prints debug info back to browser client
-     **/
-    private class Debug {
-        final private ByteArrayOutputStream buffer;
-        final private PrintStream printer;
-        final private HttpServletRequest request;
-        final private HttpServletResponse response;
-        Debug(HttpServletRequest request, HttpServletResponse response){
-            buffer=new ByteArrayOutputStream();
-            printer=new PrintStream(buffer);
-            this.request=request;
-            this.response=response;
-        }
-
-        void printDebugInfo() throws IOException, ServletException {
-            request.setAttribute("ErrorMessage",new String(buffer.toByteArray()));
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
-        }
-
-        void print(Object o) {
-            printer.println(o);
-        }
-        void printMessage(String msg) {
-            print("<p>"+msg);
-        }
-        void printInsertLineBreaks( byte[] bA ) throws Exception {
-            BufferedReader br=new BufferedReader(
-                new InputStreamReader(new ByteArrayInputStream(bA)) );
-            while ( true ){
-                String line=br.readLine();
-                if (line==null)
-                    break;
-                print(line.toString()+"<br>");
-            }
-        }
-        void takeCareOfException(Throwable t ) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            t.printStackTrace(new PrintStream(baos));
-            print("<h4>Exception:</h4>");
-            try {
-                printInsertLineBreaks( baos.toByteArray() );
-            } catch (Exception e) {
-                e.printStackTrace(printer);
-            }
-            request.setAttribute("Exception", "true");
-        }
-        void ieCertFix(byte[] bA) throws Exception {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            PrintStream tmpPrinter=new PrintStream(baos);
-            ieCertFormat(bA, tmpPrinter);
-            printInsertLineBreaks(baos.toByteArray());
-        }
-    } // Debug
 
 } // CertReqServlet
