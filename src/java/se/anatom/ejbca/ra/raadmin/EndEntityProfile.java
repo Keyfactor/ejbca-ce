@@ -29,7 +29,7 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.20 2004-04-16 07:38:41 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.21 2004-05-13 09:03:47 herrvendil Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -670,10 +670,16 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         }
        
         if(getVersion() < 2){
-          addField(AVAILCAS);
-          addField(DEFAULTCA);
-          setRequired(AVAILCAS,0,true);
-          setRequired(DEFAULTCA,0,true);
+            ArrayList numberarray = (ArrayList)   data.get(NUMBERARRAY);
+            while(numberarray.size() < 39){
+               numberarray.add(new Integer(0));
+            }
+            data.put(NUMBERARRAY,numberarray);
+        	
+            addField(AVAILCAS);
+            addField(DEFAULTCA);
+            setRequired(AVAILCAS,0,true);
+            setRequired(DEFAULTCA,0,true);
         }
         
         if(getVersion() < 3){
