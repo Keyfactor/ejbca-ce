@@ -15,6 +15,9 @@
   ! No SQL migration file is available right now to do so !
 - Small text and spelling fixes.
 
+3.0.4
+-----
+Fixed integer overflow when setting CRLPeriod longer than 596 hours.
 
 3.0.3
 -----

@@ -30,3 +30,5 @@ Stephane Bailliez <sbailliez(at)linagora.com>, patches all over, XDoclet.
 Yannick Quenec'hdu <yquenechdu(at)linagora.com> french translation.
 James A. Rome <jar(at)ornl.gov>, additional 'Use fields in DN' for publisher.
 Manuel Ruiz <mruiz(at)safa.es>, make admin commands flexible and usable from within java-code.
+Risto Laanoja <risto.laanoja(at)eyp.ee>, fix for integer overflow when setting CRLPeriod longer than 596 hours.
+

@@ -101,7 +101,7 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.28 2004-06-30 08:30:51 anatom Exp $
+ * @version $Id: X509CA.java,v 1.29 2004-11-01 09:08:54 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -456,7 +456,7 @@ public class X509CA extends CA implements Serializable {
         Date nextUpdate = new Date();
 
         // crlperiod is hours = crlperiod*60*60*1000 milliseconds
-        nextUpdate.setTime(nextUpdate.getTime() + (getCRLPeriod() * 60 * 60 * 1000));
+        nextUpdate.setTime(nextUpdate.getTime() + (getCRLPeriod() * (long)(60 * 60 * 1000)));
         X509V2CRLGenerator crlgen = new X509V2CRLGenerator();
         crlgen.setThisUpdate(thisUpdate);
         crlgen.setNextUpdate(nextUpdate);
