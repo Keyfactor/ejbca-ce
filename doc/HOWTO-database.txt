@@ -4,7 +4,7 @@ Set up a database for EJBCA in JBoss
 The following databases have in some stage been tested with EJBCA:
 
 * Hypersoniq (hsqldb) (default in JBoss)
-* PostegreSQL 7.2 (http://www.postgresql.org/)
+* PostegreSQL 7.2 and 8.0 (http://www.postgresql.org/)
 * MySQL (http://www.mysql.com/)
 * Oracle 8i (http://www.oracle.com/)
 * Sybase
