@@ -26,7 +26,7 @@ import org.bouncycastle.jce.interfaces.*;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.20 2003-08-20 10:18:37 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.21 2003-08-23 08:56:27 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -142,10 +142,19 @@ public class KeyTools {
             for (int i = 1; i < chain.length; i++) {
                 X509Certificate cacert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(
                             chain[i].getEncoded()));
-
                 // Set attributes on CA-cert
                 PKCS12BagAttributeCarrier caBagAttr = (PKCS12BagAttributeCarrier) chain[i];
+                // We constuct a friendly name for the CA, and try with some parts from the DN if they exist.
                 String cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
+                if (cafriendly == null) {
+                    cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "O");
+                }
+                if (cafriendly == null) {
+                    cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "OU");
+                }
+                if (cafriendly == null) {
+                    cafriendly = "CA_unknown";
+                }
                 caBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName,
                     new DERBMPString(cafriendly));
             }
