@@ -30,7 +30,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.65 2004-09-16 19:03:54 anatom Exp $
+ * @version $Id: CertTools.java,v 1.66 2004-10-20 12:21:54 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -753,7 +753,7 @@ public class CertTools {
             }
         }
         catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error parsing CrlDistributionPoint", e);
             throw new CertificateParsingException(e.toString());
         }
         return null;
