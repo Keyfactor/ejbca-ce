@@ -20,7 +20,7 @@ import se.anatom.ejbca.log.Admin;
  * check for revocation etc. the CertificateStoreSession implements the interface
  * ICertificateStoreSession. Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.21 2003-10-03 14:34:20 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.22 2003-10-05 09:29:07 anatom Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote {
 
@@ -119,6 +119,95 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     public Certificate findCertificateByFingerprint(Admin admin, String fingerprint)
         throws RemoteException;
 
+	/**
+	 * The method retrives all certificates from a specific issuer
+	 * which are identified by list of serial numbers. The collection
+	 * will be empty if the issuerDN is <tt>null</tt>/empty
+	 * or the collection of serial numbers is empty.
+	 *
+	 * @param admin
+	 * @param issuer the subjectDN of a CA certificate
+	 * @param sernos a collection of certificate serialnumbers
+	 *
+	 * @return Collection a list of certificates; never <tt>null</tt>
+	 */
+	public Collection findCertificatesByIssuerAndSernos(Admin admin, String issuerDN, Collection sernos)
+		throws RemoteException;
+
+	/**
+	 * Lists all certificates of a specific type and if
+	 * given from a specific issuer.
+	 *
+	 * The type is the bitwise OR value of the types listed
+	 * int {@link se.anatom.ejbca.SecConst}:<br>
+	 * <ul>
+	 * <li><tt>CERTTYPE_ENDENTITY</tt><br>
+	 * An user or machine certificate, which identifies a subject.
+	 * </li>
+	 * <li><tt>CERTTYPE_CA</tt><br>
+	 * A CA certificate which is <b>not</b> a root CA.
+	 * </li>
+	 * <li><tt>CERTTYPE_ROOTCA</tt><br>
+	 * A Root CA certificate.
+	 * </li>
+	 * </ul>
+	 * <p>
+	 * Usage examples:<br>
+	 * <ol>
+	 * <li>Get all root CA certificates
+	 * <p>
+	 * <code>
+	 * ...
+	 * ICertificateStoreSessionRemote itf = ...
+	 * Collection certs = itf.findCertificatesByType(adm,
+	 *                                               SecConst.CERTTYPE_ROOTCA,
+	 *                                               null);
+	 * ...
+	 * </code>
+	 * </li>
+	 * <li>Get all subordinate CA certificates for a specific
+	 * Root CA. It is assumed that the <tt>subjectDN</tt> of the
+	 * Root CA certificate is located in the variable <tt>issuer</tt>.
+	 * <p>
+	 * <code>
+	 * ...
+	 * ICertificateStoreSessionRemote itf = ...
+	 * Certficate rootCA = ...
+	 * String issuer = rootCA.getSubjectDN();
+	 * Collection certs = itf.findCertificatesByType(adm,
+	 *                                               SecConst.CERTTYPE_CA,
+	 *                                               issuer);
+	 * ...
+	 * </code>
+	 * </li>
+	 * <li>Get <b>all</b> CA certificates.
+	 * <p>
+	 * <code>
+	 * ...
+	 * ICertificateStoreSessionRemote itf = ...
+	 * Collection certs = itf.findCertificatesByType(adm,
+	 *                                               SecConst.CERTTYPE_CA
+	 *                                               + CERTTYPE_CA,
+	 *                                               null);
+	 * ...
+	 * </code>
+	 * </li>
+	 * </ol>
+	 *
+	 * @param admin
+	 * @param type
+	 * @param issuerDN get all certificates issued by a specific issuer.
+	 *                 If <tt>null</tt> or empty return certificates regardless of
+	 *                 the issuer.
+	 *
+	 * @return Collection the list of the requested certificates;
+	 *                     never <tt>null</tt>
+	 *
+	 * @throws RemoteException
+	 */
+	 public Collection findCertificatesByType(Admin admin, int type, String issuerDN)
+		throws RemoteException;
+
     /**
      * Set the status of certificates of given dn to revoked.
      *
@@ -176,6 +265,19 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      */
     public RevokedCertInfo isRevoked(Admin admin, String issuerDN, BigInteger serno)
         throws RemoteException;
+
+	/**
+	 * The method returns the revocation status for a list or certificate identified
+	 * by the serialnumber.
+	 *
+	 * @param admin
+	 * @param issuer the subjectDN of a CA certificate
+	 * @param sernos a collection of certificate serialnumbers
+	 *
+	 * @return Collection a collection of {@link RevokedCertInfo} objects which
+	 *                    reflect the revocation status of the given certificates.
+	 */
+	public Collection isRevoked(Admin admin, String issuerDN, Collection sernos) throws RemoteException;
 
     /**
     * Lists all revoked certificates, ie status = CERT_REVOKED.

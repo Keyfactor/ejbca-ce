@@ -9,7 +9,7 @@ import junit.framework.*;
 /**
  * main test class
  *
- * @version $Id: TestRunner.java,v 1.5 2003-07-24 08:43:30 anatom Exp $
+ * @version $Id: TestRunner.java,v 1.6 2003-10-05 09:29:07 anatom Exp $
  */
 public class TestRunner extends Object {
     private static Logger log = Logger.getLogger(TestRunner.class);
@@ -39,7 +39,7 @@ public class TestRunner extends Object {
 
         TestSuite suite = new TestSuite();
         suite.addTest(new TestSuite(TestCertificateData.class));
-
+		suite.addTest( new TestSuite( TestCertificateRetrival.class ));
         //suite.addTest( new TestSuite( TestPublisher.class ));
         log.debug("<suite()");
 

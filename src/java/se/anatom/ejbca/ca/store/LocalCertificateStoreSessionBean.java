@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.53 2003-10-03 14:34:20 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.54 2003-10-05 09:29:07 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -449,6 +449,111 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
     } //findCertificateByIssuerAndSerno
 
+	/**
+	 * Implements ICertificateStoreSession::findCertificatesByIssuerAndSernos.
+	 *
+	 * The method retrives all certificates from a specific issuer
+	 * which are identified by list of serial numbers. The collection
+	 * will be empty if the issuerDN is <tt>null</tt>/empty
+	 * or the collection of serial numbers is empty.
+	 *
+	 * @param admin
+	 * @param issuer the subjectDN of a CA certificate
+	 * @param sernos a collection of certificate serialnumbers
+	 *
+	 * @return Collection a list of certificates; never <tt>null</tt>
+	 */
+	public Collection findCertificatesByIssuerAndSernos(Admin admin, String issuerDN, Collection sernos) {
+		debug(">findCertificateByIssuerAndSernos()");
+
+		Connection con = null;
+		PreparedStatement ps = null;
+		ResultSet result = null;
+		ArrayList vect = null;
+
+		if (null == admin) {
+			throw new IllegalArgumentException();
+		}
+
+
+		if (null == issuerDN || issuerDN.length() <= 0
+			|| null == sernos || sernos.isEmpty()) {
+			return new ArrayList();
+		}
+
+		String dn = CertTools.stringToBCDNString(issuerDN);
+		debug("Looking for cert with (transformed)DN: " + dn);
+
+		try {
+
+			final StringBuffer sb = new StringBuffer();
+			/*
+			 * tmeckel:
+			 * JBoss seems to have problems loading anoymous classes :(
+			 * i always get an java.lang.NoClassDefFound exception when
+			 * i try to use the following code snipped
+			 *
+			 * the code in the following block is only a dingy
+			 * replacement as long as the problem with anonymous
+			 * classes are solved :)
+			CollectionUtils.forAllDo(sernos, new Closure() {
+												public void execute(Object input) {
+													if (null != input) {
+														sb.append(", ");
+														sb.append(input.toString());
+													}
+												}} );
+			*/
+			{
+				Iterator iter = sernos.iterator();
+				while (iter.hasNext()) {
+					sb.append(", ");
+					sb.append(iter.next().toString());
+				}
+			}
+			/*
+			 * to save the repeating if-statement in the above
+			 * Closure not to add ', ' as the first characters
+			 * in the StringBuffer we remove the two chars here :)
+			 */
+			sb.delete(0, ", ".length());
+			con = getConnection();
+			ps = con.prepareStatement("SELECT DISTINCT fingerprint"
+									  + " FROM CertificateData WHERE"
+									  + " issuerDN = '" + dn + "'"
+									  + " AND serialNumber IN (" + sb.toString() + ")");
+			result = ps.executeQuery();
+
+			vect = new ArrayList();
+			while (result.next()) {
+				vect.add(findCertificateByFingerprint(admin, result.getString(1)));
+			}
+
+			debug("<findCertificateByIssuerAndSernos()");
+
+			return vect;
+
+		} catch (Exception fe) {
+			throw new EJBException(fe);
+		} finally {
+		   try {
+				if (result != null) {
+					result.close();
+				}
+
+				if (ps != null) {
+					ps.close();
+				}
+
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException se) {
+				error("Unable to cleanup after : findCertificateByIssuerAndSernos()", se);
+			}
+		}
+	} // findCertificateByIssuerAndSernos
+
     /**
      * Implements ICertificateStoreSession::findCertificatesBySerno.
      *
@@ -565,6 +670,153 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             throw new EJBException(fe);
         }
     } // findCertificateByFingerprint
+
+	/**
+	 * Lists all active (status = 20) certificates of a specific type and if
+	 * given from a specific issuer.
+	 *
+	 * The type is the bitwise OR value of the types listed
+	 * int {@link se.anatom.ejbca.SecConst}:<br>
+	 * <ul>
+	 * <li><tt>CERTTYPE_ENDENTITY</tt><br>
+	 * An user or machine certificate, which identifies a subject.
+	 * </li>
+	 * <li><tt>CERTTYPE_CA</tt><br>
+	 * A CA certificate which is <b>not</b> a root CA.
+	 * </li>
+	 * <li><tt>CERTTYPE_ROOTCA</tt><br>
+	 * A Root CA certificate.
+	 * </li>
+	 * </ul>
+	 * <p>
+	 * Usage examples:<br>
+	 * <ol>
+	 * <li>Get all root CA certificates
+	 * <p>
+	 * <code>
+	 * ...
+	 * ICertificateStoreSessionRemote itf = ...
+	 * Collection certs = itf.findCertificatesByType(adm,
+	 *                                               SecConst.CERTTYPE_ROOTCA, 
+	 *                                               null);
+	 * ...
+	 * </code>
+	 * </li>
+	 * <li>Get all subordinate CA certificates for a specific
+	 * Root CA. It is assumed that the <tt>subjectDN</tt> of the
+	 * Root CA certificate is located in the variable <tt>issuer</tt>.
+	 * <p>
+	 * <code>
+	 * ...
+	 * ICertificateStoreSessionRemote itf = ...
+	 * Certficate rootCA = ...
+	 * String issuer = rootCA.getSubjectDN();
+	 * Collection certs = itf.findCertificatesByType(adm, 
+	 *                                               SecConst.CERTTYPE_CA,
+	 *                                               issuer);
+	 * ...
+	 * </code>
+	 * </li>
+	 * <li>Get <b>all</b> CA certificates.
+	 * <p>
+	 * <code>
+	 * ...
+	 * ICertificateStoreSessionRemote itf = ...
+	 * Collection certs = itf.findCertificatesByType(adm,
+	 *                                               SecConst.CERTTYPE_CA 
+	 *                                               + CERTTYPE_CA, 
+	 *                                               null);
+	 * ...
+	 * </code>
+	 * </li>
+	 * </ol>
+	 *
+	 * @param admin
+	 * @paran type
+	 * @param issuerDN get all certificates issued by a specific issuer.
+	 *                 If <tt>null</tt> or empty return certificates regardless of
+	 *                 the issuer.
+	 *
+	 * @return Collection the list of the requested certificates;
+	 *                     never <tt>null</tt>
+	 *
+	 * @throws RemoteException
+	 */
+	 public Collection findCertificatesByType(Admin admin, int type, String issuerDN) {
+		debug(">findCertificatesByType()");
+		if (null == admin 
+			|| type <= 0 
+			|| type > SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ENDENTITY + SecConst.CERTTYPE_ROOTCA) {
+			throw new IllegalArgumentException();        
+		}
+		StringBuffer ctypes = new StringBuffer();
+		if ((type & SecConst.CERTTYPE_SUBCA) > 0) {
+			ctypes.append(SecConst.CERTTYPE_SUBCA);
+		}
+		if ((type & SecConst.CERTTYPE_ENDENTITY) > 0) {
+			if (ctypes.length() > 0) {
+				ctypes.append(", ");
+			}
+			ctypes.append(SecConst.CERTTYPE_ENDENTITY);
+		}
+		if ((type & SecConst.CERTTYPE_ROOTCA) > 0) {
+			if (ctypes.length() > 0) {
+				ctypes.append(", ");
+			}            
+			ctypes.append(SecConst.CERTTYPE_ROOTCA);
+		}
+
+		Connection con = null;
+		PreparedStatement ps = null;
+		ResultSet result = null;
+		try {
+			ArrayList vect;
+			StringBuffer stmt = new StringBuffer("SELECT DISTINCT fingerprint FROM CertificateData WHERE status = 20 AND ");
+			stmt.append(" type IN (");
+			stmt.append(ctypes.toString());
+			stmt.append(')');
+			if (null != issuerDN && issuerDN.length() > 0) {
+				String dn = CertTools.stringToBCDNString(issuerDN);
+				if (log.isDebugEnabled()) {
+					debug("findCertificatesByType() : Looking for cert with (transformed)DN: " + dn);
+				}
+				stmt.append(" AND issuerDN = '");
+				stmt.append(dn);
+				stmt.append('\'');
+			}
+			if (log.isDebugEnabled()) {
+				debug("findCertificatesByType() : executing SQL statement\n"
+					  + stmt.toString());
+			}
+			con = getConnection();
+			ps = con.prepareStatement(stmt.toString());
+			result = ps.executeQuery();
+
+			vect = new ArrayList();
+			while (result.next()) {
+				vect.add(findCertificateByFingerprint(admin, result.getString(1)));
+			}
+
+			debug("<findCertificatesByType()");
+			return vect;
+		} catch (Exception e) {
+			throw new EJBException(e);
+		} finally {
+		   try {
+				if (result != null) {
+					result.close();
+				}
+				if (ps != null) {
+					ps.close();
+				}
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException se) {
+				error("Unable to cleanup after : findCertificatesByType()", se);
+			}
+		}
+	 } // findCertificatesByType
 
     /**
      * Set the status of certificates of given username to revoked.
@@ -751,8 +1003,114 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     }
 
 
+	/**
+	 * The method returns the revocation status for a list or certificate identified
+	 * by the serialnumber.
+	 *
+	 * @param admin
+	 * @param issuer the subjectDN of a CA certificate
+	 * @param sernos a collection of certificate serialnumbers
+	 *
+	 * @return Collection a collection of {@link RevokedCertInfo} objects which
+	 *                    reflect the revocation status of the given certificates.
+	 */
+	public Collection isRevoked(Admin admin, String issuerDN, Collection sernos) {
+		debug(">isRevoked()");
+
+		Connection con = null;
+		PreparedStatement ps = null;
+		ResultSet result = null;
+		ArrayList vect = null;
+
+		if (null == admin
+			|| null == issuerDN || issuerDN.length() <= 0
+			|| null == sernos) {
+			throw new IllegalArgumentException();
+		}
+
+		if (sernos.isEmpty()) {
+			return new ArrayList();
+		}
+
+		// First make a DN in our well-known format
+		String dn = CertTools.stringToBCDNString(issuerDN);
+		if (log.isDebugEnabled()) {
+			debug("Looking for cert with (transformed)DN: " + dn);
+		}
+		try {
+			final StringBuffer sb = new StringBuffer();
+
+			/*
+			 * tmeckel:
+			 * why commented out refer to 'findCertificateByIssuerAndSernos'
+			CollectionUtils.forAllDo(sernos, new Closure() {
+												public void execute(Object input) {
+													if (null != input) {
+														sb.append(", ");
+														sb.append(input.toString());
+													}
+												}} );
+			*/
+			{
+				Iterator iter = sernos.iterator();
+				while (iter.hasNext()) {
+					sb.append(", ");
+					sb.append(iter.next().toString());
+				}
+			}
+			/*
+			 * to save the repeating if-statement in the above
+			 * Closure not to add ', ' as the first characters
+			 * in the StringBuffer we remove the two chars here :)
+			 */
+			sb.delete(0, ", ".length());
+			con = getConnection();
+			ps = con.prepareStatement("SELECT DISTINCT serialNumber, revocationDate, revocationReason, status"
+									  + " FROM CertificateData WHERE"
+									  + " issuerDN = '" + dn + "'"
+									  + " AND serialNumber IN (" + sb.toString() + ")");
+			result = ps.executeQuery();
+
+			vect = new ArrayList();
+			while (result.next()) {
+				RevokedCertInfo info = new RevokedCertInfo(new BigInteger(result.getBytes(1)), new Date(result.getLong(2)), result.getInt(3));
+				// Backwards compatibility, handle databases that did not have NOT_REVOKED
+				if (result.getInt(4) != CertificateData.CERT_REVOKED) {
+					info.setReason(RevokedCertInfo.NOT_REVOKED);
+				}
+				vect.add(info);
+			}
+
+		} catch (Exception e) {
+			error("Unable to load revoked certificates for issuer '"
+				  + issuerDN
+				  + "'"
+				  , e);
+			throw new EJBException(e);
+		} finally {
+		   try {
+				if (result != null) {
+					result.close();
+				}
+
+				if (ps != null) {
+					ps.close();
+				}
+
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException se) {
+				error("Unable to cleanup after : findCertificateByIssuerAndSernos()", se);
+			}
+		}
+		debug("<isRevoked()");
+		return vect;
+	} // isRevoked
+
     /**
      * Implements ICertificateStoreSession::isRevoked.
+     * Uses select directly from datasource.
      *
      * @param admin DOCUMENT ME!
      * @param issuerDN DOCUMENT ME!
