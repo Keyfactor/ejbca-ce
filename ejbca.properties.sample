@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.8 2005-03-07 15:33:44 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.9 2005-03-07 15:38:51 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -50,13 +50,15 @@ jboss.home=${env.JBOSS_HOME}
 # This is the URL used to connect to the database, used to configure a new datasource in JBoss.
 # Default: jdbc:hsqldb:${jboss.server.data.dir}${/}hypersonic${/}ejbcaDB
 #database.url=jdbc:mysql://127.0.0.1:3306/ejbca
-#database.url=jdbc:postgresql://192.168.1.100/ejbca_dev
+#database.url=jdbc:postgresql://127.0.0.1/ejbca
+#database.url=jdbc:oracle:thin:@127.0.0.1:1521:ejbca
 
 # JDBC driver classname
 # The J2EE server needs to be configured with the appropriate JDBC driver for the selected database
 # Default: org.hsqldb.jdbcDriver
 #database.driver=com.mysql.jdbc.Driver
 #database.driver=org.postgresql.Driver
+#database.driver=oracle.jdbc.driver.OracleDriver
 
 # database username
 # Default: sa (works with hsqldb)
