@@ -92,13 +92,13 @@ import se.anatom.ejbca.util.query.Query;
  *
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
- *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-extends="javax.ejb.EJBLocalHome,LogConstants"
  *   local-class="se.anatom.ejbca.log.ILogSessionLocalHome"
  *   remote-class="se.anatom.ejbca.log.ILogSessionHome"
  *
  * @ejb.interface
  *   extends="javax.ejb.EJBObject"
- *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-extends="javax.ejb.EJBLocalObject,LogConstants"
  *   local-class="se.anatom.ejbca.log.ILogSessionLocal"
  *   remote-class="se.anatom.ejbca.log.ILogSessionRemote"
  *
@@ -107,14 +107,6 @@ import se.anatom.ejbca.util.query.Query;
  *
  */
 public class LocalLogSessionBean extends BaseSessionBean {
-
-    public static final int MAXIMUM_QUERY_ROWCOUNT = 300;
-
-    /**
-     * Constant containing caid that couldn't be determined in any other way. Log events can only be viewed.
-     * by superadministrator.
-     */
-    public static final int INTERNALCAID = 0;
 
     private static final Logger log = Logger.getLogger(LocalLogSessionBean.class);
 
@@ -347,11 +339,11 @@ public class LocalLogSessionBean extends BaseSessionBean {
 
             }
             //ps.setFetchDirection(ResultSet.FETCH_REVERSE);
-            ps.setFetchSize(MAXIMUM_QUERY_ROWCOUNT + 1);
+            ps.setFetchSize(LogConstants.MAXIMUM_QUERY_ROWCOUNT + 1);
             // Execute query.
             rs = ps.executeQuery();
             // Assemble result.
-            while (rs.next() && returnval.size() <= MAXIMUM_QUERY_ROWCOUNT) {
+            while (rs.next() && returnval.size() <= LogConstants.MAXIMUM_QUERY_ROWCOUNT) {
                 LogEntry data = new LogEntry(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getInt(4), new java.util.Date(rs.getLong(5)), rs.getString(6), rs.getString(7)
                         , rs.getInt(8), rs.getString(9));
                 returnval.add(data);
