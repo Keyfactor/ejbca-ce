@@ -43,7 +43,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.10 2002-03-25 10:28:07 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.11 2002-03-28 08:46:45 anatom Exp $
  *
  */
 
@@ -60,10 +60,10 @@ public class BatchMakeP12 {
     private ISignSessionHome signhome;
 
     static public Context getInitialContext() throws NamingException{
-        //System.out.println(">GetInitialContext");
+        cat.debug(">GetInitialContext");
         // jndi.properties must exist in classpath
         Context ctx = new javax.naming.InitialContext();
-        //System.out.println("<GetInitialContext");
+        cat.debug("<GetInitialContext");
         return ctx;
     }
     /**
@@ -183,14 +183,10 @@ public class BatchMakeP12 {
         // Make a certificate chain from the certificate and the CA-certificate
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         Certificate[] cachain = getCACertChain();
-        X509Certificate[] chain = new X509Certificate[cachain.length+1];
-        chain[0] = cert;
-        for (int i=0;i<cachain.length;i++)
-            chain[i+1] = (X509Certificate)cachain[i];
-        // CA-certificate
-        if (CertTools.isSelfSigned(chain[chain.length-1])) {
+        // Verify CA-certificate
+        if (CertTools.isSelfSigned((X509Certificate)cachain[cachain.length-1])) {
             try {
-                chain[chain.length-1].verify(chain[chain.length-1].getPublicKey());
+                cachain[cachain.length-1].verify(cachain[cachain.length-1].getPublicKey());
             } catch (GeneralSecurityException se) {
                 throw new Exception("RootCA certificate does not verify");
             }
@@ -200,7 +196,7 @@ public class BatchMakeP12 {
 
         // Verify that the user-certificate is signed by our CA
         try {
-            chain[0].verify(chain[1].getPublicKey());
+            cert.verify(cachain[0].getPublicKey());
         } catch (GeneralSecurityException se) {
             throw new Exception("Generated certificate does not verify using CA-certificate.");
         }
@@ -208,7 +204,7 @@ public class BatchMakeP12 {
         // Use CommonName as alias in the keystore
         String alias = CertTools.getPartFromDN(cert.getSubjectDN().toString(), "CN");
         // Store keys and certificates in keystore.
-        KeyStore p12 = KeyTools.createP12(alias, rsaKeys.getPrivate(), chain[0], chain[1]);
+        KeyStore p12 = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);
         storeKeyStore(p12, username, password);
         
         cat.info("Created P12 for " + username+ ".");
@@ -234,6 +230,7 @@ public class BatchMakeP12 {
      */
     public void createAllNew() throws Exception {
         cat.debug(">createAllNew:");
+        cat.info("Generating for all NEW.");
         createAllWithStatus(UserData.STATUS_NEW);
         cat.debug("<createAllNew:");
     } // createAllNew
@@ -244,6 +241,7 @@ public class BatchMakeP12 {
      */
     public void createAllFailed() throws Exception {
         cat.debug(">createAllFailed:");
+        cat.info("Generating for all FAILED.");
         createAllWithStatus(UserData.STATUS_FAILED);
         cat.debug("<createAllFailed:");
     } // createAllFailed
@@ -270,7 +268,7 @@ public class BatchMakeP12 {
             UserAdminData data = (UserAdminData) it.next();
             if (data.getPassword() != null) {                
                 try {
-                    cat.debug("Generating keys for " + data.getUsername());
+                    cat.info("Generating keys for " + data.getUsername());
                     // Grab new user, set status to INPROCESS
                     admin.setUserStatus(data.getUsername(), UserData.STATUS_INPROCESS);
                     processUser(data);
@@ -293,7 +291,7 @@ public class BatchMakeP12 {
         }
         if (failedusers != "")
             throw new Exception("BatchMakeP12 failed for " + failcount + " users (" + successcount + " succeeded) - " + failedusers);
-        cat.debug(successcount + " new users generated successfully - " + successusers);
+        cat.info(successcount + " new users generated successfully - " + successusers);
         cat.debug("<createAllWithStatus: "+status);
 
     } // createAllWithStatus
@@ -331,7 +329,7 @@ public class BatchMakeP12 {
             cat.error("Unknown user: " + username);
             throw new Exception("BatchMakeP12 failed for '" + username+"'.");
         }
-        cat.debug("New user generated successfully - " + data.getUsername());
+        cat.info("New user generated successfully - " + data.getUsername());
         cat.debug(">createUser("+username+")");
 
     } // doit
@@ -353,10 +351,16 @@ public class BatchMakeP12 {
             }
             if (args.length > 0) {
                 if (args[0].equals("-pem")) {
+                    cat.info("Generating PEM-files.");
                     makep12.createPEM(true);
+                    // Make P12 for all NEW users in local DB
+                    makep12.createAllNew();
+                    // Make P12 for all FAILED users in local DB
+                    makep12.createAllFailed();
                 } else {
                     // Make P12 for specified user
                     if ( (args.length > 1) && (args[1].equals("-pem")) ) {
+                            cat.info("Generating PEM-files.");
                             makep12.createPEM(true);
                         }
                     makep12.createUser(args[0]);

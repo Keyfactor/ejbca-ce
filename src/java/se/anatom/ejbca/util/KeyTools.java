@@ -31,7 +31,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.5 2002-03-25 10:28:07 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.6 2002-03-28 08:46:45 anatom Exp $
  */
 public class KeyTools {
 
@@ -73,26 +73,58 @@ public class KeyTools {
      */
     static public KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, X509Certificate cacert)
     throws Exception {
-        cat.debug(">createP12: privKey, cert=" + cert.getSubjectDN() + ", cacert=" + (cacert == null ? "null" : cacert.getSubjectDN().toString()) );
+        Certificate[] chain;
+        if (cacert == null)
+            chain = null;
+        else {
+            chain = new Certificate[1];
+            chain[0] = cacert;
+        }
+        return createP12(alias, privKey, cert, chain);
+    } // createP12
+    
+    /**
+     * Creates PKCS12-file that can be imported in IE or Netscape.
+     * The alias for the private key is set to 'privateKey' and the private key password is null.
+     * @param alias the alias used for the key entry
+     * @param privKey RSA private key
+     * @param cert user certificate
+     * @param cachain CA-certificate chain or null if only one cert in chain, in that case use 'cert'.
+     * @param username user's username
+     * @param password user's password
+     * @return byte[] containing PKCS12-file in binary format
+     * @exception Exception if input parameters are not OK or certificate generation fails
+     */
+    static public KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, Certificate[] cachain)
+    throws Exception {
+        cat.debug(">createP12: privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length) );
 
         // Certificate chain, only max two levels deep unforturnately, this is a TODO:
-        Certificate[] chain = null;
-        if ( (cert != null) && (cacert != null) )
-             chain = new Certificate[2];
-        else if (cert != null)
-            chain = new Certificate[1];
-        else throw new IllegalArgumentException("Parameter cert cannot be null.");
-
+        if (cert == null)
+            throw new IllegalArgumentException("Parameter cert cannot be null.");
+        int len = 1;
+        if (cachain != null)
+            len += cachain.length;
+        Certificate[] chain = new Certificate[len];
+        // To not get a ClassCastException we need to genereate a real new certificate with BC
         CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
-
-        if (cacert != null) {
-            chain[1] = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(cacert.getEncoded()));
-            // Set attributes on CA-cert
-            PKCS12BagAttributeCarrier   caBagAttr = (PKCS12BagAttributeCarrier)chain[1];
-            String cafriendly = CertTools.getPartFromDN(cacert.getSubjectDN().toString(), "CN");
-            caBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(cafriendly));
-        }
         chain[0] = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(cert.getEncoded()));
+        if (cachain != null)
+            for (int i=0;i<cachain.length;i++) {
+                 X509Certificate tmpcert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(cachain[i].getEncoded()));
+                 chain[i+1] = tmpcert;
+            }
+
+
+        if (chain.length > 1) {
+            for (int i=1;i<chain.length;i++) {
+                X509Certificate cacert  = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(chain[i].getEncoded()));
+                // Set attributes on CA-cert
+                PKCS12BagAttributeCarrier   caBagAttr = (PKCS12BagAttributeCarrier)chain[i];
+                String cafriendly = CertTools.getPartFromDN(cacert.getSubjectDN().toString(), "CN");
+                caBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(cafriendly));
+            }
+        }
         // Set attributes on user-cert
         PKCS12BagAttributeCarrier   certBagAttr = (PKCS12BagAttributeCarrier)chain[0];
         certBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(alias));
@@ -112,7 +144,7 @@ public class KeyTools {
         KeyStore store = KeyStore.getInstance("PKCS12", "BC");
         store.load(null, null);
         store.setKeyEntry(alias, pk, null, chain);
-        cat.debug(">createP12: privKey, cert=" + cert.getSubjectDN() + ", cacert=" + (cacert == null ? "null" : cacert.getSubjectDN().toString()));
+        cat.debug(">createP12: privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length));
 
         return store;
     } // createP12

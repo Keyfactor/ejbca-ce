@@ -88,7 +88,7 @@ public class ca {
                 System.out.println("Generating keys, please wait...");
                 KeyPair rsaKeys = KeyTools.genKeys(keysize);
                 X509Certificate rootcert = CertTools.genSelfCert(dn, validity, rsaKeys.getPrivate(), rsaKeys.getPublic(), true);
-                KeyStore ks = KeyTools.createP12(privKeyAlias, rsaKeys.getPrivate(), rootcert, null);
+                KeyStore ks = KeyTools.createP12(privKeyAlias, rsaKeys.getPrivate(), rootcert, (X509Certificate)null);
 
                 FileOutputStream os = new FileOutputStream(filename);
                 System.out.println("Storing keystore '"+filename+"'.");
