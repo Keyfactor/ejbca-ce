@@ -1,4 +1,4 @@
-$Id: README,v 1.98 2003-09-07 09:53:51 anatom Exp $
+$Id: README,v 1.99 2003-09-24 14:00:10 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -280,6 +280,9 @@ command
 'ant keystore', otherwise run 'ant keystore'.
 Run 'ant deploy' to build and deploy your new configuration
 (password).
+
+Start JBoss:
+At this point it is a good idea to start JBoss.
 
 Subordinate CA:
 run 'ca.sh/bat makereq' and enter all required parameters.
