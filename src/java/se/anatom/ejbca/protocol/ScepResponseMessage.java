@@ -1,6 +1,7 @@
 package se.anatom.ejbca.protocol;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -22,6 +23,7 @@ import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSException;
@@ -32,21 +34,24 @@ import org.bouncycastle.cms.CMSSignedDataGenerator;
 
 /** A response message for scep (pkcs7).
 *
-* @version  $Id: ScepResponseMessage.java,v 1.3 2003-06-15 11:58:32 anatom Exp $
+* @version  $Id: ScepResponseMessage.java,v 1.4 2003-06-19 10:21:21 anatom Exp $
 */
-public class  ScepResponseMessage implements IResponseMessage {
+public class  ScepResponseMessage implements IResponseMessage, Serializable {
 
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);
 
-    /** The response message itself
+    /** The encoded response message
      */
-    private CMSSignedData signedData = null;
+    private byte[] responseMessage = null;
     /** status for the response
      */
     private int status = 0;
     /** Possible fail information in the response. Defaults to 'badRequest (2)'. 
      */
     private String failInfo = "2";
+    /** The un-encoded response message itself
+     */
+    private transient CMSSignedData signedData = null;
     /** Certificate to be in response message, not serialized
      */
     private transient Certificate cert = null;
@@ -66,7 +71,7 @@ public class  ScepResponseMessage implements IResponseMessage {
      * @return the response message in the default encoding format.
      */
     public byte[] getResponseMessage() throws IOException, CertificateEncodingException {
-            return signedData.getEncoded();
+            return responseMessage;
     }
     /** Sets the status of the response message.
      * @param status status of the response.
@@ -74,11 +79,23 @@ public class  ScepResponseMessage implements IResponseMessage {
     public void setStatus(int status) {
         this.status = status;
     }
+    /** Gets the status of the response message.
+     * @return status status of the response.
+     */
+    public int getStatus() {
+        return status;
+    }
     /** Sets info about reason for failure.
      * @param failInfo reason for failure.
      */
     public void setFailInfo(String failInfo) {
         this.failInfo = failInfo;
+    }
+    /** Gets info about reason for failure.
+     * @return failInfo reason for failure.
+     */
+    public String getFailInfo() {
+        return failInfo;
     }
     /** Create encrypts and creates signatures as needed to produce a complete response message. 
      * If needed setSignKeyInfo and setEncKeyInfo must be called before this method.
@@ -102,7 +119,7 @@ public class  ScepResponseMessage implements IResponseMessage {
             certList.add(signCert);
             CertStore certs = CertStore.getInstance("Collection", new CollectionCertStoreParameters(certList), "BC");
             // Create the signed CMS message to be contained inside the envelope
-            CMSProcessable msg = null;
+            CMSProcessable msg = new CMSProcessableByteArray("PrimeKey".getBytes());
             CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
             gen.addSigner(signKey, signCert, CMSSignedDataGenerator.DIGEST_SHA1);
             gen.addCertificatesAndCRLs(certs);
@@ -117,12 +134,27 @@ public class  ScepResponseMessage implements IResponseMessage {
              // Create the outermost signed data
             msg = new CMSProcessableByteArray(ed.getEncoded());
             CMSSignedDataGenerator gen1 = new CMSSignedDataGenerator();
-            // add status, transactionId, sender- and recipientNonce
+            // add authenticated attributes...status, transactionId, sender- and recipientNonce and more...
             Hashtable attributes = new Hashtable();
-            // TransactionId
-            DERObjectIdentifier oid = new DERObjectIdentifier(ScepRequestMessage.id_transId);
-            DERSet value = new DERSet(new DERPrintableString("foo"));
+            // Content Type
+            DERObjectIdentifier oid = PKCSObjectIdentifiers.pkcs_9_at_contentType;
+            DERSet value = new DERSet(PKCSObjectIdentifiers.data);
             Attribute attr = new Attribute(oid, value);
+            attributes.put(attr.getAttrType(), attr);
+            // Message digest
+            oid = PKCSObjectIdentifiers.pkcs_9_at_messageDigest;
+            value = new DERSet(new DEROctetString("foo".getBytes()));
+            attr = new Attribute(oid, value);
+            attributes.put(attr.getAttrType(), attr);
+            // Message type (certrep)
+            oid = new DERObjectIdentifier(ScepRequestMessage.id_messageType);
+            value = new DERSet(new DERPrintableString("3"));
+            attr = new Attribute(oid, value);
+            attributes.put(attr.getAttrType(), attr);
+            // TransactionId
+            oid = new DERObjectIdentifier(ScepRequestMessage.id_transId);
+            value = new DERSet(new DERPrintableString("foo"));
+            attr = new Attribute(oid, value);
             attributes.put(attr.getAttrType(), attr);
             // status
             oid = new DERObjectIdentifier(ScepRequestMessage.id_pkiStatus);
@@ -153,9 +185,10 @@ public class  ScepResponseMessage implements IResponseMessage {
             attributes.put(attr.getAttrType(), attr);
             // Put our signer info and all newly generated attributes
             gen1.addSigner(signKey, signCert, CMSSignedDataGenerator.DIGEST_SHA1, new AttributeTable(attributes), null);
+            signedData = gen1.generate(msg, true, "BC");
             
-            signedData = gen.generate(msg, true, "BC");
-            if (signedData != null) {
+            responseMessage = signedData.getEncoded();
+            if (responseMessage != null) {
                 ret = true;
             }
         } catch (InvalidAlgorithmParameterException e) {

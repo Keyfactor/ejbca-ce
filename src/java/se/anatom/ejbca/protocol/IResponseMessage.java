@@ -22,7 +22,7 @@ import java.security.cert.Certificate;
 * byte[] responseMessage = resp.getResponseMessage();
 * </code>
 *
-* @version  $Id: IResponseMessage.java,v 1.3 2003-06-14 11:29:10 anatom Exp $
+* @version  $Id: IResponseMessage.java,v 1.4 2003-06-19 10:21:21 anatom Exp $
 */
 public interface  IResponseMessage {
 
@@ -41,10 +41,18 @@ public interface  IResponseMessage {
      * @param status status of the response.
      */
     public void setStatus(int status);
+    /** Gets the status of the response message.
+     * @return status status of the response.
+     */
+    public int getStatus();
     /** Sets info about reason for failure.
      * @param failInfo reason for failure.
      */
     public void setFailInfo(String failInfo);
+    /** Gets info about reason for failure.
+     * @return failInfo reason for failure.
+     */
+    public String getFailInfo();
     /** Create encrypts and creates signatures as needed to produce a complete response message. 
      * If needed setSignKeyInfo and setEncKeyInfo must be called before this method.
      * After this is called the response message can be retrieved with getResponseMessage();

@@ -16,6 +16,8 @@ import javax.ejb.DuplicateKeyException;
 
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
 import se.anatom.ejbca.protocol.PKCS10RequestMessage;
+import se.anatom.ejbca.protocol.ScepRequestMessage;
+import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.ca.sign.*;
 import se.anatom.ejbca.util.*;
@@ -32,7 +34,7 @@ import junit.framework.*;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.21 2003-03-12 16:11:36 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.22 2003-06-19 10:21:25 anatom Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -72,42 +74,35 @@ public class TestSignSession extends TestCase {
     +"fw==").getBytes());
 
     static byte[] openscep = Base64.decode(
-    ("MIIGqwYJKoZIhvcNAQcCoIIGnDCCBpgCAQExDjAMBggqhkiG9w0CBQUAMIICuwYJ"
-    +"KoZIhvcNAQcBoIICrASCAqgwggKkBgkqhkiG9w0BBwOgggKVMIICkQIBADGB1TCB"
+    ("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"
-    +"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").getBytes());
+    +"VQQGEwJTRQIIbzEhUVZYO3gwDQYJKoZIhvcNAQEBBQAEgYDJP3tsx1KMC+Ws3gcV"
+    +"gpvatMgxocUrKS2Z5BRj7z8HE/BySwa40fwzpBXq3xhakclrdK9D6Bb7I2oTqaNo"
+    +"y25tk2ykow8px1HEerGg5eCIDeAwX4IGurKn+ajls4vWntybgtosAFPLuBO2sdfy"
+    +"VhTv+iFxkl+lZgcRfpJhmqfOJjCCASoGCSqGSIb3DQEHATARBgUrDgMCBwQIapUt"
+    +"FKgA/KmAggEIpzjb5ONkiT7gPs5VeQ6a2e3IdXMgZTRknqZZRRzRovKwp17LJPkA"
+    +"AF9vQKCk6IQwM1dY4NAhu/mCvkfQwwVgML+rbsx7cYH5VuMxw6xw79CnGZbcgOoE"
+    +"lhfYR9ytfZFAVjs8TF/cx1GfuxxN/3RdXzwIFmvPRX1SPh83ueMbGTHjmk0/kweE"
+    +"9XcLkI85jTyG/Dsq3mUlWDS4qQg4sSbFAvkHgmCl0DQd2qW3eV9rCDbfPNjc+2dq"
+    +"nG5EwjX1UVYS2TSWy7vu6MQvKtEWFP4B10+vGBcVE8fZ4IxL9TDQ4UMz3gfFIQSc"
+    +"Moq4lw7YKmywbbyieGGYJuXDX/0gUBKj/MrP9s3L12bLoIIBajCCAWYwggEQoAMC"
+    +"AQMCIDNGREQzNUM5NzZDODlENjcwRjNCM0IxOTgxQjhDMzA2MA0GCSqGSIb3DQEB"
+    +"BAUAMCwxCzAJBgNVBAYTAlNFMQ8wDQYDVQQKEwZBbmFUb20xDDAKBgNVBAMTA2Zv"
+    +"bzAeFw0wMzA2MTkwODQ3NDlaFw0wMzA3MTkwODQ3NDlaMCwxCzAJBgNVBAYTAlNF"
+    +"MQ8wDQYDVQQKEwZBbmFUb20xDDAKBgNVBAMTA2ZvbzBcMA0GCSqGSIb3DQEBAQUA"
+    +"A0sAMEgCQQDLfHDEOse6Mbi02egr2buI9mgWC0ur9dvGmLiIxmNg1TNhn1WHj5Zy"
+    +"VsjKyLoVuVqgGRPYVA73ItANF8RNBAt9AgMBAAEwDQYJKoZIhvcNAQEEBQADQQCw"
+    +"9kQsl3M0Ag1892Bu3izeZOYKpze64kJ7iGuYmN8atkdO8Rpp4Jn0W6vvUYQcat2a"
+    +"Jzf6h3xfEQ7m8CzvaQ2/MYIBfDCCAXgCAQEwUDAsMQswCQYDVQQGEwJTRTEPMA0G"
+    +"A1UEChMGQW5hVG9tMQwwCgYDVQQDEwNmb28CIDNGREQzNUM5NzZDODlENjcwRjNC"
+    +"M0IxOTgxQjhDMzA2MAwGCCqGSIb3DQIFBQCggcEwEgYKYIZIAYb4RQEJAjEEEwIx"
+    +"OTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0wMzA2"
+    +"MTkwODQ3NDlaMB8GCSqGSIb3DQEJBDESBBCevtHE4n3my5B7Q+MiKj04MCAGCmCG"
+    +"SAGG+EUBCQUxEgQQwH1TAMlSzz1d3SNXoOARkTAwBgpghkgBhvhFAQkHMSITIDNG"
+    +"REQzNUM5NzZDODlENjcwRjNCM0IxOTgxQjhDMzA2MA0GCSqGSIb3DQEBAQUABEAW"
+    +"r+9YB3t1750Aj4bm5JAHv80VhzkrPmVLZqsJdC2DGn3UQFp1FhXo4od2xGpeg+pZ"
+    +"b0B6kUt+uxvuq3PbagLi").getBytes());
 
     static byte[] keytooldsa = Base64.decode(
     ("MIICNjCCAfQCAQAwMTERMA8GA1UEAxMIRFNBIFRlc3QxDzANBgNVBAoTBkFuYXRvbTELMAkGA1UE"
@@ -175,6 +170,7 @@ public class TestSignSession extends TestCase {
         return rsaKeys;
 
     } // getKeys
+
 
     public void test01CreateNewUser() throws Exception {
         log.debug(">test01CreateNewUser()");
@@ -364,7 +360,6 @@ public class TestSignSession extends TestCase {
         //fos.close();
         log.debug("<test08SwedeChars()");
     }
-
 /*
     public void test07TestOpenScep() throws Exception {
         log.debug(">test07TestOpenScep()");
@@ -372,9 +367,11 @@ public class TestSignSession extends TestCase {
         UserDataRemote data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
-        X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", new ScepRequestMessage(openscep));
-        assertNotNull("Failed to create certificate", cert);
-        log.debug("Cert="+cert.toString());
+        IResponseMessage resp = remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER), new ScepRequestMessage(openscep), -1, Class.forName("se.anatom.ejbca.protocol.ScepResponseMessage"));
+        assertNotNull("Failed to create certificate", resp);
+        byte[] msg = resp.getResponseMessage();
+        log.debug("Message: "+new String(Base64.encode(msg,true)));
+        assertNotNull("Failed to get encoded response message", msg);
         log.debug("<test07TestOpenScep()");
     }
 */
