@@ -14,6 +14,7 @@
 package se.anatom.ejbca.protocol;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -41,7 +42,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.22 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.23 2004-05-22 13:33:11 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(PKCS10RequestMessage.class);
@@ -198,6 +199,23 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
      * @return issuerDN of receiving CA or null.
      */
     public String getIssuerDN() {
+        return null;
+    }
+    /**
+     * Gets the issuer DN (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
+     *
+     * @return issuerDN of CA issuing CRL.
+     */
+    public String getCRLIssuerDN() {
+        return null;
+    }
+
+    /**
+     * Gets the number (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
+     *
+     * @return serial number of CA certificate for CA issuing CRL.
+     */
+    public BigInteger getCRLSerialNo() {
         return null;
     }
 

@@ -20,6 +20,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -31,11 +32,13 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * A response message consisting of a single X509 Certificate.
  *
- * @version $Id: X509ResponseMessage.java,v 1.14 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: X509ResponseMessage.java,v 1.15 2004-05-22 13:33:11 anatom Exp $
  */
 public class X509ResponseMessage implements IResponseMessage, Serializable {
     /** Certificate to be in response message, */
     private Certificate cert = null;
+    /** CRL to be in response message, */
+    private CRL crl = null;
 
     /** status for the response */
     private ResponseStatus status = ResponseStatus.SUCCESS;
@@ -50,6 +53,14 @@ public class X509ResponseMessage implements IResponseMessage, Serializable {
      */
     public void setCertificate(Certificate cert) {
         this.cert = cert;
+    }
+    /**
+     * Sets the CRL (if present) in the response message.
+     *
+     * @param crl crl in the response message.
+     */
+    public void setCrl(CRL crl) {
+        this.crl = crl;
     }
     
 	/**

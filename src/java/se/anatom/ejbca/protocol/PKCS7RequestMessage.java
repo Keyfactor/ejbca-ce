@@ -14,6 +14,7 @@
 package se.anatom.ejbca.protocol;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
@@ -24,7 +25,7 @@ import org.apache.log4j.Logger;
 /**
  * Class to handle PKCS7 request messages sent to the CA.
  *
- * @version $Id: PKCS7RequestMessage.java,v 1.16 2004-05-22 11:31:17 anatom Exp $
+ * @version $Id: PKCS7RequestMessage.java,v 1.17 2004-05-22 13:33:11 anatom Exp $
  */
 public class PKCS7RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(PKCS7RequestMessage.class);
@@ -114,6 +115,23 @@ public class PKCS7RequestMessage implements IRequestMessage, Serializable {
      * @return issuerDN of receiving CA or null.
      */
     public String getIssuerDN() {
+        return null;
+    }
+    /**
+     * Gets the issuer DN (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
+     *
+     * @return issuerDN of CA issuing CRL.
+     */
+    public String getCRLIssuerDN() {
+        return null;
+    }
+
+    /**
+     * Gets the number (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
+     *
+     * @return serial number of CA certificate for CA issuing CRL.
+     */
+    public BigInteger getCRLSerialNo() {
         return null;
     }
 
