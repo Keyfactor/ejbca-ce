@@ -110,10 +110,14 @@ public class ca {
                     System.out.println("This is a subordinate CA.");
                 X509Certificate rootcert = (X509Certificate)chain[chain.length-1];
                 System.out.println("Root CA DN: "+rootcert.getSubjectDN().toString());
+                System.out.println("Certificate valid from: "+rootcert.getNotBefore().toString());
+                System.out.println("Certificate valid to: "+rootcert.getNotAfter().toString());
                 System.out.println("Root CA keysize: "+((RSAPublicKey)rootcert.getPublicKey()).getModulus().bitLength());
                 if (chain.length > 1) {
                     X509Certificate cacert = (X509Certificate)chain[chain.length-2];
                     System.out.println("CA DN: "+cacert.getSubjectDN().toString());
+                    System.out.println("Certificate valid from: "+cacert.getNotBefore().toString());
+                    System.out.println("Certificate valid to: "+cacert.getNotAfter().toString());
                     System.out.println("CA keysize: "+((RSAPublicKey)cacert.getPublicKey()).getModulus().bitLength());
                 }
             } else if (args[0].equals("makereq")) {
