@@ -44,7 +44,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.26 2005-03-21 11:58:32 anatom Exp $
+ * @version $Id: CACertServlet.java,v 1.27 2005-04-02 16:43:17 anatom Exp $
  *
  * @web.servlet name = "CACert"
  *              display-name = "CACertServlet"
@@ -73,12 +73,12 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * @web.env-entry description="Port used by EJBCA public webcomponents. i.e that doesn't require client authentication"
  *   name="PUBLICPORT"
  *   type="java.lang.String"
- *   value="8080"
+ *   value="${httpserver.pubhttp}"
  * 
  * @web.env-entry description="Port used by EJBCA private webcomponents. i.e that requires client authentication"
  *   name="PRIVATEPORT"
  *   type="java.lang.String"
- *   value="8443"
+ *   value="${httpserver.privhttps}"
  * 
  * @web.env-entry description="Protocol used by EJBCA public webcomponents. i.e that doesn't require client authentication"
  *   name="PUBLICPROTOCOL"
