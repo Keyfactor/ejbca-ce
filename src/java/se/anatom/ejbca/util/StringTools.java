@@ -1,21 +1,28 @@
-
 package se.anatom.ejbca.util;
 
+import java.util.regex.Pattern;
 
-/** This class implements some utility functions that are useful when handling Strings.
+/**
+ * This class implements some utility functions that are useful when
+ * handling Strings.
  *
- * @version $Id: StringTools.java,v 1.7 2003-03-15 22:38:02 herrvendil Exp $
+ * @version $Id: StringTools.java,v 1.8 2003-04-01 11:19:22 scop Exp $
  */
 public class StringTools {
 
-    static public final char stripChars[] = {
+    public static final char[] stripChars = {
         '\'','\"','\n','\r','/','\\',';','&','|','!','\0','%','`','?','<','>','?','$',':','~'
     };
 
-    /** Strips all special signs from a String by replacing them with a forward slash, '/'.
-     *@param str the string whose contents will be stripped.
-     *@return the stripped version of the input string.
-     **/
+    private static final Pattern WS = Pattern.compile("\\s+");
+
+    /**
+     * Strips all special characters from a string by replacing them with
+     * a forward slash, '/'.
+     *
+     * @param str the string whose contents will be stripped.
+     * @return the stripped version of the input string.
+     */
     public static String strip(String str) {
         if (str == null)
             return null;
@@ -28,5 +35,19 @@ public class StringTools {
         return ret;
     }
 
-} // StringTools
 
+    /**
+     * Strips all whitespace including space, tabs, newlines etc
+     * from the given string.
+     *
+     * @param str the string
+     * @return the string with all whitespace removed
+     * @since 2.1b1
+     */
+    public static String stripWhitespace(String str)
+    {
+      if (str == null) return null;
+      return WS.matcher(str).replaceAll("");
+    }
+
+} // StringTools
