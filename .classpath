@@ -9,7 +9,6 @@
     <classpathentry kind="lib" path="lib/mail.jar"/>
     <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
     <classpathentry kind="lib" path="lib/bcmail-jdk14-120.jar"/>
-    <classpathentry kind="lib" path="lib/bcprov-jdk14-120.jar"/>
     <classpathentry kind="lib" path="lib/commons-collections.jar"/>
     <classpathentry kind="lib" path="lib/commons-fileupload-1.0.jar"/>
     <classpathentry kind="lib" path="lib/commons-lang-2.0.jar"/>
@@ -23,5 +22,6 @@
     <classpathentry kind="lib" path="lib/batik-transcoder.jar"/>
     <classpathentry kind="lib" path="lib/batik-util.jar"/>
     <classpathentry kind="lib" path="lib/batik-css.jar"/>
+    <classpathentry kind="lib" path="lib/bcprov-jdk14-122.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
