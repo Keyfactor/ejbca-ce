@@ -22,7 +22,7 @@ import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version  $Id: ScepPkiOpHelper.java,v 1.11 2003-06-11 12:35:08 anatom Exp $
+ * @version  $Id: ScepPkiOpHelper.java,v 1.12 2003-06-11 13:27:39 anatom Exp $
  */
 public class ScepPkiOpHelper {
 
@@ -53,9 +53,9 @@ public class ScepPkiOpHelper {
         try {
             reqmsg = new ScepRequestMessage(msg);
             // Get the certificate
-            X509Certificate cert = (X509Certificate) signsession.createCertificate(admin, reqmsg, -1);
-            if (cert != null) {
-                ret = cert.getEncoded();
+            IResponseMessage resp = signsession.createCertificate(admin, reqmsg, -1, Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
+            if (resp != null) {
+                ret = resp.getResponseMessage();
             }
         } catch (IOException e) {
             log.error("Error receiving ScepMessage: ",e);
@@ -63,6 +63,8 @@ public class ScepPkiOpHelper {
             log.error("Error receiving ScepMessage: ",e);
         } catch (GeneralSecurityException e) {
             log.error("Error receiving ScepMessage: ",e);
+        } catch (ClassNotFoundException e) {
+            log.error("Error createing response message template: ",e);
         } 
         log.debug("<getRequestMessage():" + (ret == null ? 0 : ret.length));
         return ret;

@@ -78,13 +78,14 @@ import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.protocol.IRequestMessage;
+import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
 
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.82 2003-06-11 12:10:49 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.83 2003-06-11 13:28:07 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -431,15 +432,24 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(Admin admin, IRequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException {
+    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException {
         debug(">createCertificate(IRequestMessage)");
-        Certificate ret = null;
+        IResponseMessage ret = null;
         if (req.requireKeyInfo()) {
             req.setKeyInfo(caCert, signingDevice.getPrivateDecKey());
         }
         String username = req.getUsername();
         String pwd = req.getPassword();
-        ret = createCertificate(admin,username,pwd,req,keyUsage);
+        Certificate cert = createCertificate(admin,username,pwd,req,keyUsage);
+        try {
+            ret = (IResponseMessage)responseClass.newInstance();
+        } catch (IllegalAccessException e) {
+            log.error("Cannot create class for response message: ", e);
+        } catch (InstantiationException e) {
+            log.error("Cannot create class for response message: ", e);
+        }
+        ret.setCertificate(cert);
+        ret.setStatus(IResponseMessage.STATUS_OK);
         debug("<createCertificate(IRequestMessage)");
         return ret;
     }

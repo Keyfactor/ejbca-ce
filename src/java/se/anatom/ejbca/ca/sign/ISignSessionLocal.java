@@ -14,12 +14,13 @@ import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
 import se.anatom.ejbca.protocol.IRequestMessage;
+import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.log.Admin;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown.
  *  Creates certificates.
  *
- * @version $Id: ISignSessionLocal.java,v 1.10 2003-06-11 12:10:50 anatom Exp $
+ * @version $Id: ISignSessionLocal.java,v 1.11 2003-06-11 13:28:08 anatom Exp $
  * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
  */
 public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
@@ -63,7 +64,7 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
-    public Certificate createCertificate(Admin admin, IRequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException;
+    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException;
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */

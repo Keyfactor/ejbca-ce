@@ -20,12 +20,13 @@ import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
 import se.anatom.ejbca.protocol.IRequestMessage;
+import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.log.Admin;
 
 /** Creates certificates.
  * Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.12 2003-06-11 12:10:50 anatom Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.13 2003-06-11 13:28:08 anatom Exp $
  */
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
 
@@ -220,17 +221,20 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
      * @param keyusage integer with bit mask describing desired keys usage. Bit mask is packed in in integer using contants from CertificateData.
      * ex. int keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives digitalSignature and nonRepudiation.
      * ex. int keyusage = CertificateData.keyCertSign | CertificateData.cRLSign; gives keyCertSign and cRLSign
+     * @param responseClass The class that will be used as the response message.
      *
      * @see se.anatom.ejbca.ca.store.CertificateData
      * @see se.anatom.ejbca.protocol.IRequestMessage
+     * @see se.anatom.ejbca.protocol.IResponseMessage
+     * @see se.anatom.ejbca.protocol.X509ResponseMessage
      *
-     * @return The newly created certificate or null.
+     * @return The newly created response or null.
      * @throws ObjectNotFoundException if the user does not exist.
      * @throws AuthStatusException If the users status is incorrect.
      * @throws AuthLoginException If the password is incorrect.
      * @throws EJBException if a communication or other error occurs.
      */
-    public Certificate createCertificate(Admin admin, IRequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException;
+    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException;
 
    /**
     * Requests for a CRL to be created with the passed (revoked) certificates.
