@@ -594,16 +594,16 @@ In IE it is done by double-clicking on the .p12 file.
 10. Go to https://localhost:8443/raadmin
 
 Reference: to generate a JKS with keytool
-keytool -genkey -alias foo -keystore foo.jks -keyalg RSA -dname "C=SE,O=
-AnaTom,CN=foo" -storepass foo123
-keytool -certreq -alias foo -keystore foo.jks -sigalg SHA1WithRSA -storepass
-foo123 -file foo.req
+keytool -genkey -alias foo -keystore foo.jks -keyalg RSA -dname "C=SE,O=AnaTom,CN=foo" -storepass foo123
+keytool -certreq -alias foo -keystore foo.jks -sigalg SHA1WithRSA -storepass foo123 -file foo.req
 ra.sh adduser foo foo123 "C=SE,O=AnaTom,CN=foo" null, null 1 1
 ca.sh processreq foo foo123 foo.req foo.pem
 ca.sh getrootcert ca.der
+keytool -import -trustcacerts -alias cacert -file ca.der -keystore foo.jks -storepass foo123
 keytool -import -alias foo -file foo.pem -keystore foo.jks -storepass foo123
-keytool -trustcacerts -alias cacert -file ca.der -keystore foo.jks -storepass
-foo123
+
+run as root:
+keytool -import -trustcacerts -file ca.der -keystore $JAVA_HOME/jre/lib/security/cacerta -storepass changeit
 
 SAMPLES
 =======
