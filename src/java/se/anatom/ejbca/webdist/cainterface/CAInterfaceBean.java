@@ -40,14 +40,14 @@ import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  * @author  Philip Vendil
  */
-public class CAInterfaceBean  implements Serializable {
+public class CAInterfaceBean   {
     
     /** Creates a new instance of CaInterfaceBean */
     public CAInterfaceBean() throws IOException,  NamingException{
          // Get the UserSdminSession instance.
-      Properties jndienv = new Properties();
-      jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));
-      jndicontext = new InitialContext(jndienv);
+     /* Properties jndienv = new Properties();
+      jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties")); */
+      jndicontext = new InitialContext();
 
       certificatesession = null;       
     }
@@ -94,21 +94,6 @@ public class CAInterfaceBean  implements Serializable {
     
     
     // Private methods
-     // Methods used with serialization
-    private void writeObject(ObjectOutputStream out) throws IOException{
-      // Nothing needs to be done.  
-    }
-      
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException{
-      try{  
-        Properties jndienv = new Properties();
-        jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));
-        jndicontext = new InitialContext(jndienv);
-        certificatesession = null;
-      }catch(Exception e){
-        throw new IOException(e.getMessage());   
-      }
-    }
     
     // Private fields
     private transient InitialContext                    jndicontext; 

@@ -11,21 +11,21 @@
   final static String BUTTON_CREATECRL      = "buttoncreatecrl";
 %>
 <%   // Initialize environment
-  ejbcawebbean.initialize(request); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
 
-  final String THIS_FILENAME                = GlobalConfiguration.getCaPath() 
+  final String THIS_FILENAME                = globalconfiguration .getCaPath() 
                                                   + "/cafunctions.jsp";
 
-  final String CREATECRL_LINK               = GlobalConfiguration.getCaPath() 
+  final String CREATECRL_LINK               = globalconfiguration .getCaPath() 
                                                   + "/createcrl/createcrl.jsp";
   final String CREATECRL_PAGE               =  "createcrl/createcrl.jsp";
-  final String GETCRL_LINK                  =    GlobalConfiguration.getCaPath() 
+  final String GETCRL_LINK                  =    globalconfiguration .getCaPath() 
                                                   + "/getcrl/getcrl.jsp";
   final String GETCRL_PAGE                  =    "getcrl/getcrl.jsp"; 
   final String VIEWCERTIFICATE_LINK         =    "viewcertificate.jsp";
-  final String DOWNLOADCERTIFICATE_LINK     = GlobalConfiguration.getCaPath() 
+  final String DOWNLOADCERTIFICATE_LINK     = globalconfiguration .getCaPath() 
                                                   + "/cacert";
-  final String DOWNLOADCRL_LINK             = GlobalConfiguration.getCaPath() 
+  final String DOWNLOADCRL_LINK             = globalconfiguration .getCaPath() 
                                                   + "/getcrl/getcrl";
 
   if( request.getParameter(BUTTON_CREATECRL) != null ){
@@ -37,12 +37,12 @@
 
 %>
 <head>
-  <title><%= GlobalConfiguration.getEjbcaTitle() %></title>
+  <title><%= globalconfiguration .getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
 
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-  <script language=javascript src="<%= GlobalConfiguration.getRaAdminPath() %>ejbcajslib.js"></script>
+  <script language=javascript src="<%= globalconfiguration .getRaAdminPath() %>ejbcajslib.js"></script>
 </head>
 <body>
   <h2 align="center"><%= ejbcawebbean.getText("CAFUNCTIONS") %></h2>
@@ -120,7 +120,7 @@
 
 
 <% // Include Footer 
-   String footurl =  GlobalConfiguration.getFootBanner(); %>
+   String footurl =  globalconfiguration .getFootBanner(); %>
    
   <jsp:include page="<%= footurl %>" />
 </body>

@@ -37,7 +37,7 @@ import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.1 2002-06-10 16:21:05 herrvendil Exp $
+ * @version $Id: CACertServlet.java,v 1.2 2002-06-27 10:57:34 herrvendil Exp $
  *
  */
 public class CACertServlet extends HttpServlet {
@@ -59,9 +59,8 @@ public class CACertServlet extends HttpServlet {
        try {
 
             // Get EJB context and home interfaces
-            GlobalConfiguration gc = new GlobalConfiguration();
-            Properties jndienv = new Properties();
-            jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));
+            /*Properties jndienv = new Properties();
+            jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));*/
             ctx = new InitialContext();
            
             signhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
@@ -80,7 +79,6 @@ public class CACertServlet extends HttpServlet {
 
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
         cat.debug(">doGet()");
-        
         // Check if authorized
         EjbcaWebBean ejbcawebbean= (se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean)
                                    req.getSession().getAttribute("ejbcawebbean");

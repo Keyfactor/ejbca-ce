@@ -91,7 +91,7 @@
         </description>
         <ejb-ref-name>ejb/GlobalWebConfigurationDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra..raadmin.GlobalWebConfigurationDataLocalHome</local-home>
+        <local-home>se.anatom.ejbca.ra.raadmin.GlobalWebConfigurationDataLocalHome</local-home>
         <local>se.anatom.ejbca.ra.raadmin.GlobalWebConfigurationDataLocal</local>
         <ejb-link>GlobalWebConfigurationData</ejb-link>
      </ejb-local-ref>
@@ -115,6 +115,16 @@
         <local>se.anatom.ejbca.ra.raadmin.ProfileGroupDataLocal</local>
         <ejb-link>ProfileGroupData</ejb-link>
      </ejb-local-ref>
+     <ejb-local-ref>
+        <description>
+          The ProfileData Entity bean 
+        </description>
+        <ejb-ref-name>ejb/ProfileDataLocal</ejb-ref-name>
+        <ejb-ref-type>Entity</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ra.raadmin.ProfileDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.raadmin.ProfileDataLocal</local>
+        <ejb-link>ProfileData</ejb-link>
+     </ejb-local-ref>     
                
      <security-identity>
         <run-as>
@@ -123,6 +133,42 @@
       </security-identity>
    </session>
 
+   <session>
+     <description>
+         Session bean handling interface with ra authorization, uses entity beans AvailableAccessRules,
+         UserGroupData
+     </description>
+     <ejb-name>AuthorizationSession</ejb-name>
+     <home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionHome</home>
+     <remote>se.anatom.ejbca.ra.authorization.IAuthorizationSessionRemote</remote>
+     <ejb-class>se.anatom.ejbca.ra.authorization.LocalAuthorizationSessionBean</ejb-class>
+     <session-type>Stateless</session-type>
+     <transaction-type>Container</transaction-type>
+     <env-entry>
+        <description>JDBC datasource to be used</description>
+        <env-entry-name>DataSource</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>java:/DefaultDS</env-entry-value>
+     </env-entry>
+
+     <ejb-local-ref>
+        <description>
+          Available Access Rules
+        </description>
+        <ejb-ref-name>ejb/AvailableAccessRulesDataLocal</ejb-ref-name>
+        <ejb-ref-type>Entity</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataLocal</local>
+        <ejb-link>AvailableAccessRulesData</ejb-link>
+     </ejb-local-ref>
+               
+     <security-identity>
+        <run-as>
+            <role-name>InternalUser</role-name>
+        </run-as>
+      </security-identity>
+   </session>   
+   
    <entity>
       <description>
             This enterprise bean entity represents a User with accompanying data.
@@ -156,7 +202,7 @@
       <ejb-class>se.anatom.ejbca.ra.raadmin.GlobalWebConfigurationDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
       <prim-key-class>java.lang.String</prim-key-class>            
-      <reentrant>True</reentrant>      
+      <reentrant>False</reentrant>      
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>GlobalWebConfigurationDataBean</abstract-schema-name>
       <cmp-field><field-name>configurationId</field-name></cmp-field>
@@ -248,6 +294,23 @@
       <cmp-field><field-name>profile</field-name></cmp-field>
       <primkey-field>profileName</primkey-field>  
    </entity>   
+   
+   <entity>
+      <description>
+            This enterprise bean entity represents available access rules in ra authorization.
+      </description>
+      <ejb-name>AvailableAccessRulesData</ejb-name>
+      <local-home>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataLocalHome</local-home>
+      <local>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataLocal</local>
+      <ejb-class>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataBean</ejb-class>
+      <persistence-type>Container</persistence-type>
+      <prim-key-class>java.lang.String</prim-key-class>            
+      <reentrant>False</reentrant>      
+      <cmp-version>2.x</cmp-version>
+      <abstract-schema-name>AvailableAccessRulesDataBean</abstract-schema-name>
+      <cmp-field><field-name>name</field-name></cmp-field>
+      <primkey-field>name</primkey-field>  
+   </entity>
   </enterprise-beans> 
     
   <relationships>
@@ -316,10 +379,7 @@
        Supports is used for methods which only read data.
    -->
     <container-transaction>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>*</method-name>
-     </method>
+
      <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>findUser</method-name>
@@ -328,8 +388,16 @@
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>findAllUsersByStatus</method-name>
      </method>
-     <trans-attribute>Supports</trans-attribute>   
-   </container-transaction>       
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <trans-attribute>Supports</trans-attribute> 
+   </container-transaction>
    <container-transaction>
      <method>
          <ejb-name>ProfileGroupData</ejb-name>

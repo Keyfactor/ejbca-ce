@@ -1,5 +1,6 @@
 package se.anatom.ejbca.ra.raadmin;
 import java.util.Collection;
+import java.util.TreeMap;
 import java.math.BigInteger;
 
 import java.rmi.RemoteException;
@@ -11,7 +12,7 @@ import se.anatom.ejbca.webdist.rainterface.Profile;
 
 /**
  *
- * @version $Id: IRaAdminSessionRemote.java,v 1.2 2002-06-10 16:21:05 herrvendil Exp $
+ * @version $Id: IRaAdminSessionRemote.java,v 1.3 2002-06-27 10:57:34 herrvendil Exp $
  */
 public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
 
@@ -30,6 +31,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     */
     public GlobalConfiguration loadGlobalConfiguration() throws RemoteException;
+    
     
     // Functions used by User Preferences
      /**
@@ -164,7 +166,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
        * @return A collection of profiles in the group
        * @throws EJBException if a communication or other error occurs.
        */        
-    public Collection getProfiles(String profilegroupname) throws RemoteException;
+    public TreeMap getProfiles(String profilegroupname) throws RemoteException;
     
       /**
        * Returns the available profile group names.
@@ -173,5 +175,19 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
        * @throws EJBException if a communication or other error occurs.
        */         
     public Profile getProfile(String profilegroupname, String profilename) throws RemoteException;
+      /**
+       * Returns the number of profile groups.
+       *
+       * @return the number of profile groups.
+       * @throws EJBException if a communication or other error occurs.
+       */             
+    public int getNumberOfProfileGroups() throws RemoteException;
+      /**
+       * Returns the available profiles in a group.
+       *
+       * @return the available profiles in tje group.
+       * @throws EJBException if a communication or other error occurs.
+       */             
+    public int getNumberOfProfiles(String profilegroupname) throws RemoteException;
 }
 

@@ -4,10 +4,10 @@
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <%   // Initialize environment
-  ejbcawebbean.initialize(request); 
+  GlobalConfiguration  globalconfiguration = ejbcawebbean.initialize(request); 
 %>
 <head>
-  <title><%= GlobalConfiguration.getEjbcaTitle() %></title>
+  <title><%= globalconfiguration .getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">

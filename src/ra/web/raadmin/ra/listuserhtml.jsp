@@ -1,8 +1,8 @@
 <head>
-  <title><%= GlobalConfiguration.getEjbcaTitle() %></title>
+  <title><%= globalconfiguration.getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript src="<%= GlobalConfiguration.getRaAdminPath() %>ejbcajslib.js"></script>
+  <script language=javascript src="<%= globalconfiguration.getRaAdminPath() %>ejbcajslib.js"></script>
   <script language=javascript>
 <!--
 function viewuser(){
@@ -344,7 +344,7 @@ function viewcert(){
   </table>
   </form>
   <%// Include Footer 
-   String footurl =   GlobalConfiguration.getFootBanner(); %>
+   String footurl =   globalconfiguration.getFootBanner(); %>
    
   <jsp:include page="<%= footurl %>" />
 </body>

@@ -4,10 +4,10 @@
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <%   // Initialize environment
-   ejbcawebbean.initialize(request); 
+   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
 %>
 <head>
-  <title><%= GlobalConfiguration.getEjbcaTitle() %></title>
+  <title><%= globalconfiguration.getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
 </head>
@@ -20,7 +20,7 @@
 
 
 <% // Include Footer 
-   String footurl =   GlobalConfiguration.getFootBanner(); %>
+   String footurl =   globalconfiguration.getFootBanner(); %>
    
   <jsp:include page="<%= footurl %>" />
 </body>

@@ -28,12 +28,15 @@ public class EjbcaAthorization extends Object implements java.io.Serializable {
     public static final int USER_ENTITY_MATCHWITH  = 0;
     public static final int USER_ENTITY_MATCHTYPE  = 1;
     public static final int USER_ENTITY_MATCHVALUE = 2;
+    
+
    
     /** Creates new EjbcaAthorization */
-    public EjbcaAthorization() {
+    public EjbcaAthorization(GlobalConfiguration globalconfiguration) {
+        this.globalconfiguration = globalconfiguration;        
         getParameters();
         accesstree = new AccessTree(baseurl, usergroups, opendirectories);
-        availabledirectories = new AvailableDirectories(documentroot,hiddendirectories,GlobalConfiguration.getRaAdminPath());
+        availabledirectories = new AvailableDirectories(documentroot,hiddendirectories,globalconfiguration.getRaAdminPath());
         usergroupsdatahandler = new UserGroupsDataHandler();
         loadAccessData();
     }
@@ -122,7 +125,7 @@ public class EjbcaAthorization extends Object implements java.io.Serializable {
     /** Method that returns all avaliable rules to a usergroup. It checks the filesystem for
      * all directories beneaf document root that isn't set hidden or already applied to this group.*/
     public String[] getAvailableRules(String groupname) throws IOException{  
-      return usergroups.getUserGroup(groupname).nonUsedDirectories(availabledirectories.getDirectories());
+      return usergroups.getUserGroup(groupname).nonUsedDirectories(availabledirectories.getDirectories(), hiddendirectories);
     }
     
       /** Method to add an array of user entities  to a usergroup. A user entity
@@ -179,14 +182,14 @@ public class EjbcaAthorization extends Object implements java.io.Serializable {
     /** Method to retrieve parameters from configuration part.*/
     private void getParameters(){
         // Get a copy of global values.
-        opendirectories = new String[GlobalConfiguration.getOpenDirectories().length];
-        System.arraycopy(GlobalConfiguration.getOpenDirectories(),0,opendirectories,0,
-                         GlobalConfiguration.getOpenDirectories().length);
-        hiddendirectories = new String[GlobalConfiguration.getHiddenDirectories().length];
-        System.arraycopy(GlobalConfiguration.getHiddenDirectories(),0,hiddendirectories,0,
-                         GlobalConfiguration.getHiddenDirectories().length);
-        baseurl=  new String(GlobalConfiguration.getBaseUrl());
-        documentroot =  new String(GlobalConfiguration.getDocumentRoot());        
+        opendirectories = new String[globalconfiguration .getOpenDirectories().length];
+        System.arraycopy(globalconfiguration .getOpenDirectories(),0,opendirectories,0,
+                         globalconfiguration .getOpenDirectories().length);
+        hiddendirectories = new String[globalconfiguration .getHiddenDirectories().length];
+        System.arraycopy(globalconfiguration .getHiddenDirectories(),0,hiddendirectories,0,
+                         globalconfiguration .getHiddenDirectories().length);
+        baseurl=  new String(globalconfiguration .getBaseUrl());
+        documentroot =  new String(globalconfiguration .getDocumentRoot());        
     }
     
      /** Metod to save the access data to the database. */
@@ -211,5 +214,5 @@ public class EjbcaAthorization extends Object implements java.io.Serializable {
     private AccessTree            accesstree;
     private AvailableDirectories  availabledirectories;
     private UserGroupsDataHandler usergroupsdatahandler;
-    
+    private GlobalConfiguration   globalconfiguration;    
 }

@@ -5,49 +5,47 @@
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <% 
   // A jsp page that generates the menu after the users access rights 
+  // Initialize environment.
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
+ 
+  final String THIS_FILENAME            =   globalconfiguration.getMenuFilename();
 
+  final String MAIN_LINK                =  globalconfiguration.getRaAdminPath() +globalconfiguration.getMainFilename();
 
-
-  final String THIS_FILENAME            =   GlobalConfiguration.getMenuFilename();
-
-  final String MAIN_LINK                =  GlobalConfiguration.getRaAdminPath() +GlobalConfiguration.getMainFilename();
-
-  final String CA_LINK                  = GlobalConfiguration.getCaPath() 
+  final String CA_LINK                  = globalconfiguration.getCaPath() 
                                                   + "/cafunctions.jsp";
-  final String RA_LINK                  = GlobalConfiguration.getRaPath() 
+  final String RA_LINK                  = globalconfiguration.getRaPath() 
                                                   + "/adduser.jsp";
-  final String RA_EDITPROFILESLINK      = GlobalConfiguration.getRaPath()+"/profiles/editprofiles.jsp";
-  final String RA_LISTUSERSLINK         = GlobalConfiguration.getRaPath()+"/listusers.jsp";
-  final String RA_ADDUSERLINK           = GlobalConfiguration.getRaPath()+"/adduser.jsp";
-  final String RA_LISTUSERS             = GlobalConfiguration.getRaPath()+"/listusers.jsp";
-  final  String LOG_LINK                = GlobalConfiguration.getLogPath() 
+  final String RA_EDITPROFILESLINK      = globalconfiguration.getRaPath()+"/profiles/editprofiles.jsp";
+  final String RA_LISTUSERSLINK         = globalconfiguration.getRaPath()+"/listusers.jsp";
+  final String RA_ADDUSERLINK           = globalconfiguration.getRaPath()+"/adduser.jsp";
+  final String RA_LISTUSERS             = globalconfiguration.getRaPath()+"/listusers.jsp";
+  final  String LOG_LINK                = globalconfiguration.getLogPath() 
                                                   + "/ejbcaauthorization.jsp";
-  final  String CONFIGURATION_LINK      = GlobalConfiguration.getConfigPath() 
+  final  String CONFIGURATION_LINK      = globalconfiguration.getConfigPath() 
                                                   + "/configuration.jsp";
-  final String AUTHORIZATION_LINK       = GlobalConfiguration.getAuthorizationPath() 
+  final String AUTHORIZATION_LINK       = globalconfiguration.getAuthorizationPath() 
                                                   + "/ejbcaauthorization.jsp";
-  final String USERPREFERENCES_LINK     = GlobalConfiguration.getRaAdminPath() + "userpreferences.jsp";
-  final String HELP_LINK                = GlobalConfiguration.getRaAdminPath() + GlobalConfiguration.getHelpPath() 
+  final String USERPREFERENCES_LINK     = globalconfiguration.getRaAdminPath() + "userpreferences.jsp";
+  final String HELP_LINK                = globalconfiguration.getRaAdminPath() + globalconfiguration.getHelpPath() 
                                                   + "/index_help.html";
 %>
 <%  
-  // Initialize environment.
-  ejbcawebbean.initialize(request); 
- 
+
   boolean raheaderprinted =false;
 %>
 <head>
   <title><%= ""%></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript src="<%= GlobalConfiguration.getRaAdminPath() %>ejbcajslib.js"></script>
+  <script language=javascript src="<%= globalconfiguration.getRaAdminPath() %>ejbcajslib.js"></script>
 </head>
 <body id="menu">
 <%  // If authorized to use the main page then display related links.
    try{
      if(ejbcawebbean.isAuthorized(MAIN_LINK)){ %>
      <br>
-     <A href="<%=MAIN_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("MAINPAGE") %></A>     
+     <A href="<%=MAIN_LINK %>" target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("MAINPAGE") %></A>     
      <br>
 
 <%    }
@@ -56,7 +54,7 @@
    try{
      if(ejbcawebbean.isAuthorized(CA_LINK)){ %>
      <br>
-     <A href='<%= CA_LINK %>' target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("CAFUNCTIONS") %></a>
+     <A href='<%= CA_LINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("CAFUNCTIONS") %></a>
      <br>
 
 <%    }
@@ -69,7 +67,7 @@
            raheaderprinted=true;%> 
            <br>  
            <%=ejbcawebbean.getText("RAFUNCTIONS")+"<br>" %>
-           &nbsp;&nbsp;<A href='<%= RA_EDITPROFILESLINK %>' target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"> 
+           &nbsp;&nbsp;<A href='<%= RA_EDITPROFILESLINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"> 
            <%=ejbcawebbean.getText("EDITPROFILES") %></a><br><br>
 
 <%   }
@@ -81,9 +79,9 @@
               out.write(ejbcawebbean.getText("RAFUNCTIONS")+"<br>"); 
               raheaderprinted=true;
             }  %>
-           &nbsp;&nbsp;<A href='<%= RA_ADDUSERLINK %>' target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"> 
+           &nbsp;&nbsp;<A href='<%= RA_ADDUSERLINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"> 
            <%=ejbcawebbean.getText("ADDUSER") %></a><br>
-           &nbsp;&nbsp;<A href='<%=RA_LISTUSERSLINK %>' target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"> 
+           &nbsp;&nbsp;<A href='<%=RA_LISTUSERSLINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"> 
            <%=ejbcawebbean.getText("LISTUSERS") %></a><br>
   
 <%   }
@@ -93,7 +91,7 @@
       if(ejbcawebbean.isAuthorized(CONFIGURATION_LINK)){ %>
    <br>
    <br>
-   <A href="<%= CONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("SYSTEMCONFIGURATION") %></A>
+   <A href="<%= CONFIGURATION_LINK %>" target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("SYSTEMCONFIGURATION") %></A>
    <br>
 <%   }
    }catch(AuthorizationDeniedException e){}
@@ -101,7 +99,7 @@
     try{
       if(ejbcawebbean.isAuthorized(AUTHORIZATION_LINK)){ %>
    
-   <A href="<%= AUTHORIZATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("AUTHORIZATION") %></A>
+   <A href="<%= AUTHORIZATION_LINK %>" target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("AUTHORIZATION") %></A>
    <br>
 <%   }
    }catch(AuthorizationDeniedException e){}
@@ -110,7 +108,7 @@
       if(ejbcawebbean.isAuthorized(USERPREFERENCES_LINK)){ %>
      <br>
      <br>
-     <A href="<%= USERPREFERENCES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("USERPREFERENCES") %></A>
+     <A href="<%= USERPREFERENCES_LINK %>" target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("USERPREFERENCES") %></A>
      <br>
 <%   }
    }catch(AuthorizationDeniedException e){

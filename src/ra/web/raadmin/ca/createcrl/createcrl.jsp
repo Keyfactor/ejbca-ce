@@ -1,5 +1,5 @@
 <%@page contentType="text/html"%>
-<%@page errorPage="../../errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration,
+<%@page errorPage="../../errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration ,
                                               se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.webdist.rainterface.CertificateView,
                                               se.anatom.ejbca.webdist.rainterface.DNFieldExtractor, se.anatom.ejbca.webdist.ejbcaathorization.AuthorizationDeniedException"%>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
@@ -9,9 +9,11 @@
 <%!
      final static String BUTTON_CREATECRL      = "buttoncreatecrl";
 %>
-<%   final String CREATECRL_LINK               = GlobalConfiguration.getCaPath() 
+<%   
+     GlobalConfiguration globalconfiguration = ejbcawebbean.getGlobalConfiguration();
+     final String CREATECRL_LINK               = globalconfiguration .getCaPath() 
                                                   + "/createcrl/createcrl.jsp";
-     final String CAFUNCTIONS_LINK             = GlobalConfiguration.getCaPath() 
+     final String CAFUNCTIONS_LINK             = globalconfiguration .getCaPath() 
                                                   + "/cafunctions.jsp";
 %>
 

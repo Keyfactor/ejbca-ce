@@ -3,7 +3,7 @@
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <%   // Initialize environment
-  ejbcawebbean.initialize(request); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
 %>
  <br>
  <br>

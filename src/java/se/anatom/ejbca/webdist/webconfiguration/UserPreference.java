@@ -38,12 +38,7 @@ public class UserPreference implements java.io.Serializable, Cloneable {
       this.entriesperpage= entriesperpage; 
     }
     public String getTheme() {return theme;}
-    
-    public String getCssFile(){
-      return GlobalConfiguration.getRaAdminPath() + GlobalConfiguration.getThemePath() + "/" + theme + ".css";  
-    }
-    
-    
+        
     public void setPreferedLanguage(String languagecode) {
       String[] languages = WebLanguages.getAvailableLanguages();  
       if(languages != null){
@@ -77,6 +72,12 @@ public class UserPreference implements java.io.Serializable, Cloneable {
       this.theme=theme;  
     }
     
+    public String getLastProfileGroup(){ return lastprofilegroup;}
+    public void setLastProfileGroup(String lastprofilegroup){this.lastprofilegroup=lastprofilegroup;}
+    
+    public String getLastProfile(){ return lastprofile;}
+    public void setLastProfile(String lastprofile){this.lastprofile=lastprofile;}
+    
     public Object clone() throws CloneNotSupportedException {
       return super.clone();   
     }
@@ -85,6 +86,8 @@ public class UserPreference implements java.io.Serializable, Cloneable {
     private int preferedlanguage; 
     private int secondarylanguage;
     private int entriesperpage= 30;
-    private String theme = "default_theme";
+    private String theme;
+    private String lastprofilegroup;
+    private String lastprofile;
     
 }

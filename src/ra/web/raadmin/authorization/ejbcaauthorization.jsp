@@ -58,18 +58,18 @@
 %>
 <% 
   boolean usergroupexists = false;
-  String THIS_FILENAME            =  GlobalConfiguration.getAuthorizationPath()  + "/ejbcaauthorization.jsp";
+
   // Initialize environment
   String includefile = null;
-  ejbcawebbean.initialize(request); 
-
+  GlobalConfiguration globalconfiguration =ejbcawebbean.initialize(request); 
+  String THIS_FILENAME            =  globalconfiguration .getAuthorizationPath()  + "/ejbcaauthorization.jsp";
   ejbcaauthorization =   ejbcawebbean.getAthorizationComponent();  %>
 <html>
 <head>
-  <title><%= GlobalConfiguration.getEjbcaTitle() %></title>
+  <title><%= globalconfiguration .getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript src="<%= GlobalConfiguration.getRaAdminPath() %>ejbcajslib.js"></script>
+  <script language=javascript src="<%= globalconfiguration .getRaAdminPath() %>ejbcajslib.js"></script>
 </head>
 <body>
 
@@ -190,7 +190,7 @@
 <%}
 
    // Include Footer 
-   String footurl =   GlobalConfiguration.getFootBanner(); %>
+   String footurl =   globalconfiguration .getFootBanner(); %>
    
   <jsp:include page="<%= footurl %>" />
 

@@ -21,7 +21,7 @@ import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.util.CertTools;
 
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
-import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
+
 /**
  * Servlet used to distribute  CRLs.<br>
  *
@@ -47,10 +47,10 @@ public class GetCRLServlet extends HttpServlet {
         try {
 
             // Get EJB context and home interfaces
-            GlobalConfiguration gc = new GlobalConfiguration();
-            java.util.Properties jndienv = new java.util.Properties();
-            jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));
-            ctx = new InitialContext(jndienv);
+            
+           /* java.util.Properties jndienv = new java.util.Properties();
+            jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));*/
+            ctx = new InitialContext();
             
         } catch( Exception e ) {
             throw new ServletException(e);

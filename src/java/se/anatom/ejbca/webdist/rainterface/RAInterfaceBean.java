@@ -41,20 +41,19 @@ import se.anatom.ejbca.util.Hex;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  * @author  Philip Vendil
  */
-public class RAInterfaceBean extends Object implements java.io.Serializable {
+public class RAInterfaceBean {
     
     // Public constants.
     
     /** Creates new RaInterfaceBean */
-    public RAInterfaceBean() throws  IOException, NamingException  {
+    public RAInterfaceBean() throws  IOException, NamingException, FinderException, CreateException  {
       users = new UsersView();  
-      this.profiledatahandler = new ProfileDataHandler();
-      profiles = this.profiledatahandler.loadProfilesData();
+      this.profiles = new ProfileDataHandler();
       
       // Get the UserSdminSession instance.
-      Properties jndienv = new Properties(); 
-      jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));
-      jndicontext = new InitialContext(jndienv);
+      //Properties jndienv = new Properties(); 
+      //jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));
+      jndicontext = new InitialContext();
 
       adminsession = null;
       certificatesession = null;
@@ -300,71 +299,57 @@ public class RAInterfaceBean extends Object implements java.io.Serializable {
     }
     // Metods dealing with profiles.
     /** Returns all profile data as strings. The commonly used method in ra jsp pages.*/
-    public String[][][] getProfilesAsString(){
+    public String[][][] getProfilesAsString() throws RemoteException{
       return profiles.getProfilesAsStrings();  
     }
     
-    public String[] getProfileNames(){
+    public String[] getProfileNames() throws RemoteException{
       return profiles.getProfileNames();   
     }
     
     /* Returns profiles as a Profiles object */ 
-    public Profiles getProfiles(){  
+    public ProfileDataHandler getProfileDataHandler(){  
       return profiles;   
     }
     
-    public Profile getProfile(String name){
+    public Profile getProfile(String name) throws RemoteException{
       return profiles.getProfile(name);
     }
  
-    public String[][] getProfileAsString(String name){  
+    public String[][] getProfileAsString(String name) throws RemoteException{  
       return profiles.getProfile(name).getAllValues();  
     }
     
-    public void addProfile(String name) throws ProfileExistsException {
+    public void addProfile(String name) throws ProfileExistsException, RemoteException{
        profiles.addProfile(name, new Profile());  
-       this.profiledatahandler.saveProfilesData(profiles);
     }    
     
-    public void addProfile(String name, String[][] profilevalues) throws ProfileExistsException {
-       profiles.addProfile(name, new Profile(profilevalues));  
-       this.profiledatahandler.saveProfilesData(profiles);
+    public void addProfile(String name, Profile profile) throws ProfileExistsException, RemoteException {
+       profiles.addProfile(name, profile);  
     }
     
-    public void removeProfile(String name){
+    public void changeProfile(String name, Profile profile) throws ProfileDoesntExistsException, RemoteException {
+       profiles.changeProfile(name, profile);          
+    }
+    
+    public void removeProfile(String name)throws RemoteException{
         profiles.removeProfile(name);
-        this.profiledatahandler.saveProfilesData(profiles);
     }
     
-    public void renameProfile(String oldname, String newname) throws ProfileExistsException{
+    public void renameProfile(String oldname, String newname) throws ProfileExistsException, RemoteException{
        profiles.renameProfile(oldname, newname);   
-       this.profiledatahandler.saveProfilesData(profiles);
     }
     
-    public void cloneProfile(String originalname, String newname) throws ProfileExistsException{
-      profiles.cloneProfile(originalname, newname); 
-      this.profiledatahandler.saveProfilesData(profiles);  
+    public void cloneProfile(String originalname, String newname) throws ProfileExistsException, RemoteException{
+      profiles.cloneProfile(originalname, newname);  
+    }
+          
+    public String[][] getLastProfileAsString(String lastprofilename) throws RemoteException{
+      return profiles.getLastProfileAsString(lastprofilename);  
     }
     
-    public void setDefaultProfile(String name){
-      profiles.setDefaultProfile(name);
-      this.profiledatahandler.saveProfilesData(profiles);        
-    }
-    
-    public void saveProfileData(){
-      this.profiledatahandler.saveProfilesData(profiles);         
-    }
-    
-    public void reloadProfileData(){
-      profiles = this.profiledatahandler.loadProfilesData();
-    }
-      
-    public String getDefaultProfileName(){
-      return profiles.getDefaultProfileName();   
-    }
-      
-    public String[][] getDefaultProfileAsString(){
-      return profiles.getDefaultProfileAsString();  
+    public Profile getLastProfile(String lastprofilename) throws RemoteException{
+      return profiles.getLastProfile(lastprofilename);  
     }
     
     public void loadCertificates(String subjectdn) throws RemoteException, NamingException, CreateException{
@@ -411,39 +396,17 @@ public class RAInterfaceBean extends Object implements java.io.Serializable {
       return returnval;
     }
     // Private methods.
-     // Methods used with serialization
-    private void writeObject(ObjectOutputStream out) throws IOException{
-      // Nothing needs to be done.  
-    }
-      
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException{
-      try{  
-        users = new UsersView();  
-        this.profiledatahandler = new ProfileDataHandler();
-        profiles = this.profiledatahandler.loadProfilesData();
-      
-        // Get the UserAdminSession instance.
-        Properties jndienv = new Properties(); 
-        jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));
-        jndicontext = new InitialContext(jndienv);
 
-        adminsession = null; 
-        certificatesession = null;  
-      }catch(Exception e){
-        throw new IOException(e.getMessage());   
-      }
-    }    
     // Private fields.
+   
+    private ProfileDataHandler             profiles;
     
-    private transient Profiles                       profiles;
-    private transient ProfileDataHandler             profiledatahandler;
+    private InitialContext                 jndicontext; 
+    private IUserAdminSessionRemote        adminsession;
+    private IUserAdminSessionHome          adminsessionhome;
+    private ICertificateStoreSessionRemote certificatesession; 
+    private ICertificateStoreSessionHome   certificatesessionhome;
     
-    private transient InitialContext                 jndicontext; 
-    private transient IUserAdminSessionRemote        adminsession;
-    private transient IUserAdminSessionHome          adminsessionhome;
-    private transient ICertificateStoreSessionRemote certificatesession; 
-    private transient ICertificateStoreSessionHome   certificatesessionhome;
-    
-    private transient UsersView                      users;
-    private transient CertificateView[]              certificates;
+    private UsersView                      users;
+    private CertificateView[]              certificates;
 }

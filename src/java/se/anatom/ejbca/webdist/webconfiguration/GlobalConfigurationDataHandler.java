@@ -18,6 +18,8 @@ import java.rmi.RemoteException;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 
+import java.math.BigInteger;
+
 /**
  * A class handling the saving and loading of global configuration data.
  * By default all data are saved to a database.
@@ -27,33 +29,33 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 public class GlobalConfigurationDataHandler {
     
     /** Creates a new instance of GlobalConfigurationDataHandler */
-    public GlobalConfigurationDataHandler() throws IOException, FileNotFoundException, NamingException, CreateException,
-                                                   FinderException{
+    public GlobalConfigurationDataHandler() throws IOException, FileNotFoundException, NamingException,
+                                                   FinderException, CreateException{
                                        
-        Properties jndienv = new Properties(); 
-        jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));   
-        InitialContext jndicontext = new InitialContext(jndienv);
-        Object obj1 = jndicontext.lookup("RaAdminSession");
-        IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, 
+      //  Properties jndienv = new Properties(); 
+      // jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));   
+      //  jndicontext = new InitialContext(jndienv); 
+       InitialContext jndicontext = new InitialContext();
+       IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"), 
                                                                                  IRaAdminSessionHome.class);
-        raadminsession = raadminsessionhome.create();   
+       raadminsession = raadminsessionhome.create();         
+        
     }
     
-    public GlobalConfiguration loadGlobalConfiguration() throws RemoteException, NamingException {
+    public GlobalConfiguration loadGlobalConfiguration() throws RemoteException, NamingException{
         GlobalConfiguration ret = null;
 
-        ret = raadminsession.loadGlobalConfiguration();  
-        System.out.println(" loadGlobalConfiguration" + ret.getEjbcaTitle()); 
+        ret = raadminsession.loadGlobalConfiguration();   
         if(ret == null){
-           System.out.println("new global"); 
            ret = new GlobalConfiguration();    
         }
         return ret;
     }
     
     public void saveGlobalConfiguration(GlobalConfiguration gc) throws RemoteException {
-       raadminsession.saveGlobalConfiguration(gc);      
+       raadminsession.saveGlobalConfiguration( gc);      
     }
  
+   // private IRaAdminSessionHome  raadminsessionhome;
     private IRaAdminSessionRemote raadminsession;
 }

@@ -39,14 +39,14 @@
   // Initialize environment.
   final String THIS_FILENAME                          =  "configuration.jsp";
 
-  ejbcawebbean.initialize(request); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
 
-  String forwardurl = "/" + GlobalConfiguration.getMainFilename(); 
+  String forwardurl = "/" + globalconfiguration .getMainFilename(); 
 
     // Determine action 
   if( request.getParameter(BUTTON_CANCEL) != null){
        // Cancel current values and go back to old ones.
-       ejbcawebbean.reloadGlobalConfiguration();
+       ejbcawebbean.reloadGlobalConfiguration ();
       
 %> 
  <jsp:forward page="<%= forwardurl %>"/>

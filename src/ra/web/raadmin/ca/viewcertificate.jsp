@@ -33,10 +33,10 @@
 
 %><%
 
-  String THIS_FILENAME            =  GlobalConfiguration.getRaPath()  + "/viewcertificate.jsp";
-
   // Initialize environment.
-  ejbcawebbean.initialize(request); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
+
+  String THIS_FILENAME            =  globalconfiguration .getRaPath()  + "/viewcertificate.jsp";
 
   boolean nosubjectdnparameter    = true;
   CertificateView certificatedata = null;
@@ -82,10 +82,10 @@
   }  
 %>
 <head>
-  <title><%= GlobalConfiguration.getEjbcaTitle() %></title>
+  <title><%= globalconfiguration .getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript src="<%= GlobalConfiguration.getRaAdminPath() %>ejbcajslib.js"></script>
+  <script language=javascript src="<%= globalconfiguration .getRaAdminPath() %>ejbcajslib.js"></script>
 </head>
 <body >
   <h2 align="center"><%= ejbcawebbean.getText("VIEWCERTIFICATE") %></h2>

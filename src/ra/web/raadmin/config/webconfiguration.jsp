@@ -4,9 +4,9 @@
 %>
 <html>
 <head>
-  <title><%= GlobalConfiguration.getEjbcaTitle() %></title>
+  <title><%= gc.getEjbcaTitle() %></title>
   <link rel=STYLESHEET href="/<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript src="/<%= GlobalConfiguration.getRaAdminPath() %>ejbcajslib.js"></script>
+  <script language=javascript src="/<%= gc.getRaAdminPath() %>ejbcajslib.js"></script>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
 

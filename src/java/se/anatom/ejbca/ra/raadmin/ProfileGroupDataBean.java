@@ -2,9 +2,14 @@ package se.anatom.ejbca.ra.raadmin;
 
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+import javax.ejb.RemoveException;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Vector;
+import java.util.TreeMap;
 import java.util.Iterator;
 import org.apache.log4j.*;
 
@@ -87,8 +92,10 @@ public abstract class ProfileGroupDataBean implements javax.ejb.EntityBean {
        if(returnvalue){
           try{ 
             ProfileDataLocal profiledata = createProfileData(newprofilename, profile);
+            getProfilesData().add(profiledata);
           }catch(Exception e){
             returnvalue=false;   
+           //throw new EJBException(e.getMessage());  
           }
        }
        return returnvalue;
@@ -100,16 +107,18 @@ public abstract class ProfileGroupDataBean implements javax.ejb.EntityBean {
      * @see se.anatom.ejbca.ra.raadmin.ProfileGroupDataLocal
 
      */         
-    public void removeProfile(String profilename){
-       Iterator i = getProfilesData().iterator();        
+    public void removeProfile(String profilename)  {
+       Iterator i = getProfilesData().iterator();     
         while(i.hasNext()){
             ProfileDataLocal pdl = (ProfileDataLocal) i.next();
             if(pdl.getProfileName().equals(profilename)){
-              try{  
-                getProfilesData().remove(pdl);
-              }catch(Exception e){}
-            }    
-       }        
+                getProfilesData().remove(pdl);     
+                try{
+                  pdl.remove();
+                }catch(RemoveException e){ throw new EJBException(e.getMessage());}
+                break;              
+           }    
+       }     
     } // removeProfile
 
     /**
@@ -120,17 +129,20 @@ public abstract class ProfileGroupDataBean implements javax.ejb.EntityBean {
     public boolean renameProfile(String oldprofilename, String newprofilename){
        boolean returnvalue = false;
        Profile profile = null;
-       Iterator i = getProfilesData().iterator();        
-        while(i.hasNext()){
-            ProfileDataLocal pdl = (ProfileDataLocal) i.next();
+       Iterator i = getProfilesData().iterator();           
+        while(i.hasNext()){           
+            ProfileDataLocal pdl = (ProfileDataLocal) i.next();        
             if(pdl.getProfileName().equals(oldprofilename)){
               profile = pdl.getProfile();  
               try{
                 getProfilesData().remove(pdl);
+                pdl.remove();
                 ProfileDataLocal profiledata = createProfileData(newprofilename, profile);
+                getProfilesData().add(profiledata);
                 returnvalue=true;
+                break;
               }catch(Exception e){
-                returnvalue=false;   
+                 returnvalue=false;   
               }
             }    
        }        
@@ -183,20 +195,23 @@ public abstract class ProfileGroupDataBean implements javax.ejb.EntityBean {
      * @see se.anatom.ejbca.ra.raadmin.ProfileGroupDataLocal
 
      */     
-    public Collection getProfiles(){
-      Vector returnval = null;
+    public TreeMap getProfiles(){
+      TreeMap returnval = null;
       Collection result = null;
       try{
         result = ejbSelectProfiles(getProfileGroupName());
         if(result.size()>0){
-          returnval = new Vector();  
+          returnval = new TreeMap();  
           Iterator i = result.iterator();
           while(i.hasNext()){
-            returnval.add(((ProfileDataLocal) i.next()).getProfile());
+            ProfileDataLocal pdl = (ProfileDataLocal) i.next();
+            returnval.put(pdl.getProfileName(),pdl.getProfile());
           }
         }
       }catch(Exception e){
-        returnval=null;   
+        returnval=null;             
+                //    throw new EJBException(e.getMessage());    
+
       }
       return returnval;        
     } // getProfiles
@@ -216,7 +231,9 @@ public abstract class ProfileGroupDataBean implements javax.ejb.EntityBean {
           returnval = ((ProfileDataLocal) i.next()).getProfile();   
         }
       }catch(Exception e){
-        returnval=null;   
+        returnval=null;            
+                  //  throw new EJBException(e.getMessage());    
+ 
       }
       return returnval;             
     } // getProfile
@@ -296,14 +313,12 @@ public abstract class ProfileGroupDataBean implements javax.ejb.EntityBean {
     }
     
     // Private Methods.
-    private ProfileDataLocal createProfileData(String profilename, Profile profile) throws CreateException{
-      try{
-          InitialContext initial = new InitialContext();
-          ProfileDataLocalHome home = (ProfileDataLocalHome) initial.lookup("java:comp/env/ejb/ProfileDataLocal");
-          return home.create(profilename, profile);
-      }catch(Exception e){
-        throw new javax.ejb.EJBException(e);   
-      }
+    private ProfileDataLocal createProfileData(String profilename, Profile profile) throws CreateException, javax.naming.NamingException{
+      ProfileDataLocal returnval = null;  
+      InitialContext initial = new InitialContext();
+      ProfileDataLocalHome home = (ProfileDataLocalHome) initial.lookup("java:comp/env/ejb/ProfileDataLocal");
+      returnval= home.create(profilename, profile);
+      return returnval; 
     } // createProfileData
     
 

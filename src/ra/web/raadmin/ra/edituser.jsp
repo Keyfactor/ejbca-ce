@@ -41,12 +41,9 @@
   static final String CHECKBOX_VALUE             = "true";
 
 %><%
-
-  String THIS_FILENAME            =  GlobalConfiguration.getRaPath()  + "/edituser.jsp";
-
   // Initialize environment.
-  ejbcawebbean.initialize(request); 
-
+  GlobalConfiguration  globalconfiguration = ejbcawebbean.initialize(request); 
+  String THIS_FILENAME            =  globalconfiguration.getRaPath()  + "/edituser.jsp";
   boolean nouserparameter          = true;
 
   String[] userdata = null;
@@ -197,7 +194,7 @@
   
 %>
 <head>
-  <title><%= GlobalConfiguration.getEjbcaTitle() %></title>
+  <title><%= globalconfiguration .getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
   <script language='JavaScript'>
@@ -251,7 +248,7 @@ function checksaveclose(){
 }
    -->
   </script>
-  <script language=javascript src="<%= GlobalConfiguration.getRaAdminPath() %>ejbcajslib.js"></script>
+  <script language=javascript src="<%= globalconfiguration .getRaAdminPath() %>ejbcajslib.js"></script>
 </head>
 <body >
   <h2 align="center"><%= ejbcawebbean.getText("EDITUSER") %></h2>

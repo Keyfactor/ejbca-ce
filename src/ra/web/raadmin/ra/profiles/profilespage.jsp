@@ -8,7 +8,7 @@
 
 <% 
   String[] profiles     = ejbcarabean.getProfileNames(); 
-  String defaultprofile = ejbcarabean.getDefaultProfileName();
+  String lastprofile = ejbcawebbean.getLastProfile();
 %>
 
 
@@ -58,9 +58,9 @@
                  }else{
                    out.write(profiles[i]);
                  }
-                 if(profiles[i].equals(defaultprofile)){ 
+               /*  if(profiles[i].equals(defaultprofile)){ 
                    out.write(", " + ejbcawebbean.getText("DEFAULT"));
-                 }%></option>
+                 } */%></option>
             <%}%>
               <option value="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -84,7 +84,7 @@
                 <input type="submit" name="<%= BUTTON_EDIT_PROFILE %>" value="<%= ejbcawebbean.getText("EDITPROFILE") %>">
               </td>
               <td>
-                <input type="submit" name="<%= BUTTON_SET_AS_DEFAULT %>" value="<%= ejbcawebbean.getText("SETASDEFAULT") %>">
+             &nbsp; <% /*<!--   <input type="submit" name="<%= BUTTON_SET_AS_DEFAULT " value="<%= ejbcawebbean.getText("SETASDEFAULT") "> --> */ %>
               </td>
               <td>
                 <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE") %>');" name="<%= BUTTON_DELETE_PROFILE %>" value="<%= ejbcawebbean.getText("DELETEPROFILE") %>">

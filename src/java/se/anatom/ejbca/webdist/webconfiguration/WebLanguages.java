@@ -22,12 +22,12 @@ public class WebLanguages {
     /** Construtor used to load static content. An instance must be declared with this constructor before
      *  any WebLanguage object can be used. */
     /** Special constructor used by Ejbca web bean */
-    public WebLanguages() throws IOException{  
+    public WebLanguages(GlobalConfiguration globalconfiguration) throws IOException{  
       if(languages == null){ 
         // Get available languages.  
          this.availablelanguages=null;
          
-         String availablelanguagesstring = GlobalConfiguration.getAvailableLanguagesAsString();
+         String availablelanguagesstring = globalconfiguration .getAvailableLanguagesAsString();
          availablelanguages =  availablelanguagesstring.split(",");
          for(int i=0; i < availablelanguages.length;i++){
            availablelanguages[i] =  availablelanguages[i].trim().toUpperCase();  
@@ -36,8 +36,8 @@ public class WebLanguages {
          languages = new Properties[availablelanguages.length];
          for(int i = 0; i < availablelanguages.length; i++){
            languages[i] = new Properties();
-           languages[i].load(this.getClass().getResourceAsStream("/" + GlobalConfiguration.getLanguagePath() + "/" 
-                                                                    + GlobalConfiguration.getLanguageFilename() + "."  
+           languages[i].load(this.getClass().getResourceAsStream("/" + globalconfiguration .getLanguagePath() + "/" 
+                                                                    + globalconfiguration .getLanguageFilename() + "."  
                                                                     + availablelanguages[i].toLowerCase() +".properties"));
          } 
       } 

@@ -18,7 +18,7 @@
 //  Used in profiles.jsp
   static final String BUTTON_EDIT_PROFILE      = "buttoneditprofile"; 
   static final String BUTTON_DELETE_PROFILE    = "buttondeleteprofile";
-  static final String BUTTON_SET_AS_DEFAULT    = "buttonsetasdefault"; 
+//  static final String BUTTON_SET_AS_DEFAULT    = "buttonsetasdefault"; 
   static final String BUTTON_ADD_PROFILE       = "buttonaddprofile"; 
   static final String BUTTON_RENAME_PROFILE    = "buttonrenameprofile";
   static final String BUTTON_CLONE_PROFILE     = "buttoncloneprofile";
@@ -73,21 +73,23 @@
 
 %>
 <% 
-  String THIS_FILENAME            =  GlobalConfiguration.getRaPath()  + "/profiles/editprofiles.jsp";
+
   // Initialize environment
   String includefile = null;
   boolean  triedtoeditemptyprofile   = false;
   boolean  triedtodeleteemptyprofile = false;
   boolean  profileexists             = false;
 
-  ejbcawebbean.initialize(request); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
+
+  String THIS_FILENAME            =  globalconfiguration .getRaPath()  + "/profiles/editprofiles.jsp";
 %>
  
 <head>
-  <title><%= GlobalConfiguration.getEjbcaTitle() %></title>
+  <title><%= globalconfiguration .getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript src="<%= GlobalConfiguration.getRaAdminPath() %>ejbcajslib.js"></script>
+  <script language=javascript src="<%= globalconfiguration .getRaAdminPath() %>ejbcajslib.js"></script>
 </head>
 <body>
 
@@ -161,7 +163,7 @@
          }
          includefile="profilespage.jsp"; 
       }
-      if( request.getParameter(BUTTON_SET_AS_DEFAULT) != null){
+ /*     if( request.getParameter(BUTTON_SET_AS_DEFAULT) != null){
          // Set selected profile as default and display profilespage.
          profile = request.getParameter(SELECT_PROFILE);
          if(profile != null){
@@ -170,7 +172,7 @@
            }      
          }
          includefile="profilespage.jsp"; 
-      }
+      }*/
       if( request.getParameter(BUTTON_CLONE_PROFILE) != null){
          // clone profile and display profilespage.
        String newprofilename = request.getParameter(TEXTFIELD_PROFILENAME);
@@ -193,72 +195,73 @@
        if(profile != null){
          if(!profile.trim().equals("")){
            if(request.getParameter(BUTTON_SAVE) != null){
+             Profile profiledata = ejbcarabean.getProfile(profile);
              // Save changes.
              String value = request.getParameter(TEXTFIELD_USERNAME);
              String required = null;
              if(value !=null){
                value=value.trim(); 
                if(!value.equals("")){
-                 ejbcarabean.getProfile(profile).setValue(Profile.USERNAME,value); 
+                 profiledata.setValue(Profile.USERNAME,value); 
                }
              }
              required = request.getParameter(CHECKBOX_REQUIRED_USERNAME);
              if(required != null){
                if(required.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setRequired(Profile.USERNAME,Profile.TRUE);                  
+                 profiledata.setRequired(Profile.USERNAME,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setRequired(Profile.USERNAME,Profile.FALSE); 
+                 profiledata.setRequired(Profile.USERNAME,Profile.FALSE); 
                }
              }
              value = request.getParameter(TEXTFIELD_PASSWORD);
              if(value !=null){
                value=value.trim(); 
                if(!value.equals("")){
-                 ejbcarabean.getProfile(profile).setValue(Profile.PASSWORD,value); 
+                 profiledata.setValue(Profile.PASSWORD,value); 
                }
              }
              required = request.getParameter(CHECKBOX_REQUIRED_PASSWORD);
              if(required != null){
                if(required.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setRequired(Profile.PASSWORD,Profile.TRUE);                  
+                 profiledata.setRequired(Profile.PASSWORD,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setRequired(Profile.PASSWORD,Profile.FALSE); 
+                 profiledata.setRequired(Profile.PASSWORD,Profile.FALSE); 
                }
              }
              value = request.getParameter(CHECKBOX_CLEARTEXTPASSWORD);
              if(value !=null){
                if(value.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setValue(Profile.CLEARTEXTPASSWORD,Profile.TRUE);                  
+                 profiledata.setValue(Profile.CLEARTEXTPASSWORD,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setValue(Profile.CLEARTEXTPASSWORD,Profile.FALSE); 
+                 profiledata.setValue(Profile.CLEARTEXTPASSWORD,Profile.FALSE); 
                }
              }
              required = request.getParameter(CHECKBOX_REQUIRED_CLEARTEXTPASSWORD);
              if(required != null){
                if(required.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setRequired(Profile.CLEARTEXTPASSWORD,Profile.TRUE);                  
+                 profiledata.setRequired(Profile.CLEARTEXTPASSWORD,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setRequired(Profile.CLEARTEXTPASSWORD,Profile.FALSE); 
+                 profiledata.setRequired(Profile.CLEARTEXTPASSWORD,Profile.FALSE); 
                }
              }
              value = request.getParameter(TEXTFIELD_COMMONNAME);
              if(value !=null){
                value=value.trim(); 
                if(!value.equals("")){
-                 ejbcarabean.getProfile(profile).setValue(Profile.COMMONNAME,value); 
+                 profiledata.setValue(Profile.COMMONNAME,value); 
                }
              }
              required = request.getParameter(CHECKBOX_REQUIRED_COMMONNAME);
              if(required != null){
                if(required.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setRequired(Profile.COMMONNAME,Profile.TRUE);                  
+                 profiledata.setRequired(Profile.COMMONNAME,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setRequired(Profile.COMMONNAME,Profile.FALSE); 
+                 profiledata.setRequired(Profile.COMMONNAME,Profile.FALSE); 
                }
              }
 
@@ -266,16 +269,16 @@
              if(value !=null){
                value=value.trim(); 
                if(!value.equals("")){
-                 ejbcarabean.getProfile(profile).setValue(Profile.ORGANIZATIONUNIT,value); 
+                 profiledata.setValue(Profile.ORGANIZATIONUNIT,value); 
                }
              }
              required = request.getParameter(CHECKBOX_REQUIRED_ORGANIZATIONUNIT);
              if(required != null){
                if(required.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setRequired(Profile.ORGANIZATIONUNIT,Profile.TRUE);                  
+                 profiledata.setRequired(Profile.ORGANIZATIONUNIT,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setRequired(Profile.ORGANIZATIONUNIT,Profile.FALSE); 
+                 profiledata.setRequired(Profile.ORGANIZATIONUNIT,Profile.FALSE); 
                }
              }
 
@@ -283,16 +286,16 @@
              if(value !=null){
                value=value.trim(); 
                if(!value.equals("")){
-                 ejbcarabean.getProfile(profile).setValue(Profile.ORGANIZATION,value); 
+                 profiledata.setValue(Profile.ORGANIZATION,value); 
                }
              }
              required = request.getParameter(CHECKBOX_REQUIRED_ORGANIZATION);
              if(required != null){
                if(required.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setRequired(Profile.ORGANIZATION,Profile.TRUE);                  
+                 profiledata.setRequired(Profile.ORGANIZATION,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setRequired(Profile.ORGANIZATION,Profile.FALSE); 
+                 profiledata.setRequired(Profile.ORGANIZATION,Profile.FALSE); 
                }
              }
 
@@ -300,16 +303,16 @@
              if(value !=null){
                value=value.trim(); 
                if(!value.equals("")){
-                 ejbcarabean.getProfile(profile).setValue(Profile.LOCALE,value); 
+                 profiledata.setValue(Profile.LOCALE,value); 
                }
              }
              required = request.getParameter(CHECKBOX_REQUIRED_LOCALE);
              if(required != null){
                if(required.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setRequired(Profile.LOCALE,Profile.TRUE);                  
+                 profiledata.setRequired(Profile.LOCALE,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setRequired(Profile.LOCALE,Profile.FALSE); 
+                 profiledata.setRequired(Profile.LOCALE,Profile.FALSE); 
                }
              }
 
@@ -317,16 +320,16 @@
              if(value !=null){
                value=value.trim(); 
                if(!value.equals("")){
-                 ejbcarabean.getProfile(profile).setValue(Profile.STATE,value); 
+                 profiledata.setValue(Profile.STATE,value); 
                }
              }
              required = request.getParameter(CHECKBOX_REQUIRED_STATE);
              if(required != null){
                if(required.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setRequired(Profile.STATE,Profile.TRUE);                  
+                 profiledata.setRequired(Profile.STATE,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setRequired(Profile.STATE,Profile.FALSE); 
+                 profiledata.setRequired(Profile.STATE,Profile.FALSE); 
                }
              }
 
@@ -334,143 +337,143 @@
              if(value !=null){
                value=value.trim(); 
                if(!value.equals("")){
-                 ejbcarabean.getProfile(profile).setValue(Profile.COUNTRY,value); 
+                 profiledata.setValue(Profile.COUNTRY,value); 
                }
              }
              required = request.getParameter(CHECKBOX_REQUIRED_COUNTRY);
              if(required != null){
                if(required.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setRequired(Profile.COUNTRY,Profile.TRUE);                  
+                 profiledata.setRequired(Profile.COUNTRY,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setRequired(Profile.COUNTRY,Profile.FALSE); 
+                 profiledata.setRequired(Profile.COUNTRY,Profile.FALSE); 
                }
              }
              value = request.getParameter(TEXTFIELD_EMAIL);
              if(value !=null){
                value=value.trim(); 
                if(!value.equals("")){
-                 ejbcarabean.getProfile(profile).setValue(Profile.EMAIL,value); 
+                 profiledata.setValue(Profile.EMAIL,value); 
                }
              }
              required = request.getParameter(CHECKBOX_REQUIRED_EMAIL);
              if(required != null){
                if(required.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setRequired(Profile.EMAIL,Profile.TRUE);                  
+                 profiledata.setRequired(Profile.EMAIL,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setRequired(Profile.EMAIL,Profile.FALSE); 
+                 profiledata.setRequired(Profile.EMAIL,Profile.FALSE); 
                }
              }
              value = request.getParameter(CHECKBOX_TYPEENDUSER);
              if(value !=null){
                if(value.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setValue(Profile.TYPE_ENDUSER,Profile.TRUE);                  
+                 profiledata.setValue(Profile.TYPE_ENDUSER,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setValue(Profile.TYPE_ENDUSER,Profile.FALSE); 
+                 profiledata.setValue(Profile.TYPE_ENDUSER,Profile.FALSE); 
                }
              }
              required = request.getParameter(CHECKBOX_REQUIRED_TYPEENDUSER);
              if(required != null){
                if(required.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setRequired(Profile.TYPE_ENDUSER,Profile.TRUE);                  
+                 profiledata.setRequired(Profile.TYPE_ENDUSER,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setRequired(Profile.CLEARTEXTPASSWORD,Profile.FALSE); 
+                 profiledata.setRequired(Profile.CLEARTEXTPASSWORD,Profile.FALSE); 
                }
              }
              value = request.getParameter(CHECKBOX_TYPERA);
              if(value !=null){
                if(value.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setValue(Profile.TYPE_RA,Profile.TRUE);                  
+                 profiledata.setValue(Profile.TYPE_RA,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setValue(Profile.TYPE_RA,Profile.FALSE); 
+                 profiledata.setValue(Profile.TYPE_RA,Profile.FALSE); 
                }
              }
              required = request.getParameter(CHECKBOX_REQUIRED_TYPERA);
              if(required != null){
                if(required.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setRequired(Profile.TYPE_RA,Profile.TRUE);                  
+                 profiledata.setRequired(Profile.TYPE_RA,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setRequired(Profile.TYPE_RA,Profile.FALSE); 
+                 profiledata.setRequired(Profile.TYPE_RA,Profile.FALSE); 
                }
              }
              value = request.getParameter(CHECKBOX_TYPERAADMIN);
              if(value !=null){
                if(value.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setValue(Profile.TYPE_RAADMIN,Profile.TRUE);                  
+                 profiledata.setValue(Profile.TYPE_RAADMIN,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setValue(Profile.TYPE_RAADMIN,Profile.FALSE); 
+                 profiledata.setValue(Profile.TYPE_RAADMIN,Profile.FALSE); 
                }
              }
              required = request.getParameter(CHECKBOX_REQUIRED_TYPERAADMIN);
              if(required != null){
                if(required.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setRequired(Profile.TYPE_RAADMIN,Profile.TRUE);                  
+                 profiledata.setRequired(Profile.TYPE_RAADMIN,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setRequired(Profile.TYPE_RAADMIN,Profile.FALSE); 
+                 profiledata.setRequired(Profile.TYPE_RAADMIN,Profile.FALSE); 
                }
              }
              value = request.getParameter(CHECKBOX_TYPECA);
              if(value !=null){
                if(value.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setValue(Profile.TYPE_CA,Profile.TRUE);                  
+                 profiledata.setValue(Profile.TYPE_CA,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setValue(Profile.TYPE_CA,Profile.FALSE); 
+                 profiledata.setValue(Profile.TYPE_CA,Profile.FALSE); 
                }
              }
              required = request.getParameter(CHECKBOX_REQUIRED_TYPECA);
              if(required != null){
                if(required.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setRequired(Profile.TYPE_CA,Profile.TRUE);                  
+                 profiledata.setRequired(Profile.TYPE_CA,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setRequired(Profile.TYPE_CA,Profile.FALSE); 
+                 profiledata.setRequired(Profile.TYPE_CA,Profile.FALSE); 
                }
              }
              value = request.getParameter(CHECKBOX_TYPECAADMIN);
              if(value !=null){
                if(value.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setValue(Profile.TYPE_CAADMIN,Profile.TRUE);                  
+                 profiledata.setValue(Profile.TYPE_CAADMIN,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setValue(Profile.TYPE_CAADMIN,Profile.FALSE); 
+                 profiledata.setValue(Profile.TYPE_CAADMIN,Profile.FALSE); 
                }
              }
              required = request.getParameter(CHECKBOX_REQUIRED_TYPECAADMIN);
              if(required != null){
                if(required.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setRequired(Profile.TYPE_CAADMIN,Profile.TRUE);                  
+                 profiledata.setRequired(Profile.TYPE_CAADMIN,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setRequired(Profile.TYPE_CAADMIN,Profile.FALSE); 
+                 profiledata.setRequired(Profile.TYPE_CAADMIN,Profile.FALSE); 
                }
              }
              value = request.getParameter(CHECKBOX_TYPEROOTCA);
              if(value !=null){
                if(value.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setValue(Profile.TYPE_ROOTCA,Profile.TRUE);                  
+                 profiledata.setValue(Profile.TYPE_ROOTCA,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setValue(Profile.TYPE_ROOTCA,Profile.FALSE); 
+                 profiledata.setValue(Profile.TYPE_ROOTCA,Profile.FALSE); 
                }
              }
              required = request.getParameter(CHECKBOX_REQUIRED_TYPEROOTCA);
              if(required != null){
                if(required.equals(CHECKBOX_VALUE)){
-                 ejbcarabean.getProfile(profile).setRequired(Profile.TYPE_ROOTCA,Profile.TRUE);                  
+                 profiledata.setRequired(Profile.TYPE_ROOTCA,Profile.TRUE);                  
                }
                else{
-                 ejbcarabean.getProfile(profile).setRequired(Profile.TYPE_ROOTCA,Profile.FALSE); 
+                 profiledata.setRequired(Profile.TYPE_ROOTCA,Profile.FALSE); 
                }
              }
-             ejbcarabean.saveProfileData();
+             ejbcarabean.changeProfile(profile,profiledata);
            }
            if(request.getParameter(BUTTON_CANCEL) != null){
               // Don't save changes.
@@ -494,7 +497,7 @@
 <%}
 
    // Include Footer 
-   String footurl =   GlobalConfiguration.getFootBanner(); %>
+   String footurl =   globalconfiguration .getFootBanner(); %>
    
   <jsp:include page="<%= footurl %>" />
 

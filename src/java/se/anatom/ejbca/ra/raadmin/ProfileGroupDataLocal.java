@@ -3,6 +3,7 @@ package se.anatom.ejbca.ra.raadmin;
 
 import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.TreeMap;
 
 import se.anatom.ejbca.webdist.rainterface.Profile;
 /**
@@ -67,7 +68,7 @@ public interface ProfileGroupDataLocal extends javax.ejb.EJBLocalObject {
        *
        * @return A collection of profiles in the group
        */        
-    public Collection getProfiles();
+    public TreeMap getProfiles();
     
       /**
        * Returns the available profile group names.

@@ -20,7 +20,7 @@ public interface ProfileGroupDataLocalHome extends javax.ejb.EJBLocalHome {
     public ProfileGroupDataLocal findByPrimaryKey(String profilegroupname)
         throws FinderException;
     
-    public Collection findAllProfileGroupName()
+    public Collection findAll()
         throws FinderException;    
 
 }

@@ -6,7 +6,9 @@
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
 <jsp:setProperty name="cabean" property="*" /> 
-<%  final String DOWNLOADCRL_LINK             = GlobalConfiguration.getCaPath() 
+<% 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.getGlobalConfiguration();
+  final String DOWNLOADCRL_LINK             = globalconfiguration.getCaPath() 
                                                   + "/getcrl/getcrl"; %>
 <br>
 <br>

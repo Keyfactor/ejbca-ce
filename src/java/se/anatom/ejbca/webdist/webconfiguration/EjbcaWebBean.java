@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.Date;
 import java.text.DateFormat;
 import java.rmi.RemoteException;
+import java.util.Collection;
 
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
@@ -46,19 +47,20 @@ public class EjbcaWebBean {
         
     /** Creates a new instance of EjbcaWebBean */
     public EjbcaWebBean() throws IOException, NamingException, CreateException, FileNotFoundException,
-                                 FinderException, RemoteException{              
-      globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler();   
-      globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();    
-      userspreferences = new UsersPreferenceDataHandler();      
-      authorize = new EjbcaAthorization();
-      weblanguages = new WebLanguages();                                
+                                 FinderException, RemoteException{                              
+      globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler();
+      globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();      
+      userspreferences = new UsersPreferenceDataHandler();         
+      authorize = new EjbcaAthorization(globalconfiguration); 
+      authorizedatahandler = new AuthorizationDataHandler(globalconfiguration);
+      weblanguages = new WebLanguages(globalconfiguration);        
       initialized=false;
     }
         
     // Public Methods.
     
-        /* Sets the current user */
-    public void initialize(HttpServletRequest request) throws AuthorizationDeniedException,  IOException, 
+        /* Sets the current user and returns the global configuration */
+    public GlobalConfiguration initialize(HttpServletRequest request) throws AuthorizationDeniedException,  IOException, 
                                                               NamingException, CreateException, java.security.cert.CertificateException,
                                                               java.security.cert.CertificateExpiredException,  java.security.cert.CertificateNotYetValidException,
                                                               javax.ejb.FinderException{
@@ -117,9 +119,6 @@ public class EjbcaWebBean {
         }else{
           throw new  AuthorizationDeniedException("Your certificate do not belong to any user.");    
         }
- 
-        
-         
       }
       try{
         isAuthorized(URLDecoder.decode(request.getRequestURI(),"UTF-8"));  
@@ -148,6 +147,7 @@ public class EjbcaWebBean {
         
         initialized=true;
       }
+      return globalconfiguration;
     }
     
     /** Returns the current users common name */
@@ -162,10 +162,10 @@ public class EjbcaWebBean {
     
     
     /** Return the users selected theme including it's trailing '.css' */
-    public String getCssFile() {
-      return currentuserpreference.getCssFile();  
-    }
-        
+    public String getCssFile(){
+      return globalconfiguration.getRaAdminPath() + globalconfiguration.getThemePath() + "/" + currentuserpreference.getTheme() + ".css";  
+    }  
+    
     /** Returns the users prefered language */
     public int getPreferedLanguage() {
       return currentuserpreference.getPreferedLanguage();  
@@ -178,6 +178,29 @@ public class EjbcaWebBean {
     
     public int getEntriesPerPage(){
       return currentuserpreference.getEntriesPerPage();   
+    }
+    
+    public String getLastProfileGroup(){ return currentuserpreference.getLastProfileGroup();}
+    public void setLastProfileGroup(String lastprofilegroup) throws Exception{
+        currentuserpreference.setLastProfileGroup(lastprofilegroup);
+        if(existsUserPreference()){
+          changeUserPreference(currentuserpreference);
+        }else{
+          addUserPreference(currentuserpreference);           
+        }
+    }    
+    public String getLastProfile(){ return currentuserpreference.getLastProfile();}
+    public void setLastProfile(String lastprofile) throws Exception{
+        currentuserpreference.setLastProfile(lastprofile);
+        if(existsUserPreference()){
+          changeUserPreference(currentuserpreference);
+        }else{
+          addUserPreference(currentuserpreference);           
+        }
+    }
+    
+    public Object clone() throws CloneNotSupportedException {
+      return super.clone();   
     }
     
     /* Checks if the user have authorization to view the url */
@@ -195,8 +218,11 @@ public class EjbcaWebBean {
     public String getBaseUrl(){return globalconfiguration.getBaseUrl();}
     
     /* Returns the current users preference */
-    public UserPreference getUserPreference() throws RemoteException{
-      return currentuserpreference;  
+    public UserPreference getUserPreference() throws Exception{
+      UserPreference returnval = userspreferences.getUserPreference(certificateserialnumber);  
+      if(returnval==null)
+        returnval = currentuserpreference;
+      return returnval; 
     }
     
     /* Returns the user preferences database */
@@ -228,18 +254,18 @@ public class EjbcaWebBean {
       String helpfile = helpfilename.substring(0,helpfilename.lastIndexOf('.'));
       String postfix  = helpfilename.substring(helpfilename.lastIndexOf('.')+1);
       
-      String preferedfilename = "/" + GlobalConfiguration.getHelpPath()+"/"
+      String preferedfilename = "/" + globalconfiguration.getHelpPath()+"/"
                                 + helpfile + "." + prefered + "." + postfix;
       
-      String secondaryfilename = "/" + GlobalConfiguration.getHelpPath()+"/"
+      String secondaryfilename = "/" + globalconfiguration .getHelpPath()+"/"
                                  + helpfile + "." + secondary + "." + postfix;
       
-      String preferedurl = GlobalConfiguration.getBaseUrl() + GlobalConfiguration.getRaAdminPath()
-                          + GlobalConfiguration.getHelpPath()+"/"
+      String preferedurl = globalconfiguration .getBaseUrl() + globalconfiguration .getRaAdminPath()
+                          + globalconfiguration .getHelpPath()+"/"
                           + helpfile + "." + prefered + "." + postfix;
       
-      String secondaryurl = GlobalConfiguration.getBaseUrl() + GlobalConfiguration.getRaAdminPath()
-                          + GlobalConfiguration.getHelpPath()+"/"
+      String secondaryurl = globalconfiguration .getBaseUrl() + globalconfiguration .getRaAdminPath()
+                          + globalconfiguration .getHelpPath()+"/"
                           + helpfile + "." + secondary + "." + postfix;
     
       if(this.getClass().getResourceAsStream(preferedfilename) != null)
@@ -266,22 +292,22 @@ public class EjbcaWebBean {
       String imagefile = imagefilename.substring(0,imagefilename.lastIndexOf('.'));
       String postfix  = imagefilename.substring(imagefilename.lastIndexOf('.')+1);
       
-      String preferedfilename = "/" + GlobalConfiguration.getImagesPath()+"/"
+      String preferedfilename = "/" + globalconfiguration .getImagesPath()+"/"
                                 + imagefile + "." + prefered + "." + postfix;
       
-      String secondaryfilename = "/" + GlobalConfiguration.getImagesPath()+"/"
+      String secondaryfilename = "/" + globalconfiguration .getImagesPath()+"/"
                                  + imagefile + "." + secondary + "." + postfix;
       
-      String preferedurl = GlobalConfiguration.getBaseUrl() + GlobalConfiguration.getRaAdminPath()
-                          + GlobalConfiguration.getImagesPath()+"/"
+      String preferedurl = globalconfiguration .getBaseUrl() + globalconfiguration .getRaAdminPath()
+                          + globalconfiguration .getImagesPath()+"/"
                           + imagefile + "." + prefered + "." + postfix;
       
-      String secondaryurl = GlobalConfiguration.getBaseUrl() + GlobalConfiguration.getRaAdminPath()
-                          + GlobalConfiguration.getImagesPath()+"/"
+      String secondaryurl = globalconfiguration .getBaseUrl() + globalconfiguration .getRaAdminPath()
+                          + globalconfiguration .getImagesPath()+"/"
                           + imagefile + "." + secondary + "." + postfix;
       
-      String imageurl     = GlobalConfiguration.getBaseUrl()  + GlobalConfiguration.getRaAdminPath()
-                          + GlobalConfiguration.getImagesPath()+"/"
+      String imageurl     = globalconfiguration .getBaseUrl()  + globalconfiguration .getRaAdminPath()
+                          + globalconfiguration .getImagesPath()+"/"
                           + imagefile + "."  + postfix;
     
       if(this.getClass().getResourceAsStream(preferedfilename) != null)
@@ -305,52 +331,85 @@ public class EjbcaWebBean {
      return DateFormat.getDateInstance(DateFormat.SHORT).format(date);   
     }
     
-    public void reloadGlobalConfiguration() throws RemoteException, NamingException {
+    public void reloadGlobalConfiguration() throws  Exception {
       globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();
     }
     
-    public void saveGlobalConfiguration() throws RemoteException{
+    public void saveGlobalConfiguration() throws Exception{
       System.out.println("saving global title : " +  globalconfiguration.getEjbcaTitle() );
       globaldataconfigurationdatahandler.saveGlobalConfiguration(globalconfiguration);       
     }
     
-    public boolean existsUserPreference() throws RemoteException{
+    public boolean existsUserPreference() throws Exception{
       return userspreferences.existsUserPreference(certificateserialnumber); 
     }
     
-    public void addUserPreference(UserPreference up) throws UserExistsException, RemoteException{
+    public void addUserPreference(UserPreference up) throws Exception{
+      currentuserpreference = up;  
       userspreferences.addUserPreference(certificateserialnumber,up);    
     }
     
       
-    public void changeUserPreference(UserPreference up) throws UserDoesntExistException, RemoteException{
+    public void changeUserPreference(UserPreference up) throws Exception{
+      currentuserpreference = up;  
       userspreferences.changeUserPreference(certificateserialnumber,up);
     }
     
-    // Private Methods
-/*     // Methods used with serialization
-    private void writeObject(ObjectOutputStream out) throws IOException{
-      // Nothing needs to be done.  
-    }
-      
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException{
-      try{  
-        globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler();   
-        globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();    
-        userspreferences = new UsersPreferenceDataHandler();      
-        authorize = new EjbcaAthorization();
-        weblanguages = new WebLanguages();      
-      }catch(Exception e){
-         throw new IOException(e.getMessage());   
-      }
-      initialized=false;
-    } */
+    /**
+     * Method to add an access rule.
+     */ 
+
+    public void addAvailableAccessRule(String name) throws RemoteException{
+      authorizedatahandler.addAvailableAccessRule(name);
+    } // addAvailableAccessRule
+
+    /**
+     * Method to add an Collection of access rules.
+     */ 
+    
+    public void addAvailableAccessRules(Collection names) throws RemoteException{
+      authorizedatahandler.addAvailableAccessRules(names);        
+    } //  addAvailableAccessRules
+ 
+    /**
+     * Method to remove an access rule.
+     */ 
+
+    public void removeAvailableAccessRule(String name)  throws RemoteException{
+      authorizedatahandler.removeAvailableAccessRule(name);
+    } // removeAvailableAccessRule
+
+    /**
+     * Method to remove an Collection of access rules.
+     */ 
+    
+    public void removeAvailableAccessRules(Collection names)  throws RemoteException{
+      authorizedatahandler.removeAvailableAccessRules(names);
+    } // removeAvailableAccessRules
+
+    /**
+     * Method that returns a Collection of Strings containing all access rules.
+     */ 
+    
+    public Collection getAvailableAccessRules() throws RemoteException{
+       return authorizedatahandler.getAvailableAccessRules();
+    } // getAvailableAccessRules
+    
+    /**
+     * Checks wheither an access rule exists in the database.
+     */ 
+    
+    public boolean existsAvailableAccessRule(String name) throws RemoteException{
+      return authorizedatahandler.existsAvailableAccessRule(name);
+    } // existsAvailableAccessRule
+    
     // Private Fields. 
     private UsersPreferenceDataHandler userspreferences;
     private UserPreference currentuserpreference;
     private GlobalConfiguration globalconfiguration;
     private GlobalConfigurationDataHandler globaldataconfigurationdatahandler;
     private EjbcaAthorization authorize;
+    private AuthorizationDataHandler authorizedatahandler;
     private WebLanguages weblanguages;
     private WebLanguages usersweblanguage;
     private String usercommonname = "";

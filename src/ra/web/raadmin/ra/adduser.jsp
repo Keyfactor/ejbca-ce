@@ -1,4 +1,4 @@
-<html>
+<html> 
 <%@page contentType="text/html"%>
 <%@page  errorPage="/errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration, se.anatom.ejbca.webdist.rainterface.UserView,
                  se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.Profile, se.anatom.ejbca.webdist.rainterface.Profiles, se.anatom.ejbca.ra.UserData,
@@ -58,16 +58,13 @@
 
 
 %><%
-
-  String THIS_FILENAME            =  GlobalConfiguration.getRaPath()  + "/adduser.jsp";
-
   // Initialize environment.
-  ejbcawebbean.initialize(request); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
 
-  rabean.reloadProfileData();
+  String THIS_FILENAME            =  globalconfiguration.getRaPath()  + "/adduser.jsp";
   String[][][] profiles            = rabean.getProfilesAsString();
   String[] profilenames            = rabean.getProfileNames();
-  String defaultprofilename        = rabean.getDefaultProfileName();
+  String lastprofilename        = ejbcawebbean.getLastProfile();
   boolean userexists               = false;
   boolean useradded                = false;
   boolean useoldprofile            = false;
@@ -82,7 +79,8 @@
          // Get previous chosen profile.
          String index = request.getParameter(SELECT_PROFILE); 
          if(index != null){
-           oldprofilename = profilenames[Integer.parseInt(index)];           
+           oldprofilename = profilenames[Integer.parseInt(index)];       
+           ejbcawebbean.setLastProfile(oldprofilename);
          }
 
          if(oldprofilename != null){
@@ -241,7 +239,7 @@
            // See if user already exists
            if(rabean.userExist(newuser[UserView.USERNAME])){
              userexists = true;
-             defaultprofilename = oldprofilename;
+             lastprofilename = oldprofilename;
              useoldprofile = true;   
            } 
            else{
@@ -254,7 +252,7 @@
   
 %>
 <head>
-  <title><%= GlobalConfiguration.getEjbcaTitle() %></title>
+  <title><%= globalconfiguration .getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
   <script language=javascript>
@@ -475,7 +473,7 @@ function checkallfields(){
 }
    -->
   </script>
-  <script language=javascript src="<%= GlobalConfiguration.getRaAdminPath() %>ejbcajslib.js"></script>
+  <script language=javascript src="<%= globalconfiguration .getRaAdminPath() %>ejbcajslib.js"></script>
 </head>
 <body onload='<% if(useoldprofile)
                    out.write("fillfromoldprofile()");
@@ -502,7 +500,7 @@ function checkallfields(){
 	 <td align="right"><%= ejbcawebbean.getText("PROFILE") %></td>
 	 <td><select name="<%=SELECT_PROFILE %>" size="1" tabindex="1" onchange='fillfromprofile()'>
                 <% for(int i = 0; i < profiles.length;i++){ %>
-	 	<option value="<%=i %>" <% if(profilenames[i].equals(defaultprofilename))
+	 	<option value="<%=i %>" <% if(profilenames[i].equals(lastprofilename))
                                              out.write("selected"); %>>
                     <% if(profilenames[i].equals(Profiles.EMPTY_PROFILE)){
                          out.write(ejbcawebbean.getText("EMPTY"));
@@ -694,7 +692,7 @@ function checkallfields(){
    <p></p>
 
   <%// Include Footer 
-   String footurl =   GlobalConfiguration.getFootBanner(); %>
+   String footurl =   globalconfiguration .getFootBanner(); %>
    
   <jsp:include page="<%= footurl %>" />
 </body>

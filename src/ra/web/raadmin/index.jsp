@@ -4,10 +4,10 @@
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <%   // Initialize environment
-  ejbcawebbean.initialize(request); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
 %>
 <head>
-  <title><%= GlobalConfiguration.getEjbcaTitle() %></title>
+  <title><%= globalconfiguration.getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
 
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
@@ -15,11 +15,11 @@
 </head>
 
 <frameset rows="131,*" cols="*" frameborder="NO" border="0" framespacing="0"> 
-  <frame name="<%= GlobalConfiguration.HEADERFRAME %>" scrolling="NO" noresize src="<%= GlobalConfiguration.getHeadBanner() %>" >
+  <frame name="<%= globalconfiguration.HEADERFRAME %>" scrolling="NO" noresize src="<%= globalconfiguration.getHeadBanner() %>" >
   <frameset cols="217,*" frameborder="NO" border="0" framespacing="0" rows="*"> 
-    <frame name="<%= GlobalConfiguration.MENUFRAME %>" noresize scrolling="NO" src="<%= GlobalConfiguration.getRaAdminPath() +
-                                                                                        GlobalConfiguration.getMenuFilename() %>">
-    <frame name="<%= GlobalConfiguration.MAINFRAME %>" src="<%= GlobalConfiguration.getRaAdminPath() + GlobalConfiguration.getMainFilename() %>">
+    <frame name="<%= globalconfiguration.MENUFRAME %>" noresize scrolling="NO" src="<%= globalconfiguration.getRaAdminPath() +
+                                                                                        globalconfiguration.getMenuFilename() %>">
+    <frame name="<%= globalconfiguration.MAINFRAME %>" src="<%= globalconfiguration.getRaAdminPath() + globalconfiguration.getMainFilename() %>">
   </frameset>
 </frameset>
 <noframes>

@@ -72,14 +72,14 @@
   static final String HIDDEN_RECORDNUMBER       = "hiddenrecordnumber"; 
 %><%
   // Initialize environment.
-  ejbcawebbean.initialize(request); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
 
   String oldaction      = OLD_ACTION_NOACTION; 
   String oldactionvalue = null;
   String sortby         = SORTBY_USERNAME_ACC;
 
   boolean blank                   = true;
-  String THIS_FILENAME            =  GlobalConfiguration.getRaPath()  + "/listusers.jsp";
+  String THIS_FILENAME            =  globalconfiguration.getRaPath()  + "/listusers.jsp";
   String[][] users                = null;
   int numcheckboxes               = 0;
   boolean editbuttonpressed       = false;

@@ -92,10 +92,9 @@ public class UserGroup implements Serializable {
     
     /** Method that given an array of available directories returns which isn't already
      * in use by the rule set. */
-    public String[] nonUsedDirectories(String[] availabledirectories){
+    public String[] nonUsedDirectories(String[] availabledirectories, String[] hiddendirectories){
       Vector nonuseddirectories = new Vector(); 
       String[] dummy = {};
-      String[] hiddendirectories = GlobalConfiguration.getHiddenDirectories();
       int result;
       boolean hidden=false;
       if(availabledirectories != null){

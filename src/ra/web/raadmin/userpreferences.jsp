@@ -23,11 +23,11 @@
 %>
 <% 
    // Initialize environment.
-  ejbcawebbean.initialize(request); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
 
-  final String THIS_FILENAME                          = GlobalConfiguration.getRaAdminPath() + "userpreferences.jsp";
+  final String THIS_FILENAME                          = globalconfiguration.getRaAdminPath() + "userpreferences.jsp";
 
-  String forwardurl = GlobalConfiguration.getMainFilename(); 
+  String forwardurl = globalconfiguration.getMainFilename(); 
 
     // Determine action 
   if( request.getParameter(BUTTON_CANCEL) != null){
@@ -70,10 +70,10 @@
    UserPreference dup = ejbcawebbean.getUserPreference(); %>
 <html>
 <head>
-<title><%= GlobalConfiguration.getEjbcaTitle() %></title>
+<title><%= globalconfiguration.getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript src="<%= GlobalConfiguration.getRaAdminPath() %>ejbcajslib.js"></script>
+  <script language=javascript src="<%= globalconfiguration.getRaAdminPath() %>ejbcajslib.js"></script>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
 
@@ -135,7 +135,7 @@
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_THEME %>">
-          <% String[] availablethemes = GlobalConfiguration.getAvailableThemes();                                    
+          <% String[] availablethemes = globalconfiguration.getAvailableThemes();                                    
              String theme = dup.getTheme();
              if(availablethemes != null){
                for(int i = 0; i < availablethemes.length; i++){
@@ -153,7 +153,7 @@
       </td>
       <td width="51%" valign="top"> 
         <select name="<%= LIST_ENTIESPERPAGE %>">
-          <% String[] possibleentriesperpage = GlobalConfiguration.getPossibleEntiresPerPage();                                    
+          <% String[] possibleentriesperpage = globalconfiguration.getPossibleEntiresPerPage();                                    
              int entriesperpage = dup.getEntriesPerPage();
              for(int i = 0; i < possibleentriesperpage.length; i++){
           %>   <option <% if(Integer.parseInt(possibleentriesperpage[i]) == entriesperpage){ %> selected <% } %>
@@ -172,7 +172,7 @@
   </table>
  </form>
 <% // Include Footer 
-   String footurl =   GlobalConfiguration.getFootBanner(); %>
+   String footurl =   globalconfiguration.getFootBanner(); %>
    
   <jsp:include page="<%= footurl %>" />
  
