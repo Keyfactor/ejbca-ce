@@ -36,6 +36,7 @@ import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.smime.SMIMECapability;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -84,7 +85,7 @@ import se.anatom.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.17 2004-01-25 09:37:11 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.18 2004-01-27 08:50:10 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -499,7 +500,9 @@ public class X509CA extends CA implements Serializable {
     public byte[] encryptKeys(KeyPair keypair) throws IOException{    
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	ObjectOutputStream os = new ObjectOutputStream(baos);
-    	os.writeObject(keypair);    	    	     		
+    	os.writeObject(keypair);    	    
+    	
+    	CertTools.installBCProvider();
     		
        CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();    	    	    	
     	
@@ -507,10 +510,10 @@ public class X509CA extends CA implements Serializable {
        
     	CMSEnvelopedData ed;
 		try {
-			edGen.addKeyTransRecipient((X509Certificate) getCAToken().getEncCert());
+			edGen.addKeyTransRecipient((X509Certificate) this.getCACertificate());
 			ed = edGen.generate(
 					new CMSProcessableByteArray(baos.toByteArray()),
-					CMSEnvelopedDataGenerator.AES256_CBC, getCAToken().getProvider());
+					SMIMECapability.dES_CBC.getId(), getCAToken().getProvider());
 		} catch (Exception e) {
 			e.printStackTrace();
           throw new IOException(e.getMessage());		

@@ -3,6 +3,7 @@ package se.anatom.ejbca.hardtoken.hardtokenprofiles;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -23,6 +24,7 @@ import org.apache.batik.dom.svg.SVGOMImageElement;
 import org.apache.batik.svggen.ImageHandlerBase64Encoder;
 import org.apache.batik.svggen.SVGGeneratorContext;
 import org.apache.batik.svggen.SimpleImageHandler;
+import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.print.PrintTranscoder;
@@ -30,6 +32,7 @@ import org.apache.batik.util.XMLResourceDescriptor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.svg.SVGRectElement;
 import org.w3c.dom.svg.SVGTextElement;
 
 import se.anatom.ejbca.ra.UserAdminData;
@@ -41,11 +44,9 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id: SVGImageManipulator.java,v 1.1 2003-12-05 14:50:27 herrvendil Exp $
+ * @version $Id: SVGImageManipulator.java,v 1.2 2004-01-27 08:50:39 herrvendil Exp $
  */
 public class SVGImageManipulator {
-
-
 
 	/**
      * Availabe vairables used to replace text in a printlayout
@@ -138,9 +139,9 @@ public class SVGImageManipulator {
      * @return A processed notification message.
      *     
      */
-    public byte[] print(UserAdminData userdata, 
+    public Printable print(UserAdminData userdata, 
                       String[] pincodes, String[] pukcodes,
-	                  String hardtokensn, String copyoftokensn) throws IOException, PrinterException  {
+	                  String hardtokensn, String copyoftokensn) throws IOException, PrinterException, TranscoderException  {
       // Initialize
 	  DNFieldExtractor dnfields = new DNFieldExtractor(userdata.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
 	  // DNFieldExtractor subaltnamefields = new DNFieldExtractor(dn,DNFieldExtractor.TYPE_SUBJECTALTNAME);
@@ -155,11 +156,11 @@ public class SVGImageManipulator {
       Node originaldokument = svgdoc.cloneNode(true);
       
       // Get Text rows
-	  NodeList list = svgdoc.getDocumentElement().getElementsByTagName("text");
-	  int numberofelements = list.getLength();
+	  NodeList list = svgdoc.getDocumentElement().getElementsByTagName("text");	  
+	  int numberofelements = list.getLength();	  
 	  for(int i=0; i<numberofelements; i++){
 		Node node = list.item(i);		  
-		if(node instanceof SVGTextElement){		  
+		if(node instanceof SVGTextElement){	
 		  NodeList list2 = ((SVGTextElement) node).getChildNodes();
 		  int numberofelements2 = list2.getLength();
 		  for(int j=0;j<numberofelements2;j++){
@@ -171,9 +172,7 @@ public class SVGImageManipulator {
 			                       startdate, enddate);			  
 			  ((GenericText) node2).setData(data);			  
 		  }
-		}
-		  		  		  		  		  
-		  		  		  		  		  		  	   
+		}						  		  		  		  		  		  	   
 	  }
                        
       // Add Image
@@ -187,25 +186,20 @@ public class SVGImageManipulator {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();     
       
       // Write it to stream.
-	  PrintTranscoder t = new PrintTranscoder();	  		  	
+      	  
+	  PrintTranscoder t = new PrintTranscoder(); 
 	  TranscoderInput input = new TranscoderInput(svgdoc);			  
 	  TranscoderOutput output = new TranscoderOutput(baos);
 		
 	  // save the image
+	 
 	  t.transcode(input, output);
 	  t.addTranscodingHint(PrintTranscoder.KEY_SCALE_TO_PAGE, new Boolean(false));
-	  t.print();
-	  
-	  
-	  // flush and close the stream then exit
-	  baos.flush();
-
+	         	  	  	   	 
       // Reuse original document
       svgdoc = (SVGOMDocument) originaldokument;
-
-      
-
-      return baos.toByteArray();
+              
+      return t;
     }
 
 
@@ -253,29 +247,52 @@ public class SVGImageManipulator {
 
     // Private Methods
     private void insertImage(UserAdminData userdata) throws FileNotFoundException, IOException{
+    	int imgx = 0;
+    	int imgy = 0;
+    	int imgwidth = 0;
+    	int imgheight = 0;
     	
+       String transform = null;
+    	// Get image info from template
+    	NodeList list = svgdoc.getDocumentElement().getElementsByTagName("rect");
+    	int numberofelements = list.getLength();
+    	for(int i=0; i<numberofelements; i++){
+    		Node node = list.item(i);		  
+    		if(node instanceof SVGRectElement){
+    			SVGRectElement rectnode = (SVGRectElement) node;
+                if(rectnode.getId().equalsIgnoreCase("USERPICTURE")){
+                    transform = rectnode.getAttribute("transform");
+                    imgx = (int) rectnode.getX().getBaseVal().getValue();
+                    imgy = (int) rectnode.getY().getBaseVal().getValue();                    
+                    imgwidth = (int) rectnode.getWidth().getBaseVal().getValue();
+                    imgheight = (int) rectnode.getHeight().getBaseVal().getValue();
+           
+                }
+    		 }
+    	  }  
     	
-    	// Special dravel for demo remove
-		BufferedImage image = ImageIO.read(new FileInputStream("/home/philip/san.jpg"));
-      // TODO get image.
+    	if(imgwidth != 0 && imgheight != 0){    	
+    	  // Special dravel for demo remove
+		  BufferedImage image = ImageIO.read(new FileInputStream("/home/philip/san.jpg"));
+        // TODO get image.
       
       	
-	  SVGOMImageElement imageelement = new SVGOMImageElement("", svgdoc); 
-	  SimpleImageHandler imagehandler = new SimpleImageHandler(new ImageHandlerBase64Encoder());
+	      SVGOMImageElement imageelement = new SVGOMImageElement("", svgdoc); 
+	      SimpleImageHandler imagehandler = new SimpleImageHandler(new ImageHandlerBase64Encoder());
 		        				 		  
-	  SVGGeneratorContext svgcxt = SVGGeneratorContext.createDefault(svgdoc);		        				 		  
-	  imagehandler.handleImage((RenderedImage) image, imageelement,  
-	                           100, 260, 
-	                           2360, 2870, 
+	      SVGGeneratorContext svgcxt = SVGGeneratorContext.createDefault(svgdoc);
+            		        				 		  
+	      imagehandler.handleImage((RenderedImage) image, imageelement,  
+	                           imgx, imgy, 
+	                           imgwidth, imgheight, 
 	                           svgcxt);
-
-		
-	/*  imageelement.setAttributeNS(null, "x", imagex + unit);
-	  imageelement.setAttributeNS(null, "y", imagey + unit);
-	  imageelement.setAttributeNS(null, "width", imagewidth + unit);
-	  imageelement.setAttributeNS(null, "heigth", imageheight + unit);*/
-	  svgdoc.getRootElement().appendChild(imageelement);
-		    	
+          
+          if(transform != null && !transform.equals(""))
+            imageelement.setAttribute("transform", transform); 
+           
+	    svgdoc.getRootElement().appendChild(imageelement);
+    	}
+	    
     }
 
     // Private Variables

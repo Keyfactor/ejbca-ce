@@ -1,5 +1,6 @@
 package se.anatom.ejbca.admin;
 
+import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -17,6 +18,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.hardtoken.IHardTokenSessionHome;
 import se.anatom.ejbca.hardtoken.IHardTokenSessionRemote;
+import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
@@ -28,9 +30,19 @@ import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.30 2004-01-08 14:31:26 herrvendil Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.31 2004-01-27 08:49:49 herrvendil Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
+	
+	private final static String USERGENERATED = "USERGENERATED"; 
+	private final static String P12                     = "P12";
+	private final static String JKS                     = "JKS";
+	private final static String PEM                    = "PEM";
+	
+	private final String[] softtokennames = {USERGENERATED,P12,JKS,PEM};
+	private final int[] softtokenids = {SecConst.TOKEN_SOFT_BROWSERGEN,
+			SecConst.TOKEN_SOFT_P12, SecConst.TOKEN_SOFT_JKS, SecConst.TOKEN_SOFT_PEM};
+	
     /**
      * Creates a new instance of RaAddUserCommand
      *
@@ -74,15 +86,18 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             boolean usehardtokens = globalconfiguration.getIssueHardwareTokens();
             boolean usekeyrecovery = globalconfiguration.getEnableKeyRecovery();
             String[] hardtokenissueraliases = null;
-            
+            Collection authorizedhardtokenprofiles   = null;
+            HashMap hardtokenprofileidtonamemap = null;            
 
             IHardTokenSessionRemote hardtokensession=null;
             if(usehardtokens){  
               IHardTokenSessionHome hardtokensessionhome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("HardTokenSession"),
                                                                                  IHardTokenSessionHome.class);
               hardtokensession = hardtokensessionhome.create();
-              hardtokenissueraliases = (String[]) hardtokensession.getHardTokenIssuerAliases(administrator).toArray((Object[]) new String[0]);
-             // availabletokens = hardtokensession.getAvailableHardTokens(); // TODO
+              hardtokenissueraliases = (String[]) hardtokensession.getHardTokenIssuerAliases(administrator).toArray((Object[]) new String[0]);             
+
+              authorizedhardtokenprofiles = hardtokensession.getAuthorizedHardTokenProfileIds(administrator);
+              hardtokenprofileidtonamemap = hardtokensession.getHardTokenProfileIdToNameMap(administrator);
             }  
             
             if (args.length < 9) {
@@ -114,16 +129,14 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                         "Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64; SENDNOTIFICATION=256");
                 }
 
-                System.out.print("Token      : User Generated=" + SecConst.TOKEN_SOFT_BROWSERGEN +
-                    "; P12=" + SecConst.TOKEN_SOFT_P12 + "; JKS=" + SecConst.TOKEN_SOFT_JKS +
-                    ";  PEM=" + SecConst.TOKEN_SOFT_PEM);
+                System.out.print("Existing tokens      : " + USERGENERATED + " , " +
+                                          P12 + " , "+ JKS + " , "  + PEM);
 
                 if (usehardtokens) {
-                	//TODO
-/*                    for (int i = 0; i < availabletokens.length; i++) {
-                        System.out.print("; " + availabletokens[i].getName() + "=" +
-                            availabletokens[i].getId());
-                    }*/
+                  Iterator iter = authorizedhardtokenprofiles.iterator();
+                  while(iter.hasNext()){
+                    System.out.print(", " + hardtokenprofileidtonamemap.get(iter.next()));
+                  }
                 }
 
                 System.out.print("\n");
@@ -186,7 +199,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             String caname  = args[5];
             String email = args[6];
             int type  = Integer.parseInt(args[7]);
-            int token = Integer.parseInt(args[8]);
+            String tokenname = args[8];
             int profileid =  SecConst.EMPTY_ENDENTITYPROFILE;
 
             int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
@@ -220,7 +233,8 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
               usehardtokenissuer = true;
             }
             
-            if (!validToken(token, usehardtokens)) {
+            int tokenid =getTokenId(administrator, tokenname, usehardtokens, hardtokensession);
+            if (tokenid == 0) {
                 System.out.println("Error : Invalid token id.");
                 error = true;
             }
@@ -245,7 +259,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
               error = true;       
             }  
 
-            if ((token > SecConst.TOKEN_SOFT) &&
+            if ((tokenid > SecConst.TOKEN_SOFT) &&
                     (hardtokenissuerid == SecConst.NO_HARDTOKENISSUER)) {
                 System.out.println(
                     "Error : HardTokenIssuer has to be choosen when user with hard tokens is added.");
@@ -279,7 +293,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
               System.out.println("SubjectAltName: "+subjectaltname);
               System.out.println("Email: "+email);
               System.out.println("Type: "+type);
-              System.out.println("Token: "+token);
+              System.out.println("Token: "+tokenname);
               System.out.println("Certificate profile: "+certificatetypeid);
               System.out.println("End entity profile: "+profileid);
 			  if (password.toUpperCase().equals("NULL"))
@@ -290,7 +304,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                   email = null;
               try{
                 getAdminSession().addUser(administrator, username, password, dn, subjectaltname, email, false, profileid, certificatetypeid,
-                                         type, token, hardtokenissuerid, caid);
+                                         type, tokenid, hardtokenissuerid, caid);
                 System.out.println("User '"+username+"' has been added.");
                 System.out.println();
                 System.out.println("Note: If batch processing should be possible, \nalso use 'ra setclearpwd "+username+" <pwd>'.");
@@ -306,21 +320,23 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
     }
 
     // execute
-    private boolean validToken(int token, boolean usehardtokens) {
-        boolean returnval = false;
-        returnval = ((token == SecConst.TOKEN_SOFT_BROWSERGEN) ||
-            (token == SecConst.TOKEN_SOFT_P12) || (token == SecConst.TOKEN_SOFT_PEM) ||
-            (token == SecConst.TOKEN_SOFT_JKS));
+    /**
+     *  Returns the tokenid type of the user, returns 0 if invalid tokenname.    
+     */
+    
+    private int getTokenId(Admin administrator, String tokenname, boolean usehardtokens, IHardTokenSessionRemote hardtokensession) throws RemoteException {
+        int returnval = 0;
+        
+        // First check for soft token type
+        for(int i=0;i< softtokennames.length;i++){
+        	if(softtokennames[i].equals(tokenname)){
+        		returnval = softtokenids[i];
+        		break;
+        	}        	
+        }
 
-        if (!returnval && usehardtokens) {
-        	//TODO add hard token profiles
- /*           for (int i = 0; i < availabletokens.length; i++) {
-                if (token == Integer.parseInt(availabletokens[i].getId())) {
-                    returnval = true;
-
-                    break;
-                }
-            } */
+        if (returnval == 0 && usehardtokens) {
+             returnval = hardtokensession.getHardTokenProfileId(administrator , tokenname);
         }
 
         return returnval;
