@@ -46,7 +46,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.8 2003-12-17 18:42:26 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.9 2003-12-18 10:12:02 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -195,24 +195,6 @@ public class OCSPServlet extends HttpServlet {
                 m_log.debug("Certificate alias : '" + certalias + "'\n");
             }
 
-            /* TODO: move this
-            initparam = config.getInitParameter("responderID").trim();
-            if (null == initparam || initparam.length() <= 0) {
-                final String msg = "Required parameter 'responderID' not set.";
-                m_log.error(msg);
-                throw new ServletException(msg);
-            }
-            // Normalize DN in initparam
-            initparam = CertTools.stringToBCDNString(initparam);
-            m_responderIdx = findCertificateIndexBySubject(m_signcerts, initparam);
-            if (m_responderIdx < 0) {
-                final String msg = "Unable to find certificate for given responderID.";
-                m_log.error(msg);
-                throw new ServletException(msg);
-            }
-            */
-            // TODO: END of private signing key todo
-            
             String initparam = config.getInitParameter("enforceRequestSigning").trim();
             if (m_log.isDebugEnabled()) {
                 m_log.debug("Enforce request signing : '" 
@@ -261,8 +243,6 @@ public class OCSPServlet extends HttpServlet {
                                 + certInfo.toString());
                 }
 
-                // TODO: create this after we find out which CA
-                // basicRes = createOCSPResponse(req);
             
                 /**
                  * check the signature if contained in request.
@@ -302,7 +282,7 @@ public class OCSPServlet extends HttpServlet {
                  * OCSP clients which are allowed to talk?
                  * 
                  * check if requestor is allowed to talk
-                 * to the CA if not send back a 'unauthorized'
+                 * to the CA, if not send back a 'unauthorized'
                  * response
                  */
                 //throw new OCSPUnauthorizedException()
@@ -317,7 +297,6 @@ public class OCSPServlet extends HttpServlet {
                         X509Certificate cert = null;
                         CertificateID certId = requests[i].getCertID();
                         RevokedCertInfo rci;
-                    
                         try {
                             cacert = findCAByHash(certId, m_cacerts);
                         } catch (OCSPException e) {
@@ -325,9 +304,14 @@ public class OCSPServlet extends HttpServlet {
                             cacert = null;
                             continue;
                         }
-                        if (null == cacert) {
-                            m_log.info("Unable to find CA certificate by hash.");
-                            basicRes.addResponse(certId, new UnknownStatus());
+                        // Create a basic response using the first issuer we find
+                        if ( (cacert != null) && (basicRes == null) ) {
+                            basicRes = createOCSPResponse(req, cacert);
+                        } else if (cacert == null) {
+                            final String msg = "Unable to find CA certificate by issuer name hash: "+certId.getIssuerNameHash();
+                            m_log.error(msg);
+                            // throw new ServletException(msg);
+                            //basicRes.addResponse(certId, new UnknownStatus());
                             continue;                    
                         }
 
