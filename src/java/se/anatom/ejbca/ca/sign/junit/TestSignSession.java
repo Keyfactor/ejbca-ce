@@ -32,7 +32,7 @@ import junit.framework.*;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.20 2003-02-12 11:23:16 scop Exp $
+ * @version $Id: TestSignSession.java,v 1.21 2003-03-12 16:11:36 anatom Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -327,6 +327,42 @@ public class TestSignSession extends TestCase {
                        e instanceof IllegalKeyException);
         }
         log.debug("<test07DSAKey()");
+    }
+
+    public void test08SwedeChars() throws Exception {
+        log.debug(">test08SwedeChars()");
+        // Make user that we know...
+        boolean userExists = false;
+        try {
+            UserDataRemote createdata = userhome.create("swede", "foo123", "C=SE, O=ÅÄÖ, CN=åäö");
+            assertNotNull("Failed to create user foo", createdata);
+            createdata.setType(SecConst.USER_ENDUSER);
+            createdata.setSubjectEmail("swede@anatom.se");
+            log.debug("created user: swede, foo123, C=SE, O=ÅÄÖ, CN=åäö");
+        } catch (RemoteException re) {
+            if (re.detail instanceof DuplicateKeyException) {
+                userExists = true;
+            }
+        } catch (DuplicateKeyException dke) {
+            userExists = true;
+        }
+        if (userExists) {
+            log.debug("user swede already exists.");
+            UserDataPK pk = new UserDataPK("swede");
+            UserDataRemote data = userhome.findByPrimaryKey(pk);
+            data.setStatus(UserDataRemote.STATUS_NEW);
+            log.debug("Reset status to NEW");
+        }
+        keys = genKeys();
+        // user that we know exists...
+        X509Certificate cert = (X509Certificate)remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER), "swede", "foo123", keys.getPublic());
+        assertNotNull("Misslyckades skapa cert", cert);
+        log.debug("Cert="+cert.toString());
+        assertEquals("Wrong DN med swedechars", CertTools.getSubjectDN(cert), CertTools.stringToBCDNString("C=SE, O=ÅÄÖ, CN=åäö"));
+        //FileOutputStream fos = new FileOutputStream("swedecert.crt");
+        //fos.write(cert.getEncoded());
+        //fos.close();
+        log.debug("<test08SwedeChars()");
     }
 
 /*
