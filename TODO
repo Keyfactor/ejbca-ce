@@ -1,4 +1,4 @@
-$Id: TODO,v 1.57 2003-03-07 09:40:30 anatom Exp $
+$Id: TODO,v 1.58 2003-03-19 08:58:21 herrvendil Exp $
 
 V 1.x
 -----
@@ -25,6 +25,8 @@ http://support.microsoft.com/default.aspx?scid=kb;EN-US;q281245
 - XML/Soap stuff.
 - Multiple CDPs, comma separated strings should give several CDPs. 
 - Better command line tools for batch stuff.
+- OCSP
+- Encrypt key recoverable keys stored in database.
 
 Future
 ------
@@ -37,4 +39,4 @@ CA).
 - Make CA/RA for off-line authorization of requests for high security
 environments.
 - RA with self registration for end-entities, RA approves registration.
-- OCSP
+
