@@ -581,9 +581,12 @@ function checkallfields(){
        }
        for(int i=0; i < profile.getSubjectAltNameFieldOrderLength(); i++){
          fielddata = profile.getSubjectAltNameFieldsInOrder(i);
-         if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME){
-           if(profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){
-             if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.IPADDRESS){ %>
+         int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
+         if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && fieldtype != EndEntityProfile.DIRECTORYNAME && 
+            fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){ // Not implemented yet.
+           if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME){
+             if(profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){
+               if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.IPADDRESS){ %>
     if(!checkfieldforipaddess("document.edituser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYNUMBERALSANDDOTS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
       illegalfields++;
            <%  }else{ %>
@@ -594,9 +597,10 @@ function checkallfields(){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]])%>");
       illegalfields++;
     } 
-    <%      }
+    <%        }
+             }
+            }
            }
-          }
          }
          else{ %>
       document.edituser.<%= CHECKBOX_SUBJECTALTNAME+i %>.disabled = false;          

@@ -159,7 +159,7 @@ function confirmrenewal(){
 
   <% if(ocspcert != null){ %>
 function viewocspcert(){        
-    var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>=<%=ocspcert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(ocspcert)%>";
+    var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>=<%= java.net.URLEncoder.encode(ocspcert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(ocspcert),"UTF-8")%>";
     link = encodeURI(link);
     window.open(link, 'view_cert','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }
@@ -568,7 +568,7 @@ function checkallfields(){
          <% if(editca && ocspcert != null){ %> &nbsp;&nbsp;         
          <input type="submit" name="<%= BUTTON_REVOKERENEWOCSPCERTIFICATE %>" <% if(ocspcainfo.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE || waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWOCSPCERT") %>" >
          <br>         
-         <a  onClick="viewocspcert()"><u><%= ejbcawebbean.getText("VIEWOCSPCERTIFICATE")%></u></a>
+         <a style="cursor:hand;" onClick="viewocspcert()"><u><%= ejbcawebbean.getText("VIEWOCSPCERTIFICATE")%></u></a>
          <% } %>
       </td>
     </tr>    
@@ -591,7 +591,7 @@ function checkallfields(){
         &nbsp;
       </td>
       <td width="50%"> 
-        <a  onClick="window.open('<%=VIEWCERT_LINK%>?caid=<%=caid%>', 'view_cert','height=600,width=600,scrollbars=yes,toolbar=no,resizable=1')";><u><%= ejbcawebbean.getText("VIEWCACERTIFICATE")%></u></a>
+        <a style="cursor:hand;" onClick="window.open('<%=VIEWCERT_LINK%>?caid=<%=caid%>', 'view_cert','height=600,width=600,scrollbars=yes,toolbar=no,resizable=1')";><u><%= ejbcawebbean.getText("VIEWCACERTIFICATE")%></u></a>
       </td>
     </tr>
     <% } %>

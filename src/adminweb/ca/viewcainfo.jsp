@@ -62,7 +62,7 @@
 <SCRIPT language="JavaScript">
 <!--
 function viewocspcert(){        
-    var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>=<%=ocspcert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(ocspcert)%>";
+    var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>=<%=java.net.URLEncoder.encode(ocspcert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(ocspcert),"UTF-8")%>";
     link = encodeURI(link);
     window.open(link, 'view_cert','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }

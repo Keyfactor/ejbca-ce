@@ -345,18 +345,18 @@ function confirmrevokation(){
                         }%></td>
       <td width="8%">
 
-        <A  onclick='viewuser(<%= i %>)'>
+        <A  style="cursor:hand;" onclick='viewuser(<%= i %>)'>
         <u><%= ejbcawebbean.getText("VIEWENDENTITY") %></u> </A> 
       <% try{ 
            if((rabean.authorizedToEditUser(users[i].getEndEntityProfileId()) || !globalconfiguration.getEnableEndEntityProfileLimitations())
                && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_EDIT_RIGHTS)){ %>
-        <A  onclick='edituser(<%= i %>)'>
+        <A  style="cursor:hand;" onclick='edituser(<%= i %>)'>
         <u><%= ejbcawebbean.getText("EDITENDENTITY") %></u> </A>
         <% } 
          }catch(AuthorizationDeniedException ade){} 
          try{ 
            if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_CA_VIEW_CERT)){ %>
-        <A  onclick='viewcert(<%= i %>)'>
+        <A  style="cursor:hand;" onclick='viewcert(<%= i %>)'>
         <u><%= ejbcawebbean.getText("VIEWCERTIFICATES") %></u> </A>
         <% }
          }catch(AuthorizationDeniedException ade){}
@@ -364,14 +364,14 @@ function confirmrevokation(){
            if(globalconfiguration.getIssueHardwareTokens() &&
               (rabean.authorizedToViewHardToken(users[i].getEndEntityProfileId()) || !globalconfiguration.getEnableEndEntityProfileLimitations())
                && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_HARDTOKEN_VIEW_RIGHTS)){ %>
-        <A  onclick='viewtoken(<%= i %>)'>
+        <A  style="cursor:hand;" onclick='viewtoken(<%= i %>)'>
         <u><%= ejbcawebbean.getText("VIEWHARDTOKENS") %></u> </A>
         <% }
          }catch(AuthorizationDeniedException ade){}
          try{ 
            if((rabean.authorizedToViewHistory(users[i].getEndEntityProfileId()) || !globalconfiguration.getEnableEndEntityProfileLimitations()) 
                && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_HISTORY_RIGHTS)){ %>
-        <A  onclick='viewhistory(<%= i %>)'>
+        <A  style="cursor:hand;" onclick='viewhistory(<%= i %>)'>
         <u><%= ejbcawebbean.getText("VIEWHISTORY") %></u> </A>
         <%   } 
            }catch(AuthorizationDeniedException ade){} %>

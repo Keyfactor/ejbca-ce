@@ -26,6 +26,7 @@ function viewcert(row){
     var hiddencertsernofield = eval("document.form.<%= HIDDEN_CERTSERNO %>" + row);
     var certserno = hiddencertsernofield.value;
     var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>="+certserno;
+    link = encodeURI(link);
     window.open(link, 'view_cert','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }
 
@@ -282,7 +283,7 @@ function viewcert(row){
   <% } else{
          for(int i=0; i < logentries.length; i++){%>
   <tr id="LogTextRow<%= i%2 %>"> 
-       <input type="hidden" name='<%= HIDDEN_USERNAME + i %>' value='<%= logentries[i].getValue(LogEntryView.USERNAME) %>'>
+       <input type="hidden" name='<%= HIDDEN_USERNAME + i %>' value='<% if(logentries[i].getValue(LogEntryView.USERNAME) != null) out.print(java.net.URLEncoder.encode(logentries[i].getValue(LogEntryView.USERNAME),"UTF-8")); %>'>
        <input type="hidden" name='<%= HIDDEN_CERTSERNO + i %>' value='<% if(logentries[i].getValue(LogEntryView.CERTIFICATESERNO) != null) out.print(java.net.URLEncoder.encode(logentries[i].getValue(LogEntryView.CERTIFICATESERNO),"UTF-8")); %>'>
        <input type="hidden" name='<%= HIDDEN_ADMINSERNO + i %>' value='<% if(logentries[i].getValue(LogEntryView.ADMINCERTSERNO) != null) out.print(java.net.URLEncoder.encode(logentries[i].getValue(LogEntryView.ADMINCERTSERNO),"UTF-8")); %>'>
     <td width="9%"><%= logentries[i].getValue(LogEntryView.TIME) %></td>
@@ -292,7 +293,7 @@ function viewcert(row){
              if(logentries[i].getValue(LogEntryView.ADMINDATA).equals(""))
                 out.write(ejbcawebbean.getText("CERTIFICATENOTKNOWN"));
              else{%>
-        <A  onclick='viewadmincert(<%= i %>)'>
+        <A style="cursor:hand;"  onclick='viewadmincert(<%= i %>)'>
         <u><%= logentries[i].getValue(LogEntryView.ADMINDATA) %></u> </A>
        <% } else         
             out.write(logentries[i].getValue(LogEntryView.ADMINDATA));
@@ -304,7 +305,7 @@ function viewcert(row){
     <td width="7%"><% if(logentries[i].getValue(LogEntryView.USERNAME) == null)
                          out.write(ejbcawebbean.getText("NOENDENTITYINVOLVED"));
                        else{%> 
-        <A  onclick='viewuser(<%= i %>)'>
+        <A  style="cursor:hand;"  onclick='viewuser(<%= i %>)'>
         <u><%= logentries[i].getValue(LogEntryView.USERNAME) %></u> </A>
                     <% } %>
     </td>
@@ -314,7 +315,7 @@ function viewcert(row){
                          if(logentries[i].getValue(LogEntryView.CERTIFICATE).equals(""))
                            out.write(ejbcawebbean.getText("CERTIFICATENOTKNOWN"));
                          else{%> 
-        <A  onclick='viewcert(<%= i %>)'>
+        <A  style="cursor:hand;"  onclick='viewcert(<%= i %>)'>
         <u><%= logentries[i].getValue(LogEntryView.CERTIFICATE) %></u> </A>
                     <% } %>
     </td>

@@ -145,7 +145,7 @@ function confirmrevokation(){
 }
 
 function viewcert(){
-    var link = "<%= VIEWCERT_LINK %>?<%= USER_PARAMETER %>=<%=username%>&<%=TOKENSN_PARAMETER %>=<%=token.getTokenSN()%>";
+    var link = "<%= VIEWCERT_LINK %>?<%= USER_PARAMETER %>=<%= java.net.URLEncoder.encode(username,"UTF-8")%>&<%=TOKENSN_PARAMETER %>=<%=token.getTokenSN()%>";
     link = encodeURI(link);
     window.open(link, 'view_cert','height=600,width=600,scrollbars=yes,toolbar=no,resizable=1');
 }
@@ -246,7 +246,7 @@ function viewcert(){
                  while(iter.hasNext()){ 
                     String copytokensn = (String) iter.next();%>
                    <br>
-                   <A  href='<%= java.net.URLDecoder.decode(VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copytokensn + "&" + USER_PARAMETER + "=" + username,"UTF-8")%>'>
+                   <A  href='<%= java.net.URLEncoder.encode(VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copytokensn + "&" + USER_PARAMETER + "=" + username,"UTF-8")%>'>
                       <u><%= copytokensn %></u> 
                    </A><%
                  }
@@ -254,7 +254,7 @@ function viewcert(){
             }else{
               out.write(ejbcawebbean.getText("THISISACOPYOF") + ":<br>");  
               String copyofsn = token.getCopyOf();%>
-                <A  href='<%= java.net.URLDecoder.decode(VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copyofsn + "&" + USER_PARAMETER + "=" + username,"UTF-8")%>'>
+                <A  href='<%= java.net.URLEncoder.encode(VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copyofsn + "&" + USER_PARAMETER + "=" + username,"UTF-8")%>'>
                    <u><%= copyofsn %></u> 
                  </A><%
             } %>
@@ -281,7 +281,7 @@ function viewcert(){
       <td>
         <% try{ 
              if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_CA_VIEW_CERT)){ %>
-        <A  onclick='viewcert()'>
+        <A style="cursor:hand;" onclick='viewcert()'>
         <u><%= ejbcawebbean.getText("VIEWCERTIFICATES") %></u> </A>
         <%   }
          }catch(se.anatom.ejbca.authorization.AuthorizationDeniedException ade){}

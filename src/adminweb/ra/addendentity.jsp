@@ -709,9 +709,12 @@ function checkallfields(){
        }
        for(int i=0; i < profile.getSubjectAltNameFieldOrderLength(); i++){
          fielddata = profile.getSubjectAltNameFieldsInOrder(i);
-         if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME){
-           if(profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){
-             if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.IPADDRESS){ %>
+         int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
+         if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && fieldtype != EndEntityProfile.DIRECTORYNAME && 
+            fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){ // not implemented yet
+           if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME){
+             if(profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){
+               if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.IPADDRESS){ %>
     if(!checkfieldforipaddess("document.adduser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYNUMBERALSANDDOTS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
       illegalfields++;
            <%  }else{ %>
@@ -728,7 +731,8 @@ function checkallfields(){
          }
          else{ %>
       document.adduser.<%= CHECKBOX_SUBJECTALTNAME+i %>.disabled = false;          
-     <%  }
+     <%    }
+         } 
        }
        if(profile.getUse(EndEntityProfile.EMAIL,0)){ %>
     if(!checkfieldforlegalemailcharswithoutat("document.adduser.<%=TEXTFIELD_EMAIL%>","<%= ejbcawebbean.getText("ONLYEMAILCHARSNOAT") %>"))
@@ -1277,9 +1281,9 @@ function edituser(row){
     <td width="20%"><%= addedusers[i].getSubjectDNField(DNFieldExtractor.OU,0) %></td>
     <td width="20%"><%= addedusers[i].getSubjectDNField(DNFieldExtractor.O,0) %></td>
     <td width="25%">
-        <A  onclick='viewuser(<%= i %>)'>
+        <A style="cursor:hand;" onclick='viewuser(<%= i %>)'>
         <u><%= ejbcawebbean.getText("VIEWENDENTITY") %></u> </A>
-        <A  onclick='edituser(<%= i %>)'>
+        <A style="cursor:hand;" onclick='edituser(<%= i %>)'>
         <u><%= ejbcawebbean.getText("EDITENDENTITY") %></u> </A>
     </td>
   </tr>
