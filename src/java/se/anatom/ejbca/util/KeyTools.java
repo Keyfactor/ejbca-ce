@@ -39,7 +39,7 @@ import org.bouncycastle.jce.interfaces.*;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.26 2004-05-09 09:07:09 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.27 2004-05-31 14:28:51 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -150,7 +150,7 @@ public class KeyTools {
         }
         Certificate[] chain = new Certificate[len];
         // To not get a ClassCastException we need to genereate a real new certificate with BC
-        CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
+        CertificateFactory cf = CertTools.getCertificateFactory();
         chain[0] = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(
                     cert.getEncoded()));
 

@@ -52,7 +52,7 @@ import se.anatom.ejbca.util.KeyTools;
  * </ul>
  *
  *
- * @version $Id: HttpGetCert.java,v 1.15 2004-04-16 07:39:02 anatom Exp $
+ * @version $Id: HttpGetCert.java,v 1.16 2004-05-31 14:29:07 anatom Exp $
  */
 public class HttpGetCert {
     private static Logger log = Logger.getLogger(HttpGetCert.class);
@@ -90,7 +90,7 @@ public class HttpGetCert {
     /*
     public void setSSLTrustedServerCert(byte[] cert) throws java.security.cert.CertificateException {
     log.debug(">setSSLTrustedServerCert:");
-    CertificateFactory cf = CertificateFactory.getInstance("X.509");
+    CertificateFactory cf = CertTools.getCertificateFactory();
     webcert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(cert));
     if ( CertTools.isSelfSigned( webcert ) )
         throw new IllegalArgumentException("Webcert certificate is not self signed (not a root CA certificate).");

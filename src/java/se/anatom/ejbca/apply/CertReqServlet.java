@@ -74,7 +74,7 @@ import se.anatom.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.44 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.45 2004-05-31 14:29:06 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
@@ -475,7 +475,7 @@ public class CertReqServlet extends HttpServlet {
 
 
         // Make a certificate chain from the certificate and the CA-certificate
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        CertificateFactory cf = CertTools.getCertificateFactory();
         Certificate[] cachain = (Certificate[]) signsession.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
 
         // Verify CA-certificate

@@ -61,7 +61,7 @@ import se.anatom.ejbca.util.CertTools;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.36 2004-04-16 07:39:01 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.37 2004-05-31 14:29:05 anatom Exp $
  */
 public class EjbcaWebBean {
 
@@ -119,7 +119,7 @@ public class EjbcaWebBean {
 
       String userdn = "";
 
-      CertificateFactory certfact =  CertificateFactory.getInstance("X.509");
+      CertificateFactory certfact =  CertTools.getCertificateFactory();
       certificates =   (X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" );
 
       if(certificates == null) throw new AuthenticationFailedException("Client certificate required.");

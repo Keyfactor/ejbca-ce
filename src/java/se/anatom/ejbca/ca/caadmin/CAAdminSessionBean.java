@@ -87,7 +87,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.24 2004-05-19 07:01:01 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.25 2004-05-31 14:29:06 anatom Exp $
  */
 public class CAAdminSessionBean extends BaseSessionBean {
     
@@ -1378,7 +1378,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
 	    
 	    CertPathValidator certPathValidator
 		    = CertPathValidator.getInstance(CertPathValidator.getDefaultType(), "BC");
-	    CertPath certpath = CertificateFactory.getInstance("X.509").generateCertPath(calist);
+        CertificateFactory fact = CertTools.getCertificateFactory();
+	    CertPath certpath = fact.generateCertPath(calist);
 	    
 	    iter = certpath.getCertificates().iterator();
 

@@ -30,7 +30,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.61 2004-05-30 17:44:32 herrvendil Exp $
+ * @version $Id: CertTools.java,v 1.62 2004-05-31 14:28:52 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -334,7 +334,7 @@ public class CertTools {
         return stringToBCDNString(dn);
     } // getIssuerDN
     
-    private static CertificateFactory getCertificateFactory() {
+    public static CertificateFactory getCertificateFactory() {
         try {
             return CertificateFactory.getInstance("X.509", "BC");
         } catch (NoSuchProviderException nspe) {
