@@ -17,11 +17,14 @@ import se.anatom.ejbca.SecConst;
 /**
  * Authenticates users towards a remote user database, using HTTP-based protocol.
  *
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.1.1.1 2001-11-15 14:58:14 anatom Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.2 2002-03-07 15:00:36 anatom Exp $
  */
 public class RemoteAuthenticationSessionBean extends BaseSessionBean implements IAuthenticationSession {
 
     private static String REMOTE_PROTOCOL_VER = "1.0";
+
+    /** URL to remote authentication server */
+    String remoteurl = null;
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -29,6 +32,8 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean implements 
      */
     public void ejbCreate() throws CreateException {
         debug(">ejbCreate()");
+        // Get the URL from the environment from deployment descriptor
+        remoteurl = (String)lookup("java:comp/env/AuthURL", java.lang.String.class);
         debug("<ejbCreate()");
     }
 
@@ -75,9 +80,6 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean implements 
     private UserAuthData getDNfromRemote(String version, String user,
     String password ) throws NamingException, IOException {
         debug(">getDNfromRemote("+version+", "+user+", "+password+")");
-        // Get the URL from the environment from deployment descriptor
-        Context initCtx = getInitialContext();
-        String remoteurl = (String)initCtx.lookup("java:comp/env/AuthURL");
 
         // Connect to url and do our stuff...
         URL url=new URL(remoteurl);

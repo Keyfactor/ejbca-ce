@@ -13,11 +13,20 @@
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
    
+     <ejb-ref>
+        <description>The User entity bean</description>
+        <ejb-ref-name>ejb/UserData</ejb-ref-name>
+        <ejb-ref-type>entity</ejb-ref-type>
+        <home>se.anatom.ejbca.ca.store.UserDataHome</home>
+        <remote>se.anatom.ejbca.ca.store.UserData</remote>
+        <ejb-link>UserData</ejb-link>
+     </ejb-ref>
+
      <env-entry>
-     	<description>JDBC datasource to be used</description>
-     	<env-entry-name>DataSource</env-entry-name>
-     	<env-entry-type>java.lang.String</env-entry-type>
-     	<env-entry-value>java:/DefaultDS</env-entry-value>
+        <description>JDBC datasource to be used</description>
+        <env-entry-name>DataSource</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>java:/DefaultDS</env-entry-value>
      </env-entry>
 
    </session>

@@ -15,9 +15,12 @@ import se.anatom.ejbca.ra.UserDataHome;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.2 2002-02-27 16:32:11 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.3 2002-03-07 15:00:36 anatom Exp $
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean implements IAuthenticationSession {
+
+    /** home interface to user entity bean */
+    private UserDataHome userHome = null;
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -25,6 +28,8 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean implements I
      */
     public void ejbCreate () throws CreateException {
         debug(">ejbCreate()");
+        // Look up the UserData entity bean home interface
+        userHome = (UserDataHome)lookup("java:comp/env/ejb/UserData", UserDataHome.class);
         debug("<ejbCreate()");
     }
 
@@ -36,12 +41,10 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean implements I
     public UserAuthData authenticateUser(String username, String password) throws RemoteException {
         debug(">authenticateUser("+username+", hiddenpwd)");
         try {
-            // Look up the UserData entity bean home interface
-            UserDataHome home = (UserDataHome)lookup("UserData", UserDataHome.class);
             // Find the user with username username
             UserDataPK pk = new UserDataPK();
             pk.username = username;
-            UserData data = home.findByPrimaryKey(pk);
+            UserData data = userHome.findByPrimaryKey(pk);
             int status = data.getStatus();
             if ( (status == UserData.STATUS_NEW) || (status == UserData.STATUS_FAILED) || (status == UserData.STATUS_INPROCESS) ) {
                 info("Trying to authenticate user: username="+data.getUsername()+", dn="+data.getSubjectDN()+", email="+data.getSubjectEmail()+", status="+data.getStatus()+", type="+data.getType());
@@ -70,12 +73,10 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean implements I
     public void finishUser(String username, String password) throws RemoteException {
         debug(">finishUser("+username+", hiddenpwd)");
         try {
-            // Look up the UserData entity bean home interface
-            UserDataHome home = (UserDataHome)lookup("UserData", UserDataHome.class);
             // Find the user with username username
             UserDataPK pk = new UserDataPK();
             pk.username = username;
-            UserData data = home.findByPrimaryKey(pk);
+            UserData data = userHome.findByPrimaryKey(pk);
             data.setStatus(UserData.STATUS_GENERATED);
             debug("<finishUser("+username+", hiddenpwd)");
         } catch (Exception e) {

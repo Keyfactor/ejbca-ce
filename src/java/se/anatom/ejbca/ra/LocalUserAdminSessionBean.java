@@ -17,7 +17,7 @@ import se.anatom.ejbca.BaseSessionBean;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.5 2002-03-04 14:09:09 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.6 2002-03-07 15:00:37 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserAdminSession {
 
@@ -33,7 +33,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
      */
     public void ejbCreate () throws CreateException {
         debug(">ejbCreate()");
-        home = (UserDataHome) lookup("UserData", UserDataHome.class);
+        home = (UserDataHome) lookup("java:comp/env/ejb/UserData", UserDataHome.class);
         dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
         debug("DataSource=" + dataSource);
         debug("<ejbCreate()");
@@ -74,7 +74,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
 
         try {
             UserDataPK pk = new UserDataPK();
-            pk.username = username;            
+            pk.username = username;
             home.remove(pk);
             info("Deleted user "+pk.username);
         }
@@ -131,7 +131,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
         debug(">findUser("+username+")");
         UserDataPK pk = new UserDataPK();
         pk.username = username;
-        UserData data; 
+        UserData data;
         try {
             data = home.findByPrimaryKey(pk);
         } catch (ObjectNotFoundException oe) {

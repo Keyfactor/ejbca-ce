@@ -17,13 +17,13 @@ import java.security.*;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ca.auth.IAuthenticationSessionHome;
-import se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote;
+import se.anatom.ejbca.ca.auth.IAuthenticationSession;
 import se.anatom.ejbca.ca.auth.UserAuthData;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
+import se.anatom.ejbca.ca.store.ICertificateStoreSession;
 import se.anatom.ejbca.ca.store.IPublisherSession;
 import se.anatom.ejbca.ca.store.IPublisherSessionHome;
-import se.anatom.ejbca.ca.store.IPublisherSessionRemote;
+import se.anatom.ejbca.ca.store.IPublisherSession;
 import se.anatom.ejbca.ca.store.CertificateData;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.SecConst;
@@ -38,7 +38,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.14 2002-02-27 16:32:11 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.15 2002-03-07 15:00:37 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -60,12 +60,14 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
     private Boolean finishUser;
     private SecureRandom random;
 
-    /** Pointer to main certificate store */
-    private ICertificateStoreSessionRemote certificateStore = null;
-    /** A vector of publishers where certs and CRLs are stored */
+    /** Home interface to certificate store */
+    private ICertificateStoreSessionHome storeHome = null;
+
+    /** A vector of publishers home interfaces where certs and CRLs are stored */
     private Vector publishers = null;
-    /* AuthenticationSession for authentication of users when certs are created */
-    private IAuthenticationSessionRemote authSession = null;
+
+    /* Home interface to Authentication session */
+    private IAuthenticationSessionHome authHome = null;
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -77,6 +79,26 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             // Install BouncyCastle provider
             Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
             int result = Security.addProvider(BCJce);
+
+            // get home interfaces to other session beans used
+            storeHome = (ICertificateStoreSessionHome) lookup("java:comp/env/ejb/CertificateStoreSession", ICertificateStoreSessionHome.class);
+            authHome = (IAuthenticationSessionHome)lookup("java:comp/env/ejb/AuthenticationSession",IAuthenticationSessionHome.class);
+
+            // Init the publisher session beans
+            int i = 1;
+            publishers = new Vector(0);
+            try {
+                while (true) {
+                    String jndiName = "PublisherSession" + i;
+                    IPublisherSessionHome pubHome = (IPublisherSessionHome) lookup(jndiName, IPublisherSessionHome.class);
+                    publishers.add(pubHome);
+                    info("Added publisher class '"+pubHome.getClass().getName()+"'");
+                    i++;
+                }
+            } catch (EJBException e) {
+                // We could not find this publisher
+                debug("Failed to find publisher at index '"+i+"', no more publishers.");
+            }
 
             // Get env variables and read in nessecary data
             KeyStore keyStore=KeyStore.getInstance("PKCS12", "BC");
@@ -239,7 +261,8 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
 
         try {
             // Authorize user and get DN
-            initAuthSession();
+            IAuthenticationSession authSession = authHome.create();
+
             UserAuthData data = authSession.authenticateUser(username, password);
             info("Authorized user " + username + " with DN=" + data.getDN());
             System.out.println("type="+ data.getType());
@@ -261,11 +284,13 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
                 // Verify before returning
                 cert.verify(caCert.getPublicKey());
                 // Store certificate in the database
-                initCertificateStore();
+                ICertificateStoreSession certificateStore = storeHome.create();
                 certificateStore.storeCertificate(cert, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
                 // Call authentication session and tell that we are finished with this user
                 for (int i=0;i<publishers.size();i++) {
-                    ((IPublisherSession)(publishers.get(i))).storeCertificate(cert, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
+                    IPublisherSessionHome pubHome = (IPublisherSessionHome)publishers.get(i);
+                    IPublisherSession pub = pubHome.create();
+                    pub.storeCertificate(cert, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
                 }
                 if (finishUser.booleanValue() == true)
                     authSession.finishUser(username, password);
@@ -340,7 +365,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
         debug(">createCRL()");
         X509CRL crl = null;
         try {
-            initCertificateStore();
+            ICertificateStoreSession certificateStore = storeHome.create();
             // Get number of last CRL and increase by 1
             int number = certificateStore.getLastCRLNumber() + 1;
             crl = makeBCCRL(caSubjectName, crlperiod.longValue(), certs, number);
@@ -374,49 +399,6 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
         } else
             return password.toCharArray();
     }
-
-    /**
-     * Creates the authenticationSession so it is available.
-     */
-    private void initAuthSession() throws CreateException, RemoteException {
-        debug(">initAuthSession()");
-        if (authSession == null) {
-            IAuthenticationSessionHome home = (IAuthenticationSessionHome)lookup("AuthenticationSession",IAuthenticationSessionHome.class);
-            authSession = home.create();
-        }
-        debug("<initAuthSession()");
-    } // initAuthSession
-
-    /**
-     * Creates the CertificateStore and Publishers so they are available.
-     */
-    private void initCertificateStore() throws CreateException, RemoteException {
-        debug(">initCertificateStore()");
-        // First init main certificate store
-        if (certificateStore == null) {
-            ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) lookup("CertificateStoreSession", ICertificateStoreSessionHome.class);
-            certificateStore = storehome.create();
-        }
-        // Init the publisher session beans
-        if (publishers == null) {
-            int i = 1;
-            publishers = new Vector(0);
-            try {
-                while (true) {
-                    String jndiName = "PublisherSession" + i;
-                    IPublisherSessionHome pubhome = (IPublisherSessionHome) lookup(jndiName, IPublisherSessionHome.class);
-                    IPublisherSessionRemote pubremote = pubhome.create();
-                    publishers.add(pubremote);
-                    info("Added publisher class '"+pubremote.getClass().getName()+"'");
-                    i++;
-                }
-            } catch (EJBException e) {
-                // We could not find this publisher
-                debug("Failed to find publisher at index '"+i+"', no more publishers.");
-            }
-        }
-        debug("<initCertificateStore()");
-    } // initCertificateStore
 
     private int sunKeyUsageToBC(boolean[] sku) {
 

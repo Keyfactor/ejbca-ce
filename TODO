@@ -1,4 +1,4 @@
-$Id: TODO,v 1.10 2002-03-07 08:35:09 anatom Exp $
+$Id: TODO,v 1.11 2002-03-07 15:00:36 anatom Exp $
 
 V 1.0
 -----
@@ -9,9 +9,9 @@ V 2.0
 -----
 - Batch create keystores in other formats, PKCS8/PEM. Apache compatible.
 - Better architecture for JSPs (MVC - ModelViewController?).
-- Correct <ejb-ref> and <transaction-xx> for beans in ejb-jar.xml.
+- Correct <transaction-xx> for beans in ejb-jar.xml.
 - Certificate update/rollover for CAs and clients.
-- Sample Iptables firewall sripts for CA.
+- Sample Iptables firewall scripts for CA.
 - Make a database model similar to architecture model.
 - Possibility to warn about certificates about to expire.
 - Return PKCS7 response to IE/Mozilla, response is PKCS7 with whole chain.
@@ -20,7 +20,7 @@ ca.crt is also pkcs7 with whole chain.
 - Remote secure administration through browser CA-admin and RA-admin.
 - EJB best practices, performance meachurments and optimization.
 - Add Configuration (for some stuff) through database so changes can be made on-
-the-fly.
+the-fly??
 - Invent strategy for handling multiple instances of CAs on the same app-server.
 - Strategy for handling certificate issuance if notAfter is beyond CAs notAfter.
 - Add support for deeper hierarchies than 2 levels of CAs (today only root and

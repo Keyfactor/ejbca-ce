@@ -25,12 +25,18 @@ import se.anatom.ejbca.util.Base64;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.4 2002-01-08 11:25:24 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.5 2002-03-07 15:00:37 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean implements ICertificateStoreSession {
 
     /** Var holding JNDI name of datasource */
     private String dataSource = "java:/DefaultDS";
+
+    /** The home interface of Certificate entity bean */
+    private CertificateDataHome certHome = null;
+
+    /** The home interface of CRL entity bean */
+    private CRLDataHome crlHome = null;
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -40,8 +46,18 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         debug(">ejbCreate()");
         dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
         debug("DataSource=" + dataSource);
+        certHome = (CertificateDataHome) lookup("java:comp/env/ejb/CertificateData", CertificateDataHome.class);
+        crlHome = (CRLDataHome) lookup("java:comp/env/ejb/CRLData", CRLDataHome.class);
         debug("<ejbCreate()");
     }
+
+    /** Gets connection to Datasource used for manual SQL searches
+     * @return Connection
+     */
+    private Connection getConnection() throws SQLException, NamingException {
+           DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
+           return ds.getConnection();
+    } //getConnection
 
    /**
     * Implements ICertificateStoreSession::storeCertificate.
@@ -51,15 +67,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         debug(">storeCertificate("+cafp+", "+status+", "+type+")");
 
         try {
-            CertificateDataHome home = (CertificateDataHome) lookup("CertificateData", CertificateDataHome.class);
-
             X509Certificate cert = (X509Certificate)incert;
             CertificateDataPK pk = new CertificateDataPK();
             pk.fp = CertTools.getFingerprintAsString(cert);
             info("Storing cert with fp="+pk.fp);
 
             CertificateData data1=null;
-            data1 = home.create(cert);
+            data1 = certHome.create(cert);
             data1.setCAFingerprint(cafp);
             data1.setStatus(status);
             data1.setType(type);
@@ -81,9 +95,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         debug(">storeCRL("+cafp+", "+number+")");
 
         try {
-            CRLDataHome home = (CRLDataHome) lookup("CRLData", CRLDataHome.class);
             X509CRL crl = CertTools.getCRLfromByteArray(incrl);
-            CRLData data1 = home.create(crl, number);
+            CRLData data1 = crlHome.create(crl, number);
             data1.setCAFingerprint(cafp);
             info("Stored CRL with fp="+CertTools.getFingerprintAsString(crl));
         }
@@ -94,11 +107,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         debug("<storeCRL()");
         return true;
     } // storeCRL
-
-    private Connection getConnection() throws SQLException, NamingException {
-           DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
-           return ds.getConnection();
-    } //getConnection
 
    /**
     * Implements ICertificateStoreSession::listAlLCertificates.
@@ -243,7 +251,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
             if (result.next()) {
                 cert = CertTools.getCertfromByteArray(Base64.decode(result.getString(1).getBytes()));
                 debug("Found cert with serno "+serno.toString()+".");
-            } 
+            }
 
             debug("<findCertificateByIssuerAndSerno()");
             return cert;
@@ -287,7 +295,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
                 debug("Found cert with fingerprint "+fp+".");
             } else {
                 throw new Exception("Cannot find certificate with issuer '"+dn+"' and serno '"+serno.toString()+"'.");
-            } 
+            }
         } catch (Exception e) {
             throw new EJBException(e);
         }
@@ -301,10 +309,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
             }
         }
         try{
-            CertificateDataHome home = (CertificateDataHome)lookup("CertificateData", CertificateDataHome.class);
             CertificateDataPK pk = new CertificateDataPK();
             pk.fp = fp;
-            CertificateData data = home.findByPrimaryKey(pk);
+            CertificateData data = certHome.findByPrimaryKey(pk);
             RevokedCertInfo revinfo = null;
             if (data.getStatus() == CertificateData.CERT_REVOKED) {
                 revinfo = new RevokedCertInfo(serno, data.getRevocationDate(), data.getRevocationReason());
@@ -315,7 +322,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
             throw new EJBException(e);
         }
     } //isRevoked
-    
+
    /**
     * Implements ICertificateStoreSession::getLastCRL.
     * Uses select directly from datasource.

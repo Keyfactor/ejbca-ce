@@ -13,143 +13,165 @@
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
      
+     <ejb-ref>
+        <description>The Certificate store used to store and fetch certificates</description>
+        <ejb-ref-name>ejb/CertificateStoreSession</ejb-ref-name>
+        <ejb-ref-type>session</ejb-ref-type>
+        <home>se.anatom.ejbca.ca.store.ICertificateStoreSessionHome</home>
+        <remote>se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote</remote>
+        <ejb-link>CertificateStoreSession</ejb-link>
+     </ejb-ref>
+     <ejb-ref>
+        <description>
+        <!-- The Authentication session used to authenticate users when issuing certificates 
+             alter this to enable a custom made authentication session implementing the 
+             IAuthenticationSession interface.
+        -->
+        </description>
+        <ejb-ref-name>ejb/AuthenticationSession</ejb-ref-name>
+        <ejb-ref-type>session</ejb-ref-type>
+        <home>se.anatom.ejbca.ca.store.IAuthenticationSessionHome</home>
+        <remote>se.anatom.ejbca.ca.store.IAuthenticationSessionRemote</remote>
+        <ejb-link>AuthenticationSession</ejb-link>
+     </ejb-ref>
+
      <env-entry>
-     	<description>Location of CA keystore</description>
-     	<env-entry-name>keyStore</env-entry-name>
-     	<env-entry-type>java.lang.String</env-entry-type>
-     	<env-entry-value>/tmp/server.p12</env-entry-value>
+        <description>Location of CA keystore</description>
+        <env-entry-name>keyStore</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>/tmp/server.p12</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>Password for server keystore, comment out to prompt for pwd.</description>
-     	<env-entry-name>keyStorePass</env-entry-name>
-     	<env-entry-type>java.lang.String</env-entry-type>
-     	<env-entry-value>foo123</env-entry-value>
+        <description>Password for server keystore, comment out to prompt for pwd.</description>
+        <env-entry-name>keyStorePass</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>foo123</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>Alias in keystore for CA private key</description>
-     	<env-entry-name>privateKeyAlias</env-entry-name>
-     	<env-entry-type>java.lang.String</env-entry-type>
-     	<env-entry-value>privateKey</env-entry-value>
+        <description>Alias in keystore for CA private key</description>
+        <env-entry-name>privateKeyAlias</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>privateKey</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>Password for CA private key, only used for JKS-keystore. Leave as null for PKCS12-keystore, comment out to prompt</description>
-     	<env-entry-name>privateKeyPass</env-entry-name>
-     	<env-entry-type>java.lang.String</env-entry-type>
-     	<env-entry-value>null</env-entry-value>
+        <description>Password for CA private key, only used for JKS-keystore. Leave as null for PKCS12-keystore, comment out to prompt</description>
+        <env-entry-name>privateKeyPass</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>null</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>Validity in days from days date for created certificate</description>
-     	<env-entry-name>validity</env-entry-name>
-     	<env-entry-type>java.lang.Long</env-entry-type>
-     	<env-entry-value>730</env-entry-value>
+        <description>Validity in days from days date for created certificate</description>
+        <env-entry-name>validity</env-entry-name>
+        <env-entry-type>java.lang.Long</env-entry-type>
+        <env-entry-value>730</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>Use BasicConstraints?</description>
-     	<env-entry-name>BasicConstraints</env-entry-name>
-     	<env-entry-type>java.lang.Boolean</env-entry-type>
-     	<env-entry-value>true</env-entry-value>
+        <description>Use BasicConstraints?</description>
+        <env-entry-name>BasicConstraints</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>true</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>BasicConstraints critical? (RFC2459 says YES)</description>
-     	<env-entry-name>BasicConstraintsCritical</env-entry-name>
-     	<env-entry-type>java.lang.Boolean</env-entry-type>
-     	<env-entry-value>true</env-entry-value>
+        <description>BasicConstraints critical? (RFC2459 says YES)</description>
+        <env-entry-name>BasicConstraintsCritical</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>true</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>Use KeyUsage?</description>
-     	<env-entry-name>KeyUsage</env-entry-name>
-     	<env-entry-type>java.lang.Boolean</env-entry-type>
-     	<env-entry-value>true</env-entry-value>
+        <description>Use KeyUsage?</description>
+        <env-entry-name>KeyUsage</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>true</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>KeyUsage critical? (RFC2459 says YES)</description>
-     	<env-entry-name>KeyUsageCritical</env-entry-name>
-     	<env-entry-type>java.lang.Boolean</env-entry-type>
-     	<env-entry-value>true</env-entry-value>
+        <description>KeyUsage critical? (RFC2459 says YES)</description>
+        <env-entry-name>KeyUsageCritical</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>true</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>Use SubjectKeyIdentifier?</description>
-     	<env-entry-name>SubjectKeyIdentifier</env-entry-name>
-     	<env-entry-type>java.lang.Boolean</env-entry-type>
-     	<env-entry-value>true</env-entry-value>
+        <description>Use SubjectKeyIdentifier?</description>
+        <env-entry-name>SubjectKeyIdentifier</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>true</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>SubjectKeyIdentifier critical? (RFC2459 says NO)</description>
-     	<env-entry-name>SubjectKeyIdentifierCritical</env-entry-name>
-     	<env-entry-type>java.lang.Boolean</env-entry-type>
-     	<env-entry-value>false</env-entry-value>
+        <description>SubjectKeyIdentifier critical? (RFC2459 says NO)</description>
+        <env-entry-name>SubjectKeyIdentifierCritical</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>false</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>Use AuthorityKeyIdentifier?</description>
-     	<env-entry-name>AuthorityKeyIdentifier</env-entry-name>
-     	<env-entry-type>java.lang.Boolean</env-entry-type>
-     	<env-entry-value>true</env-entry-value>
+        <description>Use AuthorityKeyIdentifier?</description>
+        <env-entry-name>AuthorityKeyIdentifier</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>true</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>AuthorityKeyIdentifier critical? (RFC2459 says NO)</description>
-     	<env-entry-name>AuthorityKeyIdentifierCritical</env-entry-name>
-     	<env-entry-type>java.lang.Boolean</env-entry-type>
-     	<env-entry-value>false</env-entry-value>
+        <description>AuthorityKeyIdentifier critical? (RFC2459 says NO)</description>
+        <env-entry-name>AuthorityKeyIdentifierCritical</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>false</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>Use SubjectAlternativeName?</description>
-     	<env-entry-name>SubjectAlternativeName</env-entry-name>
-     	<env-entry-type>java.lang.Boolean</env-entry-type>
-     	<env-entry-value>true</env-entry-value>
+        <description>Use SubjectAlternativeName?</description>
+        <env-entry-name>SubjectAlternativeName</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>true</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>SubjectAlternativeName critical? (RFC2459 says NO)</description>
-     	<env-entry-name>SubjectAlternativeNameCritical</env-entry-name>
-     	<env-entry-type>java.lang.Boolean</env-entry-type>
-     	<env-entry-value>false</env-entry-value>
+        <description>SubjectAlternativeName critical? (RFC2459 says NO)</description>
+        <env-entry-name>SubjectAlternativeNameCritical</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>false</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>Use CRLDistributionPoint?</description>
-     	<env-entry-name>CRLDistributionPoint</env-entry-name>
-     	<env-entry-type>java.lang.Boolean</env-entry-type>
-     	<env-entry-value>false</env-entry-value>
+        <description>Use CRLDistributionPoint?</description>
+        <env-entry-name>CRLDistributionPoint</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>false</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>CRLDistributionPoint critical? (RFC2459 says NO)</description>
-     	<env-entry-name>CRLDistributionPointCritical</env-entry-name>
-     	<env-entry-type>java.lang.Boolean</env-entry-type>
-     	<env-entry-value>false</env-entry-value>
+        <description>CRLDistributionPoint critical? (RFC2459 says NO)</description>
+        <env-entry-name>CRLDistributionPointCritical</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>false</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>URI of CRLDistributionPoint?</description>
-     	<env-entry-name>CRLDistURI</env-entry-name>
-     	<env-entry-type>java.lang.String</env-entry-type>
-     	<env-entry-value>http://127.0.0.1:8080/webdist/certdist?cmd=crl</env-entry-value>
+        <description>URI of CRLDistributionPoint?</description>
+        <env-entry-name>CRLDistURI</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>http://127.0.0.1:8080/webdist/certdist?cmd=crl</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>Use old style altName with email in DN? (RFC2459 says NO)</description>
-     	<env-entry-name>EmailInDN</env-entry-name>
-     	<env-entry-type>java.lang.Boolean</env-entry-type>
-     	<env-entry-value>false</env-entry-value>
+        <description>Use old style altName with email in DN? (RFC2459 says NO)</description>
+        <env-entry-name>EmailInDN</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>false</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>Use CRLNumber?</description>
-     	<env-entry-name>CRLNumber</env-entry-name>
-     	<env-entry-type>java.lang.Boolean</env-entry-type>
-     	<env-entry-value>true</env-entry-value>
+        <description>Use CRLNumber?</description>
+        <env-entry-name>CRLNumber</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>true</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>CRLNumber critical? (RFC2459 says NO)</description>
-     	<env-entry-name>CRLNumberCritical</env-entry-name>
-     	<env-entry-type>java.lang.Boolean</env-entry-type>
-     	<env-entry-value>false</env-entry-value>
+        <description>CRLNumber critical? (RFC2459 says NO)</description>
+        <env-entry-name>CRLNumberCritical</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>false</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>Period in hours between CRLs beeing issued</description>
-     	<env-entry-name>CRLPeriod</env-entry-name>
-     	<env-entry-type>java.lang.Long</env-entry-type>
-     	<env-entry-value>24</env-entry-value>
+        <description>Period in hours between CRLs beeing issued</description>
+        <env-entry-name>CRLPeriod</env-entry-name>
+        <env-entry-type>java.lang.Long</env-entry-type>
+        <env-entry-value>24</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>Call finishUser in AuthenticationSession after generation?</description>
-     	<env-entry-name>FinishUser</env-entry-name>
-     	<env-entry-type>java.lang.Boolean</env-entry-type>
-     	<env-entry-value>true</env-entry-value>
+        <description>Call finishUser in AuthenticationSession after generation?</description>
+        <env-entry-name>FinishUser</env-entry-name>
+        <env-entry-type>java.lang.Boolean</env-entry-type>
+        <env-entry-value>true</env-entry-value>
      </env-entry>
 
     <security-identity>
@@ -157,12 +179,11 @@
             <role-name>InternalUser</role-name>
     </run-as>
     </security-identity>
-
    </session>
 
 <!-- Commented out, use LocalAuthenticationSession, move comment if RemoteAuthentication should be used
    <session>
-     <ejb-name>AuthenticationSession</ejb-name>
+     <ejb-name>RemoteAuthenticationSession</ejb-name>
      <home>se.anatom.ejbca.ca.auth.IAuthenticationSessionHome</home>
      <remote>se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote</remote>
      <ejb-class>se.anatom.ejbca.ca.auth.RemoteAuthenticationSessionBean</ejb-class>
@@ -170,11 +191,17 @@
      <transaction-type>Container</transaction-type>
      
      <env-entry>
-     	<description>URL to remote authentication server</description>
-     	<env-entry-name>AuthURL</env-entry-name>
-     	<env-entry-type>java.lang.String</env-entry-type>
-     	<env-entry-value>http://127.0.0.1:8080/sampleauth/verify</env-entry-value>
+        <description>URL to remote authentication server</description>
+        <env-entry-name>AuthURL</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>http://127.0.0.1:8080/sampleauth/verify</env-entry-value>
      </env-entry>
+
+    <security-identity>
+        <run-as>
+            <role-name>InternalUser</role-name>
+        </run-as>
+    </security-identity>
    </session>
 -->
 
@@ -186,12 +213,19 @@
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
 
-    <security-identity>
+     <ejb-ref>
+        <description>The User entity bean</description>
+        <ejb-ref-name>ejb/UserData</ejb-ref-name>
+        <ejb-ref-type>entity</ejb-ref-type>
+        <home>se.anatom.ejbca.ca.store.UserDataHome</home>
+        <remote>se.anatom.ejbca.ca.store.UserData</remote>
+     </ejb-ref>
+
+     <security-identity>
         <run-as>
             <role-name>InternalUser</role-name>
         </run-as>
-    </security-identity>
-
+     </security-identity>
    </session>
 
    <session>
@@ -202,11 +236,28 @@
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>     
 
+     <ejb-ref>
+        <description>The Certificate entity bean used to store and fetch certificates</description>
+        <ejb-ref-name>ejb/CertificateData</ejb-ref-name>
+        <ejb-ref-type>entity</ejb-ref-type>
+        <home>se.anatom.ejbca.ca.store.CertificateDataHome</home>
+        <remote>se.anatom.ejbca.ca.store.CertificateData</remote>
+        <ejb-link>CertificateData</ejb-link>
+     </ejb-ref>
+     <ejb-ref>
+        <description>The CRL entity bean used to store and fetch CRLs</description>
+        <ejb-ref-name>ejb/CRLData</ejb-ref-name>
+        <ejb-ref-type>entity</ejb-ref-type>
+        <home>se.anatom.ejbca.ca.store.CRLDataHome</home>
+        <remote>se.anatom.ejbca.ca.store.CRLData</remote>
+        <ejb-link>CRLData</ejb-link>
+     </ejb-ref>
+     
      <env-entry>
-     	<description>JDBC datasource to be used</description>
-     	<env-entry-name>DataSource</env-entry-name>
-     	<env-entry-type>java.lang.String</env-entry-type>
-     	<env-entry-value>java:/DefaultDS</env-entry-value>
+        <description>JDBC datasource to be used</description>
+        <env-entry-name>DataSource</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>java:/DefaultDS</env-entry-value>
      </env-entry>
 
     <security-identity>
@@ -224,11 +275,37 @@
      <ejb-class>se.anatom.ejbca.ca.crl.CreateCRLSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>     
+
+     <ejb-ref>
+        <description>The Certificate entity bean used manipulate certificates</description>
+        <ejb-ref-name>ejb/CertificateData</ejb-ref-name>
+        <ejb-ref-type>entity</ejb-ref-type>
+        <home>se.anatom.ejbca.ca.store.CertificateDataHome</home>
+        <remote>se.anatom.ejbca.ca.store.CertificateData</remote>
+        <ejb-link>CertificateData</ejb-link>
+     </ejb-ref>
+     <ejb-ref>
+        <description>The Certificate store used to store and fetch certificates</description>
+        <ejb-ref-name>ejb/CertificateStoreSession</ejb-ref-name>
+        <ejb-ref-type>session</ejb-ref-type>
+        <home>se.anatom.ejbca.ca.store.ICertificateStoreSessionHome</home>
+        <remote>se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote</remote>
+        <ejb-link>CertificateStoreSession</ejb-link>
+     </ejb-ref>
+     <ejb-ref>
+        <description>The signing session used to create CRL</description>
+        <ejb-ref-name>ejb/SignSession</ejb-ref-name>
+        <ejb-ref-type>session</ejb-ref-type>
+        <home>se.anatom.ejbca.ca.store.ISignSessionHome</home>
+        <remote>se.anatom.ejbca.ca.store.ISignSessionRemote</remote>
+        <ejb-link>RSASignSession</ejb-link>
+     </ejb-ref>
+
      <env-entry>
-     	<description>Period in hours between CRLs beeing issued</description>
-     	<env-entry-name>CRLPeriod</env-entry-name>
-     	<env-entry-type>java.lang.Long</env-entry-type>
-     	<env-entry-value>24</env-entry-value>
+        <description>Period in hours between CRLs beeing issued</description>
+        <env-entry-name>CRLPeriod</env-entry-name>
+        <env-entry-type>java.lang.Long</env-entry-type>
+        <env-entry-value>24</env-entry-value>
      </env-entry>
    </session>
 
@@ -243,46 +320,46 @@
      <transaction-type>Container</transaction-type>     
 
      <env-entry>
-     	<description>LDAP host</description>
-     	<env-entry-name>ldapHost</env-entry-name>
-     	<env-entry-type>java.lang.String</env-entry-type>
-     	<env-entry-value>localhost</env-entry-value>
+        <description>LDAP host</description>
+        <env-entry-name>ldapHost</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>localhost</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>LDAP port</description>
-     	<env-entry-name>ldapPort</env-entry-name>
-     	<env-entry-type>java.lang.Integer</env-entry-type>
-     	<env-entry-value>389</env-entry-value>
+        <description>LDAP port</description>
+        <env-entry-name>ldapPort</env-entry-name>
+        <env-entry-type>java.lang.Integer</env-entry-type>
+        <env-entry-value>389</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>DN used to login to LDAP server</description>
-     	<env-entry-name>loginDN</env-entry-name>
-     	<env-entry-type>java.lang.String</env-entry-type>
-     	<env-entry-value>cn=Admin,o=AnaTom,c=SE</env-entry-value>
+        <description>DN used to login to LDAP server</description>
+        <env-entry-name>loginDN</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>cn=Admin,o=AnaTom,c=SE</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>Password used to login to LDAP server.</description>
-     	<env-entry-name>loginPassword</env-entry-name>
-     	<env-entry-type>java.lang.String</env-entry-type>
-     	<env-entry-value>foo123</env-entry-value>
+        <description>Password used to login to LDAP server.</description>
+        <env-entry-name>loginPassword</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>foo123</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>The base DN handled by the LDAP server.</description>
-     	<env-entry-name>containerName</env-entry-name>
-     	<env-entry-type>java.lang.String</env-entry-type>
-     	<env-entry-value>o=AnaTom,c=SE</env-entry-value>
+        <description>The base DN handled by the LDAP server.</description>
+        <env-entry-name>containerName</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>o=AnaTom,c=SE</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>objectclass for storing user entries.</description>
-     	<env-entry-name>userObjectclass</env-entry-name>
-     	<env-entry-type>java.lang.String</env-entry-type>
-     	<env-entry-value>inetOrgPerson</env-entry-value>
+        <description>objectclass for storing user entries.</description>
+        <env-entry-name>userObjectclass</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>inetOrgPerson</env-entry-value>
      </env-entry>
      <env-entry>
-     	<description>objectclass for storing CA entries.</description>
-     	<env-entry-name>cAObjectclass</env-entry-name>
-     	<env-entry-type>java.lang.String</env-entry-type>
-     	<env-entry-value>certificateAuthority</env-entry-value>
+        <description>objectclass for storing CA entries.</description>
+        <env-entry-name>cAObjectclass</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>certificateAuthority</env-entry-value>
      </env-entry>
    </session>
 
