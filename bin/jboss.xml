@@ -1,6 +1,11 @@
 <project name="jboss" basedir=".." default="j2ee:deploy">
 	<property environment="env"/>
 
+    <property name="jboss.home" value="${env.JBOSS_HOME}"/>
+	<property name="jboss.deploy.dir" location="${jboss.home}/server/default/deploy"/>
+	<property name="jboss.server.home.dir" location="${jboss.deploy.dir}/.."/>
+	<property name="keystore.file" value="conf/keystore/keystore.jks"/>
+
 	<property name="jboss.deploy.dir" location="${jboss.home}/server/default/deploy"/>
 	<property name="jboss.server.home.dir" location="${jboss.deploy.dir}/.."/>
 	<property name="keystore.file" value="conf/keystore/keystore.jks"/>
@@ -20,9 +25,6 @@
             we could have a dedicated jboss for ejbca, so give users a chance to override
             otherwise, try to pick the one from environment if it exists
             -->
-        <condition property="jboss.home" value="${env.JBOSS_HOME}">
-            <available file="${env.JBOSS_HOME}" type="dir"/>
-        </condition>
         <fail message="Please set the property 'jboss.home' for this project" unless="jboss.home"/>
         <available file="${jboss.home}/client/jboss-j2ee.jar" property="jboss.home.valid"/>
         <fail message="'jboss.home' (${jboss.home}) does not seem to be a valid JBoss home directory" unless="jboss.home.valid"/>

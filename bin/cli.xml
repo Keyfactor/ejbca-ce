@@ -9,7 +9,7 @@
 
     <property name="lib.dir" location="${ejbca.home}/lib"/>
 
-    <available file="${ejbca.home}/dist/admin.jar" property="bootstrap.done"/>
+    <available file="${ejbca.home}/dist/ejbca-ca.ear" property="bootstrap.done"/>
 
     <path id="classpath">
          <!-- need to pickup jndi.properties and log4j.properties -->
@@ -54,7 +54,7 @@
 	  EJBCA need to be run before the app.server (or the webapp) is fully ssl configured with the keystore
 	  So we are 'bootstrapping' it, the 'j2ee.web-noconfigure' property will skip all the serverside
 	  -->
-    <target name="ejbca:bootstrap" unless="bootstrap.done" description="Bootstrap EJBCA application">
+    <target name="ejbca:bootstrap" description="Bootstrap EJBCA application">
         <ant dir="${ejbca.home}" target="deploy">
         	<property name="j2ee.web-noconfigure" value="true"/>
         </ant>
@@ -64,7 +64,7 @@
         <ant dir="${ejbca.home}" target="clean"/>
     </target>
 
-    <target name="ejbca:init" depends="ejbca:bootstrap,ejbca:noprompt,ejbca:prompt">
+    <target name="ejbca:init" unless="bootstrap.done" depends="ejbca:noprompt,ejbca:prompt">
     <echo>
 ------------------- CA Properties ----------------
 ca.name             : ${ca.name}

@@ -94,26 +94,6 @@ import se.anatom.ejbca.util.Hex;
  *
  * @ejb.permission role-name="InternalUser"
  *
- * @ejb.env-entry description="Password for server keystore, comment out to prompt for pwd"
- *   name="keyStorePass"
- *   type="java.lang.String"
- *   value="foo123"
- *
- * @ejb.env-entry description="Password for CA private key, only used for JKS-keystore. Leave as null for PKCS12-keystore, comment out to prompt"
- *   name="privateKeyPass"
- *   type="java.lang.String"
- *   value="null"
- *
- * @ejb.env-entry description="Password for OCSP keystores"
- *   name="OCSPKeyStorePass"
- *   type="java.lang.String"
- *   value="foo123"
- *
- * @ejb.env-entry description="Password for OCSP keystores private key protection"
- *   name="privateOCSPKeyPass"
- *   type="java.lang.String"
- *   value="foo123"
- *
  * @ejb.env-entry description="Name of PRNG algorithm used for random source - refer to Appendix A in the
  * Java Cryptography Architecture API Specification And Reference for
  * information about standard PRNG algorithm names"
