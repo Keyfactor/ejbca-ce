@@ -1,4 +1,4 @@
-$Id: README,v 1.80 2003-03-31 07:39:11 anatom Exp $
+$Id: README,v 1.81 2003-04-01 08:48:35 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -937,6 +937,10 @@ There is some bug that required a "nocache" meta tag to
 eliminate duplicate sending of certificate request. This
 duplicate sending will result in wrong behaviour, since user
 status will be wrong.
+<HEAD>
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<META HTTP-EQUIV="Expires" CONTENT="-1">
+</HEAD>
 
 Microsoft Smart Card Logon certificates:
 http://support.microsoft.com/default.aspx?scid=kb;EN-US;q281245
