@@ -1,0 +1,28 @@
+<HTML>
+<HEAD>
+<TITLE>EJBCA Demo Certificate Enrollment</TITLE>
+<link rel="stylesheet" href="indexmall.css" type="text/css">
+</HEAD>
+<BODY  link="black" vlink="black" alink="black">
+      <div align="center">
+        <span class="titel">Demo Certificate Enrollment</span>
+        <p>
+          <span class="text">Enrollment for a Certificate can be made:<br>
+          <a href="demo_apply_unknown.html">for your browser</a> (Mozilla/Netscape/IE).
+      </div>
+
+<SCRIPT LANGUAGE="JavaScript">
+var browserName = navigator.appName;
+var browserNum = parseInt(navigator.appVersion);
+linkSelector ();
+function linkSelector () {
+        if(browserName == "Netscape") {
+                document.links[0].href = "demo_apply_nav.html";
+        }
+    else if ((browserName == "Microsoft Internet Explorer") &&(browserNum>= 4)) {
+                document.links[0].href = "demo_apply_exp.html";
+        }
+}
+</SCRIPT>
+</BODY>
+</html>
