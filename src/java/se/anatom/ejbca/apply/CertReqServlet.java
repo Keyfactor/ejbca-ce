@@ -58,7 +58,7 @@ import se.anatom.ejbca.util.FileTools;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.10 2002-01-26 16:18:52 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.11 2002-01-30 12:50:58 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
@@ -106,9 +106,11 @@ public class CertReqServlet extends HttpServlet {
                 byte[] certs = nsCertRequest(reqBytes, username, password, debug);
                 cat.debug("Received NS request:"+new String(reqBytes));
                 sendNewCertToNSClient(certs, response);
-            } else if (request.getParameter("pkcs10") != null) {
+            } else if ( (request.getParameter("pkcs10") != null) || (request.getParameter("PKCS10") != null) ) {
                 // if not netscape, check if it's IE
                 byte[] reqBytes=request.getParameter("pkcs10").getBytes();
+                if (reqBytes == null)
+                    reqBytes=request.getParameter("PKCS10").getBytes();
                 cat.debug("Received IE request:"+new String(reqBytes));
                 byte[] b64cert=pkcs10CertRequest(
                     reqBytes, username, password, debug);
