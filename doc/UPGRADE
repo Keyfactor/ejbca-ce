@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.2 2004-05-09 09:13:45 anatom Exp $
+$Id: UPGRADE,v 1.3 2004-05-09 09:14:16 anatom Exp $
 
 UPGRADE
 =======
@@ -32,3 +32,6 @@ Access rules and administrator groups - If you have several administrators with 
 the access rules needs to be rebuilt using the Admin GUI.
 
 Hard Tokens - If you issued hard tokens with ejbca 2. You must remake your structure with issuers and profiles.
+
+* If you absolutely need any of this data, please contact us.
+
