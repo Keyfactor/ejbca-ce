@@ -59,12 +59,12 @@ import se.anatom.ejbca.PropertyEntityPK;
  *
  * @ejb.finder
  *   description="findByProperty"
- *   signature="se.anatom.ejbca.BasePropertyDataLocal findByProperty(java.lang.String, java.lang.String)"
+ *   signature="se.anatom.ejbca.BasePropertyDataLocal findByProperty(java.lang.String id, java.lang.String property)"
  *   query="SELECT DISTINCT OBJECT(a) from HardTokenPropertyEntityBean a WHERE a.id =?1 AND a.property=?2"
  *
  * @ejb.finder
  *   description="findIdsByPropertyAndValue"
- *   signature="Collection findIdsByPropertyAndValue(java.lang.String, java.lang.String)"
+ *   signature="Collection findIdsByPropertyAndValue(java.lang.String property, java.lang.String value)"
  *   query="SELECT DISTINCT OBJECT(a) from HardTokenPropertyEntityBean a WHERE a.property =?1 AND a.value=?2"
  */
 public abstract class HardTokenPropertyEntityBean extends BasePropertyEntityBean {

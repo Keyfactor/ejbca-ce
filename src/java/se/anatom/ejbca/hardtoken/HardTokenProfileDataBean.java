@@ -69,7 +69,7 @@ import se.anatom.ejbca.hardtoken.hardtokenprofiles.SwedishEIDProfile;
  *
  * @ejb.finder
  *   description="findByName"
- *   signature="se.anatom.ejbca.hardtoken.HardTokenProfileDataLocal findByName(java.lang.String)"
+ *   signature="se.anatom.ejbca.hardtoken.HardTokenProfileDataLocal findByName(java.lang.String name)"
  *   query="SELECT DISTINCT OBJECT(a) from HardTokenProfileDataBean a WHERE a.name=?1"
  *
  */

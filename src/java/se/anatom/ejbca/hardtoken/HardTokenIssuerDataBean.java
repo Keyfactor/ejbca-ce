@@ -64,7 +64,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *
  * @ejb.finder
  *   description="findByAlias"
- *   signature="se.anatom.ejbca.hardtoken.HardTokenIssuerDataLocal findByAlias(java.lang.String)"
+ *   signature="se.anatom.ejbca.hardtoken.HardTokenIssuerDataLocal findByAlias(java.lang.String alias)"
  *   query="SELECT DISTINCT OBJECT(a) from HardTokenIssuerDataBean a WHERE a.alias=?1"
  */
 public abstract class HardTokenIssuerDataBean extends BaseEntityBean {

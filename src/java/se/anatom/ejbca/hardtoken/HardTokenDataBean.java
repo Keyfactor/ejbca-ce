@@ -69,7 +69,7 @@ import se.anatom.ejbca.util.StringTools;
  *
  * @ejb.finder
  *   description="findByUsername"
- *   signature="Collection findByUsername(java.lang.String)"
+ *   signature="Collection findByUsername(java.lang.String username)"
  *   query="SELECT DISTINCT OBJECT(a) from HardTokenDataBean a WHERE a.username=?1"
  *
  */
