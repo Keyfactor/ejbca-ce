@@ -212,8 +212,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
   </target>
 
   <!-- =================================================================== -->
-  <!-- Build webdist part                                                    
--->
+  <!-- Build webdist part                                                  -->
   <!-- =================================================================== -->
   <target name="webdist.war" depends="compile">
     <mkdir    dir="${webdist.build}"/>
@@ -243,9 +242,8 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
     <jar basedir="${webdist.build}" jarfile="${webdistjar}"/>    
   </target>
   
-    <!-- =================================================================== -->
-  <!-- Build raadmin web part                                                    
--->
+  <!-- =================================================================== -->
+  <!-- Build raadmin web part                                              -->
   <!-- =================================================================== -->
   <target name="raadmin.war" depends="compile">
     <mkdir    dir="${raadmin.build}"/>
@@ -261,6 +259,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>         
                 <include name="se/anatom/ejbca/ca/store/certificatetypes/*.class"/>                        
                 <include name="se/anatom/ejbca/ra/*.class"/>
+                <include name="se/anatom/ejbca/ra/authorization/*.class"/>      
                 <include name="se/anatom/ejbca/ra/raadmin/*.class"/>
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
                 <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
