@@ -56,8 +56,11 @@ The JDBC section should look something like:
        <attribute name="JDBCUser">root</attribute>
        <attribute name="Password">yourpassword</attribute>
        <attribute name="MaxSize">10</attribute>
-       <attribute name="MinSize">0</attribute>
-       <attribute name="IdleTimeout">1800000</attribute>
+       <attribute name="MinSize">1</attribute>
+       <attribute name="GCInterval">450000</attribute>
+       <attribute name="GCEnabled">true</attribute>
+       <attribute name="IdleTimeout">900000</attribute>
+       <attribute name="IdleTimeoutEnabled">true</attribute>
        <attribute name="MaxIdleTimeoutPercent">1.0</attribute>
      </mbean>
 
@@ -67,3 +70,4 @@ The JDBC section should look something like:
 
 7. DONE! Start JBoss. Run all tests with 'runtest.sh/cmd'.
    Use your favorite mySQL graphic editor to look at the beautiful tables.
+
