@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.7 2002-01-08 08:04:26 anatom Exp $
+ * @version $Id: CertTools.java,v 1.8 2002-01-25 11:49:15 anatom Exp $
  */
 public class CertTools {
 
@@ -146,7 +146,7 @@ public class CertTools {
      * @return String containing dnpart or null if dnpart is not present
      */
     public static String getPartFromDN(String dn, String dnpart) {
-        cat.debug(">getPartFromDN: dn=" + dn+", dnpart="+dnpart);
+        cat.debug(">getPartFromDN: dn:'" + dn+"', dnpart="+dnpart);
         String trimmeddn = dn.trim();
         String part = null, o = null;
         StringTokenizer st = new StringTokenizer(trimmeddn, ",=");
@@ -156,7 +156,7 @@ public class CertTools {
                 part = st.nextToken();
             }
         }
-        cat.debug("<getpartFromDN: dnpart="+part);
+        cat.debug("<getpartFromDN: resulting DN part="+part);
         return part;
     } //getCNFromDN
 

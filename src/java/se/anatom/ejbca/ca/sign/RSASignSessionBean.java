@@ -38,7 +38,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.11 2002-01-24 14:31:51 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.12 2002-01-25 11:49:14 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -232,9 +232,9 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
                     System.out.println("Setting new keyusage...");
                     // If this is a CA, we only allow CA-type keyUsage
                     Arrays.fill(keyusage, false);
-                    // digitalSignature
+                    // certificateSign
                     keyusage[5] = true;
-                    // keyEncipherment
+                    // CRLSign
                     keyusage[6] = true;
                 }
                 X509Certificate cert = makeBCCertificate(data, caSubjectName, validity.longValue(), pk, sunKeyUsageToBC(keyusage));
