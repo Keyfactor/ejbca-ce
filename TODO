@@ -1,4 +1,4 @@
-$Id: TODO,v 1.68 2003-08-29 07:09:49 anatom Exp $
+$Id: TODO,v 1.69 2003-08-29 12:57:49 anatom Exp $
 
 V 1.x
 -----
@@ -6,6 +6,7 @@ V 1.x
 
 V 2.x
 -----
+- Clean javacode to use plain us-ascii ( \uXXXX escapes to the rescue?http://java.sun.com/docs/books/jls/second_edition/html/lexical.doc.html#95504)
 - All DNs UTF8 in the DB to work around encoding issues in DB/JDK(?).
 - Make it possible to dynamically configure new OtherNames in subjectAltName.
 - XML format of profiles and konfig (see java.beans.XMLEncoder/XMLDecoder,http://www.fawcette.com/javapro/2003_06/magazine/features/chavener/default_pf.asp)
