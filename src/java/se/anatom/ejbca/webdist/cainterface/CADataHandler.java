@@ -39,6 +39,7 @@ import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.ca.store.CertificateDataBean;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
+import se.anatom.ejbca.exception.EjbcaException;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.IRequestMessage;
 import se.anatom.ejbca.protocol.IResponseMessage;
@@ -232,6 +233,14 @@ public class CADataHandler implements Serializable {
 		certificatesession.revokeCertificate(administrator,ocspcert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);	  	 
 	  }
 	}  
+ }
+ 
+ public void activateCAToken(int caid, String authorizationcode) throws AuthorizationDeniedException, CATokenAuthenticationFailedException, CATokenOfflineException {
+   caadminsession.activateCAToken(administrator,caid,authorizationcode);	
+ }
+ 
+ public void deactivateCAToken(int caid) throws AuthorizationDeniedException, EjbcaException{
+    caadminsession.deactivateCAToken(administrator, caid);	
  }
    
   private ICAAdminSessionLocal           caadminsession; 

@@ -3,20 +3,13 @@
                  se.anatom.ejbca.webdist.cainterface.CAInfoView, se.anatom.ejbca.util.CertTools, se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.SecConst,
                  se.anatom.ejbca.authorization.AuthorizationDeniedException,
                  javax.ejb.CreateException, java.rmi.RemoteException" %>
+
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
+<jsp:useBean id="viewcainfohelper" scope="session" class="se.anatom.ejbca.webdist.cainterface.ViewCAInfoJSPHelper" />
 
-<%! // Declarations
- 
-  static final String CA_PARAMETER           = "caid";
-
-  static final String CERTSERNO_PARAMETER       = "certsernoparameter"; 
-
-  static final String BUTTON_CLOSE             = "buttonclose"; 
-
-
-%><%
+<%
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ca_functionality/basic_functions"); 
                                             cabean.initialize(request, ejbcawebbean);
@@ -24,32 +17,9 @@
 
   final String VIEWCERT_LINK            = globalconfiguration.getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
 
-  boolean nocaparameter          = true;
-  boolean notauthorized            = false;
-
+  viewcainfohelper.initialize(request, ejbcawebbean, cabean);
+  viewcainfohelper.parseRequest(request);
   
-  CAInfoView cainfo = null;
-  String[] cainfodata = null;
-  String[] cainfotexts = null;
-  int caid = 0; 
-  java.security.cert.X509Certificate ocspcert = null;
-   
-
-  if( request.getParameter(CA_PARAMETER) != null ){
-    caid = Integer.parseInt(request.getParameter(CA_PARAMETER));
-    try{
-      cainfo = cabean.getCAInfo(caid);
-      ocspcert = cainfo.getOCSPSignerCertificate();
-    } catch(AuthorizationDeniedException e){
-       notauthorized = true;
-    }
-    nocaparameter = false;
-    if(cainfo!=null){
-      cainfodata  = cainfo.getCAInfoData();
-      cainfotexts = cainfo.getCAInfoDataText(); 
-    }
-  }  
-
   int row = 0; 
   int columnwidth = 200;
 %>
@@ -62,7 +32,7 @@
 <SCRIPT language="JavaScript">
 <!--
 function viewocspcert(){        
-    var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>=<%=java.net.URLEncoder.encode(ocspcert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(ocspcert),"UTF-8")%>";
+    var link = "<%= VIEWCERT_LINK %>?<%= viewcainfohelper.CERTSERNO_PARAMETER %>=<%=java.net.URLEncoder.encode(viewcainfohelper.ocspcert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(viewcainfohelper.ocspcert),"UTF-8")%>";
     link = encodeURI(link);
     window.open(link, 'view_cert','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }
@@ -74,41 +44,57 @@ function viewocspcert(){
   <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html")  + "#viewendentity"%>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
   </div>
-  <%if(nocaparameter){%>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYCAID") %></h4></div> 
+  <%if(viewcainfohelper.generalerrormessage != null){%>
+  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText(viewcainfohelper.generalerrormessage) %></h4></div> 
   <% } 
      else{
-       if(cainfo == null){%>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("CADOESNTEXIST") %></h4></div> 
-    <% }
-       else{ 
-         if(notauthorized){ %>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOVIEWCA") %></h4></div> 
-     <%  }else{%>
+       if(viewcainfohelper.activationerrormessage != null){ %>
+  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText(viewcainfohelper.activationerrormessage) %></h4></div> 
+     <%  }       
+         if(viewcainfohelper.activationmessage != null){ %>
+              <div align="center"><h4><%=ejbcawebbean.getText(viewcainfohelper.activationmessage) %></h4></div> 
+     <%  }%>
 
-  <form name="adduser" action="<%= THIS_FILENAME %>" method="post">
-     <input type="hidden" name='<%= CA_PARAMETER %>' value='<%=caid %>'>
+  <form name="viewcainfo" action="<%= THIS_FILENAME %>" method="post">
+     <input type="hidden" name='<%= viewcainfohelper.CA_PARAMETER %>' value='<%=viewcainfohelper.caid %>'>
      <table border="0" cellpadding="0" cellspacing="2" width="400">
-     <% for(int i=0; i < cainfotexts.length; i++){ %>
+     <% for(int i=0; i < viewcainfohelper.cainfo.getCAInfoData().length; i++){ %>
       <tr id="Row<%=(row++)%2%>">
-	<td align="right" width="<%=columnwidth%>"><%= cainfotexts[i] %></td>
-	<td>&nbsp;&nbsp;<%= cainfodata[i] %>
+	<td align="right" width="<%=columnwidth%>"><%= viewcainfohelper.cainfo.getCAInfoDataText()[i] %></td>
+	<td>&nbsp;&nbsp;<%= viewcainfohelper.cainfo.getCAInfoData()[i] %>
         </td>
       </tr>    
       <% } %>
-      <tr id="Row<%=(row++)%2%>">
+     
+     <% if(viewcainfohelper.can_activate && viewcainfohelper.ishardcatoken && viewcainfohelper.status == SecConst.CA_OFFLINE){ %> 
+     <tr id="Row<%=(row++)%2%>">
+  	    <td width="<%=columnwidth%>"></td>
+	    <td>
+ 	         <%= ejbcawebbean.getText("AUTHENTICATIONCODE") + ": " %>
+	         <input type="password" name="<%= viewcainfohelper.PASSWORD_AUTHENTICATIONCODE %>" size="10" maxlength="255"  value=''>
+             <input type="submit" name="<%= viewcainfohelper.BUTTON_ACTIVATE %>" value="<%= ejbcawebbean.getText("ACTIVATE") %>" onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSUREACTIVATECA") %>")'>
+        </td>
+      </tr> 
+     <% }
+        if(viewcainfohelper.can_activate && viewcainfohelper.ishardcatoken && viewcainfohelper.status == SecConst.CA_ACTIVE){ %>     
+     <tr id="Row<%=(row++)%2%>">
 	 <td width="<%=columnwidth%>"></td>
 	 <td>
-             <input type="reset" name="<%= BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="20"
-                    onClick='self.close()'>
+             <input type="submit" name="<%= viewcainfohelper.BUTTON_MAKEOFFLINE %>" value="<%= ejbcawebbean.getText("MAKEOFFLINE") %>" onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSUREMAKECAOFFLINE") %>")'>
          </td>
+      </tr>           
+     <% } %>      
+      <tr id="Row<%=(row++)%2%>">
+	    <td width="<%=columnwidth%>"></td>
+	    <td>
+             <input type="button" name="<%= viewcainfohelper.BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" 
+                    onClick='self.close()'>
+        </td>
       </tr> 
      </table> 
    </form>
    <p></p>
-   <% }
-    }
-   }%>
+   <% }%>
 
 </body>
 </html>

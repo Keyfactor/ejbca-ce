@@ -82,7 +82,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.30 2004-11-02 08:22:08 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.31 2004-11-13 00:42:17 herrvendil Exp $
  *
  * @ejb.bean description="Session bean manging CAs"
  *   display-name="CAAdminSB"
@@ -1248,10 +1248,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public void activateCAToken(Admin admin, int caid, String authorizationcode) throws AuthorizationDeniedException, CATokenAuthenticationFailedException, CATokenOfflineException{
-       // Authorize, Check that admin is superadministrator.
-       // TODO, make this possible for CAAdministrators
+       // Authorize
         try{
-            getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
+            getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.REGULAR_ACTIVATECA);
         }catch(AuthorizationDeniedException ade){
             getLogSession().log (admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Administrator isn't authorized to activate CA token.",ade);
             throw new AuthorizationDeniedException("Administrator not authorized to activate CA token.");
@@ -1287,10 +1286,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public void deactivateCAToken(Admin admin, int caid) throws AuthorizationDeniedException, EjbcaException{
-       // Authorize, Check that admin is superadministrator.
-       // TODO, make this possible for CAAdministrators
+       // Authorize
         try{
-            getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
+            getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.REGULAR_ACTIVATECA);
         }catch(AuthorizationDeniedException ade){
             getLogSession().log (admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Administrator isn't authorized to deactivate CA token.",ade);
             throw new AuthorizationDeniedException("Administrator not authorized to deactivate CA token.");

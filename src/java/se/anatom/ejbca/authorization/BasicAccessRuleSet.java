@@ -17,25 +17,25 @@ package se.anatom.ejbca.authorization;
  * A class containing constats used when configuring Basic Access Rule Set 
  *
  * @author  herrvendil 
- * @version $Id: BasicAccessRuleSet.java,v 1.3 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: BasicAccessRuleSet.java,v 1.4 2004-11-13 00:42:16 herrvendil Exp $
  */
 public class BasicAccessRuleSet implements java.io.Serializable {
 
-	public static final int ROLE_NONE                           = 0;
-    public static final int ROLE_SUPERADMINISTRATOR = 1;
+	public static final int ROLE_NONE                  = 0;
+    public static final int ROLE_SUPERADMINISTRATOR    = 1;
     public static final int ROLE_CAADMINISTRATOR       = 2;
     public static final int ROLE_RAADMINISTRATOR       = 3;
-    public static final int ROLE_SUPERVISOR                 = 4;
+    public static final int ROLE_SUPERVISOR            = 4;
     public static final int ROLE_HARDTOKENISSUER       = 5;
 
-    public static final int ENDENTITY_VIEW                      = 2;
-    public static final int ENDENTITY_VIEWHISTORY         = 4;
-    public static final int ENDENTITY_VIEWHARDTOKENS  = 8;    
-    public static final int ENDENTITY_CREATE                   = 16;    
-    public static final int ENDENTITY_EDIT                        = 32;
-    public static final int ENDENTITY_DELETE                    = 64;
-    public static final int ENDENTITY_REVOKE                   = 128;
-    public static final int ENDENTITY_KEYRECOVER           = 256;
+    public static final int ENDENTITY_VIEW             = 2;
+    public static final int ENDENTITY_VIEWHISTORY      = 4;
+    public static final int ENDENTITY_VIEWHARDTOKENS   = 8;    
+    public static final int ENDENTITY_CREATE           = 16;    
+    public static final int ENDENTITY_EDIT             = 32;
+    public static final int ENDENTITY_DELETE           = 64;
+    public static final int ENDENTITY_REVOKE           = 128;
+    public static final int ENDENTITY_KEYRECOVER       = 256;
     
     public static final int ENDENTITYPROFILE_ALL  = 0;
     

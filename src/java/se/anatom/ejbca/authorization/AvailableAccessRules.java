@@ -29,7 +29,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 /**
  * 
  *
- * @version $Id: AvailableAccessRules.java,v 1.8 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: AvailableAccessRules.java,v 1.9 2004-11-13 00:42:16 herrvendil Exp $
  */
 public class AvailableAccessRules {
         
@@ -64,7 +64,8 @@ public class AvailableAccessRules {
     
     
     public static final String REGULAR_CAFUNCTIONALTY                             = "/ca_functionality";
-    public static final String REGULAR_CABASICFUNCTIONS                           = "/ca_functionality/basic_functions";    
+    public static final String REGULAR_CABASICFUNCTIONS                           = "/ca_functionality/basic_functions";
+    public static final String REGULAR_ACTIVATECA                                 = "/ca_functionality/basic_functions/activate_ca";    
     public static final String REGULAR_VIEWCERTIFICATE                            = "/ca_functionality/view_certificate";    
     public static final String REGULAR_CREATECRL                                  = "/ca_functionality/create_crl";    
     public static final String REGULAR_EDITCERTIFICATEPROFILES                    = "/ca_functionality/edit_certificate_profiles";    
@@ -96,6 +97,7 @@ public class AvailableAccessRules {
         // Standard Regular Access Rules
     private  final  String[] STANDARDREGULARACCESSRULES = {REGULAR_CAFUNCTIONALTY, 
                                                            REGULAR_CABASICFUNCTIONS,
+                                                           REGULAR_ACTIVATECA,
                                                            REGULAR_VIEWCERTIFICATE, 
                                                            REGULAR_CREATECRL,
                                                            REGULAR_EDITCERTIFICATEPROFILES,                                                           
