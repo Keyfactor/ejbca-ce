@@ -212,7 +212,6 @@ public class RequestHelper {
         String responseTemplate, String classid) throws Exception {
         if (b64cert.length == 0) {
             log.error("0 length certificate can not be sent to IE client!");
-
             return;
         }
 
@@ -251,7 +250,6 @@ public class RequestHelper {
         throws Exception {
         if (certs.length == 0) {
             log.error("0 length certificate can not be sent to NS client!");
-
             return;
         }
 
@@ -278,8 +276,16 @@ public class RequestHelper {
         throws Exception {
         if (b64cert.length == 0) {
             log.error("0 length certificate can not be sent to client!");
-
             return;
+        }
+
+        if (out.containsHeader("Pragma")) {
+            log.debug("Removing Pragma header to avoid caching issues in IE");
+            out.setHeader("Pragma",null);
+        }
+        if (out.containsHeader("Cache-Control")) {
+            log.debug("Removing Cache-Control header to avoid caching issues in IE");
+            out.setHeader("Cache-Control",null);
         }
 
         // Set content-type to general file
