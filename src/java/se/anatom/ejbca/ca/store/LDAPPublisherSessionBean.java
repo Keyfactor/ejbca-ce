@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.*;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.7 2002-06-04 14:37:07 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.8 2002-06-28 06:58:16 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
 
@@ -89,7 +89,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
      * @return true if storage was succesful.
      * @throws EJBException if a communication or other error occurs.
      */
-    public boolean storeCRL(byte[] incrl, String cafp, int number) throws RemoteException {
+    public boolean storeCRL(byte[] incrl, String cafp, int number) {
 
         int ldapVersion  = LDAPConnection.LDAP_V3;
         LDAPConnection lc = new LDAPConnection();
@@ -182,7 +182,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
      * @return true if storage was succesful.
      * @throws EJBException if a communication or other error occurs.
      */
-    public boolean storeCertificate(Certificate incert, String cafp, int status, int type) throws RemoteException {
+    public boolean storeCertificate(Certificate incert, String cafp, int status, int type) {
 
         int ldapVersion  = LDAPConnection.LDAP_V3;
         LDAPConnection lc = new LDAPConnection();

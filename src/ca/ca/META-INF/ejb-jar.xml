@@ -181,6 +181,19 @@
         <local>se.anatom.ejbca.ca.store.IAuthenticationSessionLocal</local>
         <ejb-link>AuthenticationSession</ejb-link>
      </ejb-local-ref>
+<!-- Uncomment to use LDAP publisher
+     <ejb-local-ref>
+        <description>
+                Publishers are configured to store certificates and CRLs in addiotional places
+                from the main database. Publishers runs as local beans.
+        </description>
+        <ejb-ref-name>ejb/PublisherSession1</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ca.store.IPublisherSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.store.IPublisherSessionLocal</local>
+        <ejb-link>PublisherSession1</ejb-link>
+     </ejb-local-ref>
+END LDAP Publisher -->
     <security-identity>
         <run-as>
             <role-name>InternalUser</role-name>
@@ -323,8 +336,7 @@
 
    </session>
 
-<!-- Uncomment to use LDAP Publisher
-
+<!-- Uncomment to use LDAP publisher
    <session>
      <ejb-name>PublisherSession1</ejb-name>
      <home>se.anatom.ejbca.ca.store.IPublisherSessionHome</home>
@@ -378,8 +390,7 @@
         <env-entry-value>certificateAuthority</env-entry-value>
      </env-entry>
    </session>
-
- END LDAP Publisher section -->
+END LDAP Publisher -->
 
    <entity>
       <description>
@@ -532,12 +543,13 @@
          <method-name>*</method-name>
      </method>
 
-<!-- Uncomment for LDAP Publisher
+<!-- Uncomment to use LDAP publisher
      <method>
          <ejb-name>PublisherSession1</ejb-name>
          <method-name>*</method-name>
      </method>
--->
+END LDAP Publisher -->
+
      <method>
          <ejb-name>CertificateStoreSession</ejb-name>
          <method-name>storeCRL</method-name>
@@ -625,12 +637,13 @@
          <method-intf>Remote</method-intf>
          <method-name>*</method-name>
      </method>
-<!-- Uncomment for LDAP Publisher
+<!-- Uncomment to use LDAP publisher
      <method>
          <ejb-name>PublisherSession1</ejb-name>
          <method-name>*</method-name>
      </method>
--->
+END LDAP Publisher -->
+
    <trans-attribute>Required</trans-attribute>
    </container-transaction>       
 

@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.32 2002-06-07 12:21:34 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.33 2002-06-28 06:58:16 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -92,7 +92,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             publishers = new Vector(0);
             try {
                 while (true) {
-                    String jndiName = "PublisherSession" + i;
+                    String jndiName = "java:comp/env/ejb/PublisherSession" + i;
                     IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)lookup(jndiName);
                     publishers.add(pubHome);
                     info("Added publisher class '"+pubHome.getClass().getName()+"'");
@@ -396,10 +396,12 @@ public class RSASignSessionBean extends BaseSessionBean {
             // Store CRL in the database
             certificateStore.storeCRL(crl.getEncoded(), CertTools.getFingerprintAsString(caCert), number);
             for (int i=0;i<publishers.size();i++) {
-                ((IPublisherSessionLocal)(publishers.get(i))).storeCRL(crl.getEncoded(), CertTools.getFingerprintAsString(caCert), number);
+                IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(i);
+                IPublisherSessionLocal pub = pubHome.create();
+                pub.storeCRL(crl.getEncoded(), CertTools.getFingerprintAsString(caCert), number);
             }
         } catch (Exception e) {
-            throw new EJBException(e.toString());
+            throw new EJBException(e);
         }
         debug("<createCRL()");
         return crl;
