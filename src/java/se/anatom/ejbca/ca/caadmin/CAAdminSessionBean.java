@@ -62,7 +62,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.6 2003-11-14 14:59:57 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.7 2003-11-20 14:49:16 anatom Exp $
  */
 public class CAAdminSessionBean extends BaseSessionBean {
     
@@ -98,15 +98,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
         dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
         debug("DataSource=" + dataSource);
         cadatahome = (CADataLocalHome)lookup("java:comp/env/ejb/CADataLocal");
-        
-        
         // Install BouncyCastle provider if it doesnt exists
-      //  if( Security.getProvider("BC") == null){
-          Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
-          Security.addProvider(BCJce);
-      //  }  
-
-        
+        Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
+        Security.addProvider(BCJce);
         debug("<ejbCreate()");
     }
     

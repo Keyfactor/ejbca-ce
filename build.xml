@@ -159,7 +159,11 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </copy>
   
     <!-- Jar the apply.war package together -->
-    <jar basedir="${apply.build}" jarfile="${applyjar}"/>    
+    <jar basedir="${apply.build}" jarfile="${applyjar}">    
+        <manifest>
+            <attribute name="Class-Path" value="${jar.classpath}"/>
+        </manifest>
+    </jar>
   </target>
   
     <!-- =================================================================== -->
@@ -270,7 +274,11 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </copy>
     
     <!-- Jar the log.jar package together -->
-    <jar basedir="${log.build}" jarfile="${logjar}"/>    
+    <jar basedir="${log.build}" jarfile="${logjar}">    
+        <manifest>
+            <attribute name="Class-Path" value="${jar.classpath}"/>
+        </manifest>
+    </jar>
   </target>  
 
   <!-- =================================================================== -->
@@ -299,7 +307,11 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
-    <jar basedir="${authorization.build}" jarfile="${authorizationjar}"/>    
+    <jar basedir="${authorization.build}" jarfile="${authorizationjar}">    
+        <manifest>
+            <attribute name="Class-Path" value="${jar.classpath}"/>
+        </manifest>
+    </jar>
   </target>      
   
   <!-- =================================================================== -->
@@ -330,7 +342,11 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
-    <jar basedir="${hardtoken.build}" jarfile="${hardtokenjar}"/>    
+    <jar basedir="${hardtoken.build}" jarfile="${hardtokenjar}">    
+        <manifest>
+            <attribute name="Class-Path" value="${jar.classpath}"/>
+        </manifest>
+    </jar>
   </target>    
   
   <!-- =================================================================== -->
@@ -357,7 +373,11 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         </fileset>
     </copy>
     
-    <jar basedir="${keyrecovery.build}" jarfile="${keyrecoveryjar}"/>    
+    <jar basedir="${keyrecovery.build}" jarfile="${keyrecoveryjar}">    
+        <manifest>
+            <attribute name="Class-Path" value="${jar.classpath}"/>
+        </manifest>
+    </jar>
   </target>      
 
 
@@ -426,7 +446,11 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </copy>
   
     <!-- Jar the webdist.war package together -->
-    <jar basedir="${webdist.build}" jarfile="${webdistjar}"/>    
+    <jar basedir="${webdist.build}" jarfile="${webdistjar}">    
+        <manifest>
+            <attribute name="Class-Path" value="${jar.classpath}"/>
+        </manifest>
+    </jar>
   </target>
 
   <!-- =================================================================== -->
@@ -487,7 +511,11 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         </fileset>
     </copy>
     <!-- Jar the demoweb.war package together -->
-    <jar basedir="${demoweb.build}" jarfile="${demowebjar}"/>    
+    <jar basedir="${demoweb.build}" jarfile="${demowebjar}">    
+        <manifest>
+            <attribute name="Class-Path" value="${jar.classpath}"/>
+        </manifest>
+    </jar>
   </target>
 
   <!-- =================================================================== -->
@@ -610,12 +638,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </copy>
   
     <!-- Jar the ear package together -->
-    <jar basedir="${caear.earbuild}" jarfile="${caear}">
-      <manifest>
-      <!--  <attribute name="Class-Path" value="lib/bcmail-jdk14-120.jar lib/bcprov-jdk14-120.jar lib/log4j-1.2.7.jar lib/ldap.jar,lib/commons-lang-1.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar"/> -->
-        
-      </manifest>
-     </jar>    
+    <jar basedir="${caear.earbuild}" jarfile="${caear}"/>
   </target>
 
   <!-- =================================================================== -->
