@@ -16,7 +16,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.46 2003-10-25 09:38:37 anatom Exp $
+ * @version $Id: CertTools.java,v 1.47 2003-11-20 14:55:34 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -73,9 +73,7 @@ public class CertTools {
 
     private static DERObjectIdentifier getOid(String o) {
         return (DERObjectIdentifier) oids.get(o.toLowerCase());
-    }
-
-    // getOid
+    } // getOid
 
     /**
      * Creates a (Bouncycastle) X509Name object from a string with a DN. Known OID (with order)
@@ -153,9 +151,7 @@ public class CertTools {
 
         //log.debug("<stringToBcX509Name");
         return new X509Name(ordering, values);
-    }
-
-    // stringToBcX509Name
+    } // stringToBcX509Name
 
     /**
      * Every DN-string should look the same. Creates a name string ordered and looking like we want
@@ -230,9 +226,7 @@ public class CertTools {
         log.debug("<getpartFromDN: resulting DN part=" + part);
 
         return part;
-    }
-
-    //getCNFromDN
+    } //getCNFromDN
 
     /**
      * Gets subject DN in the format we are sure about (BouncyCastle),supporting UTF8.
@@ -299,7 +293,6 @@ public class CertTools {
     public static String getIssuerDN(X509CRL crl) {
         //log.debug(">getIssuerDN(crl)");
         String dn = null;
-
         try {
             CertificateFactory cf = CertTools.getCertificateFactory();
             X509CRL x509crl = (X509CRL) cf.generateCRL(new ByteArrayInputStream(crl.getEncoded()));
@@ -310,30 +303,22 @@ public class CertTools {
 
             return null;
         }
-
         //log.debug("<getIssuerDN(crl):"+dn);
         return stringToBCDNString(dn);
-    }
-
-    // getIssuerDN
+    } // getIssuerDN
+    
     private static CertificateFactory getCertificateFactory() {
         try {
-            if (Security.getProvider("BC") == null) {
-                // Bouncy Castle security provider
-                if (Security.addProvider(new BouncyCastleProvider()) < 0) {
-                    log.error("Cannot install BC provider!");
-
-                    return null;
-                }
+            if (Security.addProvider(new BouncyCastleProvider()) < 0) {
+                log.error("Cannot install BC provider!");
+                return null;
             }
-
             return CertificateFactory.getInstance("X.509", "BC");
         } catch (NoSuchProviderException nspe) {
             log.error("NoSuchProvider: ", nspe);
         } catch (CertificateException ce) {
             log.error("CertificateException: ", ce);
         }
-
         return null;
     }
 
@@ -448,9 +433,7 @@ public class CertTools {
         log.debug("<getCertfromByteArray:");
 
         return x509cert;
-    }
-
-    // getCertfromByteArray
+    } // getCertfromByteArray
 
     /**
      * Creates X509CRL from byte[].
@@ -476,9 +459,7 @@ public class CertTools {
         log.debug("<getCRLfromByteArray:");
 
         return x509crl;
-    }
-
-    // getCRLfromByteArray
+    } // getCRLfromByteArray
 
     /**
      * Checks if a certificate is self signed by verifying if subject and issuer are the same.
@@ -495,9 +476,7 @@ public class CertTools {
         log.debug("<isSelfSigned:" + ret);
 
         return ret;
-    }
-
-    // isSelfSigned
+    } // isSelfSigned
 
     /**
      * DOCUMENT ME!
@@ -754,9 +733,7 @@ public class CertTools {
         }
 
         return null;
-    }
-
-    // generateSHA1Fingerprint
+    } // generateSHA1Fingerprint
 
     /**
      * Generate a MD5 fingerprint from a byte array containing a X.509 certificate
@@ -775,10 +752,6 @@ public class CertTools {
         }
 
         return null;
-    }
-
-    // generateMD5Fingerprint
-}
-
-
-// CertTools
+    } // generateMD5Fingerprint
+    
+} // CertTools
