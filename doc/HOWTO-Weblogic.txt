@@ -2,15 +2,14 @@
 CONFIGURING Weblogic
 ====================
 
-Note: Probably outdated, EJBCA 2.x should work fine with Weblogic 7.x/8.x
-
-Note: This howto is for EJBCA 1.x, and should be modified for EJBCA 2.x
+Note: EJBCA should work fine with Weblogic 7.x/8.x
 
 1. In the database configured for DefaultPool and DefaultDS in Weblogic, create
-tables for the entity beans, CertificateData, CRLData and UserData.
+tables if weblogic does not do it automagically.
 
 See the file database-tables.sql for table definitions.
-    
+
+Depending on how your database is organized, you may have to do the following:
 
 Don't forget to create public synonyms and access rights for your tables, or
 however you organize the data...
@@ -22,36 +21,16 @@ however you organize the data...
     EJBCA;
     GRANT UPDATE, SELECT, INSERT, DELETE ON EJBCA.CRLDATA TO EJBCA;
     GRANT UPDATE, SELECT, INSERT, DELETE ON EJBCA.USERDATA TO EJBCA;
+    etc...
 
-2. Edit deployment descriptors to sidestep some container differences...
-in both src/ca/META-INF/ejb-jar.xml and src/ra/META-INF/ejb-jar.xml, change the
-entry for DataSource from:
+2. Deploy the beans in weblogic, they should works straight away.
 
-     <env-entry>
-        <description>JDBC datasource to be used</description>
-        <env-entry-name>DataSource</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>java:/DefaultDS</env-entry-value>
-     </env-entry>
-
-to:
-
-     <env-entry>
-        <description>JDBC datasource to be used</description>
-        <env-entry-name>DataSource</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>DefaultDS</env-entry-value>
-     </env-entry>
-
-3. Deploy the beans in weblogic, they should works straight away.
-
-4. Copy weblogic.jar to 'lib'. Edit all commands, i.e. ra.cmd/sh, ca.cmd/sh,
+3. Copy weblogic.jar to 'lib'. Edit all commands, i.e. ra.cmd/sh, ca.cmd/sh,
 batch.cmd/sh, jobrunner.cmd/sh, runtest.cmd/sh. The files are commented so it
 should be obvious what needs to be changed.
 
-5. Edit 'jndi.properties' in the directories 'ejbca' and 'ejbca/src/java' to
+4. Edit 'jndi.properties' in the directories 'ejbca' and 'ejbca/src/java' to
 call Weblogic instead of JBoss.
 
-6. Run 'runtest.cmd/sh' to test the setup.
-
+5. Run 'runtest.cmd/sh' to test the setup.
 
