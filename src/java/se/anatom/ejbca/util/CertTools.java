@@ -16,7 +16,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.41 2003-09-21 10:54:55 anatom Exp $
+ * @version $Id: CertTools.java,v 1.42 2003-09-23 19:34:01 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -167,15 +167,7 @@ public class CertTools {
      */
     public static String stringToBCDNString(String dn) {
         //log.debug(">stringToBcDNString: "+dn);
-        // Take the X509Name as string in the native encoding, and convert to UTF-8
-        //try {
-            //byte[] utf8bytes = stringToBcX509Name(dn).toString().getBytes(); 
-            // Construct a new string from these UTF-8 bytes, US-ASCII does not mess with these...
-            //return new String(utf8bytes);
-            return stringToBcX509Name(dn).toString();
-//        } catch (UnsupportedEncodingException e) {
-//            return stringToBcX509Name(dn).toString();
-//        }
+        return stringToBcX509Name(dn).toString();
         //log.debug("<stringToBcDNString: "+name);
     }
 
