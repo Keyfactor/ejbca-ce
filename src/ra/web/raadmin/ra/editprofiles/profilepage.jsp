@@ -63,43 +63,54 @@ function checkallfields(){
     </tr>
     <tr  id="Row0"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USERNAME") %> <br>
-        <%= ejbcawebbean.getText("REQUIRED") %>
+        <%= ejbcawebbean.getText("USERNAME") %> <br>&nbsp;
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_USERNAME%>" size="40" maxlength="255" 
            value="<% if(profiledata[Profile.USERNAME][Profile.VALUE]!= null) out.write(profiledata[Profile.USERNAME][Profile.VALUE]); %>"><br>
-        <input type="checkbox" name="<%=CHECKBOX_REQUIRED_USERNAME %>" value="<%=CHECKBOX_VALUE %>" 
+           <%= ejbcawebbean.getText("REQUIRED") %>
+           <input type="checkbox" name="<%=CHECKBOX_REQUIRED_USERNAME %>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.USERNAME][Profile.ISREQUIRED]!= null)
                if(profiledata[Profile.USERNAME][Profile.ISREQUIRED].equals(Profile.TRUE))
+                 out.write("CHECKED");
+           %>> 
+        &nbsp;&nbsp;<%= ejbcawebbean.getText("CHANGEABLE") %> 
+        <input type="checkbox" name="<%=CHECKBOX_CHANGEABLE_USERNAME %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(profiledata[Profile.USERNAME][Profile.CHANGEABLE]!= null)
+               if(profiledata[Profile.USERNAME][Profile.CHANGEABLE].equals(Profile.TRUE))
                  out.write("CHECKED");
            %>> 
       </td>
     <tr  id="Row1"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("PASSWORD") %> <br>
-        <%= ejbcawebbean.getText("REQUIRED") %>
+        <%= ejbcawebbean.getText("PASSWORD") %> <br> &nbsp;
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_PASSWORD%>" size="40" maxlength="255" 
            value="<% if(profiledata[Profile.PASSWORD][Profile.VALUE]!= null) out.write(profiledata[Profile.PASSWORD][Profile.VALUE]); %>"><br>
-        <input type="checkbox" name="<%=CHECKBOX_REQUIRED_PASSWORD %>" value="<%=CHECKBOX_VALUE %>" 
+           <%= ejbcawebbean.getText("REQUIRED") %>
+           <input type="checkbox" name="<%=CHECKBOX_REQUIRED_PASSWORD %>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.PASSWORD][Profile.ISREQUIRED]!= null)
                if(profiledata[Profile.PASSWORD][Profile.ISREQUIRED].equals(Profile.TRUE))
+                 out.write("CHECKED");
+           %>> 
+        &nbsp;&nbsp;<%= ejbcawebbean.getText("CHANGEABLE") %> 
+        <input type="checkbox" name="<%=CHECKBOX_CHANGEABLE_PASSWORD %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(profiledata[Profile.PASSWORD][Profile.CHANGEABLE]!= null)
+               if(profiledata[Profile.PASSWORD][Profile.CHANGEABLE].equals(Profile.TRUE))
                  out.write("CHECKED");
            %>> 
       </td>
     <tr  id="Row0"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CLEARTEXTPASSWORD") %> <br>
-        <%= ejbcawebbean.getText("REQUIRED") %>
+        <%= ejbcawebbean.getText("CLEARTEXTPASSWORD") %> <br>&nbsp;
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_CLEARTEXTPASSWORD%>"  value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.CLEARTEXTPASSWORD][Profile.VALUE]!= null)
                if(profiledata[Profile.CLEARTEXTPASSWORD][Profile.VALUE].equals(Profile.TRUE))
                  out.write("CHECKED");
-           %>> <br>
+           %>> <br> <%= ejbcawebbean.getText("REQUIRED") %>
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_CLEARTEXTPASSWORD %>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.CLEARTEXTPASSWORD][Profile.ISREQUIRED]!= null)
                if(profiledata[Profile.CLEARTEXTPASSWORD][Profile.ISREQUIRED].equals(Profile.TRUE))
@@ -108,105 +119,148 @@ function checkallfields(){
       </td>
     <tr  id="Row1"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("COMMONNAME") %> <br>
-        <%= ejbcawebbean.getText("REQUIRED") %>
+        <%= ejbcawebbean.getText("COMMONNAME") %> <br>&nbsp;
+
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_COMMONNAME%>" size="40" maxlength="255" 
            value="<% if(profiledata[Profile.COMMONNAME][Profile.VALUE]!= null) out.write(profiledata[Profile.COMMONNAME][Profile.VALUE]); %>"><br>
-        <input type="checkbox" name="<%=CHECKBOX_REQUIRED_COMMONNAME %>" value="<%=CHECKBOX_VALUE %>" 
+            <%= ejbcawebbean.getText("REQUIRED") %>
+            <input type="checkbox" name="<%=CHECKBOX_REQUIRED_COMMONNAME %>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.COMMONNAME][Profile.ISREQUIRED]!= null)
                if(profiledata[Profile.COMMONNAME][Profile.ISREQUIRED].equals(Profile.TRUE))
+                 out.write("CHECKED");
+           %>> 
+        &nbsp;&nbsp;<%= ejbcawebbean.getText("CHANGEABLE") %> 
+        <input type="checkbox" name="<%=CHECKBOX_CHANGEABLE_COMMONNAME %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(profiledata[Profile.COMMONNAME][Profile.CHANGEABLE]!= null)
+               if(profiledata[Profile.COMMONNAME][Profile.CHANGEABLE].equals(Profile.TRUE))
                  out.write("CHECKED");
            %>> 
       </td>
     </tr>
     <tr  id="Row0"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("ORGANIZATIONUNIT") %> <br>
-        <%= ejbcawebbean.getText("REQUIRED") %>
+        <%= ejbcawebbean.getText("ORGANIZATIONUNIT") %> <br>&nbsp;
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_ORGANIZATIONUNIT%>" size="40" maxlength="255" 
            value="<% if(profiledata[Profile.ORGANIZATIONUNIT][Profile.VALUE]!= null) out.write(profiledata[Profile.ORGANIZATIONUNIT][Profile.VALUE]); %>"><br>
+        <%= ejbcawebbean.getText("REQUIRED") %>
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_ORGANIZATIONUNIT %>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.ORGANIZATIONUNIT][Profile.ISREQUIRED]!= null)
                if(profiledata[Profile.ORGANIZATIONUNIT][Profile.ISREQUIRED].equals(Profile.TRUE))
                  out.write("CHECKED");
            %>> 
+        &nbsp;&nbsp;<%= ejbcawebbean.getText("CHANGEABLE") %> 
+        <input type="checkbox" name="<%=CHECKBOX_CHANGEABLE_ORGANIZATIONUNIT  %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(profiledata[Profile.ORGANIZATIONUNIT][Profile.CHANGEABLE]!= null)
+               if(profiledata[Profile.ORGANIZATIONUNIT][Profile.CHANGEABLE].equals(Profile.TRUE))
+                 out.write("CHECKED");
+           %>> 
       </td>
     </tr>
     <tr  id="Row1"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("ORGANIZATION") %> <br>
-        <%= ejbcawebbean.getText("REQUIRED") %>
+        <%= ejbcawebbean.getText("ORGANIZATION") %> <br>&nbsp;
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_ORGANIZATION%>" size="40" maxlength="255" 
            value="<% if(profiledata[Profile.ORGANIZATION][Profile.VALUE]!= null) out.write(profiledata[Profile.ORGANIZATION][Profile.VALUE]); %>"><br>
+           <%= ejbcawebbean.getText("REQUIRED") %>
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_ORGANIZATION %>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.ORGANIZATION][Profile.ISREQUIRED]!= null)
                if(profiledata[Profile.ORGANIZATION][Profile.ISREQUIRED].equals(Profile.TRUE))
                  out.write("CHECKED");
            %>> 
+        &nbsp;&nbsp;<%= ejbcawebbean.getText("CHANGEABLE") %> 
+        <input type="checkbox" name="<%=CHECKBOX_CHANGEABLE_ORGANIZATION  %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(profiledata[Profile.ORGANIZATION][Profile.CHANGEABLE]!= null)
+               if(profiledata[Profile.ORGANIZATION][Profile.CHANGEABLE].equals(Profile.TRUE))
+                 out.write("CHECKED");
+           %>> 
       </td>
     </tr>
     <tr  id="Row0"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("LOCALE") %> <br>
-        <%= ejbcawebbean.getText("REQUIRED") %>
+        <%= ejbcawebbean.getText("LOCALE") %> <br>&nbsp;
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_LOCALE%>" size="40" maxlength="255" 
            value="<% if(profiledata[Profile.LOCALE][Profile.VALUE]!= null) out.write(profiledata[Profile.LOCALE][Profile.VALUE]); %>"><br>
+                <%= ejbcawebbean.getText("REQUIRED") %>
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_LOCALE %>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.LOCALE][Profile.ISREQUIRED]!= null)
                if(profiledata[Profile.LOCALE][Profile.ISREQUIRED].equals(Profile.TRUE))
                  out.write("CHECKED");
            %>> 
+        &nbsp;&nbsp;<%= ejbcawebbean.getText("CHANGEABLE") %> 
+        <input type="checkbox" name="<%=CHECKBOX_CHANGEABLE_LOCALE  %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(profiledata[Profile.LOCALE][Profile.CHANGEABLE]!= null)
+               if(profiledata[Profile.LOCALE][Profile.CHANGEABLE].equals(Profile.TRUE))
+                 out.write("CHECKED");
+           %>> 
       </td>
     </tr>
     <tr  id="Row1"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("STATE") %> <br>
-        <%= ejbcawebbean.getText("REQUIRED") %>
+        <%= ejbcawebbean.getText("STATE") %> <br>&nbsp;
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_STATE%>" size="40" maxlength="255" 
            value="<% if(profiledata[Profile.STATE][Profile.VALUE]!= null) out.write(profiledata[Profile.STATE][Profile.VALUE]); %>"><br>
+               <%= ejbcawebbean.getText("REQUIRED") %>
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_STATE %>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.STATE][Profile.ISREQUIRED]!= null)
                if(profiledata[Profile.STATE][Profile.ISREQUIRED].equals(Profile.TRUE))
+                 out.write("CHECKED");
+           %>> 
+        &nbsp;&nbsp;<%= ejbcawebbean.getText("CHANGEABLE") %> 
+        <input type="checkbox" name="<%=CHECKBOX_CHANGEABLE_STATE  %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(profiledata[Profile.STATE][Profile.CHANGEABLE]!= null)
+               if(profiledata[Profile.STATE][Profile.CHANGEABLE].equals(Profile.TRUE))
                  out.write("CHECKED");
            %>> 
       </td>
     </tr>
     <tr  id="Row0"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("COUNTRY") %> <br>
-        <%= ejbcawebbean.getText("REQUIRED") %>
+        <%= ejbcawebbean.getText("COUNTRY") %> <br>&nbsp;
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_COUNTRY%>" size="2" maxlength="2" 
            value="<% if(profiledata[Profile.COUNTRY][Profile.VALUE]!= null) out.write(profiledata[Profile.COUNTRY][Profile.VALUE]); %>"><br>
+                <%= ejbcawebbean.getText("REQUIRED") %>
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_COUNTRY%>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.COUNTRY][Profile.ISREQUIRED]!= null)
                if(profiledata[Profile.COUNTRY][Profile.ISREQUIRED].equals(Profile.TRUE))
+                 out.write("CHECKED");
+           %>> 
+        &nbsp;&nbsp;<%= ejbcawebbean.getText("CHANGEABLE") %> 
+        <input type="checkbox" name="<%=CHECKBOX_CHANGEABLE_COUNTRY  %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(profiledata[Profile.COUNTRY][Profile.CHANGEABLE]!= null)
+               if(profiledata[Profile.COUNTRY][Profile.CHANGEABLE].equals(Profile.TRUE))
                  out.write("CHECKED");
            %>> 
       </td>
     </tr>
     <tr  id="Row1"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("EMAIL") %> <br>
-        <%= ejbcawebbean.getText("REQUIRED") %>
+        <%= ejbcawebbean.getText("EMAIL") %> <br>&nbsp;
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_EMAIL%>" size="40" maxlength="255" 
            value="<% if(profiledata[Profile.EMAIL][Profile.VALUE]!= null) out.write(profiledata[Profile.EMAIL][Profile.VALUE]); %>"><br>
+               <%= ejbcawebbean.getText("REQUIRED") %>
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_EMAIL%>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.EMAIL][Profile.ISREQUIRED]!= null)
                if(profiledata[Profile.EMAIL][Profile.ISREQUIRED].equals(Profile.TRUE))
+                 out.write("CHECKED");
+           %>> 
+        &nbsp;&nbsp;<%= ejbcawebbean.getText("CHANGEABLE") %> 
+        <input type="checkbox" name="<%=CHECKBOX_CHANGEABLE_EMAIL  %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(profiledata[Profile.EMAIL][Profile.CHANGEABLE]!= null)
+               if(profiledata[Profile.EMAIL][Profile.CHANGEABLE].equals(Profile.TRUE))
                  out.write("CHECKED");
            %>> 
       </td>
@@ -217,15 +271,14 @@ function checkallfields(){
     </tr>
     <tr  id="Row1"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("TYPEENDUSER") %> <br>
-        <%= ejbcawebbean.getText("REQUIRED") %>
+        <%= ejbcawebbean.getText("TYPEENDUSER") %> <br>&nbsp;
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_TYPEENDUSER%>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.TYPE_ENDUSER][Profile.VALUE]!= null)
                if(profiledata[Profile.TYPE_ENDUSER][Profile.VALUE].equals(Profile.TRUE))
                  out.write("CHECKED");
-           %>> <br>
+           %>> <br>         <%= ejbcawebbean.getText("REQUIRED") %>
 
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_TYPEENDUSER%>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.TYPE_ENDUSER][Profile.ISREQUIRED]!= null)
@@ -236,15 +289,14 @@ function checkallfields(){
     </tr>
     <tr  id="Row0"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("TYPERA") %> <br>
-        <%= ejbcawebbean.getText("REQUIRED") %>
+        <%= ejbcawebbean.getText("TYPERA") %> <br>&nbsp;
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_TYPERA%>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.TYPE_RA][Profile.VALUE]!= null)
                if(profiledata[Profile.TYPE_RA][Profile.VALUE].equals(Profile.TRUE))
                  out.write("CHECKED");
-           %>> <br>
+           %>> <br>        <%= ejbcawebbean.getText("REQUIRED") %>
 
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_TYPERA%>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.TYPE_RA][Profile.ISREQUIRED]!= null)
@@ -255,15 +307,14 @@ function checkallfields(){
     </tr>
     <tr  id="Row1"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("TYPERAADMIN") %> <br>
-        <%= ejbcawebbean.getText("REQUIRED") %>
+        <%= ejbcawebbean.getText("TYPERAADMIN") %> <br>&nbsp;
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_TYPERAADMIN%>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.TYPE_RAADMIN][Profile.VALUE]!= null)
                if(profiledata[Profile.TYPE_RAADMIN][Profile.VALUE].equals(Profile.TRUE))
                  out.write("CHECKED");
-           %>> <br>
+           %>> <br>        <%= ejbcawebbean.getText("REQUIRED") %>
 
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_TYPERAADMIN%>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.TYPE_RAADMIN][Profile.ISREQUIRED]!= null)
@@ -274,15 +325,14 @@ function checkallfields(){
     </tr>
     <tr  id="Row0"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("TYPECA") %> <br>
-        <%= ejbcawebbean.getText("REQUIRED") %>
+        <%= ejbcawebbean.getText("TYPECA") %> <br>&nbsp;
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_TYPECA%>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.TYPE_CA][Profile.VALUE]!= null)
                if(profiledata[Profile.TYPE_CA][Profile.VALUE].equals(Profile.TRUE))
                  out.write("CHECKED");
-           %>> <br>
+           %>> <br>        <%= ejbcawebbean.getText("REQUIRED") %>
 
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_TYPECA%>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.TYPE_CA][Profile.ISREQUIRED]!= null)
@@ -293,15 +343,14 @@ function checkallfields(){
     </tr>
     <tr  id="Row1"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("TYPECAADMIN") %> <br>
-        <%= ejbcawebbean.getText("REQUIRED") %>
+        <%= ejbcawebbean.getText("TYPECAADMIN") %> <br>&nbsp;
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_TYPECAADMIN%>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.TYPE_CAADMIN][Profile.VALUE]!= null)
                if(profiledata[Profile.TYPE_CAADMIN][Profile.VALUE].equals(Profile.TRUE))
                  out.write("CHECKED");
-           %>> <br>
+           %>> <br>        <%= ejbcawebbean.getText("REQUIRED") %>
 
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_TYPECAADMIN%>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.TYPE_CAADMIN][Profile.ISREQUIRED]!= null)
@@ -312,15 +361,14 @@ function checkallfields(){
     </tr>
     <tr  id="Row0"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("TYPEROOTCA") %> <br>
-        <%= ejbcawebbean.getText("REQUIRED") %>
+        <%= ejbcawebbean.getText("TYPEROOTCA") %> <br>&nbsp;
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_TYPEROOTCA%>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.TYPE_ROOTCA][Profile.VALUE]!= null)
                if(profiledata[Profile.TYPE_ROOTCA][Profile.VALUE].equals(Profile.TRUE))
                  out.write("CHECKED");
-           %>> <br>
+           %>> <br>        <%= ejbcawebbean.getText("REQUIRED") %>
 
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_TYPEROOTCA%>" value="<%=CHECKBOX_VALUE %>" 
            <% if(profiledata[Profile.TYPE_ROOTCA][Profile.ISREQUIRED]!= null)
