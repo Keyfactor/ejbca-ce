@@ -30,19 +30,19 @@ import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillProfile;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.24 2002-08-28 12:22:25 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.25 2002-09-12 11:28:35 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
     /** The home interface of  GlobalConfiguration entity bean */
     private GlobalConfigurationDataLocalHome globalconfigurationhome = null;
-    
+
     /** Var containing the global configuration. */
     private GlobalConfiguration globalconfiguration;
-    
+
     /** The local interface of RaAdmin Session Bean. */
     private IRaAdminSessionLocal raadminsession;
-    
+
     /** The remote interface of the certificate store session bean */
     private ICertificateStoreSessionRemote certificatesession;
 
@@ -69,28 +69,28 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
 
         this.globalconfiguration = loadGlobalConfiguration();
-                
+
         debug("DataSource=" + dataSource);
-        debug("<ejbCreate()"); 
+        debug("<ejbCreate()");
     }
-    
+
     /** Initializes the statful session bean. */
     public void init(UserInformation userinformation){
-      try{        
-        IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) lookup("java:comp/env/ejb/AuthorizationSessionLocal",IAuthorizationSessionLocalHome.class);       
-        IAuthorizationSessionLocal authorizationsession = authorizationsessionhome.create(); 
-        authorizationsession.init(globalconfiguration);          
-        IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) lookup("java:comp/env/ejb/RaAdminSessionLocal", IRaAdminSessionLocalHome.class);         
-        raadminsession = raadminsessionhome.create();  
+      try{
+        IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) lookup("java:comp/env/ejb/AuthorizationSessionLocal",IAuthorizationSessionLocalHome.class);
+        IAuthorizationSessionLocal authorizationsession = authorizationsessionhome.create();
+        authorizationsession.init(globalconfiguration);
+        IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) lookup("java:comp/env/ejb/RaAdminSessionLocal", IRaAdminSessionLocalHome.class);
+        raadminsession = raadminsessionhome.create();
         ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome) lookup("java:comp/env/ejb/CertificateStoreSession", ICertificateStoreSessionHome.class);
-        certificatesession = certificatesessionhome.create();        
-        this.userinformation = userinformation;       
-        profileauthproxy = new ProfileAuthorizationProxy(userinformation, authorizationsession);         
+        certificatesession = certificatesessionhome.create();
+        this.userinformation = userinformation;
+        profileauthproxy = new ProfileAuthorizationProxy(userinformation, authorizationsession);
       }catch(Exception e){
-        throw new EJBException(e.getMessage());   
-      }        
+        throw new EJBException(e.getMessage());
+      }
     }
-    
+
     /** Gets connection to Datasource used for manual SQL searches
      * @return Connection
      */
@@ -98,7 +98,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
         return ds.getConnection();
     } //getConnection
-    
+
    /**
     * Implements IUserAdminSession::addUser.
     * Implements a mechanism that uses UserDataEntity Bean.
@@ -106,16 +106,16 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     public void addUser(String username, String password, String dn, String email, int type, boolean clearpwd, int profileid, int certificatetypeid)
                          throws AuthorizationDeniedException, UserDoesntFullfillProfile, RemoteException {
         debug(">addUser("+username+", password, "+dn+", "+email+", "+type+")");
-        if(globalconfiguration.getUseStrongAuthorization()){        
+        if(globalconfiguration.getUseStrongAuthorization()){
           // Check if user fulfills it's profile.
           Profile profile = raadminsession.getProfile(profileid);
           if(!profile.doesUserFulfillProfile(username, password, dn, email, type,  certificatetypeid, clearpwd))
-            throw new UserDoesntFullfillProfile("Given userdata doesn't match it's profile.");   
+            throw new UserDoesntFullfillProfile("Given userdata doesn't match it's profile.");
             // Check if administrator is authorized to add user.
- 
+
             if(!profileauthproxy.getProfileAuthorization(profileid,ProfileAuthorizationProxy.CREATE_RIGHTS))
-              throw new AuthorizationDeniedException("Administrator not authorized to create user.");  
-        }           
+              throw new AuthorizationDeniedException("Administrator not authorized to create user.");
+        }
         try {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1=null;
@@ -128,24 +128,24 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             if(clearpwd){
               try {
                 if (password == null){
-                  data1.setClearPassword("");                
-                }    
+                  data1.setClearPassword("");
+                }
                 else{
                   data1.setOpenPassword(password);
-                }    
+                }
               } catch (java.security.NoSuchAlgorithmException nsae)
               {
                 error("NoSuchAlgorithmException while setting password for user "+username);
                 throw new EJBException(nsae);
               }
-            }  
+            }
             info("Added user "+pk.username);
           }
         catch (Exception e) {
             error("Add user failed.", e);
             throw new EJBException(e.getMessage());
         }
-  
+
         debug("<addUser("+username+", password, "+dn+", "+email+", "+type+")");
     } // addUser
 
@@ -153,18 +153,18 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * Implements IUserAdminSession::changeUser.
     * Implements a mechanism that uses UserDataEntity Bean.
     */
-    public void changeUser(String username,  String dn, String email, int type, int profileid, int certificatetypeid) 
+    public void changeUser(String username,  String dn, String email, int type, int profileid, int certificatetypeid)
         throws AuthorizationDeniedException, UserDoesntFullfillProfile, RemoteException {
         debug(">changeUser("+username+", "+dn+", "+email+", "+type+")");
         // Check if user fulfills it's profile.
-        if(globalconfiguration.getUseStrongAuthorization()){          
+        if(globalconfiguration.getUseStrongAuthorization()){
         Profile profile = raadminsession.getProfile(profileid);
         if(!profile.doesUserFulfillProfileWithoutPassword(username,  dn, email, type, certificatetypeid))
-          throw new UserDoesntFullfillProfile("Given userdata doesn't match it's profile.");   
-        // Check if administrator is authorized to edit user. 
+          throw new UserDoesntFullfillProfile("Given userdata doesn't match it's profile.");
+        // Check if administrator is authorized to edit user.
           if(!profileauthproxy.getProfileAuthorization(profileid,ProfileAuthorizationProxy.EDIT_RIGHTS))
-            throw new AuthorizationDeniedException("Administrator not authorized to edit user.");  
-        }        
+            throw new AuthorizationDeniedException("Administrator not authorized to edit user.");
+        }
         try {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1= home.findByPrimaryKey(pk);
@@ -193,18 +193,18 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     public void deleteUser(String username) throws AuthorizationDeniedException, RemoteException{
         debug(">deleteUser("+username+")");
         // Check if administrator is authorized to delete user.
-        if(globalconfiguration.getUseStrongAuthorization()){         
+        if(globalconfiguration.getUseStrongAuthorization()){
           try{
             UserDataPK pk = new UserDataPK(username);
-            UserDataLocal data1 = home.findByPrimaryKey(pk);     
+            UserDataLocal data1 = home.findByPrimaryKey(pk);
             if(!profileauthproxy.getProfileAuthorization(data1.getProfileId(),ProfileAuthorizationProxy.DELETE_RIGHTS))
-                throw new AuthorizationDeniedException("Administrator not authorized to delete user.");              
+                throw new AuthorizationDeniedException("Administrator not authorized to delete user.");
           }
           catch(FinderException e){
             error("Delete user failed, Couldn't find username in database.", e);
-            throw new EJBException(e.getMessage());            
-          }    
-        }  
+            throw new EJBException(e.getMessage());
+          }
+        }
         try {
             UserDataPK pk = new UserDataPK(username);
             home.remove(pk);
@@ -221,26 +221,19 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * Implements IUserAdminSession::setUserStatus.
     * Implements a mechanism that uses UserData Entity Bean.
     */
-    public void setUserStatus(String username, int status) throws AuthorizationDeniedException, FinderException, RemoteException{
+    public void setUserStatus(String username, int status) throws AuthorizationDeniedException, FinderException, RemoteException {
         debug(">setUserStatus("+username+", "+status+")");
-        // Check if administrator is authorized to edit user.
-        if(globalconfiguration.getUseStrongAuthorization()){         
-          try{
-            UserDataPK pk = new UserDataPK(username);
-            UserDataLocal data1 = home.findByPrimaryKey(pk);              
-            if(!profileauthproxy.getProfileAuthorization(data1.getProfileId(),ProfileAuthorizationProxy.EDIT_RIGHTS))
-                throw new AuthorizationDeniedException("Administrator not authorized to edit user.");              
-          }
-          catch(FinderException e){
-            error("Set user status failed, Couldn't find username in database.", e);
-            throw new EJBException(e.getMessage());            
-          }    
-        }      
         // Find user
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data = home.findByPrimaryKey(pk);
+        // Check if administrator is authorized to edit user.
+        if(globalconfiguration.getUseStrongAuthorization()) {
+            if(!profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.EDIT_RIGHTS))
+                throw new AuthorizationDeniedException("Administrator not authorized to edit user.");
+        }
         data.setStatus(status);
-        data.setTimeModified((new java.util.Date()).getTime());        
+        data.setTimeModified((new java.util.Date()).getTime());
+        cat.info("Changed status of user '"+username+"' to "+status);
         debug("<setUserStatus("+username+", "+status+")");
     } // setUserStatus
 
@@ -249,30 +242,30 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * Implements a mechanism that uses UserData Entity Bean.
     */
     public void setPassword(String username, String password) throws UserDoesntFullfillProfile, AuthorizationDeniedException, FinderException, RemoteException{
-        debug(">setPassword("+username+", hiddenpwd)");  
+        debug(">setPassword("+username+", hiddenpwd)");
         // Find user
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data = home.findByPrimaryKey(pk);
-        
-        if(globalconfiguration.getUseStrongAuthorization()){ 
+
+        if(globalconfiguration.getUseStrongAuthorization()){
           // Check if user fulfills it's profile.
           Profile profile = raadminsession.getProfile(data.getProfileId());
-          
+
           boolean fullfillsprofile = true;
           if(profile.isChangeable(Profile.PASSWORD)){
-            if(!password.equals(profile.getValue(Profile.PASSWORD))); 
-              fullfillsprofile=false;          
+            if(!password.equals(profile.getValue(Profile.PASSWORD)));
+              fullfillsprofile=false;
           }
           else
             if(profile.isRequired(Profile.PASSWORD)){
               if(password == null || password.trim().equals(""))
-                fullfillsprofile=false;            
+                fullfillsprofile=false;
             }
           if(!fullfillsprofile)
-            throw new UserDoesntFullfillProfile("Given userdata doesn't match it's profile.");   
+            throw new UserDoesntFullfillProfile("Given userdata doesn't match it's profile.");
           // Check if administrator is authorized to edit user.
           if(!profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.EDIT_RIGHTS))
-            throw new AuthorizationDeniedException("Administrator not authorized to edit user.");          
+            throw new AuthorizationDeniedException("Administrator not authorized to edit user.");
         }
         try {
             data.setPassword(password);
@@ -294,25 +287,25 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         // Find user
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data = home.findByPrimaryKey(pk);
-        if(globalconfiguration.getUseStrongAuthorization()){ 
+        if(globalconfiguration.getUseStrongAuthorization()){
           // Check if user fulfills it's profile.
           Profile profile = raadminsession.getProfile(data.getProfileId());
-          
+
           if(profile.isRequired(Profile.CLEARTEXTPASSWORD) && profile.getValue(Profile.CLEARTEXTPASSWORD).equals(Profile.FALSE))
-            throw new UserDoesntFullfillProfile("Given userdata doesn't match it's profile.");   
+            throw new UserDoesntFullfillProfile("Given userdata doesn't match it's profile.");
           // Check if administrator is authorized to edit user.
           if(!profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.EDIT_RIGHTS))
-            throw new AuthorizationDeniedException("Administrator not authorized to edit user.");          
-        }                
+            throw new AuthorizationDeniedException("Administrator not authorized to edit user.");
+        }
         try {
             if (password == null){
                 data.setClearPassword("");
                 data.setTimeModified((new java.util.Date()).getTime());
-            }    
+            }
             else{
                 data.setOpenPassword(password);
                 data.setTimeModified((new java.util.Date()).getTime());
-            }    
+            }
         } catch (java.security.NoSuchAlgorithmException nsae)
         {
             error("NoSuchAlgorithmException while setting password for user "+username);
@@ -320,7 +313,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         }
         debug("<setClearTextPassword("+username+", hiddenpwd)");
     } // setClearTextPassword
-    
+
     /**
      * Method that revokes a user.
      *
@@ -333,15 +326,15 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         try {
             data = home.findByPrimaryKey(pk);
         } catch (ObjectNotFoundException oe) {
-            throw new EJBException(oe);            
-        }        
-               
+            throw new EJBException(oe);
+        }
+
         if(!profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.REVOKE_RIGHTS))
           throw new AuthorizationDeniedException("Not authorized to revoke user : " + username + ".");
-        
+
         setUserStatus(username, UserDataRemote.STATUS_REVOKED);
         certificatesession.setRevokeStatus(data.getSubjectDN(), reason);
- 
+
         debug("<revokeUser()");
     } // revokeUser
 
@@ -357,13 +350,13 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         } catch (ObjectNotFoundException oe) {
             return null;
         }
-        
-        if(globalconfiguration.getUseStrongAuthorization()){ 
+
+        if(globalconfiguration.getUseStrongAuthorization()){
           // Check if administrator is authorized to view user.
           if(!profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.VIEW_RIGHTS))
-            throw new AuthorizationDeniedException("Administrator not authorized to view user.");          
-        }                   
-               
+            throw new AuthorizationDeniedException("Administrator not authorized to view user.");
+        }
+
         UserAdminData ret = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getStatus()
                                               , data.getType(), data.getProfileId(), data.getCertificateTypeId()
                                           , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified()) );
@@ -387,12 +380,12 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         } catch( FinderException e) {
             cat.error("Cannot find user with DN='"+dn+"'");
         }
-        if(globalconfiguration.getUseStrongAuthorization()){ 
+        if(globalconfiguration.getUseStrongAuthorization()){
           // Check if administrator is authorized to view user.
           if(!profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.VIEW_RIGHTS))
-             throw new AuthorizationDeniedException("Administrator not authorized to view user.");          
-          }        
-        
+             throw new AuthorizationDeniedException("Administrator not authorized to view user.");
+          }
+
         if(data != null){
           returnval = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getStatus()
                                         , data.getType(), data.getProfileId(), data.getCertificateTypeId()
@@ -402,7 +395,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         debug("<findUserBySubjectDN("+subjectdn+")");
         return returnval;
     } // findUserBySubjectDN
-    
+
    /**
     * Implements IUserAdminSession::findUserBySubjectDN.
     */
@@ -417,12 +410,12 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         } catch( FinderException e) {
             cat.error("Cannot find user with Email='"+email+"'");
         }
-        if(globalconfiguration.getUseStrongAuthorization()){ 
+        if(globalconfiguration.getUseStrongAuthorization()){
           // Check if administrator is authorized to view user.
           if(!profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.VIEW_RIGHTS))
-             throw new AuthorizationDeniedException("Administrator not authorized to view user.");          
-          }        
-        
+             throw new AuthorizationDeniedException("Administrator not authorized to view user.");
+          }
+
         if(data != null){
           returnval = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getStatus()
                                         , data.getType(), data.getProfileId(), data.getCertificateTypeId()
@@ -431,8 +424,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         }
         debug("<findUserByEmail("+email+")");
         return returnval;
-    } // findUserBySubjectDN    
-    
+    } // findUserBySubjectDN
+
    /**
     * Implements IUserAdminSession::CheckIfSubjectDNisAdmin.
     */
@@ -448,8 +441,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         } catch( FinderException e) {
             cat.error("Cannot find user with DN='"+dn+"'");
         }
-        
-        
+
+
         if(data != null){
           int type = data.getType();
           if( (type & 32)  == 0) // Temporate RAADMIN.
@@ -457,11 +450,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         }else{
           throw new  AuthorizationDeniedException("Your certificate do not belong to any user.");
         }
-        
-        
+
+
         debug("<CheckIfSubjectDNisAdmin("+subjectdn+")");
-    } // findUserBySubjectDN    
-    
+    } // findUserBySubjectDN
+
 
     /**
     * Implements IUserAdminSession::findAllUsersByStatus.
@@ -479,12 +472,12 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                                                        ,user.getType(), user.getProfileId(), user.getCertificateTypeId()
                                                        , new java.util.Date(user.getTimeCreated()), new java.util.Date(user.getTimeModified()) );
             userData.setPassword(user.getClearPassword());
-            if(globalconfiguration.getUseStrongAuthorization()){ 
+            if(globalconfiguration.getUseStrongAuthorization()){
               // Check if administrator is authorized to view user.
-              if(profileauthproxy.getProfileAuthorization(user.getProfileId(),ProfileAuthorizationProxy.VIEW_RIGHTS)) 
+              if(profileauthproxy.getProfileAuthorization(user.getProfileId(),ProfileAuthorizationProxy.VIEW_RIGHTS))
                 ret.add(userData);
-            }  
-            else         
+            }
+            else
               ret.add(userData);
         }
         debug("found "+ret.size()+" user(s) with status="+status);
@@ -494,7 +487,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
     /**
     * Implements IUserAdminSession::findAllUsersWithLimit.
-    */    
+    */
     public Collection findAllUsersWithLimit()  throws FinderException, RemoteException{
         debug(">findAllUsersWithLimit()");
         Collection users = home.findAll();
@@ -507,15 +500,15 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                                                        ,user.getType(), user.getProfileId(), user.getCertificateTypeId()
                                                        , new java.util.Date(user.getTimeCreated()), new java.util.Date(user.getTimeModified()) );
             userData.setPassword(user.getClearPassword());
-            if(globalconfiguration.getUseStrongAuthorization()){ 
+            if(globalconfiguration.getUseStrongAuthorization()){
               // Check if administrator is authorized to view user.
-              if(profileauthproxy.getProfileAuthorization(user.getProfileId(),ProfileAuthorizationProxy.VIEW_RIGHTS)) 
+              if(profileauthproxy.getProfileAuthorization(user.getProfileId(),ProfileAuthorizationProxy.VIEW_RIGHTS))
                 ret.add(userData);
-            }  
-            else         
+            }
+            else
               ret.add(userData);
-        }         
-        debug("<findAllUsersWithLimit()");  
+        }
+        debug("<findAllUsersWithLimit()");
         return ret;
     }
 
@@ -549,14 +542,14 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             throw new EJBException("Error starting external service", e);
         }
     } // startExternalService
-    
+
     /**
      * Method to execute a customized query on the ra user data. The parameter query should be a legal Query object.
-     * 
+     *
      * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
      * @return a collection of UserAdminData. Maximum size of Collection is defined i IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT
      * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
-     * @see se.anatom.ejbca.util.query.Query 
+     * @see se.anatom.ejbca.util.query.Query
      */
     public Collection query(Query query) throws IllegalQueryException, RemoteException{
         debug(">query()");
@@ -564,49 +557,49 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         PreparedStatement ps = null;
         ResultSet rs = null;
         ArrayList returnval = new ArrayList();
-        
+
         // Check if query is legal.
-        if(!query.isLegalQuery()) 
+        if(!query.isLegalQuery())
           throw new IllegalQueryException();
         try{
-           // Construct SQL query.            
+           // Construct SQL query.
             con = getConnection();
             ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where " + query.getQueryString());
             // Execute query.
             rs = ps.executeQuery();
-            // Assemble result.            
+            // Assemble result.
             while(rs.next() && returnval.size() <= IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT){
               UserAdminData data = new UserAdminData(rs.getString(1), rs.getString(2), rs.getString(3), rs.getInt(4), rs.getInt(5)
                                                , rs.getInt(9), rs.getInt(10)
                                                , new java.util.Date(rs.getLong(7)), new java.util.Date(rs.getLong(8)));
               data.setPassword(rs.getString(6));
 
-              if(globalconfiguration.getUseStrongAuthorization()){ 
+              if(globalconfiguration.getUseStrongAuthorization()){
                 // Check if administrator is authorized to edit user.
-                if(profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.VIEW_RIGHTS)) 
+                if(profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.VIEW_RIGHTS))
                   returnval.add(data);
-              }  
-              else         
+              }
+              else
                 returnval.add(data);
             }
-            debug("<query()");  
+            debug("<query()");
             return returnval;
-            
+
         }catch(Exception e){
-          throw new EJBException(e);   
+          throw new EJBException(e);
         }finally{
            try{
              if(rs != null) rs.close();
              if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
-              se.printStackTrace();   
+              se.printStackTrace();
            }
-        }       
+        }
     } // query
-    
-    /** 
-     * Methods that checks if a user exists in the database having the given profileid. This function is mainly for avoiding 
+
+    /**
+     * Methods that checks if a user exists in the database having the given profileid. This function is mainly for avoiding
      * desyncronisation when profile is deleted.
      *
      * @param profileid the id of profile to look for.
@@ -619,40 +612,40 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         ResultSet rs = null;
         ArrayList returnval = new ArrayList();
         int count = 1; // return true as default.
-        
+
         Query query = new Query(Query.TYPE_USERQUERY);
         query.add(UserMatch.MATCH_WITH_PROFILE, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(profileid));
-        
+
         try{
-           // Construct SQL query.            
+           // Construct SQL query.
             con = getConnection();
             ps = con.prepareStatement("select COUNT(*) from UserData where " + query.getQueryString());
             // Execute query.
             rs = ps.executeQuery();
-            // Assemble result.            
+            // Assemble result.
             while(rs.next()){
-              count = rs.getInt(1); 
-            }  
-            debug("<checkForProfileId()");  
+              count = rs.getInt(1);
+            }
+            debug("<checkForProfileId()");
             return count > 0;
-            
+
         }catch(Exception e){
-          throw new EJBException(e);   
+          throw new EJBException(e);
         }finally{
            try{
              if(rs != null) rs.close();
              if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
-              se.printStackTrace();   
+              se.printStackTrace();
            }
-        }             
-        
-        
+        }
+
+
     }
-    
-    /** 
-     * Methods that checks if a user exists in the database having the given certificatetypeid. This function is mainly for avoiding 
+
+    /**
+     * Methods that checks if a user exists in the database having the given certificatetypeid. This function is mainly for avoiding
      * desyncronisation when a certificatetype is deleted.
      *
      * @param certificatetypeid the id of certificatetype to look for.
@@ -665,39 +658,39 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         ResultSet rs = null;
         ArrayList returnval = new ArrayList();
         int count = 1; // return true as default.
-        
+
         Query query = new Query(Query.TYPE_USERQUERY);
         query.add(UserMatch.MATCH_WITH_CERTIFICATETYPE, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(certificatetypeid));
-       
+
         try{
-           // Construct SQL query.            
+           // Construct SQL query.
             con = getConnection();
             ps = con.prepareStatement("select COUNT(*) from UserData where " + query.getQueryString());
             // Execute query.
             rs = ps.executeQuery();
-            // Assemble result.            
+            // Assemble result.
             while(rs.next()){
-              count = rs.getInt(1); 
-            }  
-            debug("<checkForCertificateTypeId()");  
+              count = rs.getInt(1);
+            }
+            debug("<checkForCertificateTypeId()");
             return count > 0;
-            
+
         }catch(Exception e){
-          throw new EJBException(e);   
+          throw new EJBException(e);
         }finally{
            try{
              if(rs != null) rs.close();
              if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
-              se.printStackTrace();   
+              se.printStackTrace();
            }
-        }             
-        
-        
-    }    
-    
-     /** 
+        }
+
+
+    }
+
+     /**
      * Loads the global configuration from the database.
      *
      * @throws EJBException if a communication or other error occurs.
