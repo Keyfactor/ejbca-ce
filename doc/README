@@ -1,4 +1,4 @@
-$Id: README,v 1.69 2003-02-23 16:55:28 anatom Exp $
+$Id: README,v 1.70 2003-02-27 16:58:04 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source Initiative.
@@ -542,16 +542,10 @@ in the file 'log4j.properties' with:
 INSTALLING WEB RA-ADMIN
 =======================
 
-Preliminary documentation - TODO:
-Installation procedure will be enhanced eventually.
-
-Automatic method
-----------------
+Automatic method (preferred)
+----------------------------
 
 1. Run the script 'setup-adminweb.cmd'
-
-NOTE: On Linux the script works fine, but the keystore generated will not work
-perfectly with Tomcat. Tobefixed.
 
 2. Import the certificate from 'ejbca/p12/SuperAdmin.p12' in your browser and go
 to 'https://localhost:8443/ejbca
