@@ -1,21 +1,16 @@
-/*
- * EjbcaWebBean.java
- *
- * Created on den 28 mars 2002, 17:59
- */
-
 package se.anatom.ejbca.webdist.webconfiguration;
-import java.io.IOException;
-import java.security.cert.X509Certificate;
-import javax.security.auth.x500.X500Principal;
-import javax.servlet.http.HttpServletRequest;
-import java.security.cert.CertificateFactory;
-import java.net.URLDecoder;
-import java.math.BigInteger;
+
 import java.beans.*;
 import javax.naming.*;
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
+import javax.security.auth.x500.X500Principal;
+import javax.servlet.http.HttpServletRequest;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.net.URLDecoder;
+import java.math.BigInteger;
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
@@ -42,7 +37,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.8 2002-07-09 15:04:22 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.9 2002-07-16 12:26:40 anatom Exp $
  */
 public class EjbcaWebBean {
 
@@ -63,7 +58,7 @@ public class EjbcaWebBean {
     // Public Methods.
 
         /* Sets the current user and returns the global configuration */
-    public GlobalConfiguration initialize(HttpServletRequest request) throws AuthorizationDeniedException,  IOException,
+    public GlobalConfiguration initialize(HttpServletRequest request) throws AuthorizationDeniedException, IOException,
                                                               NamingException, CreateException, java.security.cert.CertificateException,
                                                               java.security.cert.CertificateExpiredException,  java.security.cert.CertificateNotYetValidException,
                                                               javax.ejb.FinderException{

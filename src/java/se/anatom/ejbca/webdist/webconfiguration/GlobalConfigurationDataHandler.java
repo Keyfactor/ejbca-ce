@@ -1,37 +1,25 @@
-/*
- * GlobalConfigurationDataHandler.java
- *
- * Created on den 29 mars 2002, 13:16
- */
-
 package se.anatom.ejbca.webdist.webconfiguration;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.FileNotFoundException;
+
 import java.beans.*;
 import javax.naming.*;
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
-import java.util.Properties;
 import java.rmi.RemoteException;
 
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
-
-import java.math.BigInteger;
 
 /**
  * A class handling the saving and loading of global configuration data.
  * By default all data are saved to a database.
  *
  * @author  Philip Vendil
- * @version $Id: GlobalConfigurationDataHandler.java,v 1.6 2002-06-27 12:14:03 anatom Exp $
+ * @version $Id: GlobalConfigurationDataHandler.java,v 1.7 2002-07-16 12:26:40 anatom Exp $
  */
 public class GlobalConfigurationDataHandler {
 
     /** Creates a new instance of GlobalConfigurationDataHandler */
-    public GlobalConfigurationDataHandler() throws IOException, FileNotFoundException, NamingException,
-                                                   FinderException, CreateException{
+    public GlobalConfigurationDataHandler() throws RemoteException, NamingException, CreateException{
 
        InitialContext jndicontext = new InitialContext();
        IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"),

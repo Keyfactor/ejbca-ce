@@ -1,4 +1,4 @@
-$Id: TODO,v 1.35 2002-06-20 08:48:52 anatom Exp $
+$Id: TODO,v 1.36 2002-07-16 12:26:38 anatom Exp $
 
 V 1.x
 -----
@@ -7,7 +7,9 @@ V 1.x
 V 2.x
 -----
 - Installation procedure, including installation of Web-RA.
-- Put keystores in db to not break EJB contract
+- Put keystores in db to not break EJB contract.
+- Make to work with JDK 1.3 (problems with importing certificate chains in jks
+using keytool).
 - Make a database model similar to architecture model.
 - Add a 'Service Locator' to concentrate code for lookups.
 - Use a 'Value List Handler' for listing of all certificates, clrs and users.
@@ -32,3 +34,4 @@ environments.
 - RA with self registration for end-entities, RA approves registration.
 - Describe SSL-setup in server.
 - XKMS specifications, and more XML/Soap stuff.
+

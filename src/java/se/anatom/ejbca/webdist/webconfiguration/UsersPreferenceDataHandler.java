@@ -1,17 +1,9 @@
-/*
- * UsersPreferences.java
- *
- * Created on den 28 mars 2002, 16:18
- */
-
 package se.anatom.ejbca.webdist.webconfiguration;
-import java.io.FileInputStream;
-import java.io.IOException;
+
 import java.beans.*;
 import javax.naming.*;
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
-import java.util.Properties;
 import java.rmi.RemoteException;
 import java.math.BigInteger;
 
@@ -23,12 +15,12 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
  * save to a database.
  *
  * @author  Philip Vendil
- * @version $Id: UsersPreferenceDataHandler.java,v 1.5 2002-06-27 12:14:03 anatom Exp $
+ * @version $Id: UsersPreferenceDataHandler.java,v 1.6 2002-07-16 12:26:40 anatom Exp $
  */
 public class UsersPreferenceDataHandler {
 
     /** Creates a new instance of UsersPreferences */
-    public UsersPreferenceDataHandler()throws IOException, NamingException, FinderException, CreateException {
+    public UsersPreferenceDataHandler() throws RemoteException, NamingException, CreateException {
         InitialContext jndicontext = new InitialContext();
         IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"),
                                                IRaAdminSessionHome.class);
