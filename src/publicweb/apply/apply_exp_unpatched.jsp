@@ -4,27 +4,9 @@
  
 <link rel="stylesheet" href="../indexmall.css" type="text/css">
 <object
-   classid="clsid:127698e4-e730-4e5c-a2b1-21490a70c8a1"
-   CODEBASE="/CertControl/xenroll.cab#Version=5,131,3659,0"
+   classid="clsid:43F8F289-7A20-11D0-8F06-00C04FC295E1"
    id="encoder">
  </object>
-
-<!-- New updated enrollment activeX-control 2002-09-02 (Q323172)
-New Xenroll.dll information:
-Class ID: {127698e4-e730-4e5c-a2b1-21490a70c8a1}
-sXEnrollVersion="5,131,3659,0" 
-
-New Scrdenrl.dll information:
-Class ID: {c2bbea20-1f2b-492f-8a06-b1c5ffeace3b}
-sScrdEnrlVersion="5,131,3642,0" 
--->
-<!-- Old Xenroll.dll information: 
-Class ID: {43F8F289-7A20-11D0-8F06-00C04FC295E1} 
-
-Old Scrdenrl.dll information:
-Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45} 
--->
-
 <SCRIPT LANGUAGE=VBSCRIPT>
 <!--
    Function GetProviderList()
@@ -67,22 +49,9 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
    End Function
 -->      
 </SCRIPT>
-<SCRIPT language='javascript'>
-<!--
-  function test(){
-    GetProviderList();
-
-    if(document.CertReqForm.CspProvider.options.length == 0){
-      document.patched.<%=HIDDEN_PATCHED %>.value="false";
-      document.patched.submit();
-    }
-  }
--->
-</SCRIPT>
-
 
 </HEAD>
-<BODY onLoad="test()" bgcolor="#ffffff" link="black" vlink="black" alink="black">
+<BODY onLoad="GetProviderList()" bgcolor="#ffffff" link="black" vlink="black" alink="black">
 <center>
   <strong class="titel"><span class="E">E</span><span class="J">J</span><span class="B">B</span><span class="C">C</span><span class="A">A</span> 
   IE Certificate Enrollment </strong> 
@@ -118,15 +87,6 @@ try  {
 }                                             
 %>
 <HR>
-
-<FORM NAME="patched" ACTION="<%=THIS_FILENAME%>"  METHOD=POST>
-        <INPUT NAME='<%= ACTION %>' TYPE="hidden" VALUE='<%=ACTION_GENERATETOKEN %>'> 
-        <INPUT NAME="<%=HIDDEN_BROWSER%>" TYPE="hidden" VALUE="<%= browser %>">
-	<INPUT NAME="<%=TEXTFIELD_USERNAME %>"  TYPE="hidden" VALUE="<%=username%>">
-	<INPUT NAME="<%=TEXTFIELD_PASSWORD %>" TYPE="hidden"  VALUE="<%=password%>">
-	<INPUT NAME="<%=HIDDEN_PATCHED %>" TYPE="hidden"  VALUE="true">
-</FORM>
-
 <FORM NAME="CertReqForm" ACTION="certreq" ENCTYPE=x-www-form-encoded METHOD=POST>
  
  <b>NOTE!</b> If you do not get a list of CSPs in the list below, you may have to upgrade Internet Explorer
@@ -137,6 +97,7 @@ try  {
 
 	<INPUT NAME=user TYPE="hidden" VALUE="<%=username%>">
 	<INPUT NAME=password TYPE="hidden"  VALUE="<%=password%>">
+	<INPUT NAME=classid TYPE="hidden"  VALUE="clsid:43F8F289-7A20-11D0-8F06-00C04FC295E1">
 
     <P>Please choose the CSP you wish to use from the list below (the default is probably good):</P>
     <SELECT NAME="CspProvider">
@@ -145,8 +106,6 @@ try  {
     <INPUT TYPE="hidden" NAME="pkcs10" VALUE="">
 
 <INPUT type="button" value="OK" name="GenReq">
-
-</FORM>
 
 <SCRIPT LANGUAGE=VBS>
     Function CSR(keyflags)

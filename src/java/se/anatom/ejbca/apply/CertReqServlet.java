@@ -65,7 +65,7 @@ import se.anatom.ejbca.log.Admin;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.32 2003-04-01 11:27:09 scop Exp $
+ * @version $Id: CertReqServlet.java,v 1.33 2003-04-20 09:48:23 herrvendil Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
@@ -118,7 +118,10 @@ public class CertReqServlet extends HttpServlet {
             String password        = request.getParameter("password");
             String keylengthstring = request.getParameter("keylength");
             int keylength          = 1024;
-
+           
+            String classid         = "clsid:127698e4-e730-4e5c-a2b1-21490a70c8a1\" CODEBASE=\"/CertControl/xenroll.cab#Version=5,131,3659,0";
+            if(request.getParameter("classid")!=null)
+              classid= request.getParameter("classid");   
 
             if(keylengthstring != null)
               keylength = Integer.parseInt(keylengthstring);
@@ -179,7 +182,7 @@ public class CertReqServlet extends HttpServlet {
                   if (reqBytes != null) {
                       byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password);
                       debug.ieCertFix(b64cert);
-                      RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"));
+                      RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"),classid);
                   }
               } else if (request.getParameter("pkcs10req") != null) {
                   // if not IE, check if it's manual request
