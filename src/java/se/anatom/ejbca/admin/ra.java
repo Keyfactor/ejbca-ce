@@ -13,13 +13,10 @@
  
 package se.anatom.ejbca.admin;
 
-import org.apache.log4j.PropertyConfigurator;
-
-
 /**
  * Implements the RA command line interface
  *
- * @version $Id: ra.java,v 1.26 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: ra.java,v 1.27 2004-06-28 12:03:52 sbailliez Exp $
  */
 public class ra extends BaseCommand {
     /**
@@ -28,8 +25,6 @@ public class ra extends BaseCommand {
      * @param args command line arguments
      */
     public static void main(String[] args) {
-        PropertyConfigurator.configure("log4j.properties");
-
         try {
             IAdminCommand cmd = RaAdminCommandFactory.getCommand(args);
 

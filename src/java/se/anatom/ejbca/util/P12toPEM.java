@@ -24,7 +24,6 @@ import java.security.cert.*;
 import java.util.Enumeration;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 /**
  * P12toPEM is used to export PEM files from a single p12 file. The class exports the user
@@ -32,7 +31,7 @@ import org.apache.log4j.PropertyConfigurator;
  * a third file. The PEM files will have the names <i>common name</i>.pem, <i>common
  * name</i>Key.pem and <i>common name</i>CA.pem derived from the DN in user certificate.
  *
- * @version $Id: P12toPEM.java,v 1.13 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: P12toPEM.java,v 1.14 2004-06-28 12:05:18 sbailliez Exp $
  */
 public class P12toPEM {
     private static Logger log = Logger.getLogger(P12toPEM.class);
@@ -54,8 +53,6 @@ public class P12toPEM {
      * @param args DOCUMENT ME!
      */
     public static void main(String[] args) {
-        PropertyConfigurator.configure("log4j.properties");
-
         // Bouncy Castle security provider
         CertTools.installBCProvider();
 

@@ -13,13 +13,11 @@
  
 package se.anatom.ejbca.admin;
 
-import org.apache.log4j.PropertyConfigurator;
-
 
 /**
  * Implements the setup command line interface
  *
- * @version $Id: setup.java,v 1.2 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: setup.java,v 1.3 2004-06-28 12:03:52 sbailliez Exp $
  */
 public class setup {
     /**
@@ -28,8 +26,6 @@ public class setup {
      * @param args command line arguments
      */
     public static void main(String[] args) {
-        PropertyConfigurator.configure("log4j.properties");
-
         try {
             IAdminCommand cmd = SetupCommandFactory.getCommand(args);
 

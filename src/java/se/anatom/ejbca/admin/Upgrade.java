@@ -21,15 +21,13 @@ import javax.ejb.CreateException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import org.apache.log4j.PropertyConfigurator;
-
 import se.anatom.ejbca.upgrade.IUpgradeSessionRemote;
 import se.anatom.ejbca.upgrade.IUpgradeSessionHome;
 
 /**
  * Implements call to the upgrade function
  *
- * @version $Id: Upgrade.java,v 1.9 2004-05-14 08:25:32 anatom Exp $
+ * @version $Id: Upgrade.java,v 1.10 2004-06-28 12:03:52 sbailliez Exp $
  */
 public class Upgrade extends BaseCommand {
 
@@ -149,8 +147,6 @@ public class Upgrade extends BaseCommand {
      * @param args command line arguments
      */
     public static void main(String[] args) {
-        PropertyConfigurator.configure("log4j.properties");
-
         Upgrade upgrade = new Upgrade();
         try {
             boolean ret = upgrade.upgrade();
