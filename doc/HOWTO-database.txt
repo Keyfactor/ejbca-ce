@@ -29,6 +29,8 @@ jdbc.xml is used. Make sure src/ca/META-INF/jbosscmp-jdbc.xml contains entries
 to set the correct type-mappings for 'base64cert' and 'base64crl' for the
 database used.
 
+2. Do the same with src/ra/META-INF/jbosscmp-jdbc-<database>.xml
+
 2. Build EJBCA with 'ant' and deploy with 'deploy.sh/cmd'.
 
 Configuring JBoss

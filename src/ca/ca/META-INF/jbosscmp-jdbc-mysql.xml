@@ -4,6 +4,7 @@
 
 <defaults>
     <datasource>java:/DefaultDS</datasource>
+    <datasource-mapping>mySQL</datasource-mapping>
 </defaults>
 
 <!-- Default setting for mySQL in EJBCA version > 1.0. 

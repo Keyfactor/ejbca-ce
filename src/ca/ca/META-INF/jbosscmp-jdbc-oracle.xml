@@ -4,6 +4,7 @@
 
 <defaults>
     <datasource>java:/DefaultDS</datasource>
+    <datasource-mapping>Oracle8</datasource-mapping>
 </defaults>
 
 <!-- Setting for Oracle in EJBCA version > 1.0. 
