@@ -24,6 +24,7 @@ SECURITY: Add checks in adminweb for illegal SQL chars in advanced modes in list
 Weblogic xml files for WLS 8.1 (still needs patch for complete function).
 Possibility to set 2048 bit keys in Swedish hardtoken profile.
 Changed error message when unlimithed strengh policy files not installed during install.
+Handle double type encoding in install.en.properties for other languages.
 
 3.0.4
 -----
