@@ -1,0 +1,79 @@
+#
+# EJBCA Schema for OpenLDAP
+#
+# Namespace: Primekey
+#
+# Written by Mike Jackson <mj@sci.fi>
+#
+# Namespace Primekey - 1.3.6.1.4.1.22408
+#                                      |_.1 products
+#                                         |_.1 ejbca
+#                                           |_.1 attributes
+#                                           |_.2 object classes
+#
+#
+#
+#
+#********************************************************************
+#
+# 1.3.6.1.4.1.22408.1.1.1 - EJBCA Attributes
+#
+#********************************************************************
+#
+#
+#
+attributetype (
+  1.3.6.1.4.1.22408.1.1.1.1
+  NAME 'ejbcaDeviceCertificate'
+  DESC 'Cerfificate for devices'
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.5
+  )
+
+#
+#********************************************************************
+#
+##attributetype (
+##  1.3.6.1.4.1.22408.1.1.1.2
+##  NAME 'ejbcaFoo'
+##  DESC 'foo'
+##  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+##  )
+##
+##
+#
+#********************************************************************
+# 
+# 1.3.6.1.4.1.22408.1.1.2 - EJBCA Object Classes
+# 
+#********************************************************************
+# 
+# 
+# 
+#
+objectClass (
+  1.3.6.1.4.1.22408.1.1.2.1
+  NAME 'ejbcaDevice'
+  DESC 'subclass for adding certificates to devices'
+  SUP 'device'
+  AUXILIARY
+  MUST ( ejbcaDeviceCertificate )
+  MAY  ( description )
+  )	
+
+#
+#********************************************************************
+#
+##objectClass (
+##  1.3.6.1.4.1.22408.1.1.2.2
+##  NAME 'ejbcaExample'
+##  DESC 'example object class'
+##  SUP 'top'
+##  MUST ( ejbcaFoo $ ejbcaBar $ ejbcaXYZ )
+##  MAY  ( description )
+##  )	
+##
+#
+#********************************************************************
+#
+#
+# EOF
