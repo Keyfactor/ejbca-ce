@@ -25,7 +25,7 @@ webtest()
 
 cd src/java
 
-if [ "$1" = "webtest" ]
+if [ "$1" = "web" ]
 then
   webtest
   cd ../..
