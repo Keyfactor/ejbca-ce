@@ -12,6 +12,7 @@ import java.security.Security;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
+import javax.ejb.*;
 
 import javax.rmi.PortableRemoteObject;
 import javax.naming.InitialContext;
@@ -94,15 +95,6 @@ public class CertReqServlet extends HttpServlet {
 
         Debug debug = new Debug();
         try {
-            {
-                debug.print("<h3>parameter name and values: </h3>");
-                Enumeration paramNames=request.getParameterNames();
-                while (paramNames.hasMoreElements()) {
-                    String name=paramNames.nextElement().toString();
-                    String parameter=request.getParameter(name);
-                    debug.print("<h4>"+name+":</h4>"+parameter+"<br>");
-                }
-            }
             String username = request.getParameter("user");
             String password = request.getParameter("password");
             cat.info("Got request for " + username + "/" + password);
@@ -131,8 +123,25 @@ public class CertReqServlet extends HttpServlet {
             }
         } catch (Exception e) {
             cat.error(e);
-            debug.takeCareOfException(e);
-            debug.printDebugInfo(response.getOutputStream());
+            if (e.getMessage().indexOf("status") != -1) {
+                debug.printMessage("Wrong user status!");
+                debug.printMessage("To generate a certificate for a user the user must have status new, failed or inprocess.");
+                debug.printDebugInfo(response.getOutputStream());                
+            } else if (e.getMessage().indexOf("password") != -1) {
+                debug.printMessage("Wrong username or password!");
+                debug.printMessage("To generate a certificate a valid username and password must be entered.");
+                debug.printDebugInfo(response.getOutputStream());                
+            } else {
+                debug.print("<h3>parameter name and values: </h3>");
+                Enumeration paramNames=request.getParameterNames();
+                while (paramNames.hasMoreElements()) {
+                    String name=paramNames.nextElement().toString();
+                    String parameter=request.getParameter(name);
+                    debug.print("<h4>"+name+":</h4>"+parameter+"<br>");
+                }
+                debug.takeCareOfException(e);
+                debug.printDebugInfo(response.getOutputStream());
+            }
         }
     } //doPost
 
@@ -216,7 +225,7 @@ public class CertReqServlet extends HttpServlet {
             print("<body>");
             print("<head>");
 
-            String title = "the CertRequest servlet";
+            String title = "EJBCA cert request servlet";
             print("<title>" + title + "</title>");
             print("</head>");
             print("<body bgcolor=\"white\">");
@@ -232,6 +241,9 @@ public class CertReqServlet extends HttpServlet {
 
         void print(Object o) {
             printer.println(o);
+        }
+        void printMessage(String msg) {
+            print("<p>"+msg);
         }
         void printInsertLineBreaks( byte[] bA ) throws Exception {
             BufferedReader br=new BufferedReader(
@@ -259,7 +271,7 @@ public class CertReqServlet extends HttpServlet {
             ieCertFormat(bA, tmpPrinter);
             printInsertLineBreaks(baos.toByteArray());
         }
-    }
+    } // Debug
 
     private void ieCertFormat(byte[] bA, PrintStream out) throws Exception {
         BufferedReader br=new BufferedReader(
