@@ -6,6 +6,10 @@ up mySQL as DefaultDS. The default database HypersoniqDB should also be
 removed completely. The section "JBossCX setup" must probably be edited for
 this...
 
+NOTE: For the time beeing, mySQL does not work (with the config below) since
+it uses 'VARCHAR(255) BINARY' as mapping form String, and my Strings
+(b64cert etc) are longer than 255 chars.
+
 Now on to the howto:
 
 1. Download and install mySQL.
