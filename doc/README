@@ -61,8 +61,8 @@ The minimal requirements to download and install are JBoss and Ant.
 
 Bouncycastle
 ------------
-EJBCA uses the OpenSource JCE crypto provider from Bouncy Castle
- (http://www.bouncycastle.org).
+For cryptography and creation of certificates and CRLs, EJBCA uses the OpenSource 
+JCE crypto provider from Bouncy Castle (http://www.bouncycastle.org).
 The provider is distributed with EJBCA as 'jce-jdk13-<version>.jar. The latest
  version of the JCE provider can always be obtained from Bouncy Castle.
 jce-jdk13-<version>.jar is Copyright (c) 2000 The Legion Of The Bouncy Castle
@@ -73,7 +73,7 @@ conditions of Bouncy Castle JCE.
 JBoss
 -----
 EJBCA is developed on the OpenSource J2EE application server JBoss
- (http://www.jboss.org). By default we expect a JBoss with an integrated Servlet
+ (http://www.jboss.org). We expect a JBoss with an integrated Servlet
 engine, such as JBoss with Tomcat or Jetty.
 JBoss and jars from JBoss are Copyright (c) 1999-2001 jboss.org.
 Jar files needed to run EJBCA is distributed with EJBCA. The version of
@@ -82,25 +82,25 @@ conditions of JBoss.
 
 Ant and Log4J
 -------------
-Ant and Log4j is Copyright 1999-2001, Apache Software Foundation and can be
- obtained from http://jakarta.apache.org.
+Ant (used for building) and Log4j (used for logging) is Copyright 1999-2001, 
+Apache Software Foundation and can be obtained from http://jakarta.apache.org.
 Jar file for Log4j is distributed with EJBCA. The version of Log4j used in
 this release is 1.1.3. See doc/LICENSE-APACHE for license conditions of Log4j.
 
 JUnit
 -----
-JUnit can be obtained from http://www.junit.org. Jar file needed to run JUnit
-tests is
+For automated testing JUnit is used and can be obtained from 
+http://www.junit.org. Jar file needed to run JUnit tests is
 distributed with EJBCA. The version used in this release is 3.7. JUnit is
 released under the IBM Public License
  (http://oss.software.ibm.com/developerworks/opensource/license10.html).
 
 OpenLDAP
 --------
-OpenLDAP can be obtained from http://www.openldap.org. Jar fil needed for EJBCA
-is
-redistributed with EJBCA. See doc/LICENSE-JLDAP for license conditions of
-OpenLDAP.
+OpenLDAP is an Open Source LDAP directory which can be obtained from 
+http://www.openldap.org. This jar fil is needed by EJBCA to store certificates 
+and CRLs in LDAP directories. The jar is redistributed with EJBCA. 
+See doc/LICENSE-JLDAP for license conditions of OpenLDAP.
 
 PLATFORMS
 =========
