@@ -238,7 +238,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     private ILogSessionLocal getLogSession() {
         if(logsession == null){
           try{
-            ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup("java:comp/env/ejb/LogSessionLocal",ILogSessionLocalHome.class);
+            ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup(ILogSessionLocalHome.COMP_NAME,ILogSessionLocalHome.class);
             logsession = logsessionhome.create();
           }catch(Exception e){
              throw new EJBException(e);
