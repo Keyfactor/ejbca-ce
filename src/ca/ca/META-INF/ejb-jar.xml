@@ -34,7 +34,20 @@
         <env-entry-name>privateKeyPass</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>null</env-entry-value>
-     </env-entry>          
+     </env-entry>     
+     <env-entry>
+        <description>Password for OCSP keystores, comment out to prompt for pwd.</description>
+        <env-entry-name>OCSPkeyStorePass</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>foo123</env-entry-value>
+     </env-entry>
+     <env-entry>
+        <description>Password for OCSP private key, only used for JKS-keystore. Leave as null for PKCS12-keystore, comment out to prompt</description>
+        <env-entry-name>privateKeyPass</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>null</env-entry-value>
+     </env-entry>  
+        
      <env-entry>
         <description>Name of PRNG algorithm used for random source - refer to Appendix A in the Java Cryptography Architecture API Specification And Reference for information about standard PRNG algorithm names.</description>
         <env-entry-name>randomAlgorithm</env-entry-name>
