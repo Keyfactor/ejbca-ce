@@ -2,7 +2,7 @@
     originally contributed by <surd0007(at)yahoo.com.cn>
  
 (This install guide is a complement to the guide present in README).
-$Id: INSTALL-guide.txt,v 1.9 2004-09-07 07:23:34 anatom Exp $
+$Id: INSTALL-guide.txt,v 1.10 2004-11-18 14:18:35 anatom Exp $
 
  
  Softwares needed:
@@ -70,7 +70,7 @@ $Id: INSTALL-guide.txt,v 1.9 2004-09-07 07:23:34 anatom Exp $
  	Configure mysql:
  	#cd /usr/j2ee/ejbca
     #ant replaceDS
-    choose database mysql and your datasource (EjbcaDS is recommended).
+    choose database mysql and your datasource (java:/EjbcaDS is recommended).
     
     (this does the below that you don't have to do manually
  	#cp src/ca/ca/META-INF/jbosscmp-jdbc-mysql.xml src/ca/ca/META-INF/jbosscmp-jdbc.xml
