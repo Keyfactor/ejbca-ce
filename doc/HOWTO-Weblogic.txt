@@ -2,7 +2,7 @@
 CONFIGURING Weblogic
 ====================
 
-This howto is for EJBCA 1.x, and should be modified for EJBCA 2.x
+Note: This howto is for EJBCA 1.x, and should be modified for EJBCA 2.x
 
 1. In the database configured for DefaultPool and DefaultDS in Weblogic, create
 tables for the entity beans, CertificateData, CRLData and UserData.
