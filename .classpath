@@ -13,5 +13,6 @@
     <classpathentry kind="lib" path="lib/ldap.jar"/>
     <classpathentry kind="lib" path="lib/log4j-1.2.jar"/>
     <classpathentry kind="lib" path="lib/servlet.jar"/>
+    <classpathentry kind="lib" path="lib/regexp1_0_0.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
