@@ -20,7 +20,7 @@ import se.anatom.ejbca.util.Hex;
 
 /** Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaRevokeUserCommand.java,v 1.5 2002-07-05 23:43:18 herrvendil Exp $
+ * @version $Id: RaRevokeUserCommand.java,v 1.6 2002-08-16 19:56:22 anatom Exp $
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
 
@@ -31,11 +31,15 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
 
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
-            if (args.length < 2) {
-                System.out.println("Usage: RA revokeuser <username>");
-                return;
+            if (args.length < 3) {
+                System.out.println("Usage: RA revokeuser <username> <reason>");
+                System.out.println("Reason: unused(0), keyCompromise(1), cACompromise(2), affiliationChanged(3), superseded(4), cessationOfOperation(5), certficateHold(6)");
+                System.out.println("Normal reason is 0");
+                 return;
             }
             String username = args[1];
+            int reason = Integer.parseInt(args[2]);
+            
             UserAdminData data = getAdminSession().findUser(username);
             System.out.println("Found user:");
             System.out.println("username="+data.getUsername());
@@ -57,6 +61,7 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
                 if (rev.getStatus() != CertificateData.CERT_REVOKED) {
                     rev.setStatus(CertificateData.CERT_REVOKED);
                     rev.setRevocationDate(new Date());
+                    rev.setRevocationReason(reason);
                     System.out.println("Revoked cert with serialNumber "+Hex.encode(((X509Certificate)rev.getCertificate()).getSerialNumber().toByteArray()));
                 }
             }
