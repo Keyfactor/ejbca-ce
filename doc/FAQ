@@ -1,6 +1,13 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.14 2002-10-14 07:08:27 anatom Exp $
+$Id: FAQ,v 1.15 2002-10-30 15:48:48 anatom Exp $
+
+---------
+Q : When enrolling for certificates with IE, the enrollment controll (clsid) is
+incorrect.
+
+A : Microsoft changed the enrollment controll due to secrity issues. Look in
+'src/publicweb/apply/apply_exp.jsp' for more information.
 
 ---------
 Q : I get the error "Object Class Violation : (65)" when publishing certificates
@@ -171,6 +178,7 @@ important information. Logging in JBoss is configured in 'log4j.properties' in
 the JBoss config directory.
 
 -----
+
 
 
 
