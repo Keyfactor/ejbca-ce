@@ -18,7 +18,7 @@ import java.security.cert.X509Certificate;
  * (resp.requireEncKeyInfo()) { resp.setEncKeyInfo(enccert,enckey) }; resp.create(); byte[]
  * responseMessage = resp.getResponseMessage(); </code>
  *
- * @version $Id: IResponseMessage.java,v 1.7 2003-07-21 14:18:30 anatom Exp $
+ * @version $Id: IResponseMessage.java,v 1.8 2003-07-22 10:26:24 anatom Exp $
  */
 public interface IResponseMessage {
     public final int STATUS_OK = 0;
@@ -127,14 +127,14 @@ public interface IResponseMessage {
     /**
      * Sets a senderNonce if it should be present in the response
      *
-     * @param senderNonce a string of hex encoded bytes
+     * @param senderNonce a string of base64 encoded bytes
      */
     public void setSenderNonce(String senderNonce);
 
     /**
      * Sets a recipient if it should be present in the response
      *
-     * @param recipientNonce a string of hex encoded bytes
+     * @param recipientNonce a string of base64 encoded bytes
      */
     public void setRecipientNonce(String recipientNonce);
 

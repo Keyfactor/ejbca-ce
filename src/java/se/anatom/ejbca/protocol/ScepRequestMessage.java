@@ -26,7 +26,7 @@ import org.bouncycastle.asn1.cms.*;
 import org.bouncycastle.cms.*;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 
-import se.anatom.ejbca.util.Hex;
+import se.anatom.ejbca.util.Base64;
 
 /**
  * Class to handle SCEP request messages sent to the CA. TODO: don't forget extensions, e.g.
@@ -34,7 +34,7 @@ import se.anatom.ejbca.util.Hex;
  * TODO: extract senderNonce 
  * TODO: extract transactionId
  *
- * @version $Id: ScepRequestMessage.java,v 1.21 2003-07-21 14:18:30 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.22 2003-07-22 10:26:24 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage,
     Serializable {
@@ -67,7 +67,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
     /**
      * SenderNonce in a request is used as recipientNonce when the server sends back a reply to the
-     * client. This is hex encoded bytes
+     * client. This is base64 encoded bytes
      */
     private String senderNonce = null;
 
@@ -134,9 +134,19 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
             // Get self signed cert to identify the senders public key
             ASN1Set certs = sd.getCertificates();
-            // TODO!
-            // Requestors self-signed certificate is requestKeyInfo
-            //requestKeyInfo = cert.toByteArray();
+            if (certs.size() > 0) {
+                // There should be only one...
+                DEREncodable dercert = certs.getObjectAt(0);
+                if (dercert != null) {
+                    // Requestors self-signed certificate is requestKeyInfo
+                    ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+                    DEROutputStream dOut = new DEROutputStream(bOut);
+                    dOut.writeObject(dercert);
+                    if (bOut.size() > 0 ) {
+                        requestKeyInfo = bOut.toByteArray();
+                    }
+                }
+            }
 
             Enumeration sis = sd.getSignerInfos().getObjects();
 
@@ -152,20 +162,20 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                     if (a.getAttrType().getId().equals(id_senderNonce)) {
                         Enumeration values = a.getAttrValues().getObjects();
                         ASN1OctetString str = ASN1OctetString.getInstance(values.nextElement());
-                        senderNonce = Hex.encode(str.getOctets());
-                        log.debug("SenderNonce = " + senderNonce);
+                        senderNonce = new String(Base64.encode(str.getOctets(),false));
+                        log.debug("senderNonce = " + senderNonce);
                     }
                     if (a.getAttrType().getId().equals(id_transId)) {
                         Enumeration values = a.getAttrValues().getObjects();
                         DERPrintableString str = DERPrintableString.getInstance(values.nextElement());
                         transactionId = str.getString();
-                        log.debug("TransactionId = " + transactionId);
+                        log.debug("transactionId = " + transactionId);
                     }
                     if (a.getAttrType().getId().equals(id_messageType)) {
                         Enumeration values = a.getAttrValues().getObjects();
                         DERPrintableString str = DERPrintableString.getInstance(values.nextElement());
                         messageType = Integer.parseInt(str.getString());
-                        log.debug("Messagetype = " + messageType);
+                        log.debug("messagetype = " + messageType);
                     }
                 }
             }
@@ -473,7 +483,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     /**
      * Returns a senderNonce if present in the request
      *
-     * @return senderNonce as a string of hex encoded bytes
+     * @return senderNonce as a string of base64 encoded bytes
      */
     public String getSenderNonce() {
         return senderNonce;

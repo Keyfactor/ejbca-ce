@@ -14,7 +14,7 @@ import java.security.cert.X509Certificate;
 /**
  * A response message consisting of a single X509 Certificate.
  *
- * @version $Id: X509ResponseMessage.java,v 1.8 2003-07-21 14:18:30 anatom Exp $
+ * @version $Id: X509ResponseMessage.java,v 1.9 2003-07-22 10:26:24 anatom Exp $
  */
 public class X509ResponseMessage implements IResponseMessage {
     /** Certificate to be in response message, */
@@ -150,14 +150,14 @@ public class X509ResponseMessage implements IResponseMessage {
     /**
      * Sets a senderNonce if it should be present in the response
      *
-     * @param senderNonce a string of hex encoded bytes
+     * @param senderNonce a string of base64 encoded bytes
      */
     public void setSenderNonce(String senderNonce) {
     }
     /**
      * Sets a recipient if it should be present in the response
      *
-     * @param recipientNonce a string of hex encoded bytes
+     * @param recipientNonce a string of base64 encoded bytes
      */
     public void setRecipientNonce(String recipientNonce) {
     }

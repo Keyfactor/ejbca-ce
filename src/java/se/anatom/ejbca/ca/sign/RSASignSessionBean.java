@@ -92,7 +92,7 @@ import javax.ejb.ObjectNotFoundException;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.89 2003-07-21 14:18:26 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.90 2003-07-22 10:26:00 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     transient X509Certificate caCert;
@@ -763,7 +763,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 ret.setTransactionId(req.getTransactionId());
             }
             // Sendernonce is a random number
-            ret.setSenderNonce(Hex.encode("1234567890".getBytes()));
+            ret.setSenderNonce(Hex.encode("PrimeKey Solutions".getBytes()));
             // If we have a specified request key info, use it in the reply
             if (req.getRequestKeyInfo() != null) {
                 ret.setRecipientKeyInfo(req.getRequestKeyInfo());

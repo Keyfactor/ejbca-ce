@@ -38,13 +38,13 @@ import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 
-import se.anatom.ejbca.util.Hex;
+import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.7 2003-07-21 14:18:30 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.8 2003-07-22 10:26:24 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage, Serializable {
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);
@@ -59,11 +59,11 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
     private String failInfo = "2";
 
     /**
-     * SenderNonce. This is hex encoded bytes
+     * SenderNonce. This is base64 encoded bytes
      */
     private String senderNonce = null;
     /**
-     * RecipientNonce in a response is the senderNonce from the request. This is hex encoded bytes
+     * RecipientNonce in a response is the senderNonce from the request. This is base64 encoded bytes
      */
     private String recipientNonce = null;
     
@@ -164,10 +164,12 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
 
             if (status == IResponseMessage.STATUS_OK) {
                 certList.add(cert);
+                log.debug("Creating a STATUS_OK message.");
+            } else {
+                log.debug("Creating a STATUS_FAILED message.");
             }
 
             certList.add(signCert);
-
             CertStore certs = CertStore.getInstance("Collection",
                     new CollectionCertStoreParameters(certList), "BC");
 
@@ -258,7 +260,8 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             // senderNonce
             if (senderNonce != null) {
                 oid = new DERObjectIdentifier(ScepRequestMessage.id_senderNonce);
-                value = new DERSet(new DEROctetString(Hex.decode(senderNonce)));
+                log.debug("Added senderNonce: "+senderNonce);
+                value = new DERSet(new DEROctetString(Base64.decode(senderNonce.getBytes())));
                 attr = new Attribute(oid, value);
                 attributes.put(attr.getAttrType(), attr);
             }
@@ -266,7 +269,8 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             // recipientNonce
             if (recipientNonce != null) {
                 oid = new DERObjectIdentifier(ScepRequestMessage.id_recipientNonce);
-                value = new DERSet(new DEROctetString(Hex.decode(recipientNonce)));
+                log.debug("Added recipientNonce: "+recipientNonce);                
+                value = new DERSet(new DEROctetString(Base64.decode(recipientNonce.getBytes())));
                 attr = new Attribute(oid, value);
                 attributes.put(attr.getAttrType(), attr);
             }
@@ -343,7 +347,7 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
     /**
      * Sets a senderNonce if it should be present in the response
      *
-     * @param senderNonce a string of hex encoded bytes
+     * @param senderNonce a string of base64 encoded bytes
      */
     public void setSenderNonce(String senderNonce) {
         this.senderNonce = senderNonce;
@@ -351,7 +355,7 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
     /**
      * Sets a recipient if it should be present in the response
      *
-     * @param recipientNonce a string of hex encoded bytes
+     * @param recipientNonce a string of base64 encoded bytes
      */
     public void setRecipientNonce(String recipientNonce) {
         this.recipientNonce = recipientNonce;
