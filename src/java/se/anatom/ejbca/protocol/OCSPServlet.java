@@ -30,12 +30,15 @@ import org.apache.log4j.Logger;
 import org.apache.commons.lang.StringUtils;
 
 import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
+import se.anatom.ejbca.ca.sign.ISignSessionLocal;
+import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.log.Admin;
@@ -49,7 +52,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.10 2003-12-26 11:50:03 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.11 2003-12-27 10:58:01 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -57,6 +60,7 @@ public class OCSPServlet extends HttpServlet {
 
     private ICertificateStoreSessionLocal m_certStore;
     private ICAAdminSessionLocal m_caadminsession;
+    private ISignSessionLocal m_signsession = null;
     private Admin m_adm;
 
     private PrivateKey m_signkey;
@@ -178,6 +182,8 @@ public class OCSPServlet extends HttpServlet {
             ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) ctx.lookup("java:comp/env/ejb/CAAdminSessionLocal");
             m_caadminsession = caadminsessionhome.create();
             m_adm = new Admin(Admin.TYPE_INTERNALUSER);
+            ISignSessionLocalHome signhome = (ISignSessionLocalHome) ctx.lookup("java:comp/env/ejb/SignSessionLocal");
+            m_signsession = signhome.create();
             
             // Parameters for OCSP signing (private) key
             kspwd = config.getInitParameter("keyStorePass").trim();
@@ -372,10 +378,10 @@ public class OCSPServlet extends HttpServlet {
                     if (cacert != null) {
                         String issuerdn = CertTools.stringToBCDNString(cacert.getSubjectDN().toString()); 
                         int caid = issuerdn.hashCode();
-                        CAInfo cainfo = m_caadminsession.getCAInfo(m_adm, caid);
-                        Collection coll = cainfo.getExtendedCAServiceInfos();
-                        // TODO:
-                        basicRes.generate("sha1withrsa", m_signkey, m_signcerts, new Date(), "BC" );
+                        // Call extended CA services to get our OCSP stuff
+                        OCSPCAServiceResponse resp = (OCSPCAServiceResponse)m_signsession.extendedService(m_adm,caid, new OCSPCAServiceRequest(0));
+                        // Now use the returned OCSPServiceResponse to get private key anc cetificate chain to sign the ocsop response 
+                        basicRes.generate("sha1withrsa", resp.getOCSPSigningKey(), (X509Certificate[])(resp.getOCSPSigningCertificateChain().toArray()), new Date(), "BC" );
                         ocspresp = res.generate(OCSPRespGenerator.SUCCESSFUL, basicRes);                        
                     } else {
                         final String msg = "Unable to find CA certificate and key to generate OCSP response!";
