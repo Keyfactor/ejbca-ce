@@ -57,7 +57,7 @@ import com.novell.ldap.LDAPModificationSet;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.6 2004-07-23 10:24:42 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.7 2004-08-24 07:56:41 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher{
 	 	
@@ -148,10 +148,11 @@ public class LdapPublisher extends BasePublisher{
           lc = new LDAPConnection();        
         }
         String dn = null;
-
+        String certdn = null;
         try {
             // Extract the users DN from the cert.
-            dn = constructLDAPDN(CertTools.getSubjectDN((X509Certificate) incert));
+        	certdn = CertTools.getSubjectDN((X509Certificate) incert);
+            dn = constructLDAPDN(certdn);
         } catch (Exception e) {
             log.error("Error decoding input certificate: ", e);            
             throw new PublisherException("Error decoding input certificate.");            
@@ -164,7 +165,7 @@ public class LdapPublisher extends BasePublisher{
 
         // If not, see if we have old styld email-in-DN
         if (subjAltNameValue == null) {
-            email = CertTools.getPartFromDN(dn, "EmailAddress");
+            email = CertTools.getEmailFromDN(certdn);
         } else {
             try {
                 // Get extension value
@@ -225,13 +226,14 @@ public class LdapPublisher extends BasePublisher{
 
             if (oldEntry != null) {
                 // TODO: Are we the correct type objectclass?
-                modSet = getModificationSet(oldEntry, dn, false, true);
+                modSet = getModificationSet(oldEntry, certdn, false, true);
             } else {
-                objectclass = getUserObjectClass();
+                objectclass = getUserObjectClass(); // just used for logging
             }
 
-            attributeSet = getAttributeSet((X509Certificate) incert, getUserObjectClass(), dn, true, true);
+            attributeSet = getAttributeSet(getUserObjectClass(), certdn, true, true);
             if (email != null) {
+            	//log.debug("Adding email attribute: "+email);
                 LDAPAttribute mailAttr = new LDAPAttribute("mail", email);
                 if (oldEntry != null) {
                     modSet.add(LDAPModification.REPLACE, mailAttr);
@@ -241,7 +243,6 @@ public class LdapPublisher extends BasePublisher{
             }
 
             try {
-                attribute = getUserCertAttribute();
                 LDAPAttribute certAttr = new LDAPAttribute(getUserCertAttribute(), incert.getEncoded());
                 if (oldEntry != null) {
                     modSet.add(LDAPModification.REPLACE, certAttr);                    
@@ -256,11 +257,11 @@ public class LdapPublisher extends BasePublisher{
             log.debug("Publishing CA certificate to " + getHostname());
 
             if (oldEntry != null) {
-                modSet = getModificationSet(oldEntry, dn, false, false);
+                modSet = getModificationSet(oldEntry, certdn, false, false);
             } else {
-                objectclass = getCAObjectClass();
+                objectclass = getCAObjectClass(); // just used for logging
             }
-            attributeSet = getAttributeSet((X509Certificate) incert, getCAObjectClass(), dn, true, false);
+            attributeSet = getAttributeSet(getCAObjectClass(), certdn, true, false);
             try {
                 attribute = getCACertAttribute();
                 LDAPAttribute certAttr = new LDAPAttribute(getCACertAttribute(), incert.getEncoded());
@@ -293,14 +294,14 @@ public class LdapPublisher extends BasePublisher{
             // Add or modify the entry
             if (oldEntry != null && getModifyExistingUsers()) {
                 lc.modify(dn, modSet);
-                log.debug("\nModified object: " + dn + " successfully.");  
+                log.info("\nModified object: " + dn + " successfully.");  
             } else {
                 if(this.getCreateNonExisingUsers()){     
                   if (oldEntry == null) {
                     newEntry = new LDAPEntry(dn, attributeSet);
                   }
                   lc.add(newEntry);
-                  log.debug("\nAdded object: " + dn + " successfully.");
+                  log.info("\nAdded object: " + dn + " successfully.");
                 }  
             }
             // disconnect with the server
@@ -327,11 +328,13 @@ public class LdapPublisher extends BasePublisher{
         }
         X509CRL crl = null;
         String dn = null;
-
+        String crldn = null;
         try {
+            // Extract the users DN from the crl.
             crl = CertTools.getCRLfromByteArray(incrl);
-            // Extract the issuers DN from the crl.
+        	crldn = CertTools.getIssuerDN(crl);
             dn = constructLDAPDN(CertTools.getIssuerDN(crl));
+            // Extract the issuers DN from the crl.
         } catch (Exception e) {
         	log.error("Error decoding input CRL: ", e);        	
         	throw new PublisherException("Error decoding input CRL.");            
@@ -363,9 +366,9 @@ public class LdapPublisher extends BasePublisher{
         LDAPAttributeSet attributeSet = null;
 
         if (oldEntry != null) {
-            modSet = getModificationSet(oldEntry, dn, false, false);
+            modSet = getModificationSet(oldEntry, crldn, false, false);
         } else {
-            attributeSet = getAttributeSet(null, this.getCAObjectClass(), dn, true, false);
+            attributeSet = getAttributeSet(this.getCAObjectClass(), crldn, true, false);
         }
 
         try {
@@ -423,10 +426,11 @@ public class LdapPublisher extends BasePublisher{
           lc = new LDAPConnection();        
         }
         String dn = null;
-
+        String certdn = null;
         try {
             // Extract the users DN from the cert.
-            dn = constructLDAPDN(CertTools.getSubjectDN((X509Certificate) cert));
+        	certdn = CertTools.getSubjectDN((X509Certificate) cert);
+            dn = constructLDAPDN(certdn);
         } catch (Exception e) {
             log.error("Error decoding input certificate: ", e);            
             throw new PublisherException("Error decoding input certificate.");            
@@ -463,7 +467,7 @@ public class LdapPublisher extends BasePublisher{
 
             if (oldEntry != null) {            	
                 // TODO: Are we the correct type objectclass?
-                modSet = getModificationSet(oldEntry, dn, false, true);
+                modSet = getModificationSet(oldEntry, certdn, false, true);
                 modSet.add(LDAPModification.DELETE, new LDAPAttribute(getUserCertAttribute()));
             }else{
                 log.error("Certificate doesn't exist in database");            
@@ -774,7 +778,7 @@ public class LdapPublisher extends BasePublisher{
      *
      * @return LDAPAtributeSet created...
      */
-    protected LDAPAttributeSet getAttributeSet(X509Certificate cert, String objectclass, String dn, boolean extra, boolean person) {
+    protected LDAPAttributeSet getAttributeSet(String objectclass, String dn, boolean extra, boolean person) {
         LDAPAttributeSet attributeSet = new LDAPAttributeSet();
         LDAPAttribute attr = new LDAPAttribute("objectclass");
         // The full LDAP object tree is divided with ; in the objectclass
@@ -843,7 +847,10 @@ public class LdapPublisher extends BasePublisher{
             if (ou != null) {
                 attributeSet.add(new LDAPAttribute("ou", ou));
             }
-        }
+            String uid = CertTools.getPartFromDN(dn, "uid");
+            if (uid != null) {
+                attributeSet.add(new LDAPAttribute("uid", uid));
+            }        }
         return attributeSet;
     } // getAttributeSet
 	
@@ -913,7 +920,10 @@ public class LdapPublisher extends BasePublisher{
             if (ou != null) {
                 modSet.add(LDAPModification.REPLACE, new LDAPAttribute("ou", ou));
             }
-        }
+            String uid = CertTools.getPartFromDN(dn, "uid");
+            if (uid != null) {
+                modSet.add(LDAPModification.REPLACE, new LDAPAttribute("uid", uid));
+            }        }
         return modSet;
     } // getModificationSet
     
