@@ -14,6 +14,16 @@
 - LDAP object classes for devices.
 - New structure for the cli, it now lives in the bin subdirectory.
 
+3.0.7
+-----
+* [ECA-54] - HardCATokens goes off-line when bean gets passivated
+* [ECA-49] - saving of generated request from CA fails on IE
+
+3.0.6
+-----
+* [ECA-40] - defined hardtoken issuer and profiles disapears after some time
+* [ECA-42] - <enterpris-beans> tag missing in xml fil
+
 3.0.5
 -----
 Added support for activation of hardcatokens in View CA Info page.
