@@ -12,13 +12,21 @@ import java.security.cert.X509Certificate;
 
 /**
  * Base interface for response messages sent from the CA. Implementors of this interface must also
- * implement Serializable if they are to be sent to any EJB bussiness methods. Example: <code>
- * ResponseMessage resp = new ResponseMessage(); resp.setCertificate(cert); resp.setStatus(OK); if
- * (resp.requireSignKeyInfo()) { resp.setSignKeyInfo(signcert,signkey) }; if
- * (resp.requireEncKeyInfo()) { resp.setEncKeyInfo(enccert,enckey) }; resp.create(); byte[]
- * responseMessage = resp.getResponseMessage(); </code>
+ * implement Serializable if they are to be sent to any EJB bussiness methods. 
+ * Example: <code>
+ * ResponseMessage resp = new ResponseMessage(); 
+ * resp.setCertificate(cert); resp.setStatus(OK); 
+ * if (resp.requireSignKeyInfo()) { 
+ *     resp.setSignKeyInfo(signcert,signkey) 
+ * }; 
+ * if (resp.requireEncKeyInfo()) { 
+ *     resp.setEncKeyInfo(enccert,enckey) 
+ * }; 
+ * resp.create(); 
+ * byte[] responseMessage = resp.getResponseMessage(); 
+ * </code>
  *
- * @version $Id: IResponseMessage.java,v 1.10 2003-10-09 08:46:27 anatom Exp $
+ * @version $Id: IResponseMessage.java,v 1.11 2003-11-03 13:05:52 anatom Exp $
  */
 public interface IResponseMessage {
 

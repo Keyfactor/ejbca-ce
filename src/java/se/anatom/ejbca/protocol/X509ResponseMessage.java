@@ -1,6 +1,8 @@
 package se.anatom.ejbca.protocol;
 
 import java.io.IOException;
+import java.io.Serializable;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -16,9 +18,9 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * A response message consisting of a single X509 Certificate.
  *
- * @version $Id: X509ResponseMessage.java,v 1.12 2003-10-21 13:48:47 herrvendil Exp $
+ * @version $Id: X509ResponseMessage.java,v 1.13 2003-11-03 13:05:52 anatom Exp $
  */
-public class X509ResponseMessage implements IResponseMessage {
+public class X509ResponseMessage implements IResponseMessage, Serializable {
     /** Certificate to be in response message, */
     private Certificate cert = null;
 

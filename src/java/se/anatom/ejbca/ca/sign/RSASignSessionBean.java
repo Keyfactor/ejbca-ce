@@ -62,7 +62,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.109 2003-10-29 19:44:59 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.110 2003-11-03 13:05:44 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -522,11 +522,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     throw new InvalidKeyException("Key is null!");
                 }
                 Certificate cert = null;
-                try {
-                    cert = createCertificate(admin,data,ca,reqpk,keyUsage);        
-                } catch (IllegalKeyException e) {
-                    log.error("Public key is of wrong type", e);
-                }
+                cert = createCertificate(admin,data,ca,reqpk,keyUsage);        
                 if (cert != null) {
                     ret.setCertificate(cert);
                     ret.setStatus(ResponseStatus.SUCCESS);
@@ -542,6 +538,15 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
             // TODO: handle returning errors as response message,
             // javax.ejb.ObjectNotFoundException and the others thrown...
+        } catch (ObjectNotFoundException oe) {
+            throw oe;
+        } catch (AuthStatusException se) {
+            throw se;
+        } catch (AuthLoginException le) {
+            throw le;
+        } catch (IllegalKeyException ke) {
+            log.error("Key is of unknown type: ", ke);
+            throw ke;
         } catch (IllegalKeyStoreException e) {
             throw new IllegalKeyException(e);
         } catch (UnsupportedEncodingException e) {
