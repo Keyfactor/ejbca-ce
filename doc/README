@@ -1,4 +1,4 @@
-$Id: README,v 1.135 2004-05-09 08:33:24 anatom Exp $
+$Id: README,v 1.136 2004-05-19 10:12:18 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -772,7 +772,7 @@ These values should be set during deployment of PrimeCA. After the values have b
 with the 'ant deploy' command.
 
 Example to generate OCSP request using OpenSSL:
-openssl ocsp -issuer Test-CA.pem -cert Test.pem -req_text -url http://localhost:8080/ejbca/publicweb/status/ocsp
+openssl ocsp -issuer Test-CA.pem -CAfile Test-CA.pem -cert Test.pem -req_text -url http://localhost:8080/ejbca/publicweb/status/ocsp
 
 If Mozilla is to request and accept OCSP-responses from a CA it must be configured:
 
