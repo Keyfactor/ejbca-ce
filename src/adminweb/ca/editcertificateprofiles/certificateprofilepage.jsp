@@ -17,6 +17,7 @@
   Collection authorizedcas = cabean.getAuthorizedCAs();
   HashMap caidtonamemap = cabean.getCAIdToNameMap();
 
+  TreeMap authorizedpublishers = ejbcawebbean.getInformationMemory().getAuthorizedPublisherNames();
   HashMap publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
 
   int row = 0;
@@ -437,16 +438,17 @@ function checkallfields(){
         <%= ejbcawebbean.getText("PUBLISHERS") %> <br>&nbsp;
       </td>
       <td width="50%"> 
-        <select name="<%=SELECT_AVAILABLEPUBLISHERS%>" size="5" multiple  <% if(certificateprofiledata.getType() != CertificateDataBean.CERTTYPE_ENDENTITY) out.write(" disabled "); %>
+        <select name="<%=SELECT_AVAILABLEPUBLISHERS%>" size="5" multiple  <% if(certificateprofiledata.getType() != CertificateDataBean.CERTTYPE_ENDENTITY) out.write(" disabled "); %>>
            <%   Collection usedpublishers = certificateprofiledata.getPublisherList(); 
-                iter = publisheridtonamemap.keySet().iterator(); 
+                iter = authorizedpublishers.keySet().iterator(); 
                 while(iter.hasNext()){
-                  Integer next = (Integer) iter.next(); %>
-           <option  value="<%= next.intValue() %>" 
-              <%    if(usedpublishers.contains(next))
+                  String next = (String) iter.next(); 
+                  Integer nextid = (Integer) authorizedpublishers.get(next); %>
+           <option  value="<%= nextid %>" 
+              <%    if(usedpublishers.contains(nextid))
                       out.write(" selected ");
                   %>>
-              <%= publisheridtonamemap.get(next) %>         
+              <%= next %>         
            </option>  
               <% } %>
         </select>

@@ -527,7 +527,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean  {
 	  HashSet returnval = new HashSet();
 	  Collection result = null;
       boolean superadmin = false;
-
+      // If superadmin return all available publishers
 	  try {
 	  	superadmin = getAuthorizationSession(admin).isAuthorized(admin,AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
 		result = this.publisherhome.findAll();
@@ -539,7 +539,8 @@ public class LocalPublisherSessionBean extends BaseSessionBean  {
 		}
 	  } catch (AuthorizationDeniedException e1) {}
 	  	catch (FinderException fe){}
-
+       
+      // If ca admin return
 	  if(!superadmin){
         Iterator authorizedcas = this.getAuthorizationSession(admin).getAuthorizedCAIds(admin).iterator();
         while(authorizedcas.hasNext()){
