@@ -4,6 +4,8 @@ Thanks to a bug in B1 the database table 'HardTokenPropertyData'. If you have be
 using the HardToken features in Beta1, or plan to use them in the future, this table must be rebuilt.
 'drop table hardtokenpropertydata' will delete and rebuild the table (data must be entered again).
 
+Apart from this, it is a plug-in upgrade.
+
 EJBCA V3.0
 -------------
 EJBCA 3.0 is a major new release taking the Open Source CA to new heights. 

@@ -1,4 +1,4 @@
-$Id: TODO,v 1.78 2004-03-10 20:27:57 anatom Exp $
+$Id: TODO,v 1.79 2004-03-18 08:00:30 anatom Exp $
 
 V 3.x
 -----
@@ -6,15 +6,15 @@ V 3.x
 - More automated testing, Junit as well as web-stuff (httpjunit).
 - Continue improving exceptions and error handling.
 - Commands and status for certificate suspend (command for unrevoke, status for unrevoked).
-- Strategy for handling certificate issuance if notAfter is beyond CAs notAfter.
 - Import utility to get users from external datasources.
 - Command line to edit/change users.
 - Better command line tools for batch stuff.
-- Add smart card support (PKCS15) in CA for protection of private key.
-- CMP (rfc 2510)
 
 General
 -------
+- Add smart card support (PKCS15) in CA for protection of private key.
+- CMP (rfc 2510)
+- Strategy for handling certificate issuance if notAfter is beyond CAs notAfter.
 - Run on other appservers, ie Jonas, Websphere etc.
 - Test LDAP with mod_authz_ldap in apache
 - Implement XKMS specifications
