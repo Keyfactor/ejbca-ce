@@ -1,7 +1,7 @@
 #
-# $Id: ejbca.properties.sample,v 1.7 2005-03-07 09:39:41 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.8 2005-03-07 15:33:44 anatom Exp $
 #
-# This is just a sample file to override properties used
+# This is a sample file to override properties used
 # during development (or deployment) of EJBCA
 # 
 # You should copy and rename this file to .ejbca.properties
@@ -69,6 +69,7 @@ jboss.home=${env.JBOSS_HOME}
 #database.password=postgres
 
 # ------------ mail configuration ---------------------
+
 # Used to send notification email from the RA
 # See ${ejbca.home}/src/appserver/ejbca-mail-service.xml
 # It will be copied in ${jboss.server.dir}/deploy/ejbca-mail-service.xml
@@ -88,31 +89,45 @@ mail.from=ejbca-donotreply@domain.com
 mail.debug=true
 
 
-# ------------ certificate configuration ---------------------
-# 
-#
+# ------------ Basic CA configuration ---------------------
+
+# This installation will create a first administrative CA. This CA will be used to create the first
+# superadministrator and for the SSL server certificate of administrative web server.
+# When the administrative web server have been setup you can create other CA:s and administrators.
+# This is only used for administrative purposes,
+# Enter a short name for the CA.
 ca.name=AdminCA1
 
+# The Distinguished Name of the CA. 
+# This is used in the CA certificate to distinguish the CA.
 ca.dn=CN=AdminCA1,O=EJBCA Sample,C=SE
 
-ca.keysize=512
+# The keysize in bits of the CA, only digits.
+ca.keysize=2048
 
-ca.validity=365
+# The validity in days for the CA, only digits.
+ca.validity=3650
 
-# Certificate Policy id, like '2.5.29.32.0' for any policy or 'NO' for no policy at all.
+# The policy id of the CA. Policy id determines which PKI policy the CA uses.
+# Type your policy id or use '2.5.29.32.0' for 'any policy' (rfc3280) or 'null' for no policy at all.
 ca.policy=null
+
+# ------------ Web GUI configuration ---------------------
 
 # Password for java trust keystore (JAVA_HOME/jre/lib/security/cacerts), default is changeit.
 java.trustpassword=changeit
 
-# CN should match your hosts DNS name to avoid browser warnings.
-httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
+# The password used to protect the generated super administrator P12 keystore (to be imported in browser).
+# Choose a good password here.
+superadmin.password=ejbca
 
-# Used to protect servers SSL keystore
+# The password used to protect the web servers SSL keystore.
+# Choose a good passowrd here.
 httpsserver.password=serverpwd
 
-# The servers DNS host name, must exist on client using the admin GUI.
+# The CA servers DNS host name, must exist on client using the admin GUI.
 httpsserver.hostname=localhost
 
-# Used to protect super administrator P12 keystore (to be imported in browser)
-superadmin.password=ejbca
+# The Distinguished Name of the SSL server certificate used by the administrative web gui.
+# The CN part  should match your hosts DNS name to avoid browser warnings.
+httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
