@@ -72,11 +72,17 @@ Now when everything is installed, there are a few things to configure before sta
 Most important, to run the CA a keystore must be in the directory designated by the item 'keyStore' in src/ca/META-INF/ejb-jar.xml (default /tmp/server.p12). A test keyStore is provided in 'src/ca/keystore/server.p12'.
 
 For the impatient:
-1. Copy 'src/ca/keyStore/server.p12' to /tmp.
-2. Start JBoss, jars and wars should be deployed.
-3. Run the tests with 'runtest.sh/bat'.
+1. Remove the file 'src/ca/META-INF/jaws.xml' (the default HypersonicDB database will be used in JBoss).
+2. Build everything again with 'ant'.
+3. Deploy EJBCA to JBoss with 'deploy.sh/cmd'.
+4. Copy 'src/ca/keyStore/server.p12' to /tmp.
+5. Start JBoss, jars and wars should be deployed.
+6. Run the tests with 'runtest.sh/cmd'.
 
 For the others:
+
+Configure the database to be used in JBoss. See HOWTO-<database>.txt files for this.
+If the default HypersonicDB is to be used the file 'src/ca/META-INF/jaws.xml' can simply be removed.
 
 Setting up your own CA:
 
