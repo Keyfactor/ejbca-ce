@@ -10,11 +10,8 @@ import java.io.InputStreamReader;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import javax.naming.InitialContext;
-
 import org.ietf.ldap.LDAPDN;
 
-import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /**
@@ -22,7 +19,7 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
  *
  * The main porpose of this program is to provide easy installment of EJBCA.
  */
-public class Install {
+public class Install extends BaseCommand {
 
 	public static int ARG_COMMAND   =  0;
 	public static int ARG_OS               =  1;
@@ -63,6 +60,7 @@ public class Install {
 	
 	public Install(String osstring, String language, String version, String appserverstring) throws Exception{
 			
+        super();
 		reader = new BufferedReader(new InputStreamReader(System.in));
 		
 		text = new Properties();
@@ -122,17 +120,10 @@ public class Install {
 	 * @return true if all requirements are set.
 	 */
 	private boolean checkRequirements(){
-	  boolean retval = false;
-	  
-      // Check that JBOSS is running 	  	  	  
-	  try{
-	    IUserAdminSessionHome home = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow((new InitialContext()).lookup("UserAdminSession"), IUserAdminSessionHome.class );
-	    retval= true;
-	  }catch(Exception e){
-		System.out.println(text.getProperty("APPSERVMUSTBERUNNING"));
-	  }
-
-	  	
+	  boolean retval = appServerRunning();
+      if (!retval) {
+        System.out.println(text.getProperty("APPSERVMUSTBERUNNING"));
+      }	  
 	  return retval;
 	}
 	
@@ -204,7 +195,7 @@ public class Install {
 			System.out.print(text.getProperty("ENTERKEYSIZE"));
 			answer = getAnswer();
 		}
-		this.keysize = this.getDigitAnser(answer);		
+		this.keysize = this.getDigitAnswer(answer);		
 	}
 	
 	private void getValidity(){
@@ -215,7 +206,7 @@ public class Install {
 			System.out.print(text.getProperty("ENTERVALIDITY"));
 			answer = getAnswer();
 		}
-		this.validity = this.getDigitAnser(answer);				
+		this.validity = this.getDigitAnswer(answer);				
 	}
 	
 	private void getPolicyId(){
@@ -491,7 +482,7 @@ public class Install {
 	    return !nondigitordot.matcher(answer).find();
     }
 	
-	private int getDigitAnser(String answer){
+	private int getDigitAnswer(String answer){
 		return Integer.parseInt(answer);
 	}
 	

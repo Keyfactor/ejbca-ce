@@ -6,9 +6,9 @@ import org.apache.log4j.PropertyConfigurator;
 /**
  * Implements the RA command line interface
  *
- * @version $Id: ra.java,v 1.24 2004-01-31 14:24:58 herrvendil Exp $
+ * @version $Id: ra.java,v 1.25 2004-04-10 17:12:26 anatom Exp $
  */
-public class ra {
+public class ra extends BaseCommand {
     /**
      * main RA
      *

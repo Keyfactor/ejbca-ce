@@ -6,9 +6,9 @@ import org.apache.log4j.PropertyConfigurator;
 /**
  * Implements the CA command line interface
  *
- * @version $Id: ca.java,v 1.34 2004-01-31 14:24:58 herrvendil Exp $
+ * @version $Id: ca.java,v 1.35 2004-04-10 17:12:25 anatom Exp $
  */
-public class ca {
+public class ca extends BaseCommand {
     /**
      * Main
      *
