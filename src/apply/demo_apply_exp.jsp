@@ -2,7 +2,7 @@
 
 <HTML>
 <HEAD>
-<TITLE>EJBCA IE Certificate Enroll</TITLE>
+<TITLE>EJBCA IE Demo Certificate Enroll</TITLE>
 
  <object
    classid="clsid:43F8F289-7A20-11D0-8F06-00C04FC295E1"
@@ -53,7 +53,7 @@
 </HEAD>
 <BODY onLoad="GetProviderList()" bgcolor="#ffffff" link="black" vlink="black" alink="black">
 <center>
-<FONT face=arial size="3"><strong>EJBCA IE Certificate Enrollment
+<FONT face=arial size="3"><strong>EJBCA IE Demo Certificate Enrollment
 </strong></FONT>
 </center>
 
@@ -86,10 +86,15 @@ try  {
 %>
 <HR>
 <FORM NAME="CertReqForm" ACTION="/apply/certreq" ENCTYPE=x-www-form-encoded METHOD=POST>
- Please give your username and password, then click OK to fetch your certificate.<BR>
-
-        Username: <input type=text size=10 name=user value="foo"><br>
-        Password: <input type=text size=10 name=password value="foo123"><br>
+Certificates issued by this CA comes with absolutely NO WARRANTY whatsoever. 
+NO AUTHENTICATION is performed on the information entered below.
+<p>
+Please give your name, then click OK to fetch your certificate.<BR>
+<INPUT name=user type=hidden><br>
+<INPUT name=dn type=hidden value="C=SE,O=AnaTom,CN="><br>
+Common Name, e.g. Sven Svensson:<br>
+	<INPUT NAME=cn TYPE=text SIZE=30><p>
+Email (you may leave empty): <INPUT name=email TYPE=text size=20><p>
 
     <P>Please choose the CSP you wish to use from the list below (the default is probably good):</P>
     <SELECT NAME="CspProvider">
@@ -149,6 +154,8 @@ try  {
           result = MsgBox("Unable to generate PKCS#10 certificate request.", 0, "Alert")
           Exit Sub
        end if
+       TheForm.user.Value=TheForm.dn.Value+TheForm.cn.Value
+       TheForm.user.Value=TheForm.user.Value+",EmailAddress="+TheForm.email.Value
        TheForm.pkcs10.Value = result
        TheForm.Submit
        Exit Sub
