@@ -443,6 +443,19 @@ ca.ear, canora.ear, ra.jar, adminweb.war, admin.jar, sampleauth.war">
   </target>
 
   <!-- =================================================================== -->
+  <!-- Replace every occurrence of the DefaultDS to something else (here ejbcaDS) -->
+  <!-- =================================================================== -->
+
+  <target name="replaceDS">
+        <replace dir="${src}" value="java:/ejbcaDS">
+        <include name="**/*.xml"/>
+        <include name="**/*.java"/>
+        <replacetoken>java:/DefaultDS</replacetoken>
+        </replace>
+  </target>
+
+
+  <!-- =================================================================== -->
   <!-- Run JUnit tests                                                     -->
   <!-- =================================================================== -->
 <!--
