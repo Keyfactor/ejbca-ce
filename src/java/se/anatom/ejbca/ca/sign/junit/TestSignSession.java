@@ -32,7 +32,7 @@ import junit.framework.*;
 
 /** Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.4 2002-03-21 11:49:08 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.5 2002-03-21 12:50:54 anatom Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -186,14 +186,14 @@ public class TestSignSession extends TestCase {
         boolean verify = req2.verify();
         cat.debug("Verify returned " + verify);
         if (verify == false) {
-            System.out.println("Aborting!");
+            cat.debug("Aborting!");
             return;
         }
         cat.debug("CertificationRequest generated succefully.");
         byte[] bcp10 = bOut.toByteArray();
         X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", bcp10);
         assertNotNull("Failed to create certificate", cert);
-        System.out.println("Cert="+cert.toString());
+        cat.debug("Cert="+cert.toString());
         cat.debug("<test03TestBCPKCS10()");
     }
     public void test04TestKeytoolPKCS10() throws Exception {

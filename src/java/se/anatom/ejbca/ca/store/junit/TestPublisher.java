@@ -17,10 +17,10 @@ import junit.framework.*;
 
 /** Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.6 2002-01-08 12:32:29 anatom Exp $
+ * @version $Id: TestPublisher.java,v 1.7 2002-03-21 12:50:54 anatom Exp $
  */
 public class TestPublisher extends TestCase {
-    
+
     static byte[] testcert = Base64.decode(
     ("MIICWzCCAcSgAwIBAgIIJND6Haa3NoAwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
     +"AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw"
@@ -35,7 +35,7 @@ public class TestPublisher extends TestCase {
     +"5wSOJhoVJSaEGHMPw6t3e+CbnEL9Yh5GlgxVAJCmIqhoScTMiov3QpDRHOZlZ15c"
     +"UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+"
     +"XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==").getBytes());
-    
+
     static byte[] testcacert = Base64.decode(
     ("MIICLDCCAZWgAwIBAgIISDzEq64yCAcwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
     +"AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAxMTIw"
@@ -87,9 +87,9 @@ public class TestPublisher extends TestCase {
     protected void tearDown() throws Exception {
     }
     private Context getInitialContext() throws NamingException {
-        System.out.println(">getInitialContext");
+        cat.debug(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        System.out.println("<getInitialContext");
+        cat.debug("<getInitialContext");
         return ctx;
     }
 
@@ -107,21 +107,21 @@ public class TestPublisher extends TestCase {
         assertTrue("Storing certificate failed", ret);
         cat.debug("<test02AddCertAgain()");
     }
-    
+
     public void test03StoreCRL() throws Exception {
         cat.debug(">test03StoreCRL()");
         boolean ret = pub.storeCRL(testcrl, null, 1);
         assertTrue("Storing CRL failed", ret);
         cat.debug("<test03StoreCRL()");
     }
-    
+
     public void test04StoreCRLAgain() throws Exception {
         cat.debug(">test04StoreCRLAgain()");
         boolean ret = pub.storeCRL(testcrl, null, 1);
         assertTrue("Storing CRL failed", ret);
         cat.debug("<test04StoreCRLAgain()");
     }
-    
+
     public void test05AddCACert() throws Exception {
         cat.debug(">test05AddCACert()");
         X509Certificate cacert = CertTools.getCertfromByteArray(testcacert);
@@ -136,7 +136,7 @@ public class TestPublisher extends TestCase {
         assertTrue("Storing certificate failed", ret);
         cat.debug("<test06AddCACertAgain()");
     }
-    
+
 }
 
 

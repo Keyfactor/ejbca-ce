@@ -21,7 +21,7 @@ import junit.framework.*;
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.4 2002-01-08 12:32:29 anatom Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.5 2002-03-21 12:50:54 anatom Exp $
  */
 public class TestBatchMakeP12 extends TestCase {
 
@@ -47,9 +47,9 @@ public class TestBatchMakeP12 extends TestCase {
     protected void tearDown() throws Exception {
     }
     private Context getInitialContext() throws NamingException {
-        System.out.println(">getInitialContext");
+        cat.debug(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        System.out.println("<getInitialContext");
+        cat.debug("<getInitialContext");
         return ctx;
     }
     private String genRandomUserName() throws Exception {
@@ -62,7 +62,7 @@ public class TestBatchMakeP12 extends TestCase {
             int randint = rand.nextInt(9);
             username += (new Integer(randint)).toString();
         }
-        System.out.println("Generated random username: username =" + username);
+        cat.debug("Generated random username: username =" + username);
         return username;
     } // genRandomUserName
     private String genRandomPwd() throws Exception {
@@ -75,31 +75,30 @@ public class TestBatchMakeP12 extends TestCase {
             int randint = rand.nextInt(9);
             password += (new Integer(randint)).toString();
         }
-        System.out.println("Generated random pwd: password=" + password);
+        cat.debug("Generated random pwd: password=" + password);
         return password;
     } // genRandomPwd
 
     public void test01CreateNewUsers() throws Exception {
         cat.debug(">test01CreateNewUser()");
-            UserData data1=null;
-            String username = genRandomUserName();
-            data1 = home.create(username, "foo123", "C=SE, O=AnaTom, CN="+username);
-            assertNotNull("Failed to create user "+username, data1);
-            data1.setType(SecConst.USER_ENDUSER);
-            data1.setSubjectEmail(username+"@anatom.se");
-            data1.setClearPassword("foo123");
-            System.out.println("created "+username+ ", pwd=foo123");
+        UserData data1=null;
+        String username = genRandomUserName();
+        data1 = home.create(username, "foo123", "C=SE, O=AnaTom, CN="+username);
+        assertNotNull("Failed to create user "+username, data1);
+        data1.setType(SecConst.USER_ENDUSER);
+        data1.setSubjectEmail(username+"@anatom.se");
+        data1.setClearPassword("foo123");
+        cat.debug("created "+username+ ", pwd=foo123");
 
 
-            UserData data4=null;
-            String username1 = genRandomUserName();
-            data4 = home.create(username1, "foo123", "C=SE, O=AnaTom, CN="+username1);
-            assertNotNull("Failed to create user "+username1, data4);
-            data4.setType(SecConst.USER_ENDUSER);
-            data4.setSubjectEmail(username1+"@anatom.se");
-            data4.setClearPassword("foo123");
-            System.out.println("created "+username1+ ", pwd=foo123");
-
+        UserData data4=null;
+        String username1 = genRandomUserName();
+        data4 = home.create(username1, "foo123", "C=SE, O=AnaTom, CN="+username1);
+        assertNotNull("Failed to create user "+username1, data4);
+        data4.setType(SecConst.USER_ENDUSER);
+        data4.setSubjectEmail(username1+"@anatom.se");
+        data4.setClearPassword("foo123");
+        cat.debug("created "+username1+ ", pwd=foo123");
         cat.debug("<test01CreateNewUsers()");
     }
     public void test02MakeP12() throws Exception {

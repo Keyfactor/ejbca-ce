@@ -1,4 +1,4 @@
-$Id: TODO,v 1.18 2002-03-20 16:52:55 anatom Exp $
+$Id: TODO,v 1.19 2002-03-21 12:50:54 anatom Exp $
 
 V 1.0
 -----
@@ -33,7 +33,7 @@ CA).
 - Make RA for large scale deployment, different orgunits for different admins.
 Secure remote RA, RA authenticates requests.
 - Complete implementation of createCertificate() method in SignSessionBean.
-- Run on other appservers, ie Weblogic, Websphere etc.
+- Run on other appservers, ie Websphere etc.
 - Add smart card support (PKCS15) in CA for protection of private key.
 - Make CA/RA for off-line authorization of requests for high security
 environments.

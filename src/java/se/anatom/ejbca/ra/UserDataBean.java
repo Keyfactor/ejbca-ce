@@ -140,13 +140,10 @@ public class UserDataBean implements javax.ejb.EntityBean {
         type = t;
     }
     public void setEntityContext(EntityContext ctx) {
-        this.ctx = ctx;
+        // Not implemented.
     }
     public void unsetEntityContext() {
-        this.ctx = null;
-    }
-    public EntityContext getEntityContext() {
-        return this.ctx;
+        // Not implemented.
     }
     public void ejbActivate() {
         // Not implemented.

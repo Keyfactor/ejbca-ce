@@ -8,44 +8,43 @@ tables for the entity beans, CertificateData, CRLData and UserData.
 CREATE TABLE CERTIFICATEDATA
 (
 B64CERT          LONG,
-FP                       VARCHAR2(32)      NOT NULL,
+FP               VARCHAR2(45)      NOT NULL,            
 SUBJECTDN        VARCHAR2(256),
 ISSUERDN         VARCHAR2(256),
-SERNO            VARCHAR2(16),
+SERNO            VARCHAR2(32),
 STATUS           INTEGER,
 TYPE             INTEGER,
-CAFP             VARCHAR(32),
+CAFP             VARCHAR(45),
 EXPIREDATE       NUMBER,
 REVOCATIONDATE   NUMBER,
 REVOCATIONREASON INTEGER,
-PRIMARY KEY("FP")
+PRIMARY KEY("FP")       
 );
-
-describe CRLDATA;
 
 CREATE TABLE CRLDATA
 (
 B64CRL           LONG,
-FP                       VARCHAR2(32)      NOT NULL,
+FP               VARCHAR2(45)      NOT NULL,            
 ISSUERDN         VARCHAR2(256),
-CRLNUMBER        VARCHAR2(16),
-CAFP             VARCHAR(32),
+CRLNUMBER        VARCHAR2(32),
+CAFP             VARCHAR(45),
 THISUPDATE       NUMBER,
 NEXTUPDATE       NUMBER,
-PRIMARY KEY("FP")
+PRIMARY KEY("FP")       
 );
 
 CREATE TABLE USERDATA
 (
 USERNAME         VARCHAR2(32) NOT NULL,
-PASSWORD         VARCHAR2(32),
-PASSWORDHASH VARCHAR2(32),
+PASSWORD         VARCHAR2(32),          
+PASSWORDHASH     VARCHAR2(64),              
 SUBJECTDN        VARCHAR2(256),
-SUBJECTEMAIL VARCHAR2(128),
+SUBJECTEMAIL     VARCHAR2(128),
 STATUS           INTEGER,
 TYPE             INTEGER,
-PRIMARY KEY("USERNAME")
+PRIMARY KEY("USERNAME") 
 );
+
 
 Don't forget to create public synonyms and access rights for your tables, or
 however you organize the data...
