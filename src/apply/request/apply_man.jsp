@@ -2,7 +2,7 @@
 
 <HTML>
 <HEAD>
-<TITLE>EJBCA maunal certificate enroll</TITLE>
+<TITLE>EJBCA manual certificate enroll</TITLE>
 </HEAD>
 <BODY bgcolor="#ffffff" link="black" vlink="black" alink="black">
 <center>

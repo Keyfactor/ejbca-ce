@@ -2,7 +2,8 @@
 ---
 Commands for batch processing, and other batch fixes.
 Better error messages when user applies for cert with browser.
-Bugfixes
+Fixed bug where NextUpdate in CRLs were incorrect.
+Minor improvements and bugfixes.
 
 1.1
 ---
