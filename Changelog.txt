@@ -9,6 +9,7 @@
 Fixed warning in SSL deployment with JBoss 3.2.4.
 Long timeout for ca creation in JBoss 3.2.4.
 Fix for keystore path in Tomcat41-JBoss32.
+Some doc and xml fixes.
 
 3.0
 ---
