@@ -1,4 +1,4 @@
-$Id: README,v 1.136 2004-05-19 10:12:18 anatom Exp $
+$Id: README,v 1.137 2004-05-19 14:01:03 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -758,7 +758,10 @@ servlet can process requests for certificates signed by a CA running in EJBCA, a
 service has not been deactivated. 
 
 The OCSP servlet receives OCSP request by http(s) and send back a status response signed by the CA, or 
-with a dedicated responder certificate.. 
+with a dedicated responder certificate.
+
+For a CA to be valid as an OCSP-responder it must have the KeyUsage 'Digital Signature'. 
+In the certificate profile used to create the CA, this KeyUsage should be included if the CA is to sign OCSP-responses.
 
 There are a few one-time parameters affecting the OCSP service in the file src/publicweb/status/WEB-INF/web.xml:
 'useCASigningCert' - If set to true (default) the OCSP reponses will be signed directly by the CAs certificate instead 
@@ -790,6 +793,7 @@ An appropriate URL for validation is: http://<hostname>:8080/ejbca/publicweb/sta
 If using a dedicated OCSP responder certificate, this certificate must be imported in Mozilla as a Trusted CA certificate, so it
 can be set as OCSP signer in 'Privacy & Security->Validation'. You can do this through 'View Certificates' in EJBCA 
 (http://localhost:8080/ejbca/publicweb/webdist/cacert.jsp).
+
 
 EXPORT/IMPORT PROFILES
 =======================
