@@ -55,7 +55,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.14 2003-12-29 16:27:31 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.15 2003-12-29 16:44:55 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -371,7 +371,7 @@ public class OCSPServlet extends HttpServlet {
                                                    , cacert.getSubjectDN().getName()
                                                    , certId.getSerialNumber());
                             if (null == rci) {
-                                m_log.info("Unable to find revocation information for certificate with serial '"
+                                m_log.debug("Unable to find revocation information for certificate with serial '"
                                            + certId.getSerialNumber() + "'"
                                            + " from issuer '" + cacert.getSubjectDN().getName() + "'");
                                 basicRes.addResponse(certId, new UnknownStatus());
@@ -386,7 +386,7 @@ public class OCSPServlet extends HttpServlet {
                                     certStatus = null;
                                 }
                                 if (m_log.isDebugEnabled()) {
-                                    m_log.info("Adding status information for certificate with serial '"
+                                    m_log.debug("Adding status information for certificate with serial '"
                                                + certId.getSerialNumber() + "'"
                                                + " from issuer '" + cacert.getSubjectDN().getName() + "'");
                                 }
