@@ -30,6 +30,7 @@ Support for PostgreSQL 8.0 on JBoss 4.
 Fix for 'rule' column name in config for MS SQL server 2000.
 Fixed problem where requiring RFC822Name caused error when editing end entity.
 Fixed bug with extra commas in publishers when selected DN components don't exist in DN.
+Changed 'Batch' text in adminweb to be more descriptive.
 
 3.0.4
 -----
