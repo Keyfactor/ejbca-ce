@@ -357,6 +357,10 @@
          <method-name>*</method-name>
      </method>
      <method>
+         <ejb-name>LDAPPublisherSession</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
          <ejb-name>CertificateStoreSession</ejb-name>
          <method-name>storeCRL</method-name>
      </method>
