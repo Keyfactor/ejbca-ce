@@ -77,7 +77,7 @@
     <path id="xdoclet.classpath">
         <fileset dir="lib" includes="*.jar" />
         <fileset dir="lib/ext" includes="*.jar" />
-        <fileset dir="lib/xdoclet-1.2.1/lib" includes="*.jar" />
+        <fileset dir="lib/xdoclet/lib" includes="*.jar" />
     </path>
 
     <path id="test.compile.classpath">
@@ -177,17 +177,20 @@ database.password    = ${database.password}
                 destdir="${src.dd}/META-INF" 
                 datasource="java:/${datasource.jndi-name}" 
                 datasourcemapping="Hypersonic SQL" />
-            <jonas version="4.0" 
+            <jonas version="3.0" 
                 xmlencoding="UTF-8" 
                 destdir="${src.dd}/META-INF" 
-                validatexml="false" 
-                defaultentityjndiname="${datasource.jndi-name}" />
+                validatexml="false" />
             <weblogic version="7.0" 
                 xmlencoding="UTF-8" 
                 destdir="${src.dd}/META-INF" 
                 validatexml="false" 
                 datasource="${datasource.jndi-name}" 
                 persistence="weblogic" />
+            <sunone version="7.0" 
+                xmlencoding="UTF-8" 
+                destdir="${src.dd}/META-INF" 
+                validatexml="false" />
         </ejbdoclet>
     </target>
 
