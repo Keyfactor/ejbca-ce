@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 
-<!DOCTYPE weblogic-ejb-jar PUBLIC "-//BEA Systems, Inc.//DTD WebLogic 6.0.0 EJB//EN" "http://www.bea.com/servers/wls600/dtd/weblogic-ejb-jar.dtd" >
+<!DOCTYPE weblogic-rdbms-jar PUBLIC
+ '-//BEA Systems, Inc.//DTD WebLogic 8.1.0 EJB RDBMS Persistence//EN'
+ 'http://www.bea.com/servers/wls810/dtd/weblogic-rdbms20-persistence-810.dtd'>
 
 <weblogic-ejb-jar>
 
@@ -16,9 +18,6 @@
   <weblogic-enterprise-bean>
     <ejb-name>LogEntryData</ejb-name>
     <entity-descriptor>
-      <!--<entity-cache>
-        <max-beans-in-cache>1</max-beans-in-cache>
-      </entity-cache> -->
       <persistence>
         <persistence-type>
           <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
@@ -37,11 +36,6 @@
     <weblogic-enterprise-bean>
       <ejb-name>LogConfigurationData</ejb-name>
       <entity-descriptor>
-      <!-- gr
-        <entity-cache>
-          <max-beans-in-cache>1</max-beans-in-cache>
-        </entity-cache>
-        -->
         <persistence>
           <persistence-type>
             <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
