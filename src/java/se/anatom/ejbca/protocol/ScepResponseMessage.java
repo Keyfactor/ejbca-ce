@@ -8,6 +8,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.MessageDigest;
 import java.security.cert.CertStore;
 import java.security.cert.CertStoreException;
 import java.security.cert.Certificate;
@@ -44,7 +45,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.11 2003-10-09 08:46:27 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.12 2004-03-12 13:30:29 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage, Serializable {
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);
@@ -165,15 +166,14 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             }
 
             CMSProcessable msg;
-
+            // The signed data to be enveloped
+            CMSSignedData s = null;
             if (status.equals(ResponseStatus.SUCCESS)) {
 
                 CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
                 // Add the issued certificate to the signed portion of the CMS (as signer, degenerate case)
                 ArrayList certList = new ArrayList();
-
                 certList.add(cert);
-
                 certList.add(signCert);
                 CertStore certs = CertStore.getInstance("Collection",
                         new CollectionCertStoreParameters(certList), "BC");
@@ -183,14 +183,13 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
                 CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
                 gen.addSigner(signKey, signCert, CMSSignedDataGenerator.DIGEST_SHA1);
                 gen.addCertificatesAndCRLs(certs);
-
-                CMSSignedData s = gen.generate(msg, true, "BC");
+                s = gen.generate(msg, true, "BC");
 
                 // Envelope the CMS message
-
                 if (recipientKeyInfo != null) {
                     try {
                     X509Certificate rec = CertTools.getCertfromByteArray(recipientKeyInfo);
+                    log.debug("Added recipient information - issuer: '"+CertTools.getIssuerDN(rec)+"', serno: '"+rec.getSerialNumber().toString(16));
                     edGen.addKeyTransRecipient(rec);
                     } catch (CertificateException e) {
                         throw new IOException("Can not decode recipients self signed certificate!");
@@ -198,37 +197,47 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
                 } else {
                     edGen.addKeyTransRecipient((X509Certificate) cert);
                 }
-
-
                 CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(s.getEncoded()),
                                     SMIMECapability.dES_CBC.getId(), "BC");
 
                 log.debug("Signed data is " + ed.getEncoded().length +" bytes long");
-
                 msg = new CMSProcessableByteArray(ed.getEncoded());
             } else {
-                //TODO : Create an empty message here - causes problems for now
-                msg = new CMSProcessableByteArray(new byte[]{0});
+                // Create an empty message here
+                msg = new CMSProcessableByteArray("PrimeKey".getBytes());
             }
 
             // Create the outermost signed data
-
             CMSSignedDataGenerator gen1 = new CMSSignedDataGenerator();
 
             // add authenticated attributes...status, transactionId, sender- and recipientNonce and more...
             Hashtable attributes = new Hashtable();
-
+            DERObjectIdentifier oid;
+            Attribute attr;
+            DERSet value;
+            
             // Content Type
-            DERObjectIdentifier oid = PKCSObjectIdentifiers.pkcs_9_at_contentType;
-            DERSet value = new DERSet(PKCSObjectIdentifiers.data);
-            Attribute attr = new Attribute(oid, value);
-            attributes.put(attr.getAttrType(), attr);
-
-            // Message digest
-            oid = PKCSObjectIdentifiers.pkcs_9_at_messageDigest;
-            value = new DERSet(new DEROctetString("foo".getBytes()));
+            /* Added automagically by CMSSignedDataGenerator
+            oid = PKCSObjectIdentifiers.pkcs_9_at_contentType;
+            value = new DERSet(PKCSObjectIdentifiers.data);
             attr = new Attribute(oid, value);
             attributes.put(attr.getAttrType(), attr);
+            */
+
+            // Message digest
+            /* Added automagically by CMSSignedDataGenerator
+            byte[] digest = null;
+            if (s != null) {
+                MessageDigest md = MessageDigest.getInstance("SHA1");
+                digest = md.digest(s.getEncoded());
+            } else {
+                digest = new byte[]{0};
+            }
+            oid = PKCSObjectIdentifiers.pkcs_9_at_messageDigest;
+            value = new DERSet(new DEROctetString(digest));
+            attr = new Attribute(oid, value);
+            attributes.put(attr.getAttrType(), attr);
+            */
 
             // Message type (certrep)
             oid = new DERObjectIdentifier(ScepRequestMessage.id_messageType);
@@ -280,9 +289,7 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             gen1.addSigner(signKey, signCert, CMSSignedDataGenerator.DIGEST_SHA1,
                 new AttributeTable(attributes), null);
             signedData = gen1.generate(msg, true, "BC");
-
             responseMessage = signedData.getEncoded();
-
             if (responseMessage != null) {
                 ret = true;
             }

@@ -43,7 +43,7 @@ import se.anatom.ejbca.util.CertTools;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.26 2004-03-10 20:47:53 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.27 2004-03-12 13:30:29 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);
@@ -141,7 +141,6 @@ public class ScepServlet extends HttpServlet {
                 
                 // CA_IDENT is the message for this request to indicate which CA we are talking about
                 log.debug("Got SCEP cert request for CA '"+message+"'");
-                ISignSessionRemote signsession = signhome.create();
                 Collection certs = null;
                 ICAAdminSessionRemote caadminsession = caadminhome.create();          
                 CAInfo cainfo = caadminsession.getCAInfo(administrator, message);
