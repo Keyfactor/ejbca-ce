@@ -157,6 +157,7 @@ makereq - generates a certification request to create a keystore for a subordina
 recrep - receives a certification reply (from another CA) for the above generated request.
 processreq - processes a certification request for a subordinate CA and creates a certification reply.
 createcrl - issues a CRL.
+getcrl - retrieves the latest CRL.
 
 Administrating RA:
 
@@ -167,7 +168,7 @@ setclearpwd - set a clear text password for a user, needed to generate certifica
 setuserstatus - sets status of a user, users can only apply for certificates when their status is NEW.
 finduser - find a user in the database and lists details.
 listnewusers - lists all users with status NEW.
-
+revokeuser - revokes a user and all certificates issued to the user.
 
 Fetching certificates and CRLs:
 

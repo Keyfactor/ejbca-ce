@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.3 2001-11-18 10:53:06 anatom Exp $
+ * @version $Id: CertTools.java,v 1.4 2001-11-21 09:53:26 anatom Exp $
  */
 public class CertTools {
 
@@ -305,7 +305,7 @@ public class CertTools {
             
         X509Certificate selfcert = certgen.generateX509Certificate(privKey);
         return selfcert;
-    }
+    } //genselfCert
 
     /**
       * Generate SHA1 fingerprint in string representation.

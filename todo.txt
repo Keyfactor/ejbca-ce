@@ -1,9 +1,9 @@
-$Id: todo.txt,v 1.9 2001-11-20 13:59:11 anatom Exp $
+$Id: todo.txt,v 1.10 2001-11-21 09:53:26 anatom Exp $
 
 V 1.0
 -----
 
-- Add CA/RA function to revoke certificates for a user.
+- NONE.
 
 V 2.0
 -----

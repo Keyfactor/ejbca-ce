@@ -38,7 +38,7 @@ public class ca {
 
     public static void main(String [] args){
         if (args.length < 1) {
-            System.out.println("Usage: CA makeroot | rootcert | makereq | recrep | processreq | createcrl ");
+            System.out.println("Usage: CA makeroot | rootcert | makereq | recrep | processreq | createcrl | getcrl");
             System.exit(1);
         }
         try {
@@ -95,7 +95,6 @@ public class ca {
             } else if (args[0].equals("makereq")) {
                 // Generates keys and creates a keystore (PKCS12) to be used by the CA
                 if (args.length < 7) {
-                    System.out.println(args.length);
                     System.out.println("Usage: CA makereq <DN> <keysize> <rootca-cert> <reqfile> <ksfile> <storepassword>");
                     System.exit(1);
                 }
@@ -157,7 +156,6 @@ public class ca {
             } else if (args[0].equals("recrep")) {
                 // Receive certificate reply as result of certificate request
                 if (args.length < 4) {
-                    System.out.println(args.length);
                     System.out.println("Usage: CA recrep <cert-file> <ksfile> <storepassword>");
                     System.exit(1);
                 }
@@ -224,7 +222,6 @@ public class ca {
             } else if (args[0].equals("processreq")) {
                 // Receive certification request and create certificate to send back
                 if (args.length < 5) {
-                    System.out.println(args.length);
                     System.out.println("Usage: CA processreq <username> <password> <req-file> <outfile>");
                     System.exit(1);
                 }
@@ -260,8 +257,22 @@ public class ca {
                 ICertificateStoreSession storeremote = storehome.create();
                 int number = storeremote.getLastCRLNumber();
                 System.out.println("CRL with number " + number+ " generated.");
+            } else if (args[0].equals("getcrl")) {
+                if (args.length < 2) {
+                    System.out.println("Usage: CA getcrl <outfile>");
+                    System.exit(1);
+                }
+                String outfile = args[1];
+                Context context = getInitialContext();
+                ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class);
+                ICertificateStoreSession storeremote = storehome.create();
+                byte[] crl = storeremote.getLastCRL();
+                FileOutputStream fos = new FileOutputStream(outfile);
+                fos.write(crl);
+                fos.close();
+                System.out.println("Wrote latest CR to " + outfile+ ".");
             } else {
-            System.out.println("Usage: CA makeroot | rootcert | makereq | recrep | processreq | createcrl ");
+                System.out.println("Usage: CA makeroot | rootcert | makereq | recrep | processreq | createcrl | getcrl");
             }
 
         } catch (Exception e) {

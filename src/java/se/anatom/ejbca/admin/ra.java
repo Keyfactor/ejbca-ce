@@ -8,10 +8,19 @@ import javax.naming.InitialContext;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import java.rmi.RemoteException;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 
 import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.util.*;
 import se.anatom.ejbca.SecConst;
+
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
+import se.anatom.ejbca.ca.store.CertificateDataPK;
+import se.anatom.ejbca.ca.store.CertificateData;
+import se.anatom.ejbca.ca.store.CertificateDataHome;
+
 
 public class ra {
 
@@ -95,7 +104,6 @@ public class ra {
                 System.out.println("password="+data.getPassword());
             } else if (args[0].equals("listnewusers"))
             {
-
                 Collection coll = admin.findAllUsersByStatus(UserData.STATUS_NEW);
                 Iterator iter = coll.iterator();
                 while (iter.hasNext())
@@ -106,27 +114,38 @@ public class ra {
             } else if (args[0].equals("revokeuser"))
             {
                 // TODO:
-                /*
+                if (args.length < 2) {
+                    System.out.println("Usage: RA revokeuser username");
+                    System.exit(1);
+                }
+                String username = args[1];
+                UserAdminData data = admin.findUser(username);
+                System.out.println("Found user:");
+                System.out.println("username="+data.getUsername());
+                System.out.println("dn=\""+data.getDN()+"\"");
+                System.out.println("Old status="+data.getStatus());
+                admin.setUserStatus(username, UserData.STATUS_REVOKED);
+                System.out.println("New status="+UserData.STATUS_REVOKED);
+
                 Object obj2 = jndiContext.lookup("CertificateStoreSession");
                 ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
                 ICertificateStoreSessionRemote store = storehome.create();
-                String[] certfps = store.listAllCertificates();
-                System.out.println("List certs:");
-                for (int i=0;i< certfps.length;i++)
-                    System.out.println(certfps[i]);
-                
+                Certificate[] certs = store.findCertificatesBySubject(data.getDN());
                 // Revoke all certs
-                for (int i=0; i<certfps.length;i++) {
-                    CertificateDataPK revpk = new CertificateDataPK();
-                    revpk.fp = certfps[i];
-                    CertificateData rev = home.findByPrimaryKey(revpk);
-                    if (rev.getStatus() != CertificateData.CERT_REVOKED) {
-                        rev.setStatus(CertificateData.CERT_REVOKED);
-                        rev.setRevocationDate(new Date());
-                        System.out.println("Revoked cert "+certfps[i]);
+                if (certs.length > 0 ) {
+                    Object obj = jndiContext.lookup("CertificateData");
+                    CertificateDataHome home = (CertificateDataHome) javax.rmi.PortableRemoteObject.narrow(obj, CertificateDataHome.class);
+                    for (int i=0; i<certs.length;i++) {
+                        CertificateDataPK revpk = new CertificateDataPK();
+                        revpk.fp = CertTools.getFingerprintAsString((X509Certificate)certs[i]);
+                        CertificateData rev = home.findByPrimaryKey(revpk);
+                        if (rev.getStatus() != CertificateData.CERT_REVOKED) {
+                            rev.setStatus(CertificateData.CERT_REVOKED);
+                            rev.setRevocationDate(new Date());
+                            System.out.println("Revoked cert with serialNumber "+Hex.encode(((X509Certificate)certs[i]).getSerialNumber().toByteArray()));
+                        }
                     }
                 }
-                */
             } else {
                 System.out.println("Usage: RA adduser|deluser|setclearpwd|setuserstatus|finduser|listnewusers|revokeuser");
             }
