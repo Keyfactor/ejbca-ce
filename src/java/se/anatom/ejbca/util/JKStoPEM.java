@@ -30,7 +30,7 @@ import java.util.Enumeration;
  * a third file. The PEM files will have the names <i>common name</i>.pem, <i>common
  * name</i>Key.pem and <i>common name</i>CA.pem derived from the DN in user certificate.
  *
- * @version $Id: JKStoPEM.java,v 1.1 2005-03-17 07:38:39 anatom Exp $
+ * @version $Id: JKStoPEM.java,v 1.2 2005-03-18 11:56:36 anatom Exp $
  */
 public class JKStoPEM {
     String exportpath = "./p12/pem/";
@@ -159,7 +159,7 @@ public class JKStoPEM {
             ks.load(in, password.toCharArray());
             in.close();
         }
-        // Fid the key private key entry in the keystore
+        // Find the key private key entry in the keystore
         Enumeration e = ks.aliases();
         Object o = null;
         PrivateKey serverPrivKey = null;
@@ -169,8 +169,7 @@ public class JKStoPEM {
 
             if (o instanceof String) {
                 if ((ks.isKeyEntry((String) o)) &&
-                        ((serverPrivKey = (PrivateKey) ks.getKey((String) o, password.toCharArray())) != null)) {
-
+                        ((serverPrivKey = (PrivateKey) ks.getKey((String) o, keypass.toCharArray())) != null)) {
                     break;
                 }
             }
