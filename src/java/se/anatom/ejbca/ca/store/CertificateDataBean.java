@@ -32,7 +32,7 @@ import se.anatom.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.20 2003-07-24 08:43:30 anatom Exp $
+ * @version $Id: CertificateDataBean.java,v 1.21 2003-08-13 10:20:28 anatom Exp $
  */
 public abstract class CertificateDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(CertificateDataBean.class);
@@ -256,8 +256,6 @@ public abstract class CertificateDataBean extends BaseEntityBean {
             setSerialNumber(tmpcert.getSerialNumber().toString());
         } catch (CertificateEncodingException cee) {
             log.error("Can't extract DER encoded certificate information.", cee);
-        } catch (CertificateException ce) {
-            log.error("Can't get information from cert.", ce);
         }
     }
 
