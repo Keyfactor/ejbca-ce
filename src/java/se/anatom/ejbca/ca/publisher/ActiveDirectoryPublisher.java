@@ -15,6 +15,7 @@ package se.anatom.ejbca.ca.publisher;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
+import se.anatom.ejbca.ra.ExtendedInformation;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import se.anatom.ejbca.util.CertTools;
 
@@ -33,7 +35,7 @@ import com.novell.ldap.LDAPModificationSet;
 /**
  * ActiveDirectoryPublisher is a class handling a publishing to Active Directory catalouges.  
  *
- * @version $Id: ActiveDirectoryPublisher.java,v 1.6 2004-08-24 08:05:12 anatom Exp $
+ * @version $Id: ActiveDirectoryPublisher.java,v 1.7 2004-11-07 14:58:11 herrvendil Exp $
  */
 public class ActiveDirectoryPublisher extends LdapPublisher{
 	
@@ -138,31 +140,37 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
     
     /**
      * Creates an LDAPAttributeSet.
-     *
+     * 
+     * @param cert is the certificate about to be published
      * @param objectclass the objectclass the attribute set should be of.
      * @param dn dn of the LDAP entry.
      * @param extra if we should add extra attributes except the objectclass to the attributeset.
      * @param pserson true if this is a person-entry, false if it is a CA.
+     * @param password to set for the user, if null no password is set.
+     * @param extendedinformation, for future use...
      *
      * @return LDAPAtributeSet created...
      */
-    protected LDAPAttributeSet getAttributeSet(X509Certificate cert, String objectclass, String dn, boolean extra, boolean person) {
+    protected LDAPAttributeSet getAttributeSet(Certificate cert, String objectclass, String dn, boolean extra, boolean person, 
+    		                                   String password, ExtendedInformation extendedinformation) {
     	log.debug("ADPublisher : getAttributeSet");
-        LDAPAttributeSet attributeSet = super.getAttributeSet(objectclass, dn, extra, person);
+    	
+        LDAPAttributeSet attributeSet = super.getAttributeSet(cert, objectclass, dn, extra, person, password, extendedinformation);
+        
         String cn = CertTools.getPartFromDN(dn, "CN");
         // Add AD specific attributes
-        attributeSet.add(new LDAPAttribute("userAccountControl", Integer.toString(getUserAccountControl())));
+        //attributeSet.add(new LDAPAttribute("userAccountControl", Integer.toString(getUserAccountControl())));
         
-        if(cert!= null){
+        if(cert!= null && cert instanceof X509Certificate){
           String upn = null;
 		try {
-			upn = CertTools.getUPNAltName(cert);
+			upn = CertTools.getUPNAltName((X509Certificate) cert);
 		} catch (CertificateParsingException e) {}
 		  catch (IOException e) {}
 		String samaccountname = upn;
 		if(upn != null && upn.indexOf('@') != -1){
 		  // only use name part of UPN.
-			samaccountname = samaccountname.substring(upn.indexOf('@'));	
+			samaccountname = samaccountname.substring(0, upn.indexOf('@'));	
 		}
 		
 		
@@ -182,15 +190,16 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
           	attributeSet.add(new LDAPAttribute("userPrincipalName", upn));    
           else
           	attributeSet.add(new LDAPAttribute("userPrincipalName", cn));
+          	
         }
         attributeSet.add(new LDAPAttribute("displayName", cn));
-        attributeSet.add(new LDAPAttribute("description", getUserDescription()));
-        
+        if(getUserDescription() != null && !getUserDescription().trim().equals("")){
+          attributeSet.add(new LDAPAttribute("description", getUserDescription()));
+        }
 
-        if(getUseSSL() && getUseUserPassword()){
-        	// TODO fix better
-        	String password = "foo123"; 
+        if(getUseSSL()  && password != null){
           //Can only set password through SSL connection
+        	
         	//attributeSet.add(new LDAPAttribute("userPassword", password));	
           
 
@@ -213,7 +222,6 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
         }  
         
         
-        
         return attributeSet;
     } // getAttributeSet
 	
@@ -230,7 +238,8 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
      * @return LDAPModificationSet created...
      */
     protected LDAPModificationSet getModificationSet(LDAPEntry oldEntry, String dn, boolean extra, boolean person) {
-        LDAPModificationSet modSet = super.getModificationSet(oldEntry, dn, extra, person);
+    	//LDAPModificationSet modSet = super.getModificationSet(oldEntry, dn, extra, person);
+    	LDAPModificationSet modSet = super.getModificationSet(oldEntry, dn, false, person);
 
 		// Modify AD specific attributes
 		
