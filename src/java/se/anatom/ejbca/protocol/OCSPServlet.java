@@ -6,9 +6,9 @@ import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Vector;
 
 import javax.naming.InitialContext;
 import javax.servlet.ServletConfig;
@@ -17,7 +17,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERGeneralizedTime;
+import org.bouncycastle.asn1.DERInputStream;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
@@ -48,6 +51,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.exception.MalformedRequestException;
+import se.anatom.ejbca.protocol.exception.NotSupportedException;
 import se.anatom.ejbca.util.Hex;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
@@ -57,7 +61,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.23 2004-01-04 17:37:26 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.24 2004-01-05 18:28:35 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -168,22 +172,49 @@ public class OCSPServlet extends HttpServlet {
         return null;
     }
 
-    protected BasicOCSPRespGenerator createOCSPResponse(OCSPReq req, X509Certificate cacert) throws OCSPException {
+    protected BasicOCSPRespGenerator createOCSPResponse(OCSPReq req, X509Certificate cacert) throws OCSPException, NotSupportedException {
         if (null == req) {
             throw new IllegalArgumentException();
         }
         BasicOCSPRespGenerator res = new BasicOCSPRespGenerator(cacert.getPublicKey());
 		DERObjectIdentifier id_pkix_ocsp_nonce = new DERObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".2");
+        DERObjectIdentifier id_pkix_ocsp_response = new DERObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".4");
+        DERObjectIdentifier id_pkix_ocsp_basic = new DERObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".1");
         X509Extensions reqexts = req.getRequestExtensions();
         if (reqexts != null) {
             X509Extension ext = (X509Extension)reqexts.getExtension(id_pkix_ocsp_nonce);
             if (null != ext) {
+                //m_log.debug("Found extension Nonce");
                 Hashtable table = new Hashtable();
-                Vector vec = null;
                 table.put(id_pkix_ocsp_nonce, ext);
                 X509Extensions exts = new X509Extensions(table); 
                 res.setResponseExtensions(exts);
-            }            
+            }
+            ext = (X509Extension)reqexts.getExtension(id_pkix_ocsp_response);
+            if (null != ext) {
+                //m_log.debug("Found extension AcceptableResponses");
+                ASN1OctetString oct = ext.getValue();
+                try {
+                    ASN1Sequence seq = ASN1Sequence.getInstance((ASN1Sequence) new DERInputStream(
+                                new ByteArrayInputStream(oct.getOctets())).readObject());
+                    Enumeration enum = seq.getObjects();
+                    boolean supportsResponseType = false;
+                    while (enum.hasMoreElements()) {
+                        DERObjectIdentifier oid = (DERObjectIdentifier)enum.nextElement();
+                        //m_log.debug("Found oid: "+oid.getId());
+                        if (oid.equals(id_pkix_ocsp_basic)) {
+                            // This is the response type we support, so we are happy! Break the loop.
+                            supportsResponseType = true;
+                            m_log.debug("Response type supported: "+oid.getId());
+                            continue;
+                        }
+                    }
+                    if (!supportsResponseType) {
+                        throw new NotSupportedException("Required response type not supported, this responder only supports id-pkix-ocsp-basic.");
+                    }
+                } catch (IOException e) {
+                }
+            }
         }
         return res;
     }
@@ -280,16 +311,56 @@ public class OCSPServlet extends HttpServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response) 
         throws IOException, ServletException {
         m_log.debug(">doPost()");
+        String contentType = request.getHeader("Content-Type");
+        if (!contentType.equalsIgnoreCase("application/ocsp-request")) {
+            m_log.debug("Content type is not application/ocsp-request");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Content type is not application/ocsp-request");
+            return;
+        }
+                // Get the request data
+        BufferedReader in = request.getReader();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // This works for small requests, and OCSP requests are small
+        int b = in.read(); 
+        while (b != -1) {
+            baos.write(b);
+            b = in.read();
+        }
+        baos.flush();
+        in.close();
+        byte[] reqBytes = baos.toByteArray();
+        // Do it...
+        service(request, response, reqBytes); 
+        m_log.debug("<doPost()");
+    } //doPost
+
+    public void doGet(HttpServletRequest request,  HttpServletResponse response) 
+        throws IOException, ServletException {
+        m_log.debug(">doGet()");
+        /**
+         * We only support POST operation, so return
+         * an appropriate HTTP error code to caller.
+         */
+        response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "OCSP only supports POST");
+        m_log.debug("<doGet()");
+    } // doGet
+
+    public void service(HttpServletRequest request, HttpServletResponse response, byte[] reqBytes) 
+        throws IOException, ServletException {
+        m_log.debug(">service()");
+        if ( (reqBytes == null) || (reqBytes.length==0) ) {
+            m_log.debug("No request bytes");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No request bytes.");
+            return;
+        }
         try {
             OCSPResp ocspresp = null;
             BasicOCSPRespGenerator basicRes = null;
             OCSPRespGenerator res = new OCSPRespGenerator();
             X509Certificate cacert = null; // CA-certificate used to sign response
             try {
-                X509Extension ext = null;
-
-                OCSPReq req = new OCSPReq(request.getInputStream());
-                m_log.debug("OCSpReq: "+new String(Base64.encode(req.getEncoded())));
+                OCSPReq req = new OCSPReq(reqBytes);
+                m_log.debug("OCSPReq: "+new String(Base64.encode(req.getEncoded())));
 
                 loadCertificates();
             
@@ -362,6 +433,7 @@ public class OCSPServlet extends HttpServlet {
                     }
                     throw new MalformedRequestException(msg);
                 } else {
+                    m_log.debug("The OCSP request contains "+requests.length+" simpleRequests.");
                     for (int i=0;i<requests.length;i++) {
                         CertificateID certId = requests[i].getCertID();
                         boolean unknownCA = false; // if the certId was issued by an unknown CA
@@ -482,7 +554,10 @@ public class OCSPServlet extends HttpServlet {
                 BasicOCSPResp basicresp = signOCSPResponse(basicRes, cacert); 
                 ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, basicRes);
             }
-            response.getOutputStream().write(ocspresp.getEncoded());
+            byte[] respBytes = ocspresp.getEncoded();
+            response.setContentType("application/ocsp-response");
+            response.setContentLength(respBytes.length);
+            response.getOutputStream().write(respBytes);
         } catch (OCSPException e) {
             m_log.error("OCSPException caught, fatal error : ", e);
             throw new ServletException(e);
@@ -499,18 +574,6 @@ public class OCSPServlet extends HttpServlet {
             m_log.error("Error in CAs extended service: ", e);
             throw new ServletException(e);                    
         }                 
-        m_log.debug("<doPost()");
-    } //doPost
-
-    public void doGet(HttpServletRequest request,  HttpServletResponse response) 
-        throws IOException, ServletException {
-        m_log.debug(">doGet()");
-        /**
-         * We only support POST operation, so return
-         * an appropriate HTTP error code to caller.
-         */
-        response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "OCSP only supports POST");
-        m_log.debug("<doGet()");
-    } // doGet
-
+        m_log.debug("<service()");
+    }
 } // OCSPServlet

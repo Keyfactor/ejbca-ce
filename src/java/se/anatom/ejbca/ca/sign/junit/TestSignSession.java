@@ -39,7 +39,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.30 2003-11-23 09:47:53 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.31 2004-01-05 18:28:38 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -186,9 +186,7 @@ public class TestSignSession extends TestCase {
             ((RSAPrivateKey) rsaKeys.getPrivate()).getModulus().bitLength());
 
         return rsaKeys;
-    }
-
-    // getKeys
+    } // genKeys
 
     /**
      * creates new user
@@ -216,7 +214,7 @@ public class TestSignSession extends TestCase {
         }
 
         if (userExists) {
-            log.debug("user foo already exists.");
+            log.debug("User foo already exists.");
 
             UserDataPK pk = new UserDataPK("foo");
             UserDataRemote data = userhome.findByPrimaryKey(pk);
