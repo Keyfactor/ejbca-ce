@@ -1,15 +1,18 @@
+$Id: INSTALL-guide.txt,v 1.11 2005-03-21 11:57:15 anatom Exp $
+
     My LINUX+JBOSS+EJBCA+MYSQL+OPENLDAP How To
     originally contributed by <surd0007(at)yahoo.com.cn>
  
-(This install guide is a complement to the guide present in README).
-$Id: INSTALL-guide.txt,v 1.10 2004-11-18 14:18:35 anatom Exp $
+This install guide is a complement to the guide present in README.
+The quick install guide in README should be the first choice, you can 
+consult this guide for additional information related to MySQL and OpenLDAP.
 
  
  Softwares needed:
  	redhat8.0
  	j2sdk-1_4_2_05-linux-i586.bin
- 	jboss-3.2.5.zip
- 	ejbca_3_0_2.zip
+ 	jboss-3.2.7.zip
+ 	ejbca_3_1.zip
  	mysql-3.23.52-3(included in redhat CDs)
  	mysql-connector-java-3.0.9-stable-bin.jar(JDBC driver)
  	openldap-2.1.12(support BDB type)
@@ -24,10 +27,10 @@ $Id: INSTALL-guide.txt,v 1.10 2004-11-18 14:18:35 anatom Exp $
  
  
  Install jboss
- 	#cp jboss-3.2.5.zip /usr
+ 	#cp jboss-3.2.7.zip /usr
  	#cd /usr
- 	#unzip jboss-3.2.5.zip
- 	#cd jboss-3.2.5
+ 	#unzip jboss-3.2.7.zip
+ 	#cd jboss-3.2.7
  
  
  Install ant
@@ -39,7 +42,7 @@ $Id: INSTALL-guide.txt,v 1.10 2004-11-18 14:18:35 anatom Exp $
  	add the following text to the tail of /etc/profile:
  
  	export JAVA_HOME=/usr/java
- 	export JBOSS_HOME=/usr/jboss-3.2.5
+ 	export JBOSS_HOME=/usr/jboss-3.2.7
  	export PATH=/usr/java/bin:$PATH:/usr/j2ee/apache-ant-1.6.2/bin
  	export CLASSPATH=/usr/java/jre/lib/ext/:$CLASSPATH
  
@@ -63,60 +66,23 @@ $Id: INSTALL-guide.txt,v 1.10 2004-11-18 14:18:35 anatom Exp $
  
  
  Install EJBCA
- 	#cp ejbca_3_0_2.zip /usr/j2ee
- 	#unzip ejbca_3_0_2.zip
+ 	#cp ejbca_3_1.zip /usr/j2ee
+ 	#unzip ejbca_3_1.zip
  	#cd ejbca
  
  	Configure mysql:
  	#cd /usr/j2ee/ejbca
-    #ant replaceDS
-    choose database mysql and your datasource (java:/EjbcaDS is recommended).
+ 	#cp ejbca.properties.sample ejbca.properties
+    #edit ejbca.properties and uncomment the MySQL parts, database.name, datasource.mapping, database.url, database.driver, database.username and database.password.
     
-    (this does the below that you don't have to do manually
- 	#cp src/ca/ca/META-INF/jbosscmp-jdbc-mysql.xml src/ca/ca/META-INF/jbosscmp-jdbc.xml
- 	#cp src/ra/META-INF/jbosscmp-jdbc-mysql.xml src/ra/META-INF/jbosscmp-jdbc.xml
- 	#cp src/log/META-INF/jbosscmp-jdbc-mysql.xml src/log/META-INF/jbosscmp-jdbc.xml
- 	#cp src/hardtoken/META-INF/jbosscmp-jdbc-mysql.xml src/hardtoken/META-INF/jbosscmp-jdbc.xml
- 	#cp src/keyrecovery/META-INF/jbosscmp-jdbc-mysql.xml src/keyrecovery/META-INF/jbosscmp-jdbc.xml
-    #cp src/authorization/META-INF/jbosscmp-jdbc-mysql.xml src/authorization/META-INF/jbosscmp-jdbc.xml
-    )
-
  	Compile ejbca source and deploy to application server:
- 	#ant deploy 
- 
- 
- Configure JBOSS:
- 	#cp mysql-connector-java-3.0.9-stable.tar.gz /usr
- 	#tar xvfz mysql-connector-java-3.0.9-stable.tar.gz
- 	#cd mysql-connector-java-3.0.9-stable
- 	#cp mysql-connector-java-3.0.9-stable-bin.jar $JBOSS_HOME/server/default/lib/ 
- 
- 	#cd /usr/j2ee/ejbca
- 	#cp doc/mysql-ds.xml $JBOSS_HOME/server/default/deploy/
- 	#vi $JBOSS_HOME/server/default/deploy/mysql-ds.xml
+ 	#ant bootstrap
  	
- 	......
-    <datasources>
-       <local-tx-datasource>
-          <jndi-name>EjbcaDS</jndi-name>
-          <connection-url>jdbc:mysql://localhost:3306/ejbca</connection-url>
-          <driver-class>com.mysql.jdbc.Driver</driver-class>
-          <user-name>ejbca</user-name>
-          <password>ejbca</password>
-          <min-pool-size>5</min-pool-size>
-          <max-pool-size>20</max-pool-size>
-          <idle-timeout-minutes>15</idle-timeout-minutes>
-          <track-statements>true</track-statements>
-       </local-tx-datasource>
-    </datasources>
- 	......
- 
- 	#cd $JBOSS_HOME/bin/
- 	#./run.sh   (pay attention to log info, ejbca should deploy without errors)
-
- 	#cd /usr/j2ee/ejbca
- 	#./install.sh
- 
+ 	Install ejbca
+ 	#ant install 
+ 	
+ 	Restart JBoss
+  
  Configure LDAP
  	/usr/local/etc/openldap/slapd.conf as follows:
  
@@ -147,16 +113,17 @@ the SuSE version and uninstall it, and the user will be created for you.)
 
 3) set JBOSS_HOME=/usr/share/jboss
 
-4) As root, edit any of the Web files in /ejbca/src if desired
+4) As root, edit ejbca.properties if desired
 
 5) As jboss, go into /usr/ejbca and do
-ant deploy
+ant bootstrap
+ant install
 
 6) As root edit  /usr/share/jboss/bin/jboss_init_suse.sh to use 'default'
 rather than 'all'. move it to /etc/init.d/jboss and link that
 to /usr/sbin/rcjboss
 
-7) As jboss, in /usr/ejbca
+7) As jboss, in /usr/ejbca/bin
 chmod +x *.sh
 also in /usr/share/jboss/bin
 chmod +x *.sh
@@ -168,12 +135,9 @@ start jboss
 rcjboss start
 It takes several minutes to get it all the way started!
 
-9) As root in /usr/ejbca
-./install.sh
+9) in /usr/share/jboss/server/default/conf/keystore
 
-10) in /usr/share/jboss/bin
-
-chmod +x tomcat.jks
+chmod +x keystore.jks
 and change the owner and group to jboss
 
 11) As root:
@@ -184,5 +148,5 @@ rcjboss start
 time is not sufficient.
 
 12) To start things automatically at boot time, as root in /etc/init.d, do
-insserv jboss
-which places the script in the appropriate startup sections. 
+insserv jboss which places the script in the appropriate startup sections. 
+

@@ -34,7 +34,8 @@ Configuring EJBCA
 
 0. Use 'ant clean' to clean up your repository if not already done.
 
-1. Edit '.ejbca.properties' and specify the 'datasource.jndi-name' to the one you chose.
+1. Edit '.ejbca.properties' and follow the instructions to change the default values.
+   Specify the 'datasource.jndi-name' to the one you chose.
    For example: 'ejbcaDS'
 
    There is a .ejbca.properties.sample that is heavily commented.
@@ -75,8 +76,45 @@ Check your database documentation for more info (I know it is boring).
 Typically for postgres: 'createdb -U postgres ejbca "database for ejbca"' will create
 a database named 'ejbca' with description "database for ejbca" and with user postgres.
 
+Typically for mysql: 'mysqladmin create ejbca' will create the database. 
+Start 'mysql -u root mysql' and create the user with "grant all on ejbca.* to ejbca@'<host>' identified by '<pwd>'".
+
 3. Put the JDBC driver for the database in <jboss-home>/server/default/lib/.
 
-4. DONE! Start JBoss. Run tests with 'runtest.sh/cmd'.
+4. DONE! Start JBoss. Run tests with 'ant test:run'.
    Use your favorite database graphic editor to look at the beautiful database tables.
+
+
+MySQL specifics
+---------------
+EJBCA have been tested with MySQL 3 and 4.
+
+Jaws configuration file: jbosscmp-jdbc-mysql.xml
+
+JDBC driver: mysql-connector-java-3.0.x.jar (preferably 3.0.9 or higher).
+
+Download JDBC driver for mySQL from http://www.mysql.com/
+
+PostgreSQL specifics
+--------------------
+EJBCA have been tested with PostgreSQL 7.2 and 8.0.
+
+Jaws configuration file: jbosscmp-jdbc-postgres.xml
+
+JDBC driver: the 7.4 driver (development) is needed to support the JDBC used by
+JBoss.
+
+Download JDBC driver for PostgreSQL from http://jdbc.postgresql.org/.
+
+Oracle specifics
+----------------
+Jaws configuration file: jbosscmp-jdbc-oracle.xml
+
+JDBC driver: classes12.zip (can be downloaded from http://www.oracle.com/).
+
+MS-SQL specifics
+----------------
+Jaws configuration file: jbosscmp-jdbc-mssql2000.xml
+
+JDBC driver: http://msdn.microsoft.com/downloads/default.asp?url=/downloads/sample.asp?url=/MSDN-FILES/027/001/779/msdncompositedoc.xml&frame=true
 
