@@ -110,7 +110,7 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
 
    Function NewCSR(keyflags)
       NewCSR = ""
-      szName          = "CN=6AEK347fw8vWE424"
+       szName = Document.CertReqForm.user.value
        newencoder.HashAlgorithm = "MD5"
        err.clear
        On Error Resume Next
@@ -148,7 +148,7 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
 
    Function OldCSR(keyflags)
       OldCSR = ""
-      szName          = "CN=6AEK347fw8vWE424"
+       szName = Document.CertReqForm.user.value
        oldencoder.HashAlgorithm = "MD5"
        err.clear
        On Error Resume Next
@@ -188,6 +188,18 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
        Dim TheForm
        Set TheForm = Document.CertReqForm
        err.clear
+       if len(TheForm.cn.Value)=0 Then
+           MsgBox("Please fill in the name field!")
+           TheForm.cn.focus()
+           Exit Sub
+       end if
+       TheForm.user.Value=TheForm.dn.Value+TheForm.cn.value
+       if len(TheForm.email.Value)>0 Then
+          If InStr(1, TheForm.email.Value, "@", 1)<2 Then
+             MsgBox("Email address should contain an @ character!")
+             Exit Sub
+          end if
+       end if
        If useold Then
          result = OldCSR(2)
        Else
