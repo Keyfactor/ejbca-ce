@@ -41,7 +41,7 @@ import se.anatom.ejbca.log.Admin;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.20 2003-10-01 11:12:08 herrvendil Exp $
+ * @version $Id: CertDistServlet.java,v 1.21 2003-11-29 16:04:03 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -239,9 +239,9 @@ public class CertDistServlet extends HttpServlet {
                 ISignSessionRemote ss = signhome.create();
                 Certificate[] chain = null;
                 if(caid != 0)
-				chain = (Certificate[]) ss.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
+				    chain = (Certificate[]) ss.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
                 else
-                  chain = (Certificate[]) ss.getCertificateChain(administrator, issuerdn.hashCode()).toArray(new Certificate[0]);
+                    chain = (Certificate[]) ss.getCertificateChain(administrator, issuerdn.hashCode()).toArray(new Certificate[0]);
                 // chain.length-1 is last cert in chain (root CA)
                 if ( (chain.length-1-level) < 0 ) {
                     PrintStream ps = new PrintStream(res.getOutputStream());
@@ -343,7 +343,7 @@ public class CertDistServlet extends HttpServlet {
             }
         } else {
             res.setContentType("text/plain");
-            res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Commands=lastcert | listcerts | crl | revoked && issuer=<issuerdn>");
+            res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Commands=cacert | lastcert | listcerts | crl | revoked && issuer=<issuerdn>");
             return;
         }
 
