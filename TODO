@@ -1,4 +1,4 @@
-$Id: TODO,v 1.4 2002-01-02 17:05:31 anatom Exp $
+$Id: TODO,v 1.5 2002-01-08 12:40:56 anatom Exp $
 
 V 1.0
 -----
@@ -16,7 +16,6 @@ V 2.0
 - Invent strategy for handling multiple instances of CAs on the same app-server.
 - Strategy for handling certificate issuance if notAfter is beyond CAs notAfter.
 - Add support for deeper hierarchies than 2 levels of CAs (today only root and CA).
-- Add links to LDAP for storage and retrieval of certs (use in addition/instead of local db). See OpenLDAP.
 - Make RA for large scale deployment, different orgunits for different admins. Secure remote RA, RA authenticates requests.
 - Complete implementation of createCertificate() method in SignSessionBean.
 - Run on other appservers, ie Weblogic, Websphere etc.
