@@ -70,6 +70,7 @@ try  {
             ctx.lookup("RSASignSession"), ISignSessionHome.class );
     ISignSession ss = home.create();
     Certificate[] chain = ss.getCertificateChain();
+    out.println("<div align=\"center\">");
     if (chain.length == 0) {
         out.println("No CA certificates exist");
     } else {
@@ -80,6 +81,7 @@ try  {
             }
         }
     }
+    out.println("</div>");
 } catch(Exception ex) {
     ex.printStackTrace();
 }                                             

@@ -12,7 +12,7 @@
 </center>
 
 <HR>
-<div align="center">Welcome to certificate enrollment. <BR>
+<div align="center">Welcome to the certificate enrollment. <BR>
   If you haven't done so already, you should<br>
   first fetch the CA certificate(s). </div>
 <P align="center">Fetch CA certificates: 
@@ -23,6 +23,7 @@ try  {
             ctx.lookup("RSASignSession"), ISignSessionHome.class );
     ISignSession ss = home.create();
     Certificate[] chain = ss.getCertificateChain();
+    out.println("<div align=\"center\">");
     if (chain.length == 0) {
         out.println("No CA certificates exist");
     } else {
@@ -33,6 +34,7 @@ try  {
             }
         }
     }
+    out.println("</div>");
 } catch(Exception ex) {
     ex.printStackTrace();
 }                                             
@@ -48,7 +50,7 @@ function validateForm() {
   //-- Check the common name field, reject if blank.
   if (document.demoreq.cn.value=="") {
     okSoFar=false
-    alert("Please fill in the Common Name field!")
+    alert("Please fill in the name field!")
     document.demoreq.cn.focus()
   }
   document.demoreq.user.value=document.demoreq.dn.value+document.demoreq.cn.value
@@ -58,7 +60,7 @@ function validateForm() {
       var foundAt = document.demoreq.email.value.indexOf("@",0)
       if (foundAt < 1 && okSoFar) {
         okSoFar = false
-        alert ("EMail address should contain an @ character!")
+        alert ("Email address should contain an @ character!")
         document.demoreq.email.focus()
       }
   document.demoreq.user.value=document.demoreq.user.value+",EmailAddress="+document.demoreq.email.value

@@ -12,7 +12,7 @@
 </center>
 
 <HR width="450">
-<div align="center">Welcome to the Certificate Enrollment. <BR>
+<div align="center">Welcome to the certificate enrollment. <BR>
   If you haven't done so already, you must first install<br>
   the CA certificate(s) in your browser. </div>
 <P align="center">Install CA certificates: 
@@ -23,6 +23,7 @@ try  {
             ctx.lookup("RSASignSession"), ISignSessionHome.class );
     ISignSession ss = home.create();
     Certificate[] chain = ss.getCertificateChain();
+    out.println("<div align=\"center\">");
     if (chain.length == 0) {
         out.println("No CA certificates exist");
     } else {
@@ -33,6 +34,7 @@ try  {
             }
         }
     }
+    out.println("</div>");
 } catch(Exception ex) {
     ex.printStackTrace();
 }                                             
@@ -49,7 +51,7 @@ function validateForm() {
   //-- Check the common name field, reject if blank.
   if (document.demoreq.cn.value=="") {
     okSoFar=false
-    alert("Please fill in the Common Name field!")
+    alert("Please fill in the name field!")
     document.demoreq.cn.focus()
   }
   document.demoreq.user.value=document.demoreq.dn.value+document.demoreq.cn.value
@@ -59,7 +61,7 @@ function validateForm() {
       var foundAt = document.demoreq.email.value.indexOf("@",0)
       if (foundAt < 1 && okSoFar) {
         okSoFar = false
-        alert ("EMail address should contain an @ character!")
+        alert ("Email address should contain an @ character!")
         document.demoreq.email.focus()
       }
   document.demoreq.user.value=document.demoreq.user.value+",EmailAddress="+document.demoreq.email.value
@@ -88,7 +90,7 @@ function validateForm() {
     <INPUT name=email TYPE=text size=25 maxlength="60" class="input">
   
   <p align="center"> Key length <KEYGEN TYPE="hidden" NAME="keygen" VALUE="challenge"> 
-    <input type="button" value="OK" onclick="validateForm()">
+   <p align="center"> <input type="button" value="OK" onclick="validateForm()">
 </FORM>
 
 <script language="JavaScript">
