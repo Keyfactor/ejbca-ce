@@ -19,14 +19,12 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * by JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: CertificateView.java,v 1.8 2003-03-11 09:47:43 anatom Exp $
+ * @version $Id: CertificateView.java,v 1.9 2003-03-27 08:16:03 anatom Exp $
  */
 public class CertificateView {
 
    public static final int DIGITALSIGNATURE = CertificateProfile.DIGITALSIGNATURE;
    public static final int NONREPUDIATION   = CertificateProfile.NONREPUDIATION;
-   /** @deprecated use NONREPUDIATION instead */
-   public static final int NONREPUDATION    = NONREPUDIATION;
    public static final int KEYENCIPHERMENT  = CertificateProfile.KEYENCIPHERMENT;
    public static final int DATAENCIPHERMENT = CertificateProfile.DATAENCIPHERMENT;
    public static final int KEYAGREEMENT     = CertificateProfile.KEYAGREEMENT;

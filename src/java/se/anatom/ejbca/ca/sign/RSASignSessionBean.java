@@ -34,6 +34,7 @@ import org.bouncycastle.asn1.DEREncodableVector;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERInputStream;
 import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
@@ -81,7 +82,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.77 2003-03-26 19:55:31 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.78 2003-03-27 08:15:43 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -600,28 +601,21 @@ public class RSASignSessionBean extends BaseSessionBean {
         if (certProfile.getUseSubjectKeyIdentifier() == true) {
             SubjectPublicKeyInfo spki =
                 new SubjectPublicKeyInfo(
-                    (ASN1Sequence) new DERInputStream(new ByteArrayInputStream(publicKey
-                        .getEncoded()))
-                        .readObject());
+                    (ASN1Sequence) new DERInputStream(new ByteArrayInputStream(publicKey.getEncoded())).readObject());
             SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
             certgen.addExtension(
                 X509Extensions.SubjectKeyIdentifier.getId(),
-                certProfile.getSubjectKeyIdentifierCritical(),
-                ski);
+                certProfile.getSubjectKeyIdentifierCritical(), ski);
         }
         // Authority key identifier
         if (certProfile.getUseAuthorityKeyIdentifier() == true) {
             SubjectPublicKeyInfo apki =
                 new SubjectPublicKeyInfo(
-                    (ASN1Sequence) new DERInputStream(new ByteArrayInputStream(caCert
-                        .getPublicKey()
-                        .getEncoded()))
-                        .readObject());
+                    (ASN1Sequence) new DERInputStream(new ByteArrayInputStream(caCert.getPublicKey().getEncoded())).readObject());
             AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
             certgen.addExtension(
                 X509Extensions.AuthorityKeyIdentifier.getId(),
-                certProfile.getAuthorityKeyIdentifierCritical(),
-                aki);
+                certProfile.getAuthorityKeyIdentifierCritical(), aki);
         }
         // Subject Alternative name
         if ( (certProfile.getUseSubjectAlternativeName() == true) && (altName != null) && (altName.length() > 0) ) {
@@ -647,10 +641,10 @@ public class RSASignSessionBean extends BaseSessionBean {
             if (upn != null) {
                 DERConstructedSequence upnSeq = new DERConstructedSequence();
                 upnSeq.addObject(new DERObjectIdentifier(CertTools.UPN_OBJECTID));
-                upnSeq.addObject(new DERUTF8String(upn));
+                upnSeq.addObject(new DERTaggedObject(0, new DERUTF8String(upn)));
                 GeneralName gn = new GeneralName(upnSeq, 0);
                 vec.add(gn);
-            }            
+            }
             if (vec.size() > 0) {
                 GeneralNames san = new GeneralNames(new DERSequence(vec));
                 certgen.addExtension(X509Extensions.SubjectAlternativeName.getId(), certProfile.getSubjectAlternativeNameCritical(), san);

@@ -12,18 +12,16 @@ import se.anatom.ejbca.SecConst;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.13 2003-03-11 09:47:40 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.14 2003-03-27 08:16:02 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
     // Default Values
     public static final float LATEST_VERSION = 6;
 
-    // Public Constants
+    /** KeyUsage constants */
     public static final int DIGITALSIGNATURE = 0;
     public static final int NONREPUDIATION   = 1;
-    /** @deprecated use NONREPUDIATION instead */
-    public static final int NONREPUDATION    = NONREPUDIATION;
     public static final int KEYENCIPHERMENT  = 2;
     public static final int DATAENCIPHERMENT = 3;
     public static final int KEYAGREEMENT     = 4;
@@ -32,6 +30,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int ENCIPHERONLY     = 7;
     public static final int DECIPHERONLY     = 8;
 
+    /** Extended key usage constants */
     public static final int ANYEXTENDEDKEYUSAGE = 0;
     public static final int SERVERAUTH          = 1;
     public static final int CLIENTAUTH          = 2;
@@ -41,9 +40,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int IPSECTUNNEL         = 6;
     public static final int IPSECUSER           = 7;
     public static final int TIMESTAMPING        = 8;
+    public static final int SMARTCARDLOGON      = 9;
 
     private static final String[] EXTENDEDKEYUSAGEOIDSTRINGS = {"1.3.6.1.5.5.7.3.0", "1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2", "1.3.6.1.5.5.7.3.3", "1.3.6.1.5.5.7.3.4",
-                                                              "1.3.6.1.5.5.7.3.5", "1.3.6.1.5.5.7.3.6", "1.3.6.1.5.5.7.3.7", "1.3.6.1.5.5.7.3.8"};
+                                                              "1.3.6.1.5.5.7.3.5", "1.3.6.1.5.5.7.3.6", "1.3.6.1.5.5.7.3.7", "1.3.6.1.5.5.7.3.8", "1.3.6.1.4.1.311.20.2.2"};
 
     public static final String TRUE  = "true";
     public static final String FALSE = "false";
