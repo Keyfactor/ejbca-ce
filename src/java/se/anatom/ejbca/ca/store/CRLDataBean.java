@@ -38,7 +38,7 @@ import se.anatom.ejbca.util.CertTools;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.23 2005-03-05 16:04:40 anatom Exp $
+ * @version $Id: CRLDataBean.java,v 1.24 2005-03-10 13:36:07 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CRLDataEB"
@@ -79,13 +79,13 @@ public abstract class CRLDataBean extends BaseEntityBean {
     private static final Logger log = Logger.getLogger(CRLDataBean.class);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="cRLNumber"
      * @ejb.interface-method
      */
     public abstract int getCRLNumber();
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="cRLNumber"
      * @ejb.interface-method
      */
     public abstract void setCRLNumber(int cRLNumber);
@@ -118,13 +118,13 @@ public abstract class CRLDataBean extends BaseEntityBean {
     public abstract void setFingerprint(String fingerprint);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="cAFingerprint"
      * @ejb.interface-method
      */
     public abstract String getCAFingerprint();
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="cAFingerprint"
      * @ejb.interface-method
      */
     public abstract void setCAFingerprint(String cAFingerprint);

@@ -1,8 +1,5 @@
 <cmp-field>
-  <field-name>adminGroupName</field-name>
-</cmp-field>
-<cmp-field>
-  <field-name>caId</field-name>
+  <field-name>PK</field-name>
 </cmp-field>
 <cmp-field>
   <field-name>accessRule</field-name>
@@ -14,4 +11,3 @@
 <cmp-field>
   <field-name>isRecursive</field-name>
 </cmp-field>
-

@@ -62,14 +62,10 @@ public abstract class AuthorizationTreeUpdateDataBean extends BaseEntityBean
     public static final Integer AUTHORIZATIONTREEUPDATEDATA = new Integer(1);
 
 	/**
+     * @ejb.persistence column-name="pK"
      * @ejb.pk-field
-     * @ejb.persistence
      */
     public abstract Integer getPK();
-
-    /**
-     * @ejb.persistence
-     */
     public abstract void setPK(Integer pK);
 
 	/**

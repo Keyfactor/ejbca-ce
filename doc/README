@@ -1,4 +1,4 @@
-$Id: README,v 1.177 2005-03-08 08:45:23 anatom Exp $
+$Id: README,v 1.178 2005-03-10 13:35:24 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -109,7 +109,13 @@ JBoss's root is
  (/jboss-<version>). This is done so the deploy script will
  know where files are to be copied, they are copied to the
  $JBOSS_HOME/server/default/deploy directory.
-
+ 
+ Windows/Unix: 
+ When we describe command line commands below we use
+ unix notation, e.g. 'ejbca.sh' for the executable command files.
+ The same command files are available for windows as cmd-files,
+ e.g. 'ejbca.cmd.'
+ 
 Configure
 ---------
 
@@ -136,24 +142,22 @@ FOR THE IMPATIENT
 
 Note that the installation must be done with a user with privileges to write to JBOSS_HOME and subdirs. 
 
-(To create your own secure master password, change the variable 'keyStorePass' in 
-src/java/se/anatom/ejbca/ca/RSASignSession java from the default value foo123. 
-DO NOT forget this password, if you need to re-install the software sometime)
 
 1) Set the environment variable JBOSS_HOME to where your JBoss is installed,
 example /opt/jboss-4.0.1.
 
-2) Copy ejbca.properties.sample to ejbca.properties
+2) Copy ejbca.properties.sample to ejbca.properties and customize if needed.
+The default values works fine for a test installaton.
 
-3) Customize the database if needed but easiest thing is to keep the default as it is,
+- Customize the database if needed but easiest thing is to keep the default as it is,
 it will use the JBoss embedded HSQLDB and everything will be easier for you.
 For production use you should use a real database instead of the embedded one.
-
-4) Customize the CA properties if you need to do so.
+- Customize the CA properties if you need to do so.
 For production use you need to do this, don't forget to edit
 passwords to be secure and secret. Keep ejbca.properties as secret as possible.
+DO NOT forget the passwords, if you need to re-install the software sometime.
 
-5) Open another console (terminal) and start JBoss.
+3) Open another console (terminal) and start JBoss.
 You can start JBoss with 'ant j2ee:run' from EJBCA_HOME
 or the normal command 'run.sh/cmd' from JBOSS_HOME/bin.
 
@@ -191,7 +195,8 @@ NOTE! Don't forget to configure JBoss for security! See
 'security.txt'.
 Security is CRITICAL for a CA.
 
-AFTER INSTALLTION (TODO: not updated to ejbca 3.1.x):
+AFTER INSTALLTION
+=================
 
 After installation, that creates a default admin CA
 you can create more CAs using the admin GUI.
@@ -200,8 +205,8 @@ You CAs can be either root CAs, subordinate CAs to another CA in EJBCA
 or subordinate CAs to an external CA. The initial admin CA is a RootCA.
 
 You can also use the command line interface (cli) 
-'ca.sh/cmd init' to create new CAs, although a better idea is to do it from the Admin GUI.
-Ex: 'ca init TestRoot "C=SE,O=PrimeKey,CN=EJBCA" 2048 365 2.5.29.32.0' 
+'bin/ejbca.sh ca init' to create new CAs, although a better idea is to do it from the Admin GUI.
+Ex: 'bin/ejbca.sh ca init TestRoot "C=SE,O=PrimeKey,CN=EJBCA" 2048 365 2.5.29.32.0' 
 will create a root CA with the DN 'C=SE,O=PrimeKey,CN=EJBCA'. The
 keylength is
  2048 bit (RSA) and the validity of the root certificate is 365
@@ -216,8 +221,6 @@ Subordinate CA:
 Subordinate CAs is created using the admin GUI, you can not use the 
 cli for that.
 
-
-
 Note that application for certificates only work when the status
 of a user is NEW (one time password thing). The status is set to GENERATED
 after a certificate has been issued. To issue a new certificate, the 
@@ -226,7 +229,7 @@ the RA using the admin GUI or the cli, 'ra.sh/cmd setuserstatus <username> <stat
  
 Converting an OpenSSL CA
 ------------------------
-You can convert a PEM-style CA key to a PKCS12file that can be imported in EJBCA.
+You can convert a PEM-style Root CA key to a PKCS12file that can be imported in EJBCA.
 openssl pkcs12 -export -out server1.p12 -inkey cakey.pem -in ca.pem -name privateKey
 
 You can import the CA with the command 'ca importca' after ejbca has been installed 
@@ -234,12 +237,12 @@ and the the initial CA created.
 
 
 Running EJBCA
-
+---------------
 
 Creating Users
 --------------
-Users are added in the admin-GUI, 'Add End Entity' or with the cmd-line interface
-'ca.sh/cmd adduser'.
+Users are added in the admin-GUI, 'Add End Entity' or with the cli
+'bin/ejbca.sh ra adduser'.
 The users DN is normally entered as "C=SE,O=MyOrg,OU=MyOrgUnit,CN=MyName".
 If a ',' is needed in the DN the comma must be escaped using '\,'.
 

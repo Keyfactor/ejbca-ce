@@ -39,7 +39,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.15 2005-03-05 10:13:15 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.16 2005-03-10 13:36:06 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
@@ -99,14 +99,10 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
     private static final Logger log = Logger.getLogger(AdminGroupDataBean.class);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="pK"
      * @ejb.pk-field
      */
     public abstract Integer getPK();
-
-    /**
-     * @ejb.persistence
-     */
     public abstract void setPK(Integer pk);
 
     /**
@@ -122,13 +118,13 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
     public abstract void setAdminGroupName(String admingroupname);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="cAId"
      * @ejb.interface-method view-type="local"
      */
     public abstract int getCaId();
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="cAId"
      * @ejb.interface-method view-type="local"
      */
     public abstract void setCaId(int caid);
@@ -139,15 +135,15 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      * 
      * @jboss.target-relation
      * related-pk-field="PK"
-     * fk-column="AdminGroupData_AdminEntities"  
+     * fk-column="AdminGroupData_adminEntities"  
      * 
      * @weblogic.target-column-map
      * key-column="PK"
-     * foreign-key-column="AdminGroupData_AdminEntities"
+     * foreign-key-column="AdminGroupData_adminEntities"
      * 
      * @sunone.relation
      * column="PK"
-     * target="AdminGroupData_AdminEntities"
+     * target="AdminGroupData_adminEntities"
      */
     public abstract Collection getAdminEntities();
     public abstract void setAdminEntities(Collection adminentities);
@@ -159,15 +155,15 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      * 
      * @jboss.target-relation
      * related-pk-field="PK"
-     * fk-column="AdminGroupData_AccessRules"
+     * fk-column="AdminGroupData_accessRules"
      *      
      * @weblogic.target-column-map
      * key-column="PK"
-     * foreign-key-column="AdminGroupData_AccessRules"
+     * foreign-key-column="AdminGroupData_accessRules"
      * 
      * @sunone.relation
      * column="PK"
-     * target="AdminGroupData_AccessRules"
+     * target="AdminGroupData_accessRules"
      */
     public abstract Collection getAccessRules();
     public abstract void setAccessRules(Collection accessrules);
@@ -320,12 +316,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
     // this method is to avoid matching arguments errors while generating the class
     private AdminEntityPK createAdminEntityPK(String name, int id, int with, int type, String value){
-        AdminEntityPK pk = new AdminEntityPK();
-        pk.setAdminGroupName(name);
-        pk.setCaId(id);
-        pk.setMatchWith(with);
-        pk.setMatchType(type);
-        pk.setMatchValue(value);
+        AdminEntityPK pk = new AdminEntityPK(name, id, with, type, value);
         return pk;
     }
 

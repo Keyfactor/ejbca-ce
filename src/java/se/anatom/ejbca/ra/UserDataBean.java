@@ -54,7 +54,7 @@ import java.util.HashMap;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.33 2005-03-05 10:13:15 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.34 2005-03-10 13:36:08 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
  * display-name="UserDataEB"
@@ -136,13 +136,13 @@ public abstract class UserDataBean extends BaseEntityBean {
     public abstract void setSubjectDN(String subjectDN);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="cAId"
      * @ejb.interface-method
      */
     public abstract int getCaId();
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="cAId"
      * @ejb.interface-method
      */
     public abstract void setCaId(int caid);

@@ -112,22 +112,22 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
     public abstract void setUsername(String username);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="cTime"
      */
     public abstract long getCTime();
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="cTime"
      */
     public abstract void setCTime(long createtime);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="mTime"
      */
     public abstract long getMTime();
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="mTime"
      */
     public abstract void setMTime(long modifytime);
 

@@ -41,6 +41,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * @ejb.permission role-name="InternalUser"
  *
  * @ejb.pk
+ *   generate="false"
  *   class="se.anatom.ejbca.authorization.AdminEntityPK"
  *   extends="java.lang.Object"
  *   implements="java.io.Serializable"
@@ -55,54 +56,37 @@ import se.anatom.ejbca.BaseEntityBean;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="se.anatom.ejbca.authorization.AdminEntityDataLocal"
  *
- * @todo Write migration script
  */
 public abstract class AdminEntityDataBean extends BaseEntityBean {
 
     private static Logger log = Logger.getLogger(AdminEntityDataBean.class);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="pK"
      * @ejb.pk-field
-     * @ejb.interface-method view-type="local"
      */
-    public abstract String getAdminGroupName();
+    public abstract int getPK();
 
     /**
      * @ejb.persistence
      */
-    public abstract void setAdminGroupName(String admingroupname);
-
-    /**
-     * @ejb.persistence
-     * @ejb.pk-field
-     * @ejb.interface-method view-type="local"
-     */
-    public abstract int getCaId();
-
-    /**
-     * @ejb.persistence
-     */
-    public abstract void setCaId(int caid);
+    public abstract void setPK(int pK);
 
 	/**
 	 * @ejb.persistence
      * @ejb.interface-method view-type="local"
-     * @ejb.pk-field
      */
     public abstract int          getMatchWith();
 
     /**
 	 * @ejb.persistence
      * @ejb.interface-method view-type="local"
-     * @ejb.pk-field
      */
     public abstract int          getMatchType();
 
     /**
 	 * @ejb.persistence
      * @ejb.interface-method view-type="local"
-     * @ejb.pk-field
      */
     public abstract String       getMatchValue();
 
@@ -135,14 +119,13 @@ public abstract class AdminEntityDataBean extends BaseEntityBean {
      * @ejb.create-method
 	 */
     public AdminEntityPK ejbCreate(String admingroupname, int caid, int matchwith, int matchtype, String matchvalue) throws CreateException {
-        setAdminGroupName(admingroupname);
-        setCaId(caid);
+        AdminEntityPK ret = new AdminEntityPK(admingroupname, caid, matchwith, matchtype, matchvalue);
+        setPK(ret.PK);
         setMatchWith(matchwith);
         setMatchType(matchtype);
         setMatchValue(matchvalue);
-
         log.debug("Created admin entity "+ matchvalue);
-        return null;
+        return ret;
     }
 
     public void ejbPostCreate(String admingroupname, int caid, int matchwith, int matchtype, String matchvalue) {

@@ -15,6 +15,8 @@ package se.anatom.ejbca.authorization;
 
 import javax.ejb.CreateException;
 
+import org.apache.log4j.Logger;
+
 import se.anatom.ejbca.BaseEntityBean;
 
 /** Entity bean should not be used directly, use though Session beans.
@@ -43,6 +45,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * @ejb.permission role-name="InternalUser"
  *
  * @ejb.pk
+ *   generate="false"
  *   class="se.anatom.ejbca.authorization.AccessRulesPK"
  *   extends="java.lang.Object"
  *   implements="java.io.Serializable"
@@ -61,25 +64,16 @@ import se.anatom.ejbca.BaseEntityBean;
  */
 public abstract class AccessRulesDataBean extends BaseEntityBean
 {
+    private static Logger log = Logger.getLogger(AccessRulesDataBean.class);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="pK"
      * @ejb.pk-field
-     * @ejb.interface-method view-type="local"
      */
-    public abstract String getAdminGroupName();
-    public abstract void setAdminGroupName(String admingroupname);
-
-    /**
-     * @ejb.persistence
-     * @ejb.pk-field
-     * @ejb.interface-method view-type="local"
-     */
-    public abstract int getCaId();
-    public abstract void setCaId(int caid);
+    public abstract int getPK();
+    public abstract void setPK(int PK);
 
 	/**
-     * @ejb.pk-field
 	 * @ejb.persistence
      * @ejb.interface-method view-type="local"
 	 */
@@ -87,7 +81,6 @@ public abstract class AccessRulesDataBean extends BaseEntityBean
     public abstract void setAccessRule(String accessrule);
 
 	/**
-     * @ejb.pk-field
 	 * @ejb.persistence
      * @ejb.interface-method view-type="local"
 	 */
@@ -95,7 +88,6 @@ public abstract class AccessRulesDataBean extends BaseEntityBean
     public abstract void setRule(int rule);
 
 	/**
-     * @ejb.pk-field
 	 * @ejb.persistence
      * @ejb.interface-method view-type="local"
 	 */
@@ -116,12 +108,13 @@ public abstract class AccessRulesDataBean extends BaseEntityBean
      * @ejb.create-method
 	 */
     public AccessRulesPK ejbCreate(String admingroupname, int caid, String accessrule, int rule, boolean isrecursive) throws CreateException {
-        setAdminGroupName(admingroupname);
-        setCaId(caid);
+        AccessRulesPK ret = new AccessRulesPK(admingroupname, caid, new AccessRule(accessrule, rule, isrecursive));
+        setPK(ret.PK);
         setAccessRule(accessrule);
         setRule(rule);
         setIsRecursive(isrecursive);
-        return null;
+        log.debug("Created accessrule : "+ accessrule);
+        return ret;
     }
 
     public void ejbPostCreate(String admingroupname, int caid, String accessrule, int rule, boolean isrecursive) {

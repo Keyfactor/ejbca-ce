@@ -1,5 +1,6 @@
 <cmp-field>
   <field-name>CRLNumber</field-name>
+  <column-name>cRLNumber</column-name>
 </cmp-field>
 <cmp-field>
   <field-name>issuerDN</field-name>
@@ -9,6 +10,7 @@
 </cmp-field>
 <cmp-field>
   <field-name>CAFingerprint</field-name>
+  <column-name>cAFingerprint</column-name>
 </cmp-field>
 <cmp-field>
   <field-name>thisUpdate</field-name>

@@ -37,7 +37,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.10 2005-03-02 11:25:41 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.11 2005-03-10 13:36:07 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -92,14 +92,16 @@ public abstract class CADataBean extends BaseEntityBean {
 
     /**
      * @ejb.pk-field
-     * @ejb.persistence
+     * @ejb.persistence column-name="cAId"
      * @ejb.interface-method
     */
     public abstract Integer getCaId();
 
     /**
-     * @ejb.persistence
-     */
+     * @ejb.pk-field
+     * @ejb.persistence column-name="cAId"
+     * @ejb.interface-method
+    */
     public abstract void setCaId(Integer caid);
 
     /**

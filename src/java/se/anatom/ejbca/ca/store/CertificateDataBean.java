@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.32 2005-03-05 10:13:10 anatom Exp $
+ * @version $Id: CertificateDataBean.java,v 1.33 2005-03-10 13:36:07 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a certificate with accompanying data"
  * display-name="CertificateDataEB"
@@ -222,7 +222,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * Fingerprint of CA certificate
      *
      * @return fingerprint
-     * @ejb.persistence
+     * @ejb.persistence column-name="cAFingerprint"
      * @ejb.interface-method
      */
     public abstract String getCAFingerprint();
@@ -231,7 +231,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * Fingerprint of CA certificate
      *
      * @param cAFingerprint fingerprint
-     * @ejb.persistence
+     * @ejb.persistence column-name="cAFingerprint"
      * @ejb.interface-method
      */
     public abstract void setCAFingerprint(String cAFingerprint);

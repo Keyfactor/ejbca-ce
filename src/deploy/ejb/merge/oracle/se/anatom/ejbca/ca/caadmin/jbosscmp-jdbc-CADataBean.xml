@@ -1,5 +1,6 @@
 <cmp-field>
   <field-name>caId</field-name>
+  <column-name>cAId</column-name>
 </cmp-field>
 <cmp-field>
   <field-name>name</field-name>
