@@ -1,4 +1,4 @@
-$Id: TODO,v 1.80 2004-06-09 08:13:19 anatom Exp $
+$Id: TODO,v 1.81 2004-10-10 08:18:34 anatom Exp $
 
 V 3.x
 -----
@@ -7,9 +7,10 @@ V 3.x
 - Continue improving exceptions and error handling.
 - Commands and status for certificate suspend (command for unrevoke, status for unrevoked).
 - Import utility to get users from external datasources.
+- Import utility to import a CA from P12 or PEM file, both rootCA and subCA.
 - Command line to edit/change users.
 - Better command line tools for batch stuff.
-- I18N, use traditional bundle pickup, and i18n-enable servlets with error messages displayed by error.jsp.
+- I18N, use traditional bundle pickup, and i18n-enable servlets with error messages displayed by jsp-page.
 
 General
 -------
