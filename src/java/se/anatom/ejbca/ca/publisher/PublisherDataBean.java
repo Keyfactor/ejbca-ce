@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.ca.publisher;
 
 import java.io.UnsupportedEncodingException;
@@ -23,47 +23,109 @@ import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.BaseEntityBean;
 
-/** Entity bean should not be used directly, use though Session beans.
+/**
+ * Entity bean should not be used directly, use though Session beans.
  *
  * Entity Bean representing a publisher in the ca.
  * Information stored:
  * <pre>
  *  id (Primary key)
  *  name (of the publisher)
- *  updatecount, help counter incremented each update used to check if a publisher proxy class should update its data 
+ *  updatecount, help counter incremented each update used to check if a publisher proxy class should update its data
  *  publisher (Data saved concerning the publisher)
  * </pre>
  *
- * @version $Id: PublisherDataBean.java,v 1.2 2004-04-16 07:38:55 anatom Exp $
- **/
-
+ * @ejb.bean
+ *	 generate="true"
+ *   description="This enterprise bean entity represents a publisher"
+ *   display-name="PublisherDataEB"
+ *   name="PublisherData"
+ *   jndi-name="PublisherData"
+ *   local-jndi-name="PublisherDataLocal"
+ *   view-type="local"
+ *   type="CMP"
+ *   reentrant="false"
+ *   cmp-version="2.x"
+ *   transaction-type="Container"
+ *   schema="PublisherDataBean"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.pk generate="false"
+ *   class="java.lang.Integer"
+ *
+ * @ejb.home
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.ca.publisher.PublisherDataLocalHome"
+ *
+ * @ejb.interface
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.ca.publisher.PublisherDataLocal"
+ *
+ * @ejb.finder
+ *   description="findByName"
+ *   signature="Collection findByName(java.lang.String name)"
+ *   query="SELECT DISTINCT OBJECT(a) from PublisherDataBean a WHERE a.name=?1"
+ */
 public abstract class PublisherDataBean extends BaseEntityBean {
 
     private static Logger log = Logger.getLogger(PublisherDataBean.class);
-    
+
     private BasePublisher publisher = null;
 
+    /**
+     * @ejb.pk-field
+     * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     */
     public abstract Integer getId();
+
+    /**
+     * @ejb.persistence
+     */
     public abstract void setId(Integer id);
 
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     */
     public abstract String getName();
-    public abstract void setName(String name);
-    
-	public abstract int getUpdateCounter();
-	public abstract void setUpdateCounter(int updatecounter);
-      
 
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract void setName(String name);
+
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     */
+	public abstract int getUpdateCounter();
+
+    /**
+     * @ejb.persistence
+     */
+	public abstract void setUpdateCounter(int updatecounter);
+
+    /**
+     * @ejb.persistence
+     */
     public abstract String getData();
+
+    /**
+     * @ejb.persistence
+     */
     public abstract void setData(String data);
-    
-    
-   
-    /** 
+
+    /**
      * Method that returns the publisher data and updates it if nessesary.
-     */    
-    
-    public BasePublisher getPublisher(){		
-		        
+     * @ejb.interface-method view-type="local"
+     */
+    public BasePublisher getPublisher(){
+
   	  if(publisher == null){
 	    java.beans.XMLDecoder decoder;
 		try {
@@ -75,48 +137,49 @@ public abstract class PublisherDataBean extends BaseEntityBean {
 		}
 		HashMap data = (HashMap) decoder.readObject();
 		decoder.close();
-             
+
 		switch (((Integer) (data.get(BasePublisher.TYPE))).intValue()) {
 		  case LdapPublisher.TYPE_LDAPPUBLISHER :
 		    publisher = new LdapPublisher();
 		    break;
 		  case ActiveDirectoryPublisher.TYPE_ADPUBLISHER:
-		    publisher =  new ActiveDirectoryPublisher();      
+		    publisher =  new ActiveDirectoryPublisher();
 		    break;
 		  case CustomPublisherContainer.TYPE_CUSTOMPUBLISHERCONTAINER:
-		  	publisher =  new CustomPublisherContainer();      
-		  	break;  		  		    
+		  	publisher =  new CustomPublisherContainer();
+		  	break;
 		}
-		  
-		publisher.loadData(data);		  
-	  }	
-		                 
-		return publisher;                          
+
+		publisher.loadData(data);
+	  }
+
+		return publisher;
     }
-    
-    /** 
+
+    /**
      * Method that saves the publisher data to database.
-     */    
+     * @ejb.interface-method view-type="local"
+     */
     public void setPublisher(BasePublisher publisher){
 		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-       
+
 		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
 		encoder.writeObject(publisher.saveData());
 		encoder.close();
-		       
+
 		try {
             if (log.isDebugEnabled()) {
-                log.debug("Profiledata: \n" + baos.toString("UTF8"));                
+                log.debug("Profiledata: \n" + baos.toString("UTF8"));
             }
 			setData(baos.toString("UTF8"));
 		} catch (UnsupportedEncodingException e) {
           throw new EJBException(e);
 		}
-       
-		this.publisher = publisher;    	       
-        setUpdateCounter(getUpdateCounter() +1);          
+
+		this.publisher = publisher;
+        setUpdateCounter(getUpdateCounter() +1);
     }
-    
+
 
     //
     // Fields required by Container
@@ -133,16 +196,15 @@ public abstract class PublisherDataBean extends BaseEntityBean {
      * Entity Bean holding data of a publisher.
      *
      * @return null
-     *
+     * @ejb.create-method view-type="local"
      **/
-
     public Integer ejbCreate(Integer id, String name, BasePublisher publisher) throws CreateException {
         setId(id);
         setName(name);
-        this.setUpdateCounter(0); 
-        if(publisher != null)           
+        this.setUpdateCounter(0);
+        if(publisher != null)
           setPublisher(publisher);
-        
+
         log.debug("Created Hard Token Profile "+ name );
         return id;
     }

@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.ca.sign;
 
 import java.io.BufferedReader;
@@ -34,13 +34,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Vector;
-
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.ObjectNotFoundException;
 
 import org.bouncycastle.jce.X509KeyUsage;
-
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal;
@@ -83,30 +81,105 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.130 2004-05-24 20:04:54 anatom Exp $
+ * @ejb.bean description="Session bean handling core CA function,signing certificates"
+ *   display-name="RSASignSessionSB"
+ *   name="RSASignSession"
+ *   jndi-name="RSASignSession"
+ *   local-jndi-name="RSASignSessionLocal"
+ *   view-type="both"
+ *   type="Stateless"
+ *   transaction-type="Container"
+ * @ejb.transaction type="Required"
+ * @ejb.permission role-name="InternalUser"
+ * @ejb.env-entry description="Password for server keystore, comment out to prompt for pwd"
+ *   name="keyStorePass"
+ *   type="java.lang.String"
+ *   value="foo123"
+ * @ejb.env-entry description="Password for CA private key, only used for JKS-keystore. Leave as null for PKCS12-keystore, comment out to prompt"
+ *   name="privateKeyPass"
+ *   type="java.lang.String"
+ *   value="null"
+ * @ejb.env-entry description="Password for OCSP keystores"
+ *   name="OCSPKeyStorePass"
+ *   type="java.lang.String"
+ *   value="foo123"
+ * @ejb.env-entry description="Password for OCSP keystores private key protection"
+ *   name="privateOCSPKeyPass"
+ *   type="java.lang.String"
+ *   value="foo123"
+ * @ejb.env-entry description="Name of PRNG algorithm used for random source - refer to Appendix A in the
+ * Java Cryptography Architecture API Specification And Reference for
+ * information about standard PRNG algorithm names"
+ *   name="randomAlgorithm"
+ *   type="java.lang.String"
+ *   value="SHA1PRNG"
+ * @ejb.ejb-external-ref description="The CA entity bean"
+ *   view-type="local"
+ *   ejb-name="CADataLocal"
+ *   type="Entity"
+ *   home="se.anatom.ejbca.ca.caadmin.ICADataLocalHome"
+ *   business="se.anatom.ejbca.ca.caadmin.ICADataLocal"
+ *   link="CAData"
+ * @ejb.ejb-external-ref description="The log session bean"
+ *   view-type="local"
+ *   ejb-name="LogSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.log.ILogSessionLocalHome"
+ *   business="se.anatom.ejbca.log.ILogSessionLocal"
+ *   link="LogSession"
+ * @ejb.ejb-external-ref description="The Certificate store used to store and fetch certificates"
+ *   view-type="local"
+ *   ejb-name="CertificateStoreSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome"
+ *   business="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal"
+ *   link="CertificateStoreSession"
+ * @ejb.ejb-external-ref description="The Authentication session used to authenticate users when issuing certificates.
+ * Alter this to enable a custom made authentication session implementing the
+ * IAuthenticationSessionLocal interface"
+ *   view-type="local"
+ *   ejb-name="AuthenticationSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.ca.auth.IAuthenticationSessionLocalHome"
+ *   business="se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal"
+ *   link="AuthenticationSession"
+ * @ejb.ejb-external-ref description="Publishers are configured to store certificates and CRLs in additional places
+ * from the main database. Publishers runs as local beans"
+ *   view-type="local"
+ *   ejb-name="PublisherSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.ca.publisher.IPublisherSessionLocalHome"
+ *   business="se.anatom.ejbca.ca.publisher.IPublisherSessionLocal"
+ *   link="PublisherSession"
  */
 public class RSASignSessionBean extends BaseSessionBean {
-    
 
-    /** Local interfacte to ca admin store */
+
+    /**
+     * Local interfacte to ca admin store
+     */
     private CADataLocalHome cadatahome;
-    
-    /** Home interface to certificate store */
+
+    /**
+     * Home interface to certificate store
+     */
     private ICertificateStoreSessionLocalHome storeHome = null;
-        
+
     /* Home interface to Authentication session */
     private IAuthenticationSessionLocalHome authHome = null;
 
     /* Home interface to Publisher session */
     private IPublisherSessionLocalHome publishHome = null;
-    
-    /** The local interface of the log session bean */
+
+    /**
+     * The local interface of the log session bean
+     */
     private ILogSessionLocal logsession;
     /**
      * Source of good random data
      */
     SecureRandom randomSource = null;
-    
+
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -117,85 +190,89 @@ public class RSASignSessionBean extends BaseSessionBean {
         debug(">ejbCreate()");
 
         try {
-             // Install BouncyCastle provider
-             CertTools.installBCProvider();
+            // Install BouncyCastle provider
+            CertTools.installBCProvider();
 
             // get home interfaces to other session beans used
-            storeHome = (ICertificateStoreSessionLocalHome) lookup(
-                    "java:comp/env/ejb/CertificateStoreSessionLocal");
-            authHome = (IAuthenticationSessionLocalHome) lookup(
-                    "java:comp/env/ejb/AuthenticationSessionLocal");
+            storeHome = (ICertificateStoreSessionLocalHome) lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
+            authHome = (IAuthenticationSessionLocalHome) lookup("java:comp/env/ejb/AuthenticationSessionLocal");
 
-            cadatahome = (CADataLocalHome)lookup("java:comp/env/ejb/CADataLocal");
-            
+            cadatahome = (CADataLocalHome) lookup("java:comp/env/ejb/CADataLocal");
+
             publishHome = (IPublisherSessionLocalHome) lookup("java:comp/env/ejb/PublisherSessionLocal");
-            
+
             // Get a decent source of random data
-            String  randomAlgorithm = (String) lookup("java:comp/env/randomAlgorithm");
+            String randomAlgorithm = (String) lookup("java:comp/env/randomAlgorithm");
             randomSource = SecureRandom.getInstance(randomAlgorithm);
             SernoGenerator.setAlgorithm(randomAlgorithm);
 
 
-        } catch( Exception e ) {
+        } catch (Exception e) {
             debug("Caught exception in ejbCreate(): ", e);
             throw new EJBException(e);
         }
 
         debug("<ejbCreate()");
     }
-    
-    
-    /** Gets connection to log session bean
+
+
+    /**
+     * Gets connection to log session bean
      */
     private ILogSessionLocal getLogSession() {
-        if(logsession == null){
-            try{
-                ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup("java:comp/env/ejb/LogSessionLocal",ILogSessionLocalHome.class);
+        if (logsession == null) {
+            try {
+                ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup(ILogSessionLocalHome.COMP_NAME, ILogSessionLocalHome.class);
                 logsession = logsessionhome.create();
-            }catch(Exception e){
+            } catch (Exception e) {
                 throw new EJBException(e);
             }
         }
         return logsession;
-    } //getLogSession   
-    
+    } //getLogSession
+
 
     /**
-     *  Returns the Certificate Chain of a CA. 
+     * Retrieves the certificate chain for the signer. The returned certificate chain MUST have the
+     * RootCA certificate in the last position.
      *
- 	 * @param admin admin performing action!
-     * @param caid is the issuerdn.hashCode()
+     * @param admin Information about the administrator or admin preforming the event.
+     * @param caid  is the issuerdn.hashCode()
+     * @return The certificate chain, never null.
+     * @ejb.permission unchecked
+     * @ejb.interface-method view-type="both"
      */
-    public Collection getCertificateChain(Admin admin, int caid){
-      // get CA
-         CADataLocal cadata = null; 
-         try{
-           cadata = cadatahome.findByPrimaryKey(new Integer(caid));
-         }catch(javax.ejb.FinderException fe){         
-            throw new EJBException(fe);                   
-         }
-                
-         CA ca = null;
-         try{
-           ca = cadata.getCA();
-         }catch(java.io.UnsupportedEncodingException uee){
-           throw new EJBException(uee);   
-         }
-        
-         return ca.getCertificateChain();        
+    public Collection getCertificateChain(Admin admin, int caid) {
+        // get CA
+        CADataLocal cadata = null;
+        try {
+            cadata = cadatahome.findByPrimaryKey(new Integer(caid));
+        } catch (javax.ejb.FinderException fe) {
+            throw new EJBException(fe);
+        }
+
+        CA ca = null;
+        try {
+            ca = cadata.getCA();
+        } catch (java.io.UnsupportedEncodingException uee) {
+            throw new EJBException(uee);
+        }
+
+        return ca.getCertificateChain();
     }  // getCertificateChain
 
 
     /**
-     * Implements ISignSession::createPKCS7
+     * Creates a signed PKCS7 message containing the whole certificate chain, including the
+     * provided client certificate.
      *
      * @param admin Information about the administrator or admin preforming the event.
-     * @param cert client certificate which we want ancapsulated in a PKCS7 together with
-     *        certificate chain. If null, a PKCS7 with only CA certificate chain is returned.
-     *
+     * @param cert  client certificate which we want encapsulated in a PKCS7 together with
+     *              certificate chain.
      * @return The DER-encoded PKCS7 message.
-     *
-     * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid cert
+     * @throws CADoesntExistsException       if the CA does not exist or is expired, or has an invalid cert
+     * @throws SignRequestSignatureException if the certificate is not signed by the CA
+     * @ejb.interface-method view-type="both"
      */
     public byte[] createPKCS7(Admin admin, Certificate cert) throws CADoesntExistsException, SignRequestSignatureException {
         Integer caid = new Integer(CertTools.getIssuerDN((X509Certificate) cert).hashCode());
@@ -203,69 +280,83 @@ public class RSASignSessionBean extends BaseSessionBean {
     } // createPKCS7
 
     /**
-     * Implements ISignSession::createPKCS7
+     * Creates a signed PKCS7 message containing the whole certificate chain of the specified CA.
      *
      * @param admin Information about the administrator or admin preforming the event.
-	 * @param caId CA for which we want a PKCS7 certificate chain.
-     *
+     * @param caId  CA for which we want a PKCS7 certificate chain.
      * @return The DER-encoded PKCS7 message.
-     *
      * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid cert
+     * @ejb.interface-method view-type="both"
      */
     public byte[] createPKCS7(Admin admin, int caId) throws CADoesntExistsException {
         try {
             return createPKCS7(admin, caId, null);
         } catch (SignRequestSignatureException e) {
-            error("Unknown error, strange?", e); 
+            error("Unknown error, strange?", e);
             throw new EJBException(e);
         }
     } // createPKCS7
 
-    /** Internal helper method
+    /**
+     * Internal helper method
+     *
      * @param admin Information about the administrator or admin preforming the event.
-	 * @param caId CA for which we want a PKCS7 certificate chain.
-     * @param cert client certificate which we want ancapsulated in a PKCS7 together with
-     *        certificate chain, or null
+     * @param caId  CA for which we want a PKCS7 certificate chain.
+     * @param cert  client certificate which we want ancapsulated in a PKCS7 together with
+     *              certificate chain, or null
      * @return The DER-encoded PKCS7 message.
      * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid cert
      */
     private byte[] createPKCS7(Admin admin, int caId, Certificate cert) throws CADoesntExistsException, SignRequestSignatureException {
-        debug(">createPKCS7("+caId+", "+CertTools.getIssuerDN((X509Certificate)cert)+")");
+        debug(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN((X509Certificate) cert) + ")");
         byte[] returnval = null;
-         // get CA
-         CADataLocal cadata = null; 
-         try{
-           cadata = cadatahome.findByPrimaryKey(new Integer(caId));
-         }catch(javax.ejb.FinderException fe){         
-            throw new CADoesntExistsException(fe);                   
-         }
-                
-         CA ca = null;
-         try{
-           ca = cadata.getCA();
-         }catch(java.io.UnsupportedEncodingException uee){
-           throw new CADoesntExistsException(uee);   
-         }
-                
-         // Check that CA hasn't expired.
-         X509Certificate cacert = (X509Certificate) ca.getCACertificate();                  
-         try{
-           cacert.checkValidity();                   
-         }catch(CertificateExpiredException e){
-           // Signers Certificate has expired.   
-           cadata.setStatus(SecConst.CA_EXPIRED);         
-           throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " has expired");   
-         } catch (CertificateNotYetValidException cve) {
-			throw new CADoesntExistsException(cve);
-		 }           
-        
-         returnval = ca.createPKCS7(cert);
-         debug("<createPKCS7()");
-         return returnval;
+        // get CA
+        CADataLocal cadata = null;
+        try {
+            cadata = cadatahome.findByPrimaryKey(new Integer(caId));
+        } catch (javax.ejb.FinderException fe) {
+            throw new CADoesntExistsException(fe);
+        }
+
+        CA ca = null;
+        try {
+            ca = cadata.getCA();
+        } catch (java.io.UnsupportedEncodingException uee) {
+            throw new CADoesntExistsException(uee);
+        }
+
+        // Check that CA hasn't expired.
+        X509Certificate cacert = (X509Certificate) ca.getCACertificate();
+        try {
+            cacert.checkValidity();
+        } catch (CertificateExpiredException e) {
+            // Signers Certificate has expired.
+            cadata.setStatus(SecConst.CA_EXPIRED);
+            throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " has expired");
+        } catch (CertificateNotYetValidException cve) {
+            throw new CADoesntExistsException(cve);
+        }
+
+        returnval = ca.createPKCS7(cert);
+        debug("<createPKCS7()");
+        return returnval;
     } // createPKCS7
 
     /**
-     * Implements ISignSession::createCertificate
+     * Requests for a certificate to be created for the passed public key with default key usage
+     * The method queries the user database for authorization of the user.
+     *
+     * @param admin    Information about the administrator or admin preforming the event.
+     * @param username unique username within the instance.
+     * @param password password for the user.
+     * @param pk       the public key to be put in the created certificate.
+     * @return The newly created certificate or null.
+     * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException     If the users status is incorrect.
+     * @throws AuthLoginException      If the password is incorrect.
+     * @throws IllegalKeyException     if the public key is of wrong type.
+     * @ejb.permission unchecked
+     * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
         debug(">createCertificate(pk)");
@@ -275,69 +366,133 @@ public class RSASignSessionBean extends BaseSessionBean {
     } // createCertificate
 
     /**
-     * Implements ISignSession::createCertificate
+     * Requests for a certificate to be created for the passed public key with the passed key
+     * usage. The method queries the user database for authorization of the user. CAs are only
+     * allowed to have certificateSign and CRLSign set.
+     *
+     * @param admin    Information about the administrator or admin preforming the event.
+     * @param username unique username within the instance.
+     * @param password password for the user.
+     * @param pk       the public key to be put in the created certificate.
+     * @param keyusage integer with mask describing desired key usage in format specified by
+     *                 X509Certificate.getKeyUsage(). id-ce-keyUsage OBJECT IDENTIFIER ::=  { id-ce 15 }
+     *                 KeyUsage ::= BIT STRING { digitalSignature        (0), nonRepudiation          (1),
+     *                 keyEncipherment         (2), dataEncipherment        (3), keyAgreement (4),
+     *                 keyCertSign             (5), cRLSign                 (6), encipherOnly (7),
+     *                 decipherOnly            (8) }
+     * @return The newly created certificate or null.
+     * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException     If the users status is incorrect.
+     * @throws AuthLoginException      If the password is incorrect.
+     * @throws IllegalKeyException     if the public key is of wrong type.
+     * @ejb.permission unchecked
+     * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, boolean[] keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
-        return createCertificate(admin, username, password, pk, sunKeyUsageToBC(keyusage));                    
+        return createCertificate(admin, username, password, pk, sunKeyUsageToBC(keyusage));
     }
 
     /**
-     * Implements ISignSession::createCertificate
+     * Requests for a certificate to be created for the passed public key with the passed key
+     * usage. The method queries the user database for authorization of the user. CAs are only
+     * allowed to have certificateSign and CRLSign set.
+     *
+     * @param admin    Information about the administrator or admin preforming the event.
+     * @param username unique username within the instance.
+     * @param password password for the user.
+     * @param pk       the public key to be put in the created certificate.
+     * @param keyusage integer with bit mask describing desired keys usage, overrides keyUsage from
+     *                 CertificateProfiles if allowed. Bit mask is packed in in integer using constants
+     *                 from CertificateData. -1 means use default keyUsage from CertificateProfile. ex. int
+     *                 keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives
+     *                 digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
+     *                 | CertificateData.cRLSign; gives keyCertSign and cRLSign
+     * @return The newly created certificate or null.
+     * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException     If the users status is incorrect.
+     * @throws AuthLoginException      If the password is incorrect.
+     * @throws IllegalKeyException     if the public key is of wrong type.
+     * @ejb.permission unchecked
+     * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
-        return createCertificate(admin, username, password, pk, keyusage, SecConst.PROFILE_NO_PROFILE);                    
+        return createCertificate(admin, username, password, pk, keyusage, SecConst.PROFILE_NO_PROFILE);
     }
 
-    
+
     /**
-     * Implements ISignSession::createCertificate
+     * Requests for a certificate to be created for the passed public key with the passed key
+     * usage and using the given certificate profile. This method is primarily intended to be used when
+     * issueing hardtokens having multiple certificates per user.
+     * The method queries the user database for authorization of the user. CAs are only
+     * allowed to have certificateSign and CRLSign set.
+     *
+     * @param admin                Information about the administrator or admin preforming the event.
+     * @param username             unique username within the instance.
+     * @param password             password for the user.
+     * @param pk                   the public key to be put in the created certificate.
+     * @param keyusage             integer with bit mask describing desired keys usage, overrides keyUsage from
+     *                             CertificateProfiles if allowed. Bit mask is packed in in integer using constants
+     *                             from CertificateData. -1 means use default keyUsage from CertificateProfile. ex. int
+     *                             keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives
+     *                             digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
+     *                             | CertificateData.cRLSign; gives keyCertSign and cRLSign
+     * @param certificateprofileid used to override the one set in userdata.
+     *                             Should be set to SecConst.PROFILE_NO_PROFILE if the regular certificateid shpuld be used
+     * @return The newly created certificate or null.
+     * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException     If the users status is incorrect.
+     * @throws AuthLoginException      If the password is incorrect.
+     * @throws IllegalKeyException     if the public key is of wrong type.
+     * @ejb.permission unchecked
+     * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, int certificateprofileid) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
-        debug(">createCertificate(pk, ku)");        
+        debug(">createCertificate(pk, ku)");
         try {
             // Authorize user and get DN
             UserAuthData data = authUser(admin, username, password);
-            debug("Authorized user " + username + " with DN='" + data.getDN()+"'." + " with CA=" + data.getCAId());
-            if(certificateprofileid != SecConst.PROFILE_NO_PROFILE){
-            	debug("Overriding user certificate profile with :" + certificateprofileid);
-            	data.setCertProfileId(certificateprofileid);
+            debug("Authorized user " + username + " with DN='" + data.getDN() + "'." + " with CA=" + data.getCAId());
+            if (certificateprofileid != SecConst.PROFILE_NO_PROFILE) {
+                debug("Overriding user certificate profile with :" + certificateprofileid);
+                data.setCertProfileId(certificateprofileid);
             }
-            
-            
-            debug("type="+ data.getType());
+
+
+            debug("type=" + data.getType());
             // get CA
-            CADataLocal cadata = null; 
-            try{
-              cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
-            }catch(javax.ejb.FinderException fe){
-              getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Invalid CA Id",fe);  
-              throw new CADoesntExistsException();                   
+            CADataLocal cadata = null;
+            try {
+                cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
+            } catch (javax.ejb.FinderException fe) {
+                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Invalid CA Id", fe);
+                throw new CADoesntExistsException();
             }
             CA ca = null;
-            try{
-              ca = cadata.getCA();
-            }catch(java.io.UnsupportedEncodingException uee){
-               throw new EJBException(uee);   
+            try {
+                ca = cadata.getCA();
+            } catch (java.io.UnsupportedEncodingException uee) {
+                throw new EJBException(uee);
             }
             // Check that CA hasn't expired.
-            X509Certificate cacert = (X509Certificate) ca.getCACertificate();         
-            
-            if(ca.getStatus() != SecConst.CA_ACTIVE){
-		      getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " isn't active.");
-			  throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");             
+            X509Certificate cacert = (X509Certificate) ca.getCACertificate();
+
+            if (ca.getStatus() != SecConst.CA_ACTIVE) {
+                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " isn't active.");
+                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");
             }
-                     
-            try{
-                cacert.checkValidity();                   
-            }catch(CertificateExpiredException cee){
-                 // Signers Certificate has expired.   
-                cadata.setStatus(SecConst.CA_EXPIRED);  
-                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " has expired",cee);
-                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " has expired");   
+
+            try {
+                cacert.checkValidity();
+            } catch (CertificateExpiredException cee) {
+                // Signers Certificate has expired.
+                cadata.setStatus(SecConst.CA_EXPIRED);
+                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " has expired", cee);
+                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " has expired");
             } catch (CertificateNotYetValidException cve) {
-				throw new EJBException(cve);
-			}                
-            
+                throw new EJBException(cve);
+            }
+
 
             // Now finally after all these checks, get the certificate
             Certificate cert = createCertificate(admin, data, ca, pk, keyusage);
@@ -355,11 +510,29 @@ public class RSASignSessionBean extends BaseSessionBean {
             throw le;
         } catch (IllegalKeyException ke) {
             throw ke;
-        } 
+        }
     } // createCertificate
 
     /**
-     * Implements ISignSession::createCertificate
+     * Requests for a certificate of the specified type to be created for the passed public key.
+     * The method queries the user database for authorization of the user.
+     *
+     * @param admin    Information about the administrator or admin preforming the event.
+     * @param username unique username within the instance.
+     * @param password password for the user.
+     * @param certType integer type of certificate taken from CertificateData.CERT_TYPE_XXX. the
+     *                 type CertificateData.CERT_TYPE_ENCRYPTION gives keyUsage keyEncipherment,
+     *                 dataEncipherment. the type CertificateData.CERT_TYPE_SIGNATURE gives keyUsage
+     *                 digitalSignature, non-repudiation. all other CERT_TYPES gives the default keyUsage
+     *                 digitalSignature, keyEncipherment
+     * @param pk       the public key to be put in the created certificate.
+     * @return The newly created certificate or null.
+     * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException     If the users status is incorrect.
+     * @throws AuthLoginException      If the password is incorrect.
+     * @throws IllegalKeyException     if the public key is of wrong type.
+     * @ejb.permission unchecked
+     * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, int certType, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
         debug(">createCertificate(pk, certType)");
@@ -393,15 +566,34 @@ public class RSASignSessionBean extends BaseSessionBean {
     } // createCertificate
 
     /**
-     * Implements ISignSession::createCertificate
+     * Requests for a certificate to be created for the passed public key wrapped in a self-signed
+     * certificate. Verification of the signature (proof-of-possesion) on the request is
+     * performed, and an exception thrown if verification fails. The method queries the user
+     * database for authorization of the user.
+     *
+     * @param admin    Information about the administrator or admin preforming the event.
+     * @param username unique username within the instance.
+     * @param password password for the user.
+     * @param incert   a certificate containing the public key to be put in the created certificate.
+     *                 Other (requested) parameters in the passed certificate can be used, such as DN,
+     *                 Validity, KeyUsage etc. Currently only KeyUsage is considered!
+     * @return The newly created certificate or null.
+     * @throws ObjectNotFoundException       if the user does not exist.
+     * @throws AuthStatusException           If the users status is incorrect.
+     * @throws AuthLoginException            If the password is incorrect.
+     * @throws IllegalKeyException           if the public key is of wrong type.
+     * @throws SignRequestSignatureException if the provided client certificate was not signed by
+     *                                       the CA.
+     * @ejb.permission unchecked
+     * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, Certificate incert) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestSignatureException, CADoesntExistsException {
         debug(">createCertificate(cert)");
-        X509Certificate cert = (X509Certificate)incert;
+        X509Certificate cert = (X509Certificate) incert;
         try {
             cert.verify(cert.getPublicKey());
-        }catch (Exception e) {                       
-           throw new SignRequestSignatureException("Verification of signature (popo) on certificate failed.");
+        } catch (Exception e) {
+            throw new SignRequestSignatureException("Verification of signature (popo) on certificate failed.");
         }
         Certificate ret = createCertificate(admin, username, password, cert.getPublicKey(), cert.getKeyUsage());
         debug("<createCertificate(cert)");
@@ -409,107 +601,134 @@ public class RSASignSessionBean extends BaseSessionBean {
     } // createCertificate
 
     /**
-     * Implements ISignSession::createCertificate
+     * Requests for a certificate to be created for the passed public key wrapped in a
+     * certification request message (ex PKCS10). Verification of the signature
+     * (proof-of-possesion) on the request is performed, and an exception thrown if verification
+     * fails. The method queries the user database for authorization of the user.
+     *
+     * @param admin         Information about the administrator or admin preforming the event.
+     * @param req           a Certification Request message, containing the public key to be put in the
+     *                      created certificate. Currently no additional parameters in requests are considered!
+     *                      Currently no additional parameters in the PKCS10 request is considered!
+     * @param responseClass The implementation class that will be used as the response message.
+     * @return The newly created response message or null.
+     * @throws ObjectNotFoundException       if the user does not exist.
+     * @throws AuthStatusException           If the users status is incorrect.
+     * @throws AuthLoginException            If the password is incorrect.
+     * @throws IllegalKeyException           if the public key is of wrong type.
+     * @throws SignRequestException          if the provided request is invalid.
+     * @throws SignRequestSignatureException if the provided client certificate was not signed by
+     *                                       the CA.
+     * @ejb.permission unchecked
+     * @ejb.interface-method view-type="both"
      */
-    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException{
+    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException {
         return createCertificate(admin, req, -1, responseClass);
     }
 
     /**
-     * Implements ISignSession::createCertificate
+     * Requests for a certificate to be created for the passed public key wrapped in a
+     * certification request message (ex PKCS10).  The username and password used to authorize is
+     * taken from the request message. Verification of the signature (proof-of-possesion) on the
+     * request is performed, and an exception thrown if verification fails. The method queries the
+     * user database for authorization of the user.
      *
-     * @param admin Information about the administrator or admin preforming the event.
-     * @param req a Certification Request message, containing the public key to be put in the
-     *        created certificate. Currently no additional parameters in requests are considered!
-     * @param keyUsage integer with bit mask describing desired keys usage. Bit mask is packed in
-     *        in integer using contants from CertificateData. ex. int keyusage =
-     *        CertificateData.digitalSignature | CertificateData.nonRepudiation; gives
-     *        digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
-     *        | CertificateData.cRLSign; gives keyCertSign and cRLSign. Keyusage < 0 means that default 
-     *        keyUsage should be used.
-     * @param responseClass the implementation class of the desired response 
-     *
-     * @return The newly created certificate or null.
-     *
-     * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthStatusException If the users status is incorrect.
-     * @throws AuthLoginException If the password is incorrect.
-     * @throws IllegalKeyException if the public key is of wrong type.
-     * @throws CADoesntExistsException if the targeted CA does not exist
-     * @throws SignRequestException if the provided request is invalid.
+     * @param admin         Information about the administrator or admin preforming the event.
+     * @param req           a Certification Request message, containing the public key to be put in the
+     *                      created certificate. Currently no additional parameters in requests are considered!
+     * @param keyUsage      integer with bit mask describing desired keys usage. Bit mask is packed in
+     *                      in integer using contants from CertificateData. ex. int keyusage =
+     *                      CertificateData.digitalSignature | CertificateData.nonRepudiation; gives
+     *                      digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
+     *                      | CertificateData.cRLSign; gives keyCertSign and cRLSign. Keyusage < 0 means that default
+     *                      keyUsage should be used.
+     * @param responseClass The implementation class that will be used as the response message.
+     * @return The newly created response or null.
+     * @throws ObjectNotFoundException       if the user does not exist.
+     * @throws AuthStatusException           If the users status is incorrect.
+     * @throws AuthLoginException            If the password is incorrect.
+     * @throws IllegalKeyException           if the public key is of wrong type.
+     * @throws CADoesntExistsException       if the targeted CA does not exist
+     * @throws SignRequestException          if the provided request is invalid.
      * @throws SignRequestSignatureException if the provided client certificate was not signed by
-     *         the CA.
+     *                                       the CA.
+     * @ejb.permission unchecked
+     * @ejb.interface-method view-type="both"
+     * @see se.anatom.ejbca.ca.store.CertificateData
+     * @see se.anatom.ejbca.protocol.IRequestMessage
+     * @see se.anatom.ejbca.protocol.IResponseMessage
+     * @see se.anatom.ejbca.protocol.X509ResponseMessage
      */
     public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException {
         debug(">createCertificate(IRequestMessage)");
         IResponseMessage ret = null;
 
         // Get CA that will receive request
-        CADataLocal cadata = null; 
+        CADataLocal cadata = null;
         UserAuthData data = null;
-        try{
+        try {
             // See if we can get issuerDN directly from request
             if (req.getIssuerDN() != null) {
                 cadata = cadatahome.findByPrimaryKey(new Integer(req.getIssuerDN().hashCode()));
-                debug("Using CA (from issuerDN) with id: "+cadata.getCAId()+" and DN: "+cadata.getSubjectDN());
-            } else if (req.getUsername() != null ){
+                debug("Using CA (from issuerDN) with id: " + cadata.getCAId() + " and DN: " + cadata.getSubjectDN());
+            } else if (req.getUsername() != null) {
                 // See if we can get username and password directly from request
                 String username = req.getUsername();
                 String password = req.getPassword();
                 data = authUser(admin, username, password);
                 cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
-                debug("Using CA (from username) with id: "+cadata.getCAId()+" and DN: "+cadata.getSubjectDN());
+                debug("Using CA (from username) with id: " + cadata.getCAId() + " and DN: " + cadata.getSubjectDN());
             } else {
                 throw new CADoesntExistsException();
             }
-        }catch(javax.ejb.FinderException fe) {
-            error("Can not find CA Id from issuerDN: "+req.getIssuerDN() + " or username: "+req.getUsername());
-            getLogSession().log(admin, -1, LogEntry.MODULE_CA, new java.util.Date(),req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Invalid CA Id",fe);  
-            throw new CADoesntExistsException(fe);                   
+        } catch (javax.ejb.FinderException fe) {
+            error("Can not find CA Id from issuerDN: " + req.getIssuerDN() + " or username: " + req.getUsername());
+            getLogSession().log(admin, -1, LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Invalid CA Id", fe);
+            throw new CADoesntExistsException(fe);
         }
         try {
             CA ca = cadata.getCA();
             CAToken catoken = ca.getCAToken();
-            
-			if(ca.getStatus() != SecConst.CA_ACTIVE){
-			  getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " isn't active.");
-			  throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");             
-			}
-			
-            // Check that CA hasn't expired.
-            X509Certificate cacert = (X509Certificate) ca.getCACertificate();                  
-            try{	
-                cacert.checkValidity();                   
-            }catch(CertificateExpiredException cee){
-                 // Signers Certificate has expired.   
-                cadata.setStatus(SecConst.CA_EXPIRED);  
-                getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " has expired",cee);
-                throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " has expired");   
-            } catch (CertificateNotYetValidException cve) {
-				throw new CADoesntExistsException(cve); 
-			}                
 
-             
+            if (ca.getStatus() != SecConst.CA_ACTIVE) {
+                getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " isn't active.");
+                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");
+            }
+
+            // Check that CA hasn't expired.
+            X509Certificate cacert = (X509Certificate) ca.getCACertificate();
+            try {
+                cacert.checkValidity();
+            } catch (CertificateExpiredException cee) {
+                // Signers Certificate has expired.
+                cadata.setStatus(SecConst.CA_EXPIRED);
+                getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " has expired", cee);
+                throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " has expired");
+            } catch (CertificateNotYetValidException cve) {
+                throw new CADoesntExistsException(cve);
+            }
+
+
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+                req.setKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
             }
             // Create the response message and set all required fields
             try {
                 ret = (IResponseMessage) responseClass.newInstance();
             } catch (InstantiationException e) {
                 //TODO : do something with these exceptions
-                log.error("Error creating response message",e);
+                log.error("Error creating response message", e);
                 return null;
             } catch (IllegalAccessException e) {
-                log.error("Error creating response message",e);
+                log.error("Error creating response message", e);
                 return null;
             }
             if (ret.requireSignKeyInfo()) {
-                ret.setSignKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+                ret.setSignKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
             }
             if (ret.requireEncKeyInfo()) {
-                ret.setEncKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT));
+                ret.setEncKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT));
             }
             if (req.getSenderNonce() != null) {
                 ret.setRecipientNonce(req.getSenderNonce());
@@ -527,10 +746,10 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
             // Verify the request
             if (req.verify() == false) {
-                getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA,new java.util.Date(),req.getUsername(),null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"POPO verification failed.");
+                getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "POPO verification failed.");
                 throw new SignRequestSignatureException("Verification of signature (popo) on request failed.");
             }
-            if ((req.getUsername() == null ) || (req.getPassword() == null)) {
+            if ((req.getUsername() == null) || (req.getPassword() == null)) {
                 log.error("No username/password in request");
                 throw new SignRequestException("No username/password in request!");
                 //ret.setFailInfo(FailInfo.BAD_REQUEST);
@@ -539,13 +758,13 @@ public class RSASignSessionBean extends BaseSessionBean {
                 // If we haven't done so yet, authenticate user
                 if (data == null) {
                     data = authUser(admin, req.getUsername(), req.getPassword());
-                }    
+                }
                 PublicKey reqpk = req.getRequestPublicKey();
                 if (reqpk == null) {
                     throw new InvalidKeyException("Key is null!");
                 }
                 Certificate cert = null;
-                cert = createCertificate(admin,data,ca,reqpk,keyUsage);        
+                cert = createCertificate(admin, data, ca, reqpk, keyUsage);
                 if (cert != null) {
                     ret.setCertificate(cert);
                     ret.setStatus(ResponseStatus.SUCCESS);
@@ -584,10 +803,10 @@ public class RSASignSessionBean extends BaseSessionBean {
             log.error("Cannot create response message: ", e);
         } catch (CATokenOfflineException ctoe) {
             log.error("CA Token is Offline: ", ctoe);
-            cadata.setStatus(SecConst.CA_OFFLINE);  
-            getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " is offline.",ctoe);
-            throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " is offline.");   
-		} 
+            cadata.setStatus(SecConst.CA_OFFLINE);
+            getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " is offline.", ctoe);
+            throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " is offline.");
+        }
         debug("<createCertificate(IRequestMessage)");
         return ret;
     }
@@ -595,90 +814,85 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::getCRL
      *
-     * @param admin Information about the administrator or admin preforming the event.
-     * @param req a CRL Request message
-     * @param responseClass the implementation class of the desired response 
-     *
+     * @param admin         Information about the administrator or admin preforming the event.
+     * @param req           a CRL Request message
+     * @param responseClass the implementation class of the desired response
      * @return The newly created certificate or null.
-     *
-     * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthStatusException If the users status is incorrect.
-     * @throws AuthLoginException If the password is incorrect.
-     * @throws IllegalKeyException if the public key is of wrong type.
-     * @throws CADoesntExistsException if the targeted CA does not exist
-     * @throws SignRequestException if the provided request is invalid.
+     * @throws IllegalKeyException           if the public key is of wrong type.
+     * @throws CADoesntExistsException       if the targeted CA does not exist
+     * @throws SignRequestException          if the provided request is invalid.
      * @throws SignRequestSignatureException if the provided client certificate was not signed by
-     *         the CA.
+     *                                       the CA.
+     * @ejb.interface-method view-type="both"
      */
     public IResponseMessage getCRL(Admin admin, IRequestMessage req, Class responseClass) throws IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException {
         debug(">getCRL(IRequestMessage)");
         IResponseMessage ret = null;
         ICertificateStoreSessionLocal certificateStore = null;
         try {
-             certificateStore = storeHome.create();
+            certificateStore = storeHome.create();
         } catch (CreateException e) {
             error("Can not create certificate store session: ", e);
             throw new EJBException(e);
         }
         // Get CA that will receive request
-        CADataLocal cadata = null; 
-        UserAuthData data = null;
-        try{
+        CADataLocal cadata = null;
+        try {
             // See if we can get issuerDN directly from request
             if (req.getIssuerDN() != null) {
                 cadata = cadatahome.findByPrimaryKey(new Integer(req.getIssuerDN().hashCode()));
-                debug("Using CA (from issuerDN) with id: "+cadata.getCAId()+" and DN: "+cadata.getSubjectDN());
+                debug("Using CA (from issuerDN) with id: " + cadata.getCAId() + " and DN: " + cadata.getSubjectDN());
             } else {
                 throw new CADoesntExistsException();
             }
-        }catch(javax.ejb.FinderException fe) {
-            error("Can not find CA Id from issuerDN: "+req.getIssuerDN() + " or username: "+req.getUsername());
-            getLogSession().log(admin, -1, LogEntry.MODULE_CA, new java.util.Date(),req.getUsername(), null, LogEntry.EVENT_ERROR_GETLASTCRL,"Invalid CA Id",fe);  
-            throw new CADoesntExistsException(fe);                   
+        } catch (javax.ejb.FinderException fe) {
+            error("Can not find CA Id from issuerDN: " + req.getIssuerDN() + " or username: " + req.getUsername());
+            getLogSession().log(admin, -1, LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_GETLASTCRL, "Invalid CA Id", fe);
+            throw new CADoesntExistsException(fe);
         }
         try {
             CA ca = cadata.getCA();
             CAToken catoken = ca.getCAToken();
-            
-            if(ca.getStatus() != SecConst.CA_ACTIVE){
-              getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL,"Signing CA " + cadata.getSubjectDN() + " isn't active.");
-              throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");             
-            }
-            
-            // Check that CA hasn't expired.
-            X509Certificate cacert = (X509Certificate) ca.getCACertificate();                  
-            try{    
-                cacert.checkValidity();                   
-            }catch(CertificateExpiredException cee){
-                 // Signers Certificate has expired.   
-                cadata.setStatus(SecConst.CA_EXPIRED);  
-                getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL,"Signing CA " + cadata.getSubjectDN() + " has expired",cee);
-                throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " has expired");   
-            } catch (CertificateNotYetValidException cve) {
-                throw new CADoesntExistsException(cve); 
-            }                
 
-             
+            if (ca.getStatus() != SecConst.CA_ACTIVE) {
+                getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL, "Signing CA " + cadata.getSubjectDN() + " isn't active.");
+                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");
+            }
+
+            // Check that CA hasn't expired.
+            X509Certificate cacert = (X509Certificate) ca.getCACertificate();
+            try {
+                cacert.checkValidity();
+            } catch (CertificateExpiredException cee) {
+                // Signers Certificate has expired.
+                cadata.setStatus(SecConst.CA_EXPIRED);
+                getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL, "Signing CA " + cadata.getSubjectDN() + " has expired", cee);
+                throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " has expired");
+            } catch (CertificateNotYetValidException cve) {
+                throw new CADoesntExistsException(cve);
+            }
+
+
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+                req.setKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
             }
             // Create the response message and set all required fields
             try {
                 ret = (IResponseMessage) responseClass.newInstance();
             } catch (InstantiationException e) {
                 //TODO : do something with these exceptions
-                log.error("Error creating response message",e);
+                log.error("Error creating response message", e);
                 return null;
             } catch (IllegalAccessException e) {
-                log.error("Error creating response message",e);
+                log.error("Error creating response message", e);
                 return null;
             }
             if (ret.requireSignKeyInfo()) {
-                ret.setSignKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+                ret.setSignKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
             }
             if (ret.requireEncKeyInfo()) {
-                ret.setEncKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT));
+                ret.setEncKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT));
             }
             if (req.getSenderNonce() != null) {
                 ret.setRecipientNonce(req.getSenderNonce());
@@ -694,7 +908,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             if (req.getRequestKeyInfo() != null) {
                 ret.setRecipientKeyInfo(req.getRequestKeyInfo());
             }
-            // Get the CRL, don't even bother digging into the encrypted CRLIssuerDN...since we already 
+            // Get the CRL, don't even bother digging into the encrypted CRLIssuerDN...since we already
             // know that we are the CA (SCEP is soooo stupid!)
             byte[] crl = certificateStore.getLastCRL(admin, req.getIssuerDN());
             if (crl != null) {
@@ -725,127 +939,138 @@ public class RSASignSessionBean extends BaseSessionBean {
             log.error("Cannot create response message: ", e);
         } catch (CATokenOfflineException ctoe) {
             log.error("CA Token is Offline: ", ctoe);
-            cadata.setStatus(SecConst.CA_OFFLINE);  
-            getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL,"Signing CA " + cadata.getSubjectDN() + " is offline.",ctoe);
-            throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " is offline.");   
-        } 
+            cadata.setStatus(SecConst.CA_OFFLINE);
+            getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL, "Signing CA " + cadata.getSubjectDN() + " is offline.", ctoe);
+            throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " is offline.");
+        }
         debug("<getCRL(IRequestMessage)");
         return ret;
     }
 
     /**
-     * Implements ISignSession::createCRL
+     * Requests for a CRL to be created with the passed (revoked) certificates.
+     *
+     * @param admin Information about the administrator or admin preforming the event.
+     * @param certs vector of RevokedCertInfo object.
+     * @return The newly created CRL or null.
+     * @ejb.interface-method view-type="both"
      */
     public X509CRL createCRL(Admin admin, int caid, Vector certs) {
         debug(">createCRL()");
         X509CRL crl = null;
         try {
-          // get CA
-          CADataLocal cadata = null; 
-          try{
-             cadata = cadatahome.findByPrimaryKey(new Integer(caid));
-          }catch(javax.ejb.FinderException fe){
-             getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,"Invalid CA Id",fe);  
-             throw new EJBException(fe);                   
-          }
-                
-          CA ca = null;
-          try{
-            ca = cadata.getCA();
-          }catch(java.io.UnsupportedEncodingException uee){
-            throw new EJBException(uee);   
-          }
-		  if(ca.getStatus() != SecConst.CA_ACTIVE){
-			getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " isn't active.");
-			throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");             
-		  }
-                
-          // Check that CA hasn't expired.
-          X509Certificate cacert = (X509Certificate) ca.getCACertificate();                  
-          try{
-            cacert.checkValidity();                   
-          }catch(CertificateExpiredException e){
-            // Signers Certificate has expired.   
-            cadata.setStatus(SecConst.CA_EXPIRED);  
-            getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECRL,"Signing CA " + cadata.getSubjectDN() + " has expired",e);
-            throw new EJBException("Signing CA " + cadata.getSubjectDN() + " has expired");   
-          }catch(CertificateNotYetValidException e){
-          	 throw new EJBException(e);             
-          }
-          
-          
-          ICertificateStoreSessionLocal certificateStore = storeHome.create();
-           // Get number of last CRL and increase by 1
-          int number = certificateStore.getLastCRLNumber(admin, ca.getSubjectDN()) + 1;
-          try{
-            crl = (X509CRL) ca.generateCRL(certs, number);
-          } catch(CATokenOfflineException ctoe) {
-            log.error("CA Token is Offline: ", ctoe);
-            cadata.setStatus(SecConst.CA_OFFLINE);  
-            getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECRL,"Signing CA " + cadata.getSubjectDN() + " is offline.",ctoe);
-            throw new EJBException("Signing CA " + cadata.getSubjectDN() + " is offline.");
-          }
-          getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CREATECRL,"Number :" + number);
-          
-          // Store CRL in the database
-          String fingerprint = CertTools.getFingerprintAsString(cacert);
-          certificateStore.storeCRL(admin, crl.getEncoded(), fingerprint, number);
-          // Store crl in ca CRL publishers.
-          IPublisherSessionLocal pub = publishHome.create();
-          pub.storeCRL(admin, ca.getCRLPublishers(), crl.getEncoded(), fingerprint, number);
-          
-        } catch (Exception e) {          
-            getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,"");          
+            // get CA
+            CADataLocal cadata = null;
+            try {
+                cadata = cadatahome.findByPrimaryKey(new Integer(caid));
+            } catch (javax.ejb.FinderException fe) {
+                getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECRL, "Invalid CA Id", fe);
+                throw new EJBException(fe);
+            }
+
+            CA ca = null;
+            try {
+                ca = cadata.getCA();
+            } catch (java.io.UnsupportedEncodingException uee) {
+                throw new EJBException(uee);
+            }
+            if (ca.getStatus() != SecConst.CA_ACTIVE) {
+                getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " isn't active.");
+                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");
+            }
+
+            // Check that CA hasn't expired.
+            X509Certificate cacert = (X509Certificate) ca.getCACertificate();
+            try {
+                cacert.checkValidity();
+            } catch (CertificateExpiredException e) {
+                // Signers Certificate has expired.
+                cadata.setStatus(SecConst.CA_EXPIRED);
+                getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECRL, "Signing CA " + cadata.getSubjectDN() + " has expired", e);
+                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " has expired");
+            } catch (CertificateNotYetValidException e) {
+                throw new EJBException(e);
+            }
+
+
+            ICertificateStoreSessionLocal certificateStore = storeHome.create();
+            // Get number of last CRL and increase by 1
+            int number = certificateStore.getLastCRLNumber(admin, ca.getSubjectDN()) + 1;
+            try {
+                crl = (X509CRL) ca.generateCRL(certs, number);
+            } catch (CATokenOfflineException ctoe) {
+                log.error("CA Token is Offline: ", ctoe);
+                cadata.setStatus(SecConst.CA_OFFLINE);
+                getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECRL, "Signing CA " + cadata.getSubjectDN() + " is offline.", ctoe);
+                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " is offline.");
+            }
+            getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CREATECRL, "Number :" + number);
+
+            // Store CRL in the database
+            String fingerprint = CertTools.getFingerprintAsString(cacert);
+            certificateStore.storeCRL(admin, crl.getEncoded(), fingerprint, number);
+            // Store crl in ca CRL publishers.
+            IPublisherSessionLocal pub = publishHome.create();
+            pub.storeCRL(admin, ca.getCRLPublishers(), crl.getEncoded(), fingerprint, number);
+
+        } catch (Exception e) {
+            getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECRL, "");
             throw new EJBException(e);
         }
         debug("<createCRL()");
         return crl;
     } // createCRL
-    
-    /** Method that publishes the given CA certificate chain to the list of publishers.
-    * Is mainly used by CAAdminSessionBean when CA is created.
-    *  @see se.anatom.ejbca.ca.sign.ISignSessionRemote
-    */
-   public void publishCACertificate(Admin admin, Collection certificatechain, Collection usedpublishers, int certtype){
-       try{
-                 
-           ICertificateStoreSessionLocal certificateStore = storeHome.create();
-      
-           Iterator certificates = certificatechain.iterator();
-           while(certificates.hasNext()){
-               Certificate cacert = (Certificate) certificates.next();
-          
-                 //     Store CA certificate in the database
+
+    /**
+     * Method that publishes the given CA certificate chain to the list of publishers.
+     * Is mainly used by CAAdminSessionBean when CA is created.
+     *
+     * @param admin            Information about the administrator or admin preforming the event.
+     * @param certificatechain certchain of certificate to publish
+     * @param usedpublishers   a collection if publisher id's (Integer) indicating which publisher that should be used.
+     * @param certtype         is one of SecConst.CERTTYPE_ constants
+     * @ejb.interface-method view-type="both"
+     */
+    public void publishCACertificate(Admin admin, Collection certificatechain, Collection usedpublishers, int certtype) {
+        try {
+
+            ICertificateStoreSessionLocal certificateStore = storeHome.create();
+
+            Iterator certificates = certificatechain.iterator();
+            while (certificates.hasNext()) {
+                Certificate cacert = (Certificate) certificates.next();
+
+                //     Store CA certificate in the database
                 String fingerprint = CertTools.getFingerprintAsString((X509Certificate) cacert);
-           
-                if(certificateStore.findCertificateByFingerprint(admin, fingerprint) == null){                                
+
+                if (certificateStore.findCertificateByFingerprint(admin, fingerprint) == null) {
                     certificateStore.storeCertificate(admin, cacert, "SYSTEMCA", fingerprint, CertificateData.CERT_ACTIVE, certtype);
-                }  
+                }
                 // Store cert in ca cert publishers.
                 IPublisherSessionLocal pub = publishHome.create();
-                if(usedpublishers != null)
-                  pub.storeCertificate(admin, usedpublishers, cacert, fingerprint, null , fingerprint, CertificateData.CERT_ACTIVE, certtype, null);
+                if (usedpublishers != null)
+                    pub.storeCertificate(admin, usedpublishers, cacert, fingerprint, null, fingerprint, CertificateData.CERT_ACTIVE, certtype, null);
+            }
+        } catch (javax.ejb.CreateException ce) {
+            throw new EJBException(ce);
         }
-       }catch(javax.ejb.CreateException ce){
-           throw new EJBException(ce);   
-       }
-   }
+    }
 
     private String getPassword(String initKey) throws Exception {
         String password;
         try {
-            password = (String)lookup(initKey, java.lang.String.class);
+            password = (String) lookup(initKey, java.lang.String.class);
         } catch (EJBException e) {
             password = null;
         }
-        if ( password == null ) {
-            debug(initKey+" password: ");
+        if (password == null) {
+            debug(initKey + " password: ");
             BufferedReader in
-            = new BufferedReader(new InputStreamReader(System.in));
+                    = new BufferedReader(new InputStreamReader(System.in));
             return (in.readLine());
         } else
             return password;
-    }    
+    }
 
     private int sunKeyUsageToBC(boolean[] sku) {
         int bcku = 0;
@@ -868,8 +1093,8 @@ public class RSASignSessionBean extends BaseSessionBean {
         if (sku[8] == true)
             bcku = bcku | X509KeyUsage.decipherOnly;
         return bcku;
-    }    
-    
+    }
+
     private UserAuthData authUser(Admin admin, String username, String password) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         // Authorize user and get DN
         try {
@@ -879,8 +1104,9 @@ public class RSASignSessionBean extends BaseSessionBean {
             log.error(e);
             throw new EJBException(e);
         }
- 
+
     } // authUser
+
     private void finishUser(Admin admin, String username, String password) throws ObjectNotFoundException {
         // Finnish user and set new status
         try {
@@ -892,23 +1118,24 @@ public class RSASignSessionBean extends BaseSessionBean {
         }
     } // finishUser
 
-    /** Creates the certificate, does NOT check any authorization on user, profiles or CA! 
+    /**
+     * Creates the certificate, does NOT check any authorization on user, profiles or CA!
      * This must be done earlier
-     * 
-     * @param admin administrator performing this task
-     * @param data auth data for user to get the certificate
-     * @param ca the CA that will sign the certificate
-     * @param pk ther users public key to be put in the certificate
+     *
+     * @param admin    administrator performing this task
+     * @param data     auth data for user to get the certificate
+     * @param ca       the CA that will sign the certificate
+     * @param pk       ther users public key to be put in the certificate
      * @param keyusage requested key usage for the certificate, may be ignored by the CA
-     * @throws IllegalKeyException if the public key given is invalid
      * @return Certificate that has been generated and signed by the CA
+     * @throws IllegalKeyException if the public key given is invalid
      */
     private Certificate createCertificate(Admin admin, UserAuthData data, CA ca, PublicKey pk, int keyusage) throws IllegalKeyException {
-        debug(">createCertificate(pk, ku)");        
+        debug(">createCertificate(pk, ku)");
         try {
             // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
             if (data.getType() == SecConst.USER_INVALID) {
-                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"User type is invalid, cannot create certificate for this user.");
+                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "User type is invalid, cannot create certificate for this user.");
             } else {
 
                 ICertificateStoreSessionLocal certificateStore = storeHome.create();
@@ -920,100 +1147,110 @@ public class RSASignSessionBean extends BaseSessionBean {
                     certProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
                     certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
                 }
-                
+
                 // Check that CAid is among available CAs
                 boolean caauthorized = false;
                 Iterator iter = certProfile.getAvailableCAs().iterator();
-                while(iter.hasNext()){
-                  int next = ((Integer) iter.next()).intValue();
-                  if(next == data.getCAId() || next == CertificateProfile.ANYCA){
-                    caauthorized = true;  
-                  }                    
+                while (iter.hasNext()) {
+                    int next = ((Integer) iter.next()).intValue();
+                    if (next == data.getCAId() || next == CertificateProfile.ANYCA) {
+                        caauthorized = true;
+                    }
                 }
-                
+
                 // Sign Session bean is only able to issue certificates with a end entity type certificate profile.
-                if(certProfile.getType() != CertificateProfile.TYPE_ENDENTITY){
-                  getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Wrong type of Certificate Profile for end entity. Only End Entity Certificate Profiles can be issued by signsession bean.");  
-                  throw new EJBException("Wrong type of Certificate Profile for end entity. Only End Entity Certificate Profiles can be issued by signsession bean.");  
+                if (certProfile.getType() != CertificateProfile.TYPE_ENDENTITY) {
+                    getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Wrong type of Certificate Profile for end entity. Only End Entity Certificate Profiles can be issued by signsession bean.");
+                    throw new EJBException("Wrong type of Certificate Profile for end entity. Only End Entity Certificate Profiles can be issued by signsession bean.");
                 }
-                
-                if(!caauthorized){
-                  getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"End Entity data contains a CA which the Certificate Profile isn't authorized to use.");  
-                  throw new EJBException("End Entity data contains a CA which the Certificate Profile isn't authorized to use.");
+
+                if (!caauthorized) {
+                    getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "End Entity data contains a CA which the Certificate Profile isn't authorized to use.");
+                    throw new EJBException("End Entity data contains a CA which the Certificate Profile isn't authorized to use.");
                 }
-                                                
-                log.debug("Using certificate profile with id "+certProfileId);
+
+                log.debug("Using certificate profile with id " + certProfileId);
                 int keyLength;
                 try {
-                  keyLength = ((RSAPublicKey)pk).getModulus().bitLength();
+                    keyLength = ((RSAPublicKey) pk).getModulus().bitLength();
                 } catch (ClassCastException e) {
-                  throw new
-                    IllegalKeyException("Unsupported public key (" +
-                                        pk.getClass().getName() +
-                                        "), only RSA keys are supported.");
+                    throw new
+                            IllegalKeyException("Unsupported public key (" +
+                            pk.getClass().getName() +
+                            "), only RSA keys are supported.");
                 }
-                log.debug("Keylength = "+keyLength); // bitBength() will return 1 less bit if BigInt i negative
-                if ( (keyLength < (certProfile.getMinimumAvailableBitLength()-1))
-                    || (keyLength > (certProfile.getMaximumAvailableBitLength())) ) {
-                        String msg = "Illegal key length "+keyLength;
-                        log.error(msg);
-                        throw new IllegalKeyException(msg);
-                    }
- 
-                X509Certificate   cert = (X509Certificate) ca.generateCertificate(data, pk, keyusage, certProfile);
-                
-                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),data.getUsername(), cert, LogEntry.EVENT_INFO_CREATECERTIFICATE,"");
-                debug("Generated certificate with SerialNumber '" + Hex.encode(cert.getSerialNumber().toByteArray())+"' for user '"+data.getUsername()+"'.");
+                log.debug("Keylength = " + keyLength); // bitBength() will return 1 less bit if BigInt i negative
+                if ((keyLength < (certProfile.getMinimumAvailableBitLength() - 1))
+                        || (keyLength > (certProfile.getMaximumAvailableBitLength()))) {
+                    String msg = "Illegal key length " + keyLength;
+                    log.error(msg);
+                    throw new IllegalKeyException(msg);
+                }
+
+                X509Certificate cert = (X509Certificate) ca.generateCertificate(data, pk, keyusage, certProfile);
+
+                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), cert, LogEntry.EVENT_INFO_CREATECERTIFICATE, "");
+                debug("Generated certificate with SerialNumber '" + Hex.encode(cert.getSerialNumber().toByteArray()) + "' for user '" + data.getUsername() + "'.");
                 debug(cert.toString());
-                
+
                 // Store certificate in the database
                 String fingerprint = CertTools.getFingerprintAsString(cert);
                 certificateStore.storeCertificate(admin, cert, data.getUsername(), fingerprint, CertificateData.CERT_ACTIVE, certProfile.getType());
                 // Store certificate in certificate profiles publishers.
                 IPublisherSessionLocal pub = publishHome.create();
-                if(certProfile.getPublisherList() != null)
-                  pub.storeCertificate(admin, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), fingerprint, CertificateData.CERT_ACTIVE, certProfile.getType(), data.getExtendedInformation());
-                                                
+                if (certProfile.getPublisherList() != null)
+                    pub.storeCertificate(admin, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), fingerprint, CertificateData.CERT_ACTIVE, certProfile.getType(), data.getExtendedInformation());
+
                 debug("<createCertificate(pk, ku)");
                 return cert;
             }
         } catch (IllegalKeyException ke) {
             throw ke;
-        } catch (CATokenOfflineException ctoe) {        	
-        	ca.setStatus(SecConst.CA_OFFLINE);
-        	throw new EJBException("Error CA Token is Offline", ctoe);
-        }catch (Exception e) {
+        } catch (CATokenOfflineException ctoe) {
+            ca.setStatus(SecConst.CA_OFFLINE);
+            throw new EJBException("Error CA Token is Offline", ctoe);
+        } catch (Exception e) {
             log.error(e);
             throw new EJBException(e);
         }
         debug("<createCertificate(pk, ku)");
-        log.error("Invalid user type for user "+data.getUsername());
-        throw new EJBException("Invalid user type for user "+data.getUsername());    
+        log.error("Invalid user type for user " + data.getUsername());
+        throw new EJBException("Invalid user type for user " + data.getUsername());
     } // createCertificate
-    
-	/** 
-	 * Method used to perform the extended service
-	 */
-	public ExtendedCAServiceResponse extendedService(Admin admin, int caid, ExtendedCAServiceRequest request) 
-	  throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException{
 
-		// Get CA that will process request
-		CADataLocal cadata = null; 		
-		ExtendedCAServiceResponse returnval = null;
-		try{			
-		  cadata = cadatahome.findByPrimaryKey(new Integer(caid));
-		  returnval = cadata.getCA().extendedService(request);			
-		}catch(javax.ejb.FinderException fe){			 
-			throw new CADoesntExistsException(fe);                   
-		}catch(UnsupportedEncodingException ue){
-			throw new EJBException(ue);
-		}
+    /**
+     * Method used to perform a extended CA Service, like OCSP CA Service.
+     *
+     * @param admin   Information about the administrator or admin preforming the event.
+     * @param caid    the ca that should perform the service
+     * @param request a service request.
+     * @return A corresponding response.
+     * @throws IllegalExtendedCAServiceRequestException
+     *                                 if the request was invalid.
+     * @throws ExtendedCAServiceNotActiveException
+     *                                 thrown when the service for the given CA isn't activated
+     * @throws CADoesntExistsException The given caid doesn't exists.
+     * @ejb.interface-method view-type="both"
+     */
+    public ExtendedCAServiceResponse extendedService(Admin admin, int caid, ExtendedCAServiceRequest request)
+            throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException {
+
+        // Get CA that will process request
+        CADataLocal cadata = null;
+        ExtendedCAServiceResponse returnval = null;
+        try {
+            cadata = cadatahome.findByPrimaryKey(new Integer(caid));
+            returnval = cadata.getCA().extendedService(request);
+        } catch (javax.ejb.FinderException fe) {
+            throw new CADoesntExistsException(fe);
+        } catch (UnsupportedEncodingException ue) {
+            throw new EJBException(ue);
+        }
 
 
-		return returnval;
-	  		     
-	}
-    
+        return returnval;
 
-    
+    }
+
+
 } //RSASignSessionBean
