@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 
-import se.anatom.ejbca.IJobRunnerSessionHome;
+import se.anatom.ejbca.ca.crl.ICreateCRLSessionHome;
 import se.anatom.ejbca.apply.RequestHelper;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
@@ -50,7 +50,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.22 2004-01-31 14:25:00 herrvendil Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.23 2004-02-11 10:45:26 herrvendil Exp $
  */
 public class CAInterfaceBean   {
 
@@ -205,7 +205,7 @@ public class CAInterfaceBean   {
       
     public void createCRL(String issuerdn)  throws RemoteException, NamingException, CreateException  {      
       InitialContext jndicontext = new InitialContext();
-      IJobRunnerSessionHome home  = (IJobRunnerSessionHome)javax.rmi.PortableRemoteObject.narrow( jndicontext.lookup("CreateCRLSession") , IJobRunnerSessionHome.class );
+      ICreateCRLSessionHome home  = (ICreateCRLSessionHome)javax.rmi.PortableRemoteObject.narrow( jndicontext.lookup("CreateCRLSession") , ICreateCRLSessionHome.class );
       home.create().run(administrator, issuerdn);
     }
 

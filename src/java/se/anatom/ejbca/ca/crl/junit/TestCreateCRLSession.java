@@ -1,33 +1,38 @@
 package se.anatom.ejbca.ca.crl.junit;
 
 import java.security.cert.X509CRL;
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import se.anatom.ejbca.ca.store.*;
-import se.anatom.ejbca.util.*;
-import se.anatom.ejbca.*;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
-import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
-import se.anatom.ejbca.ca.caadmin.CAInfo;
+import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import junit.framework.*;
+
+import se.anatom.ejbca.ca.caadmin.CAInfo;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
+import se.anatom.ejbca.ca.crl.ICreateCRLSessionHome;
+import se.anatom.ejbca.ca.crl.ICreateCRLSessionRemote;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.util.CertTools;
 
 /**
  * Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.13 2003-11-20 15:23:22 anatom Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.14 2004-02-11 10:44:22 herrvendil Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 
     private static Logger log = Logger.getLogger(TestCreateCRLSession.class);
     private static Context ctx;
-    private static IJobRunnerSessionHome  home;
-    private static IJobRunnerSessionRemote remote;
+    private static ICreateCRLSessionHome  home;
+    private static ICreateCRLSessionRemote remote;
     private static ICertificateStoreSessionHome storehome;
     private static ICertificateStoreSessionRemote storeremote;
     private static Admin admin;
@@ -52,7 +57,7 @@ public class TestCreateCRLSession extends TestCase {
         admin = new Admin(Admin.TYPE_INTERNALUSER);
 
         Object obj = ctx.lookup("CreateCRLSession");
-        home = (IJobRunnerSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IJobRunnerSessionHome.class);
+        home = (ICreateCRLSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICreateCRLSessionHome.class);
         remote = home.create();
 
         Object obj1 = ctx.lookup("CertificateStoreSession");

@@ -24,6 +24,7 @@
   static final String TEXTFIELD_SUBJECTDN         = "textfieldsubjectdn";
   static final String TEXTFIELD_SUBJECTALTNAME    = "textfieldsubjectaltname";
   static final String TEXTFIELD_EMAIL             = "textfieldemail";
+  static final String TEXTFIELD_EMAILDOMAIN       = "textfieldemaildomain";
 
   static final String SELECT_ENDENTITYPROFILE     = "selectendentityprofile";
   static final String SELECT_CERTIFICATEPROFILE   = "selectcertificateprofile";
@@ -33,7 +34,7 @@
   static final String SELECT_CONFIRMPASSWORD      = "selectconfirmpassword";
   static final String SELECT_SUBJECTDN            = "selectsubjectdn";
   static final String SELECT_SUBJECTALTNAME       = "selectsubjectaltname";
-  static final String SELECT_EMAIL                = "selectemail";
+  static final String SELECT_EMAILDOMAIN          = "selectemaildomain";
   static final String SELECT_HARDTOKENISSUER      = "selecthardtokenissuer";
   static final String SELECT_CHANGE_STATUS        = "selectchangestatus"; 
   static final String SELECT_CA                   = "selectca";
@@ -154,19 +155,26 @@
                }
              }
 
-               value = request.getParameter(TEXTFIELD_EMAIL);
-               if(value !=null){
-                 value=value.trim(); 
-                 if(!value.equals("")){
-                   newuser.setEmail(value);
+             value = request.getParameter(TEXTFIELD_EMAIL);
+             if(value !=null){
+               value=value.trim(); 
+               if(!value.equals("")){
+                 String emaildomain = request.getParameter(TEXTFIELD_EMAILDOMAIN);
+                 if(emaildomain !=null){
+                   emaildomain=emaildomain.trim(); 
+                   if(!emaildomain.equals("")){
+                     newuser.setEmail(value + "@" + emaildomain);            
+                   }
+                 }
+
+                 emaildomain = request.getParameter(SELECT_EMAILDOMAIN);
+                 if(emaildomain !=null){
+                   if(!emaildomain.equals("")){
+                     newuser.setEmail(value + "@" + emaildomain);                   
+                   }
                  }
                }
-               value = request.getParameter(SELECT_EMAIL);
-               if(value !=null){
-                 if(!value.equals("")){
-                   newuser.setEmail(value);
-                 }
-               } 
+             }
 
                String subjectdn = "";
                int numberofsubjectdnfields = profile.getSubjectDNFieldOrderLength();
@@ -594,19 +602,29 @@ function checkallfields(){
       document.edituser.<%= CHECKBOX_SUBJECTALTNAME+i %>.disabled = false;          
      <%  }
        }
-       if(profile.getUse(EndEntityProfile.EMAIL,0)){
-         if(profile.isModifyable(EndEntityProfile.EMAIL,0)){%>
-    if(!checkfieldforlegalemailchars("document.edituser.<%=TEXTFIELD_EMAIL%>","<%= ejbcawebbean.getText("ONLYEMAILCHARS") %>"))
+       if(profile.getUse(EndEntityProfile.EMAIL,0)){ %>
+    if(!checkfieldforlegalemailcharswithoutat("document.edituser.<%=TEXTFIELD_EMAIL%>","<%= ejbcawebbean.getText("ONLYEMAILCHARSNOAT") %>"))
       illegalfields++;
-      <%  if(profile.isRequired(EndEntityProfile.EMAIL,0)){%>
+
+    <%  if(profile.isRequired(EndEntityProfile.EMAIL,0)){%>
     if((document.edituser.<%= TEXTFIELD_EMAIL %>.value == "")){
       alert("<%= ejbcawebbean.getText("REQUIREDEMAIL") %>");
       illegalfields++;
     } 
     <%    }
+
+          if(profile.isModifyable(EndEntityProfile.EMAIL,0)){%>
+    if(!checkfieldforlegalemailcharswithoutat("document.edituser.<%=TEXTFIELD_EMAILDOMAIN%>","<%= ejbcawebbean.getText("ONLYEMAILCHARSNOAT") %>"))
+      illegalfields++;
+          
+      <%  if(profile.isRequired(EndEntityProfile.EMAIL,0)){%>
+    if((document.edituser.<%= TEXTFIELD_EMAILDOMAIN %>.value == "")){
+      alert("<%= ejbcawebbean.getText("REQUIREDEMAIL") %>");
+      illegalfields++;
+    } 
+    <%    }
         }
-      }
- 
+      } 
        if(profile.getUse(EndEntityProfile.PASSWORD,0)){
          if(profile.isModifyable(EndEntityProfile.PASSWORD,0)){%>  
     if(document.edituser.<%= TEXTFIELD_PASSWORD %>.value != document.edituser.<%= TEXTFIELD_CONFIRMPASSWORD %>.value){
@@ -829,18 +847,22 @@ function checkUseInBatch(){
         </td>
 	<td></td> 
       </tr>
-      <% } %>
-      <% if(profile.getUse(EndEntityProfile.EMAIL,0)){ %>
-       <tr id="Row<%=(row++)%2%>">
+      <% } 
+         if(profile.getUse(EndEntityProfile.EMAIL,0)){ 
+           String emailname   = userdata.getEmail().substring(0,userdata.getEmail().indexOf('@'));
+           String emaildomain = userdata.getEmail().substring(userdata.getEmail().indexOf('@')+1);
+%>
+       <tr id="Row<%=(row++)%2%>">	 
 	 <td align="right"><%= ejbcawebbean.getText("EMAIL") %></td>
 	 <td>      
+           <input type="text" name="<%= TEXTFIELD_EMAIL %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<%=emailname%>'>@
           <% if(!profile.isModifyable(EndEntityProfile.EMAIL,0)){ 
                  String[] options = profile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
                %>
-           <select name="<%= SELECT_EMAIL %>" size="1" tabindex="<%=tabindex++%>">
+           <select name="<%= SELECT_EMAILDOMAIN %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
                     for(int i=0;i < options.length;i++){ %>
-             <option value='<%=options[i].trim()%>' <% if(userdata.getEmail().equals(options[i])) out.write(" selected "); %>>
+             <option value='<%=options[i].trim()%>' <% if(emaildomain.equals(options[i])) out.write(" selected "); %>>
                 <%=options[i].trim()%>  
              </option>                
                <%   }
@@ -848,8 +870,7 @@ function checkUseInBatch(){
                 %>
            </select>
            <% }else{ %> 
-             <input type="text" name="<%= TEXTFIELD_EMAIL %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(userdata.getEmail()!= null) 
-                                                                                                                               out.write(userdata.getEmail());%>'>
+             <input type="text" name="<%= TEXTFIELD_EMAILDOMAIN %>" size="20" maxlength="255" tabindex="<%=tabindex++%>"  value='<%=emaildomain%>'>
            <% } %>
         </td>
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_EMAIL %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.EMAIL,0)) out.write(" CHECKED "); %>></td>

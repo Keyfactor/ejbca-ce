@@ -74,6 +74,9 @@
   <property name="canorarootwar" value="${caearnora.earbuild}/publicwebroot.war" />
   <property name="caearnora" value="${dist}/ejbca-canora.ear" />
 
+  <property name="createcrlservice.build" value="${tmp}/crlcreateservice.jar" />
+  <property name="createcrlservicejar" value="${dist}/crlcreateservice.jar" />
+
   <!-- Jar with class files needed for administration, i.e. ca, ra, jobrunner -->
   <property name="adminjar.cli" value="${src}/cli" />
   <property name="adminjar.build" value="${tmp}/adminjar" />
@@ -120,11 +123,12 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
 
   <!-- =================================================================== -->
   <!-- Compile java sources                                                -->
-  <!-- =================================================================== -->
+	  <!-- =================================================================== -->
   <target name="compile" depends="init">
     <!-- Compile the java code from ${javasrc} into ${build} -->
     <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
         <exclude name="**/CVS/**"/>    
+        <exclude name="**/appserver/**"/> <!-- appserver specific files are built separtely-->
         <include name="**/*.java"/>
     </javac>
     <copy todir="${javasrc}">
@@ -549,6 +553,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
                 <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/RevokedCertInfo*.class"/>
+                <include name="se/anatom/ejbca/ca/crl/ICreateCRL*.class"/>
                 <include name="se/anatom/ejbca/ca/store/CertificateData*.class"/>
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/> 
                 <include name="se/anatom/ejbca/ra/*.class"/> 
@@ -766,6 +771,55 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   		 </classpath>
   	</java>
   </target>
+
+  <!-- =================================================================== -->
+  <!-- Build Jboss Specific Services                       -->
+  <!-- =================================================================== -->
+  <target name="jbossservices" depends="compile">
+    <path id="jbossservices.classpath">
+      <pathelement location="${env.JBOSS_HOME}/lib/jboss-system.jar"/>
+      <pathelement location="${env.JBOSS_HOME}/lib/jboss-common.jar"/>
+      <pathelement location="${env.JBOSS_HOME}/lib/jboss-jmx.jar"/>
+    </path>
+      <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">  
+        <exclude name="**/CVS/**"/>   
+        <include name="**/appserver/**"/> <!-- appserver specific files are built separtely-->
+        <classpath refid="jbossservices.classpath"/>
+      </javac>
+    <copy todir="${javasrc}">
+        <fileset dir="${build}">
+                <include name="**/appserver/*.class"/>
+                <include name="**/appserver/**/*.class"/>
+        </fileset>
+    </copy> 
+  
+
+    <mkdir dir="${createcrlservice.build}"/>
+    <copy todir="${createcrlservice.build}">
+      <fileset dir="${src}/appserver/jboss">
+        <include name="crlcreate-service.xml"/>
+      </fileset>
+    </copy>
+    <copy todir="${createcrlservice.build}">
+        <fileset dir="${build}">
+                <include name="se/anatom/ejbca/appserver/jboss/CRLCreate*.class"/>
+                <exclude name="se/anatom/ejbca/**/*Test*"/>
+        </fileset>
+    </copy>
+    <jar basedir="${createcrlservice.build}" jarfile="${createcrlservicejar}">    
+        <manifest>
+            <attribute name="Class-Path" value="${jar.classpath}"/>
+        </manifest>
+    </jar>
+  </target>
+  
+  <!-- =================================================================== -->
+  <!--Deploy Jboss Specific Services                       -->
+  <!-- =================================================================== -->
+  <target name="deployjbossservices" depends="jbossservices">
+	<copy file="${createcrlservicejar}" tofile="${env.JBOSS_HOME}/server/default/deploy/createcrlservice.jar" verbose="true"/>
+  </target>
+  
     
   <!-- ======================================================================= -->
   <!-- Deploy EJBCA ear to JBoss                                               -->

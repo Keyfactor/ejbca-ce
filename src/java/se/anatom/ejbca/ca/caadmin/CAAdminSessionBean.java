@@ -35,8 +35,8 @@ import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 
 import se.anatom.ejbca.BaseSessionBean;
-import se.anatom.ejbca.IJobRunnerSessionLocal;
-import se.anatom.ejbca.IJobRunnerSessionLocalHome;
+import se.anatom.ejbca.ca.crl.ICreateCRLSessionLocal;
+import se.anatom.ejbca.ca.crl.ICreateCRLSessionLocalHome;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.AvailableAccessRules;
@@ -71,7 +71,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.13 2004-01-31 14:25:00 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.14 2004-02-11 10:44:48 herrvendil Exp $
  */
 public class CAAdminSessionBean extends BaseSessionBean {
     
@@ -97,7 +97,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     private ISignSessionLocal signsession;
     
     /** The local interface of the job runner session bean used to create crls.*/
-    private IJobRunnerSessionLocal jobrunner;
+    private ICreateCRLSessionLocal jobrunner;
     
 
     
@@ -157,10 +157,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
     /** Gets connection to crl create session bean
      * @return Connection
      */
-    private IJobRunnerSessionLocal getCRLCreateSession() {
+    private ICreateCRLSessionLocal getCRLCreateSession() {
       if(jobrunner == null){
       	 try{
-      	    IJobRunnerSessionLocalHome home = (IJobRunnerSessionLocalHome) lookup("java:comp/env/ejb/CreateCRLSessionLocal", IJobRunnerSessionLocalHome.class);
+      	    ICreateCRLSessionLocalHome home = (ICreateCRLSessionLocalHome) lookup("java:comp/env/ejb/CreateCRLSessionLocal", ICreateCRLSessionLocalHome.class);
     	    jobrunner = home.create();
       	 }catch(Exception e){
       	 	throw new EJBException(e);

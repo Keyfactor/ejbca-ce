@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE server>
+<!-- $Id: crlcreate-service.xml,v 1.1 2004-02-11 10:39:05 herrvendil Exp $ -->
+
+<server>
+
+  <classpath codebase="." archives="crlcreateservice.jar"/>
+
+  <!-- ==================================================================== -->
+  <!-- PrimeCard Connection Service                                         -->
+  <!-- ==================================================================== -->
+
+  <mbean code="se.anatom.ejbca.appserver.jboss.CRLCreateService"
+         name="user:service=CRLCreateService">
+         
+         
+         
+    <!-- Time indicating how often checks for new CRLs should be done
+            The variable can have the following values:           
+            DAILY     =  Every midnight
+            HOURLY  =  At XX:00 every hour.
+            30MIN    =  At XX:30 and XX:00 every hour
+            15MIN    =  At XX:15, XX:30, XX:45,XX:00, every hour 
+            1MIN      =  Every minute
+      -->     
+   <attribute name="Polltime">1MIN</attribute>
+   <depends>jboss.j2ee:service=EJB,jndiName=RSASignSession</depends>
+   <depends>jboss.j2ee:service=EJB,jndiName=HardTokenSession</depends>
+   <depends>jboss.j2ee:service=EJB,jndiName=AuthorizationSession</depends>
+   <depends>jboss.j2ee:service=EJB,jndiName=CertificateStoreSession</depends>
+   <depends>jboss.j2ee:service=EJB,jndiName=UserAdminSession</depends>
+   <depends>jboss.j2ee:service=EJB,jndiName=LogSession</depends>   
+   <depends>jboss.j2ee:service=EJB,jndiName=CAAdminSession</depends>
+   <depends>jboss.j2ee:service=EJB,jndiName=CreateCRLSession</depends>   
+   
+  </mbean>
+
+</server>

@@ -47,7 +47,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.44 2004-01-25 09:37:30 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.45 2004-02-11 10:45:35 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -751,25 +751,39 @@ public class RAInterfaceBean {
       return returnval;
     }    
 
+    /**
+     *  Help functiosn used by edit end entity pages used to temporary save a profile 
+     *  so things can be canceled later
+     */
+    public EndEntityProfile getTemporaryEndEntityProfile(){
+    	return this.temporateendentityprofile;
+    }
+    
+    public void setTemporaryEndEntityProfile(EndEntityProfile profile){
+    	this.temporateendentityprofile = profile;
+    }
+    
     // Private fields.
 
     private EndEntityProfileDataHandler    profiles;
 
-    private InitialContext                 jndicontext;
-    private IUserAdminSessionLocal         adminsession;
-    private IUserAdminSessionLocalHome     adminsessionhome;
-    private ICertificateStoreSessionLocal  certificatesession;
-    private ICertificateStoreSessionLocalHome   certificatesessionhome;
-    private IRaAdminSessionLocalHome       raadminsessionhome;
-    private IRaAdminSessionLocal           raadminsession;
-    private IAuthorizationSessionLocal     authorizationsession;
-    private IHardTokenSessionLocal         hardtokensession;
-    private IKeyRecoverySessionLocal       keyrecoverysession;
+    private InitialContext                                 jndicontext;
+    private IUserAdminSessionLocal                 adminsession;
+    private IUserAdminSessionLocalHome        adminsessionhome;
+    private ICertificateStoreSessionLocal          certificatesession;
+    private ICertificateStoreSessionLocalHome certificatesessionhome;
+    private IRaAdminSessionLocalHome            raadminsessionhome;
+    private IRaAdminSessionLocal                     raadminsession;
+    private IAuthorizationSessionLocal              authorizationsession;
+    private IHardTokenSessionLocal                  hardtokensession;
+    private IKeyRecoverySessionLocal               keyrecoverysession;
 
     private UsersView                           users;
-    private CertificateView[]                   certificates;
-    private AddedUserMemory                     addedusermemory;
-    private Admin                               administrator;   
-    private InformationMemory                   informationmemory;
+    private CertificateView[]                  certificates;
+    private AddedUserMemory              addedusermemory;
+    private Admin                                 administrator;   
+    private InformationMemory             informationmemory;
     private boolean initialized=false;
+    
+    private EndEntityProfile temporateendentityprofile = null;  
 }

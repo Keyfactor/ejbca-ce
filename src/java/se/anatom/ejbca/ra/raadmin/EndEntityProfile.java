@@ -16,11 +16,11 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.17 2003-12-05 14:50:26 herrvendil Exp $
+ * @version $Id: EndEntityProfile.java,v 1.18 2004-02-11 10:45:16 herrvendil Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
-    public static final float LATEST_VERSION = 1;
+    public static final float LATEST_VERSION = 3;
 
     // Public constants
     // Type of data constants.
@@ -69,8 +69,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public static final int UPN                = 36;
     public static final int DEFAULTCA          = 37;
     public static final int AVAILCAS           = 38;    
-
-
+    
+    
     public static final int NUMBEROFPARAMETERS = 39;
 
     public static final String SPLITCHAR       = ";";
@@ -110,11 +110,13 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         data.put(SUBJECTALTNAMEFIELDORDER,new ArrayList());
 
         for(int i=0; i < NUMBEROFPARAMETERS; i++){
-          addField(i);
-          setValue(i,0,"");
-          setRequired(i,0,false);
-          setUse(i,0,true);
-          setModifyable(i,0,true);
+          if(i != SENDNOTIFICATION){	
+             addField(i);
+             setValue(i,0,"");
+             setRequired(i,0,false);
+             setUse(i,0,true);
+             setModifyable(i,0,true);
+          }  
         }
 
         setRequired(USERNAME,0,true);
@@ -352,6 +354,40 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	return PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE).getNewPassword(6,8);    	
     }
     
+    public String getNotificationSender(){
+    	if(data.get(NOTIFICATIONSENDER) == null)
+    		return "";
+    	
+    	return (String) data.get(NOTIFICATIONSENDER);
+    }
+    
+    public void setNotificationSender(String sender){
+    	data.put(NOTIFICATIONSENDER, sender);
+    }
+    
+    public String getNotificationSubject(){
+    	if(data.get(NOTIFICATIONSUBJECT) == null)
+    		return "";
+    	
+    	return (String) data.get(NOTIFICATIONSUBJECT);
+    }
+    
+    public void setNotificationSubject(String subject){
+    	data.put(NOTIFICATIONSUBJECT, subject);
+    }
+        
+    public String getNotificationMessage(){
+    	if(data.get(NOTIFICATIONMESSAGE) == null)
+    		return "";
+    	    	
+    	return (String) data.get(NOTIFICATIONMESSAGE);
+    }
+    
+    public void setNotificationMessage(String message){
+    	data.put(NOTIFICATIONMESSAGE, message);
+    }
+    
+    
     /** A function that takes an fieldid pointing to a coresponding id in UserView and DnFieldExctractor.
      *  For example : profileFieldIdToUserFieldIdMapper(EndEntityProfile.COMMONNAME) returns DnFieldExctractor.COMMONNAME.
      *
@@ -421,7 +457,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       //  Check Email address.
      if(email == null)
        email = "";
-     checkIfDataFullfillProfile(EMAIL,0,email,"Email",null);
+     checkIfEmailFullfillProfile(EMAIL,0,email,"Email");
 
       // Check contents of Subject DN fields.
       int[] subjectdnfieldnumbers = subjectdnfields.getNumberOfFields();
@@ -620,7 +656,13 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
           addField(DEFAULTCA);
           setRequired(AVAILCAS,0,true);
           setRequired(DEFAULTCA,0,true);
-        }    
+        }
+        
+        if(getVersion() < 3){
+            setNotificationSubject("");
+        	setNotificationSender("");
+        	setNotificationMessage("");
+        } 
             
         data.put(VERSION, new Float(LATEST_VERSION));
 
@@ -629,22 +671,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
     // Private Methods
 
-    private void checkIfDataFullfillProfile(int field, int number, String data, String text, String email) throws UserDoesntFullfillEndEntityProfile {
-
-      if(data == null && field != EMAIL)
-          throw new UserDoesntFullfillEndEntityProfile("Field " +  text + " cannot be null.");
-
-      if(data !=null)
-        if(!getUse(field,number) && !data.trim().equals(""))
+    private void checkIfEmailFullfillProfile(int field, int number, String email, String text) throws UserDoesntFullfillEndEntityProfile {
+    	if(!email.trim().equals("") && email.indexOf('@') == -1)
+    		throw new UserDoesntFullfillEndEntityProfile("Invalid email address. There must have '@' in address.");
+    	
+    	String emaildomain = email.substring(email.indexOf('@') + 1);    	    	
+    	
+        if(!getUse(field,number) && !email.trim().equals(""))
           throw new UserDoesntFullfillEndEntityProfile(text + " cannot be used in end entity profile.");
-
-      if(field == OLDDNE || field == RFC822NAME){
-        if(isRequired(field,number)){
-            if(!data.trim().equals(email.trim()))
-              throw new UserDoesntFullfillEndEntityProfile("Field " + text + " data didn't match Email field.");
-        }
-      }
-      else{
+      
         if(!isModifyable(field,number)){
           String[] values;
           try{
@@ -654,13 +689,47 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
           }
           boolean exists = false;
           for(int i = 0; i < values.length ; i++){
-            if(data.equals(values[i].trim()))
+            if(emaildomain.equals(values[i].trim()))
               exists = true;
           }
           if(!exists)
             throw new UserDoesntFullfillEndEntityProfile("Field " + text + " data didn't match requirement of end entity profile.");
         }
-      }
+    }
+    
+    
+    private void checkIfDataFullfillProfile(int field, int number, String data, String text, String email) throws UserDoesntFullfillEndEntityProfile {
+
+    	if(data == null && field != EMAIL)
+    		throw new UserDoesntFullfillEndEntityProfile("Field " +  text + " cannot be null.");
+
+    	if(data !=null)
+    		if(!getUse(field,number) && !data.trim().equals(""))
+    			throw new UserDoesntFullfillEndEntityProfile(text + " cannot be used in end entity profile.");
+
+    	if(field == OLDDNE || field == RFC822NAME){
+    		if(isRequired(field,number)){
+    			if(!data.trim().equals(email.trim()))
+    				throw new UserDoesntFullfillEndEntityProfile("Field " + text + " data didn't match Email field.");
+    		}
+    	}
+    	else{
+    		if(!isModifyable(field,number)){
+    			String[] values;
+    			try{
+    				values = getValue(field, number).split(SPLITCHAR);
+    			}catch(Exception e){
+    				throw new UserDoesntFullfillEndEntityProfile("Error parsing end entity profile.");
+    			}
+    			boolean exists = false;
+    			for(int i = 0; i < values.length ; i++){
+    				if(data.equals(values[i].trim()))
+    					exists = true;
+    			}
+    			if(!exists)
+    				throw new UserDoesntFullfillEndEntityProfile("Field " + text + " data didn't match requirement of end entity profile.");
+    		}
+    	}
     }
 
     private void checkIfAllRequiredFieldsExists(DNFieldExtractor subjectdnfields, DNFieldExtractor subjectaltnames, String username, String email)  throws UserDoesntFullfillEndEntityProfile{
@@ -727,6 +796,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       ArrayList numberarray = (ArrayList) data.get(NUMBERARRAY);
       numberarray.set(parameter, new Integer(((Integer) numberarray.get(parameter)).intValue() - 1));
     }
+    
+    
 
     // Private Constants.
     private static final int FIELDBOUNDRARY  = 10000;
@@ -772,6 +843,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     private static final String NUMBERARRAY               = "NUMBERARRAY";
     private static final String SUBJECTDNFIELDORDER       = "SUBJECTDNFIELDORDER";
     private static final String SUBJECTALTNAMEFIELDORDER  = "SUBJECTALTNAMEFIELDORDER";
+    
+    private static final String NOTIFICATIONSENDER     = "NOTIFICATIONSENDER";
+    private static final String NOTIFICATIONSUBJECT    = "NOTIFICATIONSSUBJECT";
+    private static final String NOTIFICATIONMESSAGE   = "NOTIFICATIONSMESSAGE";
     // Private fields.
 
 
