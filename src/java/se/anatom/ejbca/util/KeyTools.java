@@ -32,7 +32,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.10 2002-10-24 20:11:26 herrvendil Exp $
+ * @version $Id: KeyTools.java,v 1.11 2002-12-17 16:44:09 anatom Exp $
  */
 public class KeyTools {
 
@@ -166,6 +166,7 @@ public class KeyTools {
     throws Exception {
         cat.debug(">createJKS: alias=" + alias + ", privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length) );
 
+        String caAlias="cacert";
         // Certificate chain, only max two levels deep unforturnately, this is a TODO:
         if (cert == null)
             throw new IllegalArgumentException("Parameter cert cannot be null.");
@@ -174,13 +175,17 @@ public class KeyTools {
             len += cachain.length;
         Certificate[] chain = new Certificate[len];
         chain[0] = cert;
-        if (cachain != null)
+        if (cachain != null) {
             for (int i=0;i<cachain.length;i++) {
                 chain[i+1] = cachain[i];
             }
+        }
         // store the key and the certificate chain
         KeyStore store = KeyStore.getInstance("JKS");
         store.load(null, null);
+        if (cachain != null) {
+            store.setCertificateEntry(caAlias, cachain[cachain.length-1]);
+        }
         store.setKeyEntry(alias, privKey, password.toCharArray(), chain);
         cat.debug(">createJKS: alias=" + alias + ", privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length));
 
