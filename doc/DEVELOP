@@ -1,3 +1,13 @@
+
+BouncyCastle provider
+=====================
+EJBCA uses the BouncyCastle (BC) jce provider. 
+To handle redeploy you must use the static method:
+
+CertTools.installBCProvier()
+
+to install the provider if needed.
+
 Subject and Issuer DNs
 ======================
 Handling of subject and issuer DNs must be done in an extremely predictable way,
@@ -120,7 +130,7 @@ public int myMethod(int arg) {
 }
 
 Making session beans
---------------------
+====================
 
 All session beans should inherit the class se.anatom.ejbca.BaseSessionBean.java.
 When doing lookups for other beans from within the new bean, a simple construct
@@ -145,7 +155,7 @@ For local interfaces to other beans:
 
 
 Making entity beans
---------------------
+===================
 
 All entity beans should inherit the class se.anatom.ejbca.BaseEntityBean.java.
 When doing this, the standard methods like setting the context are already in
@@ -154,22 +164,22 @@ can however always be overriden.
 
 
 CVS
----
+===
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.10 2003-07-21 08:17:28 anatom Exp $
+@version $Id: DEVELOP,v 1.11 2003-11-20 15:28:24 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.10 2003-07-21 08:17:28 anatom Exp $
+ * @version $Id: DEVELOP,v 1.11 2003-11-20 15:28:24 anatom Exp $
  */
 
 CA KeyStore architecture/creating a custom CA Keystore
---------------------------------------------------------------------------
+======================================================
 
 The CA Keystore, where the CAs private key is stored and used is
 defined by the interface se.anatom.ejbca.ca.sign.ISigningDevice.
@@ -192,7 +202,7 @@ The SigningDeviceFactory class MUST contain the method:
     }
 
 CertificateStore/Publisher architecture
----------------------------------------
+=======================================
 
 The CertificateStore/Publisher architecture is defined by the two interfaces
 IPublisherSession and ICertificateStoreSession:
@@ -228,7 +238,8 @@ or the LDAP directory as the primary CertificateStoreSession where we also
 publish certificates to a specific SQL database for a specific purpose.
 
 Clear or hashed passwords
--------------------------
+=========================
+
 Passwords for users are normally stored SHA1-hashed in the database.
 
 You can retrieve and use the password IF it is stored in clear text.
