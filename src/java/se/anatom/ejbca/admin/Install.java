@@ -319,24 +319,19 @@ public class Install {
         
 		if(this.os == OS_WINDOWS){
 			try {											
-				
 				Process runcainit = Runtime.getRuntime().exec("ca.cmd init " + this.caname + " \"" + this.cadn + "\" " + this.keysize + " " + this.validity + " " + this.policyid.trim() );
-				
 				BufferedReader br = new BufferedReader(new InputStreamReader(runcainit.getInputStream()));
 				Thread.sleep(1000);
 				String line = "";
 				while((line = br.readLine()) != null){
 					System.out.println(line);
 				}
-				
-				
-				
 				if(runcainit.waitFor() != 0){					
-					System.out.print(text.getProperty("ERRORINITCA"));
+					System.out.println(text.getProperty("ERRORINITCA"));
 					System.exit(-1);
 				}				
 			} catch (Exception e) {				
-		    	System.out.print(text.getProperty("ERRORINITCA") + e.getMessage());
+		    	System.out.println(text.getProperty("ERRORINITCA") + e);
 				System.exit(-1);
 			} 	
 			System.out.print(text.getProperty("SETUPOFADMINWEB"));
@@ -347,21 +342,17 @@ public class Install {
 				Thread.sleep(1000);
 				String line = "";
 				while((line = br.readLine()) != null);
-				
 				if(setupadminweb.waitFor() != 0){
-					System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB"));
+					System.out.println(text.getProperty("ERRORSETTINGUPADMINWEB"));
 					System.exit(-1);
 				}
-				
-				
 				Process getrootcert = Runtime.getRuntime().exec("ca.cmd getrootcert "+ this.caname + " tmp/rootca.der -der");			   			   				
 				if(getrootcert.waitFor() != 0){
-					System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB"));
+					System.out.println(text.getProperty("ERRORSETTINGUPADMINWEB"));
 					System.exit(-1);
-				}
-				
+				}				
 			} catch (Exception e) {		
-				System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB") + e.getMessage());
+				System.out.println(text.getProperty("ERRORSETTINGUPADMINWEB") + e);
 				System.exit(-1);
 			}
 		}
@@ -374,15 +365,13 @@ public class Install {
 				String line = "";
 				while((line = br.readLine()) != null){
 					System.out.println(line);
-				}
-								
+				}	
 				if(runcainit.waitFor() != 0){
-					
-					System.out.print(text.getProperty("ERRORINITCA"));
+					System.out.println(text.getProperty("ERRORINITCA"));
 					System.exit(-1);
 				}				
 			} catch (Exception e) {
-				System.out.print(text.getProperty("ERRORINITCA"));
+				System.out.println(text.getProperty("ERRORINITCA") + e);
 				System.exit(-1);
 			} 
 			System.out.print(text.getProperty("SETUPOFADMINWEB"));
@@ -397,12 +386,12 @@ public class Install {
 				Process getrootcert = Runtime.getRuntime().exec("./ca.sh getrootcert "+ this.caname + " tmp/rootca.der -der");			   			   
 											
 				if(getrootcert.waitFor() != 0){
-					System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB"));
+					System.out.println(text.getProperty("ERRORSETTINGUPADMINWEB"));
 					System.exit(-1);
 				}
 								
 			} catch (Exception e) {
-				System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB"));
+				System.out.println(text.getProperty("ERRORSETTINGUPADMINWEB") + e);
 				System.exit(-1);
 			}
 	    }	
