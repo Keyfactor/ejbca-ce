@@ -1,9 +1,13 @@
 2.0b2
 -----
-Changed initial temporary super administrator from "CN=Walter" to "CN=SuperAdmin".
-Removed CA and ROOTCA types in "ra adduser" cmd, from now on use certificate profiles.
+Changed initial temporary super administrator from "CN=Walter" to "CN=
+SuperAdmin".
+Removed CA and ROOTCA types in "ra adduser" cmd, from now on use certificate
+profiles.
 Added allowOverrideKeyUsage in certifcate profiles.
 New fields in DN, givenname, surname, initials.
+New servlet in adminweb, AdminCertReqServlet that creates users out of PKCS10-
+requests.
 Bugfixes, cleanups.
 
 2.0b1
@@ -108,3 +112,4 @@ Creates p12-files during test in real temporary dir.
 1.0b1
 -----
 Initial release
+
