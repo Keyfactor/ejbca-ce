@@ -17,6 +17,8 @@ TEST_CP=.:$JBOSS_HOME/client/jnp-client.jar:$JBOSS_HOME/client/jboss-j2ee.jar:$J
 
 echo Testing utils
 java -cp $TEST_CP se.anatom.ejbca.util.junit.TestRunner
+echo Testing messages
+#java -cp $TEST_CP se.anatom.ejbca.protocol.junit.TestRunner
 echo Testing ra
 java -cp $TEST_CP se.anatom.ejbca.ra.junit.TestRunner
 echo Testing ca.auth

@@ -13,6 +13,8 @@ rem set TEST_CP=.;..\..\lib\weblogic.jar;..\..\lib\junit.jar;..\..\lib\log4j-1.2
 
 echo Testing utils
 java -cp %TEST_CP% se.anatom.ejbca.util.junit.TestRunner
+echo Testing messages
+rem java -cp %TEST_CP% se.anatom.ejbca.protocol.junit.TestRunner
 echo Testing ra
 java -cp %TEST_CP% se.anatom.ejbca.ra.junit.TestRunner
 echo Testing ca.auth
