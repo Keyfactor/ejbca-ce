@@ -5,14 +5,11 @@ import javax.ejb.FinderException;
 import java.util.Collection;
 import java.math.BigInteger;
 
-import se.anatom.ejbca.hardtoken.HardTokenIssuerData;
-
 /**
  * For docs, see HardTokenIssuerDataBean
  *
- * @version $Id: HardTokenIssuerDataLocalHome.java,v 1.1 2003-02-06 15:35:46 herrvendil Exp $
+ * @version $Id: HardTokenIssuerDataLocalHome.java,v 1.2 2003-02-09 14:56:16 anatom Exp $
  **/
-
 public interface HardTokenIssuerDataLocalHome extends javax.ejb.EJBLocalHome {
 
     public HardTokenIssuerDataLocal create(Integer id, String alias, BigInteger certificatesn, String certissuerdn,  HardTokenIssuer issuerdata)

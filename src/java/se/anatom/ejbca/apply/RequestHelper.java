@@ -13,7 +13,6 @@ import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.apache.log4j.*;
 
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
-import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.PKCS10RequestMessage;

@@ -11,12 +11,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
-import se.anatom.ejbca.SecConst;
 /**
  * HardTokenIssuer is a class representing the data saved for each HardTokenIssuer.
  *
  * @author  TomSelleck
- * @version $Id: HardTokenIssuer.java,v 1.1 2003-02-06 15:35:46 herrvendil Exp $
+ * @version $Id: HardTokenIssuer.java,v 1.2 2003-02-09 14:56:16 anatom Exp $
  */
 public  class HardTokenIssuer extends UpgradeableDataHashMap implements Serializable, Cloneable {
 

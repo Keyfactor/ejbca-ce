@@ -24,10 +24,8 @@ import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.LogEntry;
-import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.hardtoken.hardtokentypes.*;
-import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
@@ -39,7 +37,7 @@ import se.anatom.ejbca.ra.IUserAdminSessionHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.1 2003-02-06 15:35:46 herrvendil Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.2 2003-02-09 14:56:16 anatom Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 

@@ -1,6 +1,5 @@
 package se.anatom.ejbca.hardtoken;
 import java.util.Collection;
-import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 
 import java.rmi.RemoteException;
@@ -11,7 +10,7 @@ import se.anatom.ejbca.ra.UserAdminData;
 /**
  * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from RA. 
  *
- * @version $Id: IHardTokenBatchJobSessionRemote.java,v 1.1 2003-02-06 15:35:46 herrvendil Exp $
+ * @version $Id: IHardTokenBatchJobSessionRemote.java,v 1.2 2003-02-09 14:56:16 anatom Exp $
  */
 public interface IHardTokenBatchJobSessionRemote extends javax.ejb.EJBObject {
     

@@ -2,11 +2,7 @@ package se.anatom.ejbca.hardtoken;
 
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
-import java.util.HashMap;
-import java.math.BigInteger;
 import org.apache.log4j.*;
-import java.security.cert.X509Certificate;
-import se.anatom.ejbca.SecConst;
 
 /** Entity bean should not be used directly, use though Session beans.
  *
@@ -17,7 +13,7 @@ import se.anatom.ejbca.SecConst;
  *  tokensn 
  * </pre>
  *
- * @version $Id: HardTokenCertificateMapBean.java,v 1.1 2003-02-06 15:35:46 herrvendil Exp $
+ * @version $Id: HardTokenCertificateMapBean.java,v 1.2 2003-02-09 14:56:16 anatom Exp $
  **/
 
 public abstract class HardTokenCertificateMapBean implements javax.ejb.EntityBean {

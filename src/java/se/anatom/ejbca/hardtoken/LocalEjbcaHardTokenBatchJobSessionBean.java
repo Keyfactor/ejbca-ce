@@ -1,12 +1,8 @@
 package se.anatom.ejbca.hardtoken;
 
 import java.rmi.*;
-import java.math.BigInteger;
-import java.util.Date;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import java.sql.*;
 import javax.sql.DataSource;
 import javax.naming.*;
@@ -19,7 +15,6 @@ import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.ra.UserDataLocalHome;
-import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.LogEntry;
@@ -28,9 +23,8 @@ import se.anatom.ejbca.SecConst;
 /**
  * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from EJBCA RA. 
  *
- * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.1 2003-02-06 15:35:46 herrvendil Exp $
+ * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.2 2003-02-09 14:56:16 anatom Exp $
  */
-
 public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
     private static Category cat = Category.getInstance(LocalEjbcaHardTokenBatchJobSessionBean.class.getName());

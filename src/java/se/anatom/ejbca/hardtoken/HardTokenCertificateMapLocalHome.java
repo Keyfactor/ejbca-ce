@@ -3,13 +3,12 @@ package se.anatom.ejbca.hardtoken;
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import java.util.Collection;
-import java.math.BigInteger;
 
 
 /**
  * For docs, see HardTokenCertificateMapBean
  *
- * @version $Id: HardTokenCertificateMapLocalHome.java,v 1.1 2003-02-06 15:35:46 herrvendil Exp $
+ * @version $Id: HardTokenCertificateMapLocalHome.java,v 1.2 2003-02-09 14:56:16 anatom Exp $
  **/
 
 public interface HardTokenCertificateMapLocalHome extends javax.ejb.EJBLocalHome {
