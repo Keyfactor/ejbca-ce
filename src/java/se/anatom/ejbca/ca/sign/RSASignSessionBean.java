@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.23 2002-04-15 07:15:31 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.24 2002-05-09 18:15:30 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -303,6 +303,40 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
         throw new EJBException("Invalid user type for user "+username);
     } // createCertificate
 
+    /**
+     * Implements ISignSession::createCertificate
+     */
+    public Certificate createCertificate(String username, String password, PublicKey pk, int certType) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException {
+        debug(">createCertificate(pk, certType)");
+        // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
+        boolean[] keyusage = new boolean[9];
+        Arrays.fill(keyusage, false);
+        switch (certType) {
+            case SecConst.CERT_TYPE_ENCRYPTION:
+                // keyEncipherment
+                keyusage[2] = true;
+                // dataEncipherment
+                keyusage[3] = true;
+                break;
+            case SecConst.CERT_TYPE_SIGNATURE:
+                // digitalSignature
+                keyusage[0] = true;
+                // non-repudiation
+                keyusage[1] = true;
+                break;
+            default:
+                // digitalSignature
+                keyusage[0] = true;
+                // keyEncipherment
+                keyusage[2] = true;
+                break;
+        }
+        
+        Certificate ret = createCertificate(username, password, pk, keyusage);
+        debug("<createCertificate(pk, certType)");
+        return ret;
+    } // createCertificate
+    
     /**
      * Implements ISignSession::createCertificate
      */

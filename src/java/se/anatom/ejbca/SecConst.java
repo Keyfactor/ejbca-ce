@@ -2,8 +2,9 @@
 package se.anatom.ejbca;
 
 
-/**
- * Constants for Type of user.
+/** Constants for users and certificates.
+ *
+ * Constants for Type of user:
  * Type is constructed as a mask since one user can be of several types.
  * To test a user type:
  * <pre>
@@ -18,19 +19,39 @@ package se.anatom.ejbca;
  * bits 16-23 (3:rd byte):  unused
  * bits 24-30 (4:th byte):  unused
  *
- * @version $Id: SecConst.java,v 1.2 2002-01-06 17:40:21 anatom Exp $
+ * Constants for certificates are simple integer types.
+ *
+ * @version $Id: SecConst.java,v 1.3 2002-05-09 18:15:29 anatom Exp $
  */
 public class SecConst extends Object {
 
     // User types
-    public static int USER_INVALID =        0x00;   // Dummy type
-    public static int USER_ENDUSER =        0x1;    // This is an end user certificate (default)
-    public static int USER_CA =             0x2;    // This is a CA
-    public static int USER_RA =             0x4;    // This is a RA
-    public static int USER_ROOTCA =         0x8;    // This is a Root CA
-    public static int USER_CAADMIN =        0x10;   // This is a CA Administrator
-    public static int USER_RAADMIN =        0x20;   // This is a RA Administrator
-    public static int USER_MASK =           0xff;   // All bits used by Type
+    
+    /** Dummy type. */
+    public static final int USER_INVALID =        0x0;   
+    /** This is an end user certificate (default). */
+    public static final int USER_ENDUSER =        0x1;    
+    /** This is a CA. */
+    public static final int USER_CA =             0x2;    
+    /** This is a RA. */
+    public static final int USER_RA =             0x4;    
+    /** This is a Root CA. */
+    public static final int USER_ROOTCA =         0x8;    
+    /** This is a CA Administrator. */
+    public static final int USER_CAADMIN =        0x10;   
+    /** This is a RA Administrator. */
+    public static final int USER_RAADMIN =        0x20;   
+    /** All bits used by Type. */
+    public static final int USER_MASK =           0xff;   
+
+    // Certificate types
+    
+    /** Certificate used for encryption. */
+    public static final int CERT_TYPE_ENCRYPTION    = 0x1; 
+    /** Certificate used for digital signatures. */
+    public static final int CERT_TYPE_SIGNATURE     = 0x2; 
+    /** Certificate used for both encryption and signatures. */
+    public static final int CERT_TYPE_ENCSIGN       = 0x3; 
 
     /** Prevents creation of new SecConst **/
     private SecConst() {

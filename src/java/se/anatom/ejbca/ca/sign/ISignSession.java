@@ -17,7 +17,7 @@ import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 /**
  * Creates certificates.
  *
- * @version $Id: ISignSession.java,v 1.3 2002-03-22 11:21:49 anatom Exp $
+ * @version $Id: ISignSession.java,v 1.4 2002-05-09 18:15:30 anatom Exp $
  */
 public interface ISignSession {
 
@@ -49,7 +49,8 @@ public interface ISignSession {
 
    /**
     * Requests for a certificate to be created for the passed public key with the passed key usage.
-    * The method queries the user database for authorization of the user.
+    * The method queries the user database for authorization of the user. CAs are only allowed to have 
+    * certificateSign and CRLSign set.
     *
     * @param username unique username within the instance.
     * @param password password for the user.
@@ -76,6 +77,26 @@ public interface ISignSession {
     * @throws EJBException if a communication or other error occurs.
     */
     public Certificate createCertificate(String username, String password, PublicKey pk, boolean[] keyusage) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException;
+    
+    /**
+    * Requests for a certificate of the specified type to be created for the passed public key.
+    * The method queries the user database for authorization of the user. 
+    *
+    * @param username unique username within the instance.
+    * @param password password for the user.
+    * @param pk the public key to be put in the created certificate.
+    * @param certType integer type of certificate taken from SecConst.CERT_TYPE_XXX.
+    * the type SecConst.CERT_TYPE_ENCRYPTION gives keyUsage keyEncipherment, dataEncipherment.
+    * the type SecConst.CERT_TYPE_SIGNATURE gives keyUsage digitalSignature, non-repudiation.
+    * all other CERT_TYPES gives the default keyUsage digitalSignature, keyEncipherment
+    *
+    * @return The newly created certificate or null.
+    * @throws ObjectNotFoundException if the user does not exist.
+    * @throws AuthStatusException If the users status is incorrect.
+    * @throws AuthLoginException If the password is incorrect.
+    * @throws EJBException if a communication or other error occurs.
+     */
+    public Certificate createCertificate(String username, String password, PublicKey pk, int certType) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException;
 
    /**
     * Requests for a certificate to be created for the passed public key wrapped in a self-signed certificate.
