@@ -306,14 +306,17 @@ ra.sh/cmd setclearpwd <username> <password>
 3. Generate private keys and certificates in PKCS12 files by:
 batch.sh/cmd
 
-4. Many servers (ex Apache) wants keys and certificates in PEM-format, not
-PKCS12.
+4. Many servers (ex Apache, Tomcat) wants keys and certificates in PEM-format or
+SUN JKS, not PKCS12.
 To generate PEM-files as well as PKCS12-files, add the parameter '-pem' after
-the
-'batch.cmd/sh' command. The PEM-files will be stored in a separate subdirectory,
-'pem'. The generated PEM-files can be used with Apache etc, and are NOT
-protected
-by any password.
+the 'batch.cmd/sh' command. The PEM-files will be stored in a separate
+subdirectory, 'pem'. The generated PEM-files can be used with Apache etc,
+and are NOT protected by any password.
+To generate JKS-files, add the parameter '-jks' after
+the 'batch.cmd/sh' command. The JKS-files will be stored in the
+subdirectory, 'p12' instead of PKCS12-files. The generated JKS-files can be used
+with Tomcat etc, and are protected (both private key password and keystore
+password) by the users password.
 
 Another way is to use openssl to transform a PKCS12 file to PEM-format.
 
@@ -467,6 +470,16 @@ To generate PEM-files as well as PKCS12-files, add the parameter '-pem' after
 the
 'batch.cmd/sh' command. The PEM-files generates can be used with Apache etc, and
 are NOT protected by any password.
+To generate JKS-files instead of PKCS12-files, add the parameter '-jks' after
+the 'batch.cmd/sh' command. The JKS-files generates can be used with Tomcat etc
+, and are protected (both private key password and keystore password)
+by the users password.
+
+The batch.sh/cmd command can also be executed for a specific user:
+
+batch.sh <username>
+batch.sh <username> -pem
+batch.sh <username> -jks
 
 Fetching certificates and CRLs
 ------------------------------
@@ -505,52 +518,57 @@ $JBOSS_HOME/server/default/deploy
 
 2. Edit parameters in src/ra/web/raadmin/WEB-INF/web.xml.
 
-3. Create a tomcat server keystore with 'keytool' (create a certificate request
-that is processed by EJBCA and import the returned certificate).
-
-keytool -genkey -keyalg RSA -alias tomcat -keystore keystore -storepass foo123 -
-dname "C=SE,O=PrimeKey,CN=<your-host-name>"
-keytool -certreq -alias tomcat -file tomcat.req -keystore keystore -storepass
-foo123
+3. Create a tomcat server keystore with the batch.sh/cmd tool (this can also be
+done with Suns 'keytool' by creating a keystore and then generating a
+certificate request that is processed by EJBCA, and last import the returned
+certificate).
 
 Create a user in EJBCA, DN="C=SE,O=PrimeKey,CN=<your-host-name>".
 ./ra.sh adduser tomcat-user foo123 "C=SE,O=PrimeKey,CN=<your-host-name>" null 1
 
-Process the request from keytool and write the certificate to 'tomcat.pem'.
-./ca.sh processreq tomcat-user foo123 tomcat.req tomcat.pem
+Set a clear text password for the tomcat-user:
+./ra.sh setclearpwd tomcat-user foo123
 
-Download the CA certificate in PEM-format from
-http://localhost:8080/webdist/cacert.jsp (call it ejbca-ca.pem), and concatenate
-the certificates together in 'tomcat.pem.'
-cat ejbca-ca.pem >> tomcat.pem
+Generate a JKS-keystore for tomcat-user:
+./batch.sh tomcat-user -jks 
 
-Import to the keystore:
-keytool -import -alias tomcat -file tomcat.pem -keystore keystore -storepass
-foo123
+4. Name the generated keystore '.keystore' and put in $JBOSS_HOME.
 
-4. Name the keystore '.keystore' and put in $JBOSS_HOME.
+cp ./p12/tomcat-user.jks $JBOSS_HOME/.keystore
 
-5. Add the EJBCA CA certificate to the trust-keystore in
+5. Download the CA certificate in PEM-format from
+http://localhost:8080/webdist/cacert.jsp (call it ejbca-ca.pem).
+
+6. Add the EJBCA CA certificate to the Java trust-keystore in
 $JAVA_HOME/jre/lib/security/cacerts
 
 keytool -import -trustcacerts -file ejbca-ca.pem -keystore
 $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 
-6. Create a PKCS12 file with EJBCA for a user with CN=walter and the RAADMIN bit
+7. Create a user for EJBCA admin with CN=walter and the RAADMIN bit
+(temporarily CN=walter gives adminrights).
+./ra.sh adduser raadmin-user foo123 "C=SE,O=PrimeKey,CN=walter"
+walter@primekey.se 32
+
+Alternative:
+Create a PKCS12 file with EJBCA for a user with CN=walter and the RAADMIN bit
 (temporarily CN=walter gives adminrights).
 ./ra.sh adduser raadmin-user foo123 "C=SE,O=PrimeKey,CN=walter"
 walter@primekey.se 32
 ./ra.sh setclearpwd raadmin-user foo123
 ./batch.sh
 
-7. Install the generated PKCS12 (p12/walter.p12) file in the browser.
+8. Fetch the certificate using your browser at http://localhost:8080/apply
+
+Alternative:
+Install the generated PKCS12 (p12/walter.p12) file in the browser.
 In Mozilla this is done by Edit->Preferences->Privacy&Security->Certificates->
 Manage Certificates->Import
 In IE it is done by double-clicking on the .p12 file.
 
-8. Start JBoss.
+9. Start JBoss.
 
-11. Go to https://localhost:8443/raadmin
+10. Go to https://localhost:8443/raadmin
 
 
 SAMPLES
@@ -609,6 +627,8 @@ For IE to verify client certs, the ordering in the DN must be strictly the same
 
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
+
+
 
 
 

@@ -31,7 +31,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.7 2002-07-22 14:07:28 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.8 2002-07-26 09:26:39 anatom Exp $
  */
 public class KeyTools {
 
@@ -97,7 +97,7 @@ public class KeyTools {
      */
     static public KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, Certificate[] cachain)
     throws Exception {
-        cat.debug(">createP12: privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length) );
+        cat.debug(">createP12: alias=" + alias + ", privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length) );
 
         // Certificate chain, only max two levels deep unforturnately, this is a TODO:
         if (cert == null)
@@ -144,7 +144,7 @@ public class KeyTools {
         KeyStore store = KeyStore.getInstance("PKCS12", "BC");
         store.load(null, null);
         store.setKeyEntry(alias, pk, null, chain);
-        cat.debug(">createP12: privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length));
+        cat.debug(">createP12: alias=" + alias + ", privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length));
 
         return store;
     } // createP12
@@ -161,9 +161,9 @@ public class KeyTools {
      * @return KeyStore containing JKS-keystore
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
-    static public KeyStore createJKS(String alias, PrivateKey privKey, X509Certificate cert, Certificate[] cachain)
+    static public KeyStore createJKS(String alias, PrivateKey privKey, String password, X509Certificate cert, Certificate[] cachain)
     throws Exception {
-        cat.debug(">createJKS: privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length) );
+        cat.debug(">createJKS: alias=" + alias + ", privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length) );
 
         // Certificate chain, only max two levels deep unforturnately, this is a TODO:
         if (cert == null)
@@ -180,8 +180,8 @@ public class KeyTools {
         // store the key and the certificate chain
         KeyStore store = KeyStore.getInstance("JKS");
         store.load(null, null);
-        store.setKeyEntry(alias, privKey, null, chain);
-        cat.debug(">createJKS: privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length));
+        store.setKeyEntry(alias, privKey, password.toCharArray(), chain);
+        cat.debug(">createJKS: alias=" + alias + ", privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length));
 
         return store;
     } // createJKS

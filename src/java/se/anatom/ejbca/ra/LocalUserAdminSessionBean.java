@@ -18,19 +18,19 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.20 2002-07-20 18:40:08 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.21 2002-07-26 09:26:39 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
     /** The home interface of  GlobalConfiguration entity bean */
     private GlobalConfigurationDataLocalHome globalconfigurationhome = null;
-    
+
     private UserDataLocalHome home = null;
     /** Columns in the database used in select */
     private final String USERDATA_COL = "username, subjectDN, subjectEmail, status, type, clearpassword";
     /** Var holding JNDI name of datasource */
     private String dataSource = "java:/DefaultDS";
-    
+
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -38,7 +38,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     public void ejbCreate () throws CreateException {
         debug(">ejbCreate()");
         home = (UserDataLocalHome) lookup("java:comp/env/ejb/UserDataLocal", UserDataLocalHome.class);
-        globalconfigurationhome = (GlobalConfigurationDataLocalHome)lookup("java:comp/env/ejb/GlobalConfigurationDataLocal", GlobalConfigurationDataLocalHome.class);              
+        globalconfigurationhome = (GlobalConfigurationDataLocalHome)lookup("java:comp/env/ejb/GlobalConfigurationDataLocal", GlobalConfigurationDataLocalHome.class);
         dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
         debug("DataSource=" + dataSource);
         debug("<ejbCreate()");
@@ -154,7 +154,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         UserDataLocal data = home.findByPrimaryKey(pk);
         try {
             if (password == null)
-                data.setClearPassword("");
+                data.setClearPassword(null);
             else
                 data.setOpenPassword(password);
         } catch (java.security.NoSuchAlgorithmException nsae)
@@ -258,8 +258,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             throw new EJBException("Error starting external service", e);
         }
     } // startExternalService
-    
-     /** 
+
+     /**
      * Loads the global configuration from the database.
      *
      * @throws EJBException if a communication or other error occurs.
@@ -290,17 +290,17 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         debug(">saveGlobalConfiguration()");
         String pk = "0";
         try {
-          GlobalConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey(pk);  
+          GlobalConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey(pk);
           gcdata.setGlobalConfiguration(globalconfiguration);
         }catch (javax.ejb.FinderException fe) {
-           // Global configuration doesn't yet exists. 
-           try{ 
-             GlobalConfigurationDataLocal data1= globalconfigurationhome.create(pk,globalconfiguration);     
-           } catch(CreateException e){         
+           // Global configuration doesn't yet exists.
+           try{
+             GlobalConfigurationDataLocal data1= globalconfigurationhome.create(pk,globalconfiguration);
+           } catch(CreateException e){
            }
-        }         
+        }
         debug("<saveGlobalConfiguration()");
-     } // saveGlobalConfiguration     
+     } // saveGlobalConfiguration
 
 } // LocalUserAdminSessionBean
 

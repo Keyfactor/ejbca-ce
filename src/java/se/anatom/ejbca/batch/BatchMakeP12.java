@@ -43,7 +43,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.18 2002-07-22 14:07:28 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.19 2002-07-26 09:26:39 anatom Exp $
  *
  */
 
@@ -160,7 +160,11 @@ public class BatchMakeP12 {
         if (mainStoreDir == null)
             throw new IOException("Can't find directory to store keystore in.");
 
-        String keyStoreFilename = mainStoreDir + "/" + username+ ".p12";
+        String keyStoreFilename = mainStoreDir + "/" + username;
+        if (createJKS)
+            keyStoreFilename += ".jks";
+        else
+            keyStoreFilename += ".p12";
 
         FileOutputStream os = new FileOutputStream(keyStoreFilename);
         ks.store(os, kspassword.toCharArray());
@@ -224,7 +228,7 @@ public class BatchMakeP12 {
         // Store keys and certificates in keystore.
         KeyStore ks = null;
         if (createJKS)
-            ks = KeyTools.createJKS(alias, rsaKeys.getPrivate(), cert, cachain);
+            ks = KeyTools.createJKS(alias, rsaKeys.getPrivate(), password, cert, cachain);
         else
             ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);
         storeKeyStore(ks, username, password);
@@ -295,6 +299,7 @@ public class BatchMakeP12 {
             if (data.getPassword() != null) {
                 try {
                     cat.info("Generating keys for " + data.getUsername());
+                    cat.info("Password:" + data.getPassword());
                     // Grab new user, set status to INPROCESS
                     admin.setUserStatus(data.getUsername(), UserDataLocal.STATUS_INPROCESS);
                     processUser(data);
@@ -332,9 +337,9 @@ public class BatchMakeP12 {
         cat.debug(">createUser("+username+")");
         IUserAdminSessionRemote admin = adminhome.create();
         UserAdminData data = admin.findUser(username);
-        if (data != null) {
+        if ((data != null) && (data.getPassword() != null)) {
             try {
-                cat.debug("Creating P12 for " + data.getUsername());
+                cat.info("Generating keys for " + data.getUsername());
                 // Grab new user, set status to INPROCESS
                 admin.setUserStatus(data.getUsername(), UserDataLocal.STATUS_INPROCESS);
                 processUser(data);
@@ -351,7 +356,7 @@ public class BatchMakeP12 {
             }
         }
         else {
-            cat.error("Unknown user: " + username);
+            cat.error("Unknown user, or clear text password is null: " + username);
             throw new Exception("BatchMakeP12 failed for '" + username+"'.");
         }
         cat.info("New user generated successfully - " + data.getUsername());
@@ -379,10 +384,11 @@ public class BatchMakeP12 {
                     if (args[0].equals("-pem")) {
                         cat.info("Generating PEM-files.");
                         makep12.createPEM(true);
-                    } else {
+                    } else if (args[0].equals("-jks")) {
                         cat.info("Generating JKS-file.");
                         makep12.createJKS(true);
-                    }
+                    } else
+                        cat.info("Generating PKCS12-file.");
 
                     // Make P12 for all NEW users in local DB
                     makep12.createAllNew();
@@ -391,13 +397,15 @@ public class BatchMakeP12 {
                 } else {
                     // Make P12 for specified user
                     if ( (args.length > 1) && (args[1].equals("-pem")) ) {
-                            cat.info("Generating PEM-files.");
-                            makep12.createPEM(true);
-                        }
-                    if ( (args.length > 1) && (args[1].equals("-jks")) ) {
-                            cat.info("Generating JKS-file.");
-                            makep12.createJKS(true);
-                        }
+                        cat.info("Generating PEM-file.");
+                        makep12.createPEM(true);
+                    }
+                    else if ( (args.length > 1) && (args[1].equals("-jks")) ) {
+                        cat.info("Generating JKS-file.");
+                        makep12.createJKS(true);
+                    } else
+                        cat.info("Generating PKCS12-file.");
+
                     makep12.createUser(args[0]);
                 }
             } else {
