@@ -37,15 +37,13 @@ import se.anatom.ejbca.util.Base64;
 * 6. sign the reply data (PKCS#7) from the previous step
 * 7. output the result as a der encoded block on stdout
 * -----
-* @version  $Id: ScepServlet.java,v 1.5 2002-11-17 14:01:40 herrvendil Exp $
+* @version  $Id: ScepServlet.java,v 1.6 2003-02-03 11:30:25 scop Exp $
 */
 public class ScepServlet extends HttpServlet {
 
     static private Category cat = Category.getInstance( ScepServlet.class.getName() );
 
-    private InitialContext ctx = null;
-    private Admin administrator = null;
-    ISignSessionHome home = null;
+    private ISignSessionHome home = null;
 
     public void init(ServletConfig config) throws ServletException {
     super.init(config);
@@ -55,7 +53,7 @@ public class ScepServlet extends HttpServlet {
             int result = Security.addProvider(BCJce);
 
             // Get EJB context and home interfaces
-            ctx = new InitialContext();
+            InitialContext ctx = new InitialContext();
             home = (ISignSessionHome) PortableRemoteObject.narrow(
             ctx.lookup("RSASignSession"), ISignSessionHome.class );
         } catch( Exception e ) {
@@ -63,58 +61,56 @@ public class ScepServlet extends HttpServlet {
         }
     }
 
-	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		cat.debug(">doPost()");
-		Debug debug = new Debug(request, response);
-		debug.print("The certificate request servlet only handles POST method.");
-		debug.printDebugInfo();
-		cat.debug("<doPost()");
-	} //doPost
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        cat.debug(">doPost()");
+        doGet(request, response);
+        cat.debug("<doPost()");
+    } //doPost
 
     public void doGet(HttpServletRequest request,  HttpServletResponse response) throws java.io.IOException, ServletException {
         cat.debug(">doGet()");
         Debug debug = new Debug(request, response);
-		try {
-			String operation = request.getParameter("operation");
+        try {
+            String operation = request.getParameter("operation");
             String message = request.getParameter("message");
             if ((operation == null) || (message == null)) {
-				debug.print("<h3>Parameters 'operation' and 'message' must be supplied!</h3>");
+                debug.print("<h3>Parameters 'operation' and 'message' must be supplied!</h3>");
                 debug.print((operation == null) ? "operation" : "message" + "is null.");
-				debug.printDebugInfo();
-				return;
-			}
-			administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
-			cat.debug("Got request '" + operation + "'");
-			debug.print("<h3>Operation: " + operation + "</h3>");
+                debug.printDebugInfo();
+                return;
+            }
+            Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
+            cat.debug("Got request '" + operation + "'");
+            debug.print("<h3>Operation: " + operation + "</h3>");
             cat.debug("Message: "+message);
             ISignSessionRemote ss = home.create();
-			if (operation.equals("PKIOperation")) {
+            if (operation.equals("PKIOperation")) {
                 byte[] scepmsg = Base64.decode(message.getBytes());
                 ScepPkiOpHelper helper = new ScepPkiOpHelper(scepmsg);
-			} else if (operation.equals("GetCACert")) {
-			} else if (operation.equals("GetCACertChain")) {
-			} else {
+            } else if (operation.equals("GetCACert")) {
+            } else if (operation.equals("GetCACertChain")) {
+            } else {
                 debug.print("<h3>Invalid parameter '"+operation+"'!</h3>");
                 debug.printDebugInfo();
-			}
+            }
         } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
             cat.debug("Empty or invalid request received.");
             debug.printMessage("Empty or invalid request!");
             debug.printMessage("Please supply a correct request.");
             debug.printDebugInfo();
             return;
-		} catch (Exception e) {
-			cat.debug(e);
-			debug.print("<h3>parameter name and values: </h3>");
-			Enumeration paramNames = request.getParameterNames();
-			while (paramNames.hasMoreElements()) {
-				String name = paramNames.nextElement().toString();
-				String parameter = request.getParameter(name);
-				debug.print("<h4>" + name + ":</h4>" + parameter + "<br>");
-			}
-			debug.takeCareOfException(e);
-			debug.printDebugInfo();
-		}
+        } catch (Exception e) {
+            cat.debug(e);
+            debug.print("<h3>parameter name and values: </h3>");
+            Enumeration paramNames = request.getParameterNames();
+            while (paramNames.hasMoreElements()) {
+                String name = paramNames.nextElement().toString();
+                String parameter = request.getParameter(name);
+                debug.print("<h4>" + name + ":</h4>" + parameter + "<br>");
+            }
+            debug.takeCareOfException(e);
+            debug.printDebugInfo();
+        }
         cat.debug("<doGet()");
     } // doGet
 
