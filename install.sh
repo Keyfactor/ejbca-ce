@@ -12,10 +12,8 @@ fi
 
 CP=.:./admin.jar:./lib/ldap.jar
 
-java -cp $CP se.anatom.ejbca.admin.Install install unix en ejbca jboss tomcat
-
-
-
+if java -cp $CP se.anatom.ejbca.admin.Install install unix en ejbca jboss tomcat
+then
 #This command must be run as root
 echo
 echo Importing certs in the JAVA trust store requires root privileges
@@ -27,5 +25,5 @@ su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -import -trustcacerts -file tmp/ro
 rm tmp/rootca.der
 
 java -cp $CP se.anatom.ejbca.admin.Install displayendmessage unix en ejbca jboss tomcat
-
+fi 
 
