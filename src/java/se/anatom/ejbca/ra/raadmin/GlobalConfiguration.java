@@ -18,7 +18,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.14 2004-11-20 23:06:11 sbailliez Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.15 2005-01-04 10:04:44 anatom Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -125,10 +125,10 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     }
 
     public   String getBaseUrl() {    
-    	return (String) data.get(this.PRIVATEPROTOCOL) + "://" + 
-    	           (String) data.get(this.COMPUTERNAME) + ":" +
-    	           (String) data.get(this.PRIVATEPORT) + "/" +
-    	           (String) data.get(this.APPLICATIONPATH);
+    	return (String) data.get(GlobalConfiguration.PRIVATEPROTOCOL) + "://" + 
+    	           (String) data.get(GlobalConfiguration.COMPUTERNAME) + ":" +
+    	           (String) data.get(GlobalConfiguration.PRIVATEPORT) + "/" +
+    	           (String) data.get(GlobalConfiguration.APPLICATIONPATH);
    }
         
     

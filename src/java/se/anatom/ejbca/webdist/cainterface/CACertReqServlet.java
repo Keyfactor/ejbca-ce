@@ -23,8 +23,6 @@ import java.io.PrintStream;
 import java.security.cert.Certificate;
 
 import javax.ejb.EJBException;
-import javax.naming.InitialContext;
-import javax.rmi.PortableRemoteObject;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -38,8 +36,8 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import se.anatom.ejbca.apply.RequestHelper;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
-import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 import se.anatom.ejbca.util.ServiceLocator;
+import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 
 /**
  * Servlet used to distribute  CRLs.<br>
@@ -50,7 +48,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: CACertReqServlet.java,v 1.3 2004-11-20 23:30:53 sbailliez Exp $
+ * @version $Id: CACertReqServlet.java,v 1.4 2005-01-04 10:04:20 anatom Exp $
  */
 public class CACertReqServlet extends HttpServlet {
 

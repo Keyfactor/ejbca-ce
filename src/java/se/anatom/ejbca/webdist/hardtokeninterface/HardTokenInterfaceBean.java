@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.TreeMap;
 
-import javax.naming.InitialContext;
 import javax.servlet.http.HttpServletRequest;
 
 import se.anatom.ejbca.authorization.AdminGroup;
@@ -40,9 +39,9 @@ import se.anatom.ejbca.hardtoken.IHardTokenSessionLocalHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionLocal;
 import se.anatom.ejbca.ra.IUserAdminSessionLocalHome;
+import se.anatom.ejbca.util.ServiceLocator;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
-import se.anatom.ejbca.util.ServiceLocator;
 
 /**
  * A java bean handling the interface between EJBCA hard token module and JSP pages.
@@ -183,7 +182,7 @@ public class HardTokenInterfaceBean {
     public void addHardTokenIssuer(String alias, int admingroupid) throws HardTokenIssuerExistsException, RemoteException{
       Iterator iter = this.informationmemory.getHardTokenIssuingAdminGroups().iterator();
       while(iter.hasNext()){
-      	if(((AdminGroup) iter.next()).getAdminGroupId().intValue() == admingroupid){
+      	if(((AdminGroup) iter.next()).getAdminGroupId() == admingroupid){
 			if(!hardtokensession.addHardTokenIssuer(admin, alias, admingroupid, new HardTokenIssuer()))
 			  throw new HardTokenIssuerExistsException();
 			informationmemory.hardTokenDataEdited();      		
@@ -194,7 +193,7 @@ public class HardTokenInterfaceBean {
     public void addHardTokenIssuer(String alias, int admingroupid, HardTokenIssuer hardtokenissuer) throws HardTokenIssuerExistsException, RemoteException {
 		Iterator iter = this.informationmemory.getHardTokenIssuingAdminGroups().iterator();
 		while(iter.hasNext()){
-		  if(((AdminGroup) iter.next()).getAdminGroupId().intValue() == admingroupid){
+		  if(((AdminGroup) iter.next()).getAdminGroupId() == admingroupid){
 			  if(!hardtokensession.addHardTokenIssuer(admin, alias, admingroupid, new HardTokenIssuer()))
 				throw new HardTokenIssuerExistsException();
 			  informationmemory.hardTokenDataEdited();      		

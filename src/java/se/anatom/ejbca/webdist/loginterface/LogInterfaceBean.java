@@ -21,7 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import javax.naming.InitialContext;
 import javax.servlet.http.HttpServletRequest;
 
 import se.anatom.ejbca.authorization.AdminInformation;
@@ -33,8 +32,8 @@ import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.log.LogConfiguration;
 import se.anatom.ejbca.log.LogConstants;
 import se.anatom.ejbca.log.LogEntry;
-import se.anatom.ejbca.util.StringTools;
 import se.anatom.ejbca.util.ServiceLocator;
+import se.anatom.ejbca.util.StringTools;
 import se.anatom.ejbca.util.query.BasicMatch;
 import se.anatom.ejbca.util.query.LogMatch;
 import se.anatom.ejbca.util.query.Query;
@@ -46,7 +45,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.15 2004-11-20 23:34:34 sbailliez Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.16 2005-01-04 10:04:43 anatom Exp $
  */
 public class LogInterfaceBean {
 

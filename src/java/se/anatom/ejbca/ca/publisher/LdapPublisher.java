@@ -36,7 +36,6 @@ import org.bouncycastle.asn1.DERInputStream;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERTaggedObject;
 
-import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.exception.PublisherConnectionException;
 import se.anatom.ejbca.ca.exception.PublisherException;
 import se.anatom.ejbca.ca.store.CertificateDataBean;
@@ -58,7 +57,7 @@ import com.novell.ldap.LDAPModificationSet;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.11 2004-11-07 14:58:11 herrvendil Exp $
+ * @version $Id: LdapPublisher.java,v 1.12 2005-01-04 10:04:44 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher{
 	 	
