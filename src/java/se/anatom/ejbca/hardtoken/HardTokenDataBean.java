@@ -47,10 +47,11 @@ import se.anatom.ejbca.util.StringTools;
  *   local-jndi-name="HardTokenDataLocal"
  *   view-type="local"
  *   type="CMP"
- *   reentrant="false"
+ *   reentrant="False"
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="HardTokenDataBean"
+ *   primkey-field="tokenSN"
  *
  * @ejb.permission role-name="InternalUser"
  *
@@ -72,12 +73,17 @@ import se.anatom.ejbca.util.StringTools;
  *   signature="Collection findByUsername(java.lang.String username)"
  *   query="SELECT DISTINCT OBJECT(a) from HardTokenDataBean a WHERE a.username=?1"
  *
+ * @ejb.transaction
+ *   type="Supports"
+ *
+ * @jonas.jdbc-mapping
+ *   jndi-name="${datasource.jndi-name}"
  */
 public abstract class HardTokenDataBean extends BaseEntityBean {
 
 
 
-    private static Logger log = Logger.getLogger(HardTokenIssuerDataBean.class);
+    private static final Logger log = Logger.getLogger(HardTokenIssuerDataBean.class);
 
     /**
      * @ejb.pk-field

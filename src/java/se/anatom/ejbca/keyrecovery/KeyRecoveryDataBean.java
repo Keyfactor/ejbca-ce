@@ -34,7 +34,7 @@ import se.anatom.ejbca.util.StringTools;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.16 2004-06-08 18:06:05 sbailliez Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.17 2004-11-20 22:41:56 sbailliez Exp $
  *
  * @ejb.bean
  *   description="Stores key recovery data"
@@ -43,7 +43,7 @@ import se.anatom.ejbca.util.StringTools;
  *   local-jndi-name="KeyRecoveryData"
  *   view-type="local"
  *   type="CMP"
- *   reentrant="false"
+ *   reentrant="False"
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="KeyRecoveryDataBean"
@@ -75,13 +75,15 @@ import se.anatom.ejbca.util.StringTools;
  *   signature="Collection findByUserMark(java.lang.String usermark)"
  *   query="SELECT DISTINCT OBJECT(a) from KeyRecoveryDataBean a WHERE a.username=?1 AND a.markedAsRecoverable=TRUE"
  *
+ * @ejb.transaction
+ *   type="Supports"
+ *
  * @jonas.bean
  *   ejb-name="KeyRecoveryData"
  *   jndi-name="KeyRecoveryData"
  *
  * @jonas.jdbc-mapping
- *   jdbc-table-name  = "KeyRecoveryData"
- *   automatic-pk="true"
+ *   jndi-name="${datasource.jndi-name}"
  */
 public abstract class KeyRecoveryDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(KeyRecoveryDataBean.class);
@@ -200,7 +202,7 @@ public abstract class KeyRecoveryDataBean extends BaseEntityBean {
         setKeyDataFromByteArray(keydata);
         KeyRecoveryDataPK pk = new KeyRecoveryDataPK(getCertSN(), issuerdn);
         log.debug("Created Key Recoverydata for user " + username);
-        return pk;
+        return null;
     }
 
     public void ejbPostCreate(BigInteger certificatesn, String issuerdn, String username,

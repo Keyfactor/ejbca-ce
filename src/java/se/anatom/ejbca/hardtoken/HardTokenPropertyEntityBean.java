@@ -33,7 +33,7 @@ import javax.ejb.CreateException;
  *   local-jndi-name="HardTokenPropertyData"
  *   view-type="local"
  *   type="CMP"
- *   reentrant="false"
+ *   reentrant="False"
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="HardTokenPropertyEntityBean"
@@ -61,6 +61,13 @@ import javax.ejb.CreateException;
  *   description="findIdsByPropertyAndValue"
  *   signature="Collection findIdsByPropertyAndValue(java.lang.String property, java.lang.String value)"
  *   query="SELECT DISTINCT OBJECT(a) from HardTokenPropertyEntityBean a WHERE a.property =?1 AND a.value=?2"
+ *
+ * @ejb.transaction
+ *   type="Supports"
+ *
+ * @jonas.jdbc-mapping
+ *   jndi-name="${datasource.jndi-name}"
+ *
  */
 public abstract class HardTokenPropertyEntityBean extends BaseEntityBean {
 

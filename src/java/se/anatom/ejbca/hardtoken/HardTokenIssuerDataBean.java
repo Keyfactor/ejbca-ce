@@ -41,10 +41,11 @@ import se.anatom.ejbca.BaseEntityBean;
  *   local-jndi-name="HardTokenIssuerDataLocal"
  *   view-type="local"
  *   type="CMP"
- *   reentrant="false"
+ *   reentrant="False"
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="HardTokenIssuerDataBean"
+ *   primkey-field="id"
  *
  * @ejb.permission
  *   role-name="InternalUser"
@@ -71,11 +72,17 @@ import se.anatom.ejbca.BaseEntityBean;
  *   description="findAll"
  *   signature="java.util.Collection findAll()"
  *   query="SELECT DISTINCT OBJECT(a) from HardTokenIssuerDataBean AS a"
-
+ *
+ * @ejb.transaction
+ *   type="Supports"
+ *
+ * @jonas.jdbc-mapping
+ *   jndi-name="${datasource.jndi-name}"
+ *
  */
 public abstract class HardTokenIssuerDataBean extends BaseEntityBean {
 
-    private static Logger log = Logger.getLogger(HardTokenIssuerDataBean.class);
+    private static final Logger log = Logger.getLogger(HardTokenIssuerDataBean.class);
 
 	/**
      * @ejb.pk-field

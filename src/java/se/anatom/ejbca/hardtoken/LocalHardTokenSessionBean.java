@@ -37,6 +37,7 @@ import javax.sql.DataSource;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.JNDINames;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
@@ -208,30 +209,16 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
 
     public void ejbCreate() throws CreateException {
-        debug(">ejbCreate()");
       try{
-        dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
-        debug("DataSource=" + dataSource);
-        hardtokenissuerhome = (HardTokenIssuerDataLocalHome) lookup("java:comp/env/ejb/HardTokenIssuerData", HardTokenIssuerDataLocalHome.class);
-        hardtokendatahome = (HardTokenDataLocalHome) lookup("java:comp/env/ejb/HardTokenData", HardTokenDataLocalHome.class);
-        hardtokencertificatemaphome = (HardTokenCertificateMapLocalHome) lookup("java:comp/env/ejb/HardTokenCertificateMap", HardTokenCertificateMapLocalHome.class);
-		hardtokenprofilehome = (HardTokenProfileDataLocalHome) lookup("java:comp/env/ejb/HardTokenProfileData", HardTokenProfileDataLocalHome.class);
-		hardtokenpropertyhome = (HardTokenPropertyLocalHome) lookup("java:comp/env/ejb/HardTokenPropertyData", HardTokenPropertyLocalHome.class);
-
-        debug("<ejbCreate()");
+        hardtokenissuerhome = (HardTokenIssuerDataLocalHome) getLocator().getLocalHome(HardTokenIssuerDataLocalHome.COMP_NAME);
+        hardtokendatahome = (HardTokenDataLocalHome) getLocator().getLocalHome(HardTokenDataLocalHome.COMP_NAME);
+        hardtokencertificatemaphome = (HardTokenCertificateMapLocalHome) getLocator().getLocalHome(HardTokenCertificateMapLocalHome.COMP_NAME);
+		hardtokenprofilehome = (HardTokenProfileDataLocalHome) getLocator().getLocalHome(HardTokenProfileDataLocalHome.COMP_NAME);
+		hardtokenpropertyhome = (HardTokenPropertyLocalHome) getLocator().getLocalHome(HardTokenPropertyLocalHome.COMP_NAME);
       }catch(Exception e){
          throw new EJBException(e);
       }
     }
-
-
-    /** Gets connection to Datasource used for manual SQL searches
-     * @return Connection
-     */
-    private Connection getConnection() throws SQLException, NamingException {
-        DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
-        return ds.getConnection();
-    } //getConnection
 
 
     /** Gets connection to log session bean
@@ -240,7 +227,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     private ILogSessionLocal getLogSession() {
         if(logsession == null){
           try{
-            ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup(ILogSessionLocalHome.COMP_NAME,ILogSessionLocalHome.class);
+            ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
             logsession = logsessionhome.create();
           }catch(Exception e){
              throw new EJBException(e);
@@ -255,7 +242,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     private ICertificateStoreSessionLocal getCertificateStoreSession() {
         if(certificatestoresession == null){
           try{
-            ICertificateStoreSessionLocalHome certificatestoresessionhome = (ICertificateStoreSessionLocalHome) lookup("java:comp/env/ejb/CertificateStoreSessionLocal",ICertificateStoreSessionLocalHome.class);
+            ICertificateStoreSessionLocalHome certificatestoresessionhome = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
             certificatestoresession = certificatestoresessionhome.create();
           }catch(Exception e){
              throw new EJBException(e);
@@ -270,7 +257,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     private IAuthorizationSessionLocal getAuthorizationSession(Admin admin) {
         if(authorizationsession == null){
           try{
-            IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) lookup("java:comp/env/ejb/AuthorizationSessionLocal",IAuthorizationSessionLocalHome.class);
+            IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
             authorizationsession = authorizationsessionhome.create();
           }catch(Exception e){
              throw new EJBException(e);
@@ -1229,7 +1216,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     	ResultSet rs = null;
     	try{
     		// Construct SQL query.
-    		con = getConnection();
+    		con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
     		ps = con.prepareStatement("select distinct username from HardTokenData where  tokenSN LIKE '" + searchpattern + "%'");
     		// Execute query.
     		rs = ps.executeQuery();

@@ -46,10 +46,11 @@ import se.anatom.ejbca.hardtoken.hardtokenprofiles.SwedishEIDProfile;
  *   local-jndi-name="HardTokenProfileDataLocal"
  *   view-type="local"
  *   type="CMP"
- *   reentrant="false"
+ *   reentrant="False"
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="HardTokenProfileDataBean"
+ *   primkey-field="id"
  *
  * @ejb.permission role-name="InternalUser"
  *
@@ -75,10 +76,17 @@ import se.anatom.ejbca.hardtoken.hardtokenprofiles.SwedishEIDProfile;
  *   description="findAll"
  *   signature="java.util.Collection findAll()"
  *   query="SELECT DISTINCT OBJECT(a) from HardTokenProfileDataBean a"
+ *
+ * @ejb.transaction
+ *   type="Supports"
+ *
+ * @jonas.jdbc-mapping
+ *   jndi-name="${datasource.jndi-name}"
+ *
  */
 public abstract class HardTokenProfileDataBean extends BaseEntityBean {
 
-    private static Logger log = Logger.getLogger(HardTokenProfileDataBean.class);
+    private static final Logger log = Logger.getLogger(HardTokenProfileDataBean.class);
 
     private HardTokenProfile profile = null;
 

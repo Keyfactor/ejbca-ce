@@ -16,17 +16,15 @@ package se.anatom.ejbca.hardtoken;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.JNDINames;
 import se.anatom.ejbca.util.JDBCUtil;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
@@ -73,7 +71,7 @@ import se.anatom.ejbca.ra.UserDataLocalHome;
  * @ejb.ejb-external-ref
  *   description="The Certificate Store session bean"
  *   view-type="local"
- *   ejb-name="The hard token session bean"
+ *   ejb-name="HardTokenSessionLocal"
  *   type="Entity"
  *   home="se.anatom.ejbca.hardtoken.IHardTokenSessionLocalHome"
  *   business="se.anatom.ejbca.hardtoken.IHardTokenSessionLocal"
@@ -109,10 +107,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
     public static final int MAX_RETURNED_QUEUE_SIZE = 300;
 
     /** Columns in the database used in select */
-    private final static String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId, cAId";
-
-    /** Var holding JNDI name of datasource */
-    private String dataSource = "";
+    private static final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId, cAId";
 
     /** The home interface of  User Admin entity bean */
     private UserDataLocalHome useradminsession = null;
@@ -131,14 +126,8 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      */
 
     public void ejbCreate() throws CreateException {
-        debug(">ejbCreate()");
       try{
-        dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
-        debug("DataSource=" + dataSource);
-
-        useradminsession = (UserDataLocalHome) lookup("java:comp/env/ejb/UserDataLocal", UserDataLocalHome.class);
-
-        debug("<ejbCreate()");
+        useradminsession = (UserDataLocalHome) getLocator().getLocalHome(UserDataLocalHome.COMP_NAME);
       }catch(Exception e){
          throw new EJBException(e);
       }
@@ -146,21 +135,13 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
     }
 
 
-    /** Gets connection to Datasource used for manual SQL searches
-     * @return Connection
-     */
-    private Connection getConnection() throws SQLException, NamingException {
-        DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
-        return ds.getConnection();
-    } //getConnection
-
     /** Gets connection to hard token session bean
      * @return IHardTokenSessionLocal
      */
     private IHardTokenSessionLocal getHardTokenSession() {
         if(hardtokensession == null){
           try{
-            IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) lookup("java:comp/env/ejb/HardTokenSessionLocal",IHardTokenSessionLocalHome.class);
+            IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) getLocator().getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
             hardtokensession = hardtokensessionhome.create();
           }catch(Exception e){
              throw new EJBException(e);
@@ -175,7 +156,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
     private ILogSessionLocal getLogSession() {
         if(logsession == null){
           try{
-            ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup(ILogSessionLocalHome.COMP_NAME,ILogSessionLocalHome.class);
+            ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
             logsession = logsessionhome.create();
           }catch(Exception e){
              throw new EJBException(e);
@@ -211,7 +192,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         try{
            // Construct SQL query.
         	debug("HERE");
-            con = getConnection();
+            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
             ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)" );
             ps.setInt(1,issuerid);
             ps.setInt(2,SecConst.TOKEN_SOFT);
@@ -268,7 +249,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         PreparedStatement ps = null;
         try{
            // Construct SQL query.
-            con = getConnection();
+            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
             ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)" );
             ps.setInt(1,issuerid);
             ps.setInt(2,SecConst.TOKEN_SOFT);
@@ -322,7 +303,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         ResultSet rs = null;
         try{
            // Construct SQL query.
-            con = getConnection();
+            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
             ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)" );
             ps.setInt(1,issuerid);
             ps.setInt(2,SecConst.TOKEN_SOFT);
@@ -373,7 +354,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         ResultSet rs = null;
         try{
            // Construct SQL query.
-            con = getConnection();
+            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
             ps = con.prepareStatement("select COUNT(*) from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)");
             ps.setInt(1,issuerid);
             ps.setInt(2,SecConst.TOKEN_SOFT);
@@ -412,7 +393,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
         try{
            // Construct SQL query.
-            con = getConnection();
+            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
             ps = con.prepareStatement("select COUNT(*) from UserData where hardTokenIssuerId=?");
             ps.setInt(1,hardtokenissuerid);
             // Execute query.
