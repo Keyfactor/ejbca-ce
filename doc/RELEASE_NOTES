@@ -1,0 +1,24 @@
+
+EJBCA V1.1
+----------
+
+Upgrading from version 1.0:
+
+If upgrading from version 1.0 the database tables need to be migrated if the
+DN attributes L or ST have been used. This is because the ordering of those
+attributes have changed (for string matching the order must be defined).
+
+If L or ST have not been used in DNs, migration is NOT needed.
+
+What need to be done are to:
+1. Read column with DN to me migrated from table.
+2. Run 'newDN=CertTools.stringToBCDNString(oldDN)'.
+3. Update column with DN in table.
+
+Columns that need updating are:
+issuerDN in table CRLData
+subjectDN, issuerDN in table CertificateData
+subjectDN in table UserData.
+
+If a tool is needed to perform the migration, please contact us.
+See http://sourceforge.net/projects/ejbca

@@ -3,7 +3,7 @@
 Tested with additional databases (mySQL, PostgreSQL).
 The Datasource used is configurable.
 New architecture for Publishers where certificates can be published in addition to the main database.
-Change DN order to match standard better. WARNING! This makes upgrade in need of a database migration if L (Locality) attribute is used.
+Change DN order to match RFC1779. WARNING! See doc/RELEASE_NOTES for information about upgrading from v1.0.
 
 1.0
 ---

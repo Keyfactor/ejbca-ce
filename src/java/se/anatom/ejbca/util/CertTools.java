@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.6 2002-01-07 15:44:39 anatom Exp $
+ * @version $Id: CertTools.java,v 1.7 2002-01-08 08:04:26 anatom Exp $
  */
 public class CertTools {
 
@@ -37,9 +37,12 @@ public class CertTools {
 
     /**
      * Creates a (Bouncycastle) X509Name object from a string with a DN.
+     * <p>Known OID (with order) are:
+     * <pre>
+     * CN, SN, OU, O, L, ST, DC, C
      *
      * @param dn String containing DN that will be transformed into X509Name, The DN string has the format 
-"C=SE, O=xx, OU=yy, CN=zz". Unknown OIDs in the string will be silently dropped.
+"CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in the string will be silently dropped.
      * @return X509Name
      *
      */
@@ -57,25 +60,25 @@ public class CertTools {
                 oid = X509Name.C;
                 coll.add(X509Name.C);
             }
-            else if (o.trim().equalsIgnoreCase("O")) {
-                oid = X509Name.O;
-                coll.add(X509Name.O);
-            }
             else if (o.trim().equalsIgnoreCase("DC")) {
                 oid = X509Name.DC;
                 coll.add(X509Name.DC);
             }
-            else if (o.trim().equalsIgnoreCase("OU")) {
-                oid = X509Name.OU;
-                coll.add(X509Name.OU);
+            else if (o.trim().equalsIgnoreCase("ST")) {
+                oid = X509Name.ST;
+                coll.add(X509Name.ST);
             }
             else if (o.trim().equalsIgnoreCase("L")) {
                 oid = X509Name.L;
                 coll.add(X509Name.L);
             }
-            else if (o.trim().equalsIgnoreCase("ST")) {
-                oid = X509Name.ST;
-                coll.add(X509Name.ST);
+            else if (o.trim().equalsIgnoreCase("O")) {
+                oid = X509Name.O;
+                coll.add(X509Name.O);
+            }
+            else if (o.trim().equalsIgnoreCase("OU")) {
+                oid = X509Name.OU;
+                coll.add(X509Name.OU);
             }
             else if (o.trim().equalsIgnoreCase("SN")) {
                 oid = X509Name.SN;
@@ -93,26 +96,26 @@ public class CertTools {
                 oid=null; // Just drop unknown entries in the DN
             if (oid != null)
                 dntable.put(oid, st.nextToken());
-         }
-         Vector order = new Vector();
+        }
+        Vector order = new Vector();
         order.add(X509Name.EmailAddress);
         order.add(X509Name.CN);
         order.add(X509Name.SN);
-        order.add(X509Name.ST);
         order.add(X509Name.OU);
         order.add(X509Name.O);
-        order.add(X509Name.DC);
         order.add(X509Name.L);
+        order.add(X509Name.ST);
+        order.add(X509Name.DC);
         order.add(X509Name.C);
         order.retainAll(coll);
-
+        
         cat.debug(order.toString());
         cat.debug(dntable.toString());
-
+        
         cat.debug("<stringToBcX509Name");
         return new X509Name(order, dntable);
     }
-
+    
     /**
      * Every DN-string should look the same.
      * Creates a name string ordered and looking like we want it...
