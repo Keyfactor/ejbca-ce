@@ -24,7 +24,7 @@ Troubleshooting database problems:
 * Have you configured a <database-ds.xml> in JBOSS_HOME/server/default/deploy?
 * Do you have the correct username/password configured in <database-ds.xml>?
 * Is the JDBC driver installed in JBOSS_HOME/server/default/lib?
-* Does you database accept incoming connection from the network, not only localhost?
+* Does you database accept incoming connection from the network, not only localhost or vice versa?
 * Do you have a firewall blocking connections to the database?
 * Can you connect to the database from another machine?
 * Use ip-address instead of hostname in <database-ds.xml> (DNS problems?)
