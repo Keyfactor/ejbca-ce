@@ -30,6 +30,9 @@ import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.ocsp.*;
 
+import org.apache.log4j.Logger;
+import org.apache.commons.lang.StringUtils;
+
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.exception.SignRequestException;
@@ -41,14 +44,12 @@ import se.anatom.ejbca.protocol.exception.MalformedRequestException;
 import se.anatom.ejbca.util.Hex;
 import se.anatom.ejbca.util.CertTools;
 
-import org.apache.log4j.Logger;
-
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.4 2003-11-01 14:20:49 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.5 2003-12-12 14:59:54 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -148,19 +149,11 @@ public class OCSPServlet extends HttpServlet {
         super.init(config);
         
         try {
-            String initparam;
-            String kspath;
+            String pkpass;
             String kspwd;
-            String kstype;
             String pkalias;
+            String certalias;
             
-            InitialContext ctx = new InitialContext();
-            ICertificateStoreSessionLocalHome certStoreHome = 
-                (ICertificateStoreSessionLocalHome)PortableRemoteObject.narrow(ctx.lookup("java:comp/env/ejb/CertificateStoreSessionLocal"), ICertificateStoreSessionLocalHome.class);
-
-            m_certStore = certStoreHome.create();
-            m_adm = new Admin(Admin.TYPE_INTERNALUSER);
-
             {
                 File cwd = new File(".");
                 m_log.info("OCSPServlet current working directory : '"
@@ -168,99 +161,29 @@ public class OCSPServlet extends HttpServlet {
                             + "'");
             }
             
-            // TODO: get keystore from CA instead, when parsing request and finding out
-            // who the issuer is
-            kspath = config.getInitParameter("keyStore").trim();
-            if (null == kspath || kspath.length() <= 0) {
-                m_log.error("Path to keystore not defined in initialization parameters.");
-                throw new ServletException("Missing keystore path.");
-            }
+            // Parameters for OCSP signing (private) key
             kspwd = config.getInitParameter("keyStorePass").trim();
-            if (null == kspwd || kspwd.length() <= 0) {
+            if (StringUtils.isEmpty(kspwd)) {
                 m_log.error("Keystore password not defined in initialization parameters.");
                 throw new ServletException("Missing keystore password.");
             }
-            kstype = config.getInitParameter("keyStoreType").trim();
-            if (null == kstype || kstype.length() <= 0) {
-                m_log.warn("Keystore format not defined. Assuming PKCS12 as default.");
-                kstype = "PKCS12";
-            }
-
-            if (m_log.isDebugEnabled()) {
-                m_log.debug("Keystore type     : '" + kstype + "'\n"
-                            + "Keystore path     : '" + kspath + "'\n"
-                            + "Keystore passwd   : '" + kspwd + "'\n");
-            }
-            KeyStore ks = KeyStore.getInstance(kstype);
-            ks.load(new FileInputStream(kspath), kspwd.toCharArray());
-
-            if (m_log.isDebugEnabled()) {
-                StringBuffer sb = new StringBuffer();
-                Enumeration aliases = ks.aliases();
-                while (aliases.hasMoreElements()) {
-                    sb.append(", ");
-                    sb.append(aliases.nextElement());
-                }
-                sb.delete(0, ", ".length());
-                m_log.debug("Available aliases is keystore : '"
-                            + sb.toString()
-                            + "'");                            
-            }
-            /*
-             * load OCSP signing (private) key
-             */
             pkalias = config.getInitParameter("privateKeyAlias").trim();
-            if (null == pkalias || pkalias.length() <= 0) {
+            if (StringUtils.isEmpty(pkalias)) {
                 pkalias = "ocspsignkey";
             }            
-            initparam = config.getInitParameter("privateKeyPass").trim();
-            if (null != initparam && initparam.length() <= 0) {
-                initparam = null;
+            pkpass = config.getInitParameter("privateKeyPass").trim();
+            if (StringUtils.isEmpty(pkpass)) {
+                pkpass = null;
             }
-            if (!ks.isKeyEntry(pkalias)) {
-                m_log.error("The private key alias '" 
-                            + pkalias 
-                            + "' does not denote a private key in the specified keystore.");
-                throw new ServletException("Unable to find OCSP signing key.");
+            certalias = config.getInitParameter("certificateAlias").trim();
+            if (StringUtils.isEmpty(certalias)) {
+                certalias = "ocspsigncert";
             }
             if (m_log.isDebugEnabled()) {
-                m_log.debug("Private key alias     : '" + pkalias + "'\n"
-                            + "Private key pass      : '" + (initparam == null ? "null" : initparam) + "'");
-            }
-            m_signkey = (PrivateKey)ks.getKey(pkalias
-                                              , (initparam == null ? null : initparam.toCharArray()));
-            if (null == m_signkey) {
-                final String msg = "Unable to load private key from keystore.";
-                m_log.error(msg);
-                throw new ServletException(msg);                
-            }
-            /*
-             * load OCSP signing certificate
-             */
-            initparam = config.getInitParameter("certificateAlias").trim();
-            if (null == initparam || initparam.length() <= 0) {
-                initparam = "ocspsigncert";
-            }
-            if (m_log.isDebugEnabled()) {
-                m_log.debug("Certificate alias : '" + initparam + "'\n");
+                m_log.debug("Certificate alias : '" + certalias + "'\n");
             }
 
-            Certificate [] certs = ks.getCertificateChain(initparam);
-            if (null == certs) {
-                final String msg = "Unable to load certificate (chain) from keystore.";
-                m_log.error(msg);
-                throw new ServletException(msg);
-            }
-            m_signcerts = new X509Certificate[certs.length];
-            for (int i=0; i<certs.length; i++) {
-                if (!(certs[i] instanceof X509Certificate)) {
-                    final String msg = "Certificate (chain) from keytsore must be of type 'X509Certificate'.";
-                    m_log.error(msg);
-                    throw new ServletException(msg);
-                }
-                m_signcerts[i] = (X509Certificate)certs[i];
-            }
-
+            /* TODO: move this
             initparam = config.getInitParameter("responderID").trim();
             if (null == initparam || initparam.length() <= 0) {
                 final String msg = "Required parameter 'responderID' not set.";
@@ -275,16 +198,17 @@ public class OCSPServlet extends HttpServlet {
                 m_log.error(msg);
                 throw new ServletException(msg);
             }
+            */
             // TODO: END of private signing key todo
             
-            initparam = config.getInitParameter("enforceRequestSigning").trim();
+            String initparam = config.getInitParameter("enforceRequestSigning").trim();
             if (m_log.isDebugEnabled()) {
                 m_log.debug("Enforce request signing : '" 
-                            + (null == initparam || initparam.length() <= 0 ? "<not set>" : initparam)
+                            + (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
                             + "'");
             }
             m_reqMustBeSigned = true;
-            if (null != initparam && initparam.length() > 0) {
+            if (!StringUtils.isEmpty(initparam)) {
                 if (initparam.equalsIgnoreCase("false") 
                     || initparam.equalsIgnoreCase("no")) {
                     m_reqMustBeSigned = false;
