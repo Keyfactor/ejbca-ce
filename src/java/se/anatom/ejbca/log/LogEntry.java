@@ -20,6 +20,7 @@
 package se.anatom.ejbca.log;
 
 import java.util.Date;
+import java.io.Serializable;
 
 /**
  *  This is a  class containing information about one log event in the database. Used mainly during database queries by the web interface.
@@ -27,7 +28,7 @@ import java.util.Date;
  * @author  TomSelleck
  * @version
  */
-public class LogEntry implements java.io.Serializable {
+public class LogEntry implements Serializable {
 
     // Public constants
 

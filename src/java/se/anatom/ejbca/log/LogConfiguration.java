@@ -14,15 +14,16 @@
 package se.anatom.ejbca.log;
 
 import java.util.HashMap;
+import java.io.Serializable;
 
 
 /**
  * Class containing the log configuration data. Tells which events should be logged and if internal
  * log database and/or external logging device should be used.
  *
- * @version $Id: LogConfiguration.java,v 1.7 2004-06-10 12:35:05 sbailliez Exp $
+ * @version $Id: LogConfiguration.java,v 1.8 2004-11-08 22:12:27 sbailliez Exp $
  */
-public class LogConfiguration implements java.io.Serializable {
+public class LogConfiguration implements Serializable {
     // Public constants
     // Constructors
     public LogConfiguration() {
