@@ -57,7 +57,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.17 2004-05-30 15:07:28 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.18 2004-06-01 14:32:31 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage, Serializable {
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);
@@ -317,14 +317,15 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             // Put our signer info and all newly generated attributes
             gen1.addSigner(signKey, signCert, CMSSignedDataGenerator.DIGEST_SHA1,
                 new AttributeTable(attributes), null);
+            ArrayList certList = new ArrayList();
             if (crl != null) {
-                ArrayList certList = new ArrayList();
                 log.debug("Adding CRL to response message (outer signer)");
                 certList.add(crl);
-                CertStore certs = CertStore.getInstance("Collection",
-                        new CollectionCertStoreParameters(certList), "BC");
-                gen1.addCertificatesAndCRLs(certs);            	
-            }
+            } 
+            certList.add(signCert);                    
+            CertStore certs = CertStore.getInstance("Collection",
+                    new CollectionCertStoreParameters(certList), "BC");
+            gen1.addCertificatesAndCRLs(certs);            	
             signedData = gen1.generate(msg, true, "BC");
             responseMessage = signedData.getEncoded();
             if (responseMessage != null) {
