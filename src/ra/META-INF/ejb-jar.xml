@@ -6,7 +6,9 @@
  <enterprise-beans>
 
    <session>
-     <description>Session bean handling user administration, uses UserData entity bean</description>
+     <description>
+         Session bean handling user administration, uses UserData entity bean
+     </description>
      <ejb-name>UserAdminSession</ejb-name>
      <home>se.anatom.ejbca.ra.IUserAdminSessionHome</home>
      <remote>se.anatom.ejbca.ra.IUserAdminSessionRemote</remote>
@@ -14,6 +16,13 @@
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
    
+     <env-entry>
+        <description>JDBC datasource to be used</description>
+        <env-entry-name>DataSource</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>java:/DefaultDS</env-entry-value>
+     </env-entry>
+
      <ejb-ref>
         <description>The User entity bean</description>
         <ejb-ref-name>ejb/UserData</ejb-ref-name>
@@ -22,13 +31,6 @@
         <remote>se.anatom.ejbca.ca.store.UserData</remote>
         <ejb-link>UserData</ejb-link>
      </ejb-ref>
-
-     <env-entry>
-        <description>JDBC datasource to be used</description>
-        <env-entry-name>DataSource</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>java:/DefaultDS</env-entry-value>
-     </env-entry>
 
    </session>
 
@@ -106,7 +108,7 @@
          <method-name>*</method-name>
      </method>
 
-   <trans-attribute>Required</trans-attribute>   
+     <trans-attribute>Required</trans-attribute>   
    </container-transaction>       
 
    <container-transaction>
@@ -119,7 +121,7 @@
          <method-name>findAllUsersByStatus</method-name>
      </method>
 
-   <trans-attribute>Supports</trans-attribute>   
+     <trans-attribute>Supports</trans-attribute>   
    </container-transaction>       
 
  </assembly-descriptor>
