@@ -48,6 +48,10 @@ else
 fi
 
 EJBCA_HOME=..
+if [ ! -x ejbca.sh ]
+then
+EJBCA_HOME=.
+fi
 # Check that classes exist
 if [ ! -d ${EJBCA_HOME}/bin/classes ]
 then    
