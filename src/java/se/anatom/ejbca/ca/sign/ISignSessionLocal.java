@@ -13,13 +13,13 @@ import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
-import se.anatom.ejbca.protocol.RequestMessage;
+import se.anatom.ejbca.protocol.IRequestMessage;
 import se.anatom.ejbca.log.Admin;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown.
  *  Creates certificates.
  *
- * @version $Id: ISignSessionLocal.java,v 1.7 2002-11-18 11:18:22 anatom Exp $
+ * @version $Id: ISignSessionLocal.java,v 1.8 2003-01-12 17:26:40 anatom Exp $
  * @see se.anatom.ejbca.ca.sign.ISignSession
  */
 public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
@@ -55,11 +55,11 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
-    public Certificate createCertificate(Admin admin, String username, String password, RequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException;
+    public Certificate createCertificate(Admin admin, String username, String password, IRequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException;
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
-    public Certificate createCertificate(Admin admin, String username, String password, RequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException;
+    public Certificate createCertificate(Admin admin, String username, String password, IRequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException;
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */

@@ -19,13 +19,13 @@ import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
-import se.anatom.ejbca.protocol.RequestMessage;
+import se.anatom.ejbca.protocol.IRequestMessage;
 import se.anatom.ejbca.log.Admin;
 
 /** Creates certificates.
  * Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.10 2002-12-12 14:22:50 anatom Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.11 2003-01-12 17:26:40 anatom Exp $
  */
 
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
@@ -181,7 +181,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     */
 
-    public Certificate createCertificate(Admin admin, String username, String password, RequestMessage req) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException;
+    public Certificate createCertificate(Admin admin, String username, String password, IRequestMessage req) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException;
 
    /**
     * Requests for a certificate to be created for the passed public key wrapped in a PKCS10 certification request.
@@ -204,7 +204,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     */
 
-    public Certificate createCertificate(Admin admin, String username, String password, RequestMessage req, int keyUsage) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException;
+    public Certificate createCertificate(Admin admin, String username, String password, IRequestMessage req, int keyUsage) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException;
 
    /**
     * Requests for a CRL to be created with the passed (revoked) certificates.

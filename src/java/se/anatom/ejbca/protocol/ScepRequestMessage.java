@@ -33,9 +33,9 @@ import org.bouncycastle.cms.CMSException;
 
 /** Class to handle SCEP request messages sent to the CA.
  *
-* @version  $Id: ScepRequestMessage.java,v 1.5 2003-01-12 17:16:32 anatom Exp $
+* @version  $Id: ScepRequestMessage.java,v 1.6 2003-01-12 17:24:01 anatom Exp $
  */
-public class ScepRequestMessage implements RequestMessage, Serializable {
+public class ScepRequestMessage implements IRequestMessage, Serializable {
 
     static private Category cat = Category.getInstance( ScepRequestMessage.class.getName() );
 

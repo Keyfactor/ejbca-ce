@@ -16,9 +16,9 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 
 /** Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.5 2002-12-17 08:44:59 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.6 2003-01-12 17:24:01 anatom Exp $
  */
-public class PKCS10RequestMessage implements RequestMessage, Serializable {
+public class PKCS10RequestMessage implements IRequestMessage, Serializable {
 
     static private Category cat = Category.getInstance( PKCS10RequestMessage.class.getName() );
 

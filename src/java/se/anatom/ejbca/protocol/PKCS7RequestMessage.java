@@ -9,9 +9,9 @@ import org.apache.log4j.*;
 
 /** Class to handle PKCS7 request messages sent to the CA.
  *
-* @version  $Id: PKCS7RequestMessage.java,v 1.4 2002-11-08 14:43:24 anatom Exp $
+* @version  $Id: PKCS7RequestMessage.java,v 1.5 2003-01-12 17:24:01 anatom Exp $
  */
-public class PKCS7RequestMessage implements RequestMessage, Serializable {
+public class PKCS7RequestMessage implements IRequestMessage, Serializable {
 
     static private Category cat = Category.getInstance( PKCS7RequestMessage.class.getName() );
 

@@ -38,7 +38,7 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.log.LogEntry;
-import se.anatom.ejbca.protocol.RequestMessage;
+import se.anatom.ejbca.protocol.IRequestMessage;
 
 import org.bouncycastle.jce.*;
 import org.bouncycastle.asn1.x509.*;
@@ -47,7 +47,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.61 2003-01-12 17:16:35 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.62 2003-01-12 17:26:40 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -355,7 +355,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * Implements ISignSession::createCertificate
      */
 
-    public Certificate createCertificate(Admin admin, String username, String password, RequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException {
+    public Certificate createCertificate(Admin admin, String username, String password, IRequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException {
         return createCertificate(admin, username, password, req, -1 );
     }
 
@@ -363,7 +363,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * Implements ISignSession::createCertificate
      */
 
-    public Certificate createCertificate(Admin admin, String username, String password, RequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException {
+    public Certificate createCertificate(Admin admin, String username, String password, IRequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException {
         debug(">createCertificate(pkcs10)");
         Certificate ret = null;
         try {
