@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.Base64;
 * 6. sign the reply data (PKCS#7) from the previous step
 * 7. output the result as a der encoded block on stdout
 * -----
-* @version  $Id: ScepServlet.java,v 1.10 2003-06-05 09:24:40 anatom Exp $
+* @version  $Id: ScepServlet.java,v 1.11 2003-06-05 13:08:31 anatom Exp $
 */
 public class ScepServlet extends HttpServlet {
 
@@ -94,10 +94,9 @@ public class ScepServlet extends HttpServlet {
                 ISignSessionRemote signsession = signhome.create();
                 ScepPkiOpHelper helper = new ScepPkiOpHelper(administrator, adminsession, signsession);
                 // We are not ready yet, so lets deny all requests for now...
-                // TODO:
                 response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
-                
-                if (false) helper.scepCertRequest(scepmsg);                    
+                // Read the message end get the cert, this also checksauthorization
+                helper.scepCertRequest(scepmsg);                    
             } else if (operation.equals("GetCACert")) {
                 // TODO:
                 response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");

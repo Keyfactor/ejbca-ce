@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.asn1.*;
+import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.cms.*;
@@ -31,7 +32,7 @@ import se.anatom.ejbca.util.Base64;
 /**
  * Class to handle SCEP request messages sent to the CA.
  *
- * @version  $Id: ScepRequestMessage.java,v 1.13 2003-06-05 09:24:40 anatom Exp $
+ * @version  $Id: ScepRequestMessage.java,v 1.14 2003-06-05 13:08:31 anatom Exp $
  */
 public class ScepRequestMessage implements IRequestMessage, Serializable {
 
@@ -201,6 +202,9 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
         log.debug("<decrypt");
     } // decrypt
 
+    /** Returns the public key from the certificattion request.
+    * @return public key from certification request.
+    */
     public PublicKey getRequestPublicKey() {
         log.debug(">getRequestPublicKey()");
         PublicKey ret = null;
@@ -224,22 +228,45 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
         return ret;
     }
     
+    /** Returns the string representation of the subject DN from the certificattion request.
+    * @return subject DN from certification request.
+    */
     public String getRequestDN() {
-        // TODO:
-        return "foo";
+        if (pkcs10 == null) 
+            return null;
+        String ret = null;
+        // Get subject name from request
+        CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
+        if (info != null) {
+            X509Name name = info.getSubject();
+            ret = name.toString();
+        }
+        return ret;
     }
     
-    public String getRequestChallengePwd() {
+    /** Returns the challenge password from the certificattion request.
+    * @return challenge password from certification request.
+    */
+    public String getRequestPassword() {
+        if (pkcs10 == null) 
+            return null;
         String ret = null;
-        // TODO:
         // Get attributes
         CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
         AttributeTable attributes = new AttributeTable(info.getAttributes());
         Attribute attr = attributes.get(PKCSObjectIdentifiers.pkcs_9_at_challengePassword);
         ASN1Set values = attr.getAttrValues();
         if (values.size() > 0) {
-            DERIA5String str = DERIA5String.getInstance((values.getObjectAt(0)));
-            ret = str.getString();
+            DERString str = null;
+            try {
+                str = DERPrintableString.getInstance((values.getObjectAt(0)));
+            } catch (IllegalArgumentException ie) {
+                // This was not printable string, should be utf8string then according to pkcs#9 v2.0
+                str = DERUTF8String.getInstance((values.getObjectAt(0)));
+            }
+            if (str != null) {
+                ret = str.getString();
+            }
         } 
         return ret;
     }
