@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.30 2003-02-12 10:51:57 scop Exp $
+ * @version $Id: CertTools.java,v 1.31 2003-03-04 11:40:04 anatom Exp $
  */
 public class CertTools {
 
@@ -97,7 +97,7 @@ public class CertTools {
      *
      */
     public static X509Name stringToBcX509Name(String dn) {
-        log.debug(">stringToBcX509Name: " + dn);
+        //log.debug(">stringToBcX509Name: " + dn);
         // first make two vectors, one with all the C, O, OU etc specifying
         // the order and one holding the actual values
         ArrayList oldordering = new ArrayList();
@@ -150,7 +150,7 @@ public class CertTools {
                 log.debug((String)i2.next());
             }
         } */
-        log.debug("<stringToBcX509Name");
+        //log.debug("<stringToBcX509Name");
         return new X509Name(ordering, values);
     } // stringToBcX509Name
 
@@ -162,7 +162,7 @@ public class CertTools {
      * @return String containing DN
      **/
      public static String stringToBCDNString(String dn) {
-        log.debug(">stringToBcDNString: "+dn);
+        //log.debug(">stringToBcDNString: "+dn);
         String name = stringToBcX509Name(dn).toString();
 
         // Older workaround for bug in BC X509Name.java, kept for fun...
@@ -171,7 +171,7 @@ public class CertTools {
         //X509Name ret = new X509Name((DERConstructedSequence)obj);
         //return ret.toString();
 
-        log.debug("<stringToBcDNString: "+name);
+        //log.debug("<stringToBcDNString: "+name);
         return name;
      }
 
