@@ -190,7 +190,34 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
             <formatter type="xml"/>
             <batchtest fork="yes" todir="${test.dir}/reports">
                 <fileset dir="${test.dir}">
-                    <include name="**/Test*" />
+                    <include name="**/caadmin/TestCAs*" />
+                    <exclude name="**/TestRunner*" />
+                </fileset>
+            </batchtest>
+            <batchtest fork="yes" todir="${test.dir}/reports">
+                <fileset dir="${test.dir}">
+                    <include name="**/util/Test*" />
+                    <!-- Messagestesten kräver vissa CA som vi inte kan göra automagisgt
+                    <include name="**/protocol/Test*" /> -->
+                    <include name="**/ra/Test*" />
+                    <!-- LotsosUsers skapar MASSOR med använder, körs bara ibland -->
+                    <exclude name="**/ra/TestAddLotsofUsers*" /> 
+                    <include name="**/raadmin/Test*" />
+                    <include name="**/auth/Test*" />
+                    <include name="**/store/Test*" />
+                    <include name="**/sign/Test*" />
+                    <include name="**/crl/Test*" />
+                    <include name="**/publisher/Test*" />
+                    <include name="**/batch/Test*" />
+                    <include name="**/log/Test*" />
+                    <include name="**/keyrecovery/Test*" />
+                    <include name="**/hardtoken/Test*" />
+                    <exclude name="**/TestRunner*" />
+                </fileset>
+            </batchtest>
+            <batchtest fork="yes" todir="${test.dir}/reports">
+                <fileset dir="${test.dir}">
+                    <include name="**/caadmin/TestRemoveCA*" />
                     <exclude name="**/TestRunner*" />
                 </fileset>
             </batchtest>
