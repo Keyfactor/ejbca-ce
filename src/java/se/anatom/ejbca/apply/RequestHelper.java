@@ -46,6 +46,9 @@ public class RequestHelper {
     public byte[] nsCertRequest(ISignSessionRemote signsession, byte[] reqBytes, String username, String password)
         throws Exception {
             byte[] buffer = Base64.decode(reqBytes);
+            if (buffer == null) {
+                return null;
+            }
             DERInputStream  in = new DERInputStream(new ByteArrayInputStream(buffer));
             DERConstructedSequence spkac = (DERConstructedSequence)in.readObject();
             NetscapeCertRequest nscr = new NetscapeCertRequest (spkac);
@@ -109,6 +112,9 @@ public class RequestHelper {
             ISignSessionRemote ss = home.create();
             cert = (X509Certificate) ss.createCertificate(administrator, username, password, new PKCS10RequestMessage(buffer));
             */
+        }
+        if (buffer == null) {
+            return null;
         }
         cert = (X509Certificate) signsession.createCertificate(administrator, username, password, new PKCS10RequestMessage(buffer));
         byte[] pkcs7 = signsession.createPKCS7(administrator, cert);

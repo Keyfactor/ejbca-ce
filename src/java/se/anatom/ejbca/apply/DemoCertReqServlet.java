@@ -8,6 +8,7 @@ import java.io.PrintStream;
 import java.security.Provider;
 import java.security.Security;
 import java.util.Date;
+import java.util.Enumeration;
 import javax.ejb.CreateException;
 import javax.ejb.ObjectNotFoundException;
 import javax.naming.InitialContext;
@@ -79,7 +80,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.16 2003-02-12 11:23:14 scop Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.17 2003-02-13 09:09:37 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -269,38 +270,54 @@ public class DemoCertReqServlet extends HttpServlet {
               debug.ieCertFix(b64cert);
               RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"));
         }
-
-    //} catch (java.security.cert.CertificateEncodingException e) {
-    //  throw new ServletException(e);
-    } catch (ObjectNotFoundException e) {
-      // User not found
-      log.error(e);
-      throw new ServletException(e);
-    } catch (AuthStatusException e) {
-      // Wrong user status, shouldn't really happen.  The user needs to have
-      // status of NEW, FAILED or INPROCESS.
-      log.error(e);
-      throw new ServletException(e);
-    } catch (AuthLoginException e) {
-      // Wrong username or password, hmm... wasn't the wrong username caught
-      // in the objectnotfoundexception above... and this shouldn't happen.
-      log.error(e);
-      throw new ServletException(e);
-    } catch (IllegalKeyException e) {
-      // Malformed key (?)
-      log.error(e);
-      throw new ServletException(e);
-    } catch (SignRequestException e) {
-      // Invalid request
-      log.error(e);
-      throw new ServletException(e);
-    } catch (SignRequestSignatureException e) {
-      // Invalid signature in certificate request
-      log.error(e);
-      throw new ServletException(e);
+    } catch (ObjectNotFoundException oe) {
+        log.debug("Non existens username!");
+        debug.printMessage("Non existent username!");
+        debug.printMessage("To generate a certificate a valid username and password must be entered.");
+        debug.printDebugInfo();
+        return;
+    } catch (AuthStatusException ase) {
+        log.debug("Wrong user status!");
+        debug.printMessage("Wrong user status!");
+        debug.printMessage("To generate a certificate for a user the user must have status new, failed or inprocess.");
+        debug.printDebugInfo();
+        return;
+    } catch (AuthLoginException ale) {
+        log.debug("Wrong password for user!");
+        debug.printMessage("Wrong username or password!");
+        debug.printMessage("To generate a certificate a valid username and password must be entered.");
+        debug.printDebugInfo();
+        return;
+    } catch (SignRequestException re) {
+        log.debug("Invalid request!");
+        debug.printMessage("Invalid request!");
+        debug.printMessage("Please supply a correct request.");
+        debug.printDebugInfo();
+        return;
+    } catch (SignRequestSignatureException se) {
+        log.debug("Invalid signature on certificate request!");
+        debug.printMessage("Invalid signature on certificate request!");
+        debug.printMessage("Please supply a correctly signed request.");
+        debug.printDebugInfo();
+        return;
+    } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
+        log.debug("Empty or invalid request received.");
+        debug.printMessage("Empty or invalid request!");
+        debug.printMessage("Please supply a correct request.");
+        debug.printDebugInfo();
+        return;
     } catch (Exception e) {
-        log.error(e);
-        throw new ServletException(e);
+        log.debug(e);
+        debug.print("<h3>parameter name and values: </h3>");
+        Enumeration paramNames=request.getParameterNames();
+        while (paramNames.hasMoreElements()) {
+            String name=paramNames.nextElement().toString();
+            String parameter=request.getParameter(name);
+            debug.print("<h4>"+name+":</h4>"+parameter+"<br>");
+        }
+        debug.takeCareOfException(e);
+        debug.printDebugInfo();
+        return;
     }
   }
 
