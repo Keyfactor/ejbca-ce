@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.42 2002-09-11 12:36:09 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.43 2002-09-12 06:51:53 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -208,11 +208,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     "SHA1",
                     signingDevice.getProvider());
             debug("<createPKCS7()");
-            FileOutputStream fos = new FileOutputStream("C:\\foo.der");
-            fos.write(pkcs7.getEncoded());
-            fos.close();
             return pkcs7.getEncoded();
-
         } catch (Exception e) {
             throw new EJBException(e);
         }
