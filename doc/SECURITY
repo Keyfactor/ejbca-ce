@@ -28,25 +28,19 @@ This is because the public end-user actions can be performed through the public
 See 'ejbcafirewall.sh' for an example how to configure an Iptables firewall in
 Linux for protecting EJBCA running on JBoss.
 
-See http://www.jboss.org/online-manual/HTML/ch11s03.html for a list of ports
- used in JBOSS.
-See http://www.jboss.org/online-manual/HTML/ch13s84.html for information about
- security in JBOSS/EJB.
+See www.jboss.org for a list of ports used in JBOSS, for information about
+ security in JBOSS/EJB and for how to set up SSL with JBOSS.
 See http://www.javaworld.com/javaworld/jw-08-2001/jw-0831-jaas_p.html for more
  examples about setting up role-permissions.
-See http://www.jboss.org/online-manual/HTML/ch13s12.html on how to set up SSL
- with JBOSS/Tomcat.
 
 For more advanced security configurations utilizing Bean permissions as defined
  below, security must be activated in JBoss. To activate security in JBoss see
- the JBoss manual at:
-http://www.jboss.org/online-manual/HTML/ch09.html
+ the JBoss manual.
 
 File permission
 ---------------
-The application server should be run as a special user. The PKCS12 file with the
-CAs private key should be protected so the ONLY the user running the
-application server can access it.
+The application server should be run as a special user. Files should be protected 
+so the ONLY the user running the application server can access them.
 
 If PKCS12 files are generated for users, the subdirectory ('p12') where
 they are stored and the generated files should be protected in the same way.

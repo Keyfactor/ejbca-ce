@@ -168,17 +168,17 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.12 2003-12-12 10:15:28 anatom Exp $
+@version $Id: DEVELOP,v 1.13 2004-01-08 11:40:35 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.12 2003-12-12 10:15:28 anatom Exp $
+ * @version $Id: DEVELOP,v 1.13 2004-01-08 11:40:35 anatom Exp $
  */
 
-CA KeyStore architecture/creating a custom CA Keystore
+EJBCA2: CA KeyStore architecture/creating a custom CA Keystore
 ======================================================
 
 The CA Keystore, where the CAs private key is stored and used is
