@@ -102,13 +102,17 @@ public class ra {
                 }
                 String username = args[1];
                 UserAdminData data = admin.findUser(username);
-                System.out.println("Found user:");
-                System.out.println("username="+data.getUsername());
-                System.out.println("dn=\""+data.getDN()+"\"");
-                System.out.println("email="+data.getEmail());
-                System.out.println("status="+data.getStatus());
-                System.out.println("type="+data.getType());
-                System.out.println("password="+data.getPassword());
+                if (data != null) {
+                    System.out.println("Found user:");
+                    System.out.println("username="+data.getUsername());
+                    System.out.println("dn=\""+data.getDN()+"\"");
+                    System.out.println("email="+data.getEmail());
+                    System.out.println("status="+data.getStatus());
+                    System.out.println("type="+data.getType());
+                    System.out.println("password="+data.getPassword());
+                } else {
+                    System.out.println("User '"+username+"' does not exist.");
+                }
             } else if (args[0].equals("listnewusers"))
             {
                 Collection coll = admin.findAllUsersByStatus(UserData.STATUS_NEW);

@@ -58,7 +58,7 @@ import se.anatom.ejbca.util.FileTools;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.11 2002-01-30 12:50:58 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.12 2002-02-01 09:08:19 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
@@ -103,25 +103,30 @@ public class CertReqServlet extends HttpServlet {
             if (request.getParameter("keygen") != null) {
                 byte[] reqBytes=request.getParameter("keygen").getBytes();
                 cat.debug("Received NS request:"+new String(reqBytes));
-                byte[] certs = nsCertRequest(reqBytes, username, password, debug);
-                cat.debug("Received NS request:"+new String(reqBytes));
-                sendNewCertToNSClient(certs, response);
+                if (reqBytes != null) {
+                    byte[] certs = nsCertRequest(reqBytes, username, password, debug);
+                    sendNewCertToNSClient(certs, response);
+                }
             } else if ( (request.getParameter("pkcs10") != null) || (request.getParameter("PKCS10") != null) ) {
                 // if not netscape, check if it's IE
                 byte[] reqBytes=request.getParameter("pkcs10").getBytes();
                 if (reqBytes == null)
                     reqBytes=request.getParameter("PKCS10").getBytes();
                 cat.debug("Received IE request:"+new String(reqBytes));
-                byte[] b64cert=pkcs10CertRequest(
-                    reqBytes, username, password, debug);
-                debug.ieCertFix(b64cert);
-                sendNewCertToIEClient(b64cert, response.getOutputStream());
+                if (reqBytes != null) {
+                    byte[] b64cert=pkcs10CertRequest(
+                        reqBytes, username, password, debug);
+                    debug.ieCertFix(b64cert);
+                    sendNewCertToIEClient(b64cert, response.getOutputStream());
+                }
             } else if (request.getParameter("pkcs10req") != null) {
                 // if not IE, check if it's manual request
                 byte[] reqBytes=request.getParameter("pkcs10req").getBytes();
-                byte[] b64cert=pkcs10CertRequest(
-                    reqBytes, username, password, debug);
-                sendNewB64Cert(b64cert, response);
+                if (reqBytes != null) {
+                    byte[] b64cert=pkcs10CertRequest(
+                        reqBytes, username, password, debug);
+                    sendNewB64Cert(b64cert, response);
+                }
             }
         } catch (Exception e) {
             cat.error(e);
