@@ -1,3 +1,12 @@
+EJBCA V3.0.3
+------------
+
+The database table 'hardtokenprofiledata' using the database HypersonicSQL changed. 
+If you are using the hardtoken functionality on the HypersonicSQL database
+(which you should not be doing in production), the table must be removed and
+recreated. No migration script is provided since we don't anticipate anyone using
+this combination in production.
+
 EJBCA V3.0
 ----------
 EJBCA 3.0 is a major new release taking the Open Source CA to new heights. 
