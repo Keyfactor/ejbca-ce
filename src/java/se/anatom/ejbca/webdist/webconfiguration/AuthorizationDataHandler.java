@@ -19,7 +19,7 @@ import se.anatom.ejbca.log.ILogSessionRemote;
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
  * @author  Philip Vendil
- * @version $Id: AuthorizationDataHandler.java,v 1.6 2002-09-12 18:14:15 herrvendil Exp $
+ * @version $Id: AuthorizationDataHandler.java,v 1.7 2002-09-13 08:34:18 herrvendil Exp $
  */
 public class AuthorizationDataHandler {
 
@@ -63,6 +63,18 @@ public class AuthorizationDataHandler {
     public boolean isAuthorized(UserInformation userinformation, String resource) throws AuthorizationDeniedException{
       return authorize.isAuthorized(userinformation, resource);
     }
+    
+    /**
+     * Method to check if a user is authorized to a resource without performing any logging.
+     *
+     * @param userinformation information about the user to be authorized.
+     * @param resource the resource to look up.
+     * @returns true if authorizes
+     * @throws AuthorizationDeniedException when authorization is denied.
+     */
+    public boolean isAuthorizedNoLog(UserInformation userinformation, String resource) throws AuthorizationDeniedException{
+      return authorize.isAuthorizedNoLog(userinformation, resource);
+    }    
     
     /**
      * Method that authenticates a certificate by verifying signature, checking validity and lookup if certificate is revoked.

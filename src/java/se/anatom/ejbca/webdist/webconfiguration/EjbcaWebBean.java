@@ -42,7 +42,7 @@ import se.anatom.ejbca.ra.raadmin.UserPreference;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.14 2002-09-12 18:14:15 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.15 2002-09-13 08:34:18 herrvendil Exp $
  */
 public class EjbcaWebBean {
 
@@ -218,6 +218,18 @@ public class EjbcaWebBean {
       }
       return returnval;
     }
+    
+    /* Checks if the user have authorization to view the url without performing any logging. Used by menu page */
+    public boolean isAuthorizedNoLog(String url) throws AuthorizationDeniedException {
+      boolean returnval=false;
+      if(certificates != null){           
+        returnval= authorizedatahandler.isAuthorizedNoLog(new UserInformation(certificates[0]),url);
+      }
+      else{
+        throw new  AuthorizationDeniedException("Client certificate required.");
+      }
+      return returnval;
+    }    
 
     public String getBaseUrl(){return globalconfiguration.getBaseUrl();}
 

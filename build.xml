@@ -27,10 +27,6 @@
   <property name="ca.build" value="${tmp}/ca/ca.jar" />
   <property name="cajar" value="${dist}/ca.jar" />
 
-  <property name="log.src" value="${src}/log" />
-  <property name="log.build" value="${tmp}/log" />
-  <property name="logjar" value="${dist}/log.jar" />  
-  
   <property name="ra.src" value="${src}/ra" />
   <property name="ra.build" value="${tmp}/ra.jar" />
   <property name="rajar" value="${dist}/ra.jar" />
@@ -90,7 +86,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- =================================================================== -->
   <!-- Build ALL                                                           -->
   <!-- =================================================================== -->
-  <target name="build" depends="compile, apply.war, webdist.war, ca.jar, log.jar,
+  <target name="build" depends="compile, apply.war, webdist.war, ca.jar, 
 ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
   </target>
 
@@ -101,6 +97,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
     <!-- Compile the java code from ${javasrc} into ${build} -->
     <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on" >
         <exclude name="**/CVS/**"/>    
+        <exclude name="**/log/*.java"/>
         <include name="**/*.java"/>
     </javac>
     <copy todir="${javasrc}">
@@ -130,7 +127,6 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/util/**/FileTools*.class"/>
                 <include name="se/anatom/ejbca/exception/**/*.class"/>
                 <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
-                <include name="se/anatom/ejbca/log/Admin.class"/>                
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
@@ -156,7 +152,6 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/samples/RemoteVerify*.class"/>
                 <include name="se/anatom/ejbca/exception/**/*.class"/>
                 <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
-                <include name="se/anatom/ejbca/log/Admin.class"/>                 
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
@@ -191,27 +186,6 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
     <jar basedir="${ca.build}" jarfile="${cajar}"/>    
   </target>
 
-  <!-- =================================================================== -->
-  <!-- Build log part                                                    -->
-  <!-- =================================================================== -->
-  <target name="log.jar" depends="compile">
-    <mkdir    dir="${log.build}"/>
-    <copy todir="${log.build}">
-        <fileset dir="${log.src}"> 
-                <include name="**/*"/>
-        </fileset>
-    </copy>
-    <copy todir="${log.build}">
-        <fileset dir="${build}">
-                <include name="se/anatom/ejbca/log/*.class"/>
-                <include name="se/anatom/ejbca/util/query/*.class"/>                
-                <exclude name="se/anatom/ejbca/**/*Test*"/>
-        </fileset>
-    </copy>
-    
-    <!-- Jar the ca.jar package together -->
-    <jar basedir="${log.build}" jarfile="${logjar}"/>    
-  </target>  
 
   <!-- =================================================================== -->
   <!-- Build ra part                                                    -->
@@ -229,8 +203,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/ra/**/*.class"/>            
                 <include name="se/anatom/ejbca/*.class"/>
                 <include name="se/anatom/ejbca/util/**/*.class"/>
-                <include name="se/anatom/ejbca/util/query/*.class"/>   
-                <include name="se/anatom/ejbca/log/Admin.class"/>                              
+                <include name="se/anatom/ejbca/util/query/*.class"/>                
                 <exclude name="se/anatom/ejbca/**/*Test*"/>           
         </fileset>
     </copy>
@@ -262,7 +235,6 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/util/**/Hex*.class"/>
                 <include name="se/anatom/ejbca/exception/**/*.class"/>
                 <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
-                <include name="se/anatom/ejbca/log/Admin.class"/>                 
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
@@ -297,7 +269,6 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/util/query/*.class"/>                
                 <include name="se/anatom/ejbca/exception/**/*.class"/>
                 <include name="se/anatom/ejbca/ca/exception/**/*.class"/>           
-                <include name="se/anatom/ejbca/log/Admin.class"/>                 
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
@@ -340,8 +311,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/ra/raadmin/Profile.class"/>                                                 
                 <include name="se/anatom/ejbca/ra/authorization/*Exception.class"/>
                 <include name="se/anatom/ejbca/ra/authorization/UserEntity.class"/>  
-                <include name="se/anatom/ejbca/ra/authorization/UserInformation.class"/>      
-                <include name="se/anatom/ejbca/log/Admin.class"/>                                                                                                                                                                                                 
+                <include name="se/anatom/ejbca/ra/authorization/UserInformation.class"/>                                                                                                                                                                                      
                 <exclude name="se/anatom/ejbca/**/*Test*"/> 
        </fileset>
       </copy>
@@ -352,7 +322,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
   <!-- =================================================================== -->
   <!-- Build CA-ear                                                        -->
   <!-- =================================================================== -->
-  <target name="ca.ear" depends="apply.war, webdist.war, ca.jar, ra.jar, raadmin.war, log.jar">
+  <target name="ca.ear" depends="apply.war, webdist.war, ca.jar, ra.jar, raadmin.war">
     <mkdir dir="${caear.build}"/>
     <copy todir="${caear.earbuild}">
         <fileset dir="${caear.earsrc}"> 
@@ -375,7 +345,6 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="apply.war"/>
                 <include name="ca.jar"/>
                 <include name="ra.jar"/>
-                <include name="log.jar"/>                
                 <include name="raadmin.war"/>
         </fileset>
     </copy>
@@ -387,7 +356,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
   <!-- =================================================================== -->
   <!-- Build CA-ear without web-RA                                         -->
   <!-- =================================================================== -->
-  <target name="canora.ear" depends="apply.war, webdist.war, ca.jar, ra.jar, log.jar">
+  <target name="canora.ear" depends="apply.war, webdist.war, ca.jar, ra.jar">
     <mkdir dir="${caearnora.build}"/>
     <copy todir="${caearnora.earbuild}">
         <fileset dir="${caear.earsrc}"> 
@@ -412,7 +381,6 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="webdist.war"/>
                 <include name="apply.war"/>
                 <include name="ca.jar"/>
-                <include name="log.jar"/>                 
                 <include name="ra.jar"/>
         </fileset>
     </copy>
