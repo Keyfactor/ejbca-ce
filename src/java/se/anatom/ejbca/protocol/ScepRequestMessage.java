@@ -4,6 +4,7 @@ import java.io.*;
 import java.security.PublicKey;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.InvalidKeyException;
@@ -27,13 +28,17 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.smime.SMIMECapability;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.cms.*;
 import org.bouncycastle.cms.*;
+
+import se.anatom.ejbca.util.Base64;
+import se.anatom.ejbca.util.CertTools;
 
 /**
  * Class to handle SCEP request messages sent to the CA.
  *
- * @version  $Id: ScepRequestMessage.java,v 1.9 2003-03-11 09:47:41 anatom Exp $
+ * @version  $Id: ScepRequestMessage.java,v 1.10 2003-06-01 19:08:03 anatom Exp $
  */
 public class ScepRequestMessage implements IRequestMessage, Serializable {
 
@@ -178,26 +183,20 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
             log.error("No enveloped data to decrypt!");
             return;
         }
+        /*
             CMSEnvelopedData ed = new CMSEnvelopedData(envEncData);
-
             RecipientInformationStore  recipients = ed.getRecipientInfos();
-
             Collection  c = recipients.getRecipients();
-            Iterator    it = c.iterator();
-
+            Iterator it = c.iterator();
             byte[] pkcs10Bytes = null;
             while (it.hasNext())
             {
                 RecipientInformation   recipient = (RecipientInformation)it.next();
-
                 pkcs10Bytes = recipient.getContent(privateKey, "BC");
                 break;
             }
-/*
-        if (envData == null) {
-            log.error("No enveloped data to decrypt!");
-            return;
-        }
+            */
+
         Enumeration ris = envData.getRecipientInfos().getObjects();
         if (ris.hasMoreElements()) {
             RecipientInfo ri = RecipientInfo.getInstance(ris.nextElement());
@@ -214,7 +213,7 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
                         log.debug("Issuer and serialnumer of recipient:");
                         log.debug("Issuer: "+((IssuerAndSerialNumber)rid).getName().toString());
                         log.debug("SerialNo: "+((IssuerAndSerialNumber)rid).getSerialNumber().getValue().toString());
-                        log.debug("My key Issuer: "+CertTool.getIssuerDN(cert));
+                        log.debug("My key Issuer: "+CertTools.getIssuerDN(cert));
                         log.debug("My serialNo: "+cert.getSerialNumber().toString());
                     }
 
@@ -225,7 +224,7 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
                     //}
 
                     // At least OpenSCEP uses nopadding, go figure...
-//                    Cipher cipher = Cipher.getInstance("RSA/NONE/NOPADDING", "BC");
+                    //Cipher cipher = Cipher.getInstance("RSA/NONE/NOPADDING", "BC");
 //                    Cipher cipher = Cipher.getInstance("RSA/ECB/NOPADDING", "BC");
 //                    Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1PADDING", "BC");
 //                    Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPPADDING", "BC");
@@ -237,9 +236,9 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
 //                    Cipher cipher = Cipher.getInstance("RSA/1/PCKS1PADDING", "BC");
 //                    Cipher cipher = Cipher.getInstance("RSA/2/PCKS1PADDING", "BC");
                     Cipher cipher = Cipher.getInstance(id, "BC");
+                    log.info("keysize="+((RSAPrivateKey)privateKey).getModulus().bitLength());
                     cipher.init(Cipher.DECRYPT_MODE, privateKey);
                     log.info("blocksize="+cipher.getBlockSize());
-                    log.info("keysize="+((RSAPrivateKey)privateKey).getPrivateExponent().bitLength());
                     byte[] encKey = kti.getEncryptedKey().getOctets();
                     log.info("Encrypted keybytes: "+encKey.length);
                     byte[] dekBytes = cipher.doFinal(encKey);
@@ -286,7 +285,7 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
                 error = 5;
             }
         }
-        */
+        
         log.debug("<decrypt");
     } // decrypt
 
