@@ -44,7 +44,7 @@ public class HardCATokenSample implements IHardCAToken {
 	private transient Logger log;		
 	
 	// TODO set this right after testing.
-	private static boolean registered = HardCATokenManager.register("se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenSample", "HardCATokenSample", false, true);
+	private static boolean registered = HardCATokenManager.register("se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenSample", "HardCATokenSample", false, false);
 	
 	private static byte[] signkeypairenc = Base64.decode(
 			("rO0ABXNyABVqYXZhLnNlY3VyaXR5LktleVBhaXKXAww60s0SkwIAAkwACnByaXZh"
