@@ -28,7 +28,7 @@
   <property name="cajar" value="${dist}/ca.jar" />
 
   <property name="log.src" value="${src}/log" />
-  <property name="log.build" value="${tmp}/log" />
+  <property name="log.build" value="${tmp}/log.jar" />
   <property name="logjar" value="${dist}/log.jar" />  
   
   <property name="ra.src" value="${src}/ra" />
