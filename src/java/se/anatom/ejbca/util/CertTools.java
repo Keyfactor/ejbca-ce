@@ -30,7 +30,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.68 2005-02-11 13:12:27 anatom Exp $
+ * @version $Id: CertTools.java,v 1.69 2005-02-11 14:14:20 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -748,12 +748,8 @@ public class CertTools {
         if (altNames != null) {
             Iterator i = altNames.iterator();
             while (i.hasNext()) {
-                List listitem = (List) i.next();
-                Integer no = (Integer) listitem.get(0);
-                if (no.intValue() == 0) {
-                    byte[] altName = (byte[]) listitem.get(1);
-                    DERObject oct = (DERObject) (new DERInputStream(new ByteArrayInputStream(altName)).readObject());
-                    ASN1Sequence seq = ASN1Sequence.getInstance(oct);
+                ASN1Sequence seq = getAltnameSequence((List)i.next());
+                if ( seq != null) {                    
                     // First in sequence is the object identifier, that we must check
                     DERObjectIdentifier id = DERObjectIdentifier.getInstance(seq.getObjectAt(0));
                     if (id.getId().equals(CertTools.UPN_OBJECTID)) {
@@ -779,12 +775,8 @@ public class CertTools {
         if (altNames != null) {
             Iterator i = altNames.iterator();
             while (i.hasNext()) {
-                List listitem = (List) i.next();
-                Integer no = (Integer) listitem.get(0);
-                if (no.intValue() == 0) {
-                    byte[] altName = (byte[]) listitem.get(1);
-                    DERObject oct = (DERObject) (new DERInputStream(new ByteArrayInputStream(altName)).readObject());
-                    ASN1Sequence seq = ASN1Sequence.getInstance(oct);
+                ASN1Sequence seq = getAltnameSequence((List)i.next());
+                if ( seq != null) {                    
                     // First in sequence is the object identifier, that we must check
                     DERObjectIdentifier id = DERObjectIdentifier.getInstance(seq.getObjectAt(0));
                     if (id.getId().equals(CertTools.GUID_OBJECTID)) {
@@ -798,6 +790,19 @@ public class CertTools {
         return null;
     } // getGuidAltName
 
+    /** Helper for the above methods 
+     */
+    private static ASN1Sequence getAltnameSequence(List listitem) throws IOException {
+        Integer no = (Integer) listitem.get(0);
+        if (no.intValue() == 0) {
+            byte[] altName = (byte[]) listitem.get(1);
+            DERObject oct = (DERObject) (new DERInputStream(new ByteArrayInputStream(altName)).readObject());
+            ASN1Sequence seq = ASN1Sequence.getInstance(oct);
+            return seq;
+        }
+        return null;
+    }
+    
     /**
      * Return the CRL distribution point URL form a certificate.
      */
