@@ -629,7 +629,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- ======================================================================= -->
   <!-- Deploy EJBCA ear to JBoss                                               -->
   <!-- ======================================================================= -->
-  <target name="deploy" depends="ca.ear">
+  <target name="deploy" depends="ca.ear, admin.jar">
 	<copy file="${caear}" tofile="${env.JBOSS_HOME}/server/default/deploy/ejbca-ca.ear" verbose="true"/>
   </target>
 
