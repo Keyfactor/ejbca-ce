@@ -162,6 +162,10 @@ public class RequestHelper {
     */
     static public void sendNewCertToIEClient(byte[] b64cert, OutputStream out, ServletContext sc, String responseTemplate)
         throws Exception {
+        if (b64cert.length == 0) {
+            log.error("0 length certificate can not be sent to IE client!");
+            return;
+        }
         PrintStream ps = new PrintStream(out);
         BufferedReader br = new BufferedReader(
             new InputStreamReader(
@@ -182,6 +186,10 @@ public class RequestHelper {
 
     static public void sendNewCertToNSClient(byte[] certs, HttpServletResponse out)
         throws Exception {
+        if (certs.length == 0) {
+            log.error("0 length certificate can not be sent to NS client!");
+            return;
+        }
         // Set content-type to what NS wants
         out.setContentType("application/x-x509-user-cert");
         out.setContentLength(certs.length);
@@ -192,6 +200,10 @@ public class RequestHelper {
     }
     static public void sendNewB64Cert(byte[] b64cert, HttpServletResponse out)
         throws Exception {
+        if (b64cert.length == 0) {
+            log.error("0 length certificate can not be sent to client!");
+            return;
+        }
         // Set content-type to general file
         out.setContentType("application/octet-stream");
         out.setHeader("Content-disposition", "filename=cert.pem");
