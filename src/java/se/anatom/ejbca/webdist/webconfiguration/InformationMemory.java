@@ -18,6 +18,7 @@ import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
+import se.anatom.ejbca.hardtoken.IHardTokenSessionLocal;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.RAAuthorization;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
@@ -25,6 +26,7 @@ import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 import se.anatom.ejbca.webdist.cainterface.CAAuthorization;
 import se.anatom.ejbca.webdist.cainterface.CertificateProfileNameProxy;
+import se.anatom.ejbca.webdist.hardtokeninterface.HardTokenAuthorization;
 import se.anatom.ejbca.webdist.loginterface.LogAuthorization;
 import se.anatom.ejbca.webdist.rainterface.EndEntityProfileNameProxy;
 
@@ -43,6 +45,7 @@ public class InformationMemory {
                              IAuthorizationSessionLocal authorizationsession,
                              ISignSessionLocal signsession,
                              ICertificateStoreSessionLocal certificatestoresession,
+                             IHardTokenSessionLocal hardtokensession,
                              GlobalConfiguration globalconfiguration){
       this.caadminsession = caadminsession;                           
       this.administrator = administrator;
@@ -55,6 +58,7 @@ public class InformationMemory {
       this.raauthorization = new RAAuthorization(administrator, raadminsession, authorizationsession);
       this.caauthorization = new CAAuthorization(administrator, caadminsession, certificatestoresession, authorizationsession);
       this.logauthorization = new LogAuthorization(administrator, authorizationsession);
+      this.hardtokenauthorization = new HardTokenAuthorization(administrator, hardtokensession, authorizationsession);
     }
     
     
@@ -315,6 +319,20 @@ public class InformationMemory {
 	   return authorizedaccessrules;
     }
     
+	/**
+	 *  @see se.anatom.ejbca.webdist.hardtokeninterface.HardTokenAuthorization.java
+	 */	
+	public TreeMap getHardTokenIssuers(){	  	    
+	   return hardtokenauthorization.getHardTokenIssuers();
+	}
+	
+	/**
+	 *  @see se.anatom.ejbca.webdist.hardtokeninterface.HardTokenAuthorization.java
+	 */	
+	public boolean authorizedToHardTokenIssuer(String alias){			  	    
+	   return hardtokenauthorization.authorizedToHardTokenIssuer(alias);
+	}	
+    
     /**
      * Method that should be called every time CA configuration is edited.
      */
@@ -325,6 +343,7 @@ public class InformationMemory {
       logauthorization.clear();
       raauthorization.clear();
       caauthorization.clear();
+      hardtokenauthorization.clear();
     }
     
 
@@ -358,7 +377,16 @@ public class InformationMemory {
       logauthorization.clear();   
       raauthorization.clear();
       caauthorization.clear();
+	  hardtokenauthorization.clear();
     }    
+
+	/**
+	 * Method that should be called every time hard token issuers has been edited
+	 */
+	public void hardTokenIssuersEdited(){	 
+	  hardtokenauthorization.clear();
+	}    
+
     
     /**
      * Method that should be called every time the system configuration has been edited
@@ -381,6 +409,7 @@ public class InformationMemory {
     LogAuthorization logauthorization = null;
     RAAuthorization raauthorization = null;
     CAAuthorization caauthorization = null;
+    HardTokenAuthorization hardtokenauthorization = null;
     
     HashMap endentityprofileidtonamemap = null;
     HashMap caidtonamemap = null;

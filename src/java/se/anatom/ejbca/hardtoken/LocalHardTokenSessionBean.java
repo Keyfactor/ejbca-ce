@@ -33,7 +33,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.14 2003-09-03 12:47:24 herrvendil Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.15 2003-10-03 10:07:00 herrvendil Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
@@ -150,23 +150,24 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     public boolean addHardTokenIssuer(Admin admin, String alias, BigInteger certificatesn, String certissuerdn, HardTokenIssuer issuerdata){
        debug(">addHardTokenIssuer(alias: " + alias + ")");
        boolean returnval=false;
+       String bcdn = CertTools.stringToBCDNString(certissuerdn);
        try{
           hardtokenissuerhome.findByAlias(alias);
        }catch(FinderException e){
          try{
-           hardtokenissuerhome.findByCertificateSN(certificatesn.toString(16), certissuerdn);
+           hardtokenissuerhome.findByCertificateSN(certificatesn.toString(16), bcdn);
          }catch(FinderException f){
            try{
-             hardtokenissuerhome.create(findFreeHardTokenIssuerId(), alias, certificatesn, certissuerdn, issuerdata);
+             hardtokenissuerhome.create(findFreeHardTokenIssuerId(), alias, certificatesn, bcdn, issuerdata);
              returnval = true;
            }catch(Exception g){}
          }
        }
      
        if(returnval)
-         getLogSession().log(admin, certissuerdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " + alias + " added.");
+         getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " + alias + " added.");
        else
-         getLogSession().log(admin, certissuerdn.hashCode(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error adding hard token issuer "+ alias);
+         getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error adding hard token issuer "+ alias);
        
        debug("<addHardTokenIssuer()");
        return returnval;
@@ -209,15 +210,16 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        debug(">cloneHardTokenIssuer(alias: " + oldalias + ")");
        HardTokenIssuer issuerdata = null;
        boolean returnval = false;
+	   String bcdn = CertTools.stringToBCDNString(newcertissuerdn);
        try{
          HardTokenIssuerDataLocal htih = hardtokenissuerhome.findByAlias(oldalias);
          issuerdata = (HardTokenIssuer) htih.getHardTokenIssuer().clone();
 
-         returnval = addHardTokenIssuer(admin, newalias, newcertificatesn, newcertissuerdn, issuerdata);
+         returnval = addHardTokenIssuer(admin, newalias, newcertificatesn, bcdn, issuerdata);
          if(returnval)
-           getLogSession().log(admin, newcertissuerdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"New hard token issuer " + newalias +  ", used issuer " + oldalias + " as template.");
+           getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"New hard token issuer " + newalias +  ", used issuer " + oldalias + " as template.");
          else
-           getLogSession().log(admin, newcertissuerdn.hashCode(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error adding hard token issuer " + newalias +  " using issuer " + oldalias + " as template.");
+           getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error adding hard token issuer " + newalias +  " using issuer " + oldalias + " as template.");
        }catch(Exception e){
           throw new EJBException(e);
        }
@@ -255,17 +257,18 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
                                          BigInteger newcertificatesn, String newcertissuerdn){
        debug(">renameHardTokenIssuer(from " + oldalias + " to " + newalias + ")");
        boolean returnvalue = false;
+	   String bcdn = CertTools.stringToBCDNString(newcertissuerdn);	   
        try{
           hardtokenissuerhome.findByAlias(newalias);
        }catch(FinderException e){
          try{
-           hardtokenissuerhome.findByCertificateSN(newcertificatesn.toString(16), newcertissuerdn);
+           hardtokenissuerhome.findByCertificateSN(newcertificatesn.toString(16), bcdn);
          }catch(FinderException f){
            try{
              HardTokenIssuerDataLocal htih = hardtokenissuerhome.findByAlias(oldalias);
              htih.setAlias(newalias);
              htih.setCertSN(newcertificatesn);
-             htih.setCertIssuerDN(newcertissuerdn);
+             htih.setCertIssuerDN(bcdn);
              returnvalue = true;
            }catch(FinderException g){}
          }
@@ -273,9 +276,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
        
        if(returnvalue)
-         getLogSession().log(admin, newcertissuerdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " + oldalias + " renamed to " + newalias +  "." );
+         getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " + oldalias + " renamed to " + newalias +  "." );
        else
-         getLogSession().log(admin, newcertissuerdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA," Error renaming hard token issuer  " + oldalias +  " to " + newalias + "." );
+         getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA," Error renaming hard token issuer  " + oldalias +  " to " + newalias + "." );
 
 
        debug("<renameHardTokenIssuer()");
@@ -545,18 +548,19 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        */
     public void addHardToken(Admin admin, String tokensn, String username, String significantissuerdn, int tokentype,  HardToken hardtokendata, Collection certificates) throws HardTokenExistsException{
         debug(">addHardToken(tokensn : " + tokensn + ")");
+		String bcdn = CertTools.stringToBCDNString(significantissuerdn);
         try {
-            hardtokendatahome.create(tokensn, username,new java.util.Date(), new java.util.Date(), tokentype, significantissuerdn, hardtokendata);
+            hardtokendatahome.create(tokensn, username,new java.util.Date(), new java.util.Date(), tokentype, bcdn, hardtokendata);
             if(certificates != null){
               Iterator i = certificates.iterator();
               while(i.hasNext()){
                 addHardTokenCertificateMapping(admin, tokensn, (X509Certificate) i.next());
               }
             }
-            getLogSession().log(admin, significantissuerdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_INFO_HARDTOKENDATA,"Hard token with serial number : " + tokensn + " added.");
+            getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_INFO_HARDTOKENDATA,"Hard token with serial number : " + tokensn + " added.");
         }
         catch (Exception e) {
-          getLogSession().log(admin, significantissuerdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_HARDTOKENDATA,"Trying to add hard tokensn that already exists.");
+          getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_HARDTOKENDATA,"Trying to add hard tokensn that already exists.");
           throw new HardTokenExistsException("Tokensn : " + tokensn);
         }
         debug("<addHardToken()");
@@ -703,13 +707,13 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     public void addHardTokenCertificateMapping(Admin admin, String tokensn, X509Certificate certificate){
         String certificatesn = certificate.getSerialNumber().toString(16);
         debug(">addHardTokenCertificateMapping(certificatesn : "+ certificatesn  +", tokensn : " + tokensn + ")");
-         
+        int caid = CertTools.getIssuerDN(certificate).hashCode(); 
         try {
             hardtokencertificatemaphome.create(CertTools.getFingerprintAsString(certificate),tokensn);
-            getLogSession().log(admin, certificate.getIssuerDN().toString().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENCERTIFICATEMAP,"Certificate mapping added, certificatesn: "  + certificatesn +", tokensn: " + tokensn + " added.");
+            getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENCERTIFICATEMAP,"Certificate mapping added, certificatesn: "  + certificatesn +", tokensn: " + tokensn + " added.");
         }
         catch (Exception e) {
-          getLogSession().log(admin, certificate.getIssuerDN().toString().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENCERTIFICATEMAP,"Error adding certificate mapping, certificatesn: "  + certificatesn +", tokensn: " + tokensn);
+          getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENCERTIFICATEMAP,"Error adding certificate mapping, certificatesn: "  + certificatesn +", tokensn: " + tokensn);
         }
         debug("<addHardTokenCertificateMapping()");
     } // addHardTokenCertificateMapping
@@ -726,13 +730,14 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     public void removeHardTokenCertificateMapping(Admin admin, X509Certificate certificate){
        String certificatesn = certificate.getSerialNumber().toString(16);
        debug(">removeHardTokenCertificateMapping(Certificatesn: " + certificatesn + ")");
+	   int caid = CertTools.getIssuerDN(certificate).hashCode();
       try{
         HardTokenCertificateMapLocal htcm =hardtokencertificatemaphome.findByPrimaryKey(CertTools.getFingerprintAsString(certificate));
         htcm.remove();
-        getLogSession().log(admin, certificate.getIssuerDN().toString().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENCERTIFICATEMAP, "Certificate mapping with certificatesn: "  + certificatesn +" removed.");
+        getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENCERTIFICATEMAP, "Certificate mapping with certificatesn: "  + certificatesn +" removed.");
       }catch(Exception e){
          try{
-           getLogSession().log(admin, certificate.getIssuerDN().toString().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENCERTIFICATEMAP, "Error removing certificate mapping with certificatesn " + certificatesn + ".");
+           getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENCERTIFICATEMAP, "Error removing certificate mapping with certificatesn " + certificatesn + ".");
          }catch(Exception re){
             throw new EJBException(e);
          }
@@ -815,8 +820,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      *
      */
     public void tokenGenerated(Admin admin, String tokensn, String username, String significantissuerdn){
+	  int caid = CertTools.stringToBCDNString(significantissuerdn).hashCode(); 	
       try{
-        getLogSession().log(admin, significantissuerdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_INFO_HARDTOKENGENERATED, "Token with serialnumber : " + tokensn + " generated successfully.");
+        getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_INFO_HARDTOKENGENERATED, "Token with serialnumber : " + tokensn + " generated successfully.");
       }catch(Exception e){
         throw new EJBException(e);
       }
@@ -832,8 +838,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      *
      */
     public void errorWhenGeneratingToken(Admin admin, String tokensn, String username, String significantissuerdn){
+      int caid = CertTools.stringToBCDNString(significantissuerdn).hashCode();	
       try{
-        getLogSession().log(admin, significantissuerdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_HARDTOKENGENERATED, "Error when generating token with serialnumber : " + tokensn + ".");
+        getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_HARDTOKENGENERATED, "Error when generating token with serialnumber : " + tokensn + ".");
       }catch(Exception e){
         throw new EJBException(e);
       }

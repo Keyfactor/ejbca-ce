@@ -27,7 +27,7 @@
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ra_functionality/view_end_entity"); 
                                             rabean.initialize(request, ejbcawebbean);
                                             if(globalconfiguration.getIssueHardwareTokens())
-                                              tokenbean.initialize(request);
+                                              tokenbean.initialize(request, ejbcawebbean);
   String THIS_FILENAME                    = globalconfiguration.getRaPath()  + "/viewendentity.jsp";
 
   boolean nouserparameter          = true;

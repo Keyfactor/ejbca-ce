@@ -1,6 +1,6 @@
 
 <% 
-  TreeMap issuerdatas  = tokenbean.getHardTokenIssuers();
+  TreeMap issuerdatas   = ejbcawebbean.getInformationMemory().getHardTokenIssuers();
 %>
   <script language=javascript>
 <!--
@@ -60,10 +60,10 @@ function checkselected(){
             <% Iterator i = issuerdatas.keySet().iterator();
                while(i.hasNext()){  
                  String curalias = (String) i.next();
-                 HardTokenIssuerData data = (HardTokenIssuerData) issuerdatas.get(curalias);
+                 HardTokenIssuerData data = (HardTokenIssuerData) issuerdatas.get(curalias);                 
                   %>
               <option value="<%=curalias%>"> 
-                  <%= curalias %>, <%=  ejbcawebbean.getText("SHORTSERIALNUMBER") %> : <%= data.getCertificateSN().toString(16) %>               
+                  <%= curalias %>, <%=  ejbcawebbean.getText("SHORTSERIALNUMBER") %> : <%= data.getCertificateSN().toString(16) + ", " + caidtonamemap.get(new Integer(data.getIssuerDN().hashCode()))%>  
                </option>
             <%}%>
               <option value="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -120,6 +120,16 @@ function checkselected(){
         </td>
         <td width="*"> 
          <input type="text" name="<%=TEXTFIELD_CERTSN%>" size="40" maxlength="255">
+          &nbsp;
+          <select name="<%=SELECT_CA%>" >
+            <%Iterator iter = ejbcawebbean.getInformationMemory().getAuthorizedCAIds().iterator(); 
+              while(iter.hasNext()){
+                Integer authorizedcaid = (Integer) iter.next();%>
+              <option value="<%= authorizedcaid%>">
+                 <%= caidtonamemap.get(authorizedcaid)%>
+              </option>
+            <%}%>
+          </select>
         </td>
       </tr> 
        <tr>

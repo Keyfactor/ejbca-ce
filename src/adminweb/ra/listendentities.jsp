@@ -603,7 +603,7 @@
 
                if(matchwithrow1 == UserMatch.MATCH_WITH_ENDENTITYPROFILE || matchwithrow1 == UserMatch.MATCH_WITH_CERTIFICATEPROFILE){
                     matchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
-                    if(matchvaluerow1.equals("0")) matchvaluerow1 = null;
+                    if(matchvaluerow1 == null || matchvaluerow1.equals("0")) matchvaluerow1 = null;
                }else{
                   if(matchwithrow1 == UserMatch.MATCH_WITH_STATUS || matchwithrow1 == UserMatch.MATCH_WITH_CA){
                     matchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
@@ -613,7 +613,7 @@
                } 
                if(matchwithrow2 == UserMatch.MATCH_WITH_ENDENTITYPROFILE || matchwithrow2 == UserMatch.MATCH_WITH_CERTIFICATEPROFILE){
                  matchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
-                 if(matchvaluerow2.equals("0")) matchvaluerow2 = null;
+                 if(matchvaluerow2 == null || matchvaluerow2.equals("0")) matchvaluerow2 = null;
                }else{
                   if(matchwithrow2 == UserMatch.MATCH_WITH_STATUS || matchwithrow2 == UserMatch.MATCH_WITH_CA){
                     matchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
@@ -624,7 +624,7 @@
 
                if(matchwithrow3 == UserMatch.MATCH_WITH_ENDENTITYPROFILE || matchwithrow3 == UserMatch.MATCH_WITH_CERTIFICATEPROFILE){
                  matchvaluerow3 = request.getParameter(SELECT_MATCHVALUE_ROW3);
-                 if(matchvaluerow3.equals("0")) matchvaluerow3 = null; 
+                 if(matchvaluerow3 == null || matchvaluerow3.equals("0")) matchvaluerow3 = null; 
                }else{
                   if(matchwithrow3 == UserMatch.MATCH_WITH_STATUS || matchwithrow3 == UserMatch.MATCH_WITH_CA){
                     matchvaluerow3   = request.getParameter(SELECT_MATCHVALUE_ROW3);

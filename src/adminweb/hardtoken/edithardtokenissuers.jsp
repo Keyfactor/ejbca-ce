@@ -1,6 +1,6 @@
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp" import="java.util.ArrayList, java.util.TreeMap, java.util.Iterator, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst
+<%@page errorPage="/errorpage.jsp" import="java.util.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst
                ,se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, se.anatom.ejbca.hardtoken.HardTokenIssuer, se.anatom.ejbca.hardtoken.HardTokenIssuerData, se.anatom.ejbca.hardtoken.HardTokenIssuerExistsException,
                se.anatom.ejbca.hardtoken.HardTokenIssuerDoesntExistsException, se.anatom.ejbca.hardtoken.AvailableHardToken, se.anatom.ejbca.webdist.rainterface.CertificateView"%>
 
@@ -24,9 +24,11 @@
   static final String BUTTON_CLONE_ISSUER      = "buttoncloneissuer";
 
   static final String SELECT_ISSUER            = "selectissuer";
+  static final String SELECT_CA                = "selectca";
   static final String TEXTFIELD_ALIAS          = "textfieldalias";
   static final String HIDDEN_ALIAS             = "hiddenalias";
   static final String TEXTFIELD_CERTSN         = "textfieldcertsn";
+  
  
 // Buttons used in profile.jsp
   static final String BUTTON_SAVE              = "buttonsave";
@@ -47,14 +49,15 @@
   boolean  issuerdeletefailed       = false;
 
   String value=null;
-  HardTokenIssuer issuer=null;
- 
+  HardTokenIssuer issuer=null;     
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/super_administrator"); 
-                                            tokenbean.initialize(request);
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/hardtoken_functionality/edit_hardtoken_issuers"); 
+                                            tokenbean.initialize(request, ejbcawebbean);
                                             cabean.initialize(request, ejbcawebbean); 
 
   String THIS_FILENAME                    = globalconfiguration.getHardTokenPath() + "/edithardtokenissuers.jsp";
+
+  HashMap caidtonamemap = cabean.getCAIdToNameMap(); 
 %>
  
 <head>
@@ -66,9 +69,6 @@
 <body>
 
 <%  
-   // Get Certificate issuer DN
-   CertificateView[] cacerts = cabean.getCAInfo();
-   String certissuerdn= cacerts[cacerts.length-1].getIssuerDN();
 
    // Determine action 
   if( request.getParameter(ACTION) != null){
@@ -103,7 +103,9 @@
        String newalias  = request.getParameter(TEXTFIELD_ALIAS);
        String newcertsn = request.getParameter(TEXTFIELD_CERTSN);
        String oldalias = request.getParameter(SELECT_ISSUER);
-       if(oldalias != null && newalias != null && newcertsn!=null){
+       String certissuerdn = cabean.getCAInfo(Integer.parseInt(request.getParameter(SELECT_CA))).getCAInfo().getSubjectDN();
+       
+       if(oldalias != null && newalias != null && newcertsn!=null && certissuerdn != null){
          if(!newalias.trim().equals("") && !oldalias.trim().equals("") && !newcertsn.trim().equals("")){
            try{
              tokenbean.renameHardTokenIssuer(oldalias.trim(),newalias.trim(),newcertsn.trim(),certissuerdn);
@@ -118,7 +120,8 @@
          // Add profile and display profilespage.
          alias = request.getParameter(TEXTFIELD_ALIAS);
          String newcertsn = request.getParameter(TEXTFIELD_CERTSN);
-         if(alias != null && newcertsn != null){
+         String certissuerdn = cabean.getCAInfo(Integer.parseInt(request.getParameter(SELECT_CA))).getCAInfo().getSubjectDN();
+         if(alias != null && newcertsn != null && certissuerdn != null){
            if(!alias.trim().equals("") && !newcertsn.trim().equals("")){
              try{
                tokenbean.addHardTokenIssuer(alias.trim(), newcertsn.trim(),certissuerdn);
@@ -134,7 +137,8 @@
        String newalias  = request.getParameter(TEXTFIELD_ALIAS);
        String newcertsn = request.getParameter(TEXTFIELD_CERTSN);
        String oldalias = request.getParameter(SELECT_ISSUER);
-       if(oldalias != null && newalias != null && newcertsn != null){
+       String certissuerdn = cabean.getCAInfo(Integer.parseInt(request.getParameter(SELECT_CA))).getCAInfo().getSubjectDN();
+       if(oldalias != null && newalias != null && newcertsn != null && certissuerdn != null){
          if(!oldalias.trim().equals("") && !newalias.trim().equals("") && !newcertsn.trim().equals("")){
              try{ 
                tokenbean.cloneHardTokenIssuer(oldalias.trim(),newalias.trim(), newcertsn.trim(), certissuerdn);
@@ -148,7 +152,7 @@
     }
     if( request.getParameter(ACTION).equals(ACTION_EDIT_ISSUER)){
          // Display edit access rules page.
-       alias = request.getParameter(HIDDEN_ALIAS);
+       alias = request.getParameter(HIDDEN_ALIAS);       
        if(alias != null){
          if(!alias.trim().equals("")){
            if(request.getParameter(BUTTON_SAVE) != null){

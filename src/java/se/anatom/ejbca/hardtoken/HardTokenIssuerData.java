@@ -24,7 +24,7 @@ public class HardTokenIssuerData implements java.io.Serializable, Comparable {
       this.hardtokenissuerid=hardtokenissuerid;
       this.alias=alias;     
       this.certificatesn=certificatesn;
-      this.issuerdn=issuerdn;
+      this.issuerdn=issuerdn;      
       this.hardtokenissuer=hardtokenissuer;
     }
     
@@ -39,8 +39,8 @@ public class HardTokenIssuerData implements java.io.Serializable, Comparable {
     public BigInteger getCertificateSN(){ return this.certificatesn; }   
     public void setCertificateSN(BigInteger certificatesn){ this.certificatesn=certificatesn; }
     
-    public String getIssuerSN(){ return this.issuerdn; }   
-    public void setIssuerSN(String issuerdn){ this.issuerdn=issuerdn;}    
+    public String getIssuerDN(){ return this.issuerdn; }   
+    public void setIssuerDN(String issuerdn){ this.issuerdn=issuerdn;}    
    
     public HardTokenIssuer getHardTokenIssuer(){ return this.hardtokenissuer; }   
     public void setHardTokenIssuer(HardTokenIssuer hardtokenissuer){ this.hardtokenissuer=hardtokenissuer; }    
@@ -53,6 +53,6 @@ public class HardTokenIssuerData implements java.io.Serializable, Comparable {
     private    int             hardtokenissuerid;
     private    String          alias;   
     private    BigInteger      certificatesn;
-    private    String          issuerdn;
+    private    String          issuerdn;    
     private    HardTokenIssuer hardtokenissuer;
 }

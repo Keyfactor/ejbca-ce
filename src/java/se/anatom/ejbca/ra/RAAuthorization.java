@@ -1,6 +1,7 @@
 package se.anatom.ejbca.ra;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
@@ -14,7 +15,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 /**
  * A class that looks up the which CA:s or end entity profiles the administrator is authorized to view.
  * 
- * @version $Id: RAAuthorization.java,v 1.2 2003-10-01 11:12:14 herrvendil Exp $
+ * @version $Id: RAAuthorization.java,v 1.3 2003-10-03 10:06:50 herrvendil Exp $
  */
 public class RAAuthorization implements Serializable {
     
@@ -62,9 +63,10 @@ public class RAAuthorization implements Serializable {
      */
     public String getEndEntityProfileAuthorizationString(){
       if(authendentityprofilestring==null){
-        Iterator iter =  this.authorizationsession.getAuthorizedEndEntityProfileIds(admin, AvailableAccessRules.VIEW_RIGHTS).iterator();
-         
-      
+      	Collection result = this.authorizationsession.getAuthorizedEndEntityProfileIds(admin, AvailableAccessRules.VIEW_RIGHTS);     	
+      	result.retainAll(this.raadminsession.getAuthorizedEndEntityProfileIds(admin));
+      	Iterator iter = result.iterator();
+      	                    
         while(iter.hasNext()){
           if(authendentityprofilestring == null)
             authendentityprofilestring = " endEntityprofileId = " + ((Integer) iter.next()).toString();   
@@ -72,7 +74,8 @@ public class RAAuthorization implements Serializable {
             authendentityprofilestring = authendentityprofilestring + " OR endEntityprofileId = " + ((Integer) iter.next()).toString(); 
         }
         
-        authendentityprofilestring = "( " + authendentityprofilestring + " )"; 
+        if(authendentityprofilestring != null)
+          authendentityprofilestring = "( " + authendentityprofilestring + " )"; 
           
       }
         

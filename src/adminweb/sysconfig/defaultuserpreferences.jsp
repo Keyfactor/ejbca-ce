@@ -94,9 +94,7 @@
     </tr>
     <tr  id="Row0"> 
       <td width="49%" valign="top">&nbsp;</td>
-      <td width="51%" valign="top"> 
-        <h5><%= ejbcawebbean.getText("OBSERVERRESTART") %></h5>
-      </td>
+      <td width="51%" valign="top">&nbsp;</td>
     </tr>
     <tr  id="Row1"> 
       <td width="49%" valign="top">&nbsp;</td>

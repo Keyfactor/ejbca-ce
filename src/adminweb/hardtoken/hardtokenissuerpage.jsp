@@ -2,7 +2,7 @@
    AvailableHardToken[] availabletokens = tokenbean.getAvailableHardTokens();
    boolean used = false;
 
-
+   int row=0;
 %>
 <SCRIPT language="JavaScript">
 
@@ -27,7 +27,7 @@ function checkallfields(){
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ISSUER %>'>
   <input type="hidden" name='<%= HIDDEN_ALIAS %>' value='<%=alias %>'>
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
-    <tr id="Row0"> 
+    <tr id="Row<%=row++%2%>"> 
       <td width="15%" valign="top">
          &nbsp;
       </td>
@@ -43,7 +43,7 @@ function checkallfields(){
         <u><%= ejbcawebbean.getText("HELP") %></u> </A></div> -->
       </td>
     </tr>
-    <tr id="Row0"> 
+    <tr id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -53,7 +53,7 @@ function checkallfields(){
       <td width="70%"> 
          <%=  issuerdata.getAlias() %>
       </td>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
         &nbsp;
       </td>
@@ -63,7 +63,17 @@ function checkallfields(){
       <td width="70%"> 
         <%= issuerdata.getCertificateSN().toString(16) %> 
       </td>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+        &nbsp;
+      </td>
+      <td width="25%"  align="right"> 
+        <%= ejbcawebbean.getText("CA") %> 
+      </td>
+      <td width="70%"> 
+        <%=caidtonamemap.get(new Integer(issuerdata.getIssuerDN().hashCode()))%> 
+      </td>
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -73,7 +83,7 @@ function checkallfields(){
       <td width="70%"> 
          &nbsp;&nbsp; 
       </td>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
         &nbsp;
       </td>
@@ -97,7 +107,7 @@ function checkallfields(){
         </select>  
       </td> 
     </tr>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>

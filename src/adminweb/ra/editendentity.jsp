@@ -67,7 +67,7 @@
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionality/edit_end_entity"); 
                                             rabean.initialize(request, ejbcawebbean);
                                             if(globalconfiguration.getIssueHardwareTokens())
-                                              tokenbean.initialize(request);
+                                              tokenbean.initialize(request, ejbcawebbean);
 
   String[] subjectfieldtexts = {"","","", "OLDEMAILDN2", "UID", "COMMONNAME", "SERIALNUMBER1", 
                                 "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",

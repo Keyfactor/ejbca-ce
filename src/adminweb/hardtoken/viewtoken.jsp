@@ -29,7 +29,7 @@
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ra_functionality/view_hardtoken"); 
                                             rabean.initialize(request, ejbcawebbean); 
-                                            tokenbean.initialize(request);
+                                            tokenbean.initialize(request, ejbcawebbean);
   String THIS_FILENAME                    = globalconfiguration.getHardTokenPath() + "/viewtoken.jsp";
 
   final String VIEWCERT_LINK            = "/" + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";

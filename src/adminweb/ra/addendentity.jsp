@@ -76,7 +76,7 @@
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionality/create_end_entity"); 
                                             rabean.initialize(request, ejbcawebbean);
                                             if(globalconfiguration.getIssueHardwareTokens())
-                                              tokenbean.initialize(request);
+                                              tokenbean.initialize(request, ejbcawebbean);
 
   final String VIEWUSER_LINK            = "/" + globalconfiguration.getRaPath()  + "/viewendentity.jsp";
   final String EDITUSER_LINK            = "/" + globalconfiguration.getRaPath()  + "/editendentity.jsp";

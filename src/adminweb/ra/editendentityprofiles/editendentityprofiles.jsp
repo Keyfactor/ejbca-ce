@@ -119,7 +119,7 @@
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionality/edit_end_entity_profiles"); 
                                             ejbcarabean.initialize(request, ejbcawebbean);
                                             cabean.initialize(request, ejbcawebbean);
-                                            tokenbean.initialize(request);
+                                            tokenbean.initialize(request, ejbcawebbean);
   String THIS_FILENAME            =  globalconfiguration .getRaPath()  + "/editendentityprofiles/editendentityprofiles.jsp";
 %>
  

@@ -14,6 +14,9 @@ import se.anatom.ejbca.log.*;
 import se.anatom.ejbca.hardtoken.*;
 import se.anatom.ejbca.authorization.AdminInformation;
 import se.anatom.ejbca.util.StringTools;
+import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
+import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
 
 /**
  * A java bean handling the interface between EJBCA hard token module and JSP pages.
@@ -32,7 +35,7 @@ public class HardTokenInterfaceBean {
      *
      * @param request is a reference to the http request.
      */
-    public void initialize(HttpServletRequest request) throws  Exception{
+    public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
 
       if(!initialized){
         admininformation = new AdminInformation(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
@@ -49,6 +52,8 @@ public class HardTokenInterfaceBean {
 
         availablehardtokens = hardtokensession.getAvailableHardTokens();
         initialized=true;
+        
+        this.informationmemory = ejbcawebbean.getInformationMemory();
 
       }
     }
@@ -141,48 +146,66 @@ public class HardTokenInterfaceBean {
     }
 
     public void addHardTokenIssuer(String alias, String certificatesn, String certissuerdn) throws HardTokenIssuerExistsException, RemoteException{
-      certificatesn = StringTools.stripWhitespace(certificatesn);
-      if(!hardtokensession.addHardTokenIssuer(admin, alias, new BigInteger(certificatesn,16), certissuerdn, new HardTokenIssuer()))
-        throw new HardTokenIssuerExistsException();
+      if(this.informationmemory.getAuthorizedCAIds().contains(new Integer((CertTools.stringToBCDNString(certissuerdn)).hashCode()))){
+        certificatesn = StringTools.stripWhitespace(certificatesn);      
+        if(!hardtokensession.addHardTokenIssuer(admin, alias, new BigInteger(certificatesn,16), certissuerdn, new HardTokenIssuer()))
+          throw new HardTokenIssuerExistsException();
+        informationmemory.hardTokenIssuersEdited();
+      }  
     }
 
     public void addHardTokenIssuer(String alias, String certificatesn, String certissuerdn, HardTokenIssuer hardtokenissuer) throws HardTokenIssuerExistsException, RemoteException {
-      certificatesn = StringTools.stripWhitespace(certificatesn);
-      if(!hardtokensession.addHardTokenIssuer(admin, alias, new BigInteger(certificatesn,16), certissuerdn, hardtokenissuer))
-        throw new HardTokenIssuerExistsException();
+      if(this.informationmemory.getAuthorizedCAIds().contains(new Integer((CertTools.stringToBCDNString(certissuerdn)).hashCode()))){	
+        certificatesn = StringTools.stripWhitespace(certificatesn);
+        if(!hardtokensession.addHardTokenIssuer(admin, alias, new BigInteger(certificatesn,16), certissuerdn, hardtokenissuer))
+          throw new HardTokenIssuerExistsException();
+        informationmemory.hardTokenIssuersEdited();
+      }
     }
 
-    public void changeHardTokenIssuer(String alias, HardTokenIssuer hardtokenissuer) throws HardTokenIssuerDoesntExistsException, RemoteException {
-      if(!hardtokensession.changeHardTokenIssuer(admin, alias, hardtokenissuer))
-        throw new HardTokenIssuerDoesntExistsException();
+    public void changeHardTokenIssuer(String alias, HardTokenIssuer hardtokenissuer) throws HardTokenIssuerDoesntExistsException, RemoteException{
+      if(informationmemory.authorizedToHardTokenIssuer(alias)){	          	
+        if(!hardtokensession.changeHardTokenIssuer(admin, alias, hardtokenissuer))
+          throw new HardTokenIssuerDoesntExistsException();
+        informationmemory.hardTokenIssuersEdited();
+      }
     }
 
     /* Returns false if profile is used by any user or in authorization rules. */
-    public boolean removeHardTokenIssuer(String alias)throws RemoteException{
+    public boolean removeHardTokenIssuer(String alias)throws RemoteException{		
         boolean issuerused = false;
-        int issuerid = hardtokensession.getHardTokenIssuerId(admin, alias);
+		if(informationmemory.authorizedToHardTokenIssuer(alias)){
+          int issuerid = hardtokensession.getHardTokenIssuerId(admin, alias);
         // Check if any users or authorization rule use the profile.
 
-        issuerused = hardtokenbatchsession.checkForHardTokenIssuerId(admin, issuerid);
+          issuerused = hardtokenbatchsession.checkForHardTokenIssuerId(admin, issuerid);
 
-        if(!issuerused){
-          hardtokensession.removeHardTokenIssuer(admin, alias);
-        }
-
-        return !issuerused;
+          if(!issuerused){
+            hardtokensession.removeHardTokenIssuer(admin, alias);
+		    informationmemory.hardTokenIssuersEdited();
+          }		
+		} 
+        return !issuerused;	
     }
 
     public void renameHardTokenIssuer(String oldalias, String newalias, String newcertificatesn, String certissuersn) throws HardTokenIssuerExistsException, RemoteException{
-      newcertificatesn = StringTools.stripWhitespace(newcertificatesn);
-      if(!hardtokensession.renameHardTokenIssuer(admin, oldalias, newalias, new BigInteger(newcertificatesn,16), certissuersn))
-       throw new HardTokenIssuerExistsException();
+      if(informationmemory.authorizedToHardTokenIssuer(oldalias)){	
+        newcertificatesn = StringTools.stripWhitespace(newcertificatesn);
+        if(!hardtokensession.renameHardTokenIssuer(admin, oldalias, newalias, new BigInteger(newcertificatesn,16), certissuersn))
+         throw new HardTokenIssuerExistsException();
+       
+         informationmemory.hardTokenIssuersEdited();
+      }   
     }
 
     public void cloneHardTokenIssuer(String oldalias, String newalias, String newcertificatesn, String newcertissuerdn) throws HardTokenIssuerExistsException, RemoteException{
-      newcertificatesn = StringTools.stripWhitespace(newcertificatesn);
-      if(!hardtokensession.cloneHardTokenIssuer(admin, oldalias, newalias, new BigInteger(newcertificatesn,16), newcertissuerdn))
-        throw new HardTokenIssuerExistsException();
-
+	  if(informationmemory.authorizedToHardTokenIssuer(oldalias)){    	
+        newcertificatesn = StringTools.stripWhitespace(newcertificatesn);
+        if(!hardtokensession.cloneHardTokenIssuer(admin, oldalias, newalias, new BigInteger(newcertificatesn,16), newcertissuerdn))
+          throw new HardTokenIssuerExistsException();
+        
+        informationmemory.hardTokenIssuersEdited();
+	  }
     }
 
     public AvailableHardToken[] getAvailableHardTokens(){
@@ -194,6 +217,7 @@ public class HardTokenInterfaceBean {
     private AvailableHardToken[]            availablehardtokens;
     private AdminInformation                admininformation;
     private Admin                           admin;
+    private InformationMemory      informationmemory;
     private boolean                         initialized=false;
     private HardTokenView[]                 result;
 }
