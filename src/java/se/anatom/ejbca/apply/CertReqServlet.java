@@ -62,7 +62,7 @@ import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.16 2002-03-22 11:21:47 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.17 2002-05-04 13:37:04 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
@@ -88,10 +88,9 @@ public class CertReqServlet extends HttpServlet {
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response)
-        throws IOException {
-        response.setContentType("text/html");
+        throws IOException, ServletException {
 
-        Debug debug = new Debug();
+        Debug debug = new Debug(request,response);
         try {
             String username = request.getParameter("user");
             String password = request.getParameter("password");
@@ -127,37 +126,40 @@ public class CertReqServlet extends HttpServlet {
                 }
             }
         } catch (ObjectNotFoundException oe) {
+            cat.info("Non existens username!");
             debug.printMessage("Non existent username!");
             debug.printMessage("To generate a certificate a valid username and password must be entered.");
-            debug.printDebugInfo(response.getOutputStream());
+            debug.printDebugInfo();
             return;
         } catch (AuthStatusException ase) {
+            cat.info("Wrong user status!");
             debug.printMessage("Wrong user status!");
             debug.printMessage("To generate a certificate for a user the user must have status new, failed or inprocess.");
-            debug.printDebugInfo(response.getOutputStream());
+            debug.printDebugInfo();
             return;
         } catch (AuthLoginException ale) {
+            cat.info("Wrong password for user!");
             debug.printMessage("Wrong username or password!");
             debug.printMessage("To generate a certificate a valid username and password must be entered.");
-            debug.printDebugInfo(response.getOutputStream());
+            debug.printDebugInfo();
             return;
         } catch (SignRequestException re) {
-            cat.error("Invalid request!");
+            cat.info("Invalid request!");
             debug.printMessage("Invalid request!");
             debug.printMessage("Please supply a correct request.");
-            debug.printDebugInfo(response.getOutputStream());
+            debug.printDebugInfo();
             return;
         } catch (SignRequestSignatureException se) {
-            cat.error("Invalid signature on certificate request!");
+            cat.info("Invalid signature on certificate request!");
             debug.printMessage("Invalid signature on certificate request!");
             debug.printMessage("Please supply a correctly signed request.");
-            debug.printDebugInfo(response.getOutputStream());
+            debug.printDebugInfo();
             return;
         } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
-            cat.error("Empty or invalid request received.");
+            cat.info("Empty or invalid request received.");
             debug.printMessage("Empty or invalid request!");
             debug.printMessage("Please supply a correct request.");
-            debug.printDebugInfo(response.getOutputStream());
+            debug.printDebugInfo();
             return;
         } catch (Exception e) {
             cat.error(e);
@@ -169,14 +171,15 @@ public class CertReqServlet extends HttpServlet {
                 debug.print("<h4>"+name+":</h4>"+parameter+"<br>");
             }
             debug.takeCareOfException(e);
-            debug.printDebugInfo(response.getOutputStream());
+            debug.printDebugInfo();
         }
     } //doPost
 
-    public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
+    public void doGet(HttpServletRequest request,  HttpServletResponse response) throws java.io.IOException, ServletException {
         cat.debug(">doGet()");
-        res.setContentType("text/html");
-        res.getOutputStream().println("The certificate request servlet only handles POST method.");
+        Debug debug = new Debug(request,response);
+        debug.print("The certificate request servlet only handles POST method.");
+        debug.printDebugInfo();
         cat.debug("<doGet()");
     } // doGet
 
@@ -370,26 +373,18 @@ public class CertReqServlet extends HttpServlet {
     private class Debug {
         final private ByteArrayOutputStream buffer;
         final private PrintStream printer;
-        Debug( ){
+        final private HttpServletRequest request;
+        final private HttpServletResponse response;
+        Debug(HttpServletRequest request, HttpServletResponse response){
             buffer=new ByteArrayOutputStream();
             printer=new PrintStream(buffer);
-
-            print("<html>");
-            print("<body>");
-            print("<head>");
-
-            String title = "EJBCA cert request servlet";
-            print("<title>" + title + "</title>");
-            print("</head>");
-            print("<body bgcolor=\"white\">");
-
-            print("<h2>" + title + "</h2>");
+            this.request=request;
+            this.response=response;
         }
 
-        void printDebugInfo(OutputStream out) throws IOException {
-            print("</body>");
-            print("</html>");
-            out.write(buffer.toByteArray());
+        void printDebugInfo() throws IOException, ServletException {
+            request.setAttribute("ErrorMessage",new String(buffer.toByteArray()));
+            request.getRequestDispatcher("/error.jsp").forward(request, response);
         }
 
         void print(Object o) {
@@ -417,6 +412,7 @@ public class CertReqServlet extends HttpServlet {
             } catch (Exception e) {
                 e.printStackTrace(printer);
             }
+            request.setAttribute("Exception", "true");
         }
         void ieCertFix(byte[] bA) throws Exception {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -427,4 +423,3 @@ public class CertReqServlet extends HttpServlet {
     } // Debug
 
 } // CertReqServlet
-
