@@ -1,4 +1,4 @@
-$Id: TODO,v 1.34 2002-06-11 08:24:44 anatom Exp $
+$Id: TODO,v 1.35 2002-06-20 08:48:52 anatom Exp $
 
 V 1.x
 -----
@@ -6,6 +6,7 @@ V 1.x
 
 V 2.x
 -----
+- Installation procedure, including installation of Web-RA.
 - Put keystores in db to not break EJB contract
 - Make a database model similar to architecture model.
 - Add a 'Service Locator' to concentrate code for lookups.

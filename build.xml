@@ -300,8 +300,7 @@ ca.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
   </target>
 
   <!-- =================================================================== -->
-  <!-- Build CA-ear                                                           
--->
+  <!-- Build CA-ear                                                        -->
   <!-- =================================================================== -->
   <target name="ca.ear" depends="apply.war, webdist.war, ca.jar, ra.jar, raadmin.war">
     <mkdir dir="${caear.build}"/>

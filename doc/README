@@ -489,6 +489,53 @@ in the file 'log4j.properties' with:
 
     log4j.rootCategory=DEBUG, Console
 
+
+INSTALLING WEB RA-ADMIN
+=======================
+
+Preliminary documentation - TODO:
+Installation procedure will be enhanced.
+
+
+1. Copy src/ra/web/raadmin/WEB-INF/tomcat-services.xml to
+JBOSS_HOME/server/default/deploy
+
+2. Edit parameters in src/ra/web/raadmin/WEB-INF/web.xml.
+
+3. Create a tomcat server keystore with 'keytool' (create a certificate request
+that is processed by EJBCA and import the returned certificate).
+
+keytool -genkey -keyalg RSA -alias tomcat -keystore .keystore -storepass foo123
+keytool -certreq -alias tomcat -file tomcat.req -keystore .keystore -storepass
+foo123
+
+Create a user in EJBCA, DN="C=SE,O=PrimeKEy,CN=localhost" or similar.
+Process the request from keytool and write the certificate to 'tomcat.pem'.
+Download the CA certificate, transfer to PEM-format and concatenate the
+certificates together in 'tomcat.pem.'
+
+Import to the keystore:
+keytool -import -alias tomcat -file tomcat.pem -keystore .keystore -storepass
+foo123
+
+4. Name the keystore '.keystore' and put in $JBOSS_HOME.
+
+5. Add the EJBCA CA certificate to the trust-keystore in
+$JAVA_HOME/jre/lib/security/cacerts
+
+keytool -import -trustcacerts -file ejbca-ca.pem -keystore cacerts -storepass
+changeit
+
+6. Create a PKCS12 file with EJBCA for a user with CN=walter and the RAADMIN bit
+(temporarily CN=walter gives adminrights).
+
+7. Install the PKCS12 file in the browser.
+
+8. Start JBoss.
+
+11. Go to https://localhost:8443/raadmin
+
+
 SAMPLES
 =======
 A collection of samples are in the directory src/java/se/anatom/ejbca/samples.
@@ -545,6 +592,7 @@ For IE to verify client certs, the ordering in the DN must be strictly the same
 
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
+
 
 
 
