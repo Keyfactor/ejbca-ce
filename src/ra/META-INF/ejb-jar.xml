@@ -44,6 +44,24 @@
       </description>
      <role-name>everyone</role-name>
    </security-role>
+   <security-role>
+      <description>
+         This role represents an internal process
+      </description>
+      <role-name>internalUser</role-name>
+    </security-role>
+
+   <method-permission>
+     <role-name>internalUser</role-name>
+     <method>
+         <ejb-name>UserData</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>*</method-name>
+     </method>
+   </method-permission>
 
  </assembly-descriptor>
 

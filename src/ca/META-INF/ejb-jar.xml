@@ -365,13 +365,6 @@
      </method>
    </method-permission>
 
-   <container-transaction>
-     <method>
-        <ejb-name>AuthenticationSession</ejb-name>
-        <method-name>*</method-name>
-     </method>
-     <trans-attribute>Required</trans-attribute>
-   </container-transaction>
  </assembly-descriptor>
 
 </ejb-jar>

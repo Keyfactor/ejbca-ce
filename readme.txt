@@ -20,6 +20,12 @@ Configurable certificate contents.
 Revocation of certificates and CRL creation using scheduled jobs.
 URL-based CRLDistribution Points according to (RFC2459).
 
+SECURITY
+--------
+
+Security is discussed below in the chapter about configuration and in 'security.txt'. 
+Please take a minute to thorougly consider the security implications and make sure you know what you are doing when you are setting up a CA.
+
 DEPENDENCIES
 ------------
 EJBCA uses the OpenSource JCE crypto provider from Bouncycastle (www.bouncycastle.org).
@@ -73,6 +79,9 @@ The result will be a PKCS10 certificate request which must be processed by the C
 //TODO: more description and examples.
 run 'ca.sh/bat recrep' and enter all required parameters to receive the certificate reply sent by the CA certifying this subordinate CA. The certificate reply is simply a DER-encoded certificate.
 Now edit 'src/ca/META-INF/ejb-jar.xml' to reflect the values you entered for 'keyStore' and 'keyStorePass'.
+
+OBS! Don't forget to configure JBoss for security! See 'security.txt'.
+Security is CRITICAL for a CA.
 
 DEPLOY
 ------

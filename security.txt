@@ -1,4 +1,11 @@
 
+EJBCA SECURITY
+==============
+
+NOTE!
+Security is CRITICAL for a CA. Protection of the CAs private key is esential, since compromise of the CAs private key will let anyone issue false certificates, which can be used to gain access to systems relying on the CA for authentication and other security services.
+After realising this, please read on and take a pragmatic approach to security suitable for your policy, application and environment.
+
 Configuring for security
 ------------------------
 The easiest way to keep the installation secure is to block all JBOSS ports (1099, 1476, 4444, 8082, 8083) from the outside and only allow traffic to Tomcat ports (8080).
@@ -9,12 +16,16 @@ See http://www.jboss.org/online-manual/HTML/ch13s84.html for information about s
 See http://www.javaworld.com/javaworld/jw-08-2001/jw-0831-jaas_p.html for more examples about setting up role-permissions.
 See http://www.jboss.org/online-manual/HTML/ch14s12.html on how to set up SSL with JBOSS/Tomcat.
 
+For more advanced security configurations utilizing Bean permissions as defined below, security must be activated in JBoss. To activate security in JBoss see the JBoss manual at:
+http://www.jboss.org/online-manual/HTML/ch09.html
+
 BEAN PERMISSIONS
 ----------------
 
 Below is a list describing the access permissions that should apply on all beans and their methods.
 internalUser means that the method should not be available to the public, only internally to administrator interfaces and other beans and servlets running on the server.
 
+Bean permissions are set in the 'ejb-jar.xml' files.
 CA BEAN
 =======
 

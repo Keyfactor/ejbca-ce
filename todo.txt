@@ -1,8 +1,7 @@
-$Id: todo.txt,v 1.6 2001-11-19 13:57:18 anatom Exp $
+$Id: todo.txt,v 1.7 2001-11-19 14:30:55 anatom Exp $
 
 V 1.0
 -----
-- Look over security for Servlets and Beans. Define roles, method-permissions and authentication-methods. See security.txt.
 - Compare against ejbca-design.txt to see what requirements are left in 1.0 and which are left to 2.0.
 - Documentation, howto set up and configure. Bean descriptions and dependencies.
 
