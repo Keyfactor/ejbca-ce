@@ -446,7 +446,10 @@
     Collection authcas = null;
 
     if(issuperadministrator)
-      authcas = ejbcawebbean.getInformationMemory().getAuthorizedCAIds();
+      if(profileid == SecConst.EMPTY_ENDENTITYPROFILE)
+        authcas = ejbcawebbean.getAuthorizedCAIds();
+      else
+        authcas = profile.getAvailableCAs();
     else
       availablecas = ejbcawebbean.getInformationMemory().getEndEntityAvailableCAs(profileid);
 %>
@@ -549,7 +552,13 @@ function isKeyRecoveryPossible(){
       Iterator iter = authcas.iterator();
       int i = 0;
       while(iter.hasNext()){
-    Integer nextca = (Integer) iter.next();  %> 
+        Object next = iter.next();
+        Integer nextca = null;   
+        if(next instanceof String)
+           nextca =  new Integer((String) next);
+        else
+           nextca = (Integer) next;
+    %> 
     
     availablecas[<%=i%>] = new Array(2);
     availablecas[<%=i%>][CANAME] = "<%= caidtonamemap.get(nextca) %>";      

@@ -1,5 +1,7 @@
 <%
-  TreeMap certificateprofiles     = cabean.getAuthorizedCertificateProfileNames(); 
+  TreeMap certificateprofiles     = cabean.getEditCertificateProfileNames(); 
+
+  
 %>
 
 
@@ -57,10 +59,8 @@
           <select name="<%=SELECT_CERTIFICATEPROFILES%>" size="15"  >
             <% Iterator iter = certificateprofiles.keySet().iterator();
                while(iter.hasNext()){
-                 String profilename = (String) iter.next();
-                 if( ((Integer) certificateprofiles.get(profilename)).intValue() <= CertificateProfileDataHandler.FIXED_CERTIFICATEPROFILE_BOUNDRY){ 
-                   profilename += " (FIXED)";
-                 }%>
+                 String profilename = (String) iter.next(); %>
+                 
               <option value="<%=profilename%>"> 
                   <%= profilename %>
                </option>

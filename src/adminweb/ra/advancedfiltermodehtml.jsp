@@ -1,5 +1,5 @@
 <% TreeMap endentityprofileids = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityProfileNames(); 
-   TreeMap certificateprofileids = ejbcawebbean.getInformationMemory().getAuthorizedCertificateProfileNames();
+   TreeMap certificateprofileids = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityCertificateProfileNames();
    TreeMap caids = ejbcawebbean.getInformationMemory().getCANames();
  
    String[] connectorreferences = {"AND","OR","ANDNOT","ORNOT"};

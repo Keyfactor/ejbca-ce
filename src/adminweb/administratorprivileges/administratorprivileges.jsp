@@ -83,7 +83,7 @@
 
 <%  // Determine action 
   if( request.getParameter(ACTION) != null){
-    if( request.getParameter(ACTION).equals(ACTION_EDIT_GROUPS)){
+    if( request.getParameter(ACTION).equals(ACTION_EDIT_GROUPS) && request.getParameter(SELECT_ADMINGROUPS) != null){
       if( request.getParameter(BUTTON_EDIT_ADMINS) != null){
           // Display adminentity jsp page.
          admingroup = request.getParameter(SELECT_ADMINGROUPS).split(";");

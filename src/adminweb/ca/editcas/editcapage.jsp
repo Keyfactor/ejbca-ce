@@ -5,7 +5,7 @@
   TreeMap casigners = info.getCANames();
 
   HashMap certprofileidtonamemap = info.getCertificateProfileIdToNameMap();
-  HashMap publisheridtonamemap = cabean.getAvailablePublishers();
+  HashMap publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
 
   int[]    availablecatokentypes = {CATokenInfo.CATOKENTYPE_P12};  
   String[] availablecatokentypetexts = {"SOFTCATOKEN"};

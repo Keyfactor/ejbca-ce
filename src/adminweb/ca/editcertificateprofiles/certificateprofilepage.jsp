@@ -7,7 +7,7 @@
   Collection authorizedcas = cabean.getAuthorizedCAs();
   HashMap caidtonamemap = cabean.getCAIdToNameMap();
 
-  HashMap publisheridtonamemap = cabean.getAvailablePublishers();
+  HashMap publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
 
   int row = 0;
 %>
