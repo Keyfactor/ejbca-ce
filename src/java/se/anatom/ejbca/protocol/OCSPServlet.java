@@ -30,6 +30,9 @@ import org.apache.log4j.Logger;
 import org.apache.commons.lang.StringUtils;
 
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.ca.caadmin.CAInfo;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
@@ -46,13 +49,14 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.9 2003-12-18 10:12:02 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.10 2003-12-26 11:50:03 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
     private static Logger m_log = Logger.getLogger(OCSPServlet.class);
 
     private ICertificateStoreSessionLocal m_certStore;
+    private ICAAdminSessionLocal m_caadminsession;
     private Admin m_adm;
 
     private PrivateKey m_signkey;
@@ -171,6 +175,8 @@ public class OCSPServlet extends HttpServlet {
             ICertificateStoreSessionLocalHome castorehome = 
                 (ICertificateStoreSessionLocalHome) ctx.lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
             m_certStore = castorehome.create();
+            ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) ctx.lookup("java:comp/env/ejb/CAAdminSessionLocal");
+            m_caadminsession = caadminsessionhome.create();
             m_adm = new Admin(Admin.TYPE_INTERNALUSER);
             
             // Parameters for OCSP signing (private) key
@@ -292,9 +298,8 @@ public class OCSPServlet extends HttpServlet {
                     m_log.error(msg);
                     throw new MalformedRequestException(msg);
                 } else {
+                    X509Certificate cacert = null;
                     for (int i=0;i<requests.length;i++) {
-                        X509Certificate cacert = null;
-                        X509Certificate cert = null;
                         CertificateID certId = requests[i].getCertID();
                         RevokedCertInfo rci;
                         try {
@@ -363,8 +368,20 @@ public class OCSPServlet extends HttpServlet {
                             basicRes.addResponse(certId, certStatus);
                         }
                     }
-                    basicRes.generate("sha1withrsa", m_signkey, m_signcerts, new Date(), "BC" );
-                    ocspresp = res.generate(OCSPRespGenerator.SUCCESSFUL, basicRes);
+                    // Find the OCSP signing key and cert for the issuer
+                    if (cacert != null) {
+                        String issuerdn = CertTools.stringToBCDNString(cacert.getSubjectDN().toString()); 
+                        int caid = issuerdn.hashCode();
+                        CAInfo cainfo = m_caadminsession.getCAInfo(m_adm, caid);
+                        Collection coll = cainfo.getExtendedCAServiceInfos();
+                        // TODO:
+                        basicRes.generate("sha1withrsa", m_signkey, m_signcerts, new Date(), "BC" );
+                        ocspresp = res.generate(OCSPRespGenerator.SUCCESSFUL, basicRes);                        
+                    } else {
+                        final String msg = "Unable to find CA certificate and key to generate OCSP response!";
+                        m_log.error(msg);
+                        throw new ServletException(msg);
+                    }
                 }
             } catch (MalformedRequestException e) {
                 m_log.info("MalformedRequestException caught : ", e);
