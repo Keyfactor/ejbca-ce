@@ -79,13 +79,12 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.14 2003-01-31 09:40:41 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.15 2003-02-03 13:00:03 scop Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
   private final static Category cat = Category.getInstance(DemoCertReqServlet.class.getName());
 
-  private InitialContext ctx = null;
   private ISignSessionHome signsessionhome = null;
   private IUserAdminSessionHome useradminsessionhome = null;
   private IRaAdminSessionHome raadminsessionhome = null;
@@ -111,7 +110,7 @@ public class DemoCertReqServlet extends HttpServlet {
       int result = Security.addProvider(p);
 
       // Get EJB context and home interfaces
-      ctx = new InitialContext();
+      InitialContext ctx = new InitialContext();
       signsessionhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class);
       useradminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class);
       raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("RaAdminSession"), IRaAdminSessionHome.class);
@@ -309,6 +308,7 @@ public class DemoCertReqServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException
   {
     cat.debug(">doGet()");
+    response.setHeader("Allow", "POST");
     ServletDebug debug = new ServletDebug(request,response);
     debug.print("The certificate request servlet only handles POST method.");
     debug.printDebugInfo();
