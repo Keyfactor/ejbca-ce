@@ -27,6 +27,7 @@ import org.apache.log4j.*;
 public class UserDataBean implements javax.ejb.EntityBean {
 
     private static Category cat = Category.getInstance( UserDataBean.class.getName() );
+    private EntityContext  ctx;
 
     public String username;
     public String password;
@@ -76,8 +77,11 @@ public class UserDataBean implements javax.ejb.EntityBean {
     /** Verifies password by verifying agains passwordhash
     */
     public boolean comparePassword(String password) throws NoSuchAlgorithmException {
+        cat.debug(">comparePassword()");
         if (password == null)
             return false;
+        cat.debug("<comparePassword()");
+        //System.out.println("Newhash="+makePasswordHash(password)+", OldHash="+passwordHash);
         return (makePasswordHash(password).equals(passwordHash));
     }
     /** Creates the hashed password
@@ -87,7 +91,7 @@ public class UserDataBean implements javax.ejb.EntityBean {
             return null;
         try {
             MessageDigest md = MessageDigest.getInstance("SHA1");
-            byte[] pwdhash = md.digest(password.getBytes());
+            byte[] pwdhash = md.digest(password.trim().getBytes());
             return Hex.encode(pwdhash);
         } catch (NoSuchAlgorithmException nsae) {
             cat.error("SHA1 algorithm not supported.", nsae);
@@ -111,49 +115,52 @@ public class UserDataBean implements javax.ejb.EntityBean {
         this.password = password;
         this.passwordHash = makePasswordHash(password);
     }
-    public String getSubjectDN(){
+    public String getSubjectDN() {
         return subjectDN;
     }
     public void setSubjectDN(String dn) {
         subjectDN = CertTools.stringToBCDNString(dn);
     }
-    public String getSubjectEmail(){
+    public String getSubjectEmail() {
         return subjectEmail;
     }
     public void setSubjectEmail(String email) {
         this.subjectEmail = email;
     }
-    public int getStatus(){
+    public int getStatus() {
         return status;
     }
     public void setStatus(int st) {
         status = st;
     }
-    public int getType(){
+    public int getType() {
         return type;
     }
-    public void setType(int t){
+    public void setType(int t) {
         type = t;
     }
-    public void setEntityContext(EntityContext ctx){
-         // Not implemented.
+    public void setEntityContext(EntityContext ctx) {
+        this.ctx = ctx;
     }
-    public void unsetEntityContext(){
-         // Not implemented.
+    public void unsetEntityContext() {
+        this.ctx = null;
     }
-    public void ejbActivate(){
+    public EntityContext getEntityContext() {
+        return this.ctx;
+    }
+    public void ejbActivate() {
         // Not implemented.
     }
-    public void ejbPassivate(){
+    public void ejbPassivate() {
         // Not implemented.
     }
-    public void ejbLoad(){
+    public void ejbLoad() {
         // Not implemented.
     }
-    public void ejbStore(){
+    public void ejbStore() {
         // Not implemented.
     }
-    public void ejbRemove(){
+    public void ejbRemove() {
         // Not implemented.
     }
 }

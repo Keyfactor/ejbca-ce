@@ -57,6 +57,9 @@
   <weblogic-enterprise-bean>
     <ejb-name>CertificateData</ejb-name>   
     <entity-descriptor>
+      <entity-cache>    
+        <max-beans-in-cache>1</max-beans-in-cache>
+      </entity-cache>    
       <persistence>
         <persistence-type>
           <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
@@ -75,6 +78,9 @@
   <weblogic-enterprise-bean>
     <ejb-name>CRLData</ejb-name>   
     <entity-descriptor>
+      <entity-cache>    
+        <max-beans-in-cache>1</max-beans-in-cache>
+      </entity-cache>    
       <persistence>
         <persistence-type>
           <type-identifier>WebLogic_CMP_RDBMS</type-identifier>

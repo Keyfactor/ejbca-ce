@@ -2,7 +2,7 @@
 CONFIGURING Weblogic
 ====================
 
-In the database configured for DefaultPool and DefaultDS in Weblogic, create
+1. In the database configured for DefaultPool and DefaultDS in Weblogic, create
 tables for the entity beans, CertificateData, CRLData and UserData.
 
 CREATE TABLE CERTIFICATEDATA
@@ -38,13 +38,13 @@ PRIMARY KEY("FP")
 CREATE TABLE USERDATA
 (
 USERNAME         VARCHAR2(32) NOT NULL,
-PASSWORD         VARCHAR2(32),          
-PASSWORDHASH VARCHAR2(32),              
+PASSWORD         VARCHAR2(32),
+PASSWORDHASH VARCHAR2(32),
 SUBJECTDN        VARCHAR2(256),
 SUBJECTEMAIL VARCHAR2(128),
 STATUS           INTEGER,
 TYPE             INTEGER,
-PRIMARY KEY("USERNAME") 
+PRIMARY KEY("USERNAME")
 );
 
 Don't forget to create public synonyms and access rights for your tables, or
@@ -62,4 +62,30 @@ GRANT UPDATE, SELECT, INSERT, DELETE ON EJBCA.CRLDATA TO HJOURNALAPP;
 
 GRANT UPDATE, SELECT, INSERT, DELETE ON EJBCA.USERDATA TO HJOURNALAPP;
 
-Deploy the beans in weblogic, they should works straight away.
+2. Edit deployment descriptors to sidestep some container differences...
+in both src/ca/META-INF/ejb-jar.xml and src/ra/META-INF/ejb-jar.xml, change the
+entry for DataSource from:
+
+     <env-entry>
+        <description>JDBC datasource to be used</description>
+        <env-entry-name>DataSource</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>java:/DefaultDS</env-entry-value>
+     </env-entry>
+
+to:
+
+     <env-entry>
+        <description>JDBC datasource to be used</description>
+        <env-entry-name>DataSource</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>DefaultDS</env-entry-value>
+     </env-entry>
+
+3. Deploy the beans in weblogic, they should works straight away.
+
+4. Copy weblogic.jar to 'lib'. Edit all commands, i.e. ra.cmd/sh, ca.cmd/sh,
+batch.cmd/sh, jobrunner.cmd/sh, runtest.cmd/sh. The files are commented so it
+should be obvious what needs to be changed.
+
+5. Run 'runtest.cmd/sh' to test the setup.

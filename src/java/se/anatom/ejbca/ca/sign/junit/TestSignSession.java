@@ -32,7 +32,7 @@ import junit.framework.*;
 
 /** Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.3 2001-12-04 14:13:17 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.4 2002-03-21 11:49:08 anatom Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -100,9 +100,9 @@ public class TestSignSession extends TestCase {
     protected void tearDown() throws Exception {
     }
     private Context getInitialContext() throws NamingException {
-        System.out.println(">getInitialContext");
+        cat.debug(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        System.out.println("<getInitialContext");
+        cat.debug("<getInitialContext");
         return ctx;
     }
     /**
@@ -114,12 +114,12 @@ public class TestSignSession extends TestCase {
     private static KeyPair genKeys()
     throws Exception
     {
-        KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA");
+        KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA", "BC");
         keygen.initialize(512);
-        System.out.println("Generating keys, please wait...");
+        cat.debug("Generating keys, please wait...");
         KeyPair rsaKeys = keygen.generateKeyPair();
 
-        System.out.println("Generated " + rsaKeys.getPrivate().getAlgorithm() + " keys with length" + ((RSAPrivateKey)rsaKeys.getPrivate()).getPrivateExponent().bitLength());
+        cat.debug("Generated " + rsaKeys.getPrivate().getAlgorithm() + " keys with length" + ((RSAPrivateKey)rsaKeys.getPrivate()).getPrivateExponent().bitLength());
 
         return rsaKeys;
 
@@ -128,19 +128,27 @@ public class TestSignSession extends TestCase {
     public void test01CreateNewUser() throws Exception {
         cat.debug(">test01CreateNewUser()");
         // Make user that we know...
+        boolean userExists = false;
         try {
             UserData createdata = userhome.create("foo", "foo123", "C=SE, O=AnaTom, CN=foo");
             assertNotNull("Failed to create user foo", createdata);
             createdata.setType(SecConst.USER_ENDUSER);
             createdata.setSubjectEmail("foo@anatom.se");
-            System.out.println("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
+            cat.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
+        } catch (RemoteException re) {
+            if (re.getCause() instanceof DuplicateKeyException) {
+                userExists = true;
+            }
         } catch (DuplicateKeyException dke) {
-            System.out.println("user foo already exists.");
+            userExists = true;
+        }
+        if (userExists) {
+            cat.debug("user foo already exists.");
             UserDataPK pk = new UserDataPK();
             pk.username = "foo";
             UserData data = userhome.findByPrimaryKey(pk);
             data.setStatus(UserData.STATUS_NEW);
-            System.out.println("Reset status to NEW");
+            cat.debug("Reset status to NEW");
         }
         cat.debug("<test01CreateNewUser()");
     }
@@ -150,11 +158,11 @@ public class TestSignSession extends TestCase {
         // user that we know exists...
         X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", keys.getPublic());
         assertNotNull("Misslyckades skapa cert", cert);
-        System.out.println("Cert="+cert.toString());
+        cat.debug("Cert="+cert.toString());
         //FileOutputStream fos = new FileOutputStream("testcert.crt");
         //fos.write(cert.getEncoded());
         //fos.close();
-       cat.debug("<test02SignSession()");
+        cat.debug("<test02SignSession()");
     }
 
     public void test03TestBCPKCS10() throws Exception {
@@ -176,7 +184,7 @@ public class TestSignSession extends TestCase {
         DERInputStream dIn = new DERInputStream(bIn);
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest((DERConstructedSequence)dIn.readObject());
         boolean verify = req2.verify();
-        System.out.println("Verify returned " + verify);
+        cat.debug("Verify returned " + verify);
         if (verify == false) {
             System.out.println("Aborting!");
             return;
@@ -184,9 +192,9 @@ public class TestSignSession extends TestCase {
         cat.debug("CertificationRequest generated succefully.");
         byte[] bcp10 = bOut.toByteArray();
         X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", bcp10);
-        assertNotNull("Misslyckades skapa cert", cert);
+        assertNotNull("Failed to create certificate", cert);
         System.out.println("Cert="+cert.toString());
-       cat.debug("<test03TestBCPKCS10()");
+        cat.debug("<test03TestBCPKCS10()");
     }
     public void test04TestKeytoolPKCS10() throws Exception {
         cat.debug(">test04TestKeytoolPKCS10()");
@@ -194,11 +202,11 @@ public class TestSignSession extends TestCase {
         pk.username = "foo";
         UserData data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserData.STATUS_NEW);
-        System.out.println("Reset status of 'foo' to NEW");
+        cat.debug("Reset status of 'foo' to NEW");
         X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", keytoolp10);
-        assertNotNull("Misslyckades skapa cert", cert);
-        System.out.println("Cert="+cert.toString());
-       cat.debug("<test04TestKeytoolPKCS10()");
+        assertNotNull("Failed to create certificate", cert);
+        cat.debug("Cert="+cert.toString());
+        cat.debug("<test04TestKeytoolPKCS10()");
     }
     public void test05TestIEPKCS10() throws Exception {
         cat.debug(">test05TestIEPKCS10()");
@@ -206,11 +214,11 @@ public class TestSignSession extends TestCase {
         pk.username = "foo";
         UserData data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserData.STATUS_NEW);
-        System.out.println("Reset status of 'foo' to NEW");
+        cat.debug("Reset status of 'foo' to NEW");
         X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", iep10);
-        assertNotNull("Misslyckades skapa cert", cert);
-        System.out.println("Cert="+cert.toString());
-       cat.debug("<test05TestIEPKCS10()");
+        assertNotNull("Failed to create certificate", cert);
+        cat.debug("Cert="+cert.toString());
+        cat.debug("<test05TestIEPKCS10()");
     }
 }
 

@@ -38,7 +38,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.15 2002-03-07 15:00:37 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.16 2002-03-21 11:49:08 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -141,10 +141,10 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
                 else {
                     String ialias = CertTools.getPartFromDN(caCert.getIssuerDN().toString(), "CN");
                     Certificate[] chain1 = keyStore.getCertificateChain(ialias);
-                    System.out.println("Loaded certificate chain with length "+ chain1.length+" with alias '"+ialias+"'.");
+                    debug("Loaded certificate chain with length "+ chain1.length+" with alias '"+ialias+"'.");
                     if (chain1.length == 0) {
-                        System.out.println("No RootCA certificate found!");
-                        System.exit(1);
+                        error("No RootCA certificate found!");
+                        throw new Exception("No RootCA certificate found in keystore");
                     }
                     rootCert = (X509Certificate)chain1[0];
                 }
@@ -265,12 +265,12 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
 
             UserAuthData data = authSession.authenticateUser(username, password);
             info("Authorized user " + username + " with DN=" + data.getDN());
-            System.out.println("type="+ data.getType());
+            debug("type="+ data.getType());
             if ((data.getType() & SecConst.USER_INVALID) !=0) {
                 error("User type is invalid, cannot create certificate for this user.");
             } else {
                 if ( ((data.getType() & SecConst.USER_CA) != 0) || ((data.getType() & SecConst.USER_ROOTCA) != 0) ) {
-                    System.out.println("Setting new keyusage...");
+                    debug("Setting new keyusage...");
                     // If this is a CA, we only allow CA-type keyUsage
                     Arrays.fill(keyusage, false);
                     // certificateSign
@@ -392,7 +392,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             password = null;
         }
         if ( password == null ) {
-            System.out.print(initKey+" password: ");
+            debug(initKey+" password: ");
             BufferedReader in
             = new BufferedReader(new InputStreamReader(System.in));
             return (in.readLine()).toCharArray();

@@ -21,7 +21,7 @@ import junit.framework.*;
 
 /** Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.1.1.1 2001-11-15 14:58:14 anatom Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.2 2002-03-21 11:49:08 anatom Exp $
  */
 public class TestAuthenticationSession extends TestCase {
 
@@ -45,9 +45,9 @@ public class TestAuthenticationSession extends TestCase {
     protected void tearDown() throws Exception {
     }
     private Context getInitialContext() throws NamingException {
-        System.out.println(">getInitialContext");
+        cat.debug(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        System.out.println("<getInitialContext");
+        cat.debug("<getInitialContext");
         return ctx;
     }
 
@@ -56,19 +56,27 @@ public class TestAuthenticationSession extends TestCase {
         // Make user that we know...
         Object obj1 = ctx.lookup("UserData");
         UserDataHome userhome = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj1, UserDataHome.class);
+        boolean userExists = false;
         try {
             UserData createdata = userhome.create("foo", "foo123", "C=SE, O=AnaTom, CN=foo");
             assertNotNull("Failed to create user foo", createdata);
             createdata.setType(SecConst.USER_ENDUSER);
             createdata.setSubjectEmail("foo@anatom.se");
-            System.out.println("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
+            cat.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
+        } catch (RemoteException re) {
+            if (re.getCause() instanceof DuplicateKeyException) {
+                userExists = true;
+            }
         } catch (DuplicateKeyException dke) {
-            System.out.println("user foo already exists.");
+            userExists = true;
+        }
+        if (userExists) {
+            cat.debug("user foo already exists.");
             UserDataPK pk = new UserDataPK();
             pk.username = "foo";
             UserData data = userhome.findByPrimaryKey(pk);
             data.setStatus(UserData.STATUS_NEW);
-            System.out.println("Reset status to NEW");
+            cat.debug("Reset status to NEW");
         }
         cat.debug("<test01CreateNewUser()");
     }
@@ -76,11 +84,11 @@ public class TestAuthenticationSession extends TestCase {
         cat.debug(">test02AuthenticateUser()");
         // user that we know exists...
         UserAuthData data = remote.authenticateUser("foo", "foo123");
-        System.out.println("DN: "+data.getDN());
+        cat.debug("DN: "+data.getDN());
         assertTrue("DN is wrong", data.getDN().indexOf("foo") != -1);
-        System.out.println("Email: "+data.getEmail());
+        cat.debug("Email: "+data.getEmail());
         assertTrue("Email is wrong", data.getEmail().equals("foo@anatom.se"));
-        System.out.println("Type: "+data.getType());
+        cat.debug("Type: "+data.getType());
         assertTrue("Type is wrong", data.getType() == SecConst.USER_ENDUSER);
         cat.debug("<test02AuthenticateUser()");
     }
