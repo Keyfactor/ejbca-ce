@@ -22,7 +22,7 @@ import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 /** Creates certificates.
  * Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.5 2002-09-10 18:53:42 anatom Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.6 2002-09-11 12:36:09 anatom Exp $
  */
 
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
@@ -35,11 +35,11 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     */
     public Certificate[] getCertificateChain() throws RemoteException;
-    
+
     /**
      * Creates a signed PKCS7 message containing the whole certificate chain, including the provided client certificate.
-     * 
-     * @param cert client certificate which we want ancapsulated in a PKCS7 together with certificate chain.
+     *
+     * @param cert client certificate which we want ancapsulated in a PKCS7 together with certificate chain. If null, a PKCS7 with only CA certificate chain is returned.
      * @return The DER-encoded PCS7 message.
      * @throws SignRequestSignatureException is the provided client certificate was not signed by the CA.
      * @throws EJBException if a communication or other error occurs.

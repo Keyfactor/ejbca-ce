@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.41 2002-09-10 18:53:41 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.42 2002-09-11 12:36:09 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -174,35 +174,50 @@ public class RSASignSessionBean extends BaseSessionBean {
      * Implements ISignSession::getCertificateChain
      */
     public Certificate[] getCertificateChain() {
-        debug(">getCertificateChain()");
+        debug(":getCertificateChain()");
         return signingDevice.getCertificateChain();
-    	} // getCertificateChain
+        } // getCertificateChain
 
-	/**
-	 * Implements ISignSession::createPKCS7
-	 */
-	public byte[] createPKCS7(Certificate cert) throws SignRequestSignatureException {
-		debug(">createPKCS7()");
+    /**
+     * Implements ISignSession::createPKCS7
+     */
+    public byte[] createPKCS7(Certificate cert) throws SignRequestSignatureException {
+        debug(">createPKCS7()");
         // First verify that we signed this certificate
         try {
-            cert.verify(signingDevice.getPublicSignKey(), signingDevice.getProvider());
+            if (cert != null)
+                cert.verify(signingDevice.getPublicSignKey(), signingDevice.getProvider());
         } catch (Exception e) {
             throw new SignRequestSignatureException("Cannot verify certificate in createPKCS7(), did I sign this?");
         }
-		try {
-			PKCS7SignedData pkcs7 =
-				new PKCS7SignedData(
-					signingDevice.getPrivateSignKey(),
-					getCertificateChain(),
-					"SHA1",
-					signingDevice.getProvider());
-			debug("<createPKCS7()");
-			return pkcs7.getEncoded();
-		} catch (Exception e) {
-			throw new EJBException(e);
-		}
-	} // createPKCS7
-    
+        Certificate[] chain = getCertificateChain();
+        Certificate[] certs;
+        if (cert != null) {
+            certs = new Certificate[chain.length+1];
+            certs[0] = cert;
+            for (int i=0;i<chain.length;i++)
+                certs[i+1] = chain[i];
+        } else {
+            certs = chain;
+        }
+        try {
+            PKCS7SignedData pkcs7 =
+                new PKCS7SignedData(
+                    signingDevice.getPrivateSignKey(),
+                    certs,
+                    "SHA1",
+                    signingDevice.getProvider());
+            debug("<createPKCS7()");
+            FileOutputStream fos = new FileOutputStream("C:\\foo.der");
+            fos.write(pkcs7.getEncoded());
+            fos.close();
+            return pkcs7.getEncoded();
+
+        } catch (Exception e) {
+            throw new EJBException(e);
+        }
+    } // createPKCS7
+
      /**
      * Implements ISignSession::createCertificate
      */

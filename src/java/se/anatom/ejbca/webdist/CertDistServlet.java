@@ -40,7 +40,7 @@ import se.anatom.ejbca.util.CertTools;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.7 2002-06-27 11:37:46 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.8 2002-09-11 12:36:10 anatom Exp $
  *
  */
 public class CertDistServlet extends HttpServlet {
@@ -193,9 +193,12 @@ public class CertDistServlet extends HttpServlet {
         } else if (command.equalsIgnoreCase(COMMAND_NSCACERT) || command.equalsIgnoreCase(COMMAND_IECACERT) || command.equalsIgnoreCase(COMMAND_CACERT) ) {
             String lev = req.getParameter(LEVEL_PROPERTY);
             int level = 0;
+            boolean pkcs7 = false;
             if (lev != null)
                 level = Integer.parseInt(lev);
-            // Root CA is level 0, next below root level 1 etc etc
+            else
+                pkcs7 = true;
+            // Root CA is level 0, next below root level 1 etc etc, -1 returns chain as PKCS7
             try {
                 ISignSessionRemote ss = signhome.create();
                 Certificate[] chain = ss.getCertificateChain();
@@ -210,23 +213,37 @@ public class CertDistServlet extends HttpServlet {
                 String filename=CertTools.getPartFromDN(cacert.getSubjectDN().toString(), "CN");
                 if (filename == null)
                     filename = "ca";
-                byte[] enccert = cacert.getEncoded();
+                byte[] enccert = null;
+                if (pkcs7)
+                    enccert = ss.createPKCS7(null);
+                else
+                    enccert = cacert.getEncoded();
                 if (command.equalsIgnoreCase(COMMAND_NSCACERT)) {
                     res.setContentType("application/x-x509-ca-cert");
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);
                     cat.debug("Sent CA cert to NS client, len="+enccert.length+".");
                 } else if (command.equalsIgnoreCase(COMMAND_IECACERT)) {
-                    res.setHeader("Content-disposition", "attachment; filename="+filename+".crt");
+                    if (pkcs7)
+                        res.setHeader("Content-disposition", "attachment; filename="+filename+".p7c");
+                    else
+                        res.setHeader("Content-disposition", "attachment; filename="+filename+".crt");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);
                     cat.debug("Sent CA cert to IE client, len="+enccert.length+".");
                 } else if (command.equalsIgnoreCase(COMMAND_CACERT)) {
                     byte[] b64cert = Base64.encode(enccert);
-                    String out = "-----BEGIN CERTIFICATE-----\n";
+                    String out;
+                    if (pkcs7)
+                        out = "-----BEGIN PKCS7-----\n";
+                    else
+                        out = "-----BEGIN CERTIFICATE-----\n";
                     out += new String(b64cert);
-                    out += "\n-----END CERTIFICATE-----\n";
+                    if (pkcs7)
+                        out += "\n-----END PKCS7-----\n";
+                    else
+                        out += "\n-----END CERTIFICATE-----\n";
                     res.setHeader("Content-disposition", "attachment; filename="+filename+".pem");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(out.length());

@@ -62,7 +62,7 @@ import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.17 2002-05-04 13:37:04 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.18 2002-09-11 12:35:58 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
@@ -282,36 +282,11 @@ public class CertReqServlet extends HttpServlet {
             ISignSessionRemote ss = home.create();
             X509Certificate cert = (X509Certificate) ss.createCertificate(username, password, nscr.getPublicKey());
             //Certificate[] chain = ss.getCertificateChain();
-            cat.info("Created certificate for "+ username);
+            byte[] pkcs7 = ss.createPKCS7(cert);
+            cat.info("Created certificate (PKCS7) for "+ username);
             debug.print("<h4>Generated certificate:</h4>");
             debug.printInsertLineBreaks(cert.toString().getBytes());
-            /*
-            // Make sequence of certificates
-            DERConstructedSequence seq = new DERConstructedSequence();
-            ByteArrayInputStream bIn = new ByteArrayInputStream(cert.getEncoded());
-            DERInputStream dIn = new DERInputStream(bIn);
-            DERObject obj = dIn.readObject();
-            seq.addObject(obj);
-            for (int i = 0; i<chain.length; i++) {
-                ByteArrayInputStream bIn1 = new ByteArrayInputStream(chain[i].getEncoded());
-                DERInputStream dIn1 = new DERInputStream(bIn1);
-                DERObject obj1 = dIn1.readObject();
-                seq.addObject(obj1);
-            }
-            // Make PKCS7 ContentInfo for Netscape
-            DERConstructedSequence pkcs7 = new DERConstructedSequence();
-            // netscape-cert-sequence OBJECT IDENTIFIER :: = { netscape-data-type 5 }
-            pkcs7.addObject(new DERObjectIdentifier("2.16.840.1.113730.5"));
-            pkcs7.addObject(new DERTaggedObject(0, seq));
-            // Now create the DER-datastream
-            ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
-            DEROutputStream         dOut = new DEROutputStream(bOut);
-            dOut.writeObject(pkcs7);
-            dOut.close();
-            byte[]  bytes = bOut.toByteArray();
-             */
-            byte[] bytes = cert.getEncoded();
-            return bytes;
+            return pkcs7;
     } //nsCertRequest
 
     /**
@@ -339,32 +314,30 @@ public class CertReqServlet extends HttpServlet {
     private byte[] pkcs10CertRequest(byte[] b64Encoded, String username, String password, Debug debug)
         throws Exception {
         X509Certificate cert;
-        {
-            byte[] buffer;
+        byte[] buffer;
+        try {
+            // A real PKCS10 PEM request
+            String beginKey = "-----BEGIN CERTIFICATE REQUEST-----";
+            String endKey = "-----END CERTIFICATE REQUEST-----";
+            buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
+        } catch (IOException e) {
             try {
-                // A real PKCS10 PEM request
-                String beginKey = "-----BEGIN CERTIFICATE REQUEST-----";
-                String endKey = "-----END CERTIFICATE REQUEST-----";
+                // Keytool PKCS10 PEM request
+                String beginKey = "-----BEGIN NEW CERTIFICATE REQUEST-----";
+                String endKey = "-----END NEW CERTIFICATE REQUEST-----";
                 buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
-            } catch (IOException e) {
-                try {
-                    // Keytool PKCS10 PEM request
-                    String beginKey = "-----BEGIN NEW CERTIFICATE REQUEST-----";
-                    String endKey = "-----END NEW CERTIFICATE REQUEST-----";
-                    buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
-                } catch (IOException ioe) {
-                    // IE PKCS10 Base64 coded request
-                    buffer = Base64.decode(b64Encoded);
-                }
+            } catch (IOException ioe) {
+                // IE PKCS10 Base64 coded request
+                buffer = Base64.decode(b64Encoded);
             }
-            ISignSessionRemote ss = home.create();
-            cert = (X509Certificate) ss.createCertificate(username, password, buffer);
-            cat.info("Created certificate for " + username);
-
         }
+        ISignSessionRemote ss = home.create();
+        cert = (X509Certificate) ss.createCertificate(username, password, buffer);
+        byte[] pkcs7 = ss.createPKCS7(cert);
+        cat.info("Created certificate (PKCS7) for " + username);
         debug.print("<h4>Generated certificate:</h4>");
         debug.printInsertLineBreaks(cert.toString().getBytes());
-        return Base64.encode(cert.getEncoded());
+        return Base64.encode(pkcs7);
     } //ieCertRequest
 
     /**
