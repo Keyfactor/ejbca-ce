@@ -7,6 +7,7 @@ Fixed bug in setup-adminweb.sh
 Fixed missing submit button with PEM/P12 users
 New cmd line command to export/import profiles to XML files
 Fixed bug in 'ca makereq' when rootCA has no CN
+Added encoding=ascii to javac to fix compile on strange locales
 
 2.0.1
 -----
