@@ -7,428 +7,104 @@
 
    <session>
      <description>
-         Session bean handling user administration, uses UserData entity bean
+         Session bean handling EJBCA logging, uses LogEntryData and LogConfigurationData entity beans.
      </description>
-     <ejb-name>UserAdminSession</ejb-name>
-     <home>se.anatom.ejbca.ra.IUserAdminSessionHome</home>
-     <remote>se.anatom.ejbca.ra.IUserAdminSessionRemote</remote>
-     <ejb-class>se.anatom.ejbca.ra.LocalUserAdminSessionBean</ejb-class>
-     <session-type>Stateful</session-type>
-     <transaction-type>Container</transaction-type>
-
-     <env-entry>
-        <description>JDBC datasource to be used</description>
-        <env-entry-name>DataSource</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>java:/DefaultDS</env-entry-value>
-     </env-entry>
-     
-     <!-- Env-entries for starting an external RMI service using SSL --> 
-     <env-entry>
-        <description>Factory class can dynamically link to external implementation class.</description>
-        <env-entry-name>RMIFactory</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>se.walter.cardPersonalization.ra.ejbca.RMIFactoryImpl</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Port used for external RMI registry</description>
-        <env-entry-name>registryPortRMI</env-entry-name>
-        <env-entry-type>java.lang.Integer</env-entry-type>
-        <env-entry-value>1030</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>First port used for external RMI objects</description>
-        <env-entry-name>startPortRMI</env-entry-name>
-        <env-entry-type>java.lang.Integer</env-entry-type>
-        <env-entry-value>1031</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Key store file name for server SSL certificate</description>
-        <env-entry-name>keyStoreFileName</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>../server/default/conf/SSL.jks</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Key store password</description>
-        <env-entry-name>keyStorePassword</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>server</env-entry-value>
-     </env-entry>
-     <!-- END Env-entries for starting an external RMI service using SSL --> 
-     <ejb-ref>
-        <description>The Certificate Store session bean</description>
-        <ejb-ref-name>ejb/CertificateStoreSession</ejb-ref-name>
-        <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.ca.store.ICertificateStoreSessionHome</home>
-        <remote>se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote</remote>
-        <ejb-link>CertificateStoreSession</ejb-link>
-     </ejb-ref>     
-     <ejb-local-ref>
-        <description>The Authorization session bean</description>
-        <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
-        <ejb-ref-type>Session</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocal</local>
-        <ejb-link>AuthorizationSession</ejb-link>
-     </ejb-local-ref>
-     <ejb-local-ref>
-        <description>The Ra Admin session bean</description>
-        <ejb-ref-name>ejb/RaAdminSessionLocal</ejb-ref-name>
-        <ejb-ref-type>Session</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal</local>
-        <ejb-link>RaAdminSession</ejb-link>
-     </ejb-local-ref>     
-     <ejb-local-ref>
-        <description>The User entity bean</description>
-        <ejb-ref-name>ejb/UserDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.UserDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.UserDataLocal</local>
-        <ejb-link>UserData</ejb-link>
-     </ejb-local-ref>
-     <ejb-local-ref>
-        <description>
-          The GlobalConfigurationData Entity bean 
-        </description>
-        <ejb-ref-name>ejb/GlobalConfigurationDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.GlobalonfigurationDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.GlobalConfigurationDataLocal</local>
-        <ejb-link>GlobalConfigurationData</ejb-link>
-     </ejb-local-ref>
- 
-   </session>
-   
-   <session>
-     <description>
-         Session bean handling interface with ra administration web services, uses entity beans 
-         ProfileData ant UserPreferencesData
-     </description>
-     <ejb-name>RaAdminSession</ejb-name>
-     <local-home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome</local-home>
-     <home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome</home>
-     <local>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal</local>     
-     <remote>se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote</remote>
-     <ejb-class>se.anatom.ejbca.ra.raadmin.LocalRaAdminSessionBean</ejb-class>
+     <ejb-name>LogSession</ejb-name>
+     <home>se.anatom.ejbca.log.ILogSessionHome</home>
+     <remote>se.anatom.ejbca.log.ILogSessionRemote</remote>
+     <ejb-class>se.anatom.ejbca.log.LocalLogSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
+
      <env-entry>
         <description>JDBC datasource to be used</description>
         <env-entry-name>DataSource</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>java:/DefaultDS</env-entry-value>
      </env-entry>
-
-     <ejb-local-ref>
-        <description>
-          The UserPreferencesData Entity bean 
+     
+     <!-- Env-entries for starting an external log devices. --> 
+     <env-entry>
+        <description>String representing the log device factories to be used. The different device classes should be separeded with a ';' character. 
         </description>
-        <ejb-ref-name>ejb/UserPreferencesDataLocal</ejb-ref-name>
+        <env-entry-name>logDeviceFactories</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>se.anatom.ejbca.log.Log4jLogDeviceFactory</env-entry-value>
+     </env-entry>
+     <env-entry>
+        <description>String representing the property file corresponding to each log device. 
+                     The property files should be placed in the "/logdeviceproperties" subdirectory. 
+                     The filenames should be separated with a ';' sign.</description>
+        <env-entry-name>logDevicePropertyFiles</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>Log4j.properties</env-entry-value>
+     </env-entry>
+     
+     <ejb-local-ref>
+        <description>The Log Entry Data entity bean</description>
+        <ejb-ref-name>ejb/LogEntryDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra..raadmin.UserPreferencesDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.raadmin.UserPreferencesDataLocal</local>
-        <ejb-link>UserPreferencesData</ejb-link>
+        <local-home>se.anatom.ejbca.log.LogEntryDataLocalHome</local-home>
+        <local>se.anatom.ejbca.log.LogEntryDataLocal</local>
+        <ejb-link>LogEntryData</ejb-link>
      </ejb-local-ref>
      <ejb-local-ref>
         <description>
-          The ProfileData Entity bean 
+          The Log Configuration Data Entity bean 
         </description>
-        <ejb-ref-name>ejb/ProfileDataLocal</ejb-ref-name>
+        <ejb-ref-name>ejb/LogConfigurationDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.raadmin.ProfileDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.raadmin.ProfileDataLocal</local>
-        <ejb-link>ProfileData</ejb-link>
-     </ejb-local-ref>     
-               
-     <security-identity>
-        <run-as>
-            <role-name>InternalUser</role-name>
-        </run-as>
-      </security-identity>
+        <local-home>se.anatom.ejbca.log.LogConfigurationDataLocalHome</local-home>
+        <local>se.anatom.ejbca.log.LogConfigurationDataLocal</local>
+        <ejb-link>LogConfigurationData</ejb-link>
+     </ejb-local-ref> 
    </session>
-
-   <session>
-     <description>
-         Session bean handling interface with ra authorization, uses entity beans AvailableAccessRules,
-         UserGroupData
-     </description>
-     <ejb-name>AuthorizationSession</ejb-name>
-     <local-home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome</local-home>     
-     <home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionHome</home>
-     <local>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocal</local>
-     <remote>se.anatom.ejbca.ra.authorization.IAuthorizationSessionRemote</remote>
-     <ejb-class>se.anatom.ejbca.ra.authorization.LocalAuthorizationSessionBean</ejb-class>
-     <session-type>Stateful</session-type>
-     <transaction-type>Container</transaction-type>
-     <env-entry>
-        <description>JDBC datasource to be used</description>
-        <env-entry-name>DataSource</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>java:/DefaultDS</env-entry-value>
-     </env-entry>
-
-     <ejb-local-ref>
-        <description>
-          Available Access Rules
-        </description>
-        <ejb-ref-name>ejb/AvailableAccessRulesDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataLocal</local>
-        <ejb-link>AvailableAccessRulesData</ejb-link>
-     </ejb-local-ref>
-     <ejb-local-ref>
-        <description>
-          User Groups
-        </description>
-        <ejb-ref-name>ejb/UserGroupDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.UserGroupDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.UserGroupDataLocal</local>
-        <ejb-link>UserGroupData</ejb-link>
-     </ejb-local-ref>
-     <ejb-local-ref>
-        <description>
-          Access Rules
-        </description>
-        <ejb-ref-name>ejb/AccessRulesDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.AccessRulesDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.AccessRulesDataLocal</local>
-        <ejb-link>AccessRulesData</ejb-link>
-     </ejb-local-ref>
-     <ejb-local-ref>
-        <description>
-          User Entities
-        </description>
-        <ejb-ref-name>ejb/UserEntityDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.UserEntityDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.UserEntityDataLocal</local>
-        <ejb-link>UserEntityData</ejb-link>
-     </ejb-local-ref>                  
-     <security-identity>
-        <run-as>
-            <role-name>InternalUser</role-name>
-        </run-as>
-      </security-identity>
-   </session>   
-   
-   <entity>
-      <description>
-            This enterprise bean entity represents a User with accompanying data.
-      </description>
-      <ejb-name>UserData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.UserDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.UserDataLocal</local>
-      <home>se.anatom.ejbca.ra.UserDataHome</home>
-      <remote>se.anatom.ejbca.ra.UserDataRemote</remote>
-      <ejb-class>se.anatom.ejbca.ra.UserDataBean</ejb-class>
-      <persistence-type>Container</persistence-type>
-      <prim-key-class>se.anatom.ejbca.ra.UserDataPK</prim-key-class>
-      <reentrant>False</reentrant>
-      <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>UserDataBean</abstract-schema-name>
       
-      <cmp-field><field-name>username</field-name></cmp-field>
-      <cmp-field><field-name>subjectDN</field-name></cmp-field>
-      <cmp-field><field-name>subjectEmail</field-name></cmp-field>
-      <cmp-field><field-name>status</field-name></cmp-field>
-      <cmp-field><field-name>type</field-name></cmp-field>
-      <cmp-field><field-name>clearPassword</field-name></cmp-field>
-      <cmp-field><field-name>passwordHash</field-name></cmp-field>
-      <cmp-field><field-name>timeCreated</field-name></cmp-field>
-      <cmp-field><field-name>timeModified</field-name></cmp-field>
-      <cmp-field><field-name>profileId</field-name></cmp-field>
-      <cmp-field><field-name>certificateTypeId</field-name></cmp-field>                             
-   </entity>
-   
    <entity>
       <description>
-            This enterprise bean entity represents global configuration of ra administration.
+            This enterprise bean entity represents a Log Entry with accompanying data.
       </description>
-      <ejb-name>GlobalConfigurationData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.GlobalConfigurationDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.GlobalConfigurationDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.GlobalConfigurationDataBean</ejb-class>
+      <ejb-name>LogEntryData</ejb-name>
+      <local-home>se.anatom.ejbca.log.LogEntryDataLocalHome</local-home>
+      <local>se.anatom.ejbca.log.LogEntryDataLocal</local>
+      <ejb-class>se.anatom.ejbca.log.LogEntryDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
-      <prim-key-class>java.lang.String</prim-key-class>            
-      <reentrant>False</reentrant>      
-      <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>GlobalConfigurationDataBean</abstract-schema-name>
-      <cmp-field><field-name>configurationId</field-name></cmp-field>
-      <cmp-field><field-name>globalConfiguration</field-name></cmp-field>    
-      <primkey-field>configurationId</primkey-field>  
-   </entity>
-   
-   <entity>
-      <description>
-            This enterprise bean entity represents a ra admins user preference.
-      </description>
-      <ejb-name>UserPreferencesData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.raadmin.UserPreferencesDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.raadmin.UserPreferencesDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.raadmin.UserPreferencesDataBean</ejb-class>
-      <persistence-type>Container</persistence-type>
-      <prim-key-class>java.lang.String</prim-key-class>    
+      <prim-key-class>java.lang.Integer</prim-key-class>
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>UserPreferencesDataBean</abstract-schema-name>
-      <cmp-field><field-name>id</field-name></cmp-field>
-      <cmp-field><field-name>userPreference</field-name></cmp-field>
-       <primkey-field>id</primkey-field>  
-   </entity>
-
-   <entity>
-      <description>
-            This enterprise bean entity represents a profile.
-      </description>
-      <ejb-name>ProfileData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.raadmin.ProfileDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.raadmin.ProfileDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.raadmin.ProfileDataBean</ejb-class>
-      <persistence-type>Container</persistence-type>
-      <prim-key-class>java.lang.Integer</prim-key-class>    
-      <reentrant>False</reentrant>
-      <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>ProfileDataBean</abstract-schema-name>
+      <abstract-schema-name>LogEntryDataBean</abstract-schema-name>
       <cmp-field><field-name>id</field-name></cmp-field>      
-      <cmp-field><field-name>profileName</field-name></cmp-field>
-      <cmp-field><field-name>profile</field-name></cmp-field>
-      <primkey-field>id</primkey-field>  
-   </entity>   
-
-   <entity>
-      <description>
-            This enterprise bean entity represents an authorization usergroup.
-      </description>
-      <ejb-name>UserGroupData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.authorization.UserGroupDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.authorization.UserGroupDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.authorization.UserGroupDataBean</ejb-class>
-      <persistence-type>Container</persistence-type>
-      <prim-key-class>java.lang.String</prim-key-class>  
-      <reentrant>False</reentrant>
-      <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>UserGroupDataBean</abstract-schema-name>
-      <cmp-field><field-name>userGroupName</field-name></cmp-field>
-      <primkey-field>userGroupName</primkey-field>       
-      <ejb-local-ref>
-        <ejb-ref-name>ejb/UserEntityDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.UserEntityDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.UserEntityDataLocal</local>
-        <ejb-link>UserEntityData</ejb-link>
-      </ejb-local-ref>    
-      <ejb-local-ref>
-        <ejb-ref-name>ejb/AccessRulesDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.AccessRulesDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.AccessRulesDataLocal</local>
-        <ejb-link>AccessRulesData</ejb-link>
-      </ejb-local-ref>       
-   </entity>   
-         
-   <entity>
-      <description>
-            This enterprise bean entity represents a user entity.
-      </description>
-      <ejb-name>UserEntityData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.authorization.UserEntityDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.authorization.UserEntityDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.authorization.UserEntityDataBean</ejb-class>
-      <persistence-type>Container</persistence-type>  
-      <prim-key-class>se.anatom.ejbca.ra.authorization.UserEntityPK</prim-key-class>
-      <reentrant>False</reentrant>
-      <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>UserEntityDataBean</abstract-schema-name>
-      <cmp-field><field-name>pK</field-name></cmp-field>        
-      <cmp-field><field-name>matchWith</field-name></cmp-field>
-      <cmp-field><field-name>matchType</field-name></cmp-field>
-      <cmp-field><field-name>matchValue</field-name></cmp-field>                
-   </entity>   
-   <entity>
-      <description>
-            This enterprise bean entity represents an access rule.
-      </description> 
-      <ejb-name>AccessRulesData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.authorization.AccessRulesDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.authorization.AccessRulesDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.authorization.AccessRulesDataBean</ejb-class>
-      <prim-key-class>se.anatom.ejbca.ra.authorization.AccessRulesPK</prim-key-class> 
-      <persistence-type>Container</persistence-type>   
-      <reentrant>False</reentrant>
-      <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>AccessRulesDataBean</abstract-schema-name>
-      <cmp-field><field-name>pK</field-name></cmp-field> 
-      <cmp-field><field-name>directory</field-name></cmp-field>
-      <cmp-field><field-name>accessRule</field-name></cmp-field>         
-   </entity>   
+      <cmp-field><field-name>adminType</field-name></cmp-field>
+      <cmp-field><field-name>adminData</field-name></cmp-field>
+      <cmp-field><field-name>time</field-name></cmp-field>
+      <cmp-field><field-name>username</field-name></cmp-field>
+      <cmp-field><field-name>certificateSNR</field-name></cmp-field>
+      <cmp-field><field-name>event</field-name></cmp-field>
+      <cmp-field><field-name>comment</field-name></cmp-field>    
+      <primkey-field>id</primkey-field>                       
+   </entity>
    
    <entity>
       <description>
-            This enterprise bean entity represents available access rules in ra authorization.
+            This enterprise bean entity represents log configuration of ejbca.
       </description>
-      <ejb-name>AvailableAccessRulesData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataBean</ejb-class>
+      <ejb-name>LogConfigurationData</ejb-name>
+      <local-home>se.anatom.ejbca.log.LogConfigurationDataLocalHome</local-home>
+      <local>se.anatom.ejbca.log.LogConfigurationDataLocal</local>
+      <ejb-class>se.anatom.ejbca.log.LogConfigurationDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
-      <prim-key-class>java.lang.String</prim-key-class>             
+      <prim-key-class>java.lang.Integer</prim-key-class>            
       <reentrant>False</reentrant>      
       <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>AvailableAccessRulesDataBean</abstract-schema-name>
-      <cmp-field><field-name>name</field-name></cmp-field>
-      <primkey-field>name</primkey-field>  
+      <abstract-schema-name>LogConfigurationDataBean</abstract-schema-name>
+      <cmp-field><field-name>id</field-name></cmp-field>
+      <cmp-field><field-name>logConfiguration</field-name></cmp-field>   
+      <cmp-field><field-name>logEntryRowNumber </field-name></cmp-field>      
+      <primkey-field>id</primkey-field>  
    </entity>
+
   </enterprise-beans> 
  
-  <relationships>         
-     <ejb-relation>
-       <ejb-relation-name>UserGroupDataToUserEntities</ejb-relation-name>
-       <ejb-relationship-role>
-         <ejb-relationship-role-name>UserGroupData</ejb-relationship-role-name>
-         <multiplicity>One</multiplicity>
-         <relationship-role-source>
-           <ejb-name>UserGroupData</ejb-name>
-         </relationship-role-source>
-         <cmr-field>
-           <cmr-field-name>userEntities</cmr-field-name>
-           <cmr-field-type>java.util.Collection</cmr-field-type>
-         </cmr-field>
-       </ejb-relationship-role>
-       <ejb-relationship-role>
-         <ejb-relationship-role-name>UserEntityData</ejb-relationship-role-name>
-         <multiplicity>Many</multiplicity>
-         <relationship-role-source>
-           <ejb-name>UserEntityData</ejb-name>
-         </relationship-role-source>
-       </ejb-relationship-role>
-     </ejb-relation>     
-     
-     <ejb-relation>
-       <ejb-relation-name>UserGroupDataToAccessRules</ejb-relation-name>
-       <ejb-relationship-role>
-         <ejb-relationship-role-name>UserGroupData</ejb-relationship-role-name>
-         <multiplicity>One</multiplicity>
-         <relationship-role-source>
-           <ejb-name>UserGroupData</ejb-name>
-         </relationship-role-source>
-         <cmr-field>
-           <cmr-field-name>accessRules</cmr-field-name>
-           <cmr-field-type>java.util.Collection</cmr-field-type>
-         </cmr-field>
-       </ejb-relationship-role>
-       <ejb-relationship-role>
-         <ejb-relationship-role-name>AccessRulesData</ejb-relationship-role-name>
-         <multiplicity>Many</multiplicity>
-         <relationship-role-source>
-           <ejb-name>AccessRulesData</ejb-name>
-         </relationship-role-source>
-       </ejb-relationship-role>
-     </ejb-relation>          
-  </relationships>            
    
   <assembly-descriptor>
    <security-role>
@@ -456,11 +132,15 @@
    <method-permission>
      <role-name>InternalUser</role-name>
      <method>
-         <ejb-name>UserData</ejb-name>
+         <ejb-name>LogEntryData</ejb-name>
          <method-name>*</method-name>
      </method>
      <method>
-         <ejb-name>UserAdminSession</ejb-name>
+         <ejb-name>LogConfigurationData</ejb-name>
+         <method-name>*</method-name>
+     </method>     
+     <method>
+         <ejb-name>LogSession</ejb-name>
          <method-name>*</method-name>
      </method>
    </method-permission>
@@ -473,243 +153,26 @@
    -->
     <container-transaction>     
      <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>findUser</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>findUserBySubjectDN</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>findUserByEmail</method-name>
-     </method>     
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>CheckIfSubjectDNisAdmin</method-name>
-     </method>     
-    <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>findAllUsersByStatus</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>findAllUsersWithLimit</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>checkForProfileId</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>checkForCertificateTypeId</method-name>
-     </method>          
-    <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>loadGlobalConfiguration</method-name>
-     </method>     
-    <method>
-         <ejb-name>UserAdminSession</ejb-name>
+         <ejb-name>LogSession</ejb-name>
          <method-name>query</method-name>
-     </method>          
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getUserPreference</method-name>
      </method>
      <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>existsUserPreference</method-name>
+         <ejb-name>LogSession</ejb-name>
+         <method-name>SaveLogConfiguration</method-name>
      </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getProfileNames</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getProfiles</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getProfile</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getNumberOfProfiles</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getProfileId</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getProfileName</method-name>
-     </method> 
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>existsCertificateTypeInProfiles</method-name>
-     </method>                
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>isAuthorized</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>authenticate</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getUserGroup</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getUserGroupnames</method-name>
-     </method>    
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getUserGroups</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getNumberOfAccessRules</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getAccessRules</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getNumberOfUserEntities</method-name>
-     </method>       
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getUserEntities</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getAvailableAccessRules</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>existsAvailableAccessRule</method-name>
-     </method> 
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>existsProfileInRules</method-name>
-     </method>                              
+                              
      <trans-attribute>Supports</trans-attribute> 
    </container-transaction>
     
    <container-transaction>
      <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>addUser</method-name>
+         <ejb-name>LogSession</ejb-name>
+         <method-name>log</method-name>
      </method>
      <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>changeUser</method-name>
+         <ejb-name>LogSession</ejb-name>
+         <method-name>saveLogConfiguration</method-name>
      </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>deleteUser</method-name>
-     </method>   
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>setUserStatus</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>revokeUser</method-name>
-     </method>     
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>setPassword</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>setClearTextPassword</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>startExternalService</method-name>
-     </method>     
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>saveGlobalConfiguration</method-name>
-     </method>
-         
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>addUserPreference</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>changeUserPreference</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>addProfile</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>cloneProfile</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>removeProfile</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>renameProfile</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>changeProfile</method-name>
-     </method>          
-      
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>addUserGroup</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>removeUserGroup</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>renameUserGroup</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>addAccessRule</method-name>
-     </method>    
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>removeAccessRule</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>addUserEntity</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>removeUserEntity</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>addAvailableAccessRule</method-name>
-     </method>       
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>addAvailableAccessRules</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>removeAvailableAccessRule</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>removeAvailableAccessRules</method-name>
-     </method>   
                                    
      <trans-attribute>Required</trans-attribute>   
    </container-transaction> 
