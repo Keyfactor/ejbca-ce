@@ -38,7 +38,7 @@ import se.anatom.ejbca.util.CertTools;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.16 2004-07-09 16:20:10 sbailliez Exp $
+ * @version $Id: CRLDataBean.java,v 1.17 2004-07-23 11:56:10 sbailliez Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CRLDataEB"
@@ -71,12 +71,12 @@ import se.anatom.ejbca.util.CertTools;
  * @ejb.finder
  *   description="findByIssuerDNAndCRLNumber"
  *   view-type="local"
- *   signature="CRLDataLocal findByIssuerDNAndCRLNumber(java.lang.String issuerdn, int cRLNumber)"
- *   query="SELECT DISTINCT OBJECT(a) from CRLDataBean a WHERE a.issuerDN=?1 AND a.cRLNumber=?2"
+ *   signature="se.anatom.ejbca.ca.store.CRLDataLocal findByIssuerDNAndCRLNumber(java.lang.String issuerdn, int cRLNumber)"
+ *   query="SELECT DISTINCT OBJECT(a) from CRLDataBean a WHERE a.issuerDN=?1 AND a.CRLNumber=?2"
  *
  * @ejb.finder
  *   view-type="remote"
- *   signature="CRLData findByIssuerDNAndCRLNumber(java.lang.String issuerdn, int cRLNumber)"
+ *   signature="se.anatom.ejbca.ca.store.CRLData findByIssuerDNAndCRLNumber(java.lang.String issuerdn, int cRLNumber)"
  */
 public abstract class CRLDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(CRLDataBean.class);

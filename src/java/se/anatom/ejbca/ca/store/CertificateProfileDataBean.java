@@ -44,6 +44,7 @@ import java.util.HashMap;
  * cmp-version="2.x"
  * transaction-type="Container"
  * schema="CertificateProfileDataBean"
+ * primkey-field="id"
  *
  * @ejb.permission role-name="InternalUser"
  *
