@@ -8,7 +8,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 /**
  * This class is used to create notification messages
  *
- * @version $Id: NotificationCreator.java,v 1.2 2003-04-01 11:27:23 scop Exp $
+ * @version $Id: NotificationCreator.java,v 1.3 2003-04-20 13:36:35 herrvendil Exp $
  */
 public class NotificationCreator {
 
@@ -17,19 +17,19 @@ public class NotificationCreator {
      *  Variable text are case-insensitive.
      */
     private static final Pattern USERNAME =
-      Pattern.compile("$Username", Pattern.CASE_INSENSITIVE);
+      Pattern.compile("\\$Username", Pattern.CASE_INSENSITIVE);
     private static final Pattern PASSWORD =
-      Pattern.compile("$Password", Pattern.CASE_INSENSITIVE);
+      Pattern.compile("\\$Password", Pattern.CASE_INSENSITIVE);
     private static final Pattern CN =
-      Pattern.compile("$CN", Pattern.CASE_INSENSITIVE);
+      Pattern.compile("\\$CN", Pattern.CASE_INSENSITIVE);
     private static final Pattern O =
-      Pattern.compile("$O", Pattern.CASE_INSENSITIVE);
+      Pattern.compile("\\$O", Pattern.CASE_INSENSITIVE);
     private static final Pattern OU =
-      Pattern.compile("$OU", Pattern.CASE_INSENSITIVE);
+      Pattern.compile("\\$OU", Pattern.CASE_INSENSITIVE);
     private static final Pattern C =
-      Pattern.compile("$C", Pattern.CASE_INSENSITIVE);
+      Pattern.compile("\\$C", Pattern.CASE_INSENSITIVE);
     private static final Pattern DATE =
-      Pattern.compile("$DATE", Pattern.CASE_INSENSITIVE);
+      Pattern.compile("\\$DATE", Pattern.CASE_INSENSITIVE);
 
     private static final Pattern NEWLINE = Pattern.compile("\\n");
 
@@ -75,7 +75,7 @@ public class NotificationCreator {
       return returnval;
     }
 
-    // Provate Variables
+    // Private Variables
     private String sender;
     private String subject;
     private String message;
