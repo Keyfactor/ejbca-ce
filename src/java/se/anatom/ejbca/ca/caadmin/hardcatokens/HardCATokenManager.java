@@ -42,6 +42,7 @@ public class HardCATokenManager {
      * @return true when finished initializing.
      */
 	private static boolean init(){
+        loadClass("se.anatom.ejbca.ca.caadmin.hardcatokens.StaticRegistering");
         loadClass("se.anatom.ejbca.ca.caadmin.hardcatokens.DummyHardCAToken");
         loadClass("se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenSample");
     	return true;
@@ -59,11 +60,11 @@ public class HardCATokenManager {
     	try {    		
 			HardCATokenManager.class.getClassLoader().loadClass(classpath).newInstance();		
 		} catch (ClassNotFoundException e) {
-           // Do Nothing
+		    log.info("Class not found: "+classpath); // Do Nothing, just log
 		} catch (InstantiationException e) {
-	       // Do Nothing
+		    log.error("InstantiationException: "+classpath); // Do Nothing, just log
 		} catch (IllegalAccessException e) {
-	      // Do Nothing
+		    log.error("IllegalAccessException: "+classpath); // Do Nothing, just log
 		}    
     }
         

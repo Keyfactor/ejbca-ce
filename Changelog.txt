@@ -32,6 +32,7 @@ Fixed problem where requiring RFC822Name caused error when editing end entity.
 Fixed bug with extra commas in publishers when selected DN components don't exist in DN.
 Changed 'Batch' text in adminweb to be more descriptive.
 Changed 'Use fields in DN' in adminweb to be more descriptive.
+Added StaticRegistering to CA hard token manager.
 
 3.0.4
 -----
