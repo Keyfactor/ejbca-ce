@@ -57,7 +57,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.15 2004-05-22 12:58:51 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.16 2004-05-25 20:54:46 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage, Serializable {
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);
@@ -190,7 +190,8 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             CMSProcessable msg;
             // The signed data to be enveloped
             CMSSignedData s = null;
-            if (status.equals(ResponseStatus.SUCCESS)) {
+            // Create encrypted response if this is success and NOT a CRL response message
+            if (status.equals(ResponseStatus.SUCCESS) && (crl == null)) {
 
                 CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
                 // Add the issued certificate to the signed portion of the CMS (as signer, degenerate case)
@@ -199,10 +200,6 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
                     log.debug("Adding certificates to response message");
                     certList.add(cert);
                     certList.add(signCert);                    
-                }
-                if (crl != null) {
-                    log.debug("Adding CRL to response message");
-                    certList.add(crl);
                 }
                 CertStore certs = CertStore.getInstance("Collection",
                         new CollectionCertStoreParameters(certList), "BC");
@@ -317,6 +314,14 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             // Put our signer info and all newly generated attributes
             gen1.addSigner(signKey, signCert, CMSSignedDataGenerator.DIGEST_SHA1,
                 new AttributeTable(attributes), null);
+            if (crl != null) {
+                ArrayList certList = new ArrayList();
+                log.debug("Adding CRL to response message (outer signer)");
+                certList.add(crl);
+                CertStore certs = CertStore.getInstance("Collection",
+                        new CollectionCertStoreParameters(certList), "BC");
+                gen1.addCertificatesAndCRLs(certs);            	
+            }
             signedData = gen1.generate(msg, true, "BC");
             responseMessage = signedData.getEncoded();
             if (responseMessage != null) {
