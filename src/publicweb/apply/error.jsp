@@ -24,5 +24,7 @@ Unknown error, or you came to this page directly without beeing redirected.
 <%
 }
 %>
+<p>
+<a href="javascript:history.back()">Go back</a>
 </body>
 </html>
