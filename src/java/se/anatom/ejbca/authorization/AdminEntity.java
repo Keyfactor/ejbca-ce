@@ -29,7 +29,7 @@ import se.anatom.ejbca.util.StringTools;
  * Matchtype constants tells under which contitions the match shall be performed.
  *
  * @author  Philip Vendil
- * @version $Id: AdminEntity.java,v 1.4 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: AdminEntity.java,v 1.5 2004-07-26 12:14:20 sbailliez Exp $
  */
 public class AdminEntity implements Serializable, Comparable {
     // Special Users. (Constants cannot have 0 value).
@@ -73,9 +73,10 @@ public class AdminEntity implements Serializable, Comparable {
         this.caid=caid;
     }
 
-    public AdminEntity(int specialadmin){
-      this.matchtype=specialadmin;
-      this.matchwith=WITH_SERIALNUMBER;
+    public AdminEntity(int specialadmin) {
+        // FIXME this is a hack for now, to initialize explicitely attributes to some fixed values.
+        // I'm setting matchvalue to some arbitrary value as the schema does not support null
+        this(WITH_SERIALNUMBER, specialadmin, "UNUSED", 0);
     }
 
     // Public methods.
