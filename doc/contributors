@@ -3,7 +3,7 @@ CONTRIBUTORS
 
 The following people have in some way or other contributed to EJBCA:
 
-Tomas Gustavsson <tomas.gustavsson(at)abc.se>, project founder.
+Tomas Gustavsson <tomas(at)primekey.se>, project founder.
 Anna Diruba Christensen <dilnet(at)hotmail.com>, project homepage design.
 Nathan Phelps <nphelps(at)solarc.com>, testing, bugfinding and suggestions.
 Leo Tai <hkleo(at)users.sourceforge.net>, Oracle database configuration.
@@ -17,8 +17,8 @@ Leonardo Souza Mario Bueno <isbueno(at)users.sourceforge.net>, patch for request
 template path.
 Jean ? <icejean(at)21cn.com>, support for Sybase and Active Directory, port to
 Java 1.2/EJB 1.0, suggestions and bugfixes.
-Philip Vendil <philip(at)primekey.se>, web administration
+Philip Vendil <philip(at)primekey.se>, web administration, new functionality etc
 Lars Silven <lars(at)primekey.se>, external connection to smart card
 personalisation, various additions.
-Gösta Bäckström <gosta.backstrom(at)goyada.com>, PKCS7 to browsers.
-
+Gösta Bäckström <gosta.backstrom(at)goyada.com>, initial PKCS7 to browsers.
+Ville Skyttä <ville.skytta(at)iki.fi>, various patches
