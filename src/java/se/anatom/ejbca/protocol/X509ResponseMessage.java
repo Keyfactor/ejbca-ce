@@ -13,17 +13,17 @@ import java.security.cert.X509Certificate;
 /**
  * A response message consisting of a single X509 Certificate.
  *
- * @version $Id: X509ResponseMessage.java,v 1.10 2003-07-24 08:43:31 anatom Exp $
+ * @version $Id: X509ResponseMessage.java,v 1.11 2003-10-09 08:46:27 anatom Exp $
  */
 public class X509ResponseMessage implements IResponseMessage {
     /** Certificate to be in response message, */
     private Certificate cert = null;
 
     /** status for the response */
-    private int status = 0;
+    private ResponseStatus status = ResponseStatus.SUCCESS;
 
     /** Possible fail information in the response. Defaults to null. */
-    private String failInfo = null;
+    private FailInfo failInfo = null;
 
     /**
      * Sets the complete certificate in the response message.
@@ -48,7 +48,7 @@ public class X509ResponseMessage implements IResponseMessage {
      *
      * @param status status of the response.
      */
-    public void setStatus(int status) {
+    public void setStatus(ResponseStatus status) {
         this.status = status;
     }
 
@@ -57,7 +57,7 @@ public class X509ResponseMessage implements IResponseMessage {
      *
      * @return status status of the response.
      */
-    public int getStatus() {
+    public ResponseStatus getStatus() {
         return status;
     }
 
@@ -66,7 +66,7 @@ public class X509ResponseMessage implements IResponseMessage {
      *
      * @param failInfo reason for failure.
      */
-    public void setFailInfo(String failInfo) {
+    public void setFailInfo(FailInfo failInfo) {
         this.failInfo = failInfo;
     }
 
@@ -75,7 +75,7 @@ public class X509ResponseMessage implements IResponseMessage {
      *
      * @return failInfo reason for failure.
      */
-    public String getFailInfo() {
+    public FailInfo getFailInfo() {
         return failInfo;
     }
 

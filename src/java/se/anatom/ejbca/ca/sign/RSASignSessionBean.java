@@ -57,13 +57,15 @@ import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.protocol.IRequestMessage;
 import se.anatom.ejbca.protocol.IResponseMessage;
+import se.anatom.ejbca.protocol.ResponseStatus;
+import se.anatom.ejbca.protocol.FailInfo;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
 
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.103 2003-10-01 11:12:14 herrvendil Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.104 2003-10-09 08:46:21 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -190,11 +192,11 @@ public class RSASignSessionBean extends BaseSessionBean {
      *
      * @param admin Information about the administrator or admin preforming the event.
      * @param cert client certificate which we want ancapsulated in a PKCS7 together with
-     *        certificate chain. If null, a PKCS7 with only CA certificate chain is returned.
+     *        certificate chain.
      *
      * @return The DER-encoded PKCS7 message.
      *
-     * @throws SignRequestSignatureException is the provided client certificate was not signed by
+     * @throws SignRequestSignatureException if the provided client certificate was not signed by
      *         the CA.
      */
     public byte[] createPKCS7(Admin admin, Certificate cert) throws SignRequestSignatureException {
@@ -405,9 +407,9 @@ public class RSASignSessionBean extends BaseSessionBean {
             } else {
                 throw new CADoesntExistsException();
             }
-        }catch(javax.ejb.FinderException fe){
+        } catch(javax.ejb.FinderException fe) {
             getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Invalid CA Id",fe);  
-            throw new EJBException(fe);                   
+            throw new CADoesntExistsException(fe);                   
         }
         try {
             CA ca = cadata.getCA();
@@ -416,31 +418,17 @@ public class RSASignSessionBean extends BaseSessionBean {
             X509Certificate cacert = (X509Certificate) ca.getCACertificate();                  
             try{
                 cacert.checkValidity();                   
-            }catch(Exception e){
+            } catch(Exception e) {
                  // Signers Certificate has expired.   
                 cadata.setStatus(SecConst.CA_EXPIRED);  
                 getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " has expired",e);
-                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " has expired");   
+                throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " has expired");   
             }                
+            // Make sure we can decrypt the request
             if (req.requireKeyInfo()) {
                 req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateDecKey());
             }
-            if ((req.getUsername() == null ) || (req.getPassword() == null)) {
-                throw new SignRequestException("No username/password in request!");
-            }
-            if (req.verify() == false) {
-                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,new java.util.Date(),req.getUsername(),null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"POPO verification failed.");
-                throw new SignRequestSignatureException("Verification of signature (popo) on request failed.");
-            }
-            // If we haven't done so yet, authenticate user
-            if (data == null) {
-                data = authUser(admin, req.getUsername(), req.getPassword());
-            }    
-            Certificate cert = null;
-            PublicKey reqpk = req.getRequestPublicKey();
-            if (reqpk == null) {
-                throw new InvalidKeyException("Key is null!");
-            }
+            // Create the response message and set all required fields
             try {
                 ret = (IResponseMessage) responseClass.newInstance();
             } catch (InstantiationException e) {
@@ -467,16 +455,42 @@ public class RSASignSessionBean extends BaseSessionBean {
             byte[] senderNonce = new byte[16];
             randomSource.nextBytes(senderNonce);
             ret.setSenderNonce(Hex.encode(senderNonce));
-            try {
-                cert = createCertificate(admin,data,ca,reqpk,keyUsage);        
-            } catch (IllegalKeyException e) {
-                log.error("Public key is of wrong type",e);
+            // If we have a specified request key info, use it in the reply
+            if (req.getRequestKeyInfo() != null) {
+                ret.setRecipientKeyInfo(req.getRequestKeyInfo());
             }
-            if (cert != null) {
-                ret.setCertificate(cert);
-                ret.setStatus(IResponseMessage.STATUS_OK);
+            // Verify the request
+            if (req.verify() == false) {
+                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,new java.util.Date(),req.getUsername(),null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"POPO verification failed.");
+                throw new SignRequestSignatureException("Verification of signature (popo) on request failed.");
+            }
+            if ((req.getUsername() == null ) || (req.getPassword() == null)) {
+                log.error("No username/password in request");
+                throw new SignRequestException("No username/password in request!");
+                //ret.setFailInfo(FailInfo.BAD_REQUEST);
+                //ret.setStatus(ResponseStatus.FAILURE);
             } else {
-                ret.setStatus(IResponseMessage.STATUS_FAILED);
+                // If we haven't done so yet, authenticate user
+                if (data == null) {
+                    data = authUser(admin, req.getUsername(), req.getPassword());
+                }    
+                PublicKey reqpk = req.getRequestPublicKey();
+                if (reqpk == null) {
+                    throw new InvalidKeyException("Key is null!");
+                }
+                Certificate cert = null;
+                try {
+                    cert = createCertificate(admin,data,ca,reqpk,keyUsage);        
+                } catch (IllegalKeyException e) {
+                    log.error("Public key is of wrong type", e);
+                }
+                if (cert != null) {
+                    ret.setCertificate(cert);
+                    ret.setStatus(ResponseStatus.SUCCESS);
+                } else {
+                    ret.setStatus(ResponseStatus.FAILURE);
+                    ret.setFailInfo(FailInfo.BAD_REQUEST);
+                }
             }
             ret.create();
             // TODO: handle returning errors as response message,

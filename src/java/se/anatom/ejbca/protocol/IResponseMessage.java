@@ -1,6 +1,7 @@
 package se.anatom.ejbca.protocol;
 
 import java.io.IOException;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -8,7 +9,6 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-
 
 /**
  * Base interface for response messages sent from the CA. Implementors of this interface must also
@@ -18,11 +18,9 @@ import java.security.cert.X509Certificate;
  * (resp.requireEncKeyInfo()) { resp.setEncKeyInfo(enccert,enckey) }; resp.create(); byte[]
  * responseMessage = resp.getResponseMessage(); </code>
  *
- * @version $Id: IResponseMessage.java,v 1.9 2003-07-24 08:43:31 anatom Exp $
+ * @version $Id: IResponseMessage.java,v 1.10 2003-10-09 08:46:27 anatom Exp $
  */
 public interface IResponseMessage {
-    public final int STATUS_OK = 0;
-    public final int STATUS_FAILED = 1;
 
     /**
      * Sets the complete certificate in the response message.
@@ -43,28 +41,28 @@ public interface IResponseMessage {
      *
      * @param status status of the response.
      */
-    public void setStatus(int status);
+    public void setStatus(ResponseStatus status);
 
     /**
      * Gets the status of the response message.
      *
      * @return status status of the response.
      */
-    public int getStatus();
+    public ResponseStatus getStatus();
 
     /**
      * Sets info about reason for failure.
      *
      * @param failInfo reason for failure.
      */
-    public void setFailInfo(String failInfo);
+    public void setFailInfo(FailInfo failInfo);
 
     /**
      * Gets info about reason for failure.
      *
      * @return failInfo reason for failure.
      */
-    public String getFailInfo();
+    public FailInfo getFailInfo();
 
     /**
      * Create encrypts and creates signatures as needed to produce a complete response message.  If
@@ -80,8 +78,8 @@ public interface IResponseMessage {
      * @throws NoSuchAlgorithmException if the signature on the request is done with an unhandled
      *         algorithm.
      *
-     * @see #setSignKeyInfo()
-     * @see #setEncKeyInfo()
+     * @see #setSignKeyInfo
+     * @see #setEncKeyInfo
      */
     public boolean create()
         throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException;
@@ -146,10 +144,9 @@ public interface IResponseMessage {
     public void setTransactionId(String transactionId);
 
     /**
-     * Sets recipient key info, key id or similar. This is usually the request key info from the
-     * request message.
+     * Sets recipient key info, key id or similar. This is usually the request key info from the request message.
      *
-     * @param recipient key info
+     * @param recipientKeyInfo key info
      */
     public void setRecipientKeyInfo(byte[] recipientKeyInfo);
 }
