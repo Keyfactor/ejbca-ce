@@ -1,6 +1,7 @@
 2.1b1
 -----
 Support for JBoss_Jetty.
+Microsoft UPN altName and smart card logon extended key usage.
 
 2.0
 ---
