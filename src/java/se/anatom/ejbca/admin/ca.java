@@ -39,8 +39,12 @@ import se.anatom.ejbca.ca.store.CertificateData;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSession;
 
+import org.apache.log4j.*;
+
 public class ca {
 
+    private static Category cat = Category.getInstance( ca.class.getName() );
+    
     /** Pointer to main certificate store */
     private static ICertificateStoreSession certificateStore = null;
     /** A vector of publishers where certs and CRLs are stored */
@@ -418,7 +422,7 @@ public class ca {
             Certificate[] chain = ss.getCertificateChain();
             return chain;
         } catch (Exception e) {
-            e.printStackTrace();
+            cat.error(e);
         }
         return null;
     } // getRootCert
@@ -445,11 +449,11 @@ public class ca {
             }
         } catch (NamingException e) {
             // We could not find this publisher
-            System.out.println("Failed to find cert store.");
+            cat.error("Failed to find cert store.");
             e.printStackTrace();
         } catch (CreateException ce) {
             // We could not find this publisher
-            System.out.println("Failed to create cert store.");
+            cat.error("Failed to create cert store.");
             ce.printStackTrace();
         }
         // Init the publisher session beans
@@ -462,16 +466,16 @@ public class ca {
                     IPublisherSessionHome pubhome = (IPublisherSessionHome)javax.rmi.PortableRemoteObject.narrow(context.lookup(jndiName), IPublisherSessionHome.class);
                     IPublisherSession pub = pubhome.create();
                     publishers.add(pub);
-                    System.out.println("Added publisher class '"+pub.getClass().getName()+"'");
+                    cat.debug("Added publisher class '"+pub.getClass().getName()+"'");
                     i++;
                 }
                 
             } catch (NamingException e) {
-                // We could not find this publisher
-                System.out.println("Failed to find publisher at index '"+i+"', no more publishers.");
+                // We could not find this publisherm this is not an error
+                cat.debug("Failed to find publisher at index '"+i+"', no more publishers.");
             } catch (CreateException ce) {
                 // We could not find this publisher
-                System.out.println("Failed to create publisher.");
+                cat.error("Failed to create configured publisher.");
                 ce.printStackTrace();
             }
         }
