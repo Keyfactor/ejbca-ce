@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.60 2003-11-29 14:39:38 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.61 2003-12-01 12:18:40 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -206,7 +206,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet result = null;
-        String dn=CertTools.stringToBCDNString(StringTools.strip(issuerdn));
+        String dn=CertTools.stringToBCDNString(issuerdn);
+        dn = StringTools.strip(dn);
         try {
             con = getConnection();
             ps = con.prepareStatement("select fingerprint from CertificateData where issuerDN=? ORDER BY expireDate DESC");
@@ -245,7 +246,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet result = null;
-        String dn=CertTools.stringToBCDNString(StringTools.strip(issuerdn));
+        String dn=CertTools.stringToBCDNString(issuerdn);
+        dn = StringTools.strip(dn);
         try {
             // TODO:
             // This should only list a few thousend certificates at a time, in case there
@@ -760,7 +762,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 			stmt.append(ctypes.toString());
 			stmt.append(')');
 			if (null != issuerDN && issuerDN.length() > 0) {
-				String dn = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
+				String dn = CertTools.stringToBCDNString(issuerDN);
+                dn = StringTools.strip(dn);
 				if (log.isDebugEnabled()) {
 					debug("findCertificatesByType() : Looking for cert with (transformed)DN: " + dn);
 				}

@@ -2,16 +2,25 @@ package se.anatom.ejbca.util;
 
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.11 2003-07-24 08:43:32 anatom Exp $
+ * @version $Id: StringTools.java,v 1.12 2003-12-01 12:18:46 anatom Exp $
  */
 public class StringTools {
+    private static Logger log = Logger.getLogger(StringTools.class);
+
+    // Characters that are bynot allowed in strings that may be passed to the db
     private static final char[] stripChars = {
         '\'', '\"', '\n', '\r', '/', '\\', ';', '&', '|', '!', '\0', '%', '`', '?', '<', '>', '?',
         '$', ':', '~'
+    };
+    // Characters that are allowed to escape in strings
+    private static final char[] allowedEscapeChars = {
+        ','
     };
     private static final Pattern WS = Pattern.compile("\\s+");
 
@@ -31,12 +40,33 @@ public class StringTools {
 
         for (int i = 0; i < stripChars.length; i++) {
             if (ret.indexOf(stripChars[i]) > -1) {
-                ret = ret.replace(stripChars[i], '/');
+                // If it is an escape char, we have to process manually
+                if (stripChars[i] == '\\') {
+                    // If it is an escaped char, allow it if it is an allowed escapechar
+                    int index = ret.indexOf('\\');
+                    while (index > -1) {
+                        boolean allowed = false;
+                        for (int j = 0; j < allowedEscapeChars.length; j++) {
+                            if (ret.charAt(index+1) == allowedEscapeChars[j]) {
+                                allowed = true;
+                                log.info("Did not replace at index "+index+1);
+                            }
+                        }
+                        if (!allowed) {
+                            StringUtils.overlay("abcdef", "zzzz", 2, 4);
+                            ret = StringUtils.overlay(ret,"/",index,index+1);
+                            log.info("Did replace at index "+index);
+                        }
+                        index = ret.indexOf('\\',index+1);
+                    }
+                } else {
+                    ret = ret.replace(stripChars[i], '/');
+                }
             }
         }
 
         return ret;
-    }
+    } // strip
 
     /**
      * Strips all whitespace including space, tabs, newlines etc from the given string.
@@ -54,7 +84,4 @@ public class StringTools {
 
         return WS.matcher(str).replaceAll("");
     }
-}
-
-
-// StringTools
+} // StringTools

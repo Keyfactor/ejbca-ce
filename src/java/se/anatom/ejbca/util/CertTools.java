@@ -16,7 +16,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.49 2003-11-20 15:23:23 anatom Exp $
+ * @version $Id: CertTools.java,v 1.50 2003-12-01 12:18:46 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -162,9 +162,10 @@ public class CertTools {
      * @return String containing DN
      */
     public static String stringToBCDNString(String dn) {
-        //log.debug(">stringToBcDNString: "+dn);
-        return stringToBcX509Name(dn).toString();
-        //log.debug("<stringToBcDNString: "+name);
+        log.info(">stringToBcDNString: "+dn);
+        String ret = stringToBcX509Name(dn).toString();
+        log.info("<stringToBcDNString: "+ret);
+        return ret;
     }
 
     /**

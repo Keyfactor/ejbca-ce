@@ -55,7 +55,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.70 2003-11-14 14:59:57 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.71 2003-12-01 12:18:46 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -196,7 +196,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                         int type, int tokentype, int hardwaretokenissuerid, int caid)
                          throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException {
         // String used in SQL so strip it
-        String dn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
+        String dn = CertTools.stringToBCDNString(subjectdn);
+        dn = StringTools.strip(dn);
         String newpassword = password;
         debug(">addUser("+username+", password, "+dn+", "+email+")");
         
@@ -300,7 +301,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                            int type, int tokentype, int hardwaretokenissuerid, int status, int caid)
                               throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
         // String used in SQL so strip it
-        String dn = StringTools.strip(subjectdn);
+        String dn = CertTools.stringToBCDNString(subjectdn);
+        dn = StringTools.strip(dn);
         String newpassword = password;
         boolean statuschanged = false;
         debug(">changeUser("+username+", "+dn+", "+email+")");

@@ -8,13 +8,14 @@ import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.StringTools;
 import se.anatom.ejbca.util.Hex;
 
 
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.18 2003-11-20 15:23:23 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.19 2003-12-01 12:18:46 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -198,13 +199,16 @@ public class TestCertTools extends TestCase {
         assertEquals(CertTools.stringToBCDNString(dn18), "CN=jean,CN=EJBCA,DC=home,DC=jean");
 
         String dn19 = "C=SE, dc=dc1,DC=DC2,O=EJBCA, O=oo, cn=foo, cn=bar";
-        assertEquals(CertTools.stringToBCDNString(dn19),
-            "CN=foo,CN=bar,O=EJBCA,O=oo,DC=dc1,DC=DC2,C=SE");
+        assertEquals(CertTools.stringToBCDNString(dn19), "CN=foo,CN=bar,O=EJBCA,O=oo,DC=dc1,DC=DC2,C=SE");
 
         String dn20 = " C=SE,CN=\"foo, OU=bar\",  O=baz\\\\\\, quux  ";
-
         // BC always escapes with backslash, it doesn't use quotes.
         assertEquals(CertTools.stringToBCDNString(dn20), "CN=foo\\, OU=bar,O=baz\\\\\\, quux,C=SE");
+        
+        String dn21 = "C=SE,O=Foo\\, Inc, OU=Foo\\, Dep, CN=Foo\\'";
+        String bcdn21 = CertTools.stringToBCDNString(dn21);
+        assertEquals(bcdn21, "CN=Foo\',OU=Foo\\, Dep,O=Foo\\, Inc,C=SE");        
+        assertEquals(StringTools.strip(bcdn21), "CN=Foo/,OU=Foo\\, Dep,O=Foo\\, Inc,C=SE");        
 
         log.debug("<test02StringToBCDNString()");
     }
@@ -267,8 +271,8 @@ public class TestCertTools extends TestCase {
         // We try to examine the general case and som special cases, which we want to be able to handle
         String dn1 = "CN=Tomasåäö, O=ÅÄÖ-Org, OU=ÜÉ-Unit, C=SE";
         String bcdn1 = CertTools.stringToBCDNString(dn1);
-        log.info("dn1: " + dn1);
-        log.info("bcdn1: " + bcdn1);
+        log.debug("dn1: " + dn1);
+        log.debug("bcdn1: " + bcdn1);
         assertEquals("CN=Tomasåäö,OU=ÜÉ-Unit,O=ÅÄÖ-Org,C=SE", bcdn1);
         log.debug("<test05IntlChars()");
     }
