@@ -2,7 +2,7 @@
     originally contributed by <surd0007(at)yahoo.com.cn>
  
 (This install guide is a complement to the guide present in README).
-$Id: INSTALL-guide.txt,v 1.8 2004-09-02 10:35:18 anatom Exp $
+$Id: INSTALL-guide.txt,v 1.9 2004-09-07 07:23:34 anatom Exp $
 
  
  Softwares needed:
@@ -59,7 +59,7 @@ $Id: INSTALL-guide.txt,v 1.8 2004-09-02 10:35:18 anatom Exp $
  
  	add user "ejbca" with password "ejbca" (you should choose a good password) and enough privileges. 
  	Allow user ejbca to connect to mysql server, not only from localhost.
- 	create ejbca database under user ejbca.
+ 	create database ejbca under user ejbca.
  
  
  Install EJBCA
@@ -70,7 +70,7 @@ $Id: INSTALL-guide.txt,v 1.8 2004-09-02 10:35:18 anatom Exp $
  	Configure mysql:
  	#cd /usr/j2ee/ejbca
     #ant replaceDS
-    choose database mysql and your datasource.
+    choose database mysql and your datasource (EjbcaDS is recommended).
     
     (this does the below that you don't have to do manually
  	#cp src/ca/ca/META-INF/jbosscmp-jdbc-mysql.xml src/ca/ca/META-INF/jbosscmp-jdbc.xml
@@ -92,13 +92,13 @@ $Id: INSTALL-guide.txt,v 1.8 2004-09-02 10:35:18 anatom Exp $
  	#cp mysql-connector-java-3.0.9-stable-bin.jar $JBOSS_HOME/server/default/lib/ 
  
  	#cd /usr/j2ee/ejbca
- 	#cp doc/mysql-service.xml $JBOSS_HOME/server/default/deploy/
+ 	#cp doc/mysql-ds.xml $JBOSS_HOME/server/default/deploy/
  	#vi $JBOSS_HOME/server/default/deploy/mysql-ds.xml
  	
  	......
     <datasources>
        <local-tx-datasource>
-          <jndi-name>DefaultDS</jndi-name>
+          <jndi-name>EjbcaDS</jndi-name>
           <connection-url>jdbc:mysql://localhost:3306/ejbca</connection-url>
           <driver-class>com.mysql.jdbc.Driver</driver-class>
           <user-name>ejbca</user-name>
@@ -109,16 +109,6 @@ $Id: INSTALL-guide.txt,v 1.8 2004-09-02 10:35:18 anatom Exp $
           <track-statements>true</track-statements>
        </local-tx-datasource>
     </datasources>
- 	......
- 
- 	#cd $JBOSS_HOME/server/default/deploy/
- 	#rm hsqldb-ds.xml
- 	
- 	#vi ../conf/standardjbosscmp-jdbc.xml
- 
- 	......
-      <datasource>java:/DefaultDS</datasource>
-      <type-mapping>mySQL</type-mapping>
  	......
  
  	#cd $JBOSS_HOME/bin/
