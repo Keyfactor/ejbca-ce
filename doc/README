@@ -1,4 +1,4 @@
-$Id: README,v 1.153 2004-08-03 19:09:40 anatom Exp $
+$Id: README,v 1.154 2004-08-04 06:29:40 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -789,7 +789,7 @@ machines, this must be
 a real hostname or ip-address.
 Run 'ant deploy' to install the changes.
 
-1. Tomcat: Copy src/adminweb/WEB-INF/tomcat41-jboss32.xml (if using JBoss 3.2.x) 
+1. Tomcat: Copy src/adminweb/WEB-INF/tomcat41-jboss32.xml (if using JBoss < 3.2.4) 
 to $JBOSS_HOME/server/default/deploy/jbossweb-tomcat41.sar/META-INF/jboss-service.xml.
 
 Edit the file so 'keyStorePass' is the
@@ -814,9 +814,9 @@ Generate a JKS-keystore for tomcat:
 ./batch.sh tomcat -jks
 
 4. Name the generated keystore 'tomcat.jks' and put in
-$JBOSS_HOME.
+$JBOSS_HOME/bin.
 
-cp ./p12/tomcat.jks $JBOSS_HOME/tomcat.jks
+cp ./p12/tomcat.jks $JBOSS_HOME/bin/tomcat.jks
 
 5. Download the CA certificate in PEM-format from
 http://localhost:8080/ejbca/publicweb/webdist/cacert.jsp (call
