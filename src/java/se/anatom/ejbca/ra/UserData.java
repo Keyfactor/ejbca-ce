@@ -22,15 +22,15 @@ public interface UserData extends javax.ejb.EJBObject {
     public String getUsername() throws RemoteException;
     public void setUsername(String username) throws RemoteException;
     public String getSubjectDN() throws RemoteException;
-    public void setSubjectDN(String dn) throws RemoteException;
+    public void setSubjectDN(String subjectDN) throws RemoteException;
     public String getSubjectEmail() throws RemoteException;
-    public void setSubjectEmail(String email) throws RemoteException;
+    public void setSubjectEmail(String subjectEmail) throws RemoteException;
     public int getStatus() throws RemoteException;
     public void setStatus(int status) throws RemoteException;
     public int getType() throws RemoteException;
     public void setType(int type) throws RemoteException;
     public String getClearPassword() throws RemoteException;
-    public void setClearPassword(String password) throws RemoteException;
+    public void setClearPassword(String clearPassword) throws RemoteException;
     public String getPasswordHash() throws RemoteException;
     public void setPasswordHash(String passwordHash) throws RemoteException;
 

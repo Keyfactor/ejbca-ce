@@ -10,7 +10,7 @@ import se.anatom.ejbca.ra.UserAdminData;
 
 /**
  *
- * @version $Id: IUserAdminSession.java,v 1.5 2002-03-26 12:39:34 anatom Exp $
+ * @version $Id: IUserAdminSession.java,v 1.6 2002-05-21 13:38:42 anatom Exp $
  */
 public interface IUserAdminSession {
 
@@ -81,7 +81,8 @@ public interface IUserAdminSession {
     * @param status the new status, from 'UserData'.
     * @return Collection of UserAdminData
     * @throws EJBException if a communication or other error occurs.
+    * @see se.anatom.ejbca.ra.UserAdminData
     */
-    public Collection findAllUsersByStatus(int status) throws RemoteException;
+    public Collection findAllUsersByStatus(int status) throws FinderException, RemoteException;
 
 }

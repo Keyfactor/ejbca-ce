@@ -17,7 +17,7 @@ import se.anatom.ejbca.BaseSessionBean;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.9 2002-05-21 08:52:30 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.10 2002-05-21 13:38:42 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserAdminSession {
 
@@ -130,10 +130,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
         pk.username = username;
         UserData data = home.findByPrimaryKey(pk);
         try {
-			if (password == null)
-				data.setClearPassword(null);
-			else
-            	data.setOpenPassword(password);
+            if (password == null)
+                data.setClearPassword(null);
+            else
+                data.setOpenPassword(password);
         } catch (java.security.NoSuchAlgorithmException nsae)
         {
             error("NoSuchAlgorithmException while setting password for user "+username);
@@ -141,11 +141,6 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
         }
         debug("<setClearTextPassword("+username+", hiddenpwd)");
     } // setClearTextPassword
-
-    private Connection getConnection() throws SQLException, NamingException {
-           DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
-           return ds.getConnection();
-    } //getConnection
 
     /**
     * Implements IUserAdminSession::findUser.
@@ -162,45 +157,32 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
         }
         UserAdminData ret = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getStatus(), data.getType());
         ret.setPassword(data.getClearPassword());
+        debug("<findUser("+username+")");
         return ret;
     } // findUser
 
     /**
     * Implements IUserAdminSession::findAllUsersByStatus.
     */
-    public Collection findAllUsersByStatus(int status) throws RemoteException {
+    public Collection findAllUsersByStatus(int status) throws FinderException, RemoteException {
         debug(">findAllUsersByStatus("+status+")");
         debug("Looking for users with status: " + status);
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        ArrayList ret = new ArrayList();
-        try{
-            con = getConnection();
-            ps = con.prepareStatement("select "+USERDATA_COL+ " from UserData where status=?");
-            ps.setInt(1,status);
-            rs = ps.executeQuery();
-            while(rs.next()){
-                UserAdminData data = new UserAdminData(rs.getString(1), rs.getString(2), rs.getString(3), rs.getInt(4), rs.getInt(5));
-                data.setPassword(rs.getString(6));
-                ret.add( data );
-            }
-            debug("found "+ret.size()+" user(s) with status="+status);
-            debug("<findAllUsersByStatus("+status+")");
-            return ret;
+        Collection users = home.findByStatus(status);
+        Collection ret = new ArrayList();
+        Iterator iter = users.iterator();
+        while (iter.hasNext())
+        {
+            UserData user = (UserData)iter.next();
+            ret.add(new UserAdminData(user.getUsername(),user.getSubjectDN(),user.getSubjectEmail(),user.getStatus(),user.getType()));
         }
-        catch (Exception e) {
-            throw new EJBException(e.getMessage());
-        }
-        finally {
-            try {
-                if (rs != null) rs.close();
-                if (ps != null) ps.close();
-                if (con!= null) con.close();
-            } catch(SQLException se) {
-                se.printStackTrace();
-            }
-        }
+        debug("found "+ret.size()+" user(s) with status="+status);
+        debug("<findAllUsersByStatus("+status+")");
+        return ret;
     } // findAllUsersByStatus
+
+    private Connection getConnection() throws SQLException, NamingException {
+           DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
+           return ds.getConnection();
+    } //getConnection
 
 } // LocalUserAdminSessionBean

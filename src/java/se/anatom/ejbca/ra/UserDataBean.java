@@ -27,8 +27,8 @@ import org.apache.log4j.*;
  * Type (type, from SecConst)
  * </pre>
  *
- * Passwords should me manipulated through helper functions setPassword() and setOpenPassword(). 
- * The setPassword() function sets the hashed password, while the setOpenPassword() method sets 
+ * Passwords should me manipulated through helper functions setPassword() and setOpenPassword().
+ * The setPassword() function sets the hashed password, while the setOpenPassword() method sets
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
@@ -42,19 +42,19 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
     public abstract String getUsername();
     public abstract void setUsername(String username);
     public abstract String getSubjectDN();
-    public abstract void setSubjectDN(String dn);
+    public abstract void setSubjectDN(String subjectDN);
     public abstract String getSubjectEmail();
-    public abstract void setSubjectEmail(String email);
+    public abstract void setSubjectEmail(String subjectEmail);
     public abstract int getStatus();
-    public abstract void setStatus(int st);
+    public abstract void setStatus(int status);
     public abstract int getType();
-    public abstract void setType(int t);
+    public abstract void setType(int type);
     /** Returns clear text password or null. */
     public abstract String getClearPassword();
     /** Sets clear text password, the preferred method is setOpenPassword().
      * @see setOpenPassword
      */
-    public abstract void setClearPassword(String password);
+    public abstract void setClearPassword(String clearPassword);
     /** Returns hashed password or null. */
     public abstract String getPasswordHash();
     /** Sets hash of password, this is the normal way to store passwords, but use the method setPassword() instead.
@@ -66,7 +66,7 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
     // Public methods used to help us manage passwords
     //
 
-	/** Sets password in ahsed form in the database, this way it cannot be read in clear form */
+    /** Sets password in ahsed form in the database, this way it cannot be read in clear form */
     public void setPassword(String password) throws NoSuchAlgorithmException {
         String passwordHash = makePasswordHash(password);
         setPasswordHash(passwordHash);
@@ -94,7 +94,7 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
     //
     // Helper functions
     //
-    
+
     /** Creates the hashed password
     */
     private String makePasswordHash(String password) throws NoSuchAlgorithmException {
@@ -117,7 +117,7 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
     //
     // Fields required by Container
     //
-    
+
     /**
      * Entity Bean holding info about a User.
      * Create by sending in the instance, username, password and subject DN.
