@@ -32,7 +32,7 @@ import se.anatom.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.7 2003-09-03 11:27:06 herrvendil Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.8 2003-11-17 09:07:09 anatom Exp $
  */
 public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	private static Category cat = Category.getInstance(LocalKeyRecoverySessionBean.class.getName());
@@ -529,10 +529,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 		} catch (Exception e) {
 			throw new EJBException(e);
 		}
-
-		System.out.println("<isUserMarked(" + returnval + ")");
-		debug("<isUserMarked()");
-
+		debug("<isUserMarked(" + returnval + ")");
 		return returnval;
 	}
 
