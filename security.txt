@@ -1,0 +1,62 @@
+
+Configuring for security
+------------------------
+The easiest way to keep the installation secure is to block all JBOSS ports (1099, 1476, 4444, 8082, 8083) from the outside and only allow traffic to Tomcat ports (8080).
+This is because the public end-user actions can be performed through the public servlets, while administration tasks are performed directly on the beans.
+
+See http://www.jboss.org/online-manual/HTML/ch11s03.html for a list of ports used in JBOSS.
+See http://www.jboss.org/online-manual/HTML/ch13s84.html for information about security in JBOSS/EJB.
+See http://www.javaworld.com/javaworld/jw-08-2001/jw-0831-jaas_p.html for more examples about setting up role-permissions.
+See http://www.jboss.org/online-manual/HTML/ch14s12.html on how to set up SSL with JBOSS/Tomcat.
+
+BEAN PERMISSIONS
+----------------
+
+Below is a list describing the access permissions that should apply on all beans and their methods.
+internalUser means that the method should not be available to the public, only internally to administrator interfaces and other beans and servlets running on the server.
+
+CA BEAN
+=======
+
+RSASignSession
+--------------
+CreateCRL() must be protected and should only be possible to run from internalUser.
+All other methods are public.
+
+AuthenticationSession
+---------------------
+All methods are protected and can only be accessed from the RSASignSession (internalUser).
+
+CertificateStoreSession
+-----------------------
+storeCertificate() is protected and can only be accessed from internalUser.
+storeCRL() is protected and can only be accessed from internalUser.
+All other methods are public.
+
+CreateCRLSession
+----------------
+All methods are protected and can only be accessed from the internalUser, i.e. cronjob running timely.
+
+CertificateDate
+---------------
+All methods are protected and can only be accessed from the internalUser.
+
+CRLData
+-------
+All methods are protected and can only be accessed from the internalUser.
+
+RA BEAN
+=======
+
+UserAdminSession
+----------------
+All methods are protected and can only be accessed from the internalUser.
+
+
+UserData
+--------
+All methods are protected and can only be accessed from the internalUser.
+
+SERVLETS
+========
+Servlets is available to the public.

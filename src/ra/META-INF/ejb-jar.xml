@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE ejb-jar PUBLIC "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN" "http://java.sun.com/j2ee/dtds/ejb-jar_2_0.dtd">
+
+<ejb-jar>
+ <enterprise-beans>
+
+   <session>
+     <ejb-name>UserAdminSession</ejb-name>
+     <home>se.anatom.ejbca.ra.IUserAdminSessionHome</home>
+     <remote>se.anatom.ejbca.ra.IUserAdminSessionRemote</remote>
+     <ejb-class>se.anatom.ejbca.ra.LocalUserAdminSessionBean</ejb-class>
+     <session-type>Stateless</session-type>
+     <transaction-type>Container</transaction-type>
+   </session>
+
+   <entity>
+      <description>
+            This enterprise bean entity represents a User with accompanying data.
+      </description>
+      <ejb-name>UserData</ejb-name>
+      <home>se.anatom.ejbca.ra.UserDataHome</home>
+      <remote>se.anatom.ejbca.ra.UserData</remote>
+      <ejb-class>se.anatom.ejbca.ra.UserDataBean</ejb-class>
+      <persistence-type>Container</persistence-type>
+      <prim-key-class>se.anatom.ejbca.ra.UserDataPK</prim-key-class>
+      <reentrant>False</reentrant>
+
+      <cmp-field><field-name>username</field-name></cmp-field>
+      <cmp-field><field-name>password</field-name></cmp-field>
+      <cmp-field><field-name>passwordhash</field-name></cmp-field>
+      <cmp-field><field-name>subjectDN</field-name></cmp-field>
+      <cmp-field><field-name>subjectEmail</field-name></cmp-field>
+      <cmp-field><field-name>status</field-name></cmp-field>
+      <cmp-field><field-name>type</field-name></cmp-field>
+   </entity>
+
+  </enterprise-beans>
+
+ <assembly-descriptor>
+   <security-role>
+      <description>
+         This role represents everyone
+      </description>
+     <role-name>everyone</role-name>
+   </security-role>
+
+ </assembly-descriptor>
+
+</ejb-jar>

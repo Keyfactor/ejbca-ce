@@ -1,0 +1,54 @@
+<HTML>
+<HEAD><TITLE>EJBCA certificate/CRL retrieval.</TITLE></HEAD>
+<BODY bgcolor="#ffffff" link="black" vlink="black" alink="black">
+
+<FORM ACTION="http://127.0.0.1:8080/webdist/certdist" ENCTYPE=x-www-form-encoded METHOD="GET">
+<P><HR>
+Give subject DN to fetch users latest certificate.<BR>
+
+	<INPUT TYPE="hidden" NAME="cmd" VALUE="lastcert">
+Subject DN
+	<INPUT NAME="subject" TYPE=text SIZE=30 VALUE="c=SE, O=AnaTom, CN=foo"><br>
+
+<INPUT type="submit" value="OK">
+
+</FORM>
+<HR>
+
+<FORM ACTION="http://127.0.0.1:8080/webdist/certdist" ENCTYPE=x-www-form-encoded METHOD="GET">
+
+Click 'Fetch CRL' to get latest CRL.
+<INPUT TYPE="hidden" NAME="cmd" VALUE="crl">
+<BR>
+<INPUT type="submit" value="Fetch CRL">
+
+</FORM>
+
+<HR>
+
+<FORM ACTION="http://127.0.0.1:8080/webdist/listcerts.jsp" ENCTYPE=x-www-form-encoded METHOD="GET">
+Give subject DN to list users certificates.<BR>
+
+	<INPUT TYPE="hidden" NAME="cmd" VALUE="listcerts">
+Subject DN
+	<INPUT NAME="subject" TYPE=text SIZE=30 VALUE="c=SE, O=AnaTom, CN=foo"><br>
+
+<INPUT type="submit" value="OK">
+</FORM>
+
+<HR>
+
+<FORM ACTION="http://127.0.0.1:8080/webdist/revoked.jsp" ENCTYPE=x-www-form-encoded METHOD="GET">
+Enter serialnumber of certificate and click 'Check revocation' to see if the certificate is revoked.
+<INPUT TYPE="hidden" NAME="cmd" VALUE="revoked"><BR>
+Subject DN
+	<INPUT NAME="issuer" TYPE=text SIZE=30 VALUE="c=SE, O=AnaTom, CN=foo"><br>
+Serial number
+	<INPUT NAME="serno" TYPE=text SIZE=30 VALUE=""><br>
+<BR>
+<INPUT type="submit" value="Check revocation">
+
+</FORM>
+
+</BODY>
+</HTML>

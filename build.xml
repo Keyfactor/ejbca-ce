@@ -1,0 +1,268 @@
+<?xml version="1.0"?>
+
+<project name="ejbca" default="build" basedir=".">
+
+  <!-- set global properties for this build -->
+  <property name="src" value="./src"/>
+  <property name="javasrc" value="${src}/java"/>
+  <property name="lib" value="./lib"/>
+  <property name="tmp" value="./tmp" />
+  <property name="build" value="${tmp}/classes"/>
+  <property name="dist"  value="./dist"/>
+  <property name="apidoc" value="./doc/api"/>
+  
+  <property name="apply.src" value="${src}/apply" />
+  <property name="apply.build" value="${tmp}/apply" />
+  <property name="applyjar" value="${dist}/apply.war" />
+  
+  <property name="webdist.src" value="${src}/webdist" />
+  <property name="webdist.build" value="${tmp}/webdist" />
+  <property name="webdistjar" value="${dist}/webdist.war" />
+
+  <property name="sampleauth.src" value="${src}/sampleauth" />
+  <property name="sampleauth.build" value="${tmp}/sampleauth" />
+  <property name="sampleauthjar" value="${dist}/sampleauth.war" />
+
+  <property name="ca.src" value="${src}/ca" />
+  <property name="ca.build" value="${tmp}/ca" />
+  <property name="cajar" value="${dist}/ca.jar" />
+
+  <property name="ra.src" value="${src}/ra" />
+  <property name="ra.build" value="${tmp}/ra" />
+  <property name="rajar" value="${dist}/ra.jar" />
+
+  <!-- Jar with class files needed for administration, i.e. ca, ra, jobrunner -->
+  <property name="adminjar.build" value="${tmp}/adminjar" />
+  <property name="adminjar" value="./admin.jar" />
+
+
+  <!-- =================================================================== -->
+  <!-- Create the time stamp and build directory -->
+  <!-- =================================================================== -->
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+    <mkdir dir="${dist}"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Clean ALL                                                           -->
+  <!-- =================================================================== -->
+  <target name="clean">
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+    <delete dir="${tmp}"/>
+    <delete dir="${apidoc}"/>
+    <delete file="admin.jar"/>
+    <delete>
+	<fileset dir="${javasrc}" includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
+    </delete>
+    
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Build ALL                                                           -->
+  <!-- =================================================================== -->
+  <target name="build" depends="compile, apply.war, webdist.war, sampleauth.war, ca.jar, ra.jar, admin.jar">
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compile java sources                                                -->
+  <!-- =================================================================== -->
+  <target name="compile" depends="init">
+    <!-- Compile the java code from ${javasrc} into ${build} -->
+    <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}">
+    	<exclude name="**/CVS/**"/>
+    	<include name="**/*.java"/>
+    </javac>
+    <copy todir="${javasrc}">
+    	<fileset dir="${build}">
+		<include name="**/*.class"/>
+	</fileset>
+    </copy>
+
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Build apply part                                                    -->
+  <!-- =================================================================== -->
+  <target name="apply.war" depends="compile">
+    <mkdir    dir="${apply.build}"/>
+    <copy todir="${apply.build}">
+    	<fileset dir="${apply.src}"> 
+		<include name="**/*"/>
+	</fileset>
+    </copy>
+    <copy todir="${apply.build}/WEB-INF/classes">
+    	<fileset dir="${build}">
+		<include name="se/anatom/ejbca/apply/**/*.class"/>
+		<include name="se/anatom/ejbca/ca/sign/**/ISign*.class"/>
+		<include name="se/anatom/ejbca/util/**/Base64*.class"/>
+		<include name="se/anatom/ejbca/util/**/CertTools*.class"/>
+                <include name="se/anatom/ejbca/util/**/FileTools*.class"/>
+		<exclude name="se/anatom/ejbca/**/*Test*"/>
+	</fileset>
+    </copy>
+  
+    <!-- Jar the apply.war package together -->
+    <jar basedir="${apply.build}" jarfile="${applyjar}"/>    
+  </target>
+  
+  <!-- =================================================================== -->
+  <!-- Build sampleauth part                                                    -->
+  <!-- =================================================================== -->
+  <target name="sampleauth.war" depends="compile">
+    <mkdir    dir="${sampleauth.build}"/>
+    <copy todir="${sampleauth.build}">
+    	<fileset dir="${sampleauth.src}"> 
+		<include name="**/*"/>
+	</fileset>
+    </copy>
+    <copy todir="${sampleauth.build}/WEB-INF/classes">
+    	<fileset dir="${build}">
+		<include name="se/anatom/ejbca/samples/AuthResult*.class"/>
+		<include name="se/anatom/ejbca/samples/RemoteVerify*.class"/>
+		<exclude name="se/anatom/ejbca/**/*Test*"/>
+	</fileset>
+    </copy>
+    <copy todir="${sampleauth.build}/WEB-INF/lib">
+    	<fileset dir="${lib}">
+		<include name=""/>
+	</fileset>
+    </copy>
+  
+    <!-- Jar the sampleauth.war package together -->
+    <jar basedir="${sampleauth.build}" jarfile="${sampleauthjar}"/>    
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Build ca part                                                    -->
+  <!-- =================================================================== -->
+  <target name="ca.jar" depends="compile">
+    <mkdir    dir="${ca.build}"/>
+    <copy todir="${ca.build}">
+    	<fileset dir="${ca.src}"> 
+		<include name="**/*"/>
+	</fileset>
+    </copy>
+    <copy todir="${ca.build}">
+    	<fileset dir="${build}">
+		<include name="se/anatom/ejbca/**/*.class"/>
+		<exclude name="se/anatom/ejbca/**/*Test*"/>
+	</fileset>
+    </copy>
+    
+    <!-- Jar the ca.jar package together -->
+    <jar basedir="${ca.build}" jarfile="${cajar}"/>    
+  </target>
+
+
+  <!-- =================================================================== -->
+  <!-- Build ra part                                                    -->
+  <!-- =================================================================== -->
+  <target name="ra.jar" depends="compile">
+    <mkdir    dir="${ra.build}"/>
+    <copy todir="${ra.build}">
+    	<fileset dir="${ra.src}"> 
+		<include name="**/*"/>
+	</fileset>
+    </copy>
+    <copy todir="${ra.build}">
+    	<fileset dir="${build}">
+		<include name="se/anatom/ejbca/ra/**/*.class"/>
+		<include name="se/anatom/ejbca/*.class"/>
+		<include name="se/anatom/ejbca/util/**/*.class"/>
+		<exclude name="se/anatom/ejbca/**/*Test*"/>
+	</fileset>
+    </copy>
+    
+    <!-- Jar the ra.jar package together -->
+    <jar basedir="${ra.build}" jarfile="${rajar}"/>    
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Build webdist part                                                    -->
+  <!-- =================================================================== -->
+  <target name="webdist.war" depends="compile">
+    <mkdir    dir="${webdist.build}"/>
+    <copy todir="${webdist.build}">
+    	<fileset dir="${webdist.src}"> 
+		<include name="**/*"/>
+	</fileset>
+    </copy>
+    <copy todir="${webdist.build}/WEB-INF/classes">
+    	<fileset dir="${build}">
+		<include name="se/anatom/ejbca/webdist/**/*.class"/>
+		<include name="se/anatom/ejbca/ca/store/**/ICertificateStore*.class"/>
+                <include name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
+		<include name="se/anatom/ejbca/util/**/Base64*.class"/>
+		<include name="se/anatom/ejbca/util/**/CertTools*.class"/>
+		<exclude name="se/anatom/ejbca/**/*Test*"/>
+	</fileset>
+    </copy>
+  
+    <!-- Jar the webdist.war package together -->
+    <jar basedir="${webdist.build}" jarfile="${webdistjar}"/>    
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Build admin jar                                                     -->
+  <!-- =================================================================== -->
+  <target name="admin.jar" depends="compile">
+    <mkdir dir="${adminjar.build}"/>
+    <copy todir="${adminjar.build}">
+    	<fileset dir="${build}">
+		<include name="se/anatom/ejbca/IJobRunner*.class"/>
+                <include name="se/anatom/ejbca/SecConst*.class"/>
+		<include name="se/anatom/ejbca/util/*.class"/>
+		<include name="se/anatom/ejbca/admin/*.class"/>
+                <include name="se/anatom/ejbca/ca/store/ICertificateStoreSession*.class"/>
+                <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
+                <include name="se/anatom/ejbca/ra/*.class"/>
+		<exclude name="se/anatom/ejbca/**/*Test*"/>
+	</fileset>
+    </copy>
+  
+    <!-- Jar the admin.jar package together -->
+    <jar basedir="${adminjar.build}" jarfile="${adminjar}"/>    
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Build Javadoc part                                                -->
+  <!-- =================================================================== -->
+  <target name="javadoc" depends="">
+    	<mkdir dir="${apidoc}"/>
+	<javadoc packagenames="se.anatom.*"
+		maxmemory="256m"
+           	sourcepath="${javasrc}"
+           	destdir="${apidoc}"
+           	extdirs="${lib}"
+           	author="true"
+           	version="true"
+           	use="true"
+           	windowtitle="EJBCA API"
+           	bottom="Copyright &#169; 2001 AnaTom.">
+  	</javadoc>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Run JUnit tests                                                     -->
+  <!-- =================================================================== -->
+<!--
+  <target name="test" depends="build">
+	<junit printsummary="yes" haltonfailure="yes">
+	  <formatter type="plain" />
+	  <batchtest fork="yes" todir=".">
+	    <fileset dir="${javasrc}">
+	      <include name="**/junit/**/Test*.java" />
+	      <exclude name="**/TestRunner.java" />
+	    </fileset>
+	  </batchtest>
+	</junit>
+  </target>
+-->
+
+</project>

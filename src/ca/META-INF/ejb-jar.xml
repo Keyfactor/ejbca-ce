@@ -1,0 +1,290 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE ejb-jar PUBLIC "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN" "http://java.sun.com/j2ee/dtds/ejb-jar_2_0.dtd">
+
+<ejb-jar>
+ <enterprise-beans>
+
+   <session>
+     <ejb-name>RSASignSession</ejb-name>
+     <home>se.anatom.ejbca.ca.sign.ISignSessionHome</home>
+     <remote>se.anatom.ejbca.ca.sign.ISignSessionRemote</remote>
+     <ejb-class>se.anatom.ejbca.ca.sign.RSASignSessionBean</ejb-class>
+     <session-type>Stateless</session-type>
+     <transaction-type>Container</transaction-type>
+     
+     <env-entry>
+     	<description>Location of CA keystore</description>
+     	<env-entry-name>keyStore</env-entry-name>
+     	<env-entry-type>java.lang.String</env-entry-type>
+     	<env-entry-value>/tmp/server.p12</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>Password for server keystore, comment out to prompt for pwd.</description>
+     	<env-entry-name>keyStorePass</env-entry-name>
+     	<env-entry-type>java.lang.String</env-entry-type>
+     	<env-entry-value>foo123</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>Alias in keystore for CA private key</description>
+     	<env-entry-name>privateKeyAlias</env-entry-name>
+     	<env-entry-type>java.lang.String</env-entry-type>
+     	<env-entry-value>privateKey</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>Password for CA private key, only used for JKS-keystore. Leave as null for PKCS12-keystore, comment out to prompt</description>
+     	<env-entry-name>privateKeyPass</env-entry-name>
+     	<env-entry-type>java.lang.String</env-entry-type>
+     	<env-entry-value>null</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>Validity in days from days date for created certificate</description>
+     	<env-entry-name>validity</env-entry-name>
+     	<env-entry-type>java.lang.Long</env-entry-type>
+     	<env-entry-value>730</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>Use BasicConstraints?</description>
+     	<env-entry-name>BasicConstraints</env-entry-name>
+     	<env-entry-type>java.lang.Boolean</env-entry-type>
+     	<env-entry-value>true</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>BasicConstraints critical? (RFC2459 says YES)</description>
+     	<env-entry-name>BasicConstraintsCritical</env-entry-name>
+     	<env-entry-type>java.lang.Boolean</env-entry-type>
+     	<env-entry-value>true</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>Use KeyUsage?</description>
+     	<env-entry-name>KeyUsage</env-entry-name>
+     	<env-entry-type>java.lang.Boolean</env-entry-type>
+     	<env-entry-value>true</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>KeyUsage critical? (RFC2459 says YES)</description>
+     	<env-entry-name>KeyUsageCritical</env-entry-name>
+     	<env-entry-type>java.lang.Boolean</env-entry-type>
+     	<env-entry-value>true</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>Use SubjectKeyIdentifier?</description>
+     	<env-entry-name>SubjectKeyIdentifier</env-entry-name>
+     	<env-entry-type>java.lang.Boolean</env-entry-type>
+     	<env-entry-value>true</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>SubjectKeyIdentifier critical? (RFC2459 says NO)</description>
+     	<env-entry-name>SubjectKeyIdentifierCritical</env-entry-name>
+     	<env-entry-type>java.lang.Boolean</env-entry-type>
+     	<env-entry-value>false</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>Use AuthorityKeyIdentifier?</description>
+     	<env-entry-name>AuthorityKeyIdentifier</env-entry-name>
+     	<env-entry-type>java.lang.Boolean</env-entry-type>
+     	<env-entry-value>true</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>AuthorityKeyIdentifier critical? (RFC2459 says NO)</description>
+     	<env-entry-name>AuthorityKeyIdentifierCritical</env-entry-name>
+     	<env-entry-type>java.lang.Boolean</env-entry-type>
+     	<env-entry-value>false</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>Use SubjectAlternativeName?</description>
+     	<env-entry-name>SubjectAlternativeName</env-entry-name>
+     	<env-entry-type>java.lang.Boolean</env-entry-type>
+     	<env-entry-value>true</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>SubjectAlternativeName critical? (RFC2459 says NO)</description>
+     	<env-entry-name>SubjectAlternativeNameCritical</env-entry-name>
+     	<env-entry-type>java.lang.Boolean</env-entry-type>
+     	<env-entry-value>false</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>Use CRLDistributionPoint?</description>
+     	<env-entry-name>CRLDistributionPoint</env-entry-name>
+     	<env-entry-type>java.lang.Boolean</env-entry-type>
+     	<env-entry-value>false</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>CRLDistributionPoint critical? (RFC2459 says NO)</description>
+     	<env-entry-name>CRLDistributionPointCritical</env-entry-name>
+     	<env-entry-type>java.lang.Boolean</env-entry-type>
+     	<env-entry-value>false</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>URI of CRLDistributionPoint?</description>
+     	<env-entry-name>CRLDistURI</env-entry-name>
+     	<env-entry-type>java.lang.String</env-entry-type>
+     	<env-entry-value>http://127.0.0.1:8080/webdist/certdist?cmd=crl</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>Use old style altName with email in DN? (RFC2459 says NO)</description>
+     	<env-entry-name>EmailInDN</env-entry-name>
+     	<env-entry-type>java.lang.Boolean</env-entry-type>
+     	<env-entry-value>false</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>Use CRLNumber?</description>
+     	<env-entry-name>CRLNumber</env-entry-name>
+     	<env-entry-type>java.lang.Boolean</env-entry-type>
+     	<env-entry-value>true</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>CRLNumber critical? (RFC2459 says NO)</description>
+     	<env-entry-name>CRLNumberCritical</env-entry-name>
+     	<env-entry-type>java.lang.Boolean</env-entry-type>
+     	<env-entry-value>false</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>Period in hours between CRLs beeing issued</description>
+     	<env-entry-name>CRLPeriod</env-entry-name>
+     	<env-entry-type>java.lang.Long</env-entry-type>
+     	<env-entry-value>24</env-entry-value>
+     </env-entry>
+     <env-entry>
+     	<description>Call finishUser in AuthenticationSession after generation?</description>
+     	<env-entry-name>FinishUser</env-entry-name>
+     	<env-entry-type>java.lang.Boolean</env-entry-type>
+     	<env-entry-value>true</env-entry-value>
+     </env-entry>
+   </session>
+
+<!-- Commented out, use LocalAuthenticationSession, move comment if RemoteAuthentication should be used
+   <session>
+     <ejb-name>AuthenticationSession</ejb-name>
+     <home>se.anatom.ejbca.ca.auth.IAuthenticationSessionHome</home>
+     <remote>se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote</remote>
+     <ejb-class>se.anatom.ejbca.ca.auth.RemoteAuthenticationSessionBean</ejb-class>
+     <session-type>Stateless</session-type>
+     <transaction-type>Container</transaction-type>
+     
+     <env-entry>
+     	<description>URL to remote authentication server</description>
+     	<env-entry-name>AuthURL</env-entry-name>
+     	<env-entry-type>java.lang.String</env-entry-type>
+     	<env-entry-value>http://127.0.0.1:8080/sampleauth/verify</env-entry-value>
+     </env-entry>
+   </session>
+-->
+
+   <session>
+     <ejb-name>AuthenticationSession</ejb-name>
+     <home>se.anatom.ejbca.ca.auth.IAuthenticationSessionHome</home>
+     <remote>se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote</remote>
+     <ejb-class>se.anatom.ejbca.ca.auth.LocalAuthenticationSessionBean</ejb-class>
+     <session-type>Stateless</session-type>
+     <transaction-type>Container</transaction-type>
+   </session>
+
+   <session>
+     <ejb-name>CertificateStoreSession</ejb-name>
+     <home>se.anatom.ejbca.ca.store.ICertificateStoreSessionHome</home>
+     <remote>se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote</remote>
+     <ejb-class>se.anatom.ejbca.ca.store.LocalCertificateStoreSessionBean</ejb-class>
+     <session-type>Stateless</session-type>
+     <transaction-type>Container</transaction-type>     
+   </session>
+
+   <session>
+     <ejb-name>CreateCRLSession</ejb-name>
+     <home>se.anatom.ejbca.IJobRunnerSessionHome</home>
+     <remote>se.anatom.ejbca.IJobRunnerSessionRemote</remote>
+     <ejb-class>se.anatom.ejbca.ca.crl.CreateCRLSessionBean</ejb-class>
+     <session-type>Stateless</session-type>
+     <transaction-type>Container</transaction-type>     
+     <env-entry>
+     	<description>Period in hours between CRLs beeing issued</description>
+     	<env-entry-name>CRLPeriod</env-entry-name>
+     	<env-entry-type>java.lang.Long</env-entry-type>
+     	<env-entry-value>24</env-entry-value>
+     </env-entry>
+   </session>
+
+   <resource-ref>
+        <description>DataSource for the Certificate database</description>
+        <res-ref-name>DefaultDB</res-ref-name>
+        <res-type>javax.sql.DataSource</res-type>
+        <res-auth>Container</res-auth>
+   </resource-ref>
+
+   <entity>
+      <description>
+            This enterprise bean entity represents a certificate with accompanying data.
+      </description>
+      <ejb-name>CertificateData</ejb-name>
+      <home>se.anatom.ejbca.ca.store.CertificateDataHome</home>
+      <remote>se.anatom.ejbca.ca.store.CertificateData</remote>
+      <ejb-class>se.anatom.ejbca.ca.store.CertificateDataBean</ejb-class>
+      <persistence-type>Container</persistence-type>
+      <prim-key-class>se.anatom.ejbca.ca.store.CertificateDataPK</prim-key-class>
+      <reentrant>False</reentrant>
+
+      <cmp-field><field-name>b64cert</field-name></cmp-field>
+      <cmp-field><field-name>fp</field-name></cmp-field>
+      <cmp-field><field-name>subjectDN</field-name></cmp-field>
+      <cmp-field><field-name>issuerDN</field-name></cmp-field>
+      <cmp-field><field-name>cafp</field-name></cmp-field>
+      <cmp-field><field-name>serno</field-name></cmp-field>
+      <cmp-field><field-name>status</field-name></cmp-field>
+      <cmp-field><field-name>type</field-name></cmp-field>
+      <cmp-field><field-name>expireDate</field-name></cmp-field>
+      <cmp-field><field-name>revocationDate</field-name></cmp-field>
+      <cmp-field><field-name>revocationReason</field-name></cmp-field>
+   </entity>
+
+   <entity>
+      <description>
+            This enterprise bean entity represents a CRL with accompanying data.
+      </description>
+      <ejb-name>CRLData</ejb-name>
+      <home>se.anatom.ejbca.ca.store.CRLDataHome</home>
+      <remote>se.anatom.ejbca.ca.store.CRLData</remote>
+      <ejb-class>se.anatom.ejbca.ca.store.CRLDataBean</ejb-class>
+      <persistence-type>Container</persistence-type>
+      <prim-key-class>se.anatom.ejbca.ca.store.CRLDataPK</prim-key-class>
+      <reentrant>False</reentrant>
+
+      <cmp-field><field-name>b64crl</field-name></cmp-field>
+      <cmp-field><field-name>fp</field-name></cmp-field>
+      <cmp-field><field-name>CRLNumber</field-name></cmp-field>
+      <cmp-field><field-name>issuerDN</field-name></cmp-field>
+      <cmp-field><field-name>cafp</field-name></cmp-field>
+      <cmp-field><field-name>thisUpdate</field-name></cmp-field>
+      <cmp-field><field-name>nextUpdate</field-name></cmp-field>
+   </entity>
+
+  </enterprise-beans>
+
+ <assembly-descriptor>
+   <security-role>
+      <description>
+         This role represents everyone
+      </description>
+     <role-name>everyone</role-name>
+   </security-role>
+
+   <method-permission>
+     <role-name>everyone</role-name>
+     <method>
+         <ejb-name>AuthenticationSession</ejb-name>
+         <method-name>*</method-name>
+     </method>
+   </method-permission>
+
+   <container-transaction>
+     <method>
+        <ejb-name>AuthenticationSession</ejb-name>
+        <method-name>*</method-name>
+     </method>
+     <trans-attribute>Required</trans-attribute>
+   </container-transaction>
+ </assembly-descriptor>
+
+</ejb-jar>
+
+
+
