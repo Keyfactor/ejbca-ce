@@ -36,11 +36,14 @@ import se.anatom.ejbca.util.KeyTools;
 import se.anatom.ejbca.webdist.cainterface.CAInterfaceBean;
 import se.anatom.ejbca.webdist.rainterface.RAInterfaceBean;
 import se.anatom.ejbca.webdist.rainterface.UserView;
+import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 
 /**
  * This is a servlet that is used for creating a user into EJBCA and
- * retrieving her certificate.  Supports only POST.
- * This servlet requires authentication of the amdinistrator.
+ * retrieving her certificate. This servlet requires authentication of the
+ * administrator, specifically it requires that the
+ * client certificate has the priviledge "/ra_functionallity/create_end_entity",
+ * as defined in the admin-GUI.
  * <p>
  *   The CGI parameters for requests are the following.
  * </p>
@@ -73,7 +76,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dl>
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.1 2003-01-29 12:01:03 anatom Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.2 2003-01-29 12:32:54 anatom Exp $
  */
 public class AdminCertReqServlet extends HttpServlet {
 
@@ -137,7 +140,13 @@ public class AdminCertReqServlet extends HttpServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException
   {
-    //ServletDebug debug = new ServletDebug(request, response);
+    // Check if authorized
+    EjbcaWebBean ejbcawebbean= getEjbcaWebBean(request);
+    try{
+      ejbcawebbean.initialize(request, "/ra_functionallity/create_end_entity");
+    } catch(Exception e){
+       throw new java.io.IOException("Authorization Denied");
+    }
 
     X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
     if (certs == null) {
@@ -344,6 +353,26 @@ public class AdminCertReqServlet extends HttpServlet {
   }
 
 
+  /**
+   *
+   */
+  private final EjbcaWebBean getEjbcaWebBean(HttpServletRequest req)
+    throws ServletException
+  {
+    HttpSession session = req.getSession();
+    EjbcaWebBean ejbcawebbean= (EjbcaWebBean)session.getAttribute("ejbcawebbean");
+    if ( ejbcawebbean == null ){
+      try {
+        ejbcawebbean = (EjbcaWebBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), "se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean");
+       } catch (ClassNotFoundException exc) {
+           throw new ServletException(exc.getMessage());
+       }catch (Exception exc) {
+           throw new ServletException (" Cannot create bean of class "+"se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean", exc);
+       }
+       session.setAttribute("ejbcawebbean", ejbcawebbean);
+    }
+    return ejbcawebbean;
+  }
   /**
    *
    */
