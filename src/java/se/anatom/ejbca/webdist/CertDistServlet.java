@@ -13,12 +13,7 @@
  
 package se.anatom.ejbca.webdist;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.math.BigInteger;
@@ -70,7 +65,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.30 2005-02-11 13:12:17 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.31 2005-02-13 17:10:20 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -470,56 +465,4 @@ public class CertDistServlet extends HttpServlet {
                 pout.println("</html>");
     }
 
-    /**
-     * Prints debug info back to browser client
-     **/
-    private class Debug {
-        private final ByteArrayOutputStream buffer;
-        private final PrintStream printer;
-        Debug( ){
-            buffer=new ByteArrayOutputStream();
-            printer=new PrintStream(buffer);
-
-            print("<html>");
-            print("<body>");
-            print("<head>");
-
-            String title = "Certificate/CRL distribution servlet";
-            print("<title>" + title + "</title>");
-            print("</head>");
-            print("<body bgcolor=\"white\">");
-
-            print("<h2>" + title + "</h2>");
-        }
-
-        void printDebugInfo(OutputStream out) throws IOException {
-            print("</body>");
-            print("</html>");
-            out.write(buffer.toByteArray());
-        }
-
-        void print(Object o) {
-            printer.println(o);
-        }
-        void printInsertLineBreaks( byte[] bA ) throws Exception {
-            BufferedReader br=new BufferedReader(
-                new InputStreamReader(new ByteArrayInputStream(bA)) );
-            while ( true ){
-                String line=br.readLine();
-                if (line==null)
-                    break;
-                print(line.toString()+"<br>");
-            }
-        }
-        void takeCareOfException(Throwable t ) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            t.printStackTrace(new PrintStream(baos));
-            print("<h4>Exception:</h4>");
-            try {
-                printInsertLineBreaks( baos.toByteArray() );
-            } catch (Exception e) {
-                e.printStackTrace(printer);
-            }
-        }
-    }
 }
