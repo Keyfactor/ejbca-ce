@@ -3,152 +3,70 @@ Set up a database for EJBCA in JBoss
 
 The following databases have in some stage been tested with EJBCA:
 
-* HypersoniqDB (default in JBoss)
+* HSQLDB (default in JBoss)
 * PostegreSQL 7.2 (http://www.postgresql.org/)
 * MySQL (http://www.mysql.com/)
 * Oracle 8i (http://www.oracle.com/)
 * Sybase
 
-NOTE:
+Unless you are adventurous and know what you're doing, it is recommended to define
+another datasource for ejbca and not reconfigure DefaultDS with another database
+as you run the risk to jump into mapping bugs in the JBoss configuration and mess
+up your server default configuration.
 
-To use the default database, HypersonicDB, nothing should be done, just install
-JBoss and run. Read this HOWTO if you want to replace the default database with
-another.
-
-When using another database as the default database, HypersoniqDB, should be
-removed completely.
-The file server/default/deploy/hsqldb-ds.xml should be removed.
+If all is well the automatic deployment script of EJBCA will configure all that for
+you and you will be up and running in 30 seconds.
 
 NOW ON TO THE HOWTO!
 
 Configuring EJBCA
 -----------------
 
-1. Use the command 'ant replaceDS'. 
-This command replaces jbosscmp-jdbc.xml files and all occurences of 'java:/DefaultDS' 
-ejb-jar.xml files.
-JDBC files changed are: ('ant replaceDS' does ALL this for you)
-src/ra/META-INF/jbosscmp-jdbc-<database>.xml
-src/authorization/META-INF/jbosscmp-jdbc-<database>.xml
-src/log/META-INF/jbosscmp-jdbc-<database>.xml
-src/hardtoken/META-INF/jbosscmp-jdbc-<database>.xml
-src/keyrecovery/META-INF/jbosscmp-jdbc-<database>.xml
+0. Use 'ant clean' to clean up your repository if not already done.
 
-2. Build and deploy EJBCA with 'ant deploy'.
+1. Edit '.ejbca.properties' and specify the 'datasource.jndi-name' to the one you chose.
+   For example: 'ejbcaDS'
+
+   There is a .ejbca.properties.sample that is heavily commented.
+
+2. Use 'ant deploy', it will configure automatically all deployment descriptors such
+   as ejb-jar.xml, jbosscmp-jdbc.xml, according to the database/jndi-name you chose before.
+
+  It will also copy ejbca-ds.xml to ${jboss.home}/server/default/deploy.
+  This file defines your database configuration such as the driver, url, username, password.
+  All other parameters are optional, so don't bother with them unless you know what you're doing.
+  Of course this ejbca-ds.xml should define the jndi-name as 'ejbcaDS' (or whatever name you chose
+  in the previous step)
+
+  If something is wrong, you should see it in the logs of your application server
+
 
 Configuring JBoss
 -----------------
 
+NOTE:
+
+If you are using the default database HSQLDB: Nothing should be done, just install
+JBoss and run.
+
+The following is only if you want to replace the default database with another.
+
 The description given here is for JBoss 3.x. Consider consulting the
 official JBoss documentation.
 
-First comes the general description and in the end database specific
-configurations
-are given in sections for the specific databases.
-
-Database configuration files in JBoss (with Tomcat or Jetty) is located in the
+Database configuration files in JBoss (with Tomcat or Jetty) are located in the
 <jboss-home>/server/default/deploy.
 
-1. Install and setup the database.
+1. Install and setup the database your database.
 
-2. Create a database for EJBCA, for example 'ejbca'.
+2. Create a database for EJBCA (that is obviouslly the one you defined in .ejbca.properties)
+Check your database documentation for more info (I know it is boring)
 
-2. Put the JDBC driver for the database in <jboss-home>/server/default/lib/.
+Typically for postgres: 'createdb -U postgres ejbca "database for ejbca"' will create
+a database named 'ejbca' with description "database for ejbca" and with user postgres.
 
-3. Copy the proper <database>-ds.xml file to <jboss-home>
-/server/default/deploy. The JDBC-driver must be inluded and the database set up
-as DefaultDS. Current <database>-ds.xml files can be obtained from
-jboss.org, provided here are snapshots that work for me.
+3. Put the JDBC driver for the database in <jboss-home>/server/default/lib/.
 
-4. Remove the standard database, hsqldb-ds.xml, from <jboss-home>
-/server/default/deploy (if you will not use this as well).
-
-5. If the new database will be you default database for JBoss:
-Edit standardjbosscmp-jdbc.xml. Change the default type-
-mapping to match the chosen database (see below).
-
-6. DONE! Start JBoss. Run tests with 'runtest.sh/cmd'.
+4. DONE! Start JBoss. Run tests with 'runtest.sh/cmd'.
    Use your favorite database graphic editor to look at the beautiful database tables.
-
-MySQL specifics
----------------
-Jaws configuration file: jbosscmp-jdbc-mysql.xml
-
-JDBC driver: mysql-connector-java-3.0.x.jar (preferably 3.0.9 or higher).
-
-Download JDBC driver for mySQL from http://www.mysql.com/
-
-Copy mysql-ds.xml to server/default/deploy
-In mysql-ds.xml is defined the databas instance (EJBCA), in the connection-URL,
-and the database username (EJBCA) and password (EJBCA).
-These must be changed to your values.
-The item 'ConnectionURL' must be edited to match your database.
-
-Type mapping:
-
-     <datasource>java:/DefaultDS</datasource>
-     <type-mapping>mySQL</type-mapping>
-
-PostgreSQL specifics
---------------------
-EJBCA have been tested with PostgreSQL 7.2, which is why the database mapping
-"PostgreSQL 7.2" is beeing used. Other versions of PostgreSQL might be able to
-use the mapping "PostgreSQL".
-
-Jaws configuration file: jbosscmp-jdbc-postgres.xml
-
-JDBC driver: the 7.4 driver (development) is needed to support the JDBC used by
-JBoss.
-
-Download JDBC driver for PostgreSQL from http://jdbc.postgresql.org/.
-
-Copy postgres-ds.xml to server/default/deploy
-In postgres-ds.xml is defined the databas instance (EJBCA), in the connection-URL, 
-and the database username (EJBCA) and password (EJBCA).
-These must be changed to your values.
-The item 'ConnectionURL' must be edited to match your database.
-
-Type mapping:
-
-     <datasource>java:/DefaultDS</datasource>
-     <type-mapping>PostgreSQL 7.2</type-mapping>
-
-Oracle specifics
-----------------
-Jaws configuration file: jbosscmp-jdbc-oracle.xml
-JBoss configuration file: oracle-service.xml
-
-JDBC driver: classes12.zip (can be downloaded from http://www.oracle.com/).
-
-Copy oracle-ds.xml to server/default/deploy
-In oracle-ds.xml is defined the database instance (EJBCA), in the connection-URL, 
-and the database username (EJBCA) and password (EJBCA). 
-These must be changed to your values.
-The item 'ConnectionURL' must be edited to match your database.
-
-Type mapping:
-
-     <datasource>java:/DefaultDS</datasource>
-     <type-mapping>Oracle8</type-mapping>
-
-MS-SQL specifics
-----------------
-Jaws configuration file: jbosscmp-jdbc-mssql2000.xml
-JBoss configuration file: mssql-ds.xml
-
-JDBC driver: http://msdn.microsoft.com/downloads/default.asp?url=/downloads/sample.asp?url=/MSDN-FILES/027/001/779/msdncompositedoc.xml&frame=true
-
-Copy mssql-ds.xml to server/default/deploy
-In mssql-ds.xml is defined the database instance (EJBCA), in the connection-URL, 
-and the database username (EJBCA) and password (EJBCA). 
-These must be changed to your values.
-The item 'ConnectionURL' must be edited to match your database.
-
-Type mapping:
-
-     <datasource>java:/DefaultDS</datasource>
-     <type-mapping>MS SQLSERVER2000</type-mapping>
-
-
-
 
