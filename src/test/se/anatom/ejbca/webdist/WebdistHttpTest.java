@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
  
-package se.anatom.ejbca.webdist.junit;
+package se.anatom.ejbca.webdist;
 
 import junit.framework.*;
 import com.meterware.httpunit.*;

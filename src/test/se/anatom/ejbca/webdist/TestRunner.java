@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
  
-package se.anatom.ejbca.webdist.junit;
+package se.anatom.ejbca.webdist;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
@@ -22,7 +22,7 @@ import junit.framework.*;
 /**
  * Main test class
  *
- * @version $Id: TestRunner.java,v 1.2 2004-04-16 07:39:03 anatom Exp $
+ * @version $Id: TestRunner.java,v 1.1 2004-06-10 16:31:06 sbailliez Exp $
  */
 public class TestRunner extends Object {
     private static Logger log = Logger.getLogger(TestRunner.class);
