@@ -8,7 +8,7 @@ import java.security.cert.*;
 import javax.rmi.PortableRemoteObject;
 import javax.naming.InitialContext;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
@@ -26,11 +26,11 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java,v 1.10 2003-02-03 12:55:15 scop Exp $
+ * @version $Id: GetCRLServlet.java,v 1.11 2003-02-03 13:54:36 scop Exp $
  */
 public class GetCRLServlet extends HttpServlet {
 
-    static private Category cat = Category.getInstance(GetCRLServlet.class.getName() );
+    private static Logger log = Logger.getLogger(GetCRLServlet.class.getName() );
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
     private static final String COMMAND_CRL = "crl";
@@ -53,14 +53,14 @@ public class GetCRLServlet extends HttpServlet {
     }
 
     public void doPost(HttpServletRequest req, HttpServletResponse res)
-        throws IOException {
-        cat.debug(">doPost()");
+        throws IOException, ServletException {
+        log.debug(">doPost()");
         doGet(req, res);
-        cat.debug("<doPost()");
+        log.debug("<doPost()");
     } //doPost
 
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
-        cat.debug(">doGet()");
+        log.debug(">doGet()");
 
         // Check if authorized
         EjbcaWebBean ejbcawebbean= (se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean)
@@ -108,12 +108,12 @@ public class GetCRLServlet extends HttpServlet {
                 res.setContentType("application/pkix-crl");
                 res.setContentLength(crl.length);
                 res.getOutputStream().write(crl);
-                cat.info("Sent latest CRL to client at " + remoteAddr);
+                log.info("Sent latest CRL to client at " + remoteAddr);
             } catch (Exception e) {
                 PrintStream ps = new PrintStream(res.getOutputStream());
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting latest CRL.");
                 e.printStackTrace(ps);
-                cat.error("Error sending latest CRL to " + remoteAddr, e);
+                log.error("Error sending latest CRL to " + remoteAddr, e);
                 return;
             }
         }
