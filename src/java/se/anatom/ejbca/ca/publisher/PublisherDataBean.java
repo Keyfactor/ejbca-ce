@@ -47,6 +47,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="PublisherDataBean"
+ *   primkey-field="id"
  *
  * @ejb.permission role-name="InternalUser"
  *
@@ -65,7 +66,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *
  * @ejb.finder
  *   description="findByName"
- *   signature="Collection findByName(java.lang.String name)"
+ *   signature="se.anatom.ejbca.ca.publisher.PublisherDataLocal findByName(java.lang.String name)"
  *   query="SELECT DISTINCT OBJECT(a) from PublisherDataBean a WHERE a.name=?1"
  *
  * @ejb.finder
