@@ -5,7 +5,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataLocal.java,v 1.10 2003-09-04 14:36:14 herrvendil Exp $
+ * @version $Id: UserDataLocal.java,v 1.11 2003-11-02 10:15:12 anatom Exp $
  **/
 public interface UserDataLocal extends javax.ejb.EJBLocalObject {
 
@@ -28,7 +28,7 @@ public interface UserDataLocal extends javax.ejb.EJBLocalObject {
     */
     public void setUsername(String username);
     public String getSubjectDN();
-//    public void setSubjectDN(String subjectDN);
+    public void setSubjectDN(String subjectDN);
     public int getCAId();
     public void setCAId(int caid);
     
