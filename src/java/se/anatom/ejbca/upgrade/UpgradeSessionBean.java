@@ -36,7 +36,7 @@ import se.anatom.ejbca.util.SqlExecutor;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.6 2004-04-18 09:06:19 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.7 2004-04-18 16:03:19 anatom Exp $
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
@@ -162,6 +162,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
             JDBCUtil.close(con);
         }
         info("Finished migrating database.");
+        // TODO: import CA from PKCS12 file
         // TODO: Change fields, i.e. CAId in database tables
         debug(">upgrade()");
         return false;
