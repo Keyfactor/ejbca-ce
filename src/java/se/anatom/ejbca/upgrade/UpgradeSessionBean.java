@@ -14,6 +14,7 @@
 package se.anatom.ejbca.upgrade;
 
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,10 +32,11 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.util.JDBCUtil;
+import se.anatom.ejbca.util.SqlExecutor;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.5 2004-04-16 08:17:25 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.6 2004-04-18 09:06:19 anatom Exp $
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
@@ -145,7 +147,22 @@ public class UpgradeSessionBean extends BaseSessionBean {
         	error("Can not read resource for database type '"+dbtype+"'");
         	return false;
         }
-        // TODO:
+        // TODO: export and import profiles?
+        // TODO: export and import key recovery keys?
+        Connection con = null;
+        info("Start migration of database.");
+        try {
+            InputStreamReader inreader = new InputStreamReader(in);
+            con = getConnection();
+            SqlExecutor sqlex = new SqlExecutor(con, false); 
+            sqlex.runCommands(inreader);
+        } catch (Exception e) {
+            error("Error during database migration: ", e);
+        } finally {
+            JDBCUtil.close(con);
+        }
+        info("Finished migrating database.");
+        // TODO: Change fields, i.e. CAId in database tables
         debug(">upgrade()");
         return false;
     }
