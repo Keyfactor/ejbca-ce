@@ -12,6 +12,8 @@ import java.util.List;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.apache.log4j.Logger;
+
 import se.anatom.ejbca.ca.auth.UserAuthData;
 import se.anatom.ejbca.ca.caadmin.CA;
 import se.anatom.ejbca.ca.exception.IllegalKeyStoreException;
@@ -20,9 +22,11 @@ import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.KeyTools;
 /** Handles and maintains the CA -part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.2 2003-11-14 14:59:57 herrvendil Exp $
+ * @version $Id: OCSPCAService.java,v 1.3 2003-12-26 11:49:47 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
+
+    private static Logger m_log = Logger.getLogger(OCSPCAService.class);
 
     public static final float LATEST_VERSION = 1; 
     
@@ -45,7 +49,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
     
             
     public OCSPCAService(ExtendedCAServiceInfo serviceinfo)  {
-		System.out.println("OCSPCAService : constuctor " + serviceinfo.getStatus()); 	
+      m_log.debug("OCSPCAService : constructor " + serviceinfo.getStatus()); 	
 	  // Currently only RSA keys are supported
 	  OCSPCAServiceInfo info = (OCSPCAServiceInfo) serviceinfo;	
       data = new HashMap();   
@@ -108,7 +112,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	* @see se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAService#extendedService(se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest)
 	*/   
    public void init(CA ca) throws Exception{
-   	 System.out.println("OCSPCAService : init ");
+   	 m_log.debug("OCSPCAService : init ");
 	 // lookup keystore passwords      
 	 InitialContext ictx = new InitialContext();
 	 String keystorepass = (String) ictx.lookup("java:comp/env/OCSPKeyStorePass");      
@@ -170,7 +174,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	*/   
    public void update(ExtendedCAServiceInfo serviceinfo, CA ca) throws Exception{		   
    	   OCSPCAServiceInfo info = (OCSPCAServiceInfo) serviceinfo; 
-	   System.out.println("OCSPCAService : update " + serviceinfo.getStatus());
+	   m_log.debug("OCSPCAService : update " + serviceinfo.getStatus());
 	   setStatus(serviceinfo.getStatus());
    	   if(info.getRenewFlag()){  	 
    	     // Renew The OCSP Signers certificate.	                            	       		 										  

@@ -2,6 +2,7 @@
 -----
 Improved error handing for batch generation.
 Fixed some SQL for PostgreSQL.
+Minor debug cleanups.
 
 2.1
 ----

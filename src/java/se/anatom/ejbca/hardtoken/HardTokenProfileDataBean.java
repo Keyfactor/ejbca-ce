@@ -24,12 +24,10 @@ import se.anatom.ejbca.hardtoken.hardtokenprofiles.SwedishEIDProfile;
  *  hardtokenprofile (Data saved concerning the hard token profile)
  * </pre>
  *
- * @version $Id: HardTokenProfileDataBean.java,v 1.1 2003-12-05 14:50:27 herrvendil Exp $
+ * @version $Id: HardTokenProfileDataBean.java,v 1.2 2003-12-26 11:49:50 anatom Exp $
  **/
 
 public abstract class HardTokenProfileDataBean extends BaseEntityBean {
-
-
 
     private static Logger log = Logger.getLogger(HardTokenProfileDataBean.class);
     
@@ -94,7 +92,9 @@ public abstract class HardTokenProfileDataBean extends BaseEntityBean {
 		encoder.close();
 		       
 		try {
-			System.out.println("Profiledata: \n" + baos.toString("UTF8"));
+            if (log.isDebugEnabled()) {
+                log.debug("Profiledata: \n" + baos.toString("UTF8"));                
+            }
 			setData(baos.toString("UTF8"));
 		} catch (UnsupportedEncodingException e) {
           throw new EJBException(e);
