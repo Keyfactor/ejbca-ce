@@ -30,7 +30,7 @@
 
      <ejb-local-ref>
         <description>The key recovery data entity bean</description>
-        <ejb-ref-name>ejb/KeyRecoveryData</ejb-ref-name>
+        <ejb-ref-name>ejb/KeyRecoveryDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
         <local-home>se.anatom.ejbca.keyrecovery.KeyRecoveryDataLocalHome</local-home>
         <local>se.anatom.ejbca.keyrecovery.KeyRecoveryDataLocal</local>
