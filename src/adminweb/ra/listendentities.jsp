@@ -511,6 +511,9 @@
                oldaction=OLD_ACTION_LISTUSERS;
                oldactionvalue=status;
              }
+             else{
+               blank=true;
+             }
            }
          }else{
            if( request.getParameter(BUTTON_ISREVOKED) != null){

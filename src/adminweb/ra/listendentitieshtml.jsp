@@ -11,7 +11,7 @@ function viewuser(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    window.open(link, 'view_cert',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+    window.open(link, 'view_user',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }
 
 function edituser(row){
@@ -178,7 +178,8 @@ function confirmrevokation(){
   <% if(largeresult){ %>
      <H4 id="alert"><div align="center" ><%= ejbcawebbean.getText("TOLARGERESULT")  + " " + RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT
                                              + " " + ejbcawebbean.getText("ROWSWILLBEDISPLAYED") %> </div> </H4>  
-  <% } %>
+  <% } 
+  if(!blank){ %>
   <p>
     <input type="submit" name="<%=BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>">
   </p>
@@ -186,14 +187,14 @@ function confirmrevokation(){
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
     <tr> 
       <td width="14%"> 
-        <% if(rabean.previousButton(record,size)){ %>
+        <% if(rabean.previousButton(record,size) ){ %>
           <input type="submit" name="<%=BUTTON_PREVIOUS %>" value="<%= ejbcawebbean.getText("PREVIOUS") %>">
         <% } %>
       </td>
       <td width="76%">&nbsp; </td>
       <td width="10%"> 
         <div align="right">
-        <% if(rabean.nextButton(record,size)){ %>
+        <% if(rabean.nextButton(record,size) ){ %>
           <input type="submit" name="<%=BUTTON_NEXT %>" value="<%= ejbcawebbean.getText("NEXT") %>">
         <% } %>
         </div>
@@ -432,6 +433,7 @@ function confirmrevokation(){
       </td>
     </tr>
   </table>
+  <% } %>
   </form>
   <%// Include Footer 
    String footurl =   globalconfiguration.getFootBanner(); %>

@@ -324,7 +324,7 @@
     }
 
     int row = 0;
-    int tabindex = 0;
+    int tabindex = 1;
 %>
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
@@ -540,7 +540,7 @@ function checkUseInBatch(){
     document.edituser.<%= CHECKBOX_CLEARTEXTPASSWORD %>.checked  = false;  
   }
 
-  return returnval;
+  return !returnval;
 }
 <% } 
   }
