@@ -22,6 +22,7 @@ CLI command to import a CA from an existing PKCS12 file (openssl CA).
 Fixed bug where own fp instead of CA fp was written to the database.
 Fixed bug where an administrator could not use the admin GUI if signed by a CA using multiple DC attributes.
 Fixed buggs with AD publishing, useraccountcontrol temporarly removed.
+Changed the default extended keyusages for hard token profiles.
 
 3.0.3
 -----
