@@ -942,13 +942,14 @@ public class RSASignSessionBean extends BaseSessionBean {
      * Requests for a CRL to be created with the passed (revoked) certificates.
      *
      * @param admin Information about the administrator or admin preforming the event.
+     * @param caid Id of the CA which CRL should be created.
      * @param certs vector of RevokedCertInfo object.
-     * @return The newly created CRL or null.
+     * @return The newly created CRL in DER encoded byte form or null, use CerlTools.getCRLfromByteArray to convert to X509CRL.
      * @ejb.interface-method view-type="both"
      */
-    public X509CRL createCRL(Admin admin, int caid, Vector certs) {
+    public byte[] createCRL(Admin admin, int caid, Vector certs) {
         debug(">createCRL()");
-        X509CRL crl = null;
+        byte[] crlBytes;
         try {
             // get CA
             CADataLocal cadata = null;
@@ -983,10 +984,10 @@ public class RSASignSessionBean extends BaseSessionBean {
                 throw new EJBException(e);
             }
 
-
             ICertificateStoreSessionLocal certificateStore = storeHome.create();
             // Get number of last CRL and increase by 1
             int number = certificateStore.getLastCRLNumber(admin, ca.getSubjectDN()) + 1;
+            X509CRL crl = null;
             try {
                 crl = (X509CRL) ca.generateCRL(certs, number);
             } catch (CATokenOfflineException ctoe) {
@@ -1004,12 +1005,13 @@ public class RSASignSessionBean extends BaseSessionBean {
             IPublisherSessionLocal pub = publishHome.create();
             pub.storeCRL(admin, ca.getCRLPublishers(), crl.getEncoded(), fingerprint, number);
 
+            crlBytes = crl.getEncoded();
         } catch (Exception e) {
             getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECRL, "");
             throw new EJBException(e);
         }
         debug("<createCRL()");
-        return crl;
+        return crlBytes;
     } // createCRL
 
     /**
