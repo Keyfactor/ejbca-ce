@@ -64,7 +64,7 @@ function validateForm() {
         alert ("Email address should contain an @ character!")
         document.demoreq.email.focus()
       }
-  document.demoreq.user.value=document.demoreq.user.value+",EmailAddress="+document.demoreq.email.value
+      document.demoreq.user.value=document.demoreq.user.value+",EmailAddress="+document.demoreq.email.value
   }
   //-- If all fields OK go ahead and submit the form and put up a message.
   if (okSoFar==true) {

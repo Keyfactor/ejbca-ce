@@ -94,6 +94,8 @@ try  {
   <p align="center"> Please fill out the form, then click OK to fetch your certificate.<br>
     <INPUT name=user type=hidden>
     <br>
+    <INPUT name=dn type=hidden value="C=SE,O=AnaTom,CN=">
+    <br>
     Full name, e.g. Sven Svensson: 
     <INPUT NAME=cn TYPE=text SIZE=25 maxlength="60" class="input">
   <p align="center"> E-mail (optional): 
@@ -114,8 +116,8 @@ try  {
     </p>
   </div>
 </FORM>
-<div align="center">
-  <SCRIPT LANGUAGE=VBS>
+
+<SCRIPT LANGUAGE=VBS>
     Function CSR(keyflags)
        CSR = ""
        szName          = "CN=6AEK347fw8vWE424"
@@ -158,18 +160,31 @@ try  {
        Dim TheForm
        Set TheForm = Document.CertReqForm
        err.clear
+       if len(TheForm.cn.Value)=0 Then
+           MsgBox("Please fill in the name field!")
+           TheForm.cn.focus()
+           Exit Sub
+       end if
+       TheForm.user.Value=TheForm.dn.Value+TheForm.cn.value
+       if len(TheForm.email.Value)>0 Then
+          If InStr(1, TheForm.email.Value, "@", 1)<2 Then
+             MsgBox("Email address should contain an @ character!")
+             Exit Sub
+          Else
+          TheForm.user.Value=TheForm.user.Value+",EmailAddress="+TheForm.email.Value
+          end if
+       end if
        result = CSR(2)
        if len(result)=0 Then
           result = MsgBox("Unable to generate PKCS#10 certificate request.", 0, "Alert")
           Exit Sub
        end if
-       TheForm.user.Value=TheForm.dn.Value+TheForm.cn.Value
-       TheForm.user.Value=TheForm.user.Value+",EmailAddress="+TheForm.email.Value
        TheForm.pkcs10.Value = result
        TheForm.Submit
        Exit Sub
     End Sub
+
 </SCRIPT>
-</div>
+
 </BODY>
 </HTML>
