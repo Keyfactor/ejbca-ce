@@ -1,9 +1,9 @@
-<html>
-<%@page contentType="text/html"%>
+<%@ page pageEncoding="ISO-8859-1"%>
 <%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.authorization.AuthorizationDeniedException,
                  se.anatom.ejbca.webdist.rainterface.UserView, se.anatom.ejbca.webdist.rainterface.SortBy,se.anatom.ejbca.webdist.rainterface.RevokedInfoView,
                  se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.ra.UserDataRemote,se.anatom.ejbca.ra.raadmin.AdminPreference, se.anatom.ejbca.ra.raadmin.DNFieldExtractor,
                  javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.util.query.*, java.util.*, java.text.DateFormat" %>
+<html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
 

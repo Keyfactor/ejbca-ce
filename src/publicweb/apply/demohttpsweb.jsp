@@ -1,6 +1,6 @@
-<html>
-<%@page contentType="text/html"%>
+<%@ page pageEncoding="ISO-8859-1"%>
 <%@page  errorPage="errorpage.jsp" import="se.anatom.ejbca.util.CertTools, java.security.cert.*" %>
+<html>
 <%   // Initialize environment
     X509Certificate[] certificates =   (X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" );
     if(certificates == null) throw new ServletException("Client certificate required.");

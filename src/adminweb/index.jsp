@@ -1,6 +1,6 @@
-<html>
-<%@page contentType="text/html"%>
+<%@ page pageEncoding="ISO-8859-1"%>
 <%@page errorPage="errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.webdist.webconfiguration.WebLanguages"%>
+<html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <%   // Initialize environment
@@ -11,7 +11,6 @@
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
 
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
 
 <frameset rows="131,*" cols="*" frameborder="NO" border="0" framespacing="0"> 

@@ -1,3 +1,4 @@
+<%@ page pageEncoding="ISO-8859-1"%>
 <%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,se.anatom.ejbca.ca.sign.*,se.anatom.ejbca.ca.caadmin.*,se.anatom.ejbca.log.Admin"%>
 
 <HTML>

@@ -1,8 +1,8 @@
+<%@ page isErrorPage="true" %>
+
 <html>
 <title>EJBCA Certificate Enroll Error</title>
 <body>
-
-<%@ page isErrorPage="true" %>
 
 <h2>EJBCA Certificate Enroll Error</h2>
 <%

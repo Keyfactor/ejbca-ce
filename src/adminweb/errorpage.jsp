@@ -1,4 +1,4 @@
-<%@page contentType="text/html"%>
+<%@ page pageEncoding="ISO-8859-1"%>
 
 <%@page isErrorPage="true" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.authorization.AuthorizationDeniedException,
                                    se.anatom.ejbca.authorization.AuthenticationFailedException"%>

@@ -1,10 +1,10 @@
 <!-- Version: $Id: viewcertificate.jsp,v 1.4 2002/08/28 12:22:25 herrvendil Exp $ -->
 
-<html>
-<%@page contentType="text/html"%>
+<%@ page pageEncoding="ISO-8859-1"%>
 <%@page errorPage="/errorpage.jsp"  import="java.math.BigInteger, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
                  se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.CertificateView, se.anatom.ejbca.webdist.rainterface.RevokedInfoView,
                  javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.authorization.AuthorizationDeniedException, se.anatom.ejbca.util.CertTools" %>
+<html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
 <jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />

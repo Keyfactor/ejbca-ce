@@ -1,3 +1,4 @@
+<%@ page pageEncoding="ISO-8859-1"%>
 <%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.net.*,java.security.cert.*,java.math.BigInteger,se.anatom.ejbca.ca.store.*,se.anatom.ejbca.util.Hex, se.anatom.ejbca.log.Admin"%>
 <html>
 <head><title>EJBCA - List certificates</title>

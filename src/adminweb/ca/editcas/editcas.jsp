@@ -1,11 +1,11 @@
-<html>
-<%@page contentType="text/html"%>
+<%@ page pageEncoding="ISO-8859-1"%>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, org.apache.commons.fileupload.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst, se.anatom.ejbca.util.FileTools, se.anatom.ejbca.util.CertTools, se.anatom.ejbca.authorization.AuthorizationDeniedException,
                se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.ca.caadmin.CAInfo, se.anatom.ejbca.ca.caadmin.X509CAInfo, se.anatom.ejbca.ca.caadmin.CATokenInfo, se.anatom.ejbca.ca.caadmin.SoftCATokenInfo, se.anatom.ejbca.webdist.cainterface.CADataHandler,
                se.anatom.ejbca.webdist.rainterface.RevokedInfoView, se.anatom.ejbca.ca.caadmin.CATokenInfo, se.anatom.ejbca.ca.caadmin.SoftCATokenInfo, se.anatom.ejbca.webdist.webconfiguration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.bouncycastle.jce.PKCS10CertificationRequest, 
                se.anatom.ejbca.protocol.PKCS10RequestMessage, se.anatom.ejbca.ca.exception.CAExistsException, se.anatom.ejbca.ca.exception.CADoesntExistsException, se.anatom.ejbca.ca.exception.CATokenOfflineException, se.anatom.ejbca.ca.exception.CATokenAuthenticationFailedException,
                se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo, se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenManager, se.anatom.ejbca.ca.caadmin.AvailableHardCAToken, se.anatom.ejbca.ca.caadmin.HardCATokenInfo"%>
 
+<html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
 

@@ -1,10 +1,10 @@
-<html>
-<%@page contentType="text/html"%>
+<%@ page pageEncoding="ISO-8859-1"%>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst, se.anatom.ejbca.authorization.AuthorizationDeniedException,
                se.anatom.ejbca.authorization.AvailableAccessRules,
                se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, se.anatom.ejbca.hardtoken.hardtokenprofiles.*, se.anatom.ejbca.webdist.hardtokeninterface.EditHardTokenProfileJSPHelper, 
                se.anatom.ejbca.hardtoken.HardTokenProfileExistsException"%>
 
+<html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:useBean id="hardtokenbean" scope="session" class="se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean" />
 <jsp:useBean id="helper" scope="session" class="se.anatom.ejbca.webdist.hardtokeninterface.EditHardTokenProfileJSPHelper" />

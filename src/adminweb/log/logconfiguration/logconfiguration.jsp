@@ -1,4 +1,4 @@
-<%@page contentType="text/html"%>
+<%@ page pageEncoding="ISO-8859-1"%>
 <%@page errorPage="/errorpage.jsp"  import=" se.anatom.ejbca.authorization.AuthorizationDeniedException, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
                 se.anatom.ejbca.log.LogConfiguration, se.anatom.ejbca.webdist.loginterface.LogInterfaceBean, se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.log.LogEntry,
                 se.anatom.ejbca.webdist.webconfiguration.WebLanguages, java.util.HashMap, java.util.Arrays, java.util.Iterator, java.util.Collection"%>

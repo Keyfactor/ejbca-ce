@@ -1,10 +1,10 @@
-<html>
-<%@page contentType="text/html"%>
+<%@ page pageEncoding="ISO-8859-1"%>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst, 
               se.anatom.ejbca.authorization.AuthorizationDeniedException, se.anatom.ejbca.authorization.AvailableAccessRules,
                se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.ca.publisher.*, se.anatom.ejbca.webdist.cainterface.EditPublisherJSPHelper, 
                se.anatom.ejbca.ca.exception.PublisherExistsException, se.anatom.ejbca.ra.raadmin.DNFieldExtractor"%>
 
+<html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
 <jsp:useBean id="publisherhelper" scope="session" class="se.anatom.ejbca.webdist.cainterface.EditPublisherJSPHelper" />

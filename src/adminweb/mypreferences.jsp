@@ -1,4 +1,4 @@
-<%@page contentType="text/html"%>
+<%@ page pageEncoding="ISO-8859-1"%>
 <%@page  errorPage="errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
                 se.anatom.ejbca.ra.raadmin.AdminPreference, se.anatom.ejbca.webdist.webconfiguration.GlobalConfigurationDataHandler,
                 se.anatom.ejbca.webdist.webconfiguration.WebLanguages, se.anatom.ejbca.webdist.webconfiguration.AdminPreferenceDataHandler"%>

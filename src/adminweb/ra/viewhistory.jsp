@@ -1,10 +1,10 @@
-<html>
-<%@page contentType="text/html"%>
+<%@ page pageEncoding="ISO-8859-1"%>
 <%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
                  se.anatom.ejbca.webdist.rainterface.SortBy,se.anatom.ejbca.webdist.loginterface.LogEntryView,se.anatom.ejbca.webdist.loginterface.LogEntriesView,
              se.anatom.ejbca.webdist.loginterface.LogInterfaceBean, se.anatom.ejbca.log.LogEntry, se.anatom.ejbca.log.Admin, 
                  javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.util.query.*, java.util.Calendar, java.util.Date, java.text.DateFormat, java.util.Locale,
                  java.util.HashMap" %>
+<html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:useBean id="logbean" scope="session" class="se.anatom.ejbca.webdist.loginterface.LogInterfaceBean" />
 <jsp:useBean id="rabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />

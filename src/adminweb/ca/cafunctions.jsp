@@ -1,8 +1,8 @@
-<html>
-<%@page contentType="text/html"%>
+<%@ page pageEncoding="ISO-8859-1"%>
 <%@page errorPage="/errorpage.jsp"  import=" java.util.*, java.security.cert.Certificate, java.security.cert.X509Certificate, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration,
                                               se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.webdist.rainterface.CertificateView,
                                               se.anatom.ejbca.ca.caadmin.CAInfo, se.anatom.ejbca.ca.store.CRLInfo, se.anatom.ejbca.authorization.AuthorizationDeniedException, se.anatom.ejbca.SecConst"%>
+<html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />

@@ -1,8 +1,8 @@
-<HTML>
-<%@page contentType="text/html"%>
+<%@ page pageEncoding="ISO-8859-1"%>
 <%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,se.anatom.ejbca.ca.sign.*,
                                  se.anatom.ejbca.log.Admin, se.anatom.ejbca.apply.ApplyBean, se.anatom.ejbca.SecConst"%>
 
+<HTML>
 <jsp:useBean id="applybean" scope="session" class="se.anatom.ejbca.apply.ApplyBean" />
 <%!
 
