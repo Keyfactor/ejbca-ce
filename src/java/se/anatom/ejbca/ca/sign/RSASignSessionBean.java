@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.36 2002-08-14 13:17:53 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.37 2002-08-19 11:04:01 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -532,7 +532,9 @@ public class RSASignSessionBean extends BaseSessionBean {
             GeneralNames gns = new GeneralNames(seq);
             DistributionPointName dpn = new DistributionPointName(0, gns);
             DistributionPoint distp = new DistributionPoint(dpn, null, null);
-            certgen.addExtension(X509Extensions.CRLDistributionPoints.getId(), crldistcritical.booleanValue(), distp);
+            DERConstructedSequence ext = new DERConstructedSequence();
+            ext.addObject(distp);
+            certgen.addExtension(X509Extensions.CRLDistributionPoints.getId(), crldistcritical.booleanValue(), ext);
         }
         X509Certificate cert = certgen.generateX509Certificate(signingDevice.getPrivateSignKey(), signingDevice.getProvider());
         debug("<makeBCCertificate()");
