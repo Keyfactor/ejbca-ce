@@ -1,4 +1,4 @@
-$Id: README,v 1.84 2003-04-10 14:41:01 anatom Exp $
+$Id: README,v 1.85 2003-05-12 08:40:56 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -186,7 +186,7 @@ Build
 
 Needed to build and run are:
 JDK 1.4.x
-JBOSS 3.0.x (with Tomcat 4.1.x or Jetty)
+JBOSS 3.2.x or 3.0.x (with Jetty or Tomcat 4.1.x)
 Ant 1.4.x/1.5.x to build (http://jakarta.apache.org/ant/)
 (Bouncycastle JCE provider, distributed with EJBCA see above)
 
@@ -195,7 +195,7 @@ everything.
 
 Set the environment variable JBOSS_HOME to the directory where
 JBoss's root is
- (/jboss-<version>_Tomcat-<version>). This is done so the deploy
+ (/jboss-<version>). This is done so the deploy
  script will
  know where files are to be
  copied, they are copied to the
@@ -233,18 +233,16 @@ will be populated with a few entries.
 to test the
 installation.
 
-NOTE-2: The installed keystore is a demo keystore with DN 'C=
-SE,O=AnaTom,CN=
-TestCA'.
+NOTE-2: The installed keystore is a demo keystore with DN
+'C=SE,O=AnaTom,CN=TestCA'.
 You should create a new keystore (see below) if using EJBCA for
-production
-purposes.
+production purposes.
 
 FOR THE OTHERS:
 
 If another database than the default Hypersonic database (for
-example mySQL)
- should be used, configure the database to be used in JBoss.
+example mySQL) should be used, configure the database to be used
+in JBoss.
 See doc/HOWTO-<database>.txt files for this.
 
 Setting up your own CA:
@@ -975,6 +973,7 @@ url=
 
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
+
 
 
 

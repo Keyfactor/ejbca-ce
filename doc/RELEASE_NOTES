@@ -1,45 +1,60 @@
 EJBCA V2.1b1
 ------------
 
+
+EJBCA V2.0.1
+------------
+
+Except from notes below this is a plugin upgrade from v2.0.
+
 Java >= 1.4 is now required.
 
-Delete bcmail-jdk13*, jce-jdk13* and regexp1_0_0.jar from
-$JBOSS_HOME/server/default/lib.
+Delete bcmail-jdk13*, jce-jdk13*, ldap.jar and regexp1_0_0.jar
+from $JBOSS_HOME/server/default/lib.
 
 EJBCA V2.0
 ----------
-Name of initial temporary super administrator changed from "CN=Walter" to "CN=
+Name of initial temporary super administrator changed from "CN=
+Walter" to "CN=
 SuperAdmin". A new must be created.
 
 All defined administrator privileges must be redefined.
 
 Certificate profiles should be redefined.
 
-Drop tables GlobalConfigurationData, AdminGroupData, AdminEntityData,
-AccessRulesData and EndEntityProfileData to flush configuration and
-administrator privileges (actually deleting the content would be enough but you
+Drop tables GlobalConfigurationData, AdminGroupData,
+AdminEntityData,
+AccessRulesData and EndEntityProfileData to flush configuration
+and
+administrator privileges (actually deleting the content would be
+enough but you
 might as well drop the tables).
 
-Delete bcmail-jdk13-116.jar, jce-jdk13-116.jar, ldap.jar and regexp1_0_0.jar
-from $JBOSS_HOME/server/default/lib.
+Delete bcmail-jdk13-116.jar, jce-jdk13-116.jar, ldap.jar and
+regexp1_0_0.jar from $JBOSS_HOME/server/default/lib.
 
 EJBCA V2.0B1
 ----------
 We have moved to EJB 2.0. JBoss 3 is now required.
-A complete reinstall from EJBCA 1.x is required, old jars, wars and ears must be
+A complete reinstall from EJBCA 1.x is required, old jars, wars
+and ears must be
 deleted.
-Database schema has changed, old data in the database must be migrated.
-A Web GUI for administration is available through https, see doc/README for
+Database schema has changed, old data in the database must be
+migrated.
+A Web GUI for administration is available through https, see
+doc/README for
 installation instructions.
 
 EJBCA V1.3
 ----------
-This is a plugin upgrade from v1.2 or 1.1. Just build and deploy the new
+This is a plugin upgrade from v1.2 or 1.1. Just build and deploy
+the new
 files.
 
 EJBCA V1.2
 ----------
-This is a plugin upgrade from v1.1. Just build and deploy the new
+This is a plugin upgrade from v1.1. Just build and deploy the
+new
 files.
 
 EJBCA V1.1
@@ -47,9 +62,12 @@ EJBCA V1.1
 
 Upgrading from version 1.0:
 
-If upgrading from version 1.0 the database tables need to be migrated if the
-DN attributes L or ST have been used. This is because the ordering of those
-attributes have changed (for string matching the order must be defined).
+If upgrading from version 1.0 the database tables need to be
+migrated if the
+DN attributes L or ST have been used. This is because the
+ordering of those
+attributes have changed (for string matching the order must be
+defined).
 
 If L or ST have not been used in DNs, migration is NOT needed.
 
@@ -65,6 +83,8 @@ subjectDN in table UserData.
 
 If a tool is needed to perform the migration, please contact us.
 See http://sourceforge.net/projects/ejbca
+
+
 
 
 
