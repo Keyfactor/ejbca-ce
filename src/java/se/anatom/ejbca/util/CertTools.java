@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.5 2002-01-06 10:51:32 anatom Exp $
+ * @version $Id: CertTools.java,v 1.6 2002-01-07 15:44:39 anatom Exp $
  */
 public class CertTools {
 
@@ -99,10 +99,10 @@ public class CertTools {
         order.add(X509Name.CN);
         order.add(X509Name.SN);
         order.add(X509Name.ST);
-        order.add(X509Name.L);
         order.add(X509Name.OU);
-        order.add(X509Name.DC);
         order.add(X509Name.O);
+        order.add(X509Name.DC);
+        order.add(X509Name.L);
         order.add(X509Name.C);
         order.retainAll(coll);
 
