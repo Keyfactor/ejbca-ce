@@ -225,13 +225,6 @@
      </env-entry>
    </session>
 
-   <resource-ref>
-        <description>DataSource for the Certificate database</description>
-        <res-ref-name>DefaultDB</res-ref-name>
-        <res-type>javax.sql.DataSource</res-type>
-        <res-auth>Container</res-auth>
-   </resource-ref>
-
    <entity>
       <description>
             This enterprise bean entity represents a certificate with accompanying data.
