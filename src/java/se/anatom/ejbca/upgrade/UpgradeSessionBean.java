@@ -16,7 +16,6 @@ package se.anatom.ejbca.upgrade;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -51,7 +50,7 @@ import se.anatom.ejbca.util.SqlExecutor;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.14 2004-05-13 13:16:34 herrvendil Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.15 2004-05-13 17:21:35 anatom Exp $
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 

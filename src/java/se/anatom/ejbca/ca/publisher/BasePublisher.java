@@ -16,8 +16,6 @@ package se.anatom.ejbca.ca.publisher;
 import java.io.Serializable;
 import java.security.cert.Certificate;
 
-import javax.ejb.EJBException;
-
 import se.anatom.ejbca.ca.exception.PublisherConnectionException;
 import se.anatom.ejbca.ca.exception.PublisherException;
 import se.anatom.ejbca.log.Admin;
@@ -29,7 +27,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * of publishers in the system.
  *  
  *
- * @version $Id: BasePublisher.java,v 1.4 2004-05-13 15:36:11 herrvendil Exp $
+ * @version $Id: BasePublisher.java,v 1.5 2004-05-13 17:21:45 anatom Exp $
  */
 public abstract class BasePublisher extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values

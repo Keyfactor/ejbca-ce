@@ -17,8 +17,6 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.HashMap;
 
-import javax.ejb.EJBException;
-
 import se.anatom.ejbca.ca.exception.PublisherConnectionException;
 import se.anatom.ejbca.ca.exception.PublisherExistsException;
 import se.anatom.ejbca.log.Admin;
@@ -26,7 +24,7 @@ import se.anatom.ejbca.ra.ExtendedInformation;
 
 /**
  *
- * @version $Id: IPublisherSessionRemote.java,v 1.3 2004-05-13 15:36:11 herrvendil Exp $
+ * @version $Id: IPublisherSessionRemote.java,v 1.4 2004-05-13 17:21:45 anatom Exp $
  */
 public interface IPublisherSessionRemote extends javax.ejb.EJBObject {
     
