@@ -91,7 +91,7 @@ import se.anatom.ejbca.ra.UserAdminData;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.35 2004-07-14 07:59:49 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.36 2004-07-16 20:43:34 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -228,8 +228,8 @@ public class DemoCertReqServlet extends HttpServlet {
     log.debug("includeEmail="+includeEmail);
 
     UserAdminData newuser = new UserAdminData();
+    newuser.setType(SecConst.USER_ENDUSER);
     newuser.setUsername(username);
-
     newuser.setDN(dn);
     newuser.setTokenType(SecConst.TOKEN_SOFT_BROWSERGEN);
     newuser.setAdministrator(false);

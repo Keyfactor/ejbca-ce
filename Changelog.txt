@@ -10,6 +10,7 @@
 3.0.3
 -----
 Added missing class in admin.jar for 'ca processreq'.
+Fixes to demo servlet.
 
 3.0.2
 -----
