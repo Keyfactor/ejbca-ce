@@ -1,3 +1,9 @@
+1.3
+---
+Configuration howto/support for Oracle.
+CA-certs now downloaded from webdist.
+Minor, mostly cosmetic changes.
+
 1.2
 ---
 Command for batch processing, and other batch fixes.
@@ -13,14 +19,17 @@ Minor improvements and bugfixes.
 ---
 Tested with additional databases (mySQL, PostgreSQL).
 The Datasource used is configurable.
-New architecture for Publishers where certificates can be published in addition to the main database.
-Change DN order to match RFC1779. WARNING! See doc/RELEASE_NOTES for information about upgrading from v1.0.
+New architecture for Publishers where certificates can be published in addition
+to the main database.
+Change DN order to match RFC1779. WARNING! See doc/RELEASE_NOTES for information
+about upgrading from v1.0.
 LDAP Publisher to store for certificates and CRLs in LDAP directory.
 Minor bugfixes.
 
 1.0
 ---
-Fixed bug with not returning correct content-length to browser when returning PEM-certificates.
+Fixed bug with not returning correct content-length to browser when returning
+PEM-certificates.
 New version of BouncyCastle provider with minor PKCS12 fix.
 Updated docs.
 Added FAQ.
@@ -29,7 +38,8 @@ Added FAQ.
 -----
 New version of Bouncycastle JCE provider.
 Added and clarified some documentation.
-New version of BC provider fixed compatibility of PKCS10 requests with KeyTool and MS CA.
+New version of BC provider fixed compatibility of PKCS10 requests with KeyTool
+and MS CA.
 Fixed process of PKCS10 request from KeyTool (they use different header).
 Fixed bug during key generation of CA that always generated 1024 bit keys.
 Creates p12-files during test in real temporary dir.
@@ -37,4 +47,5 @@ Creates p12-files during test in real temporary dir.
 1.0b1
 -----
 Initial release
+
 

@@ -20,7 +20,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.CertificateDataPK;
 import se.anatom.ejbca.ca.store.CertificateData;
 import se.anatom.ejbca.ca.store.CertificateDataHome;
-
+ 
 
 public class ra {
 
@@ -40,7 +40,7 @@ public class ra {
             if (args[0].equals("adduser"))
             {
                 if (args.length < 6) {
-                    System.out.println("Usage: RA adduser username password dn email type");
+                    System.out.println("Usage: RA adduser <username> <password> <dn> <email> <type>");
                     System.out.println("Type (mask): INVALID=0; END-USER=1; CA=2; RA=4; ROOTCA=8; CAADMIN=16; RAADMIN=0x32");
                     return;
                 }
@@ -62,7 +62,7 @@ public class ra {
             } else if (args[0].equals("deluser"))
             {
                 if (args.length < 2) {
-                    System.out.println("Usage: RA deluser username");
+                    System.out.println("Usage: RA deluser <username>");
                     return;
                 }
                 String username = args[1];
@@ -76,7 +76,7 @@ public class ra {
             } else if (args[0].equals("setclearpwd"))
             {
                 if (args.length < 3) {
-                    System.out.println("Usage: RA setclearpwd username password");
+                    System.out.println("Usage: RA setclearpwd <username> <password>");
                     return;
                 }
                 String username = args[1];
@@ -86,7 +86,7 @@ public class ra {
             } else if (args[0].equals("setuserstatus"))
             {
                 if (args.length < 3) {
-                    System.out.println("Usage: RA setuserstatus username status");
+                    System.out.println("Usage: RA setuserstatus <username> <status>");
                     System.out.println("Status: NEW=10; FAILED=11; INITIALIZED=20; INPROCESS=30; GENERATED=40; HISTORICAL=50");
                     return;
                 }
@@ -97,7 +97,7 @@ public class ra {
             } else if (args[0].equals("finduser"))
             {
                 if (args.length < 2) {
-                    System.out.println("Usage: RA finduser username");
+                    System.out.println("Usage: RA finduser <username>");
                     return;
                 }
                 String username = args[1];
@@ -140,7 +140,7 @@ public class ra {
             } else if (args[0].equals("revokeuser"))
             {
                 if (args.length < 2) {
-                    System.out.println("Usage: RA revokeuser username");
+                    System.out.println("Usage: RA revokeuser <username>");
                     return;
                 }
                 String username = args[1];
