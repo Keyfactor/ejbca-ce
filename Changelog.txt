@@ -2,7 +2,7 @@
 -----
 Initial SCEP support.
 Support for multiple CDPs separated by ';'
-Removed unnneded debug output of cert during creation
+Removed unneded debug output of cert during creation
 Fixed bug in setup-adminweb.sh
 
 2.0.1
