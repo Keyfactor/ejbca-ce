@@ -6,7 +6,7 @@
         <datasource>java:/DefaultDS</datasource>
         <datasource-mapping>mySQL</datasource-mapping>
     </defaults>
-
+<enterprise-beans>
     <entity>
         <ejb-name>HardTokenProfileData</ejb-name>
         <cmp-field>
@@ -15,5 +15,5 @@
             <sql-type>TEXT</sql-type>
         </cmp-field>
     </entity>
-
+</enterprise-beans>
 </jbosscmp-jdbc>
