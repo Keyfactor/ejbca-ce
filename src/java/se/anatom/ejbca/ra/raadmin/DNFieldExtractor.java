@@ -81,22 +81,29 @@ public class DNFieldExtractor {
          this.dn=dn;  
          dnfields = new HashMap();
         
-         String[] dnexploded = LDAPDN.explodeDN(dn,false);
-         for(int i = 0; i < dnexploded.length; i++){ 
-           boolean exists = false;  
-           for(int j = 0; j < fields.length; j++){
-             if(dnexploded[i].toUpperCase().startsWith(fields[j])){
-               exists = true;  
-               String rdn = LDAPDN.unescapeRDN(dnexploded[i]);   
-               if(type == TYPE_SUBJECTDN) 
-                 dnfields.put(new Integer((j * BOUNDRARY) + fieldnumbers[j]) ,rdn);  
-               else  
-                 dnfields.put(new Integer(((j+ SUBJECTALTERNATIVENAMEBOUNDRARY) * BOUNDRARY) + fieldnumbers[j]) ,rdn);                 
-               fieldnumbers[j]++;
-             }
-           }  
-           if(!exists)
-             existsother=true;  
+         try{
+           String[] dnexploded = LDAPDN.explodeDN(dn,false);
+           for(int i = 0; i < dnexploded.length; i++){ 
+             boolean exists = false;  
+             for(int j = 0; j < fields.length; j++){
+               if(dnexploded[i].toUpperCase().startsWith(fields[j])){
+                 exists = true;  
+                 String rdn = LDAPDN.unescapeRDN(dnexploded[i]);   
+                 if(type == TYPE_SUBJECTDN) 
+                   dnfields.put(new Integer((j * BOUNDRARY) + fieldnumbers[j]) ,rdn);  
+                 else  
+                   dnfields.put(new Integer(((j+ SUBJECTALTERNATIVENAMEBOUNDRARY) * BOUNDRARY) + fieldnumbers[j]) ,rdn);                 
+                 fieldnumbers[j]++;
+               }
+             }  
+             if(!exists)
+               existsother=true;  
+           }
+         }catch(Exception e){
+             if(type == TYPE_SUBJECTDN) 
+                dnfields.put(new Integer((CN * BOUNDRARY) ) , "Illegal DN : " + dn);  
+             else  
+                dnfields.put(new Integer(((RFC822NAME + SUBJECTALTERNATIVENAMEBOUNDRARY) * BOUNDRARY)) ,"Illegal Subjectaltname : " + dn);                
          }
       }
       else

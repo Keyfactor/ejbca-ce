@@ -32,7 +32,7 @@ import se.anatom.ejbca.ra.raadmin.AdminPreference;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.24 2003-02-14 08:39:47 scop Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.25 2003-03-10 07:22:04 herrvendil Exp $
  */
 public class EjbcaWebBean {
 
@@ -69,6 +69,7 @@ public class EjbcaWebBean {
     private BigInteger                     certificateserialnumber;
     private X509Certificate[]              certificates;
     private boolean                        initialized=false;
+    private boolean                        errorpage_initialized=false;    
     private Boolean[]                      raauthorized;
 
     /** Creates a new instance of EjbcaWebBean */
@@ -116,7 +117,7 @@ public class EjbcaWebBean {
         log.debug("Verifying authoirization of '"+userdn);
 
         // Check that user is administrator.
-        adminsession.checkIfSubjectDNisAdmin(administrator, userdn);
+        adminsession.checkIfCertificateBelongToAdmin(administrator, certificates[0].getSerialNumber());
 
         logsession.log(administrator,LogEntry.MODULE_ADMINWEB,  new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORLOGGEDIN,"");
 
@@ -150,6 +151,34 @@ public class EjbcaWebBean {
       }
       return globalconfiguration;
     }
+    
+
+    public GlobalConfiguration initialize_errorpage(HttpServletRequest request) throws Exception{
+
+      if(!errorpage_initialized){
+        String remoteAddr = request.getRemoteAddr();
+        Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
+
+        InitialContext jndicontext = new InitialContext();
+        Object obj1 = jndicontext.lookup("UserAdminSession");
+        IUserAdminSessionHome adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
+        IUserAdminSessionRemote  adminsession = adminsessionhome.create();
+        
+        globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(adminsession, administrator);
+        globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();
+        adminspreferences = new AdminPreferenceDataHandler(administrator);
+        weblanguages = new WebLanguages(globalconfiguration);
+
+        if(currentadminpreference == null){
+           currentadminpreference = adminspreferences.getDefaultAdminPreference();
+        }
+        adminsweblanguage = new WebLanguages( currentadminpreference.getPreferedLanguage()
+                                             ,currentadminpreference.getSecondaryLanguage());
+
+        errorpage_initialized=true;
+      }
+      return globalconfiguration;
+    }    
 
     /** Returns the current users common name */
     public String getUsersCommonName(){

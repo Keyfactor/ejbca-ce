@@ -3,6 +3,7 @@ package se.anatom.ejbca.ra.authorization;
 import java.security.cert.X509Certificate;
 import java.io.Serializable;
 
+
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 /**
  * A class representing a admin entity. It can be set to match one admins dn or an entire organization by matching against o.
@@ -12,7 +13,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * Matchtype constants tells under which contitions the match shall be performed.
  *
  * @author  Philip Vendil
- * @version $Id: AdminEntity.java,v 1.5 2003-03-07 08:17:30 herrvendil Exp $
+ * @version $Id: AdminEntity.java,v 1.6 2003-03-10 07:22:05 herrvendil Exp $
  */
 public class AdminEntity implements Serializable, Comparable {
     // Special Users. (Constants cannot have 0 value).
@@ -73,6 +74,9 @@ public class AdminEntity implements Serializable, Comparable {
         X509Certificate certificate = admininformation.getX509Certificate();
         String certstring = certificate.getSubjectX500Principal().toString();
         String serialnumber = certificate.getSerialNumber().toString(16);
+        try{
+          certstring = new RegularExpression.RE("SERIALNUMBER=",false).replace(certstring,"SN=");
+        }catch(Exception e){}         
         int parameter;
         int size=0;
         String[] clientstrings=null;

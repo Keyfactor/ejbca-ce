@@ -37,7 +37,7 @@ import se.anatom.ejbca.ra.IUserAdminSessionHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.6 2003-03-01 20:54:00 herrvendil Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.7 2003-03-10 07:22:02 herrvendil Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
@@ -840,7 +840,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      */
     public void tokenGenerated(Admin admin, String tokensn, String username){
       try{ 
-        getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_INFO_TOKENGENERATED,"Token with serialnumber : " + tokensn + " generated successfully.");
+        getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_INFO_HARDTOKENGENERATED, "Token with serialnumber : " + tokensn + " generated successfully.");
       }catch(Exception e){
         throw new EJBException(e);         
       }   
@@ -856,7 +856,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      */
     public void errorWhenGeneratingToken(Admin admin, String tokensn, String username){
       try{ 
-        getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_TOKENGENERATED,"Error when generating token with serialnumber : " + tokensn + ".");
+        getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_HARDTOKENGENERATED, "Error when generating token with serialnumber : " + tokensn + ".");
       }catch(Exception e){
         throw new EJBException(e);         
       }         

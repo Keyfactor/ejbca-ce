@@ -32,7 +32,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.38 2003-02-28 09:17:46 koen_serry Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.39 2003-03-10 07:22:02 herrvendil Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -275,6 +275,43 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             throw new EJBException(fe);
         }
     } //findCertificatesByExpireTime
+    
+    /** Finds usernames of users having certificate(s) expiring within a specified time and that has status active.
+     * @return a collection of usernames (String)
+     * Implements ICertificateStoreSession::findCertificatesByExpireTimeWithLimit.
+     */
+    public Collection findCertificatesByExpireTimeWithLimit(Admin admin, Date expiretime) {
+        debug(">findCertificatesByExpireTimeWithLimit");
+        Connection con = null;
+        PreparedStatement ps = null;;
+        ResultSet result = null;
+        ArrayList returnval = new ArrayList();
+        long currentdate = new Date().getTime();
+        try {
+            con = getConnection();
+            ps = con.prepareStatement("SELECT DISTINCT username FROM CertificateData WHERE expireDate >= " +  currentdate + 
+                                      " AND expireDate < " + expiretime.getTime() + " AND status = " + CertificateData.CERT_ACTIVE);
+            result = ps.executeQuery();
+            while(result.next() && returnval.size() <= SecConst.MAXIMUM_QUERY_ROWCOUNT +1){
+                if(result.getString(1) != null && !result.getString(1).equals(""))
+                  returnval.add(result.getString(1));
+            }    
+            debug("<findCertificatesByExpireTimeWithLimit()");
+            return returnval;
+        }
+        catch (Exception e) {
+            throw new EJBException(e);
+        }
+        finally {
+            try {
+                if (result != null) result.close();
+                if (ps != null) ps.close();
+                if (con!= null) con.close();
+            } catch(SQLException se) {
+                se.printStackTrace();
+            }
+        }
+    } //findCertificatesByExpireTimeWithLimit
 
     /**
      * Implements ICertificateStoreSession::findCertificateByIssuerAndSerno.

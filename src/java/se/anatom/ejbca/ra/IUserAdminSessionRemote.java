@@ -7,6 +7,7 @@ import java.rmi.RemoteException;
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
+import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.util.query.Query;
@@ -18,12 +19,12 @@ import se.anatom.ejbca.log.Admin;
 
 /**
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.18 2003-03-07 15:53:48 anatom Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.19 2003-03-10 07:22:04 herrvendil Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
 
     // Public constants
-    public static final int MAXIMUM_QUERY_ROWCOUNT = 100; // The maximun number of rows passed back in a query.
+    public static final int MAXIMUM_QUERY_ROWCOUNT = SecConst.MAXIMUM_QUERY_ROWCOUNT; // The maximun number of rows passed back in a query.
     // Public methods
 
 
@@ -153,14 +154,14 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     public UserAdminData findUserByEmail(Admin admin, String email) throws AuthorizationDeniedException, RemoteException;
 
     /**
-    * Method that checks if user with specified userdn exists in database and is set as administrator.
+    * Method that checks if user with specified users certificate exists in database and is set as administrator.
     *
     * @param subjectdn
     * @throws AuthorizationDeniedException if user isn't an administrator.
     * @throws EJBException if a communication or other error occurs.
     */
 
-    public void checkIfSubjectDNisAdmin(Admin admin, String subjectdn) throws AuthorizationDeniedException, RemoteException;
+    public void checkIfCertificateBelongToAdmin(Admin admin, BigInteger certificatesnr) throws AuthorizationDeniedException, RemoteException;
 
    /**
     * Finds all users with a specified status.
@@ -180,15 +181,17 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @see se.anatom.ejbca.ra.UserAdminData
     */
     public Collection findAllUsersWithLimit(Admin admin) throws FinderException, RemoteException;
+    
    /**
     * Finds all users with a specified status and returns the first MAXIMUM_QUERY_ROWCOUNT.
     *
     * @param status the new status, from 'UserData'.
+    * @param onlybatchusers, only returns uses meant to be processed through batch tool.
     * @return Collection of UserAdminData
     * @throws EJBException if a communication or other error occurs.
     * @see se.anatom.ejbca.ra.UserAdminData
     */
-    public Collection findAllUsersByStatusWithLimit(Admin admin, int status) throws FinderException, RemoteException;
+    public Collection findAllUsersByStatusWithLimit(Admin admin, int status, boolean onlybatchusers) throws FinderException, RemoteException;
 
     /**
     * Starts an external service that may be needed bu user administration.

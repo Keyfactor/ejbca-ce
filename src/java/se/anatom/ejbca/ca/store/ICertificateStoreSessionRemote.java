@@ -21,7 +21,7 @@ import se.anatom.ejbca.log.Admin;
  *
  * Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.12 2003-02-06 15:35:49 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.13 2003-03-10 07:22:02 herrvendil Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote  {
 
@@ -96,6 +96,13 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     * @throws EJBException if a communication or other error occurs.
     */
     public Collection findCertificatesByExpireTime(Admin admin, Date expireTime) throws RemoteException;
+
+    /** 
+     * Finds usernames of users having certificate(s) expiring within a specified time and that has status active.
+     * @return a collection of usernames (String)
+     * Implements ICertificateStoreSession::findCertificatesByExpireTimeWithLimit.
+     */
+    public Collection findCertificatesByExpireTimeWithLimit(Admin admin, Date expiretime) throws RemoteException;
     
     /**
     * Finds certificate with specified fingerprint.

@@ -40,7 +40,7 @@ import org.apache.log4j.PropertyConfigurator;
  * This class generates keys and request certificates for all users with
  * status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.33 2003-03-07 15:57:51 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.34 2003-03-10 07:22:04 herrvendil Exp $
  */
 public class BatchMakeP12 {
 
@@ -304,13 +304,14 @@ public class BatchMakeP12 {
 
     public void createAllWithStatus(int status) throws Exception {
         log.debug(">createAllWithStatus: "+status);
-
+        Collection result;
         IUserAdminSessionRemote admin = adminhome.create();
 
         //Collection result = admin.findAllUsersByStatus(administrator, status);
-        Collection result = admin.findAllUsersByStatusWithLimit(administrator, status);
-        while (result.size() > 0) {
-            log.info("Batch generating "+result.size()+" users.");
+        do{
+          result = admin.findAllUsersByStatusWithLimit(administrator, status, true);
+          log.info("Batch generating "+result.size()+" users.");
+          if(result.size()>0){
             Iterator it = result.iterator();
             boolean createJKS;
             boolean createPEM;
@@ -366,7 +367,8 @@ public class BatchMakeP12 {
             if (failedusers != "")
                 throw new Exception("BatchMakeP12 failed for " + failcount + " users (" + successcount + " succeeded) - " + failedusers);
             log.info(successcount + " new users generated successfully - " + successusers);
-        }
+          }  
+        }while (result.size() > 0);
         log.debug("<createAllWithStatus: "+status);
     } // createAllWithStatus
 

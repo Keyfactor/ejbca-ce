@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+
+<jbosscmp-jdbc>
+
+<defaults>
+    <datasource>java:/DefaultDS</datasource>
+    <datasource-mapping>MS SQLSERVER2000</datasource-mapping>
+</defaults>
+
+<!-- Default setting for MS SQLSERVER 2000 in EJBCA version > 2.0. 
+     base64cert and base64crl fields is too long form default mapping with some databases. 
+     If using another database (the default HypersonicDB for ex.), simply remove (or edit) 
+     the <entity> sections below if things don't work. -->
+
+<enterprise-beans>
+    <entity>
+        <ejb-name>CertificateData</ejb-name>
+        <cmp-field>
+            <field-name>base64Cert</field-name>
+            <jdbc-type>LONGVARCHAR</jdbc-type>
+            <sql-type>VARCHAR(2000)</sql-type>
+        </cmp-field>
+    </entity>
+
+    <entity>
+        <ejb-name>CRLData</ejb-name>
+        <cmp-field>
+            <field-name>base64Crl</field-name>
+            <jdbc-type>LONGVARCHAR</jdbc-type>
+            <sql-type>TEXT</sql-type>
+        </cmp-field>
+    </entity>
+</enterprise-beans>
+
+</jbosscmp-jdbc>

@@ -44,14 +44,14 @@ import org.apache.log4j.Logger;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.33 2003-03-07 08:17:30 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.34 2003-03-10 07:22:05 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
     private static Logger log = Logger.getLogger(RAInterfaceBean.class);
 
     // Public constants.
-    public static final int MAXIMUM_QUERY_ROWCOUNT = IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT;
+    public static final int MAXIMUM_QUERY_ROWCOUNT = SecConst.MAXIMUM_QUERY_ROWCOUNT;
 
     public static final String[] tokentexts = {"TOKENSOFTBROWSERGEN","TOKENSOFTP12","TOKENSOFTJKS","TOKENSOFTPEM"};
     public static final int[]    tokenids   = {SecConst.TOKEN_SOFT_BROWSERGEN,SecConst.TOKEN_SOFT_P12,SecConst.TOKEN_SOFT_JKS,SecConst.TOKEN_SOFT_PEM};
@@ -298,9 +298,23 @@ public class RAInterfaceBean {
     public UserView[] filterByTokenSN(String tokensn, int index,int size) throws Exception{
       UserView[] returnval = null;
       UserAdminData user = null;
+      InitialContext ictx = new InitialContext();
+      Context myenv = (Context) ictx.lookup("java:comp/env");        
+      boolean useprefix = false;
+      String sIIN = null;
+      
+      if(myenv.lookup("USEHARDTOKENPREFIX") != null && myenv.lookup("ISSUERIDENTIFICATIONNUMBER") != null){
+        useprefix = ((Boolean) myenv.lookup("USEHARDTOKENPREFIX")).booleanValue();
+        sIIN = (String) myenv.lookup("ISSUERIDENTIFICATIONNUMBER");
+      }
+      
       try{
         tokensn = new RegularExpression.RE(" ",false).replace(tokensn,"");
       }catch(Exception e){}
+      
+      if(useprefix)
+        tokensn = calculateCardNumber(tokensn, sIIN);
+  
       HardTokenData token = hardtokensession.getHardToken(administrator, tokensn);
 
       if(token!=null)
@@ -356,7 +370,6 @@ public class RAInterfaceBean {
                                                                                             NamingException,
                                                                                             CreateException{
       Vector uservector = new Vector();
-      HashMap addedusers = new HashMap();
       UserView[] returnval = null;
 
       long d = Long.parseLong(days);
@@ -364,20 +377,19 @@ public class RAInterfaceBean {
       long millis = (d * 86400000); // One day in milliseconds.
       finddate.setTime(finddate.getTime() + (long)millis);
 
-      Collection certs =certificatesession.findCertificatesByExpireTime(administrator, finddate);
-      if(!certs.isEmpty()){
-        Iterator i = certs.iterator();
-        while(i.hasNext() && uservector.size() <= MAXIMUM_QUERY_ROWCOUNT ){
+      Collection usernames =certificatesession.findCertificatesByExpireTimeWithLimit(administrator, finddate);
+      if(!usernames.isEmpty()){
+        Iterator i = usernames.iterator();
+        while(i.hasNext() && uservector.size() <= MAXIMUM_QUERY_ROWCOUNT +1 ){
            UserAdminData user = null;
            try{
-             user = adminsession.findUserBySubjectDN(administrator, ((X509Certificate) i.next()).getSubjectDN().toString());
+             user = adminsession.findUser(administrator, (String) i.next());
            }catch(AuthorizationDeniedException e){
              user=null;
            }
-           if(user != null && addedusers.get(user.getUsername()) == null){
-             addedusers.put(user.getUsername(), Boolean.TRUE);
+           if(user != null) 
              uservector.addElement(user);
-           }
+
         }
         users.setUsers(uservector);
 
@@ -572,7 +584,6 @@ public class RAInterfaceBean {
        boolean success = true;
                
        Collection certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
-       System.out.println("revokeTokenCertificates : Certificates " + certs.size() + " Tokensn " + tokensn + " Username : " + username + ", reason " + reason);        
        Iterator i = certs.iterator();
        try{
          while(i.hasNext()){  
@@ -590,15 +601,12 @@ public class RAInterfaceBean {
 
       UserAdminData user = adminsession.findUser(administrator, username);
       boolean allrevoked = true;
-
-          System.out.println("isAllTokenCertificatesRevoked : Certificates " + certs.size() + " Tokensn " + tokensn + " Username : " + username);      
-      
+    
       if(!certs.isEmpty()){
         Iterator j = certs.iterator();
         while(j.hasNext()){
           X509Certificate cert = (X509Certificate) j.next();
           RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, cert.getIssuerDN().toString(), cert.getSerialNumber());
-          System.out.println("isAllTokenCertificatesRevoked : Certificate " + cert.getSerialNumber() + " is revoked " + (revinfo == null));
           if(revinfo == null)
             allrevoked = false;
         }
@@ -730,7 +738,35 @@ public class RAInterfaceBean {
     }
 
     // Private methods.
-
+    private String calculateCardNumber(String tokensn, String sIIN) {
+        
+        while( tokensn.length() + sIIN.length() < 18 )
+            tokensn = "0" + tokensn;
+        final int lengthByte = tokensn.length() + sIIN.length() + 1;
+        final long divider = pow(10,tokensn.length());
+        final long number = Long.parseLong(sIIN)*divider + Long.parseLong(tokensn);
+        final int chsum; {
+            int sum = 0;
+            for ( int i=0; i+1<lengthByte; i++ ) {
+                int digit=(int)(number/pow(10,i) % 10);
+                if ( i%2==0 ) {
+                    digit *= 2;
+                    sum += digit/10+digit%10;
+                } else
+                    sum += digit;
+            }
+            chsum = (10-sum%10)%10;
+        }
+        return (""+lengthByte+number+chsum+(lengthByte%2==1 ? "0": ""));
+    }   
+    
+    private long pow( int x, int y ) {
+        long result=1;
+        for ( int i=0; i<y; i++ )
+            result *= x;
+        return result;
+    }    
+    
     // Private fields.
 
     private EndEntityProfileDataHandler    profiles;

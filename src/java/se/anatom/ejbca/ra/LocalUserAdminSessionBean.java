@@ -37,7 +37,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.50 2003-03-09 11:45:27 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.51 2003-03-10 07:22:03 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -572,21 +572,23 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     } // findUserBySubjectDN
 
    /**
-    * Implements IUserAdminSession::CheckIfSubjectDNisAdmin.
+    * Implements IUserAdminSession::checkIfCertificateBelongToAdmin.
     */
-    public void checkIfSubjectDNisAdmin(Admin admin, String subjectdn) throws AuthorizationDeniedException, RemoteException {
-        debug(">CheckIfSubjectDNisAdmin("+subjectdn+")");
-        String dn = CertTools.stringToBCDNString(subjectdn);
-        debug("Looking for users with subjectdn: " + dn);
+    public void checkIfCertificateBelongToAdmin(Admin admin, BigInteger certificatesnr) throws AuthorizationDeniedException, RemoteException {
+        debug(">checkIfCertificateBelongToAdmin("+certificatesnr+")");
+        String username =certificatesession.findUsernameByCertSerno(admin, certificatesnr);
+
         UserAdminData returnval = null;
 
         UserDataLocal data = null;
-        try{
-          data = home.findBySubjectDN(dn);
-        } catch( FinderException e) {
-          log.debug("Cannot find user with DN='"+dn+"'");
+        if(username != null){
+          UserDataPK pk = new UserDataPK(username);
+          try {
+            data = home.findByPrimaryKey(pk);            
+          } catch( FinderException e) {
+            log.debug("Cannot find user with username='"+username+"'");
+          }
         }
-
 
         if(data != null){
           int type = data.getType();
@@ -599,9 +601,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
           throw new AuthorizationDeniedException("Your certificate does not belong to any user.");
         }
 
-
-        debug("<CheckIfSubjectDNisAdmin("+subjectdn+")");
-    } // findUserBySubjectDN
+        debug("<checkIfCertificateBelongToAdmin()");
+    } // checkIfCertificateBelongToAdmin
 
 
     /**
@@ -685,7 +686,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     /**
     * Implements IUserAdminSession::findAllUsersWithLimit.
     */
-    public Collection findAllUsersByStatusWithLimit(Admin admin, int status) throws FinderException, RemoteException{
+    public Collection findAllUsersByStatusWithLimit(Admin admin, int status, boolean onlybatchusers) throws FinderException, RemoteException{
         debug(">findAllUsersByStatusWithLimit()");
         Connection con = null;
         PreparedStatement ps = null;
@@ -707,13 +708,15 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                                                ,  rs.getInt(12), rs.getInt(13));
               data.setPassword(rs.getString(7));
 
-              if(globalconfiguration.getEnableEndEntityProfileLimitations()){
-                // Check if administrator is authorized to view user.
-                if(profileauthproxy.getEndEntityProfileAuthorization(admin,data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS, LogEntry.MODULE_RA))
+              if(!onlybatchusers ||  (data.getPassword() != null && data.getPassword().length() > 0)){
+                if(globalconfiguration.getEnableEndEntityProfileLimitations()){
+                  // Check if administrator is authorized to view user.
+                  if(profileauthproxy.getEndEntityProfileAuthorization(admin,data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS, LogEntry.MODULE_RA))
+                    returnval.add(data);
+                }
+                else
                   returnval.add(data);
               }
-              else
-                returnval.add(data);
             }
             debug("<findAllUsersByStatusWithLimit()");
             return returnval;

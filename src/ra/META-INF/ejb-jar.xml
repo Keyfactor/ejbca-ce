@@ -618,7 +618,7 @@
      </method>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
-         <method-name>checkIfSubjectDNisAdmin</method-name>
+         <method-name>checkIfCertificateBelongToAdmin</method-name>
      </method>
     <method>
          <ejb-name>UserAdminSession</ejb-name>
