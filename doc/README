@@ -1,4 +1,4 @@
-$Id: README,v 1.89 2003-06-04 20:07:09 anatom Exp $
+$Id: README,v 1.90 2003-06-06 08:15:46 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -874,6 +874,12 @@ The policy files can be found at the same place as the JDK 1.4 download. Further
 the Sun documentation on the JCE.
 
 There is a SCEP servlet receiving requests on http://localhost:8080/ejbca/publicweb/apply/scep/pkiclient.exe
+
+The CN part of the DN in the PKCS#10 request, which is part of the Scep request, will be used as the 'username' when 
+authenticating the request in EJBCA. Create the Scep request with a CN mathing the username registered in EJBCA.
+The challengePassword in the PKCS#10 request, which is part of the Scep request, will be used as the 'password' when 
+authenticating the request in EJBCA. Create the Scep request with a challengePassword mathing the password registered in EJBCA.
+
 To use the OpenScep (http://openscep.othello.ch/) client to request a certificate from this servlet, use the command:
 ./scep -d -k test.key -r test.pemreq -2 -e test.req -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
 Where test.key is generated with:
