@@ -27,7 +27,7 @@ public class ra {
 
     public static void main(String [] args){
         if (args.length < 1) {
-            System.out.println("Usage: RA adduser|deluser|setclearpwd|setuserstatus|finduser|listnewusers|revokeuser");
+            System.out.println("Usage: RA adduser|deluser|setclearpwd|setuserstatus|finduser|listnewusers|listusers|revokeuser");
             return;
         }
         try {
@@ -168,7 +168,7 @@ public class ra {
                     }
                 }
             } else {
-                System.out.println("Usage: RA adduser|deluser|setclearpwd|setuserstatus|finduser|listnewusers|revokeuser");
+                System.out.println("Usage: RA adduser|deluser|setclearpwd|setuserstatus|finduser|listnewusers|listusers|revokeuser");
             }
 
         } catch (Exception e) {
