@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -27,12 +28,12 @@ import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.CRLNumber;
-import org.bouncycastle.asn1.x509.CertificatePolicies;
 import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -53,7 +54,7 @@ import se.anatom.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.1 2003-09-03 16:21:29 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.2 2003-09-04 10:35:17 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -290,8 +291,9 @@ public class X509CA extends CA implements Serializable {
                 vec.add(gn);
             }
             String uri = CertTools.getPartFromDN(altName, CertTools.URI);
-            if (uri == null)
+            if (uri == null){            
                 uri  = CertTools.getPartFromDN(altName, CertTools.URI1);
+            }
             if (uri != null) {
                 GeneralName gn = new GeneralName(new DERIA5String(uri), 6);
                 vec.add(gn);
@@ -310,25 +312,34 @@ public class X509CA extends CA implements Serializable {
                 certgen.addExtension(X509Extensions.SubjectAlternativeName.getId(), certProfile.getSubjectAlternativeNameCritical(), san);
             }
         }
-        // Certificate Policies
-        if (certProfile.getUseCertificatePolicies() == true) {
-            CertificatePolicies cp = new CertificatePolicies(certProfile.getCertificatePolicyId());
-            certgen.addExtension(
-                X509Extensions.CertificatePolicies.getId(),
-                certProfile.getCertificatePoliciesCritical(),
-                cp);
-        }
-        // CRL Distribution point URI
-        if (certProfile.getUseCRLDistributionPoint() == true) {
-            GeneralName gn = new GeneralName(new DERIA5String(certProfile.getCRLDistributionPointURI()), 6);
-            GeneralNames gns = new GeneralNames(new DERSequence(gn));
-            DistributionPointName dpn = new DistributionPointName(0, gns);
-            DistributionPoint distp = new DistributionPoint(dpn, null, null);
-            certgen.addExtension(
-                X509Extensions.CRLDistributionPoints.getId(),
-                certProfile.getCRLDistributionPointCritical(),
-                new DERSequence(distp));
-        }
+        
+		// Certificate Policies
+		 if (certProfile.getUseCertificatePolicies() == true) {
+			 PolicyInformation pi = new PolicyInformation(new DERObjectIdentifier(certProfile.getCertificatePolicyId()));
+			 DERSequence seq = new DERSequence(pi);
+			 certgen.addExtension(X509Extensions.CertificatePolicies.getId(),
+				 certProfile.getCertificatePoliciesCritical(), seq);
+		 }
+
+		 // CRL Distribution point URI
+		 if (certProfile.getUseCRLDistributionPoint() == true) {
+			 // Multiple CDPs are spearated with the ';' sign
+			 StringTokenizer tokenizer = new StringTokenizer(certProfile.getCRLDistributionPointURI(), ";", false);
+			 DEREncodableVector vec = new DEREncodableVector();
+			 while (tokenizer.hasMoreTokens()) {
+				 GeneralName gn = new GeneralName(new DERIA5String(
+							 tokenizer.nextToken()), 6);
+				 GeneralNames gns = new GeneralNames(new DERSequence(gn));
+				 DistributionPointName dpn = new DistributionPointName(0, gns);
+				 DistributionPoint distp = new DistributionPoint(dpn, null, null);
+				 vec.add(distp);
+			 }
+			 if (vec.size() > 0) {
+				 certgen.addExtension(X509Extensions.CRLDistributionPoints.getId(),
+					 certProfile.getCRLDistributionPointCritical(), new DERSequence(vec));
+			 }
+		 }
+		 
         X509Certificate cert =
             certgen.generateX509Certificate(getCAToken().getPrivateSignKey(), 
                                             getCAToken().getProvider());
