@@ -37,7 +37,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.5 2002-01-01 11:08:09 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.6 2002-01-01 11:25:59 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -60,8 +60,11 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
     private SecureRandom random;
 
     /** Pointer to main certificate store */
-    ICertificateStoreSessionRemote certificateStore = null;
-    Vector publishers = null;
+    private ICertificateStoreSessionRemote certificateStore = null;
+    /** A vector of publishers where certs and CRLs are stored */
+    private Vector publishers = null;
+    /* AuthenticationSession for authentication of users when certs are created */
+    private IAuthenticationSessionRemote authSession = null;
     
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -216,11 +219,9 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
         debug(">createCertificate(pk, ku)");
 
         try {
-
-            IAuthenticationSessionHome home = (IAuthenticationSessionHome)lookup("AuthenticationSession",IAuthenticationSessionHome.class);
-            IAuthenticationSessionRemote remote = home.create();
             // Authorize user and get DN
-            UserAuthData data = remote.authenticateUser(username, password);
+            initAuthSession();
+            UserAuthData data = authSession.authenticateUser(username, password);
             info("Authorized user " + username + " with DN=" + data.getDN());
             System.out.println("type="+ data.getType());
             if (data.getType() == SecConst.USER_INVALID) {
@@ -245,7 +246,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
                 certificateStore.storeCertificate(cert, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, SecConst.USER_ENDUSER);
                 // Call authentication session and tell that we are finished with this user
                 if (finishUser.booleanValue() == true)
-                    remote.finishUser(username, password);
+                    authSession.finishUser(username, password);
                 debug("<createCertificate(pk, ku)");
                 return cert;
             }
@@ -350,7 +351,22 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
         } else
             return password.toCharArray();
     }
+
+    /**
+     * Creates the authenticationSession so it is available.
+     */
+    private void initAuthSession() throws CreateException, RemoteException {
+        debug(">initAuthSession()");
+        if (authSession == null) {
+            IAuthenticationSessionHome home = (IAuthenticationSessionHome)lookup("AuthenticationSession",IAuthenticationSessionHome.class);
+            authSession = home.create();
+        }
+        debug("<initAuthSession()");
+    } // initAuthSession
     
+    /**
+     * Creates the CertificateStore and Publishers so they are available.
+     */
     private void initCertificateStore() throws CreateException, RemoteException {
         debug(">initCertificateStore()");
         // First init main certificate store
@@ -368,16 +384,15 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
                     IPublisherSessionHome pubhome = (IPublisherSessionHome) lookup(jndiName, IPublisherSessionHome.class);
                     IPublisherSessionRemote pubremote = pubhome.create();
                     publishers.add(pubremote);
-                    cat.info("Added publisher class '"+pubremote.getClass().getName()+"'");
+                    info("Added publisher class '"+pubremote.getClass().getName()+"'");
                 }
             } catch (EJBException e) {
                 // We could not find this publisher
-                cat.debug("Failed to find publisher at index '"+i+"', no more publishers.");
+                debug("Failed to find publisher at index '"+i+"', no more publishers.");
             }
         }
         debug("<initCertificateStore()");
-        
-    }
+    } // initCertificateStore
 
     private int sunKeyUsageToBC(boolean[] sku) {
 
