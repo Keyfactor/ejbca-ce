@@ -18,6 +18,8 @@
 -----
 * [ECA-54] - HardCATokens goes off-line when bean gets passivated
 * [ECA-49] - saving of generated request from CA fails on IE
+* [ECA-50] - Key Recovery status and change password in Edit End Entity doesn't work
+* [ECA-52] - In Create CA page should the CAToken authentication info be a password field instead
 
 3.0.6
 -----
