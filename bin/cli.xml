@@ -2,9 +2,9 @@
     <property name="ejbca.home" location=".."/>
     <property environment="env"/>
 
-    <property file="${user.home}/.ejbca.properties"/>
-    <property file=".ejbca.properties"/>
-    <property file="${ejbca.home}/.ejbca.properties"/>
+    <property file="${user.home}/ejbca.properties"/>
+    <property file="ejbca.properties"/>
+    <property file="${ejbca.home}/ejbca.properties"/>
     <!-- this sucks because we have a dependency with JBoss just for the jndi provider -->
     <property name="jboss.home" value="${env.JBOSS_HOME}"/>
 
