@@ -40,7 +40,7 @@ import se.anatom.ejbca.util.StringTools;
  *   name="LogEntryData"
  *   view-type="local"
  *   type="CMP"
- *   reentrant="false"
+ *   reentrant="False"
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="LogEntryDataBean"
@@ -62,6 +62,11 @@ import se.anatom.ejbca.util.StringTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="se.anatom.ejbca.log.LogEntryDataLocal"
  *
+ * @ejb.transaction
+ *    type="Supports"
+ *
+ * @jonas.jdbc-mapping
+ *   jndi-name="${datasource.jndi-name}"
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
 
@@ -208,7 +213,7 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
         setCertificateSNR(certificatesnr);
         setEvent(event);
         setComment(comment);
-        return id;
+        return null;
     }
 
     /**
