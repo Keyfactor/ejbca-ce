@@ -17,13 +17,15 @@ Usage: listcerts.jsp?subject=<DN>
         ICertificateStoreSessionHome home = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
         ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
         ICertificateStoreSessionRemote store = home.create();
-        Certificate[] certs = store.findCertificatesBySubject(dn);
-        for (int i=0;i<certs.length;i++) {
-            Date notBefore = ((X509Certificate)certs[i]).getNotBefore();
-            Date notAfter = ((X509Certificate)certs[i]).getNotAfter();
-            String subject = ((X509Certificate)certs[i]).getSubjectDN().toString();
-            String issuer = ((X509Certificate)certs[i]).getIssuerDN().toString();
-            BigInteger serno = ((X509Certificate)certs[i]).getSerialNumber();
+        Collection certs = store.findCertificatesBySubject(dn);
+        Iterator i = certs.iterator();
+        while (i.hasNext()) {
+            X509Certificate x509cert = (X509Certificate)i.next();
+            Date notBefore = x509cert.getNotBefore();
+            Date notAfter = x509cert.getNotAfter();
+            String subject = x509cert.getSubjectDN().toString();
+            String issuer = x509cert.getIssuerDN().toString();
+            BigInteger serno = x509cert.getSerialNumber();
             String hexSerno = Hex.encode(serno.toByteArray());
             String urlEncIssuer = URLEncoder.encode(issuer);
 %>            
@@ -37,7 +39,7 @@ Serial number: <%=hexSerno%>
 <hr>
 <%
         }
-        if (certs.length == 0) {
+        if (certs.isEmpty()) {
 %>
 No certificates exists for '<%=dn%>'.
 <%
