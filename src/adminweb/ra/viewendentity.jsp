@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@page errorPage="/errorpage.jsp"  import="java.util.TreeMap, java.util.Iterator, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
                  se.anatom.ejbca.webdist.rainterface.UserView, se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.SecConst,
-                 se.anatom.ejbca.ra.raadmin.EndEntityProfile,se.anatom.ejbca.authorization.AuthorizationDeniedException,  se.anatom.ejbca.ra.UserDataRemote,
+                 se.anatom.ejbca.ra.raadmin.EndEntityProfile,se.anatom.ejbca.authorization.AuthorizationDeniedException,  se.anatom.ejbca.ra.UserDataConstants,
                  javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, 
                  se.anatom.ejbca.hardtoken.HardTokenIssuer, se.anatom.ejbca.hardtoken.HardTokenIssuerData" %>
 <html>
@@ -39,8 +39,8 @@
                                 "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME",
                                 "EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN", "", "", "UNSTRUCTUREDADDRESS", "UNSTRUCTUREDNAME","GUID"};
    
-   int[] statusids            = {UserDataRemote.STATUS_NEW ,UserDataRemote.STATUS_FAILED, UserDataRemote.STATUS_INITIALIZED, UserDataRemote.STATUS_INPROCESS
-                                , UserDataRemote.STATUS_GENERATED, UserDataRemote.STATUS_REVOKED , UserDataRemote.STATUS_HISTORICAL, UserDataRemote.STATUS_KEYRECOVERY};
+   int[] statusids            = {UserDataConstants.STATUS_NEW ,UserDataConstants.STATUS_FAILED, UserDataConstants.STATUS_INITIALIZED, UserDataConstants.STATUS_INPROCESS
+                                , UserDataConstants.STATUS_GENERATED, UserDataConstants.STATUS_REVOKED , UserDataConstants.STATUS_HISTORICAL, UserDataConstants.STATUS_KEYRECOVERY};
    String[] statustexts         = {"STATUSNEW", "STATUSFAILED", "STATUSINITIALIZED", "STATUSINPROCESS", "STATUSGENERATED", "STATUSREVOKED", "STATUSHISTORICAL", "STATUSKEYRECOVERY"};
 
   UserView userdata = null;

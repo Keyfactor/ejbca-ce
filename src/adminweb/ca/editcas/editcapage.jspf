@@ -351,10 +351,10 @@ function checkallfields(){
   <%   }
      }
    if( catokentype == CATokenInfo.CATOKENTYPE_P12 && !processrequest && !isexternal){ %>
-   <%@ include file="softcatokenpage.jsp" %> 
+   <%@ include file="softcatokenpage.jspf" %> 
 <%}  
    if( catokentype == CATokenInfo.CATOKENTYPE_HSM && !processrequest && !isexternal){ %>
-   <%@ include file="hardcatokenpage.jsp" %> 
+   <%@ include file="hardcatokenpage.jspf" %> 
 <%}  %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 

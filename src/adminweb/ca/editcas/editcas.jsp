@@ -100,7 +100,7 @@
   // Initialize environment
   int caid = 0;
   String caname = null;
-  String includefile = "choosecapage.jsp"; 
+  String includefile = "choosecapage.jspf"; 
   String processedsubjectdn = "";
   int catype = CAInfo.CATYPE_X509;  // default
   int catokentype = CATokenInfo.CATOKENTYPE_P12; // default
@@ -187,12 +187,12 @@
       // Actions in the choose CA page.
       if( request.getParameter(BUTTON_EDIT_CA) != null){
           // Display  profilepage.jsp         
-         includefile="choosecapage.jsp";
+         includefile="choosecapage.jspf";
          if(request.getParameter(SELECT_CAS) != null){
            caid = Integer.parseInt(request.getParameter(SELECT_CAS));
            if(caid != 0){             
              editca = true;
-             includefile="editcapage.jsp";              
+             includefile="editcapage.jspf";              
            }
          } 
       }
@@ -204,7 +204,7 @@
                 cadeletefailed = !cadatahandler.removeCA(caid);
             }
           }
-          includefile="choosecapage.jsp";             
+          includefile="choosecapage.jspf";             
       }
       if( request.getParameter(BUTTON_RENAME_CA) != null){ 
          // Rename selected profile and display profilespage.
@@ -219,17 +219,17 @@
            }                
          }
         }      
-        includefile="choosecapage.jsp"; 
+        includefile="choosecapage.jspf"; 
       }
       if( request.getParameter(BUTTON_CREATE_CA) != null){
          // Add profile and display profilespage.
-         includefile="choosecapage.jsp"; 
+         includefile="choosecapage.jspf"; 
          caname = request.getParameter(TEXTFIELD_CANAME);
          if(caname != null){
            caname = caname.trim();
            if(!caname.equals("")){             
              editca = false;
-             includefile="editcapage.jsp";              
+             includefile="editcapage.jspf";              
            }      
          }         
       }
@@ -239,7 +239,7 @@
            caname = caname.trim();
            if(!caname.equals("")){             
              filemode = PROCESSREQUESTMODE;
-             includefile="recievefile.jsp";               
+             includefile="recievefile.jspf";               
            }      
          }                        
       }
@@ -390,7 +390,7 @@
                  }catch(CATokenAuthenticationFailedException catfe){
                     catokenauthfailed = true;
                  }
-                 includefile="choosecapage.jsp"; 
+                 includefile="choosecapage.jspf"; 
                }
                if(request.getParameter(BUTTON_MAKEREQUEST) != null){
                  caid = CertTools.stringToBCDNString(subjectdn).hashCode();  
@@ -414,7 +414,7 @@
                                                         finishuser, extendedcaservices);
                  cabean.saveRequestInfo(x509cainfo);                
                  filemode = MAKEREQUESTMODE;
-                 includefile="recievefile.jsp"; 
+                 includefile="recievefile.jspf"; 
                }
              }                          
            } 
@@ -422,7 +422,7 @@
        } 
        if(request.getParameter(BUTTON_CANCEL) != null){
          // Don't save changes.
-         includefile="choosecapage.jsp"; 
+         includefile="choosecapage.jspf"; 
        }                        
       }
     if( action.equals(ACTION_EDIT_CA)){
@@ -517,7 +517,7 @@
                  cadatahandler.revokeOCSPCertificate(caid);
                  renew=true;
                  ocsprenewed = true;             
-                 includefile="choosecapage.jsp"; 
+                 includefile="choosecapage.jspf"; 
                }
 
 	      ArrayList extendedcaservices = new ArrayList();
@@ -541,11 +541,11 @@
                if(request.getParameter(BUTTON_SAVE) != null){
                   // Do nothing More
 
-                  includefile="choosecapage.jsp"; 
+                  includefile="choosecapage.jspf"; 
                }
                if(request.getParameter(BUTTON_RECEIVEREQUEST) != null){                  
                   filemode = RECIEVERESPONSEMODE;
-                  includefile="recievefile.jsp"; 
+                  includefile="recievefile.jspf"; 
                }
                if(request.getParameter(BUTTON_RENEWCA) != null){
                  int signedby = cadatahandler.getCAInfo(caid).getCAInfo().getSignedBy();
@@ -553,18 +553,18 @@
                    cadatahandler.renewCA(caid, null);
                    carenewed = true;
                  }else{                   
-                   includefile="renewexternal.jsp"; 
+                   includefile="renewexternal.jspf"; 
                  }  
                }
                if(request.getParameter(BUTTON_REVOKECA) != null){
                  int revokereason = Integer.parseInt(request.getParameter(SELECT_REVOKEREASONS));
                  cadatahandler.revokeCA(caid, revokereason);                   
-                 includefile="choosecapage.jsp"; 
+                 includefile="choosecapage.jspf"; 
                }                 
                if(request.getParameter(BUTTON_PUBLISHCA) != null){
                  cadatahandler.publishCA(caid);
                  capublished = true;             
-                 includefile="choosecapage.jsp"; 
+                 includefile="choosecapage.jspf"; 
                }
 
              }                          
@@ -573,7 +573,7 @@
        } 
        if(request.getParameter(BUTTON_CANCEL) != null){
          // Don't save changes.
-         includefile="choosecapage.jsp"; 
+         includefile="choosecapage.jspf"; 
        }               
 
          
@@ -590,11 +590,11 @@
                certreq=cadatahandler.makeRequest(caid, certchain, true);
                cabean.savePKCS10RequestData(certreq);     
                filemode = CERTREQGENMODE;
-               includefile = "displayresult.jsp";
+               includefile = "displayresult.jspf";
              }catch(Exception e){  
                cadatahandler.removeCA(caid); 
                errorrecievingfile = true;
-               includefile="choosecapage.jsp";  
+               includefile="choosecapage.jspf";  
              }
            }catch(CAExistsException caee){
               caexists = true; 
@@ -638,7 +638,7 @@
                cabean.savePKCS10RequestData(certreq.getCertificationRequest());                                
                processedsubjectdn = certreq.getCertificationRequest().getCertificationRequestInfo().getSubject().toString();
                processrequest = true;
-               includefile="editcapage.jsp";
+               includefile="editcapage.jspf";
              }
            }
          }catch(Exception e){                      
@@ -725,7 +725,7 @@
                    java.security.cert.Certificate result = cadatahandler.processRequest(x509cainfo, new PKCS10RequestMessage(req));
                    cabean.saveProcessedCertificate(result);
                    filemode = CERTGENMODE;   
-                   includefile="displayresult.jsp";
+                   includefile="displayresult.jspf";
                  }catch(CAExistsException caee){
                     caexists = true;
                  }                  
@@ -744,10 +744,10 @@
            cabean.savePKCS10RequestData(certreq);   
                
            filemode = CERTREQGENMODE;
-           includefile = "displayresult.jsp";
+           includefile = "displayresult.jspf";
           }catch(Exception e){
            errorrecievingfile = true; 
-           includefile="choosecapage.jsp"; 
+           includefile="choosecapage.jspf"; 
           } 
         }else{
           cabean.saveRequestInfo((CAInfo) null); 
@@ -778,32 +778,32 @@
           catokentype = CATokenInfo.CATOKENTYPE_HSM;
         }
         editca = false;
-        includefile="editcapage.jsp";              
+        includefile="editcapage.jspf";              
       }
 
     }
   }catch(CATokenOfflineException ctoe){
     catokenoffline = true;
-    includefile="choosecapage.jsp";
+    includefile="choosecapage.jspf";
   }   
 
 
  // Include page
-  if( includefile.equals("editcapage.jsp")){ 
+  if( includefile.equals("editcapage.jspf")){ 
 %>
-   <%@ include file="editcapage.jsp" %>
+   <%@ include file="editcapage.jspf" %>
 <%}
-  if( includefile.equals("choosecapage.jsp")){ %>
-   <%@ include file="choosecapage.jsp" %> 
+  if( includefile.equals("choosecapage.jspf")){ %>
+   <%@ include file="choosecapage.jspf" %> 
 <%}  
-  if( includefile.equals("recievefile.jsp")){ %>
-   <%@ include file="recievefile.jsp" %> 
+  if( includefile.equals("recievefile.jspf")){ %>
+   <%@ include file="recievefile.jspf" %> 
 <%} 
-  if( includefile.equals("displayresult.jsp")){ %>
-   <%@ include file="displayresult.jsp" %> 
+  if( includefile.equals("displayresult.jspf")){ %>
+   <%@ include file="displayresult.jspf" %> 
 <%}
-  if( includefile.equals("renewexternal.jsp")){ %>
-   <%@ include file="renewexternal.jsp" %> 
+  if( includefile.equals("renewexternal.jspf")){ %>
+   <%@ include file="renewexternal.jspf" %> 
 <%}
 
 

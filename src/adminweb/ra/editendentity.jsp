@@ -1,6 +1,6 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@page  errorPage="/errorpage.jsp" import="java.util.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.webdist.rainterface.UserView,
-                 se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.EndEntityProfileDataHandler, se.anatom.ejbca.ra.raadmin.EndEntityProfile, se.anatom.ejbca.ra.UserDataRemote,
+                 se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.EndEntityProfileDataHandler, se.anatom.ejbca.ra.raadmin.EndEntityProfile, se.anatom.ejbca.ra.UserDataConstants,
                  javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.authorization.AuthorizationDeniedException, se.anatom.ejbca.ra.raadmin.DNFieldExtractor, se.anatom.ejbca.ra.UserAdminData,
                  se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, se.anatom.ejbca.hardtoken.HardTokenIssuer, se.anatom.ejbca.hardtoken.HardTokenIssuerData, 
                  se.anatom.ejbca.SecConst, se.anatom.ejbca.util.StringTools" %>
@@ -299,7 +299,7 @@
   
               if(request.getParameter(SELECT_CHANGE_STATUS)!=null){
                 int newstatus = Integer.parseInt(request.getParameter(SELECT_CHANGE_STATUS));
-                if(newstatus == UserDataRemote.STATUS_NEW || newstatus == UserDataRemote.STATUS_GENERATED || newstatus == UserDataRemote.STATUS_HISTORICAL )
+                if(newstatus == UserDataConstants.STATUS_NEW || newstatus == UserDataConstants.STATUS_GENERATED || newstatus == UserDataConstants.STATUS_HISTORICAL )
                   newuser.setStatus(newstatus); 
               }
                // Send changes to database.
@@ -672,24 +672,24 @@ function checkallfields(){
 
   <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){ 
        if(profile.isModifyable(EndEntityProfile.PASSWORD,0)){%>  
-   if((status == <%= UserDataRemote.STATUS_NEW%> || status == <%= UserDataRemote.STATUS_KEYRECOVERY%>) && status != <%= userdata.getStatus() %> && document.edituser.<%= TEXTFIELD_PASSWORD %>.value == ""){
+   if((status == <%= UserDataConstants.STATUS_NEW%> || status == <%= UserDataConstants.STATUS_KEYRECOVERY%>) && status != <%= userdata.getStatus() %> && document.edituser.<%= TEXTFIELD_PASSWORD %>.value == ""){
       alert("<%= ejbcawebbean.getText("REQUIREDPASSWORD") %>");
       illegalfields++;
    }
 
   <%   } else { %>
-   if((status == <%= UserDataRemote.STATUS_NEW%> || status == <%= UserDataRemote.STATUS_KEYRECOVERY%>) && status != <%= userdata.getStatus() %> && document.edituser.<%= TEXTFIELD_PASSWORD %>.options.selectedIndex == -1){
+   if((status == <%= UserDataConstants.STATUS_NEW%> || status == <%= UserDataConstants.STATUS_KEYRECOVERY%>) && status != <%= userdata.getStatus() %> && document.edituser.<%= TEXTFIELD_PASSWORD %>.options.selectedIndex == -1){
       alert("<%= ejbcawebbean.getText("REQUIREDPASSWORD") %>");
       illegalfields++;
    }
  <%   }
     }else{%>
-   if((status == <%= UserDataRemote.STATUS_NEW%> || status == <%= UserDataRemote.STATUS_KEYRECOVERY%>) && status != <%= userdata.getStatus() %> && document.edituser.<%= CHECKBOX_REGENERATEPASSWD %>.checked == false && token <= <%= SecConst.TOKEN_SOFT%> ){
+   if((status == <%= UserDataConstants.STATUS_NEW%> || status == <%= UserDataConstants.STATUS_KEYRECOVERY%>) && status != <%= userdata.getStatus() %> && document.edituser.<%= CHECKBOX_REGENERATEPASSWD %>.checked == false && token <= <%= SecConst.TOKEN_SOFT%> ){
       alert("<%= ejbcawebbean.getText("PASSWORDMUSTBEREGEN") %>");
       illegalfields++;
    }
  <% } %>
-   if(status != <%= UserDataRemote.STATUS_NEW%> && status != <%= UserDataRemote.STATUS_KEYRECOVERY%> && status != <%= UserDataRemote.STATUS_GENERATED%> && status != <%= UserDataRemote.STATUS_HISTORICAL%>){
+   if(status != <%= UserDataConstants.STATUS_NEW%> && status != <%= UserDataConstants.STATUS_KEYRECOVERY%> && status != <%= UserDataConstants.STATUS_GENERATED%> && status != <%= UserDataConstants.STATUS_HISTORICAL%>){
       alert("<%= ejbcawebbean.getText("ONLYSTATUSCANBESELECTED") %>");
       illegalfields++;
     }
@@ -1119,13 +1119,13 @@ function checkUseInBatch(){
       </td>
       <td > 
         <select name="<%=SELECT_CHANGE_STATUS %>" tabindex="<%=tabindex++%>" >
-         <option <%if(userdata.getStatus()== UserDataRemote.STATUS_NEW) out.write(" selected ");%> value='<%= UserDataRemote.STATUS_NEW %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
-         <option <%if(userdata.getStatus()== UserDataRemote.STATUS_FAILED) out.write(" selected ");%> value='<%= UserDataRemote.STATUS_FAILED %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>  -->
-         <option <%if(userdata.getStatus()== UserDataRemote.STATUS_INITIALIZED) out.write(" selected ");%> value='<%= UserDataRemote.STATUS_INITIALIZED %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>  -->
-         <option <%if(userdata.getStatus()== UserDataRemote.STATUS_INPROCESS) out.write(" selected ");%> value='<%= UserDataRemote.STATUS_INPROCESS %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>  -->
-         <option <%if(userdata.getStatus()== UserDataRemote.STATUS_GENERATED) out.write(" selected ");%> value='<%= UserDataRemote.STATUS_GENERATED %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>  
-         <option <%if(userdata.getStatus()== UserDataRemote.STATUS_REVOKED) out.write(" selected ");%> value='<%= UserDataRemote.STATUS_REVOKED %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>  -->
-         <option <%if(userdata.getStatus()== UserDataRemote.STATUS_HISTORICAL) out.write(" selected ");%> value='<%= UserDataRemote.STATUS_HISTORICAL %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
+         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_NEW) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_NEW %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
+         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_FAILED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_FAILED %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>  -->
+         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_INITIALIZED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_INITIALIZED %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>  -->
+         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_INPROCESS) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_INPROCESS %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>  -->
+         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_GENERATED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_GENERATED %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>  
+         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_REVOKED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_REVOKED %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>  -->
+         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_HISTORICAL) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_HISTORICAL %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
         </select>
       </td>
       <td></td>

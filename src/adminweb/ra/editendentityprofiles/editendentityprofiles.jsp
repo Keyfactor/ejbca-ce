@@ -108,7 +108,7 @@
 <% 
 
   // Initialize environment
-  String includefile = "endentityprofilespage.jsp";
+  String includefile = "endentityprofilespage.jspf";
   boolean  triedtoeditemptyprofile   = false;
   boolean  triedtodeleteemptyprofile = false;
   boolean  profileexists             = false;
@@ -140,13 +140,13 @@
   if( request.getParameter(ACTION) != null){
     if( request.getParameter(ACTION).equals(ACTION_EDIT_PROFILES)){
       if( request.getParameter(BUTTON_EDIT_PROFILE) != null){
-          // Display  profilepage.jsp
+          // Display  profilepage.jspf
          profile = request.getParameter(SELECT_PROFILE);
          if(profile != null){
            if(!profile.trim().equals("")){
              if(!profile.equals(EndEntityProfileDataHandler.EMPTY_PROFILE)){ 
                ejbcarabean.setTemporaryEndEntityProfile(null);
-               includefile="endentityprofilepage.jsp"; 
+               includefile="endentityprofilepage.jspf"; 
              }else{
                 triedtoeditemptyprofile=true;
                 profile= null;
@@ -157,7 +157,7 @@
           } 
         }
         if(profile == null){   
-          includefile="endentityprofilespage.jsp";     
+          includefile="endentityprofilespage.jspf";     
         }
       }
       if( request.getParameter(BUTTON_DELETE_PROFILE) != null) {
@@ -172,7 +172,7 @@
               }
             }
           }
-          includefile="endentityprofilespage.jsp";             
+          includefile="endentityprofilespage.jspf";             
       }
       if( request.getParameter(BUTTON_RENAME_PROFILE) != null){ 
          // Rename selected profile and display profilespage.
@@ -191,7 +191,7 @@
            }        
          }
        }      
-       includefile="endentityprofilespage.jsp"; 
+       includefile="endentityprofilespage.jspf"; 
       }
       if( request.getParameter(BUTTON_ADD_PROFILE) != null){
          // Add profile and display profilespage.
@@ -205,7 +205,7 @@
              }
            }      
          }
-         includefile="endentityprofilespage.jsp"; 
+         includefile="endentityprofilespage.jspf"; 
       }
       if( request.getParameter(BUTTON_CLONE_PROFILE) != null){
          // clone profile and display profilespage.
@@ -224,7 +224,7 @@
              }
          }
        }      
-          includefile="endentityprofilespage.jsp"; 
+          includefile="endentityprofilespage.jspf"; 
       }
     }
     if( request.getParameter(ACTION).equals(ACTION_EDIT_PROFILE)){
@@ -423,30 +423,30 @@
                  profiledata.addField(Integer.parseInt(value));                
                }                       
              }
-             includefile="endentityprofilepage.jsp";
+             includefile="endentityprofilepage.jspf";
              ejbcarabean.setTemporaryEndEntityProfile(profiledata);
            
              if(request.getParameter(BUTTON_SAVE) != null){             
                ejbcarabean.changeEndEntityProfile(profile,profiledata);
                ejbcarabean.setTemporaryEndEntityProfile(null);
-               includefile="endentityprofilespage.jsp";  
+               includefile="endentityprofilespage.jspf";  
              }
            }
            if(request.getParameter(BUTTON_CANCEL) != null){
               // Don't save changes.
              ejbcarabean.setTemporaryEndEntityProfile(null);
-             includefile="endentityprofilespage.jsp";
+             includefile="endentityprofilespage.jspf";
            }
          }
       }
     }
   }
  // Include page
-  if( includefile.equals("endentityprofilepage.jsp")){ %>
-   <%@ include file="endentityprofilepage.jsp" %>
+  if( includefile.equals("endentityprofilepage.jspf")){ %>
+   <%@ include file="endentityprofilepage.jspf" %>
 <%}
-  if( includefile.equals("endentityprofilespage.jsp")){ %>
-   <%@ include file="endentityprofilespage.jsp" %> 
+  if( includefile.equals("endentityprofilespage.jspf")){ %>
+   <%@ include file="endentityprofilespage.jspf" %> 
 <%}
 
    // Include Footer 

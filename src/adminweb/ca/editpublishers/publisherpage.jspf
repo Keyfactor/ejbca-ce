@@ -179,13 +179,13 @@ function checkallfields(){
       </td>
     </tr>
     <% if(publisherhelper.publisherdata instanceof LdapPublisher){%>
-         <%@ include file="ldappublisherpage.jsp" %> 
+         <%@ include file="ldappublisherpage.jspf" %> 
     <% }
       if(publisherhelper.publisherdata instanceof ActiveDirectoryPublisher){%>
-         <%@ include file="adpublisherpage.jsp" %> 
+         <%@ include file="adpublisherpage.jspf" %> 
     <% }
        if(publisherhelper.publisherdata instanceof CustomPublisherContainer){%>
-         <%@ include file="custompublisherpage.jsp" %> 
+         <%@ include file="custompublisherpage.jspf" %> 
     <% } %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right">         

@@ -12,7 +12,7 @@
 <% 
 
   // Initialize environment
-  String includefile = "hardtokenprofilespage.jsp"; 
+  String includefile = "hardtokenprofilespage.jspf"; 
 
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AvailableAccessRules.HARDTOKEN_EDITHARDTOKENPROFILES); 
@@ -39,15 +39,15 @@
   includefile = helper.parseRequest(request);
 
  // Include page
-  if( includefile.equals("hardtokenprofilepage.jsp")){ 
+  if( includefile.equals("hardtokenprofilepage.jspf")){ 
 %>
-   <%@ include file="hardtokenprofilepage.jsp" %>
+   <%@ include file="hardtokenprofilepage.jspf" %>
 <%}
-  if( includefile.equals("hardtokenprofilespage.jsp")){ %>
-   <%@ include file="hardtokenprofilespage.jsp" %> 
+  if( includefile.equals("hardtokenprofilespage.jspf")){ %>
+   <%@ include file="hardtokenprofilespage.jspf" %> 
 <%} 
-  if( includefile.equals("uploadtemplate.jsp")){ %>
-   <%@ include file="uploadtemplate.jsp" %> 
+  if( includefile.equals("uploadtemplate.jspf")){ %>
+   <%@ include file="uploadtemplate.jspf" %> 
 <%}
 
    // Include Footer 

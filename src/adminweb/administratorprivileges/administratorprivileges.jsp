@@ -77,7 +77,7 @@
 
   String[] admingroup = null;
   // Initialize environment
-  String includefile = "editadmingroups.jsp";
+  String includefile = "editadmingroups.jspf";
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/system_functionality/edit_administrator_privileges"); 
                                             cabean.initialize(request, ejbcawebbean);       
                                             rabean.initialize(request, ejbcawebbean); 
@@ -106,14 +106,14 @@
          if(admingroup != null){
            if(!admingroup[ADMINGROUPNAME].equals("")){ 
               caid = Integer.parseInt(admingroup[CAID]); 
-              includefile="editadminentities.jsp"; 
+              includefile="editadminentities.jspf"; 
            }
            else{ 
              admingroup= null;
            }  
          }
         if(admingroup == null){   
-          includefile="editadmingroups.jsp";     
+          includefile="editadmingroups.jspf";     
         }
       }
       if( request.getParameter(BUTTON_EDIT_ACCESSRULES) != null && request.getParameter(SELECT_ADMINGROUPS) != null) {
@@ -122,14 +122,14 @@
          if(admingroup != null){
            if(!admingroup[ADMINGROUPNAME].trim().equals("")){
              caid = Integer.parseInt(admingroup[CAID]);
-             includefile="editaccessrules.jsp";
+             includefile="editaccessrules.jspf";
            }
            else{ 
             admingroup= null;
            } 
          }
          if(admingroup == null){  
-           includefile="editadmingroups.jsp";     
+           includefile="editadmingroups.jspf";     
          }
       }
       if( request.getParameter(BUTTON_DELETE_ADMINGROUP) != null && request.getParameter(SELECT_ADMINGROUPS) != null) {
@@ -140,7 +140,7 @@
               adh.removeAdminGroup(admingroup[ADMINGROUPNAME], Integer.parseInt(admingroup[CAID]));
             }
           }
-          includefile="editadmingroups.jsp";             
+          includefile="editadmingroups.jspf";             
       }
       if( request.getParameter(BUTTON_RENAME_SELECTED) != null && request.getParameter(SELECT_ADMINGROUPS) != null){ 
          // Rename selected admingroup and display main group editing page.
@@ -153,7 +153,7 @@
              }catch(AdminGroupExistsException e){ admingroupexists = true;}
          }
        }      
-          includefile="editadmingroups.jsp"; 
+          includefile="editadmingroups.jspf"; 
       }
       if( request.getParameter(BUTTON_ADD_ADMINGROUP) != null){
          // Add admingroup and display main group editing page.
@@ -167,7 +167,7 @@
              }catch(AdminGroupExistsException e){ admingroupexists = true; }
            }      
          }
-         includefile="editadmingroups.jsp"; 
+         includefile="editadmingroups.jspf"; 
       }
     }
     if( request.getParameter(ACTION).equals(ACTION_EDIT_ACCESSRULES)){
@@ -176,7 +176,7 @@
        if(admingroup != null){
          if(!admingroup[ADMINGROUPNAME].trim().equals("")){
              caid = Integer.parseInt(admingroup[CAID]);
-             includefile="editaccessrules.jsp";
+             includefile="editaccessrules.jspf";
              if(request.getParameter(MODE) != null && request.getParameter(MODE).equals(MODE_BASIC)){
 
                 if(request.getParameter(BUTTON_SAVE) != null){
@@ -219,10 +219,10 @@
                    
                   adh.replaceAccessRules(admingroup[ADMINGROUPNAME],caid,barsd.getCurrentAdvancedRuleSet());  
 
-                  includefile="editadmingroups.jsp";    
+                  includefile="editadmingroups.jspf";    
                 }
                 if(request.getParameter(BUTTON_SAVE) != null){
-                  includefile="editadmingroups.jsp";    
+                  includefile="editadmingroups.jspf";    
                 }
              }
       
@@ -233,7 +233,7 @@
           } 
         }
         if(admingroup == null){            
-          includefile="editadmingroups.jsp";    
+          includefile="editadmingroups.jspf";    
         }
     }
     if( request.getParameter(ACTION).equals(ACTION_EDIT_ADMINENTITIES)){
@@ -242,27 +242,27 @@
        if(admingroup != null){
          if(!admingroup[ADMINGROUPNAME].trim().equals("")){
            caid = Integer.parseInt(admingroup[CAID]);
-           includefile="editadminentities.jsp"; 
+           includefile="editadminentities.jspf"; 
          }
           else{ 
             admingroup= null;
           } 
         }
         if(admingroup == null){ 
-          includefile="editadmingroups.jsp"; 
+          includefile="editadmingroups.jspf"; 
         }
      }
   }
 
  // Include page
-  if( includefile.equals("editadmingroups.jsp")){ %>
-   <%@ include file="editadmingroups.jsp" %>
+  if( includefile.equals("editadmingroups.jspf")){ %>
+   <%@ include file="editadmingroups.jspf" %>
 <%}
-  if( includefile.equals("editadminentities.jsp")){ %>
-   <%@ include file="editadminentities.jsp" %> 
+  if( includefile.equals("editadminentities.jspf")){ %>
+   <%@ include file="editadminentities.jspf" %> 
 <%}
-  if( includefile.equals("editaccessrules.jsp")){ %>
-    <%@ include file="editaccessrules.jsp" %>
+  if( includefile.equals("editaccessrules.jspf")){ %>
+    <%@ include file="editaccessrules.jspf" %>
 <%}
 
    // Include Footer 

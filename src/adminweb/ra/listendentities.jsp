@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.authorization.AuthorizationDeniedException,
                  se.anatom.ejbca.webdist.rainterface.UserView, se.anatom.ejbca.webdist.rainterface.SortBy,se.anatom.ejbca.webdist.rainterface.RevokedInfoView,
-                 se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.ra.UserDataRemote,se.anatom.ejbca.ra.raadmin.AdminPreference, se.anatom.ejbca.ra.raadmin.DNFieldExtractor,
+                 se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.ra.UserDataConstants,se.anatom.ejbca.ra.raadmin.AdminPreference, se.anatom.ejbca.ra.raadmin.DNFieldExtractor,
                  javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.util.query.*, java.util.*, java.text.DateFormat" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
@@ -736,16 +736,16 @@
     rabean.clearUsers();
 
   
-    int[] availablestatuses = {UserDataRemote.STATUS_NEW, UserDataRemote.STATUS_FAILED ,UserDataRemote.STATUS_INITIALIZED, 
-                               UserDataRemote.STATUS_INPROCESS, UserDataRemote.STATUS_GENERATED, UserDataRemote.STATUS_REVOKED,
-                               UserDataRemote.STATUS_HISTORICAL};
+    int[] availablestatuses = {UserDataConstants.STATUS_NEW, UserDataConstants.STATUS_FAILED ,UserDataConstants.STATUS_INITIALIZED, 
+                               UserDataConstants.STATUS_INPROCESS, UserDataConstants.STATUS_GENERATED, UserDataConstants.STATUS_REVOKED,
+                               UserDataConstants.STATUS_HISTORICAL};
     String[] availablestatustexts = {"STATUSNEW", "STATUSFAILED", "STATUSINITIALIZED", "STATUSINPROCESS", "STATUSGENERATED",
                                      "STATUSREVOKED", "STATUSHISTORICAL"}; 
 
     if(globalconfiguration.getEnableKeyRecovery()){
-      int[] tempintarray = {UserDataRemote.STATUS_NEW, UserDataRemote.STATUS_FAILED ,UserDataRemote.STATUS_INITIALIZED, 
-                               UserDataRemote.STATUS_INPROCESS, UserDataRemote.STATUS_GENERATED, UserDataRemote.STATUS_REVOKED,
-                               UserDataRemote.STATUS_HISTORICAL, UserDataRemote.STATUS_KEYRECOVERY}; 
+      int[] tempintarray = {UserDataConstants.STATUS_NEW, UserDataConstants.STATUS_FAILED ,UserDataConstants.STATUS_INITIALIZED, 
+                               UserDataConstants.STATUS_INPROCESS, UserDataConstants.STATUS_GENERATED, UserDataConstants.STATUS_REVOKED,
+                               UserDataConstants.STATUS_HISTORICAL, UserDataConstants.STATUS_KEYRECOVERY}; 
        
       String[] tempstringarray = {"STATUSNEW", "STATUSFAILED", "STATUSINITIALIZED", "STATUSINPROCESS", "STATUSGENERATED",
                                   "STATUSREVOKED", "STATUSHISTORICAL", "STATUSKEYRECOVERY"};
@@ -759,4 +759,4 @@
 
 %>
 
-<%@ include file="listendentitieshtml.jsp" %>
+<%@ include file="listendentitieshtml.jspf" %>

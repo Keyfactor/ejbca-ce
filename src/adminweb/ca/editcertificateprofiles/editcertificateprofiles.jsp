@@ -67,7 +67,7 @@
 
   // Initialize environment
   String certprofile = null;
-  String includefile = "certificateprofilespage.jsp"; 
+  String includefile = "certificateprofilespage.jspf"; 
   boolean  triedtoeditfixedcertificateprofile   = false;
   boolean  triedtodeletefixedcertificateprofile = false;
   boolean  triedtoaddfixedcertificateprofile    = false;
@@ -106,7 +106,7 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
          if(certprofile != null){
            if(!certprofile.trim().equals("")){
              if(!certprofile.endsWith("(FIXED)")){ 
-               includefile="certificateprofilepage.jsp"; 
+               includefile="certificateprofilepage.jspf"; 
              }else{
                 triedtoeditfixedcertificateprofile=true;
                 certprofile= null;
@@ -117,7 +117,7 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
           } 
         }
         if(certprofile == null){   
-          includefile="certificateprofilespage.jsp";     
+          includefile="certificateprofilespage.jspf";     
         }
       }
       if( request.getParameter(BUTTON_DELETE_CERTIFICATEPROFILES) != null) {
@@ -132,7 +132,7 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
               }
             }
           }
-          includefile="certificateprofilespage.jsp";             
+          includefile="certificateprofilespage.jspf";             
       }
       if( request.getParameter(BUTTON_RENAME_CERTIFICATEPROFILES) != null){ 
          // Rename selected profile and display profilespage.
@@ -151,7 +151,7 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
            }        
          }
        }      
-       includefile="certificateprofilespage.jsp"; 
+       includefile="certificateprofilespage.jspf"; 
       }
       if( request.getParameter(BUTTON_ADD_CERTIFICATEPROFILES) != null){
          // Add profile and display profilespage.
@@ -169,7 +169,7 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
              }
            }      
          }
-         includefile="certificateprofilespage.jsp"; 
+         includefile="certificateprofilespage.jspf"; 
       }
       if( request.getParameter(BUTTON_CLONE_CERTIFICATEPROFILES) != null){
          // clone profile and display profilespage.
@@ -186,7 +186,7 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
              }
          }
        }      
-          includefile="certificateprofilespage.jsp"; 
+          includefile="certificateprofilespage.jspf"; 
       }
     }
     if( request.getParameter(ACTION).equals(ACTION_EDIT_CERTIFICATEPROFILE)){
@@ -437,19 +437,19 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
            if(request.getParameter(BUTTON_CANCEL) != null){
               // Don't save changes.
            }
-             includefile="certificateprofilespage.jsp";
+             includefile="certificateprofilespage.jspf";
          }
       }
     }
   }
 
  // Include page
-  if( includefile.equals("certificateprofilepage.jsp")){ 
+  if( includefile.equals("certificateprofilepage.jspf")){ 
 %>
-   <%@ include file="certificateprofilepage.jsp" %>
+   <%@ include file="certificateprofilepage.jspf" %>
 <%}
-  if( includefile.equals("certificateprofilespage.jsp")){ %>
-   <%@ include file="certificateprofilespage.jsp" %> 
+  if( includefile.equals("certificateprofilespage.jspf")){ %>
+   <%@ include file="certificateprofilespage.jspf" %> 
 <%}
 
    // Include Footer 

@@ -76,7 +76,7 @@
         }
         ejbcawebbean.saveDefaultAdminPreference(dup);
 %>
-       <%@ include file="webconfiguration.jsp" %>
+       <%@ include file="webconfiguration.jspf" %>
 <%  }
 
     if( request.getParameter(BUTTON_NEXT) != null){
@@ -121,7 +121,7 @@
 
 
 %>  
-           <%@ include file="defaultuserpreferences.jsp" %>
+           <%@ include file="defaultuserpreferences.jspf" %>
 <%  }
      if( request.getParameter(BUTTON_SAVE) != null){
         // Save global configuration.
@@ -155,7 +155,7 @@
       // get current global configuration.
         ejbcawebbean.reloadGlobalConfiguration();
 %>
-           <%@ include file="webconfiguration.jsp" %>
+           <%@ include file="webconfiguration.jspf" %>
 <%  }  %>
 
 

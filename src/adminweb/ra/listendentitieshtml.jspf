@@ -164,10 +164,10 @@ function confirmrevokation(){
   <input type="hidden" name='<%= HIDDEN_RECORDNUMBER %>' value='<%=String.valueOf(record) %>'>
   <input type="hidden" name='<%= HIDDEN_SORTBY  %>' value='<%=sortby %>'>
      <% if(filtermode == AdminPreference.FILTERMODE_BASIC){ %>
-        <%@ include file="basicfiltermodehtml.jsp" %>
+        <%@ include file="basicfiltermodehtml.jspf" %>
      <% }
         if(filtermode == AdminPreference.FILTERMODE_ADVANCED){ %>
-        <%@ include file="advancedfiltermodehtml.jsp" %>
+        <%@ include file="advancedfiltermodehtml.jspf" %>
      <%   } %>
 
   <% if(illegalquery){ %>
@@ -318,28 +318,28 @@ function confirmrevokation(){
     <td width="17%"><%= users[i].getSubjectDNField(DNFieldExtractor.OU,0) %></td>
     <td width="18%"><%= users[i].getSubjectDNField(DNFieldExtractor.O,0) %></td>
     <td width="12%"><%  switch(users[i].getStatus()){
-                          case UserDataRemote.STATUS_NEW :
+                          case UserDataConstants.STATUS_NEW :
                             out.write(ejbcawebbean.getText("STATUSNEW"));
                             break;
-                          case UserDataRemote.STATUS_FAILED :
+                          case UserDataConstants.STATUS_FAILED :
                             out.write(ejbcawebbean.getText("STATUSFAILED"));
                             break;
-                          case UserDataRemote.STATUS_INITIALIZED :
+                          case UserDataConstants.STATUS_INITIALIZED :
                             out.write(ejbcawebbean.getText("STATUSINITIALIZED"));
                             break;
-                          case UserDataRemote.STATUS_INPROCESS :
+                          case UserDataConstants.STATUS_INPROCESS :
                             out.write(ejbcawebbean.getText("STATUSINPROCESS"));
                             break;
-                          case UserDataRemote.STATUS_GENERATED :
+                          case UserDataConstants.STATUS_GENERATED :
                             out.write(ejbcawebbean.getText("STATUSGENERATED"));
                             break;
-                          case UserDataRemote.STATUS_REVOKED :
+                          case UserDataConstants.STATUS_REVOKED :
                             out.write(ejbcawebbean.getText("STATUSREVOKED"));
                             break;
-                          case UserDataRemote.STATUS_HISTORICAL :
+                          case UserDataConstants.STATUS_HISTORICAL :
                             out.write(ejbcawebbean.getText("STATUSHISTORICAL"));
                             break;
-                          case UserDataRemote.STATUS_KEYRECOVERY :
+                          case UserDataConstants.STATUS_KEYRECOVERY :
                             out.write(ejbcawebbean.getText("STATUSKEYRECOVERY"));
                             break;
                         }%></td>
@@ -448,13 +448,13 @@ function confirmrevokation(){
         <input type="submit" name="<%=BUTTON_CHANGESTATUS %>" value="<%= ejbcawebbean.getText("CHANGESTATUSTO") %>"
                onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSURECHANGE") %>")'><br>
         <select name="<%=SELECT_CHANGE_STATUS %>">
-         <option selected value='<%= Integer.toString(UserDataRemote.STATUS_NEW) %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
-     <!--   <option value='<%= Integer.toString(UserDataRemote.STATUS_FAILED) %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>  -->
-       <!--  <option value='<%= Integer.toString(UserDataRemote.STATUS_INITIALIZED) %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>  -->
-       <!--  <option value='<%= Integer.toString(UserDataRemote.STATUS_INPROCESS) %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>  -->
-            <option value='<%= Integer.toString(UserDataRemote.STATUS_GENERATED) %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>  
-        <!--  <option value='<%= Integer.toString(UserDataRemote.STATUS_REVOKED) %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>  -->
-         <option value='<%= Integer.toString(UserDataRemote.STATUS_HISTORICAL) %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
+         <option selected value='<%= Integer.toString(UserDataConstants.STATUS_NEW) %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
+     <!--   <option value='<%= Integer.toString(UserDataConstants.STATUS_FAILED) %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>  -->
+       <!--  <option value='<%= Integer.toString(UserDataConstants.STATUS_INITIALIZED) %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>  -->
+       <!--  <option value='<%= Integer.toString(UserDataConstants.STATUS_INPROCESS) %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>  -->
+            <option value='<%= Integer.toString(UserDataConstants.STATUS_GENERATED) %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>  
+        <!--  <option value='<%= Integer.toString(UserDataConstants.STATUS_REVOKED) %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>  -->
+         <option value='<%= Integer.toString(UserDataConstants.STATUS_HISTORICAL) %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
         </select>
        <% }  
         }catch(AuthorizationDeniedException ade){} */%>&nbsp;

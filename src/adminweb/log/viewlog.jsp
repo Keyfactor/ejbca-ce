@@ -565,4 +565,4 @@
 
 %>
 
-<%@ include file="viewloghtml.jsp" %>
+<%@ include file="viewloghtml.jspf" %>

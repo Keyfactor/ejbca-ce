@@ -110,16 +110,16 @@ function checkallfields(){
       </td>
     </tr>
     <% if(helper.profiledata instanceof SwedishEIDProfile){%>
-         <%@ include file="swedisheidpage.jsp" %> 
+         <%@ include file="swedisheidpage.jspf" %> 
     <% }
        if(helper.profiledata instanceof EnhancedEIDProfile){%>
-         <%@ include file="enhancedeidpage.jsp" %> 
+         <%@ include file="enhancedeidpage.jspf" %> 
     <% }
        if(helper.profiledata instanceof IPINEnvelopeSettings){%>
-         <%@ include file="pinenvelopepage.jsp" %> 
+         <%@ include file="pinenvelopepage.jspf" %> 
     <% }
        if(helper.profiledata instanceof IVisualLayoutSettings){%>
-       <%@ include file="visuallayoutpage.jsp" %> 
+       <%@ include file="visuallayoutpage.jspf" %> 
     <% }      
        if(helper.profiledata instanceof IPINEnvelopeSettings){%>
     <tr id="Row<%=row++%2%>"> 

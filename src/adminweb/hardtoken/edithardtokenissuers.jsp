@@ -45,7 +45,7 @@
 <% 
 
   // Initialize environment
-  String includefile = "hardtokenissuerspage.jsp";
+  String includefile = "hardtokenissuerspage.jspf";
 
   boolean  issuerexists             = false;
   boolean  issuerdeletefailed       = false;
@@ -76,18 +76,18 @@
   if( request.getParameter(ACTION) != null){
     if( request.getParameter(ACTION).equals(ACTION_EDIT_ISSUERS)){
       if( request.getParameter(BUTTON_EDIT_ISSUER) != null){
-          // Display  profilepage.jsp
+          // Display  profilepage.jspf
          alias = request.getParameter(SELECT_ISSUER);
          if(alias != null){
            if(!alias.trim().equals("")){
-             includefile="hardtokenissuerpage.jsp"; 
+             includefile="hardtokenissuerpage.jspf"; 
            } 
            else{ 
             alias= null;
           } 
         }
         if(alias == null){   
-          includefile="hardtokenissuerspage.jsp";     
+          includefile="hardtokenissuerspage.jspf";     
         }
       }
       if( request.getParameter(BUTTON_DELETE_ISSUER) != null) {
@@ -98,7 +98,7 @@
               issuerdeletefailed = !tokenbean.removeHardTokenIssuer(alias);
             }
           }
-          includefile="hardtokenissuerspage.jsp";          
+          includefile="hardtokenissuerspage.jspf";          
       }
       if( request.getParameter(BUTTON_RENAME_ISSUER) != null){ 
          // Rename selected profile and display profilespage.
@@ -115,7 +115,7 @@
            }        
          }
        }      
-       includefile="hardtokenissuerspage.jsp"; 
+       includefile="hardtokenissuerspage.jspf"; 
       }
       if( request.getParameter(BUTTON_ADD_ISSUER) != null){
          // Add profile and display profilespage.         
@@ -130,7 +130,7 @@
              }
            }      
          }
-         includefile="hardtokenissuerspage.jsp"; 
+         includefile="hardtokenissuerspage.jspf"; 
       }
       if( request.getParameter(BUTTON_CLONE_ISSUER) != null){
          // clone profile and display profilespage.
@@ -146,7 +146,7 @@
              }
          }
        }      
-       includefile="hardtokenissuerspage.jsp"; 
+       includefile="hardtokenissuerspage.jspf"; 
       }
     }
     if( request.getParameter(ACTION).equals(ACTION_EDIT_ISSUER)){
@@ -175,11 +175,11 @@
 
 
              tokenbean.changeHardTokenIssuer(alias,issuer);
-             includefile="hardtokenissuerspage.jsp";
+             includefile="hardtokenissuerspage.jspf";
            }
            if(request.getParameter(BUTTON_CANCEL) != null){
               // Don't save changes.
-             includefile="hardtokenissuerspage.jsp";
+             includefile="hardtokenissuerspage.jspf";
            }
          }
       }
@@ -190,11 +190,11 @@
   HashMap adminidtonamemap = ejbcawebbean.getInformationMemory().getAdminGroupIdToNameMap();
 
  // Include page
-  if( includefile.equals("hardtokenissuerspage.jsp")){ %>
-   <%@ include file="hardtokenissuerspage.jsp" %>
+  if( includefile.equals("hardtokenissuerspage.jspf")){ %>
+   <%@ include file="hardtokenissuerspage.jspf" %>
 <%}
-  if( includefile.equals("hardtokenissuerpage.jsp")){ %>
-   <%@ include file="hardtokenissuerpage.jsp" %> 
+  if( includefile.equals("hardtokenissuerpage.jspf")){ %>
+   <%@ include file="hardtokenissuerpage.jspf" %> 
 <%}
 
    // Include Footer 

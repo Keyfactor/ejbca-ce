@@ -12,7 +12,7 @@
 <% 
 
   // Initialize environment
-  String includefile = "publisherspage.jsp"; 
+  String includefile = "publisherspage.jspf"; 
 
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AvailableAccessRules.ROLE_SUPERADMINISTRATOR); 
@@ -35,12 +35,12 @@
   includefile = publisherhelper.parseRequest(request);
 
  // Include page
-  if( includefile.equals("publisherpage.jsp")){ 
+  if( includefile.equals("publisherpage.jspf")){ 
 %>
-   <%@ include file="publisherpage.jsp" %>
+   <%@ include file="publisherpage.jspf" %>
 <%}
-  if( includefile.equals("publisherspage.jsp")){ %>
-   <%@ include file="publisherspage.jsp" %> 
+  if( includefile.equals("publisherspage.jspf")){ %>
+   <%@ include file="publisherspage.jspf" %> 
 <%} 
 
    // Include Footer 

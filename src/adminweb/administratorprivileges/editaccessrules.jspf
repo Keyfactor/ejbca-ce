@@ -18,7 +18,7 @@
     if(request.getParameter(MODE) == null || request.getParameter(MODE).equals(MODE_BASIC)){
        // Always start with basic mode
 
-        includefile = "editbasicaccessrules.jsp";
+        includefile = "editbasicaccessrules.jspf";
     }else{      
       if(request.getParameter(MODE).equals(MODE_ADVANCED)){
         mode = MODE_ADVANCED;   
@@ -72,7 +72,7 @@
           }
         }
 
-        includefile = "editadvancedaccessrules.jsp";
+        includefile = "editadvancedaccessrules.jspf";
       } 
     }
 
@@ -84,7 +84,7 @@
      BasicAccessRuleSetEncoder basicruleset = new BasicAccessRuleSetEncoder(ag.getAccessRules(), adh.getAvailableAccessRules(), globalconfiguration.getIssueHardwareTokens(), globalconfiguration.getEnableKeyRecovery());
     
      if(basicruleset.getForceAdvanced())
-       includefile = "editadvancedaccessrules.jsp";
+       includefile = "editadvancedaccessrules.jspf";
 %>
 
 <div align="center">
@@ -113,9 +113,9 @@
   </form>
 </div>
 <%
-  if( includefile.equals("editbasicaccessrules.jsp")){ %>
-   <%@ include file="editbasicaccessrules.jsp" %> 
+  if( includefile.equals("editbasicaccessrules.jspf")){ %>
+   <%@ include file="editbasicaccessrules.jspf" %> 
 <%}
-  if( includefile.equals("editadvancedaccessrules.jsp")){ %>
-    <%@ include file="editadvancedaccessrules.jsp" %>
+  if( includefile.equals("editadvancedaccessrules.jspf")){ %>
+    <%@ include file="editadvancedaccessrules.jspf" %>
 <%} %>
