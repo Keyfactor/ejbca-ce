@@ -1,4 +1,4 @@
-$Id: README,v 1.93 2003-07-22 10:59:47 anatom Exp $
+$Id: README,v 1.94 2003-07-23 10:54:05 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -64,6 +64,7 @@ and
   CRLs to different sources.
 - Optional publisher for LDAP publishes certificates and CRLs in
   LDAP.
+- Supports the Simple Certificate Enrollment Protocol (SCEP).
 - Component based architecture for various authorization methods
   of entities when issuing certificates.
 - Easy to integrate into large applications for optimal
