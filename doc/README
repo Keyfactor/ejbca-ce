@@ -1,4 +1,4 @@
-$Id: README,v 1.134 2004-04-19 07:21:06 anatom Exp $
+$Id: README,v 1.135 2004-05-09 08:33:24 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -82,6 +82,12 @@ EJBCA is completely written in Java and should as such run on any
 platform where a J2EE server runs.  Development and testing is
 performed on Linux and Windows 2000 platforms.
 
+UPGRADE
+=======
+
+See doc/RELEASE_NOTES and UPGRADE for information about upgrading from an 
+earlier version of EJBCA.
+
 QUICK START GUIDE
 =================
 
@@ -122,7 +128,10 @@ FOR THE IMPATIENT:
 3. execute 'install.sh/cmd' in the ejbca directory.  The installation script
  will use the default javacacerts password. If you have changed it (from changeit) 
  it you should use 'install.sh/cmd <javacacerts password>'.
-
+4. Restart JBoss.
+5. Import p12/superadmin.p12 in your browser and go to https://localhost:8443/ejbca
+ to access the admin GUI of EJBCA.
+ 
 If you want to run a thorough test of your new CA, run the automated tests with 'runtest.sh/cmd'.
 
 NOTE-1: After running tests with 'runtest.sh/cmd', you might
@@ -134,7 +143,7 @@ runtest your CRLs will be populated with a few entries.
 to test the installation.
 
 It is also possible to deploy EJBCA without the Web admin GUI, 
-use 'ant deploy_nora'.
+use 'ant deploy_nora'. This applies to versons < 3.0 only.
 
 FOR THE OTHERS:
 
@@ -152,14 +161,20 @@ or a subordinate CA to an external CA. Initially you shoud setup a RootCA so
 you can access the admin-GUI.
 
 Root CA:
-run 'ca.sh/cmd init' and enter all required parameters.
+run 'install.sh/cmd' and enter all required parameters. this will create the first 
+Root CA. More CAs can be created using the Admin GUI after this. 
+Import p12/superadmin.p12 in your browser and go to https://localhost:8443/ejbca
+to access the admin GUI of EJBCA.
+
+You can run 'ca.sh/cmd init' and enter all required parameters to create additional 
+Root CAs, although a better idea is to do it from the Admin GUI.
 Ex: 'ca init TestRoot "C=SE,O=PrimeKey,CN=EJBCA" 2048 365 2.5.29.32.0' 
 will create a root CA with the DN 'C=SE,O=PrimeKey,CN=EJBCA'. The
 keylength is
  2048 bit (RSA) and the validity of the root certificate is 365
  days. Quote the DN  so it is treated as one argument.
 
- PKIX requires that a CRL always is available even if it is
+PKIX requires that a CRL always is available even if it is
 empty. When running 'ca.sh/cmd init' the CA certificate is stored,
 and published (if any Publishers are configured), and the initial CRL is created 
 and stored/published.
@@ -386,15 +401,15 @@ session bean
  'AuthenticationSession'.
 
 Options in CertificateStoreSession:
--Datasource to be used when finding things in the database.
+-Datasource to be used when finding things in the database. 
+Do not edit this one, use 'ant ReplaceDS' instead.
 
 Administrating CA
 -----------------
 The CA has a command line interface ca.sh/cmd. Options are:
 
-* init - Iniitalizes a CA in the beginning or after a rollover.
-Stores CA
-certificates and publishes first CRL.
+* init - Creates a new Root CA.
+Stores CA certificates and publishes first CRL.
 * makeroot - creates a new Root CA keystore (only used by Root
 CA). - not used in EJBCA3
 Quote the DN (") so it is treated as one argument.

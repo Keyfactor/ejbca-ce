@@ -1,6 +1,15 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.20 2004-03-24 08:05:24 anatom Exp $
+$Id: FAQ,v 1.21 2004-05-09 08:33:24 anatom Exp $
+
+---------
+Q : After upgrading the version of Java, the Admin GUI no longer works.
+
+A : Tomcat needs the CA-certificate relating to the server certificate in 
+javas trust-store. This is imported when running 'install.sh/cmd' and when
+you upgraded java, you have a new, empty truststore.
+Import the CA-certificate in $JAVA_HOME/jre/lib/security/cacerts again, 
+or copy the old truststore from the earlier JAVA_HOME.
 
 ---------
 Q : When running 'install' or creating JKS or PKCS12 files you can't use longer 

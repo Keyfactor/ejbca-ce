@@ -1,0 +1,34 @@
+$Id: UPGRADE,v 1.1 2004-05-09 08:33:24 anatom Exp $
+
+UPGRADE
+=======
+
+This document describes proceedures needed to upgrade from one 
+version of EJBCA to a new version.
+Upgrades within a major version, from 2.0 to 2.0.1 for example, are 
+usually plug-in upgrades and can be made simply by deploying the new 
+software.
+
+From EJBCA 2.x to EJBCA 3.x
+---------------------------
+EJBCA 3 has several large database changes due to majur new features.
+
+The upgrade process typically consists of:
+1. ant ReplaceDS
+2. ant deploy
+3. ant upgrade
+4. restart JBoss
+
+Some things are not upgraded from ejbca2, and needs to be rebuilt after the upgrade 
+(if you have used this function and customized).
+
+Important data lost during upgrade from EJBCA 2.x to EJBCA 3.x
+--------------------------------------------------------------
+
+Key Recovery - If you have used key recovery in ejbca 2, the stored keys are NOT migrated to ejbca 3.
+Recoverable keys will be LOST in ejbca 3.
+
+Access rules and administrator groups - If you have several administrators with different access rules, 
+the access rules needs to be rebuilt using the Admin GUI.
+
+Hard Tokens - If you issued hard tokens with ejbca 2. You must remake your structure with issuers and profiles.
