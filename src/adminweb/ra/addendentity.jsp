@@ -126,6 +126,7 @@
   EndEntityProfile oldprofile      = null;
   String addedusername             = ""; 
 
+  String oldemail = "";
   String lastselectedusername           = "";
   String lastselectedpassword           = "";
   String lastselectedemaildomain        = "";
@@ -222,6 +223,7 @@
            value = request.getParameter(TEXTFIELD_EMAIL);
            if(value !=null){
              value=value.trim(); 
+             oldemail = value;
              if(!value.equals("")){
                String emaildomain = request.getParameter(TEXTFIELD_EMAILDOMAIN);
                if(emaildomain !=null){
@@ -405,9 +407,10 @@
     int tabindex = 0;
   
     if(!noprofiles){
-      if(!useoldprofile)
+      if(!useoldprofile){
         profile = rabean.getEndEntityProfile(profileid);
-      else
+        oldemail = "";
+      }else
         profile = oldprofile;
     }else
         profile = new EndEntityProfile();
@@ -954,7 +957,7 @@ function checkallfields(){
 	 <td></td>
 	 <td align="right"><%= ejbcawebbean.getText("EMAIL") %></td>
 	 <td>      
-           <input type="text" name="<%= TEXTFIELD_EMAIL %>" size="20" maxlength="255" tabindex="<%=tabindex++%>">@
+           <input type="text" name="<%= TEXTFIELD_EMAIL %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value="<%=oldemail%>">@
           <% if(!profile.isModifyable(EndEntityProfile.EMAIL,0)){ 
                  String[] options = profile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
                %>

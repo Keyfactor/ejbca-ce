@@ -133,6 +133,10 @@
         </td>
       </tr>
       <% } %>
+      <tr id="Row<%=(row++)%2%>">
+      <td>&nbsp;</td>
+      <td>&nbsp</td>
+      </tr> 
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SUBJECTDNFIELDS") %></td>
 	 <td>
@@ -147,11 +151,15 @@
 	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %></td>
 	 <td><% if(fieldvalue != null) out.write(fieldvalue); %> 
          </td>
-       </tr>
+       </tr 
        <% } 
           subjectfieldsize = profile.getSubjectAltNameFieldOrderLength();
           if(subjectfieldsize > 0){
        %> 
+       <tr id="Row<%=(row++)%2%>">
+         <td>&nbsp;</td>
+         <td>&nbsp</td>
+       </tr>
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SUBJECTALTNAMEFIELDS") %></td>
 	 <td>

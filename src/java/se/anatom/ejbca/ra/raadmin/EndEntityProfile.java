@@ -31,7 +31,7 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.26 2004-06-02 08:16:16 herrvendil Exp $
+ * @version $Id: EndEntityProfile.java,v 1.27 2004-09-16 22:02:30 herrvendil Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -724,7 +724,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         if(!getUse(field,number) && !email.trim().equals(""))
           throw new UserDoesntFullfillEndEntityProfile(text + " cannot be used in end entity profile.");
       
-        if(!isModifyable(field,number)){
+        if(!isModifyable(field,number) && !email.equals("")){
           String[] values;
           try{
             values = getValue(field, number).split(SPLITCHAR);

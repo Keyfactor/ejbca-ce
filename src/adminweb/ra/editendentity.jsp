@@ -156,7 +156,9 @@
              }
 
              value = request.getParameter(TEXTFIELD_EMAIL);
-             if(value !=null){
+             if(value == null || value.trim().equals("")){
+               newuser.setEmail("");                   
+             }else{
                value=value.trim(); 
                if(!value.equals("")){
                  String emaildomain = request.getParameter(TEXTFIELD_EMAILDOMAIN);
@@ -169,6 +171,7 @@
 
                  emaildomain = request.getParameter(SELECT_EMAILDOMAIN);
                  if(emaildomain !=null){
+                   emaildomain=emaildomain.trim(); 
                    if(!emaildomain.equals("")){
                      newuser.setEmail(value + "@" + emaildomain);                   
                    }

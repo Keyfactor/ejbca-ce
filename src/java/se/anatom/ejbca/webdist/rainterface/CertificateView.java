@@ -39,7 +39,7 @@ import se.anatom.ejbca.util.Hex;
  * by JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: CertificateView.java,v 1.16 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: CertificateView.java,v 1.17 2004-09-16 22:02:41 herrvendil Exp $
  */
 public class CertificateView {
 
@@ -264,34 +264,50 @@ public class CertificateView {
       return certificate;
     }
     
-    public String getSubjectAltName(){
+    public String getSubjectAltName() {
       if(subjectaltnamestring == null){      	
         try {
           if(certificate.getSubjectAlternativeNames() != null){
-			subjectaltnamestring = "";          
+			subjectaltnamestring = "";
+			
+			String separator = "";
+          	String guid = null;
+          	try{              	  
+          		guid = CertTools.getGuidAltName(certificate); 
+          	}catch(IOException e){
+          		subjectaltnamestring = e.getMessage();
+          	}  
+          	if(guid != null){
+          		subjectaltnamestring += separator + "GUID=" + guid;
+          		separator = ", ";
+          	}
+          	String upn = null;
+          	try{              	  
+          		upn = CertTools.getUPNAltName(certificate);
+          	}catch(IOException e){
+          		subjectaltnamestring = e.getMessage();	
+          	}  
+          	if(upn != null){               
+          		subjectaltnamestring += separator + "UPN=" + upn;
+          		separator = ", ";
+          	}
+			
 			Iterator iter = certificate.getSubjectAlternativeNames().iterator();
-			while(iter.hasNext()){
-			  if(!subjectaltnamestring.equals(""))
-			    subjectaltnamestring += ", ";	
+			while(iter.hasNext()){				
               List next = (List) iter.next(); 
               int OID = ((Integer) next.get(0)).intValue();
               
               switch(OID){
               	case SUBALTNAME_OTHERNAME:
-              	  // check if upn exists.
-				  String upn = null;
-              	  try{              	  
-                    upn = CertTools.getUPNAltName(certificate);
-              	  }catch(IOException e){}  
-                  if(upn != null)
-				    subjectaltnamestring += "UPN=" + upn;
-                                  	  
+              	  // Already taken care of                                                                 
               	  break;
               	case SUBALTNAME_RFC822NAME: 
-				  subjectaltnamestring += "RFC822NAME=" + (String) next.get(1);  
+				  subjectaltnamestring += separator + "RFC822NAME=" + (String) next.get(1);
+				  separator = ", ";
               	  break;
               	case SUBALTNAME_DNSNAME:
-				  subjectaltnamestring += "DNSNAME=" + (String) next.get(1);
+				  subjectaltnamestring += separator + "DNSNAME=" + (String) next.get(1);
+				  separator = ", ";
               	  break;
               	case SUBALTNAME_X400ADDRESS:
               	  //TODO Implement X400ADDRESS
@@ -300,20 +316,26 @@ public class CertificateView {
 				  //TODO Implement EDIPARTYNAME
 				  break;              	                	  
 				case SUBALTNAME_URI:
-				  subjectaltnamestring += "URI=" + (String) next.get(1);
+		          if(!subjectaltnamestring.equals(""))
+					 subjectaltnamestring += ", ";
+				  subjectaltnamestring += separator + "URI=" + (String) next.get(1);
+				  separator = ", ";
 				  break;
 				case SUBALTNAME_IPADDRESS:
-                  //TODO implement IPADDRESS
+				  subjectaltnamestring += separator + "IPADDRESS=" + (String) next.get(1);
+				  separator = ", ";
 				  break;
 				case SUBALTNAME_REGISTREDID:
                   //TODO implement REGISTREDID
 				  break;
               }
+
 			}			
           }	
-		} catch (CertificateParsingException e) {}                  
-      }  
-      
+		} catch (CertificateParsingException e) {
+			subjectaltnamestring = e.getMessage();		
+		}                  
+      }        
 
       return subjectaltnamestring; 	
     }
