@@ -27,10 +27,10 @@
         <property name="ca.keysize" value="512"/>
         <property name="ca.validity" value="365"/>
         <property name="ca.policy" value="null"/>
-        <property name="cacert.password" value="changeit"/>
-        <property name="server.dn" value="CN=localhost,O=PrimeKey Solutions AB,C=SE"/>
-        <property name="keystore.password" value="serverpwd"/>
-        <property name="hostname" value="localhost"/>
+        <property name="java.trustpassword" value="changeit"/>
+        <property name="httpsserver.dn" value="CN=localhost,O=PrimeKey Solutions AB,C=SE"/>
+        <property name="httpsserver.password" value="serverpwd"/>
+        <property name="httpsserver.hostname" value="localhost"/>
 		<property name="superadmin.password" value="primekey"/>
     </target>
 
@@ -40,10 +40,10 @@
         <input message="Please enter the CA key size (eg. 1024) ?" addproperty="ca.keysize" defaultvalue="1024" />
         <input message="Please enter the CA validity (in days, eg: 365) ?" addproperty="ca.validity" defaultvalue="365"/>
         <input message="Please enter the CA policy id (default, no policy) ?" addproperty="ca.policy" defaultvalue="null"/>
-        <input message="Please enter the CA certificate password (default 'changeit') ?" addproperty="cacert.password" defaultvalue="changeitt"/>
-        <input message="Please enter the server hostname (default 'localhost') ?" addproperty="hostname" defaultvalue="localhost"/>
-        <input message="Please enter the server dn (default 'CN=localhost,O=PrimeKey Solutions AB,C=SE') ?" addproperty="server.dn" defaultvalue="CN=localhost,O=PrimeKey Solutions AB,C=SE"/>
-        <input message="Please enter the server keystore password (default: 'serverpwd') ?" addproperty="keystore.password" defaultvalue="serverpwd"/>
+        <input message="Please enter the CA certificate password (default 'changeit') ?" addproperty="java.trustpassword" defaultvalue="changeitt"/>
+        <input message="Please enter the server httpsserver.hostname (default 'localhost') ?" addproperty="httpsserver.hostname" defaultvalue="localhost"/>
+        <input message="Please enter the server dn (default 'CN=localhost,O=PrimeKey Solutions AB,C=SE') ?" addproperty="httpsserver.dn" defaultvalue="CN=localhost,O=PrimeKey Solutions AB,C=SE"/>
+        <input message="Please enter the server keystore password (default: 'serverpwd') ?" addproperty="httpsserver.password" defaultvalue="serverpwd"/>
         <input message="Please enter the superadmin password (default: 'primekey') ?" addproperty="superadmin.password" defaultvalue="primekey"/>
     </target>
 
@@ -69,10 +69,10 @@ ca.dn               : ${ca.dn}
 ca.keysize          : ${ca.keysize}
 ca.validity         : ${ca.validity}
 ca.policy           : ${ca.policy}
-cacert.password     : ${cacert.password}
-server.dn           : ${server.dn}
-keystore.password   : ${keystore.password}
-hostname            : ${hostname}
+java.trustpassword  : ${java.trustpassword}
+httpsserver.dn      : ${httpsserver.dn}
+httpsserver.password: ${httpsserver.password}
+httpsserver.hostname: ${httpsserver.hostname}
 superadmin.password : ${superadmin.password}
     </echo>
     </target>
@@ -83,16 +83,16 @@ superadmin.password : ${superadmin.password}
         <antcall target="ejbca:adminweb"/>
         <echo message="Creating root certificate in DER format..."/>
         <ejbca:cli name="ca" arg='getrootcert ${ca.name} ${java.io.tmpdir}/rootca.der -der'/>
-        <ejbca:keytool arg="-v -alias EJBCA-CA -delete -keystore ${java.home}/lib/security/cacerts -storepass ${cacert.password}"/>
-        <ejbca:keytool arg="-v -alias EJBCA-CA -import -trustcacerts -file ${java.io.tmpdir}/rootca.der -keystore ${java.home}/lib/security/cacerts -storepass ${cacert.password} -noprompt"/>
+        <ejbca:keytool arg="-v -alias EJBCA-CA -delete -keystore ${java.home}/lib/security/cacerts -storepass ${java.trustpassword}"/>
+        <ejbca:keytool arg="-v -alias EJBCA-CA -import -trustcacerts -file ${java.io.tmpdir}/rootca.der -keystore ${java.home}/lib/security/cacerts -storepass ${java.trustpassword} -noprompt"/>
         <delete file="${java.io.tmpdir}/rootca.der"/>
     </target>
 
 	<target name="ejbca:adminweb">
-		<ejbca:cli name="setup" arg="${hostname} ejbca"/>
+		<ejbca:cli name="setup" arg="${httpsserver.hostname} ejbca"/>
 		
-		<ejbca:cli name="ra" arg='adduser tomcat ${keystore.password} "${server.dn}" null ${ca.name} null 1 JKS'/>
-		<ejbca:cli name="ra" arg="setclearpwd tomcat ${keystore.password}"/>
+		<ejbca:cli name="ra" arg='adduser tomcat ${httpsserver.password} "${httpsserver.dn}" null ${ca.name} null 1 JKS'/>
+		<ejbca:cli name="ra" arg="setclearpwd tomcat ${httpsserver.password}"/>
 		
 		<ejbca:cli name="ra" arg='adduser superadmin ${superadmin.password} "CN=SuperAdmin" null ${ca.name} null 65 P12'/>
 		<ejbca:cli name="ra" arg="setclearpwd superadmin ${superadmin.password}"/>
