@@ -11,35 +11,16 @@ import java.security.cert.X509CRL;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 
 /**
+ * The CertificateStoreSession is the primary storage
+ * for certificates and CRL. The CA always puts certificates and CRLs in the
+ * CertificateStoreSession session bean defined in ca/ejb-jar.xml. The
+ * CertificateStoreSession is also used to retrieve and find certificates,
+ * retrieve CRLs, check for revocation etc. the CertificateStoreSession implements
+ * the interface ICertificateStoreSession.
  *
- * @version $Id: ICertificateStoreSession.java,v 1.1.1.1 2001-11-15 14:58:16 anatom Exp $
+ * @version $Id: ICertificateStoreSession.java,v 1.2 2001-12-31 15:48:12 anatom Exp $
  */
-public interface ICertificateStoreSession {
-
-   /**
-    * Stores a certificate in the database.
-    *
-    * @param incert The certificate to be stored.
-    * @param chainfp Fingerprint (hex) of the CAs certificate.
-    * @param status Status of the certificate (from CertificateData).
-    * @param type Type of certificate (from SecConst).
-    *
-    * @return true if storage was succesful.
-    * @throws EJBException if a communication or other error occurs.
-    */
-    public boolean storeCertificate(Certificate incert, String cafp, int status, int type) throws RemoteException;
-
-   /**
-    * Stores a CRL in the database.
-    *
-    * @param incrl The CRL to be stored.
-    * @param chainfp Fingerprint (hex) of the CAs certificate.
-    * @param number CRL number.
-    *
-    * @return true if storage was succesful.
-    * @throws EJBException if a communication or other error occurs.
-    */
-    public boolean storeCRL(X509CRL incrl, String cafp, int number) throws RemoteException;
+public interface ICertificateStoreSession extends IPublisherSession {
 
    /**
     * Lists fingerprint (primary key) of ALL certificates in the database.

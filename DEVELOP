@@ -1,0 +1,35 @@
+CertificateStore/Publisher architecture
+---------------------------------------
+
+The CertificateStore/Publisher architecture is defined by the two interfaces
+IPublisherSession and ICertificateStoreSession:
+
+public interface IPublisherSession;
+public interface ICertificateStoreSession extends IPublisherSession;
+
+The CertificateStoreSession is the primary storage
+for certificates and CRL. The CA always puts certificates and CRLs in the
+CertificateStoreSession session bean defined in ca/ejb-jar.xml. The
+CertificateStoreSession is also used to retrieve and find certificates,
+retrieve CRLs, check for revocation etc. the CertificateStoreSession implements
+the interface ICertificateStoreSession.
+
+Certificates and CRLs can also be published to any number of other certificate
+stores, which are defined by session beans PublisherSession1, PublisherSession2,
+etc. A PublisherSession is a simple subset of the CertificateStoreSession and
+can only be used to store certificates and CRLs. PublisherSession's implement
+the interface IPublisherSession.
+
+The IPublisherSession is a simple interface which is only used to store a
+certificate or a CRL.
+The ICertificateStoreSession extends the IPublisherSession interface with
+capabilities to find certificates and CRL etc.
+A class implementing the ICertificateStoreSession interface can thus also be
+used a PublisherSession and a class implementing the IPublisherSession can
+easily (well maybe not so easily) be extended to a fully fledged
+CertificateStore.
+
+This architecture gives us the choice of for example an SQL database aa
+CertificateStoreSession where we also publish certificates to an LDAP directory,
+or the LDAP directory as the primary CertificateStoreSession where we also
+publish certificates to a specific SQL database for a specific purpose.
