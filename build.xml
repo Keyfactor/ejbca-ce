@@ -72,6 +72,14 @@
   <property name="adminjar" value="./admin.jar" />
   
   <property environment="env"/>
+  <!-- store to be copied to Jboss conf directory -->
+  <property name="keystore" value="src/ca/ca/keyStore/server.p12"/>
+  
+  <!-- libs to be copied to Jboss lib directory -->
+  <property name="lib.bcmail" value="${lib}/bcmail-jdk13-117.jar"/>
+  <property name="lib.jce" value="${lib}/jce-jdk13-117.jar"/>
+  <property name="lib.ldap" value="${lib}/ldap.jar"/>
+  <property name="lib.regexp" value="${lib}/regexp1_0_0.jar"/>
 
   <!-- =================================================================== -->
   <!-- Create the time stamp and build directory -->
@@ -564,11 +572,6 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
 		    validargs="oracle,mysql,postgres,sapdb,hsqldb"
 		    addproperty="ejbca.DB"
 		  />
-        <replace dir="${src}" value="${ejbca.DS}">
-	        <include name="**/*.xml"/>
-	        <replacetoken>java:/DefaultDS</replacetoken>
-        </replace>
-
 		<!-- Replace the jbosscmp xml description files by the correct ones -->
 		<copy overwrite="true" file="src/ca/ca/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/ca/ca/META-INF/jbosscmp-jdbc.xml"/>
 		<copy overwrite="true" file="src/ra/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/ra/META-INF/jbosscmp-jdbc.xml"/>
@@ -576,17 +579,43 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
 		<copy overwrite="true" file="src/hardtoken/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/hardtoken/META-INF/jbosscmp-jdbc.xml"/>
 		<copy overwrite="true" file="src/keyrecovery/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/keyrecovery/META-INF/jbosscmp-jdbc.xml"/>
 
+        <replace dir="${src}" value="${ejbca.DS}">
+	        <include name="**/jbosscmp-jdbc.xml"/>
+	        <replacetoken>java:/DefaultDS</replacetoken>
+        </replace>
   </target>
 
   <target name="batch" depends="admin.jar">
   	<java classname="se.anatom.ejbca.batch.BatchMakeP12" fork="true">
   		 <classpath>
   		 	<pathelement location="${adminjar}"/>
-  		 	<fileset dir="${env.JBOSS_HOME}\client" includes="**/*.jar"/>
+  		 	<fileset dir="${env.JBOSS_HOME}/client" includes="**/*.jar"/>
   		 	<fileset dir="${lib}" includes="**/*.jar"/>
   		 </classpath>
   	</java>
   </target>
+  
+  <target name="deploylib">
+	<copy file="${lib.jce}" tofile="${env.JBOSS_HOME}/server/default/lib" verbose="true"/>
+	<copy file="${lib.bcmail}" tofile="${env.JBOSS_HOME}/server/default/lib" verbose="true"/>
+	<copy file="${lib.ldap}" tofile="${env.JBOSS_HOME}/server/default/lib" verbose="true"/>
+	<copy file="${lib.regexp}" tofile="${env.JBOSS_HOME}/server/default/lib" verbose="true"/>
+  </target>  
+  
+  <target name="deploy" depends="deploylib">
+	<copy file="${caear}" tofile="${env.JBOSS_HOME}/server/default/deploy/ejbca-ca.ear" verbose="true"/>
+  </target>
+
+  <target name="deploy_nora" depends="deploylib">
+	<copy file="${caearnora}" tofile="${env.JBOSS_HOME}/server/default/deploy/ejbca-canora.ear" verbose="true"/>
+  </target>
+  
+  
+
+  <target name="keystore">
+  	<copy file="${keystore}" tofile="${env.JBOSS_HOME}/server/default/conf" verbose="true"/>	
+  </target>
+
   <!-- =================================================================== -->
   <!-- Run JUnit tests                                                     -->
   <!-- =================================================================== -->
