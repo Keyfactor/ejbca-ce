@@ -56,9 +56,12 @@
         index++;
       }
 
-      hardtokenissueraliases = tokenbean.getHardTokenIssuerAliases();
+      hardtokenissueraliases = new String[ejbcawebbean.getInformationMemory().getHardTokenIssuers().keySet().size()];
+      Iterator issueriter = ejbcawebbean.getInformationMemory().getHardTokenIssuers().keySet().iterator();
+      
       hardtokenissuerids = new int[hardtokenissueraliases.length];
       for(int i=0; i < hardtokenissueraliases.length; i++){
+        hardtokenissueraliases[i] = (String) issueriter.next();
         hardtokenissuerids[i]= tokenbean.getHardTokenIssuerId(hardtokenissueraliases[i]);
       }
    }

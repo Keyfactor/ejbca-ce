@@ -185,6 +185,7 @@
       }
     }
   }
+
   Collection authgroups = ejbcawebbean.getInformationMemory().getHardTokenIssuingAdminGroups();
   HashMap adminidtonamemap = ejbcawebbean.getInformationMemory().getAdminGroupIdToNameMap();
 
