@@ -79,7 +79,9 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
 
 <HR>
 Welcome to certificate enrollment. <BR>
-If you haven't done so already, you must first install the CA certificate(s) in your browser.
+<p>
+If you you want to, you can manually install the CA certificate(s) in your browser, otherwise this will be done automatically 
+when your certificate is retrieved.
 
 <P>Install CA certificates:
 
@@ -95,7 +97,7 @@ try  {
     } else {
         out.println("<li><a href=\"../webdist/certdist?cmd=iecacert&level=0\">Root CA</a></li>");
         if (chain.length > 1) {
-            for (int i=chain.length-2;i>=0;i--) {
+            for (int i=chain.length-1;i>0;i--) {
                 out.println("<li><a href=\"../webdist/certdist?cmd=iecacert&level="+i+"\">CA</a></li>");
             }
         }
