@@ -36,8 +36,7 @@ Stores Certificates and CRLs in any SQL database (handled by application
  server).
 Component based architecture for publishing certificates and CRLs to different
  sources.
-Optional publisher for LDAP (configuration) publisher certificates and CRLs
-in LDAP.
+Optional publisher for LDAP publishes certificates and CRLs in LDAP.
 Component based architecture for various authorization methods of entities when issuing certificates.
 
 SECURITY
