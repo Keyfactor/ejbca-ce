@@ -25,6 +25,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.IPublisherSessionLocal;
 import se.anatom.ejbca.ca.store.IPublisherSessionLocalHome;
 import se.anatom.ejbca.ca.store.CertificateData;
+import se.anatom.ejbca.ca.store.certificateprofiles.*;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.CertTools;
@@ -48,7 +49,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.50 2002-11-12 08:25:37 herrvendil Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.51 2002-11-13 12:35:24 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -270,14 +271,25 @@ public class RSASignSessionBean extends BaseSessionBean {
                     // If this is a CA, we only allow CA-type keyUsage
                     keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
                 }
-                X509Certificate cert = makeBCCertificate(data, caSubjectName, validity.longValue(), pk, keyusage);
+                ICertificateStoreSessionLocal certificateStore = storeHome.create(admin);
+                // Retrieve the certificate profile this user should have
+                CertificateProfile certProfile = certificateStore.getCertificateProfile(data.getCertProfileId());
+                // What if certProfile == null?
+                if (certProfile == null) {
+                    if (data.getType() == SecConst.USER_CA)
+                        certProfile = certificateStore.getCertificateProfile(SecConst.PROFILE_FIXED_CA);
+                    else if (data.getType() == SecConst.USER_ROOTCA)
+                        certProfile = certificateStore.getCertificateProfile(SecConst.PROFILE_FIXED_ROOTCA);
+                    else
+                        certProfile = certificateStore.getCertificateProfile(SecConst.PROFILE_FIXED_ENDUSER);
+                }
+                X509Certificate cert = makeBCCertificate(data, caSubjectName, validity.longValue(), pk, keyusage, certProfile);
                 logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, cert, LogEntry.EVENT_INFO_CREATECERTIFICATE,"");
                 debug("Generated certificate with SerialNumber '" + Hex.encode(cert.getSerialNumber().toByteArray())+"' for user '"+username+"'.");
                 debug(cert.toString());
                 // Verify before returning
                 cert.verify(caCert.getPublicKey());
                 // Store certificate in the database
-                ICertificateStoreSessionLocal certificateStore = storeHome.create(admin);
                 certificateStore.storeCertificate(cert, username, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
                 // Call authentication session and tell that we are finished with this user
                 for (int i=0;i<publishers.size();i++) {
@@ -492,13 +504,8 @@ public class RSASignSessionBean extends BaseSessionBean {
 
 
 
-    private X509Certificate makeBCCertificate(
-        UserAuthData subject,
-        X509Name caname,
-        long validity,
-        PublicKey publicKey,
-        int keyusage)
-        throws Exception {
+    private X509Certificate makeBCCertificate(UserAuthData subject, X509Name caname, long validity,
+        PublicKey publicKey, int keyusage, CertificateProfile certProfile) throws Exception {
         debug(">makeBCCertificate()");
         final String sigAlg = "SHA1WithRSA";
         Date firstDate = new Date();
@@ -508,8 +515,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         // validity in days = validity*24*60*60*1000 milliseconds
         lastDate.setTime(lastDate.getTime() + (validity * 24 * 60 * 60 * 1000));
         X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
-        // Serialnumber is random bits, where random generator is initialized with Date.getTime() when this
-
+        // Serialnumber is random bits, where random generator is initialized when this
         // bean is created.
         BigInteger serno = SernoGenerator.instance().getSerno();
         certgen.setSerialNumber(serno);
@@ -528,7 +534,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         certgen.setPublicKey(publicKey);
 
         // Basic constranits, all subcerts are NOT CAs
-        if (usebc.booleanValue() == true) {
+        if (certProfile.getUseBasicConstraints() == true) {
             boolean isCA = false;
             if (((subject.getType() & SecConst.USER_CA) == SecConst.USER_CA)
                 || ((subject.getType() & SecConst.USER_ROOTCA)
@@ -537,19 +543,19 @@ public class RSASignSessionBean extends BaseSessionBean {
             BasicConstraints bc = new BasicConstraints(isCA);
             certgen.addExtension(
                 X509Extensions.BasicConstraints.getId(),
-                bccritical.booleanValue(),
+                certProfile.getBasicConstraintsCritical(),
                 bc);
         }
         // Key usage
-        if (useku.booleanValue() == true) {
-            X509KeyUsage ku = new X509KeyUsage(keyusage);
+        if (certProfile.getUseKeyUsage() == true) {
+            X509KeyUsage ku = new X509KeyUsage(sunKeyUsageToBC(certProfile.getKeyUsage()));
             certgen.addExtension(
                 X509Extensions.KeyUsage.getId(),
-                kucritical.booleanValue(),
+                certProfile.getKeyUsageCritical(),
                 ku);
         }
         // Subject key identifier
-        if (useski.booleanValue() == true) {
+        if (certProfile.getUseSubjectKeyIdentifier() == true) {
             SubjectPublicKeyInfo spki =
                 new SubjectPublicKeyInfo(
                     (DERConstructedSequence) new DERInputStream(new ByteArrayInputStream(publicKey
@@ -558,11 +564,11 @@ public class RSASignSessionBean extends BaseSessionBean {
             SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
             certgen.addExtension(
                 X509Extensions.SubjectKeyIdentifier.getId(),
-                skicritical.booleanValue(),
+                certProfile.getSubjectKeyIdentifierCritical(),
                 ski);
         }
         // Authority key identifier
-        if (useaki.booleanValue() == true) {
+        if (certProfile.getUseAuthorityKeyIdentifier() == true) {
             SubjectPublicKeyInfo apki =
                 new SubjectPublicKeyInfo(
                     (DERConstructedSequence) new DERInputStream(new ByteArrayInputStream(caCert
@@ -572,11 +578,11 @@ public class RSASignSessionBean extends BaseSessionBean {
             AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
             certgen.addExtension(
                 X509Extensions.AuthorityKeyIdentifier.getId(),
-                akicritical.booleanValue(),
+                certProfile.getAuthorityKeyIdentifierCritical(),
                 aki);
         }
         // Subject Alternative name
-        if ((usesan.booleanValue() == true) && (subject.getEmail() != null)) {
+        if ((certProfile.getUseSubjectAlternativeName() == true) && (subject.getEmail() != null)) {
             GeneralName gn =
                 new GeneralName(new DERIA5String(subject.getEmail()), 1);
             DERConstructedSequence seq = new DERConstructedSequence();
@@ -584,20 +590,20 @@ public class RSASignSessionBean extends BaseSessionBean {
             GeneralNames san = new GeneralNames(seq);
             certgen.addExtension(
                 X509Extensions.SubjectAlternativeName.getId(),
-                sancritical.booleanValue(),
+                certProfile.getSubjectAlternativeNameCritical(),
                 san);
         }
         // Certificate Policies
-        if (usecertpol.booleanValue() == true) {
-            CertificatePolicies cp = new CertificatePolicies(certpolid);
+        if (certProfile.getUseCertificatePolicies() == true) {
+            CertificatePolicies cp = new CertificatePolicies(certProfile.getCertificatePolicyId());
             certgen.addExtension(
                 X509Extensions.CertificatePolicies.getId(),
-                certpolcritical.booleanValue(),
+                certProfile.getCertificatePoliciesCritical(),
                 cp);
         }
         // CRL Distribution point URI
-        if (usecrldist.booleanValue() == true) {
-            GeneralName gn = new GeneralName(new DERIA5String(crldisturi), 6);
+        if (certProfile.getUseCRLDistributionPoint() == true) {
+            GeneralName gn = new GeneralName(new DERIA5String(certProfile.getCRLDistributionPointURI()), 6);
             DERConstructedSequence seq = new DERConstructedSequence();
             seq.addObject(gn);
             GeneralNames gns = new GeneralNames(seq);
@@ -607,7 +613,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             ext.addObject(distp);
             certgen.addExtension(
                 X509Extensions.CRLDistributionPoints.getId(),
-                crldistcritical.booleanValue(),
+                certProfile.getCRLDistributionPointCritical(),
                 ext);
         }
         X509Certificate cert =
