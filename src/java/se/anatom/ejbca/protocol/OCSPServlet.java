@@ -52,7 +52,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.11 2003-12-27 10:58:01 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.12 2003-12-27 11:05:42 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -311,7 +311,7 @@ public class OCSPServlet extends HttpServlet {
                         try {
                             cacert = findCAByHash(certId, m_cacerts);
                         } catch (OCSPException e) {
-                            m_log.info("Unable to generate CA certificate hash.", e);    
+                            m_log.error("Unable to generate CA certificate hash.", e);    
                             cacert = null;
                             continue;
                         }
@@ -319,7 +319,7 @@ public class OCSPServlet extends HttpServlet {
                         if ( (cacert != null) && (basicRes == null) ) {
                             basicRes = createOCSPResponse(req, cacert);
                         } else if (cacert == null) {
-                            final String msg = "Unable to find CA certificate by issuer name hash: "+certId.getIssuerNameHash();
+                            final String msg = "Unable to find CA certificate by issuer name hash: "+Hex.encode(certId.getIssuerNameHash());
                             m_log.error(msg);
                             // throw new ServletException(msg);
                             //basicRes.addResponse(certId, new UnknownStatus());
