@@ -30,30 +30,6 @@
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>se.walter.cardPersonalization.ra.ejbca.RMIFactoryImpl</env-entry-value>
      </env-entry>
-     <env-entry>
-        <description>Port used for external RMI registry</description>
-        <env-entry-name>registryPortRMI</env-entry-name>
-        <env-entry-type>java.lang.Integer</env-entry-type>
-        <env-entry-value>1030</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>First port used for external RMI objects</description>
-        <env-entry-name>startPortRMI</env-entry-name>
-        <env-entry-type>java.lang.Integer</env-entry-type>
-        <env-entry-value>1031</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Key store file name for server SSL certificate</description>
-        <env-entry-name>keyStoreFileName</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>../server/default/conf/SSL.jks</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Key store password</description>
-        <env-entry-name>keyStorePassword</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>server</env-entry-value>
-     </env-entry>
      <!-- END Env-entries for starting an external RMI service using SSL --> 
      <ejb-ref>
         <description>The Certificate Store session bean</description>

@@ -33,7 +33,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.27 2002-09-17 09:19:47 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.28 2002-09-19 08:30:01 primelars Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -568,24 +568,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     public void startExternalService( String[] args ) {
         debug(">startService()");
         try {
-            final int registryPortRMI =
-                ((Integer)lookup("java:comp/env/registryPortRMI",
-                                 java.lang.Integer.class)).intValue();
-            final int startPortRMI =
-                ((Integer)lookup("java:comp/env/startPortRMI",
-                                 java.lang.Integer.class)).intValue();
-            final String keyFileName =
-                (String)lookup("java:comp/env/keyStoreFileName",
-                                 java.lang.String.class);
-            final String keyStorePassword =
-                (String)lookup("java:comp/env/keyStorePassword",
-                                 java.lang.String.class);
             RMIFactory rmiFactory = (RMIFactory)Class.forName(
                 (String)lookup("java:comp/env/RMIFactory",
                                java.lang.String.class)
                 ).newInstance();
-            rmiFactory.startConnection(registryPortRMI, startPortRMI,
-                keyFileName, keyStorePassword, args );
+            rmiFactory.startConnection( args );
             debug(">startService()");
         } catch( Exception e ) {
             error("Lyckades inte starta extern service.", e);
