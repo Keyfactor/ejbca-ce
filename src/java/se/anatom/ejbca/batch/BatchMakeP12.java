@@ -54,7 +54,7 @@ import java.util.Iterator;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.49 2004-06-28 12:15:07 sbailliez Exp $
+ * @version $Id: BatchMakeP12.java,v 1.50 2004-07-23 12:33:10 sbailliez Exp $
  */
 public class BatchMakeP12 {
     /**
@@ -538,21 +538,30 @@ public class BatchMakeP12 {
     public static void main(String[] args) {
         try {
             BatchMakeP12 makep12 = new BatchMakeP12();
-
-            // Create subdirectory 'p12' if it does not exist
-            File dir = new File("./p12");
-            dir.mkdir();
-            makep12.setMainStoreDir("./p12");
-
-            if ((args.length > 0) && args[0].equals("-?")) {
-                System.out.println("Usage: batch [username]");
-                System.out.println("Without arguments generates all users with status NEW or FAILED.");
-                System.exit(1);
+            String username = null;
+            String directory = "p12";
+            for (int i = 0; i < args.length; i++) {
+                if ("-?".equalsIgnoreCase(args[i]) || "--help".equalsIgnoreCase(args[i])){
+                    System.out.println("Usage: batch [username] [-dir directory]");
+                    System.out.println("   username: the name of the user to generate the key.");
+                    System.out.println("             If omitted, keys will be generated for all users with status NEW or FAILED");
+                    System.out.println("   directory: the name of the directory to store the keys to");
+                    System.exit(1);
+                } else if ("-dir".equalsIgnoreCase(args[i])){
+                    directory = args[++i];
+                } else {
+                    username = args[i];
+                }
             }
 
-            if (args.length > 0) {
-                log.info("Generating Token.");
-                makep12.createUser(args[0]);
+            // Create subdirectory 'p12' if it does not exist
+            File dir = new File(directory).getCanonicalFile();
+            dir.mkdir();
+            makep12.setMainStoreDir(directory);
+            log.info("Generating keys in directory " + dir);
+
+            if (username != null) {
+                makep12.createUser(username);
             } else {
                 // Make P12 for all NEW users in local DB
                 makep12.createAllNew();
