@@ -1,4 +1,4 @@
-$Id: README,v 1.75 2003-03-14 09:41:18 anatom Exp $
+$Id: README,v 1.76 2003-03-19 09:38:48 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source Initiative.
@@ -36,7 +36,7 @@ Individual enrollment or batch production of certificates.
 Server and client certificates can be exported as PKCS12 or PEM.
 Browser enrollment with Netscape, Mozilla, IE, etc.
 Enrollment for other applications through open APIs and tools.
-Web based administration GUI using strong authentication.
+Powerful Web based administration GUI using strong authentication.
 Multiple levels of amdministrators with specified privileges and user groups.
 Configurable certificate profile for different types of certificates and users.
 Configurable certificate content.
@@ -44,6 +44,7 @@ Follows X509 and PKIX (RFC3280) standards where applicable.
 Revocation and Certificate Revocation Lists (CRLs).
 CRL creation using scheduled jobs.
 URL-based CRLDistribution Points according to RFC3280.
+E-mail notification to new users added by RA.
 Stores Certificates and CRLs in any SQL database (handled by application
  server).
 Component based architecture for publishing certificates and CRLs to different
