@@ -57,7 +57,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.20 2004-06-02 06:17:06 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.21 2004-06-02 06:20:20 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage, Serializable {
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);
@@ -314,7 +314,7 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
                 attributes.put(attr.getAttrType(), attr);
             }
 
-            // Put our signer info and all newly generated attributes
+            // Add our signer info and sign the message
             gen1.addSigner(signKey, signCert, CMSSignedDataGenerator.DIGEST_SHA1,
                 new AttributeTable(attributes), null);
             signedData = gen1.generate(msg, true, "BC");
