@@ -27,11 +27,12 @@ public class LogMatch extends BasicMatch {
     public final static int MATCH_WITH_CERTIFICATE      = 4; 
     public final static int MATCH_WITH_COMMENT          = 5; 
     public final static int MATCH_WITH_EVENT            = 6; // Value must the number representation.
+    public final static int MATCH_WITH_MODULE           = 7;
 
 
     // Private Constants.
     private final static String[] MATCH_WITH_SQLNAMES = {"username", "adminData", "adminData", "adminType"
-                                                         , "certificateSNR", "comment", "event"}; // Represents the column names in ra userdata table.
+                                                         , "certificateSNR", "comment", "event", "module"}; // Represents the column names in ra userdata table.
    
     
     // Public methods.

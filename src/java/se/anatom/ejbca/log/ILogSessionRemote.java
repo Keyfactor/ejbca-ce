@@ -11,7 +11,7 @@ import java.security.cert.X509Certificate;
 
 /**
  *
- * @version $Id: ILogSessionRemote.java,v 1.2 2002-09-17 09:19:46 herrvendil Exp $
+ * @version $Id: ILogSessionRemote.java,v 1.3 2002-09-18 11:31:48 herrvendil Exp $
  */
 public interface ILogSessionRemote extends javax.ejb.EJBObject {
     
@@ -33,11 +33,12 @@ public interface ILogSessionRemote extends javax.ejb.EJBObject {
      * Method to execute a customized query on the log db data. The parameter query should be a legal Query object.
      * 
      * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
+     * @param viewlogprivileges is a sql query string returned by a LogAuthorization object.
      * @return a collection of LogEntry. Maximum size of Collection is defined i ILogSessionRemote.MAXIMUM_QUERY_ROWCOUNT
      * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
      * @see se.anatom.ejbca.util.query.Query 
      */
-    public Collection query(Query query) throws IllegalQueryException, RemoteException;
+    public Collection query(Query query, String viewlogprivileges) throws IllegalQueryException, RemoteException;
     
     /**
      * Loads the log configuration from the database.

@@ -1,5 +1,7 @@
-<% String[] eventnames = logbean.getAllLocalEventNames();
-   HashMap  texttoid   = logbean.getEventNameToIdMap();
+<% String[] eventnames     = logbean.getAllLocalEventNames();
+   String[] modulenames    = logbean.getLocalModuleNames();
+   HashMap  eventtexttoid  = logbean.getEventNameToIdMap();
+   HashMap  moduletexttoid = logbean.getModuleNameToIdMap();
    
    String[] admintypes = new String[ADMINTYPES.length];
    for(int i=0; i < ADMINTYPES.length; i++){
@@ -17,6 +19,8 @@
    hour++;
    if(hour >= 24) hour =0;
 
+   int index;
+
 %> 
 
 <script language=javascript>
@@ -28,8 +32,16 @@
    eventfields[ID]   = new Array(<%= eventnames.length %>);
    eventfields[NAME] = new Array(<%= eventnames.length %>);
    <% for(int i = 0; i < eventnames.length; i++){ %>
-      eventfields[ID][<%=i %>]   = "<%=texttoid.get(eventnames[i]) %>";
+      eventfields[ID][<%=i %>]   = "<%=eventtexttoid.get(eventnames[i]) %>";
       eventfields[NAME][<%=i %>]  = "<%=eventnames[i] %>";
+    <% } %>
+
+   var modulefields   = new Array(2);
+   modulefields[ID]   = new Array(<%= modulenames.length %>);
+   modulefields[NAME] = new Array(<%= modulenames.length %>);
+   <% for(int i = 0; i < modulenames.length; i++){ %>
+      modulefields[ID][<%=i %>]   = "<%=moduletexttoid.get(modulenames[i]) %>";
+      modulefields[NAME][<%=i %>]  = "<%=modulenames[i] %>";
     <% } %>
 
    
@@ -89,9 +101,8 @@ function changematchfields(row){
      }
     }
     else{
-      // if admintype use manu and no textfield. 
-      if(matchwithvalue == <%= LogMatch.MATCH_WITH_SPECIALADMIN %> ){
-  
+      if(matchwithvalue == <%= LogMatch.MATCH_WITH_MODULE %> ){
+
         menumatchvalue.disabled = false;
         textmatchvalue.disabled = true;
         textmatchvalue.value= "";
@@ -105,33 +116,57 @@ function changematchfields(row){
 
         numofvalues = menumatchvalue.length;
         for(i=numofvalues-1; i >= 0; i--){
-         menumatchvalue.options[i]=null;
+          menumatchvalue.options[i]=null;
         }  
-        for( i = 0; i < admintypes[ID].length; i++){
-          menumatchvalue.options[i]= new Option(admintypes[NAME][i],admintypes[ID][i]);       
+        for( i = 0; i < modulefields[ID].length; i++){
+         menumatchvalue.options[i]= new Option(modulefields[NAME][i],modulefields[ID][i]);       
         }
+      }
+      else{
+        // if admintype use manu and no textfield. 
+        if(matchwithvalue == <%= LogMatch.MATCH_WITH_SPECIALADMIN %> ){
+  
+          menumatchvalue.disabled = false;
+          textmatchvalue.disabled = true;
+          textmatchvalue.value= "";
+          textmatchvalue.size=1;
+
+          var numoftypes = matchtype.length;
+          for( i=numoftypes-1; i >= 0; i-- ){
+            matchtype.options[i]=null;
+          }
+          matchtype.options[0]= new Option(matchtypefields[NAME][0],matchtypefields[ID][0]);
+
+          numofvalues = menumatchvalue.length;
+          for(i=numofvalues-1; i >= 0; i--){
+            menumatchvalue.options[i]=null;
+          }  
+          for( i = 0; i < admintypes[ID].length; i++){
+            menumatchvalue.options[i]= new Option(admintypes[NAME][i],admintypes[ID][i]);       
+          }
       
-     }
-     else{      
+       }
+       else{      
    // else use textfield.  
      
-        var numoftypes = matchtype.length;
-        for(i=numoftypes-1; i >= 0; i-- ){
-          matchtype.options[i]=null;
-        }
-        matchtype.options[0]= new Option(matchtypefields[NAME][0],matchtypefields[ID][0]);
-        matchtype.options[1]= new Option(matchtypefields[NAME][1],matchtypefields[ID][1]);
-        matchtype.options[2]= new Option(matchtypefields[NAME][2],matchtypefields[ID][2]);
+          var numoftypes = matchtype.length;
+          for(i=numoftypes-1; i >= 0; i-- ){
+            matchtype.options[i]=null;
+          }
+          matchtype.options[0]= new Option(matchtypefields[NAME][0],matchtypefields[ID][0]);
+          matchtype.options[1]= new Option(matchtypefields[NAME][1],matchtypefields[ID][1]);
+          matchtype.options[2]= new Option(matchtypefields[NAME][2],matchtypefields[ID][2]);
 
-        numofvalues = menumatchvalue.length;
-        for(i=numofvalues-1; i >= 0; i--){
-          menumatchvalue.options[i]=null;
-        }     
-        menumatchvalue.disabled = true;
-        textmatchvalue.disabled = false;
-        textmatchvalue.size=40;
+          numofvalues = menumatchvalue.length;
+          for(i=numofvalues-1; i >= 0; i--){
+            menumatchvalue.options[i]=null;
+          }     
+          menumatchvalue.disabled = true;
+          textmatchvalue.disabled = false;
+          textmatchvalue.size=40;
         
-    }  
+      }  
+    }
   }
 }
 
@@ -174,31 +209,35 @@ function checkfields(){
            </option>
            <option <%  if(tempval == LogMatch.MATCH_WITH_EVENT)
                          out.write(" selected ");
-                    %> value='<%= Integer.toString(LogMatch.MATCH_WITH_EVENT) %>'><%= ejbcawebbean.getText("MATCHEVENT") %>
+                    %> value='<%= LogMatch.MATCH_WITH_EVENT %>'><%= ejbcawebbean.getText("MATCHEVENT") %>
+           </option>
+           <option <%  if(tempval == LogMatch.MATCH_WITH_MODULE)
+                         out.write(" selected ");
+                    %> value='<%= LogMatch.MATCH_WITH_MODULE %>'><%= ejbcawebbean.getText("MATCHMODULE") %>
            </option>
            <option <% if(tempval == LogMatch.MATCH_WITH_USERNAME)
                          out.write(" selected ");
-                     %> value='<%= Integer.toString(LogMatch.MATCH_WITH_USERNAME) %>'><%= ejbcawebbean.getText("MATCHUSERNAME") %>
+                     %> value='<%= LogMatch.MATCH_WITH_USERNAME %>'><%= ejbcawebbean.getText("MATCHUSERNAME") %>
            </option>
            <option <% if(tempval == LogMatch.MATCH_WITH_CERTIFICATE)
                          out.write(" selected ");
-                         %> value='<%= Integer.toString(LogMatch.MATCH_WITH_CERTIFICATE) %>'><%= ejbcawebbean.getText("MATCHCERTIFICATE") %>
+                         %> value='<%= LogMatch.MATCH_WITH_CERTIFICATE %>'><%= ejbcawebbean.getText("MATCHCERTIFICATE") %>
            </option>
            <option <%if(tempval == LogMatch.MATCH_WITH_SPECIALADMIN)
                          out.write(" selected ");
-                     %> value='<%= Integer.toString(LogMatch.MATCH_WITH_SPECIALADMIN) %>'><%= ejbcawebbean.getText("MATCHADMINTYPE") %>
+                     %> value='<%= LogMatch.MATCH_WITH_SPECIALADMIN %>'><%= ejbcawebbean.getText("MATCHADMINTYPE") %>
            </option>
            <option <% if(tempval == LogMatch.MATCH_WITH_ADMINCERTIFICATE)
                          out.write(" selected ");
-                     %> value='<%= Integer.toString(LogMatch.MATCH_WITH_ADMINCERTIFICATE) %>'><%= ejbcawebbean.getText("MATCHADMINCERT") %>
+                     %> value='<%= LogMatch.MATCH_WITH_ADMINCERTIFICATE %>'><%= ejbcawebbean.getText("MATCHADMINCERT") %>
            </option>
            <option <% if(tempval == LogMatch.MATCH_WITH_IP)
                          out.write(" selected ");
-                     %> value='<%= Integer.toString(LogMatch.MATCH_WITH_IP) %>'><%= ejbcawebbean.getText("MATCHADMINIP") %>
+                     %> value='<%= LogMatch.MATCH_WITH_IP %>'><%= ejbcawebbean.getText("MATCHADMINIP") %>
           </option>
           <option <%if(tempval == LogMatch.MATCH_WITH_COMMENT)
                          out.write(" selected ");
-                     %> value='<%= Integer.toString(LogMatch.MATCH_WITH_COMMENT) %>'><%= ejbcawebbean.getText("MATCHCOMMENT") %>
+                     %> value='<%= LogMatch.MATCH_WITH_COMMENT %>'><%= ejbcawebbean.getText("MATCHCOMMENT") %>
           </option>
         </select> &nbsp;&nbsp;
           <%
@@ -208,7 +247,7 @@ function checkfields(){
           %>
         <select name="<%=SELECT_MATCHTYPE_ROW1 %>">
           <% if(oldmatchwithrow1 != null){
-               if(Integer.parseInt(oldmatchwithrow1) == LogMatch.MATCH_WITH_EVENT || Integer.parseInt(oldmatchwithrow1) == LogMatch.MATCH_WITH_SPECIALADMIN){ %>
+               if(Integer.parseInt(oldmatchwithrow1) == LogMatch.MATCH_WITH_EVENT || Integer.parseInt(oldmatchwithrow1) == LogMatch.MATCH_WITH_MODULE || Integer.parseInt(oldmatchwithrow1) == LogMatch.MATCH_WITH_SPECIALADMIN){ %>
           <option <%  if(tempval == BasicMatch.MATCH_TYPE_EQUALS){
                          out.write(" selected ");
                     } %> value='<%= Integer.toString(BasicMatch.MATCH_TYPE_EQUALS) %>'><%= ejbcawebbean.getText("EQUALS") %>
@@ -249,9 +288,9 @@ function checkfields(){
               >
                 <% for(int i=0; i < eventnames.length; i++){ %>
           <option <% if(oldmatchvaluerow1!= null){
-                       if(Integer.parseInt(oldmatchvaluerow1) == ((Integer) texttoid.get(eventnames[i])).intValue())
+                       if(Integer.parseInt(oldmatchvaluerow1) == ((Integer) eventtexttoid.get(eventnames[i])).intValue())
                          out.write(" selected ");
-                    } %> value='<%= ((Integer) texttoid.get(eventnames[i])).intValue() %>'><%= eventnames[i] %>
+                    } %> value='<%= ((Integer) eventtexttoid.get(eventnames[i])).intValue() %>'><%= eventnames[i] %>
           </option>                   
                 <%  }
                   }
@@ -266,16 +305,30 @@ function checkfields(){
           </option>                   
                 <%  }
                   }
+                  else{
+                   if(oldmatchwithrow1.equals(Integer.toString(LogMatch.MATCH_WITH_MODULE))){ %>
+              >
+                <% for(int i=0; i < modulenames.length; i++){ %>
+          <option <% index = ((Integer) moduletexttoid.get(modulenames[i])).intValue();
+                      if(oldmatchvaluerow1!= null){
+                         if(oldmatchvaluerow1.equals(Integer.toString(index)))
+                          out.write(" selected ");
+                      }
+                     index = ((Integer) moduletexttoid.get(modulenames[i])).intValue();
+                     %> value='<%= index %>'><%= modulenames[i] %>
+          </option>                    
+                <%  }
+                  }
                   else{ %>
                    disabled > 
                  <% } 
-                }
+                }}
               }else{ %>
                 disabled > 
            <% } %>
        </select>
        <% if( oldmatchwithrow1!= null){
-           if(  oldmatchwithrow1.equals(Integer.toString(LogMatch.MATCH_WITH_EVENT)) || oldmatchwithrow1.equals(Integer.toString(LogMatch.MATCH_WITH_SPECIALADMIN))){ %>
+           if(  oldmatchwithrow1.equals(Integer.toString(LogMatch.MATCH_WITH_EVENT)) || Integer.parseInt(oldmatchwithrow1) == LogMatch.MATCH_WITH_MODULE || oldmatchwithrow1.equals(Integer.toString(LogMatch.MATCH_WITH_SPECIALADMIN))){ %>
        <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>"  size="1" maxlength="255" value='' disabled >    
            <% }else{ %>
               <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>" size="40" maxlength="255" value='<%=oldmatchvaluerow1 %>' >
@@ -311,31 +364,35 @@ function checkfields(){
            </option>
            <option <%  if(tempval == LogMatch.MATCH_WITH_EVENT)
                          out.write(" selected ");
-                    %> value='<%= Integer.toString(LogMatch.MATCH_WITH_EVENT) %>'><%= ejbcawebbean.getText("MATCHEVENT") %>
+                    %> value='<%=LogMatch.MATCH_WITH_EVENT %>'><%= ejbcawebbean.getText("MATCHEVENT") %>
+           </option>
+           <option <%  if(tempval == LogMatch.MATCH_WITH_MODULE)
+                         out.write(" selected ");
+                    %> value='<%= LogMatch.MATCH_WITH_MODULE%>'><%= ejbcawebbean.getText("MATCHMODULE") %>
            </option>
            <option <% if(tempval == LogMatch.MATCH_WITH_USERNAME)
                          out.write(" selected ");
-                     %> value='<%= Integer.toString(LogMatch.MATCH_WITH_USERNAME) %>'><%= ejbcawebbean.getText("MATCHUSERNAME") %>
+                     %> value='<%= LogMatch.MATCH_WITH_USERNAME %>'><%= ejbcawebbean.getText("MATCHUSERNAME") %>
            </option>
            <option <% if(tempval == LogMatch.MATCH_WITH_CERTIFICATE)
                          out.write(" selected ");
-                         %> value='<%= Integer.toString(LogMatch.MATCH_WITH_CERTIFICATE) %>'><%= ejbcawebbean.getText("MATCHCERTIFICATE") %>
+                         %> value='<%= LogMatch.MATCH_WITH_CERTIFICATE %>'><%= ejbcawebbean.getText("MATCHCERTIFICATE") %>
            </option>
            <option <%if(tempval == LogMatch.MATCH_WITH_SPECIALADMIN)
                          out.write(" selected ");
-                     %> value='<%= Integer.toString(LogMatch.MATCH_WITH_SPECIALADMIN) %>'><%= ejbcawebbean.getText("MATCHADMINTYPE") %>
+                     %> value='<%= LogMatch.MATCH_WITH_SPECIALADMIN %>'><%= ejbcawebbean.getText("MATCHADMINTYPE") %>
            </option>
            <option <% if(tempval == LogMatch.MATCH_WITH_ADMINCERTIFICATE)
                          out.write(" selected ");
-                     %> value='<%= Integer.toString(LogMatch.MATCH_WITH_ADMINCERTIFICATE) %>'><%= ejbcawebbean.getText("MATCHADMINCERT") %>
+                     %> value='<%= LogMatch.MATCH_WITH_ADMINCERTIFICATE %>'><%= ejbcawebbean.getText("MATCHADMINCERT") %>
            </option>
            <option <% if(tempval == LogMatch.MATCH_WITH_IP)
                          out.write(" selected ");
-                     %> value='<%= Integer.toString(LogMatch.MATCH_WITH_IP) %>'><%= ejbcawebbean.getText("MATCHADMINIP") %>
+                     %> value='<%= LogMatch.MATCH_WITH_IP %>'><%= ejbcawebbean.getText("MATCHADMINIP") %>
           </option>
           <option <%if(tempval == LogMatch.MATCH_WITH_COMMENT)
                          out.write(" selected ");
-                     %> value='<%= Integer.toString(LogMatch.MATCH_WITH_COMMENT) %>'><%= ejbcawebbean.getText("MATCHCOMMENT") %>
+                     %> value='<%= LogMatch.MATCH_WITH_COMMENT %>'><%= ejbcawebbean.getText("MATCHCOMMENT") %>
           </option>
         </select> &nbsp;&nbsp;
           <%
@@ -345,7 +402,7 @@ function checkfields(){
           %>
         <select name="<%=SELECT_MATCHTYPE_ROW2 %>">
           <% if(oldmatchwithrow2 != null){
-               if(Integer.parseInt(oldmatchwithrow2) == LogMatch.MATCH_WITH_EVENT || Integer.parseInt(oldmatchwithrow2) == LogMatch.MATCH_WITH_SPECIALADMIN){ %>
+               if(Integer.parseInt(oldmatchwithrow2) == LogMatch.MATCH_WITH_EVENT || Integer.parseInt(oldmatchwithrow1) == LogMatch.MATCH_WITH_MODULE || Integer.parseInt(oldmatchwithrow2) == LogMatch.MATCH_WITH_SPECIALADMIN){ %>
           <option <%  if(tempval == BasicMatch.MATCH_TYPE_EQUALS){
                          out.write(" selected ");
                     } %> value='<%= Integer.toString(BasicMatch.MATCH_TYPE_EQUALS) %>'><%= ejbcawebbean.getText("EQUALS") %>
@@ -386,9 +443,9 @@ function checkfields(){
               >
                 <% for(int i=0; i < eventnames.length; i++){ %>
           <option <% if(oldmatchvaluerow2!= null){
-                       if(Integer.parseInt(oldmatchvaluerow2) == ((Integer) texttoid.get(eventnames[i])).intValue())
+                       if(Integer.parseInt(oldmatchvaluerow2) == ((Integer) eventtexttoid.get(eventnames[i])).intValue())
                          out.write(" selected ");
-                    } %> value='<%= ((Integer) texttoid.get(eventnames[i])).intValue() %>'><%= eventnames[i] %>
+                    } %> value='<%= ((Integer) eventtexttoid.get(eventnames[i])).intValue() %>'><%= eventnames[i] %>
           </option>                   
                 <%  }
                   }
@@ -403,16 +460,30 @@ function checkfields(){
           </option>                   
                 <%  }
                   }
+                  else{
+                   if(oldmatchwithrow2.equals(Integer.toString(LogMatch.MATCH_WITH_MODULE))){ %>
+              >
+                <% for(int i=0; i < modulenames.length; i++){ %>
+          <option <% index = ((Integer) moduletexttoid.get(modulenames[i])).intValue();
+                      if(oldmatchvaluerow2!= null){
+                         if(oldmatchvaluerow2.equals(Integer.toString(index)))
+                          out.write(" selected ");
+                      }
+                     index = ((Integer) moduletexttoid.get(modulenames[i])).intValue();
+                     %> value='<%= index %>'><%= modulenames[i] %>
+          </option>                  
+                <%  }
+                  }
                   else{ %>
                    disabled > 
                  <% } 
-                }
+                }}
               }else{ %>
                 disabled > 
            <% } %>
        </select>
        <% if( oldmatchwithrow2!= null){
-           if(  oldmatchwithrow2.equals(Integer.toString(LogMatch.MATCH_WITH_EVENT)) || oldmatchwithrow2.equals(Integer.toString(LogMatch.MATCH_WITH_SPECIALADMIN))){ %>
+           if(  oldmatchwithrow2.equals(Integer.toString(LogMatch.MATCH_WITH_EVENT)) || Integer.parseInt(oldmatchwithrow1) == LogMatch.MATCH_WITH_MODULE || oldmatchwithrow2.equals(Integer.toString(LogMatch.MATCH_WITH_SPECIALADMIN))){ %>
        <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>"  size="1" maxlength="255" value='' disabled >    
            <% }else{ %>
               <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>" size="40" maxlength="255" value='<%=oldmatchvaluerow2 %>' >
@@ -450,6 +521,10 @@ function checkfields(){
                          out.write(" selected ");
                     %> value='<%= Integer.toString(LogMatch.MATCH_WITH_EVENT) %>'><%= ejbcawebbean.getText("MATCHEVENT") %>
            </option>
+           <option <%  if(tempval == LogMatch.MATCH_WITH_MODULE)
+                         out.write(" selected ");
+                    %> value='<%= Integer.toString(LogMatch.MATCH_WITH_MODULE) %>'><%= ejbcawebbean.getText("MATCHMODULE") %>
+           </option>
            <option <% if(tempval == LogMatch.MATCH_WITH_USERNAME)
                          out.write(" selected ");
                      %> value='<%= Integer.toString(LogMatch.MATCH_WITH_USERNAME) %>'><%= ejbcawebbean.getText("MATCHUSERNAME") %>
@@ -482,7 +557,7 @@ function checkfields(){
           %>
         <select name="<%=SELECT_MATCHTYPE_ROW3 %>">
           <% if(oldmatchwithrow3 != null){
-               if(Integer.parseInt(oldmatchwithrow3) == LogMatch.MATCH_WITH_EVENT || Integer.parseInt(oldmatchwithrow3) == LogMatch.MATCH_WITH_SPECIALADMIN){ %>
+               if(Integer.parseInt(oldmatchwithrow3) == LogMatch.MATCH_WITH_EVENT || Integer.parseInt(oldmatchwithrow1) == LogMatch.MATCH_WITH_MODULE || Integer.parseInt(oldmatchwithrow3) == LogMatch.MATCH_WITH_SPECIALADMIN){ %>
           <option <%  if(tempval == BasicMatch.MATCH_TYPE_EQUALS){
                          out.write(" selected ");
                     } %> value='<%= Integer.toString(BasicMatch.MATCH_TYPE_EQUALS) %>'><%= ejbcawebbean.getText("EQUALS") %>
@@ -523,9 +598,9 @@ function checkfields(){
               >
                 <% for(int i=0; i < eventnames.length; i++){ %>
           <option <% if(oldmatchvaluerow3!= null){
-                       if(Integer.parseInt(oldmatchvaluerow3) == ((Integer) texttoid.get(eventnames[i])).intValue())
+                       if(Integer.parseInt(oldmatchvaluerow3) == ((Integer) eventtexttoid.get(eventnames[i])).intValue())
                          out.write(" selected ");
-                    } %> value='<%= ((Integer) texttoid.get(eventnames[i])).intValue() %>'><%= eventnames[i] %>
+                    } %> value='<%= ((Integer) eventtexttoid.get(eventnames[i])).intValue() %>'><%= eventnames[i] %>
           </option>                   
                 <%  }
                   }
@@ -540,16 +615,30 @@ function checkfields(){
           </option>                   
                 <%  }
                   }
+                  else{
+                   if(oldmatchwithrow3.equals(Integer.toString(LogMatch.MATCH_WITH_MODULE))){ %>
+              >
+                <% for(int i=0; i < modulenames.length; i++){ %>
+          <option <% index = ((Integer) moduletexttoid.get(modulenames[i])).intValue();
+                      if(oldmatchvaluerow3!= null){
+                         if(oldmatchvaluerow3.equals(Integer.toString(index)))
+                          out.write(" selected ");
+                      }
+                     index = ((Integer) moduletexttoid.get(modulenames[i])).intValue();
+                     %> value='<%= index %>'><%= modulenames[i] %>
+          </option>                   
+                <%  }
+                  }
                   else{ %>
                    disabled > 
                  <% } 
-                }
+                }}
               }else{ %>
                 disabled > 
            <% } %>
        </select>
        <% if( oldmatchwithrow3!= null){
-           if(  oldmatchwithrow3.equals(Integer.toString(LogMatch.MATCH_WITH_EVENT)) || oldmatchwithrow3.equals(Integer.toString(LogMatch.MATCH_WITH_SPECIALADMIN))){ %>
+           if(  oldmatchwithrow3.equals(Integer.toString(LogMatch.MATCH_WITH_EVENT)) || Integer.parseInt(oldmatchwithrow1) == LogMatch.MATCH_WITH_MODULE || oldmatchwithrow3.equals(Integer.toString(LogMatch.MATCH_WITH_SPECIALADMIN))){ %>
        <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>"  size="1" maxlength="255" value='' disabled >    
            <% }else{ %>
               <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>" size="40" maxlength="255" value='<%=oldmatchvaluerow3 %>' >

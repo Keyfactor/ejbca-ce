@@ -26,7 +26,7 @@ import se.anatom.ejbca.util.query.*;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalLogSessionBean.java,v 1.2 2002-09-17 09:19:46 herrvendil Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.3 2002-09-18 11:31:48 herrvendil Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean  {
 
@@ -155,11 +155,12 @@ public class LocalLogSessionBean extends BaseSessionBean  {
      * Method to execute a customized query on the log db data. The parameter query should be a legal Query object.
      * 
      * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
+     * @param viewlogprivileges is a sql query string returned by a LogAuthorization object.
      * @return a collection of LogEntry. Maximum size of Collection is defined i ILogSessionRemote.MAXIMUM_QUERY_ROWCOUNT
      * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
      * @see se.anatom.ejbca.util.query.Query 
      */
-    public Collection query(Query query) throws IllegalQueryException{
+    public Collection query(Query query, String viewlogprivileges) throws IllegalQueryException{
         debug(">query()");
         Connection con = null;
         PreparedStatement ps = null;
@@ -172,12 +173,15 @@ public class LocalLogSessionBean extends BaseSessionBean  {
         try{
            // Construct SQL query.            
             con = getConnection();
-            ps = con.prepareStatement("select " + LOGENTRYDATA_COL + " from LogEntryData where " + query.getQueryString() );
+            if(viewlogprivileges.equals(""))
+              ps = con.prepareStatement("select " + LOGENTRYDATA_COL + " from LogEntryData where " + query.getQueryString() );
+            else
+              ps = con.prepareStatement("select " + LOGENTRYDATA_COL + " from LogEntryData where (" + query.getQueryString() + ") and " + viewlogprivileges);                
             // Execute query.
             rs = ps.executeQuery();
             // Assemble result.            
             while(rs.next() && returnval.size() <= MAXIMUM_QUERY_ROWCOUNT){
-              LogEntry data = new LogEntry(rs.getInt(1), rs.getString(2), rs.getInt(1),  new java.util.Date(rs.getLong(4)), rs.getString(5), rs.getString(6)
+              LogEntry data = new LogEntry(rs.getInt(1), rs.getString(2), rs.getInt(3),  new java.util.Date(rs.getLong(4)), rs.getString(5), rs.getString(6)
                                                , rs.getInt(7), rs.getString(8));   
               returnval.add(data); 
             }

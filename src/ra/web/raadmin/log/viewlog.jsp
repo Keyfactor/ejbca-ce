@@ -61,6 +61,8 @@
   static final String SORTBY_ADMINDATA_DEC    = "sortbyadmindatadecending";
   static final String SORTBY_ADMINTYPE_ACC    = "sortbyadmintypeaccending";
   static final String SORTBY_ADMINTYPE_DEC    = "sortbyadmintypedecending";
+  static final String SORTBY_MODULE_ACC       = "sortbymoduleaccending";
+  static final String SORTBY_MODULE_DEC       = "sortbymoduledecending";
   static final String SORTBY_USERNAME_ACC     = "sortbyusernameaccending";
   static final String SORTBY_USERNAME_DEC     = "sortbyusernamedecending";
   static final String SORTBY_CERTIFICATE_ACC  = "sortbycertificateaccending";
@@ -348,15 +350,19 @@
                if(matchwithrow1 == LogMatch.MATCH_WITH_EVENT){   
                   matchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
                }else{
-                  if(matchwithrow1 == LogMatch.MATCH_WITH_ADMINCERTIFICATE)
-                    matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1).toLowerCase();
-                  else
-                    if(matchwithrow1 == LogMatch.MATCH_WITH_CERTIFICATE)
+                 if(matchwithrow1 == LogMatch.MATCH_WITH_MODULE){   
+                    matchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
+                 }else{
+                    if(matchwithrow1 == LogMatch.MATCH_WITH_ADMINCERTIFICATE)
                       matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1).toLowerCase();
-                  else{ 
-                    matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1);
+                    else
+                      if(matchwithrow1 == LogMatch.MATCH_WITH_CERTIFICATE)
+                        matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1).toLowerCase();
+                    else{ 
+                      matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1);
                    
-                }
+                   }
+                 }
                }
               } 
               if(matchwithrow2 == LogMatch.MATCH_WITH_SPECIALADMIN){
@@ -365,15 +371,19 @@
                  if(matchwithrow2 == LogMatch.MATCH_WITH_EVENT){   
                     matchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
                  }else{
-                  if(matchwithrow1 == LogMatch.MATCH_WITH_ADMINCERTIFICATE)
-                    matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1).toLowerCase();
-                  else
-                    if(matchwithrow1 == LogMatch.MATCH_WITH_CERTIFICATE)
+                   if(matchwithrow2 == LogMatch.MATCH_WITH_MODULE){   
+                    matchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
+                   }else{
+                    if(matchwithrow1 == LogMatch.MATCH_WITH_ADMINCERTIFICATE)
                       matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1).toLowerCase();
-                    else{
-                      matchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW2);
+                    else
+                      if(matchwithrow1 == LogMatch.MATCH_WITH_CERTIFICATE)
+                        matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1).toLowerCase();
+                      else{
+                        matchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW2);
                    
-                   }
+                      }
+                    }
                  }
                }
                if(matchwithrow3 == LogMatch.MATCH_WITH_SPECIALADMIN){
@@ -383,14 +393,18 @@
                  if(matchwithrow3 == LogMatch.MATCH_WITH_EVENT){   
                     matchvaluerow3 = request.getParameter(SELECT_MATCHVALUE_ROW3);
                  }else{
-                    if(matchwithrow1 == LogMatch.MATCH_WITH_ADMINCERTIFICATE)
-                      matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1).toLowerCase();
-                    else
-                      if(matchwithrow1 == LogMatch.MATCH_WITH_CERTIFICATE)
+                   if(matchwithrow3 == LogMatch.MATCH_WITH_MODULE){   
+                      matchvaluerow3 = request.getParameter(SELECT_MATCHVALUE_ROW3);
+                   }else{
+                      if(matchwithrow1 == LogMatch.MATCH_WITH_ADMINCERTIFICATE)
                         matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1).toLowerCase();
-                      else{
-                       matchvaluerow3 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW3);
-                   }
+                      else
+                        if(matchwithrow1 == LogMatch.MATCH_WITH_CERTIFICATE)
+                          matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1).toLowerCase();
+                        else{
+                         matchvaluerow3 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW3);
+                        }
+                   } 
                  }
                }
   
@@ -493,6 +507,18 @@
      // Sortby username accending
      sortby = SORTBY_ADMINDATA_DEC;
      logbean.sortUserData(SortBy.ADMINDATA,SortBy.DECENDING);
+     logentries  = logbean.getEntries (record,size);
+   }
+   if( request.getParameter(SORTBY_MODULE_ACC+".x") != null ){
+     // Sortby username accending
+     sortby = SORTBY_MODULE_DEC;
+     logbean.sortUserData(SortBy.MODULE,SortBy.ACCENDING);
+     logentries  = logbean.getEntries (record,size);
+   }
+   if( request.getParameter(SORTBY_MODULE_DEC+".x") != null ){
+     // Sortby username accending
+     sortby = SORTBY_MODULE_DEC;
+     logbean.sortUserData(SortBy.MODULE,SortBy.DECENDING);
      logentries  = logbean.getEntries (record,size);
    }
    if( request.getParameter(SORTBY_USERNAME_ACC+".x") != null ){

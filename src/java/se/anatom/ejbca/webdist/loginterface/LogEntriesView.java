@@ -23,35 +23,38 @@ import se.anatom.ejbca.log.LogEntry;
 public class LogEntriesView {
  
     /** Creates a new instance of LogEntriesView  */
-    public LogEntriesView(SubjectDNProxy dnproxy , String[] localinfoeventnames, String[] localerroreventnames) {
+    public LogEntriesView(SubjectDNProxy dnproxy , String[] localinfoeventnames, String[] localerroreventnames, String[] localmodulenames) {
       logentryviews = new ArrayList();
       sortby = new SortBy(SortBy.TIME, SortBy.DECENDING);
       this.dnproxy = dnproxy;
       this.localinfoeventnames=localinfoeventnames;
       this.localerroreventnames=localerroreventnames;
+      this.localmodulenames=localmodulenames;
     }
     
     /** Creates a new instance of LogEntriesView  containing one LogEntryView object.
      * @param logentry The log entry of LogEntry class to import.
      */
-    public LogEntriesView(LogEntry logentry, SubjectDNProxy dnproxy, String[] localinfoeventnames, String[] localerroreventnames ) throws RemoteException {
+    public LogEntriesView(LogEntry logentry, SubjectDNProxy dnproxy, String[] localinfoeventnames, String[] localerroreventnames, String[] localmodulenames) throws RemoteException {
       logentryviews = new ArrayList();
       sortby = new SortBy(SortBy.TIME, SortBy.DECENDING);     
       this.dnproxy = dnproxy;      
-      logentryviews.add(new LogEntryView(logentry, dnproxy, localinfoeventnames, localerroreventnames)); 
+      logentryviews.add(new LogEntryView(logentry, dnproxy, localinfoeventnames, localerroreventnames, localmodulenames)); 
       this.localinfoeventnames=localinfoeventnames;
-      this.localerroreventnames=localerroreventnames;      
+      this.localerroreventnames=localerroreventnames;   
+      this.localmodulenames=localmodulenames;      
     }
 
     /** Creates a new instance of LogEntriesView  containing a collection of LogEntryView objects.
      * @param logentries a collection of log entries of LogEntry class to import.
      */    
-    public LogEntriesView(Collection logentries, SubjectDNProxy dnproxy , String[] localinfoeventnames, String[] localerroreventnames) throws RemoteException { 
+    public LogEntriesView(Collection logentries, SubjectDNProxy dnproxy , String[] localinfoeventnames, String[] localerroreventnames, String[] localmodulenames) throws RemoteException { 
       logentryviews = new ArrayList();
       sortby = new SortBy(SortBy.TIME, SortBy.DECENDING);
       this.dnproxy = dnproxy;
       this.localinfoeventnames=localinfoeventnames;
       this.localerroreventnames=localerroreventnames;
+      this.localmodulenames=localmodulenames;      
       setEntries(logentries);
     }
     // Public methods.
@@ -104,7 +107,7 @@ public class LogEntriesView {
       this.logentryviews.clear();
       if(logentries !=null && logentries.length > 0){ 
         for(int i=0; i< logentries.length; i++){
-          logentryview = new LogEntryView(logentries[i], dnproxy, localinfoeventnames, localerroreventnames); 
+          logentryview = new LogEntryView(logentries[i], dnproxy, localinfoeventnames, localerroreventnames, localmodulenames); 
           logentryview.setSortBy(this.sortby);
           this.logentryviews.add(logentryview);
         }
@@ -123,7 +126,7 @@ public class LogEntriesView {
         i=logentries.iterator();
         while(i.hasNext()){
           LogEntry nextentry = (LogEntry) i.next();  
-          logentryview = new LogEntryView(nextentry, dnproxy, localinfoeventnames, localerroreventnames); 
+          logentryview = new LogEntryView(nextentry, dnproxy, localinfoeventnames, localerroreventnames, localmodulenames); 
           logentryview.setSortBy(this.sortby);
           logentryviews.add(logentryview);
         }
@@ -143,5 +146,6 @@ public class LogEntriesView {
     private SubjectDNProxy dnproxy;
     private String[] localinfoeventnames;
     private String[] localerroreventnames;
+    private String[] localmodulenames;
     
 }

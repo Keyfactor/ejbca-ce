@@ -173,7 +173,7 @@ function viewcert(row){
   </table>
   <table width="1100" border="0" cellspacing="1" cellpadding="0">
   <tr> 
-    <td width="10%"><% if(sortby.equals(SORTBY_TIME_ACC)){ %>
+    <td width="9%"><% if(sortby.equals(SORTBY_TIME_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_TIME_DEC %>" value="submit" ><%= ejbcawebbean.getText("TIME") %>              
                    <% }else{
                          if(sortby.equals(SORTBY_TIME_DEC)){ %>
@@ -183,7 +183,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="10%">
+    <td width="9%">
                    <% if(sortby.equals(SORTBY_ADMINTYPE_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ADMINTYPE_DEC %>" value="submit" ><%= ejbcawebbean.getText("ADMINTYPE") %>              
                    <% }else{
@@ -194,7 +194,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="20%">
+    <td width="19%">
                    <% if(sortby.equals(SORTBY_ADMINDATA_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ADMINDATA_DEC %>" value="submit" ><%= ejbcawebbean.getText("ADMINISTRATOR") %>              
                    <% }else{
@@ -205,7 +205,18 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="10%"><% if(sortby.equals(SORTBY_EVENT_ACC)){ %>
+    <td width="5%">
+                   <% if(sortby.equals(SORTBY_MODULE_ACC)){ %>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_MODULE_DEC %>" value="submit" ><%= ejbcawebbean.getText("MODULE") %>              
+                   <% }else{
+                         if(sortby.equals(SORTBY_MODULE_DEC)){ %>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_MODULE_ACC %>" value="submit" ><%= ejbcawebbean.getText("MODULE") %>                     
+                   <%    }else{ %> 
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_MODULE_ACC %>" value="submit" ><%= ejbcawebbean.getText("MODULE") %>
+                   <%    }
+                       } %>
+    </td>
+    <td width="9%"><% if(sortby.equals(SORTBY_EVENT_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_EVENT_DEC %>" value="submit" ><%= ejbcawebbean.getText("EVENT") %>                        
                    <% }else{ 
                          if(sortby.equals(SORTBY_EVENT_DEC)){ %>
@@ -215,7 +226,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="10%"><% if(sortby.equals(SORTBY_USERNAME_ACC)){ %>
+    <td width="9%"><% if(sortby.equals(SORTBY_USERNAME_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_USERNAME_DEC %>" value="submit" ><%= ejbcawebbean.getText("USERNAME") %>              
                    <% }else{
                          if(sortby.equals(SORTBY_USERNAME_DEC)){ %>
@@ -248,11 +259,11 @@ function viewcert(row){
   </tr>
   <%     if(logentries == null || logentries.length == 0){     %>
   <tr id="LogTextRow0"> 
-    <td width="10%"> &nbsp;</td>
-    <td width="10%">&nbsp;</td>
-    <td width="20%"><%= ejbcawebbean.getText("NOLOGENTRIESFOUND") %></td>
-    <td width="10%">&nbsp;</td>
-    <td width="10%">&nbsp;</td>
+    <td width="9%"> &nbsp;</td>
+    <td width="9%">&nbsp;</td>
+    <td width="19%"><%= ejbcawebbean.getText("NOLOGENTRIESFOUND") %></td>
+    <td width="9%">&nbsp;</td>
+    <td width="9%">&nbsp;</td>
     <td width="20%">&nbsp;</td>
     <td width="20%">&nbsp;</td>
   </tr>
@@ -262,9 +273,9 @@ function viewcert(row){
        <input type="hidden" name='<%= HIDDEN_USERNAME + i %>' value='<%= logentries[i].getValue(LogEntryView.USERNAME) %>'>
        <input type="hidden" name='<%= HIDDEN_CERTDN + i %>' value='<% if(logentries[i].getValue(LogEntryView.CERTIFICATEDN) != null) out.print(java.net.URLEncoder.encode(logentries[i].getValue(LogEntryView.CERTIFICATEDN),"UTF-8")); %>'>
        <input type="hidden" name='<%= HIDDEN_ADMINDN + i %>' value='<% if(logentries[i].getValue(LogEntryView.ADMINCERTDN) != null) out.print(java.net.URLEncoder.encode(logentries[i].getValue(LogEntryView.ADMINCERTDN),"UTF-8")); %>'>
-    <td width="10%"><%= logentries[i].getValue(LogEntryView.TIME) %></td>
-    <td width="10%"><%= ejbcawebbean.getText(ADMINTYPES[Integer.parseInt(logentries[i].getValue(LogEntryView.ADMINTYPE))]) %></td>
-    <td width="20%">
+    <td width="9%"><%= logentries[i].getValue(LogEntryView.TIME) %></td>
+    <td width="9%"><%= ejbcawebbean.getText(ADMINTYPES[Integer.parseInt(logentries[i].getValue(LogEntryView.ADMINTYPE))]) %></td>
+    <td width="19%">
        <%  if(Integer.parseInt(logentries[i].getValue(LogEntryView.ADMINTYPE)) == Admin.TYPE_CLIENTCERT_USER) 
              if(logentries[i].getValue(LogEntryView.ADMINDATA).equals(""))
                 out.write(ejbcawebbean.getText("CERTIFICATENOTKNOWN"));
@@ -275,8 +286,9 @@ function viewcert(row){
             out.write(logentries[i].getValue(LogEntryView.ADMINDATA));
           %>    
     </td>
-    <td width="10%"><%= logentries[i].getValue(LogEntryView.EVENT) %></td>
-    <td width="10%"><% if(logentries[i].getValue(LogEntryView.USERNAME) == null)
+    <td width="9%"><%= logentries[i].getValue(LogEntryView.MODULE) %></td>
+    <td width="9%"><%= logentries[i].getValue(LogEntryView.EVENT) %></td>
+    <td width="9%"><% if(logentries[i].getValue(LogEntryView.USERNAME) == null)
                          out.write(ejbcawebbean.getText("NOUSERINVOLVED"));
                        else{%> 
         <A  onclick='viewuser(<%= i %>)'>

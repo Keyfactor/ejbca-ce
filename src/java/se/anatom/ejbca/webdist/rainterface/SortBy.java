@@ -32,10 +32,11 @@ public class SortBy {
 
     public static final int ADMINTYPE        = 1;
     public static final int ADMINDATA        = 2;
-    public static final int TIME             = 3;
-    public static final int CERTIFICATE      = 4;    
-    public static final int EVENT            = 5;     
-    public static final int COMMENT          = 6;     
+    public static final int MODULE           = 3;
+    public static final int TIME             = 4;
+    public static final int CERTIFICATE      = 5;    
+    public static final int EVENT            = 6;     
+    public static final int COMMENT          = 7;     
     
     public static final int ACCENDING        = 0;
     public static final int DECENDING        = 1;

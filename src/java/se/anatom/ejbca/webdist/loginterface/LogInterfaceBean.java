@@ -38,7 +38,7 @@ import se.anatom.ejbca.util.query.*;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.1 2002-09-12 17:13:10 herrvendil Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.2 2002-09-18 11:31:49 herrvendil Exp $
  */
 public class LogInterfaceBean {
 
@@ -69,10 +69,12 @@ public class LogInterfaceBean {
                                                                                                                                  , ICertificateStoreSessionHome.class);
         certificatesession = certificatesessionhome.create(admin);
         
+        logauthorization = new LogAuthorization(ejbcawebbean);        
+        
         initializeEventNameTables(ejbcawebbean);
         
         dnproxy = new SubjectDNProxy(certificatesession);                 
-        logentriesview = new LogEntriesView(dnproxy, localinfoeventnamesunsorted, localerroreventnamesunsorted );
+        logentriesview = new LogEntriesView(dnproxy, localinfoeventnamesunsorted, localerroreventnamesunsorted, localmodulenamesunsorted);
         initialized =true; 
       }
     }
@@ -86,7 +88,7 @@ public class LogInterfaceBean {
      */
 
     public LogEntryView[] filterByQuery(Query query, int index, int size) throws Exception {
-      Collection logentries = (Collection) logsession.query(query);
+      Collection logentries = (Collection) logsession.query(query,logauthorization.getViewLogRights());
       logentriesview.setEntries(logentries);
 
       return logentriesview.getEntries(index,size);        
@@ -101,12 +103,12 @@ public class LogInterfaceBean {
      * @param size the number of elements to return.
      */
     public LogEntriesView filterByUsername(String username) throws Exception {
-      LogEntriesView returnval = new LogEntriesView(dnproxy, localinfoeventnamesunsorted, localerroreventnamesunsorted );  
+      LogEntriesView returnval = new LogEntriesView(dnproxy, localinfoeventnamesunsorted, localerroreventnamesunsorted, localmodulenamesunsorted);  
         
       Query query = new Query(Query.TYPE_LOGQUERY);
       query.add(LogMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, username);
         
-      Collection logentries = (Collection) logsession.query(query);
+      Collection logentries = (Collection) logsession.query(query,logauthorization.getViewLogRights());
       returnval.setEntries(logentries);
 
       return returnval;        
@@ -126,7 +128,7 @@ public class LogInterfaceBean {
       
       query.add(starttime, new Date());
         
-      Collection logentries = (Collection) logsession.query(query);
+      Collection logentries = (Collection) logsession.query(query,logauthorization.getViewLogRights());
       logentriesview.setEntries(logentries);
 
       return logentriesview.getEntries(index,size);        
@@ -170,13 +172,22 @@ public class LogInterfaceBean {
    
  
     /**
-     * Help methods that sets up id mappings between  error event ids and error event names in local languange.
+     * Help methods that sets up id mappings between   event ids and  event names in local languange.
      *
      * @return a hasmap with error info eventname to id mappings.
      */  
     public HashMap getEventNameToIdMap(){             
       return localeventnamestoid;          
     }    
+    
+    /**
+     * Help methods that sets up id mappings between  module ids and module names in local languange.
+     *
+     * @return a hasmap with error info eventname to id mappings.
+     */  
+    public HashMap getModuleNameToIdMap(){             
+      return localmodulenamestoid;          
+    }     
 
     /**
      * Help methods that translates info event names to the local languange.
@@ -205,6 +216,15 @@ public class LogInterfaceBean {
       return alllocaleventnames;  
     }
     
+    /**
+     * Help methods that returns an array with all translated module names.
+     *
+     * @return an array of all translated eventnames.
+     */
+    public String[] getLocalModuleNames(){
+      return localmodulenames;  
+    }    
+    
     // Private methods.
     private void initializeEventNameTables(EjbcaWebBean ejbcawebbean){
       int alleventsize = LogEntry.EVENTNAMES_INFO.length +  LogEntry.EVENTNAMES_ERROR.length; 
@@ -224,11 +244,23 @@ public class LogInterfaceBean {
       localerroreventnames = new String[LogEntry.EVENTNAMES_ERROR.length];
       for(int i = 0; i < localerroreventnames.length; i++){
         localerroreventnames[i] = ejbcawebbean.getText(LogEntry.EVENTNAMES_ERROR[i]);
-        localerroreventnamesunsorted[i] = ejbcawebbean.getText(LogEntry.EVENTNAMES_ERROR[i]);        
+        localerroreventnamesunsorted[i] = localerroreventnames[i];        
         alllocaleventnames[LogEntry.EVENTNAMES_ERROR.length + i] = localerroreventnames[i];
         localeventnamestoid.put(localerroreventnames[i], new Integer(i + LogEntry.EVENT_ERROR_BOUNDRARY));
       }
-      Arrays.sort(localerroreventnames);              
+      Arrays.sort(localerroreventnames);     
+      Arrays.sort(alllocaleventnames);
+      
+      localmodulenames = new String[LogEntry.MODULETEXTS.length]; 
+      localmodulenamesunsorted = new String[LogEntry.MODULETEXTS.length];       
+      localmodulenamestoid = new HashMap(9);     
+      for(int i = 0; i < localmodulenames.length; i++){
+        localmodulenames[i] = ejbcawebbean.getText(LogEntry.MODULETEXTS[i]);   
+        localmodulenamesunsorted[i] = localmodulenames[i];  
+        localmodulenamestoid.put(localmodulenames[i], new Integer(i));
+      }
+      Arrays.sort(localmodulenames);
+      
     }
     
 
@@ -240,11 +272,15 @@ public class LogInterfaceBean {
     private Admin                          admin;
     private SubjectDNProxy                 dnproxy;  
     private boolean                        initialized=false;
+    private LogAuthorization               logauthorization;
     
     private HashMap                        localeventnamestoid; 
+    private HashMap                        localmodulenamestoid;
     private String[]                       localinfoeventnames;
     private String[]                       localerroreventnames;    
     private String[]                       localinfoeventnamesunsorted;
     private String[]                       localerroreventnamesunsorted;        
     private String[]                       alllocaleventnames;
+    private String[]                       localmodulenames;
+    private String[]                       localmodulenamesunsorted;    
 }

@@ -49,13 +49,13 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
       this.dnproxy = dnproxy;
     }
     
-    public LogEntryView(LogEntry logentry, SubjectDNProxy dnproxy, String[] localinfoeventnames, String[] localerroreventnames) throws RemoteException{
+    public LogEntryView(LogEntry logentry, SubjectDNProxy dnproxy, String[] localinfoeventnames, String[] localerroreventnames, String[] localmodulenames) throws RemoteException{
       logentrydata = new String[NUMBEROF_FIELDS];
       for(int i=0; i<  NUMBEROF_FIELDS ; i++){
         logentrydata[i] = "";    
       }         
       this.dnproxy = dnproxy; 
-      setValues(logentry,localinfoeventnames,localerroreventnames);
+      setValues(logentry,localinfoeventnames,localerroreventnames, localmodulenames);
     }
     
    
@@ -76,7 +76,7 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
     }
        
     /* Sets the values according to the values in the UserAdminData object.*/ 
-    public void setValues(LogEntry logentry,  String[] localinfoeventnames, String[] localerroreventnames) throws RemoteException{
+    public void setValues(LogEntry logentry,  String[] localinfoeventnames, String[] localerroreventnames,String[] localmodulenames) throws RemoteException{
         
        logentrydata[TIME] = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(logentry.getTime());
        this.time = logentry.getTime();
@@ -103,7 +103,8 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
           }  
        }
             
-       
+       logentrydata[MODULE] = localmodulenames[logentry.getModule()];
+         
        logentrydata[USERNAME] = logentry.getUsername();
        if(logentrydata[USERNAME] != null && logentrydata[USERNAME].trim().equals(""))
          logentrydata[USERNAME] = null;  
@@ -143,7 +144,10 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
             break;  
           case SortBy.ADMINDATA : 
             returnvalue = logentrydata[ADMINDATA].compareTo(((LogEntryView) obj).getValue(ADMINDATA));            
-            break;             
+            break;     
+          case SortBy.MODULE :
+            returnvalue = logentrydata[MODULE].compareTo(((LogEntryView) obj).getValue(MODULE));            
+            break;               
           case SortBy.CERTIFICATE : 
             returnvalue = logentrydata[CERTIFICATE].compareTo(((LogEntryView) obj).getValue(CERTIFICATE));            
             break;  
