@@ -15,7 +15,7 @@ jakarta-tomcat-4.0.3-LE-jdk14 is included as jboss_dist/catalina
   <classpath codebase="file:&catalina.home;/server/lib/" archives="*"/>
   <classpath codebase="file:&catalina.home;/bin/" archives="*"/>
   <classpath codebase="file:&catalina.home;/lib/" archives="*"/>
-  <classpath codebase="lib" archives="tomcat4-service.jar"/>
+  <classpath codebase="." archives="tomcat4-service.jar"/>
  
   <mbean code="org.jboss.web.catalina.EmbeddedCatalinaServiceSX"
     name="jboss.web:service=EmbeddedCatalinaSX">
@@ -29,7 +29,7 @@ jakarta-tomcat-4.0.3-LE-jdk14 is included as jboss_dist/catalina
                <Host name="localhost">
                   <Valve className = "org.apache.catalina.valves.AccessLogValve"
                      prefix = "localhost_access" suffix = ".log"
-                     pattern = "common" directory = "../jboss/log" />
+                     pattern = "common" directory = "../server/default/log" />
                   <DefaultContext cookies = "true" crossContext = "true" override = "true" />
                </Host>
             </Engine>

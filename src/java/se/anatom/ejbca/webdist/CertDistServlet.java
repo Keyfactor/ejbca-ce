@@ -40,7 +40,7 @@ import se.anatom.ejbca.util.CertTools;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.6 2002-06-04 14:42:04 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.7 2002-06-27 11:37:46 anatom Exp $
  *
  */
 public class CertDistServlet extends HttpServlet {
@@ -127,7 +127,7 @@ public class CertDistServlet extends HttpServlet {
                 cat.debug("Looking for certificates for '"+dn+"'.");
                 ICertificateStoreSessionRemote store = storehome.create();
                 Collection certcoll = store.findCertificatesBySubject(dn);
-                Certificate[] certs = (Certificate[])certcoll.toArray();
+                Object[] certs = certcoll.toArray();
                 int latestcertno = -1;
                 if (command.equalsIgnoreCase(COMMAND_CERT)) {
                     long maxdate = 0;
@@ -142,7 +142,7 @@ public class CertDistServlet extends HttpServlet {
                         }
                     }
                     if (latestcertno > -1) {
-                        byte[] cert = certs[latestcertno].getEncoded();
+                        byte[] cert = ((X509Certificate)certs[latestcertno]).getEncoded();
                         String filename = CertTools.getPartFromDN(dn,"CN")+".cer";
                         res.setHeader("Content-disposition", "attachment; filename=" +  filename);
                         res.setContentType("application/octet-stream");
