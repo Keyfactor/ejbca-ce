@@ -34,7 +34,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans. Uses
  * JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.45 2003-07-24 08:43:30 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.46 2003-08-24 13:40:22 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     /** Var holding JNDI name of datasource */
@@ -952,21 +952,39 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     /**
      * Adds a certificate profile to the database.
      *
-     * @param admin DOCUMENT ME!
-     * @param certificateprofilename DOCUMENT ME!
-     * @param certificateprofile DOCUMENT ME!
+     * @param admin administrator performing the task
+     * @param certificateprofilename readable name of new certificate profile
+     * @param certificateprofile the profile to be added
      *
-     * @return DOCUMENT ME!
+     * @return true if added succesfully, false if it already exist
      */
     public boolean addCertificateProfile(Admin admin, String certificateprofilename,
         CertificateProfile certificateprofile) {
-        boolean returnval = false;
+        return addCertificateProfile(admin, findFreeCertificateProfileId(), certificateprofilename, certificateprofile);
+    } // addCertificateProfile
 
+    /**
+     * Adds a certificate profile to the database.
+     *
+     * @param admin administrator performing the task
+     * @param certificateprofileid internal ID of new certificate profile, use only if you know it's right.
+     * @param certificateprofilename readable name of new certificate profile
+     * @param certificateprofile the profile to be added
+     *
+     * @return true if added succesfully, false if it already exist
+     */
+    public boolean addCertificateProfile(Admin admin, int certificateprofileid, String certificateprofilename,
+        CertificateProfile certificateprofile) {
+        boolean returnval = false;
+        
+        if (isFreeCertificateProfileId(certificateprofileid) == false) {
+            return returnval;
+        }
         try {
             certprofilehome.findByCertificateProfileName(certificateprofilename);
         } catch (FinderException e) {
             try {
-                certprofilehome.create(findFreeCertificateProfileId(), certificateprofilename,
+                certprofilehome.create(new Integer(certificateprofileid), certificateprofilename,
                     certificateprofile);
                 returnval = true;
             } catch (Exception f) {
@@ -988,8 +1006,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
 
         return returnval;
-    }
-     // addCertificateProfile
+    } // addCertificateProfile
 
     /**
      * Adds a certificate profile with the same content as the original certificateprofile,
@@ -1309,7 +1326,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      // getCertificateProfileName
 
     // Private methods
-    private Integer findFreeCertificateProfileId() {
+    private int findFreeCertificateProfileId() {
         Random random = new Random((new Date()).getTime());
         int id = random.nextInt();
         boolean foundfree = false;
@@ -1326,8 +1343,20 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             }
         }
 
-        return new Integer(id);
-    }
-     // findFreeCertificateProfileId
+        return id;
+    } // findFreeCertificateProfileId
+
+    private boolean isFreeCertificateProfileId(int id) {
+        boolean foundfree = false;
+        try {
+            if (id > SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY) {
+                certprofilehome.findByPrimaryKey(new Integer(id));
+            } 
+        } catch (FinderException e) {
+            foundfree = true;
+        }
+        return foundfree;
+    } // isFreeCertificateProfileId
+
 }
  // CertificateStoreSessionBean

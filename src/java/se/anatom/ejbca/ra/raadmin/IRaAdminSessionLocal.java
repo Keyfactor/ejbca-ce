@@ -13,7 +13,7 @@ import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
  * Local interface for EJB, unforturnately this must be a copy of the remote interface except that
  * RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: IRaAdminSessionLocal.java,v 1.11 2003-07-24 08:43:32 anatom Exp $
+ * @version $Id: IRaAdminSessionLocal.java,v 1.12 2003-08-24 13:40:19 anatom Exp $
  *
  * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
  */
@@ -68,6 +68,10 @@ public interface IRaAdminSessionLocal extends javax.ejb.EJBLocalObject {
      * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */
     public boolean addEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile);
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */
+    public boolean addEndEntityProfile(Admin admin, int profileid, String profilename, EndEntityProfile profile);
 
     /**
      * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote

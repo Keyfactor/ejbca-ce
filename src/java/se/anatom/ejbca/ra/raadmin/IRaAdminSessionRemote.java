@@ -13,7 +13,7 @@ import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
 /**
  * DOCUMENT ME!
  *
- * @version $Id: IRaAdminSessionRemote.java,v 1.12 2003-07-24 08:43:32 anatom Exp $
+ * @version $Id: IRaAdminSessionRemote.java,v 1.13 2003-08-24 13:40:19 anatom Exp $
  */
 public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
     public static final String EMPTY_ENDENTITYPROFILE = LocalRaAdminSessionBean.EMPTY_ENDENTITYPROFILE;
@@ -36,7 +36,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
      *
      * @return false if admin already exists.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws RemoteException if a communication or other error occurs.
      */
     public boolean addAdminPreference(Admin admin, BigInteger serialnumber,
         AdminPreference adminpreference) throws RemoteException;
@@ -46,7 +46,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
      *
      * @return false if admin doesn't exists.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws RemoteException if a communication or other error occurs.
      */
     public boolean changeAdminPreference(Admin admin, BigInteger serialnumber,
         AdminPreference adminpreference) throws RemoteException;
@@ -56,7 +56,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
      *
      * @return false if admin doesn't exists.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws RemoteException if a communication or other error occurs.
      */
     public boolean changeAdminPreferenceNoLog(Admin admin, BigInteger serialnumber,
         AdminPreference adminpreference) throws RemoteException;
@@ -66,7 +66,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
      *
      * @return DOCUMENT ME!
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws RemoteException if a communication or other error occurs.
      */
     public boolean existsAdminPreference(Admin admin, BigInteger serialnumber)
         throws RemoteException;
@@ -76,7 +76,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
      *
      * @return DOCUMENT ME!
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws RemoteException if a communication or other error occurs.
      */
     public AdminPreference getDefaultAdminPreference(Admin admin)
         throws RemoteException;
@@ -84,7 +84,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
     /**
      * Function that saves the default admin preference.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws RemoteException if a communication or other error occurs.
      */
     public void saveDefaultAdminPreference(Admin admin, AdminPreference defaultadminpreference)
         throws RemoteException;
@@ -94,11 +94,29 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
     /**
      * Adds a end entity profile to the database.
      *
-     * @return false if profilename already exists.
+     * @param admin administrator performing task
+     * @param profilename readable profile name
+     * @param profile profile to be added
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @return true if added succesfully, false otherwise if profile already exist
+     *
+     * @throws RemoteException if a communication or other error occurs.
      */
     public boolean addEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile)
+        throws RemoteException;
+    /**
+     * Adds a end entity profile to the database.
+     *
+     * @param admin administrator performing task
+     * @param profileid internal ID of new profile, use only if you know it's right.
+     * @param profilename readable profile name
+     * @param profile profile to be added
+     *
+     * @return true if added succesfully, false otherwise if profile already exist
+     *
+     * @throws RemoteException if a communication or other error occurs.
+     */
+    public boolean addEndEntityProfile(Admin admin, int profileid, String profilename, EndEntityProfile profile)
         throws RemoteException;
 
     /**
@@ -106,7 +124,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
      *
      * @return false if the new profilename already exists.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws RemoteException if a communication or other error occurs.
      */
     public boolean cloneEndEntityProfile(Admin admin, String originalprofilename,
         String newprofilename) throws RemoteException;
@@ -114,7 +132,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
     /**
      * Removes a end entity profile from the database.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws RemoteException if a communication or other error occurs.
      */
     public void removeEndEntityProfile(Admin admin, String profilename)
         throws RemoteException;
@@ -124,7 +142,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
      *
      * @return false if new name already exists
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws RemoteException if a communication or other error occurs.
      */
     public boolean renameEndEntityProfile(Admin admin, String oldprofilename, String newprofilename)
         throws RemoteException;
@@ -134,7 +152,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
      *
      * @return false if profilename doesn't exists
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws RemoteException if a communication or other error occurs.
      */
     public boolean changeEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile)
         throws RemoteException;
@@ -144,7 +162,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
      *
      * @return A collection of profilenames.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws RemoteException if a communication or other error occurs.
      */
     public Collection getEndEntityProfileNames(Admin admin)
         throws RemoteException;
@@ -154,7 +172,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
      *
      * @return A collection of EndEntityProfiles.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws RemoteException if a communication or other error occurs.
      */
     public TreeMap getEndEntityProfiles(Admin admin) throws RemoteException;
 
@@ -163,7 +181,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
      *
      * @return the profile data or null if profile doesn't exists.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws RemoteException if a communication or other error occurs.
      */
     public EndEntityProfile getEndEntityProfile(Admin admin, String profilename)
         throws RemoteException;
@@ -173,7 +191,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
      *
      * @return the profile data or null if profile doesn't exists.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws RemoteException if a communication or other error occurs.
      */
     public EndEntityProfile getEndEntityProfile(Admin admin, int id)
         throws RemoteException;
@@ -183,7 +201,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
      *
      * @return the available profiles.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws RemoteException if a communication or other error occurs.
      */
     public int getNumberOfEndEntityProfiles(Admin admin)
         throws RemoteException;
@@ -193,7 +211,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
      *
      * @return id number of profile.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws RemoteException if a communication or other error occurs.
      */
     public int getEndEntityProfileId(Admin admin, String profilename)
         throws RemoteException;
@@ -203,7 +221,7 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
      *
      * @return the name of profile.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws RemoteException if a communication or other error occurs.
      */
     public String getEndEntityProfileName(Admin admin, int id)
         throws RemoteException;
@@ -215,6 +233,8 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
      * @param certificatetypeid the certificatetype id to search for.
      *
      * @return true if certificatetype exists in any of the accessrules.
+     * 
+     * @throws RemoteException if a communication or other error occurs.
      */
     public boolean existsCertificateProfileInEndEntityProfiles(Admin admin, int certificateprofileid)
         throws RemoteException;

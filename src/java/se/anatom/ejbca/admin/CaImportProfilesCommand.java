@@ -18,7 +18,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 /**
  * Export profiles from the databse to XML-files.
  *
- * @version $Id: CaImportProfilesCommand.java,v 1.2 2003-08-20 09:57:05 anatom Exp $
+ * @version $Id: CaImportProfilesCommand.java,v 1.3 2003-08-24 13:40:22 anatom Exp $
  */
 public class CaImportProfilesCommand extends BaseCaAdminCommand {
     /**
@@ -101,9 +101,17 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         System.out.println("Error: Entity profile '"+profilename+"' already exist in database.");
                                         error = true;
                                     }
+                                    if (raadminsession.getEndEntityProfile(administrator, profileid) != null) {
+                                        System.out.println("Error: Entity profileid '"+profileid+"' already exist in database.");
+                                        error = true;
+                                    }
                                 } else {
                                     if (certificatesession.getCertificateProfileId(administrator,profilename) != SecConst.PROFILE_NO_PROFILE) {
                                         System.out.println("Error: Certificate profile '"+profilename+"' already exist in database.");
+                                        error = true;
+                                    }
+                                    if (certificatesession.getCertificateProfile(administrator,profileid) != null) {
+                                        System.out.println("Error: Certificate profile id '"+profileid+"' already exist in database.");
                                         error = true;
                                     }
                                 }
@@ -114,7 +122,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                     XMLDecoder decoder = new XMLDecoder( is );
                                     if (entityprofile) {
                                         eprofile = (EndEntityProfile)decoder.readObject();
-                                        boolean ret = raadminsession.addEndEntityProfile(administrator,profilename,eprofile);
+                                        boolean ret = raadminsession.addEndEntityProfile(administrator,profileid,profilename,eprofile);
                                         if (ret == false){
                                             System.out.println("Error: Error adding entity profile '"+profilename+"' to database.");
                                         } else {
@@ -122,7 +130,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         }
                                     } else {
                                         cprofile = (CertificateProfile)decoder.readObject();
-                                        boolean ret = certificatesession.addCertificateProfile(administrator,profilename,cprofile);
+                                        boolean ret = certificatesession.addCertificateProfile(administrator,profileid,profilename,cprofile);
                                         if (ret == false){
                                             System.out.println("Error: Error adding certificate profile '"+profilename+"' to database.");
                                         } else {

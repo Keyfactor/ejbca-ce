@@ -29,7 +29,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients. Uses JNDI name for datasource as defined in env
  * 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.28 2003-07-24 08:43:32 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.29 2003-08-24 13:40:19 anatom Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean {
     private static Logger log = Logger.getLogger(LocalRaAdminSessionBean.class);
@@ -308,20 +308,37 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
     /**
      * Adds a profile to the database.
      *
-     * @param admin DOCUMENT ME!
-     * @param profilename DOCUMENT ME!
-     * @param profile DOCUMENT ME!
+     * @param admin administrator performing task
+     * @param profilename readable profile name
+     * @param profile profile to be added
      *
-     * @return DOCUMENT ME!
+     * @return true if added succesfully, false otherwise if profile already exist
      */
     public boolean addEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile) {
+        return addEndEntityProfile(admin,findFreeEndEntityProfileId(),profilename,profile);
+    } // addEndEntityProfile
+
+    /**
+     * Adds a profile to the database.
+     *
+     * @param admin administrator performing task
+     * @param profileid internal ID of new profile, use only if you know it's right.
+     * @param profilename readable profile name
+     * @param profile profile to be added
+     *
+     * @return true if added succesfully, false otherwise if profile already exist
+     */
+    public boolean addEndEntityProfile(Admin admin, int profileid, String profilename, EndEntityProfile profile) {
         boolean returnval = false;
 
+        if (isFreeEndEntityProfileId(profileid) == false) {
+            return returnval;
+        }
         try {
             profiledatahome.findByProfileName(profilename);
         } catch (FinderException e) {
             try {
-                profiledatahome.create(findFreeEndEntityProfileId(), profilename, profile);
+                profiledatahome.create(new Integer(profileid), profilename, profile);
                 returnval = true;
                 logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(), null, null,
                     LogEntry.EVENT_INFO_ENDENTITYPROFILE,
@@ -337,11 +354,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
                 }
             }
         }
-
         return returnval;
-    }
-
-    // addEndEntityProfile
+    } // addEndEntityProfile
 
     /**
      * Adds a end entity profile to a group with the same content as the original profile.
@@ -701,7 +715,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
     }
 
     // Private methods
-    private Integer findFreeEndEntityProfileId() {
+    private int findFreeEndEntityProfileId() {
         int id = (new Random((new Date()).getTime())).nextInt();
         boolean foundfree = false;
 
@@ -710,17 +724,26 @@ public class LocalRaAdminSessionBean extends BaseSessionBean {
                 if (id > 1) {
                     profiledatahome.findByPrimaryKey(new Integer(id));
                 }
-
                 id++;
             } catch (FinderException e) {
                 foundfree = true;
             }
         }
 
-        return new Integer(id);
-    }
-
-    // findFreeEndEntityProfileId
+        return id;
+    } // findFreeEndEntityProfileId
+    
+    private boolean isFreeEndEntityProfileId(int id) {
+        boolean foundfree = false;
+        try {
+            if (id > 1) {
+                profiledatahome.findByPrimaryKey(new Integer(id));
+            }
+        } catch (FinderException e) {
+            foundfree = true;
+        }
+        return foundfree;
+    } // isFreeEndEntityProfileId
 
     /**
      * Changes the admin preference in the database. Returns false if admin doesn't exist.

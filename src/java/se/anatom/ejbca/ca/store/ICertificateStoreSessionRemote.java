@@ -19,7 +19,7 @@ import se.anatom.ejbca.log.Admin;
  * check for revocation etc. the CertificateStoreSession implements the interface
  * ICertificateStoreSession. Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.16 2003-07-24 08:43:30 anatom Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.17 2003-08-24 13:40:22 anatom Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote {
     /**
@@ -215,14 +215,30 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     // Functions used for Certificate Types.
 
     /**
-     * Adds a certificateprofile to the database.
+     * Adds a certificate profile to the database.
      *
-     * @return false if certificateprofilename already exists.
+     * @param admin administrator performing the task
+     * @param certificateprofileid internal ID of new certificate profile, use only if you know it's right.
+     * @param certificateprofilename readable name of new certificate profile
+     * @param certificateprofile the profile to be added
      *
+     * @return true if added succesfully, false if it already exist
      * @throws RemoteException if a communication or other error occurs.
      */
     public boolean addCertificateProfile(Admin admin, String certificateprofilename,
         CertificateProfile certificateprofile) throws RemoteException;
+    /**
+     * Adds a certificate profile to the database.
+     *
+     * @param admin administrator performing the task
+     * @param certificateprofileid internal ID of new certificate profile, use only if you know it's right.
+     * @param certificateprofilename readable name of new certificate profile
+     * @param certificateprofile the profile to be added
+     *
+     * @return true if added succesfully, false if it already exist
+     * @throws RemoteException if a communication or other error occurs.
+     */
+    public boolean addCertificateProfile(Admin admin, int certificateprofileid, String certificateprofilename, CertificateProfile certificateprofile) throws RemoteException;
 
     /**
      * Adds a certificateprofile  with the same content as the original certificateprofile,
