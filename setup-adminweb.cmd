@@ -17,7 +17,7 @@ call ra setclearpwd superadmin %4
 
 call batch
 
-copy p12\tomcat.jks %JBOSS_HOME%\bin\.keystore
+copy p12\tomcat.jks %JBOSS_HOME%\bin\tomcat.jks
 
 call ca getrootcert %1 tmp\rootca.der -der
 

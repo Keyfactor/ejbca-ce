@@ -1,4 +1,4 @@
-$Id: README,v 1.112 2004-01-06 14:39:55 anatom Exp $
+$Id: README,v 1.113 2004-01-07 10:15:46 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -702,11 +702,8 @@ machines, this must be
 a real hostname or ip-address.
 Run 'ant deploy' to install the changes.
 
-1. Tomcat: Copy src/adminweb/WEB-INF/tomcat4-service.xml (or
-tomcat41-service.xml) to $JBOSS_HOME/server/default/deploy.
-Jetty: Copy src/adminweb/WEB-INF/jetty.xml to
-$JBOSS_HOME/server/default/deploy/jbossweb.sar/META-INF/jboss-
-service.xml
+1. Tomcat: Copy src/adminweb/WEB-INF/tomcat41-jboss32.xml (if using JBoss 3.2.x) 
+to $JBOSS_HOME/server/default/deploy/jbossweb-tomcat41.sar/META-INF/jboss-service.xml.
 
 Edit the file so 'keyStorePass' is the
 same as the password you specify below for 'tomcat'.
@@ -714,12 +711,9 @@ same as the password you specify below for 'tomcat'.
 2. Edit parameters in src/adminweb/WEB-INF/web.xml.
 
 3. Create a tomcat server keystore with the batch.sh/cmd tool
-(this can also be
-done with Suns 'keytool' by creating a keystore and then
-generating a
-certificate request that is processed by EJBCA, and last import
-the returned
-certificate and the CA-certificate into the keystore).
+(this can also be done with Suns 'keytool' by creating a keystore and then
+generating a certificate request that is processed by EJBCA, and last import
+the returned certificate and the CA-certificate into the keystore).
 
 Create a user in EJBCA, DN="C=SE,O=PrimeKey,CN=<your-host-
 name>".
@@ -732,10 +726,10 @@ Set a clear text password for the tomcat:
 Generate a JKS-keystore for tomcat:
 ./batch.sh tomcat -jks
 
-4. Name the generated keystore '.keystore' and put in
+4. Name the generated keystore 'tomcat.jks' and put in
 $JBOSS_HOME.
 
-cp ./p12/tomcat.jks $JBOSS_HOME/.keystore
+cp ./p12/tomcat.jks $JBOSS_HOME/tomcat.jks
 
 5. Download the CA certificate in PEM-format from
 http://localhost:8080/ejbca/publicweb/webdist/cacert.jsp (call

@@ -51,7 +51,7 @@ jakarta-tomcat-4.1.12-LE-jdk14 is included as jboss_dist/catalina
                  port="8442" minProcessors="5" maxProcessors="75"
                  enableLookups="true" acceptCount="10" debug="0" scheme="https" secure="true">
                  <Factory className="org.apache.catalina.net.SSLServerSocketFactory"
-                   clientAuth="false" protocol="TLS" keystoreFile="../bin/.keystore" keystorePass="foo123"/>
+                   clientAuth="false" protocol="TLS" keystoreFile="../bin/tomcat.jks" keystorePass="foo123"/>
             </Connector>
             <!-- A HTTPS Connector requiring client cert on port 8443 -->
             <Connector className="org.apache.catalina.connector.http.HttpConnector"
@@ -59,7 +59,7 @@ jakarta-tomcat-4.1.12-LE-jdk14 is included as jboss_dist/catalina
                  enableLookups="true"
 	           acceptCount="10" debug="0" scheme="https" secure="true">
                  <Factory className="org.apache.catalina.net.SSLServerSocketFactory"
-                   clientAuth="true" protocol="TLS" keystoreFile="../bin/.keystore" keystorePass="foo123"/>
+                   clientAuth="true" protocol="TLS" keystoreFile="../bin/tomcat.jks" keystorePass="foo123"/>
             </Connector>
          </Service>
       </Server>

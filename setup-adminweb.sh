@@ -42,7 +42,7 @@ fi
 
 ./batch.sh
 
-cp p12/tomcat.jks $JBOSS_HOME/bin/.keystore
+cp p12/tomcat.jks $JBOSS_HOME/bin/tomcat.jks
 
 ./ca.sh getrootcert $1 tmp/rootca.der -der
 

@@ -108,7 +108,7 @@
                  address="${jboss.bind.address}" port="8442" minProcessors="5" maxProcessors="75" 
                  enableLookups="true" acceptCount="10" debug="0" scheme="https" secure="true">
                  <Factory className = "org.apache.coyote.tomcat4.CoyoteServerSocketFactory"
-                   keystoreFile="../../bin/.keystore"
+                   keystoreFile="../../bin/tomcat.jks"
                    keystorePass="foo123"
                    protocol = "TLS"
                    clientAuth="false"/>
@@ -119,7 +119,7 @@
                  address="${jboss.bind.address}" port="8443" minProcessors="5" maxProcessors="75" 
                  enableLookups="true" acceptCount="10" debug="0" scheme="https" secure="true">
                  <Factory className = "org.apache.coyote.tomcat4.CoyoteServerSocketFactory"
-                   keystoreFile="../../bin/.keystore"
+                   keystoreFile="../../bin/tomcat.jks"
                    keystorePass="foo123"
                    protocol = "TLS"
                    clientAuth="true"/>
