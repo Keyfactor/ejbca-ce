@@ -2,7 +2,7 @@
     originally contributed by <surd0007(at)yahoo.com.cn>
  
 (This install guide is a complement to the guide present in README).
-$Id: INSTALL-guide.txt,v 1.3 2004-03-31 07:15:47 anatom Exp $
+$Id: INSTALL-guide.txt,v 1.4 2004-08-23 14:53:31 anatom Exp $
 
  
  Softwares needed:
@@ -139,3 +139,50 @@ connect to mysql server.
  
     Use the Admin-GUI to configure publishers to LDAP in EJBCA.
     
+    
+Users experience using SuSE 9.1 (comes with JBoss installation)
+-------------------------------
+Here are the steps that I had to follow to get everything
+to work on SuSE 9.1 Pro with ejbca 3.0.x:
+
+1) su to jboss and uncompress both ejbca and jboss
+
+2) As root move them to /usr/ejbca and usr/share/jboss
+
+3) set JBOSS_HOME=/usr/share/jboss
+
+4) As root, edit any of the Web files in /ejbca/src if desired
+
+5) As jboss, go into /usr/ejbca and do
+ant deploy
+
+6) As root edit  /usr/share/jboss/bin/jboss_init_suse.sh to use 'default'
+rather than 'all'. move it to /etc/init.d/jboss and link that
+to /usr/sbin/rcjboss
+
+7) As jboss, in /usr/ejbca
+chmod +x *.sh
+also in /usr/share/jboss/bin
+chmod +x *.sh
+
+8) as root :
+Look at the jboss startup file. The SuSE file starts 'all' and this must be
+changed to 'default' for jboss to work
+start jboss
+rcjboss start
+It takes several minutes to get it all the way started!
+
+9) As root in /usr/ejbca
+./install.sh
+
+10) in /usr/share/jboss/bin
+
+chmod +x tomcat.jks
+and change the owner and group to jboss
+
+11) As root:
+rcjboss stop
+rcjboss start
+# Note that it takes a LONG time to stop jboss and an even longer time to start
+# it. rcjboss restart with the default SuSE script does not work because the
+time is not sufficient.
