@@ -37,7 +37,7 @@ import se.anatom.ejbca.util.Base64;
 * 6. sign the reply data (PKCS#7) from the previous step
 * 7. output the result as a der encoded block on stdout
 * -----
-* @version  $Id: ScepServlet.java,v 1.7 2003-02-12 11:23:18 scop Exp $
+* @version  $Id: ScepServlet.java,v 1.8 2003-06-01 11:26:58 anatom Exp $
 */
 public class ScepServlet extends HttpServlet {
 
@@ -90,17 +90,18 @@ public class ScepServlet extends HttpServlet {
             } else if (operation.equals("GetCACert")) {
             } else if (operation.equals("GetCACertChain")) {
             } else {
+                log.error("Invalid parameter '"+operation);
                 debug.print("<h3>Invalid parameter '"+operation+"'!</h3>");
                 debug.printDebugInfo();
             }
         } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
-            log.debug("Empty or invalid request received.");
+            log.error("Empty or invalid request received.", ae);
             debug.printMessage("Empty or invalid request!");
             debug.printMessage("Please supply a correct request.");
             debug.printDebugInfo();
             return;
         } catch (Exception e) {
-            log.debug(e);
+            log.error("Error in ScepServlet:", e);
             debug.print("<h3>parameter name and values: </h3>");
             Enumeration paramNames = request.getParameterNames();
             while (paramNames.hasMoreElements()) {
