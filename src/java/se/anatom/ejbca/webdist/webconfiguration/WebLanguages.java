@@ -1,7 +1,7 @@
 package se.anatom.ejbca.webdist.webconfiguration;
 
 import java.io.IOException;
-import se.anatom.ejbca.webdist.webconfiguration.Properties;
+import se.anatom.ejbca.webdist.webconfiguration.LanguageProperties;
 
 import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
 
@@ -10,7 +10,7 @@ import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
  * the presented text in the users prefered language.
  *
  * @author  Philip Vendil
- * @version $Id: WebLanguages.java,v 1.10 2004-01-09 18:31:00 anatom Exp $
+ * @version $Id: WebLanguages.java,v 1.11 2004-01-10 14:09:17 anatom Exp $
  */
 public class WebLanguages {
 
@@ -28,9 +28,9 @@ public class WebLanguages {
            availablelanguages[i] =  availablelanguages[i].trim().toUpperCase();
          }
            // Load availabe languages
-         languages = new Properties[availablelanguages.length];
+         languages = new LanguageProperties[availablelanguages.length];
          for(int i = 0; i < availablelanguages.length; i++){
-           languages[i] = new Properties();
+           languages[i] = new LanguageProperties();
            languages[i].load(this.getClass().getResourceAsStream("/" + globalconfiguration .getLanguagePath() + "/"
                                                                     + globalconfiguration .getLanguageFilename() + "."
                                                                     + availablelanguages[i].toLowerCase() +".properties"));
@@ -69,6 +69,6 @@ public class WebLanguages {
     private int userssecondarylanguage;
 
     private static String[] availablelanguages;
-    private static Properties[] languages = null;
+    private static LanguageProperties[] languages = null;
 
 }

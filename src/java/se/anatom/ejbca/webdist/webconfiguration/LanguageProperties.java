@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 
-public class Properties extends java.util.Properties {  
+public class LanguageProperties extends java.util.Properties {  
   private static final String keyValueSeparators = "=: \t\r\n\f";  
   private static final String strictKeyValueSeparators = "=:";
   private static final String specialSaveChars = "=: \t\r\n\f#!";
