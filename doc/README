@@ -1,4 +1,4 @@
-$Id: README,v 1.114 2004-01-08 09:13:03 anatom Exp $
+$Id: README,v 1.115 2004-01-08 11:34:56 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -228,22 +228,7 @@ and stored/published.
 
 
 Subordinate CA:
-run 'ca.sh/cmd makereq' and enter all required parameters.
-TODO
-The result will be a PKCS10 certificate request which must be
-processed by the
- CA that will certify this subordinate CA.
-After the request has been processed by the CA the response can
-be received.
-run 'ca.sh/bat recrep' and enter all required parameters to
-receive the
- certificate reply sent by the CA certifying this subordinate
- CA. The
- certificate reply is simply a DER-encoded certificate.
-EJBCA can process certification requests as well by running
-'ca.sh/bat
- processreq' to produce a certification response for subordinate
- CAs
+Subordinate CAs is created using the admin GUI.
 
 NOTE! Don't forget to configure JBoss for security! See
 'security.txt'.
@@ -261,31 +246,6 @@ setuserstatus
  <username> <status>'. For a list of all available statuscodes
  run 'ra.sh/cmd
  setuserstatus'.
-
-Issue CRLS:
-CRLs should be issued regularly. There is a special session bean
-with JNDI name 'CreatCRLSession' deployed in order to create CRLs. 
-This bean can be run with 'jobrunner.sh/cmd'.
-
-jobrunner.sh CreateCRLSession <caname>
-
-This job should be scheduled with cron on UNIX (and something
-else on Windows).
-The job should be scheduled to run as often as the CRL period is
-configured to
-in ca/ca/META-INF/ejb-jar.xml (default 24 hours).
-
-Example crontab entry:
-
-PATH=$PATH:/usr/java/jdk1.4.2_01/bin
-@daily cd /home/ejbca;/home/ejbca/jobrunner.sh CreateCRLSession;
-
-where '/usr/java/jdk1.4.2_01/bin' is the path to where 'java'
-can be found.
-'/home/ejbca' is where ejbca is installed and 'jobrunner.sh'
-located.
-
-CRLs can also be created with the 'ca.sh/cmd createcrl <caname>' command.
 
 Deploy
 ======
@@ -401,15 +361,25 @@ your server wants the files is server-dependent.
 
 Create CRLs
 -----------
-To create a crl a JobRunnerSession bean is running with JNDI
-name
- 'CreateCRLSession'. To run the session and create a CRL,
-run 'jobrunner.sh/cmd CreateCRLSession'. This job should be run
-with regular
- intervals in a production CA, therefore the
-job should be launched from CRON. There must be a
-'jndi.properties' file in the
- classpath when 'jobrunner.sh' is run.
+CRLs should be issued regularly, as defined in the CRL interval in the CAs
+profile.
+
+CRLs are created with the 'ca.sh/cmd createcrl <caname>' command.
+
+This job should be scheduled with cron on UNIX (and something
+else on Windows).
+The job should be scheduled to run as often as the CRL period is
+configured to.
+
+Example crontab entry:
+
+PATH=$PATH:/usr/java/jdk1.4.2_01/bin
+@daily cd /home/ejbca;/home/ejbca/ca.sh createcrl <caname>;
+
+where '/usr/java/jdk1.4.2_01/bin' is the path to where 'java'
+can be found.
+'/home/ejbca' is where ejbca is installed and 'ca.sh'
+located.
 
 Sample crontab to be installed with 'crontab -e':
 --
@@ -419,7 +389,7 @@ PATH=
 CLASSPATH=$CLASSPATH;/root/ejbca;/root/ejbca/admin.jar
 JBOSS_HOME=/usr/local/jboss
 # m h dom mon dow command
-00 0    * * *   cd /root/ejbca;./jobrunner.sh CreateCRLSession
+00 0    * * *   cd /root/ejbca;./ca.sh createcrl TestCA
 --
 
 A new CA should always issue an (empty) CRL. This is done when the ca is created
@@ -428,7 +398,8 @@ and can also be done by running 'ca.sh/cmd createcrl <caname>'.
 Note on CRL Distribution Points (CDPs): it is possible to configure
 multiple URLs for CDPs if they are separated by ';'. 
 For example: http://cdpurl-1/mycrl.der;http://cdpurl-2/crl.crl
-A CRLDistributionPoint for e CA in EJBCA could look like:
+
+A CRLDistributionPoint for a CA in EJBCA could look like:
 http://<host:port>/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=<url-encoded-issuerDN>
 (such as the link from the webdist pages)
 
@@ -452,16 +423,9 @@ ISignSession),
  and
  CreateCRLSession (interface IJobRunnerSession).
 
-Options in RSASession:
--Keystore for the CAs private key and certificate chain.
--Certificate lifetime and extensions. Which certificate
-extensions should be in
- issued certificates and if they should be critical or not. The
- default values
- should be good, unless CRLDistributionPoint is desired.
 
 Options in CreateCRLSession:
--CRL lifetime and extensions. Default values should be ok.
+none
 
 Options in AuthenticationSession:
 -Authentication module. The CA authenticates certification
@@ -490,33 +454,34 @@ The CA has a command line interface ca.sh/cmd. Options are:
 Stores CA
 certificates and publishes first CRL.
 * makeroot - creates a new Root CA keystore (only used by Root
-CA).
+CA). - not used in EJBCA3
 Quote the DN (") so it is treated as one argument.
 * getrootcert - exports the CA certificates to file.
 * makereq - generates a certification request for a subCA for
-sending to a
+sending to a. - not used in EJBCA3
 RootCA. Used to create a keystore for a
 subordinate CA. Quote the DN  so it is treated as one argument.
 * recrep - used to receive certificates which has been produced
-as result of
+as result of. - not used in EJBCA3
 sending a certificate request to a RootCA.
-* processreq - processes a certification request for
+* processreq - processes a certification request for. - not used in EJBCA3
 a subordinate CA and creates  a certification reply.
 * createcrl - issues a CRL.
 * getcrl - retrieves the latest CRL.
 * rolloverroot - used to generate a new RootCA certificate using
-an existing
+an existing. - not used in EJBCA3
 keypair. This updates the current RootCA keystore.
 (only used by Root CA). When this is used, sub-certificates do
 not need to be
 resigned.
 * rolloversub - used to generate a new subCA certificate using
-an existing
+an existing. - not used in EJBCA3
 keypair. This updates the current subCA keystore.
 When this is used, sub-certificates do not need to be resigned.
 * listexpired - List certificates that will expire within a
-given number of
-days.
+given number of days.
+* exportprofiles - exports entity and certificate profiles to xml-files.
+* importprofiles - imports entity and certificate profiles from xml-files.
 
 Configuring RA
 --------------
@@ -562,6 +527,8 @@ see list of
 status codes).
 * revokeuser - revokes a user and all certificates issued to the
 user.
+* keyrecover - recovers keys related to a specific certificate.
+* keyrecovernewest - recovers the latest keys for a user. 
 
 Configuring databases
 ---------------------
@@ -599,52 +566,39 @@ beans called
 Batch creation of certificates
 ------------------------------
 Certificates can be created batch-wise with EJBCA. The class
-se.anatom.ejbca.batch.BatchMakeP12 creates PKCS12 keystores for
+se.anatom.ejbca.batch.BatchMakeP12 creates keystore files for
 all users
-designated as NEW in the local RA database. To be able to batch
+designated as NEW or FAILED in the local RA database. To be able to batch
 generate
 certificates, the users must be registered with clear text
 passwords. To set a
 clear text password for a user use 'ra.sh/cmd setclearpwd
 <username>
 <password>'.
-To generate PKCS12 files for all users with status NEW or
+To generate keystore files for all users with status NEW or
 FAILED, run
 'batch.sh/cmd'. This will generate files for users if their
 clear text passwords
 are NOT null.
-Without arguments 'batch' generates PKCS12 files for all NEW or
+Without arguments 'batch' generates keystore files for all NEW or
 FAILED users.
-To generate a PKCS12 file for a specific user, enter command
+To generate a keystore file for a specific user, enter command
 'batch.cmd/sh
 <username>'.
-Generates PKCS12 files are stored in a subdirectory (to the
+Generates keystore files are stored in a subdirectory (to the
 current directory)
 called 'p12'. If the directory does not exist, it will be
 created.
 Make sure this directory is WELL protected, since the
 information contained
-in PCS12 files are secret (private keys).
-To generate PEM-files as well as PKCS12-files, add the parameter
-'-pem' after
-the
-'batch.cmd/sh' command. The PEM-files generates can be used with
-Apache etc, and
-are NOT protected by any password.
-To generate JKS-files instead of PKCS12-files, add the parameter
-'-jks' after
-the 'batch.cmd/sh' command. The JKS-files generates can be used
-with Tomcat etc
-, and are protected (both private key password and keystore
-password)
-by the users password.
+in keystore files are secret (private keys).
+The format of keystores generated, PKCS12/JKS/PEM, is defined when adding the 
+user in the database (using 'ra adduser' or admin-GUI).
 
 The batch.sh/cmd command can also be executed for a specific
 user:
 
 batch.sh <username>
-batch.sh <username> -pem
-batch.sh <username> -jks
 
 Fetching certificates and CRLs
 ------------------------------
@@ -652,7 +606,7 @@ Certificates and CRLs can be fetched through the web-interface
 as defined in
  'webdist/index.html'. They can also be fetched directly from
  the
- 'CertificateStoreSession' session bean.
+ 'CertificateStoreSession' session bean. or using the command 'ca getcrl'
 
 Other deployment scenarios
 --------------------------
@@ -670,32 +624,29 @@ Certificate- and EndEntity Profiles
 CertificateProfiles define different types of certificates, with 
 regards to DN-contents, extensions etc. We also have 
 EndEntityProfiles, where users are grouped, and you can determine 
-which parts of their DN that is already set, and which can be 
+which parts of their DN that is already pre-set, and which can be 
 altered etc. 
 An EndEntityProfile can be connected to specific CertificateProfiles 
 so users belonging to a specific EndEntityProfile can only get 
 certificates from the specified CertificateProfile.
 
-INSTALLING WEB RA-ADMIN
+INSTALLING WEB ADMIN-GUI
 =======================
 
 Automatic method (preferred)
 ----------------------------
 
 0. Edit the file 'src/adminweb/WEB-INF/web.xml'. Change BASEURL
-to reflect your
-hostname, to be able to use the adminpages from external
-machines, this must be
-a real hostname or ip-address.
+to reflect your hostname, to be able to use the adminpages from external
+machines, this must be a real hostname or ip-address.
 Run 'ant deploy' to install the changes.
 
-1. Run the script 'setup-adminweb.cmd'
+1. Run the script 'setup-adminweb.cmd/sh'
+2. Restart JBoss.
+3. Import the certificate from 'ejbca/p12/SuperAdmin.p12' in
+your browser and go to 'https://<hostname>:8443/ejbca
 
-2. Import the certificate from 'ejbca/p12/SuperAdmin.p12' in
-your browser and go
-to 'https://localhost:8443/ejbca
-
-Manual method
+Manual method (don't use, only provided as reference)
 -------------
 0. Edit the file 'src/adminweb/WEB-INF/web.xml'. Change BASEURL
 to reflect your
@@ -720,7 +671,7 @@ the returned certificate and the CA-certificate into the keystore).
 Create a user in EJBCA, DN="C=SE,O=PrimeKey,CN=<your-host-
 name>".
 ./ra.sh adduser tomcat foo123 "C=SE,O=PrimeKey,CN=<your-host-
-name>" null null 1 3
+name>" null <caname> null 1 3
 
 Set a clear text password for the tomcat:
 ./ra.sh setclearpwd tomcat foo123
@@ -747,14 +698,14 @@ $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 RAADMIN bit
 (temporarily CN=SuperAdmin gives admin rights).
 ./ra.sh adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin"
-null null 65 1
+null <caname> null 65 1
 
 Alternative:
 Create a PKCS12 file with EJBCA for a user with CN=SuperAdmin
 and the RAADMIN
 bit (temporarily CN=SuperAdmin gives adminrights).
 ./ra.sh adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin"
-null 65 2
+null <caname> null65 2
 ./ra.sh setclearpwd raadmin foo123
 ./batch.sh
 
@@ -762,16 +713,15 @@ null 65 2
 http://localhost:8080/ejbca/publicweb/apply
 
 Alternative:
-Install the generated PKCS12 (p12/walter.p12) file in the
+Install the generated PKCS12 (p12/superadmin.p12) file in the
 browser.
 In Mozilla this is done by Edit->Preferences->Privacy&Security->
-Certificates->
-Manage Certificates->Import
+Certificates->Manage Certificates->Import
 In IE it is done by double-clicking on the .p12 file.
 
 9. Start JBoss.
 
-10. Go to https://localhost:8443/ejbca
+10. Go to https://<hostname>:8443/ejbca
 
 Reference: to generate a JKS with keytool
 keytool -genkey -alias tomcat -keystore tomcat.jks -keyalg RSA -
@@ -781,7 +731,7 @@ keytool -certreq -alias tomcat -keystore tomcat.jks -sigalg
 SHA1WithRSA -
 storepass foo123 -file tomcat.req
 ra.sh adduser tomcat foo123 "C=SE,O=AnaTom,CN=hostname" null,
-null 1 1
+<caname> null 1 1
 ca.sh processreq tomcat foo123 tomcat.req tomcat.pem
 ca.sh getrootcert ca.der -der
 keytool -import -trustcacerts -alias cacert -file ca.der -
@@ -797,23 +747,23 @@ $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 
 SCEP
 =====
+There is a SCEP servlet receiving requests on http://localhost:8080/ejbca/publicweb/apply/scep/pkiclient.exe
+
 Level of SCEP support:
 EJBCA does succesfully receive SCEP 'PKCSReq' requests and send back the certifificate immediately in a proper SCEP reply message.
 EJBCA does not support the 'polling' model.
 EJBCA will not send back proper SCEP error messages in case of failure, the error messages are not implemented yet.
+
+The CN part of the DN in the PKCS#10 request, which is part of the Scep request, will be used as the 'username' when 
+authenticating the request in EJBCA. Create the Scep request with a CN mathing the username registered in EJBCA.
+The challengePassword in the PKCS#10 request, which is part of the Scep request, will be used as the 'password' when 
+authenticating the request in EJBCA. Create the Scep request with a challengePassword mathing the password registered in EJBCA.
 
 The most common errors should be wrong username/password or wrong status (not NEW/10) on the user in EJBCA.
 
 Since SCEP uses encryption, you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
 The policy files can be found at the same place as the JDK 1.4 download. Further information on this can be found in 
 the Sun documentation on the JCE.
-
-There is a SCEP servlet receiving requests on http://localhost:8080/ejbca/publicweb/apply/scep/pkiclient.exe
-
-The CN part of the DN in the PKCS#10 request, which is part of the Scep request, will be used as the 'username' when 
-authenticating the request in EJBCA. Create the Scep request with a CN mathing the username registered in EJBCA.
-The challengePassword in the PKCS#10 request, which is part of the Scep request, will be used as the 'password' when 
-authenticating the request in EJBCA. Create the Scep request with a challengePassword mathing the password registered in EJBCA.
 
 To use the OpenScep (http://openscep.othello.ch/) client to request a certificate from this servlet, use the command:
 ./scep -k test.key -r test.pemreq -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
@@ -828,6 +778,7 @@ openssl req -key test.key -new -days 30 -out test.pemreq -outform PEM -config ..
 OCSP
 =====
 There is an OCSP servlet receiving requests on http://localhost:8080/ejbca/publicweb/status/ocsp
+
 The OCSP servlet receives OCSP request by http(s) and send back a status response signed by the CA. 
 The servlet can process requests for certificates signed directly by the CA running in EJBCA. 
 The response is signed by the CA itself.
@@ -895,7 +846,7 @@ batch.sh
 
 INTERNATIONALIZATION
 ====================
-Java uses unicode internally, so the things that needs to be tkaen care of are:
+Java uses unicode internally, so the things that needs to be taken care of are:
 
 1. Make sure your systemlocal is set correctly, so Java will recognize input of your nations language. 
 If Java does not automatically recognize your locale you might need to specify it as options to java during
@@ -905,6 +856,24 @@ example for Swedish: java -Duser.language=sv -Duser.region=SE
 
 2. Your database must also recognize the locale so it does not strip down to plain ascii. 
 This is database and JDBC-driver dependent.
+
+The admin GUI is meant to support multiple languages through language files
+in src/adminweb/languages.
+In order to add a language you should do the following:
+
+1. Rename the languagefile you have created to
+language.<languagecode>.properties. In case of chinese it should be 'ch', and place 
+it in the src/adminweb/languages directory.
+
+2. Edit the file src/adminweb/WEB-INF/web.xml
+Go to the AVAILABLELANGUAGES env-entry and add your language code to the value. i.e:
+<env-entry-value>EN,CH</env-entry-value>
+
+3. Redeploy ejbca with 'and deploy'.
+
+4. Now it should be possible to select CH in the system configuration as default language 
+and in the administrator preferences page. 
+The language will be changed next time the administrator logs in.
 
 SAMPLES
 =======
@@ -972,6 +941,8 @@ REFERENCES
 
 Request for Comments: 3280 - Certificate and CRL profile
 Request for Comments: 2253 - DN string representation
+Request for Comments: 2560 - OCSP
+
 
 MySQL:
 Create ALTER-scrips automatically to upgrade database from old
@@ -1024,6 +995,5 @@ url=
 
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
-
 
 

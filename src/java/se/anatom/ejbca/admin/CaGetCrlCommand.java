@@ -11,7 +11,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 /**
  * Retrieves the latest CRL from the CA.
  *
- * @version $Id: CaGetCrlCommand.java,v 1.10 2003-10-03 14:34:20 herrvendil Exp $
+ * @version $Id: CaGetCrlCommand.java,v 1.11 2004-01-08 11:35:18 anatom Exp $
  */
 public class CaGetCrlCommand extends BaseCaAdminCommand {
     /**
@@ -31,7 +31,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 			if (args.length < 3) {
-				throw new IllegalAdminCommandException("Usage: CA getcrl <caname> <outfile>");
+				throw new IllegalAdminCommandException("Retrieves CRL in DER format.\nUsage: CA getcrl <caname> <outfile>");
 			}
 			try {
 				String outfile = args[2];
