@@ -14,5 +14,5 @@ Magnus Broqvist <magnus@han.pp.se>, initial P12toPEM implementation.
 Slava Sklarewski <Slava.Sklarewski@de.gi-de.com>, data flow diagram.
 Leonardo Souza Mario Bueno <isbueno@users.sourceforge.net>, patch for request template path.
 Jean ? <icejean@21cn.com>, support for Sybase.
-Philip Vendil <philip@primeksysecurity.com>, web registration authority
-Lars Silven <lars@primekeysolutions.com>, external connection to smart card personalisation, various additions.
+Philip Vendil <philip@primekey.se>, web administration 
+Lars Silven <lars@primekey.se>, external connection to smart card personalisation, various additions.
