@@ -23,7 +23,7 @@ import org.apache.log4j.*;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.25 2003-01-02 11:00:02 anatom Exp $
+ * @version $Id: CertTools.java,v 1.26 2003-01-02 11:01:03 anatom Exp $
  */
 public class CertTools {
 
@@ -104,7 +104,7 @@ public class CertTools {
      * Creates a (Bouncycastle) X509Name object from a string with a DN.
      * <p>Known OID (with order) are:
      * <pre>
-     * EmailAddress, UID, CN, SN, Initials, GivenName, SurName, T, OU, O, L, ST, DC, C
+     * EmailAddress, UID, CN, SN (SerialNumber), GivenName, Initials, SurName, T, OU, O, L, ST, DC, C
      *
      * @param dn String containing DN that will be transformed into X509Name, The DN string has the format
 "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in the string will be silently dropped.
