@@ -41,7 +41,7 @@ import se.anatom.ejbca.util.Base64;
 
 /** Class to handle SCEP request messages sent to the CA.
  *
-* @version  $Id: ScepRequestMessage.java,v 1.3 2002-11-10 11:29:09 anatom Exp $
+* @version  $Id: ScepRequestMessage.java,v 1.4 2002-11-12 13:24:47 anatom Exp $
  */
 public class ScepRequestMessage implements RequestMessage, Serializable {
 
@@ -182,7 +182,6 @@ public class ScepRequestMessage implements RequestMessage, Serializable {
         cat.debug(">decrypt");
         // Now we are getting somewhere (pheew),
         // Now we just have to get the damn key...to decrypt the PKCS10
-        /*
         if (envEncData == null) {
             cat.error("No enveloped data to decrypt!");
             return;
@@ -202,7 +201,7 @@ public class ScepRequestMessage implements RequestMessage, Serializable {
                 pkcs10Bytes = recipient.getContent(privateKey, "BC");
                 break;
             }
-*/
+/*
         if (envData == null) {
             cat.error("No enveloped data to decrypt!");
             return;
@@ -213,7 +212,8 @@ public class ScepRequestMessage implements RequestMessage, Serializable {
             DEREncodable info = ri.getInfo();
             if (info instanceof KeyTransRecipientInfo) {
                 KeyTransRecipientInfo kti = (KeyTransRecipientInfo)info;
-                String id = kti.getKeyEncryptionAlgorithm().getObjectId().getId();
+                AlgorithmIdentifier keyEncAlg = AlgorithmIdentifier.getInstance(kti.getKeyEncryptionAlgorithm());
+                String id = keyEncAlg.getObjectId().getId();
                 if(id.equals(PKCSObjectIdentifiers.rsaEncryption.getId())) {
                     cat.debug("Found key encrypted with RSA inside message.");
                     //RecipientIdentifier rid = kti.getRecipientIdentifier();
@@ -225,15 +225,35 @@ public class ScepRequestMessage implements RequestMessage, Serializable {
                         cat.debug("My key Issuer: "+cert.getIssuerDN().toString());
                         cat.debug("My serialNo: "+cert.getSerialNumber().toString());
                     }
+
+                    //boolean ok = checkKeys(cert.getPublicKey(), privateKey);
+                    //if (!ok) {
+                    //    cat.error("Public and private keys do not match!");
+                    //    return;
+                    //}
+
                     // At least OpenSCEP uses nopadding, go figure...
-                    Cipher cipher = Cipher.getInstance("RSA/NONE/NOPADDING", "BC");
+//                    Cipher cipher = Cipher.getInstance("RSA/NONE/NOPADDING", "BC");
+//                    Cipher cipher = Cipher.getInstance("RSA/ECB/NOPADDING", "BC");
 //                    Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1PADDING", "BC");
+//                    Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPPADDING", "BC");
+//                    Cipher cipher = Cipher.getInstance("RSA/ECB/ISO9796-1PADDING", "BC");
+//                    Cipher cipher = Cipher.getInstance("RSA/NONE/NOPADDING", "BC");
+//                    Cipher cipher = Cipher.getInstance("RSA/NONE/PKCS1PADDING", "BC");
+//                    Cipher cipher = Cipher.getInstance("RSA/NONE/OAEPPADDING", "BC");
+//                    Cipher cipher = Cipher.getInstance("RSA/NONE/ISO9796-1PADDING", "BC");
+//                    Cipher cipher = Cipher.getInstance("RSA/1/PCKS1PADDING", "BC");
+//                    Cipher cipher = Cipher.getInstance("RSA/2/PCKS1PADDING", "BC");
+                    Cipher cipher = Cipher.getInstance(id, "BC");
                     cipher.init(Cipher.DECRYPT_MODE, privateKey);
                     cat.info("blocksize="+cipher.getBlockSize());
                     cat.info("keysize="+((RSAPrivateKey)privateKey).getPrivateExponent().bitLength());
                     byte[] encKey = kti.getEncryptedKey().getOctets();
                     cat.info("Encrypted keybytes: "+encKey.length);
-                    byte[] cekBytes = cipher.doFinal(encKey);
+                    byte[] dekBytes = cipher.doFinal(encKey);
+                    cat.info("Decrypted keybytes: "+dekBytes.length);
+                    byte[] cekBytes = unpad(dekBytes);
+                    cat.info("Unpadded keybytes: "+cekBytes.length);
                     AlgorithmIdentifier aid = envData.getEncryptedContentInfo().getContentEncryptionAlgorithm();
                     String alg = aid.getObjectId().getId();
                     cat.info("Symm alg="+alg);
@@ -241,6 +261,10 @@ public class ScepRequestMessage implements RequestMessage, Serializable {
                     SecretKey cek = getContentEncryptionKey(cekBytes, alg);
                     cat.debug("Extracted secret key.");
                     byte[] enc = envData.getEncryptedContentInfo().getEncryptedContent().getOctets();
+                    FileOutputStream fos1 = new FileOutputStream("C:\\pkcs10.enc");
+                    fos1.write(enc);
+                    fos1.close();
+
                     cipher = getCipher(alg);
                     if(iv == null) {
                         cat.debug("IV is null.");
@@ -270,6 +294,7 @@ public class ScepRequestMessage implements RequestMessage, Serializable {
                 error = 5;
             }
         }
+        */
         cat.debug("<decrypt");
     } // decrypt
 
@@ -330,6 +355,23 @@ public class ScepRequestMessage implements RequestMessage, Serializable {
     //
     // Private helper methods
     //
+    private static boolean checkKeys(PublicKey pubK, PrivateKey privK) {
+        String in = "foo123";
+        byte[] text = in.getBytes();
+        try {
+            Cipher cipher1 = Cipher.getInstance("RSA/ECB/PKCS1PADDING", "BC");
+            cipher1.init(Cipher.ENCRYPT_MODE, pubK);
+            byte[] textout = cipher1.doFinal(text);
+            Cipher cipher2 = Cipher.getInstance("RSA/ECB/PKCS1PADDING", "BC");
+            cipher2.init(Cipher.DECRYPT_MODE, privK);
+            byte[] out = cipher2.doFinal(textout);
+            cat.debug("out="+new String(out));
+            return in.equals(new String(out));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private static Cipher getCipher(String _alg)
         throws CMSException, GeneralSecurityException {
 
@@ -368,6 +410,7 @@ public class ScepRequestMessage implements RequestMessage, Serializable {
         int  _padInt = 0x000000FF & _pad;
 
         if((_padInt < 1) || (_padInt > 8)) {
+            cat.info("Unpadded");
             return _dec;
         }
 
@@ -381,10 +424,13 @@ public class ScepRequestMessage implements RequestMessage, Serializable {
         }
 
         if(_padded) {
+            cat.info("Padded");
+
             byte[] _buf = new byte[_dec.length - _padInt];
             System.arraycopy(_dec, 0, _buf, 0, _buf.length);
             return _buf;
         }
+        cat.info("Unpadded");
 
         return _dec;
     }
