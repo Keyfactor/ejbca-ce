@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.Hex;
 
 /** Creates a new root certificate with new validity, using the same key.
  *
- * @version $Id: CaRolloverSubCommand.java,v 1.3 2002-09-16 15:21:27 anatom Exp $
+ * @version $Id: CaRolloverSubCommand.java,v 1.4 2003-03-11 09:47:36 anatom Exp $
  */
 public class CaRolloverSubCommand extends BaseCaAdminCommand {
 
@@ -57,7 +57,8 @@ public class CaRolloverSubCommand extends BaseCaAdminCommand {
                 System.out.println("No subCA certificate found in keystore, this is not a subCA or keystore was not generated with EJBCA.");
                 return;
             }
-            System.out.println("Generating new certificate request for CA with DN '"+cacert.getSubjectDN().toString()+"'.");
+            String subjectDN = CertTools.getSubjectDN(cacert);
+            System.out.println("Generating new certificate request for CA with DN '"+subjectDN+"'.");
             // Get private key
             PrivateKey privateKey = (PrivateKey)keyStore.getKey(privKeyAlias, privateKeyPass);
             if (privateKey == null) {
@@ -68,7 +69,7 @@ public class CaRolloverSubCommand extends BaseCaAdminCommand {
             KeyPair keyPair = new KeyPair(cacert.getPublicKey(), privateKey);
             // verify that the old and new keyidentifieras are the same
             String policyId = CertTools.getCertificatePolicyId(cacert);
-            X509Certificate newselfcert = CertTools.genSelfCert(cacert.getSubjectDN().toString(), validity, policyId, privateKey, cacert.getPublicKey(), true);
+            X509Certificate newselfcert = CertTools.genSelfCert(subjectDN, validity, policyId, privateKey, cacert.getPublicKey(), true);
             String oldKeyId = Hex.encode(CertTools.getSubjectKeyId(cacert));
             String newKeyId = Hex.encode(CertTools.getSubjectKeyId(newselfcert));
             System.out.println("Old key id: "+oldKeyId);
@@ -85,7 +86,7 @@ public class CaRolloverSubCommand extends BaseCaAdminCommand {
                 }
             }
             // Generate the new certificate request
-            makeCertRequest(cacert.getSubjectDN().toString(), keyPair, reqfile);
+            makeCertRequest(subjectDN, keyPair, reqfile);
 
             System.out.println("Submit certificare request to RootCA and when receiving reply run 'ca recrep'.");
         } catch (Exception e) {

@@ -19,7 +19,7 @@ import junit.framework.*;
 /**
  * Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.15 2003-02-12 11:23:17 scop Exp $
+ * @version $Id: TestCertificateData.java,v 1.16 2003-03-11 09:47:41 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -185,13 +185,13 @@ public class TestCertificateData extends TestCase {
         log.debug("revocationreason="+data3.getRevocationReason());
         assertTrue("wrong reason", (data3.getRevocationReason() & RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE) == RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
 
-        log.debug("Looking for cert with DN="+cert.getSubjectDN().toString());
+        log.debug("Looking for cert with DN="+CertTools.getSubjectDN(cert));
         ICertificateStoreSessionRemote store = storehome.create();
-        Collection certs = store.findCertificatesBySubject(new Admin(Admin.TYPE_INTERNALUSER), cert.getSubjectDN().toString());
+        Collection certs = store.findCertificatesBySubject(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getSubjectDN(cert));
         Iterator iter = certs.iterator();
         while (iter.hasNext()) {
             X509Certificate xcert = (X509Certificate)iter.next();
-            log.debug(xcert.getSubjectDN().toString()+" - "+xcert.getSerialNumber().toString());
+            log.debug(CertTools.getSubjectDN(xcert)+" - "+xcert.getSerialNumber().toString());
             //log.debug(certs[i].toString());
         }
         log.debug("<test05FindAgain()");
@@ -237,9 +237,9 @@ public class TestCertificateData extends TestCase {
         CertificateData data3 = home.findByPrimaryKey(pk);
         assertNotNull("Failed to find cert", data3);
 
-        log.debug("Looking for cert with DN:"+cert.getIssuerDN().toString()+" and serno "+cert.getSerialNumber());
+        log.debug("Looking for cert with DN:"+CertTools.getIssuerDN(cert)+" and serno "+cert.getSerialNumber());
         ICertificateStoreSessionRemote store = storehome.create();
-        Certificate fcert = store.findCertificateByIssuerAndSerno(new Admin(Admin.TYPE_INTERNALUSER), cert.getIssuerDN().toString(), cert.getSerialNumber());
+        Certificate fcert = store.findCertificateByIssuerAndSerno(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getIssuerDN(cert), cert.getSerialNumber());
         assertNotNull("Cant find by issuer and serno", fcert);
         //log.debug(fcert.toString());
         log.debug("<test07FindByIssuerAndSerno()");
@@ -267,9 +267,9 @@ public class TestCertificateData extends TestCase {
         log.debug("revocationreason="+data3.getRevocationReason());
         assertTrue("wrong reason", (data3.getRevocationReason() & RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE) == RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
 
-        log.debug("Checking if cert is revoked DN:'"+cert.getIssuerDN().toString()+"', serno:'"+cert.getSerialNumber().toString()+"'.");
+        log.debug("Checking if cert is revoked DN:'"+CertTools.getIssuerDN(cert)+"', serno:'"+cert.getSerialNumber().toString()+"'.");
         ICertificateStoreSessionRemote store = storehome.create();
-        RevokedCertInfo revinfo = store.isRevoked(new Admin(Admin.TYPE_INTERNALUSER), cert.getIssuerDN().toString(), cert.getSerialNumber());
+        RevokedCertInfo revinfo = store.isRevoked(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getIssuerDN(cert), cert.getSerialNumber());
         assertNotNull("Certificate not revoked, it should be!", revinfo);
         assertTrue("Wrong revocationDate!", revinfo.getRevocationDate().getTime() == data3.getRevocationDate());
         assertTrue("Wrong reason!", revinfo.getReason() == data3.getRevocationReason());

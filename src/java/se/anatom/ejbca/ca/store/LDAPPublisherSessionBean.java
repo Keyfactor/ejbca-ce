@@ -46,7 +46,7 @@ import se.anatom.ejbca.log.LogEntry;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.18 2003-02-12 11:23:17 scop Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.19 2003-03-11 09:47:40 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
 
@@ -111,9 +111,12 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         int ldapVersion  = LDAPConnection.LDAP_V3;
         LDAPConnection lc = new LDAPConnection();
 
-        X509CRL crl;
+        X509CRL crl = null;
+        String dn = null;
         try {
             crl = CertTools.getCRLfromByteArray(incrl);
+            // Extract the users DN from the crl.
+            dn = CertTools.getIssuerDN(crl);
         } catch (Exception e) {
             error("Error decoding input CRL: ",e);
             try{
@@ -121,9 +124,6 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
             }catch(RemoteException re){}
             return false;
         }
-
-        // Extract the users DN from the cert.
-        String dn = CertTools.stringToBCDNString(crl.getIssuerDN().toString());
 
         if (checkContainerName(dn) == false) {
             info("DN not part of containername, aborting store operation.");
@@ -228,8 +228,17 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         int ldapVersion  = LDAPConnection.LDAP_V3;
         LDAPConnection lc = new LDAPConnection();
 
-        // Extract the users DN from the cert.
-        String dn = CertTools.stringToBCDNString(((X509Certificate)incert).getSubjectDN().toString());
+        String dn = null;
+        try {
+            // Extract the users DN from the cert.
+            dn = CertTools.getSubjectDN((X509Certificate)incert);
+        } catch (Exception e) {
+            error("Error decoding input certificate: ",e);
+            try{
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECERTIFICATE,"Error decoding input certificate.");
+            }catch(RemoteException re){}
+            return false;
+        }
 
         // Extract the users email from the cert.
         // First see if we have subjectAltNames extension

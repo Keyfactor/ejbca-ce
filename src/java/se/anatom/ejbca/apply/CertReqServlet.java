@@ -65,7 +65,7 @@ import se.anatom.ejbca.log.Admin;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.30 2003-02-23 12:03:01 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.31 2003-03-11 09:47:39 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
@@ -74,8 +74,8 @@ public class CertReqServlet extends HttpServlet {
     private ISignSessionHome signsessionhome = null;
     private IUserAdminSessionHome userdatahome;
     private IKeyRecoverySessionHome keyrecoveryhome;
-    
-    
+
+
 
     private byte bagattributes[] = "Bag Attributes\n".getBytes();
     private byte friendlyname[] = "    friendlyName: ".getBytes();
@@ -102,7 +102,7 @@ public class CertReqServlet extends HttpServlet {
             userdatahome = (IUserAdminSessionHome) PortableRemoteObject.narrow(
                              ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class );
             keyrecoveryhome = (IKeyRecoverySessionHome) PortableRemoteObject.narrow(
-                             ctx.lookup("KeyRecoverySession"), IKeyRecoverySessionHome.class );           
+                             ctx.lookup("KeyRecoverySession"), IKeyRecoverySessionHome.class );
         } catch( Exception e ) {
             throw new ServletException(e);
         }
@@ -112,7 +112,7 @@ public class CertReqServlet extends HttpServlet {
         throws IOException, ServletException {
 
         ServletDebug debug = new ServletDebug(request,response);
-        boolean usekeyrecovery = false;         
+        boolean usekeyrecovery = false;
         try {
             String username        = request.getParameter("user");
             String password        = request.getParameter("password");
@@ -136,16 +136,16 @@ public class CertReqServlet extends HttpServlet {
             // Check user
             int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
 
-            
-            
-            usekeyrecovery = (adminsession.loadGlobalConfiguration(administrator)).getEnableKeyRecovery();  
+
+
+            usekeyrecovery = (adminsession.loadGlobalConfiguration(administrator)).getEnableKeyRecovery();
             UserAdminData data = adminsession.findUser(administrator, username);
             if(data == null)
               throw new ObjectNotFoundException();
-            
+
             boolean savekeys = data.getKeyRecoverable() && usekeyrecovery;
             boolean loadkeys = data.getStatus() == UserDataRemote.STATUS_KEYRECOVERY && usekeyrecovery;
-            
+
                 // get users Token Type.
             tokentype = data.getTokenType();
             if(tokentype == SecConst.TOKEN_SOFT_P12){
@@ -200,8 +200,8 @@ public class CertReqServlet extends HttpServlet {
             log.debug("Wrong user status!");
             debug.printMessage("Wrong user status!");
             if(usekeyrecovery)
-              debug.printMessage("To generate a certificate for a user the user must have status new, failed or inprocess.");                
-            else    
+              debug.printMessage("To generate a certificate for a user the user must have status new, failed or inprocess.");
+            else
               debug.printMessage("To generate a certificate for a user the user must have status new, failed or inprocess.");
             debug.printDebugInfo();
             return;
@@ -307,10 +307,10 @@ public class CertReqServlet extends HttpServlet {
         X509Certificate userX509Certificate = (X509Certificate) chain[0];
 
         byte output[] = userX509Certificate.getEncoded();
-        String sn = userX509Certificate.getSubjectDN().toString();
+        String sn = CertTools.getSubjectDN(userX509Certificate);
 
         String subjectdnpem = re.replace(sn,"/");
-        String issuerdnpem = re.replace(userX509Certificate.getIssuerDN().toString(),"/");
+        String issuerdnpem = re.replace(CertTools.getIssuerDN(userX509Certificate),"/");
 
         buffer.write(bagattributes);
         buffer.write(friendlyname);
@@ -345,11 +345,11 @@ public class CertReqServlet extends HttpServlet {
         } else {
             for(int num = 1;num < chain.length;num++) {
                 X509Certificate tmpX509Cert = (X509Certificate) chain[num];
-                sn = tmpX509Cert.getSubjectDN().toString();
+                sn = CertTools.getSubjectDN(tmpX509Cert);
                 String cn = CertTools.getPartFromDN(sn, "CN");
 
                 subjectdnpem = re.replace(sn,"/");
-                issuerdnpem = re.replace(tmpX509Cert.getIssuerDN().toString(),"/");
+                issuerdnpem = re.replace(CertTools.getIssuerDN(tmpX509Cert),"/");
 
                 buffer.write(bagattributes);
                 buffer.write(friendlyname);
@@ -384,17 +384,17 @@ public class CertReqServlet extends HttpServlet {
 
     private KeyStore generateToken(Admin administrator, String username, String password, int keylength, boolean createJKS, boolean loadkeys, boolean savekeys)
        throws Exception{
-         KeyPair rsaKeys = null; 
+         KeyPair rsaKeys = null;
          if(loadkeys){
            // used saved keys.
            IKeyRecoverySessionRemote keyrecoverysession = keyrecoveryhome.create();
-           rsaKeys = ((KeyRecoveryData) keyrecoverysession.keyRecovery(administrator, username)).getKeyPair();              
+           rsaKeys = ((KeyRecoveryData) keyrecoverysession.keyRecovery(administrator, username)).getKeyPair();
          }
-         else{     
-           // generate new keys.  
+         else{
+           // generate new keys.
            rsaKeys = KeyTools.genKeys(keylength);
          }
-         
+
          ISignSessionRemote signsession = signsessionhome.create();
          X509Certificate cert = (X509Certificate)signsession.createCertificate(administrator, username, password, rsaKeys.getPublic());
 
@@ -419,11 +419,11 @@ public class CertReqServlet extends HttpServlet {
         }
 
         if(savekeys){
-          // Save generated keys to database.   
+          // Save generated keys to database.
            IKeyRecoverySessionRemote keyrecoverysession = keyrecoveryhome.create();
-           keyrecoverysession.addKeyRecoveryData(administrator, cert, username, rsaKeys);              
-        }        
-        
+           keyrecoverysession.addKeyRecoveryData(administrator, cert, username, rsaKeys);
+        }
+
         // Use CommonName as alias in the keystore
         //String alias = CertTools.getPartFromDN(cert.getSubjectDN().toString(), "CN");
         // Use username as alias in the keystore

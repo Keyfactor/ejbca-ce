@@ -32,7 +32,7 @@ import se.anatom.ejbca.ca.crl.RevokedCertInfo;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.17 2003-03-01 14:48:55 anatom Exp $
+ * @version $Id: CertificateDataBean.java,v 1.18 2003-03-11 09:47:40 anatom Exp $
  */
 public abstract class CertificateDataBean extends BaseEntityBean{
 
@@ -108,11 +108,13 @@ public abstract class CertificateDataBean extends BaseEntityBean{
             X509Certificate tmpcert = (X509Certificate)incert;
             String fp = CertTools.getFingerprintAsString(tmpcert);
             setFingerprint(fp);
-            setSubjectDN(CertTools.stringToBCDNString(tmpcert.getSubjectDN().toString()));
-            setIssuerDN(CertTools.stringToBCDNString(tmpcert.getIssuerDN().toString()));
+            setSubjectDN(CertTools.getSubjectDN(tmpcert));
+            setIssuerDN(CertTools.getIssuerDN(tmpcert));
             setSerialNumber(tmpcert.getSerialNumber().toString());
         } catch (CertificateEncodingException cee) {
             log.error("Can't extract DER encoded certificate information.", cee);
+        } catch (CertificateException ce) {
+            log.error("Can't get information from cert.", ce);
         }
     }
     public void setIssuer(String dn) {
@@ -156,23 +158,22 @@ public abstract class CertificateDataBean extends BaseEntityBean{
             tmpcert = (X509Certificate)incert;
             String fp = CertTools.getFingerprintAsString(tmpcert);
             setFingerprint(fp);
+            // Make sure names are always looking the same
+            setSubjectDN(CertTools.getSubjectDN(tmpcert));
+            setIssuerDN(CertTools.getIssuerDN(tmpcert));
+            log.debug("Creating certdata, subject="+getSubjectDN()+", issuer="+getIssuerDN());
+            setSerialNumber(tmpcert.getSerialNumber().toString());
+            // Default values for status and type
+            setStatus(CertificateData.CERT_UNASSIGNED);
+            setType(SecConst.USER_INVALID);
+            setCAFingerprint(null);
+            setExpireDate(tmpcert.getNotAfter());
+            setRevocationDate(-1L);
+            setRevocationReason(RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
         } catch (CertificateEncodingException cee) {
             log.error("Can't extract DER encoded certificate information.", cee);
             return null;
         }
-        // Make sure names are always looking the same
-        setSubjectDN(CertTools.stringToBCDNString(tmpcert.getSubjectDN().toString()));
-        setIssuerDN(CertTools.stringToBCDNString(tmpcert.getIssuerDN().toString()));
-        log.debug("Creating certdata, subject="+getSubjectDN()+", issuer="+getIssuerDN());
-        setSerialNumber(tmpcert.getSerialNumber().toString());
-        // Default values for status and type
-        setStatus(CertificateData.CERT_UNASSIGNED);
-        setType(SecConst.USER_INVALID);
-        setCAFingerprint(null);
-        setExpireDate(tmpcert.getNotAfter());
-        setRevocationDate(-1L);
-        setRevocationReason(RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
-
         CertificateDataPK pk = new CertificateDataPK(getFingerprint());
         return pk;
     }

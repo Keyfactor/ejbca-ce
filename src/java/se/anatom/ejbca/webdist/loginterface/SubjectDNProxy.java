@@ -10,33 +10,34 @@ import java.security.cert.X509Certificate;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.util.CertTools;
 
 /**
  * A class used to improve performance by proxying certificatesnr to subjectdn mappings by minimizing the number of needed lockups over rmi.
- * 
- * @version $Id: SubjectDNProxy.java,v 1.3 2003-01-12 17:16:20 anatom Exp $
+ *
+ * @version $Id: SubjectDNProxy.java,v 1.4 2003-03-11 09:47:43 anatom Exp $
  */
 public class SubjectDNProxy {
-    
+
     /** Creates a new instance of SubjectDNProxy with remote access to CA part */
     public SubjectDNProxy(Admin admin, ICertificateStoreSessionRemote certificatesession){
               // Get the RaAdminSession instance.
       this.local = false;
       this.certificatesessionremote = certificatesession;
-      this.subjectdnstore = new HashMap(); 
+      this.subjectdnstore = new HashMap();
       this.admin = admin;
-        
+
     }
-    
+
     /** Creates a new instance of SubjectDNProxy with local access to CA part */
     public SubjectDNProxy(ICertificateStoreSessionLocal certificatesession){
               // Get the RaAdminSession instance.
       this.local = true;
       this.certificatesessionlocal = certificatesession;
-      this.subjectdnstore = new HashMap(); 
-        
-    }    
-    
+      this.subjectdnstore = new HashMap();
+
+    }
+
     /**
      * Method that first tries to find subjectDN in local hashmap and if it doesn't exists looks it up over RMI.
      *
@@ -44,26 +45,26 @@ public class SubjectDNProxy {
      * @return the subjectDN or null if no subjectDN is relatied to the given id
      */
     public String getSubjectDN(String certificatesnr) throws RemoteException {
-      String returnval = null; 
+      String returnval = null;
       Collection result = null;
       // Check if name is in hashmap
       returnval = (String) subjectdnstore.get(certificatesnr);
-      
+
       if(returnval==null){
         // Retreive subjectDN over RMI
-        if(local)  
+        if(local)
           result = certificatesessionlocal.findCertificatesBySerno(admin, new BigInteger(certificatesnr,16));
         else
-          result = certificatesessionremote.findCertificatesBySerno(admin, new BigInteger(certificatesnr, 16));            
+          result = certificatesessionremote.findCertificatesBySerno(admin, new BigInteger(certificatesnr, 16));
         if(result != null){
           Iterator i = result.iterator();
           if(i.hasNext()){
-            returnval = ((X509Certificate) i.next()).getSubjectDN().toString();  
+            returnval = CertTools.getSubjectDN((X509Certificate) i.next());
             subjectdnstore.put(certificatesnr,returnval);
-          }  
-        }  
-      }    
-       
+          }
+        }
+      }
+
       return returnval;
     }
 

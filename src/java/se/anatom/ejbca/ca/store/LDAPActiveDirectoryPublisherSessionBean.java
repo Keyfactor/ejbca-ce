@@ -55,7 +55,7 @@ import org.apache.log4j.*;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.9 2003-02-12 11:23:17 scop Exp $
+ * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.10 2003-03-11 09:47:40 anatom Exp $
  */
 public class LDAPActiveDirectoryPublisherSessionBean
     extends BaseSessionBean {
@@ -71,9 +71,9 @@ public class LDAPActiveDirectoryPublisherSessionBean
     private String userObjectclass = "user";
     //For Microsoft Active directory
     private String cAObjectclass = "certificationAuthority";
-    
+
     /** The remote interface of the log session bean */
-    private ILogSessionRemote logsession;    
+    private ILogSessionRemote logsession;
 
     /**
          * Default create for SessionBean without any creation Arguments.
@@ -96,13 +96,13 @@ public class LDAPActiveDirectoryPublisherSessionBean
         debug("userObjectclass=" + userObjectclass);
         debug("cAObjectclass=" + cAObjectclass);
 
-        try{ 
-          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
+        try{
+          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);
           logsession = logsessionhome.create();
         }catch(Exception e){
-          throw new EJBException(e);   
-        }         
-        
+          throw new EJBException(e);
+        }
+
         debug("<ejbCreate()");
     }
 
@@ -120,28 +120,28 @@ public class LDAPActiveDirectoryPublisherSessionBean
     } // checkContainerName
 
     public boolean storeCertificate(
-        Admin admin,    
+        Admin admin,
         byte[] byte_incert,
         String cafp,
         int status,
         int type)
         throws RemoteException {
         Certificate incert = null;
+        String dn = null;
+        String cn = null;
         try {
             incert = CertTools.getCertfromByteArray(Base64.decode(byte_incert));
+            // Extract the users DN from the cert.
+            dn =CertTools.getSubjectDN((X509Certificate)incert);
+            cn = CertTools.getPartFromDN(dn, "CN");
         } catch (Exception e) {
             debug("Error decoding input Certificate: ", e);
             try{
               logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"Error decoding input Certificate.");
-            }catch(RemoteException re){}             
+            }catch(RemoteException re){}
             return false;
         }
 
-        // Extract the users DN from the cert.
-        String dn =
-            CertTools.stringToBCDNString(
-                ((X509Certificate) incert).getSubjectDN().toString());
-        String cn = CertTools.getPartFromDN(dn, "CN");
 
         // Extract the users email from the cert.
         // First see if we have subjectAltNames extension
@@ -175,7 +175,7 @@ public class LDAPActiveDirectoryPublisherSessionBean
                 debug("IOException when getting subjectAltNames extension.");
                 try{
                   logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"IOException when getting subjectAltNames extension.");
-                }catch(RemoteException re){}         
+                }catch(RemoteException re){}
             }
         }
 
@@ -271,7 +271,7 @@ public class LDAPActiveDirectoryPublisherSessionBean
                    debug("Error storing certificate in Active Directory LDAP: ", e);
                    try{
                      logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"Error storing certificate in Active Directory LDAP.");
-                   }catch(RemoteException re){}                      
+                   }catch(RemoteException re){}
                     return false;
                 }
             } else {
@@ -291,7 +291,7 @@ public class LDAPActiveDirectoryPublisherSessionBean
                    debug("Error storing certificate in Active Directory LDAP: ", e);
                    try{
                      logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"Error storing certificate in Active Directory LDAP.");
-                   }catch(RemoteException re){}    
+                   }catch(RemoteException re){}
                     return false;
                 }
 
@@ -343,7 +343,7 @@ public class LDAPActiveDirectoryPublisherSessionBean
                    debug("Error storing certificate in Active Directory LDAP: ", e);
                    try{
                      logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"Error storing certificate in Active Directory LDAP.");
-                   }catch(RemoteException re){}    
+                   }catch(RemoteException re){}
                     return false;
                 }
 
@@ -354,20 +354,21 @@ public class LDAPActiveDirectoryPublisherSessionBean
     public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number)
         throws RemoteException {
 
-        X509CRL crl;
+        X509CRL crl = null;
+        String dn = null;
+        String cn = null;
         try {
             crl = CertTools.getCRLfromByteArray(incrl);
+            // Extract the users DN from the crl.
+            dn = CertTools.getIssuerDN(crl);
+            cn = CertTools.getPartFromDN(dn, "CN");
         } catch (Exception e) {
             debug("Error decoding input CRL: ",e);
             try{
               logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Error decoding input CRL.");
-            }catch(RemoteException re){}  
+            }catch(RemoteException re){}
             return false;
         }
-
-        // Extract the users DN from the cert.
-        String dn = CertTools.stringToBCDNString(crl.getIssuerDN().toString());
-        String cn = CertTools.getPartFromDN(dn, "CN");
 
         //We don't check the ContainerName for Active Directory, so comment it out
         //The reason is ,CertTools.stringToBcX509Name() can't deal with Active Directory Name.
@@ -443,7 +444,7 @@ public class LDAPActiveDirectoryPublisherSessionBean
             debug("Error storing CRL in Active Directory LDAP: ", e);
             try{
               logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Error storing CRL in Active Directory LDAP.");
-            }catch(RemoteException re){}              
+            }catch(RemoteException re){}
         }
         return false;
     }

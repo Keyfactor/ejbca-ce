@@ -20,7 +20,7 @@ import se.anatom.ejbca.util.CertTools;
 
 /** Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.9 2003-01-19 09:40:13 herrvendil Exp $
+ * @version $Id: CaInitCommand.java,v 1.10 2003-03-11 09:47:36 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -57,7 +57,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                     // We will get an exception if the entity already exist
                     certificateStore.storeCertificate(administrator, cert, "cainit", cafingerprint, CertificateData.CERT_ACTIVE, type);
                 } catch (java.rmi.ServerException e) {
-                    System.out.println("Certificate for subject '"+cert.getSubjectDN()+"' already exist in the certificate store.");
+                    System.out.println("Certificate for subject '"+CertTools.getSubjectDN(cert)+"' already exist in the certificate store.");
                 }
                 for (int i=0;i<publishers.size();i++) {
                     boolean ret = ((IPublisherSessionRemote)(publishers.get(i))).storeCertificate(administrator, cert, "cainit", cafingerprint, CertificateData.CERT_ACTIVE, type);

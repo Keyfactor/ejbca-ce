@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.33 2003-03-07 12:52:34 anatom Exp $
+ * @version $Id: CertTools.java,v 1.34 2003-03-11 09:47:42 anatom Exp $
  */
 public class CertTools {
 
@@ -209,30 +209,84 @@ public class CertTools {
     /**
      * Gets subject DN in the format we are sure about (BouncyCastle),supporting UTF8.
      *
-     * @param cert X409Certificate
+     * @param cert X509Certificate
      * @return String containing the subjects DN.
      */
-    public static String getSubjectDN(X509Certificate cert) throws CertificateException {
-        log.debug(">getSubjectDN:");
-        CertificateFactory cf = null;
+    public static String getSubjectDN(X509Certificate cert) {
+        return getDN(cert,1);
+    }
+    /**
+     * Gets issuer DN in the format we are sure about (BouncyCastle),supporting UTF8.
+     *
+     * @param cert X509Certificate
+     * @return String containing the issuers DN.
+     */
+    public static String getIssuerDN(X509Certificate cert) {
+        return getDN(cert,2);
+    }
+    /**
+     * Gets subject or issuer DN in the format we are sure about (BouncyCastle),supporting UTF8.
+     *
+     * @param cert X509Certificate
+     * @return String containing the DN.
+     */
+    private static String getDN(X509Certificate cert, int which) {
+        //log.debug(">getDN("+which+")");
+        String dn = null;
         try {
-            cf = CertificateFactory.getInstance("X.509", "BC");
-        } catch (NoSuchProviderException nspe) {
-            // Bouncy Castle security provider
-            Security.addProvider(new BouncyCastleProvider());
-            try {
-                cf = CertificateFactory.getInstance("X.509", "BC");
-            } catch (NoSuchProviderException nse) {
-                log.error("NoSuchProvider: ",nse);
-                return null;
+            CertificateFactory cf = CertTools.getCertificateFactory();
+            X509Certificate x509cert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(cert.getEncoded()));
+            log.debug("Created certificate of class: "+x509cert.getClass().getName());
+            if (which == 1) {
+                dn = x509cert.getSubjectDN().toString();
+            } else {
+                dn = x509cert.getIssuerDN().toString();
             }
+        } catch (CertificateException ce) {
+            log.error("CertificateException: ",ce);
+            return null;
         }
-        X509Certificate x509cert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(cert.getEncoded()));
-        log.debug("Created certificate of class: "+x509cert.getClass().getName());
-        log.debug("<getSubjectDN:");
-        return stringToBCDNString(x509cert.getSubjectDN().toString());
-    } // getCertfromByteArray
-
+        //log.debug("<getDN("+which+"):"+dn);
+        return stringToBCDNString(dn);
+    } // getDN
+    /**
+     * Gets issuer DN for CRL in the format we are sure about (BouncyCastle),supporting UTF8.
+     *
+     * @param crl X509RL
+     * @return String containing the DN.
+     */
+    public static String getIssuerDN(X509CRL crl) {
+        //log.debug(">getIssuerDN(crl)");
+        String dn = null;
+        try {
+            CertificateFactory cf = CertTools.getCertificateFactory();
+            X509CRL x509crl = (X509CRL)cf.generateCRL(new ByteArrayInputStream(crl.getEncoded()));
+            log.debug("Created certificate of class: "+x509crl.getClass().getName());
+            dn = x509crl.getIssuerDN().toString();
+        } catch (CRLException ce) {
+            log.error("CRLException: ",ce);
+            return null;
+        }
+        //log.debug("<getIssuerDN(crl):"+dn);
+        return stringToBCDNString(dn);
+    } // getIssuerDN
+    private static CertificateFactory getCertificateFactory() {
+        try {
+            if (Security.getProvider("BC") == null) {
+                // Bouncy Castle security provider
+                if (Security.addProvider(new BouncyCastleProvider()) < 0) {
+                    log.error("Cannot install BC provider!");
+                    return null;
+                }
+            }
+            return CertificateFactory.getInstance("X.509", "BC");
+        } catch (NoSuchProviderException nspe) {
+            log.error("NoSuchProvider: ",nspe);
+        } catch (CertificateException ce) {
+            log.error("CertificateException: ",ce);
+        }
+        return null;
+    }
     /**
      * Reads a certificate in PEM-format from a file. The file may contain other things,
      * the first certificate in the file is read.
@@ -284,7 +338,7 @@ public class CertTools {
         byte[] certbuf = Base64.decode(ostr.toByteArray());
 
         // Phweeew, were done, now decode the cert from file back to X509Certificate object
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        CertificateFactory cf = CertTools.getCertificateFactory();
         X509Certificate x509cert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certbuf));
 
         log.debug("<getcertfromPEM:" + x509cert.toString());
@@ -302,7 +356,7 @@ public class CertTools {
     public static X509Certificate getCertfromByteArray(byte[] cert)
     throws IOException, CertificateException {
         log.debug(">getCertfromByteArray:");
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        CertificateFactory cf = CertTools.getCertificateFactory();
         X509Certificate x509cert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(cert));
         log.debug("<getCertfromByteArray:");
         return x509cert;
@@ -322,7 +376,7 @@ public class CertTools {
         log.debug(">getCRLfromByteArray:");
         if (crl == null)
             throw new IOException("Cannot read byte[] that is 'null'!");
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        CertificateFactory cf = CertTools.getCertificateFactory();
         X509CRL x509crl = (X509CRL)cf.generateCRL(new ByteArrayInputStream(crl));
         log.debug("<getCRLfromByteArray:");
         return x509crl;
@@ -335,8 +389,8 @@ public class CertTools {
      * @return boolean true if the certificate has the same issuer and subject, false otherwise.
      */
     public static boolean isSelfSigned(X509Certificate cert) {
-        log.debug(">isSelfSigned: cert: " + cert.getIssuerDN() + "\n" + cert.getSubjectDN());
-        boolean ret = cert.getSubjectDN().equals(cert.getIssuerDN());
+        log.debug(">isSelfSigned: cert: " + CertTools.getIssuerDN(cert) + "\n" + CertTools.getSubjectDN(cert));
+        boolean ret = CertTools.getSubjectDN(cert).equals(CertTools.getIssuerDN(cert));
         log.debug("<isSelfSigned:" + ret);
         return ret;
     } // isSelfSigned

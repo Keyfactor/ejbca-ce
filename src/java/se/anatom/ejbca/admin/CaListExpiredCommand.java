@@ -10,10 +10,11 @@ import java.security.cert.X509Certificate;
 
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
+import se.anatom.ejbca.util.CertTools;
 
 /** List certificates that will expire within the given number of days.
  *
- * @version $Id: CaListExpiredCommand.java,v 1.6 2003-01-12 17:16:31 anatom Exp $
+ * @version $Id: CaListExpiredCommand.java,v 1.7 2003-03-11 09:47:36 anatom Exp $
  */
 public class CaListExpiredCommand extends BaseCaAdminCommand {
 
@@ -41,7 +42,7 @@ public class CaListExpiredCommand extends BaseCaAdminCommand {
             while (iter.hasNext()) {
                 X509Certificate xcert = (X509Certificate)iter.next();
                 Date retDate = xcert.getNotAfter();
-                String subjectDN= xcert.getSubjectDN().toString();
+                String subjectDN= CertTools.getSubjectDN(xcert);
                 String serNo = xcert.getSerialNumber().toString();
                 System.out.println("Certificate with subjectDN '"+subjectDN+"' and serialNumber '"+serNo+"' expires at "+retDate+".");
             }

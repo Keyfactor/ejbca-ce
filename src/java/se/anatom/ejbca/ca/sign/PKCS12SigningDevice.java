@@ -16,7 +16,7 @@ import se.anatom.ejbca.util.KeyTools;
 
 /** Implements a singleton signing device using PKCS12 keystore.
  *
- * @version $Id: PKCS12SigningDevice.java,v 1.7 2003-02-12 11:23:16 scop Exp $
+ * @version $Id: PKCS12SigningDevice.java,v 1.8 2003-03-11 09:47:40 anatom Exp $
  */
 public class PKCS12SigningDevice implements ISigningDevice{
 
@@ -75,13 +75,13 @@ public class PKCS12SigningDevice implements ISigningDevice{
         }
         // We only support a ca hierarchy with depth 2.
         caCert = (X509Certificate)certchain[0];
-        log.debug("cacertIssuer: " + caCert.getIssuerDN().toString());
-        log.debug("cacertSubject: " + caCert.getSubjectDN().toString());
+        log.debug("cacertIssuer: " + CertTools.getIssuerDN(caCert));
+        log.debug("cacertSubject: " + CertTools.getSubjectDN(caCert));
 
         // root cert is last cert in chain
         rootCert = (X509Certificate)certchain[certchain.length-1];
-        log.debug("rootcertIssuer: " + rootCert.getIssuerDN().toString());
-        log.debug("rootcertSubject: " + rootCert.getSubjectDN().toString());
+        log.debug("rootcertIssuer: " + CertTools.getIssuerDN(rootCert));
+        log.debug("rootcertSubject: " + CertTools.getSubjectDN(rootCert));
         // is root cert selfsigned?
         if (!CertTools.isSelfSigned(rootCert))
             throw new Exception("Root certificate is not self signed!");

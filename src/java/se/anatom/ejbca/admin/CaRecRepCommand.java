@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.KeyTools;
 
 /** eceive certificate reply as result of certificate request.
  *
- * @version $Id: CaRecRepCommand.java,v 1.3 2003-02-12 11:23:14 scop Exp $
+ * @version $Id: CaRecRepCommand.java,v 1.4 2003-03-11 09:47:36 anatom Exp $
  */
 public class CaRecRepCommand extends BaseCaAdminCommand {
 
@@ -34,12 +34,12 @@ public class CaRecRepCommand extends BaseCaAdminCommand {
             String certfile = args[1];
             String ksfile = args[2];
             String storepwd= args[3];
-            
+
             System.out.println("Receiving cert reply:");
             System.out.println("Cert reply file: "+certfile);
             System.out.println("Storing KeyStore in: "+ksfile);
             System.out.println("Protected with storepassword: "+storepwd);
-            
+
             X509Certificate cert = CertTools.getCertfromByteArray(FileTools.readFiletoBuffer(certfile));
             X509Certificate rootcert = null;
             KeyStore store = KeyStore.getInstance("PKCS12", "BC");
@@ -57,11 +57,11 @@ public class CaRecRepCommand extends BaseCaAdminCommand {
                 if (certchain.length > 2) {
                     System.out.println("Certificate chain length is larger than 2, only 2 is supported.");
                     System.out.println("Reply NOT received!");
-                    return;                
+                    return;
                 }
                 rootcert = (X509Certificate)certchain[1];
             } else {
-                String ialias = CertTools.getPartFromDN(cert.getIssuerDN().toString(), "CN");
+                String ialias = CertTools.getPartFromDN(CertTools.getIssuerDN(cert), "CN");
                 Certificate[] chain1 = store.getCertificateChain(ialias);
                 System.out.println("Loaded certificate chain with length "+ chain1.length+" with alias '"+ialias+"'.");
                 if (chain1.length == 0) {
@@ -89,7 +89,7 @@ public class CaRecRepCommand extends BaseCaAdminCommand {
                 System.out.println("Reply NOT received!");
                 return;
             }
-            
+
             // Create new keyStore
             KeyStore ks = KeyTools.createP12("privateKey", privKey, cert, rootcert);
             FileOutputStream os = new FileOutputStream(ksfile);
@@ -99,5 +99,5 @@ public class CaRecRepCommand extends BaseCaAdminCommand {
             throw new ErrorAdminCommandException(e);
         }
     } // execute
-    
+
 }

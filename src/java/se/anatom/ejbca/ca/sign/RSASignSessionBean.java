@@ -79,7 +79,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.75 2003-03-01 14:28:46 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.76 2003-03-11 09:47:40 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -107,81 +107,81 @@ public class RSASignSessionBean extends BaseSessionBean {
     private ILogSessionRemote logsession;
 
     /**
-	 * Default create for SessionBean without any creation Arguments.
-	 * @throws CreateException if bean instance can't be created
-	 */
-	public void ejbCreate() throws CreateException {
-	    debug(">ejbCreate()");
-	    try {
-	        // Install BouncyCastle provider
-	        Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
-	        int result = Security.addProvider(BCJce);
-	
-	        // get home interfaces to other session beans used
-	        storeHome = (ICertificateStoreSessionLocalHome)lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
-	        authHome = (IAuthenticationSessionLocalHome)lookup("java:comp/env/ejb/AuthenticationSessionLocal");
-	
-	        ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);
-	        logsession = logsessionhome.create();
-	
-	        // Init the publisher session beans
-	        int i = 1;
-	        publishers = new ArrayList();
-	        try {
-	            while (true) {
-	                String jndiName = "java:comp/env/ejb/PublisherSession" + i;
-	                IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)lookup(jndiName);
-	                publishers.add(pubHome);
-	                debug("Added publisher class '"+pubHome.getClass().getName()+"'");
-	                i++;
-	            }
-	        } catch (EJBException e) {
-	            // We could not find this publisher
-	            debug("Failed to find publisher at index '"+i+"', no more publishers.");
-	        }
-	
-	        // Create a Signing device of type pointed to by env variable using properties ot pass args
-	        Properties p = new Properties();
-	        String keyStoreFile = (String)lookup("java:comp/env/keyStore", java.lang.String.class);
-	        p.setProperty("keyStore", keyStoreFile);
-	        String keyStorePass = getPassword("java:comp/env/keyStorePass");
-	        p.setProperty("keyStorePass", keyStorePass);
-	        String privateKeyAlias= (String)lookup("java:comp/env/privateKeyAlias", java.lang.String.class);
-	        p.setProperty("privateKeyAlias", privateKeyAlias);
-	        String privateKeyPass = getPassword("java:comp/env/privateKeyPass");
-	        p.setProperty("privateKeyPass", privateKeyPass);
-			String signingDeviceFactoryName = (String)lookup("java:comp/env/signingDeviceFactory");
-			ISigningDeviceFactory signingDeviceFactory = (ISigningDeviceFactory)Class.forName(signingDeviceFactoryName).newInstance();
-			debug("Creating SigningDeviceFactory of type "+signingDeviceFactoryName);
-	        signingDevice = signingDeviceFactory.makeInstance(p);
-	
-	        //signingDevice = fact.makeInstance(p);
-	        // We must keep the same order in the DN in the issuer field in created certificates as there
-	        // is in the subject field of the CA-certificate.
-	        Certificate[] certs = signingDevice.getCertificateChain();
-	        caCert = (X509Certificate)certs[0];
-	        caSubjectName = new X509Name(caCert.getSubjectDN().toString());
-	
-	        // Should extensions be used in CRLs? Critical or not?
-	        if ((useaki = (Boolean)lookup("java:comp/env/AuthorityKeyIdentifier", java.lang.Boolean.class)).booleanValue() == true)
-	            akicritical = (Boolean)lookup("java:comp/env/AuthorityKeyIdentifierCritical", java.lang.Boolean.class);
-	        if ((usecrln = (Boolean)lookup("java:comp/env/CRLNumber", java.lang.Boolean.class)).booleanValue() == true)
-	            crlncritical = (Boolean)lookup("java:comp/env/CRLNumberCritical", java.lang.Boolean.class);
-	        // The period between CRL issue
-	        crlperiod = (Long)lookup("java:comp/env/CRLPeriod", java.lang.Long.class);
-	
-	        // Use old style email address in DN? (really deprecated but old habits die hard...)
-	        emailindn = (Boolean)lookup("java:comp/env/EmailInDN", java.lang.Boolean.class);
-	        // Should we set user to finished state after generating certificate? Probably means onyl one cert can be issued
-	        // without resetting users state in user DB
-	        finishUser = (Boolean)lookup("java:comp/env/FinishUser", java.lang.Boolean.class);
-	
-	    } catch( Exception e ) {
-	        debug("Caught exception in ejbCreate(): ", e);
-	        throw new EJBException(e);
-	    }
-	    debug("<ejbCreate()");
-	}
+     * Default create for SessionBean without any creation Arguments.
+     * @throws CreateException if bean instance can't be created
+     */
+    public void ejbCreate() throws CreateException {
+        debug(">ejbCreate()");
+        try {
+            // Install BouncyCastle provider
+            Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
+            int result = Security.addProvider(BCJce);
+
+            // get home interfaces to other session beans used
+            storeHome = (ICertificateStoreSessionLocalHome)lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
+            authHome = (IAuthenticationSessionLocalHome)lookup("java:comp/env/ejb/AuthenticationSessionLocal");
+
+            ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);
+            logsession = logsessionhome.create();
+
+            // Init the publisher session beans
+            int i = 1;
+            publishers = new ArrayList();
+            try {
+                while (true) {
+                    String jndiName = "java:comp/env/ejb/PublisherSession" + i;
+                    IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)lookup(jndiName);
+                    publishers.add(pubHome);
+                    debug("Added publisher class '"+pubHome.getClass().getName()+"'");
+                    i++;
+                }
+            } catch (EJBException e) {
+                // We could not find this publisher
+                debug("Failed to find publisher at index '"+i+"', no more publishers.");
+            }
+
+            // Create a Signing device of type pointed to by env variable using properties ot pass args
+            Properties p = new Properties();
+            String keyStoreFile = (String)lookup("java:comp/env/keyStore", java.lang.String.class);
+            p.setProperty("keyStore", keyStoreFile);
+            String keyStorePass = getPassword("java:comp/env/keyStorePass");
+            p.setProperty("keyStorePass", keyStorePass);
+            String privateKeyAlias= (String)lookup("java:comp/env/privateKeyAlias", java.lang.String.class);
+            p.setProperty("privateKeyAlias", privateKeyAlias);
+            String privateKeyPass = getPassword("java:comp/env/privateKeyPass");
+            p.setProperty("privateKeyPass", privateKeyPass);
+            String signingDeviceFactoryName = (String)lookup("java:comp/env/signingDeviceFactory");
+            ISigningDeviceFactory signingDeviceFactory = (ISigningDeviceFactory)Class.forName(signingDeviceFactoryName).newInstance();
+            debug("Creating SigningDeviceFactory of type "+signingDeviceFactoryName);
+            signingDevice = signingDeviceFactory.makeInstance(p);
+
+            //signingDevice = fact.makeInstance(p);
+            // We must keep the same order in the DN in the issuer field in created certificates as there
+            // is in the subject field of the CA-certificate.
+            Certificate[] certs = signingDevice.getCertificateChain();
+            caCert = CertTools.getCertfromByteArray( ((X509Certificate)certs[0]).getEncoded() );
+            caSubjectName = new X509Name(caCert.getSubjectDN().toString());
+
+            // Should extensions be used in CRLs? Critical or not?
+            if ((useaki = (Boolean)lookup("java:comp/env/AuthorityKeyIdentifier", java.lang.Boolean.class)).booleanValue() == true)
+                akicritical = (Boolean)lookup("java:comp/env/AuthorityKeyIdentifierCritical", java.lang.Boolean.class);
+            if ((usecrln = (Boolean)lookup("java:comp/env/CRLNumber", java.lang.Boolean.class)).booleanValue() == true)
+                crlncritical = (Boolean)lookup("java:comp/env/CRLNumberCritical", java.lang.Boolean.class);
+            // The period between CRL issue
+            crlperiod = (Long)lookup("java:comp/env/CRLPeriod", java.lang.Long.class);
+
+            // Use old style email address in DN? (really deprecated but old habits die hard...)
+            emailindn = (Boolean)lookup("java:comp/env/EmailInDN", java.lang.Boolean.class);
+            // Should we set user to finished state after generating certificate? Probably means onyl one cert can be issued
+            // without resetting users state in user DB
+            finishUser = (Boolean)lookup("java:comp/env/FinishUser", java.lang.Boolean.class);
+
+        } catch( Exception e ) {
+            debug("Caught exception in ejbCreate(): ", e);
+            throw new EJBException(e);
+        }
+        debug("<ejbCreate()");
+    }
 
     /**
      * Implements ISignSession::getCertificateChain

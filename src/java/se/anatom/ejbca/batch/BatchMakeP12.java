@@ -40,7 +40,7 @@ import org.apache.log4j.PropertyConfigurator;
  * This class generates keys and request certificates for all users with
  * status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.34 2003-03-10 07:22:04 herrvendil Exp $
+ * @version $Id: BatchMakeP12.java,v 1.35 2003-03-11 09:47:40 anatom Exp $
  */
 public class BatchMakeP12 {
 
@@ -192,7 +192,7 @@ public class BatchMakeP12 {
         // Send the certificate request to the CA
         ISignSessionRemote ss = signhome.create();
         X509Certificate cert = (X509Certificate)ss.createCertificate(administrator, username, password, rsaKeys.getPublic());
-        //System.out.println("issuer " + cert.getIssuerDN().toString() + ", " + cert.getClass().getName());
+        //System.out.println("issuer " + CertTools.getIssuerDN(cert) + ", " + cert.getClass().getName());
         // Make a certificate chain from the certificate and the CA-certificate
         Certificate[] cachain = getCACertChain();
         // Verify CA-certificate
@@ -218,8 +218,6 @@ public class BatchMakeP12 {
            keyrecoverysession.addKeyRecoveryData(administrator, cert, username, rsaKeys);
         }
 
-        // Use CommonName as alias in the keystore
-        //String alias = CertTools.getPartFromDN(cert.getSubjectDN().toString(), "CN");
         // Use username as alias in the keystore
         String alias = username;
         // Store keys and certificates in keystore.
@@ -306,21 +304,24 @@ public class BatchMakeP12 {
         log.debug(">createAllWithStatus: "+status);
         Collection result;
         IUserAdminSessionRemote admin = adminhome.create();
-
+        boolean stopnow = false;
         //Collection result = admin.findAllUsersByStatus(administrator, status);
         do{
           result = admin.findAllUsersByStatusWithLimit(administrator, status, true);
           log.info("Batch generating "+result.size()+" users.");
+          int failcount = 0;
+          int successcount = 0;
           if(result.size()>0){
+            if (result.size() < IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT) {
+                stopnow = true;
+            }
             Iterator it = result.iterator();
             boolean createJKS;
             boolean createPEM;
             boolean createP12;
             int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
             String failedusers = "";
-            int failcount = 0;
             String successusers = "";
-            int successcount = 0;
             while( it.hasNext() ) {
                 createJKS = false;
                 createPEM = false;
@@ -367,8 +368,8 @@ public class BatchMakeP12 {
             if (failedusers != "")
                 throw new Exception("BatchMakeP12 failed for " + failcount + " users (" + successcount + " succeeded) - " + failedusers);
             log.info(successcount + " new users generated successfully - " + successusers);
-          }  
-        }while (result.size() > 0);
+          }
+        }while ( (result.size() > 0) && !stopnow );
         log.debug("<createAllWithStatus: "+status);
     } // createAllWithStatus
 

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 /**
  * RootCACertificateProfile is a class defining the fixed characteristics of a root ca certificate profile.
  *
- * @version $Id: RootCACertificateProfile.java,v 1.5 2003-02-20 10:28:39 herrvendil Exp $
+ * @version $Id: RootCACertificateProfile.java,v 1.6 2003-03-11 09:47:41 anatom Exp $
  */
 public class RootCACertificateProfile extends CertificateProfile{
 
@@ -23,9 +23,6 @@ public class RootCACertificateProfile extends CertificateProfile{
 
       setUseBasicConstraints(true);
       setBasicConstraintsCritical(true);
-
-      setUseKeyUsage(true);
-      setKeyUsageCritical(true);
 
       setUseSubjectKeyIdentifier(true);
       setSubjectKeyIdentifierCritical(false);
@@ -49,17 +46,19 @@ public class RootCACertificateProfile extends CertificateProfile{
       int[] bitlengths = {512,1024,2048,4096};
       setAvailableBitLengths(bitlengths);
 
+      setUseKeyUsage(true);
       setKeyUsage(new boolean[9]);
       setKeyUsage(KEYCERTSIGN,true);
       setKeyUsage(CRLSIGN,true);
-      
+      setKeyUsageCritical(true);
+
       setUseExtendedKeyUsage(false);
       setExtendedKeyUsage(new ArrayList());
     }
 
     // Public Methods.
 
-    public void upgrade(){        
+    public void upgrade(){
       if(LATEST_VERSION != getVersion()){
         // New version of the class, upgrade
 
@@ -68,7 +67,7 @@ public class RootCACertificateProfile extends CertificateProfile{
           data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
         if(data.get(USEEXTENDEDKEYUSAGE) ==null)
           data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
-        if(data.get(EXTENDEDKEYUSAGE) ==null)       
+        if(data.get(EXTENDEDKEYUSAGE) ==null)
           data.put(EXTENDEDKEYUSAGE, new ArrayList());
         if(data.get(EXTENDEDKEYUSAGECRITICAL) == null)
           data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);

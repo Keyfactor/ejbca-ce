@@ -24,7 +24,7 @@ import se.anatom.ejbca.util.Base64;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.10 2003-03-01 14:48:55 anatom Exp $
+ * @version $Id: CRLDataBean.java,v 1.11 2003-03-11 09:47:40 anatom Exp $
  */
 public abstract class CRLDataBean extends BaseEntityBean {
 
@@ -114,19 +114,18 @@ public abstract class CRLDataBean extends BaseEntityBean {
             String b64Crl = new String(Base64.encode(incrl.getEncoded()));
             setBase64Crl(b64Crl);
             setFingerprint(CertTools.getFingerprintAsString(incrl));
+            // Make sure names are always looking the same
+            setIssuerDN(CertTools.getIssuerDN(incrl));
+            log.debug("Creating crldata, issuer="+getIssuerDN());
+            // Default values for cafp
+            setCAFingerprint(null);
+            setCRLNumber(number);
+            setThisUpdate(incrl.getThisUpdate());
+            setNextUpdate(incrl.getNextUpdate());
         } catch (CRLException ce) {
             log.error("Can't extract DER encoded CRL.", ce);
             return null;
         }
-        // Make sure names are always looking the same
-        setIssuerDN(CertTools.stringToBCDNString(incrl.getIssuerDN().toString()));
-        log.debug("Creating crldata, issuer="+getIssuerDN());
-        // Default values for cafp
-        setCAFingerprint(null);
-        setCRLNumber(number);
-        setThisUpdate(incrl.getThisUpdate());
-        setNextUpdate(incrl.getNextUpdate());
-
         CRLDataPK pk = new CRLDataPK(getFingerprint());
         return pk;
     }

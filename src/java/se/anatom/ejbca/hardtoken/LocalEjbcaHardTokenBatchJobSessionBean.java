@@ -19,19 +19,20 @@ import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.util.CertTools;
 
 /**
- * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from EJBCA RA. 
+ * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from EJBCA RA.
  *
- * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.4 2003-02-28 09:25:16 koen_serry Exp $
+ * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.5 2003-03-11 09:47:41 anatom Exp $
  */
 public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
     private static Logger log = Logger.getLogger(LocalEjbcaHardTokenBatchJobSessionBean.class);
-    
+
     /** Columns in the database used in select */
-    private final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId";    
-    
+    private final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId";
+
     /** Var holding JNDI name of datasource */
     private String dataSource = "";
 
@@ -40,28 +41,28 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
     /** The local interface of  hard token session bean */
     private IHardTokenSessionLocal hardtokensession = null;
-    
-    /** The remote interface of  log session bean */    
+
+    /** The remote interface of  log session bean */
     private ILogSessionRemote logsession = null;
-         
+
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
      */
-        
+
     public void ejbCreate() throws CreateException {
         debug(">ejbCreate()");
-      try{  
+      try{
         dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
         debug("DataSource=" + dataSource);
-        
+
         useradminsession = (UserDataLocalHome) lookup("java:comp/env/ejb/UserDataLocal", UserDataLocalHome.class);
-              
-        debug("<ejbCreate()");            
+
+        debug("<ejbCreate()");
       }catch(Exception e){
-         throw new EJBException(e);  
-      } 
-        
+         throw new EJBException(e);
+      }
+
     }
 
 
@@ -72,38 +73,38 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
         return ds.getConnection();
     } //getConnection
-    
+
     /** Gets connection to hard token session bean
      * @return IHardTokenSessionLocal
      */
     private IHardTokenSessionLocal getHardTokenSession() {
         if(hardtokensession == null){
-          try{  
-            IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) lookup("java:comp/env/ejb/HardTokenSession",IHardTokenSessionLocalHome.class);       
-            hardtokensession = hardtokensessionhome.create();  
+          try{
+            IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) lookup("java:comp/env/ejb/HardTokenSession",IHardTokenSessionLocalHome.class);
+            hardtokensession = hardtokensessionhome.create();
           }catch(Exception e){
-             throw new EJBException(e);   
+             throw new EJBException(e);
           }
-        }  
+        }
         return hardtokensession;
     } //getHardTokenSession
-    
+
     /** Gets connection to log session bean
      * @return Connection
      */
-    private ILogSessionRemote getLogSession() {  
+    private ILogSessionRemote getLogSession() {
         if(logsession == null){
-          try{  
-            ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
-            logsession = logsessionhome.create(); 
+          try{
+            ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);
+            logsession = logsessionhome.create();
           }catch(Exception e){
-             throw new EJBException(e);   
+             throw new EJBException(e);
           }
-        }  
+        }
         return logsession;
-    } //getLogSession    
-    
-    
+    } //getLogSession
+
+
 
     /**
      * Returns the next user scheduled for batch generation for the given issuer.
@@ -113,12 +114,12 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      *
      * @return The next user to generate or NULL if there are no users i queue.
      * @throws EJBException if a communication or other error occurs.
-     */ 
-    
-       
+     */
+
+
     public UserAdminData getNextHardTokenToGenerate(Admin admin, X509Certificate issuercert) throws UnavailableTokenException{
       debug(">getNextHardTokenToGenerate()");
-      UserAdminData returnval=null; 
+      UserAdminData returnval=null;
       int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, issuercert);
 
       if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
@@ -136,17 +137,17 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
               returnval = new UserAdminData(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
                                                , rs.getInt(10), rs.getInt(11)
                                                , new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9))
-                                               ,  rs.getInt(12), rs.getInt(13));            
+                                               ,  rs.getInt(12), rs.getInt(13));
               returnval.setPassword(rs.getString(7));
             }
             if(returnval !=null){
               getHardTokenSession().getIsTokenTypeAvailableToIssuer(admin, issuerid, returnval);
-              getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with dn: " + issuercert.getSubjectDN().toString());             
+              getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with dn: " + CertTools.getSubjectDN(issuercert));
             }
         }catch(Exception e){
           try{
-            getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with dn: " + issuercert.getSubjectDN().toString());  
-          }catch(RemoteException re){}              
+            getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with dn: " + CertTools.getSubjectDN(issuercert));
+          }catch(RemoteException re){}
           throw new EJBException(e);
         }finally{
            try{
@@ -156,14 +157,14 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
            }catch(SQLException se){
               se.printStackTrace();
            }
-        }  
-      }    
+        }
+      }
       debug("<getNextHardTokenToGenerate()");
       return returnval;
     }// getNextHardTokenToGenerate
 
     /**
-     * Returns a Collection of users scheduled for batch generation for the given issuer. 
+     * Returns a Collection of users scheduled for batch generation for the given issuer.
      * A maximum of MAX_RETURNED_QUEUE_SIZE users will be returned by call.
      *
      * @param admin the administrator performing the actions
@@ -171,13 +172,13 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      *
      * @return A Collection of users to generate or NULL if there are no users i queue.
      * @throws EJBException if a communication or other error occurs.
-     */ 
-       
+     */
+
     public Collection getNextHardTokensToGenerate(Admin admin, X509Certificate issuercert) throws UnavailableTokenException{
       debug(">getNextHardTokensToGenerate()");
-      ArrayList returnval = new ArrayList(); 
+      ArrayList returnval = new ArrayList();
       int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, issuercert);
- 
+
       if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
         Connection con = null;
         PreparedStatement ps = null;
@@ -193,16 +194,16 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
               UserAdminData data = new UserAdminData(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
                                                , rs.getInt(10), rs.getInt(11)
                                                , new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9))
-                                               ,  rs.getInt(12), rs.getInt(13));            
+                                               ,  rs.getInt(12), rs.getInt(13));
               data.setPassword(rs.getString(7));
               getHardTokenSession().getIsTokenTypeAvailableToIssuer(admin, issuerid, data);
               returnval.add(data);
-              getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with dn: " + issuercert.getSubjectDN().toString());                
-            }           
+              getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with dn: " + CertTools.getSubjectDN(issuercert));
+            }
         }catch(Exception e){
           try{
-            getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next tokens for issuer with dn: " + issuercert.getSubjectDN().toString());  
-          }catch(RemoteException re){}            
+            getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next tokens for issuer with dn: " + CertTools.getSubjectDN(issuercert));
+          }catch(RemoteException re){}
           throw new EJBException(e);
         }finally{
            try{
@@ -212,17 +213,17 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
            }catch(SQLException se){
               se.printStackTrace();
            }
-        }  
-      }    
+        }
+      }
 
       if(returnval.size()==0)
-        returnval=null;  
-      
-      debug("<getNextHardTokensToGenerate()");      
-      return returnval;          
+        returnval=null;
+
+      debug("<getNextHardTokensToGenerate()");
+      return returnval;
     }// getNextHardTokensToGenerate
-    
-    
+
+
     /**
      * Returns the indexed user in queue scheduled for batch generation for the given issuer.
      *
@@ -232,14 +233,14 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      *
      * @return The next token to generate or NULL if the given user doesn't exist in queue.
      * @throws EJBException if a communication or other error occurs.
-     */ 
-    
-       
+     */
+
+
     public UserAdminData getNextHardTokenToGenerateInQueue(Admin admin, X509Certificate issuercert, int index) throws UnavailableTokenException{
       debug(">getNextHardTokenToGenerateInQueue()");
-      UserAdminData returnval=null; 
+      UserAdminData returnval=null;
       int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, issuercert);
- 
+
       if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
         Connection con = null;
         PreparedStatement ps = null;
@@ -255,17 +256,17 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
               returnval = new UserAdminData(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
                                                , rs.getInt(10), rs.getInt(11)
                                                , new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9))
-                                               ,  rs.getInt(12), rs.getInt(13));            
+                                               ,  rs.getInt(12), rs.getInt(13));
               returnval.setPassword(rs.getString(7));
             }
             if(returnval !=null){
               getHardTokenSession().getIsTokenTypeAvailableToIssuer(admin, issuerid, returnval);
-              getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with dn: " + issuercert.getSubjectDN().toString());  
+              getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with dn: " + CertTools.getSubjectDN(issuercert));
             }
         }catch(Exception e){
           try{
-            getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with dn: " + issuercert.getSubjectDN().toString());  
-          }catch(RemoteException re){}                  
+            getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with dn: " + CertTools.getSubjectDN(issuercert));
+          }catch(RemoteException re){}
           throw new EJBException(e);
         }finally{
            try{
@@ -275,13 +276,13 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
            }catch(SQLException se){
               se.printStackTrace();
            }
-        }  
-      }    
-      debug("<getNextHardTokenToGenerateInQueue()");        
-      return returnval;  
+        }
+      }
+      debug("<getNextHardTokenToGenerateInQueue()");
+      return returnval;
     }// getNextHardTokenToGenerateInQueue
-    
-    
+
+
     /**
      * Returns the number of users scheduled for batch generation for the given issuer.
      *
@@ -290,15 +291,15 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      *
      * @return the number of users to generate.
      * @throws EJBException if a communication or other error occurs.
-     */ 
-    
-       
+     */
+
+
     public int getNumberOfHardTokensToGenerate(Admin admin, X509Certificate issuercert){
       debug(">getNumberOfHardTokensToGenerate()");
-      int count = 0; 
+      int count = 0;
       int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, issuercert);
- 
-      if(issuerid != IHardTokenSessionLocal.NO_ISSUER){          
+
+      if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -324,10 +325,10 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
            }
         }
       }
-      debug("<getNumberOfHardTokensToGenerate()");        
-      return count;  
+      debug("<getNumberOfHardTokensToGenerate()");
+      return count;
     }// getNumberOfHardTokensToGenerate
-    
+
     /**
      * Methods that checks if a user exists in the database having the given hard token issuer id. This function is mainly for avoiding
      * desyncronisation when a hard token issuer is deleted.
@@ -366,7 +367,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
               se.printStackTrace();
            }
         }
-    } // checkForHardTokenIssuerId    
-    
+    } // checkForHardTokenIssuerId
+
 } // LocalRaAdminSessionBean
 

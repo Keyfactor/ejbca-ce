@@ -33,7 +33,7 @@ import org.bouncycastle.cms.*;
 /**
  * Class to handle SCEP request messages sent to the CA.
  *
- * @version  $Id: ScepRequestMessage.java,v 1.8 2003-02-12 11:23:18 scop Exp $
+ * @version  $Id: ScepRequestMessage.java,v 1.9 2003-03-11 09:47:41 anatom Exp $
  */
 public class ScepRequestMessage implements IRequestMessage, Serializable {
 
@@ -214,7 +214,7 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
                         log.debug("Issuer and serialnumer of recipient:");
                         log.debug("Issuer: "+((IssuerAndSerialNumber)rid).getName().toString());
                         log.debug("SerialNo: "+((IssuerAndSerialNumber)rid).getSerialNumber().getValue().toString());
-                        log.debug("My key Issuer: "+cert.getIssuerDN().toString());
+                        log.debug("My key Issuer: "+CertTool.getIssuerDN(cert));
                         log.debug("My serialNo: "+cert.getSerialNumber().toString());
                     }
 

@@ -26,7 +26,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java,v 1.12 2003-02-12 11:23:21 scop Exp $
+ * @version $Id: GetCRLServlet.java,v 1.13 2003-03-11 09:47:43 anatom Exp $
  */
 public class GetCRLServlet extends HttpServlet {
 
@@ -102,7 +102,7 @@ public class GetCRLServlet extends HttpServlet {
                 ICertificateStoreSessionRemote store = storehome.create();
                 byte[] crl = store.getLastCRL(admin);
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-                String dn = x509crl.getIssuerDN().toString();
+                String dn = CertTools.getIssuerDN(x509crl);
                 String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
                 res.setHeader("Content-disposition", "attachment; filename=" +  filename);
                 res.setContentType("application/pkix-crl");

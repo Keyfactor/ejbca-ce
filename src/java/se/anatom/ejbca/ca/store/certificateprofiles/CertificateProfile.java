@@ -12,7 +12,7 @@ import se.anatom.ejbca.SecConst;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.12 2003-02-25 13:54:02 scop Exp $
+ * @version $Id: CertificateProfile.java,v 1.13 2003-03-11 09:47:40 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
@@ -97,9 +97,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setUseBasicConstraints(true);
       setBasicConstraintsCritical(true);
 
-      setUseKeyUsage(true);
-      setKeyUsageCritical(true);
-
       setUseSubjectKeyIdentifier(true);
       setSubjectKeyIdentifierCritical(false);
 
@@ -122,8 +119,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       int[] bitlengths = {512,1024,2048,4096};
       setAvailableBitLengths(bitlengths);
 
+      setUseKeyUsage(true);
       setKeyUsage(new boolean[9]);
       setAllowKeyUsageOverride(true);
+      setKeyUsageCritical(true);
 
       setUseExtendedKeyUsage(false);
       setExtendedKeyUsage(new ArrayList());

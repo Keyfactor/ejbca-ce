@@ -5,7 +5,7 @@ import java.util.ArrayList;
 /**
  * EndUserCertificateProfile is a class defining the fixed characteristics of an enduser certificate type
  *
-* @version $Id: EndUserCertificateProfile.java,v 1.8 2003-02-21 09:42:31 anatom Exp $
+* @version $Id: EndUserCertificateProfile.java,v 1.9 2003-03-11 09:47:41 anatom Exp $
   */
 public class EndUserCertificateProfile extends CertificateProfile{
 
@@ -23,8 +23,6 @@ public class EndUserCertificateProfile extends CertificateProfile{
       setUseBasicConstraints(true);
       setBasicConstraintsCritical(true);
 
-      setUseKeyUsage(true);
-      setKeyUsageCritical(true);
 
       setUseSubjectKeyIdentifier(true);
       setSubjectKeyIdentifierCritical(false);
@@ -51,9 +49,11 @@ public class EndUserCertificateProfile extends CertificateProfile{
       // Standard key usages for end users are: digitalSignature | keyEncipherment or nonRepudiation
       // Default key usage is digitalSignature | keyEncipherment
       // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
+      setUseKeyUsage(true);
       setKeyUsage(new boolean[9]);
       setKeyUsage(DIGITALSIGNATURE,true);
       setKeyUsage(KEYENCIPHERMENT,true);
+      setKeyUsageCritical(true);
 
       setUseExtendedKeyUsage(true);
       ArrayList eku = new ArrayList();
@@ -63,6 +63,7 @@ public class EndUserCertificateProfile extends CertificateProfile{
       eku.add(new Integer(IPSECENDSYSTEM));
       eku.add(new Integer(IPSECUSER));
       setExtendedKeyUsage(eku);
+      setExtendedKeyUsageCritical(false);
 
     }
 

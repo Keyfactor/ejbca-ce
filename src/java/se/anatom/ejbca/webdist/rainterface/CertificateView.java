@@ -19,7 +19,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * by JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: CertificateView.java,v 1.7 2003-02-25 13:54:02 scop Exp $
+ * @version $Id: CertificateView.java,v 1.8 2003-03-11 09:47:43 anatom Exp $
  */
 public class CertificateView {
 
@@ -42,8 +42,8 @@ public class CertificateView {
       this.revokedinfo= revokedinfo;
       this.username=username;
 
-      subjectdnfieldextractor = new DNFieldExtractor(certificate.getSubjectDN().toString(), DNFieldExtractor.TYPE_SUBJECTDN);
-      issuerdnfieldextractor  = new DNFieldExtractor(certificate.getIssuerDN().toString(), DNFieldExtractor.TYPE_SUBJECTDN);
+      subjectdnfieldextractor = new DNFieldExtractor(CertTools.getSubjectDN(certificate), DNFieldExtractor.TYPE_SUBJECTDN);
+      issuerdnfieldextractor  = new DNFieldExtractor(CertTools.getIssuerDN(certificate), DNFieldExtractor.TYPE_SUBJECTDN);
     }
 
 
@@ -66,7 +66,7 @@ public class CertificateView {
     }
 
     public String getIssuerDN() {
-      return certificate.getIssuerDN().toString();
+      return CertTools.getIssuerDN(certificate);
     }
 
     public String getIssuerDNField(int field, int number) {
@@ -74,7 +74,7 @@ public class CertificateView {
     }
 
     public String getSubjectDN() {
-      return certificate.getSubjectDN().toString();
+      return CertTools.getSubjectDN(certificate);
     }
 
     public String getSubjectDNField(int field, int number) {

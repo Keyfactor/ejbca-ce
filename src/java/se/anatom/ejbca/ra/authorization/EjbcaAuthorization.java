@@ -14,7 +14,7 @@ import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.LogEntry;
-
+import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 
 /**
@@ -22,7 +22,7 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
  *
  * The main metod are isAthorized and authenticate.
  *
- * @version $Id: EjbcaAuthorization.java,v 1.11 2003-01-29 16:16:00 anatom Exp $
+ * @version $Id: EjbcaAuthorization.java,v 1.12 2003-03-11 09:47:41 anatom Exp $
  */
 public class EjbcaAuthorization extends Object implements java.io.Serializable{
 
@@ -114,8 +114,8 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
         boolean verified = false;
         for(int i=0; i < this.cacertificatechain.length; i++){
            try{
-//            System.out.println("EjbcaAuthorization: authenticate : Comparing : "  + certificate.getIssuerDN() + " With " + ((X509Certificate) cacertificatechain[i]).getSubjectDN());
-//            if(LDAPDN.equals(certificate.getIssuerDN().toString(), ((X509Certificate) cacertificatechain[i]).getSubjectDN().toString())){
+//            System.out.println("EjbcaAuthorization: authenticate : Comparing : "  + CertTools.getIssuerDN(certificate) + " With " + CertTools.getSubjectDN((X509Certificate) cacertificatechain[i]));
+//            if(LDAPDN.equals(CertTools.getIssuerDN(certificate), CertTools.getSubjectDN((X509Certificate) cacertificatechain[i]))){
                certificate.verify(cacertificatechain[i].getPublicKey());
                verified = true;
 //            }
@@ -126,7 +126,7 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
 
       // Check if certificate is revoked.
         try{
-          if(certificatesession.isRevoked(admin, certificate.getIssuerDN().toString(),certificate.getSerialNumber()) != null){
+          if(certificatesession.isRevoked(admin, CertTools.getIssuerDN(certificate),certificate.getSerialNumber()) != null){
             // Certificate revoked
             throw new AuthenticationFailedException("Your certificate have been revoked.");
           }

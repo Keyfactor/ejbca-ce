@@ -5,9 +5,11 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 
+import se.anatom.ejbca.util.CertTools;
+
 /** Gets and prints info about the CA.
  *
- * @version $Id: CaInfoCommand.java,v 1.2 2003-01-12 17:16:31 anatom Exp $
+ * @version $Id: CaInfoCommand.java,v 1.3 2003-03-11 09:47:35 anatom Exp $
  */
 public class CaInfoCommand extends BaseCaAdminCommand {
 
@@ -24,13 +26,13 @@ public class CaInfoCommand extends BaseCaAdminCommand {
             else
                 System.out.println("This is a subordinate CA.");
             X509Certificate rootcert = (X509Certificate)chain[chain.length-1];
-            System.out.println("Root CA DN: "+rootcert.getSubjectDN().toString());
+            System.out.println("Root CA DN: "+CertTools.getSubjectDN(rootcert));
             System.out.println("Certificate valid from: "+rootcert.getNotBefore().toString());
             System.out.println("Certificate valid to: "+rootcert.getNotAfter().toString());
             System.out.println("Root CA keysize: "+((RSAPublicKey)rootcert.getPublicKey()).getModulus().bitLength());
             if (chain.length > 1) {
                 X509Certificate cacert = (X509Certificate)chain[chain.length-2];
-                System.out.println("CA DN: "+cacert.getSubjectDN().toString());
+                System.out.println("CA DN: "+CertTools.getSubjectDN(cacert));
                 System.out.println("Certificate valid from: "+cacert.getNotBefore().toString());
                 System.out.println("Certificate valid to: "+cacert.getNotAfter().toString());
                 System.out.println("CA keysize: "+((RSAPublicKey)cacert.getPublicKey()).getModulus().bitLength());
@@ -39,5 +41,5 @@ public class CaInfoCommand extends BaseCaAdminCommand {
             throw new ErrorAdminCommandException(e);
         }
     } // execute
-    
+
 }

@@ -41,7 +41,7 @@ import se.anatom.ejbca.log.Admin;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.13 2003-02-12 11:23:20 scop Exp $
+ * @version $Id: CertDistServlet.java,v 1.14 2003-03-11 09:47:43 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -92,7 +92,7 @@ public class CertDistServlet extends HttpServlet {
         // Keep this for logging.
         String remoteAddr = req.getRemoteAddr();
         Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
-        
+
         command = req.getParameter(COMMAND_PROPERTY_NAME);
         if (command == null)
             command = "";
@@ -101,7 +101,7 @@ public class CertDistServlet extends HttpServlet {
                 ICertificateStoreSessionRemote store = storehome.create();
                 byte[] crl = store.getLastCRL(administrator);
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-                String dn = x509crl.getIssuerDN().toString();
+                String dn = CertTools.getIssuerDN(x509crl);
                 String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
                 res.setHeader("Content-disposition", "attachment; filename=" +  filename);
                 res.setContentType("application/x-x509-crl");
@@ -163,8 +163,8 @@ public class CertDistServlet extends HttpServlet {
                     for (int i=0;i<certs.length;i++) {
                         Date notBefore = ((X509Certificate)certs[i]).getNotBefore();
                         Date notAfter = ((X509Certificate)certs[i]).getNotAfter();
-                        String subject = ((X509Certificate)certs[i]).getSubjectDN().toString();
-                        String issuer = ((X509Certificate)certs[i]).getIssuerDN().toString();
+                        String subject = CertTools.getSubjectDN((X509Certificate)certs[i]);
+                        String issuer = CertTools.getIssuerDN((X509Certificate)certs[i]);
                         BigInteger serno = ((X509Certificate)certs[i]).getSerialNumber();
                         pout.println("<pre>Subject:"+subject);
                         pout.println("Issuer:"+issuer);
@@ -210,7 +210,7 @@ public class CertDistServlet extends HttpServlet {
                     return;
                 }
                 X509Certificate cacert = (X509Certificate)chain[chain.length-1-level];
-                String filename=CertTools.getPartFromDN(cacert.getSubjectDN().toString(), "CN");
+                String filename=CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
                 if (filename == null)
                     filename = "ca";
                 byte[] enccert = null;
