@@ -1,4 +1,22 @@
 
+Database connections and statements
+===================================
+It is very important to close connections and prepared statments when doing direct
+JDBC queries. There is a utility class se.anatom.ejbca.util.JDBCUtil that helps minimize 
+code for this. All direct JDBC queries must be encapsulated in in a try/finally clause 
+as shown below:
+
+Connection con = null;
+PreparedStatement ps = null;
+try {
+    // Do stuff,,,
+} catch (Exception e) {
+	// handle error
+} finally {
+    JDBCUtil.close(con);
+    JDBCUtil.close(ps);
+}            
+        
 BouncyCastle provider
 =====================
 EJBCA uses the BouncyCastle (BC) jce provider. 
@@ -168,14 +186,14 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.13 2004-01-08 11:40:35 anatom Exp $
+@version $Id: DEVELOP,v 1.14 2004-04-12 16:19:44 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.13 2004-01-08 11:40:35 anatom Exp $
+ * @version $Id: DEVELOP,v 1.14 2004-04-12 16:19:44 anatom Exp $
  */
 
 EJBCA2: CA KeyStore architecture/creating a custom CA Keystore
