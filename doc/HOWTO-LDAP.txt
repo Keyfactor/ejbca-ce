@@ -32,6 +32,25 @@ or
 
 An example image of an LDAP structure can be seen in HOWTO-LDAP-tree.png.
 
+LDAP BASICS
+===========
+LDAP has an unusual structure, if you are not used to X.500 style naming. 
+Things are either branches, or leaf nodes. You can't just drop an object 
+anywhere you like; You need to create the framework to support it. 
+Sort of like if you wanted to put entries in /etc/hosts, if the directory 
+/etc did not exist.
+
+First you mkdir /etc, Then you create the file. Then you start putting things 
+in the file. The difference with LDAP and x.500 is that instead of paths 
+separate by slashes, you have paths separated by commas and '=' signs.
+
+For example, if you want to make an object "cn=ldaphost,ou=hosts,dc=yourdom,dc=com", 
+you first have to make sure "dc=yourdom,dc=com" exists.
+Then make sure
+"ou=hosts,dc=yourdom,dc=com" exists.
+THEN you can try
+"cn=ldaphost,ou=hosts,dc=yourdom,dc=com" 
+
 CONFIGURE LDAP PUBLISHERS
 =========================
 
@@ -121,6 +140,12 @@ If your DN is like "cn=Ejbca1,0=MyOrg,c=SE" and your base DN is like
 "DC=Security,DC=Software,DC=MyOrg".
 The publisher for AD should have base DN like "cn=Users,dc=security,dc=software,dc=MyOrg"
 
+USING LDAP
+==========
+In Mozilla you can for example enter a URL like:
+ldap://ap-address-of-ldap-server:389/cn=Tomas Gustavsson,dc=se,dc=bigcorp,dc=com
+and it will fetch an adress book entry with the information about the user, including the certificate.
+
 CONFIGURE OpenLDAP
 ==================
 
@@ -175,4 +200,7 @@ Check what you have in the LDAP by:
 Configure SSL
 -------------
 TODO
+A guide for configuring OpenLDAP on Solaris can be found at:
+http://www.bolthole.com/solaris/LDAP.html
+
 
