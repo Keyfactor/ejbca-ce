@@ -4,6 +4,7 @@ Virtual CAs, run a complete hierarchy in one instance of EJBCA.
 Easier installation and configuration.
 Completed support for OCSP.
 Added 'Authority Information Access' extension for OCSP service URL in certificates.
+LDAP schema now correctly follows RFC 2256 and works with OpenLDAP 2.2. 
 
 2.1.1
 -----

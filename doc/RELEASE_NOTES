@@ -8,6 +8,10 @@ This release is not backwards compatible with EJBCA 2.1 without database upgrade
 Upgrade instructions must be followed if upgrading from EJBCA 2.1, 
 backup your database before trying any upgrades.
 
+The (default) LDAP schema has been changed to follow RFC 2256. If using LDAP, 
+the schema should be checked. You can configure the schema 
+(in ca/ca/META-INF/ejb-jar.xml) to be the same as before if needed.
+
 EJBCA V2.1.1
 ------------
 This is a plugin upgrade from V2.1.
