@@ -1,16 +1,14 @@
-<project name="jboss" basedir="." default="deploy">
+<project name="jboss" basedir=".." default="deploy">
 	
 	<property name="jboss.deploy.dir" location="${jboss.home}/server/default/deploy"/>
 	<property name="jboss.server.home.dir" location="${jboss.deploy.dir}/.."/>
 	<property name="keystore.file" value="conf/keystore/keystore.jks"/>
-	<property name="keystore.password" value="${server.password}"/>
+	<property name="keystore.password" value="changeit"/>
 
 	<target name="j2ee:check">
 		<available file="p12/tomcat.jks" property="keystore.file.present"/>
-		<fail message="Missing JKS keystore file in '${basedir}/p12/tomcat.jsk'" unless="keystore.file.present"/>
-		
-		<property name="keystore.password" value="${server.password}"/>
-		<fail message="Missing JKS keystore password 'keystore.password'" unless="server.password"/>
+		<fail message="Missing JKS keystore file in '${basedir}/p12/tomcat.jks'" unless="keystore.file.present"/>
+		<fail message="Missing JKS keystore password 'keystore.password'" unless="keystore.password"/>
 	</target>
 	
 	<target name="j2ee:configure" depends="j2ee:check" description="Configure the J2EE server with appropriate settings">
