@@ -1,4 +1,4 @@
-$Id: README,v 1.97 2003-08-24 13:45:15 anatom Exp $
+$Id: README,v 1.98 2003-09-07 09:53:51 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -561,7 +561,7 @@ certificates and publishes first CRL.
 * makeroot - creates a new Root CA keystore (only used by Root
 CA).
 Quote the DN (") so it is treated as one argument.
-* getrootcert - exports the Root CA certificate to file.
+* getrootcert - exports the CA certificates to file.
 * makereq - generates a certification request for a subCA for
 sending to a
 RootCA. Used to create a keystore for a
@@ -858,7 +858,7 @@ storepass foo123 -file tomcat.req
 ra.sh adduser tomcat foo123 "C=SE,O=AnaTom,CN=hostname" null,
 null 1 1
 ca.sh processreq tomcat foo123 tomcat.req tomcat.pem
-ca.sh getrootcert ca.der
+ca.sh getrootcert ca.der -der
 keytool -import -trustcacerts -alias cacert -file ca.der -
 keystore tomcat.jks -
 storepass foo123
