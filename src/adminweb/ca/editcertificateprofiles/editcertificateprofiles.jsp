@@ -77,7 +77,7 @@
   String THIS_FILENAME            =  globalconfiguration.getCaPath()  + "/editcertificateprofiles/editcertificateprofiles.jsp";
 
      
-  String[] keyusagetexts = {"DIGITALSIGNATURE","NONREPUDATION", "KEYENCIPHERMENT", "DATAENCIPHERMENT", "KEYAGREEMENT", "KEYCERTSIGN", "CRLSIGN", "ENCIPHERONLY", "DECIPHERONLY" };
+  String[] keyusagetexts = {"DIGITALSIGNATURE","NONREPUDIATION", "KEYENCIPHERMENT", "DATAENCIPHERMENT", "KEYAGREEMENT", "KEYCERTSIGN", "CRLSIGN", "ENCIPHERONLY", "DECIPHERONLY" };
   String[] extendedkeyusagetexts = {"ANYEXTENDEDKEYUSAGE","SERVERAUTH", "CLIENTAUTH", 
                                     "CODESIGNING", "EMAILPROTECTION", "IPSECENDSYSTEM", 
                                     "IPSECTUNNEL", "IPSECUSER", "TIMESTAMPING" };

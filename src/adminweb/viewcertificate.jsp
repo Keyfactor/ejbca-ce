@@ -25,7 +25,7 @@
   static final String BUTTON_RECOVERKEY          = "buttonrekoverkey";
 
   static final String CHECKBOX_DIGITALSIGNATURE  = "checkboxdigitalsignature";
-  static final String CHECKBOX_NONREPUDATION     = "checkboxnonrepudation";
+  static final String CHECKBOX_NONREPUDIATION    = "checkboxnonrepudiation";
   static final String CHECKBOX_KEYENCIPHERMENT   = "checkboxkeyencipherment";
   static final String CHECKBOX_DATAENCIPHERMENT  = "checkboxdataencipherment";
   static final String CHECKBOX_KEYAGREEMENT      = "checkboxkeyagreement";
@@ -312,11 +312,11 @@ function confirmkeyrecovery(){
                   first=false;
                   none =false;
                 }
-                if(certificatedata.getKeyUsage(CertificateView.NONREPUDATION)){
+                if(certificatedata.getKeyUsage(CertificateView.NONREPUDIATION)){
                   if(!first) out.write(", "); 
                   first=false;
                   none =false;
-                  out.write(ejbcawebbean.getText("NONREPUDATION"));
+                  out.write(ejbcawebbean.getText("NONREPUDIATION"));
                 }
                 if(certificatedata.getKeyUsage(CertificateView.KEYENCIPHERMENT)){
                   if(!first) out.write(", "); 
