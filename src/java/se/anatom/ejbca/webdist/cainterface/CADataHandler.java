@@ -204,12 +204,13 @@ public class CADataHandler implements Serializable {
  }
  
  public void revokeOCSPCertificate(int caid){
-	Iterator iter = caadminsession.getCAInfo(administrator, caid).getExtendedCAServiceInfos().iterator();
+ 	CAInfo cainfo = caadminsession.getCAInfo(administrator, caid);
+	Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
 	while(iter.hasNext()){
 	  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
 	  if(next instanceof OCSPCAServiceInfo){
 	  	X509Certificate ocspcert = (X509Certificate)((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath().get(0);
-		certificatesession.revokeCertificate(administrator,ocspcert,RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);	  	 
+		certificatesession.revokeCertificate(administrator,ocspcert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);	  	 
 	  }
 	}  
  }

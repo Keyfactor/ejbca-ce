@@ -25,6 +25,8 @@ import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
+import se.anatom.ejbca.ca.publisher.IPublisherSessionLocal;
+import se.anatom.ejbca.ca.publisher.IPublisherSessionLocalHome;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
 import se.anatom.ejbca.ca.store.CRLInfo;
@@ -50,7 +52,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.23 2004-02-11 10:45:26 herrvendil Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.24 2004-03-07 12:15:51 herrvendil Exp $
  */
 public class CAInterfaceBean   {
 
@@ -92,11 +94,17 @@ public class CAInterfaceBean   {
 	    		IHardTokenSessionLocalHome.class);
 	    hardtokensession = hardtokensessionhome.create();               
 	    
-        
+	    IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/PublisherSessionLocal"),
+	    		IPublisherSessionLocalHome.class);
+	    publishersession = publishersessionhome.create();               
+	    
+	    
         this.informationmemory = ejbcawebbean.getInformationMemory();
           
         certificateprofiles = new CertificateProfileDataHandler(administrator, certificatesession, authorizationsession, informationmemory);
-        cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, signsession, ejbcawebbean);        
+        cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, signsession, ejbcawebbean);
+        publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, 
+        		                                        caadminsession, certificatesession,  informationmemory);
         initialized =true;
       }
     }
@@ -226,6 +234,10 @@ public class CAInterfaceBean   {
       return signsession.getPublisherIdToNameMap(administrator);
     }
     
+    public PublisherDataHandler getPublisherDataHandler() {    
+    	return this.publisherdatahandler;
+    }
+    
     public CADataHandler getCADataHandler(){
       return cadatahandler;   
     }
@@ -298,14 +310,17 @@ public class CAInterfaceBean   {
     private IAuthorizationSessionLocal         authorizationsession;
     private IUserAdminSessionLocal             adminsession;
     private IRaAdminSessionLocal               raadminsession;
-    private ISignSessionLocal                      signsession;
-    private IHardTokenSessionLocal            hardtokensession;
+    private ISignSessionLocal                  signsession;
+    private IHardTokenSessionLocal             hardtokensession;
+    private IPublisherSessionLocal             publishersession;
     private CertificateProfileDataHandler      certificateprofiles;
     private CADataHandler                      cadatahandler;
+    private PublisherDataHandler               publisherdatahandler;
     private boolean                            initialized;
     private Admin                              administrator;
     private InformationMemory                  informationmemory;
     private CAInfo                                      cainfo;
     private PKCS10CertificationRequest       request;
-    private Certificate	                             processedcert;    
+    private Certificate	                             processedcert;
+    
 }
