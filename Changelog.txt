@@ -27,6 +27,7 @@ Fixed email field check bugg in add and edit user jsp pages.
 Fixed bugg in certificate profiles jsp page where critical extended keyusade couldn't be unchecked.
 Added missing class in admin.jar for 'ca processreq'.
 Fixes to demo servlet.
+Fixed error message when enrolling with un-allowed keysize from browser.
 Fixed minor error in authorization log text.
 Fixed error for DATE var in notifications.
 Fixed bug adding email and uid attributes in LDAP.
@@ -43,7 +44,7 @@ Tested on MacOSX.
 
 3.0.2
 -----
-Removed wirting of testfile foo.crt.
+Removed writing of testfile foo.crt.
 Changed version in web-GUI.
 
 3.0.1
