@@ -17,9 +17,9 @@ import se.anatom.ejbca.ca.exception.AuthLoginException;
 /**
  * Authenticates users towards a remote user database, using HTTP-based protocol.
  *
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.3 2002-05-26 12:42:25 anatom Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.4 2002-06-04 13:59:55 anatom Exp $
  */
-public class RemoteAuthenticationSessionBean extends BaseSessionBean implements IAuthenticationSession {
+public class RemoteAuthenticationSessionBean extends BaseSessionBean {
 
     private static String REMOTE_PROTOCOL_VER = "1.0";
 

@@ -14,13 +14,13 @@ import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 
 /**
- * Approves all authentication requests that contain a DN as the username, password is ignored and 
+ * Approves all authentication requests that contain a DN as the username, password is ignored and
  * the username is returned as DN.
  * Useful for demo purposes to give out certificates to anyone.
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.3 2002-05-26 12:42:25 anatom Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.4 2002-06-04 13:59:55 anatom Exp $
  */
-public class NullAuthenticationSessionBean extends BaseSessionBean implements IAuthenticationSession {
+public class NullAuthenticationSessionBean extends BaseSessionBean {
 
     /**
      * Default create for SessionBean without any creation Arguments.

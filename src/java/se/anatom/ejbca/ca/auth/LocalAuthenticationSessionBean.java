@@ -17,9 +17,9 @@ import se.anatom.ejbca.ca.exception.AuthLoginException;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.7 2002-05-29 12:52:50 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.8 2002-06-04 13:59:55 anatom Exp $
  */
-public class LocalAuthenticationSessionBean extends BaseSessionBean implements IAuthenticationSession {
+public class LocalAuthenticationSessionBean extends BaseSessionBean {
 
     /** home interface to user entity bean */
     private UserDataHome userHome = null;
