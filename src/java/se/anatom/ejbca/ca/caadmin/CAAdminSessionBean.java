@@ -87,7 +87,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.19 2004-05-10 11:03:47 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.20 2004-05-10 11:15:42 herrvendil Exp $
  */
 public class CAAdminSessionBean extends BaseSessionBean {
     
@@ -1081,7 +1081,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
                                          char[] privkeypass, String privatekeyalias){
         try{
             // check authorization
-            getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
+            if(admin.getAdminType() !=  Admin.TYPE_CACOMMANDLINE_USER)
+              getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
             
             // load keystore
             java.security.KeyStore keystore=KeyStore.getInstance("PKCS12", "BC");
@@ -1123,11 +1124,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			                        2048,
 			                        OCSPCAServiceInfo.KEYALGORITHM_RSA));
                 
-            int validity = (int) ((cacertificate.getNotAfter().getTime() - cacertificate.getNotBefore().getTime()) / (24*3600*1000));
+                
             X509CAInfo cainfo = new X509CAInfo(cacertificate.getSubjectDN().toString(),
                                                caname, SecConst.CA_ACTIVE,
                                                "", certprof,
-                                               validity, 
+                                               (int) ((cacertificate.getNotAfter().getTime() - cacertificate.getNotBefore().getTime()) / (24/3600)), 
                                                cacertificate.getNotAfter(), // Expiretime                                              
                                                CAInfo.CATYPE_X509,
                                                signedby,
