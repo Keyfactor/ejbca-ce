@@ -19,6 +19,7 @@
 -----
 Added support for activation of hardcatokens in View CA Info page.
 Added MS Template for DomainController functionallity
+Fixed Certificate upgrade problems
 
 3.0.4
 -----

@@ -18,7 +18,7 @@ import java.util.ArrayList;
 /**
  * RootCACertificateProfile is a class defining the fixed characteristics of a root ca certificate profile.
  *
- * @version $Id: RootCACertificateProfile.java,v 1.12 2004-05-22 10:52:47 anatom Exp $
+ * @version $Id: RootCACertificateProfile.java,v 1.13 2004-11-20 16:59:59 herrvendil Exp $
  */
 public class RootCACertificateProfile extends CertificateProfile{
 
@@ -77,10 +77,10 @@ public class RootCACertificateProfile extends CertificateProfile{
     // Public Methods.
 
     public void upgrade(){
+      super.upgrade();  	
       if(LATEST_VERSION != getVersion()){
         // New version of the class, upgrade
-
-		super.upgrade();        
+		      
       }
     }
     // Private fields.
