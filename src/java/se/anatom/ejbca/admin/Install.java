@@ -142,7 +142,7 @@ public class Install {
 		}
 		boolean cont = getBooleanAnswer(answer);
 		if(!cont)
-		  System.exit(0);	 
+		  System.exit(-1);	 
 		
 	}
 	
