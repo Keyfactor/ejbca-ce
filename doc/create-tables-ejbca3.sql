@@ -148,7 +148,7 @@ CREATE TABLE hardtokenprofiledata (
     id int(11) NOT NULL DEFAULT '0',
     name varchar(250) binary NULL DEFAULT NULL,
     updateCounter int(11) NOT NULL DEFAULT '0',
-    data varchar(250) binary NULL DEFAULT NULL,
+    data longtext NULL DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
