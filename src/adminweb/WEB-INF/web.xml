@@ -6,7 +6,7 @@
 
 <web-app>
   <display-name>Administration web</display-name>
-  <distributable/>
+ <!-- <distributable/> -->
   <servlet>
     <servlet-name>GetCRL</servlet-name>
     <display-name>GetCRLServlet</display-name>
@@ -76,7 +76,7 @@
   <env-entry>
     <description>Defines the administrationserver baseurl</description>
     <env-entry-name>BASEURL</env-entry-name>
-    <env-entry-value>https://127.0.0.1:8443/</env-entry-value>
+    <env-entry-value>https://localhost:8443/</env-entry-value>
     <env-entry-type>java.lang.String</env-entry-type>
   </env-entry>
   <env-entry>
@@ -133,32 +133,74 @@
     <env-entry-value>975250</env-entry-value>
     <env-entry-type>java.lang.String</env-entry-type>
   </env-entry>  
-  <ejb-ref>
-    <ejb-ref-name>RSASignSession</ejb-ref-name>
+  <ejb-local-ref>
+    <ejb-ref-name>SignSessionLocal</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
-    <home>se.anatom.ejbca.ca.sign.ISignSessionHome</home>
-    <remote>se.anatom.ejbca.ca.sign.ISignSessionRemote</remote>
+    <local-home>se.anatom.ejbca.ca.sign.ISignSessionLocalHome</local-home>
+    <local>se.anatom.ejbca.ca.sign.ISignSessionLocal</local>
     <ejb-link>RSASignSession</ejb-link>
-  </ejb-ref>
-  <ejb-ref>
-    <ejb-ref-name>RaAdminSession</ejb-ref-name>
+  </ejb-local-ref>
+  <ejb-local-ref>
+    <ejb-ref-name>CertificateStoreSessionLocal</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
-    <home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome</home>
-    <remote>se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote</remote>
-    <ejb-link>RaAdminSession</ejb-link>
-  </ejb-ref>
-  <ejb-ref>
-    <ejb-ref-name>CertificateStoreSession</ejb-ref-name>
-    <ejb-ref-type>Session</ejb-ref-type>
-    <home>se.anatom.ejbca.ca.store.ICertificateStoreSessionHome</home>
-    <remote>se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote</remote>
+    <local-home>se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome</local-home>
+    <local>se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal</local>
     <ejb-link>CertificateStoreSession</ejb-link>
-  </ejb-ref>
-  <ejb-ref>
-    <ejb-ref-name>UserAdminSession</ejb-ref-name>
+  </ejb-local-ref>
+  <ejb-local-ref>
+    <ejb-ref-name>CAAdminSessionLocal</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
-    <home>se.anatom.ejbca.ra.IUserAdminSessionHome</home>
-    <remote>se.anatom.ejbca.ra.IUserAdminSessionRemote</remote>
+    <local-home>se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome</local-home>
+    <local>se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal</local>
+    <ejb-link>CAAdminSession</ejb-link>
+  </ejb-local-ref>  
+  <ejb-local-ref>
+    <ejb-ref-name>UserAdminSessionLocal</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <local-home>se.anatom.ejbca.ra.IUserAdminSessionLocalHome</local-home>
+    <local>se.anatom.ejbca.ra.IUserAdminSessionLocal</local>
     <ejb-link>UserAdminSession</ejb-link>
-  </ejb-ref>
+  </ejb-local-ref>  
+  <ejb-local-ref>
+    <ejb-ref-name>RaAdminSessionLocal</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <local-home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome</local-home>
+    <local>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal</local>
+    <ejb-link>RaAdminSession</ejb-link>
+  </ejb-local-ref>
+  <ejb-local-ref>
+    <ejb-ref-name>LogSessionLocal</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <local-home>se.anatom.ejbca.log.ILogSessionLocalHome</local-home>
+    <local>se.anatom.ejbca.log.ILogSessionLocal</local>
+    <ejb-link>LogSession</ejb-link>
+  </ejb-local-ref>  
+  <ejb-local-ref>
+    <ejb-ref-name>AuthorizationSessionLocal</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <local-home>se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome</local-home>
+    <local>se.anatom.ejbca.authorization.IAuthorizationSessionLocal</local>
+    <ejb-link>AuthorizationSession</ejb-link>
+  </ejb-local-ref>  
+  <ejb-local-ref>
+    <ejb-ref-name>HardTokenSessionLocal</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <local-home>se.anatom.ejbca.hardtoken.HardTokenSessionLocalHome</local-home>
+    <local>se.anatom.ejbca.hardtoken.HardTokenSessionLocal</local>
+    <ejb-link>HardTokenSession</ejb-link>
+  </ejb-local-ref>  
+  <ejb-local-ref>
+    <ejb-ref-name>HardTokenBatchJobSessionLocal</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <local-home>se.anatom.ejbca.hardtoken.HardTokenBatchJobSessionLocalHome</local-home>
+    <local>se.anatom.ejbca.hardtoken.HardTokenBatchJobSessionLocal</local>
+    <ejb-link>HardTokenBatchJobSession</ejb-link>
+  </ejb-local-ref>
+    <ejb-local-ref>
+    <ejb-ref-name>KeyRecoverySessionLocal</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <local-home>se.anatom.ejbca.keyrecovery.KeyRecoverySessionLocalHome</local-home>
+    <local>se.anatom.ejbca.keyrecovery.KeyRecoverySessionLocal</local>
+    <ejb-link>KeyRecoverySession</ejb-link>
+  </ejb-local-ref>      
 </web-app>

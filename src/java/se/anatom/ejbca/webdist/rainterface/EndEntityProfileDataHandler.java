@@ -12,7 +12,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
 /**
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
- * @version $Id: EndEntityProfileDataHandler.java,v 1.6 2003-09-04 09:52:10 herrvendil Exp $
+ * @version $Id: EndEntityProfileDataHandler.java,v 1.7 2003-09-04 14:38:11 herrvendil Exp $
  */
 public class EndEntityProfileDataHandler {
 
@@ -72,8 +72,9 @@ public class EndEntityProfileDataHandler {
     
       /** Method to get a reference to a end entity profile.*/ 
     public EndEntityProfile getEndEntityProfile(int id) throws AuthorizationDeniedException{
+   /*   System.out.println("EndEntityProfileDataHandler : id " + id);	
       if(!authorizedToProfileId(id, false))
-        throw new AuthorizationDeniedException("Not authorized to end entity profile");            
+        throw new AuthorizationDeniedException("Not authorized to end entity profile"); */            
       
       return raadminsession.getEndEntityProfile(administrator, id); 
     }      
@@ -96,7 +97,12 @@ public class EndEntityProfileDataHandler {
      * Help function that checks if administrator is authorized to edit profile with given name.
      */
     private boolean authorizedToProfileName(String profilename, boolean editcheck){
-      EndEntityProfile profile = raadminsession.getEndEntityProfile(administrator, profilename);
+       EndEntityProfile profile = null;	
+		if(profilename.equals(IRaAdminSessionLocal.EMPTY_ENDENTITYPROFILE))
+		  profile = null;
+		else    	
+          profile = raadminsession.getEndEntityProfile(administrator, profilename);
+          
       return authorizedToProfile(profile, editcheck);
     }
      
@@ -104,8 +110,13 @@ public class EndEntityProfileDataHandler {
 /**
      * Help function that checks if administrator is authorized to edit profile with given name.
      */
-    private boolean authorizedToProfileId(int profileid, boolean editcheck){
-      EndEntityProfile profile = raadminsession.getEndEntityProfile(administrator, profileid);
+    private boolean authorizedToProfileId(int profileid, boolean editcheck){      	    	
+      EndEntityProfile profile = null;	
+      if(profileid == IRaAdminSessionLocal.EMPTY_ENDENTITYPROFILEID)
+        profile = null;
+      else  
+       profile = raadminsession.getEndEntityProfile(administrator, profileid);
+       
       return authorizedToProfile(profile, editcheck);
     }
     
@@ -118,6 +129,7 @@ public class EndEntityProfileDataHandler {
       try{  
         if(editcheck)  
           authorizationsession.isAuthorizedNoLog(administrator, "/ra_functionality/edit_end_entity_profiles");
+        
         HashSet authorizedcaids = new HashSet(authorizationsession.getAuthorizedCAIds(administrator));
        
         if(profile != null){

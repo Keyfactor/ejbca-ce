@@ -75,7 +75,7 @@ function viewcert(row){
   <input type="hidden" name='<%= OLD_MATCHTYPEROW2 %>' value='<%=oldmatchtyperow2 %>'>
   <% } %>
   <% if(oldmatchtyperow3 != null){ %>
-  <input type="hidden" name='<%= OLD_MATCHTYPEROW2 %>' value='<%=oldmatchtyperow3 %>'>
+  <input type="hidden" name='<%= OLD_MATCHTYPEROW3 %>' value='<%=oldmatchtyperow3 %>'>
   <% } %>
   <% if(oldmatchvaluerow1 != null){ %>
   <input type="hidden" name='<%= OLD_MATCHVALUEROW1 %>' value='<%=oldmatchvaluerow1%>'>
@@ -182,7 +182,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="9%">
+    <td width="7%">
                    <% if(sortby.equals(SORTBY_ADMINTYPE_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ADMINTYPE_DEC %>" value="submit" ><%= ejbcawebbean.getText("ADMINTYPE") %>              
                    <% }else{
@@ -193,7 +193,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="19%">
+    <td width="17%">
                    <% if(sortby.equals(SORTBY_ADMINDATA_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ADMINDATA_DEC %>" value="submit" ><%= ejbcawebbean.getText("ADMINISTRATOR") %>              
                    <% }else{
@@ -201,6 +201,17 @@ function viewcert(row){
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_ADMINDATA_ACC %>" value="submit" ><%= ejbcawebbean.getText("ADMINISTRATOR") %>                     
                    <%    }else{ %> 
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_ADMINDATA_ACC %>" value="submit" ><%= ejbcawebbean.getText("ADMINISTRATOR") %>
+                   <%    }
+                       } %>
+    </td>
+    <td width="10%">
+                   <% if(sortby.equals(SORTBY_CA_ACC)){ %>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_CA_DEC %>" value="submit" ><%= ejbcawebbean.getText("CA") %>              
+                   <% }else{
+                         if(sortby.equals(SORTBY_CA_DEC)){ %>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_CA_ACC %>" value="submit" ><%= ejbcawebbean.getText("CA") %>                     
+                   <%    }else{ %> 
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_CA_ACC %>" value="submit" ><%= ejbcawebbean.getText("CA") %>
                    <%    }
                        } %>
     </td>
@@ -225,7 +236,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="9%"><% if(sortby.equals(SORTBY_USERNAME_ACC)){ %>
+    <td width="7%"><% if(sortby.equals(SORTBY_USERNAME_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_USERNAME_DEC %>" value="submit" ><%= ejbcawebbean.getText("USERNAME") %>              
                    <% }else{
                          if(sortby.equals(SORTBY_USERNAME_DEC)){ %>
@@ -235,7 +246,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="20%"><% if(sortby.equals(SORTBY_CERTIFICATE_ACC)){ %>
+    <td width="18%"><% if(sortby.equals(SORTBY_CERTIFICATE_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_CERTIFICATE_DEC %>" value="submit" ><%= ejbcawebbean.getText("CERTIFICATE") %>              
                    <% }else{
                          if(sortby.equals(SORTBY_CERTIFICATE_DEC)){ %>
@@ -245,7 +256,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="20%"><% if(sortby.equals(SORTBY_COMMENT_ACC)){ %>
+    <td width="18%"><% if(sortby.equals(SORTBY_COMMENT_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_COMMENT_DEC %>" value="submit" ><%= ejbcawebbean.getText("COMMENT") %>              
                    <% }else{
                          if(sortby.equals(SORTBY_COMMENT_DEC)){ %>
@@ -259,12 +270,14 @@ function viewcert(row){
   <%     if(logentries == null || logentries.length == 0){     %>
   <tr id="LogTextRow0"> 
     <td width="9%"> &nbsp;</td>
+    <td width="7%">&nbsp;</td>
+    <td width="17%"><%= ejbcawebbean.getText("NOLOGENTRIESFOUND") %></td>
+    <td width="10%">&nbsp;</td>
+    <td width="5%">&nbsp;</td>
     <td width="9%">&nbsp;</td>
-    <td width="19%"><%= ejbcawebbean.getText("NOLOGENTRIESFOUND") %></td>
-    <td width="9%">&nbsp;</td>
-    <td width="9%">&nbsp;</td>
-    <td width="20%">&nbsp;</td>
-    <td width="20%">&nbsp;</td>
+    <td width="7%">&nbsp;</td>
+    <td width="18%">&nbsp;</td>
+    <td width="18%">&nbsp;</td>
   </tr>
   <% } else{
          for(int i=0; i < logentries.length; i++){%>
@@ -273,8 +286,8 @@ function viewcert(row){
        <input type="hidden" name='<%= HIDDEN_CERTSERNO + i %>' value='<% if(logentries[i].getValue(LogEntryView.CERTIFICATESERNO) != null) out.print(java.net.URLEncoder.encode(logentries[i].getValue(LogEntryView.CERTIFICATESERNO),"UTF-8")); %>'>
        <input type="hidden" name='<%= HIDDEN_ADMINSERNO + i %>' value='<% if(logentries[i].getValue(LogEntryView.ADMINCERTSERNO) != null) out.print(java.net.URLEncoder.encode(logentries[i].getValue(LogEntryView.ADMINCERTSERNO),"UTF-8")); %>'>
     <td width="9%"><%= logentries[i].getValue(LogEntryView.TIME) %></td>
-    <td width="9%"><%= ejbcawebbean.getText(ADMINTYPES[Integer.parseInt(logentries[i].getValue(LogEntryView.ADMINTYPE))]) %></td>
-    <td width="19%">
+    <td width="7%"><%= ejbcawebbean.getText(ADMINTYPES[Integer.parseInt(logentries[i].getValue(LogEntryView.ADMINTYPE))]) %></td>
+    <td width="17%">
        <%  if(Integer.parseInt(logentries[i].getValue(LogEntryView.ADMINTYPE)) == Admin.TYPE_CLIENTCERT_USER) 
              if(logentries[i].getValue(LogEntryView.ADMINDATA).equals(""))
                 out.write(ejbcawebbean.getText("CERTIFICATENOTKNOWN"));
@@ -285,16 +298,17 @@ function viewcert(row){
             out.write(logentries[i].getValue(LogEntryView.ADMINDATA));
           %>    
     </td>
-    <td width="9%"><%= logentries[i].getValue(LogEntryView.MODULE) %></td>
+    <td width="10%"><%= logentries[i].getValue(LogEntryView.CA) %></td>
+    <td width="5%"><%= logentries[i].getValue(LogEntryView.MODULE) %></td>
     <td width="9%"><%= logentries[i].getValue(LogEntryView.EVENT) %></td>
-    <td width="9%"><% if(logentries[i].getValue(LogEntryView.USERNAME) == null)
+    <td width="7%"><% if(logentries[i].getValue(LogEntryView.USERNAME) == null)
                          out.write(ejbcawebbean.getText("NOENDENTITYINVOLVED"));
                        else{%> 
         <A  onclick='viewuser(<%= i %>)'>
         <u><%= logentries[i].getValue(LogEntryView.USERNAME) %></u> </A>
                     <% } %>
     </td>
-    <td width="20%"><% if(logentries[i].getValue(LogEntryView.CERTIFICATESERNO) == null)
+    <td width="18%"><% if(logentries[i].getValue(LogEntryView.CERTIFICATESERNO) == null)
                          out.write(ejbcawebbean.getText("NOCERTIFICATEINVOLVED"));
                        else
                          if(logentries[i].getValue(LogEntryView.CERTIFICATE).equals(""))
@@ -304,7 +318,7 @@ function viewcert(row){
         <u><%= logentries[i].getValue(LogEntryView.CERTIFICATE) %></u> </A>
                     <% } %>
     </td>
-    <td width="20%"><%= logentries[i].getValue(LogEntryView.COMMENT) %></td>
+    <td width="18%"><%= logentries[i].getValue(LogEntryView.COMMENT) %></td>
   </tr>
  <%      }
        }%>

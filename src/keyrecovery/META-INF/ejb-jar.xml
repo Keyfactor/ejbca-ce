@@ -54,14 +54,14 @@
         <ejb-link>CertificateStoreSession</ejb-link>
      </ejb-local-ref>                    
 
-     <ejb-ref>
+     <ejb-local-ref>
         <description>The log session bean</description>
-        <ejb-ref-name>ejb/LogSession</ejb-ref-name>
+        <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.log.ILogSessionHome</home>
-        <remote>se.anatom.ejbca.log.ILogSessionRemote</remote>
+        <local-home>se.anatom.ejbca.log.ILogSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.log.ILogSessionLocal</local>
         <ejb-link>LogSession</ejb-link>
-     </ejb-ref>
+     </ejb-local-ref>
 
    </session> 
    

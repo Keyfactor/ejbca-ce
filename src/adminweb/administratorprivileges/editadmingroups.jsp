@@ -7,7 +7,10 @@
     * author  Philip Vendil */ %>
 
 <% 
-  String[] admingroups = adh.getAdminGroupnames(); 
+  Collection admingroupnames = adh.getAdminGroupNames(); 
+  
+
+
 %>
 
 
@@ -35,8 +38,12 @@
         <td width="5%"></td>
         <td width="60%">
           <select name="<%=SELECT_ADMINGROUPS%>" size="15"  >
-            <% for(int i=0; i < admingroups.length ;i++){ %>
-              <option value="<%=admingroups[i]%>"><%=admingroups[i]%></option>
+            <% Iterator iter = admingroupnames.iterator(); 
+              while(iter.hasNext()){
+                AdminGroup ag = (AdminGroup) iter.next();%>
+              <option value="<%= ag.getAdminGroupName() + ";" + ag.getCAId() %>"> 
+                 <%=ag.getAdminGroupName() + ", " + caidtonamemap.get(new Integer(ag.getCAId()))%>
+              </option>
             <%}%>
               <option value="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -82,6 +89,15 @@
         <td width="5%"></td>
         <td width="95%"> 
           <input type="text" name="<%=TEXTFIELD_GROUPNAME%>" size="40" maxlength="255">   
+          <select name="<%=SELECT_CA%>" >
+            <% iter = adh.getAuthorizedCAIds().iterator(); 
+              while(iter.hasNext()){
+                Integer authorizedcaid = (Integer) iter.next();%>
+              <option value="<%= authorizedcaid%>">
+                 <%= caidtonamemap.get(authorizedcaid)%>
+              </option>
+            <%}%>
+          </select>
           <input type="submit" name="<%= BUTTON_ADD_ADMINGROUP%>" onClick='return checkfieldforlegalchars("document.editgroup.<%=TEXTFIELD_GROUPNAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("ADDADMINGROUP") %>">&nbsp;&nbsp;&nbsp;
           <input type="submit" name="<%= BUTTON_RENAME_SELECTED%>" onClick='return checkfieldforlegalchars("document.editgroup.<%=TEXTFIELD_GROUPNAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("RENAMESELECTEDADMINGROUP") %>">
         </td>

@@ -1,13 +1,11 @@
 <html> 
 <%@page contentType="text/html"%>
-<%@page  errorPage="/errorpage.jsp" import="java.util.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, se.anatom.ejbca.webdist.rainterface.UserView,
+<%@page  errorPage="/errorpage.jsp" import="java.util.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.webdist.rainterface.UserView,
                  se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.EndEntityProfileDataHandler, se.anatom.ejbca.ra.raadmin.EndEntityProfile, se.anatom.ejbca.ra.UserDataRemote,
                  javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.ra.raadmin.DNFieldExtractor, se.anatom.ejbca.ra.UserAdminData, se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, 
                  se.anatom.ejbca.hardtoken.HardTokenIssuer, se.anatom.ejbca.hardtoken.HardTokenIssuerData, se.anatom.ejbca.hardtoken.AvailableHardToken,  se.anatom.ejbca.SecConst" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
-<jsp:setProperty name="ejbcawebbean" property="*" /> 
 <jsp:useBean id="rabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
-<jsp:setProperty name="rabean" property="*" /> 
 <jsp:useBean id="tokenbean" scope="session" class="se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean" />
 <%! // Declarations
 
@@ -36,6 +34,7 @@
   static final String SELECT_SUBJECTALTNAME       = "selectsubjectaltname";
   static final String SELECT_EMAIL                = "selectemail";
   static final String SELECT_HARDTOKENISSUER      = "selecthardtokenissuer";
+  static final String SELECT_CA                   = "selectca";
 
   static final String CHECKBOX_CLEARTEXTPASSWORD          = "checkboxcleartextpassword";
   static final String CHECKBOX_SUBJECTDN                 = "checkboxsubjectdn";
@@ -74,8 +73,8 @@
                                 "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME",
                                 "EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN"};
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionallity/create_end_entity"); 
-                                            rabean.initialize(request);
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionality/create_end_entity"); 
+                                            rabean.initialize(request, ejbcawebbean);
                                             if(globalconfiguration.getIssueHardwareTokens())
                                               tokenbean.initialize(request);
 
@@ -88,10 +87,8 @@
   boolean noprofiles               = false; 
   int profileid = 0;
 
-  if(globalconfiguration.getEnableEndEntityProfileLimitations())
-     profilenames                  = rabean.getCreateAuthorizedEndEntityProfileNames();
-  else
-     profilenames                  = rabean.getEndEntityProfileNames();
+
+  profilenames                  = (String[]) rabean.getCreateAuthorizedEndEntityProfileNames().keySet().toArray(new String[0]);
 
 
   if(profilenames== null || profilenames.length == 0) 
@@ -119,6 +116,12 @@
   boolean useoldprofile            = false;
   boolean usehardtokenissuers      = false;
   boolean usekeyrecovery           = false;
+  boolean issuperadministrator     = false;
+  try{
+    issuperadministrator = ejbcawebbean.isAuthorizedNoLog("/super_administrator");
+  }catch(se.anatom.ejbca.authorization.AuthorizationDeniedException ade){}   
+
+ 
   EndEntityProfile oldprofile      = null;
   String addedusername             = ""; 
 
@@ -127,11 +130,14 @@
   String lastselectedemail              = "";
   String lastselectedcertificateprofile = "";
   String lastselectedtoken              = "";
+  String lastselectedca                  = "";
   int lastselectedhardtokenissuer       = 1;
 
   String[] lastselectedsubjectdns       =null;
   String[] lastselectedsubjectaltnames  =null;  
   int[] fielddata = null;
+
+  HashMap caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
 
   if( request.getParameter(ACTION) != null){
     if(request.getParameter(ACTION).equals(ACTION_CHANGEPROFILE)){
@@ -140,7 +146,7 @@
     }
     if( request.getParameter(ACTION).equals(ACTION_ADDUSER)){
       if( request.getParameter(BUTTON_ADDUSER) != null){
-         UserView newuser = new UserView();
+         UserView newuser = new UserView(caidtonamemap);
          int oldprofileid = UserAdminData.NO_ENDENTITYPROFILE;
  
          // Get previous chosen profile.
@@ -339,6 +345,11 @@
            oldprofile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, value);         
            lastselectedcertificateprofile = value;
 
+           value = request.getParameter(SELECT_CA);
+           newuser.setCAId(Integer.parseInt(value));   
+           oldprofile.setValue(EndEntityProfile.DEFAULTCA, 0, value);         
+           lastselectedca = value;
+
            value = request.getParameter(SELECT_TOKEN);
            int tokentype = Integer.parseInt(value); 
            newuser.setTokenType(tokentype);   
@@ -430,6 +441,14 @@
           }  
         } 
     }
+
+    HashMap availablecas = null;
+    Collection authcas = null;
+
+    if(issuperadministrator)
+      authcas = ejbcawebbean.getInformationMemory().getAuthorizedCAIds();
+    else
+      availablecas = ejbcawebbean.getInformationMemory().getEndEntityAvailableCAs(profileid);
 %>
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
@@ -518,6 +537,98 @@ function isKeyRecoveryPossible(){
 
    <% } %>
 
+
+  
+
+  <% if(issuperadministrator){ %>
+  var availablecas = new Array(<%= authcas.size()%>);
+ 
+  var CANAME       = 0;
+  var CAID         = 1;
+<%
+      Iterator iter = authcas.iterator();
+      int i = 0;
+      while(iter.hasNext()){
+    Integer nextca = (Integer) iter.next();  %> 
+    
+    availablecas[<%=i%>] = new Array(2);
+    availablecas[<%=i%>][CANAME] = "<%= caidtonamemap.get(nextca) %>";      
+    availablecas[<%=i%>][CAID] = <%= nextca.intValue() %>;
+    
+   <%   i++; 
+      } %>
+
+function fillCAField(){
+   var caselect   =  document.adduser.<%=SELECT_CA%>; 
+
+   var numofcas = caselect.length;
+   for( i=numofcas-1; i >= 0; i-- ){
+       caselect.options[i]=null;
+    }   
+
+   for( i=0; i < availablecas.length; i ++){
+     caselect.options[i]=new Option(availablecas[i][CANAME],
+                                     availablecas[i][CAID]);    
+     if(availablecas[i][CAID] == "<%= lastselectedca %>")
+       caselect.options.selectedIndex=i;
+   }
+}
+
+ <% } else { %>
+
+  var certprofileids = new Array(<%= availablecas.keySet().size()%>);
+  var CERTPROFID   = 0;
+  var AVAILABLECAS = 1;
+
+  var CANAME       = 0;
+  var CAID         = 1;
+<%
+  Iterator iter = availablecas.keySet().iterator();
+  int i = 0;
+  while(iter.hasNext()){ 
+    Integer next = (Integer) iter.next();
+    Collection nextcaset = (Collection) availablecas.get(next);
+  %>
+    certprofileids[<%=i%>] = new Array(2);
+    certprofileids[<%=i%>][CERTPROFID] = <%= next.intValue() %> ;
+    certprofileids[<%=i%>][AVAILABLECAS] = new Array(<%= nextcaset.size() %>);
+<% Iterator iter2 = nextcaset.iterator();
+   int j = 0;
+   while(iter2.hasNext()){
+     Integer nextca = (Integer) iter2.next(); %>
+    certprofileids[<%=i%>][AVAILABLECAS][<%=j%>] = new Array(2);
+    certprofileids[<%=i%>][AVAILABLECAS][<%=j%>][CANAME] = "<%= caidtonamemap.get(nextca) %>";      
+    certprofileids[<%=i%>][AVAILABLECAS][<%=j%>][CAID] = <%= nextca.intValue() %>;
+  <% j++ ;
+   }
+   i++;
+ } %>     
+
+function fillCAField(){
+   var selcertprof = document.adduser.<%=SELECT_CERTIFICATEPROFILE%>.options.selectedIndex; 
+   var certprofid = document.adduser.<%=SELECT_CERTIFICATEPROFILE%>.options[selcertprof].value; 
+   var caselect   =  document.adduser.<%=SELECT_CA%>; 
+
+   var numofcas = caselect.length;
+   for( i=numofcas-1; i >= 0; i-- ){
+       caselect.options[i]=null;
+    }   
+
+    if( selcertprof > -1){
+      for( i=0; i < certprofileids.length; i ++){
+        if(certprofileids[i][CERTPROFID] == certprofid){
+          for( j=0; j < certprofileids[i][AVAILABLECAS].length; j++ ){
+            caselect.options[j]=new Option(certprofileids[i][AVAILABLECAS][j][CANAME],
+                                           certprofileids[i][AVAILABLECAS][j][CAID]);    
+            if(certprofileids[i][AVAILABLECAS][j][CAID] == "<%= lastselectedca %>")
+              caselect.options.selectedIndex=j;
+          }
+        }
+      }
+    }
+}
+
+  <% } %> 
 
 function checkallfields(){
     var illegalfields = 0;
@@ -614,6 +725,10 @@ function checkallfields(){
       alert("<%=  ejbcawebbean.getText("CERTIFICATEPROFILEMUST") %>");
       illegalfields++;
     }
+    if(document.adduser.<%=SELECT_CA%>.options.selectedIndex == -1){
+      alert("<%=  ejbcawebbean.getText("CAMUST") %>");
+      illegalfields++;
+    }
     if(document.adduser.<%=SELECT_TOKEN%>.options.selectedIndex == -1){
       alert("<%=  ejbcawebbean.getText("TOKENMUST") %>");
       illegalfields++;
@@ -646,7 +761,8 @@ function checkallfields(){
   <script language=javascript src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 <body onload='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");
-                   if(usekeyrecovery) out.write(" isKeyRecoveryPossible();");%>'>
+                 if(usekeyrecovery) out.write(" isKeyRecoveryPossible();");%>
+                 fillCAField();'>
   <h2 align="center"><%= ejbcawebbean.getText("ADDENDENTITY") %></h2>
   <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#addendentity"%>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
@@ -915,7 +1031,7 @@ function checkallfields(){
 	 <td></td>
 	 <td align="right"><%= ejbcawebbean.getText("CERTIFICATEPROFILE") %></td>
 	 <td>
-         <select name="<%= SELECT_CERTIFICATEPROFILE %>" size="1" tabindex="<%=tabindex++%>">
+         <select name="<%= SELECT_CERTIFICATEPROFILE %>" size="1" tabindex="<%=tabindex++%>" onchange='fillCAField()'>
          <%
            String[] availablecertprofiles = profile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
            if(lastselectedcertificateprofile.equals(""))
@@ -931,6 +1047,15 @@ function checkallfields(){
              }
            }
          %>
+         </select>
+         </td>
+	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>
+       </tr>
+       <tr id="Row<%=(row++)%2%>">
+	 <td></td>
+	 <td align="right"><%= ejbcawebbean.getText("CA") %></td>
+	 <td>
+         <select name="<%= SELECT_CA %>" size="1" tabindex="<%=tabindex++%>">
          </select>
          </td>
 	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>

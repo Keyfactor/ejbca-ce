@@ -1,7 +1,7 @@
 <%@page contentType="text/html"%>
-<%@page errorPage="../../errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration ,
+<%@page errorPage="../../errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration ,
                                               se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.webdist.rainterface.CertificateView,
-                                              se.anatom.ejbca.ra.raadmin.DNFieldExtractor,  se.anatom.ejbca.ra.authorization.AuthorizationDeniedException"%>
+                                              se.anatom.ejbca.ra.raadmin.DNFieldExtractor,  se.anatom.ejbca.authorization.AuthorizationDeniedException"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -23,8 +23,5 @@
 <br>
 <hr>
 <br>
-<form name='createcrl' method=GET action='<%=CAFUNCTIONS_LINK %>'>
-<%=ejbcawebbean.getText("CREATENEWCRL") + " : " %>
-<input type='submit' name='<%=BUTTON_CREATECRL %>' value='<%=ejbcawebbean.getText("CREATECRL") %>'>
-</form>
+
 <br>

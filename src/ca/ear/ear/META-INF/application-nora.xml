@@ -23,7 +23,17 @@ application for enrollment (apply) and distribution (webdist).
     </module>
     <module>
         <ejb>log.jar</ejb>
-    </module>      
+    </module>    
+    <module>
+        <ejb>authorization.jar</ejb>
+    </module>
+    <module>
+        <ejb>hardtoken.jar</ejb>
+    </module>       
+    <module>
+        <ejb>keyrecovery.jar</ejb>
+    </module>       
+           
     <module>
         <web>
             <web-uri>apply.war</web-uri>

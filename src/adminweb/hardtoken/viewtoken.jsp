@@ -1,6 +1,6 @@
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.GlobalConfiguration, 
+<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
                  se.anatom.ejbca.webdist.hardtokeninterface.HardTokenView, se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, se.anatom.ejbca.SecConst,
                  javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.RevokedInfoView" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
@@ -27,8 +27,8 @@
 
 %><%
   // Initialize environment.
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ra_functionallity/view_hardtoken"); 
-                                            rabean.initialize(request); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ra_functionality/view_hardtoken"); 
+                                            rabean.initialize(request, ejbcawebbean); 
                                             tokenbean.initialize(request);
   String THIS_FILENAME                    = globalconfiguration.getHardTokenPath() + "/viewtoken.jsp";
 
@@ -249,7 +249,7 @@ function viewcert(){
         <A  onclick='viewcert()'>
         <u><%= ejbcawebbean.getText("VIEWCERTIFICATES") %></u> </A>
         <%   }
-         }catch(se.anatom.ejbca.ra.authorization.AuthorizationDeniedException ade){}
+         }catch(se.anatom.ejbca.authorization.AuthorizationDeniedException ade){}
         %>&nbsp; 
        </td>
      </tr> 

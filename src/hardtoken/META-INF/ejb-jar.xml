@@ -76,8 +76,8 @@
         <description>The Authorization session bean</description>
         <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocal</local>
+        <local-home>se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.authorization.IAuthorizationSessionLocal</local>
         <ejb-link>AuthorizationSession</ejb-link>
      </ejb-local-ref> 
      <ejb-local-ref>
@@ -88,23 +88,14 @@
         <local>se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal</local>
         <ejb-link>CertificateStoreSession</ejb-link>
      </ejb-local-ref>                    
-
-     <ejb-ref>
+     <ejb-local-ref>
         <description>The log session bean</description>
-        <ejb-ref-name>ejb/LogSession</ejb-ref-name>
+        <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.log.ILogSessionHome</home>
-        <remote>se.anatom.ejbca.log.ILogSessionRemote</remote>
+        <local-home>se.anatom.ejbca.log.ILogSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.log.ILogSessionLocal</local>
         <ejb-link>LogSession</ejb-link>
-     </ejb-ref>
-     <ejb-ref>
-        <description>The user admin session bean</description>
-        <ejb-ref-name>ejb/UserAdminSession</ejb-ref-name>
-        <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.ra.IUserAdminSessionHome</home>
-        <remote>se.anatom.ejbca.ra.IUserAdminSessionRemote</remote>
-        <ejb-link>UserAdminSession</ejb-link>
-     </ejb-ref>     
+     </ejb-local-ref>    
 
    </session> 
    
@@ -144,14 +135,14 @@
         <ejb-link>HardTokenSession</ejb-link>
      </ejb-local-ref>   -->        
 
-     <ejb-ref>
+     <ejb-local-ref>
         <description>The log session bean</description>
-        <ejb-ref-name>ejb/LogSession</ejb-ref-name>
+        <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.log.ILogSessionHome</home>
-        <remote>se.anatom.ejbca.log.ILogSessionRemote</remote>
+        <local-home>se.anatom.ejbca.log.ILogSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.log.ILogSessionLocal</local>
         <ejb-link>LogSession</ejb-link>
-     </ejb-ref>  
+     </ejb-local-ref>  
    </session>   
 
    <entity>
@@ -217,6 +208,7 @@
       <cmp-field><field-name>cTime</field-name></cmp-field>
       <cmp-field><field-name>mTime</field-name></cmp-field>
       <cmp-field><field-name>tokenType</field-name></cmp-field>      
+      <cmp-field><field-name>significantIssuerDN</field-name></cmp-field>
       <cmp-field><field-name>data</field-name></cmp-field>
       <primkey-field>tokenSN</primkey-field>
       

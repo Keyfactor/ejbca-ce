@@ -1,16 +1,14 @@
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, 
+<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
                  se.anatom.ejbca.webdist.rainterface.SortBy,se.anatom.ejbca.webdist.loginterface.LogEntryView,se.anatom.ejbca.webdist.loginterface.LogEntriesView,
              se.anatom.ejbca.webdist.loginterface.LogInterfaceBean, se.anatom.ejbca.log.LogEntry, se.anatom.ejbca.log.Admin, 
                  javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.util.query.*, java.util.Calendar, java.util.Date, java.text.DateFormat, java.util.Locale,
                  java.util.HashMap" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
-<jsp:setProperty name="ejbcawebbean" property="*" /> 
 <jsp:useBean id="logbean" scope="session" class="se.anatom.ejbca.webdist.loginterface.LogInterfaceBean" />
-<jsp:setProperty name="logbean" property="*" /> 
 <jsp:useBean id="rabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
-<jsp:setProperty name="rabean" property="*" /> 
+
 <%! // Declarations
 
   static final String ACTION                             = "action";
@@ -27,6 +25,10 @@
   static final String SORTBY_ADMINDATA_DEC    = "sortbyadmindatadecending";
   static final String SORTBY_ADMINTYPE_ACC    = "sortbyadmintypeaccending";
   static final String SORTBY_ADMINTYPE_DEC    = "sortbyadmintypedecending";
+  static final String SORTBY_CA_ACC           = "sortbycaaccending";
+  static final String SORTBY_CA_DEC           = "sortbycadecending";
+  static final String SORTBY_MODULE_ACC       = "sortbymoduleaccending";
+  static final String SORTBY_MODULE_DEC       = "sortbymoduledecending";
   static final String SORTBY_USERNAME_ACC     = "sortbyusernameaccending";
   static final String SORTBY_USERNAME_DEC     = "sortbyusernamedecending";
   static final String SORTBY_CERTIFICATE_ACC  = "sortbycertificateaccending";
@@ -49,12 +51,14 @@
 
   static final String USER_PARAMETER            = "username";
   static final String CERTSERNO_PARAMETER       = "certsernoparameter";
+  static final String ISSUERDN_PARAMETER        = "issuerdn";
 
   final String[] ADMINTYPES             = Admin.ADMINTYPETEXTS;
 %><%
   // Initialize environment.
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ra_functionallity/view_end_entity_history"); 
-                                            logbean.initialize(request,ejbcawebbean);
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ra_functionality/view_end_entity_history"); 
+                                            rabean.initialize(request, ejbcawebbean);
+                                            logbean.initialize(request,ejbcawebbean, ejbcawebbean.getInformationMemory().getCAIdToNameMap());
   final String VIEWCERT_LINK            = "/" + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
   final String VIEWUSER_LINK            = "/" + globalconfiguration.getAdminWebPath() + "ra/viewendentity.jsp";
 
@@ -75,7 +79,7 @@
 
   if(request.getParameter(USER_PARAMETER) != null){
     username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
-    logdata = logbean.filterByUsername(username);
+    logdata = logbean.filterByUsername(username, ejbcawebbean.getInformationMemory().getCAIdToNameMap());
 
 
     if(globalconfiguration.getEnableEndEntityProfileLimitations() && !rabean.isAuthorizedToViewUserHistory(username))
@@ -137,6 +141,26 @@
        // Sortby username accending
        sortby = SORTBY_ADMINDATA_DEC;
        logdata.sortBy(SortBy.ADMINDATA,SortBy.DECENDING);
+     }
+     if( request.getParameter(SORTBY_CA_ACC+".x") != null ){
+       // Sortby username accending
+       sortby = SORTBY_CA_ACC;
+       logdata.sortBy(SortBy.CA,SortBy.ACCENDING);
+     }
+     if( request.getParameter(SORTBY_CA_DEC+".x") != null ){
+       // Sortby username accending
+       sortby = SORTBY_CA_DEC;
+       logdata.sortBy(SortBy.CA,SortBy.DECENDING);
+     }
+     if( request.getParameter(SORTBY_MODULE_ACC+".x") != null ){
+       // Sortby username accending
+       sortby = SORTBY_MODULE_ACC;
+       logdata.sortBy(SortBy.MODULE,SortBy.ACCENDING);
+     }
+     if( request.getParameter(SORTBY_MODULE_DEC+".x") != null ){
+       // Sortby username accending
+       sortby = SORTBY_MODULE_DEC;
+       logdata.sortBy(SortBy.MODULE,SortBy.DECENDING);
      }
      if( request.getParameter(SORTBY_USERNAME_ACC+".x") != null ){
        // Sortby username accending
@@ -208,7 +232,7 @@ function viewuser(row){
 function viewadmincert(row){
     var hiddencertsernofield = eval("document.form.<%= HIDDEN_ADMINSERNO %>" + row);
     var certserno = hiddencertsernofield.value;
-    var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>="+certserno;
+    var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>="+certserno;;
     link = encodeURI(link);
     window.open(link, 'view_cert',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }
@@ -216,6 +240,7 @@ function viewadmincert(row){
 function viewcert(row){
     var hiddencertsernofield = eval("document.form.<%= HIDDEN_CERTSERNO %>" + row);
     var certserno = hiddencertsernofield.value;
+ 
     var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>="+certserno;
     link = encodeURI(link);
     window.open(link, 'view_cert',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
@@ -270,7 +295,7 @@ function viewcert(row){
   </table>
   <table width="1100" border="0" cellspacing="1" cellpadding="0">
   <tr> 
-    <td width="10%"><% if(sortby.equals(SORTBY_TIME_ACC)){ %>
+    <td width="9%"><% if(sortby.equals(SORTBY_TIME_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_TIME_DEC %>" value="submit" ><%= ejbcawebbean.getText("TIME") %>              
                    <% }else{
                          if(sortby.equals(SORTBY_TIME_DEC)){ %>
@@ -280,7 +305,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="10%">
+    <td width="7%">
                    <% if(sortby.equals(SORTBY_ADMINTYPE_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ADMINTYPE_DEC %>" value="submit" ><%= ejbcawebbean.getText("ADMINTYPE") %>              
                    <% }else{
@@ -291,7 +316,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="20%">
+    <td width="17%">
                    <% if(sortby.equals(SORTBY_ADMINDATA_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ADMINDATA_DEC %>" value="submit" ><%= ejbcawebbean.getText("ADMINISTRATOR") %>              
                    <% }else{
@@ -302,17 +327,40 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="10%"><% if(sortby.equals(SORTBY_EVENT_ACC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_EVENT_DEC %>" value="submit" ><%= ejbcawebbean.getText("EVENT") %>                        
+
+    <td width="10%"><% if(sortby.equals(SORTBY_CA_ACC)){ %>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_CA_DEC %>" value="submit" ><%= ejbcawebbean.getText("CA") %>                        
                    <% }else{ 
+                         if(sortby.equals(SORTBY_CA_DEC)){ %>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_CA_ACC %>" value="submit" ><%= ejbcawebbean.getText("CA") %>                 
+                   <%    }else{ %> 
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_CA_ACC %>" value="submit" ><%= ejbcawebbean.getText("CA") %>
+                   <%    }
+                       } %>
+    </td>
+    <td width="5%">
+                   <% if(sortby.equals(SORTBY_MODULE_ACC)){ %>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_MODULE_DEC %>" value="submit" ><%= ejbcawebbean.getText("MODULE") %>              
+                   <% }else{
+                         if(sortby.equals(SORTBY_MODULE_DEC)){ %>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_MODULE_ACC %>" value="submit" ><%= ejbcawebbean.getText("MODULE") %>                     
+                   <%    }else{ %> 
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_MODULE_ACC %>" value="submit" ><%= ejbcawebbean.getText("MODULE") %>
+                   <%    }
+                       } %>
+    </td>
+    <td width="9%">
+                   <% if(sortby.equals(SORTBY_EVENT_ACC)){ %>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_EVENT_DEC %>" value="submit" ><%= ejbcawebbean.getText("EVENT") %>              
+                   <% }else{
                          if(sortby.equals(SORTBY_EVENT_DEC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_EVENT_ACC %>" value="submit" ><%= ejbcawebbean.getText("EVENT") %>                 
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_EVENT_ACC %>" value="submit" ><%= ejbcawebbean.getText("EVENT") %>                     
                    <%    }else{ %> 
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_EVENT_ACC %>" value="submit" ><%= ejbcawebbean.getText("EVENT") %>
                    <%    }
                        } %>
     </td>
-    <td width="10%"><% if(sortby.equals(SORTBY_USERNAME_ACC)){ %>
+    <td width="7%"><% if(sortby.equals(SORTBY_USERNAME_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_USERNAME_DEC %>" value="submit" ><%= ejbcawebbean.getText("USERNAME") %>              
                    <% }else{
                          if(sortby.equals(SORTBY_USERNAME_DEC)){ %>
@@ -322,7 +370,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="20%"><% if(sortby.equals(SORTBY_CERTIFICATE_ACC)){ %>
+    <td width="18%"><% if(sortby.equals(SORTBY_CERTIFICATE_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_CERTIFICATE_DEC %>" value="submit" ><%= ejbcawebbean.getText("CERTIFICATE") %>              
                    <% }else{
                          if(sortby.equals(SORTBY_CERTIFICATE_DEC)){ %>
@@ -332,7 +380,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="20%"><% if(sortby.equals(SORTBY_COMMENT_ACC)){ %>
+    <td width="18%"><% if(sortby.equals(SORTBY_COMMENT_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_COMMENT_DEC %>" value="submit" ><%= ejbcawebbean.getText("COMMENT") %>              
                    <% }else{
                          if(sortby.equals(SORTBY_COMMENT_DEC)){ %>
@@ -345,13 +393,15 @@ function viewcert(row){
   </tr>
   <%     if(logentries == null || logentries.length == 0){     %>
   <tr id="LogTextRow0"> 
-    <td width="10%"> &nbsp;</td>
+    <td width="9%"> &nbsp;</td>
+    <td width="7%">&nbsp;</td>
+    <td width="17%"><%= ejbcawebbean.getText("NOLOGENTRIESFOUND") %></td>
     <td width="10%">&nbsp;</td>
-    <td width="20%"><%= ejbcawebbean.getText("NOLOGENTRIESFOUND") %></td>
-    <td width="10%">&nbsp;</td>
-    <td width="10%">&nbsp;</td>
-    <td width="20%">&nbsp;</td>
-    <td width="20%">&nbsp;</td>
+    <td width="5%">&nbsp;</td>
+    <td width="9%">&nbsp;</td>
+    <td width="7%">&nbsp;</td>
+    <td width="18%">&nbsp;</td>
+    <td width="18%">&nbsp;</td>
   </tr>
   <% } else{
          for(int i=0; i < logentries.length; i++){%>
@@ -359,9 +409,9 @@ function viewcert(row){
        <input type="hidden" name='<%= HIDDEN_USERNAME + i %>' value='<%= logentries[i].getValue(LogEntryView.USERNAME) %>'>
        <input type="hidden" name='<%= HIDDEN_CERTSERNO + i %>' value='<% if(logentries[i].getValue(LogEntryView.CERTIFICATESERNO) != null) out.print(java.net.URLEncoder.encode(logentries[i].getValue(LogEntryView.CERTIFICATESERNO),"UTF-8")); %>'>
        <input type="hidden" name='<%= HIDDEN_ADMINSERNO + i %>' value='<% if(logentries[i].getValue(LogEntryView.ADMINCERTSERNO) != null) out.print(java.net.URLEncoder.encode(logentries[i].getValue(LogEntryView.ADMINCERTSERNO),"UTF-8")); %>'>
-    <td width="10%"><%= logentries[i].getValue(LogEntryView.TIME) %></td>
-    <td width="10%"><%= ejbcawebbean.getText(ADMINTYPES[Integer.parseInt(logentries[i].getValue(LogEntryView.ADMINTYPE))]) %></td>
-    <td width="20%">
+    <td width="9%"><%= logentries[i].getValue(LogEntryView.TIME) %></td>
+    <td width="7%"><%= ejbcawebbean.getText(ADMINTYPES[Integer.parseInt(logentries[i].getValue(LogEntryView.ADMINTYPE))]) %></td>
+    <td width="17%">
        <%  if(Integer.parseInt(logentries[i].getValue(LogEntryView.ADMINTYPE)) == Admin.TYPE_CLIENTCERT_USER) 
              if(logentries[i].getValue(LogEntryView.ADMINDATA).equals(""))
                 out.write(ejbcawebbean.getText("CERTIFICATENOTKNOWN"));
@@ -372,15 +422,17 @@ function viewcert(row){
             out.write(logentries[i].getValue(LogEntryView.ADMINDATA));
           %>    
     </td>
-    <td width="10%"><%= logentries[i].getValue(LogEntryView.EVENT) %></td>
-    <td width="10%"><% if(logentries[i].getValue(LogEntryView.USERNAME) == null)
+    <td width="10%"><%= logentries[i].getValue(LogEntryView.CA) %></td>
+    <td width="5%"><%= logentries[i].getValue(LogEntryView.MODULE) %></td>
+    <td width="9%"><%= logentries[i].getValue(LogEntryView.EVENT) %></td>
+    <td width="7%"><% if(logentries[i].getValue(LogEntryView.USERNAME) == null)
                          out.write(ejbcawebbean.getText("NOENDENTITYINVOLVED"));
                        else{%> 
         <A  onclick='viewuser(<%= i %>)'>
         <u><%= logentries[i].getValue(LogEntryView.USERNAME) %></u> </A>
                     <% } %>
     </td>
-    <td width="20%"><% if(logentries[i].getValue(LogEntryView.CERTIFICATESERNO) == null)
+    <td width="18%"><% if(logentries[i].getValue(LogEntryView.CERTIFICATESERNO) == null)
                          out.write(ejbcawebbean.getText("NOCERTIFICATEINVOLVED"));
                        else
                          if(logentries[i].getValue(LogEntryView.CERTIFICATE).equals(""))
@@ -390,7 +442,7 @@ function viewcert(row){
         <u><%= logentries[i].getValue(LogEntryView.CERTIFICATE) %></u> </A>
                     <% } %>
     </td>
-    <td width="20%"><%= logentries[i].getValue(LogEntryView.COMMENT) %></td>
+    <td width="18%"><%= logentries[i].getValue(LogEntryView.COMMENT) %></td>
   </tr>
  <%      }
        }%>

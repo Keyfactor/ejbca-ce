@@ -1,14 +1,13 @@
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, se.anatom.ejbca.SecConst
+<%@page errorPage="/errorpage.jsp" import="java.util.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst
                ,se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.ra.raadmin.EndEntityProfile, se.anatom.ejbca.webdist.rainterface.EndEntityProfileDataHandler, 
                 se.anatom.ejbca.ra.raadmin.EndEntityProfileExistsException, se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, se.anatom.ejbca.hardtoken.HardTokenIssuer,
-                se.anatom.ejbca.hardtoken.HardTokenIssuerData, se.anatom.ejbca.hardtoken.AvailableHardToken"%>
+                se.anatom.ejbca.hardtoken.HardTokenIssuerData, se.anatom.ejbca.hardtoken.AvailableHardToken, se.anatom.ejbca.webdist.cainterface.CAInterfaceBean"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
-<jsp:setProperty name="ejbcawebbean" property="*" /> 
 <jsp:useBean id="ejbcarabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
-<jsp:setProperty name="ejbcarabean" property="*" /> 
+<jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
 <jsp:useBean id="tokenbean" scope="session" class="se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean" />
 
 <%! // Declarations 
@@ -79,6 +78,10 @@
   static final String SELECT_DEFAULTTOKENTYPE               = "selectdefaulttokentype";
   static final String SELECT_AVAILABLETOKENTYPES            = "selectavailabletokentypes";
 
+
+  static final String SELECT_DEFAULTCA                      = "selectdefaultca";
+  static final String SELECT_AVAILABLECAS                   = "selectavailablecas";
+
   static final String SELECT_DEFAULTHARDTOKENISSUER         = "selectdefaulthardtokenissuer";
   static final String SELECT_AVAILABLEHARDTOKENISSUERS      = "selectavailablehardtokenissuers";
 
@@ -113,8 +116,9 @@
   EndEntityProfile profiledata=null;
   int[] fielddata = null;
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionallity/edit_end_entity_profiles"); 
-                                            ejbcarabean.initialize(request);
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionality/edit_end_entity_profiles"); 
+                                            ejbcarabean.initialize(request, ejbcawebbean);
+                                            cabean.initialize(request, ejbcawebbean);
                                             tokenbean.initialize(request);
   String THIS_FILENAME            =  globalconfiguration .getRaPath()  + "/editendentityprofiles/editendentityprofiles.jsp";
 %>
@@ -156,7 +160,7 @@
           if(profile != null){
             if(!profile.trim().equals("")){
               if(!profile.equals(EndEntityProfileDataHandler.EMPTY_PROFILE)){ 
-                profiledeletefailed = !ejbcarabean.removeEndEntityProfile(profile);
+                ejbcarabean.removeEndEntityProfile(profile); 
               }else{
                 triedtodeleteemptyprofile=true;
               }
@@ -350,6 +354,26 @@
                profiledata.setValue(EndEntityProfile.AVAILCERTPROFILES, 0,availablecert);
                profiledata.setRequired(EndEntityProfile.AVAILCERTPROFILES, 0,true);    
              }
+
+             String defaultca =  request.getParameter(SELECT_DEFAULTCA);
+             profiledata.setValue(EndEntityProfile.DEFAULTCA, 0,defaultca);
+             profiledata.setRequired(EndEntityProfile.DEFAULTCA, 0,true);
+
+             values = request.getParameterValues(SELECT_AVAILABLECAS);
+ 
+             if(defaultca != null){
+               String availablecas = defaultca;
+               if(values!= null){
+                 for(int i=0; i< values.length; i++){
+                     if(!values[i].equals(defaultca))
+                       availablecas += EndEntityProfile.SPLITCHAR + values[i];                      
+                 }
+               } 
+               
+               profiledata.setValue(EndEntityProfile.AVAILCAS, 0,availablecas);
+               profiledata.setRequired(EndEntityProfile.AVAILCAS, 0,true);    
+             }
+
 
              String defaulttokentype =  request.getParameter(SELECT_DEFAULTTOKENTYPE);
              profiledata.setValue(EndEntityProfile.DEFKEYSTORE, 0,defaulttokentype);

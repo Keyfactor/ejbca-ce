@@ -5,7 +5,7 @@
 <ejb-jar>
 
  <description></description>
- <display-name>RA component</display-name>
+ <display-name>RA Module</display-name>
 
  <enterprise-beans>
 
@@ -16,6 +16,8 @@
      <ejb-name>UserAdminSession</ejb-name>
      <home>se.anatom.ejbca.ra.IUserAdminSessionHome</home>
      <remote>se.anatom.ejbca.ra.IUserAdminSessionRemote</remote>
+     <local-home>se.anatom.ejbca.ra.IUserAdminSessionLocalHome</local-home>
+     <local>se.anatom.ejbca.ra.IUserAdminSessionLocal</local>
      <ejb-class>se.anatom.ejbca.ra.LocalUserAdminSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
@@ -55,22 +57,22 @@
         <env-entry-value>Hej $CN$NL$NL Detta är en test på en notification. $NL$NL Du har användarnamn: $Username$NL lösenord: $Password$NL$NL Du skall nu INTE gå ngnstans och hämta ditt certifikat för detta Är bara på skoj och för att bevisa för er att det fungerar nu.</env-entry-value>
      </env-entry>          
      <!-- END Env-entries used for notification configuration -->     
-     <ejb-ref>
+     <ejb-local-ref>
         <description>The Certificate Store session bean</description>
-        <ejb-ref-name>ejb/CertificateStoreSession</ejb-ref-name>
+        <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.ca.store.ICertificateStoreSessionHome</home>
-        <remote>se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote</remote>
+        <local-home>se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal</local>
         <ejb-link>CertificateStoreSession</ejb-link>
-     </ejb-ref>
-     <ejb-ref>
+     </ejb-local-ref>
+     <ejb-local-ref>
         <description>The Log session bean</description>
-        <ejb-ref-name>ejb/LogSession</ejb-ref-name>
+        <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.log.ILogSessionHome</home>
-        <remote>se.anatom.ejbca.log.ILogSessionRemote</remote>
+        <local-home>se.anatom.ejbca.log.ILogSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.log.ILogSessionLocal</local>
         <ejb-link>LogSession</ejb-link>
-     </ejb-ref>
+     </ejb-local-ref>
 <!-- Uncomment to use LDAP publisher
      <ejb-ref>
         <description>
@@ -88,8 +90,8 @@ END LDAP Publisher -->
         <description>The Authorization session bean</description>
         <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocal</local>
+        <local-home>se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.authorization.IAuthorizationSessionLocal</local>
         <ejb-link>AuthorizationSession</ejb-link>
      </ejb-local-ref>
      <ejb-local-ref>
@@ -107,16 +109,6 @@ END LDAP Publisher -->
         <local-home>se.anatom.ejbca.ra.UserDataLocalHome</local-home>
         <local>se.anatom.ejbca.ra.UserDataLocal</local>
         <ejb-link>UserData</ejb-link>
-     </ejb-local-ref>
-     <ejb-local-ref>
-        <description>
-          The GlobalConfigurationData Entity bean
-        </description>
-        <ejb-ref-name>ejb/GlobalConfigurationDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.GlobalConfigurationDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.GlobalConfigurationDataLocal</local>
-        <ejb-link>GlobalConfigurationData</ejb-link>
      </ejb-local-ref>
      <resource-ref>
        <res-ref-name>mail/DefaultMail</res-ref-name>
@@ -144,14 +136,22 @@ END LDAP Publisher -->
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>java:/DefaultDS</env-entry-value>
      </env-entry>
-     <ejb-ref>
+     <ejb-local-ref>
         <description>The Log session bean</description>
-        <ejb-ref-name>ejb/LogSession</ejb-ref-name>
+        <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.log.ILogSessionHome</home>
-        <remote>se.anatom.ejbca.log.ILogSessionRemote</remote>
+        <local-home>se.anatom.ejbca.log.ILogSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.log.ILogSessionLocal</local>
         <ejb-link>LogSession</ejb-link>
-     </ejb-ref>
+     </ejb-local-ref>
+     <ejb-local-ref>
+        <description>The Authorization session bean</description>
+        <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.authorization.IAuthorizationSessionLocal</local>
+        <ejb-link>AuthorizationSession</ejb-link>
+     </ejb-local-ref>     
      <ejb-local-ref>
         <description>
           The AdminPreferencesData Entity bean
@@ -172,7 +172,16 @@ END LDAP Publisher -->
         <local>se.anatom.ejbca.ra.raadmin.EndEntityProfileDataLocal</local>
         <ejb-link>EndEntityProfileData</ejb-link>
      </ejb-local-ref>
-
+     <ejb-local-ref>
+        <description>
+          The GlobalConfigurationData Entity bean
+        </description>
+        <ejb-ref-name>ejb/GlobalConfigurationDataLocal</ejb-ref-name>
+        <ejb-ref-type>Entity</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ra.raadmin.GlobalConfigurationDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.raadmin.GlobalConfigurationDataLocal</local>
+        <ejb-link>GlobalConfigurationData</ejb-link>
+     </ejb-local-ref>
      <security-identity>
         <description></description>
         <run-as>
@@ -182,81 +191,6 @@ END LDAP Publisher -->
       </security-identity>
    </session>
 
-   <session>
-     <description>
-         Session bean handling interface with ra authorization, uses entity beans AvailableAccessRules,
-         AdminGroupData
-     </description>
-     <ejb-name>AuthorizationSession</ejb-name>
-     <home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionHome</home>
-     <remote>se.anatom.ejbca.ra.authorization.IAuthorizationSessionRemote</remote>
-     <local-home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome</local-home>
-     <local>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocal</local>
-     <ejb-class>se.anatom.ejbca.ra.authorization.LocalAuthorizationSessionBean</ejb-class>
-     <session-type>Stateless</session-type>
-     <transaction-type>Container</transaction-type>
-     <env-entry>
-        <description>JDBC datasource to be used</description>
-        <env-entry-name>DataSource</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>java:/DefaultDS</env-entry-value>
-     </env-entry>
-     <ejb-ref>
-        <description>The Log session bean</description>
-        <ejb-ref-name>ejb/LogSession</ejb-ref-name>
-        <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.log.ILogSessionHome</home>
-        <remote>se.anatom.ejbca.log.ILogSessionRemote</remote>
-        <ejb-link>LogSession</ejb-link>
-     </ejb-ref>
-     <ejb-local-ref>
-        <description>
-          Available Access Rules
-        </description>
-        <ejb-ref-name>ejb/AvailableAccessRulesDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataLocal</local>
-        <ejb-link>AvailableAccessRulesData</ejb-link>
-     </ejb-local-ref>
-     <ejb-local-ref>
-        <description>
-          Admin Groups
-        </description>
-        <ejb-ref-name>ejb/AdminGroupDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.AdminGroupDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.AdminGroupDataLocal</local>
-        <ejb-link>AdminGroupData</ejb-link>
-     </ejb-local-ref>
-     <ejb-local-ref>
-        <description>
-          Access Rules
-        </description>
-        <ejb-ref-name>ejb/AccessRulesDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.AccessRulesDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.AccessRulesDataLocal</local>
-        <ejb-link>AccessRulesData</ejb-link>
-     </ejb-local-ref>
-     <ejb-local-ref>
-        <description>
-          Admin Entities
-        </description>
-        <ejb-ref-name>ejb/AdminEntityDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.AdminEntityDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.AdminEntityDataLocal</local>
-        <ejb-link>AdminEntityData</ejb-link>
-     </ejb-local-ref>
-     <security-identity>
-        <description></description>
-        <run-as>
-        <description></description>
-            <role-name>InternalUser</role-name>
-        </run-as>
-      </security-identity>
-   </session>
 
    <entity>
       <description>
@@ -276,6 +210,7 @@ END LDAP Publisher -->
 
       <cmp-field><field-name>username</field-name></cmp-field>
       <cmp-field><field-name>subjectDN</field-name></cmp-field>
+      <cmp-field><field-name>cAId</field-name></cmp-field>      
       <cmp-field><field-name>subjectAltName</field-name></cmp-field>
       <cmp-field><field-name>subjectEmail</field-name></cmp-field>
       <cmp-field><field-name>status</field-name></cmp-field>
@@ -289,16 +224,17 @@ END LDAP Publisher -->
       <cmp-field><field-name>tokenType</field-name></cmp-field>
       <cmp-field><field-name>hardTokenIssuerId</field-name></cmp-field>
       <cmp-field><field-name>keyStorePassword</field-name></cmp-field>
-
+      <cmp-field><field-name>extendedInformationData</field-name></cmp-field>
       <query>
       	<query-method>
       	  <method-name>findBySubjectDN</method-name>
       	  <method-params>
       	    <method-param>java.lang.String</method-param>
+            <method-param>int</method-param>
       	  </method-params>
       	</query-method>
 	<ejb-ql>
-	  <![CDATA[SELECT DISTINCT OBJECT(a) from UserDataBean a WHERE a.subjectDN=?1]]>
+	  <![CDATA[SELECT DISTINCT OBJECT(a) from UserDataBean a WHERE a.subjectDN=?1 AND a.cAId=?2]]>
 	</ejb-ql>
       </query>
       <query>
@@ -340,9 +276,9 @@ END LDAP Publisher -->
             This enterprise bean entity represents global configuration of ra administration.
       </description>
       <ejb-name>GlobalConfigurationData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.GlobalConfigurationDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.GlobalConfigurationDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.GlobalConfigurationDataBean</ejb-class>
+      <local-home>se.anatom.ejbca.ra.raadmin.GlobalConfigurationDataLocalHome</local-home>
+      <local>se.anatom.ejbca.ra.raadmin.GlobalConfigurationDataLocal</local>
+      <ejb-class>se.anatom.ejbca.ra.raadmin.GlobalConfigurationDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
       <prim-key-class>java.lang.String</prim-key-class>
       <reentrant>False</reentrant>
@@ -380,7 +316,7 @@ END LDAP Publisher -->
       <abstract-schema-name>AdminPreferencesDataBean</abstract-schema-name>
       <cmp-field><field-name>id</field-name></cmp-field>
       <cmp-field><field-name>data</field-name></cmp-field>
-       <primkey-field>id</primkey-field>
+      <primkey-field>id</primkey-field>
    </entity>
 
    <entity>
@@ -424,156 +360,9 @@ END LDAP Publisher -->
        </query>
        
    </entity>
-
-   <entity>
-      <description>
-            This enterprise bean entity represents an authorization usergroup.
-      </description>
-      <ejb-name>AdminGroupData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.authorization.AdminGroupDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.authorization.AdminGroupDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.authorization.AdminGroupDataBean</ejb-class>
-      <persistence-type>Container</persistence-type>
-      <prim-key-class>java.lang.String</prim-key-class>
-      <reentrant>False</reentrant>
-      <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>AdminGroupDataBean</abstract-schema-name>
-      <cmp-field><field-name>adminGroupName</field-name></cmp-field>
-      <primkey-field>adminGroupName</primkey-field>
-      <ejb-local-ref>
-        <ejb-ref-name>ejb/AdminEntityDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.AdminEntityDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.AdminEntityDataLocal</local>
-        <ejb-link>AdminEntityData</ejb-link>
-      </ejb-local-ref>
-      <ejb-local-ref>
-        <ejb-ref-name>ejb/AccessRulesDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.authorization.AccessRulesDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.authorization.AccessRulesDataLocal</local>
-        <ejb-link>AccessRulesData</ejb-link>
-      </ejb-local-ref>
-      <query>
-        <query-method>
-          <method-name>findAll</method-name>
-            <method-params></method-params>
-        </query-method>
-        <ejb-ql>
-          <![CDATA[SELECT DISTINCT OBJECT(a) from AdminGroupDataBean a]]>
-        </ejb-ql>
-      </query>
-   </entity>
-
-   <entity>
-      <description>
-            This enterprise bean entity represents a user entity.
-      </description>
-      <ejb-name>AdminEntityData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.authorization.AdminEntityDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.authorization.AdminEntityDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.authorization.AdminEntityDataBean</ejb-class>
-      <persistence-type>Container</persistence-type>
-      <prim-key-class>se.anatom.ejbca.ra.authorization.AdminEntityPK</prim-key-class>
-      <reentrant>False</reentrant>
-      <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>AdminEntityDataBean</abstract-schema-name>
-      <cmp-field><field-name>pK</field-name></cmp-field>
-      <cmp-field><field-name>matchWith</field-name></cmp-field>
-      <cmp-field><field-name>matchType</field-name></cmp-field>
-      <cmp-field><field-name>matchValue</field-name></cmp-field>
-   </entity>
-   <entity>
-      <description>
-            This enterprise bean entity represents an access rule.
-      </description>
-      <ejb-name>AccessRulesData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.authorization.AccessRulesDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.authorization.AccessRulesDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.authorization.AccessRulesDataBean</ejb-class>
-      <persistence-type>Container</persistence-type>
-      <prim-key-class>se.anatom.ejbca.ra.authorization.AccessRulesPK</prim-key-class>
-      <reentrant>False</reentrant>
-      <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>AccessRulesDataBean</abstract-schema-name>
-      <cmp-field><field-name>pK</field-name></cmp-field>
-      <cmp-field><field-name>resource</field-name></cmp-field>
-      <cmp-field><field-name>accessRule</field-name></cmp-field>
-   </entity>
-
-   <entity>
-      <description>
-            This enterprise bean entity represents available access rules in ra authorization.
-      </description>
-      <ejb-name>AvailableAccessRulesData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataBean</ejb-class>
-      <persistence-type>Container</persistence-type>
-      <prim-key-class>java.lang.String</prim-key-class>
-      <reentrant>False</reentrant>
-      <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>AvailableAccessRulesDataBean</abstract-schema-name>
-      <cmp-field><field-name>name</field-name></cmp-field>
-      <primkey-field>name</primkey-field>
-      <query>
-        <query-method>
-          <method-name>findAll</method-name>
-          <method-params></method-params>
-        </query-method>
-        <ejb-ql>
-          <![CDATA[SELECT DISTINCT OBJECT(a) from AvailableAccessRulesDataBean a]]>
-        </ejb-ql>
-      </query>
-   </entity>
    
   </enterprise-beans>
 
-  <relationships>
-     <ejb-relation>
-       <ejb-relation-name>AdminGroupDataToAdminEntities</ejb-relation-name>
-       <ejb-relationship-role>
-         <ejb-relationship-role-name>AdminGroupData</ejb-relationship-role-name>
-         <multiplicity>One</multiplicity>
-         <relationship-role-source>
-           <ejb-name>AdminGroupData</ejb-name>
-         </relationship-role-source>
-         <cmr-field>
-           <cmr-field-name>adminEntities</cmr-field-name>
-           <cmr-field-type>java.util.Collection</cmr-field-type>
-         </cmr-field>
-       </ejb-relationship-role>
-       <ejb-relationship-role>
-         <ejb-relationship-role-name>AdminEntityData</ejb-relationship-role-name>
-         <multiplicity>Many</multiplicity>
-         <relationship-role-source>
-           <ejb-name>AdminEntityData</ejb-name>
-         </relationship-role-source>
-       </ejb-relationship-role>
-     </ejb-relation>
-
-     <ejb-relation>
-       <ejb-relation-name>AdminGroupDataToAccessRules</ejb-relation-name>
-       <ejb-relationship-role>
-         <ejb-relationship-role-name>AdminGroupData</ejb-relationship-role-name>
-         <multiplicity>One</multiplicity>
-         <relationship-role-source>
-           <ejb-name>AdminGroupData</ejb-name>
-         </relationship-role-source>
-         <cmr-field>
-           <cmr-field-name>accessRules</cmr-field-name>
-           <cmr-field-type>java.util.Collection</cmr-field-type>
-         </cmr-field>
-       </ejb-relationship-role>
-       <ejb-relationship-role>
-         <ejb-relationship-role-name>AccessRulesData</ejb-relationship-role-name>
-         <multiplicity>Many</multiplicity>
-         <relationship-role-source>
-           <ejb-name>AccessRulesData</ejb-name>
-         </relationship-role-source>
-       </ejb-relationship-role>
-     </ejb-relation>
-  </relationships>
 
   <assembly-descriptor>
    <security-role>
@@ -643,6 +432,10 @@ END LDAP Publisher -->
      </method>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
+         <method-name>checkForCAId</method-name>
+     </method>     
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
          <method-name>checkForEndEntityProfileId</method-name>
      </method>
      <method>
@@ -671,19 +464,15 @@ END LDAP Publisher -->
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getEndEntityProfileNames</method-name>
+         <method-name>getAuthorizedEndEntityProfileIds</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getEndEntityProfiles</method-name>
+         <method-name>getEndEntityProfileIdToNameMap</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
          <method-name>getEndEntityProfile</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getNumberOfEndEntityProfiles</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
@@ -695,63 +484,11 @@ END LDAP Publisher -->
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
+         <method-name>existsCAInEndEntityProfiles</method-name>
+     </method>     
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
          <method-name>existsCertificateProfileInEndEntityProfiles</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>isAuthorized</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>isAuthorizedNoLog</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>authenticate</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getAdminGroup</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getNumberOfAdminGroups</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getAdminGroupnames</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getAdminGroups</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getNumberOfAccessRules</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getAccessRules</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getNumberOfAdminEntities</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getAdminEntities</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getAvailableAccessRules</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>existsAvailableAccessRule</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>existsEndEntityProfileInRules</method-name>
      </method>
      <trans-attribute>Supports</trans-attribute>
    </container-transaction>
@@ -832,54 +569,6 @@ END LDAP Publisher -->
      <method>
          <ejb-name>RaAdminSession</ejb-name>
          <method-name>changeEndEntityProfile</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>init</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>addAdminGroup</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>removeAdminGroup</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>renameAdminGroup</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>addAccessRule</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>removeAccessRule</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>addAdminEntity</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>removeAdminEntity</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>addAvailableAccessRule</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>addAvailableAccessRules</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>removeAvailableAccessRule</method-name>
-     </method>
-     <method>
-         <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>removeAvailableAccessRules</method-name>
      </method>
 
      <trans-attribute>Required</trans-attribute>

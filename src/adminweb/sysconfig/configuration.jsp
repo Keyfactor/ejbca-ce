@@ -1,10 +1,9 @@
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, 
+<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
                 se.anatom.ejbca.ra.raadmin.AdminPreference, se.anatom.ejbca.webdist.webconfiguration.GlobalConfigurationDataHandler,
                 se.anatom.ejbca.webdist.webconfiguration.WebLanguages"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
-<jsp:setProperty name="ejbcawebbean" property="*" /> 
 
 <%! // Declarations 
 
@@ -43,7 +42,7 @@
   // Initialize environment.
   final String THIS_FILENAME                          =  "configuration.jsp";
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/system_functionallity/edit_system_configuration"); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/super_administrator"); 
 
   String forwardurl = "/" + globalconfiguration .getMainFilename(); 
 

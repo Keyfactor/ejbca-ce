@@ -1,7 +1,7 @@
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, 
-                se.anatom.ejbca.log.LogConfiguration, se.anatom.ejbca.webdist.loginterface.LogInterfaceBean, se.anatom.ejbca.log.LogEntry,
-                se.anatom.ejbca.webdist.webconfiguration.WebLanguages, java.util.HashMap, java.util.Arrays"%>
+<%@page errorPage="/errorpage.jsp"  import=" se.anatom.ejbca.authorization.AuthorizationDeniedException, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
+                se.anatom.ejbca.log.LogConfiguration, se.anatom.ejbca.webdist.loginterface.LogInterfaceBean, se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.log.LogEntry,
+                se.anatom.ejbca.webdist.webconfiguration.WebLanguages, java.util.HashMap, java.util.Arrays, java.util.Iterator, java.util.Collection"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:useBean id="logbean" scope="session" class="se.anatom.ejbca.webdist.loginterface.LogInterfaceBean" />
@@ -13,6 +13,9 @@
   static final String ACTION_SAVE                            = "actionsave";
   static final String ACTION_CANCEL                          = "actioncancel";
 
+  static final String SELECT_CA                              = "selectca";
+  static final String SELECT_CLONE                           = "selectclone"; 
+
   static final String BUTTON_SELECTALLINFO                   = "buttonselectallinfo";
   static final String BUTTON_DESELECTALLINFO                 = "buttondeselectallinfo";
   static final String BUTTON_INVERTINFOSELECTION             = "buttoninvertinfoselection";
@@ -20,6 +23,8 @@
   static final String BUTTON_DESELECTALLERROR                = "buttondeselectallerror";
   static final String BUTTON_INVERTERRORSELECTION            = "buttoninverterrorselection";
 
+  static final String BUTTON_CHANGECA                        = "buttonchangeca";
+  static final String BUTTON_CLONE                           = "buttonclone";
   static final String BUTTON_SAVE                            = "buttonsave";
   static final String BUTTON_CANCEL                          = "buttoncancel";
 
@@ -31,6 +36,7 @@
 
   static final String HIDDEN_INFOTEXTROW                     = "hiddeninfotextrow";
   static final String HIDDEN_ERRORTEXTROW                    = "hiddenerrortextrow";
+  static final String HIDDEN_CAID                            = "hiddencaid";
 
   static final String CHECKBOX_VALUE             = "true";
 %> 
@@ -38,13 +44,53 @@
   // Initialize environment.
   final String THIS_FILENAME                          =  "logconfiguration.jsp";
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/log_functionallity/edit_log_configuration"); 
-                                            logbean.initialize(request, ejbcawebbean); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/log_functionality/edit_log_configuration");                                              
+                                            logbean.initialize(request,ejbcawebbean, ejbcawebbean.getInformationMemory().getCAIdToNameMap());
 
-  String forwardurl = "/" + globalconfiguration .getMainFilename(); 
+  String forwardurl = "/" + globalconfiguration .getMainFilename();
+ 
+  HashMap caidtonamemap =  ejbcawebbean.getInformationMemory().getCAIdToNameMap();
+  Collection authorizedcaids = ejbcawebbean.getAuthorizedCAIds();
 
-  LogConfiguration logconfiguration = logbean.loadLogConfiguration();
+  boolean nocachosen = true;
+  int caid = -1;
+  boolean cloneca = false;
+  int clonecaid = -1;
+  boolean logconfigurationsaved = false;
 
+  if(request.getParameter(HIDDEN_CAID) != null){
+    caid = Integer.parseInt(request.getParameter(HIDDEN_CAID));
+    nocachosen=false;
+  }
+
+  if( request.getParameter(BUTTON_CHANGECA) != null && request.getParameter(SELECT_CA) != null){
+    caid = Integer.parseInt(request.getParameter(SELECT_CA));
+    nocachosen=false;  
+  }
+
+  if( request.getParameter(BUTTON_CLONE) != null && request.getParameter(SELECT_CLONE) != null){
+    clonecaid = Integer.parseInt(request.getParameter(SELECT_CLONE));
+    cloneca = true;
+  }
+
+  // Check authorization.
+  Iterator iter = authorizedcaids.iterator();
+  boolean authorized = false;
+  int tmp = caid;
+  if(cloneca)
+    tmp = clonecaid; 
+  while(iter.hasNext()){
+    if(((Integer) iter.next()).intValue() == tmp) authorized = true;
+  }
+
+  if(!authorized && !nocachosen)
+    throw new AuthorizationDeniedException("ERROR: Not authorized to edit specified log configuration");
+
+  LogConfiguration logconfiguration = null;
+  if(cloneca)
+    logconfiguration = logbean.loadLogConfiguration(clonecaid);
+  else
+    logconfiguration = logbean.loadLogConfiguration(caid);
 
     // Determine action 
   if( request.getParameter(BUTTON_CANCEL) != null){
@@ -57,6 +103,7 @@
     String[] inforows = logbean.getLocalInfoEventNames();
     HashMap texttoid = logbean.getEventNameToIdMap();
     String[] errorrows = logbean.getLocalErronEventNames();
+
 
 
     if( request.getParameter(BUTTON_SAVE) != null){
@@ -108,10 +155,9 @@
             logconfiguration.setLogEvent(((Integer) texttoid.get(value)).intValue(), dolog); 
           }
            
-        logbean.saveLogConfiguration(logconfiguration);
-%>          
- <jsp:forward page="<%=forwardurl %>"/>
-<%   }
+        logbean.saveLogConfiguration(caid, logconfiguration);
+        logconfigurationsaved = true;
+}
 
 
 
@@ -129,11 +175,29 @@
 </head>
 
 <body>
+
+<form name="form" method="post" action="<%= globalconfiguration .getLogPath() + "/logconfiguration/" + THIS_FILENAME %>">
 <div align="center"> 
   <h2><%= ejbcawebbean.getText("LOGCONFIGURATION") %><br>
-  </h2>
+  </h2><br>
+   <% if(logconfigurationsaved) out.write("<h3>" + ejbcawebbean.getText("LOGCONFIGURATIONSAVED") + "</h3>"); %>
+   <h3><%= ejbcawebbean.getText("CONFIGURECA") %> 
+   <select name="<%=SELECT_CA %>" >
+      <% 
+         iter = authorizedcaids.iterator();
+         while(iter.hasNext()){ 
+           int authcaid = ((Integer) iter.next()).intValue(); %>
+         <option  value='<%= authcaid %>' <% 
+                                        if(authcaid ==caid)
+                                           out.write(" selected ");%>>
+            <%= caidtonamemap.get(new Integer(authcaid)) %>
+        </option>
+        <% } %>
+   </select>  
+   <input type="submit" name="<%= BUTTON_CHANGECA %>" value="<%= ejbcawebbean.getText("SELECT") %>"></h3>
 </div>
-<form name="form" method="post" action="<%= globalconfiguration .getLogPath() + "/logconfiguration/" + THIS_FILENAME %>">
+  <% if(!nocachosen){  %>
+   <input type="hidden" name='<%=HIDDEN_CAID%>' value='<%= caid %>'>
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr > 
       <td width="50%" valign="top"> 
@@ -245,13 +309,28 @@
     </tr>
 
     <tr> 
-      <td width="50%" valign="top">&nbsp;</td>
+      <td width="50%" valign="top"><%= ejbcawebbean.getText("USE") %>
+   <select name="<%=SELECT_CLONE %>" >
+      <% 
+         iter = authorizedcaids.iterator();
+         while(iter.hasNext()){ 
+           int authcaid = ((Integer) iter.next()).intValue(); 
+           if(caid != authcaid){ %>
+         <option  value='<%= authcaid %>' >
+            <%= caidtonamemap.get(new Integer(authcaid)) %>
+        </option>
+        <% }
+         }%>
+   </select>  
+      <input type="submit" name="<%= BUTTON_CLONE %>" value="<%= ejbcawebbean.getText("ASTEMPLATE") %>">
+      </td>
       <td width="50%" valign="top"> 
         <input type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>">
         <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
       </td>
     </tr>
   </table>
+ <% } %>
  </form>
 <% // Include Footer 
    String footurl = globalconfiguration .getFootBanner(); %>

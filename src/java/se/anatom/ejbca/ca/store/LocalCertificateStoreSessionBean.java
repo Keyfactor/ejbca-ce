@@ -44,7 +44,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.47 2003-09-03 19:57:54 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.48 2003-09-04 14:38:12 herrvendil Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -864,6 +864,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     public void addCertificateProfile(Admin admin, int certificateprofileid, String certificateprofilename,
         CertificateProfile certificateprofile)throws CertificateProfileExistsException {
         boolean returnval = false;
+
+		if(isCertificateProfileNameFixed(certificateprofilename)){
+		  getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificaterprofile " + certificateprofilename);  
+		  throw new CertificateProfileExistsException();  
+		}
         
         if (isFreeCertificateProfileId(certificateprofileid)) {                
            try {

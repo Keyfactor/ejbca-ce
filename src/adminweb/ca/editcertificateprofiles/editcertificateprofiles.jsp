@@ -1,10 +1,10 @@
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp" import="java.util.ArrayList, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, se.anatom.ejbca.SecConst
-               ,se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile, se.anatom.ejbca.webdist.cainterface.CertificateProfileDataHandler, se.anatom.ejbca.webdist.cainterface.CertificateProfileExistsException"%>
+<%@page errorPage="/errorpage.jsp" import="java.util.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst, se.anatom.ejbca.authorization.AuthorizationDeniedException,
+               se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile, se.anatom.ejbca.webdist.cainterface.CertificateProfileDataHandler, 
+               se.anatom.ejbca.ca.exception.CertificateProfileExistsException, se.anatom.ejbca.webdist.rainterface.CertificateView"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
-<jsp:setProperty name="ejbcawebbean" property="*" /> 
 <jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
 
 <%! // Declarations 
@@ -55,7 +55,8 @@
   static final String SELECT_KEYUSAGE                             = "selectkeyusage";
   static final String SELECT_EXTENDEDKEYUSAGE                     = "selectextendedkeyusage";
   static final String SELECT_TYPE                                 = "selecttype";
-
+  static final String SELECT_AVAILABLECAS                         = "selectavailablecas";
+  static final String SELECT_AVAILABLEPUBLISHERS                  = "selectavailablepublishers";
 
   // Declare Language file.
 
@@ -71,16 +72,18 @@
   boolean  certificateprofileexists             = false;
   boolean  certificateprofiledeletefailed       = false;
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ca_functionallity/edit_certificate_profiles"); 
-                                            cabean.initialize(request); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ca_functionality/edit_certificate_profiles"); 
+                                            cabean.initialize(request, ejbcawebbean); 
 
   String THIS_FILENAME            =  globalconfiguration.getCaPath()  + "/editcertificateprofiles/editcertificateprofiles.jsp";
+  
+  boolean issuperadministrator = false;
+  try{
+    issuperadministrator = ejbcawebbean.isAuthorizedNoLog("/super_administrator");
+  }catch(AuthorizationDeniedException ade){}   
 
-     
-  String[] keyusagetexts = {"DIGITALSIGNATURE","NONREPUDIATION", "KEYENCIPHERMENT", "DATAENCIPHERMENT", "KEYAGREEMENT", "KEYCERTSIGN", "CRLSIGN", "ENCIPHERONLY", "DECIPHERONLY" };
-  String[] extendedkeyusagetexts = {"ANYEXTENDEDKEYUSAGE","SERVERAUTH", "CLIENTAUTH", 
-                                    "CODESIGNING", "EMAILPROTECTION", "IPSECENDSYSTEM", 
-                                    "IPSECTUNNEL", "IPSECUSER", "TIMESTAMPING", "SMARTCARDLOGON"};
+  String[] keyusagetexts = CertificateView.KEYUSAGETEXTS;
+  String[] extendedkeyusagetexts = CertificateView.EXTENDEDKEYUSAGETEXTS;
 int[]    defaultavailablebitlengths = {512,1024,2048,4096};  
 %>
  
@@ -384,6 +387,29 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
               }
               else
                  certificateprofiledata.setAllowKeyUsageOverride(false);
+
+              values = request.getParameterValues(SELECT_AVAILABLECAS);
+              ArrayList availablecas = new ArrayList(); 
+              if(values != null){
+                 for(int i=0; i < values.length; i++){
+                    if(Integer.parseInt(values[i]) == CertificateProfile.ANYCA){
+                      availablecas = new ArrayList();
+                      availablecas.add(new Integer(CertificateProfile.ANYCA));
+                      break;  
+                    }
+                    availablecas.add(new Integer(values[i]));
+                 }
+              }
+              certificateprofiledata.setAvailableCAs(availablecas);
+
+              values = request.getParameterValues(SELECT_AVAILABLEPUBLISHERS);
+              ArrayList availablepublishers = new ArrayList(); 
+              if(values != null){
+                 for(int i=0; i < values.length; i++){
+                    availablepublishers.add(new Integer(values[i]));
+                 }
+              }
+              certificateprofiledata.setPublisherList(availablepublishers);
 
               cabean.changeCertificateProfile(certprofile,certificateprofiledata);
            }

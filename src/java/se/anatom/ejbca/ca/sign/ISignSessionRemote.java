@@ -23,7 +23,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * Creates certificates. Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.17 2003-09-03 17:36:44 herrvendil Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.18 2003-09-04 14:38:10 herrvendil Exp $
  */
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
 	/**
@@ -53,6 +53,27 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
 	 * @throws IllegalKeyException if the public key is of wrong type.
 	 * @throws RemoteException if a communication or other error occurs.
 	 */
+	
+	public byte[] createPKCS7(Admin admin, Certificate cert)
+		throws SignRequestSignatureException, RemoteException;
+
+	/**
+		 * Requests for a certificate to be created for the passed public key with default key usage
+		 * The method queries the user database for authorization of the user.
+		 *
+		 * @param admin Information about the administrator or admin preforming the event.
+		 * @param username unique username within the instance.
+		 * @param password password for the user.
+		 * @param pk the public key to be put in the created certificate.
+		 *
+		 * @return The newly created certificate or null.
+		 *
+		 * @throws ObjectNotFoundException if the user does not exist.
+		 * @throws AuthStatusException If the users status is incorrect.
+		 * @throws AuthLoginException If the password is incorrect.
+		 * @throws IllegalKeyException if the public key is of wrong type.
+		 * @throws RemoteException if a communication or other error occurs.
+		 */		
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk)
         throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, 
             IllegalKeyException;

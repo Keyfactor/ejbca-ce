@@ -20,14 +20,6 @@
       <jndi-name>RaAdminSession</jndi-name>
     </weblogic-enterprise-bean>
 
-    <weblogic-enterprise-bean>
-      <ejb-name>AuthorizationSession</ejb-name>
-      <transaction-descriptor>
-        <trans-timeout-seconds>900</trans-timeout-seconds>
-      </transaction-descriptor>
-      <jndi-name>AuthorizationSession</jndi-name>
-    </weblogic-enterprise-bean>
-
   <weblogic-enterprise-bean>
     <ejb-name>UserData</ejb-name>   
     <entity-descriptor>
@@ -110,90 +102,6 @@
         </persistence>
       </entity-descriptor>
       <jndi-name>EndEntityProfileData</jndi-name>
-    </weblogic-enterprise-bean>
-
-    <weblogic-enterprise-bean>
-      <ejb-name>AdminGroupData</ejb-name>
-      <entity-descriptor>
-        <entity-cache>
-          <max-beans-in-cache>1</max-beans-in-cache>
-        </entity-cache>
-        <persistence>
-          <persistence-type>
-            <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-            <type-version>7.0</type-version>
-            <type-storage>META-INF/weblogic-cmp-rdbms-jar.xml</type-storage>
-          </persistence-type>
-          <persistence-use>
-            <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-            <type-version>7.0</type-version>
-          </persistence-use>
-        </persistence>
-      </entity-descriptor>
-      <jndi-name>AdminGroupData</jndi-name>
-    </weblogic-enterprise-bean>
-
-    <weblogic-enterprise-bean>
-      <ejb-name>AdminEntityData</ejb-name>
-      <entity-descriptor>
-        <entity-cache>
-          <max-beans-in-cache>1</max-beans-in-cache>
-        </entity-cache>
-        <persistence>
-          <persistence-type>
-            <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-            <type-version>7.0</type-version>
-            <type-storage>META-INF/weblogic-cmp-rdbms-jar.xml</type-storage>
-          </persistence-type>
-          <persistence-use>
-            <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-            <type-version>7.0</type-version>
-          </persistence-use>
-        </persistence>
-      </entity-descriptor>
-      <jndi-name>AdminEntityData</jndi-name>
-    </weblogic-enterprise-bean>
-
-    <weblogic-enterprise-bean>
-      <ejb-name>AccessRulesData</ejb-name>
-      <entity-descriptor>
-        <entity-cache>
-          <max-beans-in-cache>1</max-beans-in-cache>
-        </entity-cache>
-        <persistence>
-          <persistence-type>
-            <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-            <type-version>7.0</type-version>
-            <type-storage>META-INF/weblogic-cmp-rdbms-jar.xml</type-storage>
-          </persistence-type>
-          <persistence-use>
-            <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-            <type-version>7.0</type-version>
-          </persistence-use>
-        </persistence>
-      </entity-descriptor>
-      <jndi-name>AccessRulesData</jndi-name>
-    </weblogic-enterprise-bean>
-
-    <weblogic-enterprise-bean>
-      <ejb-name>AvailableAccessRulesData</ejb-name>
-      <entity-descriptor>
-        <entity-cache>
-          <max-beans-in-cache>1</max-beans-in-cache>
-        </entity-cache>
-        <persistence>
-          <persistence-type>
-            <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-            <type-version>7.0</type-version>
-            <type-storage>META-INF/weblogic-cmp-rdbms-jar.xml</type-storage>
-          </persistence-type>
-          <persistence-use>
-            <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-            <type-version>7.0</type-version>
-          </persistence-use>
-        </persistence>
-      </entity-descriptor>
-      <jndi-name>AvailableAccessRulesData</jndi-name>
     </weblogic-enterprise-bean>
 
    <security-role-assignment>

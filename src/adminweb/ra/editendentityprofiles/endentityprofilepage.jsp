@@ -1,5 +1,5 @@
 <% profiledata = ejbcarabean.getEndEntityProfile(profile);
-   String[] certificateprofilenames = ejbcarabean.getCertificateProfileNames();
+   TreeMap certificateprofilenames = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityCertificateProfileNames();
    boolean used = false;
 
    String[] subjectfieldtexts = {"","","", "OLDEMAILDN2", "UID", "COMMONNAME", "SERIALNUMBER1", 
@@ -31,6 +31,9 @@
    String[] hardtokenissueraliases = new String[0];
    int[] hardtokenissuerids = new int[0];
 
+   HashMap caidtonamemap = cabean.getCAIdToNameMap();
+   Collection authorizedcas = ejbcawebbean.getAuthorizedCAIds();
+
    if(globalconfiguration.getIssueHardwareTokens()){
       AvailableHardToken[] availabletokens = tokenbean.getAvailableHardTokens();
 
@@ -53,6 +56,8 @@
    }
 
    boolean emailfieldexists = false;
+
+   int row = 0;
 %>
 <SCRIPT language="JavaScript">
 
@@ -203,7 +208,7 @@ function checkuseemailfield(){
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_PROFILE %>'>
   <input type="hidden" name='<%= HIDDEN_PROFILENAME %>' value='<%=profile %>'>
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
-    <tr id="Row0"> 
+    <tr id="Row<%=row++%2%>"> 
       <td width="15%" valign="top">
          &nbsp;
       </td>
@@ -219,7 +224,7 @@ function checkuseemailfield(){
         <u><%= ejbcawebbean.getText("HELP") %></u> </A></div> -->
       </td>
     </tr>
-    <tr id="Row0"> 
+    <tr id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -240,7 +245,7 @@ function checkuseemailfield(){
                  out.write("CHECKED");
            %>> 
       </td>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -261,7 +266,7 @@ function checkuseemailfield(){
                  out.write("CHECKED");
            %>> 
       </td>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -288,7 +293,7 @@ function checkuseemailfield(){
            %>> 
 
       </td>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
         <%= ejbcawebbean.getText("SELECTFORREMOVAL") %>
       </td>
@@ -310,7 +315,7 @@ function checkuseemailfield(){
        for(int i=0; i < numberofsubjectdnfields; i++){
          fielddata =  profiledata.getSubjectDNFieldsInOrder(i);
     %>
-    <tr  id="Row<%=i%2%>"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
         <input type="checkbox" name="<%=CHECKBOX_SELECTSUBJECTDN + i%>" value="<%=CHECKBOX_VALUE %>">      
       </td>
@@ -344,7 +349,7 @@ function checkuseemailfield(){
       </td>
     </tr>
    <% } %>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
         <input type="submit" name="<%= BUTTON_DELETESUBJECTDN %>" value="<%= ejbcawebbean.getText("REMOVE") %>">
       </td>
@@ -355,7 +360,7 @@ function checkuseemailfield(){
         &nbsp;&nbsp;
       </td> 
     </tr>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
         <%= ejbcawebbean.getText("SELECTFORREMOVAL") %>
       </td>
@@ -380,7 +385,7 @@ function checkuseemailfield(){
          if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && fieldtype != EndEntityProfile.DIRECTORYNAME && 
             fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){
     %>
-    <tr  id="Row<%=i%2%>"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
         <input type="checkbox" name="<%=CHECKBOX_SELECTSUBJECTALTNAME + i %>" value="<%=CHECKBOX_VALUE %>">      
       </td>
@@ -416,7 +421,7 @@ function checkuseemailfield(){
     </tr>
    <%   }
       }%>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
         <input type="submit" name="<%= BUTTON_DELETESUBJECTALTNAME %>" value="<%= ejbcawebbean.getText("REMOVE") %>">
       </td>
@@ -427,7 +432,7 @@ function checkuseemailfield(){
         &nbsp;&nbsp;
       </td> 
     </tr>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -459,7 +464,7 @@ function checkuseemailfield(){
            %>> 
       </td>
     </tr>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -468,18 +473,20 @@ function checkuseemailfield(){
       </td>
       <td width="70%"> 
         <select name="<%=SELECT_DEFAULTCERTPROFILE %>" size="1" >
-            <% for(int i=0; i < certificateprofilenames.length;i++){
-               int certprofid = ejbcarabean.getCertificateProfileId(certificateprofilenames[i]); %>
+            <% Iterator iter = certificateprofilenames.keySet().iterator();
+               while(iter.hasNext()){
+                 String nextprofilename = (String) iter.next();
+                 int certprofid = ((Integer) certificateprofilenames.get(nextprofilename)).intValue();%>
            <option <%  if(profiledata.getValue(EndEntityProfile.DEFAULTCERTPROFILE ,0) != null)
                           if(profiledata.getValue(EndEntityProfile.DEFAULTCERTPROFILE ,0).equals(Integer.toString(certprofid)))
                             out.write(" selected "); %>
-                    value='<%= certprofid %>'><%= certificateprofilenames[i] %>
+                    value='<%= certprofid %>'><%= nextprofilename %>
            </option>
             <% } %>
         </select>
       </td>
     </tr>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -489,19 +496,65 @@ function checkuseemailfield(){
       <td width="70%"> 
         <select name="<%=SELECT_AVAILABLECERTPROFILES %>" size="7" multiple >
             <% String[] availablecertprofs = profiledata.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
-               for(int i=0; i < certificateprofilenames.length;i++){
-               int certprofid = ejbcarabean.getCertificateProfileId(certificateprofilenames[i]); %>
+               iter = certificateprofilenames.keySet().iterator();
+               while(iter.hasNext()){
+                 String nextprofilename = (String) iter.next();
+                 int certprofid = ((Integer) certificateprofilenames.get(nextprofilename)).intValue(); %>
            <option <% for(int j=0;j< availablecertprofs.length;j++){
                          if(availablecertprofs[j].equals(Integer.toString(certprofid)))
                             out.write(" selected "); 
                       }%>
-                    value='<%= certprofid%>'><%= certificateprofilenames[i] %>
+                    value='<%= certprofid%>'><%= nextprofilename %>
            </option>
             <% } %>
         </select>
       </td>
     </tr>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%" align="right"> 
+        <%= ejbcawebbean.getText("DEFAULTCA") %> <br>&nbsp;
+      </td>
+      <td width="70%"> 
+        <select name="<%=SELECT_DEFAULTCA %>" size="1" >
+            <% iter = authorizedcas.iterator();
+               while(iter.hasNext()){
+                 Integer caid = (Integer) iter.next(); %>
+           <option <%  if(profiledata.getValue(EndEntityProfile.DEFAULTCA ,0) != null)
+                          if(profiledata.getValue(EndEntityProfile.DEFAULTCA ,0).equals(caid.toString()))
+                            out.write(" selected "); %>
+                    value='<%= caid.toString() %>'><%= caidtonamemap.get(caid) %>
+           </option>
+            <% } %>
+        </select>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%" align="right"> 
+        <%= ejbcawebbean.getText("AVAILABLECAS") %> <br>&nbsp;
+      </td>
+      <td width="70%"> 
+        <select name="<%=SELECT_AVAILABLECAS %>" size="7" multiple >
+            <% String[] availablecas = profiledata.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
+               iter = authorizedcas.iterator();
+               while(iter.hasNext()){
+                Integer caid = (Integer) iter.next(); %>
+           <option <% for(int j=0;j< availablecas.length;j++){
+                         if(availablecas[j].equals(caid.toString()))
+                            out.write(" selected "); 
+                      }%>
+                    value='<%= caid.toString()%>'><%= caidtonamemap.get(caid) %>
+           </option>
+            <% } %>
+        </select>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -523,7 +576,7 @@ function checkuseemailfield(){
         </select>
       </td>
     </tr>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -548,7 +601,7 @@ function checkuseemailfield(){
       </td>
     </tr>
    <% if(globalconfiguration.getIssueHardwareTokens()){ %>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -563,7 +616,7 @@ function checkuseemailfield(){
            %>>
       </td>
     </tr>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -582,7 +635,7 @@ function checkuseemailfield(){
         </select>
       </td>
     </tr>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -604,14 +657,14 @@ function checkuseemailfield(){
       </td>
     </tr>
     <% } %>
-    <tr  id="Row1">       
+    <tr  id="Row<%=row++%2%>">       
       <td width="5%" valign="top">
          &nbsp;
       </td>
       <td width="25%" valign="top" align="right"><%= ejbcawebbean.getText("TYPES") %></td>
       <td width="70%" valign="top" align="right">&nbsp;</td>
     </tr>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -638,7 +691,7 @@ function checkuseemailfield(){
       </td>
     </tr>
 <% if(globalconfiguration.getEnableKeyRecovery()){ %> 
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -665,7 +718,7 @@ function checkuseemailfield(){
       </td>
     </tr>
    <% } %>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -691,7 +744,7 @@ function checkuseemailfield(){
            %>> 
       </td>
     </tr>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>

@@ -32,7 +32,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.30 2003-09-04 09:29:36 herrvendil Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.31 2003-09-04 14:36:14 herrvendil Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
@@ -255,8 +255,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 	  *
 	  * @return true if added succesfully, false otherwise if profile already exist
 	  */
-	 public boolean addEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException {
-		 return addEndEntityProfile(admin,findFreeEndEntityProfileId(),profilename,profile);
+	 public void addEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException {
+		 addEndEntityProfile(admin,findFreeEndEntityProfileId(),profilename,profile);
 	 } // addEndEntityProfile
 
 	 /**
@@ -269,14 +269,14 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 	  *
 	  * @return true if added succesfully, false otherwise if profile already exist
 	  */
-	 public boolean addEndEntityProfile(Admin admin, int profileid, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException{
-		 boolean returnval = false;
+	 public void addEndEntityProfile(Admin admin, int profileid, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException{
 		if(profilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)){
 		  getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,"Error adding end entity profile "+ profilename);             
 		  throw new EndEntityProfileExistsException(); 
 		}  
 		 if (isFreeEndEntityProfileId(profileid) == false) {
-			 return returnval;
+			getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,"Error adding end entity profile "+ profilename);             
+		   throw new EndEntityProfileExistsException(); 
 		 }
 		 try {
 			 profiledatahome.findByProfileName(profilename);
@@ -284,8 +284,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 			 throw new EndEntityProfileExistsException(); 
 		 } catch (FinderException e) {
 			 try {
-				 profiledatahome.create(new Integer(profileid), profilename, profile);
-				 returnval = true;
+				 profiledatahome.create(new Integer(profileid), profilename, profile);				 
 				 getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(), null, null,
 					 LogEntry.EVENT_INFO_ENDENTITYPROFILE,
 					 "End entity profile " + profilename + " added.");
@@ -295,8 +294,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 						 LogEntry.EVENT_ERROR_ENDENTITYPROFILE,
 						 "Error adding end entity profile " + profilename);				 
 			 }
-		 }
-		 return returnval;
+		 }		 
 	 } // addEndEntityProfile
 
      /**

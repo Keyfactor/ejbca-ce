@@ -1,13 +1,12 @@
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, se.anatom.ejbca.ra.authorization.AuthorizationDeniedException,
+<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.authorization.AuthorizationDeniedException,
                  se.anatom.ejbca.webdist.rainterface.UserView, se.anatom.ejbca.webdist.rainterface.SortBy,se.anatom.ejbca.webdist.rainterface.RevokedInfoView,
                  se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.ra.UserDataRemote,se.anatom.ejbca.ra.raadmin.AdminPreference, se.anatom.ejbca.ra.raadmin.DNFieldExtractor,
-                 javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.util.query.*, java.util.Calendar, java.util.Date, java.text.DateFormat, java.util.Locale" %>
+                 javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.util.query.*, java.util.*, java.text.DateFormat" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
-<jsp:setProperty name="ejbcawebbean" property="*" /> 
 <jsp:useBean id="rabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
-<jsp:setProperty name="rabean" property="*" /> 
+
 <%! // Declarations
 
   static final String ACTION                             = "action";
@@ -70,6 +69,8 @@
 
   static final String SORTBY_USERNAME_ACC         = "sortbyusernameaccending";
   static final String SORTBY_USERNAME_DEC         = "sortbyusernamedecending";
+  static final String SORTBY_CA_ACC               = "sortbycaaccending";
+  static final String SORTBY_CA_DEC               = "sortbycadecending";
   static final String SORTBY_COMMONNAME_ACC       = "sortbycommonnameaccending";
   static final String SORTBY_COMMONNAME_DEC       = "sortbycommonnamedecending";
   static final String SORTBY_ORGANIZATIONUNIT_ACC = "sortbyorganizationunitaccending";
@@ -123,8 +124,8 @@
   static final int ALL_STATUS                   = -1;
 %><%
   // Initialize environment.
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionallity/view_end_entity"); 
-                                            rabean.initialize(request);
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionality/view_end_entity"); 
+                                            rabean.initialize(request, ejbcawebbean);
   final String VIEWCERT_LINK            = "/" + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
   final String VIEWUSER_LINK            = "/" + globalconfiguration.getAdminWebPath() + "ra/viewendentity.jsp";
   final String EDITUSER_LINK            = "/" + globalconfiguration.getAdminWebPath() + "ra/editendentity.jsp";
@@ -292,9 +293,19 @@
      rabean.sortUserData(SortBy.USERNAME,SortBy.ACCENDING);
    }
    if( request.getParameter(SORTBY_USERNAME_DEC+".x") != null ){
-     // Sortby username accending
+     // Sortby username decending
      sortby = SORTBY_USERNAME_DEC;
      rabean.sortUserData(SortBy.USERNAME,SortBy.DECENDING);
+   }
+   if( request.getParameter(SORTBY_CA_ACC+".x") != null ){
+     // Sortby CA accending
+     sortby = SORTBY_CA_ACC;
+     rabean.sortUserData(SortBy.CA,SortBy.ACCENDING);
+   }
+   if( request.getParameter(SORTBY_CA_DEC+".x") != null ){
+     // Sortby username decending
+     sortby = SORTBY_CA_DEC;
+     rabean.sortUserData(SortBy.CA,SortBy.DECENDING);
    }
    if( request.getParameter(SORTBY_COMMONNAME_ACC+".x") != null ){
      // Sortby username accending
@@ -590,52 +601,38 @@
                 
                boolean matchadded = false; 
 
-               if(matchwithrow1 == UserMatch.MATCH_WITH_ENDENTITYPROFILE){
-                    matchvaluerow1 = Integer.toString(rabean.getEndEntityProfileId(request.getParameter(SELECT_MATCHVALUE_ROW1)));
+               if(matchwithrow1 == UserMatch.MATCH_WITH_ENDENTITYPROFILE || matchwithrow1 == UserMatch.MATCH_WITH_CERTIFICATEPROFILE){
+                    matchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
                     if(matchvaluerow1.equals("0")) matchvaluerow1 = null;
                }else{
-                 if(matchwithrow1 == UserMatch.MATCH_WITH_CERTIFICATEPROFILE){   
-                    matchvaluerow1 = Integer.toString(rabean.getCertificateProfileId(request.getParameter(SELECT_MATCHVALUE_ROW1)));
-                    if(matchvaluerow1.equals("0")) matchvaluerow1 = null;
-                 }else{
-                    if(matchwithrow1 == UserMatch.MATCH_WITH_STATUS){
-                       matchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
-                    }else{
-                       matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1);
-                    }
-                 }
+                  if(matchwithrow1 == UserMatch.MATCH_WITH_STATUS || matchwithrow1 == UserMatch.MATCH_WITH_CA){
+                    matchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
+                  }else{
+                    matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1);
+                  } 
                } 
-               if(matchwithrow2 == UserMatch.MATCH_WITH_ENDENTITYPROFILE){
-                    matchvaluerow2 = Integer.toString(rabean.getEndEntityProfileId(request.getParameter(SELECT_MATCHVALUE_ROW2)));
-                    if(matchvaluerow2.equals("0")) matchvaluerow2 = null;
+               if(matchwithrow2 == UserMatch.MATCH_WITH_ENDENTITYPROFILE || matchwithrow2 == UserMatch.MATCH_WITH_CERTIFICATEPROFILE){
+                 matchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
+                 if(matchvaluerow2.equals("0")) matchvaluerow2 = null;
                }else{
-                 if(matchwithrow2 == UserMatch.MATCH_WITH_CERTIFICATEPROFILE){   
-                    matchvaluerow2 = Integer.toString(rabean.getCertificateProfileId(request.getParameter(SELECT_MATCHVALUE_ROW2)));
-                    if(matchvaluerow2.equals("0")) matchvaluerow2 = null;
-                 }else{
-                    if(matchwithrow2 == UserMatch.MATCH_WITH_STATUS){
-                       matchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
-                    }else{
-                       matchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW2);
-                    }
-                 }
+                  if(matchwithrow2 == UserMatch.MATCH_WITH_STATUS || matchwithrow2 == UserMatch.MATCH_WITH_CA){
+                    matchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
+                  }else{
+                     matchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW2);
+                  }                 
                }
 
-               if(matchwithrow3 == UserMatch.MATCH_WITH_ENDENTITYPROFILE){
-                  matchvaluerow3 = Integer.toString(rabean.getEndEntityProfileId(request.getParameter(SELECT_MATCHVALUE_ROW3)));
-                  if(matchvaluerow3.equals("0")) matchvaluerow3 = null; 
+               if(matchwithrow3 == UserMatch.MATCH_WITH_ENDENTITYPROFILE || matchwithrow3 == UserMatch.MATCH_WITH_CERTIFICATEPROFILE){
+                 matchvaluerow3 = request.getParameter(SELECT_MATCHVALUE_ROW3);
+                 if(matchvaluerow3.equals("0")) matchvaluerow3 = null; 
                }else{
-                 if(matchwithrow3 == UserMatch.MATCH_WITH_CERTIFICATEPROFILE){   
-                    matchvaluerow3 = Integer.toString(rabean.getCertificateProfileId(request.getParameter(SELECT_MATCHVALUE_ROW3)));
-                    if(matchvaluerow3.equals("0")) matchvaluerow3 = null;
-                 }else{
-                    if(matchwithrow3 == UserMatch.MATCH_WITH_STATUS){
-                       matchvaluerow3   = request.getParameter(SELECT_MATCHVALUE_ROW3);
-                    }else{
-                       matchvaluerow3    = request.getParameter(TEXTFIELD_MATCHVALUE_ROW3);
-                    }
-                 }
-              } 
+                  if(matchwithrow3 == UserMatch.MATCH_WITH_STATUS || matchwithrow3 == UserMatch.MATCH_WITH_CA){
+                    matchvaluerow3   = request.getParameter(SELECT_MATCHVALUE_ROW3);
+                  }else{
+                    matchvaluerow3    = request.getParameter(TEXTFIELD_MATCHVALUE_ROW3);
+                  }                 
+               } 
+
 
                oldmatchvaluerow1=matchvaluerow1;
                oldmatchvaluerow2=matchvaluerow2;

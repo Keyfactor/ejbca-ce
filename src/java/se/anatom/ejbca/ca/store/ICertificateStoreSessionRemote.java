@@ -20,22 +20,10 @@ import se.anatom.ejbca.log.Admin;
  * check for revocation etc. the CertificateStoreSession implements the interface
  * ICertificateStoreSession. Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.18 2003-09-03 19:57:54 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.19 2003-09-04 14:38:12 herrvendil Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote {
-    /**
-     * Lists fingerprint (primary key) of ALL certificates in the database. NOTE: Caution should be
-     * taken with this method as execution may be very heavy indeed if many certificates exist in
-     * the database (imagine what happens if there are millinos of certificates in the DB!).
-     * Should only be used for testing purposes.
-     *
-     * @return Collection of fingerprints, i.e. Strings, reverse ordered by expireDate where last
-     *         expireDate is first in array.
-     *
-     * @throws RemoteException if a communication or other error occurs.
-     */
-    public Collection listAllCertificates(Admin admin)
-        throws RemoteException;
+
 
    /**
     * Lists fingerprint (primary key) of ALL certificates in the database.
@@ -104,7 +92,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      *
      * @throws RemoteException if a communication or other error occurs.
      */
-    public String findUsernameByCertSerno(Admin admin, BigInteger serno)
+    public String findUsernameByCertSerno(Admin admin, BigInteger serno, String issuerdn)
         throws RemoteException;
 
     /**
@@ -120,15 +108,6 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     public Collection findCertificatesByExpireTime(Admin admin, Date expireTime)
         throws RemoteException;
 
-    /**
-    * Finds username for a given certificate serial number.
-    * @param serno the serialnumber of the certificate to find username for.
-    * @return username or null if none found.
-    *
-    * @throws EJBException if a communication or other error occurs.
-    *
-    */    
-    public String findUsernameByCertSerno(Admin admin, BigInteger serno, String issuerdn) throws RemoteException;      
 
     /**
      * Finds certificate with specified fingerprint.
@@ -273,7 +252,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      *
      * @throws RemoteException if a communication or other error occurs.
      */
-    public boolean changeCertificateProfile(Admin admin, String certificateprofilename,
+    public void changeCertificateProfile(Admin admin, String certificateprofilename,
         CertificateProfile certificateprofile) throws RemoteException;
     
     /**

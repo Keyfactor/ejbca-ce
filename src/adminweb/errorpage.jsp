@@ -1,7 +1,7 @@
 <%@page contentType="text/html"%>
 
-<%@page isErrorPage="true" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, se.anatom.ejbca.ra.authorization.AuthorizationDeniedException,
-                                   se.anatom.ejbca.ra.authorization.AuthenticationFailedException"%>
+<%@page isErrorPage="true" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.authorization.AuthorizationDeniedException,
+                                   se.anatom.ejbca.authorization.AuthenticationFailedException"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -24,6 +24,7 @@
        // Print Authorization Denied Exception.
      out.write("<H2>" + ejbcawebbean.getText("AUTHORIZATIONDENIED") + "</H2>");
      out.write("<H4>" + ejbcawebbean.getText("CAUSE") + " : " + exception.getMessage() + "</H4>");
+     exception.printStackTrace() ; // TODO Remove
    }
    else
    if( exception instanceof AuthenticationFailedException){

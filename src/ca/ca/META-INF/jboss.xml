@@ -2,12 +2,5 @@
 
 <jboss>
   <enterprise-beans>
-    <session>
-      <ejb-name>AuthenticationSession</ejb-name>
-      <ejb-ref>
-        <ejb-ref-name>ejb/UserData</ejb-ref-name>
-        <jndi-name>UserData</jndi-name>
-      </ejb-ref>
-    </session>
   </enterprise-beans>
 </jboss>

@@ -87,6 +87,19 @@ function checkfieldforlegaldnchars(thetextfield , alerttext){
   }
 }
 
+function checkfieldforcompletednchars(thetextfield , alerttext){
+  field = eval(thetextfield);
+  var text = new String(field.value);
+  re = /[^a-öA-Ö_ 0-9@\,\=\.\-:\/]/g;
+  if(re.exec(text)){
+    alert(alerttext);
+    return false;
+  }
+  else{
+    return true;
+  }
+}
+
 function checkfieldforlegaldncharswithchangeable(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);

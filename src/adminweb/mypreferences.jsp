@@ -1,5 +1,5 @@
 <%@page contentType="text/html"%>
-<%@page  errorPage="errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, 
+<%@page  errorPage="errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
                 se.anatom.ejbca.ra.raadmin.AdminPreference, se.anatom.ejbca.webdist.webconfiguration.GlobalConfigurationDataHandler,
                 se.anatom.ejbca.webdist.webconfiguration.WebLanguages, se.anatom.ejbca.webdist.webconfiguration.AdminPreferenceDataHandler"%>
 
@@ -23,7 +23,7 @@
 %>
 <% 
    // Initialize environment.
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/"); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/administrator"); 
 
   final String THIS_FILENAME                          = globalconfiguration.getAdminWebPath() + "mypreferences.jsp";
 

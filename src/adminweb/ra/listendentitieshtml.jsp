@@ -215,6 +215,16 @@ function confirmrevokation(){
                    <%    }
                        } %>
     </td>
+    <td width="10%"><% if(sortby.equals(SORTBY_CA_ACC)){ %>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_CA_DEC %>" value="submit" ><%= ejbcawebbean.getText("CA") %>              
+                   <% }else{
+                         if(sortby.equals(SORTBY_CA_DEC)){ %>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_CA_ACC %>" value="submit" ><%= ejbcawebbean.getText("CA") %>                     
+                   <%    }else{ %> 
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_CA_ACC %>" value="submit" ><%= ejbcawebbean.getText("CA") %>
+                   <%    }
+                       } %>
+    </td>
     <td width="19%">
                    <% if(sortby.equals(SORTBY_COMMONNAME_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_COMMONNAME_DEC %>" value="submit" ><%= ejbcawebbean.getText("COMMONNAME") %>              
@@ -257,7 +267,7 @@ function confirmrevokation(){
                    <%    }
                        } %>
     </td>
-    <td width="18%"> &nbsp;
+    <td width="8%"> &nbsp;
     </td>
   </tr>
   <% if(blank){ %>
@@ -265,23 +275,25 @@ function confirmrevokation(){
    <td width="5%"> 
    </td>
     <td width="11%">&nbsp;</td>
+    <td width="10%">&nbsp;</td>
     <td width="19%">&nbsp;</td>
     <td width="17%">&nbsp;</td>
     <td width="18%">&nbsp;</td>
     <td width="12%">&nbsp;</td>
-    <td width="18%">&nbsp;</td>
+    <td width="8%">&nbsp;</td>
   </tr> 
   <% }else{
        if(users == null || users.length == 0){     %>
   <tr id="Row0"> 
-   <td width="8%"> 
+   <td width="5%"> 
    </td>
     <td width="11%">&nbsp;</td>
+    <td width="10%">&nbsp;</td>
     <td width="19%"><%= ejbcawebbean.getText("NOENDENTITIESFOUND") %></td>
     <td width="17%">&nbsp;</td>
     <td width="18%">&nbsp;</td>
     <td width="12%">&nbsp;</td>
-    <td width="18%">&nbsp;</td>
+    <td width="8%">&nbsp;</td>
   </tr>
   <% } else{
          for(int i=0; i < users.length; i++){%>
@@ -294,6 +306,7 @@ function confirmrevokation(){
     <td width="11%"><%= users[i].getUsername() %>
        <input type="hidden" name='<%= HIDDEN_USERNAME + i %>' value="<%= java.net.URLEncoder.encode(users[i].getUsername(),"UTF-8") %>" >
     </td>
+    <td width="10%"><%= users[i].getCAName() %></td>      
     <td width="19%"><%= users[i].getCommonName() %></td>
     <td width="17%"><%= users[i].getSubjectDNField(DNFieldExtractor.OU,0) %></td>
     <td width="18%"><%= users[i].getSubjectDNField(DNFieldExtractor.O,0) %></td>
@@ -323,7 +336,7 @@ function confirmrevokation(){
                             out.write(ejbcawebbean.getText("STATUSKEYRECOVERY"));
                             break;
                         }%></td>
-      <td width="18%">
+      <td width="8%">
 
         <A  onclick='viewuser(<%= i %>)'>
         <u><%= ejbcawebbean.getText("VIEWENDENTITY") %></u> </A> 

@@ -1,16 +1,19 @@
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration,se.anatom.ejbca.ra.authorization.AuthorizationDeniedException"%>
+<%@page errorPage="errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration,se.anatom.ejbca.authorization.AuthorizationDeniedException"%>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <% 
   // A jsp page that generates the menu after the users access rights 
   // Initialize environment.
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/"); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/administrator"); 
  
   final String THIS_FILENAME            =   globalconfiguration.getMenuFilename();
 
   final String MAIN_LINK                =  "/" + globalconfiguration.getAdminWebPath() +globalconfiguration.getMainFilename();
+
+  final String EDITCA_LINK              = "/" +globalconfiguration.getCaPath() 
+                                                  + "/editcas/editcas.jsp";
 
   final String CA_LINK                  = "/" +globalconfiguration.getCaPath() 
                                                   + "/cafunctions.jsp";
@@ -30,25 +33,24 @@
                                                   + "/configuration.jsp";
   final String ADMINISTRATORPRIV_LINK   = "/" +globalconfiguration.getAuthorizationPath() 
                                                   + "/administratorprivileges.jsp";
-  final String AVAILABLE_ACCESSRULES_LINK  = "/" +globalconfiguration.getAuthorizationPath() 
-                                                  + "/availablerules/editavailablerules.jsp";
   final String MYPREFERENCES_LINK     = "/" +globalconfiguration.getAdminWebPath() + "mypreferences.jsp";
   final String HELP_LINK                = "/" +globalconfiguration.getAdminWebPath() + globalconfiguration.getHelpPath() 
                                                   + "/index_help.html";
 
 
-  final String MAIN_RESOURCE                          = "/";
-  final String CABASICFUNCTIONS_RESOURCE              = "/ca_functionallity/basic_functions";
-  final String EDITCERTIFICATEPROFILES_RESOURCE       = "/ca_functionallity/edit_certificate_profiles";
-  final String RAEDITENDENTITYPROFILES_RESOURCE       = "/ra_functionallity/edit_end_entity_profiles";
-  final String RAADDENDENTITY_RESOURCE                = "/ra_functionallity/create_end_entity";
-  final String RALISTEDITENDENTITY_RESOURCE           = "/ra_functionallity/view_end_entity";
-  final String HTEDITHARDTOKENISSUERS_RESOURCE        = "/hardtoken_functionallity/edit_hardtoken_issuers";
-  final String LOGVIEW_RESOURCE                       = "/log_functionallity/view_log";
-  final String LOGCONFIGURATION_RESOURCE              = "/log_functionallity/edit_log_configuration";
-  final String SYSTEMCONFIGURATION_RESOURCE           = "/system_functionallity/edit_system_configuration";
-  final String ADMINPRIVILEGES_RESOURCE               = "/system_functionallity/edit_administrator_privileges";
-  final String AVAILABLEACCESSRULES_RESOURCE          = "/system_functionallity/edit_administrator_privileges/edit_available_accessrules";
+  final String MAIN_RESOURCE                          = "/administrator";
+  final String CABASICFUNCTIONS_RESOURCE              = "/ca_functionality/basic_functions";
+  final String EDITCAS_RESOURCE                       = "/super_administrator";
+  final String EDITCERTIFICATEPROFILES_RESOURCE       = "/ca_functionality/edit_certificate_profiles";
+  final String RAEDITENDENTITYPROFILES_RESOURCE       = "/ra_functionality/edit_end_entity_profiles";
+  final String RAADDENDENTITY_RESOURCE                = "/ra_functionality/create_end_entity";
+  final String RALISTEDITENDENTITY_RESOURCE           = "/ra_functionality/view_end_entity";
+  final String HTEDITHARDTOKENISSUERS_RESOURCE        = "/hardtoken_functionality/edit_hardtoken_issuers";
+  final String LOGVIEW_RESOURCE                       = "/log_functionality/view_log";
+  final String LOGCONFIGURATION_RESOURCE              = "/log_functionality/edit_log_configuration";
+  final String SYSTEMCONFIGURATION_RESOURCE           = "/system_functionality/edit_system_configuration";
+  final String ADMINPRIVILEGES_RESOURCE               = "/system_functionality/edit_administrator_privileges";
+
 
 %>
 <%  
@@ -93,6 +95,17 @@
            raheaderprinted=true;
         } %>
      &nbsp;&nbsp;<A href='<%= CA_CERTIFICATEPROFILELINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITCERTIFICATEPROFILES") %></a>
+     <br>
+
+<%    }
+   }catch(AuthorizationDeniedException e){} 
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(EDITCAS_RESOURCE)){ 
+        if(!caheaderprinted){
+          out.write("<br>" + ejbcawebbean.getText("CAFUNCTIONS")+"<br>"); 
+           raheaderprinted=true;
+        } %>
+     &nbsp;&nbsp;<A href='<%= EDITCA_LINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITCAS") %></a>
      <br>
 
 <%    }
@@ -183,17 +196,6 @@
      &nbsp;&nbsp;<A href="<%= ADMINISTRATORPRIV_LINK %>" target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITADMINISTRATORPRIV") %></A><br>
 <%   }
    }catch(AuthorizationDeniedException e){}
-    // If authorized to edit authorizations then display related links.
-    try{
-      if(ejbcawebbean.isAuthorizedNoLog(AVAILABLEACCESSRULES_RESOURCE)){ 
-        if(!systemheaderprinted){
-          out.write("<br>" + ejbcawebbean.getText("SYSTEMFUNCTIONS")+"<br>"); 
-          systemheaderprinted=true;
-          }%>
-   &nbsp;&nbsp; <A href="<%= AVAILABLE_ACCESSRULES_LINK  %>" target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITAVAILABLERULES") %></A>
-<br>   
-<%   }
-   }catch(AuthorizationDeniedException e){}
     // If authorized to edit user preferences then display related links.
     try{
       if(ejbcawebbean.isAuthorizedNoLog(MAIN_RESOURCE)){ %>
@@ -207,11 +209,11 @@
  } 
     // If authorized to view help pages then display related links.
  /*  try{
-     if(ejbcawebbean.isAuthorizedNoLog(MAIN_RESOURCE)){ %>
-     <br><br><br>
+     if(ejbcawebbean.isAuthorizedNoLog(MAIN_RESOURCE)){ */%>
+  <!--   <br><br><br>
      <u><A onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("index_help.html") %>")' id="menu"><%=ejbcawebbean.getText("HELP") %></A></u>
-
-<%   }
+-->
+<% /*  }
     }catch(AuthorizationDeniedException e){} */%>
 
 

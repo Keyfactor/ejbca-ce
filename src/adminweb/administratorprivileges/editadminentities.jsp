@@ -7,44 +7,46 @@
     * author  Philip Vendil */ %>
 
 <% // Check actions submitted
+    AdminEntity adminentity = null;
+    int matchwith, matchtype;
+    String matchvalue = null;
+
 
     if( request.getParameter(BUTTON_ADD_ADMINENTITY) != null ){
          // Add given admin entity.
          
-         String[][] adminentity = new String[1][3];
-         adminentity[0][AuthorizationDataHandler.ADMIN_ENTITY_MATCHWITH]  = request.getParameter(SELECT_MATCHWITH);
-         adminentity[0][AuthorizationDataHandler.ADMIN_ENTITY_MATCHTYPE]  = request.getParameter(SELECT_MATCHTYPE);
-         adminentity[0][AuthorizationDataHandler.ADMIN_ENTITY_MATCHVALUE] = request.getParameter(TEXTFIELD_MATCHVALUE);
-         if(adminentity[0][AuthorizationDataHandler.ADMIN_ENTITY_MATCHVALUE] != null){
-           adminentity[0][AuthorizationDataHandler.ADMIN_ENTITY_MATCHVALUE]=
-             adminentity[0][AuthorizationDataHandler.ADMIN_ENTITY_MATCHVALUE].trim();
-           if(!adminentity[0][AuthorizationDataHandler.ADMIN_ENTITY_MATCHVALUE].equals("")){
-             adh.addAdminEntities(admingroup,adminentity);
-           }
+         matchwith  = Integer.parseInt(request.getParameter(SELECT_MATCHWITH));
+         matchtype  = Integer.parseInt(request.getParameter(SELECT_MATCHTYPE));
+         matchvalue = request.getParameter(TEXTFIELD_MATCHVALUE);
+         if(matchvalue != null && !matchvalue.trim().equals("")){
+             ArrayList adminentities = new ArrayList();
+             adminentities.add(new AdminEntity(matchwith, matchtype, matchvalue, caid));
+             adh.addAdminEntities(admingroup[ADMINGROUPNAME],caid,adminentities);
          }
     }
     if( request.getParameter(BUTTON_DELETE_ADMINENTITIES) != null ){
          // Delete selected admin entities.
        java.util.Enumeration parameters = request.getParameterNames();
-       java.util.Vector indexes = new  java.util.Vector();
+       java.util.ArrayList indexes = new  java.util.ArrayList();
        int index;
        while(parameters.hasMoreElements()) {
          String parameter = (String) parameters.nextElement();
          if(parameter.startsWith(CHECKBOX_DELETE_ADMINENTITY) && request.getParameter(parameter).equals(CHECKBOX_VALUE)){ 
            index = java.lang.Integer.parseInt(parameter.substring(CHECKBOX_DELETE_ADMINENTITY.length())); //Without []     
-           indexes.addElement(new Integer(index)); 
+           indexes.add(new Integer(index)); 
           }
        }
        
        if(indexes.size() > 0){
-         String[][] adminentities = new String[indexes.size()][3];
-         for(int i = 0; i < indexes.size(); i++){
-           index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
-           adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHWITH] = request.getParameter(HIDDEN_MATCHWITH+index);
-           adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHTYPE] = request.getParameter(HIDDEN_MATCHTYPE+index);
-           adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHVALUE] = request.getParameter(HIDDEN_MATCHVALUE+index);
+         ArrayList adminentities = new ArrayList();
+         Iterator iter = indexes.iterator();
+         while(iter.hasNext()){
+           index = ((java.lang.Integer) iter.next()).intValue();
+           adminentities.add(new AdminEntity(Integer.parseInt(request.getParameter(HIDDEN_MATCHWITH+index)),
+                                             Integer.parseInt(request.getParameter(HIDDEN_MATCHTYPE+index)),
+                                             request.getParameter(HIDDEN_MATCHVALUE+index), caid));
          }
-         adh.removeAdminEntities(admingroup,adminentities);   
+         adh.removeAdminEntities(admingroup[ADMINGROUPNAME],caid,adminentities);
       }
     }
 
@@ -53,17 +55,31 @@
 
 <%
    // Generate Html file.
-   String[][] adminentities = adh.getAdminEntities(admingroup);
+     System.out.println("admingroupname '" + admingroup[ADMINGROUPNAME] + "', caid :" + caid);
+   if(adh == null)
+     System.out.println(" adh is null");
 
-   int numdeletecheckboxes=adminentities.length;
+   if(admingroup == null)
+     System.out.println(" admingroup is null");
+   if(adh.getAdminGroup(admingroup[ADMINGROUPNAME],caid) == null)
+     System.out.println(" AdminGroup is null");
+
+   Collection adminentities = adh.getAdminGroup(admingroup[ADMINGROUPNAME],caid).getAdminEntities();
+
+   int numdeletecheckboxes=adminentities.size();
+   String[] MATCHWITHTEXTS = {"","WITHCOUNTRY", "WITHDOMAINCOMPONENT", "WITHSTATE", "WITHLOCATION", 
+                              "WITHORGANIZATION", "WITHORGANIZATIONUNIT", "WITHTITLE", 
+                              "WITHCOMMONNAME", "WITHUID", "WITHDNSERIALNUMBER", "WITHSERIALNUMBER"}; 
+
+   String[] MATCHTYPETEXTS = {"EQUALCASE", "EQUALCASEINS", "NOTEQUALCASE", "NOTEQUALCASEINS"};
 %>
 
 <div align="center">
   <p><H1><%= ejbcawebbean.getText("EDITADMINS") %></H1></p>
-  <p><H2><%= ejbcawebbean.getText("FORADMINGROUP") + " " + admingroup %></H2></p>
+  <p><H2><%= ejbcawebbean.getText("FORADMINGROUP") + " " + admingroup[ADMINGROUPNAME] + ", " + ejbcawebbean.getText("CA") + ": " + caidtonamemap.get(new Integer(caid)) %></H2></p>
   <form name="toaccessrules" method="post" action="<%=THIS_FILENAME %>">
   <div align="right"><A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOADMINGROUPS") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <input type="hidden" name='<%= HIDDEN_GROUPNAME %>' value='<%= admingroup %>'>
+    <input type="hidden" name='<%= HIDDEN_GROUPNAME %>' value='<%= admingroup[ADMINGROUPNAME] + ";" + caid %>'>
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ACCESSRULES %>'>
     <A href='javascript:document.toaccessrules.submit();'><u><%= ejbcawebbean.getText("EDITACCESSRULES") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <!--    <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("authorization_help.html") + "#admins"%>")'>
@@ -73,7 +89,7 @@
   <p align="center"></p>
   <form name="addadmins" method="post" action="<%=THIS_FILENAME %>">
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ADMINENTITIES %>'>
-    <input type="hidden" name='<%= HIDDEN_GROUPNAME %>' value='<%= admingroup %>'>
+    <input type="hidden" name='<%= HIDDEN_GROUPNAME %>' value='<%= admingroup[ADMINGROUPNAME] + ";" + caid %>'>
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
       <tr> 
         <td width="6%"></td>
@@ -115,7 +131,7 @@
           </select>
           </td>
         <td width="33%"> 
-          <input type="text" name="<%= TEXTFIELD_MATCHVALUE %>" size="40">
+          <input type="text" name="<%= TEXTFIELD_MATCHVALUE %>" size="30">
         </td>
         <td width="26%"> 
           <input type="submit" name="<%= BUTTON_ADD_ADMINENTITY %>" 
@@ -135,7 +151,7 @@
   <p align="left"> </p>
   <form name="deleteadmins" method="post" action="<%=THIS_FILENAME %>">
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ADMINENTITIES %>'>
-    <input type="hidden" name='<%= HIDDEN_GROUPNAME %>' value='<%= admingroup %>'>
+    <input type="hidden" name='<%= HIDDEN_GROUPNAME %>' value='<%= admingroup[ADMINGROUPNAME] + ";" + caid %>'>
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
       <tr> 
         <td width="6%"></td>
@@ -151,7 +167,7 @@
         <td width="53%"><H3><%= ejbcawebbean.getText("ADMIN") %></H3></td>
         <td width="2%"><b></b></td>
       </tr>
-   <% if(adminentities == null || adminentities.length == 0){ %>
+   <% if(adminentities == null || adminentities.size() == 0){ %>
       <tr id="Row0"> 
         <td width="10%">&nbsp;</td>
         <td width="20%">&nbsp;</td>
@@ -161,72 +177,31 @@
       </tr>
    <% }
       else{
-        for(int i = 0; i < adminentities.length ; i++){ %> 
+        Iterator iter = adminentities.iterator();
+        int i = 0;
+        while(iter.hasNext()){ 
+          adminentity = (AdminEntity) iter.next();%> 
       <tr id="Row<%= i%2 %>"> 
         <td width="10%"> 
           <input type="checkbox" name="<%= CHECKBOX_DELETE_ADMINENTITY + i %>" value="<%= CHECKBOX_VALUE %>">
         </td>
         <td width="20%">
-          <input type="hidden" name='<%= HIDDEN_MATCHWITH + i %>' value='<%= adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHWITH] %>'>
-        <% if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHWITH].equals(String.valueOf(AdminEntity.WITH_COUNTRY))){
-             out.write(ejbcawebbean.getText("WITHCOUNTRY"));
-           }
-           if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHWITH].equals(String.valueOf(AdminEntity.WITH_DOMAINCOMPONENT))){
-             out.write(ejbcawebbean.getText("WITHDOMAINCOMPONENT"));
-           }
-           if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHWITH].equals(String.valueOf(AdminEntity.WITH_STATE))){
-             out.write(ejbcawebbean.getText("WITHSTATE"));
-           }
-           if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHWITH].equals(String.valueOf(AdminEntity.WITH_LOCALE))){
-             out.write(ejbcawebbean.getText("WITHLOCATION"));
-           }
-           if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHWITH].equals(String.valueOf(AdminEntity.WITH_ORGANIZATION))){
-             out.write(ejbcawebbean.getText("WITHORGANIZATION"));
-           }
-           if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHWITH].equals(String.valueOf(AdminEntity.WITH_ORGANIZATIONUNIT))){
-             out.write(ejbcawebbean.getText("WITHORGANIZATIONUNIT"));
-           }
-           if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHWITH].equals(String.valueOf(AdminEntity.WITH_TITLE))){
-             out.write(ejbcawebbean.getText("WITHTITLE"));
-           }
-           if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHWITH].equals(String.valueOf(AdminEntity.WITH_COMMONNAME))){
-             out.write(ejbcawebbean.getText("WITHCOMMONNAME"));
-           }
-           if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHWITH].equals(String.valueOf(AdminEntity.WITH_UID))){
-             out.write(ejbcawebbean.getText("WITHUID"));
-           }
-           if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHWITH].equals(String.valueOf(AdminEntity.WITH_DNSERIALNUMBER))){
-             out.write(ejbcawebbean.getText("WITHDNSERIALNUMBER"));
-           }
-           if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHWITH].equals(String.valueOf(AdminEntity.WITH_SERIALNUMBER))){
-             out.write(ejbcawebbean.getText("WITHSERIALNUMBER"));
-           }
-%>
+          <input type="hidden" name='<%= HIDDEN_MATCHWITH + i %>' value='<%= adminentity.getMatchWith() %>'>
+        <%=  ejbcawebbean.getText(MATCHWITHTEXTS[adminentity.getMatchWith()]) %>
         </td>
         <td width="15%">
-          <input type="hidden" name='<%= HIDDEN_MATCHTYPE + i %>' value='<%= adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHTYPE] %>'>
-<%      if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHTYPE].equals(String.valueOf(AdminEntity.TYPE_EQUALCASE))){
-             out.write(ejbcawebbean.getText("EQUALCASE"));
-        }
-        if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHTYPE].equals(String.valueOf(AdminEntity.TYPE_EQUALCASEINS))){
-             out.write(ejbcawebbean.getText("EQUALCASEINS"));
-        }
-        if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHTYPE].equals(String.valueOf(AdminEntity.TYPE_NOT_EQUALCASE))){
-             out.write(ejbcawebbean.getText("NOTEQUALCASE"));
-        }
-        if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHTYPE].equals(String.valueOf(AdminEntity.TYPE_NOT_EQUALCASEINS))){
-             out.write(ejbcawebbean.getText("NOTEQUALCASEINS"));
-        }
-%>
+          <input type="hidden" name='<%= HIDDEN_MATCHTYPE + i %>' value='<%= adminentity.getMatchType() %>'>
+        <%=  ejbcawebbean.getText(MATCHTYPETEXTS[adminentity.getMatchType() - 1000]) %>    
 
         </td>
         <td width="53%">
-          <input type="hidden" name='<%= HIDDEN_MATCHVALUE + i %>' value='<%= adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHVALUE] %>'>
-           <%= adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHVALUE] %>
+          <input type="hidden" name='<%= HIDDEN_MATCHVALUE + i %>' value='<%= adminentity.getMatchValue() %>'>
+           <%= adminentity.getMatchValue() %>
         </td>
         <td width="2%">&nbsp;</td>
       </tr>
-<%    }
+<%    i++;
+      }
     } %>  
     </table>
   <table width="100%" border="0" cellspacing="0" cellpadding="0">

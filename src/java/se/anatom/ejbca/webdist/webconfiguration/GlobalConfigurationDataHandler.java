@@ -1,70 +1,51 @@
 package se.anatom.ejbca.webdist.webconfiguration;
 
-import java.rmi.RemoteException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
-import javax.naming.*;
-
+import se.anatom.ejbca.authorization.AuthorizationDeniedException;
+import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.GlobalConfiguration;
-import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-
+import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 
 /**
- * A class handling the saving and loading of global configuration data. By default all data are
- * saved to a database.
+ * A class handling the saving and loading of global configuration data.
+ * By default all data are saved to a database.
  *
- * @author Philip Vendil
- * @version $Id: GlobalConfigurationDataHandler.java,v 1.15 2003-07-24 08:43:33 anatom Exp $
+ * @author  Philip Vendil
+ * @version $Id: GlobalConfigurationDataHandler.java,v 1.16 2003-09-04 14:38:11 herrvendil Exp $
  */
 public class GlobalConfigurationDataHandler {
-    /**
-     * Creates a new instance of GlobalConfigurationDataHandler
-     *
-     * @param adminsession DOCUMENT ME!
-     * @param administrator DOCUMENT ME!
-     */
-    public GlobalConfigurationDataHandler(IUserAdminSessionRemote adminsession, Admin administrator) {
-        this.adminsession = adminsession;
-        this.administrator = administrator;
+
+    /** Creates a new instance of GlobalConfigurationDataHandler */
+    public GlobalConfigurationDataHandler(Admin administrator,IRaAdminSessionLocal raadminsession, IAuthorizationSessionLocal authorizationsession){
+      this.raadminsession = raadminsession;
+      this.authorizationsession = authorizationsession;
+      this.administrator = administrator;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     *
-     * @throws RemoteException DOCUMENT ME!
-     * @throws NamingException DOCUMENT ME!
-     */
-    public GlobalConfiguration loadGlobalConfiguration()
-        throws RemoteException, NamingException {
+    public GlobalConfiguration loadGlobalConfiguration() throws NamingException{
         GlobalConfiguration ret = null;
 
-        ret = adminsession.loadGlobalConfiguration(administrator);
-
+        ret = raadminsession.loadGlobalConfiguration(administrator);
         InitialContext ictx = new InitialContext();
-        Context myenv = (Context) ictx.lookup("java:comp/env");
+        Context myenv = (Context) ictx.lookup("java:comp/env");      
         ret.initialize((String) myenv.lookup("BASEURL"), (String) myenv.lookup("ADMINDIRECTORY"),
-            (String) myenv.lookup("AVAILABLELANGUAGES"), (String) myenv.lookup("AVAILABLETHEMES"),
-            (String) myenv.lookup("PUBLICPORT"), (String) myenv.lookup("PRIVATEPORT"),
-            (String) myenv.lookup("PUBLICPROTOCOL"), (String) myenv.lookup("PRIVATEPROTOCOL"));
-
+                        (String) myenv.lookup("AVAILABLELANGUAGES"), (String) myenv.lookup("AVAILABLETHEMES"), 
+                        (String) myenv.lookup("PUBLICPORT"),(String) myenv.lookup("PRIVATEPORT"),
+                        (String) myenv.lookup("PUBLICPROTOCOL"),(String) myenv.lookup("PRIVATEPROTOCOL"));
         return ret;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param gc DOCUMENT ME!
-     *
-     * @throws RemoteException DOCUMENT ME!
-     */
-    public void saveGlobalConfiguration(GlobalConfiguration gc)
-        throws RemoteException {
-        adminsession.saveGlobalConfiguration(administrator, gc);
+    public void saveGlobalConfiguration(GlobalConfiguration gc) throws AuthorizationDeniedException {
+       if(this.authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator"));
+         raadminsession.saveGlobalConfiguration(administrator,  gc);
     }
 
-    // private IRaAdminSessionHome  raadminsessionhome;
-    private IUserAdminSessionRemote adminsession;
+   // private IRaAdminSessionHome  raadminsessionhome;
+    private IRaAdminSessionLocal raadminsession;
+    private IAuthorizationSessionLocal  authorizationsession;
     private Admin administrator;
 }

@@ -2,20 +2,18 @@
 
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp"  import="java.math.BigInteger, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.GlobalConfiguration, 
+<%@page errorPage="/errorpage.jsp"  import="java.math.BigInteger, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
                  se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.CertificateView, se.anatom.ejbca.webdist.rainterface.RevokedInfoView,
-                 javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.ra.authorization.AuthorizationDeniedException" %>
+                 javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.authorization.AuthorizationDeniedException" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
-<jsp:setProperty name="ejbcawebbean" property="*" /> 
 <jsp:useBean id="rabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
-<jsp:setProperty name="rabean" property="*" /> 
 <jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
-<jsp:setProperty name="cabean" property="*" /> 
+
 <%! // Declarations
  
   static final String USER_PARAMETER             = "username";
   static final String CERTSERNO_PARAMETER        = "certsernoparameter";
-  static final String CACERT_PARAMETER           = "cacert";
+  static final String CACERT_PARAMETER           = "caid";
   static final String HARDTOKENSN_PARAMETER      = "tokensn";
 
   static final String BUTTON_CLOSE               = "buttonclose"; 
@@ -42,9 +40,9 @@
 
 %><%
   // Initialize environment.
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ca_functionallity/view_certificate"); 
-                                            rabean.initialize(request);
-                                            cabean.initialize(request); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ca_functionality/view_certificate"); 
+                                            rabean.initialize(request, ejbcawebbean);
+                                            cabean.initialize(request, ejbcawebbean); 
 
   String THIS_FILENAME            =  globalconfiguration.getAdminWebPath()  + "viewcertificate.jsp";
 
@@ -54,10 +52,12 @@
   boolean usekeyrecovery          = globalconfiguration.getEnableKeyRecovery() && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_KEYRECOVERY_RIGHTS);
   CertificateView certificatedata = null;
   String certificateserno         = null;
+  String issuerdn                 = null;
   String username                 = null;         
   String tokensn                  = null;
   int numberofcertificates        = 0;
   int currentindex                = 0;
+  int caid                        = 0;
   
   if( request.getParameter(HARDTOKENSN_PARAMETER) != null && request.getParameter(USER_PARAMETER ) != null){
      username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
@@ -79,21 +79,31 @@
   }
 
   if( request.getParameter(CERTSERNO_PARAMETER ) != null){
-     certificateserno = request.getParameter(CERTSERNO_PARAMETER );
+     
+     String[] certdata = java.net.URLDecoder.decode(request.getParameter(CERTSERNO_PARAMETER ),"UTF-8").split(",",2);
+     certificateserno = certdata[0];
+     issuerdn = certdata[1];
+
      try{  
-       rabean.loadCertificates(new BigInteger(certificateserno,16)); 
+       rabean.loadCertificates(new BigInteger(certificateserno,16), issuerdn); 
        notauthorized = false;
      }catch(AuthorizationDeniedException e){}
      noparameter = false;
   }
   if( request.getParameter(CACERT_PARAMETER ) != null){
-     currentindex = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
-     try{  
-       ejbcawebbean.isAuthorizedNoLog("/ca_functionallity/basic_functions");
-       rabean.loadCACertificates(cabean.getCAInfo()); 
-       notauthorized = false;
-     }catch(AuthorizationDeniedException e){}
-     noparameter = false;
+     caid = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
+     if(request.getParameter(BUTTON_VIEW_PREVIOUS) == null && request.getParameter(BUTTON_VIEW_NEXT) == null){
+       try{  
+         ejbcawebbean.isAuthorizedNoLog("/ca_functionallity/basic_functions");
+         ejbcawebbean.isAuthorized(se.anatom.ejbca.authorization.AvailableAccessRules.CAPREFIX + caid);
+         rabean.loadCACertificates(cabean.getCACertificates(caid)); 
+         numberofcertificates = rabean.getNumberOfCertificates();
+         if(numberofcertificates > 0)
+          currentindex = 0;     
+         notauthorized = false;
+       }catch(AuthorizationDeniedException e){}
+       noparameter = false;
+     }
      cacerts = true;
   }
   if(!noparameter){  
@@ -111,7 +121,7 @@
      certificatedata = rabean.getCertificate(currentindex);
      if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
         && !certificatedata.isRevoked())   
-       rabean.revokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getUsername(),reason);
+       rabean.revokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDN(), certificatedata.getUsername(),reason);
      try{
        if(tokensn !=null)
          rabean.loadTokenCertificates(tokensn,username);
@@ -119,7 +129,7 @@
          if(username != null)
            rabean.loadCertificates(username);
          else
-           rabean.loadCertificates(new BigInteger(certificateserno,16));
+           rabean.loadCertificates(new BigInteger(certificateserno,16), issuerdn);
        notauthorized = false;
      }catch(AuthorizationDeniedException e){
      }
@@ -140,7 +150,7 @@
          if(username != null)
            rabean.loadCertificates(username);
          else
-           rabean.loadCertificates(new BigInteger(certificateserno,16));
+           rabean.loadCertificates(new BigInteger(certificateserno,16), issuerdn);
        notauthorized = false;
      }catch(AuthorizationDeniedException e){
      }
@@ -234,7 +244,7 @@ function confirmkeyrecovery(){
      <input type="hidden" name='<%= CERTSERNO_PARAMETER %>' value='<%=certificateserno %>'> 
      <% } 
     if(cacerts){ %>
-     <input type="hidden" name='<%= CACERT_PARAMETER %>' value='<%=currentindex %>'> 
+     <input type="hidden" name='<%= CACERT_PARAMETER %>' value='<%=caid %>'> 
      <% } %>
      <input type="hidden" name='<%= HIDDEN_INDEX %>' value='<%=currentindex %>'>
      <table border="0" cellpadding="0" cellspacing="2" width="500">
@@ -363,6 +373,19 @@ function confirmkeyrecovery(){
                if(none){
                   out.write(ejbcawebbean.getText("NOKEYUSAGESPECIFIED"));          
               }
+%>
+         </td>
+       </tr>
+       <tr id="Row<%=(row++)%2%>">
+	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXTENDEDKEYUSAGE") %></td>
+	 <td><% String[] extendedkeyusage = certificatedata.getExtendedKeyUsageAsTexts();
+                for(int i=0; i<extendedkeyusage.length; i++){
+                  if(i>0)
+                    out.write(", ");
+                  out.write( ejbcawebbean.getText(extendedkeyusage[i]));
+                }                
+                if(extendedkeyusage == null || extendedkeyusage.length == 0)
+                  out.write(ejbcawebbean.getText("NOEXTENDEDKEYUSAGESPECIFIED"));                       
 %>
          </td>
        </tr>

@@ -28,6 +28,9 @@ import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionHome;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote;
 import se.anatom.ejbca.keyrecovery.KeyRecoveryData;
+
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
@@ -60,12 +63,13 @@ import se.anatom.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.38 2003-07-24 08:43:29 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.39 2003-09-04 14:38:11 herrvendil Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
     private ISignSessionHome signsessionhome = null;
     private IUserAdminSessionHome useradminhome = null;
+    private IRaAdminSessionHome raadminhome = null;
     private IKeyRecoverySessionHome keyrecoveryhome = null;
     private byte[] bagattributes = "Bag Attributes\n".getBytes();
     private byte[] friendlyname = "    friendlyName: ".getBytes();
@@ -94,13 +98,15 @@ public class CertReqServlet extends HttpServlet {
 
             // Get EJB context and home interfaces
             InitialContext ctx = new InitialContext();
-            signsessionhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup(
-                        "RSASignSession"), ISignSessionHome.class);
-            useradminhome = (IUserAdminSessionHome) PortableRemoteObject.narrow(ctx.lookup(
-                        "UserAdminSession"), IUserAdminSessionHome.class);
-            keyrecoveryhome = (IKeyRecoverySessionHome) PortableRemoteObject.narrow(ctx.lookup(
-                        "KeyRecoverySession"), IKeyRecoverySessionHome.class);
-        } catch (Exception e) {
+            signsessionhome = (ISignSessionHome) PortableRemoteObject.narrow(
+                      ctx.lookup("RSASignSession"), ISignSessionHome.class );
+            useradminhome = (IUserAdminSessionHome) PortableRemoteObject.narrow(
+                             ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class );
+            raadminhome   = (IRaAdminSessionHome) PortableRemoteObject.narrow(
+                             ctx.lookup("RaAdminSession"), IRaAdminSessionHome.class );            
+            keyrecoveryhome = (IKeyRecoverySessionHome) PortableRemoteObject.narrow(
+                             ctx.lookup("KeyRecoverySession"), IKeyRecoverySessionHome.class );
+        } catch( Exception e ) {
             throw new ServletException(e);
         }
     }
@@ -139,6 +145,7 @@ public class CertReqServlet extends HttpServlet {
             Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
 
             IUserAdminSessionRemote adminsession = useradminhome.create();
+            IRaAdminSessionRemote raadminsession = raadminhome.create();            
             ISignSessionRemote signsession = signsessionhome.create();
             RequestHelper helper = new RequestHelper(administrator, debug);
 
@@ -148,7 +155,7 @@ public class CertReqServlet extends HttpServlet {
             // Check user
             int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
 
-            usekeyrecovery = (adminsession.loadGlobalConfiguration(administrator)).getEnableKeyRecovery();
+            usekeyrecovery = (raadminsession.loadGlobalConfiguration(administrator)).getEnableKeyRecovery();
 
             UserAdminData data = adminsession.findUser(administrator, username);
 
@@ -162,64 +169,47 @@ public class CertReqServlet extends HttpServlet {
 
             // get users Token Type.
             tokentype = data.getTokenType();
-
-            if (tokentype == SecConst.TOKEN_SOFT_P12) {
-                KeyStore ks = generateToken(administrator, username, password, keylength, false,
-                        loadkeys, savekeys);
-                sendP12Token(ks, username, password, response);
+            if(tokentype == SecConst.TOKEN_SOFT_P12){
+              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, false, loadkeys, savekeys);
+              sendP12Token(ks, username, password, response);
             }
-
-            if (tokentype == SecConst.TOKEN_SOFT_JKS) {
-                KeyStore ks = generateToken(administrator, username, password, keylength, true,
-                        loadkeys, savekeys);
-                sendJKSToken(ks, username, password, response);
+            if(tokentype == SecConst.TOKEN_SOFT_JKS){
+              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, true, loadkeys, savekeys);
+              sendJKSToken(ks, username, password, response);
             }
-
-            if (tokentype == SecConst.TOKEN_SOFT_PEM) {
-                KeyStore ks = generateToken(administrator, username, password, keylength, false,
-                        loadkeys, savekeys);
-                sendPEMTokens(ks, username, password, response);
+            if(tokentype == SecConst.TOKEN_SOFT_PEM){
+              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, false, loadkeys, savekeys);
+              sendPEMTokens(ks, username, password, response);
             }
+            if(tokentype == SecConst.TOKEN_SOFT_BROWSERGEN){
 
-            if (tokentype == SecConst.TOKEN_SOFT_BROWSERGEN) {
-                // first check if it is a netcsape request,
-                if (request.getParameter("keygen") != null) {
-                    byte[] reqBytes = request.getParameter("keygen").getBytes();
-                    log.debug("Received NS request:" + new String(reqBytes));
-
-                    if (reqBytes != null) {
-                        byte[] certs = helper.nsCertRequest(signsession, reqBytes, username,
-                                password);
-                        RequestHelper.sendNewCertToNSClient(certs, response);
-                    }
-                } else if ((request.getParameter("pkcs10") != null) ||
-                        (request.getParameter("PKCS10") != null)) {
-                    // if not netscape, check if it's IE
-                    byte[] reqBytes = request.getParameter("pkcs10").getBytes();
-
-                    if (reqBytes == null) {
-                        reqBytes = request.getParameter("PKCS10").getBytes();
-                    }
-
-                    log.debug("Received IE request:" + new String(reqBytes));
-
-                    if (reqBytes != null) {
-                        byte[] b64cert = helper.pkcs10CertRequest(signsession, reqBytes, username,
-                                password);
-                        debug.ieCertFix(b64cert);
-                        RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(),
-                            getServletContext(), getInitParameter("responseTemplate"), classid);
-                    }
-                } else if (request.getParameter("pkcs10req") != null) {
-                    // if not IE, check if it's manual request
-                    byte[] reqBytes = request.getParameter("pkcs10req").getBytes();
-
-                    if (reqBytes != null) {
-                        byte[] b64cert = helper.pkcs10CertRequest(signsession, reqBytes, username,
-                                password);
-                        RequestHelper.sendNewB64Cert(b64cert, response);
-                    }
-                }
+              // first check if it is a netcsape request,
+              if (request.getParameter("keygen") != null) {
+                  byte[] reqBytes=request.getParameter("keygen").getBytes();
+                  log.debug("Received NS request:"+new String(reqBytes));
+                  if (reqBytes != null) {
+                      byte[] certs = helper.nsCertRequest(signsession, reqBytes, username, password);
+                      RequestHelper.sendNewCertToNSClient(certs, response);
+                  }
+              } else if ( (request.getParameter("pkcs10") != null) || (request.getParameter("PKCS10") != null) ) {
+                  // if not netscape, check if it's IE
+                  byte[] reqBytes=request.getParameter("pkcs10").getBytes();
+                  if (reqBytes == null)
+                      reqBytes=request.getParameter("PKCS10").getBytes();
+                  log.debug("Received IE request:"+new String(reqBytes));
+                  if (reqBytes != null) {
+                      byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password);
+                      debug.ieCertFix(b64cert);
+                      RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"),classid);
+                  }
+              } else if (request.getParameter("pkcs10req") != null) {
+                  // if not IE, check if it's manual request
+                  byte[] reqBytes=request.getParameter("pkcs10req").getBytes();
+                  if (reqBytes != null) {
+                      byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password);
+                    RequestHelper.sendNewB64Cert(b64cert, response);
+                  }
+              }
             }
         } catch (ObjectNotFoundException oe) {
             log.debug("Non existent username!");
@@ -451,27 +441,27 @@ public class CertReqServlet extends HttpServlet {
         buffer.close();
     }
 
-    private KeyStore generateToken(Admin administrator, String username, String password,
-        int keylength, boolean createJKS, boolean loadkeys, boolean savekeys)
-        throws Exception {
-        KeyPair rsaKeys = null;
 
-        if (loadkeys) {
-            // used saved keys.
-            IKeyRecoverySessionRemote keyrecoverysession = keyrecoveryhome.create();
-            rsaKeys = ((KeyRecoveryData) keyrecoverysession.keyRecovery(administrator, username)).getKeyPair();
-        } else {
-            // generate new keys.
-            rsaKeys = KeyTools.genKeys(keylength);
-        }
+    private KeyStore generateToken(Admin administrator, String username, String password, int caid, int keylength, boolean createJKS, boolean loadkeys, boolean savekeys)
+       throws Exception{
+         KeyPair rsaKeys = null;
+         if(loadkeys){
+           // used saved keys.
+           IKeyRecoverySessionRemote keyrecoverysession = keyrecoveryhome.create();
+           rsaKeys = ((KeyRecoveryData) keyrecoverysession.keyRecovery(administrator, username)).getKeyPair();
+         }
+         else{
+           // generate new keys.
+           rsaKeys = KeyTools.genKeys(keylength);
+         }
 
-        ISignSessionRemote signsession = signsessionhome.create();
-        X509Certificate cert = (X509Certificate) signsession.createCertificate(administrator,
-                username, password, rsaKeys.getPublic());
+         ISignSessionRemote signsession = signsessionhome.create();
+         X509Certificate cert = (X509Certificate)signsession.createCertificate(administrator, username, password, rsaKeys.getPublic());
+
 
         // Make a certificate chain from the certificate and the CA-certificate
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        Certificate[] cachain = signsession.getCertificateChain(administrator);
+        Certificate[] cachain = (Certificate[]) signsession.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
 
         // Verify CA-certificate
         if (CertTools.isSelfSigned((X509Certificate) cachain[cachain.length - 1])) {

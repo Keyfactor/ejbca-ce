@@ -22,6 +22,9 @@ application for enrollment (apply) and distribution (webdist).
         <ejb>ra.jar</ejb>
     </module>
     <module>
+        <ejb>authorization.jar</ejb>
+    </module> 
+    <module>
         <ejb>log.jar</ejb>
     </module>    
     <module>

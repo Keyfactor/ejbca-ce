@@ -1,16 +1,17 @@
-<% String[] profilenames = rabean.getEndEntityProfileNames(); 
-   String[] certificateprofilenames = rabean.getCertificateProfileNames();
+<% TreeMap endentityprofileids = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityProfileNames(); 
+   TreeMap certificateprofileids = ejbcawebbean.getInformationMemory().getAuthorizedCertificateProfileNames();
+   TreeMap caids = ejbcawebbean.getInformationMemory().getCANames();
  
    String[] connectorreferences = {"AND","OR","ANDNOT","ORNOT"};
    String[] monthreferences     = {"MONTHJAN","MONTHFEB","MONTHMAR","MONTHAPR","MONTHMAY","MONTHJUN","MONTHJUL","MONTHAUG","MONTHSEP"
                                   ,"MONTHOCT","MONTHNOV","MONTHDEC"};
-   int[] matchwithfields        = {UserMatch.MATCH_WITH_USERNAME, UserMatch.MATCH_WITH_UID, UserMatch.MATCH_WITH_COMMONNAME, UserMatch.MATCH_WITH_DNSERIALNUMBER, 
+   int[] matchwithfields        = {UserMatch.MATCH_WITH_USERNAME, UserMatch.MATCH_WITH_CA, UserMatch.MATCH_WITH_UID, UserMatch.MATCH_WITH_COMMONNAME, UserMatch.MATCH_WITH_DNSERIALNUMBER, 
                                    UserMatch.MATCH_WITH_GIVENNAME,UserMatch.MATCH_WITH_INITIALS, UserMatch.MATCH_WITH_SURNAME, UserMatch.MATCH_WITH_TITLE, 
                                    UserMatch.MATCH_WITH_ORGANIZATIONUNIT, UserMatch.MATCH_WITH_ORGANIZATION , UserMatch.MATCH_WITH_LOCALE, UserMatch.MATCH_WITH_STATE,
                                    UserMatch.MATCH_WITH_DOMAINCOMPONENT, UserMatch.MATCH_WITH_COUNTRY, UserMatch.MATCH_WITH_EMAIL, 
                                    UserMatch.MATCH_WITH_STATUS, UserMatch.MATCH_WITH_ENDENTITYPROFILE, UserMatch.MATCH_WITH_CERTIFICATEPROFILE};
                                    
-   String[] matchwithtexts      = {"MATCHUSERNAME", "MATCHUID", "MATCHCOMMONNAME", "MATCHDNSERIALNUMBER", "MATCHGIVENNAME", "MATCHINITIALS", "MATCHSURNAME",
+   String[] matchwithtexts      = {"MATCHUSERNAME", "MATCHCA", "MATCHUID", "MATCHCOMMONNAME", "MATCHDNSERIALNUMBER", "MATCHGIVENNAME", "MATCHINITIALS", "MATCHSURNAME",
                                    "MATCHTITLE", "MATCHORGANIZATIONUNIT", "MATCHORGANIZATION", "MATCHLOCALE", "MATCHSTATE", "MATCHDOMAINCOMPONENT",
                                    "MATCHCOUNTRY", "MATCHEMAIL", "MATCHSTATUS", "MATCHENDENTITYPROFILE", "MATCHCERTIFICATEPROFILE"};
 
@@ -26,20 +27,42 @@
 
 <script language=javascript>
 <!--
-   var profilenames = new Array(<%= profilenames.length %>);
-   <% for(int i = 0; i < profilenames.length; i++){ %>
-      profilenames[<%=i %>] = "<%=profilenames[i] %>";
-
-    <% } %>
-   var certificateprofilenames = new Array(<%= certificateprofilenames.length %>);
-   <% for(int i = 0; i < certificateprofilenames.length; i++){ %>
-      certificateprofilenames[<%=i %>] = "<%=certificateprofilenames[i] %>";
-
-    <% } %>
    
    var ID    = 0;
    var NAME  = 1;
 
+   var profilenames = new Array(<%= endentityprofileids.keySet().size() %>);
+   <% Iterator iter = endentityprofileids.keySet().iterator();
+      int index = 0;
+      while(iter.hasNext()){
+        String next = (String) iter.next(); %>
+      profilenames[<%=index %>] = new Array(2);
+      profilenames[<%=index %>][ID] = <%= ((Integer) endentityprofileids.get(next)).intValue() %>; 
+      profilenames[<%=index %>][NAME] = "<%= next %>";
+    <% index++; 
+      } %>
+
+   var certificateprofilenames = new Array(<%= certificateprofileids.keySet().size() %>);
+   <% iter = certificateprofileids.keySet().iterator();
+      index = 0;
+      while(iter.hasNext()){
+        String next = (String) iter.next(); %>
+      certificateprofilenames[<%=index %>] = new Array(2);
+      certificateprofilenames[<%=index %>][ID] = <%= ((Integer) certificateprofileids.get(next)).intValue() %>; 
+      certificateprofilenames[<%=index %>][NAME] = "<%= next %>";
+    <% index++; 
+      } %>
+
+   var cas = new Array(<%= caids.keySet().size() %>);
+   <% iter = caids.keySet().iterator();
+      index = 0;
+      while(iter.hasNext()){
+        String next = (String) iter.next(); %>
+      cas[<%=index %>] = new Array(2);
+      cas[<%=index %>][ID] = <%= ((Integer) caids.get(next)).intValue() %>; 
+      cas[<%=index %>][NAME] = "<%= next %>";
+    <% index++; 
+      } %>
    var matchtypefields = new Array(2)
    matchtypefields[ID] = new Array(2);
    matchtypefields[ID][0]= <%= BasicMatch.MATCH_TYPE_EQUALS %>;
@@ -107,7 +130,7 @@ function changematchfields(row){
        menumatchvalue.options[i]=null;
      }  
      for( i = 0; i < profilenames.length; i++){
-       menumatchvalue.options[i]= new Option(profilenames[i],profilenames[i]);       
+       menumatchvalue.options[i]= new Option(profilenames[i][NAME],profilenames[i][ID]);       
      }
     }
     else{
@@ -129,48 +152,72 @@ function changematchfields(row){
          menumatchvalue.options[i]=null;
         }  
         for( i = 0; i < certificateprofilenames.length; i++){
-          menumatchvalue.options[i]= new Option(certificateprofilenames[i],certificateprofilenames[i]);       
+          menumatchvalue.options[i]= new Option(certificateprofilenames[i][NAME],certificateprofilenames[i][ID]);       
         }
       
-     }
-     else{      
-        // if status remove beginswith and menu
-        if(matchwithvalue == <%= UserMatch.MATCH_WITH_STATUS %> ){
+      }
+      else{
+        if(matchwithvalue == <%= UserMatch.MATCH_WITH_CA %> ){
+  
           menumatchvalue.disabled = false;
           textmatchvalue.disabled = true;
           textmatchvalue.value= "";
           textmatchvalue.size=1;
 
-          numoftypes = matchtype.length;
+          var numoftypes = matchtype.length;
           for( i=numoftypes-1; i >= 0; i-- ){
             matchtype.options[i]=null;
           }
           matchtype.options[0]= new Option(matchtypefields[NAME][0],matchtypefields[ID][0]);
 
           numofvalues = menumatchvalue.length;
-          for( i=numofvalues-1; i >= 0; i--){
-            menumatchvalue.options[i]=null;
-          }  
-          for( i = 0; i < statusfields[ID].length ; i++){
-            menumatchvalue.options[i]= new Option(statusfields[NAME][i],statusfields[ID][i]);       
-          }
-        }
-   // else equals and beginswith and textfield.
-        else{
-          var numoftypes = matchtype.length;
-          for(i=numoftypes-1; i >= 0; i-- ){
-            matchtype.options[i]=null;
-          }
-          matchtype.options[0]= new Option(matchtypefields[NAME][0],matchtypefields[ID][0]);
-          matchtype.options[1]= new Option(matchtypefields[NAME][1],matchtypefields[ID][1]);
-
-          numofvalues = menumatchvalue.length;
           for(i=numofvalues-1; i >= 0; i--){
             menumatchvalue.options[i]=null;
-          }     
-          menumatchvalue.disabled = true;
-          textmatchvalue.disabled = false;
-          textmatchvalue.size=40;
+          }  
+          for( i = 0; i < cas.length; i++){
+            menumatchvalue.options[i]= new Option(cas[i][NAME],cas[i][ID]);       
+          }
+      
+       }
+       else{      
+        // if status remove beginswith and menu
+         if(matchwithvalue == <%= UserMatch.MATCH_WITH_STATUS %> ){
+           menumatchvalue.disabled = false;
+           textmatchvalue.disabled = true;
+           textmatchvalue.value= "";
+           textmatchvalue.size=1;
+
+           numoftypes = matchtype.length;
+           for( i=numoftypes-1; i >= 0; i-- ){
+             matchtype.options[i]=null;
+           }
+           matchtype.options[0]= new Option(matchtypefields[NAME][0],matchtypefields[ID][0]);
+
+           numofvalues = menumatchvalue.length;
+           for( i=numofvalues-1; i >= 0; i--){
+             menumatchvalue.options[i]=null;
+           }  
+           for( i = 0; i < statusfields[ID].length ; i++){
+             menumatchvalue.options[i]= new Option(statusfields[NAME][i],statusfields[ID][i]);       
+           }
+         }
+   // else equals and beginswith and textfield.
+         else{
+           var numoftypes = matchtype.length;
+           for(i=numoftypes-1; i >= 0; i-- ){
+             matchtype.options[i]=null;
+           }
+           matchtype.options[0]= new Option(matchtypefields[NAME][0],matchtypefields[ID][0]);
+           matchtype.options[1]= new Option(matchtypefields[NAME][1],matchtypefields[ID][1]);
+
+           numofvalues = menumatchvalue.length;
+           for(i=numofvalues-1; i >= 0; i--){
+             menumatchvalue.options[i]=null;
+           }     
+           menumatchvalue.disabled = true;
+           textmatchvalue.disabled = false;
+           textmatchvalue.size=40;
+         } 
         }
       }
     }
@@ -219,7 +266,10 @@ function changematchfields(row){
           </option> 
             <% }%>
           <% if(oldmatchwithrow1 != null){
-               if(Integer.parseInt(oldmatchwithrow1) != UserMatch.MATCH_WITH_STATUS && Integer.parseInt(oldmatchwithrow1) != UserMatch.MATCH_WITH_ENDENTITYPROFILE){ %>
+               if(   Integer.parseInt(oldmatchwithrow1) != UserMatch.MATCH_WITH_STATUS 
+                  && Integer.parseInt(oldmatchwithrow1) != UserMatch.MATCH_WITH_ENDENTITYPROFILE
+                  && Integer.parseInt(oldmatchwithrow1) != UserMatch.MATCH_WITH_CERTIFICATEPROFILE
+                  && Integer.parseInt(oldmatchwithrow1) != UserMatch.MATCH_WITH_CA){ %>
           <option <%  if(tempval == BasicMatch.MATCH_TYPE_BEGINSWITH){
                          out.write(" selected ");
                     } %> value='<%= Integer.toString(BasicMatch.MATCH_TYPE_BEGINSWITH) %>'><%= ejbcawebbean.getText("BEGINSWITH") %>
@@ -237,25 +287,45 @@ function changematchfields(row){
            <% if(oldmatchwithrow1 != null){
                  if(oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE))){ %>
               >
-                <% for(int i=0; i < profilenames.length; i++){ %>
+                <% iter = endentityprofileids.keySet().iterator();
+                   while(iter.hasNext()){
+                     String next = (String) iter.next();
+                     int id = ((Integer) endentityprofileids.get(next)).intValue();%>
           <option <% if(oldmatchvaluerow1!= null){
-                       if(oldmatchvaluerow1.equals(profilenames[i]))
+                       if(Integer.parseInt(oldmatchvaluerow1) == id)
                          out.write(" selected ");
-                    } %> value='<%= profilenames[i] %>'><%= profilenames[i] %>
+                    } %> value='<%= id %>'><%= next %>
           </option>                   
                 <%  }
                   }
                   else{
                    if(oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE))){ %>
               >
-                <% for(int i=0; i < certificateprofilenames.length; i++){ %>
-          <option <% if(oldmatchvaluerow1!= null){
-                       if(oldmatchvaluerow1.equals(certificateprofilenames[i]))
-                         out.write(" selected ");
-                    } %> value='<%= certificateprofilenames[i] %>'><%= certificateprofilenames[i] %>
-          </option>                   
+                  <% iter = certificateprofileids.keySet().iterator();
+                     while(iter.hasNext()){
+                       String next = (String) iter.next();
+                       int id = ((Integer) certificateprofileids.get(next)).intValue();%>
+            <option <% if(oldmatchvaluerow1!= null){
+                         if(Integer.parseInt(oldmatchvaluerow1) == id)
+                           out.write(" selected ");
+                      } %> value='<%= id %>'><%= next %>
+            </option>                   
                 <%  }
                   }
+                  else{
+                    if(oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_CA))){ %>
+              >
+                  <% iter = caids.keySet().iterator();
+                     while(iter.hasNext()){
+                       String next = (String) iter.next();
+                       int id = ((Integer) caids.get(next)).intValue();%>
+            <option <% if(oldmatchvaluerow1!= null){
+                         if(Integer.parseInt(oldmatchvaluerow1) == id)
+                           out.write(" selected ");
+                      } %> value='<%= id %>'><%= next %>
+            </option>                   
+                <%   }
+                   }
                   else{
                     if(oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))){ %> 
               >
@@ -271,13 +341,14 @@ function changematchfields(row){
        <% } else{ %>
           disabled >
        <%  }
-         }}
+         }}}
         }else{ %>
           disabled > 
      <% } %>
        </select>
        <% if( oldmatchwithrow1!= null){
-           if( oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE)) || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE))){ %>
+           if( oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE))
+               || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE)) || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_CA))){ %>
        <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>"  size="1" maxlength="255" value='' disabled >    
            <% }else{ %>
               <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>" size="40" maxlength="255" value='<%=oldmatchvaluerow1 %>' >
@@ -338,35 +409,67 @@ function changematchfields(row){
                     } %> value='<%= Integer.toString(BasicMatch.MATCH_TYPE_EQUALS) %>'><%= ejbcawebbean.getText("EQUALS") %>
           </option> 
             <% }%>
+          <% if(oldmatchwithrow2 != null){
+               if(   Integer.parseInt(oldmatchwithrow2) != UserMatch.MATCH_WITH_STATUS 
+                  && Integer.parseInt(oldmatchwithrow2) != UserMatch.MATCH_WITH_ENDENTITYPROFILE
+                  && Integer.parseInt(oldmatchwithrow2) != UserMatch.MATCH_WITH_CERTIFICATEPROFILE
+                  && Integer.parseInt(oldmatchwithrow2) != UserMatch.MATCH_WITH_CA){ %>
           <option <%  if(tempval == BasicMatch.MATCH_TYPE_BEGINSWITH){
                          out.write(" selected ");
                     } %> value='<%= Integer.toString(BasicMatch.MATCH_TYPE_BEGINSWITH) %>'><%= ejbcawebbean.getText("BEGINSWITH") %>
           </option>
+               <% }
+             }else{ %>
+          <option <%  if(tempval == BasicMatch.MATCH_TYPE_BEGINSWITH){
+                         out.write(" selected ");
+                    } %> value='<%= Integer.toString(BasicMatch.MATCH_TYPE_BEGINSWITH) %>'><%= ejbcawebbean.getText("BEGINSWITH") %>
+          </option> 
+           <% } %>
         </select> &nbsp;&nbsp; 
 
         <select name="<%=SELECT_MATCHVALUE_ROW2 %>"
            <% if(oldmatchwithrow2 != null){
                  if(oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE))){ %>
               >
-                <% for(int i=0; i < profilenames.length; i++){ %>
+                <% iter = endentityprofileids.keySet().iterator();
+                   while(iter.hasNext()){
+                     String next = (String) iter.next();
+                     int id = ((Integer) endentityprofileids.get(next)).intValue();%>
           <option <% if(oldmatchvaluerow2!= null){
-                       if(oldmatchvaluerow2.equals(profilenames[i]))
+                       if(Integer.parseInt(oldmatchvaluerow2) == id)
                          out.write(" selected ");
-                    } %> value='<%= profilenames[i] %>'><%= profilenames[i] %>
+                    } %> value='<%= id %>'><%= next %>
           </option>                   
                 <%  }
                   }
                   else{
                    if(oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE))){ %>
               >
-                <% for(int i=0; i < certificateprofilenames.length; i++){ %>
-          <option <% if(oldmatchvaluerow2!= null){
-                       if(oldmatchvaluerow2.equals(certificateprofilenames[i]))
-                         out.write(" selected ");
-                    } %> value='<%= certificateprofilenames[i] %>'><%= certificateprofilenames[i] %>
-          </option>                   
+                  <% iter = certificateprofileids.keySet().iterator();
+                     while(iter.hasNext()){
+                       String next = (String) iter.next();
+                       int id = ((Integer) certificateprofileids.get(next)).intValue();%>
+            <option <% if(oldmatchvaluerow2!= null){
+                         if(Integer.parseInt(oldmatchvaluerow2) == id)
+                           out.write(" selected ");
+                      } %> value='<%= id %>'><%= next %>
+            </option>                   
                 <%  }
                   }
+                  else{
+                    if(oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_CA))){ %>
+              >
+                  <% iter = caids.keySet().iterator();
+                     while(iter.hasNext()){
+                       String next = (String) iter.next();
+                       int id = ((Integer) caids.get(next)).intValue();%>
+            <option <% if(oldmatchvaluerow2!= null){
+                         if(Integer.parseInt(oldmatchvaluerow2) == id)
+                           out.write(" selected ");
+                      } %> value='<%= id %>'><%= next %>
+            </option>                   
+                <%   }
+                   }
                   else{
                     if(oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))){ %> 
               >
@@ -382,13 +485,14 @@ function changematchfields(row){
        <% } else{ %>
           disabled >
        <%  }
-         }}
+         }}}
         }else{ %>
           disabled > 
      <% } %>
        </select>
        <% if( oldmatchwithrow2!= null){
-           if( oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE)) || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE))){ %>
+           if( oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE))
+               || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE))  || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_CA))){ %>
        <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>"  size="1" maxlength="255" value='' disabled >    
            <% }else{ %>
               <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>" size="40" maxlength="255" value='<%=oldmatchvaluerow2 %>' >
@@ -448,35 +552,68 @@ function changematchfields(row){
                     } %> value='<%= Integer.toString(BasicMatch.MATCH_TYPE_EQUALS) %>'><%= ejbcawebbean.getText("EQUALS") %>
           </option> 
             <% }%>
+          <% if(oldmatchwithrow3 != null){
+               if(   Integer.parseInt(oldmatchwithrow3) != UserMatch.MATCH_WITH_STATUS 
+                  && Integer.parseInt(oldmatchwithrow3) != UserMatch.MATCH_WITH_ENDENTITYPROFILE
+                  && Integer.parseInt(oldmatchwithrow3) != UserMatch.MATCH_WITH_CERTIFICATEPROFILE
+                  && Integer.parseInt(oldmatchwithrow3) != UserMatch.MATCH_WITH_CA){ %>
           <option <%  if(tempval == BasicMatch.MATCH_TYPE_BEGINSWITH){
                          out.write(" selected ");
                     } %> value='<%= Integer.toString(BasicMatch.MATCH_TYPE_BEGINSWITH) %>'><%= ejbcawebbean.getText("BEGINSWITH") %>
           </option>
+               <% }
+             }else{ %>
+          <option <%  if(tempval == BasicMatch.MATCH_TYPE_BEGINSWITH){
+                         out.write(" selected ");
+                    } %> value='<%= Integer.toString(BasicMatch.MATCH_TYPE_BEGINSWITH) %>'><%= ejbcawebbean.getText("BEGINSWITH") %>
+          </option> 
+           <% } %>
+
         </select> &nbsp;&nbsp; 
 
         <select name="<%=SELECT_MATCHVALUE_ROW3 %>"
            <% if(oldmatchwithrow3 != null){
                  if(oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE))){ %>
               >
-                <% for(int i=0; i < profilenames.length; i++){ %>
+                <% iter = endentityprofileids.keySet().iterator();
+                   while(iter.hasNext()){
+                     String next = (String) iter.next();
+                     int id = ((Integer) endentityprofileids.get(next)).intValue();%>
           <option <% if(oldmatchvaluerow3!= null){
-                       if(oldmatchvaluerow3.equals(profilenames[i]))
+                       if(Integer.parseInt(oldmatchvaluerow3) == id)
                          out.write(" selected ");
-                    } %> value='<%= profilenames[i] %>'><%= profilenames[i] %>
+                    } %> value='<%= id %>'><%= next %>
           </option>                   
                 <%  }
                   }
                   else{
                    if(oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE))){ %>
               >
-                <% for(int i=0; i < certificateprofilenames.length; i++){ %>
-          <option <% if(oldmatchvaluerow3!= null){
-                       if(oldmatchvaluerow3.equals(certificateprofilenames[i]))
-                         out.write(" selected ");
-                    } %> value='<%= certificateprofilenames[i] %>'><%= certificateprofilenames[i] %>
-          </option>                   
+                  <% iter = certificateprofileids.keySet().iterator();
+                     while(iter.hasNext()){
+                       String next = (String) iter.next();
+                       int id = ((Integer) certificateprofileids.get(next)).intValue();%>
+            <option <% if(oldmatchvaluerow3!= null){
+                         if(Integer.parseInt(oldmatchvaluerow3) == id)
+                           out.write(" selected ");
+                      } %> value='<%= id %>'><%= next %>
+            </option>                   
                 <%  }
                   }
+                  else{
+                    if(oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_CA))){ %>
+              >
+                  <% iter = caids.keySet().iterator();
+                     while(iter.hasNext()){
+                       String next = (String) iter.next();
+                       int id = ((Integer) caids.get(next)).intValue();%>
+            <option <% if(oldmatchvaluerow3!= null){
+                         if(Integer.parseInt(oldmatchvaluerow3) == id)
+                           out.write(" selected ");
+                      } %> value='<%= id %>'><%= next %>
+            </option>                   
+                <%   }
+                   }
                   else{
                     if(oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))){ %> 
               >
@@ -492,13 +629,14 @@ function changematchfields(row){
        <% } else{ %>
           disabled >
        <%  }
-         }}
+         }}}
         }else{ %>
           disabled > 
      <% } %>
        </select>
        <% if( oldmatchwithrow3!= null){
-           if( oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE)) || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE))){ %>
+           if( oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE)) 
+               || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE)) || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_CA))){ %>
        <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>"  size="1" maxlength="255" value='' disabled >    
            <% }else{ %>
               <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>" size="40" maxlength="255" value='<%=oldmatchvaluerow3 %>' >

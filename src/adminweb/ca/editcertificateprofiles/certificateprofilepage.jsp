@@ -1,8 +1,15 @@
 <%               
   CertificateProfile certificateprofiledata = cabean.getCertificateProfile(certprofile.trim());
  
-  String[] TYPE_NAMES = {"ENDENTITY", "CA", "ROOTCA"};
-  int[] TYPE_IDS = {SecConst.CERTTYPE_ENDENTITY,SecConst.CERTTYPE_CA , SecConst.CERTTYPE_ROOTCA};
+  String[] TYPE_NAMES = {"ENDENTITY", "SUBCA", "ROOTCA"};
+  int[] TYPE_IDS = {SecConst.CERTTYPE_ENDENTITY,SecConst.CERTTYPE_SUBCA , SecConst.CERTTYPE_ROOTCA};
+
+  Collection authorizedcas = cabean.getAuthorizedCAs();
+  HashMap caidtonamemap = cabean.getCAIdToNameMap();
+
+  HashMap publisheridtonamemap = cabean.getAvailablePublishers();
+
+  int row = 0;
 %>
 <SCRIPT language="JavaScript">
 <!--  
@@ -93,7 +100,7 @@ function checkallfields(){
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_CERTIFICATEPROFILE %>'>
   <input type="hidden" name='<%= HIDDEN_CERTIFICATEPROFILENAME %>' value='<%=certprofile %>'>
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
-    <tr id="Row0"> 
+    <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
         <div align="left"> 
           <h3>&nbsp;</h3>
@@ -106,7 +113,7 @@ function checkallfields(){
         <u><%= ejbcawebbean.getText("HELP") %></u> </A></div> -->
       </td>
     </tr>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("VALIDITY") %> <br>&nbsp;
       </td>
@@ -114,7 +121,7 @@ function checkallfields(){
         <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="5" maxlength="255" 
            value="<%= certificateprofiledata.getValidity()  %>"><br>
       </td>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("USEBASICCONSTRAINTS") %> <br>  <%= ejbcawebbean.getText("BASICCONSTRAINTSCRITICAL") %>
 
@@ -133,7 +140,7 @@ function checkallfields(){
                  out.write("CHECKED");
            %>> 
       </td>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("USEKEYUSAGE") %> <br>  <%= ejbcawebbean.getText("KEYUSAGECRITICAL") %>
 
@@ -152,7 +159,7 @@ function checkallfields(){
                  out.write("CHECKED");
            %>> 
       </td>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("SUBJECTKEYID") %> <br>  <%= ejbcawebbean.getText("SUBJECTKEYIDCRITICAL") %>
 
@@ -172,7 +179,7 @@ function checkallfields(){
            %>> 
       </td>
     </tr>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
          <%= ejbcawebbean.getText("AUTHORITYKEYID") %> <br> <%= ejbcawebbean.getText("AUTHORITYKEYIDCRITICAL") %> 
       </td>
@@ -191,7 +198,7 @@ function checkallfields(){
            %>> 
       </td>
     </tr>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("SUBJECTALTNAME") %> <br>  <%= ejbcawebbean.getText("SUBJECTALTNAMECRITICAL") %>
 
@@ -211,7 +218,7 @@ function checkallfields(){
            %>> 
       </td>
     </tr>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("CRLDISTPOINT") %> <br>  <%= ejbcawebbean.getText("CRLDISTPOINTCRITICAL") %> <br> <%= ejbcawebbean.getText("CRLDISTPOINTURI") %>
 
@@ -239,7 +246,7 @@ function checkallfields(){
                        out.write(" value=\"" + globalconfiguration.getStandardCRLDistributionPointURI()+ "\"");%>>
       </td>
     </tr>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("CERTIFICATEPOLICIES") %> <br>  <%= ejbcawebbean.getText("CERTIFICATEPOLICIESCRIT") %> <br> <%= ejbcawebbean.getText("CERTIFICATEPOLICYID") %>
 
@@ -264,11 +271,11 @@ function checkallfields(){
                       out.write(" value=\"" + certificateprofiledata.getCertificatePolicyId() + "\""); %>
       </td>
     </tr>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right">&nbsp;</td>
       <td width="50%" valign="top" align="right">&nbsp;</td>
     </tr>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
         <%= ejbcawebbean.getText("KEYUSAGE") %> <br>&nbsp;
       </td>
@@ -284,7 +291,7 @@ function checkallfields(){
         </select>
       </td>
     </tr>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("ALLOWKEYUSAGEOVERRIDE") %>
       </td>
@@ -295,7 +302,7 @@ function checkallfields(){
            %>> 
       </td>
     </tr>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("USEEXTENDEDKEYUSAGE") %><br><%= ejbcawebbean.getText("EXTENDEDKEYUSAGECRITICAL") %>
       </td>
@@ -310,7 +317,7 @@ function checkallfields(){
            %>>
       </td>
     </tr>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
         <%= ejbcawebbean.getText("EXTENDEDKEYUSAGE") %> <br>&nbsp;
       </td>
@@ -327,7 +334,7 @@ function checkallfields(){
         </select>
       </td>
     </tr>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
         <%= ejbcawebbean.getText("AVAILABLEBITLENGTHS") %> <br>&nbsp;
       </td>
@@ -346,7 +353,54 @@ function checkallfields(){
         </select>
       </td>
     </tr>
-    <tr  id="Row0"> 
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <%= ejbcawebbean.getText("AVAILABLECAS") %> <br>&nbsp;
+      </td>
+      <td width="50%"> 
+        <select name="<%=SELECT_AVAILABLECAS%>" size="7" multiple >
+           <% Collection usedcas = certificateprofiledata.getAvailableCAs(); 
+              if(issuperadministrator){ %>
+           <option  value="<%= CertificateProfile.ANYCA %>" 
+              <% if(usedcas.contains(new Integer(CertificateProfile.ANYCA)))
+                   out.write(" selected ");%>>
+              <%= ejbcawebbean.getText("ANYCA") %>         
+           </option>      
+           <%   }
+                Iterator iter = authorizedcas.iterator(); 
+                while(iter.hasNext()){
+                  Integer next = (Integer) iter.next(); %>
+           <option  value="<%= next.intValue() %>" 
+              <%    if(usedcas.contains(next))
+                      out.write(" selected ");
+                  %>>
+              <%= caidtonamemap.get(next) %>         
+           </option>  
+              <% } %>
+        </select>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <%= ejbcawebbean.getText("PUBLISHERS") %> <br>&nbsp;
+      </td>
+      <td width="50%"> 
+        <select name="<%=SELECT_AVAILABLEPUBLISHERS%>" size="5" multiple >
+           <%   Collection usedpublishers = certificateprofiledata.getPublisherList(); 
+                iter = publisheridtonamemap.keySet().iterator(); 
+                while(iter.hasNext()){
+                  Integer next = (Integer) iter.next(); %>
+           <option  value="<%= next.intValue() %>" 
+              <%    if(usedpublishers.contains(next))
+                      out.write(" selected ");
+                  %>>
+              <%= publisheridtonamemap.get(next) %>         
+           </option>  
+              <% } %>
+        </select>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
         <%= ejbcawebbean.getText("TYPE") %> <br>&nbsp;
       </td>
@@ -364,7 +418,7 @@ function checkallfields(){
         </select>
       </td>
     </tr>
-    <tr  id="Row1"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top"> 
         <input type="submit" name="<%= BUTTON_SAVE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">

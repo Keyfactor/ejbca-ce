@@ -7,7 +7,7 @@
     * author  Philip Vendil */ %>
 
 <% 
-  String[] profiles     = ejbcarabean.getEndEntityProfileNames(); 
+  TreeMap profiles     = ejbcarabean.getAuthorizedEndEntityProfileNames(); 
 %>
 
 
@@ -56,10 +56,11 @@
         <td width="5%"></td>
         <td width="60%">
           <select name="<%=SELECT_PROFILE%>" size="15"  >
-            <% for(int i=0; i < profiles.length ;i++){ %>
-              <option value="<%=profiles[i]%>"> 
-                  <%= profiles[i] %>
-                 
+            <% Iterator iter = profiles.keySet().iterator();
+               while(iter.hasNext()){
+                 String profilename = (String) iter.next();%>
+              <option value="<%=profilename%>"> 
+                  <%= profilename %>
                </option>
             <%}%>
               <option value="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
