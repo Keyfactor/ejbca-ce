@@ -182,6 +182,7 @@ public class CertReqServlet extends HttpServlet {
                     ps.println("-----BEGIN CERTIFICATE-----");
                     ps.println(new String(b64cert));
                     ps.println("-----END CERTIFICATE-----");
+                    ps.close();
                     cat.debug("Sent CA cert to client.");
             } else {
                 res.setContentType("text/plain");
@@ -297,6 +298,7 @@ public class CertReqServlet extends HttpServlet {
             else
                 ieCertFormat(b64cert, ps);
         }
+        ps.close();
         cat.info("Sent reply to IE client");
         cat.debug(new String(b64cert));
     }
@@ -316,12 +318,16 @@ public class CertReqServlet extends HttpServlet {
         // Set content-type to general file
         out.setContentType("application/octet-stream");
         out.setHeader("Content-disposition", "attachment; filename=cert.pem");
-        out.setContentLength(b64cert.length+52);
+        String beg = "-----BEGIN CERTIFICATE-----";
+        String end = "-----END CERTIFICATE-----";
+        out.setContentLength(b64cert.length+beg.length()+end.length());
         // Print the certificate
         PrintStream ps = new PrintStream(out.getOutputStream());
-        ps.println("-----BEGIN CERTIFICATE-----");
+        ps.println(beg);
         ps.println(new String(b64cert));
-        ps.println("-----END CERTIFICATE-----");
+        ps.println(end);
+        ps.println();
+        ps.close();
         cat.info("Sent reply to client");
         cat.debug(new String(b64cert));
     }
