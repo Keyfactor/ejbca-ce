@@ -7,14 +7,14 @@ import java.util.Date;
 /**
  * A class representing a web interface view of a user in the ra user database.
  *
- * @version $Id: UserView.java,v 1.10 2003-02-23 09:23:34 herrvendil Exp $
+ * @version $Id: UserView.java,v 1.11 2003-02-23 12:37:09 herrvendil Exp $
  */
 public class UserView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.
 
    public UserView(){
       userdata = new UserAdminData(); 
-      
+      userdata.setType(1);
       subjectdnfields = new DNFieldExtractor("", DNFieldExtractor.TYPE_SUBJECTDN);
       subjectaltnames = new DNFieldExtractor("", DNFieldExtractor.TYPE_SUBJECTALTNAME);      
    }
