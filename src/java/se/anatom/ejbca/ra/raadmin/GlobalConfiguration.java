@@ -5,7 +5,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.9 2004-03-21 11:53:27 anatom Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.10 2004-04-08 12:34:11 herrvendil Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -50,7 +50,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
        super();
 
        setEjbcaTitle(DEFAULTEJBCATITLE);
-       setEnableEndEntityProfileLimitations(false);
+       setEnableEndEntityProfileLimitations(true);
        setEnableAuthenticatedUsersOnly(false);
        setEnableKeyRecovery(false);
        setIssueHardwareTokens(false);
