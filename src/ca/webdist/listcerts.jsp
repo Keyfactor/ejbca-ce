@@ -16,7 +16,7 @@ Usage: listcerts.jsp?subject=<DN>
         InitialContext ctx = new InitialContext();
         ICertificateStoreSessionHome home = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
         ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
-        ICertificateStoreSession store = home.create();
+        ICertificateStoreSessionRemote store = home.create();
         Certificate[] certs = store.findCertificatesBySubject(dn);
         for (int i=0;i<certs.length;i++) {
             Date notBefore = ((X509Certificate)certs[i]).getNotBefore();

@@ -17,7 +17,7 @@ Usage: revoked.jsp?issuer=<DN>&serno=<serial number>
         InitialContext ctx = new InitialContext();
         ICertificateStoreSessionHome home = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
         ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
-        ICertificateStoreSession store = home.create();
+        ICertificateStoreSessionRemote store = home.create();
         try {
             RevokedCertInfo revinfo = store.isRevoked(dn, new BigInteger(Hex.decode(serno)));
             if (revinfo != null) {

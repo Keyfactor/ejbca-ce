@@ -13,7 +13,7 @@ try  {
     InitialContext ctx = new InitialContext();
     ISignSessionHome home = home = (ISignSessionHome) PortableRemoteObject.narrow(
             ctx.lookup("RSASignSession"), ISignSessionHome.class );
-    ISignSession ss = home.create();
+    ISignSessionRemote ss = home.create();
     Certificate[] chain = ss.getCertificateChain();
     if (chain.length == 0) {
 %>
