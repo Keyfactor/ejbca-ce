@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+This is the template used to configure ejbca mail service with the appropriate
+mail server.
+
+Customize at will as this is mainly for development.
+
+$Id: ejbca-mail-service.xml,v 1.1 2004-08-16 21:10:10 sbailliez Exp $
+
+ -->
+
+<server>
+
+  <!-- ==================================================================== -->
+  <!-- Mail Connection Factory                                              -->
+  <!-- ==================================================================== -->
+
+  <mbean code="org.jboss.mail.MailService"
+         name="jboss:service=ejbcaMail">
+    <!-- Synchronize JNDI name with se.anatom.ejbca.ra.LocalUserAdminSessionBean -->
+    <attribute name="JNDIName">java:/DefaultMail</attribute>
+    
+    <attribute name="User">${mail.user}</attribute>
+    <attribute name="Password">${mail.password}</attribute>
+    <attribute name="Configuration">
+       <!-- Test -->
+       <configuration>
+          <!-- Change to your mail server prototocol -->
+          <property name="mail.store.protocol" value="pop3"/>
+          <property name="mail.transport.protocol" value="smtp"/>
+
+          <!-- Change to the user who will receive mail  -->
+          <property name="mail.user" value="${mail.user}"/>
+
+          <!-- Change to the mail server  -->
+          <property name="mail.pop3.host" value="${mail.pop3.host}"/>
+
+          <!-- Change to the SMTP gateway server -->
+          <property name="mail.smtp.host" value="${mail.smtp.host}"/>
+
+          <!-- Change to the address mail will be from  -->
+          <property name="mail.from" value="${mail.from}"/>
+
+          <!-- Enable debugging output from the javamail classes -->
+          <property name="mail.debug" value="${mail.debug}"/>
+       </configuration>
+    </attribute>
+  </mbean>
+
+</server>
