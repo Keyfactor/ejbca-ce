@@ -25,6 +25,7 @@ Fixed error for DATE var in notifications.
 Fixed bug adding email and uid attributes in LDAP.
 Added more extra attributes to LDAP publisher.
 Make o,ou,st selectable as 'Use Fields in DN' for publishers.
+Fixed publishing of CA certificates and CRLs.
 
 3.0.2
 -----
