@@ -9,10 +9,10 @@ fi
 
 
 # JBoss
-TEST_CP=.:$JBOSS_HOME/client/jnp-client.jar:$JBOSS_HOME/client/jboss-j2ee.jar:$JBOSS_HOME/client/jbossall-client.jar:$JBOSS_HOME/client/jboss-client.jar:$JBOSS_HOME/client/jbosssx-client.jar:$JBOSS_HOME/client/jboss-common-client.jar:../../lib/junit.jar:../../lib/log4j-1.2.7.jar:../../lib/bcprov-jdk14-122.jar:../../lib/bcmail-jdk14-120.jar:../../lib/httpunit.jar:../../lib/ldap.jar
+TEST_CP=.:$JBOSS_HOME/client/jnp-client.jar:$JBOSS_HOME/client/jboss-j2ee.jar:$JBOSS_HOME/client/jbossall-client.jar:$JBOSS_HOME/client/jboss-client.jar:$JBOSS_HOME/client/jbosssx-client.jar:$JBOSS_HOME/client/jboss-common-client.jar:../../lib/junit.jar:../../lib/log4j-1.2.7.jar:../../lib/bcprov-jdk14-122.jar:../../lib/bcmail-jdk14-122.jar:../../lib/httpunit.jar:../../lib/ldap.jar
 
 # Weblogic
-#TEST_CP=.:../../lib/weblogic.jar:../../lib/junit.jar:../../lib/log4j-1.2.7.jar:../../lib/bcprov-jdk14-122.jar:../../lib/bcmail-jdk14-120.jar:../../lib/httpunit.jar:../../lib/ldap.jar
+#TEST_CP=.:../../lib/weblogic.jar:../../lib/junit.jar:../../lib/log4j-1.2.7.jar:../../lib/bcprov-jdk14-122.jar:../../lib/bcmail-jdk14-122.jar:../../lib/httpunit.jar:../../lib/ldap.jar
 
 # Function to perform HTTP tests instead of regular tests
 webtest()
