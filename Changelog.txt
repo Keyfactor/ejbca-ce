@@ -1,5 +1,5 @@
-2.0
----
+2.0b1
+-----
 Moved to EJB 2.0 (JBoss 3 now required).
 Enhanced database schema, for EJB 2.0 and the many new features.
 Web GUI for administration using SSL.
