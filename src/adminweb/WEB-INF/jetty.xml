@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<server>
+
+  <!-- ==================================================================== -->
+  <!-- Web Container                                                        -->
+  <!-- ==================================================================== -->
+
+  <!--
+     | Be sure to check that the configuration values are valid for your
+     | environment.
+   -->
+
+  <mbean code="org.jboss.jetty.JettyService" name="jboss.web:service=WebServer">
+
+    <!-- ================================================================= -->
+    <!-- Your webdefault.xml file - The default settings for every webapp  -->
+    <!-- deployed by Jetty. Make systemwide changes here to your webapps   -->
+    <!-- configurations.                                                   -->
+    <!-- ================================================================= -->
+
+    <attribute name="WebDefaultResource">webdefault.xml</attribute>
+
+    <!-- ================================================================== -->
+    <!-- If true, .war files are unpacked to a temporary directory. This    -->
+    <!-- is useful with JSPs.                                               -->
+    <!-- ================================================================== -->
+
+    <attribute name="UnpackWars">true</attribute>
+
+    <!-- ================================================================== -->
+    <!-- If true, Jetty first delegates loading a class to the webapp's     -->
+    <!-- parent class loader (a la Java 2). If false, Jetty follows the     -->
+    <!--  Servlet 2.3 specification, and tries the webapp's own loader      -->
+    <!-- first (for "non-system" classes)                                   -->
+    <!-- ================================================================== -->
+
+    <attribute name="Java2ClassLoadingCompliance">true</attribute>
+
+    <!-- ================================================================= -->
+    <!-- If you require JAAS authentication, configure the name of the     -->
+    <!-- attribute in which you expect to find the JAAS active subject:    -->
+    <!--                                                                   -->
+    <!-- Commenting out this configuration will disable JAAS support       -->
+    <!-- ================================================================= -->
+
+    <attribute name="SubjectAttributeName">j_subject</attribute>
+
+    <!-- ================================================================= -->
+    <!-- Configuring Jetty. The XML fragment contained in the              -->
+    <!-- name="ConfigurationElement" attribute is a Jetty-style            -->
+    <!-- configuration specification.  It is used to configure Jetty with  -->
+    <!-- a listener on port 8080, and a HTTP request log location.         -->
+    <!-- The placement here of other Jetty XML configuration statements    -->
+    <!-- for deploying webapps etc is not encouraged: if you REALLY NEED   -->
+    <!-- something extra, place it in WEB-INF/jetty-web.xml files          -->
+    <!-- ================================================================= -->
+
+    <attribute name="ConfigurationElement">
+      <Configure class="org.mortbay.jetty.Server">
+
+       <!-- =============================================================== -->
+       <!-- Configure the Request Listeners                                 -->
+       <!-- =============================================================== -->
+
+
+       <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+       <!-- Add and configure a HTTP listener to port 8080                       -->
+       <!-- The default port can be changed using: java -Djetty.port=80     -->
+       <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+       <Call name="addListener">
+         <Arg>
+          <New class="org.mortbay.http.SocketListener">
+            <Set name="Port"><SystemProperty name="jetty.port" default="8080"/></Set>
+            <Set name="MinThreads">5</Set>
+            <Set name="MaxThreads">100</Set>
+            <Set name="MaxIdleTimeMs">30000</Set>
+            <Set name="LowResourcePersistTimeMs">5000</Set>
+          </New>
+         </Arg>
+       </Call>
+
+
+       <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+       <!-- Add a HTTPS SSL listener on port 8843                           -->
+       <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+       <!-- UNCOMMENT TO ACTIVATE -->
+       <Call name="addListener">
+         <Arg>
+           <New class="org.mortbay.http.SunJsseListener">
+            <Set name="Port">8443</Set>
+            <Set name="MinThreads">3</Set>
+            <Set name="MaxThreads">10</Set>
+            <Set name="MaxIdleTimeMs">30000</Set>
+            <Set name="LowResourcePersistTimeMs">2000</Set>
+	    <Set name="Keystore"><SystemProperty name="jetty.home" default="."/>keystore</Set>
+            <Set name="Password">foo123</Set>
+	    <Set name="KeyPassword">foo123</Set>
+	    <Set name="NeedClientAuth">true</Set>
+           </New>
+         </Arg>
+       </Call>
+
+
+       <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+       <!-- Add a AJP13 listener on port 8009                               -->
+       <!-- This protocol can be used with mod_jk in apache, IIS etc.       -->
+       <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+       <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+       <!-- Add and configure a NIO HTTP listener to port 8888              -->
+       <!-- This listener should be used to replace the standard HTTP       -->
+       <!-- listener when deployed on LARGE systems using jdk 1.4           -->
+       <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+       <!-- UNCOMMENT TO ACTIVATE
+       <Call name="addListener">
+         <Arg>
+           <New class="org.mortbay.http.SocketChannelListener">
+            <Set name="Port"><SystemProperty name="jetty.port" default="8888"/></Set>
+            <Set name="MinThreads">5</Set>
+            <Set name="MaxThreads">500</Set>
+            <Set name="MaxIdleTimeMs">30000</Set>
+           </New>
+         </Arg>
+       </Call>
+       -->
+       <!-- =============================================================== -->
+       <!-- Configure the Request Log                                       -->
+       <!-- =============================================================== -->
+       <Set name="RequestLog">
+         <New class="org.mortbay.http.NCSARequestLog">
+           <Arg><SystemProperty name="jboss.server.home.dir"/><SystemProperty name="jetty.log" default="/log"/>/yyyy_mm_dd.request.log
+           </Arg>
+           <Set name="retainDays">90</Set>
+           <Set name="append">true</Set>
+           <Set name="extended">true</Set>
+           <Set name="LogTimeZone">GMT</Set>
+         </New>
+       </Set>
+
+       <!-- ======================================================= -->
+       <!-- New Distributed Session Manager                         -->
+       <!-- ======================================================= -->
+
+       <!--
+       These can be set on a per webapp basis in WEB-INF/jetty-web.xml
+       -->
+
+      <Set name="DistributableSessionManagerPrototype">
+       <New class="org.mortbay.j2ee.session.Manager">
+        <Set name="scavengerPeriod">6000</Set>
+        <!-- NYI
+        <Set name="workerName">node1</Set>
+        -->
+        <Set name="interceptorStack">
+         <Array type="org.mortbay.j2ee.session.StateInterceptor">
+<!--
+          <Item><New class="org.mortbay.j2ee.session.DebugInterceptor"/></Item>
+-->
+          <Item><New class="org.mortbay.j2ee.session.ValidatingInterceptor"/></Item>
+          <Item><New class="org.mortbay.j2ee.session.TypeCheckingInterceptor"/></Item>
+          <Item><New class="org.mortbay.j2ee.session.BindingInterceptor"/></Item>
+          <Item><New class="org.mortbay.j2ee.session.PublishingInterceptor"/></Item>
+          <Item><New class="org.mortbay.j2ee.session.SubscribingInterceptor"/></Item>
+          <Item><New class="org.mortbay.j2ee.session.SynchronizingInterceptor"/></Item>
+         </Array>
+        </Set>
+        <!-- Put this back in for distributable support under 'all' configuration
+        <Set name="store">
+         <New class="org.mortbay.j2ee.session.JGStore">
+          <Set name="actualMaxInactiveInterval">604800</Set>
+          <Set name="scavengerPeriod">3600</Set>
+          <Set name="scavengerExtraTime">900</Set>
+          <Set name="protocolStack">UDP(mcast_addr=228.8.8.8;mcast_port=45566;ip_ttl=32;ucast_recv_buf_size=16000;ucast_send_buf_size=16000;mcast_send_buf_size=32000;mcast_recv_buf_size=64000;loopback=true):PING(timeout=2000;num_initial_members=3):MERGE2(min_interval=5000;max_interval=10000):FD_SOCK:VERIFY_SUSPECT(timeout=1500):pbcast.STABLE(desired_avg_gossip=20000):pbcast.NAKACK(gc_lag=50;retransmit_timeout=300,600,1200,2400,4800;max_xmit_size=8192):UNICAST(timeout=2000):FRAG(frag_size=8192;down_thread=false;up_thread=false):pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=false;print_local_addr=true):pbcast.STATE_TRANSFER</Set>
+          <Set name="subClusterName">DefaultSubCluster</Set>
+          <Set name="retrievalTimeOut">20000</Set>
+          <Set name="distributionTimeOut">5000</Set>
+          <Set name="distributionMode">GET_ALL</Set>
+         </New>
+        </Set>
+        -->
+       </New>
+      </Set>
+
+      <!-- For testing the Distributable SessionManager with e.g. Watchdog -->
+      <!--
+      <Set name="forceDistributable">true</Set>
+      -->
+
+      </Configure>
+     </attribute>
+
+  </mbean>
+
+  <!-- ==================================================================== -->
+  <!-- ==================================================================== -->
+
+</server>
