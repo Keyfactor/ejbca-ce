@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.CertTools;
 
 /** Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.17 2003-01-23 16:44:35 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.18 2003-01-23 16:48:09 anatom Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 
@@ -40,7 +40,6 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             String[] certprofnames = (String[]) certificatesession.getCertificateProfileNames(administrator).toArray((Object[]) new String[0]);
             String[] endentityprofilenames = (String[]) raadminsession.getEndEntityProfileNames(administrator).toArray((Object[]) new String[0]);
 
-            System.out.println(args.length);
             if (args.length < 8) {
                 System.out.println("Usage: RA adduser <username> <password> <dn> <subjectAltName> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] ");
                 System.out.println();
