@@ -83,9 +83,6 @@
   <property name="adminjar" value="./admin.jar" />
   
   <property environment="env"/>
-  <!-- store to be copied to Jboss conf directory -->
-  <property name="ksname" value="server.p12"/>
-  <property name="keystore" value="src/ca/ca/keyStore/${ksname}"/>
   
   <!-- =================================================================== -->
   <!-- Create the time stamp and build directory -->
@@ -738,15 +735,6 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
 	<copy file="${caearnora}" tofile="${env.JBOSS_HOME}/server/default/deploy/ejbca-canora.ear" verbose="true"/>
   </target>
   
-  
-  <!-- ======================================================================= -->
-  <!-- Deploy a keystore to JBOSS                                              -->
-  <!-- ======================================================================= -->
-  <target name="keystore">
-  	<copy file="${keystore}" tofile="${env.JBOSS_HOME}/server/default/conf/${ksname}" verbose="true"/>	
-  </target>
-
-
   <!-- ==================================================================== -->
   <!-- Defines the project classpath                                        -->
   <!-- ==================================================================== -->
