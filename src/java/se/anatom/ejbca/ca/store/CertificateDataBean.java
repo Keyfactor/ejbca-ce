@@ -32,7 +32,7 @@ import se.anatom.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.22 2003-09-10 11:01:29 anatom Exp $
+ * @version $Id: CertificateDataBean.java,v 1.23 2003-09-11 06:59:57 anatom Exp $
  */
 public abstract class CertificateDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(CertificateDataBean.class);
@@ -343,7 +343,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
             setCAFingerprint(null);
             setExpireDate(tmpcert.getNotAfter());
             setRevocationDate(-1L);
-            setRevocationReason(RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+            setRevocationReason(RevokedCertInfo.NOT_REVOKED);
         } catch (CertificateEncodingException cee) {
             log.error("Can't extract DER encoded certificate information.", cee);
 
