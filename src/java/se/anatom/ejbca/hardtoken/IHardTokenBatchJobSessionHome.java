@@ -1,24 +1,24 @@
 package se.anatom.ejbca.hardtoken;
 
 import java.rmi.RemoteException;
-
 import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
 
 
 /**
- * DOCUMENT ME!
- *
- * @version $Id: IHardTokenBatchJobSessionHome.java,v 1.2 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: IHardTokenBatchJobSessionHome.java,v 1.3 2003-09-03 12:47:24 herrvendil Exp $
  */
+
 public interface IHardTokenBatchJobSessionHome extends EJBHome {
+
     /**
      * Default create method. Maps to ejbCreate in implementation.
-     *
-     * @return IHardTokenBatchJobSessionRemote interface
-     *
      * @throws CreateException
      * @throws RemoteException
+     * @return IHardTokenBatchJobSessionRemote interface
      */
+
     IHardTokenBatchJobSessionRemote create() throws CreateException, RemoteException;
+
 }
+
