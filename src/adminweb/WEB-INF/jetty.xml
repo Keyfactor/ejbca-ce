@@ -93,7 +93,7 @@
             <Set name="MaxThreads">10</Set>
             <Set name="MaxIdleTimeMs">30000</Set>
             <Set name="LowResourcePersistTimeMs">2000</Set>
-	    <Set name="Keystore"><SystemProperty name="jetty.home" default="."/>keystore</Set>
+	    <Set name="Keystore"><SystemProperty name="jetty.home" default="."/>tomcat.jks</Set>
             <Set name="Password">foo123</Set>
 	    <Set name="KeyPassword">foo123</Set>
 	    <Set name="NeedClientAuth">true</Set>
