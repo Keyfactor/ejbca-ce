@@ -22,7 +22,7 @@ import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version  $Id: ScepPkiOpHelper.java,v 1.12 2003-06-11 13:27:39 anatom Exp $
+ * @version  $Id: ScepPkiOpHelper.java,v 1.13 2003-06-13 19:14:17 anatom Exp $
  */
 public class ScepPkiOpHelper {
 
@@ -38,7 +38,7 @@ public class ScepPkiOpHelper {
         this.signsession = signsession; 
         log.debug("<ScepPkiOpHelper");
     }
-    
+     
     /**
      * Handles SCEP certificate request
      *
