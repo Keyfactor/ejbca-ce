@@ -1,0 +1,48 @@
+EJBCA FAQ
+$Id: FAQ,v 1.1 2001-11-27 09:12:31 anatom Exp $
+---------
+
+Q: Why are there two versions of all commands, i.e. 'ra.sh' and 'ra.cmd'.
+
+A: 'ra.sh' is for UNIX and 'ra.cmd' for Windows.
+
+-----
+Q: Why do I get the exception/error:
+ 
+User foo has status '40', NEW, FAILED or INPROCESS required.; nested
+exception is: 
+javax.ejb.EJBException: null
+
+A: When using the LocalAuthenticationSession (default) all users have a STATUS. 
+The status lifecycle beginns with NEW and ends with REVOKED. Only when the status is 
+NEW; FAILED or INPROCESS is it possible to issue a certificate to a user. After a 
+certificate has been issued, the status is set to GENERATED. This works like a one-time-password
+scheme kind of. To issue a new certificate to the user his/her status must be reset to NEW, FAILED or INPROCESS.
+This can be done with:
+
+ra.sh/cmd setuserstatus <username> <status>
+
+status '10' is NEW. Just enter 'ra.sh/cmd setuserstatus' to see a list of all ststus codes.
+
+-----
+Q: How do I manipulate keystores using Suns 'keytool'?
+
+A: EJBCA use PKCS12 format for the keystore because it is a standard, and I like standards. 
+Normally keytool (e.g. sun) can read PKCS12 file but not write, so the BouncyCastle JCE is again needed to handle PKCS12 keystores.
+
+in your 'jre/lib/securite/java.security' file add a line so the part with providers look like:
+
+security.provider.1=org.boucycastle.jce.provider.BouncyCastleProvider
+security.provider.2=sun.security.provider.Sun
+security.provider.3=com.sun.rsajca.Provider
+
+Then put the BouncyCastle provider 'jce-jdk13-<version>.jar' in 'jre/lib/ext', the default classpath for extensions in java.
+
+Now it should be possible to run:
+
+keytool -list -alias privateKey -keystore server.p12 -storetype PKCS12 -storepass foo123 -provider org.bouncycastle.jce.provider.BouncyCastleProvider
+
+It should be possible to import etc as well using keytool.
+
+-----
+
