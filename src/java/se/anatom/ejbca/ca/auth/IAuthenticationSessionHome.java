@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.ca.auth;
 
 import java.rmi.RemoteException;
@@ -22,9 +22,13 @@ import javax.ejb.EJBHome;
 /**
  * Remote home for authentication session
  *
- * @version $Id: IAuthenticationSessionHome.java,v 1.5 2004-04-16 07:39:00 anatom Exp $
+ * @version $Id: IAuthenticationSessionHome.java,v 1.6 2004-06-15 16:42:30 sbailliez Exp $
  */
 public interface IAuthenticationSessionHome extends EJBHome {
+
+   public static final String COMP_NAME="java:comp/env/ejb/AuthenticationSession";
+   public static final String JNDI_NAME="AuthenticationSession";
+    
     /**
      * Default create method. Maps to ejbCreate in implementation.
      *

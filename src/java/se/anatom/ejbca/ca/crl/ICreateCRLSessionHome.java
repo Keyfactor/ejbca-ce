@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.ca.crl;
 
 import java.rmi.RemoteException;
@@ -22,9 +22,13 @@ import javax.ejb.EJBHome;
 /**
  * Home interface for Create CRL session.
  *
- * @version $Id: ICreateCRLSessionHome.java,v 1.2 2004-04-16 07:39:00 anatom Exp $
+ * @version $Id: ICreateCRLSessionHome.java,v 1.3 2004-06-15 16:42:29 sbailliez Exp $
  */
 public interface ICreateCRLSessionHome extends EJBHome {
+
+    public static final String COMP_NAME="java:comp/env/ejb/CreateCRLSession";
+    public static final String JNDI_NAME="CreateCRLSession";
+    
     /**
      * Default create method. Maps to ejbCreate in implementation.
      *

@@ -28,7 +28,6 @@ import se.anatom.ejbca.PropertyEntityPK;
  *
  *
  * @ejb.bean
- *	 xxxgenerate="false"
  *   description="This enterprise bean entity represents a hard token to certificate mappings"
  *   display-name="HardTokenPropertyDataEB"
  *   name="HardTokenPropertyData"
@@ -71,46 +70,4 @@ public abstract class HardTokenPropertyEntityBean extends BasePropertyEntityBean
 
   public static final String PROPERTY_COPYOF = "copyof=";
 
-    /**
-     * @ejb.persistence
-     * @ejb.pk-field
-     * @ejb.interface-method view-type="local"
-     */
-    public abstract String getId();
-
-    /**
-     * @ejb.persistence
-     */
-    public abstract void setId(String id);
-
-    /**
-     * @ejb.persistence
-     * @ejb.pk-field
-     * @ejb.interface-method view-type="local"
-     */
-    public abstract String getProperty();
-
-    /**
-     * @ejb.persistence
-     */
-    public abstract void setProperty(String property);
-
-    /**
-     * @ejb.persistence
-     * @ejb.interface-method view-type="local"
-     */
-    public abstract String getValue();
-
-    /**
-     * @ejb.persistence
-     * @ejb.interface-method view-type="local"
-     */
-    public abstract void setValue(String value);
-
-    /**
-     * @ejb.create-method view-type="local"
-     */
-    public PropertyEntityPK ejbCreate(String id, String property, String value) throws CreateException {
-        return super.ejbCreate(id, property, value);
-    }
 }

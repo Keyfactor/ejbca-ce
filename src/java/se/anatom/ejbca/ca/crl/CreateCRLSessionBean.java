@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.ca.crl;
 
 import java.math.BigInteger;
@@ -49,10 +49,10 @@ import se.anatom.ejbca.log.LogEntry;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.20 2004-04-16 07:39:00 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.21 2004-06-15 16:42:29 sbailliez Exp $
  */
 public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerSession {
-    
+
 
     /** The local home interface of Certificate store */
     private ICertificateStoreSessionLocalHome storeHome = null;
@@ -64,15 +64,15 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
     private ISignSessionLocalHome signHome = null;
 
     /** The local home interface of the caadmin session */
-    private ICAAdminSessionLocalHome caadminHome = null;    
-    
+    private ICAAdminSessionLocalHome caadminHome = null;
+
     /** The local interface of the log session bean */
-    private ILogSessionLocal logsession;        
-    
-   
+    private ILogSessionLocal logsession;
+
+
      public static long  CRLOVERLAPTIME = 0;
-    
-    
+
+
     /** Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
      */
@@ -82,14 +82,14 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
         storeHome = (ICertificateStoreSessionLocalHome)lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
         certHome = (CertificateDataLocalHome)lookup("java:comp/env/ejb/CertificateDataLocal");
         signHome = (ISignSessionLocalHome)lookup("java:comp/env/ejb/SignSessionLocal");
-        
+
         try{
-          ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup("java:comp/env/ejb/LogSessionLocal",ILogSessionLocalHome.class);       
+          ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup(ILogSessionLocalHome.COMP_NAME,ILogSessionLocalHome.class);       
           logsession = logsessionhome.create();
         }catch(Exception e){
-          throw new EJBException(e);   
-        }  
-        
+          throw new EJBException(e);
+        }
+
         debug("<ejbCreate()");
     }
 
@@ -98,17 +98,17 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
 	 * CRL.
 	 *
 	 * @param admin administrator performing the task
-	 * @param issuerdn ofof the ca  
+	 * @param issuerdn ofof the ca
 	 *
 	 * @throws EJBException om ett kommunikations eller systemfel intr?ffar.
 	 */
     public void run(Admin admin, String issuerdn)  {
         debug(">run()");
         int caid = issuerdn.hashCode();
-        try {       
+        try {
             ICAAdminSessionLocal caadmin = caadminHome.create();
             ICertificateStoreSessionLocal store = storeHome.create();
-            
+
             CAInfo cainfo = caadmin.getCAInfo(admin, caid);
             if (cainfo == null) {
                 throw new CADoesntExistsException("CA not found: "+issuerdn);
@@ -147,56 +147,56 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
             //FileOutputStream fos = new FileOutputStream("srvtestcrl.der");
             //fos.write(crl.getEncoded());
             //fos.close();
-        } catch (Exception e) {            
-            logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,e.getMessage());                
+        } catch (Exception e) {
+            logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,e.getMessage());
             throw new EJBException(e);
         }
         debug("<run()");
     }
-    
-    
+
+
     /**
      * Method that checks if there are any CRLs needed to be updated and then creates their
      * CRLs. This method can be called by a scheduler or a service.
      *
-     * @param admin administrator performing the task      
+     * @param admin administrator performing the task
      *
      * @return the number of crls created.
      * @throws EJBException om ett kommunikations eller systemfel intr?ffar.
-     */    
+     */
     public int createCRLs(Admin admin)  {
     	int createdcrls = 0;
     	try {
-    		Date currenttime = new Date();    	
+    		Date currenttime = new Date();
     		ICAAdminSessionLocal caadmin = caadminHome.create();
     		ICertificateStoreSessionLocal store = storeHome.create();
-    		
+
     		Iterator iter = caadmin.getAvailableCAs(admin).iterator();
     		while(iter.hasNext()){
     			int caid = ((Integer) iter.next()).intValue();
-    			try{    			   	
+    			try{
     			   CAInfo cainfo = caadmin.getCAInfo(admin, caid);
     			   if(cainfo instanceof X509CAInfo){
-    			      CRLInfo crlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN());    			      
+    			      CRLInfo crlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN());
     			      if((currenttime.getTime() + CRLOVERLAPTIME) >= crlinfo.getExpireDate().getTime()){
     			      	 this.run(admin, cainfo.getSubjectDN());
-    			      	 
+
     			      	 createdcrls++;
     			      }
-    			   }    			       			      			
+    			   }
     		    }catch(Exception e){
-    		    	logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,e.getMessage());                
-    		    	throw new EJBException(e);    		    	
+    		    	logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,e.getMessage());
+    		    	throw new EJBException(e);
     		    }
-    		}	
-    	} catch (Exception e) {            
-    		logsession.log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,e.getMessage());                
+    		}
+    	} catch (Exception e) {
+    		logsession.log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,e.getMessage());
     		throw new EJBException(e);
-    	}    	        	
-    	
+    	}
+
     	return createdcrls;
     }
-    
+
 }
 
 

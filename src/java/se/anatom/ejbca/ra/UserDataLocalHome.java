@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.ra;
 
 import javax.ejb.CreateException;
@@ -21,21 +21,24 @@ import java.util.Collection;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataLocalHome.java,v 1.8 2004-04-16 07:38:56 anatom Exp $
+ * @version $Id: UserDataLocalHome.java,v 1.9 2004-06-15 16:42:05 sbailliez Exp $
  **/
 public interface UserDataLocalHome extends javax.ejb.EJBLocalHome {
+
+   public static final String COMP_NAME="java:comp/env/ejb/UserDataLocal";
+   public static final String JNDI_NAME="UserDataLocal";
 
     public UserDataLocal create(String username, String password, String dn, int caid)
         throws CreateException, NoSuchAlgorithmException;
 
     public UserDataLocal findByPrimaryKey(UserDataPK pk)
         throws FinderException;
-    
-    public UserDataLocal findBySubjectDN(String dn, int caid) 
+
+    public UserDataLocal findBySubjectDN(String dn, int caid)
         throws FinderException;
-    
-    public Collection findBySubjectEmail(String email) 
-        throws FinderException;    
+
+    public Collection findBySubjectEmail(String email)
+        throws FinderException;
 
 
     /** Finds users with a specified status.
@@ -46,8 +49,8 @@ public interface UserDataLocalHome extends javax.ejb.EJBLocalHome {
     public Collection findByStatus(int status)
         throws FinderException;
 
-    public Collection findAll() 
-        throws FinderException;      
+    public Collection findAll()
+        throws FinderException;
 
 }
 

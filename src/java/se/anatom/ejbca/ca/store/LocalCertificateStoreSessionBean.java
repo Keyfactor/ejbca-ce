@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.ca.store;
 
 import java.math.BigInteger;
@@ -57,7 +57,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.70 2004-06-02 08:29:43 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.71 2004-06-15 16:42:17 sbailliez Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -78,12 +78,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
     /** The local interface of the authorization session bean */
     private IAuthorizationSessionLocal authorizationsession = null;
-    
+
     /** The local interface of the publisher session bean */
     private IPublisherSessionLocal publishersession = null;
 
-    
-    
+
+
     /**
      * Default create for SessionBean without any creation Arguments.
      *
@@ -107,14 +107,14 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
         return ds.getConnection();
     } //getConnection
-    
-    
+
+
     /** Gets connection to log session bean
      */
     private ILogSessionLocal getLogSession() {
         if(logsession == null){
           try{
-            ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup("java:comp/env/ejb/LogSessionLocal",ILogSessionLocalHome.class);
+            ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup(ILogSessionLocalHome.COMP_NAME,ILogSessionLocalHome.class);
             logsession = logsessionhome.create();
           }catch(Exception e){
              throw new EJBException(e);
@@ -122,7 +122,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
         return logsession;
     } //getLogSession
-    
+
 
     /** Gets connection to authorization session bean
      * @return Connection
@@ -137,8 +137,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
           }
         }
         return authorizationsession;
-    } //getAuthorizationSession    
-    
+    } //getAuthorizationSession
+
     /** Gets connection to publisher session bean
      * @return Connection
      */
@@ -152,9 +152,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
           }
         }
         return publishersession;
-    } //getPublisherSession   
-    
-    
+    } //getPublisherSession
+
+
     /**
      * Implements ICertificateStoreSession::storeCertificate. Implements a mechanism that uses
      * Certificate Entity Bean.
@@ -186,7 +186,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             data1.setCAFingerprint(cafp);
             data1.setStatus(status);
             data1.setType(type);
-        } catch (Exception e) {            
+        } catch (Exception e) {
            getLogSession().log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"");
            throw new EJBException(e);
         }
@@ -425,7 +425,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         try {
             con = getConnection();
             ps = con.prepareStatement(
-				"SELECT DISTINCT username FROM CertificateData WHERE expireDate>=? AND expireDate<? AND status=?"); 
+				"SELECT DISTINCT username FROM CertificateData WHERE expireDate>=? AND expireDate<? AND status=?");
             ps.setLong(1,currentdate);
 			ps.setLong(2,expiretime.getTime());
 			ps.setInt(3,CertificateData.CERT_ACTIVE);
@@ -433,7 +433,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             while(result.next() && returnval.size() <= SecConst.MAXIMUM_QUERY_ROWCOUNT +1){
                 if(result.getString(1) != null && !result.getString(1).equals(""))
                   returnval.add(result.getString(1));
-            }    
+            }
             debug("<findCertificatesByExpireTimeWithLimit()");
             return returnval;
         }
@@ -466,7 +466,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param serno DOCUMENT ME!
      *
      * @return DOCUMENT ME!
-     */                           
+     */
     public Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno) {
         debug(">findCertificateByIssuerAndSerno(), dn:"+issuerDN+", serno="+serno);
         // First make a DN in our well-known format
@@ -552,7 +552,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 				while (iter.hasNext()) {
                     sb.append(", '");
                     // Make sure this is really a BigInteger passed in as (untrusted param)
-                    BigInteger serno = (BigInteger)iter.next(); 
+                    BigInteger serno = (BigInteger)iter.next();
                     sb.append(serno.toString());
                     sb.append("'");
 				}
@@ -575,8 +575,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 			while (result.next()) {
                 Certificate cert = findCertificateByFingerprint(admin, result.getString(1));
                 if (cert != null) {
-                    vect.add(cert);                    
-                } 
+                    vect.add(cert);
+                }
 			}
 
 			debug("<findCertificateByIssuerAndSernos()");
@@ -698,8 +698,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public Certificate findCertificateByFingerprint(Admin admin, String fingerprint) {
         debug(">findCertificateByFingerprint()");
-        Certificate ret = null; 
-        
+        Certificate ret = null;
+
         try {
             CertificateDataLocal res = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
             ret = res.getCertificate();
@@ -707,7 +707,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         } catch (FinderException fe) {
            // Return null;
         } catch (Exception e) {
-            log.error("Error finding certificate with fp: "+fingerprint);            
+            log.error("Error finding certificate with fp: "+fingerprint);
             throw new EJBException(e);
         }
 		return ret;
@@ -739,7 +739,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 	 * ...
 	 * ICertificateStoreSessionRemote itf = ...
 	 * Collection certs = itf.findCertificatesByType(adm,
-	 *                                               SecConst.CERTTYPE_ROOTCA, 
+	 *                                               SecConst.CERTTYPE_ROOTCA,
 	 *                                               null);
 	 * ...
 	 * </code>
@@ -753,7 +753,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 	 * ICertificateStoreSessionRemote itf = ...
 	 * Certficate rootCA = ...
 	 * String issuer = rootCA.getSubjectDN();
-	 * Collection certs = itf.findCertificatesByType(adm, 
+	 * Collection certs = itf.findCertificatesByType(adm,
 	 *                                               SecConst.CERTTYPE_SUBCA,
 	 *                                               issuer);
 	 * ...
@@ -765,8 +765,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 	 * ...
 	 * ICertificateStoreSessionRemote itf = ...
 	 * Collection certs = itf.findCertificatesByType(adm,
-	 *                                               SecConst.CERTTYPE_SUBCA 
-	 *                                               + CERTTYPE_ROOTCA, 
+	 *                                               SecConst.CERTTYPE_SUBCA
+	 *                                               + CERTTYPE_ROOTCA,
 	 *                                               null);
 	 * ...
 	 * </code>
@@ -774,7 +774,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 	 * </ol>
 	 *
 	 * @param admin
-	 * @paran type CERTTYPE_* types from SecConst 
+	 * @paran type CERTTYPE_* types from SecConst
 	 * @param issuerDN get all certificates issued by a specific issuer.
 	 *                 If <tt>null</tt> or empty return certificates regardless of
 	 *                 the issuer.
@@ -785,10 +785,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 	 */
 	 public Collection findCertificatesByType(Admin admin, int type, String issuerDN) {
 		debug(">findCertificatesByType()");
-		if (null == admin 
-			|| type <= 0 
+		if (null == admin
+			|| type <= 0
 			|| type > SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ENDENTITY + SecConst.CERTTYPE_ROOTCA) {
-			throw new IllegalArgumentException();        
+			throw new IllegalArgumentException();
 		}
 		StringBuffer ctypes = new StringBuffer();
 		if ((type & SecConst.CERTTYPE_SUBCA) > 0) {
@@ -803,7 +803,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 		if ((type & SecConst.CERTTYPE_ROOTCA) > 0) {
 			if (ctypes.length() > 0) {
 				ctypes.append(", ");
-			}            
+			}
 			ctypes.append(SecConst.CERTTYPE_ROOTCA);
 		}
 
@@ -869,7 +869,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      *
      * @param admin DOCUMENT ME!
      * @param username the username of user to revoke certificates.
-     * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.  
+     * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.
      * @param reason reason the user is revoked from CRLData
      *
      * @see CRLData
@@ -881,7 +881,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
        username = StringTools.strip(username);
        try{
          Collection certs = findCertificatesByUsername(admin, username);
-         
+
 
           // Revoke all certs
          if (!certs.isEmpty()) {
@@ -894,13 +894,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
              if (rev.getStatus() != CertificateData.CERT_REVOKED) {
               rev.setStatus(CertificateData.CERT_REVOKED);
               rev.setRevocationDate(new Date());
-              rev.setRevocationReason(reason);             
-              getLogSession().log(admin, certificate, LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_REVOKEDCERT,("Reason :" + reason));             
+              rev.setRevocationReason(reason);
+              getLogSession().log(admin, certificate, LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_REVOKEDCERT,("Reason :" + reason));
               // Revoke in all related publishers
-              if(publishers!= null){                                
-                  getPublisherSession().revokeCertificate(admin, publishers, certificate, reason);                 	                
+              if(publishers!= null){
+                  getPublisherSession().revokeCertificate(admin, publishers, certificate, reason);
               }
-              
+
             }
           }
          }
@@ -918,7 +918,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      *
      * @param admin DOCUMENT ME!
      * @param serno the serial number of the certificate to revoke.
-     * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.  
+     * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.
      * @param reason reason the user is revoked from CRLData
      *
      * @see CRLData
@@ -928,8 +928,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
        X509Certificate certificate = null;
        try{
          certificate = (X509Certificate) this.findCertificateByIssuerAndSerno(admin, issuerdn, serno);
-         
-         
+
+
           // Revoke all certs
          if (certificate != null) {
              CertificateDataPK revpk = new CertificateDataPK();
@@ -939,20 +939,20 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
               rev.setStatus(CertificateData.CERT_REVOKED);
               rev.setRevocationDate(new Date());
               rev.setRevocationReason(reason);
-              
+
               getLogSession().log(admin, issuerdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_REVOKEDCERT,("Reason :" + reason));
-                
+
             }
              // Revoke in all related publishers
-             if(publishers!= null){                                
-                 getPublisherSession().revokeCertificate(admin, publishers, certificate, reason);                 	                
+             if(publishers!= null){
+                 getPublisherSession().revokeCertificate(admin, publishers, certificate, reason);
              }
-             
+
          }
 
-       }catch(FinderException e){          
+       }catch(FinderException e){
           getLogSession().log(admin, issuerdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT,("Couldn't find certificate with serno :" + serno));
-          
+
           throw new EJBException(e);
        }
        debug("<setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno);
@@ -964,25 +964,25 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      *
      * @param admin DOCUMENT ME!
      * @param cert The DER coded Certificate that has been revoked.
-     * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.  
+     * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.
      * @param reason DOCUMENT ME!
      *
      * @throws EJBException if a communication or other error occurs.
      */
      public void revokeCertificate(Admin admin, Certificate cert, Collection publishers, int reason) {
-         if (cert instanceof X509Certificate) {         	              
+         if (cert instanceof X509Certificate) {
                setRevokeStatus(admin, ((X509Certificate)cert).getIssuerDN().toString(), ((X509Certificate)cert).getSerialNumber(), publishers, reason);
          }
      } //revokeCertificate
-     
+
      /**
       * Method revoking all certificates generated by the specified issuerdn. Sets revokedate to current time.
       * Should only be called by CAAdminBean when a CA is about to be revoked.
-      *  
+      *
       * @param admin the administrator performing the event.
       * @param issuerdn the dn of CA about to be revoked
       * @param reason the reason of revokation.
-      * 
+      *
       */
      public void revokeAllCertByCA(Admin admin, String issuerdn, int reason){
 		Connection con = null;
@@ -990,48 +990,48 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	PreparedStatement ps2 = null;
 		int temprevoked = 0;
 		int revoked = 0;
-		
+
 		String bcdn = CertTools.stringToBCDNString(issuerdn);
-     	
+
      	final String firstsqlstatement = "UPDATE CertificateData SET status=?" +
                                                  " WHERE issuerDN=? AND status = ? ";
 		final String secondsqlstatement = "UPDATE CertificateData SET status=?, revocationDate=?, revocationReason=?" +
 												 " WHERE issuerDN=? AND status <> ?";
-												 
-		long currentdate = new Date().getTime();												 
-        	
+
+		long currentdate = new Date().getTime();
+
 		try {
-			// First SQL statement, changing all temporaty revoked certificates to permanently revoked certificates                			
+			// First SQL statement, changing all temporaty revoked certificates to permanently revoked certificates
 			con = getConnection();
-			ps = con.prepareStatement(firstsqlstatement);		  							  
+			ps = con.prepareStatement(firstsqlstatement);
 			ps.setInt(1, CertificateData.CERT_REVOKED); // first statusfield
 			ps.setString(2, bcdn); // issuerdn field
 			ps.setInt(3, CertificateData.CERT_TEMP_REVOKED); // second statusfield
 		    temprevoked = ps.executeUpdate();
 
             // Second SQL statement, revoking all non revoked certificates.
-			ps2 = con.prepareStatement(secondsqlstatement);				
+			ps2 = con.prepareStatement(secondsqlstatement);
 			ps2.setInt(1, CertificateData.CERT_REVOKED); // first statusfield
 			ps2.setLong(2, currentdate); // revokedate field
 			ps2.setInt(3, reason); // revokation reason
 			ps2.setString(4, bcdn); // issuer dn
 			ps2.setInt(5, CertificateData.CERT_REVOKED); // second statusfield
-			
+
 			revoked = ps2.executeUpdate();
-			
+
 			getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_REVOKEDCERT,("Revoked All CAs certificates successfully. Permantly revoked :" + (revoked + temprevoked) + " Certificates with reason: " + reason));
 		 } catch (Exception e) {
-			 getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT,"Error when trying to revoke a CA's all certificates", e);		 	
+			 getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT,"Error when trying to revoke a CA's all certificates", e);
 			 throw new EJBException(e);
 		 } finally {
-			 try {				 
+			 try {
 				 if (ps != null) ps.close();
 				 if (ps2 != null) ps2.close();
 				 if (con!= null) con.close();
 			 } catch(SQLException se) {
 				 error("Error cleaning up: ", se);
 			 }
-		 }                       		               
+		 }
      } // revokeAllCertByCA
 
     /**
@@ -1123,7 +1123,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 				while (iter.hasNext()) {
                     sb.append(", '");
                     // Make sure this is really a BigInteger passed in as (untrusted param)
-                    BigInteger serno = (BigInteger)iter.next(); 
+                    BigInteger serno = (BigInteger)iter.next();
                     sb.append(serno.toString());
                     sb.append("'");
 				}
@@ -1246,8 +1246,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             getLogSession().log(admin, crl.getIssuerDN().toString().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_GETLASTCRL,"Number :" + maxnumber);
             return crl.getEncoded();
         }
-        catch (Exception e) {            
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL,"Error retrieving last crl.");            
+        catch (Exception e) {
+            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL,"Error retrieving last crl.");
             throw new EJBException(e);
         }
     } //getLastCRL
@@ -1269,15 +1269,15 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             debug("<getLastCRLInfo()");
             if (crlinfo == null)
                 return null;
-            
+
             return crlinfo;
         }
-        catch (Exception e) {            
-            getLogSession().log(admin, issuerdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL,"Error retrieving crl info.");            
+        catch (Exception e) {
+            getLogSession().log(admin, issuerdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL,"Error retrieving crl info.");
             throw new EJBException(e);
         }
-    } //getLastCRL    
-    
+    } //getLastCRL
+
     /**
      * Implements ICertificateStoreSession::getLastCRLNumber.
      * Uses select directly from datasource.
@@ -1351,11 +1351,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         boolean returnval = false;
 
 		if(isCertificateProfileNameFixed(certificateprofilename)){
-		  getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificaterprofile " + certificateprofilename);  
-		  throw new CertificateProfileExistsException();  
+		  getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificaterprofile " + certificateprofilename);
+		  throw new CertificateProfileExistsException();
 		}
-        
-        if (isFreeCertificateProfileId(certificateprofileid)) {                
+
+        if (isFreeCertificateProfileId(certificateprofileid)) {
            try {
               certprofilehome.findByCertificateProfileName(certificateprofilename);
               throw new CertificateProfileExistsException("Certificate Profile Name already exists.");
@@ -1363,12 +1363,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
               try {
                   certprofilehome.create(new Integer(certificateprofileid), certificateprofilename,
                       certificateprofile);
-				  getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"New certificateprofile " + certificateprofilename +  " added successfully");                  
+				  getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"New certificateprofile " + certificateprofilename +  " added successfully");
               } catch (Exception f) {
 				 getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error when creating new certificateprofile " + certificateprofilename);
               }
            }
-        }  
+        }
       } // addCertificateProfile
 
      /**
@@ -1382,30 +1382,30 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public void cloneCertificateProfile(Admin admin, String originalcertificateprofilename, String newcertificateprofilename) throws CertificateProfileExistsException{
        CertificateProfile certificateprofile = null;
-       
+
        if(isCertificateProfileNameFixed(newcertificateprofilename)){
-         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificaterprofile " + newcertificateprofilename +  " using profile " + originalcertificateprofilename + " as template.");  
-         throw new CertificateProfileExistsException();  
+         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificaterprofile " + newcertificateprofilename +  " using profile " + originalcertificateprofilename + " as template.");
+         throw new CertificateProfileExistsException();
        }
-                            
-       try{         
+
+       try{
          certificateprofile = (CertificateProfile)  getCertificateProfile(admin, originalcertificateprofilename).clone();
-         
-          boolean issuperadministrator= false; 
+
+          boolean issuperadministrator= false;
           try{
             issuperadministrator = getAuthorizationSession().isAuthorizedNoLog(admin, "/super_administrator");
           }catch(AuthorizationDeniedException ade){}
-        
+
           if(!issuperadministrator && certificateprofile.isApplicableToAnyCA()){
              // Not superadministrator, do not use ANYCA;
              Collection authcas = getAuthorizationSession().getAuthorizedCAIds(admin);
              certificateprofile.setAvailableCAs(authcas);
-          }        	
-                  
+          }
+
          try{
            certprofilehome.findByCertificateProfileName(newcertificateprofilename);
-           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificaterprofile " + newcertificateprofilename +  " using profile " + originalcertificateprofilename + " as template.");  
-           throw new CertificateProfileExistsException();  
+           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificaterprofile " + newcertificateprofilename +  " using profile " + originalcertificateprofilename + " as template.");
+           throw new CertificateProfileExistsException();
          }catch(FinderException e){
            try{
              certprofilehome.create(new Integer(findFreeCertificateProfileId()),newcertificateprofilename,certificateprofile);
@@ -1448,7 +1448,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
          getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error renaming certificateprofile " + oldcertificateprofilename +  " to " + newcertificateprofilename + ".");
          throw new CertificateProfileExistsException("Cannot rename fixed profiles.");
        }
-        
+
        try{
           certprofilehome.findByCertificateProfileName(newcertificateprofilename);
           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error renaming certificateprofile " + oldcertificateprofilename +  " to " + newcertificateprofilename + ".");
@@ -1480,15 +1480,15 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
          pdl.setCertificateProfile(certificateprofile);
          getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"Certificateprofile " + certificateprofilename +  " edited.");
        }catch(FinderException e){
-         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE," Error editing certificateprofile " + certificateprofilename + ".");       
+         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE," Error editing certificateprofile " + certificateprofilename + ".");
        }
     }// changeCertificateProfile
-    
+
     /**
      * Retrives a Collection of id:s (Integer) to authorized profiles.
      *
-     * @param certprofiletype should be either SecConst.CERTTYPE_ENDENTITY, SecConst.CERTTYPE_SUBCA, SecConst.CERTTYPE_ROOTCA, 
-     * SecConst.CERTTYPE_HARDTOKEN (i.e EndEntity certificates and Hardtoken fixed profiles) or 0 for all. 
+     * @param certprofiletype should be either SecConst.CERTTYPE_ENDENTITY, SecConst.CERTTYPE_SUBCA, SecConst.CERTTYPE_ROOTCA,
+     * SecConst.CERTTYPE_HARDTOKEN (i.e EndEntity certificates and Hardtoken fixed profiles) or 0 for all.
      * Retrives certificate profile names sorted.
      *
      *
@@ -1497,24 +1497,24 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     public Collection getAuthorizedCertificateProfileIds(Admin admin, int certprofiletype){
       ArrayList returnval = new ArrayList();
       Collection result = null;
-      
+
       HashSet authorizedcaids = new HashSet(getAuthorizationSession().getAuthorizedCAIds(admin));
 
-      // Add fixed certificate profiles. 
+      // Add fixed certificate profiles.
       if(certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_ENDENTITY || certprofiletype == SecConst.CERTTYPE_HARDTOKEN)
         returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_ENDUSER));
       if(certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_SUBCA)
         returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_SUBCA));
       if(certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_ROOTCA)
         returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_ROOTCA));
-      
-	   if(certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_HARDTOKEN){		
+
+	   if(certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_HARDTOKEN){
 		 returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH));
 		 returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
 		 returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENENC));
 		 returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN));
-	   }	   
-      
+	   }
+
       try{
         result = certprofilehome.findAll();
         Iterator i = result.iterator();
@@ -1523,7 +1523,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
           CertificateProfile profile = next.getCertificateProfile();
           // Check if all profiles available CAs exists in authorizedcaids.
           if(certprofiletype == 0 || certprofiletype == profile.getType()
-             || ( profile.getType() == SecConst.CERTTYPE_ENDENTITY && 
+             || ( profile.getType() == SecConst.CERTTYPE_ENDENTITY &&
 			      certprofiletype == SecConst.CERTTYPE_HARDTOKEN)){
             Iterator availablecas = profile.getAvailableCAs().iterator();
             boolean allexists = true;
@@ -1533,25 +1533,25 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 allexists=true;
                 break;
               }
-                
+
               if(!authorizedcaids.contains(nextcaid)){
                 allexists = false;
                 break;
               }
             }
-          
+
             if(allexists)
               returnval.add(next.getId());
           }
-        }  
+        }
       }catch(FinderException e){}
       return returnval;
-    } // getAuthorizedCertificateProfileNames    
-    
-    
+    } // getAuthorizedCertificateProfileNames
+
+
     /**
      * Method creating a hashmap mapping profile id (Integer) to profile name (String).
-     */    
+     */
     public HashMap getCertificateProfileIdToNameMap(Admin admin){
       HashMap returnval = new HashMap();
       Collection result = null;
@@ -1570,13 +1570,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 	  			    HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME);
 	  returnval.put(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN),
 				    HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME);
-					  
-            
+
+
       try{
         result = certprofilehome.findAll();
         Iterator i = result.iterator();
         while(i.hasNext()){
-          CertificateProfileDataLocal next = (CertificateProfileDataLocal) i.next();    
+          CertificateProfileDataLocal next = (CertificateProfileDataLocal) i.next();
           returnval.put(next.getId(),next.getCertificateProfileName());
         }
       }catch(FinderException e){}
@@ -1594,29 +1594,29 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public CertificateProfile getCertificateProfile(Admin admin, String certificateprofilename){
        CertificateProfile returnval=null;
-       
+
       if(certificateprofilename.equals(EndUserCertificateProfile.CERTIFICATEPROFILENAME))
-        return new EndUserCertificateProfile(); 
-     
+        return new EndUserCertificateProfile();
+
       if(certificateprofilename.equals(CACertificateProfile.CERTIFICATEPROFILENAME))
-        return new CACertificateProfile(); 
+        return new CACertificateProfile();
 
       if(certificateprofilename.equals(RootCACertificateProfile.CERTIFICATEPROFILENAME))
-        return new RootCACertificateProfile();        
+        return new RootCACertificateProfile();
 
   	  if(certificateprofilename.equals(HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME))
 	    return new HardTokenAuthCertificateProfile();
-  	    
+
 	  if(certificateprofilename.equals(HardTokenAuthEncCertificateProfile.CERTIFICATEPROFILENAME))
-	    return new HardTokenAuthEncCertificateProfile(); 
+	    return new HardTokenAuthEncCertificateProfile();
 
 	  if(certificateprofilename.equals(HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME))
-	    return new HardTokenEncCertificateProfile(); 
-      
-	  if(certificateprofilename.equals(HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME))
-	    return new HardTokenSignCertificateProfile(); 
+	    return new HardTokenEncCertificateProfile();
 
-       
+	  if(certificateprofilename.equals(HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME))
+	    return new HardTokenSignCertificateProfile();
+
+
        try{
          returnval = (certprofilehome.findByCertificateProfileName(certificateprofilename)).getCertificateProfile();
        } catch(FinderException e){
@@ -1635,40 +1635,40 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public CertificateProfile getCertificateProfile(Admin admin, int id){
        CertificateProfile returnval=null;
-       
+
        if(id < SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY){
          switch(id){
             case SecConst.CERTPROFILE_FIXED_ENDUSER :
-              returnval = new EndUserCertificateProfile();         
+              returnval = new EndUserCertificateProfile();
               break;
             case SecConst.CERTPROFILE_FIXED_SUBCA :
-              returnval = new CACertificateProfile();         
-              break;  
+              returnval = new CACertificateProfile();
+              break;
             case SecConst.CERTPROFILE_FIXED_ROOTCA :
-              returnval = new RootCACertificateProfile();         
-              break;    
+              returnval = new RootCACertificateProfile();
+              break;
 			case SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH :
-			  returnval = new HardTokenAuthCertificateProfile();         
-			  break;    
+			  returnval = new HardTokenAuthCertificateProfile();
+			  break;
 			case SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC :
-			  returnval = new HardTokenAuthEncCertificateProfile();         
-			  break;    
+			  returnval = new HardTokenAuthEncCertificateProfile();
+			  break;
 			case SecConst.CERTPROFILE_FIXED_HARDTOKENENC :
-			  returnval = new HardTokenEncCertificateProfile();         
-			  break;    
+			  returnval = new HardTokenEncCertificateProfile();
+			  break;
 			case SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN :
-			  returnval = new HardTokenSignCertificateProfile();         
-			  break;    			  
+			  returnval = new HardTokenSignCertificateProfile();
+			  break;
             default:
-              returnval = new EndUserCertificateProfile();           
-         }         
+              returnval = new EndUserCertificateProfile();
+         }
        }else{
          try{
            returnval = (certprofilehome.findByPrimaryKey(new Integer(id))).getCertificateProfile();
          } catch(FinderException e){
              // return null if we cant find it
          }
-       }  
+       }
        return returnval;
     } // getCertificateProfile
 
@@ -1683,33 +1683,33 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public int getCertificateProfileId(Admin admin, String certificateprofilename){
       int returnval = 0;
-      
+
       if(certificateprofilename.equals(EndUserCertificateProfile.CERTIFICATEPROFILENAME))
-        return SecConst.CERTPROFILE_FIXED_ENDUSER; 
-     
+        return SecConst.CERTPROFILE_FIXED_ENDUSER;
+
       if(certificateprofilename.equals(CACertificateProfile.CERTIFICATEPROFILENAME))
-        return SecConst.CERTPROFILE_FIXED_SUBCA; 
+        return SecConst.CERTPROFILE_FIXED_SUBCA;
 
       if(certificateprofilename.equals(RootCACertificateProfile.CERTIFICATEPROFILENAME))
-        return SecConst.CERTPROFILE_FIXED_ROOTCA; 
+        return SecConst.CERTPROFILE_FIXED_ROOTCA;
 
       if(certificateprofilename.equals(HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME))
   	    return SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH;
-  	    
+
   	  if(certificateprofilename.equals(HardTokenAuthEncCertificateProfile.CERTIFICATEPROFILENAME))
-		return SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC; 
+		return SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC;
 
   	  if(certificateprofilename.equals(HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME))
-		return SecConst.CERTPROFILE_FIXED_HARDTOKENENC; 
-      
+		return SecConst.CERTPROFILE_FIXED_HARDTOKENENC;
+
   	  if(certificateprofilename.equals(HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME))
-	 	return SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN; 
-      
+	 	return SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN;
+
       try{
         Integer id = (certprofilehome.findByCertificateProfileName(certificateprofilename)).getId();
         returnval = id.intValue();
       }catch(FinderException e){}
-           
+
       return returnval;
     } // getCertificateProfileId
 
@@ -1723,46 +1723,46 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public String getCertificateProfileName(Admin admin, int id){
       String returnval = null;
-      
+
       // Is id a fixed profile
       if(id < SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY){
         switch(id){
             case SecConst.CERTPROFILE_FIXED_ENDUSER :
-              returnval = EndUserCertificateProfile.CERTIFICATEPROFILENAME;         
+              returnval = EndUserCertificateProfile.CERTIFICATEPROFILENAME;
               break;
             case SecConst.CERTPROFILE_FIXED_SUBCA :
-              returnval = CACertificateProfile.CERTIFICATEPROFILENAME;         
-              break;  
+              returnval = CACertificateProfile.CERTIFICATEPROFILENAME;
+              break;
             case SecConst.CERTPROFILE_FIXED_ROOTCA :
-              returnval = RootCACertificateProfile.CERTIFICATEPROFILENAME;         
-              break;   
+              returnval = RootCACertificateProfile.CERTIFICATEPROFILENAME;
+              break;
 			case SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH :
-			  returnval = HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME;         
-			  break;   
+			  returnval = HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME;
+			  break;
 			case SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC :
-			  returnval = HardTokenAuthEncCertificateProfile.CERTIFICATEPROFILENAME;         
-			  break;   
+			  returnval = HardTokenAuthEncCertificateProfile.CERTIFICATEPROFILENAME;
+			  break;
 			case SecConst.CERTPROFILE_FIXED_HARDTOKENENC :
-			  returnval = HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME;         
-			  break;   
+			  returnval = HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME;
+			  break;
 			case SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN :
-			  returnval = HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME;         
-			  break;   			  			  
+			  returnval = HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME;
+			  break;
             default:
               returnval = EndUserCertificateProfile.CERTIFICATEPROFILENAME;
-              
 
-        }  
+
+        }
       }else{
         try{
           returnval = (certprofilehome.findByPrimaryKey(new Integer(id))).getCertificateProfileName();
         }catch(FinderException e){}
       }
-      
-      return returnval;      
-      
+
+      return returnval;
+
     } // getCertificateProfileName
-    
+
      /**
      * Method to check if a CA exists in any of the certificate profiles. Used to avoid desyncronization of CA data.
      *
@@ -1788,7 +1788,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
       return exists;
     } // existsCAInCertificateProfiles
-    
+
     /**
      * Method to check if a Publisher exists in any of the certificate profiles. Used to avoid desyncronization of publisher data.
      *
@@ -1835,20 +1835,20 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
       }
       return id;
     } // findFreeCertificateProfileId
-    
-    
+
+
     private boolean isCertificateProfileNameFixed(String certificateprofilename){
        boolean returnval = false;
-       
+
        if(certificateprofilename.equals(EndUserCertificateProfile.CERTIFICATEPROFILENAME))
-          return true; 
-     
+          return true;
+
        if(certificateprofilename.equals(CACertificateProfile.CERTIFICATEPROFILENAME))
-         return true; 
+         return true;
 
        if(certificateprofilename.equals(RootCACertificateProfile.CERTIFICATEPROFILENAME))
-         return true;         
-       
+         return true;
+
        return returnval;
     }
 
@@ -1857,7 +1857,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 		try {
 			if (id > SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY) {
 				certprofilehome.findByPrimaryKey(new Integer(id));
-			} 
+			}
 		} catch (FinderException e) {
 			foundfree = true;
 		}

@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.ca.caadmin;
 
 import java.util.Collection;
@@ -23,10 +23,13 @@ import javax.ejb.FinderException;
 /**
  * For docs, see CADataBean
  *
- * @version $Id: CADataLocalHome.java,v 1.2 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: CADataLocalHome.java,v 1.3 2004-06-15 16:42:29 sbailliez Exp $
  **/
 
 public interface CADataLocalHome extends javax.ejb.EJBLocalHome {
+
+   public static final String COMP_NAME="java:comp/env/ejb/CADataLocal";
+   public static final String JNDI_NAME="CADataLocal";
 
     public CADataLocal create(String subjectdn, String name, int status, CA ca)
         throws CreateException;

@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.ca.crl;
 
 
@@ -21,16 +21,20 @@ import javax.ejb.EJBLocalHome;
 /**
  * Home interface for Create CRL session.
  *
- * @version $Id: ICreateCRLSessionLocalHome.java,v 1.2 2004-04-16 07:39:00 anatom Exp $
+ * @version $Id: ICreateCRLSessionLocalHome.java,v 1.3 2004-06-15 16:42:28 sbailliez Exp $
  */
 
 public interface ICreateCRLSessionLocalHome extends EJBLocalHome {
+
+    public static final String COMP_NAME="java:comp/env/ejb/CreateCRLSessionLocal";
+    public static final String JNDI_NAME="CreateCRLSessionLocal";
+
     /**
      * Default create method. Maps to ejbCreate in implementation.
      *
      * @return ICreateCRLSessionLocal interface
      *
-     * @throws CreateException 
+     * @throws CreateException
      */
     ICreateCRLSessionLocal create() throws CreateException;
 }
