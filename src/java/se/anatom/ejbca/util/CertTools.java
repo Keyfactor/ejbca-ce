@@ -30,7 +30,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.62 2004-05-31 14:28:52 anatom Exp $
+ * @version $Id: CertTools.java,v 1.63 2004-05-31 16:20:33 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -45,9 +45,13 @@ public class CertTools {
 
     /** Microsoft altName for windows smart card logon */
     public static final String UPN = "upn";
-
     /** ObjectID for upn altName for windows smart card logon */
     public static final String UPN_OBJECTID = "1.3.6.1.4.1.311.20.2.3";
+    /** Microsoft altName for windows domain controller guid */
+    public static final String GUID = "guid";
+    /** ObjectID for upn altName for windows domain controller guid */
+    public static final String GUID_OBJECTID = "1.3.6.1.4.1.311.25.1";
+    
     private static final String[] EMAILIDS = { EMAIL, EMAIL1, EMAIL2, EMAIL3 };
     /** ObjectID for unstructuredName DN attribute */
     public static final DERObjectIdentifier unstructuredName = new DERObjectIdentifier("1.2.840.113549.1.9.2");

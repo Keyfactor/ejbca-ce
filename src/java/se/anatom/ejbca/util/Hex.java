@@ -25,7 +25,7 @@ import java.math.BigInteger;
 /**
  * This class implements a hex decoder, decoding a string with hex-characters into the binary form.
  *
- * @version $Id: Hex.java,v 1.6 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: Hex.java,v 1.7 2004-05-31 16:20:33 anatom Exp $
  */
 public class Hex {
     private static final char[] hex = {
@@ -53,16 +53,16 @@ public class Hex {
         }
 
         return w.toString();
-    }
+    } // encode
 
     /**
-     * Decodar hex till binärt
+     * Decodar hex till binärt, don't use it's flawed.
      *
      * @param dataStr Sträng innehållande hex-representation av data
      *
      * @return byte[] innhållande binär representation av data
      */
-    public static byte[] decode(String dataStr) {
+    private static byte[] decode(String dataStr) {
         if (dataStr == null) {
             return null;
         }
@@ -75,9 +75,7 @@ public class Hex {
         byte[] data = cI.toByteArray();
 
         return data;
-    }
-
-    //decode
+    } //decode
 
     /**
      * Main
@@ -130,10 +128,5 @@ public class Hex {
             } catch (IOException ioe) {
             }
         }
-    }
-
-    //main
-}
-
-
-// Hex
+    } //main
+} // Hex

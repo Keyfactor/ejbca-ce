@@ -78,6 +78,7 @@ import org.bouncycastle.jce.X509V3CertificateGenerator;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
 import org.bouncycastle.ocsp.OCSPException;
+import org.bouncycastle.util.encoders.Hex;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.auth.UserAuthData;
@@ -101,7 +102,7 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.26 2004-05-22 16:02:14 anatom Exp $
+ * @version $Id: X509CA.java,v 1.27 2004-05-31 16:20:33 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -373,6 +374,19 @@ public class X509CA extends CA implements Serializable {
                 //GeneralName gn = new GeneralName(new DERSequence(v), 0);
                 DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
                 vec.add(gn);
+            }            
+            String guid =  CertTools.getPartFromDN(altName, CertTools.GUID);
+            if (guid != null) {
+                ASN1EncodableVector v = new ASN1EncodableVector();
+                byte[] guidbytes = Hex.decode(guid);
+                if (guidbytes != null) {
+                    v.add(new DERObjectIdentifier(CertTools.GUID_OBJECTID));
+                    v.add(new DERTaggedObject(true, 0, new DEROctetString(guidbytes)));
+                    DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                    vec.add(gn);                    
+                } else {
+                    log.error("Cannot decode hexadecimal guid: "+guid);
+                }
             }            
             if (vec.size() > 0) {
                 GeneralNames san = new GeneralNames(new DERSequence(vec));

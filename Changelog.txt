@@ -4,6 +4,7 @@ Added unstructuredname, unstructuredaddress and GUID to subjectdn and alternativ
 Cleaned system.out debug logs.
 Digital signature in default key usage to make ocsp work out of the box.
 Added support for iPAddress alternative name.
+Added support for MS GUID alternative name.
 Better check on altnames when adding user with cli.
 Fix CRL import in Mozilla.
 Allow . in usernames i webGUI.
