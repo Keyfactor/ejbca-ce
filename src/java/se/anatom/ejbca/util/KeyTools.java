@@ -26,7 +26,7 @@ import org.bouncycastle.jce.interfaces.*;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.22 2003-09-07 09:50:22 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.23 2003-11-24 14:49:15 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -59,9 +59,7 @@ public class KeyTools {
         log.debug("<genKeys()");
 
         return rsaKeys;
-    }
-
-    // genKeys
+    } // genKeys
 
     /**
      * Creates PKCS12-file that can be imported in IE or Netscape. The alias for the private key is
@@ -88,9 +86,7 @@ public class KeyTools {
         }
 
         return createP12(alias, privKey, cert, chain);
-    }
-
-    // createP12
+    } // createP12
 
     /**
      * Creates PKCS12-file that can be imported in IE or Netscape.
@@ -195,9 +191,7 @@ public class KeyTools {
         log.debug("<createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) + ", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
 
         return store;
-    }
-
-    // createP12
+    } // createP12
 
     /**
      * Creates JKS-file that can be used with JDK. The alias for the private key is set to
@@ -221,8 +215,7 @@ public class KeyTools {
 
         String caAlias = "cacert";
 
-        // TODO: support more than two levels of CAs
-        // Certificate chain, only max two levels deep unforturnately.
+        // Certificate chain
         if (cert == null) {
             throw new IllegalArgumentException("Parameter cert cannot be null.");
         }
@@ -256,7 +249,6 @@ public class KeyTools {
             if (!CertTools.isSelfSigned((X509Certificate) cachain[cachain.length - 1])) {
                 throw new IllegalArgumentException("Root cert is not self-signed.");
             }
-
             store.setCertificateEntry(caAlias, cachain[cachain.length - 1]);
         }
 
@@ -267,9 +259,7 @@ public class KeyTools {
             ", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
 
         return store;
-    }
-
-    // createJKS
+    } // createJKS
 
     /**
      * Retrieves the certificate chain from a keystore.
@@ -356,9 +346,7 @@ public class KeyTools {
         log.debug("<getCertChain: alias='" + privateKeyAlias + "', retlength=" + ret.length);
 
         return ret;
-    }
-
-    // getCertChain
+    } // getCertChain
 
     /**
      * create the subject key identifier.
@@ -377,8 +365,6 @@ public class KeyTools {
         } catch (Exception e) {
             throw new RuntimeException("error creating key");
         }
-    }
-}
-
-
-// KeyTools
+    } // createSubjectKeyId
+    
+} // KeyTools
