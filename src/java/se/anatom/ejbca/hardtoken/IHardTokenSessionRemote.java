@@ -1,21 +1,125 @@
 package se.anatom.ejbca.hardtoken;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.TreeMap;
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 import java.rmi.RemoteException;
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile;
 import se.anatom.ejbca.hardtoken.hardtokentypes.*;
 
 /**
  *
- * @version $Id: IHardTokenSessionRemote.java,v 1.5 2003-09-03 12:47:24 herrvendil Exp $
+ * @version $Id: IHardTokenSessionRemote.java,v 1.6 2003-12-05 14:50:26 herrvendil Exp $
  */
 public interface IHardTokenSessionRemote extends javax.ejb.EJBObject {
     
     public final static int NO_ISSUER = 0;
 
+	/**
+	 * Adds a hard token profile to the database.
+	 *
+	 * @throws HardTokenExistsException if hard token profile already exists.
+	 * @throws EJBException if a communication or other error occurs.
+	 */
+	public void addHardTokenProfile(Admin admin, String name, HardTokenProfile profile) throws HardTokenProfileExistsException, RemoteException;
+
+
+	/**
+	 * Adds a hard token profile to the database with a given id.
+	 * Should only be used when importing and exporting profiles to xml-files. 
+	 *
+	 * @throws HardTokenExistsException if hard token profile already exists.
+	 * @throws EJBException if a communication or other error occurs.
+	 */
+	public void addHardTokenProfile(Admin admin, int profileid, String name, HardTokenProfile profile) throws HardTokenProfileExistsException, RemoteException;
+	
+	/**
+	 * Updates hard token profile data
+	 *
+	 * @throws EJBException if a communication or other error occurs.
+	 */
+	public void changeHardTokenProfile(Admin admin, String name, HardTokenProfile profile) throws RemoteException;
+
+	 /**
+	 * Adds a hard token profile with the same content as the original profile,
+	 *
+     * @throws HardTokenExistsException if hard token profile already exists.
+	 * @throws EJBException if a communication or other error occurs.
+	 */
+	public void cloneHardTokenProfile(Admin admin, String oldname, String newname) throws HardTokenProfileExistsException, RemoteException;
+	 /**
+	 * Removes a hard token profile from the database.
+	 *
+	 * @throws EJBException if a communication or other error occurs.
+	 */
+	public void removeHardTokenProfile(Admin admin, String name) throws RemoteException;
+	 /**
+	 * Renames a hard token profile
+	 *
+	 * @throws HardTokenExistsException if hard token profile already exists.
+	 * @throws EJBException if a communication or other error occurs.
+	 */
+	public void renameHardTokenProfile(Admin admin, String oldname, String newname) throws HardTokenProfileExistsException, RemoteException;
+	
+	/**
+	 * Retrives a Collection of id:s (Integer) to authorized profiles.
+	 *
+	 * @return Collection of id:s (Integer)
+	 */
+	public Collection getAuthorizedHardTokenProfileIds(Admin admin) throws RemoteException;
+	
+	/**
+	 * Method creating a hashmap mapping profile id (Integer) to profile name (String).
+	 */    
+	public HashMap getHardTokenProfileIdToNameMap(Admin admin) throws RemoteException;
+
+	/**
+	 * Retrives a named hard token profile.
+	 */
+	public HardTokenProfile getHardTokenProfile(Admin admin, String name) throws RemoteException;
+	
+	 /**
+	  * Finds a hard token profile by id.
+	  *
+	  *
+	  */
+	public HardTokenProfile getHardTokenProfile(Admin admin, int id) throws RemoteException;
+	
+	/**
+	 * Help method used by hard token profile proxys to indicate if it is time to
+	 * update it's profile data.
+	 *	 
+	 */
+	
+	public int getHardTokenProfileUpdateCount(Admin admin, int hardtokenprofileid) throws RemoteException;
+
+	 /**
+	 * Returns a hard token profile id, given it's hard token profile name
+	 *	 
+	 *
+	 * @return the id or 0 if hardtokenprofile cannot be found.
+	 */
+	public int getHardTokenProfileId(Admin admin, String name) throws RemoteException;
+	
+	 /**
+	  * Returns a hard token profile name given its id.
+	  *
+	  * @return the name or null if id noesnt exists
+	  * @throws EJBException if a communication or other error occurs.
+	  */
+	public String getHardTokenProfileName(Admin admin, int id) throws RemoteException;
+
+	/**
+	* Method to check if a certificate profile exists in any of the hard token profiles. 
+	* Used to avoid desyncronization of certificate profile data.
+	*
+	* @param certificateprofileid the certificateprofileid to search for.
+	* @return true if certificateprofileid exists in any of the hard token profiles.
+	*/
+   public boolean existsCertificateProfileInHardTokenProfiles(Admin admin, int id) throws RemoteException;
            
     /**
      * Adds a hard token issuer to the database.

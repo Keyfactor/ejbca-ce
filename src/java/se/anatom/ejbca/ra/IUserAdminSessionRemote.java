@@ -20,7 +20,7 @@ import se.anatom.ejbca.util.query.Query;
 /**
  * Interface for User admin session
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.26 2003-11-02 14:28:20 anatom Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.27 2003-12-05 14:50:27 herrvendil Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     // Public constants
@@ -267,6 +267,16 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
 	 *  @return true if username already exists.
 	 */
 	public boolean existsUser(Admin admin, String username) throws RemoteException;
+	
+	/**
+	 * Methods that checks if a user exists in the database having the given hard token profile id. This function is mainly for avoiding
+	 * desyncronisation when a hard token profile is deleted.
+	 *
+	 * @param profileid of hardtokenprofile to look for.
+	 * @return true if proileid exists in userdatabase.
+	 */
+	public boolean checkForHardTokenProfileId(Admin admin, int profileid) throws RemoteException;
+
 
 
 }

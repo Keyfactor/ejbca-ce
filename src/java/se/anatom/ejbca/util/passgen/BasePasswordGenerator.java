@@ -7,21 +7,21 @@ import java.util.Date;
  * Inheriting classes should overload the constants USEDCHARS, MIN_CHARS 
  * and MAX_CHARS.
  *
- * @version $Id: BasePasswordGenerator.java,v 1.1 2003-10-21 13:48:47 herrvendil Exp $
+ * @version $Id: BasePasswordGenerator.java,v 1.2 2003-12-05 14:49:10 herrvendil Exp $
  */
 public abstract class BasePasswordGenerator implements IPasswordGenerator{       
     
-    protected BasePasswordGenerator(int minlength, int maxlength, char[] usedchars){
-       this.minlength  = minlength;
-       this.difference = maxlength - minlength;
+    protected BasePasswordGenerator(char[] usedchars){
+
        this.usedchars = usedchars; 
     }
     
 	/**
-	 * @see se.anatom.ejbca.util.passgen.IPasseordGenerator
+	 * @see se.anatom.ejbca.util.passgen.IPasswordGenerator
 	 */
     
-	public String getNewPassword(){
+	public String getNewPassword(int minlength, int maxlength){		
+		int difference = maxlength - minlength;
 		char[] password = null;
 		
 		Random ran = new Random((new Date()).getTime());
@@ -38,7 +38,5 @@ public abstract class BasePasswordGenerator implements IPasswordGenerator{
 	}
 	
     
-    private final int minlength;    
-    private final int difference;
     private final char[] usedchars;
 }

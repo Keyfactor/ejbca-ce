@@ -25,6 +25,8 @@
   final String RA_LISTENDENTITIESLINK   = "/" +globalconfiguration.getRaPath()+"/listendentities.jsp";
   final String HT_EDITHARDTOKENISSUERS_LINK  = "/" +globalconfiguration.getHardTokenPath() 
                                                   + "/edithardtokenissuers.jsp";
+  final String HT_EDITHARDTOKENPROFILES_LINK  = "/" +globalconfiguration.getHardTokenPath() 
+                                                  + "/edithardtokenprofiles/edithardtokenprofiles.jsp";
   final String LOG_LINK                 = "/" +globalconfiguration.getLogPath() 
                                                   + "/viewlog.jsp";
   final String LOG_CONFIGURATION_LINK   = "/" +globalconfiguration.getLogPath() 
@@ -46,6 +48,7 @@
   final String RAADDENDENTITY_RESOURCE                = "/ra_functionality/create_end_entity";
   final String RALISTEDITENDENTITY_RESOURCE           = "/ra_functionality/view_end_entity";
   final String HTEDITHARDTOKENISSUERS_RESOURCE        = "/hardtoken_functionality/edit_hardtoken_issuers";
+  final String HTEDITHARDTOKENPROFILES_RESOURCE       = "/hardtoken_functionality/edit_hardtoken_profiles";
   final String LOGVIEW_RESOURCE                       = "/log_functionality/view_log";
   final String LOGCONFIGURATION_RESOURCE              = "/log_functionality/edit_log_configuration";
   final String SYSTEMCONFIGURATION_RESOURCE           = "/super_administrator";
@@ -141,12 +144,25 @@
 <%   }
    }catch(AuthorizationDeniedException e){}
    if(globalconfiguration.getIssueHardwareTokens()){
+     // If authorized to edit the hard token profiles then display related links.
+     try{
+       if(ejbcawebbean.isAuthorizedNoLog(HTEDITHARDTOKENPROFILES_RESOURCE)){ 
+           htheaderprinted=true;%> 
+           <br>  
+           <%=ejbcawebbean.getText("HARDTOKENFUNCTIONS")+"<br>" %>
+           &nbsp;&nbsp;<A href='<%= HT_EDITHARDTOKENPROFILES_LINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITHARDTOKENPROFILES") %></a><br>
+
+<%     }
+      }catch(AuthorizationDeniedException e){}
+    
      // If authorized to edit the hard token issuers then display related links.
      try{
        if(ejbcawebbean.isAuthorizedNoLog(HTEDITHARDTOKENISSUERS_RESOURCE)){ 
-           raheaderprinted=true;%> 
-           <br>  
-           <%=ejbcawebbean.getText("HARDTOKENFUNCTIONS")+"<br>" %>
+           if(!htheaderprinted){
+             htheaderprinted=true;%> 
+             <br>  
+             <%=ejbcawebbean.getText("HARDTOKENFUNCTIONS")+"<br>" %> 
+           <% } %>
            &nbsp;&nbsp;<A href='<%= HT_EDITHARDTOKENISSUERS_LINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITHARDTOKENISSUERS") %></a><br>
 
 <%     }

@@ -29,7 +29,7 @@ import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.28 2003-10-29 14:25:54 herrvendil Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.29 2003-12-05 14:50:26 herrvendil Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
     /**
@@ -120,10 +120,11 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                     ";  PEM=" + SecConst.TOKEN_SOFT_PEM);
 
                 if (usehardtokens) {
-                    for (int i = 0; i < availabletokens.length; i++) {
+                	//TODO
+/*                    for (int i = 0; i < availabletokens.length; i++) {
                         System.out.print("; " + availabletokens[i].getName() + "=" +
                             availabletokens[i].getId());
-                    }
+                    }*/
                 }
 
                 System.out.print("\n");
@@ -314,13 +315,14 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             (token == SecConst.TOKEN_SOFT_JKS));
 
         if (!returnval && usehardtokens) {
-            for (int i = 0; i < availabletokens.length; i++) {
+        	//TODO add hard token profiles
+ /*           for (int i = 0; i < availabletokens.length; i++) {
                 if (token == Integer.parseInt(availabletokens[i].getId())) {
                     returnval = true;
 
                     break;
                 }
-            }
+            } */
         }
 
         return returnval;

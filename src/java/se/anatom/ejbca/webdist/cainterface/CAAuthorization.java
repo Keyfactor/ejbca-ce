@@ -17,7 +17,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * A class that looks up the which CA:s and certificate profiles the administrator is authorized to view.
  * 
- * @version $Id: CAAuthorization.java,v 1.3 2003-10-21 13:48:47 herrvendil Exp $
+ * @version $Id: CAAuthorization.java,v 1.4 2003-12-05 14:50:27 herrvendil Exp $
  */
 public class CAAuthorization implements Serializable {
     
@@ -50,10 +50,14 @@ public class CAAuthorization implements Serializable {
     
     
     
-    public TreeMap getAuthorizedEndEntityCertificateProfileNames(){
+    public TreeMap getAuthorizedEndEntityCertificateProfileNames(boolean usehardtokenprofiles){
       if(profilenamesendentity==null){
         profilenamesendentity = new TreeMap();  
-        Iterator iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ENDENTITY).iterator();      
+        Iterator iter = null;
+        if(usehardtokenprofiles)         
+          iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_HARDTOKEN).iterator();
+        else         
+		  iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ENDENTITY).iterator();
         HashMap idtonamemap = certificatestoresession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
@@ -62,7 +66,7 @@ public class CAAuthorization implements Serializable {
       }
       return profilenamesendentity;  
     }
-    
+            
     public TreeMap getAuthorizedSubCACertificateProfileNames(){
       if(profilenamessubca==null){
         profilenamessubca = new TreeMap();  

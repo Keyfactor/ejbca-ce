@@ -1,10 +1,10 @@
 package se.anatom.ejbca.util.passgen;
 
 /**
- * LettersAndDigitsPasswordGenerator is a class generating random passwords containing 6 - 8  letters 
+ * LettersAndDigitsPasswordGenerator is a class generating random passwords containing letters 
  * or digits.
  * 
- * @version $Id: LettersAndDigitsPasswordGenerator.java,v 1.1 2003-10-21 13:48:47 herrvendil Exp $
+ * @version $Id: LettersAndDigitsPasswordGenerator.java,v 1.2 2003-12-05 14:49:10 herrvendil Exp $
  */
 public class LettersAndDigitsPasswordGenerator extends BasePasswordGenerator{
     
@@ -15,11 +15,9 @@ public class LettersAndDigitsPasswordGenerator extends BasePasswordGenerator{
     	                                                             'j','J','k','K','l','L','z','Z','x','X','c','C',
     	                                                             'v','V','b','B','n','N','m','M'};
     
-    public static final int MIN_CHARS = 6;
-    public static final int MAX_CHARS = 8;
     
     public LettersAndDigitsPasswordGenerator(){
-    	super(MIN_CHARS, MAX_CHARS, USEDCHARS);
+    	super(USEDCHARS);
     }
       
 }

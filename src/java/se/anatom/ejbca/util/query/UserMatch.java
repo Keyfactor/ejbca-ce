@@ -24,6 +24,7 @@ public class UserMatch extends BasicMatch {
     public final static int MATCH_WITH_ENDENTITYPROFILE    = 3; // Matches the profile id not profilename.
     public final static int MATCH_WITH_CERTIFICATEPROFILE  = 4; // Matches the certificatetype id not name.
     public final static int MATCH_WITH_CA                  = 5; // Matches the CA id not CA name.
+	public final static int MATCH_WITH_TOKEN               = 6;
     // Subject DN fields.
     public final static int MATCH_WITH_UID              = 100;    
     public final static int MATCH_WITH_COMMONNAME       = 101;
@@ -42,7 +43,8 @@ public class UserMatch extends BasicMatch {
 
     // Private Constants.
     private final static String[] MATCH_WITH_SQLNAMES = {"username", "subjectEmail", "status"
-                                                         , "endEntityProfileId", "certificateProfileId", "cAId"}; 
+                                                         , "endEntityProfileId", "certificateProfileId"
+                                                         , "cAId", "tokenType"}; 
                                                          
 
     // Represents the column names in ra userdata table.

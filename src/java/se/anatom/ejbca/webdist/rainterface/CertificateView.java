@@ -1,13 +1,19 @@
 package se.anatom.ejbca.webdist.rainterface;
 
+
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
 
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
@@ -20,7 +26,7 @@ import se.anatom.ejbca.util.Hex;
  * by JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: CertificateView.java,v 1.14 2003-10-31 14:41:25 herrvendil Exp $
+ * @version $Id: CertificateView.java,v 1.15 2003-12-05 14:50:26 herrvendil Exp $
  */
 public class CertificateView {
 
@@ -41,6 +47,16 @@ public class CertificateView {
                                     "IPSECTUNNEL", "IPSECUSER", "TIMESTAMPING", "SMARTCARDLOGON",
                                     "OCSPSIGNER"};
 
+
+   private static final int SUBALTNAME_OTHERNAME     = 0;
+   private static final int SUBALTNAME_RFC822NAME    = 1;
+   private static final int SUBALTNAME_DNSNAME       = 2;
+   private static final int SUBALTNAME_X400ADDRESS   = 3;
+   private static final int SUBALTNAME_DIRECTORYNAME = 4;
+   private static final int SUBALTNAME_EDIPARTYNAME  = 5;   
+   private static final int SUBALTNAME_URI           = 6;
+   private static final int SUBALTNAME_IPADDRESS     = 7;   
+   private static final int SUBALTNAME_REGISTREDID   = 8;
 
     /** Creates a new instance of CertificateView */
     public CertificateView(X509Certificate certificate, RevokedInfoView revokedinfo, String username) {
@@ -206,7 +222,8 @@ public class CertificateView {
       }
       return  returnval;
     }
-
+     
+     
 
     public boolean isRevoked(){
       return revokedinfo != null  && revokedinfo.isRevoked();     
@@ -233,11 +250,66 @@ public class CertificateView {
     public X509Certificate getCertificate(){
       return certificate;
     }
+    
+    public String getSubjectAltName(){
+      if(subjectaltnamestring == null){      	
+        try {
+          if(certificate.getSubjectAlternativeNames() != null){
+			subjectaltnamestring = "";          
+			Iterator iter = certificate.getSubjectAlternativeNames().iterator();
+			while(iter.hasNext()){
+			  if(!subjectaltnamestring.equals(""))
+			    subjectaltnamestring += ", ";	
+              List next = (List) iter.next(); 
+              int OID = ((Integer) next.get(0)).intValue();
+              
+              switch(OID){
+              	case SUBALTNAME_OTHERNAME:
+              	  // check if upn exists.
+				  String upn = null;
+              	  try{              	  
+                    upn = CertTools.getUPNAltName(certificate);
+              	  }catch(IOException e){}  
+                  if(upn != null)
+				    subjectaltnamestring += "UPN=" + upn;
+                                  	  
+              	  break;
+              	case SUBALTNAME_RFC822NAME: 
+				  subjectaltnamestring += "RFC822NAME=" + (String) next.get(1);  
+              	  break;
+              	case SUBALTNAME_DNSNAME:
+				  subjectaltnamestring += "DNSNAME=" + (String) next.get(1);
+              	  break;
+              	case SUBALTNAME_X400ADDRESS:
+              	  //TODO Implement X400ADDRESS
+              	  break;
+				case SUBALTNAME_EDIPARTYNAME:
+				  //TODO Implement EDIPARTYNAME
+				  break;              	                	  
+				case SUBALTNAME_URI:
+				  subjectaltnamestring += "URI=" + (String) next.get(1);
+				  break;
+				case SUBALTNAME_IPADDRESS:
+                  //TODO implement IPADDRESS
+				  break;
+				case SUBALTNAME_REGISTREDID:
+                  //TODO implement REGISTREDID
+				  break;
+              }
+			}			
+          }	
+		} catch (CertificateParsingException e) {}                  
+      }  
+      
+
+      return subjectaltnamestring; 	
+    }
 
     // Private fields
     private X509Certificate  certificate;
     private DNFieldExtractor subjectdnfieldextractor, issuerdnfieldextractor;
     private RevokedInfoView  revokedinfo;
     private String           username;
+    private String           subjectaltnamestring;
     private static HashMap   extendedkeyusageoidtotextmap;
 }

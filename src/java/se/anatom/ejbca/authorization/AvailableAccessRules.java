@@ -16,7 +16,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 /**
  * 
  *
- * @version $Id: AvailableAccessRules.java,v 1.3 2003-10-03 10:07:00 herrvendil Exp $
+ * @version $Id: AvailableAccessRules.java,v 1.4 2003-12-05 14:50:27 herrvendil Exp $
  */
 public class AvailableAccessRules {
         
@@ -85,7 +85,8 @@ public class AvailableAccessRules {
                                                         
         // Hard Token specific accessrules used in authorization module.
     public static final String[] HARDTOKENACCESSRULES    = {"/hardtoken_functionality",
-                                                            "/hardtoken_functionality/edit_hardtoken_issuers",    
+                                                            "/hardtoken_functionality/edit_hardtoken_issuers",
+		                                                    "/hardtoken_functionality/edit_hardtoken_profiles",     
                                                             "/hardtoken_functionality/issue_hardtokens",
                                                             "/hardtoken_functionality/issue_hardtoken_administrators"};
                                                             

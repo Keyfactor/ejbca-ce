@@ -17,7 +17,7 @@ import se.anatom.ejbca.util.query.Query;
 
 /**
  *
- * @version $Id: IUserAdminSessionLocal.java,v 1.4 2003-11-02 14:28:21 anatom Exp $
+ * @version $Id: IUserAdminSessionLocal.java,v 1.5 2003-12-05 14:50:27 herrvendil Exp $
  */
 public interface IUserAdminSessionLocal extends javax.ejb.EJBLocalObject {
 
@@ -131,6 +131,11 @@ public interface IUserAdminSessionLocal extends javax.ejb.EJBLocalObject {
     * @see se.anatom.ejbca.ra.IUserAdminSessionRemote
     */
     public boolean checkForCertificateProfileId(Admin admin, int certificaterofileid);
+
+	/**
+	* @see se.anatom.ejbca.ra.IUserAdminSessionRemote
+	*/
+	public boolean checkForHardTokenProfileId(Admin admin, int profileid);
 
 	/**
     * @see se.anatom.ejbca.ra.IUserAdminSessionRemote

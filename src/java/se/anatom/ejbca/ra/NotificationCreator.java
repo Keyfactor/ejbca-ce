@@ -10,21 +10,23 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 /**
  * This class is used to create notification messages
  *
- * @version $Id: NotificationCreator.java,v 1.8 2003-07-24 08:43:31 anatom Exp $
+ * @version $Id: NotificationCreator.java,v 1.9 2003-12-05 14:50:27 herrvendil Exp $
  */
 public class NotificationCreator {
     /**
-     * Availabe vairables used to replace text i message, message is retrived from ejb-jar.xml
+     * Availabe vairables used to replace text in a message or printlayout
      * Variable text are case-insensitive.
      */
-    private static final Pattern USERNAME = Pattern.compile("\\$Username", Pattern.CASE_INSENSITIVE);
-    private static final Pattern PASSWORD = Pattern.compile("\\$Password", Pattern.CASE_INSENSITIVE);
+    private static final Pattern USERNAME = Pattern.compile("\\$USERNAME", Pattern.CASE_INSENSITIVE);
+    private static final Pattern PASSWORD = Pattern.compile("\\$PASSWORD", Pattern.CASE_INSENSITIVE);
     private static final Pattern CN = Pattern.compile("\\$CN", Pattern.CASE_INSENSITIVE);
     private static final Pattern O = Pattern.compile("\\$O", Pattern.CASE_INSENSITIVE);
     private static final Pattern OU = Pattern.compile("\\$OU", Pattern.CASE_INSENSITIVE);
     private static final Pattern C = Pattern.compile("\\$C", Pattern.CASE_INSENSITIVE);
-    private static final Pattern DATE = Pattern.compile("\\$DATE", Pattern.CASE_INSENSITIVE);
-    private static final Pattern NEWLINE = Pattern.compile("\\$NL");
+    private static final Pattern DATE = Pattern.compile("\\DATE", Pattern.CASE_INSENSITIVE);
+    private static final Pattern NEWLINE = Pattern.compile("\\$NL", Pattern.CASE_INSENSITIVE);
+
+
 
     /**
      * Creates a notification creator.
@@ -41,35 +43,29 @@ public class NotificationCreator {
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns the Sender email-address of the notificaton
      *
-     * @return DOCUMENT ME!
+     * @return email address of sender of notification, configured in end entity profiles.
      */
     public String getSender() {
         return sender;
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns the subject of the notification, observe noting is replaced when calling this function.
      *
-     * @return DOCUMENT ME!
+     * @return email address of subject of notification, configured in end entity profiles.
      */
     public String getSubject() {
         return subject;
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns the message with userspecific data replaced.
      *
-     * @param username DOCUMENT ME!
-     * @param password DOCUMENT ME!
-     * @param dn DOCUMENT ME!
-     * @param subjectaltname DOCUMENT ME!
-     * @param email DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
-     *
-     * @throws Exception DOCUMENT ME!
+     * @return A processed notification message.
+     *     
      */
     public String getMessage(String username, String password, String dn, String subjectaltname,
         String email) throws Exception {

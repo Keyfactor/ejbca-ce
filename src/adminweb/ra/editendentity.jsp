@@ -676,9 +676,8 @@ function checkallfields(){
 }
 <% if(profile.getUse(EndEntityProfile.CLEARTEXTPASSWORD,0)){%> 
 function checkUseInBatch(){
-
-  <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){  %> 
   var returnval = false;
+  <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){  %>   
   if(document.edituser.<%= CHECKBOX_CLEARTEXTPASSWORD %>.checked){
   <% if(!profile.isModifyable(EndEntityProfile.PASSWORD,0)){ %>
     returnval = document.edituser.<%= SELECT_PASSWORD %>.options.selectedIndex == -1;

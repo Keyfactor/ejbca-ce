@@ -48,7 +48,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.20 2003-10-21 13:48:47 herrvendil Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.21 2003-12-05 14:50:27 herrvendil Exp $
  */
 public class CAInterfaceBean   {
 
@@ -121,7 +121,7 @@ public class CAInterfaceBean   {
      */ 
     
     public HashMap getCAIdToNameMap(){
-      return informationmemory.getCAIdToNameMap();
+      return informationmemory.getCAIdToNameMap();      
     } 
     
     public Collection getAuthorizedCAs(){
@@ -156,6 +156,7 @@ public class CAInterfaceBean   {
        profile.setAvailableCAs(informationmemory.getAuthorizedCAIds());
        
        certificateprofiles.addCertificateProfile(name, profile);
+              
     }
 
    

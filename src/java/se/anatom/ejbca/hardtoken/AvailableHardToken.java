@@ -7,24 +7,18 @@
 package se.anatom.ejbca.hardtoken;
 
 /**
- *  Class representing a to the system available hard token, defined in ejb-jar.xml
+ *  Class representing a to the system available hard token type used by hard token profiles, defined in ejb-jar.xml
  *
  * @author  TomSelleck
  */
 public class AvailableHardToken implements java.io.Serializable {
     
     // Public Constructors
-    public AvailableHardToken(String id, String name, String classpath){
-      this.id=id;
+    public AvailableHardToken(String name, String classpath){
       this.name=name;
       this.classpath=classpath;
     }
     
-    // Public Methods    
-    
-    public String getId(){
-      return this.id;         
-    }
     public String getName(){
       return this.name;         
     }
@@ -33,7 +27,6 @@ public class AvailableHardToken implements java.io.Serializable {
     }    
                   
     // Private fields
-    private    String          id;
     private    String          name;   
     private    String          classpath;
 }

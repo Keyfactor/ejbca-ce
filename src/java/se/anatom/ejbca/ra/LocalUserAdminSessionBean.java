@@ -55,7 +55,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.71 2003-12-01 12:18:46 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.72 2003-12-05 14:50:27 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -1108,6 +1108,50 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
            }
         }
     } // checkForCAId
+
+
+	/**
+	 * Methods that checks if a user exists in the database having the given hard token profile id. This function is mainly for avoiding
+	 * desyncronisation when a hard token profile is deleted.
+	 *
+	 * @param profileid of hardtokenprofile to look for.
+	 * @return true if proileid exists in userdatabase.
+	 */
+	public boolean checkForHardTokenProfileId(Admin admin, int profileid){
+		debug(">checkForHardTokenProfileId()");
+		Connection con = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		int count = 1; // return true as default.
+
+		Query query = new Query(Query.TYPE_USERQUERY);
+		query.add(UserMatch.MATCH_WITH_TOKEN, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(profileid));
+
+		try{
+		   // Construct SQL query.
+			con = getConnection();
+			ps = con.prepareStatement("select COUNT(*) from UserData where " + query.getQueryString());
+			// Execute query.
+			rs = ps.executeQuery();
+			// Assemble result.
+			if(rs.next()){
+			  count = rs.getInt(1);
+			}
+			debug("<checkForHardTokenProfileId()");
+			return count > 0;
+
+		}catch(Exception e){
+		  throw new EJBException(e);
+		}finally{
+		   try{
+			 if(rs != null) rs.close();
+			 if(ps != null) ps.close();
+			 if(con!= null) con.close();
+		   }catch(SQLException se){
+			   error("Error on cleanup: ", se);
+		   }
+		}
+	} // checkForHardTokenProfileId
 
 
    private int makeType(boolean administrator, boolean keyrecoverable, boolean sendnotification){

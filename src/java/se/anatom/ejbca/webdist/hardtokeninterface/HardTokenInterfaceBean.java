@@ -13,6 +13,10 @@ import javax.servlet.http.HttpServletRequest;
 import se.anatom.ejbca.log.*;
 import se.anatom.ejbca.hardtoken.*;
 import se.anatom.ejbca.authorization.AdminInformation;
+import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
+import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
+import se.anatom.ejbca.ra.IUserAdminSessionLocal;
+import se.anatom.ejbca.ra.IUserAdminSessionLocalHome;
 import se.anatom.ejbca.util.StringTools;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
@@ -49,12 +53,23 @@ public class HardTokenInterfaceBean {
         IHardTokenBatchJobSessionLocalHome  hardtokenbatchsessionhome = (IHardTokenBatchJobSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/HardTokenBatchJobSessionLocal"),
                                                                                  IHardTokenBatchJobSessionLocalHome.class);
         hardtokenbatchsession = hardtokenbatchsessionhome.create();
+        
+		IAuthorizationSessionLocalHome  authorizationsessionhome = (IAuthorizationSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/AuthorizationSessionLocal"),
+																				 IAuthorizationSessionLocalHome.class);
+		IAuthorizationSessionLocal authorizationsession = authorizationsessionhome.create();
+
+
+		Object obj1 = jndicontext.lookup("java:comp/env/UserAdminSessionLocal");
+		IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionLocalHome.class);
+		IUserAdminSessionLocal useradminsession = adminsessionhome.create();
 
         availablehardtokens = hardtokensession.getAvailableHardTokens();
         initialized=true;
         
         this.informationmemory = ejbcawebbean.getInformationMemory();
-
+        
+        this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, authorizationsession , useradminsession, informationmemory);
+		
       }
     }
 
@@ -150,7 +165,7 @@ public class HardTokenInterfaceBean {
         certificatesn = StringTools.stripWhitespace(certificatesn);      
         if(!hardtokensession.addHardTokenIssuer(admin, alias, new BigInteger(certificatesn,16), certissuerdn, new HardTokenIssuer()))
           throw new HardTokenIssuerExistsException();
-        informationmemory.hardTokenIssuersEdited();
+        informationmemory.hardTokenDataEdited();
       }  
     }
 
@@ -159,7 +174,7 @@ public class HardTokenInterfaceBean {
         certificatesn = StringTools.stripWhitespace(certificatesn);
         if(!hardtokensession.addHardTokenIssuer(admin, alias, new BigInteger(certificatesn,16), certissuerdn, hardtokenissuer))
           throw new HardTokenIssuerExistsException();
-        informationmemory.hardTokenIssuersEdited();
+        informationmemory.hardTokenDataEdited();
       }
     }
 
@@ -167,7 +182,7 @@ public class HardTokenInterfaceBean {
       if(informationmemory.authorizedToHardTokenIssuer(alias)){	          	
         if(!hardtokensession.changeHardTokenIssuer(admin, alias, hardtokenissuer))
           throw new HardTokenIssuerDoesntExistsException();
-        informationmemory.hardTokenIssuersEdited();
+        informationmemory.hardTokenDataEdited();
       }
     }
 
@@ -182,7 +197,7 @@ public class HardTokenInterfaceBean {
 
           if(!issuerused){
             hardtokensession.removeHardTokenIssuer(admin, alias);
-		    informationmemory.hardTokenIssuersEdited();
+		    informationmemory.hardTokenDataEdited();
           }		
 		} 
         return !issuerused;	
@@ -194,7 +209,7 @@ public class HardTokenInterfaceBean {
         if(!hardtokensession.renameHardTokenIssuer(admin, oldalias, newalias, new BigInteger(newcertificatesn,16), certissuersn))
          throw new HardTokenIssuerExistsException();
        
-         informationmemory.hardTokenIssuersEdited();
+         informationmemory.hardTokenDataEdited();
       }   
     }
 
@@ -204,20 +219,29 @@ public class HardTokenInterfaceBean {
         if(!hardtokensession.cloneHardTokenIssuer(admin, oldalias, newalias, new BigInteger(newcertificatesn,16), newcertissuerdn))
           throw new HardTokenIssuerExistsException();
         
-        informationmemory.hardTokenIssuersEdited();
+        informationmemory.hardTokenDataEdited();
 	  }
     }
 
     public AvailableHardToken[] getAvailableHardTokens(){
       return availablehardtokens;
     }
+    
+    
+	
+	public HardTokenProfileDataHandler getHardTokenProfileDataHandler() {
+	
+		return hardtokenprofiledatahandler;
+	}    
     // Private fields.
     private IHardTokenSessionLocal          hardtokensession;
-    private IHardTokenBatchJobSessionLocal  hardtokenbatchsession;
+    private IHardTokenBatchJobSessionLocal  hardtokenbatchsession;    
     private AvailableHardToken[]            availablehardtokens;
     private AdminInformation                admininformation;
     private Admin                           admin;
-    private InformationMemory      informationmemory;
+    private InformationMemory               informationmemory;
     private boolean                         initialized=false;
     private HardTokenView[]                 result;
+    private HardTokenProfileDataHandler     hardtokenprofiledatahandler;
+
 }

@@ -4,7 +4,7 @@ package se.anatom.ejbca.util.passgen;
  * AllPrintablePasswordGenerator is a class generating random passwords containing all printable 
  * english characters.
  *
- * @version $Id: AllPrintableCharPasswordGenerator.java,v 1.1 2003-10-21 13:48:47 herrvendil Exp $
+ * @version $Id: AllPrintableCharPasswordGenerator.java,v 1.2 2003-12-05 14:49:10 herrvendil Exp $
  */
 public class AllPrintableCharPasswordGenerator extends BasePasswordGenerator{
     
@@ -14,12 +14,9 @@ public class AllPrintableCharPasswordGenerator extends BasePasswordGenerator{
     	                                                      'A','s','S','d','D','f','F','g','G','h','H','j','J','k','K',
     	                                                      'l','L','z','Z','x','X','c','C','v','V','b','B','n','N','m',
     	                                                      'M'};
-    
-    public static final int MIN_CHARS = 6;
-    public static final int MAX_CHARS = 8;
-    
+        
     public AllPrintableCharPasswordGenerator(){
-    	super(MIN_CHARS, MAX_CHARS, USEDCHARS);
+    	super(USEDCHARS);
     }
       
 }

@@ -55,7 +55,7 @@ import se.anatom.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.8 2003-12-04 10:20:21 anatom Exp $
+ * @version $Id: X509CA.java,v 1.9 2003-12-05 14:50:27 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 

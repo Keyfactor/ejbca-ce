@@ -29,10 +29,7 @@ import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.exception.CertificateProfileExistsException;
-import se.anatom.ejbca.ca.store.certificateprofiles.CACertificateProfile;
-import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
-import se.anatom.ejbca.ca.store.certificateprofiles.EndUserCertificateProfile;
-import se.anatom.ejbca.ca.store.certificateprofiles.RootCACertificateProfile;
+import se.anatom.ejbca.ca.store.certificateprofiles.*;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
@@ -45,7 +42,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.62 2003-12-04 10:20:49 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.63 2003-12-05 14:50:28 herrvendil Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -1436,12 +1433,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     /**
      * Retrives a Collection of id:s (Integer) to authorized profiles.
      *
-     * @param certprofiletype should be either SecConst.CERTTYPE_ENDENTITY, SecConst.CERTTYPE_SUBCA, SecConst.CERTTYPE_ROOTCA or 0 for all. 
+     * @param certprofiletype should be either SecConst.CERTTYPE_ENDENTITY, SecConst.CERTTYPE_SUBCA, SecConst.CERTTYPE_ROOTCA, 
+     * SecConst.CERTTYPE_HARDTOKEN (i.e EndEntity certificates and Hardtoken fixed profiles) or 0 for all. 
      * Retrives certificate profile names sorted.
      *
-     * @param admin DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return Collection of id:s (Integer)
      */
     public Collection getAuthorizedCertificateProfileIds(Admin admin, int certprofiletype){
       ArrayList returnval = new ArrayList();
@@ -1450,12 +1447,19 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
       HashSet authorizedcaids = new HashSet(getAuthorizationSession().getAuthorizedCAIds(admin));
 
       // Add fixed certificate profiles. 
-      if(certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_ENDENTITY)
+      if(certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_ENDENTITY || certprofiletype == SecConst.CERTTYPE_HARDTOKEN)
         returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_ENDUSER));
       if(certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_SUBCA)
         returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_SUBCA));
       if(certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_ROOTCA)
         returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_ROOTCA));
+      
+	   if(certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_HARDTOKEN){		
+		 returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH));
+		 returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
+		 returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENENC));
+		 returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN));
+	   }	   
       
       try{
         result = certprofilehome.findAll();
@@ -1464,7 +1468,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
           CertificateProfileDataLocal next = (CertificateProfileDataLocal) i.next();
           CertificateProfile profile = next.getCertificateProfile();
           // Check if all profiles available CAs exists in authorizedcaids.
-          if(certprofiletype == 0 || certprofiletype == profile.getType()){
+          if(certprofiletype == 0 || certprofiletype == profile.getType()
+             || ( profile.getType() == SecConst.CERTTYPE_ENDENTITY && 
+			      certprofiletype == SecConst.CERTTYPE_HARDTOKEN)){
             Iterator availablecas = profile.getAvailableCAs().iterator();
             boolean allexists = true;
             while(availablecas.hasNext()){
@@ -1486,7 +1492,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }  
       }catch(Exception e){}
       return returnval;
-    } // getAuthorizedEndEntityProfileNames    
+    } // getAuthorizedCertificateProfileNames    
     
     
     /**
@@ -1501,6 +1507,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     CACertificateProfile.CERTIFICATEPROFILENAME);
       returnval.put(new Integer(SecConst.CERTPROFILE_FIXED_ROOTCA),
                     RootCACertificateProfile.CERTIFICATEPROFILENAME);
+
+	  returnval.put(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH),
+	  			    HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME);
+	  returnval.put(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC),
+	 			    HardTokenAuthEncCertificateProfile.CERTIFICATEPROFILENAME);
+	  returnval.put(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENENC),
+	  			    HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME);
+	  returnval.put(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN),
+				    HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME);
+					  
             
       try{
         result = certprofilehome.findAll();
@@ -1533,6 +1549,19 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
       if(certificateprofilename.equals(RootCACertificateProfile.CERTIFICATEPROFILENAME))
         return new RootCACertificateProfile();        
+
+  	  if(certificateprofilename.equals(HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME))
+	    return new HardTokenAuthCertificateProfile();
+  	    
+	  if(certificateprofilename.equals(HardTokenAuthEncCertificateProfile.CERTIFICATEPROFILENAME))
+	    return new HardTokenAuthEncCertificateProfile(); 
+
+	  if(certificateprofilename.equals(HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME))
+	    return new HardTokenEncCertificateProfile(); 
+      
+	  if(certificateprofilename.equals(HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME))
+	    return new HardTokenSignCertificateProfile(); 
+
        
        try{
          returnval = (certprofilehome.findByCertificateProfileName(certificateprofilename)).getCertificateProfile();
@@ -1564,6 +1593,18 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             case SecConst.CERTPROFILE_FIXED_ROOTCA :
               returnval = new RootCACertificateProfile();         
               break;    
+			case SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH :
+			  returnval = new HardTokenAuthCertificateProfile();         
+			  break;    
+			case SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC :
+			  returnval = new HardTokenAuthEncCertificateProfile();         
+			  break;    
+			case SecConst.CERTPROFILE_FIXED_HARDTOKENENC :
+			  returnval = new HardTokenEncCertificateProfile();         
+			  break;    
+			case SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN :
+			  returnval = new HardTokenSignCertificateProfile();         
+			  break;    			  
             default:
               returnval = new EndUserCertificateProfile();           
          }         
@@ -1597,6 +1638,18 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
       if(certificateprofilename.equals(RootCACertificateProfile.CERTIFICATEPROFILENAME))
         return SecConst.CERTPROFILE_FIXED_ROOTCA; 
+
+      if(certificateprofilename.equals(HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME))
+  	    return SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH;
+  	    
+  	  if(certificateprofilename.equals(HardTokenAuthEncCertificateProfile.CERTIFICATEPROFILENAME))
+		return SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC; 
+
+  	  if(certificateprofilename.equals(HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME))
+		return SecConst.CERTPROFILE_FIXED_HARDTOKENENC; 
+      
+  	  if(certificateprofilename.equals(HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME))
+	 	return SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN; 
       
       try{
         Integer id = (certprofilehome.findByCertificateProfileName(certificateprofilename)).getId();
@@ -1628,9 +1681,23 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
               break;  
             case SecConst.CERTPROFILE_FIXED_ROOTCA :
               returnval = RootCACertificateProfile.CERTIFICATEPROFILENAME;         
-              break;    
+              break;   
+			case SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH :
+			  returnval = HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME;         
+			  break;   
+			case SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC :
+			  returnval = HardTokenAuthEncCertificateProfile.CERTIFICATEPROFILENAME;         
+			  break;   
+			case SecConst.CERTPROFILE_FIXED_HARDTOKENENC :
+			  returnval = HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME;         
+			  break;   
+			case SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN :
+			  returnval = HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME;         
+			  break;   			  			  
             default:
-              returnval = EndUserCertificateProfile.CERTIFICATEPROFILENAME;           
+              returnval = EndUserCertificateProfile.CERTIFICATEPROFILENAME;
+              
+
         }  
       }else{
         try{

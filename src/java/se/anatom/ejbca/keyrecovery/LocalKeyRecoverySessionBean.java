@@ -13,6 +13,8 @@ import javax.ejb.FinderException;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+
+
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
@@ -29,7 +31,7 @@ import se.anatom.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.10 2003-11-23 09:47:54 anatom Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.11 2003-12-05 14:50:28 herrvendil Exp $
  */
 public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 

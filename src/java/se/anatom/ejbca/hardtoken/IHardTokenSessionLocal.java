@@ -2,15 +2,17 @@ package se.anatom.ejbca.hardtoken;
 
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.TreeMap;
 import java.security.cert.X509Certificate;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile;
 import se.anatom.ejbca.hardtoken.hardtokentypes.*;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: IHardTokenSessionLocal.java,v 1.4 2003-09-03 12:47:24 herrvendil Exp $
+ * @version $Id: IHardTokenSessionLocal.java,v 1.5 2003-12-05 14:50:26 herrvendil Exp $
  * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
  */
 
@@ -20,6 +22,79 @@ public interface IHardTokenSessionLocal extends javax.ejb.EJBLocalObject
 
     public final static int NO_ISSUER = IHardTokenSessionRemote.NO_ISSUER;
     
+        
+    
+	/**
+	 * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+	 */
+	public void addHardTokenProfile(Admin admin, String name, HardTokenProfile profile) throws HardTokenProfileExistsException;
+
+	/**
+	 * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+	 */
+	public void addHardTokenProfile(Admin admin, int hardtokenprofileid, String name, HardTokenProfile profile)  throws HardTokenProfileExistsException;
+
+	
+	/**
+	 * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+	 */
+	public void changeHardTokenProfile(Admin admin, String name, HardTokenProfile profile);
+
+	/**
+	 * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+	 */
+	public void cloneHardTokenProfile(Admin admin, String oldname, String newname) throws HardTokenProfileExistsException;
+	/**
+	 * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+	 */
+	public void removeHardTokenProfile(Admin admin, String name);
+	/**
+	 * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+	 */
+	public void renameHardTokenProfile(Admin admin, String oldname, String newname) throws HardTokenProfileExistsException;
+	
+	/**
+	 * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+	 */
+	public Collection getAuthorizedHardTokenProfileIds(Admin admin);
+	
+	/**
+	 * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+	 */
+	public HashMap getHardTokenProfileIdToNameMap(Admin admin);
+
+	/**
+	 * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+	 */
+	public HardTokenProfile getHardTokenProfile(Admin admin, String name);
+	
+	/**
+	 * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+	 */
+	public HardTokenProfile getHardTokenProfile(Admin admin, int id);
+	
+	/**
+	 * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+	 */
+	public int getHardTokenProfileUpdateCount(Admin admin, int hardtokenprofileid);
+
+	/**
+	 * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+	 */
+	public int getHardTokenProfileId(Admin admin, String name);
+	
+	/**
+	 * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+	 */
+	public String getHardTokenProfileName(Admin admin, int id);
+
+	/**
+	 * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+	 */
+	public boolean existsCertificateProfileInHardTokenProfiles(Admin admin, int id);
+    
+    
+
     
     /**
      * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote

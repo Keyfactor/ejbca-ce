@@ -94,7 +94,14 @@ public class InformationMemory {
       }
       
       return caidtonamemap;
-    }    
+    }
+    
+	/**
+	 * Returns a Map of hard token profile id (Integer) -> hard token profile name (String).
+	 */
+	public HashMap getHardTokenProfileIdToNameMap(){      
+	  return this.hardtokenauthorization.getHardTokenProfileIdToNameMap();
+	}            
     
     /**
      * Returns authorized end entity profile names as a treemap of name (String) -> id (Integer)
@@ -128,7 +135,7 @@ public class InformationMemory {
      * Returns authorized end entity certificate profile names as a treemap of name (String) -> id (Integer)
      */
     public TreeMap getAuthorizedEndEntityCertificateProfileNames(){
-      return this.caauthorization.getAuthorizedEndEntityCertificateProfileNames();   
+      return this.caauthorization.getAuthorizedEndEntityCertificateProfileNames(getGlobalConfiguration().getIssueHardwareTokens());   
     }    
 
     /**
@@ -328,6 +335,20 @@ public class InformationMemory {
 	    
 	   return authorizedaccessrules;
     }
+
+	/**
+	 *  @see se.anatom.ejbca.webdist.hardtokeninterface.HardTokenAuthorization.java
+	 */	
+	public TreeMap getHardTokenProfiles(){	  	    
+	   return hardtokenauthorization.getHardTokenProfiles();
+	}
+	
+	/**
+	 *  @see se.anatom.ejbca.webdist.hardtokeninterface.HardTokenAuthorization.java
+	 */	
+	public boolean authorizedToHardTokenProfiles(String name){			  	    
+	   return hardtokenauthorization.authorizedToHardTokenProfile(name);
+	}
     
 	/**
 	 *  @see se.anatom.ejbca.webdist.hardtokeninterface.HardTokenAuthorization.java
@@ -377,6 +398,7 @@ public class InformationMemory {
       endentityavailablecas = null;
       raauthorization.clear();
       caauthorization.clear();
+      hardtokenauthorization.clear();
     }    
     
     /**
@@ -393,7 +415,7 @@ public class InformationMemory {
 	/**
 	 * Method that should be called every time hard token issuers has been edited
 	 */
-	public void hardTokenIssuersEdited(){	 
+	public void hardTokenDataEdited(){	 
 	  hardtokenauthorization.clear();
 	}    
 

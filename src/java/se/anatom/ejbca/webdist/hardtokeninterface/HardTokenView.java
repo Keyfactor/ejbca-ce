@@ -54,11 +54,11 @@ public class HardTokenView implements java.io.Serializable, Cloneable {
      * @param tokentype DOCUMENT ME!
      */
     public void setHardTokenType(String tokentype) {
-        for (int i = 0; i < availablehardtokens.length; i++) {
+/*        for (int i = 0; i < availablehardtokens.length; i++) {
             if (tokentype.equals(availablehardtokens[i].getName())) {
                 tokendata.setTokenType(Integer.parseInt(availablehardtokens[i].getId()));
             }
-        }
+        }*/
     }
 
     /**
@@ -69,11 +69,11 @@ public class HardTokenView implements java.io.Serializable, Cloneable {
     public String getHardTokenType() {
         String returnval = "";
 
-        for (int i = 0; i < availablehardtokens.length; i++) {
+ /*       for (int i = 0; i < availablehardtokens.length; i++) {
             if (tokendata.getTokenType() == Integer.parseInt(availablehardtokens[i].getId())) {
                 returnval = availablehardtokens[i].getName();
             }
-        }
+        }*/
 
         return returnval;
     }

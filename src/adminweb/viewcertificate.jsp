@@ -303,6 +303,14 @@ function confirmkeyrecovery(){
          </td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
+	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SUBALTNAME") %></td>
+	 <td><% if(certificatedata.getSubjectAltName() == null)
+                  out.write(ejbcawebbean.getText("NONE"));
+                else
+                  out.write(certificatedata.getSubjectAltName());%> 
+         </td>
+       </tr>
+       <tr id="Row<%=(row++)%2%>">
 	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("PUBLICKEY") %></td>
 	 <td><%= certificatedata.getPublicKeyAlgorithm() %> <% if(certificatedata.getPublicKeyLength() != null){
                                                                  out.write(" ( " + certificatedata.getPublicKeyLength() + ejbcawebbean.getText("BITS") + ")");  

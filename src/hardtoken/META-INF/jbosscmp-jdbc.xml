@@ -6,5 +6,15 @@
     <datasource>java:/DefaultDS</datasource>
     <datasource-mapping>Hypersonic SQL</datasource-mapping>
 </defaults>
+<enterprise-beans>
+    <entity>
+        <ejb-name>HardTokenProfileData</ejb-name>
+        <cmp-field>
+            <field-name>data</field-name>
+            <jdbc-type>BLOB</jdbc-type>
+            <sql-type>VARBINARY(1100000)</sql-type>
+        </cmp-field>
+    </entity>
+</enterprise-beans>
 
 </jbosscmp-jdbc>
