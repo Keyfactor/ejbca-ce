@@ -16,6 +16,7 @@
   <property name="tmp" value="./tmp" />
   <property name="build" value="${tmp}/classes"/>
   <property name="test.dir" value="${tmp}/junit"/>
+  <property name="test.src.dir" location="${src}/test"/>
   <property name="dist"  value="./dist"/>
   <property name="apidoc" value="./doc/api"/>
 
@@ -150,15 +151,13 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         <javac srcdir="${javasrc}" destdir="${build}" debug="on" encoding="iso8859-1"  includeantruntime="no">
             <classpath refid="compile.classpath"/>
             <exclude name="**/appserver/**"/> <!-- appserver specific files are built separtely-->
-            <exclude name="**/junit/*.java"/>
         </javac>
     </target>
 
     <target name="test:compile" depends="compile" description="compile JUnit testcases">
         <mkdir dir="${test.dir}"/>
-        <javac srcdir="${javasrc}" destdir="${test.dir}" debug="on" includeantruntime="no">
+        <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no">
             <classpath refid="test.compile.classpath"/>
-            <include name="**/junit/*.java"/>
         </javac>
         <!-- jndi.properties needs to be in the classpath -->
         <copy file="${javasrc}/jndi.properties" todir="${test.dir}"/>
@@ -424,7 +423,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         <include name="se/anatom/ejbca/webdist/**"/>
       </fileset>
     </jar>
-    
+
     <war basedir="${webdist.build}" destfile="${webdistjar}"
         webxml="${webdist.build}/WEB-INF/web.xml"
         excludes="WEB-INF/web.xml">
