@@ -1,6 +1,6 @@
 EJBCA V3.0Beta2
 ---------------
-Thanks to a bug in B1 the database table 'HardTokenPropertyData'. If you have been
+Thanks to a bug in Beta1 the database table 'HardTokenPropertyData' has changed. If you have been
 using the HardToken features in Beta1, or plan to use them in the future, this table must be rebuilt.
 'drop table hardtokenpropertydata' will delete and rebuild the table (data must be entered again).
 
