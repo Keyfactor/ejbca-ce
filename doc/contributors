@@ -25,3 +25,5 @@ Ville Skyttä <ville.skytta(at)secgo.com>, AdminCertReqServlet, various patches
 Koen Serry <koen(at)serry.org>, many improvements.
 Dickon Field <Dickon.Field(at)concise.co.uk>, Weblogic 7.1
 Justin Wood <justin(at)braidquest.com>, PKI Tools subproject
+Thomas Meckel <meckel(at)ophios.com>, OCSP
+Jon Barber <jon.barber(at)acm.org>, SCEP testing and fixes
