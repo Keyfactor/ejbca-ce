@@ -19,6 +19,7 @@ import java.util.Hashtable;
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.ca.caadmin.AvailableHardCAToken;
+import se.anatom.ejbca.ca.caadmin.CAToken;
 
 /**
  * Class managing available Hard CA Tokens. Each HardCaToken plug-in should register itself by using the method register.
@@ -30,6 +31,9 @@ public class HardCATokenManager {
     private static transient Logger log = Logger.getLogger(HardCATokenManager.class);
 
     private static Hashtable availablehardcatokens = new Hashtable();
+    private Hashtable caTokenRegistry = new Hashtable();
+
+    private static HardCATokenManager instance = null;
 
     /**
      * Static intialization block used to register all plug-in classes to the manager.
@@ -41,6 +45,42 @@ public class HardCATokenManager {
     	loadClass("se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenSample");
     }
 
+    /** Don't allow external creation of this class 
+     * 
+     */
+    private HardCATokenManager() {}
+    
+    /** Get the instance of this singleton
+     * 
+     */
+    public synchronized static HardCATokenManager instance() {
+        if (instance == null) {
+            instance = new HardCATokenManager();
+        }
+        return instance;
+    }
+    /** Returns a previously registered (using addCAToken) CAToken, or null.
+     * 
+     * @param caid the id of the CA whose CAToken you want to fetch.
+     * @return The previously added CAToken or null if the token does not exist in the registry.
+     */
+    public CAToken getCAToken(int caid) {
+        return (CAToken)caTokenRegistry.get(new Integer(caid));
+    }
+    /** Adds a CA token to the token registry.
+     * 
+     * @param caid the id of the CA whose CAToken you want to fetch.
+     * @param token the token to be added
+     * @return true if the new token was added to the registry, false if a token already exists for the given caid.
+     */
+    public boolean addCAToken(int caid, CAToken token) {
+        if (!caTokenRegistry.contains(new Integer(caid))) {
+            caTokenRegistry.put(new Integer(caid), token);
+            return true;
+        }
+        return false;
+    }
+    
     /**
 	 * Method loading a class in order to register itself to the manager.
 	 * Should be used from the init() method only.
