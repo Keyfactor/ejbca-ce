@@ -125,7 +125,7 @@
      <ejb-local-ref>
         <description>The hard token session bean</description>
         <ejb-ref-name>ejb/HardTokenSessionLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
+        <ejb-ref-type>Session</ejb-ref-type>
         <local-home>se.anatom.ejbca.hardtoken.IHardTokenSessionLocalHome</local-home>
         <local>se.anatom.ejbca.hardtoken.IHardTokenSessionLocal</local>
         <ejb-link>HardTokenSession</ejb-link>
