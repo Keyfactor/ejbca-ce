@@ -1,5 +1,5 @@
 EJBCA FAQ
-$Id: FAQ,v 1.8 2001-12-04 10:47:19 anatom Exp $
+$Id: FAQ,v 1.9 2001-12-05 08:42:35 anatom Exp $
 ---------
 
 Q: Why are there two versions of all commands, i.e. 'ra.sh' and 'ra.cmd'.
@@ -106,3 +106,19 @@ signed by another certificate, that CA certificate (Root certificate) is
 conatined in the alias with the same name as the CN part of the Root CAs DN,
 i.e. the CN part of the issuer DN from the certificate in 'privateKey'.
 
+-----
+Q: Why does the first function in 'dist.html', fetching a users certificate return 
+an error 404.
+
+A: You have specified a subject DN to which no certificates have been issued.
+
+-----
+Q: Why does 'ra.sh/cmd revokeuser <username>' return an exception.
+
+A: You have specified a username (short version e.g. 'foo') that does not exist. The exception 
+should be similar to:
+
+javax.ejb.ObjectNotFoundException: Object with primary key foo not found in sto
+rage
+
+-----
