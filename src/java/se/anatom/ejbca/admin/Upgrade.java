@@ -27,7 +27,7 @@ import se.anatom.ejbca.upgrade.IUpgradeSessionHome;
 /**
  * Implements call to the upgrade function
  *
- * @version $Id: Upgrade.java,v 1.6 2004-04-24 14:58:21 anatom Exp $
+ * @version $Id: Upgrade.java,v 1.7 2004-05-12 11:24:17 anatom Exp $
  */
 public class Upgrade extends BaseCommand {
 
@@ -40,6 +40,9 @@ public class Upgrade extends BaseCommand {
     
     public boolean upgrade() {
      debug(">upgrade");
+     
+     boolean ret = false;
+     
      String database = System.getProperty("ejbcaDB");
      debug("ejbcaDB="+database);
      String datasource = System.getProperty("ejbcaDS");
@@ -64,12 +67,12 @@ public class Upgrade extends BaseCommand {
         args[2] = caname;
         args[3] = keystore;
         args[4] = kspwd;
-        upgradesession.upgrade(administrator, args);
+        ret = upgradesession.upgrade(administrator, args);
      } catch (Exception e) {
      	error("Can't upgrade: ", e);
      }
      debug("<upgrade");
-     return false;
+     return ret;
     }
 
     protected IUpgradeSessionRemote getUpgradeSessionRemote() throws NamingException, CreateException, RemoteException {
@@ -93,7 +96,7 @@ public class Upgrade extends BaseCommand {
             if (!ret) {
                 upgrade.error("Upgrade not performed, see server log for details.");
             } else {
-             upgrade.info("Upgrade completed.");   
+            	upgrade.info("Upgrade completed.");   
             }
         } catch (Exception e) {
             //System.out.println(e.getMessage());

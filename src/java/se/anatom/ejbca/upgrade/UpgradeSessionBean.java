@@ -42,7 +42,7 @@ import se.anatom.ejbca.util.SqlExecutor;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.11 2004-04-24 14:58:20 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.12 2004-05-12 11:23:53 anatom Exp $
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
@@ -253,7 +253,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
             JDBCUtil.close(ps3);
             JDBCUtil.close(con);
         }
-        debug(">upgrade()");
+        debug("<upgrade()");
         return true;
     }
     
