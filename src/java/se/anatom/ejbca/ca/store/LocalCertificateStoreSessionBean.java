@@ -34,6 +34,7 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.log.LogEntry;
+import se.anatom.ejbca.log.LogConstants;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.JDBCUtil;
 import se.anatom.ejbca.util.StringTools;
@@ -64,17 +65,22 @@ import java.util.Random;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.73 2004-07-23 10:24:41 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.74 2004-07-23 12:01:05 sbailliez Exp $
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
  * view-type="both"
  * type="Stateless"
  * transaction-type="Container"
+ *
+ * @ejb.transaction type="Supports"
+ *
  * @ejb.permission role-name="InternalUser"
+ *
  * @ejb.env-entry description="JDBC datasource to be used"
  * name="Datasource"
  * type="java.lang.String"
  * value="java:/${datasource.jndi-name}"
+ *
  * @ejb.ejb-external-ref description="The Certificate entity bean used to store and fetch certificates"
  * view-type="local"
  * ejb-name="CertificateStoreSessionLocal"
@@ -82,6 +88,7 @@ import java.util.Random;
  * home="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome"
  * business="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal"
  * link="CertificateStoreSession"
+ *
  * @ejb.ejb-external-ref description="The Log session bean"
  * view-type="local"
  * ejb-name="LogSessionLocal"
@@ -89,6 +96,7 @@ import java.util.Random;
  * home="se.anatom.ejbca.log.ILogSessionLocalHome"
  * business="se.anatom.ejbca.log.ILogSessionLocal"
  * link="LogSession"
+ *
  * @ejb.ejb-external-ref description="The Authorization session bean"
  * view-type="local"
  * ejb-name="AuthorizationSessionLocal"
@@ -96,6 +104,7 @@ import java.util.Random;
  * home="se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome"
  * business="se.anatom.ejbca.authorization.IAuthorizationSessionLocal"
  * link="AuthorizationSession"
+ *
  * @ejb.ejb-external-ref description="Publishers are configured to store certificates and CRLs in additional places from the main database.
  * Publishers runs as local beans"
  * view-type="local"
@@ -104,10 +113,12 @@ import java.util.Random;
  * home="se.anatom.ejbca.ca.publisher.IPublisherSessionLocalHome"
  * business="se.anatom.ejbca.ca.publisher.IPublisherSessionLocal"
  * link="PublisherSession"
+ *
  * @ejb.home extends="javax.ejb.EJBHome"
  * local-extends="javax.ejb.EJBLocalHome"
  * local-class="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome"
  * remote-class="se.anatom.ejbca.ca.store.ICertificateStoreSessionHome"
+ *
  * @ejb.interface extends="javax.ejb.EJBObject"
  * local-extends="javax.ejb.EJBLocalObject"
  * local-class="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal"
@@ -238,6 +249,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param status   Status of the certificate (from CertificateData).
      * @param type     Type of certificate (CERTTYPE_ENDENTITY etc from CertificateDataBean).
      * @return true if storage was successful.
+     * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
     public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp,
@@ -273,6 +285,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param cafp   Fingerprint (hex) of the CAs certificate.
      * @param number CRL number.
      * @return true if storage was successful.
+     * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
     public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) {
@@ -284,7 +297,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             data1.setCAFingerprint(cafp);
             getLogSession().log(admin, crl.getIssuerDN().toString().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECRL, "Number : " + number + " Fingerprint : " + CertTools.getFingerprintAsString(crl) + ".");
         } catch (Exception e) {
-            getLogSession().log(admin, ILogSessionLocal.INTERNALCAID, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL, "Number : " + number + ".");
+            getLogSession().log(admin, LogConstants.INTERNALCAID, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL, "Number : " + number + ".");
             throw new EJBException(e);
         }
         debug("<storeCRL()");
@@ -900,6 +913,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.
      * @param reason     the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON
      *                   constants.)
+     * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
     public void setRevokeStatus(Admin admin, String username, Collection publishers, int reason) {
@@ -943,6 +957,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param serno      the serno of certificate to revoke.
      * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.
      * @param reason     the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON constants.)
+     * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
     public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection publishers, int reason) {
@@ -978,6 +993,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      *
      * @param cert       The DER coded Certificate that has been revoked.
      * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.
+     * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
     public void revokeCertificate(Admin admin, Certificate cert, Collection publishers, int reason) {
@@ -993,6 +1009,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param admin    the administrator performing the event.
      * @param issuerdn the dn of CA about to be revoked
      * @param reason   the reason of revokation.
+     * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
     public void revokeAllCertByCA(Admin admin, String issuerdn, int reason) {
@@ -1310,6 +1327,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param admin                  administrator performing the task
      * @param certificateprofilename readable name of new certificate profile
      * @param certificateprofile     the profile to be added
+     * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
     public void addCertificateProfile(Admin admin, String certificateprofilename,
@@ -1324,6 +1342,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param certificateprofileid   internal ID of new certificate profile, use only if you know it's right.
      * @param certificateprofilename readable name of new certificate profile
      * @param certificateprofile     the profile to be added
+     * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
     public void addCertificateProfile(Admin admin, int certificateprofileid, String certificateprofilename,
@@ -1357,6 +1376,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param admin                          Administrator performing the operation
      * @param originalcertificateprofilename readable name of old certificate profile
      * @param newcertificateprofilename      readable name of new certificate profile
+     * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
     public void cloneCertificateProfile(Admin admin, String originalcertificateprofilename, String newcertificateprofilename) throws CertificateProfileExistsException {
@@ -1402,6 +1422,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * Removes a certificateprofile from the database.
      *
      * @param admin Administrator performing the operation
+     * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
     public void removeCertificateProfile(Admin admin, String certificateprofilename) {
@@ -1417,6 +1438,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     /**
      * Renames a certificateprofile
      *
+     * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
     public void renameCertificateProfile(Admin admin, String oldcertificateprofilename, String newcertificateprofilename) throws CertificateProfileExistsException {
@@ -1444,6 +1466,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * Updates certificateprofile data
      *
      * @param admin Administrator performing the operation
+     * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
     public void changeCertificateProfile(Admin admin, String certificateprofilename, CertificateProfile certificateprofile) {
