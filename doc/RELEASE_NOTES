@@ -1,9 +1,9 @@
 EJBCA V3.0
 ----------
 EJBCA 3.0 is a major new release taking the Open Source CA to new heights. 
-The largest change is that it is now possible to run a complete (or several)
-PKI infrastructure within one single instance of EJBCA. Many other improvements are also 
-included such as complete support for OCSP, enanced Hart token interface and flexible 
+The most important improvment is that it is now possible to run several
+PKI infrastructures within one single instance of EJBCA. Among other major improvements are also 
+complete support for OCSP, enanced Hard token interface and flexible 
 LDAP configuration through the Web-GUI.
 
 This is a plugin-upgrade from beta3.
