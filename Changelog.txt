@@ -22,6 +22,7 @@ Added missing class in admin.jar for 'ca processreq'.
 Fixes to demo servlet.
 Fixed minor error in authorization log text.
 Fixed error for DATE var in notifications.
+Fixed bug adding email and uid attributes in LDAP.
 
 3.0.2
 -----
