@@ -123,7 +123,7 @@ Build
 =====
 Needed to build and run are:
 JDK (1.4.x, also works with 1.3.1_x)
-JBOSS 3.x (with Tomcat or Jetty)
+JBOSS 3.0.x (with Tomcat or Jetty)
 Ant 1.4.x to build (http://jakarta.apache.org/ant/)
 (Bouncycastle JCE provider, distributed with EJBCA see above)
 
@@ -149,7 +149,8 @@ Now when everything is installed, there are a few things to configure before
 FOR THE IMPATIENT:
 
 1. Build everything with 'ant'.
-2. Deploy EJBCA to JBoss with 'deploy.sh/cmd'.
+2. Deploy EJBCA to JBoss with 'deploy.sh/cmd', if you do not want the Web admin
+GUI, use 'deploy.sh/cmd nora'.
 3. Copy the keystore (src/ca/keyStore/server.p12) to $JBOSS_HOME/conf with
 'deploy.cmd/sh keystore'.
 4. Start JBoss, jars and wars should be deployed.
@@ -192,8 +193,7 @@ will create a root CA with the DN 'C=SE,O=AnaTom,CN=EJBCA'. The keylength is
  'foo123'. Quote the DN  so it is treated as one argument.
 Now edit 'src/ca/ca/META-INF/ejb-jar.xml' to reflect the values you entered for
  'keyStore' and 'keyStorePass'. If the keystore is placed in a custom directory,
- don't
-run the command 'deploy.cmd/sh keystore'.
+ don't run the command 'deploy.cmd/sh keystore'.
 
 Subordinate CA:
 run 'ca.sh/bat makereq' and enter all required parameters.
@@ -252,7 +252,8 @@ please run "ant" to rebuild jars and wars. If you are using a deployment tool,
 this may not be needed, consult your documentation for the tool.
 
 Run deploy.sh/cmd to install the EJBs and WARs (they are copied to the
- $JBOSS_HOME/deploy directory).
+ $JBOSS_HOME/deploy directory). If you want to deploy EJBCA without the Web
+ admini GUI use the command 'deploy.sh/cmd nora' instead.
 
 Run
 ===
@@ -608,6 +609,7 @@ For IE to verify client certs, the ordering in the DN must be strictly the same
 
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
+
 
 
 
