@@ -7,4 +7,17 @@
     <datasource-mapping>Oracle8</datasource-mapping>
   </defaults>
 
+<enterprise-beans>
+
+    <entity>
+        <ejb-name>KeyRecoveryData</ejb-name>
+        <cmp-field>
+            <field-name>keyData</field-name>
+            <jdbc-type>LONGVARCHAR</jdbc-type>
+            <sql-type>LONG</sql-type>
+        </cmp-field>
+    </entity>
+
+</enterprise-beans>
+
 </jbosscmp-jdbc>
