@@ -1,4 +1,4 @@
-$Id: README,v 1.116 2004-01-08 11:59:21 anatom Exp $
+$Id: README,v 1.117 2004-01-11 13:55:16 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -786,15 +786,20 @@ The response is signed by the CA itself.
 Parameters:
 In the file src/publicweb/status/WEB-INF/web.xml there are several parameters affecting OCSP. The most 
 important are:
-'responderID', that specifies the subject of the certificate which is used to identifiy the responder 
-which generates the OCSP response (i.e. the CAs subject DN).
+'useCASigningCert' - If set to true (default) the OCSP reponses will be signed directly by the CAs certificate instead 
+of the CAs OCSP responder. If set to false, the CAs special OCSP Responder certificate is used to sign the
+OCSP responses. The OCSP Responder certificate is signed directly by the CA.
+'defaultResponderID' - Specifies the subject of a certificate which is used to identifiy the responder which will 
+generate responses when no real CA can be found from the request. This is used to generate 'unknown' 
+responses when a request is received for a certificate that is not signed by any CA on this server.
+
 
 Example to generate OCSP request using OpenSSL:
 openssl ocsp -issuer Test-CA.pem -cert Test.pem -req_text -url http://localhost:8080/ejbca/publicweb/status/ocsp
 
 If Mozilla should accept OCSP-responses from a CA, the CAs certificate should include the KeyUsage 'Digital Signature'.
 If using a dedicated OCSP responder certificate, this certificate must be imported in Mozilla as a Trusted CA certificate, so it
-can be set as OCSP signer in 'Privacy & Security->Validation'.
+can be set as OCSP signer in 'Privacy & Security->Validation'. You can do this through 'View Certificates' in EJBCA.
 Otherwise, just select 'Use OCSP to validate all certificates using this URL and signer' in 'Privace & Security->Validation', 
 choose the CA from EJBCA (which you should have made Trusted by right clicking in 
 'Privacy & Security->Certificates->Manage Certificates->Authorities' and checking the appropriate checkboxes.
