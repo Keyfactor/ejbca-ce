@@ -92,7 +92,7 @@ import javax.ejb.ObjectNotFoundException;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.87 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.88 2003-07-21 13:09:33 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     transient X509Certificate caCert;
@@ -756,6 +756,12 @@ public class RSASignSessionBean extends BaseSessionBean {
 
             ret.setCertificate(cert);
             ret.setStatus(IResponseMessage.STATUS_OK);
+            if (req.getSenderNonce() != null)
+                ret.setRecipientNonce(req.getSenderNonce());
+            if (req.getTransactionId() != null)
+                ret.setTransactionId(req.getTransactionId());
+            // Sendernonce is a random number
+            ret.setSenderNonce(Hex.encode("1234567890".getBytes()));
             ret.create();
 
             // TODO: handle returning errors as response message,

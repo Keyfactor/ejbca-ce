@@ -1,23 +1,5 @@
 package se.anatom.ejbca.protocol;
 
-import org.apache.log4j.Logger;
-
-import org.bouncycastle.asn1.DERObjectIdentifier;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DERPrintableString;
-import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.asn1.cms.Attribute;
-import org.bouncycastle.asn1.cms.AttributeTable;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-
-import org.bouncycastle.cms.CMSEnvelopedData;
-import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
-import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.cms.CMSProcessable;
-import org.bouncycastle.cms.CMSProcessableByteArray;
-import org.bouncycastle.cms.CMSSignedData;
-import org.bouncycastle.cms.CMSSignedDataGenerator;
-
 import java.io.IOException;
 import java.io.Serializable;
 
@@ -36,11 +18,31 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import org.apache.log4j.Logger;
+
+import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DERPrintableString;
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.cms.Attribute;
+import org.bouncycastle.asn1.cms.AttributeTable;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.smime.SMIMECapability;
+
+import org.bouncycastle.cms.CMSEnvelopedData;
+import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSProcessable;
+import org.bouncycastle.cms.CMSProcessableByteArray;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
+
+import se.anatom.ejbca.util.Hex;
 
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.5 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.6 2003-07-21 13:09:33 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage, Serializable {
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);
@@ -53,6 +55,19 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
 
     /** Possible fail information in the response. Defaults to 'badRequest (2)'. */
     private String failInfo = "2";
+
+    /**
+     * SenderNonce. This is hex encoded bytes
+     */
+    private String senderNonce = null;
+    /**
+     * RecipientNonce in a response is the senderNonce from the request. This is hex encoded bytes
+     */
+    private String recipientNonce = null;
+
+    
+    /** transaction id */
+    private String transactionId = null;
 
     /** The un-encoded response message itself */
     private transient CMSSignedData signedData = null;
@@ -167,8 +182,10 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
                 edGen.addKeyTransRecipient((X509Certificate) cert);
             }
 
+            //CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(s.getEncoded()),
+              //      CMSEnvelopedDataGenerator.DES_EDE3_CBC, "BC");
             CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(s.getEncoded()),
-                    CMSEnvelopedDataGenerator.DES_EDE3_CBC, "BC");
+                    SMIMECapability.dES_CBC.getId(), "BC");
 
             // Create the outermost signed data
             msg = new CMSProcessableByteArray(ed.getEncoded());
@@ -197,10 +214,12 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             attributes.put(attr.getAttrType(), attr);
 
             // TransactionId
-            oid = new DERObjectIdentifier(ScepRequestMessage.id_transId);
-            value = new DERSet(new DERPrintableString("foo"));
-            attr = new Attribute(oid, value);
-            attributes.put(attr.getAttrType(), attr);
+            if (transactionId != null) {
+                oid = new DERObjectIdentifier(ScepRequestMessage.id_transId);
+                value = new DERSet(new DERPrintableString(transactionId));
+                attr = new Attribute(oid, value);
+                attributes.put(attr.getAttrType(), attr);
+            }
 
             // status
             oid = new DERObjectIdentifier(ScepRequestMessage.id_pkiStatus);
@@ -224,16 +243,20 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             }
 
             // senderNonce
-            oid = new DERObjectIdentifier(ScepRequestMessage.id_senderNonce);
-            value = new DERSet(new DEROctetString("1234567890123456".getBytes()));
-            attr = new Attribute(oid, value);
-            attributes.put(attr.getAttrType(), attr);
+            if (senderNonce != null) {
+                oid = new DERObjectIdentifier(ScepRequestMessage.id_senderNonce);
+                value = new DERSet(new DEROctetString(Hex.decode(senderNonce)));
+                attr = new Attribute(oid, value);
+                attributes.put(attr.getAttrType(), attr);
+            }
 
             // recipientNonce
-            oid = new DERObjectIdentifier(ScepRequestMessage.id_recipientNonce);
-            value = new DERSet(new DEROctetString("1234567890123456".getBytes()));
-            attr = new Attribute(oid, value);
-            attributes.put(attr.getAttrType(), attr);
+            if (recipientNonce != null) {
+                oid = new DERObjectIdentifier(ScepRequestMessage.id_recipientNonce);
+                value = new DERSet(new DEROctetString(Hex.decode(recipientNonce)));
+                attr = new Attribute(oid, value);
+                attributes.put(attr.getAttrType(), attr);
+            }
 
             // Put our signer info and all newly generated attributes
             gen1.addSigner(signKey, signCert, CMSSignedDataGenerator.DIGEST_SHA1,
@@ -253,8 +276,6 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             log.error("Error creating CMS message: ", e);
         }
 
-        // TODO: dont forget transactionId
-        // TODO: don't forget sender- and recipientNonce
         return ret;
     }
 
@@ -305,4 +326,31 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
         encCert = cert;
         encKey = key;
     }
+
+    /**
+     * Sets a senderNonce if it should be present in the response
+     *
+     * @param senderNonce a string of hex encoded bytes
+     */
+    public void setSenderNonce(String senderNonce) {
+        this.senderNonce = senderNonce;
+    }
+    /**
+     * Sets a recipient if it should be present in the response
+     *
+     * @param recipientNonce a string of hex encoded bytes
+     */
+    public void setRecipientNonce(String recipientNonce) {
+        this.recipientNonce = recipientNonce;
+    }
+
+    /**
+     * Sets a transaction identifier if it should be present in the response
+     *
+     * @param transactionId transaction id
+     */
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+    
 }

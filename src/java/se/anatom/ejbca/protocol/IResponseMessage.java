@@ -10,7 +10,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
-
 /**
  * Base interface for response messages sent from the CA. Implementors of this interface must also
  * implement Serializable if they are to be sent to any EJB bussiness methods. Example: <code>
@@ -19,7 +18,7 @@ import java.security.cert.X509Certificate;
  * (resp.requireEncKeyInfo()) { resp.setEncKeyInfo(enccert,enckey) }; resp.create(); byte[]
  * responseMessage = resp.getResponseMessage(); </code>
  *
- * @version $Id: IResponseMessage.java,v 1.5 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: IResponseMessage.java,v 1.6 2003-07-21 13:09:33 anatom Exp $
  */
 public interface IResponseMessage {
     public final int STATUS_OK = 0;
@@ -124,4 +123,26 @@ public interface IResponseMessage {
      * @see #requireEncKeyInfo()
      */
     public void setEncKeyInfo(X509Certificate cert, PrivateKey key);
+
+    /**
+     * Sets a senderNonce if it should be present in the response
+     *
+     * @param senderNonce a string of hex encoded bytes
+     */
+    public void setSenderNonce(String senderNonce);
+
+    /**
+     * Sets a recipient if it should be present in the response
+     *
+     * @param recipientNonce a string of hex encoded bytes
+     */
+    public void setRecipientNonce(String recipientNonce);
+
+    /**
+     * Sets a transaction identifier if it should be present in the response
+     *
+     * @param transactionId transaction id
+     */
+    public void setTransactionId(String transactionId);
+    
 }

@@ -12,13 +12,22 @@ import java.security.cert.X509Certificate;
 /**
  * Class to handle PKCS7 request messages sent to the CA.
  *
- * @version $Id: PKCS7RequestMessage.java,v 1.9 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: PKCS7RequestMessage.java,v 1.10 2003-07-21 13:09:33 anatom Exp $
  */
 public class PKCS7RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(PKCS7RequestMessage.class);
 
     /** Raw form of the PKCS7 message */
     private byte[] msg;
+
+    /**
+     * SenderNonce in a request is used as recipientNonce when the server sends back a reply to the
+     * client
+     */
+    private String senderNonce = null;
+
+    /** transaction id */
+    private String transactionId = null;
 
     /** Type of error */
     private int error = 0;
@@ -88,39 +97,62 @@ public class PKCS7RequestMessage implements IRequestMessage, Serializable {
     }
 
     /**
-     * DOCUMENT ME!
+     * indicates if this message needs recipients public and private key to verify, decrypt etc. If
+     * this returns true, setKeyInfo() should be called.
      *
-     * @return DOCUMENT ME!
+     * @return True if public and private key is needed.
      */
     public boolean requireKeyInfo() {
         return false;
     }
 
     /**
-     * DOCUMENT ME!
+     * Sets the public and private key needed to decrypt/verify the message. Must be set if
+     * requireKeyInfo() returns true.
      *
-     * @param cert DOCUMENT ME!
-     * @param key DOCUMENT ME!
+     * @param cert certificate containing the public key.
+     * @param key private key.
+     *
+     * @see #requireKeyInfo()
      */
     public void setKeyInfo(X509Certificate cert, PrivateKey key) {
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns an error number after an error has occured processing the request
      *
-     * @return DOCUMENT ME!
+     * @return class specific error number
      */
     public int getErrorNo() {
         return error;
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns an error message after an error has occured processing the request
      *
-     * @return DOCUMENT ME!
+     * @return class specific error message
      */
     public String getErrorText() {
         return errorText;
     }
+
+    /**
+     * Returns a senderNonce if present in the request
+     *
+     * @return senderNonce
+     */
+    public String getSenderNonce() {
+        return senderNonce;
+    }
+
+    /**
+     * Returns a transaction identifier if present in the request
+     *
+     * @return transaction id
+     */
+    public String getTransactionId() {
+        return transactionId;
+    }
+    
 }
  // PKCS7RequestMessage

@@ -1,14 +1,5 @@
 package se.anatom.ejbca.protocol;
 
-import org.apache.log4j.Logger;
-
-import org.bouncycastle.asn1.*;
-import org.bouncycastle.asn1.cms.*;
-
-import org.bouncycastle.cms.*;
-
-import org.bouncycastle.jce.PKCS10CertificationRequest;
-
 import java.io.*;
 
 import java.security.GeneralSecurityException;
@@ -28,12 +19,22 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 
+import org.apache.log4j.Logger;
+
+import org.bouncycastle.asn1.*;
+import org.bouncycastle.asn1.cms.*;
+import org.bouncycastle.cms.*;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
+
+import se.anatom.ejbca.util.Hex;
 
 /**
  * Class to handle SCEP request messages sent to the CA. TODO: don't forget extensions, e.g.
- * KeyUsage requested by end entity TODO: extract senderNonce TODO: extract transactionId
+ * KeyUsage requested by end entity 
+ * TODO: extract senderNonce 
+ * TODO: extract transactionId
  *
- * @version $Id: ScepRequestMessage.java,v 1.19 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.20 2003-07-21 13:09:33 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage,
     Serializable {
@@ -55,15 +56,18 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     /**
      * The messageType attribute specify the type of operation performed by the transaction. This
      * attribute is required in all PKI messages. Currently, the following message types are
-     * defined: PKCSReq (19)  -- Permits use of PKCS#10 certificate request CertRep (3)   --
-     * Response to certificate or CRL request GetCertInitial (20)  -- Certificate polling in
-     * manual enrollment GetCert (21)  -- Retrieve a certificate GetCRL  (22)  -- Retrieve a CRL
+     * defined: 
+     * PKCSReq (19)  -- Permits use of PKCS#10 certificate request 
+     * CertRep (3)   -- Response to certificate or CRL request 
+     * GetCertInitial (20)  -- Certificate polling in manual enrollment 
+     * GetCert (21)  -- Retrieve a certificate 
+     * GetCRL  (22)  -- Retrieve a CRL
      */
     private int messageType = 0;
 
     /**
      * SenderNonce in a request is used as recipientNonce when the server sends back a reply to the
-     * client
+     * client. This is hex encoded bytes
      */
     private String senderNonce = null;
 
@@ -131,20 +135,28 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                 SignerInfo si = new SignerInfo((ASN1Sequence) sis.nextElement());
                 Enumeration attr = si.getAuthenticatedAttributes().getObjects();
 
-                //Vector attr = si.getSignedAttrs().getAttributes();
                 while (attr.hasMoreElements()) {
                     Attribute a = new Attribute((ASN1Sequence) attr.nextElement());
 
-                    //Attribute a = (Attribute)iter.next();
                     log.debug("Found attribute: " + a.getAttrType().getId());
 
+                    if (a.getAttrType().getId().equals(id_senderNonce)) {
+                        Enumeration values = a.getAttrValues().getObjects();
+                        ASN1OctetString str = ASN1OctetString.getInstance(values.nextElement());
+                        senderNonce = Hex.encode(str.getOctets());
+                        log.debug("SenderNonce = " + senderNonce);
+                    }
+                    if (a.getAttrType().getId().equals(id_transId)) {
+                        Enumeration values = a.getAttrValues().getObjects();
+                        DERPrintableString str = DERPrintableString.getInstance(values.nextElement());
+                        transactionId = str.getString();
+                        log.debug("TransactionId = " + transactionId);
+                    }
                     if (a.getAttrType().getId().equals(id_messageType)) {
                         Enumeration values = a.getAttrValues().getObjects();
                         DERPrintableString str = DERPrintableString.getInstance(values.nextElement());
                         messageType = Integer.parseInt(str.getString());
                         log.debug("Messagetype = " + messageType);
-
-                        break; // we can olny handle one message type per message :-)
                     }
                 }
             }
@@ -203,7 +215,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
             errorText = "Need private key to decrypt!";
             error = 5;
             log.error(errorText);
-
             return;
         }
 
@@ -211,7 +222,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
             errorText = "No enveloped data to decrypt!";
             error = 6;
             log.error(errorText);
-
             return;
         }
 
@@ -224,7 +234,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         while (it.hasNext()) {
             RecipientInformation recipient = (RecipientInformation) it.next();
             pkcs10Bytes = recipient.getContent(privateKey, "BC");
-
             break;
         }
 
@@ -251,7 +260,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                 init();
                 decrypt();
             }
-
             ret = super.getRequestPublicKey();
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
@@ -266,16 +274,21 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
             return null;
         }
-
         log.debug("<getRequestPublicKey()");
 
         return ret;
     }
 
     /**
-     * DOCUMENT ME!
+     * Verifies signatures, popo etc on the request message. If verification fails the request
+     * should be considered invalid.
      *
-     * @return DOCUMENT ME!
+     * @return True if verification was successful, false if it failed.
+     *
+     * @throws InvalidKeyException If the key used for verification is invalid.
+     * @throws NoSuchProviderException if there is an error with the Provider.
+     * @throws NoSuchAlgorithmException if the signature on the request is done with an unhandled
+     *         algorithm.
      */
     public boolean verify() {
         log.debug(">verify()");
@@ -287,7 +300,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                 init();
                 decrypt();
             }
-
             ret = super.verify();
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
@@ -302,7 +314,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
             return false;
         }
-
         log.debug("<verify()");
 
         return ret;
@@ -323,7 +334,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                 init();
                 decrypt();
             }
-
             ret = super.getPassword();
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
@@ -338,7 +348,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
             return null;
         }
-
         log.debug("<getPassword()");
 
         return ret;
@@ -358,7 +367,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                 init();
                 decrypt();
             }
-
             ret = super.getUsername();
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
@@ -392,7 +400,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                 init();
                 decrypt();
             }
-
             ret = super.getRequestDN();
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
@@ -407,26 +414,29 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
             return null;
         }
-
         log.debug("<getRequestDN()");
 
         return ret;
     }
 
     /**
-     * DOCUMENT ME!
+     * indicates if this message needs recipients public and private key to verify, decrypt etc. If
+     * this returns true, setKeyInfo() should be called.
      *
-     * @return DOCUMENT ME!
+     * @return True if public and private key is needed.
      */
     public boolean requireKeyInfo() {
         return true;
     }
 
     /**
-     * DOCUMENT ME!
+     * Sets the public and private key needed to decrypt/verify the message. Must be set if
+     * requireKeyInfo() returns true.
      *
-     * @param cert DOCUMENT ME!
-     * @param key DOCUMENT ME!
+     * @param cert certificate containing the public key.
+     * @param key private key.
+     *
+     * @see #requireKeyInfo()
      */
     public void setKeyInfo(X509Certificate cert, PrivateKey key) {
         this.cert = cert;
@@ -434,23 +444,41 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns an error number after an error has occured processing the request
      *
-     * @return DOCUMENT ME!
+     * @return class specific error number
      */
     public int getErrorNo() {
         return error;
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns an error message after an error has occured processing the request
      *
-     * @return DOCUMENT ME!
+     * @return class specific error message
      */
     public String getErrorText() {
         return errorText;
     }
 
+    /**
+     * Returns a senderNonce if present in the request
+     *
+     * @return senderNonce as a string of hex encoded bytes
+     */
+    public String getSenderNonce() {
+        return senderNonce;
+    }
+
+    /**
+     * Returns a transaction identifier if present in the request
+     *
+     * @return transaction id
+     */
+    public String getTransactionId() {
+        return transactionId;
+    }
+    
     //
     // Private helper methods
     //

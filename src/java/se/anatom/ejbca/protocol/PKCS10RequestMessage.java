@@ -30,7 +30,7 @@ import java.security.cert.X509Certificate;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.15 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.16 2003-07-21 13:09:33 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(PKCS10RequestMessage.class);
@@ -245,39 +245,61 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     }
 
     /**
-     * DOCUMENT ME!
+     * indicates if this message needs recipients public and private key to verify, decrypt etc. If
+     * this returns true, setKeyInfo() should be called.
      *
-     * @return DOCUMENT ME!
+     * @return True if public and private key is needed.
      */
     public boolean requireKeyInfo() {
         return false;
     }
 
     /**
-     * DOCUMENT ME!
+     * Sets the public and private key needed to decrypt/verify the message. Must be set if
+     * requireKeyInfo() returns true.
      *
-     * @param cert DOCUMENT ME!
-     * @param key DOCUMENT ME!
+     * @param cert certificate containing the public key.
+     * @param key private key.
+     *
+     * @see #requireKeyInfo()
      */
     public void setKeyInfo(X509Certificate cert, PrivateKey key) {
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns an error number after an error has occured processing the request
      *
-     * @return DOCUMENT ME!
+     * @return class specific error number
      */
     public int getErrorNo() {
         return error;
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns an error message after an error has occured processing the request
      *
-     * @return DOCUMENT ME!
+     * @return class specific error message
      */
     public String getErrorText() {
         return errorText;
+    }
+
+    /**
+     * Returns a senderNonce if present in the request
+     *
+     * @return senderNonce
+     */
+    public String getSenderNonce() {
+        return null;
+    }
+
+    /**
+     * Returns a transaction identifier if present in the request
+     *
+     * @return transaction id
+     */
+    public String getTransactionId() {
+        return null;
     }
 }
  // PKCS10RequestMessage
