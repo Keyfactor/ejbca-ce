@@ -1,17 +1,14 @@
-/*
- * CADoesntExistsException.java
- *
- * Created on 17 august 2003, 11:27
- */
-
 package se.anatom.ejbca.ca.exception;
+
+import se.anatom.ejbca.exception.EjbcaException;
 
 /**
  * An exception thrown when someone tries to change a CA that doesn't already exits
  *
  * @author  Philip Vendil
+ * @version $Id: CADoesntExistsException.java,v 1.3 2003-11-03 14:00:49 anatom Exp $
  */
-public class CADoesntExistsException extends java.lang.Exception {
+public class CADoesntExistsException extends EjbcaException {
     
     /**
      * Creates a new instance of <code>CADoesntExistsException</code> without detail message.

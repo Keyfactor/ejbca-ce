@@ -13,6 +13,7 @@ import javax.ejb.EJBException;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.IJobRunnerSession;
+import se.anatom.ejbca.ca.exception.CADoesntExistsException;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
@@ -34,7 +35,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.16 2003-09-03 16:11:59 herrvendil Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.17 2003-11-03 14:00:31 anatom Exp $
  */
 public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerSession {
     
@@ -91,7 +92,10 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
             ICAAdminSessionLocal caadmin = caadminHome.create();
             ICertificateStoreSessionLocal store = storeHome.create();
             
-            CAInfo cainfo = caadmin.getCAInfo(admin, issuerdn.hashCode());
+            CAInfo cainfo = caadmin.getCAInfo(admin, caid);
+            if (cainfo == null) {
+                throw new CADoesntExistsException("CA not found: "+issuerdn);
+            }
             int crlperiod = cainfo.getCRLPeriod();
             // Find all revoked certificates
             Collection revcerts = store.listRevokedCertificates(admin, issuerdn);
@@ -127,7 +131,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
             //fos.write(crl.getEncoded());
             //fos.close();
         } catch (Exception e) {            
-            logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,"");                
+            logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,e.getMessage());                
             throw new EJBException(e);
         }
         debug("<run()");

@@ -10,6 +10,9 @@ import se.anatom.ejbca.ca.store.*;
 import se.anatom.ejbca.util.*;
 import se.anatom.ejbca.*;
 import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
+import se.anatom.ejbca.ca.caadmin.CAInfo;
 
 import org.apache.log4j.Logger;
 import junit.framework.*;
@@ -17,7 +20,7 @@ import junit.framework.*;
 /**
  * Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.11 2003-09-03 16:19:57 herrvendil Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.12 2003-11-03 14:00:49 anatom Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 
@@ -27,6 +30,9 @@ public class TestCreateCRLSession extends TestCase {
     private static IJobRunnerSessionRemote remote;
     private static ICertificateStoreSessionHome storehome;
     private static ICertificateStoreSessionRemote storeremote;
+    private static Admin admin;
+    private static int caid;
+    private static String cadn;
 
     /**
      * Creates a new TestCreateCRLSession object.
@@ -41,6 +47,8 @@ public class TestCreateCRLSession extends TestCase {
         log.debug(">setUp()");
         ctx = getInitialContext();
 
+        admin = new Admin(Admin.TYPE_INTERNALUSER);
+
         Object obj = ctx.lookup("CreateCRLSession");
         home = (IJobRunnerSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IJobRunnerSessionHome.class);
         remote = home.create();
@@ -48,6 +56,21 @@ public class TestCreateCRLSession extends TestCase {
         Object obj1 = ctx.lookup("CertificateStoreSession");
         storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
         storeremote = storehome.create();
+
+        obj = ctx.lookup("CAAdminSession");
+        ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
+        ICAAdminSessionRemote casession = cahome.create();          
+        Collection caids = casession.getAvailableCAs(admin);
+        Iterator iter = caids.iterator();
+        if (iter.hasNext()) {
+            caid = ((Integer)iter.next()).intValue();
+            CAInfo cainfo = casession.getCAInfo(admin, caid);
+            cadn = cainfo.getSubjectDN();
+        } else {
+            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
+        }
+        
+        
         log.debug("<setUp()");
     }
 
@@ -56,7 +79,6 @@ public class TestCreateCRLSession extends TestCase {
 
     private Context getInitialContext() throws NamingException {
         log.debug(">getInitialContext");
-
         Context ctx = new javax.naming.InitialContext();
         log.debug("<getInitialContext");
 
@@ -70,7 +92,7 @@ public class TestCreateCRLSession extends TestCase {
      */
     public void test01CreateNewCRL() throws Exception {
         log.debug(">test01CreateNewCRL()");
-        remote.run(new Admin(Admin.TYPE_INTERNALUSER), "TODO");
+        remote.run(admin, cadn);
         log.debug("<test01CreateNewCRL()");
     }
 
@@ -83,9 +105,9 @@ public class TestCreateCRLSession extends TestCase {
         log.debug(">test02LastCRL()");
 
         // Get number of last CRL
-        int number = storeremote.getLastCRLNumber(new Admin(Admin.TYPE_INTERNALUSER),"TODO");
+        int number = storeremote.getLastCRLNumber(admin,cadn);
         log.debug("Last CRLNumber = "+number);
-        byte[] crl = storeremote.getLastCRL(new Admin(Admin.TYPE_INTERNALUSER),"TODO");
+        byte[] crl = storeremote.getLastCRL(admin,cadn);
         assertNotNull("Could not get CRL", crl);
 
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
@@ -105,9 +127,9 @@ public class TestCreateCRLSession extends TestCase {
         log.debug(">test03CheckNumberofRevokedCerts()");
 
         // Get number of last CRL
-        Collection revfp = storeremote.listRevokedCertificates(new Admin(Admin.TYPE_INTERNALUSER),"TODO");
+        Collection revfp = storeremote.listRevokedCertificates(admin,cadn);
         log.debug("Number of revoked certificates="+revfp.size());
-        byte[] crl = storeremote.getLastCRL(new Admin(Admin.TYPE_INTERNALUSER), "TODO");
+        byte[] crl = storeremote.getLastCRL(admin, cadn);
         assertNotNull("Could not get CRL", crl);
 
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
