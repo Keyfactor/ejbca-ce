@@ -16,7 +16,7 @@ JBoss and run. Read this HOWTO if you want to replace the default database with
 another.
 
 When using another database the default database, HypersoniqDB, should be
-removed completely. 
+removed completely.
 The file server/defualt/deploy/hsqldb-service.xml should be removed.
 
 NOW ON TO THE HOWTO!
@@ -73,9 +73,9 @@ MySQL specifics
 ---------------
 Jaws configuration file: jbosscmp-jdbc-mysql.xml
 
-JDBC driver: mm.mysql-<version>-bin.jar.
+JDBC driver: mysql-connector-java-3.0.x.jar.
 
-Download JDBC driver for mySQL from http://mmmysql.sourceforge.net/
+Download JDBC driver for mySQL from http://www.mysql.com/
 
 Copy mysql-service.xml to server/default/deploy
 In mysql-service.xml is defined the databas instance (EJBCA) and the database
@@ -127,6 +127,7 @@ Type mapping:
 
      <datasource>java:/DefaultDS</datasource>
      <type-mapping>Oracle8</type-mapping>
+
 
 
 
