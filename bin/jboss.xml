@@ -4,7 +4,9 @@
 	<property name="jboss.deploy.dir" location="${jboss.home}/server/default/deploy"/>
 	<property name="jboss.server.home.dir" location="${jboss.deploy.dir}/.."/>
 	<property name="keystore.file" value="conf/keystore/keystore.jks"/>
-	<property name="keystore.password" value="changeit"/>
+
+    <!-- FIXME: It must match the password in cli.xml !! -->
+    <property name="keystore.password" value="serverpwd"/>
 	
 	<!--
 	 Do not configure the servlet container, deploys blindly ears
