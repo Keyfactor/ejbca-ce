@@ -23,10 +23,11 @@ NOW ON TO THE HOWTO!
 Configuring EJBCA
 -----------------
 
-1. Rename src/ca/META-INF/jaws-<database>.xml to jaws.xml. If no specific
-jaws-<database>.xml file is supplied the default jaws.xml is used. Make sure
-src/ca/META-INF/jaws.xml contains entries to set the correct type-mappings for
-'base64cert' and 'base64crl' for the database used.
+1. Rename src/ca/META-INF/jbosscmp-jdbc-<database>.xml to jbosscmp-jdbc.xml. If
+no specific jbosscmp-jdbc-<database>.xml file is supplied the default jbosscmp-
+jdbc.xml is used. Make sure src/ca/META-INF/jbosscmp-jdbc.xml contains entries
+to set the correct type-mappings for 'base64cert' and 'base64crl' for the
+database used.
 
 2. Build EJBCA with 'ant' and deploy with 'deploy.sh/cmd'.
 
@@ -57,7 +58,7 @@ jboss.org, provided here are snapshots that work for me.
 5. Remove the standard database driver, hsqldb-service.xml, from <jboss-home>
 /server/default/deploy.
 
-6. Edit standardjbosscmp-jdbc.xml and standardjaws.xml. Change the default type-
+6. Edit standardjbosscmp-jdbc.xml. Change the default type-
 mapping to match the chosen database (see below).
 
 7. DONE! Start JBoss. Run all tests with 'runtest.sh/cmd'.
@@ -65,7 +66,7 @@ mapping to match the chosen database (see below).
 
 MySQL specifics
 ---------------
-Jaws configuration file: jaws-mysql.xml
+Jaws configuration file: jbosscmp-jdbc-mysql.xml
 
 JDBC driver: mm.mysql-<version>-bin.jar.
 
@@ -83,7 +84,7 @@ Type mapping:
 
 PostgreSQL specifics
 --------------------
-Jaws configuration file: PostgreSQL works woth standard jaws.xml.
+Jaws configuration file: PostgreSQL works with standard jbosscmp-jdbc.xml.
 
 JDBC driver: postgresql.jar (or whatever it's called).
 
@@ -101,7 +102,7 @@ Type mapping:
 
 Oracle specifics
 ----------------
-Jaws configuration file: jaws-oracle.xml
+Jaws configuration file: jbosscmp-jdbc-oracle.xml
 JBoss configuration file: oracle-service.xml
 
 JDBC driver: classes12.zip (can be downloaded from http://www.oracle.com/).
@@ -117,6 +118,7 @@ Type mapping:
 
      <datasource>java:/DefaultDS</datasource>
      <type-mapping>Oracle8</type-mapping>
+
 
 
 
