@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.16 2003-03-11 09:47:42 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.17 2003-06-11 13:38:46 anatom Exp $
  */
 public class KeyTools {
 
@@ -95,7 +95,8 @@ public class KeyTools {
     throws Exception {
         log.debug(">createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) + ", cachain.length=" + (cachain == null ? 0 : cachain.length) );
 
-        // Certificate chain, only max two levels deep unforturnately, this is a TODO:
+        // TODO: support more than two levels of CAs
+        // Certificate chain, only max two levels deep unforturnately
         if (cert == null)
             throw new IllegalArgumentException("Parameter cert cannot be null.");
         int len = 1;
@@ -162,7 +163,8 @@ public class KeyTools {
         log.debug(">createJKS: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) + ", cachain.length=" + (cachain == null ? 0 : cachain.length) );
 
         String caAlias="cacert";
-        // Certificate chain, only max two levels deep unforturnately, this is a TODO:
+        // TODO: support more than two levels of CAs
+        // Certificate chain, only max two levels deep unforturnately.
         if (cert == null)
             throw new IllegalArgumentException("Parameter cert cannot be null.");
         int len = 1;

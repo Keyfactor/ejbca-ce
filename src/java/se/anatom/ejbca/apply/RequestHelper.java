@@ -59,7 +59,7 @@ public class RequestHelper {
                 return null;
             }
             DERInputStream  in = new DERInputStream(new ByteArrayInputStream(buffer));
-            DERConstructedSequence spkac = (DERConstructedSequence)in.readObject();
+            ASN1Sequence spkac = (ASN1Sequence)in.readObject();
             NetscapeCertRequest nscr = new NetscapeCertRequest (spkac);
             // Verify POPO, we don't care about the challenge, it's not important.
             nscr.setChallenge("challenge");

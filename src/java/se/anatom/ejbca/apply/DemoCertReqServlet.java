@@ -51,7 +51,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * <dl>
  * <dt>pkcs10req</dt>
  * <dd>
- *   A PKCS#10 request, mandatory. TODO more on this
+ *   A PKCS#10 request, mandatory.
  * </dd>
  * <dt>username</dt>
  * <dd>
@@ -61,7 +61,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * <dt>password</dt>
  * <dd>
  *   Password for the user (for EJBCA internal use only).  Optional,
- *   defaults to an empty string.
+ *   defaults to an empty string. Used for authorization of the certificate request.
  * </dd>
  * <dt>email</dt>
  * <dd>
@@ -80,7 +80,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.25 2003-04-21 15:44:53 herrvendil Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.26 2003-06-11 13:39:01 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -239,7 +239,6 @@ public class DemoCertReqServlet extends HttpServlet {
             throw new ServletException("No such end entity profile: " + tmp);
         }
     }
-    // TODO: check that we're authorized to use the profile
     newuser.setEndEntityProfileId(eProfileId);
 
     int cProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
@@ -249,7 +248,6 @@ public class DemoCertReqServlet extends HttpServlet {
             throw new ServletException("No such certificate profile: " + tmp);
         }
     }
-    // TODO: check that we're authorized to use the profile
     newuser.setCertificateProfileId(cProfileId);
 
     String password = request.getParameter("password");

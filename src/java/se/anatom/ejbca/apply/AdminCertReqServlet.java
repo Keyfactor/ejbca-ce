@@ -53,7 +53,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <dl>
  * <dt>pkcs10req</dt>
  * <dd>
- *   A PKCS#10 request, mandatory. TODO more on this
+ *   A PKCS#10 request, mandatory. 
  * </dd>
  * <dt>username</dt>
  * <dd>
@@ -63,8 +63,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <dt>password</dt>
  * <dd>
  *   Password for the user (for EJBCA internal use only).  Optional,
- *   defaults to an empty string.
- *   TODO does this have anything to do with the returned cert?
+ *   defaults to an empty string. Used for authorization af certificate request.
  * </dd>
  * <dt>entityprofile</dt>
  * <dd>
@@ -79,7 +78,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * </dl>
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.6 2003-02-27 13:01:23 koen_serry Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.7 2003-06-11 13:39:01 anatom Exp $
  */
 public class AdminCertReqServlet extends HttpServlet {
 
@@ -159,7 +158,8 @@ public class AdminCertReqServlet extends HttpServlet {
 
     byte[] buffer = pkcs10Bytes(request.getParameter("pkcs10req"));
     if (buffer == null) {
-      // TODO: abort here, no PKCS#10 received
+        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid request, missing 'pkcs10req'!");
+        return;
     }
 
     RAInterfaceBean rabean = getRaBean(request);
@@ -188,14 +188,11 @@ public class AdminCertReqServlet extends HttpServlet {
 
     String email = CertTools.getPartFromDN(dn, "E"); // BC says VeriSign
     if (email == null) email = CertTools.getPartFromDN(dn, "EMAILADDRESS");
-    // TODO: get values from subject altname, lookup email as well?
-    // newuser.setSubjectAltName(...)
     if (email != null) {
       newuser.setEmail(email);
     }
 
     String tmp = null;
-
     int eProfileId = SecConst.EMPTY_ENDENTITYPROFILE;
     if ((tmp = request.getParameter("entityprofile")) != null) {
       int reqId = rabean.getEndEntityProfileId(tmp);
@@ -205,7 +202,6 @@ public class AdminCertReqServlet extends HttpServlet {
         eProfileId = reqId;
       }
     }
-    // TODO: check that we're authorized to use the profile?
     newuser.setEndEntityProfileId(eProfileId);
 
     int cProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
@@ -218,10 +214,8 @@ public class AdminCertReqServlet extends HttpServlet {
         cProfileId = reqId;
       }
     }
-    // TODO: check that we're authorized to use the profile?
     newuser.setCertificateProfileId(cProfileId);
 
-    // TODO: figure out if we can manage without a password.
     String password = request.getParameter("password");
     if (password == null) password = "";
     newuser.setPassword(password);
