@@ -1,10 +1,19 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.5 2002-03-21 13:39:39 anatom Exp $
+$Id: FAQ,v 1.6 2002-03-21 13:43:33 anatom Exp $
 ---------
 Q : What applications servers do EJBCA run on?
 
 A : As of version 1.3, EJBCA is tested in JBoss and Weblogic.
+
+-----
+Q : What databases do EJBCA support?
+
+A : EJBCA supports in theory any database that works with the application
+server. The database must have support for long fields, a CRL can in theory
+become very large.
+EJBCA has as of version 1.3 been tested with MySQL, PostgreSQL, Oracle and
+InstantDB. Other databases should work woth simple configuration.
 
 -----
 Q : When using JDK 1.4.x i get a java.io.InvalidClassException?
@@ -148,4 +157,5 @@ important information. Logging in JBoss is configured in 'log4j.properties' in
 the JBoss config directory.
 
 -----
+
 
