@@ -21,6 +21,7 @@ package se.anatom.ejbca.ra.raadmin;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.apache.log4j.Logger;
 import org.ietf.ldap.LDAPDN;
 
 
@@ -29,8 +30,10 @@ import org.ietf.ldap.LDAPDN;
  * strings.
  *
  * @author Philip Vendil
+ * @version $Id: DNFieldExtractor.java,v 1.17 2004-05-22 16:02:52 anatom Exp $
  */
 public class DNFieldExtractor {
+    private static Logger log = Logger.getLogger(DNFieldExtractor.class);
     // Public constants
     public static final int TYPE_SUBJECTDN = 0;
     public static final int TYPE_SUBJECTALTNAME = 1;
@@ -139,7 +142,7 @@ public class DNFieldExtractor {
                     }
                 }
             } catch (Exception e) {
-            	e.printStackTrace();
+            	log.error("setDN: ", e);
 				illegal = true;
                 if (type == TYPE_SUBJECTDN) {
                     dnfields.put(new Integer((CN * BOUNDRARY)), "Illegal DN : " + dn);
