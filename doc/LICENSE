@@ -1,0 +1,20 @@
+The code of EJBCA is under the GPL license (see LICENSE-GPL or
+http://www.opensource.org/licenses/gpl-license.html).
+
+The use of interfaces of EJBCA is under LGPL license (see LICENSE-LGPL or
+http://www.opensource.org/licenses/lgpl-license.html).
+
+This means specifically that:
+Tools, code and libraries (JARS) themselves is under GPL.
+Using interfaces to create own modules and modifying the deployment descriptors
+to use these modules falls under LGPL.
+
+For example creating a new MyAlgSigningSession (implementing interface
+ISignSession) instead of the EJBCA RSASigningSessiom, deploying
+MyAlgSigningSession in another JAR and modifying
+src/ca/META-INF/ejb-jar.xml to use the new MyAlgSigningSession falls under LGPL.
+Another example falling under LGPL is where a custom AuthenticationSession is
+created (implementing interface IAuthenticationSession) and src/ca/META-INF/ejb-
+jar.xml is modified to use the custom authentication module.
+
+Any modification to java code which is part of EJBCA falls under GPL.
