@@ -15,6 +15,7 @@ package se.anatom.ejbca.util;
 
 import java.util.*;
 
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
@@ -32,13 +33,10 @@ import se.anatom.ejbca.log.Admin;
  * jnp://127.0.0.1:1099) - principal   (the user name is needed) - credentials (the password is
  * needed) - agent       (the JNDI-name of the agent session to start)
  *
- * @version $Id: JobRunner.java,v 1.8 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: JobRunner.java,v 1.9 2004-08-25 17:35:33 anatom Exp $
  */
 public class JobRunner extends java.lang.Object {
     private static Logger log = Logger.getLogger(JobRunner.class);
-    private static final String JNDI_PROVIDER = "java.naming.provider.url";
-    private static final String JNDI_PRINCIPAL = "java.naming.security.principal";
-    private static final String JNDI_CREDENTIALS = "java.naming.security.credentials";
     private InitialContext context;
 
     /**
@@ -46,7 +44,7 @@ public class JobRunner extends java.lang.Object {
      *
      * @param props properties for creating initial context
      */
-    public JobRunner(Properties props) throws NamingException {
+    public JobRunner(Hashtable props) throws NamingException {
         context = new InitialContext(props);
     }
 
@@ -96,10 +94,10 @@ IJobRunnerSessionHome.class );
                 job = args[3];
                 issuerdn = args[4];
 
-                Properties props = new Properties();
-                props.setProperty(JNDI_PROVIDER, provider);
-                props.setProperty(JNDI_PRINCIPAL, principal);
-                props.setProperty(JNDI_CREDENTIALS, credentials);
+                Hashtable props = new Hashtable();
+                props.put(Context.PROVIDER_URL, provider);
+                props.put(Context.SECURITY_PRINCIPAL, principal);
+                props.put(Context.SECURITY_CREDENTIALS, credentials);
                 runner = new JobRunner(props);
             } else {
                 job = args[0];
