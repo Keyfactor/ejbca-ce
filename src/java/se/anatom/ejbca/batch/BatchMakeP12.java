@@ -40,7 +40,7 @@ import org.apache.log4j.PropertyConfigurator;
  * This class generates keys and request certificates for all users with
  * status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.28 2003-02-12 13:21:36 herrvendil Exp $
+ * @version $Id: BatchMakeP12.java,v 1.29 2003-02-20 08:15:29 anatom Exp $
  */
 public class BatchMakeP12 {
 
@@ -55,7 +55,7 @@ public class BatchMakeP12 {
     private IKeyRecoverySessionHome keyrecoveryhome;
 
     private Admin administrator;
-    
+
     private boolean usekeyrecovery = false;
 
     static public Context getInitialContext() throws NamingException{
@@ -86,14 +86,14 @@ public class BatchMakeP12 {
         adminhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
         Object obj1 = jndiContext.lookup("RSASignSession");
         signhome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ISignSessionHome.class);
-     
-        IUserAdminSessionRemote admin = adminhome.create();        
-        usekeyrecovery = (admin.loadGlobalConfiguration(administrator)).getEnableKeyRecovery();  
-        
+
+        IUserAdminSessionRemote admin = adminhome.create();
+        usekeyrecovery = (admin.loadGlobalConfiguration(administrator)).getEnableKeyRecovery();
+
         if(usekeyrecovery){
           obj1 = jndiContext.lookup("KeyRecoverySession");
-          keyrecoveryhome = (IKeyRecoverySessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IKeyRecoverySessionHome.class);               
-        }     
+          keyrecoveryhome = (IKeyRecoverySessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IKeyRecoverySessionHome.class);
+        }
 
         log.debug("<BatchMakeP12:");
     } // BatchMakeP12
@@ -194,7 +194,6 @@ public class BatchMakeP12 {
         X509Certificate cert = (X509Certificate)ss.createCertificate(administrator, username, password, rsaKeys.getPublic());
 
         // Make a certificate chain from the certificate and the CA-certificate
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
         Certificate[] cachain = getCACertChain();
         // Verify CA-certificate
         if (CertTools.isSelfSigned((X509Certificate)cachain[cachain.length-1])) {
@@ -212,11 +211,11 @@ public class BatchMakeP12 {
         } catch (GeneralSecurityException se) {
             throw new Exception("Generated certificate does not verify using CA-certificate.");
         }
-        
+
         if(usekeyrecovery && savekeys){
-          // Save generated keys to database.   
+          // Save generated keys to database.
            IKeyRecoverySessionRemote keyrecoverysession = keyrecoveryhome.create();
-           keyrecoverysession.addKeyRecoveryData(administrator, cert, username, rsaKeys);              
+           keyrecoverysession.addKeyRecoveryData(administrator, cert, username, rsaKeys);
         }
 
         // Use CommonName as alias in the keystore
@@ -245,8 +244,8 @@ public class BatchMakeP12 {
          if(usekeyrecovery && keyrecoverflag){
             // Recover Keys
            IKeyRecoverySessionRemote keyrecoverysession = keyrecoveryhome.create();
-           rsaKeys = ((KeyRecoveryData) keyrecoverysession.keyRecovery(administrator, data.getUsername())).getKeyPair();  
-         }else{    
+           rsaKeys = ((KeyRecoveryData) keyrecoverysession.keyRecovery(administrator, data.getUsername())).getKeyPair();
+         }else{
            // Generate keys
            rsaKeys = KeyTools.genKeys(1024);
          }
@@ -279,7 +278,7 @@ public class BatchMakeP12 {
         createAllWithStatus(UserDataLocal.STATUS_FAILED);
         log.debug("<createAllFailed:");
     } // createAllFailed
-    
+
     /**
      * Creates P12-files for all users with status KEYRECOVER in the local database.
      *
@@ -287,13 +286,13 @@ public class BatchMakeP12 {
      */
 
     public void createAllKeyRecover() throws Exception {
-      if(usekeyrecovery){  
+      if(usekeyrecovery){
         log.debug(">createAllKeyRecover:");
         log.info("Generating for all KEYRECOVER.");
         createAllWithStatus(UserDataLocal.STATUS_KEYRECOVERY);
         log.debug("<createAllKeyRecover:");
-      }  
-    } // createAllKeyRecover    
+      }
+    } // createAllKeyRecover
 
     /**
      * Creates P12-files for all users with status in the local database.
@@ -325,10 +324,10 @@ public class BatchMakeP12 {
             UserAdminData data = (UserAdminData) it.next();
             if ((data.getPassword() != null) && (data.getPassword().length() > 0)) {
                 try {
-                    if(status == UserDataLocal.STATUS_KEYRECOVERY)  
+                    if(status == UserDataLocal.STATUS_KEYRECOVERY)
                       log.info("Retrieving keys for " + data.getUsername());
                     else
-                      log.info("Generating keys for " + data.getUsername());                    
+                      log.info("Generating keys for " + data.getUsername());
 
                     log.info("Password:" + data.getPassword());
 
@@ -386,8 +385,8 @@ public class BatchMakeP12 {
         IUserAdminSessionRemote admin = adminhome.create();
         UserAdminData data = admin.findUser(administrator, username);
         int status = data.getStatus();
-        if ((data != null) && (data.getPassword() != null) && (data.getPassword().length() > 0)) 
-          if(status == UserDataLocal.STATUS_NEW || (status == UserDataLocal.STATUS_KEYRECOVERY && usekeyrecovery)){  
+        if ((data != null) && (data.getPassword() != null) && (data.getPassword().length() > 0))
+          if(status == UserDataLocal.STATUS_NEW || (status == UserDataLocal.STATUS_KEYRECOVERY && usekeyrecovery)){
             try {
                 // get users Token Type.
                 tokentype = data.getTokenType();
@@ -397,7 +396,7 @@ public class BatchMakeP12 {
 
                 // Only generate supported tokens
                 if(createP12 || createPEM || createJKS){
-                  if(status == UserDataLocal.STATUS_KEYRECOVERY)  
+                  if(status == UserDataLocal.STATUS_KEYRECOVERY)
                     log.info("Retrieving keys for " + data.getUsername());
                   else
                     log.info("Generating keys for " + data.getUsername());
@@ -452,8 +451,8 @@ public class BatchMakeP12 {
                // Make P12 for all FAILED users in local DB
                makep12.createAllFailed();
                // Make P12 for all KEYRECOVERABLE users in local DB
-               makep12.createAllKeyRecover();                
-                
+               makep12.createAllKeyRecover();
+
             }
         } catch( Exception e ) {
             e.printStackTrace();
