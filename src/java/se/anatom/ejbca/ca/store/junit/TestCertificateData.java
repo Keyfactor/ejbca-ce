@@ -25,7 +25,7 @@ import junit.framework.*;
 
 /** Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.10 2002-09-12 18:14:15 herrvendil Exp $
+ * @version $Id: TestCertificateData.java,v 1.11 2002-11-03 11:52:09 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -123,21 +123,30 @@ public class TestCertificateData extends TestCase {
     public void test03listAndRevoke() throws Exception {
         cat.debug(">test03listAndRevoke()");
         ICertificateStoreSessionRemote store = storehome.create(new Admin(Admin.TYPE_INTERNALUSER));
+        // List all certificates to see
         Collection certfps = store.listAllCertificates();
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
-        cat.debug("List certs:");
+        int size = certfps.size();
+        cat.debug("List certs: "+size);
+        // List all certificates for user foo, which we have created in TestSignSession
+        certfps = store.findCertificatesBySubject("C=SE, O=AnaTom, CN=foo");
+        assertTrue("something weird with size, all < foos", size >= certfps.size());
+        cat.debug("List certs for foo: "+certfps.size());
         Iterator iter = certfps.iterator();
         while (iter.hasNext()) {
-            String fp = (String)iter.next();
+            X509Certificate  cert = (X509Certificate)iter.next();
+            String fp = CertTools.getFingerprintAsString(cert);
             cat.debug(fp);
-            // Revoke all certs
+            // Revoke all foos certificates
             CertificateDataPK revpk = new CertificateDataPK(fp);
             CertificateData rev = home.findByPrimaryKey(revpk);
             if (rev.getStatus() != CertificateData.CERT_REVOKED) {
                 rev.setStatus(CertificateData.CERT_REVOKED);
                 rev.setRevocationDate(new Date());
                 cat.debug("Revoked cert "+fp);
+            } else {
+                cat.debug("Cert '"+fp+"' already revoked.");
             }
         }
         cat.debug("<test03listAndRevoke()");
@@ -145,13 +154,15 @@ public class TestCertificateData extends TestCase {
     public void test04CheckRevoked() throws Exception {
         cat.debug(">test04CheckRevoked()");
         ICertificateStoreSessionRemote store = storehome.create(new Admin(Admin.TYPE_INTERNALUSER));
-        Collection certfps = store.listAllCertificates();
+        // List all certificates for user foo, which we have created in TestSignSession
+        Collection certfps = store.findCertificatesBySubject("C=SE, O=AnaTom, CN=foo");
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
-        // Verify that all certs are revoked
+        // Verify that cert are revoked
         Iterator iter = certfps.iterator();
         while (iter.hasNext()) {
-            String fp = (String)iter.next();
+            X509Certificate  cert = (X509Certificate)iter.next();
+            String fp = CertTools.getFingerprintAsString(cert);
             CertificateDataPK revpk = new CertificateDataPK(fp);
             CertificateData rev = home.findByPrimaryKey(revpk);
             assertTrue(rev.getStatus() == CertificateData.CERT_REVOKED);
