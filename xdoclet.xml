@@ -1,4 +1,4 @@
-﻿<project name="xdoclet" basedir="." default="xdoclet:run">
+<project name="xdoclet" basedir="." default="xdoclet:run">
 
 	<property name="xdoclet.lib.dir" location="lib/xdoclet-1.2.1/lib"/>
 	<path id="xdoclet.classpath">
