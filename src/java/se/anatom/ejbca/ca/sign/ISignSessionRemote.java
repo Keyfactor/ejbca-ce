@@ -28,7 +28,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * Creates certificates. Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.24 2003-11-14 15:23:17 herrvendil Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.25 2003-11-17 08:24:57 anatom Exp $
  */
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
 	/**
@@ -305,7 +305,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
      */
     
 	public ExtendedCAServiceResponse extendedService(Admin admin, int caid, ExtendedCAServiceRequest request) 
-	  throws IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException;
+	  throws RemoteException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException;
     
     
    /**
