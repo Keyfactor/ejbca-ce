@@ -18,7 +18,7 @@ import se.anatom.ejbca.ca.crl.RevokedCertInfo;
  * retrieve CRLs, check for revocation etc. the CertificateStoreSession implements
  * the interface ICertificateStoreSession.
  *
- * @version $Id: ICertificateStoreSession.java,v 1.6 2002-05-23 09:00:13 anatom Exp $
+ * @version $Id: ICertificateStoreSession.java,v 1.7 2002-05-23 14:28:27 anatom Exp $
  */
 public interface ICertificateStoreSession extends IPublisherSession {
 
@@ -75,10 +75,10 @@ public interface ICertificateStoreSession extends IPublisherSession {
     /**
     * Lists all revoked certificates, ie status = CERT_REVOKED.
     *
-    * @return Array of Strings containing fingerprint (primary key) of the revoced certificates. Reverse ordered by expireDate where last expireDate is first in array.
+    * @return Collection of Strings containing fingerprint (primary key) of the revoced certificates. Reverse ordered by expireDate where last expireDate is first in array.
     * @throws EJBException if a communication or other error occurs.
     */
-    public String[] listRevokedCertificates() throws RemoteException;
+    public Collection listRevokedCertificates() throws RemoteException;
 
    /**
     * Retrieves the latest CRL issued by this CA.

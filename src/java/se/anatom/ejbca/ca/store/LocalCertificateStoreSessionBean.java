@@ -28,7 +28,7 @@ import se.anatom.ejbca.util.Base64;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.11 2002-05-23 09:00:13 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.12 2002-05-23 14:28:27 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean implements ICertificateStoreSession {
 
@@ -122,6 +122,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         PreparedStatement ps = null;;
         ResultSet result = null;
         try {
+            // TODO:
+            // This should only list a few thousend certificates at a time, in case there
             con = getConnection();
             ps = con.prepareStatement("select fingerprint from CertificateData ORDER BY expireDate DESC");
             result = ps.executeQuery();
@@ -152,14 +154,14 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
     * Implements ICertificateStoreSession::listRevokedCertificates.
     * Uses select directly from datasource.
     */
-    public String[] listRevokedCertificates() throws RemoteException {
+    public Collection listRevokedCertificates() throws RemoteException {
         debug(">listRevokedCertificates()");
         Connection con = null;
         PreparedStatement ps = null;;
         ResultSet result = null;
         try {
             // TODO:
-            // This should only list a few thousend certificates at a time, ni case there
+            // This should only list a few thousend certificates at a time, in case there
             // are really many revoked certificates after some time...
             con = getConnection();
             ps = con.prepareStatement("select fingerprint from CertificateData where status=? ORDER BY expireDate DESC");
@@ -169,10 +171,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
             while(result.next()){
                 vect.addElement(result.getString(1));
             }
-            String[] returnArray = new String[vect.size()];
-            vect.copyInto(returnArray);
             debug("<listRevokedCertificates()");
-            return returnArray;
+            return vect;
         }
         catch (Exception e) {
             throw new EJBException(e);
@@ -244,7 +244,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
             cat.error(re);
             throw new EJBException(re);
         }
-
     } //findCertificatesByExpireTime
 
    /**
@@ -256,37 +255,27 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(issuerDN);
         debug("Looking for cert with (transformed)DN: " + dn);
-
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet result = null;
-        try{
-            con = getConnection();
-            ps = con.prepareStatement("select base64Cert from CertificateData where issuerDN=? and serialNumber=?");
-            ps.setString(1,dn);
-            ps.setString(2, serno.toString());
-            result = ps.executeQuery();
-            Certificate cert = null;
-            if (result.next()) {
-                cert = CertTools.getCertfromByteArray(Base64.decode(result.getString(1).getBytes()));
-                debug("Found cert with serno "+serno.toString()+".");
+        try {
+            Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
+            Certificate ret = null;
+            if (coll != null) {
+                if (coll.size() > 1)
+                    cat.error("Error in database, more than one certificate has the same Issuer and SerialNumber!");
+                Iterator iter = coll.iterator();
+                if (iter.hasNext()) {
+                    ret= ((CertificateData)iter.next()).getCertificate();
+                }
             }
+            debug("<findCertificateByIssuerAndSerno(), dn:"+issuerDN+", serno="+serno);
+            return ret;
+        } catch (javax.ejb.FinderException fe) {
+            cat.error(fe);
+            throw new EJBException(fe);
+        } catch (java.rmi.RemoteException re) {
+            cat.error(re);
+            throw new EJBException(re);
+        }
 
-            debug("<findCertificateByIssuerAndSerno()");
-            return cert;
-        }
-        catch (Exception e) {
-            throw new EJBException(e);
-        }
-        finally {
-            try {
-                if (result != null) result.close();
-                if (ps != null) ps.close();
-                if (con!= null) con.close();
-            } catch(SQLException se) {
-                se.printStackTrace();
-            }
-        }
     } //findCertificateByIssuerAndSerno
 
    /**

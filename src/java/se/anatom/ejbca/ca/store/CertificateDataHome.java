@@ -8,7 +8,6 @@ import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.Collection;
 
-
 /**
  * For docs, see CertificateDataBean
  **/
@@ -20,16 +19,23 @@ public interface CertificateDataHome extends javax.ejb.EJBHome {
     public CertificateData findByPrimaryKey(CertificateDataPK pk)
         throws FinderException, RemoteException;
 
-    /** Finds certificate which expire within a specified time.
+    /** Finds certificates which expire within a specified time.
      * @param expireTime (Date.getTime()-format), all certificates that expires before this date will be listed.
      * @return Collection of CertificateData in no specified order.
      */
     public Collection findByExpireDate(long expireDate)
         throws FinderException, RemoteException;
-    /** Finds certificate which a specified subjectDN.
-     * @param subjectDN, the subject whose certificates will be listaed
+    /** Finds certificates which a specified subjectDN.
+     * @param subjectDN, the subject whose certificates will be listed
      * @return Collection of CertificateData in no specified order.
      */
     public Collection findBySubjectDN(String subjectDN)
+        throws FinderException, RemoteException;
+    /** Finds the certificate which a specified issuerDN and SerialNumber.
+     * @param issuerDN, the issuer of the certificates that is wanted.
+     * @param serialNumber, the serial number (BigInteger.toString()-format) of the certificates that is wanted.
+     * @return Collection of CertificateData in no specified order (should only contain one!).
+     */
+    public Collection findByIssuerDNSerialNumber(String issuerDN, String serialNumber)
         throws FinderException, RemoteException;
 }

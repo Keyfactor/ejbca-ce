@@ -31,7 +31,7 @@ import junit.framework.*;
 
 /** Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.3 2002-03-21 12:50:54 anatom Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.4 2002-05-23 14:28:27 anatom Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 
@@ -86,13 +86,16 @@ public class TestCreateCRLSession extends TestCase {
     public void test03CheckNumberofRevokedCerts() throws Exception {
         cat.debug(">test03CheckNumberofRevokedCerts()");
         // Get number of last CRL
-        String[] revfp = storeremote.listRevokedCertificates();
-        cat.debug("Number of revoked certificates="+revfp.length);
+        Collection revfp = storeremote.listRevokedCertificates();
+        cat.debug("Number of revoked certificates="+revfp.size());
         byte[] crl = storeremote.getLastCRL();
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         Set revset = x509crl.getRevokedCertificates();
-        assertEquals(revfp.length, revset.size());
+        int revsize = 0;
+        if (revset != null)
+            revsize = revset.size();
+            assertEquals(revfp.size(), revsize);
         cat.debug("<test03CheckNumberofRevokedCerts()");
     }
 

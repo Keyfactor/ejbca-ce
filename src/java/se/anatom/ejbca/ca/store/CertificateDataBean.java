@@ -58,8 +58,10 @@ public abstract class CertificateDataBean implements javax.ejb.EntityBean {
     /** What type of user the certificate belongs to, ex SecConst.USER_ENDUSER
      */
     public abstract void setType(int type);
-    public abstract BigInteger getSerialNumber();
-    public abstract void setSerialNumber(BigInteger serialNumber);
+    /** Serialnumber formated as BigInteger.toString() */
+    public abstract String getSerialNumber();
+    /** Serialnumber formated as BigInteger.toString() */
+    public abstract void setSerialNumber(String serialNumber);
     /** Date formated as seconds since 1970 (== Date.getTime()) */
     public abstract long getExpireDate();
     /** Date formated as seconds since 1970 (== Date.getTime()) */
@@ -95,6 +97,12 @@ public abstract class CertificateDataBean implements javax.ejb.EntityBean {
         try {
             String b64Cert = new String(Base64.encode(incert.getEncoded()));
             setBase64Cert(b64Cert);
+            X509Certificate tmpcert = (X509Certificate)incert;
+            String fp = CertTools.getFingerprintAsString(tmpcert);
+            setFingerprint(fp);
+            setSubjectDN(CertTools.stringToBCDNString(tmpcert.getSubjectDN().toString()));
+            setIssuerDN(CertTools.stringToBCDNString(tmpcert.getIssuerDN().toString()));
+            setSerialNumber(tmpcert.getSerialNumber().toString());
         } catch (CertificateEncodingException cee) {
             cat.error("Can't extract DER encoded certificate information.", cee);
         }
@@ -148,7 +156,7 @@ public abstract class CertificateDataBean implements javax.ejb.EntityBean {
         setSubjectDN(CertTools.stringToBCDNString(tmpcert.getSubjectDN().toString()));
         setIssuerDN(CertTools.stringToBCDNString(tmpcert.getIssuerDN().toString()));
         cat.debug("Creating certdata, subject="+getSubjectDN()+", issuer="+getIssuerDN());
-        setSerialNumber(tmpcert.getSerialNumber());
+        setSerialNumber(tmpcert.getSerialNumber().toString());
         // Default values for status and type
         setStatus(CertificateData.CERT_UNASSIGNED);
         setType(SecConst.USER_INVALID);

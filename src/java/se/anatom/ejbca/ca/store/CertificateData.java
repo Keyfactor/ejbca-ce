@@ -53,8 +53,8 @@ public interface CertificateData extends javax.ejb.EJBObject {
     public void setSubjectDN(String subjectDN) throws RemoteException;
     public String getIssuerDN() throws RemoteException;
     public void setIssuerDN(String issuerDN) throws RemoteException;
-    public BigInteger getSerialNumber() throws RemoteException;
-    public void setSerialNumber(BigInteger serialNumber) throws RemoteException;
+    public String getSerialNumber() throws RemoteException;
+    public void setSerialNumber(String serialNumber) throws RemoteException;
     public String getFingerprint() throws RemoteException;
     public void setFingerprint(String fingerprint) throws RemoteException;
     public String getCAFingerprint() throws RemoteException;

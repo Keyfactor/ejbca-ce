@@ -7,7 +7,7 @@ import java.rmi.*;
 import javax.naming.*;
 import javax.rmi.*;
 import javax.ejb.*;
-
+import java.math.BigInteger;
 import java.security.cert.X509CRL;
 
 import se.anatom.ejbca.BaseSessionBean;
@@ -25,7 +25,7 @@ import se.anatom.ejbca.ca.sign.ISignSession;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.4 2002-05-22 09:15:00 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.5 2002-05-23 14:28:27 anatom Exp $
  */
 public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerSession {
 
@@ -48,8 +48,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
         // Get env variables and read in nessecary data
         crlperiod = (Long)lookup("java:comp/env/CRLPeriod", java.lang.Long.class);
         debug("crlperiod:" + crlperiod);
-        storeHome = (ICertificateStoreSessionHome)
-lookup("java:comp/env/ejb/CertificateStoreSession", ICertificateStoreSessionHome.class);
+        storeHome = (ICertificateStoreSessionHome)lookup("java:comp/env/ejb/CertificateStoreSession", ICertificateStoreSessionHome.class);
         certHome = (CertificateDataHome)lookup("java:comp/env/ejb/CertificateData", CertificateDataHome.class);
         signHome = (ISignSessionHome) lookup("java:comp/env/ejb/SignSession", ISignSessionHome.class);
         debug("<ejbCreate()");
@@ -67,18 +66,17 @@ lookup("java:comp/env/ejb/CertificateStoreSession", ICertificateStoreSessionHome
         try {
             ICertificateStoreSession store = storeHome.create();
             // Find all revoked certificates
-            String[] revcerts = store.listRevokedCertificates();
-            debug("Found "+revcerts.length+" revoked certificates.");
+            Collection revcerts = store.listRevokedCertificates();
+            debug("Found "+revcerts.size()+" revoked certificates.");
 
             // Go through them and create a CRL, at the same time archive expired certificates
             Date now = new Date();
             // crlperiod is hours = crlperiod*60*60*1000 milliseconds
             now.setTime(now.getTime() - (crlperiod.longValue() * 60 * 60 * 1000));
             Vector certs = new Vector();
-            for (int i=0; i < revcerts.length; i++)
-            {
-                CertificateDataPK pk = new CertificateDataPK();
-                pk.fingerprint = revcerts[i];
+            Iterator iter = revcerts.iterator();
+            while (iter.hasNext()) {
+                CertificateDataPK pk = new CertificateDataPK((String)iter.next());
                 CertificateData data = certHome.findByPrimaryKey(pk);
                 // We want to include certificates that was revoked after the last CRL was issued, but before this one
                 // so the revoked certs are included in ONE CRL at least.
@@ -90,8 +88,7 @@ lookup("java:comp/env/ejb/CertificateStoreSession", ICertificateStoreSessionHome
                 {
                     if (data.getRevocationDate() == -1)
                         data.setRevocationDate((new Date()).getTime());
-                    RevokedCertInfo certinfo = new RevokedCertInfo(data.getSerialNumber(),
-new Date(data.getRevocationDate()), data.getRevocationReason());
+                    RevokedCertInfo certinfo = new RevokedCertInfo(new BigInteger(data.getSerialNumber()),new Date(data.getRevocationDate()), data.getRevocationReason());
                     certs.add(certinfo);
                 }
             }
