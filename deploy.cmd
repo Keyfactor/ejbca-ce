@@ -1,6 +1,6 @@
 @echo off
 rem ----
-rem $Id: deploy.cmd,v 1.7 2002-04-01 12:10:15 anatom Exp $
+rem $Id: deploy.cmd,v 1.8 2002-04-01 12:58:26 anatom Exp $
 rem
 rem Deploy script for EJBCA
 rem
@@ -9,14 +9,14 @@ rem that the dependant files are properly installed.
 rem
 rem ----
 
-KEYSTORE=src\ca\keyStore\server.p12
+set KEYSTORE=src\ca\keyStore\server.p12
 
 rem Check for proper settings of environment variables
 if "%JBOSS_HOME%" == ""  goto error
 
-# Install keystore is 'keystore' is given as argument to deploy
-if "%1" == "" goto install
-if "%1" != "keystore" goto install
+rem Install keystore is 'keystore' is given as argument to deploy
+if "%1%" == "" goto install
+if not "%1%" == "keystore" goto install
 if exist %JBOSS_HOME%\conf\server.p12 goto ksexist
 xcopy %KEYSTORE% %JBOSS_HOME%\conf /Q /Y
 echo Copied %KEYSTORE% to %JBOSS_HOME%\conf.
