@@ -1,21 +1,20 @@
-
 ALTER TABLE accessrulesdata
-    ADD rule integer NOT NULL DEFAULT '0' AFTER accessRule,
-    ADD isRecursive bit NOT NULL DEFAULT '0' AFTER rule,
-    DROP resource,
-    MODIFY accessRule varchar(250) NULL DEFAULT NULL,
-    MODIFY `AdminGroupData_accessRules` integer NULL DEFAULT NULL;
+    ADD column rule integer DEFAULT '0' NOT NULL AFTER accessRule,
+    ADD column isRecursive bit DEFAULT '0' NOT NULL AFTER rule,
+    DROP column resource,
+    MODIFY column accessRule varchar(256) DEFAULT NULL,
+    MODIFY column `AdminGroupData_accessRules` integer DEFAULT NULL;
 #
 #  Fieldformats of
-#    accessrulesdata.accessRule changed from verbinary NULL DEFAULT NULL to varchar(256) NULL DEFAULT NULL.
+#    accessrulesdata.accessRule changed from varbinary NULL DEFAULT NULL to varchar(256) NULL DEFAULT NULL.
 #    accessrulesdata.AdminGroupData_accessRules changed from varchar(256) NULL DEFAULT NULL to integer NULL DEFAULT NULL.
 #  Possibly data modifications needed!
 #
 
 ALTER TABLE adminentitydata
-    MODIFY matchWith integer NOT NULL DEFAULT '0',
-    MODIFY matchType integer NOT NULL DEFAULT '0',
-    MODIFY `AdminGroupData_adminEntities` integer NULL DEFAULT NULL;
+    MODIFY column matchWith integer DEFAULT '0' NOT NULL,
+    MODIFY column matchType integer DEFAULT '0' NOT NULL,
+    MODIFY column `AdminGroupData_adminEntities` integer NULL DEFAULT NULL;
 #
 #  Fieldformats of
 #    adminentitydata.matchWith changed from integer NULL DEFAULT NULL to integer NOT NULL DEFAULT '0'.
@@ -25,11 +24,11 @@ ALTER TABLE adminentitydata
 #
 
 ALTER TABLE admingroupdata
-    ADD pK integer NOT NULL DEFAULT '0' FIRST,
-    ADD cAId integer NOT NULL DEFAULT '0' AFTER adminGroupName,
-    MODIFY adminGroupName varchar(256) NULL DEFAULT NULL,
-    DROP PRIMARY KEY,
-    ADD PRIMARY KEY (pK);
+    ADD column pK integer DEFAULT '0' NOT NULL FIRST,
+    ADD column cAId integer DEFAULT '0' NOT NULL AFTER adminGroupName,
+    MODIFY column adminGroupName varchar(256) DEFAULT NULL,
+    DROP column PRIMARY KEY,
+    ADD column PRIMARY KEY (pK);
 #
 #  Fieldformat of
 #    admingroupdata.adminGroupName changed from varchar(256) NOT NULL DEFAULT '' to varchar(256) NULL DEFAULT NULL.
@@ -39,20 +38,20 @@ ALTER TABLE admingroupdata
 DROP TABLE availableaccessrulesdata;
 
 ALTER TABLE hardtokendata
-    ADD significantIssuerDN varchar(256) NULL DEFAULT NULL AFTER tokenType;
+    ADD column significantIssuerDN varchar(256) DEFAULT NULL AFTER tokenType;
 
 ALTER TABLE hardtokenissuerdata
-    ADD adminGroupId integer NOT NULL DEFAULT '0' AFTER alias,
-    DROP certificateSN,
-    DROP certIssuerDN;
+    ADD column adminGroupId integer DEFAULT '0' NOT NULL AFTER alias,
+    DROP column certificateSN,
+    DROP column certIssuerDN;
 
 ALTER TABLE keyrecoverydata
-    ADD keyData varbinary NULL DEFAULT NULL AFTER markedAsRecoverable,
-    DROP pK,
-    MODIFY certSN varchar(256) NOT NULL DEFAULT '',
-    MODIFY issuerDN varchar(256) NOT NULL DEFAULT '',
-    DROP keyPair,
-    DROP PRIMARY KEY,
+    ADD column keyData varbinary DEFAULT NULL AFTER markedAsRecoverable,
+    DROP column pK,
+    MODIFY column certSN varchar(256) DEFAULT '' NOT NULL,
+    MODIFY column issuerDN varchar(256) DEFAULT '' NOT NULL,
+    DROP column keyPair,
+    DROP column PRIMARY KEY,
     ADD PRIMARY KEY (certSN, issuerDN);
 
 #
@@ -63,10 +62,9 @@ ALTER TABLE keyrecoverydata
 #
 
 ALTER TABLE logentrydata
-    ADD caId integer NOT NULL DEFAULT '0' AFTER adminData;
+    ADD column caId integer NOT NULL DEFAULT '0' AFTER adminData;
 
 ALTER TABLE userdata
-    ADD cAId ineteger NOT NULL DEFAULT '0' AFTER subjectDN,
-    ADD extendedInformationData varbinary NULL DEFAULT NULL AFTER keyStorePassword;
-
+    ADD column cAId ineteger DEFAULT '0' NOT NULL AFTER subjectDN,
+    ADD column extendedInformationData varbinary DEFAULT NULL AFTER keyStorePassword;
 
