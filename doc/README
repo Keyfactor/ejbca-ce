@@ -1,11 +1,10 @@
 
 EJBCA
 =====
-The goal with EJBCA is to create a fully functional CA built in Java. EJBCA
- builds on the J2EE platform to
-create a robust, high performance, transactional, platform independent,
- flexible, modular and component based
-CA to be used either standalone or integrated into any J2EE application.
+EJBCA is a fully functional Certificate Authority built in Java. 
+Based on J2EE technology it constitutes a robust, high performance and component 
+based CA. Both flexible and platform independent, EJBCA can be used standalone 
+or integrated in any J2EE application.
 
 EJBCA Homepage can be found at http://ejbca.sourceforge.net/
 Information about contacting the EJBCA team, contributing to EJBCA, etc can
@@ -15,6 +14,9 @@ All documentation can also be found on the homepage.
 
 There is also an IRC channel for support at irc.openprojects.net, channel
 #ejbca.
+
+We encourage and appreciate all contributions. The file 'doc/contributors' 
+contain a list of all people who have donated their valuable time to EJBCA.
 
 FEATURES
 ========
@@ -34,7 +36,7 @@ Follows X509 and PKIX (RFC2459) standards where applicable.
 Configurable certificate contents.
 Revocation and Certificate Revocation Lists (CRLs).
 CRL creation using scheduled jobs.
-URL-based CRLDistribution Points according to (RFC2459).
+URL-based CRLDistribution Points according to RFC2459.
 Stores Certificates and CRLs in any SQL database (handled by application
  server).
 Component based architecture for publishing certificates and CRLs to different
