@@ -30,7 +30,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.64 2004-06-01 19:38:26 anatom Exp $
+ * @version $Id: CertTools.java,v 1.65 2004-09-16 19:03:54 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -682,14 +682,49 @@ public class CertTools {
                     byte[] altName = (byte[]) listitem.get(1);
                     DERObject oct = (DERObject) (new DERInputStream(new ByteArrayInputStream(altName)).readObject());
                     ASN1Sequence seq = ASN1Sequence.getInstance(oct);
-                    ASN1TaggedObject obj = (ASN1TaggedObject) seq.getObjectAt(1);
-                    DERUTF8String str = DERUTF8String.getInstance(obj.getObject());
-                    return str.getString();
+                    // First in sequence is the object identifier, that we must check
+                    DERObjectIdentifier id = DERObjectIdentifier.getInstance(seq.getObjectAt(0));
+                    if (id.getId().equals(CertTools.UPN_OBJECTID)) {
+                        ASN1TaggedObject obj = (ASN1TaggedObject) seq.getObjectAt(1);
+                        DERUTF8String str = DERUTF8String.getInstance(obj.getObject());
+                        return str.getString();                        
+                    }
                 }
             }
         }
         return null;
     } // getUPNAltName
+
+    /**
+     * Gets the Microsoft specific GUID altName, that is encoded as an octect string.
+     *
+     * @param cert certificate containing the extension
+     * @return String with the hex-encoded GUID byte array
+     */
+    public static String getGuidAltName(X509Certificate cert)
+        throws IOException, CertificateParsingException {
+        Collection altNames = cert.getSubjectAlternativeNames();
+        if (altNames != null) {
+            Iterator i = altNames.iterator();
+            while (i.hasNext()) {
+                List listitem = (List) i.next();
+                Integer no = (Integer) listitem.get(0);
+                if (no.intValue() == 0) {
+                    byte[] altName = (byte[]) listitem.get(1);
+                    DERObject oct = (DERObject) (new DERInputStream(new ByteArrayInputStream(altName)).readObject());
+                    ASN1Sequence seq = ASN1Sequence.getInstance(oct);
+                    // First in sequence is the object identifier, that we must check
+                    DERObjectIdentifier id = DERObjectIdentifier.getInstance(seq.getObjectAt(0));
+                    if (id.getId().equals(CertTools.GUID_OBJECTID)) {
+                        ASN1TaggedObject obj = (ASN1TaggedObject) seq.getObjectAt(1);
+                        ASN1OctetString str = ASN1OctetString.getInstance(obj.getObject());
+                        return Hex.encode(str.getOctets());                        
+                    }
+                }
+            }
+        }
+        return null;
+    } // getGuidAltName
 
     /**
      * Return the CRL distribution point URL form a certificate.

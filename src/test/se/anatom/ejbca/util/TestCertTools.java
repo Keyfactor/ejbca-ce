@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.1 2004-06-10 16:17:44 sbailliez Exp $
+ * @version $Id: TestCertTools.java,v 1.2 2004-09-16 19:02:53 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -43,6 +43,24 @@ public class TestCertTools extends TestCase {
             + "emox1mlQ5rgO9sSel6jHkwceaq4A55+qXAjQVsuy76UJnc8ncYX8f98uSYKcjxo/"
             + "ifn1eHMbL8dGLd5bc2GNBZkmhFIEoDvbfn9jo7phlS8iyvF2YhC4eso8Xb+T7+BZ"
             + "QUOBOvc=").getBytes());
+
+    static byte[] guidcert = Base64.decode(
+            ("MIIC+zCCAmSgAwIBAgIIBW0F4eGmH0YwDQYJKoZIhvcNAQEFBQAwMTERMA8GA1UE"
+            +"AxMIQWRtaW5DQTExDzANBgNVBAoTBkFuYVRvbTELMAkGA1UEBhMCU0UwHhcNMDQw"
+            +"OTE2MTc1NzQ1WhcNMDYwOTE2MTgwNzQ1WjAyMRQwEgYKCZImiZPyLGQBARMEZ3Vp"
+            +"ZDENMAsGA1UEAxMER3VpZDELMAkGA1UEBhMCU0UwgZ8wDQYJKoZIhvcNAQEBBQAD"
+            +"gY0AMIGJAoGBANdjsBcLJKUN4hzJU1p3cqaXhPgEjGul62/3xv+Gow+7oOYePcK8"
+            +"bM5VO4zdQVWEhuGOZFaZ70YbXhei4F9kvqlN7xuG47g7DNZ0/fnRzvGY0BHmIR4Y"
+            +"/U87oMEDa2Giy0WTjsmT14uzy4luFgqb2ZA3USGcyJ9hoT6j1WDyOxitAgMBAAGj"
+            +"ggEZMIIBFTAMBgNVHRMBAf8EAjAAMA4GA1UdDwEB/wQEAwIFoDA7BgNVHSUENDAy"
+            +"BggrBgEFBQcDAQYIKwYBBQUHAwIGCCsGAQUFBwMEBggrBgEFBQcDBQYIKwYBBQUH"
+            +"AwcwHQYDVR0OBBYEFJlDddj88zI7tz3SPfdig0gw5IWvMB8GA1UdIwQYMBaAFI1k"
+            +"9WhE1WXpeezZx/kM0qsoZyqVMHgGA1UdEQRxMG+BDGd1aWRAZm9vLmNvbYIMZ3Vp"
+            +"ZC5mb28uY29thhRodHRwOi8vZ3VpZC5mb28uY29tL4cECgwNDqAcBgorBgEEAYI3"
+            +"FAIDoA4MDGd1aWRAZm9vLmNvbaAXBgkrBgEEAYI3GQGgCgQIEjRWeJCrze8wDQYJ"
+            +"KoZIhvcNAQEFBQADgYEAq39n6CZJgJnW0CH+QkcuU5F4RQveNPGiJzIJxUeOQ1yQ"
+            +"gSkt3hvNwG4kLBmmwe9YLdS83dgNImMWL/DgID/47aENlBNai14CvtMceokik4IN"
+            +"sacc7x/Vp3xezHLuBMcf3E3VSo4FwqcUYFmu7Obke3ebmB08nC6gnQHkzjNsmQw=").getBytes());
 
     /**
      * Creates a new TestCertTools object.
@@ -243,10 +261,11 @@ public class TestCertTools extends TestCase {
         String alt3 = "EmailAddress=ejbca@primekey.se, dNSName=www.primekey.se, uniformResourceIdentifier=http://www.primekey.se/ejbca";
         assertEquals(CertTools.getPartFromDN(alt3, CertTools.EMAIL2), "ejbca@primekey.se");
 
-        X509Certificate cert = CertTools.getCertfromByteArray(testcert);
+        X509Certificate cert = CertTools.getCertfromByteArray(guidcert);
         String upn = CertTools.getUPNAltName(cert);
-        log.debug("UPN=" + upn);
-        assertEquals(upn, "foo@foo");
+        assertEquals(upn, "guid@foo.com");
+        String guid = CertTools.getGuidAltName(cert);
+        assertEquals(guid, "1234567890abcdef");
         log.debug("<test03AltNames()");
     }
 
@@ -275,11 +294,11 @@ public class TestCertTools extends TestCase {
     public void test05IntlChars() throws Exception {
         log.debug(">test05IntlChars()");
         // We try to examine the general case and som special cases, which we want to be able to handle
-        String dn1 = "CN=Tomas���, O=���-Org, OU=��-Unit, C=SE";
+        String dn1 = "CN=Tomas?????????, O=?????????-Org, OU=??????-Unit, C=SE";
         String bcdn1 = CertTools.stringToBCDNString(dn1);
         log.debug("dn1: " + dn1);
         log.debug("bcdn1: " + bcdn1);
-        assertEquals("CN=Tomas���,OU=��-Unit,O=���-Org,C=SE", bcdn1);
+        assertEquals("CN=Tomas?????????,OU=??????-Unit,O=?????????-Org,C=SE", bcdn1);
         log.debug("<test05IntlChars()");
     }
 
@@ -290,11 +309,13 @@ public class TestCertTools extends TestCase {
     public void test06CertOps() throws Exception {
         log.debug(">test06CertOps()");
         X509Certificate cert = CertTools.getCertfromByteArray(testcert);
+        X509Certificate gcert = CertTools.getCertfromByteArray(guidcert);
         assertEquals("Wrong issuerDN", CertTools.getIssuerDN(cert), CertTools.stringToBCDNString("CN=TestCA,O=AnaTom,C=SE"));
         assertEquals("Wrong subjectDN", CertTools.getSubjectDN(cert), CertTools.stringToBCDNString("CN=p12test,O=PrimeTest,C=SE"));
         assertEquals("Wrong subject key id", new String(Hex.encode(CertTools.getSubjectKeyId(cert))), "E74F5690F48D147783847CD26448E8094ABB08A0".toLowerCase());
         assertEquals("Wrong authority key id", new String(Hex.encode(CertTools.getAuthorityKeyId(cert))), "637BF476A854248EA574A57744A6F45E0F579251".toLowerCase());
         assertEquals("Wrong upn alt name", "foo@foo", CertTools.getUPNAltName(cert));
+        assertEquals("Wrong guid alt name", "1234567890abcdef", CertTools.getGuidAltName(gcert));
         assertEquals("Wrong certificate policy", "1.1.1.1.1.1", CertTools.getCertificatePolicyId(cert, 0));
         assertNull("Not null policy", CertTools.getCertificatePolicyId(cert, 1));
 //        System.out.println(cert);
