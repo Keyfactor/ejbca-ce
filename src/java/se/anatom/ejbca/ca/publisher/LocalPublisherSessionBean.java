@@ -250,7 +250,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
                     returnval &= pdl.getPublisher().storeCRL(admin, incrl, cafp, number);
                     getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null,
                             null, LogEntry.EVENT_INFO_STORECRL,
-                            "Publisher CLR successfully to publisher " + pdl.getName() + ".");
+                            "Published CRL successfully to publisher " + pdl.getName() + ".");
                 } catch (PublisherException pe) {
                     getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null,
                             LogEntry.EVENT_ERROR_STORECRL, "Error when publishing CRL to " + pdl.getName() + " : " + pe.getMessage());
