@@ -54,15 +54,17 @@ export CP=.:./admin.jar
 if [ -f $JBOSS_HOME/server/default/deploy/tomcat4-service.xml ]
 then
 	SERVER_XML=tomcat4-service.xml
-else if [ -f $JBOSS_HOME/server/default/deploy/tomcat41-service.xml ]
+elif [ -f $JBOSS_HOME/server/default/deploy/tomcat41-service.xml ]
 then
 	SERVER_XML=tomcat41-service.xml
-else if [ -f $JBOSS_HOME/server/default/deploy/jbossweb.sar/META-INF/jboss-service.xml ]
+elif [ -f $JBOSS_HOME/server/default/deploy/jbossweb.sar/META-INF/jboss-service.xml ]
 then
 	SERVER_XML=jetty.xml
-else if [ -f $JBOSS_HOME/server/default/deploy/jbossweb-jetty.sar/META-INF/jboss-service.xml ]
+elif [ -f $JBOSS_HOME/server/default/deploy/jbossweb-jetty.sar/META-INF/jboss-service.xml ]
 then
 	SERVER_XML=jetty32.xml
+else
+	SERVER_XML=not_supported
 fi
 
 java -cp $CP se.anatom.ejbca.util.TomcatServiceXMLPasswordReplace src/adminweb/WEB-INF/$SERVER_XML tmp/$SERVER_XML $2
@@ -70,11 +72,14 @@ java -cp $CP se.anatom.ejbca.util.TomcatServiceXMLPasswordReplace src/adminweb/W
 if [ -f $JBOSS_HOME/server/default/deploy/jbossweb.sar/META-INF/jboss-service.xml ]
 then
 	cp tmp/$SERVER_XML $JBOSS_HOME/server/default/deploy/jbossweb.sar/META-INF/jboss-service.xml
-else if [ -f $JBOSS_HOME/server/default/deploy/jbossweb-jetty.sar/META-INF/jboss-service.xml ]
+elif [ -f $JBOSS_HOME/server/default/deploy/jbossweb-jetty.sar/META-INF/jboss-service.xml ]
 then
 	cp tmp/$SERVER_XML $JBOSS_HOME/server/default/deploy/jbossweb-jetty.sar/META-INF/jboss-service.xml
 else
 	cp tmp/$SERVER_XML $JBOSS_HOME/server/default/deploy/$SERVER_XML
 fi
 
-rm tmp/$SERVER_XML
+if [ -f tmp/$SERVER_XML ]
+then 
+	rm tmp/$SERVER_XML
+fi
