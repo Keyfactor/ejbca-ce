@@ -1,4 +1,4 @@
-$Id: TODO,v 1.63 2003-07-23 10:53:51 anatom Exp $
+$Id: TODO,v 1.64 2003-07-23 13:42:09 anatom Exp $
 
 V 1.x
 -----
@@ -17,7 +17,8 @@ V 2.x
 - Better command line tools for batch stuff.
 - Export/import utilities to export/import configuration data and profiles to XML-files.
 - OCSP
-- AuthorityInfoAcess extension required by OCSP
+- AuthorityInfoAcess extension required by OCSP (id-ad-ocsp for the accessMethod), 
+and ocspSigning extendedKeyUsage + id-pkix-ocsp-check extensions.
 - Encrypt key recoverable keys stored in database.
 - Add smart card support (PKCS15) in CA for protection of private key.
 - Add support for deeper hierarchies than 2 levels of CAs (today only root and
