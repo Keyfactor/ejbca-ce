@@ -73,6 +73,8 @@ ALTER TABLE keyrecoverydata
 ALTER TABLE logentrydata
     ADD column caId integer NOT NULL DEFAULT '0' AFTER adminData;
 
+# Update testusers so they are visible in the Web-GUI
+UPDATE userdata set endentityprofileid=1 where endentityprofileid=0;
 ALTER TABLE userdata
     ADD column cAId ineteger DEFAULT '0' NOT NULL AFTER subjectDN,
     ADD column extendedInformationData varbinary DEFAULT NULL AFTER keyStorePassword;

@@ -270,6 +270,8 @@ public class ProtocolHttpTest extends TestCase {
             assertNotNull("Failed to create user foo", createdata);
             createdata.setType(SecConst.USER_ENDUSER);
             createdata.setSubjectEmail("ocsptest@anatom.se");
+            createdata.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
+            createdata.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {

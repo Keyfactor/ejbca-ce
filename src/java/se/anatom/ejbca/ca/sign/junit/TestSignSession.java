@@ -52,7 +52,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.32 2004-04-16 07:39:02 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.33 2004-05-13 09:11:07 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -217,6 +217,8 @@ public class TestSignSession extends TestCase {
             assertNotNull("Failed to create user foo", createdata);
             createdata.setType(SecConst.USER_ENDUSER);
             createdata.setSubjectEmail("foo@anatom.se");
+            createdata.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
+            createdata.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
@@ -452,6 +454,8 @@ public class TestSignSession extends TestCase {
             assertNotNull("Failed to create user foo", createdata);
             createdata.setType(SecConst.USER_ENDUSER);
             createdata.setSubjectEmail("swede@anatom.se");
+            createdata.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
+            createdata.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
             log.debug("created user: swede, foo123, C=SE, O=ÅÄÖ, CN=åäö");
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {

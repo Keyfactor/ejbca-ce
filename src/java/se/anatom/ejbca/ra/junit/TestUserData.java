@@ -36,7 +36,7 @@ import se.anatom.ejbca.ra.UserDataRemote;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.19 2004-04-16 07:39:02 anatom Exp $
+ * @version $Id: TestUserData.java,v 1.20 2004-05-13 09:11:07 anatom Exp $
  */
 public class TestUserData extends TestCase {
 
@@ -130,6 +130,8 @@ public class TestUserData extends TestCase {
         pwd = genRandomPwd();
         data1 = home.create(username, pwd, "C=SE, O=AnaTom, CN="+username, caid);
         assertNotNull("Error creating", data1);
+        data1.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
+        data1.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
         log.debug("created it!");
         log.debug("<test01CreateNewUser()");
     }
@@ -241,6 +243,8 @@ public class TestUserData extends TestCase {
         pwd1 = genRandomPwd();
         data4 = home.create(username1, pwd1, "C=SE, O=AnaTom, CN="+username, caid);
         assertNotNull("Error creating", data4);
+        data4.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
+        data4.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
         log.debug("created it again!");
         log.debug("<test04CreateNewUser()");
     }
