@@ -2,15 +2,15 @@
 EJBCA
 =====
 The goal with EJBCA is to create a fully functional CA built in Java. EJBCA
- builds on the J2EE platform to 
+ builds on the J2EE platform to
 create a robust, high performance, transactional, platform independent,
- flexible, modular and component based 
+ flexible, modular and component based
 CA to be used either standalone or integrated into any J2EE application.
 
 EJBCA Homepage can be found at http://ejbca.sourceforge.net/
 Information about contacting the EJBCA team, contributing to EJBCA, etc can
 be found throught the Homepage.
- 
+
 FEATURES
 ========
 Built on the EJB 1.1 specification.
@@ -35,7 +35,7 @@ Component based architecture for authorizing entities when issuing certificates.
 SECURITY
 ========
 Security is discussed below in the chapter about configuration and in
- *security.txt*. 
+ *security.txt*.
 Please take a minute to thorougly consider the security implications and make
  sure you know what you are doing when you are setting up a CA.
 
@@ -48,7 +48,7 @@ The minimal requirements to download and install are JBoss and Ant.
 Bouncycastle
 ------------
 EJBCA uses the OpenSource JCE crypto provider from Bouncy Castle
- (http://www.bouncycastle.org). 
+ (http://www.bouncycastle.org).
 The provider is distributed with EJBCA as 'jce-jdk13-<version>.jar. The latest
  version of the JCE provider can always be obtained from Bouncy Castle.
 jce-jdk13-<version>.jar is Copyright (c) 2000 The Legion Of The Bouncy Castle
@@ -75,14 +75,16 @@ this release is 1.1.3. See doc/LICENSE-APACHE for license conditions of Log4j.
 
 JUnit
 -----
-JUnit can be obtained from http://www.junit.org. Jar file needed to run JUnit tests is
+JUnit can be obtained from http://www.junit.org. Jar file needed to run JUnit
+tests is
 distributed with EJBCA. The version used in this release is 3.7. JUnit is
 released under the IBM Public License
  (http://oss.software.ibm.com/developerworks/opensource/license10.html).
 
 OpenLDAP
 --------
-OpenLDAP can be obtained from http://www.openldap.org. Jar fil needed for EJBCA is
+OpenLDAP can be obtained from http://www.openldap.org. Jar fil needed for EJBCA
+is
 redistributed with EJBCA. See doc/LICENSE-JLDAP for license conditions of
 OpenLDAP.
 
@@ -109,8 +111,9 @@ Set the environment variable JBOSS_HOME to the directory where JBoss's root is
  (/jboss). This is done so the deploy script will know where files are to be
  copied, they are copied to the $JBOSS_HOME/deploy directory.
 
-Copy the Bouncycastle JCE provider 'lib/jce-jdk13-<version>.jar' and the LDAP 
-library 'lib/ldap.jar' to the directory $JBOSS_HOME/lib/ext, it will be added to JBoss's classpath 
+Copy the Bouncycastle JCE provider 'lib/jce-jdk13-<version>.jar' and the LDAP
+library 'lib/ldap.jar' to the directory $JBOSS_HOME/lib/ext, it will be added to
+JBoss's classpath
 automatically when JBoss is started.
 
 You can also build javadoc on all APIs used with 'ant javadoc'.
@@ -139,7 +142,7 @@ be wise to change the location of the keystore in 'src/ca/META-INF/ejb-jar.xml'.
 FOR THE OTHERS:
 
 If another database than the default Hypersonic database (for example mySQL)
- should be used, configure the database to be used in JBoss. 
+ should be used, configure the database to be used in JBoss.
 See doc/HOWTO-<database>.txt files for this.
 
 Setting up your own CA:
@@ -174,10 +177,10 @@ EJBCA can process certification requests as well by running 'ca.sh/bat
  processreq' to produce a certification response for subordinate CAs
 
 Initializing CA:
-PKIX requires that a CRL always is available even if it is empty. Therefore the 
-CA must be initialized by running 'ca.sh/cmd init' after the CA keystore has 
+PKIX requires that a CRL always is available even if it is empty. Therefore the
+CA must be initialized by running 'ca.sh/cmd init' after the CA keystore has
 been created and the CA deployed.
-When running 'ca.sh/cmd init' the CA certificate(s) are stored, and published 
+When running 'ca.sh/cmd init' the CA certificate(s) are stored, and published
 if any Publishers are configured, and a CRL is created and stored/published.
 
 OBS! Don't forget to configure JBoss for security! See 'security.txt'.
@@ -212,8 +215,8 @@ where '/usr/java/jdk1.3.1_01/bin' is the path to where 'java' can be found.
 
 Deploy
 ======
-After configuration, if you have edited the xml configuration files manually, 
-please run "ant" to rebuild jars and wars. If you are using a deployment tool, 
+After configuration, if you have edited the xml configuration files manually,
+please run "ant" to rebuild jars and wars. If you are using a deployment tool,
 this may not be needed, consult your documentation for the tool.
 
 Run deploy.sh/cmd to install the EJBs and WARs (they are copied to the
@@ -222,14 +225,17 @@ Run deploy.sh/cmd to install the EJBs and WARs (they are copied to the
 Run
 ===
 
-Start JBoss with 'run_whith_tomcat.sh/bat' (or run_with_jetty.sh/bat). JBoss 
+Start JBoss with 'run_whith_tomcat.sh/bat' (or run_with_jetty.sh/bat). JBoss
 should start up and deploy our beans and servlets without error messages.
 
 Run the testprograms with 'runtests.sh/cmd' and watch the lovely debug output
  and logs in JBoss.
 
+Create User certificates
+------------------------
 To enroll for certificates using browsers, open
- http://127.0.0.1:8080/apply/request/index.html (assuming Tomcat/Jetty listens to port
+ http://127.0.0.1:8080/apply/request/index.html (assuming Tomcat/Jetty listens
+ to port
  8080) and use the links for your browser.
 
 To enroll for certificates using manual methods (for server certificates for
@@ -239,16 +245,47 @@ http://127.0.0.1:8080/apply/request/apply_man.html and fill in the form.
 Use the 'ca.sh/cmd' and 'ra.sh/cmd' scripts to administer EJBCA.
 
 Note that application for certificates only work when the status of a user is
-NEW (or FAILED or INPROCESS) (one time password thing). The status is set to 
-GENERATED after a certificate has been issued. To issue a new certificate, the 
-status must be reset to NEW, which can be done through administration with the 
-RA, 'ra.sh/cmd setuserstatus <username> <status>'. For a list of all available 
+NEW (or FAILED or INPROCESS) (one time password thing). The status is set to
+GENERATED after a certificate has been issued. To issue a new certificate, the
+status must be reset to NEW, which can be done through administration with the
+RA, 'ra.sh/cmd setuserstatus <username> <status>'. For a list of all available
 statuscodes run 'ra.sh/cmd setuserstatus'.
-During batch generation of certificates, users with status NEW or FAILED are 
-generated. This is due to the if a batch generation for some reason failed, 
+During batch generation of certificates, users with status NEW or FAILED are
+generated. This is due to the if a batch generation for some reason failed,
 status is set to FAILED and you can try again after fixing the error.
 
+Create server certificates
+--------------------------
+The best way to create server certificates is to generate a PKCS12 file for the
+server.
+To do this:
 
+1. Create user with 'ra.sh/cmd'. DN for a server should have the domain name in
+CommonName (CN). Example DN for webserver: "C=SE,O=AnaTom,CN=www.anatom.se", or
+for mailserver "C=SE,O=AnaTom,OU=Engineering,CN=mail.anatom.se".
+
+2. To be able to batch-generate certificates, the batch generation program must
+have access to the users (servers) password in order to request a certificate on
+behalf of the user. Normally the password is stored in hashed form, so the
+password must be stored in clear text form by:
+ra.sh/cmd setclearpwd <username> <password>
+
+3. Generate private keys and certificates in PKCS12 files by:
+batch.sh/cmd
+
+4. Many servers (ex Apache) wants keys and certificates in PEM-format, not
+PKCS12. Usign openssl a PKCS12 file can easily be trasnformed to PEM-format.
+
+openssl pkcs12 -in <pkcs12-file> -nodes
+
+copy and paste private key to key-file, first certificate to server cert-file
+and last certificate to CA cert-file (If your CA is a subordinate CA to another
+Root CA, the CA cert-file may need to contain the whoel cert chain). Exactly how
+your server wants the files is server-dependent.
+
+
+Create CRLs
+-----------
 To create a crl a JobRunnerSession bean is running with JNDI name
  'CreateCRLSession'. To run the session and create a CRL,
 run 'jobrunner.sh/cmd CreateCRLSession'. This job should be run with regular
@@ -299,7 +336,7 @@ Options in CertificateStoreSession:
 Administrating CA
 -----------------
 The CA has a command line interface ca.sh/cmd. Options are:
-makeroot - creates a new Root CA keystore (only used by Root CA). 
+makeroot - creates a new Root CA keystore (only used by Root CA).
 Quote the DN  so it is treated as one argument.
 getrootcert - exports the Root CA certificate to file.
 makereq - generates a certification request to create a keystore for a
@@ -310,7 +347,8 @@ processreq - processes a certification request for
 a subordinate CA and creates  a certification reply.
 createcrl - issues a CRL.
 getcrl - retrieves the latest CRL.
-rolloverrootcert - creates a new Root CA certificate using the same key pair (only used by Root CA).
+rolloverrootcert - creates a new Root CA certificate using the same key pair
+(only used by Root CA).
 
 Configuring RA
 --------------
@@ -322,7 +360,7 @@ Administrating RA
 The RA has a command line interface ra.sh/cmd. Options are:
 adduser - adds a user to the database, after addition a user may apply for a
 certificate. If email address is set to 'null', no email is put in certificates.
-Quote the DN  so it is treated as one argument. 
+Quote the DN  so it is treated as one argument.
 deluser - removes a user from the database, any issued certificates
 remain  active and present in the database.
 setclearpwd - set a clear text
@@ -331,7 +369,8 @@ setuserstatus - sets status of a user, users can only apply for certificates
 when their status is NEW. finduser - find a user in the database and lists
 details.
 listnewusers - lists all users with status NEW.
-listusers - lists users with specified status (give command to see list of status codes).
+listusers - lists users with specified status (give command to see list of
+status codes).
 revokeuser - revokes a user and all certificates issued to the user.
 
 Configuring databases
@@ -377,7 +416,7 @@ Other deployment scenarios
 EJBCA can be run with servlets and EJBs or only with EJBs. The servlets are only
  a publicly available front-end to the beans. If the CA is deployed integrated
  in another J2EE application, this front-end may not be needed.
-The sampleauth servlet (sampleauth.war) is only an example and should never be 
+The sampleauth servlet (sampleauth.war) is only an example and should never be
 deployed in a real production environment.
 
 SAMPLES
@@ -399,7 +438,8 @@ The sample remote authentication is deployes by deploying the file
 -HttpGetCert.java
 Example how a certificate can be fetched programmatically using HTTP/S. The
  sample generates a certificate request and uses POST to the same servlet
-as used from a browser through http://127.0.0.1:8080/apply/request/apply_man.jsp. 
+as used from a browser through
+http://127.0.0.1:8080/apply/request/apply_man.jsp.
 The servlet url use din the example is http://127.0.0.1:8080/apply/certreq.
 The certificate reply containing a PEM-formatted certificate is printed to the
  screen.
@@ -423,3 +463,5 @@ For IE to verify client certs, the ordering in the DN must be strictly the same
 
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
+
+
