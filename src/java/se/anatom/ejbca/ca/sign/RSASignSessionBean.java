@@ -79,7 +79,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.74 2003-02-28 00:41:12 koen_serry Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.75 2003-03-01 14:28:46 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -314,7 +314,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             throw new EJBException(e);
         }
         debug("<createCertificate(pk, ku)");
-    log.error("Invalid user type for user "+username);
+        log.error("Invalid user type for user "+username);
         throw new EJBException("Invalid user type for user "+username);
     } // createCertificate
 
