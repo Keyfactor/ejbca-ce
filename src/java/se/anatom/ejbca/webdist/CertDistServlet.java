@@ -38,6 +38,7 @@ import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Base64;
+import se.anatom.ejbca.util.ServiceLocator;
 import se.anatom.ejbca.log.Admin;
 
 /**
@@ -58,7 +59,7 @@ import se.anatom.ejbca.log.Admin;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.27 2004-05-23 13:00:12 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.28 2004-11-20 23:33:27 sbailliez Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -99,10 +100,10 @@ public class CertDistServlet extends HttpServlet {
         try {
 
             // Get EJB context and home interfaces
-            InitialContext ctx = new InitialContext();
-            storehome = (ICertificateStoreSessionLocalHome)ctx.lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
-            signhome = (ISignSessionLocalHome)ctx.lookup("java:comp/env/ejb/SignSessionLocal");
-            cahome = (ICAAdminSessionLocalHome)ctx.lookup("java:comp/env/ejb/CAAdminSessionLocal");
+            ServiceLocator locator = ServiceLocator.getInstance();
+            storehome = (ICertificateStoreSessionLocalHome)locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+            signhome = (ISignSessionLocalHome)locator.getLocalHome(ISignSessionLocalHome.COMP_NAME);
+            cahome = (ICAAdminSessionLocalHome)locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
         } catch( Exception e ) {
             throw new ServletException(e);
         }
@@ -463,8 +464,8 @@ public class CertDistServlet extends HttpServlet {
      * Prints debug info back to browser client
      **/
     private class Debug {
-        final private ByteArrayOutputStream buffer;
-        final private PrintStream printer;
+        private final ByteArrayOutputStream buffer;
+        private final PrintStream printer;
         Debug( ){
             buffer=new ByteArrayOutputStream();
             printer=new PrintStream(buffer);

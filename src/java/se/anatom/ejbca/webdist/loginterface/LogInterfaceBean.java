@@ -34,6 +34,7 @@ import se.anatom.ejbca.log.LogConfiguration;
 import se.anatom.ejbca.log.LogConstants;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.util.StringTools;
+import se.anatom.ejbca.util.ServiceLocator;
 import se.anatom.ejbca.util.query.BasicMatch;
 import se.anatom.ejbca.util.query.LogMatch;
 import se.anatom.ejbca.util.query.Query;
@@ -45,7 +46,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.14 2004-08-06 07:00:11 anatom Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.15 2004-11-20 23:34:34 sbailliez Exp $
  */
 public class LogInterfaceBean {
 
@@ -67,13 +68,11 @@ public class LogInterfaceBean {
         admininformation = new AdminInformation(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);  
         admin           = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
         
-        InitialContext jndicontext = new InitialContext();
-        ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/LogSessionLocal"), 
-                                                                                 ILogSessionLocalHome.class);
+        final ServiceLocator locator = ServiceLocator.getInstance();
+        ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) locator.getLocalHome(ILogSessionLocalHome.COMP_NAME);
         logsession = logsessionhome.create(); 
         
-        ICertificateStoreSessionLocalHome certificatesessionhome = (ICertificateStoreSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/CertificateStoreSessionLocal")
-                                                                                                                                 , ICertificateStoreSessionLocalHome.class);
+        ICertificateStoreSessionLocalHome certificatesessionhome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
         certificatesession = certificatesessionhome.create();
         
         this.informationmemory = ejbcawebbean.getInformationMemory();

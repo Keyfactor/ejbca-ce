@@ -42,6 +42,7 @@ import se.anatom.ejbca.ra.IUserAdminSessionLocal;
 import se.anatom.ejbca.ra.IUserAdminSessionLocalHome;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
+import se.anatom.ejbca.util.ServiceLocator;
 
 /**
  * A java bean handling the interface between EJBCA hard token module and JSP pages.
@@ -66,26 +67,20 @@ public class HardTokenInterfaceBean {
         admininformation = new AdminInformation(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
         admin           = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
 
-        InitialContext jndicontext = new InitialContext();
-        IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/HardTokenSessionLocal"),
-                                                                                 IHardTokenSessionLocalHome.class);
+        final ServiceLocator locator = ServiceLocator.getInstance();
+        IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
         hardtokensession = hardtokensessionhome.create();
 
-        IHardTokenBatchJobSessionLocalHome  hardtokenbatchsessionhome = (IHardTokenBatchJobSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/HardTokenBatchJobSessionLocal"),
-                                                                                 IHardTokenBatchJobSessionLocalHome.class);
+        IHardTokenBatchJobSessionLocalHome  hardtokenbatchsessionhome = (IHardTokenBatchJobSessionLocalHome) locator.getLocalHome(IHardTokenBatchJobSessionLocalHome.COMP_NAME);
         hardtokenbatchsession = hardtokenbatchsessionhome.create();
         
-		IAuthorizationSessionLocalHome  authorizationsessionhome = (IAuthorizationSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/AuthorizationSessionLocal"),
-																				 IAuthorizationSessionLocalHome.class);
+		IAuthorizationSessionLocalHome  authorizationsessionhome = (IAuthorizationSessionLocalHome) locator.getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
 		IAuthorizationSessionLocal authorizationsession = authorizationsessionhome.create();
 
-
-		Object obj1 = jndicontext.lookup("java:comp/env/UserAdminSessionLocal");
-		IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionLocalHome.class);
+		IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
 		IUserAdminSessionLocal useradminsession = adminsessionhome.create();
 
-		obj1 = jndicontext.lookup("java:comp/env/CertificateStoreSessionLocal");
-		ICertificateStoreSessionLocalHome certificatestorehome = (ICertificateStoreSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionLocalHome.class);
+		ICertificateStoreSessionLocalHome certificatestorehome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
 		ICertificateStoreSessionLocal certificatesession = certificatestorehome.create();
 
 		
@@ -188,7 +183,7 @@ public class HardTokenInterfaceBean {
     public void addHardTokenIssuer(String alias, int admingroupid) throws HardTokenIssuerExistsException, RemoteException{
       Iterator iter = this.informationmemory.getHardTokenIssuingAdminGroups().iterator();
       while(iter.hasNext()){
-      	if(((AdminGroup) iter.next()).getAdminGroupId() == admingroupid){
+      	if(((AdminGroup) iter.next()).getAdminGroupId().intValue() == admingroupid){
 			if(!hardtokensession.addHardTokenIssuer(admin, alias, admingroupid, new HardTokenIssuer()))
 			  throw new HardTokenIssuerExistsException();
 			informationmemory.hardTokenDataEdited();      		
@@ -199,7 +194,7 @@ public class HardTokenInterfaceBean {
     public void addHardTokenIssuer(String alias, int admingroupid, HardTokenIssuer hardtokenissuer) throws HardTokenIssuerExistsException, RemoteException {
 		Iterator iter = this.informationmemory.getHardTokenIssuingAdminGroups().iterator();
 		while(iter.hasNext()){
-		  if(((AdminGroup) iter.next()).getAdminGroupId() == admingroupid){
+		  if(((AdminGroup) iter.next()).getAdminGroupId().intValue() == admingroupid){
 			  if(!hardtokensession.addHardTokenIssuer(admin, alias, admingroupid, new HardTokenIssuer()))
 				throw new HardTokenIssuerExistsException();
 			  informationmemory.hardTokenDataEdited();      		
