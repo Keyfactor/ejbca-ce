@@ -1,4 +1,4 @@
-$Id: TODO,v 1.59 2003-03-27 16:01:52 anatom Exp $
+$Id: TODO,v 1.60 2003-06-13 15:10:16 anatom Exp $
 
 V 1.x
 -----
@@ -7,12 +7,11 @@ V 1.x
 V 2.x
 -----
 - Multiple CDPs, comma separated strings should give several CDPs. 
+- PublisherSession should be called on revoke, to give possibility to remove cert from this store (do something or nothing).
 - More automated testing, Junit as well as web-stuff.
 - Make a database model similar to architecture model.
-- Make public web better looking.
 - Add a 'Service Locator' to concentrate code for lookups?
-- Use a 'Value List Handler' for listing of all certificates, clrs and users?
-- Better architecture for JSPs (MVC - ModelViewController?).
+- Check architecture for JSPs (MVC - ModelViewController?).
 - Continue improving exceptions and error handling.
 - Strategy for handling certificate issuance if notAfter is beyond CAs notAfter.
 - Implement SCEP, http://openscep.othello.ch/
@@ -20,6 +19,7 @@ V 2.x
 - Import utility to get users from external datasources.
 - Virtual CAs multiple CAs within one deployment
 - Better command line tools for batch stuff.
+- Export/import utilities to export/import configuration data and profiles to XML-files.
 - OCSP
 - Encrypt key recoverable keys stored in database.
 - Add smart card support (PKCS15) in CA for protection of private key.
