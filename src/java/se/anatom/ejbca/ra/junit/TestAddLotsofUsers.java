@@ -7,6 +7,7 @@ import javax.naming.NamingException;
 
 import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.log.Admin;
 
 import org.apache.log4j.Logger;
@@ -14,18 +15,22 @@ import junit.framework.*;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestAddLotsofUsers.java,v 1.1 2003-03-04 11:02:23 anatom Exp $
+ * @version $Id: TestAddLotsofUsers.java,v 1.2 2003-03-04 11:39:19 anatom Exp $
  */
 public class TestAddLotsofUsers extends TestCase {
 
     private static Logger log = Logger.getLogger(TestUserData.class);
-    private static Context ctx;
-    private static UserDataHome home;
-    private static String username;
-    private static String username1;
+    /** UserAdminSession handle, not static since different object should go to different session beans concurrently */
+    private IUserAdminSessionRemote cacheAdmin;
+    /** Handle to AdminSessionHome */
+    private static IUserAdminSessionHome cacheHome;
+
+    //private static UserDataHome home;
+    private static String baseUsername;
     private static String pwd;
     private static String pwd1;
     private static int userNo=0;
+
 
     public TestAddLotsofUsers(String name) {
         super(name);
@@ -34,11 +39,19 @@ public class TestAddLotsofUsers extends TestCase {
     protected void setUp() throws Exception {
 
         log.debug(">setUp()");
-        ctx = getInitialContext();
-        Object obj = ctx.lookup("UserData");
-        home = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj, UserDataHome.class);
+        //Object obj = ctx.lookup("UserData");
+        //home = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj, UserDataHome.class);
+        if( cacheAdmin == null ) {
+            if (cacheHome == null) {
+                Context jndiContext = getInitialContext();
+                Object obj1 = jndiContext.lookup("UserAdminSession");
+                cacheHome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
+            }
+            cacheAdmin = cacheHome.create();
+        }
+        Calendar cal = Calendar.getInstance();
+        baseUsername = "lotsausers"+cal.get(Calendar.SECOND)+"-";
         log.debug("<setUp()");
-
     }
     protected void tearDown() throws Exception {
     }
@@ -51,12 +64,9 @@ public class TestAddLotsofUsers extends TestCase {
     }
 
     private String genUserName() throws Exception {
-        // Gen random user
-        String username = "lotsausers";
+        // Gen new user
         userNo++;
-        username += userNo;
-        //log.debug("Generated random username: username =" + username);
-        return username;
+        return baseUsername + userNo;
     } // genRandomUserName
 
     private String genRandomPwd() throws Exception {
@@ -76,19 +86,37 @@ public class TestAddLotsofUsers extends TestCase {
 
     public void test01Create2000Users() throws Exception {
         log.debug(">test01Create2000Users()");
-        UserDataRemote data1=null;
+        //UserDataRemote data1=null;
+        Admin administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER);
         for (int i=0;i<2000;i++) {
-            username = genUserName();
+            String username = genUserName();
             pwd = genRandomPwd();
+            /*
             data1 = home.create(username, pwd, "C=SE, O=AnaTom, CN="+username);
             assertNotNull("Error creating", data1);
-            if (i%500 == 0) {
+            */
+            int type  = 1;
+            int token = 1;
+            int profileid =  SecConst.EMPTY_ENDENTITYPROFILE;
+            int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
+            int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
+            boolean error = false;
+            boolean usehardtokenissuer = false;
+            String dn = "C=SE, O=AnaTom, CN="+username;
+            String subjectaltname = username+"@foo.se";
+            String email = username+"@foo.se";
+            if(cacheAdmin.findUser(administrator, username) != null){;
+              System.out.println("Error : User already exists in the database." );
+              error= true;
+            }
+            cacheAdmin.addUser(administrator, username, pwd, CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid, certificatetypeid,
+                                         type, token, hardtokenissuerid);
+            if (i%100 == 0) {
                 log.debug("Created "+i+" users...");
             }
         }
         log.debug("Created 2000 users!");
         log.debug("<test01Create2000Users()");
     }
-
 }
 
