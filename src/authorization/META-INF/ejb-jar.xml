@@ -199,11 +199,6 @@
       <cmp-field><field-name>accessRule</field-name></cmp-field>
       <cmp-field><field-name>rule</field-name></cmp-field>
       <cmp-field><field-name>isrecursive</field-name></cmp-field>
-       <primkey-field>adminGroupName</primkey-field>
-       <primkey-field>caId</primkey-field>
-       <primkey-field>accessRule</primkey-field>
-       <primkey-field>rule</primkey-field>
-       <primkey-field>isrecursive</primkey-field>
    </entity>
    <entity>
       <description>
