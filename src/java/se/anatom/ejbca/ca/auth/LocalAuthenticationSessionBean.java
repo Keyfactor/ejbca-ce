@@ -35,16 +35,18 @@ import se.anatom.ejbca.ra.UserDataPK;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.28 2004-07-05 15:16:43 sbailliez Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.29 2004-07-13 08:49:43 sbailliez Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"
  *   name="AuthenticationSession"
+ *   jndi-name="AuthenticationSession"
+ *   local-jndi-name="AuthenticationSessionLocal"
  *   view-type="both"
  *   type="Stateless"
  *   transaction-type="Container"
  *
- * @ejb.security-identity run-as="InternalUser"
+ * @ejb.transaction type="Required"
  *
  * @ejb.permission role-name="InternalUser"
  *
@@ -70,13 +72,15 @@ import se.anatom.ejbca.ra.UserDataPK;
  *   extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
  *   local-class="se.anatom.ejbca.ca.auth.IAuthenticationSessionLocalHome"
- *   remote-class="se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote"
+ *   remote-class="se.anatom.ejbca.ca.auth.IAuthenticationSessionHome"
  *
  * @ejb.interface
  *   extends="javax.ejb.EJBObject"
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal"
- *   remote-class="se.anatom.ejbca.ca.auth.IAuthenticationSessionHome"
+ *   remote-class="se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote"
+ *
+ * @ejb.security-identity run-as="InternalUser"
  *
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean {
@@ -90,6 +94,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
      * Default create for SessionBean without any creation Arguments.
      *
      * @throws CreateException if bean instance can't be created
+     * @ejb.create-method
      */
     public void ejbCreate() throws CreateException {
         debug(">ejbCreate()");

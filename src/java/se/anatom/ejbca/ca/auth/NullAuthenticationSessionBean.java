@@ -32,7 +32,13 @@ import se.anatom.ejbca.util.CertTools;
  * Approves all authentication requests that contain a DN as the username, password is ignored and
  * the username is returned as DN. Useful for demo purposes to give out certificates to anyone.
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.19 2004-06-10 14:19:04 sbailliez Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.20 2004-07-13 08:49:43 sbailliez Exp $
+ * @ejb.bean
+ *   generate="false"
+ * @ejb.home
+ *   generate="none"
+ * @ejb.interface
+ *   generate="none"
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean {
     /** The remote interface of the log session bean */

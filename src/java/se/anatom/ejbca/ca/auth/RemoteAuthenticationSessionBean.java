@@ -33,7 +33,13 @@ import se.anatom.ejbca.log.LogEntry;
 /**
  * Authenticates users towards a remote user database, using HTTP-based protocol.
  *
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.14 2004-06-10 14:19:04 sbailliez Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.15 2004-07-13 08:49:43 sbailliez Exp $
+ * @ejb.bean
+ *   generate="false"
+ * @ejb.home
+ *   generate="none"
+ * @ejb.interface
+ *   generate="none"
  */
 public class RemoteAuthenticationSessionBean extends BaseSessionBean {
     private static String REMOTE_PROTOCOL_VER = "1.0";
