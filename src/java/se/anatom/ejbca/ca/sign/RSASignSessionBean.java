@@ -79,7 +79,7 @@ import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
 
 /**
- * Creates and isigns certificates.
+ * Creates and signs certificates.
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="RSASignSessionSB"

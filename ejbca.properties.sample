@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.3 2005-01-24 16:33:13 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.4 2005-02-01 08:57:24 anatom Exp $
 #
 # This is just a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -10,7 +10,7 @@
 
 # JBoss used during development
 # Default: ${env.JBOSS_HOME}
-jboss.home=${basedir}/../../jboss-3.2.4
+jboss.home=${basedir}/../../jboss-4.0.1
 
 # which compiler to use
 # default: javac
