@@ -82,9 +82,9 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.31 2004-11-13 00:42:17 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.32 2004-11-20 23:51:53 sbailliez Exp $
  *
- * @ejb.bean description="Session bean manging CAs"
+ * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
  *   name="CAAdminSession"
  *   jndi-name="CAAdminSession"
@@ -96,6 +96,26 @@ import se.anatom.ejbca.util.KeyTools;
  * @ejb.transaction type="Required"
  *
  * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.env-entry description="Used internally to keystores in database"
+ *   name="keyStorePass"
+ *   type="java.lang.String"
+ *   value="foo123"
+  *
+ * @ejb.env-entry description="Used internally to store keys in keystore in database"
+ *   name="privateKeyPass"
+ *   type="java.lang.String"
+ *   value="null"
+ *
+ * @ejb.env-entry description="Password for OCSP keystores"
+ *   name="OCSPKeyStorePass"
+ *   type="java.lang.String"
+ *   value="foo123"
+ *
+ * @ejb.env-entry description="Password for OCSP keystores private key protection"
+ *   name="privateOCSPKeyPass"
+ *   type="java.lang.String"
+ *   value="foo123"
  *
  * @ejb.ejb-external-ref description="The CA entity bean"
  *   view-type="local"
@@ -131,7 +151,7 @@ import se.anatom.ejbca.util.KeyTools;
  *
  * @ejb.ejb-external-ref description="The Sign Session Bean"
  *   view-type="local"
- *   ejb-name="SignSessionLocal"
+ *   ejb-name="RSASignSessionLocal"
  *   type="Session"
  *   home="se.anatom.ejbca.ca.sign.ISignSessionLocalHome"
  *   business="se.anatom.ejbca.ca.store.ISignSessionLocal"
@@ -186,20 +206,19 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() throws CreateException {
-        debug(">ejbCreate()");
-        cadatahome = (CADataLocalHome)lookup("java:comp/env/ejb/CADataLocal");
+        cadatahome = (CADataLocalHome)getLocator().getLocalHome(CADataLocalHome.COMP_NAME);
         // Install BouncyCastle provider
         CertTools.installBCProvider();
-        debug("<ejbCreate()");
     }
+
 
     /** Gets connection to log session bean
      */
     private ILogSessionLocal getLogSession() {
         if(logsession == null){
             try{
-                ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup(ILogSessionLocalHome.COMP_NAME,ILogSessionLocalHome.class);
-                logsession = logsessionhome.create();
+                ILogSessionLocalHome home = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
+                logsession = home.create();
             }catch(Exception e){
                 throw new EJBException(e);
             }
@@ -214,8 +233,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     private IAuthorizationSessionLocal getAuthorizationSession() {
         if(authorizationsession == null){
             try{
-                IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) lookup("java:comp/env/ejb/AuthorizationSessionLocal",IAuthorizationSessionLocalHome.class);
-                authorizationsession = authorizationsessionhome.create();
+                IAuthorizationSessionLocalHome home = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
+                authorizationsession = home.create();
             }catch(Exception e){
                 throw new EJBException(e);
             }
@@ -229,7 +248,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     private ICreateCRLSessionLocal getCRLCreateSession() {
       if(jobrunner == null){
       	 try{
-      	    ICreateCRLSessionLocalHome home = (ICreateCRLSessionLocalHome) lookup("java:comp/env/ejb/CreateCRLSessionLocal", ICreateCRLSessionLocalHome.class);
+      	    ICreateCRLSessionLocalHome home = (ICreateCRLSessionLocalHome) getLocator().getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
     	    jobrunner = home.create();
       	 }catch(Exception e){
       	 	throw new EJBException(e);
@@ -244,8 +263,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     private ICertificateStoreSessionLocal getCertificateStoreSession() {
         if(certificatestoresession == null){
             try{
-                ICertificateStoreSessionLocalHome certificatestoresessionhome = (ICertificateStoreSessionLocalHome) lookup("java:comp/env/ejb/CertificateStoreSessionLocal",ICertificateStoreSessionLocalHome.class);
-                certificatestoresession = certificatestoresessionhome.create();
+                ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+                certificatestoresession = home.create();
             }catch(Exception e){
                 throw new EJBException(e);
             }
@@ -259,7 +278,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     private ISignSessionLocal getSignSession() {
         if(signsession == null){
             try{
-                ISignSessionLocalHome signsessionhome = (ISignSessionLocalHome) lookup("java:comp/env/ejb/SignSessionLocal",ISignSessionLocalHome.class);
+                ISignSessionLocalHome signsessionhome = (ISignSessionLocalHome) getLocator().getLocalHome(ISignSessionLocalHome.COMP_NAME);
                 signsession = signsessionhome.create();
             }catch(Exception e){
                 throw new EJBException(e);

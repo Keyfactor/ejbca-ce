@@ -37,7 +37,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.7 2004-07-13 08:54:01 sbailliez Exp $
+ * @version $Id: CADataBean.java,v 1.8 2004-11-20 23:50:45 sbailliez Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -47,7 +47,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *   local-jndi-name="CADataLocal"
  *   view-type="local"
  *   type="CMP"
- *   reentrant="false"
+ *   reentrant="False"
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="CADataBean"
@@ -77,6 +77,12 @@ import se.anatom.ejbca.BaseEntityBean;
  *   description="findAll"
  *   signature="Collection findAll()"
  *   query="SELECT DISTINCT OBJECT(a) from CADataBean a"
+ *
+ * @ejb.transaction
+ *   type="Supports"
+ *
+ * @jonas.jdbc-mapping
+ *   jndi-name="${datasource.jndi-name}"
  */
 public abstract class CADataBean extends BaseEntityBean {
 
