@@ -20,8 +20,8 @@ By default the LDAP publisher is not enabled. To deploy the LDAP Publisher
 session bean, uncomment the section for the session bean 'PublisherSession1' in
 'ca/META-INF/ejb-jar.xml'.
  
-      <!-- Uncomment to use LDAP Publisher
-      <session>
+      <!-- Uncomment to use LDAP Publisher -->
+      <!-- <session>
         <ejb-name>PublisherSession1</ejb-name>
         <home>se.anatom.ejbca.ca.store.IPublisherSessionHome</home>
         <remote>se.anatom.ejbca.ca.store.IPublisherSessionRemote</remote>
@@ -36,18 +36,18 @@ session bean, uncomment the section for the session bean 'PublisherSession1' in
      	   <env-entry-value>localhost</env-entry-value>
         </env-entry>
      ...snip! removed text...
-     </session>
-     END LDAP Publisher section -->
+     </session> -->
+     <!-- END LDAP Publisher section -->
 
 Also uncomment the section for method permissions for the
 same session bean.
 
-     <!-- Uncomment for LDAP Publisher
-     <method>
+     <!-- Uncomment for LDAP Publisher -->
+     <!-- <method>
          <ejb-name>PublisherSession1</ejb-name>
          <method-name>*</method-name>
-     </method>
-     -->
+     </method> -->
+     <!-- END LDAP Publisher section -->
 
 Do the same in 'ra/META-INF/ejb-jar.xml'.
 
@@ -56,7 +56,7 @@ This will configure an LDAPPublisherSession so be deployed as
 
 'PublisherSession1' must be configured to match your LDAP server.
 
-Parameters to LDAP Publisher:
+Parameters to LDAP Publisher (in ca/ca/META-INF/ejb-jar.xml):
 
 - ldapHost is the host where the LDAP server is located.
 
@@ -68,19 +68,33 @@ update enties.
 
 - loginPassword is the password for the user above.
 
-- containerName is a definition of the domain of DNs that can be published on
-this LDAP sever. If containerName is 'o=AnaTom,c=SE' only DNs belonging to this
-o and c can be published. Several LDAP publishers can be deployed with different
-containerName is you CA will issue certificates for multiple comains.
-conatinerName can also be for example 'c=SE'.
-
 - userObjectClass is the objectclass for the LDAP entries for users, where user
-certificates are published. This objectclass must allow the attribute
-'userCertificate;binary'.
+certificates are published. The entry is hierarchical separated by ';' to build 
+a structure like:
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+This objectclass must allow the attribute 'userCertificate;binary'. 
+Default 'top;person;organizationalPerson;inetOrgPerson'
 
 - cAObjectClass is the objectclass for the LDAP entries for CAs, where CA
-certificates and CRLs are published. This objectclass must allow the attributes
-'cACertificate;binary' and 'certificateRevocationList;binary'.
+certificates and CRLs are published. The entry is hierarchical separated by ';' 
+to build a structure. This objectclass must allow the attributes
+'cACertificate;binary', 'certificateRevocationList;binary' and 'authorityRevocationList;binary'.
+Default 'top;applicationProcess;certificationAuthority'
+
+- userCertAttribute is the attribute name, in the userObjectClass, for the users 
+certificate. Default 'userCertificate;binary'
+
+- cACertAttribute is the attribute name, in the cAObjectClass, for the CAs 
+certificate. Default 'cACertificate;binary'
+
+- cRLAttribute is the attribute name, in the cAObjectClass, for CRLs (user CRLs) 
+publisher by the CA. Default 'certificateRevocationList;binary'
+
+- aRLAttribute is the attribute name, in the cAObjectClass, for ARLs (CA CRLs) 
+publisher by the CA. Default 'authorityRevocationList;binary'
 
 Setting up certificate profiles
 -------------------------------
@@ -101,10 +115,20 @@ objectclass: top
 objectclass: person
 objectclass: organizationalPerson
 objectclass: inetOrgPerson
-objectclass: strongAuthenticationUser 
 cn: Mike Jackson
 sn: Jackson
 userCertificate;binary::
+
+CAs are published in the form:
+
+dn: cn=ejbca,dc=jackson,dc=net
+objectClass: top
+objectClass: applicationProcess
+objectClass: certificationAuthority
+cn: ejbca
+cACertificate;binary:
+certificateRevocationList;binary:
+authorityRevocationList;binary: 
 
 To configure OpenLDAP (version 2.2.5) to include the 'inetOrgPerson' you must 
 add the following lines to slapd.conf:
@@ -128,14 +152,4 @@ cn: Admin
 And using the command:
 ldapadd -x -D "cn=Admin,o=AnaTom,c=SE" -W -f org.ldif
 
-CAs are published in the form:
-
-dn: cn=ejbca,dc=jackson,dc=net
-objectClass: top
-objectClass: applicationProcess
-objectClass: certificationAuthority
-cn: ejbca
-cACertificate;binary:
-certificateRevocationList;binary:
-authorityRevocationList;binary: 
 

@@ -12,6 +12,14 @@ The (default) LDAP schema has been changed to follow RFC 2256. If using LDAP,
 the schema should be checked. You can configure the schema 
 (in ca/ca/META-INF/ejb-jar.xml) to be the same as before if needed.
 
+EJBCA V2.1.2
+------------
+This is a plugin upgrade from V2.1.
+
+The (default) LDAP schema has been changed to follow RFC 2256. If using LDAP, 
+the schema should be checked. You can configure the schema 
+(in ca/ca/META-INF/ejb-jar.xml) to be the same as before if needed. See HOWTO-LDAP.txt.
+
 EJBCA V2.1.1
 ------------
 This is a plugin upgrade from V2.1.
