@@ -78,30 +78,30 @@ public class DNFieldExtractor {
         fields = SUBJECTALTNAME;        
       }        
       
-      if(dn != null){
-        this.dn=dn;  
-        dnfields = new HashMap();
-        String[] dnexploded = LDAPDN.explodeDN(dn,false);
-        for(int i = 0; i < dnexploded.length; i++){ 
-          boolean exists = false;  
-          for(int j = 0; j < fields.length; j++){
-            if(dnexploded[i].toUpperCase().startsWith(fields[j])){
-              exists = true;  
-              String rdn = LDAPDN.unescapeRDN(dnexploded[i]);   
-              if(type == TYPE_SUBJECTDN) 
-                dnfields.put(new Integer((j * BOUNDRARY) + fieldnumbers[j]) ,rdn);  
-              else  
-                dnfields.put(new Integer(((j+ SUBJECTALTERNATIVENAMEBOUNDRARY) * BOUNDRARY) + fieldnumbers[j]) ,rdn);                 
-              fieldnumbers[j]++;
-            }
-          }  
-          if(!exists)
-            existsother=true;  
-        }
+      if(dn != null && !dn.equalsIgnoreCase("null")){
+         this.dn=dn;  
+         dnfields = new HashMap();
+         String[] dnexploded = LDAPDN.explodeDN(dn,false);
+         for(int i = 0; i < dnexploded.length; i++){ 
+           boolean exists = false;  
+           for(int j = 0; j < fields.length; j++){
+             if(dnexploded[i].toUpperCase().startsWith(fields[j])){
+               exists = true;  
+               String rdn = LDAPDN.unescapeRDN(dnexploded[i]);   
+               if(type == TYPE_SUBJECTDN) 
+                 dnfields.put(new Integer((j * BOUNDRARY) + fieldnumbers[j]) ,rdn);  
+               else  
+                 dnfields.put(new Integer(((j+ SUBJECTALTERNATIVENAMEBOUNDRARY) * BOUNDRARY) + fieldnumbers[j]) ,rdn);                 
+               fieldnumbers[j]++;
+             }
+           }  
+           if(!exists)
+             existsother=true;  
+         }
       }
       else
         this.dn = null;
-    }  
+     }  
     
     public String getDN() {
       return dn;  
