@@ -201,33 +201,8 @@ END LDAP Publisher -->
     </security-identity>
    </session>
 
-<!-- Commented out, use LocalAuthenticationSession, move comment if RemoteAuthentication should be used
    <session>
-     <ejb-name>RemoteAuthenticationSession</ejb-name>
-     <home>se.anatom.ejbca.ca.auth.IAuthenticationSessionHome</home>
-     <remote>se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote</remote>
-     <local-home>se.anatom.ejbca.ca.auth.IAuthenticationSessionLocalHome</local-home>
-     <local>se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal</local>
-     <ejb-class>se.anatom.ejbca.ca.auth.RemoteAuthenticationSessionBean</ejb-class>
-     <session-type>Stateless</session-type>
-     <transaction-type>Container</transaction-type>
-     
-     <env-entry>
-        <description>URL to remote authentication server</description>
-        <env-entry-name>AuthURL</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>http://127.0.0.1:8080/sampleauth/verify</env-entry-value>
-     </env-entry>
-
-    <security-identity>
-        <run-as>
-            <role-name>InternalUser</role-name>
-        </run-as>
-    </security-identity>
-   </session>
--->
-
-   <session>
+     <description>Authenticates against the local database</description>
      <ejb-name>AuthenticationSession</ejb-name>
      <home>se.anatom.ejbca.ca.auth.IAuthenticationSessionHome</home>
      <remote>se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote</remote>
@@ -251,6 +226,34 @@ END LDAP Publisher -->
         </run-as>
      </security-identity>
    </session>
+
+<!-- Commented out, use LocalAuthenticationSession, enable this and change reference 
+      from RSASignSession (ejb/AuthenticationSessionLocal) 
+   <session>
+     <description>RemoteAuthentication session authenticates against a remote server</description>
+     <ejb-name>RemoteAuthenticationSession</ejb-name>
+     <home>se.anatom.ejbca.ca.auth.IAuthenticationSessionHome</home>
+     <remote>se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote</remote>
+     <local-home>se.anatom.ejbca.ca.auth.IAuthenticationSessionLocalHome</local-home>
+     <local>se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal</local>
+     <ejb-class>se.anatom.ejbca.ca.auth.RemoteAuthenticationSessionBean</ejb-class>
+     <session-type>Stateless</session-type>
+     <transaction-type>Container</transaction-type>
+     
+     <env-entry>
+        <description>URL to remote authentication server</description>
+        <env-entry-name>AuthURL</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>http://127.0.0.1:8080/sampleauth/verify</env-entry-value>
+     </env-entry>
+
+    <security-identity>
+        <run-as>
+            <role-name>InternalUser</role-name>
+        </run-as>
+    </security-identity>
+   </session>
+-->
 
    <session>
      <ejb-name>CertificateStoreSession</ejb-name>
