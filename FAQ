@@ -1,5 +1,5 @@
 EJBCA FAQ
-$Id: FAQ,v 1.1 2001-11-27 09:12:31 anatom Exp $
+$Id: FAQ,v 1.2 2001-11-28 08:32:52 anatom Exp $
 ---------
 
 Q: Why are there two versions of all commands, i.e. 'ra.sh' and 'ra.cmd'.
@@ -28,21 +28,21 @@ status '10' is NEW. Just enter 'ra.sh/cmd setuserstatus' to see a list of all st
 Q: How do I manipulate keystores using Suns 'keytool'?
 
 A: EJBCA use PKCS12 format for the keystore because it is a standard, and I like standards. 
-Normally keytool (e.g. sun) can read PKCS12 file but not write, so the BouncyCastle JCE is again needed to handle PKCS12 keystores.
+Normally keytool (e.g. sun) can read PKCS12 file but not write, so the BouncyCastle JCE is needed to handle PKCS12 keystores.
 
-in your 'jre/lib/securite/java.security' file add a line so the part with providers look like:
-
-security.provider.1=org.boucycastle.jce.provider.BouncyCastleProvider
-security.provider.2=sun.security.provider.Sun
-security.provider.3=com.sun.rsajca.Provider
-
-Then put the BouncyCastle provider 'jce-jdk13-<version>.jar' in 'jre/lib/ext', the default classpath for extensions in java.
+Put the BouncyCastle provider 'jce-jdk13-<version>.jar' in 'jre/lib/ext', the default classpath for extensions in java.
 
 Now it should be possible to run:
 
 keytool -list -alias privateKey -keystore server.p12 -storetype PKCS12 -storepass foo123 -provider org.bouncycastle.jce.provider.BouncyCastleProvider
 
 It should be possible to import etc as well using keytool.
+
+Note: If this doesn't work, try to add a line in your 'jre/lib/securite/java.security' so the part with security providers look like:
+
+security.provider.1=org.boucycastle.jce.provider.BouncyCastleProvider
+security.provider.2=sun.security.provider.Sun
+security.provider.3=com.sun.rsajca.Provider
 
 -----
 
