@@ -28,7 +28,7 @@
         <attribute name="module"/>
         <sequential>
 		<mkdir dir="@{todir}"/>
-		<property name="tmp.@{module}.dir" location="${tmp}/@{module}-ejb.jar/META-INF"/>
+		<property name="@{module}.tmp.dir" location="${tmp}/@{module}-ejb.jar/META-INF"/>
 		<ejbdoclet
 			destdir="@{todir}"
 			ejbspec="2.0"
@@ -50,7 +50,7 @@
                 version="3.2"
                 unauthenticatedPrincipal="nobody"
                 xmlencoding="UTF-8"
-                destdir="${tmp.@{module}.dir}"
+                destdir="${@{module}.tmp.dir}"
                 validatexml="false"
                 datasource="java:/${datasource.jndi-name}"
                 datasourcemapping="Hypersonic SQL"
@@ -58,11 +58,11 @@
             <jonas
                 version="4.0"
                 xmlencoding="UTF-8"
-                destdir="${tmp.@{module}.dir}"
+                destdir="${@{module}.tmp.dir}"
                 validatexml="false"
                 defaultentityjndiname="${datasource.jndi-name}"
                 />
-			<deploymentdescriptor destdir="${tmp.@{module}.dir}"/>
+			<deploymentdescriptor destdir="${@{module}.tmp.dir}"/>
 		</ejbdoclet>
 		</sequential>
 	</macrodef>
