@@ -80,7 +80,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.23 2003-03-14 14:51:34 herrvendil Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.24 2003-04-20 13:20:27 herrvendil Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -206,6 +206,11 @@ public class DemoCertReqServlet extends HttpServlet {
         return;
     }
 
+    // Functionality to determine the class id of ie page.
+    String classid         = "clsid:127698e4-e730-4e5c-a2b1-21490a70c8a1\" CODEBASE=\"/CertControl/xenroll.cab#Version=5,131,3659,0";
+    if(request.getParameter("classid")!=null)
+      classid= request.getParameter("classid");      
+    
     String includeEmail = request.getParameter("includeemail");
     log.debug("includeEmail="+includeEmail);
 
@@ -270,7 +275,7 @@ public class DemoCertReqServlet extends HttpServlet {
         if (type == 2) {
               byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password);
               debug.ieCertFix(b64cert);
-              RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"));
+              RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"), classid);
         }
     } catch (ObjectNotFoundException oe) {
         log.debug("Non existens username!");
