@@ -6,6 +6,7 @@
  <enterprise-beans>
 
    <session>
+     <description>Session bean handling user administration, uses UserData entity bean</description>
      <ejb-name>UserAdminSession</ejb-name>
      <home>se.anatom.ejbca.ra.IUserAdminSessionHome</home>
      <remote>se.anatom.ejbca.ra.IUserAdminSessionRemote</remote>
@@ -16,7 +17,7 @@
      <ejb-ref>
         <description>The User entity bean</description>
         <ejb-ref-name>ejb/UserData</ejb-ref-name>
-        <ejb-ref-type>entity</ejb-ref-type>
+        <ejb-ref-type>Entity</ejb-ref-type>
         <home>se.anatom.ejbca.ca.store.UserDataHome</home>
         <remote>se.anatom.ejbca.ca.store.UserData</remote>
         <ejb-link>UserData</ejb-link>

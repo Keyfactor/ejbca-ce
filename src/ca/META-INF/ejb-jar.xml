@@ -16,7 +16,7 @@
      <ejb-ref>
         <description>The Certificate store used to store and fetch certificates</description>
         <ejb-ref-name>ejb/CertificateStoreSession</ejb-ref-name>
-        <ejb-ref-type>session</ejb-ref-type>
+        <ejb-ref-type>Session</ejb-ref-type>
         <home>se.anatom.ejbca.ca.store.ICertificateStoreSessionHome</home>
         <remote>se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote</remote>
         <ejb-link>CertificateStoreSession</ejb-link>
@@ -29,7 +29,7 @@
         -->
         </description>
         <ejb-ref-name>ejb/AuthenticationSession</ejb-ref-name>
-        <ejb-ref-type>session</ejb-ref-type>
+        <ejb-ref-type>Session</ejb-ref-type>
         <home>se.anatom.ejbca.ca.store.IAuthenticationSessionHome</home>
         <remote>se.anatom.ejbca.ca.store.IAuthenticationSessionRemote</remote>
         <ejb-link>AuthenticationSession</ejb-link>
@@ -216,7 +216,7 @@
      <ejb-ref>
         <description>The User entity bean</description>
         <ejb-ref-name>ejb/UserData</ejb-ref-name>
-        <ejb-ref-type>entity</ejb-ref-type>
+        <ejb-ref-type>Entity</ejb-ref-type>
         <home>se.anatom.ejbca.ca.store.UserDataHome</home>
         <remote>se.anatom.ejbca.ca.store.UserData</remote>
      </ejb-ref>
@@ -239,7 +239,7 @@
      <ejb-ref>
         <description>The Certificate entity bean used to store and fetch certificates</description>
         <ejb-ref-name>ejb/CertificateData</ejb-ref-name>
-        <ejb-ref-type>entity</ejb-ref-type>
+        <ejb-ref-type>Entity</ejb-ref-type>
         <home>se.anatom.ejbca.ca.store.CertificateDataHome</home>
         <remote>se.anatom.ejbca.ca.store.CertificateData</remote>
         <ejb-link>CertificateData</ejb-link>
@@ -247,7 +247,7 @@
      <ejb-ref>
         <description>The CRL entity bean used to store and fetch CRLs</description>
         <ejb-ref-name>ejb/CRLData</ejb-ref-name>
-        <ejb-ref-type>entity</ejb-ref-type>
+        <ejb-ref-type>Entity</ejb-ref-type>
         <home>se.anatom.ejbca.ca.store.CRLDataHome</home>
         <remote>se.anatom.ejbca.ca.store.CRLData</remote>
         <ejb-link>CRLData</ejb-link>
@@ -279,7 +279,7 @@
      <ejb-ref>
         <description>The Certificate entity bean used manipulate certificates</description>
         <ejb-ref-name>ejb/CertificateData</ejb-ref-name>
-        <ejb-ref-type>entity</ejb-ref-type>
+        <ejb-ref-type>Entity</ejb-ref-type>
         <home>se.anatom.ejbca.ca.store.CertificateDataHome</home>
         <remote>se.anatom.ejbca.ca.store.CertificateData</remote>
         <ejb-link>CertificateData</ejb-link>
@@ -287,7 +287,7 @@
      <ejb-ref>
         <description>The Certificate store used to store and fetch certificates</description>
         <ejb-ref-name>ejb/CertificateStoreSession</ejb-ref-name>
-        <ejb-ref-type>session</ejb-ref-type>
+        <ejb-ref-type>Eession</ejb-ref-type>
         <home>se.anatom.ejbca.ca.store.ICertificateStoreSessionHome</home>
         <remote>se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote</remote>
         <ejb-link>CertificateStoreSession</ejb-link>
@@ -295,7 +295,7 @@
      <ejb-ref>
         <description>The signing session used to create CRL</description>
         <ejb-ref-name>ejb/SignSession</ejb-ref-name>
-        <ejb-ref-type>session</ejb-ref-type>
+        <ejb-ref-type>Session</ejb-ref-type>
         <home>se.anatom.ejbca.ca.store.ISignSessionHome</home>
         <remote>se.anatom.ejbca.ca.store.ISignSessionRemote</remote>
         <ejb-link>RSASignSession</ejb-link>
