@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE application PUBLIC "-//Sun Microsystems, Inc.//DTD J2EE Application 
+1.2//EN" "http://java.sun.com/j2ee/dtds/application_1_2.dtd">
+
+<application>
+    <display-name>EJBCA-CA</display-name>
+    <description>The EJBCA CA module consists of the CA beans and the web 
+application for 
+                enrollment (apply) and distribution (webdist).
+    </description>
+    <module>
+        <web>
+            <web-uri>caroot.war</web-uri>
+            <context-root>/</context-root>
+        </web>
+    </module>
+    <module>
+        <ejb>ca.jar</ejb>
+    </module>
+    <module>
+        <web>
+            <web-uri>apply.war</web-uri>
+            <context-root>/apply</context-root>
+        </web>
+    </module>
+    <module>
+        <web>
+            <web-uri>webdist.war</web-uri>
+            <context-root>/webdist</context-root>
+        </web>
+    </module>
+</application>
+

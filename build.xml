@@ -31,6 +31,13 @@
   <property name="ra.build" value="${tmp}/ra" />
   <property name="rajar" value="${dist}/ra.jar" />
 
+  <property name="caear.src" value="${src}/caear" />
+  <property name="caear.build" value="${tmp}/caear" />
+  <property name="caear.warbuild" value="${tmp}/caear/root" />
+  <property name="caear.earbuild" value="${tmp}/caear/ear" />
+  <property name="carootwar" value="${caear.earbuild}/caroot.war" />
+  <property name="caear" value="${dist}/ca.ear" />
+
   <!-- Jar with class files needed for administration, i.e. ca, ra, jobrunner -->
   <property name="adminjar.build" value="${tmp}/adminjar" />
   <property name="adminjar" value="./admin.jar" />
@@ -245,6 +252,31 @@
   
     <!-- Jar the admin.jar package together -->
     <jar basedir="${adminjar.build}" jarfile="${adminjar}"/>    
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Build CA-ear                                                           -->
+  <!-- =================================================================== -->
+  <target name="ca.ear" depends="apply.war, webdist.war, ca.jar">
+    <mkdir dir="${caear.build}"/>
+    <copy todir="${caear.build}">
+        <fileset dir="${caear.src}"> 
+                <include name="**/*"/>
+        </fileset>
+    </copy>
+    <!-- Jar the ROOT war together -->
+    <jar basedir="${caear.warbuild}" jarfile="${carootwar}"/>    
+
+    <copy todir="${caear.earbuild}">
+        <fileset dir="${dist}">
+                <include name="webdist.war"/>
+                <include name="apply.war"/>
+                <include name="ca.jar"/>
+        </fileset>
+    </copy>
+  
+    <!-- Jar the ear package together -->
+    <jar basedir="${caear.earbuild}" jarfile="${caear}"/>    
   </target>
 
   <!-- =================================================================== -->

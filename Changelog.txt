@@ -1,6 +1,8 @@
 1.4
 ---
+Added method for easily getting certificates with different keyUsage.
 Better separated and better looking web pages.
+Deployed with EAR-files.
 Architectural changes.
 
 1.3.2
