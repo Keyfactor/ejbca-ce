@@ -107,9 +107,7 @@ public class RequestHelper {
         debug.printInsertLineBreaks(cert.toString().getBytes());
 
         return pkcs7;
-    }
-
-    //nsCertRequest
+    } //nsCertRequest
 
     /**
      * Handles PKCS10 certificate request, these are constructed as: <code> CertificationRequest
@@ -184,7 +182,7 @@ public class RequestHelper {
         }
 
         out.println();
-    }
+    } // ieCertFormat
 
     /**
      * Reads template and inserts cert to send back to IE for installation of cert
@@ -226,7 +224,7 @@ public class RequestHelper {
         ps.close();
         log.debug("Sent reply to IE client");
         log.debug(new String(b64cert));
-    }
+    } // sendNewCertToIEClient
 
     /**
      * Sends back cert to NS/Mozilla for installation of cert
@@ -252,7 +250,7 @@ public class RequestHelper {
         out.getOutputStream().write(certs);
         log.debug("Sent reply to NS client");
         log.debug(new String(Base64.encode(certs)));
-    }
+    } // sendNewCertToNSClient
 
     /**
      * Sends back certificate as binary file (application/octet-stream)
@@ -285,7 +283,7 @@ public class RequestHelper {
         out.flushBuffer();
         log.debug("Sent reply to client");
         log.debug(new String(b64cert));
-    }
+    } // sendNewB64Cert
 
     /**
      * Sends back CA-certificate as binary file (application/x-x509-ca-cert)
@@ -299,7 +297,7 @@ public class RequestHelper {
         throws Exception {
         // Set content-type to CA-cert
         sendBinaryBytes(cert, out, "application/x-x509-ca-cert");
-    }
+    } // sendNewX509CaCert
 
     /**
      * Sends back a number of bytes
@@ -327,7 +325,7 @@ public class RequestHelper {
         os.write(bytes);
         out.flushBuffer();
         log.debug("Sent " + bytes.length + " bytes to client");
-    }
+    } // sendBinaryBytes
     
     public static PKCS10RequestMessage genPKCS10RequestMessageFromPEM(byte[] b64Encoded){ 
 	  byte[] buffer = null;
@@ -336,7 +334,7 @@ public class RequestHelper {
 		String beginKey = BEGIN_CERTIFICATE_REQUEST;
 		String endKey = END_CERTIFICATE_REQUEST;
 		buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
-	 } catch (IOException e) {	 	
+      } catch (IOException e) {	 	
 		try {
 			// Keytool PKCS10 PEM request
 			String beginKey = "-----BEGIN NEW CERTIFICATE REQUEST-----";
@@ -345,13 +343,12 @@ public class RequestHelper {
 		} catch (IOException ioe) {
 			// IE PKCS10 Base64 coded request
 			buffer = Base64.decode(b64Encoded);
-		}
-	 }
-
+        }
+      } 
 	  if (buffer == null) {
 		return null;
 	  }	  
 	  return new PKCS10RequestMessage(buffer);
-    }
+    } // PKCS10RequestMessage
     
 }

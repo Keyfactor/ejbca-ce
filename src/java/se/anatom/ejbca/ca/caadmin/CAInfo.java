@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * Holds nonsensitive information about a CA.
  *
- * @version $Id: CAInfo.java,v 1.4 2003-11-14 14:59:57 herrvendil Exp $
+ * @version $Id: CAInfo.java,v 1.5 2004-03-10 15:28:13 anatom Exp $
  */
 public abstract class CAInfo implements Serializable {
 
@@ -62,6 +62,9 @@ public abstract class CAInfo implements Serializable {
     public Date getExpireTime() {return this.expiretime;}
 
       
+    /** Retrieves the certificate chain for the CA. The returned certificate chain MUST have the
+	 * RootCA certificate in the last position and the CAs certificate in the first.
+     */
     public Collection getCertificateChain(){ return certificatechain;}
     public CATokenInfo getCATokenInfo() {return this.catokeninfo;}
     
