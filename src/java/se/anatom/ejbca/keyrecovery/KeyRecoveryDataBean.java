@@ -36,55 +36,139 @@ import se.anatom.ejbca.util.StringTools;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.12 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.13 2004-06-03 09:22:53 anatom Exp $
+ *
+ * @ejb.bean
+ *   generate="false"
+ *   display-name="Stores key recovery data"
+ *   name="KeyRecoveryData"
+ *   local-jndi-name="KeyRecoveryData"
+ *   view-type="local"
+ *   type="CMP"
+ *   reentrant="false"
+ *   cmp-version="2.x"
+ *   transaction-type="Container"
+ *   schema="KeyRecoveryDataBean"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.pk
+ *   class="se.anatom.ejbca.keyrecovery.KeyRecoveryDataPK"
+ *   extends="java.lang.Object"
+ *   implements="java.io.Serializable"
+ *
+ * @ejb.home
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.keyrecovery.KeyRecoveryDataLocalHome"
+ *
+ * @ejb.interface
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.keyrecovery.KeyRecoveryDataLocal"
+ *
+ * @ejb.finder
+ *   description="findByUsername"
+ *   signature="Collection findByUsername(java.lang.String)"
+ *   query="SELECT DISTINCT OBJECT(a) from KeyRecoveryDataBean a WHERE a.username=?1"
+ *
+ * @ejb.finder
+ *   description="findByUserMark"
+ *   signature="Collection findByUserMark(java.lang.String)"
+ *   query="SELECT DISTINCT OBJECT(a) from KeyRecoveryDataBean a WHERE a.username=?1 AND a.markedAsRecoverable=TRUE"
  */
 public abstract class KeyRecoveryDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(KeyRecoveryDataBean.class);
 
+	/**
+	 * @ejb.persistence
+     * @ejb.pk-field
+	 */
 	public abstract String getCertSN();
 
+	/**
+	 * @ejb.persistence
+	 */
 	public abstract void setCertSN(String certificatesn);
 
+	/**
+	 * @ejb.persistence
+     * @ejb.pk-field
+     * @ejb.interface-method view-type="local"
+	 */
 	public abstract String getIssuerDN();
 
+	/**
+	 * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     */
 	public abstract void setIssuerDN(String issuerdn);
 
+	/**
+	 * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+	 */
 	public abstract String getUsername();
 
 	/**
 	 * username must be called 'striped' using StringTools.strip()
 	 *
 	 * @see se.anatom.ejbca.util.StringTools
+	 * @ejb.persistence
+     * @ejb.interface-method view-type="local"
 	 */
 	public abstract void setUsername(String username);
 
+	/**
+	 * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+	 */
 	public abstract boolean getMarkedAsRecoverable();
 
+	/**
+	 * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+	 */
 	public abstract void setMarkedAsRecoverable(boolean markedasrecoverable);
 
-
+	/**
+	 * @ejb.persistence
+	 */
 	public abstract String getKeyData();
 
+	/**
+	 * @ejb.persistence
+	 */
 	public abstract void setKeyData(String keydata);
 
+    /**
+     * @ejb.interface-method view-type="local"
+     */
 	public BigInteger getCertificateSN() {
 		return new BigInteger(getCertSN(), 16);
 	}
-
+	
+    /**
+     * @ejb.interface-method view-type="local"
+     */
 	public void setCertificateSN(BigInteger certificatesn) {
 		setCertSN(certificatesn.toString(16));
 	}
-
+	
+    /**
+     * @ejb.interface-method view-type="local"
+     */
 	public byte[] getKeyDataAsByteArray(){
 		return Base64.decode(this.getKeyData().getBytes()); 
 	}
 	
+	/**
+     * @ejb.interface-method view-type="local"
+     */
 	public void setKeyDataFromByteArray(byte[] keydata){
 	  	setKeyData(new String(Base64.encode(keydata)));
 	}
 	
-
-
 	//
 	// Fields required by Container
 	//
@@ -98,8 +182,9 @@ public abstract class KeyRecoveryDataBean extends BaseEntityBean {
 	 * @param keydata the actual keydata.
 	 *
 	 * @return Primary Key
+	 *
+     * @ejb.create-method
 	 */
-	
 	public KeyRecoveryDataPK ejbCreate(BigInteger certificatesn, String issuerdn, String username,
 		byte[] keydata) throws CreateException {
 		KeyRecoveryDataPK pk = new KeyRecoveryDataPK(certificatesn, issuerdn);

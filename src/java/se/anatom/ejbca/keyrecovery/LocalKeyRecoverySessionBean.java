@@ -46,7 +46,77 @@ import se.anatom.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.15 2004-05-22 16:02:13 anatom Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.16 2004-06-03 09:22:53 anatom Exp $
+ *
+ * @ejb.bean
+ *   display-name="Stores key recovery data"
+ *   name="KeyRecoverySession"
+ *   jndi-name="KeyRecoverySession"
+ *   local-jndi-name="KeyRecoverySessionLocal"
+ *   view-type="both"
+ *   type="Stateless"
+ *   transaction-type="Container"
+ *
+ * @ejb.transaction type="Required"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.env-entry
+ *   name="Datasource"
+ *   type="java.lang.String"
+ *   value="java:/DefaultDS"   
+ *
+ * @ejb.ejb-external-ref
+ *   description="The key recovery data entity bean"
+ *   view-type="local"
+ *   ejb-name="KeyRecoveryData"
+ *   type="Entity"
+ *   home="se.anatom.ejbca.keyrecovery.KeyRecoveryDataLocalHome"
+ *   business="se.anatom.ejbca.keyrecovery.KeyRecoveryDataLocal"
+ *   link="KeyRecoveryData"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Sign Session Bean"
+ *   view-type="local"
+ *   ejb-name="RSASignSession"
+ *   type="Session"
+ *   home="se.anatom.ejbca.ca.sign.ISignSessionLocalHome"
+ *   business="se.anatom.ejbca.ca.sign.ISignSessionLocal"
+ *   link="RSASignSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Certificate Store session bean"
+ *   view-type="local"
+ *   ejb-name="CertificateStoreSession"
+ *   type="Session"
+ *   home="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome"
+ *   business="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal"
+ *   link="CertificateStoreSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The log session bean"
+ *   view-type="local"
+ *   ejb-name="LogSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.log.ILogSessionLocalHome"
+ *   business="se.anatom.ejbca.log.ILogSessionLocal"
+ *   link="LogSession"
+ *
+ * @ejb.home
+ *   extends="javax.ejb.EJBHome"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.keyrecovery.IKeyRecoverySessionLocalHome"
+ *   remote-class="se.anatom.ejbca.keyrecovery.IKeyRecoverySessionHome"
+ *
+ * @ejb.interface
+ *   extends="javax.ejb.EJBObject"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.keyrecovery.IKeyRecoverySessionLocal"
+ *   remote-class="se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote"
+ *
+ * @jonas.bean
+ *   ejb-name="KeyRecoverySession"
+ *
  */
 public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
@@ -164,6 +234,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	 * @return false if the certificates keyrecovery data already exists.
 	 *
 	 * @throws EJBException if a communication or other error occurs.
+	 *
+	 * @ejb.interface-method view-type="both"
 	 */
 	public boolean addKeyRecoveryData(Admin admin, X509Certificate certificate, String username,
 		KeyPair keypair) {
@@ -209,6 +281,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	 * @return false if certificates keyrecovery data doesn't exists
 	 *
 	 * @throws EJBException if a communication or other error occurs.
+	 *
+	 * @ejb.interface-method view-type="both"
 	 */
 	public boolean changeKeyRecoveryData(Admin admin, X509Certificate certificate,
 		boolean markedasrecoverable, KeyPair keypair) {
@@ -255,6 +329,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	 * @param certificate the certificate used with the keys about to be removed.
 	 *
 	 * @throws EJBException if a communication or other error occurs.
+	 *
+	 * @ejb.interface-method view-type="both"
 	 */
 	public void removeKeyRecoveryData(Admin admin, X509Certificate certificate) {
 		debug(">removeKeyRecoveryData(certificate: " + certificate.getSerialNumber().toString() +
@@ -289,6 +365,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	 * @param username DOCUMENT ME!
 	 *
 	 * @throws EJBException if a communication or other error occurs.
+	 *
+	 * @ejb.interface-method view-type="both"
 	 */
 	public void removeAllKeyRecoveryData(Admin admin, String username) {
 		debug(">removeAllKeyRecoveryData(user: " + username + ")");
@@ -323,6 +401,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	 * @return the marked keyrecovery data  or null if no recoverydata can be found.
 	 *
 	 * @throws EJBException if a communication or other error occurs.
+	 *
+	 * @ejb.interface-method view-type="both"
 	 */
 	public KeyRecoveryData keyRecovery(Admin admin, String username) {
 		debug(">keyRecovery(user: " + username + ")");
@@ -383,6 +463,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	 *         user, or user already marked.
 	 *
 	 * @throws EJBException if a communication or other error occurs.
+	 *
+	 * @ejb.interface-method view-type="both"
 	 */
 	public boolean markNewestAsRecoverable(Admin admin, String username) {
 		debug(">markNewestAsRecoverable(user: " + username + ")");
@@ -443,6 +525,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	 * @return true if operation went successful or false if  certificate couldn't be found.
 	 *
 	 * @throws EJBException if a communication or other error occurs.
+	 *
+	 * @ejb.interface-method view-type="both"
 	 */
 	public boolean markAsRecoverable(Admin admin, X509Certificate certificate) {
 		debug(">markAsRecoverable(certificatesn: " + certificate.getSerialNumber() + ")");
@@ -477,6 +561,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	 * @param username DOCUMENT ME!
 	 *
 	 * @throws EJBException if a communication or other error occurs.
+	 *
+	 * @ejb.interface-method view-type="both"
 	 */
 	public void unmarkUser(Admin admin, String username) {
 		debug(">unmarkUser(user: " + username + ")");
@@ -507,6 +593,9 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	 * @return true if user is already marked for key recovery.
 	 *
 	 * @throws EJBException if a communication or other error occurs.
+	 *
+	 * @ejb.interface-method view-type="both"
+	 * @ejb.transaction type="Supports" 
 	 */
 	public boolean isUserMarked(Admin admin, String username) {
 		debug(">isUserMarked(user: " + username + ")");
@@ -543,6 +632,9 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	 * @return true if user is already marked for key recovery.
 	 *
 	 * @throws EJBException if a communication or other error occurs.
+	 *
+	 * @ejb.interface-method view-type="both"
+	 * @ejb.transaction type="Supports"
 	 */
 	public boolean existsKeys(Admin admin, X509Certificate certificate) {
 		debug(">existsKeys()");

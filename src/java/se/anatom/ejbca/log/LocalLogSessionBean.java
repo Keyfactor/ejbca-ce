@@ -43,7 +43,70 @@ import se.anatom.ejbca.util.query.Query;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalLogSessionBean.java,v 1.18 2004-04-16 07:38:57 anatom Exp $
+ *
+ * @ejb.bean
+ *   display-name="LogSessionSB"
+ *   name="LogSession"
+ *   jndi-name="LogSession"
+ *   local-jndi-name="LogSessionLocal"
+ *   view-type="both"
+ *   type="Stateless"
+ *   transaction-type="Container"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.env-entry
+ *   name="Datasource"
+ *   type="java.lang.String"
+ *   value="java:/DefaultDS"   
+ *
+ * @ejb.env-entry
+ *   description="String representing the log device factories to be used. The different device classes should be separated with semicolons (;)."
+ *   name="logDeviceFactories"
+ *   type="java.lang.String"
+ *   value="se.anatom.ejbca.log.Log4jLogDeviceFactory"
+ *
+ * @ejb.env-entry
+ *   description="String representing the property file corresponding to each log device.
+                  The property files should be placed in the "/logdeviceproperties" subdirectory.
+                  The filenames should be separated with semicolons (;)"
+ *   name="logDevicePropertyFiles"
+ *   type="java.lang.String"
+ *   value="Log4j.properties"
+ * 
+ * @ejb.ejb-external-ref
+ *   description="The Log Entry Data entity bean"
+ *   view-type="local"
+ *   ejb-name="LogEntryDataLocal"
+ *   type="Entity"
+ *   home="se.anatom.ejbca.log.LogEntryDataLocalHome"
+ *   business="se.anatom.ejbca.log.LogEntryDataLocal"
+ *   link="LogEntryData"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Log Configuration Data Entity bean"
+ *   view-type="local"
+ *   ejb-name="LogConfigurationDataLocal"
+ *   type="Entity"
+ *   home="se.anatom.ejbca.log.LogConfigurationDataLocalHome"
+ *   business="se.anatom.ejbca.log.LogConfigurationDataLocal"
+ *   link="LogConfigurationData"
+ *
+ * @ejb.home
+ *   extends="javax.ejb.EJBHome"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.log.ILogSessionLocalHome"
+ *   remote-class="se.anatom.ejbca.log.ILogSessionHome"
+ *
+ * @ejb.interface
+ *   extends="javax.ejb.EJBObject"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.log.ILogSessionLocal"
+ *   remote-class="se.anatom.ejbca.log.ILogSessionRemote"
+ *
+ * @jonas.bean
+ *   ejb-name="LogSession"
+ *
  */
 public class LocalLogSessionBean extends BaseSessionBean  {
 
@@ -138,7 +201,10 @@ public class LocalLogSessionBean extends BaseSessionBean  {
      * @param certificate the certificate involved in the event or null if no certificate is involved.
      * @param event id of the event, should be one of the se.anatom.ejbca.log.LogEntry.EVENT_ constants.
      * @param comment comment of the event.
-     */
+	 *
+	 * @ejb.interface-method view-type="both"
+	 * @ejb.transaction type="RequiresNew"
+	 */
     public void log(Admin admin, int caid, int module,  Date time, String username, X509Certificate certificate, int event, String comment){
       try{
         LogConfiguration logconfiguration = loadLogConfiguration(caid);
@@ -177,8 +243,10 @@ public class LocalLogSessionBean extends BaseSessionBean  {
      /**
      * Same as above but with the difference of CAid which is taken from the issuerdn of 
      * given certificate.
-     */
-    
+	 *
+	 * @ejb.interface-method view-type="both"
+	 * @ejb.transaction type="RequiresNew"
+	 */
     public void log(Admin admin, X509Certificate caid, int module,  Date time, String username, X509Certificate certificate, int event, String comment){
        log(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment);
     } // log
@@ -188,7 +256,11 @@ public class LocalLogSessionBean extends BaseSessionBean  {
     * See function above for more documentation.
     *
     * @param exception the exception that has occured
-    */
+	 *
+	 * @ejb.interface-method view-type="both"
+	 * @ejb.transaction type="RequiresNew"
+	 *
+	 */
     public void log(Admin admin, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception){
       try{
         LogConfiguration logconfiguration = loadLogConfiguration(caid);   
@@ -226,7 +298,9 @@ public class LocalLogSessionBean extends BaseSessionBean  {
      /**
      * Same as above but with the difference of CAid which is taken from the issuerdn of 
      * given certificate.
-     */
+	 *
+	 * @ejb.interface-method view-type="both"
+	 */
     public void log(Admin admin, X509Certificate caid, int module,  Date time, String username, X509Certificate certificate, int event, String comment, Exception exception){
       log(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment, exception);
     } // log    
@@ -240,7 +314,11 @@ public class LocalLogSessionBean extends BaseSessionBean  {
      * @return a collection of LogEntry. Maximum size of Collection is defined i ILogSessionRemote.MAXIMUM_QUERY_ROWCOUNT
      * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
      * @see se.anatom.ejbca.util.query.Query
-     */
+	 *
+	 * @ejb.interface-method view-type="both"
+	 * @ejb.transaction type="Supports"
+	 *
+	 */
     public Collection query(Query query, String viewlogprivileges, String capriviledges) throws IllegalQueryException{
         debug(">query()");
         Connection con = null;
@@ -296,7 +374,11 @@ public class LocalLogSessionBean extends BaseSessionBean  {
      * Loads the log configuration from the database.
      *
      * @return the logconfiguration
-     */
+	 *
+	 * @ejb.interface-method view-type="both"
+	 * @ejb.transaction type="Supports"
+	 *
+	 */
     public LogConfiguration loadLogConfiguration(int caid){
         // Check if log configuration exists, else create one.
       LogConfiguration logconfiguration = null;
@@ -320,7 +402,11 @@ public class LocalLogSessionBean extends BaseSessionBean  {
      * Saves the log configuration to the database.
      *
      * @param logconfiguration the logconfiguration to save.
-     */
+	 *
+	 * @ejb.interface-method view-type="both"
+	 * @ejb.transaction type="Required"
+	 *
+	 */
     public void saveLogConfiguration(Admin admin, int caid, LogConfiguration logconfiguration){
       try{
         try{
