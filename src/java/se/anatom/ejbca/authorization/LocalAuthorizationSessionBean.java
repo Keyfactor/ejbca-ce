@@ -34,7 +34,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.5 2004-02-19 12:16:49 herrvendil Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.6 2004-02-20 08:35:01 herrvendil Exp $
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
@@ -184,8 +184,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
            String admingroupname = "Temporary Super Administrator Group";   
            addAdminGroup(admin, admingroupname, caid); 
            ArrayList adminentities = new ArrayList();
-           adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,"SuperAdmin",caid));
-           adminentities.add(new AdminEntity(AdminEntity.SPECIALADMIN_INTERNALUSER));
+           adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,"SuperAdmin",caid));           
            
            addAdminEntities(admin, admingroupname, caid, adminentities);
            ArrayList accessrules = new ArrayList();
