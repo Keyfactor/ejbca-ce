@@ -59,7 +59,7 @@
 
   if(request.getParameter(BUTTON_REVOKE) != null){
    String reasonstring = request.getParameter(SELECT_REVOKE_REASON);
-   username = request.getParameter(USER_PARAMETER);
+   username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
    if(request.getParameter(TOKENSN_PARAMETER) != null){
      if(username != null && reasonstring != null){
        tokensn  = request.getParameter(TOKENSN_PARAMETER);  
@@ -83,7 +83,7 @@
   } 
 
   if( request.getParameter(TOKENSN_PARAMETER) != null ){
-    username = request.getParameter(USER_PARAMETER);
+    username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
     tokensn  = request.getParameter(TOKENSN_PARAMETER);
     if(username != null && tokensn != null){
       noparameter=false;
@@ -98,7 +98,7 @@
     }
   }else{
     if( request.getParameter(USER_PARAMETER) != null ){
-      username = request.getParameter(USER_PARAMETER);
+      username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
       if(username!=null){
        alluserstokens=true;
        noparameter=false; 
