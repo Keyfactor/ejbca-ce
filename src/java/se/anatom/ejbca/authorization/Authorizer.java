@@ -37,7 +37,7 @@ import se.anatom.ejbca.util.CertTools;
  *
  * The main metod are isAthorized and authenticate.
  *
- * @version $Id: Authorizer.java,v 1.9 2004-08-05 18:23:09 anatom Exp $
+ * @version $Id: Authorizer.java,v 1.10 2004-08-06 07:46:28 anatom Exp $
  */
 public class Authorizer extends Object implements java.io.Serializable{
     
@@ -51,8 +51,6 @@ public class Authorizer extends Object implements java.io.Serializable{
         accesstree = new AccessTree();
         authorizationproxy = new AuthorizationProxy(admingrouphome, accesstree);
         buildAccessTree(admingroups);
-        
-        
         this.logsession = logsession;
         this.module=module;
         this.certificatesession = certificatestoresession;
