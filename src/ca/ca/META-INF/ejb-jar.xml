@@ -469,7 +469,7 @@
      </ejb-local-ref>
    </session> 
 
-   <session>
+   <!--session>
      <description>Upgrades the database for a new version of ejbca</description>
      <ejb-name>UpgradeSession</ejb-name>
      <home>se.anatom.ejbca.upgrade.IUpgradeSessionHome</home>
@@ -517,7 +517,7 @@
         <local>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal</local>
         <ejb-link>RaAdminSession</ejb-link>
      </ejb-local-ref>     
-   </session>
+   </session-->
 
    <entity>
       <description>
@@ -963,10 +963,10 @@
          <ejb-name>PublisherSession</ejb-name>
          <method-name>*</method-name>
      </method>
-     <method>
+     <!--method>
          <ejb-name>UpgradeSession</ejb-name>
          <method-name>*</method-name>
-     </method>
+     </method-->
    <trans-attribute>Required</trans-attribute>
    </container-transaction>
 
