@@ -31,4 +31,6 @@ Yannick Quenec'hdu <yquenechdu(at)linagora.com> french translation.
 James A. Rome <jar(at)ornl.gov>, additional 'Use fields in DN' for publisher.
 Manuel Ruiz <mruiz(at)safa.es>, make admin commands flexible and usable from within java-code.
 Risto Laanoja <risto.laanoja(at)eyp.ee>, fix for integer overflow when setting CRLPeriod longer than 596 hours.
-
+Giampaolo Tomassoni <Giampaolo(at)Tomassoni.biz>, PostgresSQL 8.0.
+Philipp Faerber <philipp.faerber(at)adnovum.ch>, Weblogic 8.1, adminweb sql fix.
+Hu Aranjuez <mynetbus(at)126.com>, column name fix for MS SQL2000.
