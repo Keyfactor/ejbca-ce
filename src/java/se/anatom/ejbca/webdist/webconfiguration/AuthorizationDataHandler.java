@@ -18,7 +18,7 @@ import se.anatom.ejbca.log.Admin;
  * A class handling the authorization data. 
  *
  * @author  Philip Vendil
- * @version $Id: AuthorizationDataHandler.java,v 1.16 2003-10-01 11:12:14 herrvendil Exp $
+ * @version $Id: AuthorizationDataHandler.java,v 1.17 2004-02-19 16:04:19 herrvendil Exp $
  */
 public class AuthorizationDataHandler {
 
@@ -130,7 +130,7 @@ public class AuthorizationDataHandler {
     }
 
     /** 
-     * Method to remove an array of access rules from a admingroup.
+     * Method to remove an collection of access rules from a admingroup.
      * 
      * @param accessrules a Collection of String containing accesssrules to remove.
      * @throws AuthorizationDeniedException when administrator is't authorized to edit this CA.
@@ -140,6 +140,19 @@ public class AuthorizationDataHandler {
       authorizationsession.removeAccessRules(administrator, admingroupname, caid, accessrules);
       informationmemory.administrativePriviledgesEdited();
     }
+
+    /** 
+     * Method to replace an collection of access rules in a admingroup.
+     * 
+     * @param accessrules a Collection of String containing accesssrules to replace.
+     * @throws AuthorizationDeniedException when administrator is't authorized to edit this CA.
+     */
+    public void replaceAccessRules(String admingroupname,int caid, Collection accessrules) throws AuthorizationDeniedException {
+    	authorizedToEditAdministratorPrivileges(admingroupname, caid);
+    	authorizationsession.replaceAccessRules(administrator, admingroupname, caid, accessrules);
+    	informationmemory.administrativePriviledgesEdited();
+    }
+    
     
     /**
      * Method réturning all the available access rules authorized to administrator to manage.
@@ -179,11 +192,11 @@ public class AuthorizationDataHandler {
 
     private void authorizedToEditAdministratorPrivileges(String admingroup, int caid) throws AuthorizationDeniedException{
        // Authorized to edit administrative priviledges
-      authorizationsession.isAuthorized(administrator, "/system_functionality/edit_administrator_privileges");
+      authorizationsession.isAuthorizedNoLog(administrator, "/system_functionality/edit_administrator_privileges");
       // Authorized to given CA.
-      authorizationsession.isAuthorized(administrator, AvailableAccessRules.CAPREFIX + caid);     
+      authorizationsession.isAuthorizedNoLog(administrator, AvailableAccessRules.CAPREFIX + caid);     
       // Check if admin group is among available admin groups
-      Iterator iter = this.authorizedadmingroups.iterator();
+      Iterator iter = getAdminGroupNames().iterator();
       boolean exists = false;
       while(iter.hasNext()){
         AdminGroup next = (AdminGroup) iter.next();  

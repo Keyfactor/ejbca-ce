@@ -27,7 +27,7 @@ import se.anatom.ejbca.ra.UserDataLocalHome;
 /**
  * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from EJBCA RA.
  *
- * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.14 2004-01-08 14:31:26 herrvendil Exp $
+ * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.15 2004-02-19 16:04:19 herrvendil Exp $
  */
 public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
@@ -124,27 +124,44 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
     public UserAdminData getNextHardTokenToGenerate(Admin admin, String alias) throws UnavailableTokenException{
       debug(">getNextHardTokenToGenerate()");
+      System.out.println(">getNextHardTokenToGenerate()");
+      System.out.println("alias " + alias);
       UserAdminData returnval=null;
       int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
-
+  
+      System.out.println("issuerid " + issuerid);      
+      
       if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
         Connection con = null;
         ResultSet rs = null;
+        PreparedStatement ps = null;
+        
         try{
            // Construct SQL query.
-            con = getConnection();
-            rs = getHardTokensFromHardTokenIssuer(con,issuerid);
+        	System.out.println("HERE");
+            con = getConnection();            
+            ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)" );
+            ps.setInt(1,issuerid);
+            ps.setInt(2,SecConst.TOKEN_SOFT);
+            ps.setInt(3,UserDataLocal.STATUS_NEW);
+            ps.setInt(4,UserDataLocal.STATUS_KEYRECOVERY);
+            
+            // Execute query.
+            rs = ps.executeQuery();      
+                                                
             // Assemble result.
+            
            if(rs.next()){
               returnval = new UserAdminData(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
                                                , rs.getInt(10), rs.getInt(11)
                                                , new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9))
                                                ,  rs.getInt(12), rs.getInt(13));
               returnval.setPassword(rs.getString(7));
+              System.out.println("found user" + returnval.getUsername());
             }
             if(returnval !=null){
               getHardTokenSession().getIsHardTokenProfileAvailableToIssuer(admin, issuerid, returnval);
-              getLogSession().log(admin, returnval.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with alias :" + alias);
+              getLogSession().log(admin, returnval.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with alias :" + alias);
             }
         }catch(Exception e){
           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with alias: " + alias);
@@ -152,12 +169,15 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         } finally {
            try{
              if(rs != null) rs.close();
+             if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
                error("Fel vid upprensning: ", se);
            }
         }
       }
+      
+      System.out.println("<getNextHardTokenToGenerate()");
       debug("<getNextHardTokenToGenerate()");
       return returnval;
     }// getNextHardTokenToGenerate
@@ -181,10 +201,15 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
       if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
         ResultSet rs = null;
         Connection con = null;
+        PreparedStatement ps = null;
         try{
            // Construct SQL query.
             con = getConnection();
-            rs = getHardTokensFromHardTokenIssuer(con,issuerid);
+            ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)" );
+            ps.setInt(1,issuerid);
+            ps.setInt(2,SecConst.TOKEN_SOFT);
+            ps.setInt(3,UserDataLocal.STATUS_NEW);
+            ps.setInt(4,UserDataLocal.STATUS_KEYRECOVERY);
             // Assemble result.
            while(rs.next() && returnval.size() <= IHardTokenBatchJobSessionLocal.MAX_RETURNED_QUEUE_SIZE){
               UserAdminData data = new UserAdminData(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
@@ -194,14 +219,15 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
               data.setPassword(rs.getString(7));
               getHardTokenSession().getIsHardTokenProfileAvailableToIssuer(admin, issuerid, data);
               returnval.add(data);
-              getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with alias :" + alias);
+              getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with alias :" + alias);
             }
         }catch(Exception e){
           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next tokens for issuer with alias: " + alias);
           throw new EJBException(e);
         }finally{
-           try{
+           try{           	
              if(rs != null) rs.close();
+             if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
                error("Fel vid upprensning: ", se);
@@ -236,11 +262,17 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
       if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
         Connection con = null;
+        PreparedStatement ps = null;
         ResultSet rs = null;
         try{
            // Construct SQL query.
             con = getConnection();
-            rs = getHardTokensFromHardTokenIssuer(con,issuerid);
+            ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)" );
+            ps.setInt(1,issuerid);
+            ps.setInt(2,SecConst.TOKEN_SOFT);
+            ps.setInt(3,UserDataLocal.STATUS_NEW);
+            ps.setInt(4,UserDataLocal.STATUS_KEYRECOVERY);
+            
             // Assemble result.
            if(rs.relative(index)){
               returnval = new UserAdminData(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
@@ -251,14 +283,15 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
             }
             if(returnval !=null){
               getHardTokenSession().getIsHardTokenProfileAvailableToIssuer(admin, issuerid, returnval);
-              getLogSession().log(admin, returnval.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with alias: " + alias);
+              getLogSession().log(admin, returnval.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with alias: " + alias);
             }
         }catch(Exception e){
           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with alias: " + alias);
           throw new EJBException(e);
         }finally{
-           try{
+           try{           	 
              if(rs != null) rs.close();
+             if(ps != null) ps.close();
              if(con!= null) con.close();
            }catch(SQLException se){
                error("Fel vid upprensning: ", se);
@@ -361,24 +394,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         }
     } // checkForHardTokenIssuerId
 
-    private ResultSet getHardTokensFromHardTokenIssuer(Connection con, int issuerid) throws SQLException {
-        ResultSet rs = null;
-        PreparedStatement ps = null;
-        try {
-            // Construct SQL query.
-            ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)" );
-            ps.setInt(1,issuerid);
-            ps.setInt(2,SecConst.TOKEN_SOFT);
-			ps.setInt(3,UserDataLocal.STATUS_NEW);
-			ps.setInt(4,UserDataLocal.STATUS_KEYRECOVERY);
-			
-            // Execute query.
-            rs = ps.executeQuery();
-            return rs;
-        } finally {
-            if(ps != null) ps.close();
-        }
-    }
+
 
 } // LocalRaAdminSessionBean
 

@@ -326,11 +326,6 @@ function checkuseemailfield(){
            <% if(profiledata.isRequired(EndEntityProfile.PASSWORD,0))
                  out.write("CHECKED");
            %>> 
-        &nbsp;&nbsp;<%= ejbcawebbean.getText("MODIFYABLE") %> 
-        <input type="checkbox" name="<%=CHECKBOX_MODIFYABLE_PASSWORD %>" value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
-           <% if(profiledata.isModifyable(EndEntityProfile.PASSWORD,0))
-                 out.write("CHECKED");
-           %>> 
       </td>
     <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
@@ -343,13 +338,14 @@ function checkuseemailfield(){
         <% used = false;
              if(profiledata.getUse(EndEntityProfile.CLEARTEXTPASSWORD,0)) 
                  used=true; %>
-        <input type="checkbox" name="<%=CHECKBOX_CLEARTEXTPASSWORD%>"  value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
-           <% if(profiledata.getValue(EndEntityProfile.CLEARTEXTPASSWORD,0).equals(EndEntityProfile.TRUE) && used)
-                 out.write(" CHECKED ");
-           %>> <br>
         <%= ejbcawebbean.getText("USE") %> 
         <input type="checkbox" name="<%=CHECKBOX_USE_CLEARTEXTPASSWORD %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusecheckbox('<%=CHECKBOX_USE_CLEARTEXTPASSWORD %>', '<%=CHECKBOX_CLEARTEXTPASSWORD%>', '<%=CHECKBOX_REQUIRED_CLEARTEXTPASSWORD %>')"
            <%  if(used)
+                 out.write(" CHECKED ");
+           %>><br>
+        <%= ejbcawebbean.getText("DEFAULT") %> 
+        <input type="checkbox" name="<%=CHECKBOX_CLEARTEXTPASSWORD%>"  value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
+           <% if(profiledata.getValue(EndEntityProfile.CLEARTEXTPASSWORD,0).equals(EndEntityProfile.TRUE) && used)
                  out.write(" CHECKED ");
            %>> &nbsp;&nbsp; 
         <%= ejbcawebbean.getText("REQUIRED") %>

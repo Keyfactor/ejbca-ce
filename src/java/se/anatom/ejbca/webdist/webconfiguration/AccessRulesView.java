@@ -56,7 +56,7 @@ public class AccessRulesView implements java.io.Serializable {
         }
         
         // Check if rule is CA access rule
-        if(accessrulestring.startsWith(AvailableAccessRules.CAPREFIX)){
+        if(accessrulestring.startsWith(AvailableAccessRules.CAPREFIX) || accessrulestring.equals(AvailableAccessRules.CABASE)){
           this.caaccessrules.add(accessrule);
           regular=false;
         }        

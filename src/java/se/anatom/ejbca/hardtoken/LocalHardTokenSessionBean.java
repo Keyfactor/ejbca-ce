@@ -48,7 +48,7 @@ import se.anatom.ejbca.util.CertTools;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.21 2004-02-05 14:19:28 herrvendil Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.22 2004-02-19 16:04:19 herrvendil Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
@@ -602,16 +602,20 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      * @return true if administrator is authorized to issue hardtoken with given alias.
      */
     public boolean getAuthorizedToHardTokenIssuer(Admin admin, String alias){
-      boolean returnval = false;
-      
-      try{
-      	int admingroupid = hardtokenissuerhome.findByAlias(alias).getAdminGroupId();
-		returnval = authorizationsession.isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens");
-      	returnval = returnval && authorizationsession.existsAdministratorInGroup(admin, admingroupid);      	 
-      	
-      }catch(FinderException fe){}
-       catch(AuthorizationDeniedException ade){}
-      	
+      System.out.println(">getAuthorizedToHardTokenIssuer(" +  alias + ")");
+      boolean returnval = false;      
+        try{
+        	
+      	  int admingroupid = hardtokenissuerhome.findByAlias(alias).getAdminGroupId();
+      	  System.out.println("admingroupid " +  admingroupid);
+		  returnval = authorizationsession.isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens");
+		  System.out.println("isAuthorizedNoLog " +  returnval );
+      	  returnval = returnval && authorizationsession.existsAdministratorInGroup(admin, admingroupid);      	 
+      	  System.out.println("existsAdministratorInGroup " +  returnval );
+        }catch(FinderException fe){}
+          catch(AuthorizationDeniedException ade){}
+
+          System.out.println("<getAuthorizedToHardTokenIssuer(" +  returnval + ")");
       return returnval;	
     }
 

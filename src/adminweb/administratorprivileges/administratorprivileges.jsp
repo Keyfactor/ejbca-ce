@@ -1,20 +1,23 @@
 <%@page contentType="text/html"%>
 <%@page errorPage="/errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration
-               ,se.anatom.ejbca.authorization.AccessRule, se.anatom.ejbca.webdist.webconfiguration.AuthorizationDataHandler,
-                se.anatom.ejbca.webdist.webconfiguration.AccessRulesView, se.anatom.ejbca.authorization.AvailableAccessRules,
-                se.anatom.ejbca.authorization.AdminEntity, se.anatom.ejbca.authorization.AdminGroupExistsException,
-                se.anatom.ejbca.authorization.AdminGroup, se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, java.util.*"%>
+               , se.anatom.ejbca.webdist.webconfiguration.AuthorizationDataHandler,
+                se.anatom.ejbca.webdist.webconfiguration.AccessRulesView, se.anatom.ejbca.authorization.*,
+                se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, java.util.*"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
 <jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
 
 <%! // Declarations  
-  static final String ACTION                   = "action";
-  static final String ACTION_EDIT_GROUPS       = "editgroup";
-  static final String ACTION_EDIT_ACCESSRULES  = "editaccessrules";
-  static final String ACTION_EDIT_ADMINENTITIES = "editadminentities";
-
+  static final String ACTION                        = "action";
+  static final String ACTION_EDIT_GROUPS            = "editgroup";
+  static final String ACTION_EDIT_ACCESSRULES       = "editaccessrules";
+  static final String ACTION_EDIT_ADMINENTITIES     = "editadminentities";
+  static final String ACTION_EDIT_BASICACCESSRULES  = "editbasicaccessrules";
+  
+  static final String MODE                          = "mode"; 
+  static final String MODE_BASIC                    = "modebasic"; 
+  static final String MODE_ADVANCED                 = "modeadvanced";
 
   static final String BUTTON_EDIT_ADMINS        = "buttoneditadmins"; 
   static final String BUTTON_EDIT_ACCESSRULES  = "buttoneditaccessrules";
@@ -41,6 +44,17 @@
   static final String HIDDEN_DELETEROW      = "hiddendeleterow";
   static final String HIDDEN_ADDRESOURCE    = "hiddenaddresource";
   static final String SELECT_ADDRULE        = "selectaddrule";
+  static final String SELECT_MODE           = "selectmode";
+
+// Used in editbasicaccessrules.jsp
+  static final String BUTTON_SAVE           = "buttonsave"; 
+  static final String BUTTON_CANCEL         = "buttoncancel";
+
+  static final String SELECT_ROLE               = "selectrole";
+  static final String SELECT_CAS                = "selectcas";
+  static final String SELECT_ENDENTITYRULES     = "selectendentityrules";
+  static final String SELECT_ENDENTITYPROFILES  = "selectendentityprofiles";
+  static final String SELECT_OTHER              = "selectother";
 
 // Used in editadminentities.jsp
   static final String BUTTON_ADD_ADMINENTITY      = "buttonaddadminentity"; 
@@ -67,6 +81,7 @@
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/system_functionality/edit_administrator_privileges"); 
                                             cabean.initialize(request, ejbcawebbean);       
                                             rabean.initialize(request, ejbcawebbean); 
+ 
   String THIS_FILENAME            =  globalconfiguration.getAuthorizationPath()  + "/administratorprivileges.jsp";
   AuthorizationDataHandler adh    = ejbcawebbean.getAuthorizationDataHandler(); 
   HashMap  caidtonamemap  = cabean.getCAIdToNameMap();
@@ -162,6 +177,56 @@
          if(!admingroup[ADMINGROUPNAME].trim().equals("")){
              caid = Integer.parseInt(admingroup[CAID]);
              includefile="editaccessrules.jsp";
+             if(request.getParameter(MODE) != null && request.getParameter(MODE).equals(MODE_BASIC)){
+
+                if(request.getParameter(BUTTON_SAVE) != null){
+                  // get role
+                  int role = Integer.parseInt(request.getParameter(SELECT_ROLE));
+                  // get currentcas
+                  ArrayList currentcas = new ArrayList();
+                  String[] values = request.getParameterValues(SELECT_CAS);
+                  if(values != null){
+                    for(int i=0;i < values.length; i++){
+                      currentcas.add(new Integer(values[i]));
+                    }
+                  }  
+                  // get current end entity rules
+                  ArrayList currentententityrules = new ArrayList();
+                  values = request.getParameterValues(SELECT_ENDENTITYRULES);
+                  if(values != null){
+                    for(int i=0;i < values.length; i++){
+                      currentententityrules.add(new Integer(values[i]));
+                    } 
+                  }
+                  // get current end entity profiles
+                  ArrayList currentententityprofiles = new ArrayList();
+                  values = request.getParameterValues(SELECT_ENDENTITYPROFILES);
+                  if(values != null){
+                    for(int i=0;i < values.length; i++){
+                      currentententityprofiles.add(new Integer(values[i]));
+                    }
+                  } 
+                  // get other rules
+                  ArrayList currentother = new ArrayList();
+                  values = request.getParameterValues(SELECT_OTHER);
+                  if(values != null){
+                    for(int i=0;i < values.length; i++){
+                       currentother.add(new Integer(values[i]));
+                    } 
+                  }
+
+                  BasicAccessRuleSetDecoder barsd = new BasicAccessRuleSetDecoder(role, currentcas, currentententityrules, currentententityprofiles,currentother);
+                   
+                  adh.replaceAccessRules(admingroup[ADMINGROUPNAME],caid,barsd.getCurrentAdvancedRuleSet());  
+
+                  includefile="editadmingroups.jsp";    
+                }
+                if(request.getParameter(BUTTON_SAVE) != null){
+                  includefile="editadmingroups.jsp";    
+                }
+             }
+      
+         
          }
          else{ 
             admingroup= null;
