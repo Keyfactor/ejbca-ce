@@ -354,8 +354,8 @@
 		 extendedcaservices.add(
 		             new OCSPCAServiceInfo(ocspactive,
 						  "CN=OCSPSignerCertificate, " + subjectdn,
-			     		          "",
-						  1024,
+			     		  "",
+						  2048,
 						  OCSPCAServiceInfo.KEYALGORITHM_RSA));
                  X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, 0, subjectaltname,
                                                         certprofileid, validity, 

@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.22 2004-01-02 15:33:15 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.23 2004-01-07 19:50:19 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
     /** Pointer to main certificate store */
@@ -95,7 +95,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
 				new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
 									  "CN=OCSPSignerCertificate, " + dn,
 									  "",
-									  1024,
+									  2048,
 									  OCSPCAServiceInfo.KEYALGORITHM_RSA));
               
             

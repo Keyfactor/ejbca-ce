@@ -60,7 +60,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.10 2004-01-02 15:33:15 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.11 2004-01-07 19:50:21 anatom Exp $
  */
 public class CAAdminSessionBean extends BaseSessionBean {
     
@@ -1011,7 +1011,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			  new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
 			                        "CN=OCSPSignerCertificate, " + cacertificate.getSubjectDN().toString(),
 			                        "",
-			                        1024,
+			                        2048,
 			                        OCSPCAServiceInfo.KEYALGORITHM_RSA));
                 
                 
