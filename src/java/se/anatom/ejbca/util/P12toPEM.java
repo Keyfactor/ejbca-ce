@@ -23,13 +23,15 @@ import org.bouncycastle.jce.provider.*;
  * a third file. The PEM files will have the names <i>common name</i>.pem, <i>common
  * name</i>Key.pem and <i>common name</i>CA.pem derived from the DN in user certificate.
  *
- * @version $Id: P12toPEM.java,v 1.9 2003-07-24 08:43:32 anatom Exp $
+ * @version $Id: P12toPEM.java,v 1.10 2003-10-29 15:23:28 herrvendil Exp $
  */
 public class P12toPEM {
     private static Logger log = Logger.getLogger(P12toPEM.class);
     String exportpath = "./p12/pem/";
     String p12File;
     String password;
+    KeyStore ks = null;
+    
     boolean overwrite = false;
     byte[] beginCertificate = "-----BEGIN CERTIFICATE-----".getBytes();
     byte[] endCertificate = "-----END CERTIFICATE-----".getBytes();
@@ -79,11 +81,26 @@ public class P12toPEM {
      *
      * @param p12File p12File The (path +) name of the input p12 file.
      * @param password password The password for the p12 file.
+     * 
      */
     public P12toPEM(String p12File, String password) {
         this.p12File = p12File;
         this.password = password;
     }
+
+	/**
+	 * Basic construtor using a inmemory keystore instead for a file.
+	 *
+	 * @param ks the keystore to use.
+	 * @param password password The password for the p12 file.
+	 * @param overwrite overwrite If existing files should be overwritten.    
+	 */
+	public P12toPEM(KeyStore keystore, String password, boolean overwrite) {		
+		this.password = password;
+		this.ks = keystore;
+		this.overwrite = overwrite;
+	}
+
 
     /**
      * Sets the directory where PEM-files wil be stores
@@ -123,11 +140,13 @@ public class P12toPEM {
         throws KeyStoreException, FileNotFoundException, IOException, NoSuchProviderException, 
             NoSuchAlgorithmException, CertificateEncodingException, CertificateException, 
             UnrecoverableKeyException {
-        KeyStore ks = ks = KeyStore.getInstance("PKCS12", "BC");
-        InputStream in = new FileInputStream(p12File);
-        ks.load(in, password.toCharArray());
-        in.close();
-
+         
+         if(this.ks == null){    	
+            ks = KeyStore.getInstance("PKCS12", "BC");
+            InputStream in = new FileInputStream(p12File);
+            ks.load(in, password.toCharArray());
+            in.close();
+        }
         // Fid the key private key entry in the keystore
         Enumeration e = ks.aliases();
         Object o = null;

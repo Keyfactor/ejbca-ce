@@ -44,7 +44,7 @@ import se.anatom.ejbca.util.P12toPEM;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.41 2003-10-01 11:12:15 herrvendil Exp $
+ * @version $Id: BatchMakeP12.java,v 1.42 2003-10-29 15:23:33 herrvendil Exp $
  */
 public class BatchMakeP12 {
     /** For logging */
@@ -193,15 +193,15 @@ public class BatchMakeP12 {
             keyStoreFilename += ".p12";
         }
 
-        FileOutputStream os = new FileOutputStream(keyStoreFilename);
-        ks.store(os, kspassword.toCharArray());
-
         // If we should also create PEM-files, do that
         if (createPEM) {
             String PEMfilename = mainStoreDir + "/pem";
-            P12toPEM p12topem = new P12toPEM(keyStoreFilename, kspassword, true);
+            P12toPEM p12topem = new P12toPEM(ks, kspassword, true);
             p12topem.setExportPath(PEMfilename);
             p12topem.createPEM();
+        }else{
+			FileOutputStream os = new FileOutputStream(keyStoreFilename);
+			ks.store(os, kspassword.toCharArray());        	
         }
 
         log.debug("Keystore stored in " + keyStoreFilename);
@@ -229,7 +229,7 @@ public class BatchMakeP12 {
 
     private void createUser(String username, String password, int caid, KeyPair rsaKeys, boolean createJKS, boolean createPEM, boolean savekeys)
       throws Exception {
-        log.debug(">createUser: username=" + username + ", hiddenpwd, keys=" + rsaKeys.toString());
+        log.debug(">createUser: username=" + username);
 
         // Send the certificate request to the CA
         ISignSessionRemote ss = signhome.create();
@@ -277,7 +277,7 @@ public class BatchMakeP12 {
 
         storeKeyStore(ks, username, password, createJKS, createPEM);
         log.info("Created Keystore for " + username + ".");
-        log.debug("<createUser: username=" + username + ", hiddenpwd, keys=" + rsaKeys.toString());
+        log.debug("<createUser: username=" + username);
     }
 
     // createUser
@@ -407,9 +407,7 @@ public class BatchMakeP12 {
                                     log.info("Retrieving keys for " + data.getUsername());
                                 } else {
                                     log.info("Generating keys for " + data.getUsername());
-                                }
-
-                                log.info("Password:" + data.getPassword());
+                                }                               
 
                                 // Grab new user, set status to INPROCESS
                                 admin.setUserStatus(administrator, data.getUsername(),
