@@ -10,11 +10,18 @@ Security is CRITICAL for a CA. Protection of the CAs private key is esential,
 After realising this, please read on and take a pragmatic approach to security
  suitable for your policy, application and environment.
 
+Setting up SSL
+--------------
+To set upp SSL communcation for all HTTP-traffic to the server, 
+follow the instructions in README about setting up Web Administration.
+This will set up an SSL port open for the public at 8442 and an SSL port
+which require client certificate to access the administraton pages at 8443.
+
 Configuring for security
 ------------------------
 The easiest way to keep the installation secure is to block all JBOSS ports
  (1099, 1476, 4444, 8082, 8083) from the outside and only allow traffic to
- Tomcat ports (8080).
+ Tomcat ports (8442 and 8443).
 This is because the public end-user actions can be performed through the public
  servlets, while administration tasks are performed directly on the beans.
 

@@ -23,7 +23,8 @@ USE_EXTERNAL_LDAPSERVER="yes"
 USE_LOCAL_LDAPSERVER="no"
 TRUSTEDSSH="10.1.1.110";
 EJBCAWEBSERVERPORT="8080";
-EJBCASSLWEBSERVERPORT="443";
+EJBCASSLWEBSERVERPORT1="8442";
+EJBCASSLWEBSERVERPORT2="8443";
 LDAPPORT="389";
 LDAPSSLPORT="636";
 
@@ -94,7 +95,8 @@ echo -n "Setting INPUT access rules... "
 $IPTABLES -A INPUT -m state --state INVALID -j DROP	# Drop evil invalid packets from the start
 $IPTABLES -A INPUT -i $INET_IFACE -d $INET_IP -m state --state ESTABLISHED,RELATED	-j ACCEPT # Use the statefulfiltering capability
 $IPTABLES -A INPUT -p tcp -i $INET_IFACE -s $WORLD -d $INET_IP --dport $EJBCAWEBSERVERPORT -m state --state NEW -j ACCEPT # Open webserverport
-$IPTABLES -A INPUT -p tcp -i $INET_IFACE -s $WORLD -d $INET_IP --dport $EJBCASSLWEBSERVERPORT -m state --state NEW -j ACCEPT # Open sslwebserverport
+$IPTABLES -A INPUT -p tcp -i $INET_IFACE -s $WORLD -d $INET_IP --dport $EJBCASSLWEBSERVERPORT1 -m state --state NEW -j ACCEPT # Open sslwebserverport
+$IPTABLES -A INPUT -p tcp -i $INET_IFACE -s $WORLD -d $INET_IP --dport $EJBCASSLWEBSERVERPORT2 -m state --state NEW -j ACCEPT # Open sslwebserverport
 $IPTABLES -A INPUT -p tcp -i $INET_IFACE -s $TRUSTEDSSH -d $INET_IP --dport 22 -m state --state NEW	-j ACCEPT # Open SSH for one ip
 if [ "$USE_LOCAL_LDAPSERVER" = yes ]
         then
