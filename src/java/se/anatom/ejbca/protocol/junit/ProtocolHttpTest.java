@@ -2,7 +2,6 @@ package se.anatom.ejbca.protocol.junit;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.rmi.RemoteException;

@@ -29,6 +29,16 @@
             <sql-type>LONG</sql-type>
         </cmp-field>
     </entity>
+
+    <entity>
+        <ejb-name>CAData</ejb-name>
+        <cmp-field>
+            <field-name>data</field-name>
+            <jdbc-type>LONGVARCHAR</jdbc-type>
+            <sql-type>LONG</sql-type>
+        </cmp-field>
+    </entity>
+
 </enterprise-beans>
 
 </jbosscmp-jdbc>

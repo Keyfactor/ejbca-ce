@@ -7,4 +7,13 @@
     <datasource-mapping>Oracle8</datasource-mapping>
   </defaults>
 
+    <entity>
+        <ejb-name>HardTokenProfileData</ejb-name>
+        <cmp-field>
+            <field-name>data</field-name>
+            <jdbc-type>LONGVARCHAR</jdbc-type>
+            <sql-type>LONG</sql-type>
+        </cmp-field>
+    </entity>
+
 </jbosscmp-jdbc>
