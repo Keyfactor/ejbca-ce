@@ -6,6 +6,7 @@ Support for JBoss3.2.4/Tomcat5.0
 Fixed bugg in Administrative deligations where a CA administrator could edit an superadmin group.
 Changed so 'enable end entity limitations' is enabled by default.
 Strip DN when creating new CAs.
+Added test if strong crypto is installed in the install script.
 
 3.0 beta 2
 ----------
