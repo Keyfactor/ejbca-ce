@@ -7,7 +7,7 @@ import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 /**
  * Find details of a user in the database.
  *
- * @version $Id: RaFindUserCommand.java,v 1.7 2003-09-03 14:32:02 herrvendil Exp $
+ * @version $Id: RaFindUserCommand.java,v 1.8 2004-01-28 13:21:36 anatom Exp $
  */
 public class RaFindUserCommand extends BaseRaAdminCommand {
     /**
@@ -42,7 +42,7 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
                     System.out.println("Found user:");
                     System.out.println("username=" + data.getUsername());
                     System.out.println("password=" + data.getPassword());
-                    System.out.println("dn=\"" + data.getDN() + "\"");
+                    System.out.println("dn: \"" + data.getDN() + "\"");
                     System.out.println("email=" + data.getEmail());
                     System.out.println("status=" + data.getStatus());
                     System.out.println("type=" + data.getType());
