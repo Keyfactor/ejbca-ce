@@ -19,7 +19,7 @@ import java.util.ArrayList;
  * HardTokenAuthEncCertificateProfile is a class defining the fixed characteristics 
  * of a hard token authentication and encryption certificate.
  *
- * @version $Id: HardTokenAuthEncCertificateProfile.java,v 1.3 2004-11-07 16:42:27 herrvendil Exp $
+ * @version $Id: HardTokenAuthEncCertificateProfile.java,v 1.4 2004-11-08 09:07:03 herrvendil Exp $
  */
 public class HardTokenAuthEncCertificateProfile extends CertificateProfile{
 
@@ -69,7 +69,8 @@ public class HardTokenAuthEncCertificateProfile extends CertificateProfile{
       setUseExtendedKeyUsage(true);
       ArrayList eku = new ArrayList();        
       eku.add(new Integer(CLIENTAUTH));
-      eku.add(new Integer(EMAILPROTECTION));      
+      eku.add(new Integer(EMAILPROTECTION));  
+      eku.add(new Integer(SMARTCARDLOGON));   
       eku.add(new Integer(IPSECUSER));
       setExtendedKeyUsage(eku);
       setExtendedKeyUsageCritical(false);
