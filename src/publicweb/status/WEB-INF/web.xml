@@ -7,52 +7,23 @@
         <display-name>OCSPServlet</display-name>
         <servlet-class>se.anatom.ejbca.protocol.OCSPServlet</servlet-class>
         <init-param>
-            <param-name>keyStore</param-name>
-            <param-value>../server/default/conf/server.p12</param-value>
-            <description>Location of a keystore with the private key and 
-                         the corresponding certificate which are used to sign
-                         OCSP response messages.
-            </description>
-        </init-param>
-        <init-param>
-            <param-name>keyStoreType</param-name>
-            <param-value>PKCS12</param-value>
-            <description>
-                The data format of the keystore where the privatekey
-                and certificate are stored for OCSP response
-                signing.
-            </description>
-        </init-param>
-        <init-param>
-            <param-name>keyStorePass</param-name>
-            <param-value>foo123</param-value>
-            <description>Password for OCSP keystore.</description>
-        </init-param>
-        <init-param>
-            <param-name>privateKeyAlias</param-name>
-            <param-value>privateKey</param-value>
-            <description>Alias used in the keystore to identify the 
-                         OCSP private key.
-            </description>
-        </init-param>
-        <init-param>
-            <param-name>privateKeyPass</param-name>
-            <param-value>foo123</param-value>
-            <description>
-                Password for private key. If not used specify keyword 'null'.
-            </description>
-        </init-param>
-        <init-param>
-            <param-name>certificateAlias</param-name>
-            <param-value>privateKey</param-value>
-            <description>Alias used in the keystore to identify the 
-                         OCSP signing certificate</description>
+            <param-name>SignatureAlgorithm</param-name>
+            <param-value>SHA1WithRSA</param-value>
+            <description>Algorithm used by server to generate signature on OCSP responses</description>
         </init-param>
         <init-param>
             <param-name>enforceRequestSigning</param-name>
             <param-value>false</param-value>
             <description>
                 If set to true the servlet will enforce OCSP request signing.
+            </description>
+        </init-param>
+        <init-param>
+            <param-name>useCASigningCert</param-name>
+            <param-value>true</param-value>
+            <description>
+                If set to true the OCSP reponses will be signed directly by the CAs certificate
+                instead of the CAs OCSP respnder.
             </description>
         </init-param>
         <init-param>

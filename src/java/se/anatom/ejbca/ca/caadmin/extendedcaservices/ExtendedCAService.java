@@ -6,7 +6,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /** 
  * ExtendedCAService base class.
  * 
- * @version $Id: ExtendedCAService.java,v 1.2 2003-11-14 14:59:57 herrvendil Exp $
+ * @version $Id: ExtendedCAService.java,v 1.3 2004-01-02 15:33:15 anatom Exp $
  */
 public abstract class ExtendedCAService extends UpgradeableDataHashMap implements java.io.Serializable{
     
@@ -46,7 +46,7 @@ public abstract class ExtendedCAService extends UpgradeableDataHashMap implement
      * Method used to perform the service.
      */
     public abstract ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) 
-      throws IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException;
+      throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException;
 
     
 }

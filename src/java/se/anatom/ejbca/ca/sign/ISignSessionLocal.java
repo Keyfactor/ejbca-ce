@@ -11,6 +11,7 @@ import javax.ejb.ObjectNotFoundException;
 
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
@@ -27,7 +28,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
  * Local interface for EJB, unforturnately this must be a copy of the remote interface except that
  * RemoteException is not thrown. Creates certificates.
  *
- * @version $Id: ISignSessionLocal.java,v 1.20 2003-11-14 15:23:17 herrvendil Exp $
+ * @version $Id: ISignSessionLocal.java,v 1.21 2004-01-02 15:33:15 anatom Exp $
  *
  * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
  */
@@ -115,7 +116,7 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
 	 */
     
 	public ExtendedCAServiceResponse extendedService(Admin admin, int caid, ExtendedCAServiceRequest request) 
-	  throws IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException;    
+	  throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException;    
     
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote

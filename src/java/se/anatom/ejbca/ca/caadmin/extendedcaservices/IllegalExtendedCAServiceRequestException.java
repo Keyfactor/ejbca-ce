@@ -5,7 +5,9 @@
 
 package se.anatom.ejbca.ca.caadmin.extendedcaservices;
 
-
+/** Used for illegal (invalid) CASevriceRequests
+ * 
+ */
 public class IllegalExtendedCAServiceRequestException extends java.lang.Exception {
     
     /**

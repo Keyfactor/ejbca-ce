@@ -42,7 +42,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.63 2003-12-05 14:50:28 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.64 2004-01-02 15:33:15 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -1029,8 +1029,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 	 *                    reflect the revocation status of the given certificates.
 	 */
 	public Collection isRevoked(Admin admin, String issuerDN, Collection sernos) {
-		debug(">isRevoked()");
-
+        if (log.isDebugEnabled()) {
+            debug(">isRevoked(), dn:"+issuerDN+", no of sernos="+sernos.size());
+        }
 		Connection con = null;
 		PreparedStatement ps = null;
 		ResultSet result = null;
@@ -1048,9 +1049,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
 		// First make a DN in our well-known format
 		String dn = CertTools.stringToBCDNString(issuerDN);
-		if (log.isDebugEnabled()) {
-			debug("Looking for cert with (transformed)DN: " + dn);
-		}
 		try {
 			final StringBuffer sb = new StringBuffer();
 
@@ -1136,10 +1134,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @return DOCUMENT ME!
      */
     public RevokedCertInfo isRevoked(Admin admin, String issuerDN, BigInteger serno) {
-        debug(">isRevoked(), dn:"+issuerDN+", serno="+serno);
+        if (log.isDebugEnabled()) {
+            debug(">isRevoked(), dn:"+issuerDN+", serno="+serno);
+        }
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(issuerDN);
-        debug("Looking for cert with (transformed)DN: " + dn);
 
         try {
             Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());

@@ -13,6 +13,7 @@ import java.security.PublicKey;
 
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
@@ -28,7 +29,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * Creates certificates. Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.25 2003-11-17 08:24:57 anatom Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.26 2004-01-02 15:33:15 anatom Exp $
  */
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
 	/**
@@ -305,7 +306,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
      */
     
 	public ExtendedCAServiceResponse extendedService(Admin admin, int caid, ExtendedCAServiceRequest request) 
-	  throws RemoteException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException;
+	  throws RemoteException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException;
     
     
    /**

@@ -26,7 +26,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.6 2003-11-14 14:59:57 herrvendil Exp $
+ * @version $Id: CA.java,v 1.7 2004-01-02 15:33:15 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -312,12 +312,12 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	 * Method used to perform the service.
 	 */
 	public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) 
-	  throws IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException{
-        ExtendedCAServiceResponse returnval = null; 
-	  	if(request instanceof OCSPCAServiceRequest)
-	  	  returnval = getExtendedCAService(OCSPCAService.TYPE).extendedService(request);
-
-	  	return returnval;
+	  throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException{
+          ExtendedCAServiceResponse returnval = null; 
+          if(request instanceof OCSPCAServiceRequest) {
+              returnval = getExtendedCAService(OCSPCAService.TYPE).extendedService(request);            
+          }
+          return returnval;
 	}
     
     

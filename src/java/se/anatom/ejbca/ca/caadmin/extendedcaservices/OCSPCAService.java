@@ -2,10 +2,13 @@ package se.anatom.ejbca.ca.caadmin.extendedcaservices;
 
 import java.security.KeyPair;
 import java.security.KeyStore;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -13,6 +16,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.ocsp.BasicOCSPResp;
+import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
+import org.bouncycastle.ocsp.OCSPException;
 
 import se.anatom.ejbca.ca.auth.UserAuthData;
 import se.anatom.ejbca.ca.caadmin.CA;
@@ -22,7 +28,7 @@ import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.KeyTools;
 /** Handles and maintains the CA -part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.3 2003-12-26 11:49:47 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.4 2004-01-02 15:33:15 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -130,7 +136,6 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	 OCSPCAServiceInfo info = (OCSPCAServiceInfo) getExtendedCAServiceInfo();       
                   
 	 // Create OSCP KeyStore	    
-     int keysize = info.getKeySize();  
 	 KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
 	 keystore.load(null, null);                              
       
@@ -196,13 +201,27 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	/* 
 	 * @see se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAService#extendedService(se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest)
 	 */
-	public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) throws IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
-		if(!(request instanceof OCSPCAServiceRequest))
-		  throw new IllegalExtendedCAServiceRequestException();
-        if(this.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE)
-          throw new ExtendedCAServiceNotActiveException();  		  		
+	public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
+        if (!(request instanceof OCSPCAServiceRequest)) {
+            throw new IllegalExtendedCAServiceRequestException();            
+        }
+        if (this.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
+            throw new ExtendedCAServiceNotActiveException();                            
+        }
+        ExtendedCAServiceResponse returnval = null;
+        BasicOCSPRespGenerator ocsprespgen = ((OCSPCAServiceRequest)request).getOCSPrespGenerator();
+        String sigAlg = ((OCSPCAServiceRequest)request).getSigAlg();
+        X509Certificate[] chain = (X509Certificate[])this.ocspcertificatechain.toArray(new X509Certificate[0]);
+        try {
+            BasicOCSPResp ocspresp = ocsprespgen.generate(sigAlg, this.ocspsigningkey, chain, new Date(), "BC" );
+            returnval = new OCSPCAServiceResponse(ocspresp, Arrays.asList(chain));             
+        } catch (OCSPException ocspe) {
+            throw new ExtendedCAServiceRequestException(ocspe);
+        } catch (NoSuchProviderException nspe) {
+            throw new ExtendedCAServiceRequestException(nspe);            
+        }
 		  		
-		return (ExtendedCAServiceResponse) new OCSPCAServiceResponse(this.ocspcertificatechain,this.ocspsigningkey);
+		return returnval;
 	}
 
 	

@@ -35,6 +35,7 @@ import se.anatom.ejbca.ca.caadmin.CADataLocalHome;
 import se.anatom.ejbca.ca.caadmin.CAToken;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
@@ -64,7 +65,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.119 2003-12-15 14:02:01 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.120 2004-01-02 15:33:15 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -832,7 +833,7 @@ public class RSASignSessionBean extends BaseSessionBean {
 	 * Method used to perform the extended service
 	 */
 	public ExtendedCAServiceResponse extendedService(Admin admin, int caid, ExtendedCAServiceRequest request) 
-	  throws IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException{
+	  throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException{
 
 		// Get CA that will process request
 		CADataLocal cadata = null; 		

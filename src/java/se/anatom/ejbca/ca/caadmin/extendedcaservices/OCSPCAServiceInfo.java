@@ -10,7 +10,7 @@ import java.util.List;
  * is neesed
  * 
  * 
- * @version $Id: OCSPCAServiceInfo.java,v 1.2 2003-11-14 14:59:57 herrvendil Exp $
+ * @version $Id: OCSPCAServiceInfo.java,v 1.3 2004-01-02 15:33:15 anatom Exp $
  */
 public class OCSPCAServiceInfo extends ExtendedCAServiceInfo implements Serializable {    
        
@@ -18,7 +18,7 @@ public class OCSPCAServiceInfo extends ExtendedCAServiceInfo implements Serializ
        
     private String subjectdn      = null;
     private String subjectaltname = null;   
-	private int    keysize        = 2048;
+	private int    keysize        = 1024;
     private String keyalgorithm   = KEYALGORITHM_RSA; // Currently not used.
     private List   ocspcertchain  = null;
     

@@ -3,12 +3,15 @@ package se.anatom.ejbca.ca.caadmin;
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,6 +19,7 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEREncodableVector;
@@ -43,9 +47,21 @@ import org.bouncycastle.jce.PKCS7SignedData;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.X509V2CRLGenerator;
 import org.bouncycastle.jce.X509V3CertificateGenerator;
+import org.bouncycastle.ocsp.BasicOCSPResp;
+import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
+import org.bouncycastle.ocsp.OCSPException;
 
 import se.anatom.ejbca.ca.auth.UserAuthData;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAService;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
+import se.anatom.ejbca.ca.exception.IllegalKeyStoreException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.sign.SernoGenerator;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
@@ -55,9 +71,11 @@ import se.anatom.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.9 2003-12-05 14:50:27 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.10 2004-01-02 15:33:15 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
+
+    private static Logger log = Logger.getLogger(X509CA.class);
 
     // Default Values
     public static final float LATEST_VERSION = 1;
@@ -404,6 +422,45 @@ public class X509CA extends CA implements Serializable {
 
         data.put(VERSION, new Float(LATEST_VERSION));
       }  
+    }
+
+    /** 
+     * Method used to perform an extended service.
+     */
+    public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) 
+      throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException{
+          log.debug(">extendedService()");
+          ExtendedCAServiceResponse returnval = null; 
+          if(request instanceof OCSPCAServiceRequest) {
+              BasicOCSPRespGenerator ocsprespgen = ((OCSPCAServiceRequest)request).getOCSPrespGenerator();
+              String sigAlg = ((OCSPCAServiceRequest)request).getSigAlg();
+              boolean useCACert = ((OCSPCAServiceRequest)request).useCACert();
+              PrivateKey pk = null;
+              X509Certificate[] chain = null;
+              try {
+                  if (useCACert) {
+                      pk = getCAToken().getPrivateSignKey();
+                      chain = (X509Certificate[])getCertificateChain().toArray(new X509Certificate[0]);
+                  } else {
+                      // Super class handles signing with the OCSP signing certificate
+                      log.debug("<extendedService(super)");
+                      return super.extendedService(request);                      
+                  }
+                  BasicOCSPResp ocspresp = ocsprespgen.generate(sigAlg, pk, chain, new Date(), "BC" );
+                  returnval = new OCSPCAServiceResponse(ocspresp, Arrays.asList(chain));              
+              } catch (IllegalKeyStoreException ike) {
+                  throw new ExtendedCAServiceRequestException(ike);
+              } catch (NoSuchProviderException nspe) {
+                  throw new ExtendedCAServiceRequestException(nspe);
+              } catch (OCSPException ocspe) {
+                  throw new ExtendedCAServiceRequestException(ocspe);                  
+              }
+          } else {
+              log.debug("<extendedService(super)");
+              return super.extendedService(request);
+          }
+          log.debug("<extendedService()");
+          return returnval;
     }
     
    // private help methods
