@@ -31,14 +31,14 @@ import se.anatom.ejbca.BaseEntityBean;
  * Profile data
  * </pre>
  *
- * @version $Id: EndEntityProfileDataBean.java,v 1.9 2004-08-11 00:09:50 sbailliez Exp $
+ * @version $Id: EndEntityProfileDataBean.java,v 1.10 2004-11-20 23:06:10 sbailliez Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a profile"
  * display-name="EndEntityProfileDataEB"
  * name="EndEntityProfileData"
  * view-type="local"
  * type="CMP"
- * reentrant="false"
+ * reentrant="False"
  * cmp-version="2.x"
  * transaction-type="Container"
  * schema="EndEntityProfileDataBean"

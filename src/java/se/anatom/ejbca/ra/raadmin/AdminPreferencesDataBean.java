@@ -30,14 +30,14 @@ import se.anatom.ejbca.BaseEntityBean;
  * AdminPreference
  * </pre>
  *
- * @version $Id: AdminPreferencesDataBean.java,v 1.10 2004-08-11 00:09:07 sbailliez Exp $
+ * @version $Id: AdminPreferencesDataBean.java,v 1.11 2004-11-20 23:06:11 sbailliez Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a ra admins user preference."
  * display-name="AdminPreferencesDataEB"
  * name="AdminPreferencesData"
  * view-type="local"
  * type="CMP"
- * reentrant="false"
+ * reentrant="False"
  * cmp-version="2.x"
  * transaction-type="Container"
  * schema="AdminPreferencesDataBean"

@@ -39,7 +39,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.40 2004-08-06 07:00:13 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.41 2004-11-20 23:06:11 sbailliez Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="RaAdminSB"
@@ -129,12 +129,12 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     private IAuthorizationSessionLocal authorizationsession = null;
 
 
-    public final static String EMPTY_ENDENTITYPROFILENAME   = "EMPTY";
+    public static final String EMPTY_ENDENTITYPROFILENAME   = "EMPTY";
 
     private static final String DEFAULTUSERPREFERENCE = "default";
 
-    public final static String EMPTY_ENDENTITYPROFILE = LocalRaAdminSessionBean.EMPTY_ENDENTITYPROFILENAME;
-    public final static int EMPTY_ENDENTITYPROFILEID  = SecConst.EMPTY_ENDENTITYPROFILE;
+    public static final String EMPTY_ENDENTITYPROFILE = LocalRaAdminSessionBean.EMPTY_ENDENTITYPROFILENAME;
+    public static final int EMPTY_ENDENTITYPROFILEID  = SecConst.EMPTY_ENDENTITYPROFILE;
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -142,12 +142,10 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * @ejb.create-method
      */
     public void ejbCreate() throws CreateException {
-        debug(">ejbCreate()");
       try{
-        adminpreferenceshome = (AdminPreferencesDataLocalHome)lookup("java:comp/env/ejb/AdminPreferencesDataLocal", AdminPreferencesDataLocalHome.class);
-        profiledatahome = (EndEntityProfileDataLocalHome)lookup("java:comp/env/ejb/EndEntityProfileDataLocal", EndEntityProfileDataLocalHome.class);
-        globalconfigurationhome = (GlobalConfigurationDataLocalHome)lookup("java:comp/env/ejb/GlobalConfigurationDataLocal", GlobalConfigurationDataLocalHome.class);
-        debug("<ejbCreate()");
+        adminpreferenceshome = (AdminPreferencesDataLocalHome)getLocator().getLocalHome(AdminPreferencesDataLocalHome.COMP_NAME);
+        profiledatahome = (EndEntityProfileDataLocalHome)getLocator().getLocalHome(EndEntityProfileDataLocalHome.COMP_NAME);
+        globalconfigurationhome = (GlobalConfigurationDataLocalHome)getLocator().getLocalHome(GlobalConfigurationDataLocalHome.COMP_NAME);
       }catch(Exception e){
          throw new EJBException(e);
       }
@@ -160,7 +158,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     private ILogSessionLocal getLogSession() {
         if(logsession == null){
           try{
-            ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup(ILogSessionLocalHome.COMP_NAME,ILogSessionLocalHome.class);
+            ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
             logsession = logsessionhome.create();
           }catch(Exception e){
              throw new EJBException(e);
@@ -176,7 +174,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     private IAuthorizationSessionLocal getAuthorizationSession() {
         if(authorizationsession == null){
           try{
-            IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) lookup("java:comp/env/ejb/AuthorizationSessionLocal",IAuthorizationSessionLocalHome.class);
+            IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
             authorizationsession = authorizationsessionhome.create();
           }catch(Exception e){
              throw new EJBException(e);

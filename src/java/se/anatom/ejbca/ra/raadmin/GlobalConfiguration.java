@@ -18,7 +18,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.13 2004-06-02 19:29:02 anatom Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.14 2004-11-20 23:06:11 sbailliez Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -34,18 +34,18 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private final  String[] DEFAULTPOSSIBLELOGENTRIESPERPAGE = {"10" , "25" , "50" , "100", "200", "400"};
 
     // Path added to baseurl used as default vaule in CRLDistributionPointURI field in Certificate Profile definitions.
-    private final  String   DEFAULTCRLDISTURIPATH  = "publicweb/webdist/certdist?cmd=crl&issuer=CN=TestCA,O=AnaTom,C=SE";
+    private static final  String   DEFAULTCRLDISTURIPATH  = "publicweb/webdist/certdist?cmd=crl&issuer=CN=TestCA,O=AnaTom,C=SE";
 
     // Path added to baseurl used as default vaule in OCSP Service Locator URI field in Certificate Profile definitions.
-	private final  String   DEFAULTOCSPSERVICELOCATORURIPATH = "publicweb/status/ocsp";
+	private static final  String   DEFAULTOCSPSERVICELOCATORURIPATH = "publicweb/status/ocsp";
 
     // Default name of headbanner in web interface.
-    private final  String   DEFAULTHEADBANNER             = "head_banner.jsp";
+    private static final  String   DEFAULTHEADBANNER             = "head_banner.jsp";
     // Default name of footbanner page in web interface.
-    private final  String   DEFAULTFOOTBANNER             = "foot_banner.jsp";
+    private static final  String   DEFAULTFOOTBANNER             = "foot_banner.jsp";
 
     // Title of ra admin web interface.
-    private final  String   DEFAULTEJBCATITLE             = "Enterprise Java Bean Certificate Authority";
+    private static final  String   DEFAULTEJBCATITLE             = "Enterprise Java Bean Certificate Authority";
 
     // Language codes. Observe the order is important
     public static final  int      EN                 = 0;
@@ -274,45 +274,45 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     // Private fields.
 
     // Private constants
-    private final   String BASEURL             = "baseurl";
-    private final   String COMPUTERNAME  = "computername";
-    private final   String APPLICATIONPATH  = "applicationpath";
-    private final   String ADMINPATH          = "raadminpath";
-    private final   String AVAILABLELANGUAGES = "availablelanguages";
-    private final   String AVAILABLETHEMES    = "availablethemes";
-    private final   String PUBLICPORT         = "publicport";
-    private final   String PRIVATEPORT        = "privateport";
-    private final   String PUBLICPROTOCOL     = "publicprotocol";
-    private final   String PRIVATEPROTOCOL    = "privateprotocol";
+    private static final   String BASEURL             = "baseurl";
+    private static final   String COMPUTERNAME  = "computername";
+    private static final   String APPLICATIONPATH  = "applicationpath";
+    private static final   String ADMINPATH          = "raadminpath";
+    private static final   String AVAILABLELANGUAGES = "availablelanguages";
+    private static final   String AVAILABLETHEMES    = "availablethemes";
+    private static final   String PUBLICPORT         = "publicport";
+    private static final   String PRIVATEPORT        = "privateport";
+    private static final   String PUBLICPROTOCOL     = "publicprotocol";
+    private static final   String PRIVATEPROTOCOL    = "privateprotocol";
 
 
       // Title
-    private final   String TITLE              = "title";
+    private static final   String TITLE              = "title";
       // Banner files.
-    private final   String HEADBANNER         = "headbanner";
-    private final   String FOOTBANNER         = "footbanner";
+    private static final   String HEADBANNER         = "headbanner";
+    private static final   String FOOTBANNER         = "footbanner";
       // Other configuration.
-    private final   String ENABLEEEPROFILELIMITATIONS   = "endentityprofilelimitations";
-    private final   String ENABLEAUTHENTICATEDUSERSONLY = "authenticatedusersonly";
-    private final   String ENABLEKEYRECOVERY            = "enablekeyrecovery";
-    private final   String ISSUEHARDWARETOKENS          = "issuehardwaretokens";
+    private static final   String ENABLEEEPROFILELIMITATIONS   = "endentityprofilelimitations";
+    private static final   String ENABLEAUTHENTICATEDUSERSONLY = "authenticatedusersonly";
+    private static final   String ENABLEKEYRECOVERY            = "enablekeyrecovery";
+    private static final   String ISSUEHARDWARETOKENS          = "issuehardwaretokens";
       // Paths
-    private final   String AUTHORIZATION_PATH  = "authorization_path";
-    private final   String BANNERS_PATH        = "banners_path";
-    private final   String CA_PATH             = "ca_path";
-    private final   String CONFIG_PATH         = "data_path";
-    private final   String HELP_PATH           = "help_path";
-    private final   String IMAGES_PATH         = "images_path";
-    private final   String LANGUAGE_PATH       = "language_path";
-    private final   String LOG_PATH            = "log_path";
-    private final   String RA_PATH             = "ra_path";
-    private final   String THEME_PATH          = "theme_path";
-    private final   String HARDTOKEN_PATH      = "hardtoken_path";
+    private static final   String AUTHORIZATION_PATH  = "authorization_path";
+    private static final   String BANNERS_PATH        = "banners_path";
+    private static final   String CA_PATH             = "ca_path";
+    private static final   String CONFIG_PATH         = "data_path";
+    private static final   String HELP_PATH           = "help_path";
+    private static final   String IMAGES_PATH         = "images_path";
+    private static final   String LANGUAGE_PATH       = "language_path";
+    private static final   String LOG_PATH            = "log_path";
+    private static final   String RA_PATH             = "ra_path";
+    private static final   String THEME_PATH          = "theme_path";
+    private static final   String HARDTOKEN_PATH      = "hardtoken_path";
 
-    private final   String LANGUAGEFILENAME    =  "languagefilename";
-    private final   String MAINFILENAME        =  "mainfilename";
-    private final   String INDEXFILENAME       =  "indexfilename";
-    private final   String MENUFILENAME        =  "menufilename";
-    private final   String ERRORPAGE           =  "errorpage";
+    private static final   String LANGUAGEFILENAME    =  "languagefilename";
+    private static final   String MAINFILENAME        =  "mainfilename";
+    private static final   String INDEXFILENAME       =  "indexfilename";
+    private static final   String MENUFILENAME        =  "menufilename";
+    private static final   String ERRORPAGE           =  "errorpage";
 
 }

@@ -28,14 +28,14 @@ import se.anatom.ejbca.BaseEntityBean;
  * GlobalConfiguration
  * </pre>
  *
- * @version $Id: GlobalConfigurationDataBean.java,v 1.4 2004-08-11 00:10:26 sbailliez Exp $
+ * @version $Id: GlobalConfigurationDataBean.java,v 1.5 2004-11-20 23:06:11 sbailliez Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents global configuration of ra administration"
  * display-name="GlobalConfigurationDataEB"
  * name="GlobalConfigurationData"
  * view-type="local"
  * type="CMP"
- * reentrant="false"
+ * reentrant="False"
  * cmp-version="2.x"
  * transaction-type="Container"
  * schema="GlobalConfigurationDataBean"
