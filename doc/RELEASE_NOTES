@@ -18,6 +18,11 @@ Then you should apply the following SQL commands on your MySQL database:
 ALTER TABLE crldata MODIFY base64Crl longtext NULL DEFAULT NULL;
 ALTER TABLE hardtokenprofiledata MODIFY data longtext NULL DEFAULT NULL;
 
+EJBCA V3.0.7
+------------
+This is a plugin-upgrade from 3.0.6 or 3.0.5. 
+Apply patch, build and redeploy.
+
 EJBCA V3.0.6
 ------------
 
