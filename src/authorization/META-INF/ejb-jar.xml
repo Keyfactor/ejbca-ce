@@ -356,7 +356,7 @@
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>getAuthorizedAdminGroupsNames</method-name>
+         <method-name>getAuthorizedAdminGroupNames</method-name>
      </method>     
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
