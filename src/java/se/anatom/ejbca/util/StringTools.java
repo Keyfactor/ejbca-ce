@@ -2,14 +2,13 @@ package se.anatom.ejbca.util;
 
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.apache.commons.lang.StringUtils;
-import org.ietf.ldap.LDAPDN;
+import org.apache.log4j.Logger;
 
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.14 2004-01-25 09:37:34 herrvendil Exp $
+ * @version $Id: StringTools.java,v 1.15 2004-01-28 10:39:11 herrvendil Exp $
  */
 public class StringTools {
     private static Logger log = Logger.getLogger(StringTools.class);

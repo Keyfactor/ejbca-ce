@@ -5,24 +5,22 @@
  */
 package se.anatom.ejbca.admin;
 
-import java.awt.PrintJob;
+import java.awt.print.PageFormat;
+import java.awt.print.Paper;
 import java.awt.print.PrinterJob;
-import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
-import java.io.FileReader;
+
+import java.io.InputStreamReader;
+
 import java.util.Date;
 import java.util.Properties;
 
-import javax.print.Doc;
 import javax.print.DocFlavor;
-import javax.print.DocPrintJob;
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
-import javax.print.SimpleDoc;
-import javax.print.attribute.DocAttributeSet;
-import javax.print.attribute.HashDocAttributeSet;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.standard.MediaSize;
 
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.SVGImageManipulator;
 import se.anatom.ejbca.ra.UserAdminData;
@@ -68,13 +66,13 @@ public class SVGTemplatePrinter {
 		String hardtokensnprefix = data.getProperty("HARDTOKENSNPREFIX");
 				
 		// Read the tempate file.
-		 imagemanipulator = new SVGImageManipulator( new FileReader(templatefilename), validity, hardtokensnprefix);
+		 imagemanipulator = new SVGImageManipulator( new InputStreamReader(new FileInputStream(templatefilename), "UTF-8"), validity, hardtokensnprefix);
 		
 		// Setup the printer.
 		 PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
-		 DocFlavor flavor = DocFlavor.INPUT_STREAM.POSTSCRIPT;
+		 DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
 		 PrintService printService[] =  PrintServiceLookup.lookupPrintServices(flavor, pras);		 
-		 for(int i=0;i<printService.length;i++){
+		 for(int i=0;i<printService.length;i++){		 
 		 	if(printer.trim().equalsIgnoreCase(printService[i].getName())){
 		 		printservice = printService[i];	
 		 	}		 	
@@ -84,12 +82,20 @@ public class SVGTemplatePrinter {
 	public void print() throws Exception{
 	   if(printservice != null){
 	   	  PrinterJob job = PrinterJob.getPrinterJob();
+
 	   	  job.setPrintService(printservice);
-	   	  job.setPrintable(imagemanipulator.print(userdata,pins,puks,hardtokensn, copyofhardtokensn));
+	   	  PageFormat pf = job.defaultPage();	   	  
+	   	  Paper paper = new Paper();
+	   	  paper.setSize(pf.getWidth(), pf.getHeight());
+	   	  paper.setImageableArea(0.0,0.0,pf.getWidth(), pf.getHeight());
+	   	  
+	   	  pf.setPaper(paper);	   	  
+	   	  job.setPrintable(imagemanipulator.print(userdata,pins,puks,hardtokensn, copyofhardtokensn),pf);	   	  
+	   	  
 	   	  job.print();	   	  	   	  	   	  	   	 
 	   	  		   	  
 	   	  
-	   	Thread.sleep(10000);	   	
+	   	  Thread.sleep(10000);	   	
 	   }else{
 	      System.out.println("Error: Couldn't find printer.");		  	   	
 	   }			   	   

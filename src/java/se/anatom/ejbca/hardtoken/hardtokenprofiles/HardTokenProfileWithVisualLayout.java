@@ -5,8 +5,6 @@ import java.awt.print.PrinterException;
 import java.io.IOException;
 import java.io.StringReader;
 
-import org.apache.batik.transcoder.TranscoderException;
-
 import se.anatom.ejbca.ra.UserAdminData;
 
 /**
@@ -17,7 +15,7 @@ import se.anatom.ejbca.ra.UserAdminData;
  * processed. This information could be PIN-type number of certificates, 
  * certificate profiles and so on. 
  *
- * @version $Id: HardTokenProfileWithVisualLayout.java,v 1.2 2004-01-27 10:10:47 herrvendil Exp $
+ * @version $Id: HardTokenProfileWithVisualLayout.java,v 1.3 2004-01-28 10:39:05 herrvendil Exp $
  */
 public abstract class HardTokenProfileWithVisualLayout extends HardTokenProfileWithPINEnvelope implements IVisualLayoutSettings{
 		

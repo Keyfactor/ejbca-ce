@@ -24,7 +24,6 @@ import org.apache.batik.dom.svg.SVGOMImageElement;
 import org.apache.batik.svggen.ImageHandlerBase64Encoder;
 import org.apache.batik.svggen.SVGGeneratorContext;
 import org.apache.batik.svggen.SimpleImageHandler;
-import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.print.PrintTranscoder;
@@ -44,7 +43,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id: SVGImageManipulator.java,v 1.3 2004-01-27 10:10:47 herrvendil Exp $
+ * @version $Id: SVGImageManipulator.java,v 1.4 2004-01-28 10:39:05 herrvendil Exp $
  */
 public class SVGImageManipulator {
 
@@ -54,12 +53,16 @@ public class SVGImageManipulator {
      */
     private static final Pattern USERNAME = Pattern.compile("\\$USERNAME", Pattern.CASE_INSENSITIVE);    
     private static final Pattern CN       = Pattern.compile("\\$CN", Pattern.CASE_INSENSITIVE);
+    private static final Pattern SN       = Pattern.compile("\\$SN", Pattern.CASE_INSENSITIVE);    
+    private static final Pattern GIVENNAME= Pattern.compile("\\$GIVENNAME", Pattern.CASE_INSENSITIVE);
+    private static final Pattern INITIALS = Pattern.compile("\\$INITIALS", Pattern.CASE_INSENSITIVE);
+    private static final Pattern SURNAME = Pattern.compile("\\$SURNAME", Pattern.CASE_INSENSITIVE);
     private static final Pattern O        = Pattern.compile("\\$O", Pattern.CASE_INSENSITIVE);
     private static final Pattern OU       = Pattern.compile("\\$OU", Pattern.CASE_INSENSITIVE);
     private static final Pattern C        = Pattern.compile("\\$C", Pattern.CASE_INSENSITIVE);
     private static final Pattern LOCATION = Pattern.compile("\\$LOCATION", Pattern.CASE_INSENSITIVE);
 	private static final Pattern TITLE    = Pattern.compile("\\$TITLE", Pattern.CASE_INSENSITIVE);
-			
+	
 	/**
 	 * Indicates the start date of the tokens validity.
 	 */		
@@ -69,9 +72,9 @@ public class SVGImageManipulator {
 	 */		
 	private static final Pattern ENDDATE   = Pattern.compile("\\$ENDDATE", Pattern.CASE_INSENSITIVE);    
     
-    private static final Pattern SERIALNUMBER = Pattern.compile("\\$SERIALNUMBER", Pattern.CASE_INSENSITIVE);
+    private static final Pattern HARDTOKENSN = Pattern.compile("\\$HARDTOKENSN", Pattern.CASE_INSENSITIVE);
 
-	private static final Pattern SERIALNUMBERWITHOUTPREFIX = Pattern.compile("\\$SERIALNUMBERWITHOUTPREFIX", Pattern.CASE_INSENSITIVE);
+	private static final Pattern HARDTOKENSNWITHOUTPREFIX = Pattern.compile("\\$HARDTOKENSNWITHOUTPREFIX", Pattern.CASE_INSENSITIVE);
 
     /**
      * Constants used for pin and puk codes.     
@@ -120,9 +123,8 @@ public class SVGImageManipulator {
     public SVGImageManipulator(Reader svgdata, 
 	                    int validity, 
 						 String hardtokensnprefix) throws IOException {
-      this.validityms = validity * 1000 * 3600 * 24; // Validity i ms
-      this.hardtokensnprefix = hardtokensnprefix;
-
+      this.validityms = ( ((long)validity) * 1000 *  3600 * 24); // Validity i ms
+      this.hardtokensnprefix = hardtokensnprefix;      
 
       String parser = XMLResourceDescriptor.getXMLParserClassName();
       SAXSVGDocumentFactory f = new SAXSVGDocumentFactory(parser);
@@ -147,7 +149,8 @@ public class SVGImageManipulator {
 	  // DNFieldExtractor subaltnamefields = new DNFieldExtractor(dn,DNFieldExtractor.TYPE_SUBJECTALTNAME);
 	  Date currenttime = new Date();
 	  String startdate = DateFormat.getDateInstance(DateFormat.SHORT).format(currenttime);
-	  String enddate = DateFormat.getDateInstance(DateFormat.SHORT).format(new Date(currenttime.getTime() + (this.validityms)));                	
+	  
+	  String enddate = DateFormat.getDateInstance(DateFormat.SHORT).format(new Date(currenttime.getTime() + (this.validityms)));
       String hardtokensnwithoutprefix = hardtokensn.substring(this.hardtokensnprefix.length());
       String copyoftokensnwithoutprefix = copyoftokensn.substring(this.hardtokensnprefix.length());
 
@@ -194,7 +197,8 @@ public class SVGImageManipulator {
 	  // save the image
 	 
 	  t.transcode(input, output);
-	  t.addTranscodingHint(PrintTranscoder.KEY_SCALE_TO_PAGE, new Boolean(false));
+
+	  t.addTranscodingHint(PrintTranscoder. KEY_SCALE_TO_PAGE, new Boolean(false));
 	         	  	  	   	 
       // Reuse original document
       svgdoc = (SVGOMDocument) originaldokument;
@@ -218,11 +222,15 @@ public class SVGImageManipulator {
 	  text = C.matcher(text).replaceAll(dnfields.getField(DNFieldExtractor.C, 0));
 	  text = LOCATION.matcher(text).replaceAll(dnfields.getField(DNFieldExtractor.L, 0));
 	  text = TITLE.matcher(text).replaceAll(dnfields.getField(DNFieldExtractor.T, 0));
-      
+      text = INITIALS.matcher(text).replaceAll(dnfields.getField(DNFieldExtractor.INITIALS, 0));       
+      text = SN.matcher(text).replaceAll(dnfields.getField(DNFieldExtractor.SN, 0));
+      text = SURNAME.matcher(text).replaceAll(dnfields.getField(DNFieldExtractor.SURNAME, 0));
+      text = GIVENNAME.matcher(text).replaceAll(dnfields.getField(DNFieldExtractor.GIVENNAME, 0));
+
 	  text = STARTDATE.matcher(text).replaceAll(startdate);			
 	  text = ENDDATE.matcher(text).replaceAll(enddate);        
-	  text = SERIALNUMBER.matcher(text).replaceAll(hardtokensn);
-	  text = SERIALNUMBERWITHOUTPREFIX.matcher(text).replaceAll(hardtokensnwithoutprefix);
+	  text = HARDTOKENSN.matcher(text).replaceAll(hardtokensn);
+	  text = HARDTOKENSNWITHOUTPREFIX.matcher(text).replaceAll(hardtokensnwithoutprefix);
 
       for(int i=0; i<pincodes.length;i++){
       	text = PINS[i].matcher(text).replaceAll(pincodes[i]);
@@ -273,7 +281,7 @@ public class SVGImageManipulator {
     	
     	if(imgwidth != 0 && imgheight != 0){    	
     	  // Special dravel for demo remove
-		  BufferedImage image = ImageIO.read(new FileInputStream("/home/philip/san.jpg"));
+		  BufferedImage image = ImageIO.read(new FileInputStream("c:\\userpicture.jpg"));
         // TODO get image.
       
       	
