@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.9 2005-03-07 15:38:51 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.10 2005-03-08 08:45:54 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -113,6 +113,12 @@ ca.validity=3650
 # The policy id of the CA. Policy id determines which PKI policy the CA uses.
 # Type your policy id or use '2.5.29.32.0' for 'any policy' (rfc3280) or 'null' for no policy at all.
 ca.policy=null
+
+# This password is used internally to protect CA keystores in database (i.e. the CAs private key).
+ca.keystorepass=!secret!
+
+# Password user to protect OCSP keystores in the database (CAs OCSP signer certificate).
+ca.ocspkeystorepass=ocsp!secret!
 
 # ------------ Web GUI configuration ---------------------
 

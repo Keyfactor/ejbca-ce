@@ -94,6 +94,16 @@ import se.anatom.ejbca.util.Hex;
  *
  * @ejb.permission role-name="InternalUser"
  *
+ * @ejb.env-entry description="Used internally to keystores in database"
+ *   name="keyStorePass"
+ *   type="java.lang.String"
+ *   value="${ca.keystorepass}"
+
+ * @ejb.env-entry description="Password for OCSP keystores"
+ *   name="OCSPKeyStorePass"
+ *   type="java.lang.String"
+ *   value="${ca.ocspkeystorepass}"
+ *
  * @ejb.env-entry description="Name of PRNG algorithm used for random source - refer to Appendix A in the
  * Java Cryptography Architecture API Specification And Reference for
  * information about standard PRNG algorithm names"

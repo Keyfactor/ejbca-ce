@@ -36,7 +36,7 @@ import se.anatom.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.11 2005-03-07 16:50:27 anatom Exp $
+ * @version $Id: SoftCAToken.java,v 1.12 2005-03-08 08:45:50 anatom Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
 
@@ -70,7 +70,6 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
       loadData(data);  
       if(data.get(KEYSTORE) != null){    
          // lookup keystore passwords      
-         String privatekeypass = null;
          String keystorepass = null;
          try {
              InitialContext ictx = new InitialContext();
@@ -80,18 +79,13 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
          } catch (NamingException ne) {
              throw new IllegalArgumentException("Missing keyStorePass property.");
          }
-        char[] pkpass = null;
-        if ("null".equals(privatekeypass))
-            pkpass = null;
-        else
-            pkpass = privatekeypass.toCharArray();
                
         try {
             KeyStore keystore=KeyStore.getInstance("PKCS12", "BC");
             keystore.load(new java.io.ByteArrayInputStream(Base64.decode(((String) data.get(KEYSTORE)).getBytes())),keystorepass.toCharArray());
       
-            this.privateSignKey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, pkpass);
-            this.privateDecKey = (PrivateKey) keystore.getKey(PRIVATEDECKEYALIAS, pkpass);      
+            this.privateSignKey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, null);
+            this.privateDecKey = (PrivateKey) keystore.getKey(PRIVATEDECKEYALIAS, null);      
       
             this.publicSignKey = ((Certificate) keystore.getCertificateChain(PRIVATESIGNKEYALIAS)[0]).getPublicKey();
             this.encCert =  ((Certificate) keystore.getCertificateChain(PRIVATEDECKEYALIAS)[0]);

@@ -13,6 +13,7 @@
 
 package se.anatom.ejbca.log;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.JNDINames;
@@ -124,6 +125,9 @@ public class LocalLogSessionBean extends BaseSessionBean {
 
     /** Collection of available log devices, i.e Log4j etc */
     private ArrayList logdevices;
+
+    /** Columns in the database used in select */
+    private final String LOGENTRYDATA_COL = "adminType, adminData, caid, module, time, username, certificateSNR, event, comment";
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -291,9 +295,9 @@ public class LocalLogSessionBean extends BaseSessionBean {
         try {
             // Construct SQL query.
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            String sql = "select adminType, adminData, caid, module, time, username, certificateSNR, event, comment from LogEntryData where ( "
+            String sql = "select "+LOGENTRYDATA_COL+" from LogEntryData where ( "
                     + query.getQueryString() + ") and (" + capriviledges + ")";
-            if (viewlogprivileges.length() == 0) {
+            if (StringUtils.isNotEmpty(viewlogprivileges)) {
                 sql += " and (" + viewlogprivileges + ")";
             }
             ps = con.prepareStatement(sql);

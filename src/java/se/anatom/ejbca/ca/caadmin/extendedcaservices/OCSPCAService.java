@@ -41,7 +41,7 @@ import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.KeyTools;
 /** Handles and maintains the CA -part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.8 2004-05-19 10:56:39 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.9 2005-03-08 08:45:52 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -87,28 +87,21 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
       loadData(data);  
       if(data.get(OCSPKEYSTORE) != null){    
          // lookup keystore passwords      
-         String privatekeypass = null;
          String keystorepass = null;
          try {
              InitialContext ictx = new InitialContext();
              keystorepass = (String) ictx.lookup("java:comp/env/OCSPKeyStorePass");      
              if (keystorepass == null)
                  throw new IllegalArgumentException("Missing OCSPKeyStorePass property.");
-             privatekeypass = (String) ictx.lookup("java:comp/env/privateOCSPKeyPass");
          } catch (NamingException ne) {
-             throw new IllegalArgumentException("Missing OCSPKeyStorePass or OCSPPrivateKeyPass property.");
+             throw new IllegalArgumentException("Missing OCSPKeyStorePass property.");
          }
-        char[] pkpass = null;
-        if ("null".equals(privatekeypass))
-            pkpass = null;
-        else
-            pkpass = privatekeypass.toCharArray();
                
         try {
             KeyStore keystore=KeyStore.getInstance("PKCS12", "BC");
             keystore.load(new java.io.ByteArrayInputStream(Base64.decode(((String) data.get(OCSPKEYSTORE)).getBytes())),keystorepass.toCharArray());
       
-            this.ocspsigningkey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, pkpass);
+            this.ocspsigningkey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, null);
             this.ocspcertificatechain =  Arrays.asList(keystore.getCertificateChain(PRIVATESIGNKEYALIAS));      
             this.info = new OCSPCAServiceInfo(getStatus(),
                                               (String) data.get(SUBJECTDN),
@@ -138,13 +131,6 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	 if (keystorepass == null)
 	   throw new IllegalArgumentException("Missing OCSPKeyPass property.");
         
-	 String privatekeypass = (String) ictx.lookup("java:comp/env/privateOCSPKeyPass");
-	 char[] pkpass = null;
-	 if ((privatekeypass).equals("null"))
-	   pkpass = null;
-	 else
-	   pkpass = privatekeypass.toCharArray();       
-       
 	  // Currently only RSA keys are supported
 	 OCSPCAServiceInfo info = (OCSPCAServiceInfo) getExtendedCAServiceInfo();       
                   
@@ -171,7 +157,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	 ocspcertificatechain.addAll(ca.getCertificateChain());
 	 this.ocspsigningkey = ocspkeys.getPrivate(); 	  	 	  
 	  	  	  
-     keystore.setKeyEntry(PRIVATESIGNKEYALIAS,ocspkeys.getPrivate(),pkpass,(Certificate[]) ocspcertificatechain.toArray(new Certificate[ocspcertificatechain.size()]));              
+     keystore.setKeyEntry(PRIVATESIGNKEYALIAS,ocspkeys.getPrivate(),null,(Certificate[]) ocspcertificatechain.toArray(new Certificate[ocspcertificatechain.size()]));              
      java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
      keystore.store(baos, keystorepass.toCharArray());
      data.put(OCSPKEYSTORE, new String(Base64.encode(baos.toByteArray())));      

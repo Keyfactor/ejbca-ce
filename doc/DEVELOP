@@ -6,6 +6,12 @@ to build the project. In order to do 'ant' you may have to move XDoclet classes 
 
 You can build javadoc on all APIs used with 'ant javadoc'.
 
+Debugging
+=========
+You might notice that there is a j2ee:debug target, it will start JBoss in debug mode. 
+Just fire up your debugger to the default transport and address display on your console and 
+you're set. You can now debug your application. 
+
 Database connections and statements
 ===================================
 It is very important to close connections and prepared statments when doing direct
@@ -193,14 +199,14 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.16 2005-02-13 18:26:05 anatom Exp $
+@version $Id: DEVELOP,v 1.17 2005-03-08 08:45:23 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.16 2005-02-13 18:26:05 anatom Exp $
+ * @version $Id: DEVELOP,v 1.17 2005-03-08 08:45:23 anatom Exp $
  */
 
 EJBCA2: CA KeyStore architecture/creating a custom CA Keystore

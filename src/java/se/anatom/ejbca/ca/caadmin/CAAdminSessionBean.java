@@ -81,7 +81,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.36 2005-03-07 16:50:27 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.37 2005-03-08 08:45:52 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -99,17 +99,12 @@ import se.anatom.ejbca.util.KeyTools;
  * @ejb.env-entry description="Used internally to keystores in database"
  *   name="keyStorePass"
  *   type="java.lang.String"
- *   value="foo123"
-  *
+ *   value="${ca.keystorepass}"
+
  * @ejb.env-entry description="Password for OCSP keystores"
  *   name="OCSPKeyStorePass"
  *   type="java.lang.String"
- *   value="foo123"
- *
- * @ejb.env-entry description="Password for OCSP keystores private key protection"
- *   name="privateOCSPKeyPass"
- *   type="java.lang.String"
- *   value="foo123"
+ *   value="${ca.ocspkeystorepass}"
  *
  * @ejb.ejb-external-ref description="The CA entity bean"
  *   view-type="local"
@@ -284,6 +279,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes transaction-timeout="900"
      */
     public void createCA(Admin admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException, CATokenOfflineException, CATokenAuthenticationFailedException{
     	Collection certpublishers = null;
