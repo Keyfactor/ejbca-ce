@@ -2,7 +2,6 @@ package se.anatom.ejbca.ca.sign;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
@@ -87,7 +86,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.95 2003-08-13 10:17:14 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.96 2003-08-13 10:43:41 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     transient X509Certificate caCert;
