@@ -1,7 +1,7 @@
 <%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,java.math.BigInteger,se.anatom.ejbca.ca.store.*,se.anatom.ejbca.ca.crl.RevokedCertInfo,se.anatom.ejbca.util.Hex, se.anatom.ejbca.log.Admin"%>
 <html>
 <head><title>EJBCA - Check revocation</title>
-<link rel="stylesheet" href="../indexmall.css" type="text/css">
+<link rel="stylesheet" href="indexmall.css" type="text/css">
 </head>
 <body>
 <div align="center"><span class="titel">Check certificate with issuer</span> '<%=request.getParameter("issuer")%>' 

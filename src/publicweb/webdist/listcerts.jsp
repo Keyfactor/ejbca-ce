@@ -1,7 +1,7 @@
 <%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.net.*,java.security.cert.*,java.math.BigInteger,se.anatom.ejbca.ca.store.*,se.anatom.ejbca.util.Hex, se.anatom.ejbca.log.Admin"%>
 <html>
 <head><title>EJBCA - List certificates</title>
-<link rel="stylesheet" href="../indexmall.css" type="text/css">
+<link rel="stylesheet" href="indexmall.css" type="text/css">
 </head>
 <body>
 <div align="center"><span class="titel">Certificates for</span> <%=request.getParameter("subject")%> 

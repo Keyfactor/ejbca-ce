@@ -5,7 +5,7 @@
 <TITLE>EJBCA IE Certificate Enroll</TITLE>
 
  
-<link rel="stylesheet" href="../indexmall.css" type="text/css">
+<link rel="stylesheet" href="indexmall.css" type="text/css">
 <object
    classid="clsid:127698e4-e730-4e5c-a2b1-21490a70c8a1"
    CODEBASE="/CertControl/xenroll.cab#Version=5,131,3659,0"

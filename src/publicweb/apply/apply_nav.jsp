@@ -1,7 +1,10 @@
 <%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,se.anatom.ejbca.ca.sign.*, se.anatom.ejbca.log.Admin"%>
 
 <HTML>
-<HEAD><TITLE>EJBCA Mozilla Certificate enroll</TITLE></HEAD>
+<HEAD>
+<TITLE>EJBCA Mozilla Certificate enroll</TITLE>
+<link rel="stylesheet" href="indexmall.css" type="text/css">
+</HEAD>
 <BODY bgcolor="#ffffff" link="black" vlink="black" alink="black">
 
 <center>

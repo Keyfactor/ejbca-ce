@@ -3,6 +3,7 @@
 <HTML>
 <HEAD>
 <TITLE>EJBCA manual certificate enroll</TITLE>
+<link rel="stylesheet" href="indexmall.css" type="text/css">
 </HEAD>
 <BODY bgcolor="#ffffff" link="black" vlink="black" alink="black">
 <center>
