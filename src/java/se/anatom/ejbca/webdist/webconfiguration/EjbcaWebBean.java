@@ -32,19 +32,19 @@ import se.anatom.ejbca.ra.raadmin.AdminPreference;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.23 2003-02-12 13:21:31 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.24 2003-02-14 08:39:47 scop Exp $
  */
 public class EjbcaWebBean {
 
     private static Logger log = Logger.getLogger(EjbcaWebBean.class);
-    
+
     // Public Constants.
     public static final int AUTHORIZED_RA_VIEW_RIGHTS        = 0;
     public static final int AUTHORIZED_RA_EDIT_RIGHTS        = 1;
     public static final int AUTHORIZED_RA_CREATE_RIGHTS      = 2;
     public static final int AUTHORIZED_RA_DELETE_RIGHTS      = 3;
     public static final int AUTHORIZED_RA_REVOKE_RIGHTS      = 4;
-    public static final int AUTHORIZED_RA_HISTORY_RIGHTS     = 5; 
+    public static final int AUTHORIZED_RA_HISTORY_RIGHTS     = 5;
     public static final int AUTHORIZED_HARDTOKEN_VIEW_RIGHTS = 6;
     public static final int AUTHORIZED_CA_VIEW_CERT          = 7;
     public static final int AUTHORIZED_RA_KEYRECOVERY_RIGHTS = 8;
@@ -57,7 +57,7 @@ public class EjbcaWebBean {
                                                              "/ra_functionallity/keyrecovery"};
     
     // Private Fields.
-    private ILogSessionRemote              logsession; 
+    private ILogSessionRemote              logsession;
     private AdminPreferenceDataHandler     adminspreferences;
     private AdminPreference                currentadminpreference;
     private GlobalConfiguration            globalconfiguration;
@@ -70,16 +70,16 @@ public class EjbcaWebBean {
     private X509Certificate[]              certificates;
     private boolean                        initialized=false;
     private Boolean[]                      raauthorized;
-    
+
     /** Creates a new instance of EjbcaWebBean */
     public EjbcaWebBean() throws IOException, NamingException, CreateException,
-                                 FinderException, RemoteException{                           
+                                 FinderException, RemoteException{
       initialized=false;
-      raauthorized = new Boolean[AUTHORIZED_FIELD_LENGTH]; 
+      raauthorized = new Boolean[AUTHORIZED_FIELD_LENGTH];
     }
 
     // Public Methods.
-       
+
         /* Sets the current user and returns the global configuration */
     public GlobalConfiguration initialize(HttpServletRequest request, String resource) throws Exception{
 
@@ -91,35 +91,35 @@ public class EjbcaWebBean {
       if(certificates == null) throw new AuthenticationFailedException("Client certificate required.");
       // Check if certificate is still valid
       if(!initialized){
-        Admin administrator = new Admin(certificates[0]) ;  
-        
+        Admin administrator = new Admin(certificates[0]) ;
+
         InitialContext jndicontext = new InitialContext();
         Object obj1 = jndicontext.lookup("UserAdminSession");
         IUserAdminSessionHome adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-        IUserAdminSessionRemote  adminsession = adminsessionhome.create();        
+        IUserAdminSessionRemote  adminsession = adminsessionhome.create();
         obj1 = jndicontext.lookup("LogSession");
-        ILogSessionHome logsessionhome = (ILogSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ILogSessionHome.class);   
+        ILogSessionHome logsessionhome = (ILogSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ILogSessionHome.class);
         logsession = logsessionhome.create();
-        
+
         globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(adminsession, administrator);
         globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();
         adminspreferences = new AdminPreferenceDataHandler(administrator);
-        weblanguages = new WebLanguages(globalconfiguration);          
-          
+        weblanguages = new WebLanguages(globalconfiguration);
+
         userdn = certificates[0].getSubjectX500Principal().toString();
-        
+
         // Check if user certificate is revoked
         authorizedatahandler = new AuthorizationDataHandler(globalconfiguration, logsession, administrator);
-        authorizedatahandler.authenticate(certificates[0]); 
-        
+        authorizedatahandler.authenticate(certificates[0]);
+
         // Check if certificate belongs to a RA Admin
         log.debug("Verifying authoirization of '"+userdn);
-        
+
         // Check that user is administrator.
         adminsession.checkIfSubjectDNisAdmin(administrator, userdn);
 
-        logsession.log(administrator,LogEntry.MODULE_ADMINWEB,  new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORLOGGEDIN,"");               
-        
+        logsession.log(administrator,LogEntry.MODULE_ADMINWEB,  new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORLOGGEDIN,"");
+
       }
       try{
         isAuthorized(URLDecoder.decode(resource,"UTF-8"));
@@ -180,9 +180,9 @@ public class EjbcaWebBean {
     public int getEntriesPerPage(){
       return currentadminpreference.getEntriesPerPage();
     }
-    
+
     public int getLogEntriesPerPage(){
-      return currentadminpreference.getLogEntriesPerPage();        
+      return currentadminpreference.getLogEntriesPerPage();
     }
 
     public void setLogEntriesPerPage(int logentriesperpage) throws Exception{
@@ -193,7 +193,7 @@ public class EjbcaWebBean {
           addAdminPreference(currentadminpreference);
         }
     }
-    
+
     public int getLastFilterMode(){ return currentadminpreference.getLastFilterMode();}
     public void setLastFilterMode(int lastfiltermode) throws Exception{
         currentadminpreference.setLastFilterMode(lastfiltermode);
@@ -212,7 +212,7 @@ public class EjbcaWebBean {
           addAdminPreference(currentadminpreference);
         }
     }
-    
+
     public int getLastEndEntityProfile(){ return currentadminpreference.getLastProfile();}
     public void setLastEndEntityProfile(int lastprofile) throws Exception{
         currentadminpreference.setLastProfile(lastprofile);
@@ -230,7 +230,7 @@ public class EjbcaWebBean {
     /* Checks if the admin have authorization to view the resource */
     public boolean isAuthorized(String resource) throws AuthorizationDeniedException {
       boolean returnval=false;
-      if(certificates != null){           
+      if(certificates != null){
         returnval= authorizedatahandler.isAuthorized(new AdminInformation(certificates[0]),resource);
       }
       else{
@@ -238,35 +238,35 @@ public class EjbcaWebBean {
       }
       return returnval;
     }
-    
+
     /* Checks if the admin have authorization to view the resource without performing any logging. Used by menu page */
     public boolean isAuthorizedNoLog(String resource) throws AuthorizationDeniedException {
       boolean returnval=false;
-      if(certificates != null){           
+      if(certificates != null){
         returnval= authorizedatahandler.isAuthorizedNoLog(new AdminInformation(certificates[0]),resource);
       }
       else{
         throw new  AuthorizationDeniedException("Client certificate required.");
       }
       return returnval;
-    }    
-    
-    
-    /* A more optimezed authorization verison to check if the admin have authorization to view the url without performing any logging. 
+    }
+
+
+    /* A more optimezed authorization verison to check if the admin have authorization to view the url without performing any logging.
      * AUTHORIZED_RA.. contants should be used.*/
     public boolean isAuthorizedNoLog(int resource) throws AuthorizationDeniedException {
       boolean returnval=false;
-      if(certificates != null){    
-        if(raauthorized[resource] == null) 
-         raauthorized[resource] = new Boolean(authorizedatahandler.isAuthorizedNoLog(new AdminInformation(certificates[0]),AUTHORIZED_RA_RESOURCES[resource]));
-        
+      if(certificates != null){
+        if(raauthorized[resource] == null)
+          raauthorized[resource] = authorizedatahandler.isAuthorizedNoLog(new AdminInformation(certificates[0]),AUTHORIZED_RA_RESOURCES[resource]) ? Boolean.TRUE : Boolean.FALSE;
+
         returnval = raauthorized[resource].booleanValue();
       }
       else{
         throw new  AuthorizationDeniedException("Client certificate required.");
       }
       return returnval;
-    }        
+    }
 
     public String getBaseUrl(){return globalconfiguration.getBaseUrl();}
 
@@ -337,12 +337,12 @@ public class EjbcaWebBean {
      *   3. imagename.theme.jpg/gif
      *   4. imagename.preferedlanguage.jpg/gif
      *   5. imagename.secondarylanguage.jpg/gif
-     *   6. imagename.jpg/gif   
+     *   6. imagename.jpg/gif
      *
      *   The parameter imagefilename should the wanted filename without language infix.
      *   For example: given imagefilename 'caimg.gif' would return 'caimg.en.gif'
      *   if english was the users prefered language. It's important that all letters i imagefilename is lowercase.*/
-    
+
     public String getImagefileInfix(String imagefilename) {
       String returnedurl=null;
       String prefered = WebLanguages.getAvailableLanguages()[currentadminpreference.getPreferedLanguage()]
@@ -353,7 +353,7 @@ public class EjbcaWebBean {
       String imagefile = imagefilename.substring(0,imagefilename.lastIndexOf('.'));
       String theme     = currentadminpreference.getTheme().toLowerCase();
       String postfix   = imagefilename.substring(imagefilename.lastIndexOf('.')+1);
-      
+
       String preferedthemefilename = "/" + globalconfiguration .getImagesPath()+"/"
                                 + imagefile + "." + theme + "." + prefered + "." + postfix;
       String secondarythemefilename = "/" + globalconfiguration .getImagesPath()+"/"
@@ -366,7 +366,7 @@ public class EjbcaWebBean {
 
       String secondaryfilename = "/" + globalconfiguration .getImagesPath()+"/"
                                  + imagefile + "." + secondary + "." + postfix;
-      
+
        String preferedthemeurl = globalconfiguration .getBaseUrl() + globalconfiguration .getAdminWebPath()
                           + globalconfiguration .getImagesPath()+"/"
                           + imagefile + "." + theme + "." + prefered + "." + postfix;
@@ -377,8 +377,8 @@ public class EjbcaWebBean {
 
       String imagethemeurl     = globalconfiguration .getBaseUrl()  + globalconfiguration .getAdminWebPath()
                           + globalconfiguration .getImagesPath()+"/"
-                          + imagefile + "." + theme + "." + postfix;     
-      
+                          + imagefile + "." + theme + "." + postfix;
+
 
       String preferedurl = globalconfiguration .getBaseUrl() + globalconfiguration .getAdminWebPath()
                           + globalconfiguration .getImagesPath()+"/"
@@ -396,7 +396,7 @@ public class EjbcaWebBean {
       else{
         if(this.getClass().getResourceAsStream(secondarythemefilename) != null)
           returnedurl = secondarythemeurl;
-        else{ 
+        else{
           if(this.getClass().getResourceAsStream(themefilename) != null)
             returnedurl = imagethemeurl;
           else{
@@ -409,8 +409,8 @@ public class EjbcaWebBean {
                 returnedurl = imageurl;
             }
           }
-        } 
-      }  
+        }
+      }
       return returnedurl;
     }
 
@@ -425,8 +425,8 @@ public class EjbcaWebBean {
 
     public String printDateTime(Date date){
       return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(date);
-    }    
-    
+    }
+
     public void reloadGlobalConfiguration() throws  Exception {
       globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();
     }
@@ -457,17 +457,17 @@ public class EjbcaWebBean {
     public AdminPreference getDefaultAdminPreference() throws Exception{
       return adminspreferences.getDefaultAdminPreference();
     } // getDefaultAdminPreference()
-    
+
     public void saveDefaultAdminPreference(AdminPreference dap) throws Exception{
       adminspreferences.saveDefaultAdminPreference(dap);
-      
+
       // Reload preferences
       currentadminpreference = adminspreferences.getAdminPreference(certificateserialnumber);
       if(currentadminpreference == null){
          currentadminpreference = adminspreferences.getDefaultAdminPreference();
       }
       adminsweblanguage = new WebLanguages( currentadminpreference.getPreferedLanguage()
-                                          ,currentadminpreference.getSecondaryLanguage());        
-    } // saveDefaultAdminPreference   
+                                          ,currentadminpreference.getSecondaryLanguage());
+    } // saveDefaultAdminPreference
 
 }

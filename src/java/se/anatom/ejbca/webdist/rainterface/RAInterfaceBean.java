@@ -44,7 +44,7 @@ import org.apache.log4j.Logger;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.24 2003-02-12 13:21:30 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.25 2003-02-14 08:39:47 scop Exp $
  */
 public class RAInterfaceBean {
 
@@ -69,7 +69,7 @@ public class RAInterfaceBean {
         if(request.getAttribute( "javax.servlet.request.X509Certificate" ) != null)
           administrator = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
         else
-          administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());   
+          administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
         // Get the UserAdminSession instance.
 
         jndicontext = new InitialContext();
@@ -93,7 +93,7 @@ public class RAInterfaceBean {
         authorizationsession = authorizationsessionhome.create();
         authorizationsession.init(globalconfiguration);
 
-        IHardTokenSessionHome hardtokensessionhome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("HardTokenSession"), 
+        IHardTokenSessionHome hardtokensessionhome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("HardTokenSession"),
                                                                                  IHardTokenSessionHome.class);
         hardtokensession = hardtokensessionhome.create();         
         
@@ -298,11 +298,11 @@ public class RAInterfaceBean {
        return users.getUsers(index,size);
 
     }
-    
+
     /* Method to find all users in database */
-    public UserView[] filterByTokenSN(String tokensn, int index,int size) throws Exception{  
-      UserView[] returnval = null;        
-      UserAdminData user = null;     
+    public UserView[] filterByTokenSN(String tokensn, int index,int size) throws Exception{
+      UserView[] returnval = null;
+      UserAdminData user = null;
       try{
         tokensn = new RegularExpression.RE(" ",false).replace(tokensn,"");
       }catch(Exception e){}
@@ -310,17 +310,17 @@ public class RAInterfaceBean {
 
       if(token!=null)
         user = adminsession.findUser(administrator, token.getUsername());
-      
-      Vector uservector = new Vector();     
+
+      Vector uservector = new Vector();
       if(user!=null)
          uservector.addElement(user);
-      
+
       users.setUsers(uservector);
 
-      returnval= users.getUsers(index,size);      
-      
+      returnval= users.getUsers(index,size);
+
       return returnval;
-    }    
+    }
 
     /* Method that checks if a certificate serialnumber is revoked and returns the user(s), else a null value. */
     public UserView[] filterByCertificateSerialNumber(String serialnumber, int index, int size) throws RemoteException,
@@ -380,7 +380,7 @@ public class RAInterfaceBean {
              user=null;
            }
            if(user != null && addedusers.get(user.getUsername()) == null){
-             addedusers.put(user.getUsername() ,new Boolean(true));
+             addedusers.put(user.getUsername(), Boolean.TRUE);
              uservector.addElement(user);
            }
         }
@@ -541,7 +541,7 @@ public class RAInterfaceBean {
         certificates = null;
       }
     }
-    
+
     public void loadTokenCertificates(String tokensn, String username) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
       Collection certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
 
@@ -562,11 +562,11 @@ public class RAInterfaceBean {
       else{
         certificates = null;
       }
-    }    
-    
+    }
+
     public void loadCACertificates(CertificateView[] cacerts) {
         certificates = cacerts;
-    }    
+    }
 
     public void loadCertificates(BigInteger serno) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
       Collection certs = certificatesession.findCertificatesBySerno(administrator,serno);
@@ -608,34 +608,34 @@ public class RAInterfaceBean {
       }
 
       return returnval;
-    } 
-    
-    public boolean authorizedToEditUser(int profileid) throws RemoteException{  
+    }
+
+    public boolean authorizedToEditUser(int profileid) throws RemoteException{
       return profileauthproxy.getEndEntityProfileAuthorizationNoLog(administrator, profileid, EndEntityProfileAuthorizationProxy.EDIT_RIGHTS);
     }
-    
+
     public boolean authorizedToViewHistory(int profileid) throws RemoteException{
       return profileauthproxy.getEndEntityProfileAuthorizationNoLog(administrator, profileid, EndEntityProfileAuthorizationProxy.HISTORY_RIGHTS);
     }
 
     public boolean authorizedToViewHardToken(String username) throws Exception{
       int profileid = adminsession.findUser(administrator, username).getEndEntityProfileId();
-      return profileauthproxy.getEndEntityProfileAuthorizationNoLog(administrator, profileid, EndEntityProfileAuthorizationProxy.HARDTOKEN_VIEW_RIGHTS);       
+      return profileauthproxy.getEndEntityProfileAuthorizationNoLog(administrator, profileid, EndEntityProfileAuthorizationProxy.HARDTOKEN_VIEW_RIGHTS);
     }
-    
+
     public boolean authorizedToViewHardToken(int profileid) throws Exception{
-      return profileauthproxy.getEndEntityProfileAuthorizationNoLog(administrator, profileid, EndEntityProfileAuthorizationProxy.HARDTOKEN_VIEW_RIGHTS);       
+      return profileauthproxy.getEndEntityProfileAuthorizationNoLog(administrator, profileid, EndEntityProfileAuthorizationProxy.HARDTOKEN_VIEW_RIGHTS);
     }
-    
+
     public boolean authorizedToRevokeCert(CertificateView certinfo) throws FinderException, RemoteException, AuthorizationDeniedException{
-      boolean returnval=false;   
+      boolean returnval=false;
       int profileid = (adminsession.findUser(administrator, certinfo.getUsername())).getEndEntityProfileId();
-  
+
       if(globalconfiguration.getEnableEndEntityProfileLimitations())
-       returnval= profileauthproxy.getEndEntityProfileAuthorizationNoLog(administrator, profileid, EndEntityProfileAuthorizationProxy.REVOKE_RIGHTS);         
-      else   
+       returnval= profileauthproxy.getEndEntityProfileAuthorizationNoLog(administrator, profileid, EndEntityProfileAuthorizationProxy.REVOKE_RIGHTS);
+      else
        returnval=true;
-      
+
       return returnval;
     }
     
