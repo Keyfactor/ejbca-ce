@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
  * A class used as an interface between Apply jsp pages and ejbca functions.
  *
  * @author Philip Vendil
- * @version $Id: ApplyBean.java,v 1.5 2003-06-26 11:43:22 anatom Exp $
+ * @version $Id: ApplyBean.java,v 1.6 2003-08-19 11:50:34 anatom Exp $
  */
 public class ApplyBean {
     /**
@@ -106,7 +106,7 @@ public class ApplyBean {
             ICertificateStoreSessionRemote certstoresession = certificatesessionhome.create();
             int certprofile = userdata.getCertificateProfileId();
 
-            if (certprofile != SecConst.PROFILE_NO_CERTIFICATEPROFILE) {
+            if (certprofile != SecConst.PROFILE_NO_PROFILE) {
                 returnval = certstoresession.getCertificateProfile(administrator, certprofile)
                                             .getAvailableBitLengths();
             }

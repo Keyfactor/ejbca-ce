@@ -20,7 +20,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.24 2003-07-24 08:43:29 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.25 2003-08-19 11:50:34 anatom Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
     /**
@@ -181,7 +181,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 error = true;
             }
 
-            if (certificatetypeid == SecConst.PROFILE_NO_CERTIFICATEPROFILE) { // Certificate profile not found i database.
+            if (certificatetypeid == SecConst.PROFILE_NO_PROFILE) { // Certificate profile not found i database.
                 System.out.println("Error : Couldn't find certificate profile in database.");
                 error = true;
             }
