@@ -2,7 +2,6 @@ package se.anatom.ejbca.protocol;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.cert.X509Certificate;
 
 import javax.ejb.ObjectNotFoundException;
 
@@ -22,7 +21,7 @@ import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version  $Id: ScepPkiOpHelper.java,v 1.13 2003-06-13 19:14:17 anatom Exp $
+ * @version  $Id: ScepPkiOpHelper.java,v 1.14 2003-06-13 19:15:18 anatom Exp $
  */
 public class ScepPkiOpHelper {
 
