@@ -100,7 +100,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * 
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.12 2003-09-09 12:53:46 anatom Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.13 2003-11-20 15:23:22 anatom Exp $
  */
 public class AdminCertReqServlet extends HttpServlet {
   private final static Logger log = Logger.getLogger(AdminCertReqServlet.class);
@@ -122,8 +122,7 @@ public class AdminCertReqServlet extends HttpServlet {
     super.init(config);
     try {
       // Install BouncyCastle provider
-      Provider p = new org.bouncycastle.jce.provider.BouncyCastleProvider();
-      int result = Security.addProvider(p);
+      CertTools.installBCProvider();
 
       // Get EJB context and home interfaces
       InitialContext ctx = new InitialContext();

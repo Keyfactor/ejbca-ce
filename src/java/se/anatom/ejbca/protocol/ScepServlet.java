@@ -20,6 +20,7 @@ import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.util.Base64;
+import se.anatom.ejbca.util.CertTools;
 
 
 /**
@@ -40,7 +41,7 @@ import se.anatom.ejbca.util.Base64;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.22 2003-10-09 08:46:27 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.23 2003-11-20 15:23:23 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);
@@ -58,8 +59,7 @@ public class ScepServlet extends HttpServlet {
 
         try {
             // Install BouncyCastle provider
-            Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
-            int result = Security.addProvider(BCJce);
+            CertTools.installBCProvider();
 
             // Get EJB context and home interfaces
             InitialContext ctx = new InitialContext();

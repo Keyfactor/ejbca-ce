@@ -80,7 +80,7 @@ import se.anatom.ejbca.ra.UserAdminData;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.30 2003-10-21 13:48:48 herrvendil Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.31 2003-11-20 15:23:22 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -110,8 +110,7 @@ public class DemoCertReqServlet extends HttpServlet {
     super.init(config);
     try {
       // Install BouncyCastle provider
-      Provider p = new org.bouncycastle.jce.provider.BouncyCastleProvider();
-      int result = Security.addProvider(p);
+      CertTools.installBCProvider();
 
       // Get EJB context and home interfaces
       InitialContext ctx = new InitialContext();

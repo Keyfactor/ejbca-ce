@@ -15,7 +15,7 @@ import junit.framework.*;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestKeyTools.java,v 1.4 2003-09-28 08:11:27 anatom Exp $
+ * @version $Id: TestKeyTools.java,v 1.5 2003-11-20 15:23:23 anatom Exp $
  */
 public class TestKeyTools extends TestCase {
 
@@ -97,8 +97,7 @@ public class TestKeyTools extends TestCase {
     protected void setUp() throws Exception {
         log.debug(">setUp()");
         // Install BouncyCastle provider
-        Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
-        int result = Security.addProvider(BCJce);
+        CertTools.installBCProvider();
         log.debug("<setUp()");
 
     }

@@ -14,7 +14,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.17 2003-10-25 09:38:44 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.18 2003-11-20 15:23:23 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -48,6 +48,7 @@ public class TestCertTools extends TestCase {
 
     protected void setUp() throws Exception {
         log.debug(">setUp()");
+        CertTools.installBCProvider();
         log.debug("<setUp()");
     }
 

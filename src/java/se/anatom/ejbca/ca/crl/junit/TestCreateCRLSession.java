@@ -20,7 +20,7 @@ import junit.framework.*;
 /**
  * Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.12 2003-11-03 14:00:49 anatom Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.13 2003-11-20 15:23:22 anatom Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 
@@ -45,8 +45,10 @@ public class TestCreateCRLSession extends TestCase {
 
     protected void setUp() throws Exception {
         log.debug(">setUp()");
-        ctx = getInitialContext();
+        CertTools.installBCProvider();
 
+        ctx = getInitialContext();
+        
         admin = new Admin(Admin.TYPE_INTERNALUSER);
 
         Object obj = ctx.lookup("CreateCRLSession");

@@ -16,7 +16,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.48 2003-11-20 14:58:17 anatom Exp $
+ * @version $Id: CertTools.java,v 1.49 2003-11-20 15:23:23 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -309,9 +309,6 @@ public class CertTools {
     
     private static CertificateFactory getCertificateFactory() {
         try {
-            if (Security.addProvider(new BouncyCastleProvider()) < 0) {
-                log.error("Cannot install BC provider! Already installed?");
-            }
             return CertificateFactory.getInstance("X.509", "BC");
         } catch (NoSuchProviderException nspe) {
             log.error("NoSuchProvider: ", nspe);
@@ -319,6 +316,16 @@ public class CertTools {
             log.error("CertificateException: ", ce);
         }
         return null;
+    }
+
+    public static void installBCProvider() {
+        if (Security.addProvider(new BouncyCastleProvider()) < 0) {
+            // If already installed, remove so we can handle redeploy
+            Security.removeProvider("BC");
+            if (Security.addProvider(new BouncyCastleProvider()) < 0) {
+                log.error("Cannot even install BC provider again!");
+            }
+        }
     }
 
     /**

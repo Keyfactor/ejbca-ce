@@ -23,7 +23,7 @@ import org.bouncycastle.jce.provider.*;
  * a third file. The PEM files will have the names <i>common name</i>.pem, <i>common
  * name</i>Key.pem and <i>common name</i>CA.pem derived from the DN in user certificate.
  *
- * @version $Id: P12toPEM.java,v 1.10 2003-10-29 15:23:28 herrvendil Exp $
+ * @version $Id: P12toPEM.java,v 1.11 2003-11-20 15:23:23 anatom Exp $
  */
 public class P12toPEM {
     private static Logger log = Logger.getLogger(P12toPEM.class);
@@ -48,7 +48,7 @@ public class P12toPEM {
         PropertyConfigurator.configure("log4j.properties");
 
         // Bouncy Castle security provider
-        Security.addProvider(new BouncyCastleProvider());
+        CertTools.installBCProvider();
 
         P12toPEM p12 = null;
         String pathAllP12 = null;

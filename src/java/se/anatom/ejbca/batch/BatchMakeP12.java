@@ -44,7 +44,7 @@ import se.anatom.ejbca.util.P12toPEM;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.43 2003-11-17 09:06:36 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.44 2003-11-20 15:23:22 anatom Exp $
  */
 public class BatchMakeP12 {
     /** For logging */
@@ -92,7 +92,7 @@ public class BatchMakeP12 {
         administrator = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 
         // Bouncy Castle security provider
-        Security.addProvider(new BouncyCastleProvider());
+        CertTools.installBCProvider();
 
         Context jndiContext = getInitialContext();
         Object obj = jndiContext.lookup("UserAdminSession");

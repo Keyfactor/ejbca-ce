@@ -14,6 +14,7 @@ import junit.framework.*;
 import se.anatom.ejbca.protocol.ScepRequestMessage;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.KeyTools;
+import se.anatom.ejbca.util.CertTools;
 
 
 /**
@@ -139,8 +140,7 @@ public class TestMessages extends TestCase {
         log.debug(">setUp()");
 
         // Install BouncyCastle provider
-        Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
-        int result = Security.addProvider(BCJce);
+        CertTools.installBCProvider();
 
         KeyStore keyStore = KeyStore.getInstance("PKCS12", "BC");
         InputStream is = new ByteArrayInputStream(p12);

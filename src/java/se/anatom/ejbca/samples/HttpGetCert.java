@@ -41,7 +41,7 @@ import se.anatom.ejbca.util.KeyTools;
  * </ul>
  *
  *
- * @version $Id: HttpGetCert.java,v 1.12 2003-10-08 07:23:51 anatom Exp $
+ * @version $Id: HttpGetCert.java,v 1.13 2003-11-20 15:23:23 anatom Exp $
  */
 public class HttpGetCert {
     private static Logger log = Logger.getLogger(HttpGetCert.class);
@@ -227,8 +227,7 @@ public class HttpGetCert {
         BasicConfigurator.configure();
 
         // Install BouncyCastle provider
-        Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
-        int result = Security.addProvider(BCJce);
+        CertTools.installBCProvider();
 
         // Generate keys (512 bit for sample purposes)
         System.out.print("Generating 512 bit RSA keys.");

@@ -63,7 +63,7 @@ import se.anatom.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.40 2003-10-21 13:48:48 herrvendil Exp $
+ * @version $Id: CertReqServlet.java,v 1.41 2003-11-20 15:23:22 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
@@ -93,8 +93,7 @@ public class CertReqServlet extends HttpServlet {
 
         try {
             // Install BouncyCastle provider
-            Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
-            int result = Security.addProvider(BCJce);
+            CertTools.installBCProvider();
 
             // Get EJB context and home interfaces
             InitialContext ctx = new InitialContext();

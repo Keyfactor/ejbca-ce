@@ -41,7 +41,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.28 2003-11-03 13:05:52 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.29 2003-11-20 15:23:23 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -133,8 +133,7 @@ public class TestSignSession extends TestCase {
         log.debug(">setUp()");
 
         // Install BouncyCastle provider
-        Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
-        int result = Security.addProvider(BCJce);
+        CertTools.installBCProvider();
 
         admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
         

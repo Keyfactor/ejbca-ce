@@ -108,8 +108,9 @@ public class TestCertificateRetrival extends TestCase  {
 
     protected void setUp() throws Exception {
         m_log.debug(">setUp()");
-        m_ctx = getInitialContext();
-        
+        CertTools.installBCProvider();
+
+        m_ctx = getInitialContext();        
         Object obj = m_ctx.lookup("CertificateData");
         m_home = (CertificateDataHome) javax.rmi.PortableRemoteObject.narrow(obj,
                 CertificateDataHome.class);

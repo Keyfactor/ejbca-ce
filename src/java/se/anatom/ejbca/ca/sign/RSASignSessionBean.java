@@ -66,7 +66,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.114 2003-11-20 14:49:21 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.115 2003-11-20 15:23:23 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -102,9 +102,8 @@ public class RSASignSessionBean extends BaseSessionBean {
         debug(">ejbCreate()");
 
         try {
-             // Install BouncyCastle provider if it doesnt exists
-            Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
-            Security.addProvider(BCJce);
+             // Install BouncyCastle provider
+             CertTools.installBCProvider();
 
             // get home interfaces to other session beans used
             storeHome = (ICertificateStoreSessionLocalHome) lookup(

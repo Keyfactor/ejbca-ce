@@ -35,7 +35,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.15 2003-11-02 08:46:03 anatom Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.16 2003-11-20 15:23:21 anatom Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
     /** Private key alias in PKCS12 keystores */
@@ -53,8 +53,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
     public BaseCaAdminCommand(String[] args) {
         super(args);
         // Install BouncyCastle provider
-        Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
-        int result = Security.addProvider(BCJce);
+        CertTools.installBCProvider();
         administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     }
     

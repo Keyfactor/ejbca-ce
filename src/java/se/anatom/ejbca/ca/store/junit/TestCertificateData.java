@@ -18,7 +18,7 @@ import junit.framework.*;
 /**
  * Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.23 2003-11-03 11:47:33 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.24 2003-11-20 15:23:23 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -53,8 +53,9 @@ public class TestCertificateData extends TestCase {
     }
     protected void setUp() throws Exception {
         log.debug(">setUp()");
-        ctx = getInitialContext();
+        CertTools.installBCProvider();
 
+        ctx = getInitialContext();
         Object obj = ctx.lookup("CertificateData");
         home = (CertificateDataHome) javax.rmi.PortableRemoteObject.narrow(obj, CertificateDataHome.class);
         Object obj2 = ctx.lookup("CertificateStoreSession");
