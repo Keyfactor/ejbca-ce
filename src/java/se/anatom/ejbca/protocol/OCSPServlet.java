@@ -58,7 +58,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.18 2004-01-01 16:41:44 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.19 2004-01-01 19:52:18 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -69,9 +69,7 @@ public class OCSPServlet extends HttpServlet {
     private ISignSessionLocal m_signsession = null;
     private Admin m_adm;
 
-    private PrivateKey m_signkey;
-    private X509Certificate [] m_signcerts;
-    private int m_responderIdx;
+    private String m_sigAlg;
     private boolean m_reqMustBeSigned;
     private Collection m_cacerts = null;
     /** Cache time counter */
@@ -229,12 +227,17 @@ public class OCSPServlet extends HttpServlet {
             m_signsession = signhome.create();
             
             // Parameters for OCSP signing (private) key
-            m_defaultResponderId = config.getInitParameter("defaultResponderID").trim();
+            m_sigAlg = config.getInitParameter("SignatureAlgorithm");
+            if (StringUtils.isEmpty(m_sigAlg)) {
+                m_log.error("Signature algorithm not defined in initialization parameters.");
+                throw new ServletException("Missing signature algorithm in initialization parameters.");
+            }
+            m_defaultResponderId = config.getInitParameter("defaultResponderID");
             if (StringUtils.isEmpty(m_defaultResponderId)) {
                 m_log.error("Default responder id not defined in initialization parameters.");
-                throw new ServletException("Missing default responder id.");
+                throw new ServletException("Missing default responder id in initialization parameters.");
             }
-            String initparam = config.getInitParameter("enforceRequestSigning").trim();
+            String initparam = config.getInitParameter("enforceRequestSigning");
             if (m_log.isDebugEnabled()) {
                 m_log.debug("Enforce request signing : '" 
                             + (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
@@ -430,7 +433,7 @@ public class OCSPServlet extends HttpServlet {
                     }
                     if (basicRes != null) {
                         // generate the signed response object
-                        BasicOCSPResp basicresp = basicRes.generate("SHA1WithRSA", ocspSign.getPrivateKey(), ocspSign.getCertChain(), new Date(), "BC" );
+                        BasicOCSPResp basicresp = basicRes.generate(m_sigAlg, ocspSign.getPrivateKey(), ocspSign.getCertChain(), new Date(), "BC" );
                         ocspresp = res.generate(OCSPRespGenerator.SUCCESSFUL, basicresp);                        
                     } else {
                         final String msg = "Unable to find CA certificate and key to generate OCSP response!";
@@ -442,7 +445,7 @@ public class OCSPServlet extends HttpServlet {
                 m_log.info("MalformedRequestException caught : ", e);
                 // generate the signed response object
                 try {                    
-                    BasicOCSPResp basicresp = basicRes.generate("SHA1WithRSA", ocspSign.getPrivateKey(), ocspSign.getCertChain(), new Date(), "BC" );
+                    BasicOCSPResp basicresp = basicRes.generate(m_sigAlg, ocspSign.getPrivateKey(), ocspSign.getCertChain(), new Date(), "BC" );
                     ocspresp = res.generate(OCSPRespGenerator.MALFORMED_REQUEST, basicRes);
                 } catch (NoSuchProviderException nspe) {
                     m_log.error("Can't generate any type of OCSP response: ", e);
@@ -453,7 +456,7 @@ public class OCSPServlet extends HttpServlet {
                 m_log.info("SignRequestException caught : ", e);
                 // generate the signed response object
                 try {                    
-                    BasicOCSPResp basicresp = basicRes.generate("SHA1WithRSA", ocspSign.getPrivateKey(), ocspSign.getCertChain(), new Date(), "BC" );
+                    BasicOCSPResp basicresp = basicRes.generate(m_sigAlg, ocspSign.getPrivateKey(), ocspSign.getCertChain(), new Date(), "BC" );
                     ocspresp = res.generate(OCSPRespGenerator.SIG_REQUIRED, basicRes);
                 } catch (NoSuchProviderException nspe) {
                     m_log.error("Can't generate any type of OCSP response: ", e);
@@ -463,7 +466,7 @@ public class OCSPServlet extends HttpServlet {
                 m_log.error("Unable to handle OCSP request.", e);
                 // generate the signed response object
                 try {                    
-                    BasicOCSPResp basicresp = basicRes.generate("SHA1WithRSA", ocspSign.getPrivateKey(), ocspSign.getCertChain(), new Date(), "BC" );
+                    BasicOCSPResp basicresp = basicRes.generate(m_sigAlg, ocspSign.getPrivateKey(), ocspSign.getCertChain(), new Date(), "BC" );
                     ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, basicRes);
                 } catch (NoSuchProviderException nspe) {
                     m_log.error("Can't generate any type of OCSP response: ", e);
