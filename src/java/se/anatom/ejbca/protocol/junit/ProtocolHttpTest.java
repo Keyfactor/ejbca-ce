@@ -77,16 +77,18 @@ public class ProtocolHttpTest extends TestCase {
         // Install BouncyCastle provider
         CertTools.installBCProvider();
 
+        // We want to get error responses without exceptions
+        HttpUnitOptions.setExceptionsThrownOnErrorStatus(false);
+
         log.debug("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
+
     public void test01Access() throws Exception {
 
-        // We want to get error responses without exceptions
-        HttpUnitOptions.setExceptionsThrownOnErrorStatus(false);
         WebConversation wc   = new WebConversation();
         
         // Hit ocsp, gives a 500: Internal server error (TODO)
@@ -100,6 +102,8 @@ public class ProtocolHttpTest extends TestCase {
     }
 
     /** Tests scep message from OpenScep
+     * Prerequisites for running the tests is to have a CA setup with 
+     * issuerDN: CN=TestCA,O=AnaTom,C=SE.
      * @throws Exception error
      */
     public void test02OpenScep() throws Exception {
@@ -111,8 +115,9 @@ public class ProtocolHttpTest extends TestCase {
         request.setParameter("operation", "PKIOperation");
         request.setParameter("message", new String(Base64.encode(openscep)));
         WebResponse response = wc.getResponse( request );
-        // TODO: invalid CA gives 500 so far...
-        assertEquals( "Response code", 500, response.getResponseCode() );
+        // TODO: since we our request most certainly uses the wrong CA cert to encrypt the 
+        // request, it will fail. If we get something back, we came a little bit at least :)
+        assertEquals( "Response code", 400, response.getResponseCode() );
         // TODO: send crap message and get good error
         
         log.debug("<test02OpenScep()");

@@ -64,7 +64,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.117 2003-12-08 13:10:05 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.118 2003-12-12 10:15:04 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -431,7 +431,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         try{
             // See if we can get issuerDN directly from request
             if (req.getIssuerDN() != null) {
-                cadata = cadatahome.findByName(req.getIssuerDN());
+                cadata = cadatahome.findByPrimaryKey(new Integer(req.getIssuerDN().hashCode()));
             } else if (req.getUsername() != null ){
                 // See if we can get username and password directly from request
                 String username = req.getUsername();
