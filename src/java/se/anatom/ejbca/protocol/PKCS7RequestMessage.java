@@ -2,21 +2,27 @@ package se.anatom.ejbca.protocol;
 
 import java.io.*;
 import java.security.PublicKey;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
+import java.security.GeneralSecurityException;
 import java.util.Enumeration;
 import java.util.Iterator;
 
 import org.apache.log4j.*;
 
 import org.bouncycastle.jce.PKCS7SignedData;
-import org.bouncycastle.cms.asn1.*;
 import org.bouncycastle.asn1.*;
+import org.bouncycastle.cms.asn1.*;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.parsers.SignedDataParser;
+import org.bouncycastle.cms.parsers.EnvelopedDataParser;
 
 /** Class to handle PKCS7 request messages sent to the CA.
  *
-* @version  $Id: PKCS7RequestMessage.java,v 1.1 2002-10-13 11:38:04 anatom Exp $
+* @version  $Id: PKCS7RequestMessage.java,v 1.2 2002-10-14 15:29:49 anatom Exp $
  */
 public class PKCS7RequestMessage implements RequestMessage, Serializable {
-    
+
     static private Category cat = Category.getInstance( PKCS7RequestMessage.class.getName() );
 
     private static String id_Verisign = "2.16.840.1.113733";
@@ -29,6 +35,24 @@ public class PKCS7RequestMessage implements RequestMessage, Serializable {
     private static String id_recipientNonce = id_attributes + ".6";
     private static String id_transId = id_attributes + ".7";
     private static String id_extensionReq = id_attributes + ".8";
+
+    /** Raw form of the PKCS10 message
+     */
+    private byte[] msg;
+
+    /** Signed data, the whole enchilada to to speak...
+     */
+    private transient SignedData sd = null;
+    /** Enveloped data, carrying the 'beef' of the request
+     */
+    private transient EnvelopedData envData = null;
+
+    /** Certificate used for decryption, verification
+     */
+    private X509Certificate cert;
+    /** Private key used for decryption.
+     */
+    private PrivateKey privateKey;
 
     /** The messageType attribute specify the type of operation performed by the
      * transaction. This attribute is required in all PKI messages. Currently, the following message types are defined:
@@ -52,6 +76,12 @@ public class PKCS7RequestMessage implements RequestMessage, Serializable {
      */
     public PKCS7RequestMessage(byte[] msg) throws IOException {
         cat.debug(">PKCS7RequestMessage");
+        this.msg = msg;
+        init();
+        cat.debug("<PKCS7RequestMessage");
+    }
+
+    private void init() throws IOException {
         // Parse and verify the entegrity of the PKIOperation message PKCS#7
 
         // TODO: Use SignedDataParser to verify the message
@@ -66,7 +96,7 @@ public class PKCS7RequestMessage implements RequestMessage, Serializable {
             // (could also be pkcsRepSigned or certOnly, but we don't receive them on the server side
 
             // Try to find out what kind of message this is
-            SignedData sd = new SignedData((DERConstructedSequence)ci.getContent());
+            sd = new SignedData((DERConstructedSequence)ci.getContent());
             Enumeration sis = sd.getSignerInfos().getObjects();
             if (sis.hasMoreElements()) {
                 SignerInfo si = new SignerInfo((ASN1Sequence)sis.nextElement());
@@ -100,7 +130,7 @@ public class PKCS7RequestMessage implements RequestMessage, Serializable {
                     ci = new ContentInfo((DERConstructedSequence)content);
                     ctoid = ci.getContentType().getId();
                     if (ctoid.equals(CMSObjectIdentifiers.envelopedData.getId())) {
-                        EnvelopedData envData = new EnvelopedData((DERConstructedSequence)ci.getContent());
+                        envData = new EnvelopedData((DERConstructedSequence)ci.getContent());
                     } else {
                         cat.error("EncapsulatedContentInfo does not contain PKCS7 envelopedData: "+ctoid);
                         error = 2;
@@ -129,24 +159,50 @@ public class PKCS7RequestMessage implements RequestMessage, Serializable {
             cat.error("PKCSReq does not contain 'signedData': "+ctoid);
             error = 1;
         }
-        cat.debug("<PKCS7RequestMessage");
     }
-    
+
     public PublicKey getRequestPublicKey() {
         cat.debug(">getRequestPublicKey()");
+        try {
+            if (envData == null)
+                init();
+        } catch (IOException e) {
+            cat.error("PKCS7 not inited!");
+            return null;
+        }
         // TODO:
+        //return pkcs10.getPublicKey();
         cat.debug("<getRequestPublicKey()");
         return null;
-      }
+    }
 
     public boolean verify() {
         cat.debug(">verify()");
-        // TODO:
+        boolean ret = false;
+        /*
+        try {
+            if (sd == null)
+                init();
+            ret = SignedDataParser.verify(sd, cert);
+        } catch (IOException e) {
+            cat.error("PKCS7 not inited!");
+        } catch (GeneralSecurityException e) {
+            cat.error("Error in PKCS7:", e);
+            throw e;
+        } catch (CMSException e) {
+            cat.error("Error in PKCS7:", e);
+        }
+        */
         cat.debug("<verify()");
-        return false;
-      }
+        return ret;
+    }
+
     public boolean requireKeyInfo() {
         return true;
-      }
-      
+    }
+    public void setKeyInfo(X509Certificate cert, PrivateKey key) {
+        this.cert = cert;
+        this.privateKey = key;
+    }
+
 } // PKCS7RequestMessage
