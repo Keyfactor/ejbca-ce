@@ -5,6 +5,8 @@
  */
 package se.anatom.ejbca.ca.store.certificateprofiles;
 
+import java.util.ArrayList;
+
 /**
  * CACertificateProfile is a class defining the fixed characteristics of a CA certificate profile.
  *
@@ -54,11 +56,26 @@ public class CACertificateProfile extends CertificateProfile{
       setKeyUsage(new boolean[9]);
       setKeyUsage(KEYCERTSIGN,true);
       setKeyUsage(CRLSIGN,true);
+      
+      setUseExtendedKeyUsage(false);
+      setExtendedKeyUsage(new ArrayList());
 
     }
 
     // Public Methods.
+    public void upgrade(){        
+      if(LATEST_VERSION != getVersion()){
+        // New version of the class, upgrade
 
+        data.put(VERSION, new Float(LATEST_VERSION));
+        if(data.get(ALLOWKEYUSAGEOVERRIDE) == null)
+          data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
+        if(data.get(USEEXTENDEDKEYUSAGE) ==null)
+          data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
+        if(data.get(EXTENDEDKEYUSAGE) ==null)       
+          data.put(EXTENDEDKEYUSAGE, new ArrayList());
+      }
+    }
 
     // Private fields.
 }

@@ -2,6 +2,7 @@
   CertificateProfile certificateprofiledata = cabean.getCertificateProfile(certprofile.trim());
  
   String[] TYPE_NAMES = {"ENDENTITY", "CA", "ROOTCA"};
+  int[] TYPE_IDS = {SecConst.CERTTYPE_ENDENTITY,SecConst.CERTTYPE_CA , SecConst.CERTTYPE_ROOTCA};
 %>
 <SCRIPT language="JavaScript">
 <!--  
@@ -44,6 +45,15 @@ function checkusecertificatepoliciesfield(){
     document.editcertificateprofile.<%= CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>.checked = false;
     document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.disabled = true;
     document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.value = "";
+  }
+}
+
+function checkuseextendedkeyusagefield(){
+  if(document.editcertificateprofile.<%=CHECKBOX_USEEXTENDEDKEYUSAGE %>.checked){
+    document.editcertificateprofile.<%= SELECT_EXTENDEDKEYUSAGE %>.disabled = false;
+  }
+  else{
+    document.editcertificateprofile.<%= SELECT_EXTENDEDKEYUSAGE %>.disabled = true;
   }
 }
 
@@ -283,6 +293,34 @@ function checkallfields(){
       </td>
     </tr>
     <tr  id="Row1"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("USEEXTENDEDKEYUSAGE") %>
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_USEEXTENDEDKEYUSAGE %>"  onclick="checkuseextendedkeyusagefield()" value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getUseExtendedKeyUsage())
+                 out.write("CHECKED");
+           %>> 
+      </td>
+    </tr>
+    <tr  id="Row0"> 
+      <td width="50%" align="right"> 
+        <%= ejbcawebbean.getText("EXTENDEDKEYUSAGE") %> <br>&nbsp;
+      </td>
+      <td width="50%"> 
+        <select name="<%=SELECT_EXTENDEDKEYUSAGE%>" size="9" multiple <% if(!certificateprofiledata.getUseExtendedKeyUsage()) out.write(" disabled "); %>>
+           <%  ArrayList eku = certificateprofiledata.getExtendedKeyUsage();
+                for(int i=0; i<extendedkeyusagetexts.length;i++){ %>
+           <option  value="<%= i %>" 
+              <% for(int j=0; j < eku.size(); j++) 
+                   if(((Integer) eku.get(j)).intValue() == i ) out.write(" selected "); %>> 
+              <%= ejbcawebbean.getText(extendedkeyusagetexts[i]) %>
+           </option>
+           <%   } %> 
+        </select>
+      </td>
+    </tr>
+    <tr  id="Row1"> 
       <td width="50%" align="right"> 
         <%= ejbcawebbean.getText("AVAILABLEBITLENGTHS") %> <br>&nbsp;
       </td>
@@ -309,8 +347,8 @@ function checkallfields(){
         <select name="<%=SELECT_TYPE%>" size="1" >
            <%  int type = certificateprofiledata.getType();
                 for(int i=0; i<certificateprofiledata.NUMBER_OF_TYPES;i++){ %>
-           <option  value="<%= i %>" 
-              <%  if(i == type)
+           <option  value="<%= TYPE_IDS[i] %>" 
+              <%  if(TYPE_IDS[i] == type)
                     out.write(" selected ");
                   %>>
               <%= ejbcawebbean.getText(TYPE_NAMES[i]) %>         

@@ -1,6 +1,6 @@
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, se.anatom.ejbca.SecConst
+<%@page errorPage="/errorpage.jsp" import="java.util.ArrayList, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, se.anatom.ejbca.SecConst
                ,se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile, se.anatom.ejbca.webdist.cainterface.CertificateProfileDataHandler, se.anatom.ejbca.webdist.cainterface.CertificateProfileExistsException"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
@@ -48,10 +48,11 @@
   static final String CHECKBOX_USECERTIFICATEPOLICIES             = "checkusecertificatepolicies";
   static final String CHECKBOX_CERTIFICATEPOLICIESCRITICAL        = "checkcertificatepoliciescritical";
   static final String CHECKBOX_ALLOWKEYUSAGEOVERRIDE              = "checkallowkeyusageoverride";
-
+  static final String CHECKBOX_USEEXTENDEDKEYUSAGE                = "checkuseextendedkeyusage";
 
   static final String SELECT_AVAILABLEBITLENGTHS                  = "selectavailablebitlengths";
   static final String SELECT_KEYUSAGE                             = "selectkeyusage";
+  static final String SELECT_EXTENDEDKEYUSAGE                     = "selectextendedkeyusage";
   static final String SELECT_TYPE                                 = "selecttype";
 
 
@@ -76,6 +77,9 @@
 
      
   String[] keyusagetexts = {"DIGITALSIGNATURE","NONREPUDATION", "KEYENCIPHERMENT", "DATAENCIPHERMENT", "KEYAGREEMENT", "KEYCERTSIGN", "CRLSIGN", "ENCIPHERONLY", "DECIPHERONLY" };
+  String[] extendedkeyusagetexts = {"ANYEXTENDEDKEYUSAGE","SERVERAUTH", "CLIENTAUTH", 
+                                    "CODESIGNING", "EMAILPROTECTION", "IPSECENDSYSTEM", 
+                                    "IPSECTUNNEL", "IPSECUSER", "TIMESTAMPING" };
 int[]    defaultavailablebitlengths = {512,1024,2048,4096};  
 %>
  
@@ -341,8 +345,25 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
                     ku[Integer.parseInt(values[i])] = true;
                  }
               }
-              certificateprofiledata.setKeyUsage(ku);       
-      
+              certificateprofiledata.setKeyUsage(ku);      
+ 
+             value = request.getParameter(CHECKBOX_USEEXTENDEDKEYUSAGE);
+             if(value != null && value.equals(CHECKBOX_VALUE)){
+               certificateprofiledata.setUseExtendedKeyUsage(true); 
+               values = request.getParameterValues(SELECT_EXTENDEDKEYUSAGE);
+               ArrayList eku = new ArrayList(); 
+                if(values != null){
+                   for(int i=0; i < values.length; i++){
+                      eku.add(new Integer(values[i]));
+                   }
+                }
+                certificateprofiledata.setExtendedKeyUsage(eku);    
+              }
+              else{
+                certificateprofiledata.setUseExtendedKeyUsage(false); 
+                certificateprofiledata.setExtendedKeyUsage(new ArrayList());        
+              }
+
               value = request.getParameter(SELECT_TYPE);
               int type  = CertificateProfile.TYPE_ENDENTITY;
               if(value != null){

@@ -12,12 +12,12 @@ import se.anatom.ejbca.SecConst;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.8 2003-02-14 08:39:38 scop Exp $
+ * @version $Id: CertificateProfile.java,v 1.9 2003-02-20 09:00:58 herrvendil Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
     // Default Values
-    public static final float LATEST_VERSION = 1;
+    public static final float LATEST_VERSION = 2;
 
     // Public Constants
     public static final int DIGITALSIGNATURE = 0;
@@ -29,6 +29,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int CRLSIGN          = 6;
     public static final int ENCIPHERONLY     = 7;
     public static final int DECIPHERONLY     = 8;
+    
+    public static final int ANYEXTENDEDKEYUSAGE = 0;
+    public static final int SERVERAUTH          = 1;
+    public static final int CLIENTAUTH          = 2;
+    public static final int CODESIGNING         = 3;
+    public static final int EMAILPROTECTION     = 4;
+    public static final int IPSECENDSYSTEM      = 5;
+    public static final int IPSECTUNNEL         = 6;
+    public static final int IPSECUSER           = 7;
+    public static final int TIMESTAMPING        = 8;
+    
+    private static final String[] EXTENDEDKEYUSAGEOIDSTRINGS = {"1.3.6.1.5.5.7.3.0", "1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2", "1.3.6.1.5.5.7.3.3", "1.3.6.1.5.5.7.3.4",
+                                                              "1.3.6.1.5.5.7.3.5", "1.3.6.1.5.5.7.3.6", "1.3.6.1.5.5.7.3.7", "1.3.6.1.5.5.7.3.8"};
 
     public static final String TRUE  = "true";
     public static final String FALSE = "false";
@@ -67,9 +80,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String KEYUSAGE                       = "keyusage";
     protected static final String MINIMUMAVAILABLEBITLENGTH      = "minimumavailablebitlength";
     protected static final String MAXIMUMAVAILABLEBITLENGTH      = "maximumavailablebitlength";
-    protected static final String TYPE                           = "type";
+    public    static final String TYPE                           = "type";
     protected static final String ALLOWKEYUSAGEOVERRIDE          = "allowkeyusageoverride";
-
+    protected static final String USEEXTENDEDKEYUSAGE            = "useextendedkeyusage";
+    protected static final String EXTENDEDKEYUSAGE               = "extendedkeyusage";
+    
     // Public Methods
     /** Creates a new instance of CertificateProfile */
     public CertificateProfile() {
@@ -106,6 +121,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
       setKeyUsage(new boolean[9]);
       setAllowKeyUsageOverride(true);
+      
+      setUseExtendedKeyUsage(false);
+      setExtendedKeyUsage(new ArrayList());
+      
     }
 
     // Public Methods.
@@ -246,6 +265,41 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean getAllowKeyUsageOverride() {
         return ((Boolean) data.get(ALLOWKEYUSAGEOVERRIDE)).booleanValue();
     }
+    
+    public void setUseExtendedKeyUsage(boolean use) {
+        data.put(USEEXTENDEDKEYUSAGE, use ? Boolean.TRUE : Boolean.FALSE);
+    }
+    public boolean getUseExtendedKeyUsage() {
+        return ((Boolean) data.get(USEEXTENDEDKEYUSAGE)).booleanValue();
+    }  
+    
+    /*
+     * Extended Key Usage is an arraylist of constant Integers.
+     */
+    public void setExtendedKeyUsage(ArrayList extendedkeyusage) {
+        data.put(EXTENDEDKEYUSAGE, extendedkeyusage);
+    }
+    /*
+     * Extended Key Usage is an arraylist of constant Integers.
+     */    
+    public ArrayList getExtendedKeyUsage() {
+        return (ArrayList) data.get(EXTENDEDKEYUSAGE);
+    }      
+    
+    /*
+     * Returns an ArrayList of OID.strings defined in constant EXTENDEDKEYUSAGEOIDSTRINGS.
+     */
+    public ArrayList getExtendedKeyUsageAsOIDStrings(){
+      ArrayList returnval = new ArrayList();
+      ArrayList eku = (ArrayList) data.get(EXTENDEDKEYUSAGE);
+      Iterator i = eku.iterator();
+      while(i.hasNext())
+        returnval.add(EXTENDEDKEYUSAGEOIDSTRINGS[((Integer) i.next()).intValue()]);   
+      
+        
+      return returnval;  
+    }
+    
 
     public Object clone() throws CloneNotSupportedException {
       CertificateProfile clone = new CertificateProfile();
@@ -268,12 +322,17 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     /** Implemtation of UpgradableDataHashMap function upgrade. */
 
-    public void upgrade(){
+    public void upgrade(){ 
       if(LATEST_VERSION != getVersion()){
         // New version of the class, upgrade
 
         data.put(VERSION, new Float(LATEST_VERSION));
-        data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
+        if(data.get(ALLOWKEYUSAGEOVERRIDE) == null)
+          data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
+        if(data.get(USEEXTENDEDKEYUSAGE) ==null)
+          data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
+        if(data.get(EXTENDEDKEYUSAGE) ==null)       
+          data.put(EXTENDEDKEYUSAGE, new ArrayList());
       }
     }
 

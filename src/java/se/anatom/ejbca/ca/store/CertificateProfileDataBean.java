@@ -41,7 +41,19 @@ public abstract class CertificateProfileDataBean implements javax.ejb.EntityBean
      */    
     
     public CertificateProfile getCertificateProfile(){
-      CertificateProfile returnval = new CertificateProfile();
+      CertificateProfile returnval = null;   
+      switch(((Integer)(((HashMap) getData()).get(CertificateProfile.TYPE))).intValue()){
+          case CertificateProfile.TYPE_ROOTCA :
+            returnval = new RootCACertificateProfile();
+            break;
+          case CertificateProfile.TYPE_CA :
+            returnval =  new CACertificateProfile();      
+            break;  
+          case CertificateProfile.TYPE_ENDENTITY  :
+          default :
+            returnval = new EndUserCertificateProfile();
+      }      
+
       returnval.loadData((Object) getData());
       return returnval;              
     }

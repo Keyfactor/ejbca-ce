@@ -1,9 +1,11 @@
 package se.anatom.ejbca.ca.store.certificateprofiles;
 
+import java.util.ArrayList;
+
 /**
  * RootCACertificateProfile is a class defining the fixed characteristics of a root ca certificate profile.
  *
- * @version $Id: RootCACertificateProfile.java,v 1.3 2003-01-12 17:16:29 anatom Exp $
+ * @version $Id: RootCACertificateProfile.java,v 1.4 2003-02-20 09:00:58 herrvendil Exp $
  */
 public class RootCACertificateProfile extends CertificateProfile{
 
@@ -50,10 +52,26 @@ public class RootCACertificateProfile extends CertificateProfile{
       setKeyUsage(new boolean[9]);
       setKeyUsage(KEYCERTSIGN,true);
       setKeyUsage(CRLSIGN,true);
+      
+      setUseExtendedKeyUsage(false);
+      setExtendedKeyUsage(new ArrayList());
     }
 
     // Public Methods.
 
+    public void upgrade(){
+      System.out.println("ROOTCACertificateProfile:upgrade called");         
+      if(LATEST_VERSION != getVersion()){
+        // New version of the class, upgrade
 
+        data.put(VERSION, new Float(LATEST_VERSION));
+        if(data.get(ALLOWKEYUSAGEOVERRIDE) == null)
+          data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
+        if(data.get(USEEXTENDEDKEYUSAGE) ==null)
+          data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
+        if(data.get(EXTENDEDKEYUSAGE) ==null)       
+          data.put(EXTENDEDKEYUSAGE, new ArrayList());
+      }
+    }
     // Private fields.
 }
