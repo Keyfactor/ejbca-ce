@@ -28,20 +28,66 @@ import se.anatom.ejbca.BaseEntityBean;
  * GlobalConfiguration
  * </pre>
  *
- * @version $Id: GlobalConfigurationDataBean.java,v 1.2 2004-04-16 07:38:41 anatom Exp $
+ * @version $Id: GlobalConfigurationDataBean.java,v 1.3 2004-07-23 12:09:41 sbailliez Exp $
+ *
+ * @ejb.bean description="This enterprise bean entity represents global configuration of ra administration"
+ * display-name="GlobalConfigurationDataEB"
+ * name="GlobalConfigurationData"
+ * view-type="local"
+ * type="CMP"
+ * reentrant="false"
+ * cmp-version="2.x"
+ * transaction-type="Container"
+ * schema="GlobalConfigurationDataBean"
+ *
+ * @ejb.pk class="java.lang.String"
+ * generate="false"
+ *
+ * @ejb.home
+ * local-extends="javax.ejb.EJBLocalHome"
+ * local-class="se.anatom.ejbca.ra.raadmin.GlobalConfigurationDataLocalHome"
+ *
+ * @ejb.interface
+ * local-extends="javax.ejb.EJBLocalObject"
+ * local-class="se.anatom.ejbca.ra.raadmin.GlobalConfigurationDataLocal"
+ *
+ * TODO How is this different from findByPrimaryKey ?
+ * @ejb.finder
+ *   description="findByConfigurationId"
+ *   signature="se.anatom.ejbca.ra.raadmin.GlobalConfigurationDataLocal findByConfigurationId(java.lang.String id)"
+ *   query="SELECT DISTINCT OBJECT(a) from GlobalConfigurationDataBean a WHERE a.configurationId=?1"
+ *
  */
 public abstract class GlobalConfigurationDataBean extends BaseEntityBean {
 
-    private static Logger log = Logger.getLogger(GlobalConfigurationDataBean.class);
+    private static final Logger log = Logger.getLogger(GlobalConfigurationDataBean.class);
 
+    /**
+     * @ejb.pk-field
+     * @ejb.persistence
+     * @ejb.interface-method
+     */
     public abstract String getConfigurationId();
+
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method
+     */
     public abstract void setConfigurationId(String id);
+
+    /**
+     * @ejb.persistence
+     */
     public abstract HashMap getData();
+
+    /**
+     * @ejb.persistence
+     */
     public abstract void setData(HashMap data);
-    
-    
+
     /** 
      * Method that returns the globalconfigurtation and updates it if nessesary.
+     * @ejb.interface-method
      */
     public GlobalConfiguration getGlobalConfiguration(){
       GlobalConfiguration returnval = new GlobalConfiguration();
@@ -51,6 +97,7 @@ public abstract class GlobalConfigurationDataBean extends BaseEntityBean {
     
     /** 
      * Method that saves the global configuration to database.
+     * @ejb.interface-method
      */
     public void setGlobalConfiguration(GlobalConfiguration globalconfiguration){
       setData((HashMap) globalconfiguration.saveData());   
@@ -66,10 +113,8 @@ public abstract class GlobalConfigurationDataBean extends BaseEntityBean {
      * @param id the unique id of globalconfiguration.
      * @param globalconfiguration is the serialized string representation of the global configuration.
      * @return GlobalConfigurationDataPK primary key
-     *
-     **/
-
-
+     * @ejb.create-method
+     */
     public String ejbCreate(String configurationId, GlobalConfiguration globalConfiguration) throws CreateException {
 
         setConfigurationId(configurationId);

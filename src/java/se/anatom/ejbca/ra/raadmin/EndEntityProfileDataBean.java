@@ -31,50 +31,73 @@ import se.anatom.ejbca.BaseEntityBean;
  * Profile data
  * </pre>
  *
- * @version $Id: EndEntityProfileDataBean.java,v 1.7 2004-04-16 07:38:41 anatom Exp $
+ * @version $Id: EndEntityProfileDataBean.java,v 1.8 2004-07-23 12:09:41 sbailliez Exp $
+ *
+ * @ejb.bean description="This enterprise bean entity represents a profile"
+ * display-name="EndEntityProfileDataEB"
+ * name="EndEntityProfileData"
+ * view-type="local"
+ * type="CMP"
+ * reentrant="false"
+ * cmp-version="2.x"
+ * transaction-type="Container"
+ * schema="EndEntityProfileDataBean"
+ *
+ * @ejb.pk class="java.lang.Integer"
+ * generate="false"
+ *
+ * @ejb.home
+ * local-extends="javax.ejb.EJBLocalHome"
+ * local-class="se.anatom.ejbca.ra.raadmin.EndEntityProfileDataLocalHome"
+ *
+ * @ejb.interface
+ * local-extends="javax.ejb.EJBLocalObject"
+ * local-class="se.anatom.ejbca.ra.raadmin.EndEntityProfileDataLocal"
+ *
+* @ejb.finder
+ *   description="findByProfileName"
+ *   signature="se.anatom.ejbca.ra.raadmin.EndEntityProfileDataLocal findByProfileName(java.lang.String name)"
+ *   query="SELECT DISTINCT OBJECT(a) from EndEntityProfileDataBean a WHERE a.profileName=?1"
+ *
+ * @ejb.finder
+ *   description="findAll"
+ *   signature="java.util.Collection findAll()"
+ *   query="SELECT DISTINCT OBJECT(a) from EndEntityProfileDataBean a"
  */
 public abstract class EndEntityProfileDataBean extends BaseEntityBean {
-    private static Logger log = Logger.getLogger(EndEntityProfileDataBean.class);
+    private static final Logger log = Logger.getLogger(EndEntityProfileDataBean.class);
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @ejb.pk-field
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract Integer getId();
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param id DOCUMENT ME!
+     * @ejb.persistence
      */
     public abstract void setId(Integer id);
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract String getProfileName();
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param profilename DOCUMENT ME!
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract void setProfileName(String profilename);
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @ejb.persistence
      */
     public abstract HashMap getData();
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param data DOCUMENT ME!
+     * @ejb.persistence
      */
     public abstract void setData(HashMap data);
 
@@ -82,6 +105,7 @@ public abstract class EndEntityProfileDataBean extends BaseEntityBean {
      * Method that returns the end entity profiles and updates it if nessesary.
      *
      * @return DOCUMENT ME!
+     * @ejb.interface-method
      */
     public EndEntityProfile getProfile() {
         EndEntityProfile returnval = new EndEntityProfile();
@@ -94,6 +118,7 @@ public abstract class EndEntityProfileDataBean extends BaseEntityBean {
      * Method that saves the admin preference to database.
      *
      * @param profile DOCUMENT ME!
+     * @ejb.interface-method
      */
     public void setProfile(EndEntityProfile profile) {
         setData((HashMap) profile.saveData());
@@ -111,6 +136,7 @@ public abstract class EndEntityProfileDataBean extends BaseEntityBean {
      * @param profile is the EndEntityProfile.
      *
      * @return null
+     * @ejb.create-method
      */
     public Integer ejbCreate(Integer id, String profilename, EndEntityProfile profile)
         throws CreateException {

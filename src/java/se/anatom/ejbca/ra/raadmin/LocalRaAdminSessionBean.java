@@ -43,12 +43,76 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.38 2004-06-10 15:09:33 sbailliez Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.39 2004-07-23 12:10:33 sbailliez Exp $
+ *
+ * @ejb.bean description="Session bean handling core CA function,signing certificates"
+ *   display-name="RaAdminSB"
+ *   name="RaAdminSession"
+ *   jndi-name="RaAdminSession"
+ *   local-jndi-name="RaAdminSessionLocal"
+ *   view-type="both"
+ *   type="Stateless"
+ *   transaction-type="Container"
+ *
+ * @ejb.transaction type="Required"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.home
+ *   extends="javax.ejb.EJBHome"
+ *   remote-class="se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome"
+ *
+ * @ejb.interface
+ *   extends="javax.ejb.EJBObject"
+ *   remote-class="se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal"
+ *
+ * @ejb.ejb-external-ref description="The log session bean"
+ *   view-type="local"
+ *   ejb-name="LogSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.log.ILogSessionLocalHome"
+ *   business="se.anatom.ejbca.log.ILogSessionLocal"
+ *   link="LogSession"
+ *
+ * @ejb.ejb-external-ref description="The Authorization session bean"
+ *   view-type="local"
+ *   ejb-name="AuthorizationSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome"
+ *   business="se.anatom.ejbca.authorization.IAuthorizationSessionLocal"
+ *   link="AuthorizationSession"
+ *
+ * @ejb.ejb-external-ref description="The AdminPreferencesData Entity bean"
+ *   view-type="local"
+ *   ejb-name="AdminPreferencesDataLocal"
+ *   type="Entity"
+ *   home="se.anatom.ejbca.ra.raadmin.AdminPreferencesDataLocalHome"
+ *   business="se.anatom.ejbca.ra.raadmin.AdminPreferencesDataLocal"
+ *   link="AdminPreferencesData"
+ *
+ * @ejb.ejb-external-ref description="The EndEntityProfileData Entity bean"
+ *   view-type="local"
+ *   ejb-name="EndEntityProfileDataLocal"
+ *   type="Entity"
+ *   home="se.anatom.ejbca.ra.raadmin.EndEntityProfileDataLocalHome"
+ *   business="se.anatom.ejbca.ra.raadmin.EndEntityProfileDataLocal"
+ *   link="EndEntityProfileData"
+ *
+ * @ejb.ejb-external-ref description="The GlobalConfigurationData Entity bean"
+ *   view-type="local"
+ *   ejb-name="GlobalConfigurationDataLocal"
+ *   type="Entity"
+ *   home="se.anatom.ejbca.ra.raadmin.GlobalConfigurationDataLocalHome"
+ *   business="se.anatom.ejbca.ra.raadmin.GlobalConfigurationDataLocal"
+ *   link="GlobalConfigurationData"
+ *
+ * @ejb.security-identity run-as="InternalUser"
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
-
-    /** Var holding JNDI name of datasource */
-    private String dataSource = "";
 
     /** The home interface of  AdminPreferences entity bean */
     private AdminPreferencesDataLocalHome adminpreferenceshome=null;
@@ -73,37 +137,26 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
     private static final String DEFAULTUSERPREFERENCE = "default";
 
+    public final static String EMPTY_ENDENTITYPROFILE = LocalRaAdminSessionBean.EMPTY_ENDENTITYPROFILENAME;
+    public final static int EMPTY_ENDENTITYPROFILEID  = SecConst.EMPTY_ENDENTITYPROFILE;
+
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
+     * @ejb.create-method
      */
     public void ejbCreate() throws CreateException {
         debug(">ejbCreate()");
       try{
-        dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
-        debug("DataSource=" + dataSource);
-
-
         adminpreferenceshome = (AdminPreferencesDataLocalHome)lookup("java:comp/env/ejb/AdminPreferencesDataLocal", AdminPreferencesDataLocalHome.class);
         profiledatahome = (EndEntityProfileDataLocalHome)lookup("java:comp/env/ejb/EndEntityProfileDataLocal", EndEntityProfileDataLocalHome.class);
         globalconfigurationhome = (GlobalConfigurationDataLocalHome)lookup("java:comp/env/ejb/GlobalConfigurationDataLocal", GlobalConfigurationDataLocalHome.class);
-
-
         debug("<ejbCreate()");
       }catch(Exception e){
          throw new EJBException(e);
       }
 
     }
-
-
-    /** Gets connection to Datasource used for manual SQL searches
-     * @return Connection
-     */
-    private Connection getConnection() throws SQLException, NamingException {
-        DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
-        return ds.getConnection();
-    } //getConnection
 
 
     /** Gets connection to log session bean
@@ -141,6 +194,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
      /**
      * Finds the admin preference belonging to a certificate serialnumber. Returns null if admin doesn't exists.
+     * @ejb.interface-method
      */
     public AdminPreference getAdminPreference(Admin admin, String certificatefingerprint){
         debug(">getAdminPreference()");
@@ -160,6 +214,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
     /**
      * Adds a admin preference to the database. Returns false if admin already exists.
+     * @ejb.interface-method
      */
     public boolean addAdminPreference(Admin admin, String certificatefingerprint, AdminPreference adminpreference){
         debug(">addAdminPreference(fingerprint : " + certificatefingerprint + ")");
@@ -179,6 +234,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
     /**
      * Changes the admin preference in the database. Returns false if admin doesn't exists.
+     * @ejb.interface-method
      */
     public boolean changeAdminPreference(Admin admin, String certificatefingerprint, AdminPreference adminpreference){
        debug(">changeAdminPreference(fingerprint : " + certificatefingerprint + ")");
@@ -187,6 +243,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
     /**
      * Changes the admin preference in the database. Returns false if admin doesn't exists.
+     * @ejb.interface-method
      */
     public boolean changeAdminPreferenceNoLog(Admin admin, String certificatefingerprint, AdminPreference adminpreference){
        debug(">changeAdminPreferenceNoLog(fingerprint : " + certificatefingerprint + ")");
@@ -195,6 +252,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
     /**
      * Checks if a admin preference exists in the database.
+     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
      */
     public boolean existsAdminPreference(Admin admin, String certificatefingerprint){
        debug(">existsAdminPreference(fingerprint : " + certificatefingerprint + ")");
@@ -215,6 +274,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Function that returns the default admin preference.
      *
      * @throws EJBException if a communication or other error occurs.
+     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
      */
     public AdminPreference getDefaultAdminPreference(Admin admin){
         debug(">getDefaultAdminPreference()");
@@ -241,6 +302,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Function that saves the default admin preference.
      *
      * @throws EJBException if a communication or other error occurs.
+      * @ejb.interface-method
      */
     public void saveDefaultAdminPreference(Admin admin, AdminPreference defaultadminpreference){
        debug(">saveDefaultAdminPreference()");
@@ -261,8 +323,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 	  * @param admin administrator performing task
 	  * @param profilename readable profile name
 	  * @param profile profile to be added
+     * @ejb.interface-method
 	  *
-	  * @return true if added succesfully, false otherwise if profile already exist
 	  */
 	 public void addEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException {
 		 addEndEntityProfile(admin,findFreeEndEntityProfileId(),profilename,profile);
@@ -275,8 +337,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 	  * @param profileid internal ID of new profile, use only if you know it's right.
 	  * @param profilename readable profile name
 	  * @param profile profile to be added
+      * @ejb.interface-method
 	  *
-	  * @return true if added succesfully, false otherwise if profile already exist
 	  */
 	 public void addEndEntityProfile(Admin admin, int profileid, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException{
 		if(profilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)){
@@ -308,6 +370,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
      /**
      * Adds a end entity profile to a group with the same content as the original profile.
+      * @ejb.interface-method
      */
     public void cloneEndEntityProfile(Admin admin, String originalprofilename, String newprofilename) throws EndEntityProfileExistsException{
        EndEntityProfile profile = null;
@@ -336,6 +399,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      /**
      * Removes an end entity profile from the database.
      * @throws EJBException if a communication or other error occurs.
+      * @ejb.interface-method
      */
     public void removeEndEntityProfile(Admin admin, String profilename) {
         try{
@@ -349,6 +413,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
      /**
      * Renames a end entity profile
+      * @ejb.interface-method
      */
     public void renameEndEntityProfile(Admin admin, String oldprofilename, String newprofilename) throws EndEntityProfileExistsException{
         if(newprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME) || oldprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)){
@@ -372,6 +437,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
     /**
      * Updates profile data
+     * @ejb.interface-method
      */
     public void changeEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile){
         try{
@@ -385,6 +451,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
     /**
      * Retrives a Collection of id:s (Integer) to authorized profiles.
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method
      */
     public Collection getAuthorizedEndEntityProfileIds(Admin admin){
       ArrayList returnval = new ArrayList();
@@ -431,6 +499,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
     /**
      * Method creating a hashmap mapping profile id (Integer) to profile name (String).
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method
      */
     public HashMap getEndEntityProfileIdToNameMap(Admin admin){
         debug(">getEndEntityProfileIdToNameMap");
@@ -455,6 +525,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
      /**
      * Finds a end entity profile by id.
+     * @ejb.transaction type="Supports"
+      * @ejb.interface-method
      */
     public EndEntityProfile getEndEntityProfile(Admin admin, int id){
         debug(">getEndEntityProfile(id)");
@@ -475,6 +547,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
      /**
      * Finds a end entity profile by id.
+     * @ejb.transaction type="Supports"
+      * @ejb.interface-method
      */
     public EndEntityProfile getEndEntityProfile(Admin admin, String profilename){
         debug(">getEndEntityProfile(profilename)");
@@ -496,6 +570,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Returns a end entity profiles id, given it's profilename
      *
      * @return the id or 0 if profile cannot be found.
+     * @ejb.transaction type="Supports"
+      * @ejb.interface-method
      */
     public int getEndEntityProfileId(Admin admin, String profilename){
       int returnval = 0;
@@ -515,6 +591,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Returns a end entity profiles name given it's id.
      *
      * @return profilename or null if profile id doesn't exists.
+     * @ejb.transaction type="Supports"
+      * @ejb.interface-method
      */
     public String getEndEntityProfileName(Admin admin, int id){
       String returnval = null;
@@ -534,6 +612,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      *
      * @param certificateprofileid the certificatetype id to search for.
      * @return true if certificateprofile exists in any of the end entity profiles.
+     * @ejb.transaction type="Supports"
+      * @ejb.interface-method
      */
     public boolean existsCertificateProfileInEndEntityProfiles(Admin admin, int certificateprofileid){
       String[] availablecertprofiles=null;
@@ -560,6 +640,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      *
      * @param caid the caid to search for.
      * @return true if ca exists in any of the end entity profiles.
+     * @ejb.transaction type="Supports"
+      * @ejb.interface-method
      */
     public boolean existsCAInEndEntityProfiles(Admin admin, int caid){
       String[] availablecas=null;
@@ -585,6 +667,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Loads the global configuration from the database.
      *
      * @throws EJBException if a communication or other error occurs.
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method
      */
     public GlobalConfiguration loadGlobalConfiguration(Admin admin)  {
         debug(">loadGlobalConfiguration()");
@@ -609,6 +693,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Sets the base url in the global configuration.
      *
      * @throws EJBException if a communication or other error occurs.
+     * @ejb.interface-method
      */
     public void initGlobalConfigurationBaseURL(Admin admin, String computername, String applicationpath)  {
         debug(">initGlobalConfigurationBaseURL()");
@@ -623,6 +708,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Saves the globalconfiguration
      *
      * @throws EJBException if a communication or other error occurs.
+     * @ejb.interface-method
      */
 
     public void saveGlobalConfiguration(Admin admin, GlobalConfiguration globalconfiguration)  {

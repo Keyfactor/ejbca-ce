@@ -30,36 +30,53 @@ import se.anatom.ejbca.BaseEntityBean;
  * AdminPreference
  * </pre>
  *
- * @version $Id: AdminPreferencesDataBean.java,v 1.8 2004-04-16 07:38:41 anatom Exp $
+ * @version $Id: AdminPreferencesDataBean.java,v 1.9 2004-07-23 12:09:41 sbailliez Exp $
+ *
+ * @ejb.bean description="This enterprise bean entity represents a ra admins user preference."
+ * display-name="AdminPreferencesDataEB"
+ * name="AdminPreferencesData"
+ * view-type="local"
+ * type="CMP"
+ * reentrant="false"
+ * cmp-version="2.x"
+ * transaction-type="Container"
+ * schema="AdminPreferencesDataBean"
+ *
+ * @ejb.pk class="java.lang.String"
+ * generate="false"
+ *
+ * @ejb.home
+ * local-extends="javax.ejb.EJBLocalHome"
+ * local-class="se.anatom.ejbca.ra.raadmin.AdminPreferencesDataLocalHome"
+ *
+ * @ejb.interface
+ * local-extends="javax.ejb.EJBLocalObject"
+ * local-class="se.anatom.ejbca.ra.raadmin.AdminPreferencesDataLocal"
+ *
  */
 public abstract class AdminPreferencesDataBean extends BaseEntityBean {
-    private static Logger log = Logger.getLogger(AdminPreferencesDataBean.class);
+    private static final Logger log = Logger.getLogger(AdminPreferencesDataBean.class);
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @ejb.pk-field
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract String getId();
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param id DOCUMENT ME!
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract void setId(String id);
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @ejb.persistence
      */
     public abstract HashMap getData();
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param data DOCUMENT ME!
+     * @ejb.persistence
      */
     public abstract void setData(HashMap data);
 
@@ -67,6 +84,7 @@ public abstract class AdminPreferencesDataBean extends BaseEntityBean {
      * Method that returns the admin preference and updates it if nessesary.
      *
      * @return DOCUMENT ME!
+     * @ejb.interface-method
      */
     public AdminPreference getAdminPreference() {
         AdminPreference returnval = new AdminPreference();
@@ -79,6 +97,7 @@ public abstract class AdminPreferencesDataBean extends BaseEntityBean {
      * Method that saves the admin preference to database.
      *
      * @param adminpreference DOCUMENT ME!
+     * @ejb.interface-method
      */
     public void setAdminPreference(AdminPreference adminpreference) {
         setData((HashMap) adminpreference.saveData());
@@ -95,6 +114,7 @@ public abstract class AdminPreferencesDataBean extends BaseEntityBean {
      * @param adminpreference is the AdminPreference.
      *
      * @return the primary key
+     * @ejb.create-method
      */
     public String ejbCreate(String id, AdminPreference adminpreference)
         throws CreateException {
