@@ -239,8 +239,7 @@
              if(value!=null){
                profiledata.addField(Integer.parseInt(value));
                ejbcarabean.changeEndEntityProfile(profile,profiledata);  
-             }
-             ejbcarabean.changeEndEntityProfile(profile,profiledata);              
+             }      
              includefile="endentityprofilepage.jsp"; 
            }
            if(request.getParameter(BUTTON_DELETESUBJECTALTNAME) != null){
@@ -265,7 +264,7 @@
                profiledata.addField(Integer.parseInt(value));
                ejbcarabean.changeEndEntityProfile(profile,profiledata);  
              }
-             ejbcarabean.changeEndEntityProfile(profile,profiledata);              
+          
              includefile="endentityprofilepage.jsp"; 
            }
            if(request.getParameter(BUTTON_SAVE) != null){

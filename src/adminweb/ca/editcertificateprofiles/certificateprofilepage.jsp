@@ -315,7 +315,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("EXTENDEDKEYUSAGE") %> <br>&nbsp;
       </td>
       <td width="50%"> 
-        <select name="<%=SELECT_EXTENDEDKEYUSAGE%>" size="9" multiple <% if(!certificateprofiledata.getUseExtendedKeyUsage()) out.write(" disabled "); %>>
+        <select name="<%=SELECT_EXTENDEDKEYUSAGE%>" size="<%=extendedkeyusagetexts.length%>" multiple <% if(!certificateprofiledata.getUseExtendedKeyUsage()) out.write(" disabled "); %>>
            <%  ArrayList eku = certificateprofiledata.getExtendedKeyUsage();
                 for(int i=0; i<extendedkeyusagetexts.length;i++){ %>
            <option  value="<%= i %>" 

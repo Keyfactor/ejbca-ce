@@ -39,7 +39,7 @@
                                 "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
                                 "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY",
                                 "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME",
-                                "EDIPARTNAME", "REGISTEREDID"};
+                                "EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN"};
    
    int[] statusids            = {UserDataRemote.STATUS_NEW ,UserDataRemote.STATUS_FAILED, UserDataRemote.STATUS_INITIALIZED, UserDataRemote.STATUS_INPROCESS
                                 , UserDataRemote.STATUS_GENERATED, UserDataRemote.STATUS_REVOKED , UserDataRemote.STATUS_HISTORICAL, UserDataRemote.STATUS_KEYRECOVERY};
@@ -148,7 +148,7 @@
        </tr>
        <% } 
           subjectfieldsize = profile.getSubjectAltNameFieldOrderLength();
-          if(subjectfieldsize < 0){
+          if(subjectfieldsize > 0){
        %> 
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SUBJECTALTNAMEFIELDS") %></td>
@@ -158,6 +158,9 @@
       <% }
          for(int i = 0; i < subjectfieldsize; i++){
             fielddata = profile.getSubjectAltNameFieldsInOrder(i);
+            int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
+            if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && fieldtype != EndEntityProfile.DIRECTORYNAME && 
+               fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){ // Not implemented yet.
             fieldvalue = userdata.getSubjectAltNameField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]);
          %>
        <tr id="Row<%=(row++)%2%>">
@@ -165,7 +168,8 @@
 	 <td><% if(fieldvalue != null) out.write(fieldvalue); %> 
          </td>
        </tr>
-       <% }  %>  
+       <%   }
+          }%>  
        <tr id="Row<%=(row++)%2%>">
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>

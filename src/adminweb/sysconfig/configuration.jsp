@@ -75,7 +75,7 @@
           String entriesperpage = request.getParameter(LIST_ENTIESPERPAGE); 
           dup.setEntriesPerPage(Integer.parseInt(entriesperpage.trim()));
         }
-
+        ejbcawebbean.saveDefaultAdminPreference(dup);
 %>
        <%@ include file="webconfiguration.jsp" %>
 <%  }
@@ -144,6 +144,7 @@
           dup.setEntriesPerPage(Integer.parseInt(entriesperpage.trim()));
         }
         ejbcawebbean.saveGlobalConfiguration();
+        ejbcawebbean.saveDefaultAdminPreference(dup);
 %>          
  <jsp:forward page="<%=forwardurl %>"/>
 <%   }

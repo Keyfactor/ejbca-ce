@@ -72,7 +72,7 @@
                                 "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
                                 "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY",
                                 "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME",
-                                "EDIPARTNAME", "REGISTEREDID"};
+                                "EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN"};
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionallity/create_end_entity"); 
                                             rabean.initialize(request);
@@ -100,7 +100,7 @@
     profileid = rabean.getEndEntityProfileId(profilenames[0]);
 
   boolean chooselastprofile = false;
-  if(ejbcawebbean.getLastEndEntityProfile() != 0){
+  if(ejbcawebbean.getLastEndEntityProfile() != 0 && rabean.getEndEntityProfileName(ejbcawebbean.getLastEndEntityProfile()) != null){
     for(int i=0 ; i< profilenames.length; i++){
        if(rabean.getEndEntityProfileName(ejbcawebbean.getLastEndEntityProfile()).equals(profilenames[i]))
          chooselastprofile=true;
@@ -864,7 +864,10 @@ function checkallfields(){
        </tr>
        <% }
           for(int i=0; i < numberofsubjectaltnamefields; i++){
-            fielddata = profile.getSubjectAltNameFieldsInOrder(i);  %>
+            fielddata = profile.getSubjectAltNameFieldsInOrder(i);  
+            int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
+            if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && fieldtype != EndEntityProfile.DIRECTORYNAME && 
+               fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){ // Not implemented yet.%>
        <tr id="Row<%=(row++)%2%>">
 	 <td></td>
 	 <td align="right"><%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %></td>
@@ -900,7 +903,8 @@ function checkallfields(){
         </td>
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTALTNAME + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
       </tr>
-     <% } %> 
+     <%  } 
+       } %> 
        <tr id="Row<%=(row++)%2%>">
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>

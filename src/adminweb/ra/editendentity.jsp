@@ -70,11 +70,11 @@
                                             if(globalconfiguration.getIssueHardwareTokens())
                                               tokenbean.initialize(request);
 
-  String[] subjectfieldtexts = {"","","","OLDEMAILDN2","UID", "COMMONNAME", "SERIALNUMBER1", 
+  String[] subjectfieldtexts = {"","","", "OLDEMAILDN2", "UID", "COMMONNAME", "SERIALNUMBER1", 
                                 "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
                                 "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY",
                                 "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME",
-                                "EDIPARTNAME", "REGISTEREDID"};
+                                "EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN"};
 
   String THIS_FILENAME             =  globalconfiguration.getRaPath()  + "/editendentity.jsp";
   String username                  = null;
@@ -212,6 +212,7 @@
                    }
                  }
                }
+               System.out.println("Subject Altname :"  + subjectaltname);
                newuser.setSubjectAltName(subjectaltname);
 
 
@@ -426,7 +427,10 @@ function checkallfields(){
     } 
     <%     }
           }
-         }
+         }        
+         else{ %>
+    document.edituser.<%= CHECKBOX_SUBJECTDN+i %>.disabled = false;          
+     <%  }
        }
        for(int i=0; i < profile.getSubjectAltNameFieldOrderLength(); i++){
          fielddata = profile.getSubjectAltNameFieldsInOrder(i);
@@ -447,6 +451,9 @@ function checkallfields(){
            }
           }
          }
+         else{ %>
+      document.edituser.<%= CHECKBOX_SUBJECTALTNAME+i %>.disabled = false;          
+     <%  }
        }
        if(profile.getUse(EndEntityProfile.EMAIL,0)){
          if(profile.isModifyable(EndEntityProfile.EMAIL,0)){%>
@@ -736,7 +743,10 @@ function checkUseInBatch(){
        </tr>
       <% } %>
        <% for(int i=0; i < numberofsubjectaltnamefields; i++){
-            fielddata = profile.getSubjectAltNameFieldsInOrder(i);  %>
+            fielddata = profile.getSubjectAltNameFieldsInOrder(i);
+            int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
+            if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && fieldtype != EndEntityProfile.DIRECTORYNAME && 
+               fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){ // Not implemented yet.%>
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %></td>
 	 <td>      
@@ -770,7 +780,8 @@ function checkUseInBatch(){
         </td>
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTALTNAME + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
       </tr>
-     <% } %> 
+     <%   }
+        }%> 
        <tr id="Row<%=(row++)%2%>">
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>

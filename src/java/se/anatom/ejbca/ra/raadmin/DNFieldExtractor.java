@@ -44,15 +44,16 @@ public class DNFieldExtractor {
     public static final int DIRECTORYNAME             = 19;
     public static final int EDIPARTNAME               = 20;    
     public static final int URI                       = 21;     
-    public static final int REGISTEREDID              = 22;    
+    public static final int REGISTEREDID              = 22;   
+    public static final int UPN                       = 23;
     
     public static final int SUBJECTALTERNATIVENAMEBOUNDRARY = 14;
-    public static final int NUMBEROFFIELDS                  = 22;
+    public static final int NUMBEROFFIELDS                  = 24;
        
     public static final String[] SUBJECTDNFIELDS = {"E=", "UID=", "CN=", "SN=", "GIVENNAME=", "INITIALS=", "SURNAME=", "T=", "OU=", "O=", "L=", "ST=", "DC=", "C="};
     
     public static final String[] SUBJECTALTNAME =  {"OTHERNAME=","RFC822NAME=",  "DNSNAME=", "IPADDRESS=", "X400ADDRESS=", "DIRECTORYNAME=", "EDIPARTNAME=", "UNIFORMRESOURCEIDENTIFIER=",
-                                                     "REGISTEREDID="};      
+                                                     "REGISTEREDID=", "UPN="};      
     
     // Constants used with field ordering
     public static final int FIELDTYPE = 0;

@@ -80,7 +80,7 @@
   String[] keyusagetexts = {"DIGITALSIGNATURE","NONREPUDIATION", "KEYENCIPHERMENT", "DATAENCIPHERMENT", "KEYAGREEMENT", "KEYCERTSIGN", "CRLSIGN", "ENCIPHERONLY", "DECIPHERONLY" };
   String[] extendedkeyusagetexts = {"ANYEXTENDEDKEYUSAGE","SERVERAUTH", "CLIENTAUTH", 
                                     "CODESIGNING", "EMAILPROTECTION", "IPSECENDSYSTEM", 
-                                    "IPSECTUNNEL", "IPSECUSER", "TIMESTAMPING" };
+                                    "IPSECTUNNEL", "IPSECUSER", "TIMESTAMPING", "SMARTCARDLOGON"};
 int[]    defaultavailablebitlengths = {512,1024,2048,4096};  
 %>
  

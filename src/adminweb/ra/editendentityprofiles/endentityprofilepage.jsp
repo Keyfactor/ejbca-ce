@@ -6,9 +6,25 @@
                                  "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
                                 "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY"
                                 , "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME"
-                                ,"EDIPARTNAME", "REGISTEREDID"};
-   int subjectdnstart = 3;
-   int subjectaltnamestart = 17;
+                                ,"EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN"};
+
+   int[] subjectdnfields = {EndEntityProfile.OLDDNE,EndEntityProfile.UID,EndEntityProfile.COMMONNAME,EndEntityProfile.SN
+                           ,EndEntityProfile.GIVENNAME,EndEntityProfile.INITIALS,EndEntityProfile.SURNAME
+                           ,EndEntityProfile.TITLE,EndEntityProfile.ORGANIZATIONUNIT,EndEntityProfile.ORGANIZATION
+                           ,EndEntityProfile.LOCALE,EndEntityProfile.STATE,EndEntityProfile.DOMAINCOMPONENT
+                           ,EndEntityProfile.COUNTRY};
+
+   int[] subjectaltnamefields = {EndEntityProfile.RFC822NAME
+                                 ,EndEntityProfile.DNSNAME
+                                 ,EndEntityProfile.IPADDRESS
+                                 //,EndEntityProfile.OTHERNAME
+                                 ,EndEntityProfile.UNIFORMRESOURCEID
+                                 //,EndEntityProfile.X400ADDRESS
+                                 //,EndEntityProfile.DIRECTORYNAME
+                                 //,EndEntityProfile.EDIPARTNAME
+                                 //,EndEntityProfile.REGISTEREDID
+                                 ,EndEntityProfile.UPN};
+
 
    String[] tokentexts = RAInterfaceBean.tokentexts;
    int[] tokenids = RAInterfaceBean.tokenids;
@@ -282,8 +298,8 @@ function checkuseemailfield(){
       <td width="70%"> 
         <select name="<%=SELECT_ADDSUBJECTDN %>" size="1" >
             <% 
-               for(int i=subjectdnstart; i < subjectaltnamestart; i++){ %>
-           <option  value='<%= i%>'><%= ejbcawebbean.getText(subjectfieldtexts[i]) %>
+               for(int i=0; i < subjectdnfields.length; i++){ %>
+           <option  value='<%= subjectdnfields[i]%>'><%= ejbcawebbean.getText(subjectfieldtexts[subjectdnfields[i]]) %>
            </option>
             <% } %>
         </select>
@@ -349,10 +365,10 @@ function checkuseemailfield(){
       <td width="70%"> 
         <select name="<%=SELECT_ADDSUBJECTALTNAME %>" size="1" >
             <% 
-               for(int i=subjectaltnamestart; i < subjectfieldtexts.length; i++){ %>
-           <option  value='<%= i%>'><%= ejbcawebbean.getText(subjectfieldtexts[i]) %>
+               for(int i=0; i < subjectaltnamefields.length; i++){ %>
+           <option  value='<%= subjectaltnamefields[i]%>'><%= ejbcawebbean.getText(subjectfieldtexts[subjectaltnamefields[i]]) %>
            </option>
-            <% } %>
+            <% }%>
         </select>
         &nbsp;<input type="submit" name="<%= BUTTON_ADDSUBJECTALTNAME %>" value="<%= ejbcawebbean.getText("ADD") %>"> 
       </td> 
@@ -360,6 +376,9 @@ function checkuseemailfield(){
     <% numberofsubjectdnfields = profiledata.getSubjectAltNameFieldOrderLength();
        for(int i=0; i < numberofsubjectdnfields; i++){
          fielddata =  profiledata.getSubjectAltNameFieldsInOrder(i);
+         int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
+         if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && fieldtype != EndEntityProfile.DIRECTORYNAME && 
+            fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){
     %>
     <tr  id="Row<%=i%2%>"> 
       <td width="5%" valign="top">
@@ -395,7 +414,8 @@ function checkuseemailfield(){
         <% }%>
       </td>
     </tr>
-   <% } %>
+   <%   }
+      }%>
     <tr  id="Row0"> 
       <td width="5%" valign="top">
         <input type="submit" name="<%= BUTTON_DELETESUBJECTALTNAME %>" value="<%= ejbcawebbean.getText("REMOVE") %>">

@@ -77,7 +77,7 @@ function checkfieldforlegalcharswithchangeable(thetextfield , alerttext){
 function checkfieldforlegaldnchars(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-Ö_ 0-9@.\-:]/g;
+  re = /[^a-öA-Ö_ 0-9@\.\-:\/]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
@@ -90,7 +90,7 @@ function checkfieldforlegaldnchars(thetextfield , alerttext){
 function checkfieldforlegaldncharswithchangeable(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-Ö_ 0-9@.,\-:;]/g;
+  re = /[^a-öA-Ö_ 0-9@.,\-:\/;]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
@@ -103,7 +103,7 @@ function checkfieldforlegaldncharswithchangeable(thetextfield , alerttext){
 function checkfieldforipaddess(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^0-9.]/g;
+  re = /[^0-9\.]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
@@ -116,7 +116,7 @@ function checkfieldforipaddess(thetextfield , alerttext){
 function checkfieldforlegalemailchars(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-Ö_0-9@.\-]/g;
+  re = /[^a-öA-Ö_0-9@\.\-]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
@@ -129,7 +129,7 @@ function checkfieldforlegalemailchars(thetextfield , alerttext){
 function checkfieldforlegalemailcharswithchangeable(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-Ö_0-9@.\-;]/g;
+  re = /[^a-öA-Ö_0-9@\.\-;]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;

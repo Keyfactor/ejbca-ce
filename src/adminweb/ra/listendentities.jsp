@@ -591,69 +591,55 @@
                boolean matchadded = false; 
 
                if(matchwithrow1 == UserMatch.MATCH_WITH_ENDENTITYPROFILE){
-                    oldmatchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
                     matchvaluerow1 = Integer.toString(rabean.getEndEntityProfileId(request.getParameter(SELECT_MATCHVALUE_ROW1)));
                     if(matchvaluerow1.equals("0")) matchvaluerow1 = null;
                }else{
                  if(matchwithrow1 == UserMatch.MATCH_WITH_CERTIFICATEPROFILE){   
-                    oldmatchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
                     matchvaluerow1 = Integer.toString(rabean.getCertificateProfileId(request.getParameter(SELECT_MATCHVALUE_ROW1)));
                     if(matchvaluerow1.equals("0")) matchvaluerow1 = null;
                  }else{
                     if(matchwithrow1 == UserMatch.MATCH_WITH_STATUS){
-                       oldmatchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
                        matchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
                     }else{
-                       oldmatchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1);
                        matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1);
                     }
                  }
                } 
                if(matchwithrow2 == UserMatch.MATCH_WITH_ENDENTITYPROFILE){
-                    oldmatchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
                     matchvaluerow2 = Integer.toString(rabean.getEndEntityProfileId(request.getParameter(SELECT_MATCHVALUE_ROW2)));
                     if(matchvaluerow2.equals("0")) matchvaluerow2 = null;
                }else{
                  if(matchwithrow2 == UserMatch.MATCH_WITH_CERTIFICATEPROFILE){   
-                    oldmatchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
                     matchvaluerow2 = Integer.toString(rabean.getCertificateProfileId(request.getParameter(SELECT_MATCHVALUE_ROW2)));
                     if(matchvaluerow2.equals("0")) matchvaluerow2 = null;
                  }else{
                     if(matchwithrow2 == UserMatch.MATCH_WITH_STATUS){
-                       oldmatchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
                        matchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
                     }else{
-                       oldmatchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW2);
                        matchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW2);
                     }
                  }
                }
 
                if(matchwithrow3 == UserMatch.MATCH_WITH_ENDENTITYPROFILE){
-                  oldmatchvaluerow3 = request.getParameter(SELECT_MATCHVALUE_ROW3);
                   matchvaluerow3 = Integer.toString(rabean.getEndEntityProfileId(request.getParameter(SELECT_MATCHVALUE_ROW3)));
                   if(matchvaluerow3.equals("0")) matchvaluerow3 = null; 
                }else{
                  if(matchwithrow3 == UserMatch.MATCH_WITH_CERTIFICATEPROFILE){   
-                    oldmatchvaluerow3 = request.getParameter(SELECT_MATCHVALUE_ROW3);
                     matchvaluerow3 = Integer.toString(rabean.getCertificateProfileId(request.getParameter(SELECT_MATCHVALUE_ROW3)));
                     if(matchvaluerow3.equals("0")) matchvaluerow3 = null;
                  }else{
                     if(matchwithrow3 == UserMatch.MATCH_WITH_STATUS){
-                      oldmatchvaluerow3 = request.getParameter(SELECT_MATCHVALUE_ROW3);
                        matchvaluerow3   = request.getParameter(SELECT_MATCHVALUE_ROW3);
                     }else{
-                       oldmatchvaluerow3 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW3);
                        matchvaluerow3    = request.getParameter(TEXTFIELD_MATCHVALUE_ROW3);
                     }
                  }
               } 
-               if(oldmatchvaluerow1 == null)
-                 oldmatchvaluerow1=matchvaluerow1;
-               if(oldmatchvaluerow2 == null)
-                 oldmatchvaluerow2=matchvaluerow2;
-               if(oldmatchvaluerow3 == null)
-                 oldmatchvaluerow3=matchvaluerow3;    
+
+               oldmatchvaluerow1=matchvaluerow1;
+               oldmatchvaluerow2=matchvaluerow2;
+               oldmatchvaluerow3=matchvaluerow3;    
 
               Query query = new Query(Query.TYPE_USERQUERY);
 
