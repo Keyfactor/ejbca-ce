@@ -13,7 +13,6 @@
   static final String TEXTFIELD_USERNAME                   = "textfieldusername";
   static final String TEXTFIELD_PASSWORD                   = "textfieldpassword";
 
-  static final String HIDDEN_PATCHED                       = "hiddenpatched";
   static final String HIDDEN_BROWSER                       = "hiddenbrowser";
 
   static final String BROWSER_NETSCAPE                     = "netscape";
@@ -30,7 +29,6 @@
   String username = "";
   String password = "";
   String browser  = null;
-  boolean patched  = true;
   int[] availablekeylengths = null;
 
 try  {
@@ -39,8 +37,6 @@ try  {
        username = request.getParameter(TEXTFIELD_USERNAME);
        password = request.getParameter(TEXTFIELD_PASSWORD);
        browser  = request.getParameter(HIDDEN_BROWSER);
-       if(request.getParameter(HIDDEN_PATCHED) != null)
-         patched  = Boolean.valueOf(request.getParameter(HIDDEN_PATCHED)).booleanValue();
 
        if(username != null && password != null && browser != null){
          int tokentype = applybean.getTokenType(username);
@@ -56,10 +52,7 @@ try  {
            if(browser.equals(BROWSER_NETSCAPE))
              includefile = "apply_nav.jsp"; 
            if(browser.equals(BROWSER_EXPLORER))
-             if(patched)
-               includefile = "apply_exp.jsp";
-             else
-               includefile = "apply_exp_unpatched.jsp";  
+             includefile = "apply_exp.jsp";
            if(browser.equals(BROWSER_UNKNOWN))
              includefile = "apply_unknown.html"; 
          }
@@ -90,7 +83,4 @@ try  {
 <%}
   if( includefile.equals("apply_exp.jsp")){ %>
    <%@ include file="apply_exp.jsp" %> 
-<%} 
-  if( includefile.equals("apply_exp_unpatched.jsp")){ %>
-   <%@ include file="apply_exp_unpatched.jsp" %> 
 <%} %>

@@ -80,7 +80,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.24 2003-04-20 13:20:27 herrvendil Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.25 2003-04-21 15:44:53 herrvendil Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -208,7 +208,7 @@ public class DemoCertReqServlet extends HttpServlet {
 
     // Functionality to determine the class id of ie page.
     String classid         = "clsid:127698e4-e730-4e5c-a2b1-21490a70c8a1\" CODEBASE=\"/CertControl/xenroll.cab#Version=5,131,3659,0";
-    if(request.getParameter("classid")!=null)
+    if(request.getParameter("classid")!=null && !request.getParameter("classid").equals(""))
       classid= request.getParameter("classid");      
     
     String includeEmail = request.getParameter("includeemail");
