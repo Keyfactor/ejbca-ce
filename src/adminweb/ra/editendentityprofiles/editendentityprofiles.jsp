@@ -3,7 +3,7 @@
 <%@page errorPage="/errorpage.jsp" import="java.util.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst
                ,se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.ra.raadmin.EndEntityProfile, se.anatom.ejbca.webdist.rainterface.EndEntityProfileDataHandler, 
                 se.anatom.ejbca.ra.raadmin.EndEntityProfileExistsException, se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, se.anatom.ejbca.hardtoken.HardTokenIssuer,
-                se.anatom.ejbca.hardtoken.HardTokenIssuerData, se.anatom.ejbca.hardtoken.AvailableHardToken, se.anatom.ejbca.webdist.cainterface.CAInterfaceBean"%>
+                se.anatom.ejbca.hardtoken.HardTokenIssuerData,  se.anatom.ejbca.webdist.cainterface.CAInterfaceBean"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:useBean id="ejbcarabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
