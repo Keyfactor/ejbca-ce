@@ -16,6 +16,7 @@ New servlet in adminweb, AdminCertReqServlet that creates users out of PKCS10-
 requests.
 Moved batch and deploy scripts into build.xml.
 Moved external jars into ear-file.
+Tested on Weblogic 7.1.
 Lots of bugfixes and cleanups.
 
 2.0b1

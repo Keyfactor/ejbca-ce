@@ -46,7 +46,7 @@ create table certificatedata (
 	subjectdn varchar(150),
 	issuerdn varchar(150),
 	cafingerprint varchar(150),
-	base64cert varchar(150),
+	base64cert text,
 	fingerprint varchar(150),
 	status integer(10),
 	username varchar(150),

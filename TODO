@@ -1,4 +1,4 @@
-$Id: TODO,v 1.56 2003-02-26 11:07:04 anatom Exp $
+$Id: TODO,v 1.57 2003-03-07 09:40:30 anatom Exp $
 
 V 1.x
 -----
@@ -6,13 +6,11 @@ V 1.x
 
 V 2.x
 -----
-- UTF-8 encoding in DN where needed.
-- Describe SSL-setup in server.
 - Make to work with JDK 1.3, problems with importing certificate chains in jks
 using keytool, as well as JDK 1.4 stuff.
 - More automated testing, Junit as well as web-stuff.
 - Make a database model similar to architecture model.
-- Make public web more user friendly.
+- Make public web better looking.
 - Add a 'Service Locator' to concentrate code for lookups?
 - Use a 'Value List Handler' for listing of all certificates, clrs and users?
 - Better architecture for JSPs (MVC - ModelViewController?).
