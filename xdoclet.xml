@@ -1,0 +1,69 @@
+﻿<project name="xdoclet" basedir="." default="xdoclet:run">
+
+	<property name="xdoclet.lib.dir" location="lib/xdoclet-1.2.1/lib"/>
+	<path id="xdoclet.classpath">
+		<fileset dir="${xdoclet.lib.dir}" includes="*.jar"/>
+		<fileset dir="lib" includes="*.jar"/>
+		<fileset dir="lib/ext" includes="*.jar"/>
+	</path>
+	<property name="xdoclet.classpath" refid="xdoclet.classpath"/>
+	<taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
+		<classpath path="${xdoclet.classpath}"/>
+	</taskdef>
+
+	<target name="xdoclet:run">
+		<property name="tmp" location="dist/xdoclet"/>
+		<ejb-doclet dir="src/java" todir="dist/xdoclet" module="ra"/>
+		<!--antcall target="xdoclet:keyrecovery"/>
+		<antcall target="xdoclet:authorization"/>
+		<antcall target="xdoclet:log"/>
+		<antcall target="xdoclet:hardtoken"/>
+		<antcall target="xdoclet:ra"/>
+		<antcall target="xdoclet:ca"/-->
+	</target>
+
+    <macrodef name="ejb-doclet">
+        <attribute name="dir"/>
+        <attribute name="todir"/>
+        <attribute name="module"/>
+        <sequential>
+		<mkdir dir="@{todir}"/>
+		<property name="tmp.@{module}.dir" location="${tmp}/@{module}-ejb.jar/META-INF"/>
+		<ejbdoclet
+			destdir="@{todir}"
+			ejbspec="2.0"
+			excludedtags="@version,@author"
+			force="true">
+			<fileset dir="@{dir}" includes="**/@{module}/**/*Bean.java"/>
+			<packageSubstitution packages="session,entity" substituteWith="interfaces"/>
+			<!--dataobject/-->
+			<remoteinterface/>
+			<homeinterface/>
+			<localinterface/>
+			<localhomeinterface/>
+			<entitypk/>
+			<!--entitybmp/-->
+			<!--entitycmp/-->
+			<!--utilobject/-->
+			<!--valueobject/-->
+            <jboss
+                version="3.2"
+                unauthenticatedPrincipal="nobody"
+                xmlencoding="UTF-8"
+                destdir="${tmp.@{module}.dir}"
+                validatexml="false"
+                datasource="java:/${datasource.jndi-name}"
+                datasourcemapping="Hypersonic SQL"
+                />
+            <jonas
+                version="4.0"
+                xmlencoding="UTF-8"
+                destdir="${tmp.@{module}.dir}"
+                validatexml="false"
+                defaultentityjndiname="${datasource.jndi-name}"
+                />
+			<deploymentdescriptor destdir="${tmp.@{module}.dir}"/>
+		</ejbdoclet>
+		</sequential>
+	</macrodef>
+</project>
