@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.54 2003-10-05 09:29:07 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.55 2003-10-06 11:47:12 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -737,8 +737,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 	 *                 If <tt>null</tt> or empty return certificates regardless of
 	 *                 the issuer.
 	 *
-	 * @return Collection the list of the requested certificates;
-	 *                     never <tt>null</tt>
+         * @return Collection Collection of X509Certificate, never <tt>null</tt>
 	 *
 	 * @throws RemoteException
 	 */

@@ -65,6 +65,9 @@ public class TestCertificateRetrival extends TestCase  {
     private CertificateDataHome m_home;
     private ICertificateStoreSessionHome m_storehome;
     private HashSet m_certs;
+    private String rootCaFp = null;
+    private String subCaFp = null;
+    private String endEntityFp = null;
     
     private static void dumpCertificates(Collection certs) {
         m_log.debug(">dumpCertificates()");
@@ -121,40 +124,40 @@ public class TestCertificateRetrival extends TestCase  {
         m_certs = new HashSet();
         cert = CertTools.getCertfromByteArray(testrootcert);
         m_certs.add(cert);
+        rootCaFp = CertTools.getFingerprintAsString(cert);
         try {
-            store.findCertificateByFingerprint(adm
-                                               , CertTools.getFingerprintAsString(cert));
+            store.findCertificateByFingerprint(adm, rootCaFp);
         } catch (Exception e) {
             store.storeCertificate(adm
                                    , cert
                                    , "o=AnaTom,c=SE"
-                                   , CertTools.getFingerprintAsString(cert)
+                                   , rootCaFp
                                    , CertificateData.CERT_ACTIVE
                                    , SecConst.CERTTYPE_ROOTCA);
         }
         cert = CertTools.getCertfromByteArray(testcacert);
         m_certs.add(cert);
+        subCaFp = CertTools.getFingerprintAsString(cert);
         try {
-            store.findCertificateByFingerprint(adm
-                                               , CertTools.getFingerprintAsString(cert));                                               
+            store.findCertificateByFingerprint(adm, subCaFp);                                               
         } catch (Exception e) {
             store.storeCertificate(adm
                                    , cert
                                    , "o=AnaTom,c=SE"
-                                   , CertTools.getFingerprintAsString(cert)
+                                   , subCaFp
                                    , CertificateData.CERT_ACTIVE
                                    , SecConst.CERTTYPE_SUBCA);
         }
         cert = CertTools.getCertfromByteArray(testcert);
         m_certs.add(cert);
+        endEntityFp = CertTools.getFingerprintAsString(cert);
         try {
-            store.findCertificateByFingerprint(adm
-                                               , CertTools.getFingerprintAsString(cert));
+            store.findCertificateByFingerprint(adm, endEntityFp);
         } catch (Exception e) {
             store.storeCertificate(adm
                                    , cert
                                    , "o=AnaTom,c=SE"
-                                   , CertTools.getFingerprintAsString(cert)
+                                   , endEntityFp
                                    , CertificateData.CERT_ACTIVE
                                    , SecConst.CERTTYPE_ENDENTITY);        
         }
@@ -289,14 +292,13 @@ public class TestCertificateRetrival extends TestCase  {
         ICertificateStoreSessionRemote store = m_storehome.create();
 
         // List all certificates to see
-        Iterator iter;
         Collection certfps = store.findCertificatesByType(new Admin(Admin.TYPE_INTERNALUSER)
                                                           , SecConst.CERTTYPE_ROOTCA + SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ENDENTITY
                                                           , null);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() >= 2);
         // Iterate over m_certs to see that we found all our certs (we probably found alot more...)
-        iter = m_certs.iterator();
+        Iterator iter = m_certs.iterator();
         while (iter.hasNext()) {
             assertTrue("Unable to find all test certificates.", certfps.contains(iter.next()));
         }
@@ -318,8 +320,16 @@ public class TestCertificateRetrival extends TestCase  {
                                                           , SecConst.CERTTYPE_SUBCA
                                                           , rootcacert.getSubjectDN().getName());
         assertNotNull("failed to list certs", certfps);
-        assertTrue("failed to list certs", certfps.size() == 1);
-
+        assertTrue("failed to list certs", certfps.size() >= 1);
+        Iterator iter = certfps.iterator();
+        boolean found = false;
+        while (iter.hasNext()) {
+            X509Certificate cert = (X509Certificate)iter.next();
+            if (subCaFp.equals(CertTools.getFingerprintAsString(cert))) {
+                found = true;
+            }
+        }        
+        assertTrue("Unable to find all test certificates.", found);
         m_log.debug("<test07FindCACertificatesWithIssuer()");    
     }
 
@@ -346,8 +356,7 @@ public class TestCertificateRetrival extends TestCase  {
                                    , sernos);
 
         assertNotNull("Unable to retrive certificate revocation status.", revstats);
-        assertEquals("Method 'isRevoked' does not return status for ALL certificates."
-                     , revstats.size(), 2);
+        assertTrue("Method 'isRevoked' does not return status for ALL certificates.", revstats.size() >= 2);
 
         Iterator iter = revstats.iterator();
         while (iter.hasNext()) {
