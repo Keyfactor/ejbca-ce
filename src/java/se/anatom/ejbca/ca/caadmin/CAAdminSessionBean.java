@@ -87,7 +87,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.21 2004-05-10 14:47:46 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.22 2004-05-12 14:09:33 herrvendil Exp $
  */
 public class CAAdminSessionBean extends BaseSessionBean {
     
@@ -1009,6 +1009,16 @@ public class CAAdminSessionBean extends BaseSessionBean {
     			
     			ca.setCertificateChain(cachain);
     			cadata.setCA(ca);  
+    			
+    			// Publish the new CA certificate
+                if(ca.getCRLPublishers() != null){
+                    int certtype = SecConst.CERTTYPE_SUBCA;	
+                    if(ca.getSignedBy() == CAInfo.SELFSIGNED)
+     			     certtype = SecConst.CERTTYPE_ROOTCA;
+                   ArrayList cacert = new ArrayList();
+                   cacert.add(ca.getCACertificate());
+     			   getSignSession().publishCACertificate(admin, cacert, ca.getCRLPublishers(), certtype);
+                }    		
     			
     		}catch(CATokenOfflineException e){
     			ca.setStatus(SecConst.CA_OFFLINE);
