@@ -2,5 +2,12 @@
 
 <jboss>
   <enterprise-beans>
-  </enterprise-beans>
+      <session>
+        <ejb-name>CAAdminSession</ejb-name>
+        <method-attributes>
+              <method-name>createCA</method-name>
+              <transaction-timeout>900</transaction-timeout>           
+        </method-attributes>
+      </session>
+    </enterprise-beans>
 </jboss>
