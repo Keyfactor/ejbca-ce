@@ -14,8 +14,9 @@ import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.IJobRunnerSession;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSession;
-import se.anatom.ejbca.ca.store.CertificateDataHome;
+import se.anatom.ejbca.ca.store.CertificateDataLocalHome;
 import se.anatom.ejbca.ca.store.CertificateData;
+import se.anatom.ejbca.ca.store.CertificateDataLocal;
 import se.anatom.ejbca.ca.store.CertificateDataPK;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
@@ -25,7 +26,7 @@ import se.anatom.ejbca.ca.sign.ISignSession;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.5 2002-05-23 14:28:27 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.6 2002-05-26 08:50:17 anatom Exp $
  */
 public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerSession {
 
@@ -35,7 +36,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
     private ICertificateStoreSessionHome storeHome = null;
 
     /** The home interface of Certificate entity bean */
-    private CertificateDataHome certHome = null;
+    private CertificateDataLocalHome certHome = null;
 
     /** The home interface of the signing session */
     private ISignSessionHome signHome = null;
@@ -49,7 +50,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
         crlperiod = (Long)lookup("java:comp/env/CRLPeriod", java.lang.Long.class);
         debug("crlperiod:" + crlperiod);
         storeHome = (ICertificateStoreSessionHome)lookup("java:comp/env/ejb/CertificateStoreSession", ICertificateStoreSessionHome.class);
-        certHome = (CertificateDataHome)lookup("java:comp/env/ejb/CertificateData", CertificateDataHome.class);
+        certHome = (CertificateDataLocalHome)lookup("java:comp/env/ejb/CertificateDataLocal");
         signHome = (ISignSessionHome) lookup("java:comp/env/ejb/SignSession", ISignSessionHome.class);
         debug("<ejbCreate()");
     }
@@ -77,7 +78,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
             Iterator iter = revcerts.iterator();
             while (iter.hasNext()) {
                 CertificateDataPK pk = new CertificateDataPK((String)iter.next());
-                CertificateData data = certHome.findByPrimaryKey(pk);
+                CertificateDataLocal data = certHome.findByPrimaryKey(pk);
                 // We want to include certificates that was revoked after the last CRL was issued, but before this one
                 // so the revoked certs are included in ONE CRL at least.
                 if ( (data.getStatus() == CertificateData.CERT_REVOKED) &&

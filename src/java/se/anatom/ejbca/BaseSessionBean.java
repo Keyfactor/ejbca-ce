@@ -13,7 +13,7 @@ import org.apache.log4j.*;
 
 /** Base for Session Beans providing common features, new Session Beans 'extends' BaseSessionBean.
  *
- * @version $Id: BaseSessionBean.java,v 1.3 2002-05-20 17:52:59 anatom Exp $
+ * @version $Id: BaseSessionBean.java,v 1.4 2002-05-26 08:50:17 anatom Exp $
  */
 public class BaseSessionBean implements SessionBean {
     
@@ -124,8 +124,24 @@ public class BaseSessionBean implements SessionBean {
             throw new EJBException( e );
         }
         
+    }    
+    /** Looks up a JNDI name using the (cached) InitialContext
+     *@param jndiName the JNDI name to lookup.
+     *@return Object that can be casted to 'type'.
+     */
+    public Object lookup( String jndiName) {
+        baseCat.debug(">lookup("+jndiName+")");
+        InitialContext ctx = getInitialContext();
+        try {
+            Object ret = ctx.lookup( jndiName );
+            baseCat.debug("<lookup("+jndiName+")");
+            return ret;
+        } catch( NamingException e ) {
+            baseCat.debug("NamingException, can't lookup '"+jndiName+"'");
+            throw new EJBException( e );
+        }
+        
     }
-    
     public void ejbActivate() throws javax.ejb.EJBException, java.rmi.RemoteException {
     }
     

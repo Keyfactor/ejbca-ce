@@ -1,7 +1,6 @@
 
 package se.anatom.ejbca.ca.store;
 
-import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.Date;
 
@@ -50,9 +49,7 @@ public interface CertificateData extends javax.ejb.EJBObject {
 
     // public methods
     public String getSubjectDN() throws RemoteException;
-    public void setSubjectDN(String subjectDN) throws RemoteException;
     public String getIssuerDN() throws RemoteException;
-    public void setIssuerDN(String issuerDN) throws RemoteException;
     public String getSerialNumber() throws RemoteException;
     public void setSerialNumber(String serialNumber) throws RemoteException;
     public String getFingerprint() throws RemoteException;

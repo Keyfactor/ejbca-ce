@@ -16,4 +16,10 @@ public interface CRLDataHome extends javax.ejb.EJBHome {
 
     public CRLData findByPrimaryKey(CRLDataPK pk)
         throws FinderException, RemoteException;
+    /** Finds a CRL by the CRLNumber
+     * @param crlNumber the crlNUmberof the searched CRL
+     * @return CRLData object
+     */
+    public CRLData findByCRLNumber(int cRLNumber)
+        throws FinderException, RemoteException;
 }

@@ -28,7 +28,7 @@ import se.anatom.ejbca.util.Base64;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.12 2002-05-23 14:28:27 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.13 2002-05-26 08:50:17 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean implements ICertificateStoreSession {
 
@@ -36,10 +36,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
     private String dataSource = "java:/DefaultDS";
 
     /** The home interface of Certificate entity bean */
-    private CertificateDataHome certHome = null;
+    private CertificateDataLocalHome certHome = null;
 
     /** The home interface of CRL entity bean */
-    private CRLDataHome crlHome = null;
+    private CRLDataLocalHome crlHome = null;
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -49,8 +49,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         debug(">ejbCreate()");
         dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
         debug("DataSource=" + dataSource);
-        certHome = (CertificateDataHome) lookup("java:comp/env/ejb/CertificateData", CertificateDataHome.class);
-        crlHome = (CRLDataHome) lookup("java:comp/env/ejb/CRLData", CRLDataHome.class);
+        crlHome = (CRLDataLocalHome)lookup("java:comp/env/ejb/CRLDataLocal");
+        certHome = (CertificateDataLocalHome)lookup("java:comp/env/ejb/CertificateDataLocal");
         debug("<ejbCreate()");
     }
 
@@ -75,7 +75,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
             pk.fingerprint = CertTools.getFingerprintAsString(cert);
             info("Storing cert with fp="+pk.fingerprint);
 
-            CertificateData data1=null;
+            CertificateDataLocal data1=null;
             data1 = certHome.create(cert);
             data1.setCAFingerprint(cafp);
             data1.setStatus(status);
@@ -99,7 +99,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
 
         try {
             X509CRL crl = CertTools.getCRLfromByteArray(incrl);
-            CRLData data1 = crlHome.create(crl, number);
+            CRLDataLocal data1 = crlHome.create(crl, number);
             data1.setCAFingerprint(cafp);
             info("Stored CRL with fp="+CertTools.getFingerprintAsString(crl));
         }
@@ -203,7 +203,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
             if (coll != null) {
                 Iterator iter = coll.iterator();
                 while (iter.hasNext()) {
-                    ret.add( ((CertificateData)iter.next()).getCertificate() );
+                    ret.add( ((CertificateDataLocal)iter.next()).getCertificate() );
                 }
             }
             debug("<findCertificatesBySubject(), dn="+subjectDN);
@@ -211,9 +211,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         } catch (javax.ejb.FinderException fe) {
             cat.error(fe);
             throw new EJBException(fe);
-        } catch (java.rmi.RemoteException re) {
-            cat.error(re);
-            throw new EJBException(re);
         }
     } //findCertificatesBySubject
 
@@ -232,7 +229,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
             if (coll != null) {
                 Iterator iter = coll.iterator();
                 while (iter.hasNext()) {
-                    ret.add( ((CertificateData)iter.next()).getCertificate() );
+                    ret.add( ((CertificateDataLocal)iter.next()).getCertificate() );
                 }
             }
             debug("<findCertificatesByExpireTime(), time="+expireTime);
@@ -240,9 +237,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         } catch (javax.ejb.FinderException fe) {
             cat.error(fe);
             throw new EJBException(fe);
-        } catch (java.rmi.RemoteException re) {
-            cat.error(re);
-            throw new EJBException(re);
         }
     } //findCertificatesByExpireTime
 
@@ -263,7 +257,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
                     cat.error("Error in database, more than one certificate has the same Issuer and SerialNumber!");
                 Iterator iter = coll.iterator();
                 if (iter.hasNext()) {
-                    ret= ((CertificateData)iter.next()).getCertificate();
+                    ret= ((CertificateDataLocal)iter.next()).getCertificate();
                 }
             }
             debug("<findCertificateByIssuerAndSerno(), dn:"+issuerDN+", serno="+serno);
@@ -271,11 +265,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         } catch (javax.ejb.FinderException fe) {
             cat.error(fe);
             throw new EJBException(fe);
-        } catch (java.rmi.RemoteException re) {
-            cat.error(re);
-            throw new EJBException(re);
         }
-
     } //findCertificateByIssuerAndSerno
 
    /**
@@ -287,48 +277,27 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(issuerDN);
         debug("Looking for cert with (transformed)DN: " + dn);
-
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet result = null;
-        String fp = null;
         try{
-            con = getConnection();
-            ps = con.prepareStatement("select fingerprint from CertificateData where issuerDN=? and serialnumber=?");
-            ps.setString(1,dn);
-            ps.setString(2, serno.toString());
-            result = ps.executeQuery();
-            if (result.next()) {
-                fp = result.getString(1);
-                debug("Found cert with fingerprint "+fp+".");
-            } else {
-                throw new Exception("Cannot find certificate with issuer '"+dn+"' and serno '"+serno.toString()+"'.");
+            Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
+            Certificate ret = null;
+            if (coll != null) {
+                if (coll.size() > 1)
+                    cat.error("Error in database, more than one certificate has the same Issuer and SerialNumber!");
+                Iterator iter = coll.iterator();
+                if (iter.hasNext()) {
+                    RevokedCertInfo revinfo = null;
+                    CertificateDataLocal data = (CertificateDataLocal)iter.next();
+                    if (data.getStatus() == CertificateData.CERT_REVOKED) {
+                        revinfo = new RevokedCertInfo(serno, new Date(data.getRevocationDate()), data.getRevocationReason());
+                    }
+                    debug("<isRevoked() returned "+((data.getStatus() == CertificateData.CERT_REVOKED)?"yes":"no"));
+                    return revinfo;
+                }
             }
         } catch (Exception e) {
             throw new EJBException(e);
         }
-        finally {
-            try {
-                if (result != null) result.close();
-                if (ps != null) ps.close();
-                if (con!= null) con.close();
-            } catch(SQLException se) {
-                se.printStackTrace();
-            }
-        }
-        try{
-            CertificateDataPK pk = new CertificateDataPK();
-            pk.fingerprint = fp;
-            CertificateData data = certHome.findByPrimaryKey(pk);
-            RevokedCertInfo revinfo = null;
-            if (data.getStatus() == CertificateData.CERT_REVOKED) {
-                revinfo = new RevokedCertInfo(serno, new Date(data.getRevocationDate()), data.getRevocationReason());
-            }
-            debug("<isRevoked() returned "+((data.getStatus() == CertificateData.CERT_REVOKED)?"yes":"no"));
-            return revinfo;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        }
+        return null;
     } //isRevoked
 
    /**
@@ -337,43 +306,20 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
     */
     public byte[] getLastCRL() {
         debug(">findLatestCRL()");
-        Connection con = null;
-        PreparedStatement ps = null;;
-        ResultSet result = null;
         try {
-            con = getConnection();
-            ps = con.prepareStatement("select MAX(CRLNumber) from CRLData");
-            result = ps.executeQuery();
-            int maxnumber = -1;
-            if (result.next())
-                maxnumber = result.getInt(1);
-            if (maxnumber == -1)
-            {
-                debug("No CRLs issued yet");
-                return null;
-            }
-            ps = con.prepareStatement("select base64Crl from CRLData where cRLNumber=?");
-            ps.setInt(1, maxnumber);
-            result = ps.executeQuery();
+            int maxnumber = getLastCRLNumber();
             X509CRL crl = null;
-            if (result.next()) {
-                String b64crl = result.getString(1);
-                crl = CertTools.getCRLfromByteArray(Base64.decode(b64crl.getBytes()));
-            }
+            try {
+                CRLDataLocal data = crlHome.findByCRLNumber(maxnumber);
+                crl = data.getCRL();
+            } catch (FinderException e)
             debug("<findLatestCRL()");
+            if (crl == null)
+                return null;
             return crl.getEncoded();
         }
         catch (Exception e) {
             throw new EJBException(e);
-        }
-        finally {
-            try {
-                if (result != null) result.close();
-                if (ps != null) ps.close();
-                if (con!= null) con.close();
-            } catch(SQLException se) {
-                se.printStackTrace();
-            }
         }
     } //getLastCRL
 
