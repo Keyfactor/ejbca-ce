@@ -47,9 +47,11 @@ import se.anatom.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.33 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.34 2004-07-23 09:58:28 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
+    static final long serialVersionUID = -235623330828902051L;
+    
     private static Logger log = Logger.getLogger(ScepRequestMessage.class);
         
     public static final String id_Verisign = "2.16.840.1.113733";

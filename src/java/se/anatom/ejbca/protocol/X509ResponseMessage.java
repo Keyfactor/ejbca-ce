@@ -32,9 +32,11 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * A response message consisting of a single X509 Certificate.
  *
- * @version $Id: X509ResponseMessage.java,v 1.15 2004-05-22 13:33:11 anatom Exp $
+ * @version $Id: X509ResponseMessage.java,v 1.16 2004-07-23 09:58:28 anatom Exp $
  */
 public class X509ResponseMessage implements IResponseMessage, Serializable {
+    static final long serialVersionUID = -2157072605987735912L;
+    
     /** Certificate to be in response message, */
     private Certificate cert = null;
     /** CRL to be in response message, */

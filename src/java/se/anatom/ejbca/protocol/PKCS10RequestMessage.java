@@ -42,9 +42,11 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.23 2004-05-22 13:33:11 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.24 2004-07-23 09:58:28 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
+    static final long serialVersionUID = 3597275157018205136L;
+    
     private static Logger log = Logger.getLogger(PKCS10RequestMessage.class);
 
     /** Raw form of the PKCS10 message */

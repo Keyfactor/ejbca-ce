@@ -57,9 +57,11 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.21 2004-06-02 06:20:20 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.22 2004-07-23 09:58:28 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage, Serializable {
+    static final long serialVersionUID = 2016710353393853878L;
+    
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);
 
     /** The encoded response message */
