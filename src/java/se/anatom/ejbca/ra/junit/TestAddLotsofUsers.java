@@ -15,7 +15,7 @@ import junit.framework.*;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestAddLotsofUsers.java,v 1.2 2003-03-04 11:39:19 anatom Exp $
+ * @version $Id: TestAddLotsofUsers.java,v 1.3 2003-03-04 15:21:44 herrvendil Exp $
  */
 public class TestAddLotsofUsers extends TestCase {
 
@@ -103,7 +103,7 @@ public class TestAddLotsofUsers extends TestCase {
             boolean error = false;
             boolean usehardtokenissuer = false;
             String dn = "C=SE, O=AnaTom, CN="+username;
-            String subjectaltname = username+"@foo.se";
+            String subjectaltname = "rfc822Name="+username+"@foo.se";
             String email = username+"@foo.se";
             if(cacheAdmin.findUser(administrator, username) != null){;
               System.out.println("Error : User already exists in the database." );
