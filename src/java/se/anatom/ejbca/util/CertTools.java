@@ -23,7 +23,7 @@ import org.apache.log4j.*;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.22 2002-12-29 14:45:44 anatom Exp $
+ * @version $Id: CertTools.java,v 1.23 2002-12-29 15:58:02 anatom Exp $
  */
 public class CertTools {
 
@@ -39,6 +39,8 @@ public class CertTools {
     /** inhibits creation of new CertTools */
     private CertTools() {
     }
+
+    private static String[] dNObjects = { "EmailAddress", "E", "EMail", "UID", "CN", "SerialNumber", "Initials", "GN", "GivenName", "SN", "SurName", "T", "OU", "O", "L", "ST", "DC", "C" };
 
     private static DERObjectIdentifier getOid(String o) {
         if (o.trim().equalsIgnoreCase("C")) {
@@ -62,7 +64,22 @@ public class CertTools {
         if (o.trim().equalsIgnoreCase("T")) {
             return X509Name.T;
         }
+        if (o.trim().equalsIgnoreCase("SurName")) {
+            return X509Name.SURNAME;
+        } 
         if (o.trim().equalsIgnoreCase("SN")) {
+            return X509Name.SURNAME;
+        } 
+        if (o.trim().equalsIgnoreCase("GivenName")) {
+            return X509Name.GIVENNAME;
+        } 
+        if (o.trim().equalsIgnoreCase("GN")) {
+            return X509Name.GIVENNAME;
+        } 
+        if (o.trim().equalsIgnoreCase("Initials")) {
+            return X509Name.INITIALS;
+        } 
+        if (o.trim().equalsIgnoreCase("SerialNumber")) {
             return X509Name.SN;
         }
         if (o.trim().equalsIgnoreCase("CN")) {
@@ -87,7 +104,7 @@ public class CertTools {
      * Creates a (Bouncycastle) X509Name object from a string with a DN.
      * <p>Known OID (with order) are:
      * <pre>
-     * EmailAddress, UID, CN, SN, T, OU, O, L, ST, DC, C
+     * EmailAddress, UID, CN, SN, Initials, GivenName, SurName, T, OU, O, L, ST, DC, C
      *
      * @param dn String containing DN that will be transformed into X509Name, The DN string has the format
 "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in the string will be silently dropped.
@@ -117,10 +134,9 @@ public class CertTools {
         Vector ordering = new Vector();
         Vector values = new Vector();
         int index = -1;
-        String[] objects = { "EmailAddress", "E", "EMail", "UID", "CN", "SN", "T", "OU", "O", "L", "ST", "DC", "C" };
-        for (int i = 0;i<objects.length;i++) {
+        for (int i = 0; i < dNObjects.length; i++) {
             //cat.debug("Looking for "+objects[i]);
-            String object = objects[i].toLowerCase();
+            String object = dNObjects[i].toLowerCase();
             while ((index = oldordering.indexOf(object)) != -1) {
                 //cat.debug("Found 1 "+object+" at index " + index);
                 if (getOid(object) != null) {
