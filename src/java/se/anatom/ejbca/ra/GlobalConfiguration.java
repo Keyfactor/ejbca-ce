@@ -5,7 +5,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.12 2003-02-16 09:36:59 herrvendil Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.13 2003-03-06 05:53:03 herrvendil Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -49,7 +49,8 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     public static final String    ENDENTITYPROFILEPREFIX          = "/endentityprofilesrules/";
 
     // Hard Token specific resources used in authorization module.
-    public static final String[] HARDTOKENRESOURCES               ={"/hardtoken_functionallity/edit_hardtoken_issuers"};
+    public static final String[] HARDTOKENRESOURCES               ={"/hardtoken_functionallity/edit_hardtoken_issuers","/hardtoken_functionallity/issue_hardtokens",
+                                                                    "/hardtoken_functionallity/issue_hardtoken_administrator"};
     public static final String   HARDTOKEN_RA_ENDING              ="/view_hardtoken";
 
     // Hard Token specific resource used in authorization module.

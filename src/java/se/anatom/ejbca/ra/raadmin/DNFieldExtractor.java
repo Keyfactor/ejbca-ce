@@ -80,6 +80,7 @@ public class DNFieldExtractor {
       if(dn != null && !dn.equalsIgnoreCase("null")){
          this.dn=dn;  
          dnfields = new HashMap();
+        
          String[] dnexploded = LDAPDN.explodeDN(dn,false);
          for(int i = 0; i < dnexploded.length; i++){ 
            boolean exists = false;  
