@@ -10,7 +10,7 @@ import se.anatom.ejbca.hardtoken.hardtokentypes.*;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: IHardTokenSessionLocal.java,v 1.1 2003-02-06 15:35:46 herrvendil Exp $
+ * @version $Id: IHardTokenSessionLocal.java,v 1.2 2003-03-01 20:53:59 herrvendil Exp $
  * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
  */
 
@@ -171,5 +171,17 @@ public interface IHardTokenSessionLocal extends javax.ejb.EJBLocalObject
      */
     
     public AvailableHardToken[] getAvailableHardTokens();
+    
+    /**
+     * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+     */
+    
+    public void tokenGenerated(Admin admin, String tokensn, String username);
+    
+    /**
+     * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+     */
+    
+    public void errorWhenGeneratingToken(Admin admin, String tokensn, String username);     
 }
 

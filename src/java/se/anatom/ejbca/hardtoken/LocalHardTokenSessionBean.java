@@ -37,7 +37,7 @@ import se.anatom.ejbca.ra.IUserAdminSessionHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.5 2003-02-28 09:25:16 koen_serry Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.6 2003-03-01 20:54:00 herrvendil Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
@@ -829,6 +829,39 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       debug("<getAvailableHardTokens()");         
       return availablehardtokens;  
     } // getAvailableHardTokens
+    
+    /** 
+     * Method used to signal to the log that token was generated successfully.
+     *
+     * @param admin, administrator performing action
+     * @param tokensn, tokensn of token generated
+     * @param username, username of user token was generated for.
+     *
+     */
+    public void tokenGenerated(Admin admin, String tokensn, String username){
+      try{ 
+        getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_INFO_TOKENGENERATED,"Token with serialnumber : " + tokensn + " generated successfully.");
+      }catch(Exception e){
+        throw new EJBException(e);         
+      }   
+    } // tokenGenerated
+    
+    /** 
+     * Method used to signal to the log that error occured when generating token.
+     *
+     * @param admin, administrator performing action
+     * @param tokensn, tokensn of token.
+     * @param username, username of user token was generated for.
+     *
+     */
+    public void errorWhenGeneratingToken(Admin admin, String tokensn, String username){
+      try{ 
+        getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_TOKENGENERATED,"Error when generating token with serialnumber : " + tokensn + ".");
+      }catch(Exception e){
+        throw new EJBException(e);         
+      }         
+    } // errorWhenGeneratingToken  
+    
     
     private Integer findFreeHardTokenIssuerId(){
       int id = (new Random((new Date()).getTime())).nextInt();

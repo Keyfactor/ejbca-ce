@@ -10,7 +10,7 @@ import se.anatom.ejbca.hardtoken.hardtokentypes.*;
 
 /**
  *
- * @version $Id: IHardTokenSessionRemote.java,v 1.1 2003-02-06 15:35:46 herrvendil Exp $
+ * @version $Id: IHardTokenSessionRemote.java,v 1.2 2003-03-01 20:54:00 herrvendil Exp $
  */
 public interface IHardTokenSessionRemote extends javax.ejb.EJBObject {
     
@@ -257,6 +257,26 @@ public interface IHardTokenSessionRemote extends javax.ejb.EJBObject {
        * @throws EJBException if a communication or other error occurs.
        */     
     public AvailableHardToken[] getAvailableHardTokens() throws RemoteException;
+    
+    /** 
+     * Method used to signal to the log that token was generated successfully.
+     *
+     * @param admin, administrator performing action
+     * @param tokensn, tokensn of token generated
+     * @param username, username of user token was generated for.
+     *
+     */
+    public void tokenGenerated(Admin admin, String tokensn, String username) throws RemoteException;
+    
+    /** 
+     * Method used to signal to the log that error occured when generating token.
+     *
+     * @param admin, administrator performing action
+     * @param tokensn, tokensn of token 
+     * @param username, username of user token was generated for.
+     *
+     */
+    public void errorWhenGeneratingToken(Admin admin, String tokensn, String username) throws RemoteException;     
      
 }
 
