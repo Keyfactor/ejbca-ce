@@ -24,7 +24,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * Creates certificates. Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.21 2003-10-09 08:46:21 anatom Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.22 2003-10-20 07:56:43 anatom Exp $
  */
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
 	/**
@@ -49,13 +49,11 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
 	 *
 	 * @return The DER-encoded PKCS7 message.
 	 *
-	 * @throws SignRequestSignatureException if the provided client certificate was not signed by
-	 *         the CA.
-	 * @throws IllegalKeyException if the public key is of wrong type.
+     * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid cert
+     * @throws SignRequestSignatureException if the certificate is not signed by the CA
 	 * @throws RemoteException if a communication or other error occurs.
 	 */
-	public byte[] createPKCS7(Admin admin, Certificate cert)
-		throws SignRequestSignatureException, RemoteException;
+	public byte[] createPKCS7(Admin admin, Certificate cert) throws CADoesntExistsException, SignRequestSignatureException, RemoteException;
 
 	/**
 	 * Creates a signed PKCS7 message containing the whole certificate chain of the specified CA.
@@ -65,12 +63,10 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
 	 *
 	 * @return The DER-encoded PKCS7 message.
 	 *
-	 * @throws SignRequestSignatureException if the provided client certificate was not signed by
-	 *         the CA.
-	 * @throws IllegalKeyException if the public key is of wrong type.
+     * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid cert
 	 * @throws RemoteException if a communication or other error occurs.
 	 */	
-	public byte[] createPKCS7(Admin admin, int caId) throws RemoteException;
+	public byte[] createPKCS7(Admin admin, int caId) throws CADoesntExistsException, RemoteException;
         
 	/**
          * Requests for a certificate to be created for the passed public key with default key usage

@@ -65,7 +65,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.104 2003-10-09 08:46:21 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.105 2003-10-20 07:56:43 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -196,28 +196,56 @@ public class RSASignSessionBean extends BaseSessionBean {
      *
      * @return The DER-encoded PKCS7 message.
      *
-     * @throws SignRequestSignatureException if the provided client certificate was not signed by
-     *         the CA.
+     * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid cert
      */
-    public byte[] createPKCS7(Admin admin, Certificate cert) throws SignRequestSignatureException {
-        debug(">createPKCS7()");
-        byte[] returnval = null; 
-        
+    public byte[] createPKCS7(Admin admin, Certificate cert) throws CADoesntExistsException, SignRequestSignatureException {
         Integer caid = new Integer(CertTools.getIssuerDN((X509Certificate) cert).hashCode());
-        
+        return createPKCS7(admin, caid.intValue(), cert);
+    } // createPKCS7
+
+    /**
+     * Implements ISignSession::createPKCS7
+     *
+     * @param admin Information about the administrator or admin preforming the event.
+	 * @param caId CA for which we want a PKCS7 certificate chain.
+     *
+     * @return The DER-encoded PKCS7 message.
+     *
+     * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid cert
+     */
+    public byte[] createPKCS7(Admin admin, int caId) throws CADoesntExistsException {
+        try {
+            return createPKCS7(admin, caId, null);
+        } catch (SignRequestSignatureException e) {
+            error("Unknown error, strange?", e); 
+            throw new EJBException(e);
+        }
+    } // createPKCS7
+
+    /** Internal helper method
+     * @param admin Information about the administrator or admin preforming the event.
+	 * @param caId CA for which we want a PKCS7 certificate chain.
+     * @param cert client certificate which we want ancapsulated in a PKCS7 together with
+     *        certificate chain, or null
+     * @return The DER-encoded PKCS7 message.
+     * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid cert
+     */
+    private byte[] createPKCS7(Admin admin, int caId, Certificate cert) throws CADoesntExistsException, SignRequestSignatureException {
+        debug(">createPKCS7("+caId+", "+CertTools.getIssuerDN((X509Certificate)cert)+")");
+        byte[] returnval = null;
          // get CA
          CADataLocal cadata = null; 
          try{
-           cadata = cadatahome.findByPrimaryKey(caid);
+           cadata = cadatahome.findByPrimaryKey(new Integer(caId));
          }catch(javax.ejb.FinderException fe){         
-            throw new EJBException(fe);                   
+            throw new CADoesntExistsException(fe);                   
          }
                 
          CA ca = null;
          try{
            ca = cadata.getCA();
          }catch(java.io.UnsupportedEncodingException uee){
-           throw new EJBException(uee);   
+           throw new CADoesntExistsException(uee);   
          }
                 
          // Check that CA hasn't expired.
@@ -227,15 +255,15 @@ public class RSASignSessionBean extends BaseSessionBean {
          }catch(Exception e){
            // Signers Certificate has expired.   
            cadata.setStatus(SecConst.CA_EXPIRED);         
-           throw new EJBException("Signing CA " + cadata.getSubjectDN() + " has expired");   
-         }           
+           throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " has expired");   
+         }
         
          returnval = ca.createPKCS7(cert);
          debug("<createPKCS7()");
          return returnval;
     } // createPKCS7
 
-     /**
+    /**
      * Implements ISignSession::createCertificate
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {

@@ -16,7 +16,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.44 2003-09-24 08:17:26 anatom Exp $
+ * @version $Id: CertTools.java,v 1.45 2003-10-20 07:56:50 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -267,7 +267,9 @@ public class CertTools {
     private static String getDN(X509Certificate cert, int which) {
         //log.debug(">getDN("+which+")");
         String dn = null;
-
+        if (cert == null) {
+            return dn;
+        }
         try {
             CertificateFactory cf = CertTools.getCertificateFactory();
             X509Certificate x509cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(
@@ -281,15 +283,11 @@ public class CertTools {
             }
         } catch (CertificateException ce) {
             log.error("CertificateException: ", ce);
-
             return null;
         }
-
         //log.debug("<getDN("+which+"):"+dn);
         return stringToBCDNString(dn);
-    }
-
-    // getDN
+    } // getDN
 
     /**
      * Gets issuer DN for CRL in the format we are sure about (BouncyCastle),supporting UTF8.
