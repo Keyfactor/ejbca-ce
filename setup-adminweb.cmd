@@ -1,20 +1,19 @@
 @echo off
 rem This script sets up the administrative web interface with client cert authentication.
-rem Usage: setup-adminweb <DN Tomcat Server Cert> <Tomcat keystore passwd> <java cacert keystore passwd>
-
-echo %1
-echo %2
+rem Usage: setup-adminweb <DN Tomcat Server Cert> <Tomcat keystore passwd> <SuperAdmin password> <java cacert keystore passwd>
 
 if %1() == () goto error
 if %2() == () goto error
+if %3() == () goto error
+if %4() == () goto error
 
 call ra adduser tomcat %2 %1 "" null 1 3
 
-call ra adduser walter foo123 "CN=SuperUser" "" null 65 2
+call ra adduser superadmin %3 "CN=SuperUser" "" null 65 2
 
 call ra setclearpwd tomcat %2
 
-call ra setclearpwd walter foo123
+call ra setclearpwd superadmin %3
 
 call batch
 
@@ -22,7 +21,7 @@ copy p12\tomcat.jks %JBOSS_HOME%\.keystore
 
 call ca getrootcert tmp\rootca.der
 
-keytool -import -trustcacerts -file tmp\rootca.der -keystore %JAVA_HOME%\jre\lib\security\cacerts -storepass %3
+keytool -import -trustcacerts -file tmp\rootca.der -keystore %JAVA_HOME%\jre\lib\security\cacerts -storepass %4
 
 del tmp\rootca.der
 
@@ -36,5 +35,5 @@ del tmp\tomcat4-service.xml
 
 goto end
 :error
-echo "Usage: setup-adminweb <DN Tomcat Server Cert> <Tomcat keystore passwd> <java cacert keystore passwd>"
+echo "Usage: setup-adminweb <DN Tomcat Server Cert> <Tomcat keystore passwd> <SuperAdmin password> <java cacert keystore passwd>"
 :end
