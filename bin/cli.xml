@@ -93,7 +93,7 @@ superadmin.password : ${superadmin.password}
     </target>
 
 	<target name="ejbca:adminweb">
-		<ejbca:cli name="setup" arg="${httpsserver.hostname} ejbca"/>
+		<ejbca:cli name="setup" arg="setbaseurl ${httpsserver.hostname} ejbca"/>
 		
 		<ejbca:cli name="ra" arg='adduser tomcat ${httpsserver.password} "${httpsserver.dn}" null ${ca.name} null 1 JKS'/>
 		<ejbca:cli name="ra" arg="setclearpwd tomcat ${httpsserver.password}"/>
