@@ -78,13 +78,14 @@ import se.anatom.ejbca.protocol.exception.MalformedRequestException;
 import se.anatom.ejbca.protocol.exception.NotSupportedException;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
+import se.anatom.ejbca.util.ServiceLocator;
 
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.33 2004-08-25 16:39:47 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.34 2004-11-20 22:53:52 sbailliez Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -264,14 +265,14 @@ public class OCSPServlet extends HttpServlet {
         super.init(config);
         
         try {
-            InitialContext ctx = new InitialContext();
+            ServiceLocator locator = ServiceLocator.getInstance();
             ICertificateStoreSessionLocalHome castorehome = 
-                (ICertificateStoreSessionLocalHome) ctx.lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
+                (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
             m_certStore = castorehome.create();
-            ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) ctx.lookup("java:comp/env/ejb/CAAdminSessionLocal");
+            ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome)locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
             m_caadminsession = caadminsessionhome.create();
             m_adm = new Admin(Admin.TYPE_INTERNALUSER);
-            ISignSessionLocalHome signhome = (ISignSessionLocalHome) ctx.lookup("java:comp/env/ejb/SignSessionLocal");
+            ISignSessionLocalHome signhome = (ISignSessionLocalHome) locator.getLocalHome(ISignSessionLocalHome.COMP_NAME);
             m_signsession = signhome.create();
             
             // Parameters for OCSP signing (private) key

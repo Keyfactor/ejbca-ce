@@ -56,7 +56,7 @@ import se.anatom.ejbca.util.CertTools;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.30 2004-05-30 15:07:28 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.31 2004-11-20 22:53:52 sbailliez Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);
@@ -81,8 +81,8 @@ public class ScepServlet extends HttpServlet {
             InitialContext ctx = new InitialContext();
             signhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"),
                     ISignSessionHome.class);
-            caadminhome = (ICAAdminSessionHome) PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"), 
-                    ICAAdminSessionHome.class );            
+            caadminhome = (ICAAdminSessionHome) PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"),
+                    ICAAdminSessionHome.class );
         } catch (Exception e) {
             throw new ServletException(e);
         }
