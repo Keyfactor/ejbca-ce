@@ -13,7 +13,7 @@ import java.math.BigInteger;
  * This class implements a hex decoder, decoding a string with hex-characters into
  * the binary form.
  *
- * @version $Id: Hex.java,v 1.1.1.1 2001-11-15 14:58:19 anatom Exp $
+ * @version $Id: Hex.java,v 1.2 2002-08-07 10:27:50 anatom Exp $
  *
  */
 public class Hex {
@@ -30,6 +30,7 @@ public class Hex {
      *@return Hex-representation av data
      **/
     public static String encode(byte[] dataStr) {
+        if (dataStr == null) return null;
         StringWriter w = new StringWriter();
         for (int i =0;i<dataStr.length;i++)
         {
@@ -47,6 +48,7 @@ public class Hex {
      *@return byte[] innhållande binär representation av data
      **/
     public static byte[] decode(String dataStr) {
+        if (dataStr == null) return null;
 
         if ((dataStr.length() & 0x01) == 0x01)
             dataStr = new String(dataStr+"0");

@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.Hex;
 
 /** Creates a new root certificate with new validity, using the same key.
  *
- * @version $Id: CaRolloverSubCommand.java,v 1.1 2002-04-13 18:11:27 anatom Exp $
+ * @version $Id: CaRolloverSubCommand.java,v 1.2 2002-08-07 10:27:46 anatom Exp $
  */
 public class CaRolloverSubCommand extends BaseCaAdminCommand {
 
@@ -57,7 +57,7 @@ public class CaRolloverSubCommand extends BaseCaAdminCommand {
                 System.out.println("No subCA certificate found in keystore, this is not a subCA or keystore was not generated with EJBCA?");
                 return;
             }
-            System.out.println("Generating new certificate request for CA with DN='"+cacert.getSubjectDN().toString()+"'.");
+            System.out.println("Generating new certificate request for CA with DN '"+cacert.getSubjectDN().toString()+"'.");
             // Get private key
             PrivateKey privateKey = (PrivateKey)keyStore.getKey(privKeyAlias, privateKeyPass);
             if (privateKey == null) {
@@ -71,19 +71,26 @@ public class CaRolloverSubCommand extends BaseCaAdminCommand {
             String oldKeyId = Hex.encode(CertTools.getSubjectKeyId(cacert));
             String newKeyId = Hex.encode(CertTools.getSubjectKeyId(newselfcert));
             System.out.println("Old key id: "+oldKeyId);
-            System.out.println("New key id: "+newKeyId);
-            if (oldKeyId.compareTo(newKeyId) != 0) {
-                System.out.println("Old key identifier and new key identifieras does not match, have the key pair changed?");
-                System.out.println("Unable to rollover subCA.");
-                return;
+            if (oldKeyId == null) {
+                System.out.println("Old certificate does not contain SubjectKeyIdentifier.");
+                System.out.println("This is recommended, but decided by your CA.");
+                System.out.println("Continuing...");
+            } else {
+                System.out.println("New key id: "+newKeyId);
+                if (oldKeyId.compareTo(newKeyId) != 0) {
+                    System.out.println("Old key identifier and new key identifieras does not match, have the key pair changed?");
+                    System.out.println("Unable to rollover subCA.");
+                    return;
+                }
             }
             // Generate the new certificate request
             makeCertRequest(cacert.getSubjectDN().toString(), keyPair, reqfile);
-            
+
             System.out.println("Submit certificare request to RootCA and when receiving reply run 'ca recrep'.");
         } catch (Exception e) {
+            e.printStackTrace();
             throw new ErrorAdminCommandException(e);
         }
     } // execute
-    
+
 }
