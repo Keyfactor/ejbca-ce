@@ -153,10 +153,10 @@
      </env-entry>
 
     <security-identity>
- ???    <run-as>
- ???????    <role-name>InternalUser</role-name>
- ???    </run-as>
- ???</security-identity>
+        <run-as>
+            <role-name>InternalUser</role-name>
+    </run-as>
+    </security-identity>
 
    </session>
 
@@ -187,10 +187,10 @@
      <transaction-type>Container</transaction-type>
 
     <security-identity>
- ???    <run-as>
- ???????    <role-name>InternalUser</role-name>
- ???    </run-as>
- ???</security-identity>
+        <run-as>
+            <role-name>InternalUser</role-name>
+        </run-as>
+    </security-identity>
 
    </session>
 
@@ -203,10 +203,10 @@
      <transaction-type>Container</transaction-type>     
 
     <security-identity>
- ???    <run-as>
- ???????    <role-name>InternalUser</role-name>
- ???    </run-as>
- ???</security-identity>
+        <run-as>
+            <role-name>InternalUser</role-name>
+        </run-as>
+    </security-identity>
 
    </session>
 
@@ -291,8 +291,8 @@
       <description>
          This role represents an internal process
       </description>
-????? <role-name>internalUser</role-name>
-?? </security-role>
+      <role-name>internalUser</role-name>
+    </security-role>
 
    <method-permission>
      <role-name>internalUser</role-name>
@@ -375,6 +375,4 @@
  </assembly-descriptor>
 
 </ejb-jar>
-
-
 
