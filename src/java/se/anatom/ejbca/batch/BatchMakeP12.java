@@ -40,7 +40,7 @@ import org.apache.log4j.PropertyConfigurator;
  * This class generates keys and request certificates for all users with
  * status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.31 2003-02-21 09:35:42 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.32 2003-03-03 10:10:09 anatom Exp $
  */
 public class BatchMakeP12 {
 
@@ -353,8 +353,7 @@ public class BatchMakeP12 {
                       log.info("Cannot batchmake browser generated token for user - " + data.getUsername());
                 } catch (Exception e) {
                     // If things went wrong set status to FAILED
-                    log.error("An error happened, setting status to FAILED.");
-                    log.error(e.getMessage());
+                    log.error("An error happened, setting status to FAILED.", e);
                     failedusers += ":" + data.getUsername();
                     failcount++;
                     admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_FAILED);
