@@ -93,7 +93,12 @@
 
   <property name="jar.classpath" value="lib/ejb-utils.jar"/>
 
+	<path id="ext.classpath">
+		<fileset dir="lib/ext" includes="*.jar"/>
+	</path>
+	
     <path id="compile.classpath">
+    	<path refid="ext.classpath"/>
         <fileset dir="lib" includes="*.jar"/>
     </path>
 
