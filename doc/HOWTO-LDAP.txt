@@ -204,11 +204,14 @@ Check what you have in the LDAP by:
 
 Configure SSL
 -------------
-Create a user in ejbca (cli example given below, admin-GUI works just as fine):
-ra adduser ldap foo123 "C=SE,O=Foo,CN=ldap" null AdminCA1 null 1 PEM
+Create a user in ejbca (this example is for adding a user with the cli interface, adding a user 
+with the admin-GUI works just as fine).
+In the mail ejbca directory type (use simply 'ra' on windows):
+./ra.sh adduser ldap foo123 "C=SE,O=Foo,CN=ldap" null AdminCA1 null 1 PEM
 (User type end-user, keystore type PEM, use batch).
 Batch generate the PEM keystore:
-batch
+./batch.sh
+
 
 Copy the resulting files p12/pem/ldap.pem, p12/pem/ldap-CA.pem and p12/pem/ldap-Key.pem to your 
 LDAP server. In this example the slapd.conf is located in /usr/local/etc/openldap so we copy the 
