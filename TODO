@@ -1,4 +1,4 @@
-$Id: TODO,v 1.66 2003-08-07 09:26:22 anatom Exp $
+$Id: TODO,v 1.67 2003-08-27 07:36:51 anatom Exp $
 
 V 1.x
 -----
@@ -11,11 +11,11 @@ V 2.x
 - LDAPPublisherSession should remove cert from the store when revoked.
 - More automated testing, Junit as well as web-stuff.
 - Continue improving exceptions and error handling.
+- Commands and status for certificate suspend (command for unrevoke, status for unrevoked).
 - Strategy for handling certificate issuance if notAfter is beyond CAs notAfter.
 - Import utility to get users from external datasources.
-- Virtual CAs multiple CAs within one deployment
 - Better command line tools for batch stuff.
-- Export/import utilities to export/import configuration data and profiles to XML-files.
+- Export/import utilities to export/import configuration data to XML-files.
 - OCSP
 - AuthorityInfoAcess extension required by OCSP (id-ad-ocsp for the accessMethod), 
 and ocspSigning extendedKeyUsage + id-pkix-ocsp-check extensions.
