@@ -27,7 +27,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.12 2003-06-11 12:20:02 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.13 2003-06-14 10:20:47 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
 
@@ -36,7 +36,7 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     /**
      * Raw form of the PKCS10 message
      */
-    protected transient byte[] p10msg;
+    protected byte[] p10msg;
 
     /**
      * The pkcs10 request message
