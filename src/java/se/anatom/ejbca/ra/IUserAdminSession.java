@@ -10,7 +10,7 @@ import se.anatom.ejbca.ra.UserAdminData;
 
 /**
  *
- * @version $Id: IUserAdminSession.java,v 1.3 2002-01-28 08:48:25 anatom Exp $
+ * @version $Id: IUserAdminSession.java,v 1.4 2002-02-01 09:09:31 anatom Exp $
  */
 public interface IUserAdminSession {
 
@@ -60,7 +60,7 @@ public interface IUserAdminSession {
     * Finds a user.
     *
     * @param username username.
-    * @return UserAdminData
+    * @return UserAdminData or null if the user is not found.
     * @throws EJBException if a communication or other error occurs.
     */
     public UserAdminData findUser(String username) throws FinderException, RemoteException;

@@ -17,7 +17,7 @@ import se.anatom.ejbca.BaseSessionBean;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.3 2002-01-28 08:48:25 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.4 2002-02-01 09:09:31 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserAdminSession {
 
@@ -131,7 +131,12 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
         debug(">findUser("+username+")");
         UserDataPK pk = new UserDataPK();
         pk.username = username;
-        UserData data = home.findByPrimaryKey(pk);
+        UserData data; 
+        try {
+            data = home.findByPrimaryKey(pk);
+        } catch (ObjectNotFoundException oe) {
+            return null;
+        }
         UserAdminData ret = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getStatus(), data.getType());
         ret.setPassword(data.getPassword());
         return ret;
