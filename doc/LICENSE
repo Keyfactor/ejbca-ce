@@ -1,20 +1,22 @@
-The code of EJBCA is under the GPL license (see LICENSE-GPL or
-http://www.opensource.org/licenses/gpl-license.html).
-
-The use of interfaces of EJBCA is under LGPL license (see LICENSE-LGPL or
+EJBCA is released under the LGPL license (see LICENSE-LGPL or
 http://www.opensource.org/licenses/lgpl-license.html).
 
-This means specifically that:
-Tools, code and libraries (JARS) themselves is under GPL.
-Using interfaces to create own modules and modifying the deployment descriptors
-to use these modules falls under LGPL.
+To clarify, this means that (if I understand correctly):
+The code itself (java code, tools, jars, etc) can NOT be changed without changed beeing 
+put under the same licence as EJBCA..
+Using the interfaces to use or integrate EJBCA in another project, without 
+modifying EJBCA code is allowed and does not put any constraints on the product 
+(the derived work).
 
+Any modification to java code which is part of EJBCA should fall under LGPL.
 For example creating a new MyAlgSigningSession (implementing interface
-ISignSession) instead of the EJBCA RSASigningSessiom, deploying
-MyAlgSigningSession in another JAR and modifying
-src/ca/META-INF/ejb-jar.xml to use the new MyAlgSigningSession falls under LGPL.
-Another example falling under LGPL is where a custom AuthenticationSession is
-created (implementing interface IAuthenticationSession) and src/ca/META-INF/ejb-
-jar.xml is modified to use the custom authentication module.
+ISignSession) replacing the EJBCA RSASigningSession and deploying
+MyAlgSigningSession by modifying src/ca/META-INF/ejb-jar.xml to use the new 
+MyAlgSigningSession should make MyAlgSigningSession a piece of LGPL code.
 
-Any modification to java code which is part of EJBCA falls under GPL.
+Taking EJBCA and integrating it into a web application by using the interfaces to 
+the RA (IUserAdminSession) to create users for EJBCA from another source
+(integrated with user registration in the application) does NOT put any 
+constraints on the whole application itself. A notice that the application uses 
+EJBCA and the possibility to get the source of EJBCA used in the application 
+should be provided.
