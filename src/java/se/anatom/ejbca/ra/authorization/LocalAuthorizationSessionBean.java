@@ -18,7 +18,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.12 2003-02-28 09:26:45 koen_serry Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.13 2003-03-16 18:44:27 herrvendil Exp $
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
@@ -354,6 +354,12 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
     public void addAdminEntity(Admin admin, String admingroupname, int matchwith, int matchtype, String matchvalue){         
       try{
+        if(matchwith == AdminEntity.WITH_SERIALNUMBER){
+          try{  
+            matchvalue = new RegularExpression.RE(" ",false).replace(matchvalue,""); 
+          }catch(Exception e){}  
+        }
+          
         (admingrouphome.findByPrimaryKey(admingroupname)).addAdminEntity(matchwith, matchtype, matchvalue);
         authorization.buildAccessTree(getAdminGroups(admin));
         logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Added administrator entity " + matchvalue + " to administratorgroup " + admingroupname + ".");        

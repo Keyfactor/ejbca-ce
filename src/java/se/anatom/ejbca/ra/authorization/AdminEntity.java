@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.CertTools;
  * Matchtype constants tells under which contitions the match shall be performed.
  *
  * @author  Philip Vendil
- * @version $Id: AdminEntity.java,v 1.7 2003-03-11 12:16:34 anatom Exp $
+ * @version $Id: AdminEntity.java,v 1.8 2003-03-16 18:44:27 herrvendil Exp $
  */
 public class AdminEntity implements Serializable, Comparable {
     // Special Users. (Constants cannot have 0 value).
@@ -75,7 +75,7 @@ public class AdminEntity implements Serializable, Comparable {
       else{
         X509Certificate certificate = admininformation.getX509Certificate();
         String certstring = CertTools.getSubjectDN(certificate);
-        String serialnumber = certificate.getSerialNumber().toString(16);
+        //String serialnumber = certificate.getSerialNumber().toString(16);
         try{
           certstring = new RegularExpression.RE("SERIALNUMBER=",false).replace(certstring,"SN=");
         }catch(Exception e){}
@@ -86,13 +86,22 @@ public class AdminEntity implements Serializable, Comparable {
         // Determine part of certificate to match with.
         DNFieldExtractor dn = new DNFieldExtractor(certstring,DNFieldExtractor.TYPE_SUBJECTDN);
         if(matchwith == WITH_SERIALNUMBER){
-           if(serialnumber!=null){
-             size = 1;
-             clientstrings    = new String[1];
-             clientstrings[0] = serialnumber.trim().toLowerCase();
-           }
-           else{
-             clientstrings= null;
+          if(certificate!=null){
+            switch(matchtype){
+              case TYPE_EQUALCASE:
+              case TYPE_EQUALCASEINS:
+                  try{
+                    returnvalue = (new java.math.BigInteger(matchvalue,16)).equals(certificate.getSerialNumber()); 
+                  }catch(java.lang.NumberFormatException nfe){}
+                break;
+              case TYPE_NOT_EQUALCASE:
+              case TYPE_NOT_EQUALCASEINS:
+                  try{
+                    returnvalue = !(new java.math.BigInteger(matchvalue,16)).equals(certificate.getSerialNumber()); 
+                  }catch(java.lang.NumberFormatException nfe){}                 
+                break;
+               default:
+             }
            }
         }
         else{
@@ -136,43 +145,43 @@ public class AdminEntity implements Serializable, Comparable {
             clientstrings[i] = dn.getField(parameter,i);
           }
 
+          // Determine how to match.
+          if(clientstrings!=null){
+            switch(matchtype){
+              case TYPE_EQUALCASE:
+                for(int i=0; i < size ; i++){
+                  returnvalue = clientstrings[i].equals(matchvalue);
+                  if(returnvalue)
+                    break;
+                }
+                break;
+              case TYPE_EQUALCASEINS:
+                for(int i=0; i < size ; i++){
+                  returnvalue = clientstrings[i].equalsIgnoreCase(matchvalue);
+                  if(returnvalue)
+                    break;
+                }
+                break;
+              case TYPE_NOT_EQUALCASE:
+                for(int i=0; i < size ; i++){
+                  returnvalue = !clientstrings[i].equals(matchvalue);
+                  if(returnvalue)
+                    break;
+                }
+                break;
+              case TYPE_NOT_EQUALCASEINS:
+                for(int i=0; i < size ; i++){
+                  returnvalue = !clientstrings[i].equalsIgnoreCase(matchvalue);
+                  if(returnvalue)
+                    break;
+                }
+                break;
+               default:
+             }
+            }
         }
-
-        // Determine how to match.
-        if(clientstrings!=null){
-          switch(matchtype){
-            case TYPE_EQUALCASE:
-              for(int i=0; i < size ; i++){
-                returnvalue = clientstrings[i].equals(matchvalue);
-                if(returnvalue)
-                  break;
-              }
-              break;
-            case TYPE_EQUALCASEINS:
-              for(int i=0; i < size ; i++){
-                returnvalue = clientstrings[i].equalsIgnoreCase(matchvalue);
-                if(returnvalue)
-                  break;
-              }
-              break;
-            case TYPE_NOT_EQUALCASE:
-              for(int i=0; i < size ; i++){
-                returnvalue = !clientstrings[i].equals(matchvalue);
-                if(returnvalue)
-                  break;
-              }
-              break;
-            case TYPE_NOT_EQUALCASEINS:
-              for(int i=0; i < size ; i++){
-                returnvalue = !clientstrings[i].equalsIgnoreCase(matchvalue);
-                if(returnvalue)
-                  break;
-              }
-              break;
-            default:
-           }
-          }
-        }
+      }
+      
       return returnvalue;
     }
 
@@ -198,7 +207,7 @@ public class AdminEntity implements Serializable, Comparable {
     }
 
     public void setMatchValue(String matchvalue){
-      this.matchvalue=matchvalue;
+        this.matchvalue=matchvalue;
     }
 
     public int getSpecialUser(){
