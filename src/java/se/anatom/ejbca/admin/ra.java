@@ -113,7 +113,6 @@ public class ra {
                 }
             } else if (args[0].equals("revokeuser"))
             {
-                // TODO:
                 if (args.length < 2) {
                     System.out.println("Usage: RA revokeuser username");
                     return;
@@ -156,9 +155,9 @@ public class ra {
     }
 
   static public Context getInitialContext() throws NamingException{
-    System.out.println(">GetInitialContext");
+    //System.out.println(">GetInitialContext");
     Context ctx = new javax.naming.InitialContext();
-    System.out.println("<GetInitialContext");
+    //System.out.println("<GetInitialContext");
     return ctx;
   }
 

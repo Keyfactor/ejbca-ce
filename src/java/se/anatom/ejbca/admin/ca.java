@@ -352,7 +352,7 @@ public class ca {
      * Creates the CertificateStore and Publishers so they are available.
      */
     static private void initCertificateStore() throws RemoteException {
-        System.out.println(">initCertificateStore()");
+        //System.out.println(">initCertificateStore()");
         Context context = null;
         try {
             context = getInitialContext();
@@ -393,7 +393,7 @@ public class ca {
                 ce.printStackTrace();
             }
         }
-        System.out.println("<initCertificateStore()");
+        //System.out.println("<initCertificateStore()");
     } // initCertificateStore
     
 } //ca
