@@ -51,7 +51,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.57 2002-12-12 14:22:51 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.58 2002-12-15 11:59:08 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -585,7 +585,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 aki);
         }
         // Subject Alternative name
-        if ((certProfile.getUseSubjectAlternativeName() == true) && (altName != null)) {
+        if ( (certProfile.getUseSubjectAlternativeName() == true) && (altName != null) && (altName.length() > 0) ) {
             String email = CertTools.getPartFromDN(altName, CertTools.EMAIL);
             if (email == null)
                 email = CertTools.getPartFromDN(altName, CertTools.EMAIL1);
