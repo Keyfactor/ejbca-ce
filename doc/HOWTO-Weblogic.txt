@@ -1,4 +1,6 @@
 
+This howto is for EJBCA 1.x, and should be modified for EJBCA 2.x
+
 CONFIGURING Weblogic
 ====================
 
