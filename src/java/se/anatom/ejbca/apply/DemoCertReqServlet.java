@@ -80,7 +80,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.22 2003-03-09 13:04:26 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.23 2003-03-14 14:51:34 herrvendil Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -222,7 +222,7 @@ public class DemoCertReqServlet extends HttpServlet {
     if ((email != null) && (email.length() > 0)) {
       newuser.setEmail(email);
       if (includeEmail != null) {
-          newuser.setSubjectAltName("email="+email);
+          newuser.setSubjectAltName("RFC822NAME="+email);
       }
     }
 
