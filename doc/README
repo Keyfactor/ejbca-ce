@@ -241,13 +241,13 @@ Run the testprograms with 'runtests.sh/cmd' and watch the lovely debug output
 Create User certificates
 ------------------------
 To enroll for certificates using browsers, open
- http://127.0.0.1:8080/apply/request/index.html (assuming Tomcat/Jetty listens
+ http://127.0.0.1:8080/apply/index.html (assuming Tomcat/Jetty listens
  to port
  8080) and use the links for your browser.
 
 To enroll for certificates using manual methods (for server certificates for
  example) open
-http://127.0.0.1:8080/apply/request/apply_man.html and fill in the form.
+http://127.0.0.1:8080/apply/apply_man.html and fill in the form.
 
 Use the 'ca.sh/cmd' and 'ra.sh/cmd' scripts to administer EJBCA.
 
@@ -472,7 +472,7 @@ Programatically get certificate
 Example how a certificate can be fetched programmatically using HTTP/S. The
  sample generates a certificate request and uses POST to the same servlet
 as used from a browser through
-http://127.0.0.1:8080/apply/request/apply_man.jsp.
+http://127.0.0.1:8080/apply/apply_man.jsp.
 The servlet url used in the example is http://127.0.0.1:8080/apply/certreq.
 The certificate reply containing a PEM-formatted certificate is printed to the
  screen.
