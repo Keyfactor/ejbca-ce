@@ -34,7 +34,7 @@ import junit.framework.*;
 
 /** Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.15 2002-11-18 11:18:25 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.16 2002-12-12 14:44:53 anatom Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -258,9 +258,51 @@ public class TestSignSession extends TestCase {
         cat.debug("<test05TestIEPKCS10()");
     }
 
+    public void test06KeyUsage() throws Exception {
+        cat.debug(">test06KeyUsage()");
+        UserDataPK pk = new UserDataPK("foo");
+        UserDataRemote data = userhome.findByPrimaryKey(pk);
+        data.setStatus(UserDataRemote.STATUS_NEW);
+        cat.debug("Reset status of 'foo' to NEW");
+        // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
+        boolean[] keyusage1 = new boolean[9];
+        Arrays.fill(keyusage1, false);
+        // digitalSignature
+        keyusage1[0] = true;
+        // keyEncipherment
+        keyusage1[2] = true;
+        X509Certificate cert = (X509Certificate)remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER), "foo", "foo123", keys.getPublic(), keyusage1);
+        assertNotNull("Misslyckades skapa cert", cert);
+        cat.debug("Cert="+cert.toString());
+        boolean[] retKU = cert.getKeyUsage();
+        assertTrue("Fel KeyUsage, digitalSignature finns ej!",retKU[0]);
+        assertTrue("Fel KeyUsage, keyEncipherment finns ej!",retKU[2]);
+        assertTrue("Fel KeyUsage, cRLSign finns!",!retKU[6]);
+
+        pk = new UserDataPK("foo");
+        data = userhome.findByPrimaryKey(pk);
+        data.setStatus(UserDataRemote.STATUS_NEW);
+        cat.debug("Reset status of 'foo' to NEW");
+        boolean[] keyusage2 = new boolean[9];
+        Arrays.fill(keyusage2, false);
+        // keyCertSign
+        keyusage2[5] = true;
+        // cRLSign
+        keyusage2[6] = true;
+        X509Certificate cert1 = (X509Certificate)remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER), "foo", "foo123", keys.getPublic(), keyusage2);
+        assertNotNull("Misslyckades skapa cert", cert1);
+        retKU = cert1.getKeyUsage();
+        assertTrue("Fel KeyUsage, keyCertSign finns ej!",retKU[5]);
+        assertTrue("Fel KeyUsage, cRLSign finns ej!",retKU[6]);
+        assertTrue("Fel KeyUsage, digitalSignature finns!",!retKU[0]);
+
+        cat.debug("Cert="+cert1.toString());
+        cat.debug("<test06KeyUsage()");
+    }
+
 /*
-    public void test06TestOpenScep() throws Exception {
-        cat.debug(">test06TestOpenScep()");
+    public void test07TestOpenScep() throws Exception {
+        cat.debug(">test07TestOpenScep()");
         UserDataPK pk = new UserDataPK("foo");
         UserDataRemote data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
@@ -268,7 +310,7 @@ public class TestSignSession extends TestCase {
         X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", new ScepRequestMessage(openscep));
         assertNotNull("Failed to create certificate", cert);
         cat.debug("Cert="+cert.toString());
-        cat.debug("<test06TestOpenScep()");
+        cat.debug("<test07TestOpenScep()");
     }
 */
 }
