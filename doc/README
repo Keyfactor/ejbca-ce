@@ -1,4 +1,4 @@
-$Id: README,v 1.131 2004-03-21 10:09:51 anatom Exp $
+$Id: README,v 1.132 2004-03-24 08:05:24 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -157,6 +157,11 @@ QUICK START GUIDE
 
 Build
 =====
+
+Note: If you want to use strong crypto and/or password longer than 7 characters 
+in keystores you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
+The policy files can be found at the same place as the JDK 1.4 download. 
+Further information on this can be found in the Sun documentation on the JCE.
 
 Needed to build and run are:
 JDK 1.4.x

@@ -1,14 +1,25 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.19 2004-02-04 13:54:18 anatom Exp $
+$Id: FAQ,v 1.20 2004-03-24 08:05:24 anatom Exp $
+
+---------
+Q : When running 'install' or creating JKS or PKCS12 files you can't use longer 
+password than 7 characters. Anything longer gives an error.
+
+A : If you want to use strong crypto and/or password longer than 7 characters 
+in keystores you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
+The policy files can be found at the same place as the JDK 1.4 download. 
+Further information on this can be found in the Sun documentation on the JCE.
 
 ---------
 Q : When running then 'Install' command on windows I get the following error:
 java.io.IOException: CreateProcess: ca.cmd init foo "cn=foo" 1024 23 null error=5
 
-A : If you have Cygwin or similar installed execute permissions may be needed on 
+A : You don't have enough privileges on the file 'ca.cmd'. Change so you have all 
+permissions by right-clicking the file in windows and choosing properties->security.
+If you have Cygwin or similar installed execute permissions may be needed on 
 .cmd files. Run the command 'chmod a+x *.cmd' in the ejbca directory. 
-Alt. make the file executable in windows properties->security.
+Also check the file setup-adminweb.cmd.
 
 ---------
 Q : How do I connect to, and alter data in the built-in 'Hypersonic SQL'
