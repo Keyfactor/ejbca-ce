@@ -13,20 +13,19 @@
  
 package se.anatom.ejbca;
 
-import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
-import javax.naming.*;
-import javax.rmi.PortableRemoteObject;
+import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
+
 import se.anatom.ejbca.util.ServiceLocator;
 
 
 /**
  * Base for Session Beans providing common features, new Session Beans should extend this.
  *
- * @version $Id: BaseSessionBean.java,v 1.13 2005-02-11 13:12:14 anatom Exp $
+ * @version $Id: BaseSessionBean.java,v 1.14 2005-03-08 08:51:25 anatom Exp $
  */
 public class BaseSessionBean implements SessionBean {
 
@@ -118,49 +117,6 @@ public class BaseSessionBean implements SessionBean {
      */
     public void error(String msg, Throwable t) {
         log.error(msg, t);
-    }
-
-    /**
-     * Gets InitialContext
-     *
-     * @return InitialContext
-     * @deprecated Use #getLocator()
-     */
-    public InitialContext getInitialContext() {
-        try {
-            if (cacheCtx == null) {
-                cacheCtx = new InitialContext();
-            }
-            return cacheCtx;
-        } catch (NamingException e) {
-            throw new EJBException(e);
-        }
-    }
-
-    /**
-     * Looks up a JNDI name using the (cached) InitialContext
-     *
-     * @param jndiName the JNDI name to lookup.
-     * @param type the class type to narrow the object to.
-     *
-     * @return Object that can be casted to 'type'.
-     * @deprecated Use #getLocator()
-     */
-    public Object lookup(String jndiName, Class type) {
-        Object ref = lookup(jndiName);
-        return PortableRemoteObject.narrow(ref, type);
-    }
-
-    /**
-     * Looks up a JNDI name using the (cached) InitialContext
-     *
-     * @param jndiName the JNDI name to lookup.
-     *
-     * @return Object that can be casted to 'type'.
-     * @deprecated Use #getLocator()
-     */
-    public Object lookup(String jndiName) {
-        return getLocator().getObject(jndiName);
     }
 
     /**
