@@ -37,10 +37,11 @@ import se.anatom.ejbca.BaseEntityBean;
  *   local-jndi-name="HardTokenCertificateMapLocal"
  *   view-type="local"
  *   type="CMP"
- *   reentrant="false"
+ *   reentrant="False"
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="HardTokenCertificateMapBean"
+ *   primkey-field="certificateFingerprint"
  *
  * @ejb.permission role-name="InternalUser"
  *
@@ -61,6 +62,13 @@ import se.anatom.ejbca.BaseEntityBean;
  *   description="findByTokenSN"
  *   signature="Collection findByTokenSN(java.lang.String sn)"
  *   query="SELECT DISTINCT OBJECT(a) from HardTokenCertificateMapBean a WHERE a.tokenSN=?1"
+ *
+ * @ejb.transaction
+ *   type="Supports"
+ *
+ * @jonas.jdbc-mapping
+ *   jndi-name="${datasource.jndi-name}"
+ *
  */
 public abstract class HardTokenCertificateMapBean extends BaseEntityBean {
 

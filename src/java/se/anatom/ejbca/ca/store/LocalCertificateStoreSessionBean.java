@@ -14,6 +14,7 @@
 package se.anatom.ejbca.ca.store;
 
 import se.anatom.ejbca.BaseSessionBean;
+import se.anatom.ejbca.JNDINames;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
@@ -33,8 +34,8 @@ import se.anatom.ejbca.ca.store.certificateprofiles.RootCACertificateProfile;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
-import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.log.LogConstants;
+import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.JDBCUtil;
 import se.anatom.ejbca.util.StringTools;
@@ -42,8 +43,6 @@ import se.anatom.ejbca.util.StringTools;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
@@ -51,7 +50,6 @@ import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -65,7 +63,7 @@ import java.util.Random;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.76 2004-11-04 15:47:23 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.77 2004-11-20 22:33:20 sbailliez Exp $
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
  * view-type="both"
@@ -73,7 +71,7 @@ import java.util.Random;
  * transaction-type="Container"
  *
  * @ejb.transaction type="Supports"
- *
+ * @ejb.security-identity run-as="InternalUser"
  * @ejb.permission role-name="InternalUser"
  *
  * @ejb.env-entry description="JDBC datasource to be used"
@@ -83,11 +81,27 @@ import java.util.Random;
  *
  * @ejb.ejb-external-ref description="The Certificate entity bean used to store and fetch certificates"
  * view-type="local"
- * ejb-name="CertificateStoreSessionLocal"
- * type="Session"
- * home="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome"
- * business="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal"
- * link="CertificateStoreSession"
+ * ejb-name="CertificateDataLocal"
+ * type="Entity"
+ * home="se.anatom.ejbca.ca.store.CertificateDataLocalHome"
+ * business="se.anatom.ejbca.ca.store.CertificateDataLocal"
+ * link="CertificateData"
+ *
+ * @ejb.ejb-external-ref description="The CRL entity bean used to store and fetch CRLs"
+ * view-type="local"
+ * ejb-name="CRLDataLocal"
+ * type="Entity"
+ * home="se.anatom.ejbca.ca.store.CRLDataLocalHome"
+ * business="se.anatom.ejbca.ca.store.CRLDataLocal"
+ * link="CRLData"
+ *
+ * @ejb.ejb-external-ref description="The CertificateProfileData Entity bean"
+ * view-type="local"
+ * ejb-name="CertificateProfileDataLocal"
+ * type="Entity"
+ * home="se.anatom.ejbca.ca.store.CertificateProfileDataLocalHome"
+ * business="se.anatom.ejbca.ca.store.CertificateProfileDataLocal"
+ * link="CertificateProfileData"
  *
  * @ejb.ejb-external-ref description="The Log session bean"
  * view-type="local"
@@ -127,11 +141,6 @@ import java.util.Random;
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
     /**
-     * Var holding JNDI name of datasource
-     */
-    private String dataSource = "";
-
-    /**
      * The home interface of Certificate entity bean
      */
     private CertificateDataLocalHome certHome = null;
@@ -168,26 +177,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() throws CreateException {
-        debug(">ejbCreate()");
-        dataSource = (String) lookup("java:comp/env/DataSource", java.lang.String.class);
-        debug("DataSource=" + dataSource);
-        crlHome = (CRLDataLocalHome) lookup("java:comp/env/ejb/CRLDataLocal");
-        certHome = (CertificateDataLocalHome) lookup("java:comp/env/ejb/CertificateDataLocal");
-        certprofilehome = (CertificateProfileDataLocalHome) lookup("java:comp/env/ejb/CertificateProfileDataLocal");
-
-        debug("<ejbCreate()");
+        crlHome = (CRLDataLocalHome) getLocator().getLocalHome(CRLDataLocalHome.COMP_NAME);
+        certHome = (CertificateDataLocalHome) getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
+        certprofilehome = (CertificateProfileDataLocalHome) getLocator().getLocalHome(CertificateProfileDataLocalHome.COMP_NAME);
     }
-
-    /**
-     * Gets connection to Datasource used for manual SQL searches
-     *
-     * @return Connection
-     */
-    private Connection getConnection() throws SQLException, NamingException {
-        DataSource ds = (DataSource) getInitialContext().lookup(dataSource);
-        return ds.getConnection();
-    } //getConnection
-
 
     /**
      * Gets connection to log session bean
@@ -195,8 +188,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     private ILogSessionLocal getLogSession() {
         if (logsession == null) {
             try {
-                ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup(ILogSessionLocalHome.COMP_NAME, ILogSessionLocalHome.class);
-                logsession = logsessionhome.create();
+                ILogSessionLocalHome home = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
+                logsession = home.create();
             } catch (Exception e) {
                 throw new EJBException(e);
             }
@@ -213,8 +206,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     private IAuthorizationSessionLocal getAuthorizationSession() {
         if (authorizationsession == null) {
             try {
-                IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) lookup("java:comp/env/ejb/AuthorizationSessionLocal", IAuthorizationSessionLocalHome.class);
-                authorizationsession = authorizationsessionhome.create();
+                IAuthorizationSessionLocalHome home = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
+                authorizationsession = home.create();
             } catch (Exception e) {
                 throw new EJBException(e);
             }
@@ -230,8 +223,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     private IPublisherSessionLocal getPublisherSession() {
         if (publishersession == null) {
             try {
-                IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) lookup("java:comp/env/ejb/PublisherSessionLocal", IPublisherSessionLocalHome.class);
-                publishersession = publishersessionhome.create();
+                IPublisherSessionLocalHome home = (IPublisherSessionLocalHome) getLocator().getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
+                publishersession = home.create();
             } catch (Exception e) {
                 throw new EJBException(e);
             }
@@ -325,7 +318,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         String dn = CertTools.stringToBCDNString(issuerdn);
         dn = StringTools.strip(dn);
         try {
-            con = getConnection();
+            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
             ps = con.prepareStatement("select fingerprint from CertificateData where issuerDN=? ORDER BY expireDate DESC");
             ps.setString(1, dn);
             result = ps.executeQuery();
@@ -357,7 +350,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             // TODO:
             // This should only list a few thousend certificates at a time, in case there
             // are really many revoked certificates after some time...
-            con = getConnection();
+            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
             ps = con.prepareStatement("select fingerprint from CertificateData where status=? and issuerDN=? ORDER BY expireDate DESC");
             ps.setInt(1, CertificateDataBean.CERT_REVOKED);
             ps.setString(2, dn);
@@ -484,7 +477,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         long currentdate = new Date().getTime();
 
         try {
-            con = getConnection();
+            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
             ps = con.prepareStatement("SELECT DISTINCT username FROM CertificateData WHERE expireDate>=? AND expireDate<? AND status=?");
             ps.setLong(1, currentdate);
             ps.setLong(2, expiretime.getTime());
@@ -546,7 +539,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * or the collection of serial numbers is empty.
      *
      * @param admin
-     * @param issuer the subjectDN of a CA certificate
+     * @param issuerDN the subjectDN of a CA certificate
      * @param sernos a collection of certificate serialnumbers
      * @return Collection a list of certificates; never <tt>null</tt>
      * @ejb.interface-method
@@ -608,7 +601,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
              * in the StringBuffer we remove the two chars here :)
              */
             sb.delete(0, ", ".length());
-            con = getConnection();
+            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
             ps = con.prepareStatement("SELECT DISTINCT fingerprint"
                     + " FROM CertificateData WHERE"
                     + " issuerDN = ?"
@@ -672,7 +665,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public String findUsernameByCertSerno(Admin admin, BigInteger serno, String issuerdn) {
-        debug(">findUsernameByCertSerno(), serno: " + serno+", issuerdn: "+issuerdn);
+        debug(">findUsernameByCertSerno(), serno: " + serno + ", issuerdn: " + issuerdn);
         String dn = CertTools.stringToBCDNString(issuerdn);
         try {
             Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
@@ -733,8 +726,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
         try {
             CertificateDataLocal res = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
-            ret = new CertificateInfo(res.getFingerprint(), res.getCAFingerprint(),res.getSerialNumber(),res.getIssuerDN(),res.getSubjectDN(),
-                    res.getStatus(),res.getType(),res.getExpireDate(),res.getRevocationDate(),res.getRevocationReason());
+            ret = new CertificateInfo(res.getFingerprint(), res.getCAFingerprint(), res.getSerialNumber(), res.getIssuerDN(), res.getSubjectDN(),
+                    res.getStatus(), res.getType(), res.getExpireDate(), res.getRevocationDate(), res.getRevocationReason());
             debug("<getCertificateInfo()");
         } catch (FinderException fe) {
             // Return null;
@@ -881,7 +874,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 debug("findCertificatesByType() : executing SQL statement\n"
                         + stmt.toString());
             }
-            con = getConnection();
+            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
             ps = con.prepareStatement(stmt.toString());
             result = ps.executeQuery();
 
@@ -1027,7 +1020,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
         try {
             // First SQL statement, changing all temporaty revoked certificates to permanently revoked certificates
-            con = getConnection();
+            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
             ps = con.prepareStatement(firstsqlstatement);
             ps.setInt(1, CertificateDataBean.CERT_REVOKED); // first statusfield
             ps.setString(2, bcdn); // issuerdn field
@@ -1097,7 +1090,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * by the serialnumber.
      *
      * @param admin
-     * @param issuer the subjectDN of a CA certificate
+     * @param issuerDN the subjectDN of a CA certificate
      * @param sernos a collection of certificate serialnumbers
      * @return Collection a collection of {@link RevokedCertInfo} objects which
      *         reflect the revocation status of the given certificates.
@@ -1154,7 +1147,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
              * in the StringBuffer we remove the two chars here :)
              */
             sb.delete(0, ", ".length());
-            con = getConnection();
+            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
             ps = con.prepareStatement("SELECT DISTINCT serialNumber, revocationDate, revocationReason, status"
                     + " FROM CertificateData WHERE"
                     + " issuerDN = '" + dn + "'"
@@ -1300,7 +1293,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         ;
         ResultSet result = null;
         try {
-            con = getConnection();
+            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
             ps = con.prepareStatement("select MAX(CRLNumber) from CRLData where issuerDN=?");
             ps.setString(1, issuerdn);
             result = ps.executeQuery();
