@@ -54,13 +54,13 @@ The following is only if you want to replace the default database with another.
 The description given here is for JBoss 3.x. Consider consulting the
 official JBoss documentation.
 
-Database configuration files in JBoss (with Tomcat or Jetty) are located in the
+Database configuration files in JBoss are located in the
 <jboss-home>/server/default/deploy.
 
 1. Install and setup the database your database.
 
 2. Create a database for EJBCA (that is obviouslly the one you defined in .ejbca.properties)
-Check your database documentation for more info (I know it is boring)
+Check your database documentation for more info (I know it is boring).
 
 Typically for postgres: 'createdb -U postgres ejbca "database for ejbca"' will create
 a database named 'ejbca' with description "database for ejbca" and with user postgres.
