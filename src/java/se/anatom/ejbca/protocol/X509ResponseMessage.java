@@ -14,7 +14,7 @@ import java.security.cert.X509Certificate;
 /**
  * A response message consisting of a single X509 Certificate.
  *
- * @version $Id: X509ResponseMessage.java,v 1.7 2003-07-21 13:09:33 anatom Exp $
+ * @version $Id: X509ResponseMessage.java,v 1.8 2003-07-21 14:18:30 anatom Exp $
  */
 public class X509ResponseMessage implements IResponseMessage {
     /** Certificate to be in response message, */
@@ -168,6 +168,14 @@ public class X509ResponseMessage implements IResponseMessage {
      * @param transactionId transaction id
      */
     public void setTransactionId(String transactionId) {
+    }
+
+    /**
+     * Sets recipient key info, key id or similar. This is usually the request key info from the request message.
+     *
+     * @param recipient key info
+     */
+    public void setRecipientKeyInfo(byte[] recipientKeyInfo) {
     }
     
 }

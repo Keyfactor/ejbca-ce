@@ -34,7 +34,7 @@ import se.anatom.ejbca.util.Hex;
  * TODO: extract senderNonce 
  * TODO: extract transactionId
  *
- * @version $Id: ScepRequestMessage.java,v 1.20 2003-07-21 13:09:33 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.21 2003-07-21 14:18:30 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage,
     Serializable {
@@ -73,6 +73,9 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
     /** transaction id */
     private String transactionId = null;
+
+    /** request key info, this is the requestors self-signed certificate used to identify the senders public key */
+    private byte[] requestKeyInfo = null;
 
     /** Type of error */
     private int error = 0;
@@ -128,6 +131,12 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
             // (could also be pkcsRepSigned or certOnly, but we don't receive them on the server side
             // Try to find out what kind of message this is
             sd = new SignedData((ASN1Sequence) ci.getContent());
+
+            // Get self signed cert to identify the senders public key
+            ASN1Set certs = sd.getCertificates();
+            // TODO!
+            // Requestors self-signed certificate is requestKeyInfo
+            //requestKeyInfo = cert.toByteArray();
 
             Enumeration sis = sd.getSignerInfos().getObjects();
 
@@ -477,6 +486,15 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      */
     public String getTransactionId() {
         return transactionId;
+    }
+
+    /**
+     * Returns requesters key info, key id or similar
+     *
+     * @return request key info
+     */
+    public byte[] getRequestKeyInfo() {
+        return requestKeyInfo;
     }
     
     //

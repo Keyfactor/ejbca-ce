@@ -30,7 +30,7 @@ import java.security.cert.X509Certificate;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.16 2003-07-21 13:09:33 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.17 2003-07-21 14:18:30 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(PKCS10RequestMessage.class);
@@ -299,6 +299,15 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
      * @return transaction id
      */
     public String getTransactionId() {
+        return null;
+    }
+    
+    /**
+     * Returns requesters key info, key id or similar
+     *
+     * @return request key info
+     */
+    public byte[] getRequestKeyInfo() {
         return null;
     }
 }

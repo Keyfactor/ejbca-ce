@@ -12,6 +12,7 @@ import java.security.cert.CertStore;
 import java.security.cert.CertStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509Certificate;
 
@@ -38,11 +39,12 @@ import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 
 import se.anatom.ejbca.util.Hex;
+import se.anatom.ejbca.util.CertTools;
 
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.6 2003-07-21 13:09:33 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.7 2003-07-21 14:18:30 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage, Serializable {
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);
@@ -64,11 +66,13 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
      * RecipientNonce in a response is the senderNonce from the request. This is hex encoded bytes
      */
     private String recipientNonce = null;
-
     
     /** transaction id */
     private String transactionId = null;
 
+    /** recipient key identifier, usually IssuerAndSerialno in X509 world. */
+    private byte[] recipientKeyInfo = null;
+    
     /** The un-encoded response message itself */
     private transient CMSSignedData signedData = null;
 
@@ -179,7 +183,16 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
 
             if (status == IResponseMessage.STATUS_OK) {
-                edGen.addKeyTransRecipient((X509Certificate) cert);
+                if (recipientKeyInfo != null) {
+                    try {
+                    X509Certificate rec = CertTools.getCertfromByteArray(recipientKeyInfo);
+                    edGen.addKeyTransRecipient(rec);
+                    } catch (CertificateException e) {
+                        throw new IOException("Can not decode recipients self signed certificate!");
+                    }
+                } else {
+                    edGen.addKeyTransRecipient((X509Certificate) cert);
+                }
             }
 
             //CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(s.getEncoded()),
@@ -351,6 +364,15 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
      */
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
+    }
+    
+    /**
+     * Sets recipient key info, key id or similar. This is the requestors self-signed cert from the request message.
+     *
+     * @param recipient key info
+     */
+    public void setRecipientKeyInfo(byte[] recipientKeyInfo) {
+        this.recipientKeyInfo = recipientKeyInfo;
     }
     
 }

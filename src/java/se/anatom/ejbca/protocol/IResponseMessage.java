@@ -18,7 +18,7 @@ import java.security.cert.X509Certificate;
  * (resp.requireEncKeyInfo()) { resp.setEncKeyInfo(enccert,enckey) }; resp.create(); byte[]
  * responseMessage = resp.getResponseMessage(); </code>
  *
- * @version $Id: IResponseMessage.java,v 1.6 2003-07-21 13:09:33 anatom Exp $
+ * @version $Id: IResponseMessage.java,v 1.7 2003-07-21 14:18:30 anatom Exp $
  */
 public interface IResponseMessage {
     public final int STATUS_OK = 0;
@@ -144,5 +144,11 @@ public interface IResponseMessage {
      * @param transactionId transaction id
      */
     public void setTransactionId(String transactionId);
-    
+
+    /**
+     * Sets recipient key info, key id or similar. This is usually the request key info from the request message.
+     *
+     * @param recipient key info
+     */
+    public void setRecipientKeyInfo(byte[] recipientKeyInfo);
 }
