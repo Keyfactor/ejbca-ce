@@ -10,7 +10,7 @@ import se.anatom.ejbca.log.Admin;
 
 /**
  *
- * @version $Id: IAuthorizationSessionRemote.java,v 1.8 2003-01-12 17:16:30 anatom Exp $
+ * @version $Id: IAuthorizationSessionRemote.java,v 1.9 2003-01-19 09:40:14 herrvendil Exp $
  */
 public interface IAuthorizationSessionRemote extends javax.ejb.EJBObject {
     
@@ -29,6 +29,14 @@ public interface IAuthorizationSessionRemote extends javax.ejb.EJBObject {
      * 
      */
     public boolean isAuthorized(AdminInformation admininformation, String resource) throws RemoteException, AuthorizationDeniedException;
+    
+     /** 
+     * Method to check if a user is authorized to a certain resource without performing any logging.
+     *
+     * @param admininformation can be a certificate or special user, see AdminInformation class.
+     * 
+     */
+    public boolean isAuthorizedNoLog(AdminInformation admininformation, String resource) throws RemoteException, AuthorizationDeniedException;
     
     /** 
      * Method to validate, verify and check revokation of a users certificate.

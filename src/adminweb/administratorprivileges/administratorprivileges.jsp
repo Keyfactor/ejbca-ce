@@ -58,10 +58,9 @@
 %>
 <% 
   boolean admingroupexists = false;
-  boolean trytoeditspecialgroup = false;
 
   // Initialize environment
-  String includefile = null;
+  String includefile = "editadmingroups.jsp";
   GlobalConfiguration globalconfiguration =ejbcawebbean.initialize(request, "/system_functionallity/edit_administrator_privileges"); 
                                                  rabean.initialize(request); 
   String THIS_FILENAME            =  globalconfiguration.getAuthorizationPath()  + "/administratorprivileges.jsp";
@@ -82,15 +81,8 @@
           // Display adminentity jsp page.
          admingroup = request.getParameter(SELECT_ADMINGROUPS);
          if(admingroup != null){
-           if(!admingroup.trim().equals("")){
-             if(!admingroup.equals(AdminGroup.SPECIALADMINGROUP_PUBLICWEBADMIN) && !admingroup.equals(AdminGroup.SPECIALADMINGROUP_CACOMMANDLINEADMIN)
-                && !admingroup.equals(AdminGroup.SPECIALADMINGROUP_RACOMMANDLINEADMIN)){      
+           if(!admingroup.trim().equals("")){  
                  includefile="editadminentities.jsp"; 
-             }
-             else{
-               admingroup = null;
-               trytoeditspecialgroup = true;
-             }
            }
            else{ 
              admingroup= null;
@@ -119,15 +111,8 @@
           // Delete admingroup and display main group editing page. 
           admingroup = request.getParameter(SELECT_ADMINGROUPS);
           if(admingroup != null){
-            if(!admingroup.trim().equals("")){
-              if(!admingroup.equals(AdminGroup.SPECIALADMINGROUP_PUBLICWEBADMIN) && !admingroup.equals(AdminGroup.SPECIALADMINGROUP_CACOMMANDLINEADMIN)
-                 && !admingroup.equals(AdminGroup.SPECIALADMINGROUP_RACOMMANDLINEADMIN)){           
+            if(!admingroup.trim().equals("")){       
                    adh.removeAdminGroup(admingroup);
-               }
-               else{
-                 admingroup = null;
-                 trytoeditspecialgroup = true;
-               }
             }
           }
           includefile="editadmingroups.jsp";             
@@ -137,17 +122,10 @@
        String newadmingroup = request.getParameter(TEXTFIELD_GROUPNAME);
        String oldadmingroup = request.getParameter(SELECT_ADMINGROUPS);
        if(oldadmingroup != null && newadmingroup != null){
-         if(!newadmingroup.trim().equals("") && !oldadmingroup.trim().equals("")){
-           if(!oldadmingroup.equals(AdminGroup.SPECIALADMINGROUP_PUBLICWEBADMIN) && !oldadmingroup.equals(AdminGroup.SPECIALADMINGROUP_CACOMMANDLINEADMIN)
-                 && !oldadmingroup.equals(AdminGroup.SPECIALADMINGROUP_RACOMMANDLINEADMIN) && !newadmingroup.equals(AdminGroup.SPECIALADMINGROUP_PUBLICWEBADMIN)
-                 && !newadmingroup.equals(AdminGroup.SPECIALADMINGROUP_CACOMMANDLINEADMIN) && !newadmingroup.equals(AdminGroup.SPECIALADMINGROUP_RACOMMANDLINEADMIN) ){      
+         if(!newadmingroup.trim().equals("") && !oldadmingroup.trim().equals("")){    
              try{
                adh.renameAdminGroup(oldadmingroup, newadmingroup);
              }catch(AdmingroupExistsException e){ admingroupexists = true;}
-           }else{
-              admingroup = null;
-              trytoeditspecialgroup = true; 
-           }
          }
        }      
           includefile="editadmingroups.jsp"; 
@@ -157,16 +135,9 @@
          admingroup = request.getParameter(TEXTFIELD_GROUPNAME);
          if(admingroup != null){
            if(!admingroup.trim().equals("")){
-             if(!admingroup.equals(AdminGroup.SPECIALADMINGROUP_PUBLICWEBADMIN) && !admingroup.equals(AdminGroup.SPECIALADMINGROUP_CACOMMANDLINEADMIN)
-                 && !admingroup.equals(AdminGroup.SPECIALADMINGROUP_RACOMMANDLINEADMIN)){     
-               try{
-                 adh.addAdminGroup(admingroup);
-               }catch(AdmingroupExistsException e){ admingroupexists = true; }
-             }
-             else{
-              admingroup = null;
-              trytoeditspecialgroup = true;  
-             }
+             try{
+               adh.addAdminGroup(admingroup);
+             }catch(AdmingroupExistsException e){ admingroupexists = true; }
            }      
          }
          includefile="editadmingroups.jsp"; 
@@ -203,11 +174,7 @@
         }
      }
   }
-  else{ 
-    // Display main admin group editing page. 
-          includefile="editadmingroups.jsp"; 
 
-  }
  // Include page
   if( includefile.equals("editadmingroups.jsp")){ %>
    <%@ include file="editadmingroups.jsp" %>

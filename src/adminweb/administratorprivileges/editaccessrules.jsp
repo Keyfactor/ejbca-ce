@@ -106,10 +106,7 @@
   <div align="right"><A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOADMINGROUPS") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <input type="hidden" name='<%= HIDDEN_GROUPNAME %>' value='<%= admingroup %>'>
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ADMINENTITIES%>'>
-    <% if(!admingroup.equals(AdminGroup.SPECIALADMINGROUP_PUBLICWEBADMIN) && !admingroup.equals(AdminGroup.SPECIALADMINGROUP_CACOMMANDLINEADMIN)
-          && !admingroup.equals(AdminGroup.SPECIALADMINGROUP_RACOMMANDLINEADMIN)){ %>
     <A href='javascript:document.toadminentities.submit();'><u><%= ejbcawebbean.getText("EDITADMINS") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <% } %>
     <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("authorization_help.html") + "#accessrules" %>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A>
   </div>

@@ -9,7 +9,7 @@ import se.anatom.ejbca.ra.UserAdminData;
 /** List users with specified status in the database.
  *
  * @see se.anatom.ejbca.ra.UserDataLocal
- * @version $Id: RaListUsersCommand.java,v 1.5 2003-01-12 17:16:31 anatom Exp $
+ * @version $Id: RaListUsersCommand.java,v 1.6 2003-01-19 09:40:13 herrvendil Exp $
  */
 public class RaListUsersCommand extends BaseRaAdminCommand {
 
@@ -30,7 +30,7 @@ public class RaListUsersCommand extends BaseRaAdminCommand {
             Iterator iter = coll.iterator();
             while (iter.hasNext()) {
                 UserAdminData data = (UserAdminData)iter.next();
-                System.out.println("User: "+data.getUsername()+", \""+data.getDN()+"\", "+data.getEmail()+", "+data.getStatus()+", "+data.getType());
+                System.out.println("User: "+data.getUsername()+", \""+data.getDN()+"\", \"" +data.getSubjectAltName()+ "\", " +data.getEmail()+", "+data.getStatus()+", "+data.getType() + ", " +data.getTokenType());
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

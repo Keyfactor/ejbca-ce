@@ -12,7 +12,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * Matchtype constants tells under which contitions the match shall be performed.
  *
  * @author  Philip Vendil
- * @version $Id: AdminEntity.java,v 1.2 2003-01-12 17:16:30 anatom Exp $
+ * @version $Id: AdminEntity.java,v 1.3 2003-01-19 09:40:14 herrvendil Exp $
  */
 public class AdminEntity implements Serializable, Comparable {
     // Special Users. (Constants cannot have 0 value).
@@ -39,10 +39,11 @@ public class AdminEntity implements Serializable, Comparable {
     public static final int WITH_LOCALE            = 4;
     public static final int WITH_ORGANIZATION      = 5;
     public static final int WITH_ORGANIZATIONUNIT  = 6;
-    public static final int WITH_TITLE             = 7;     
-    public static final int WITH_DNSERIALNUMBER    = 8;    
-    public static final int WITH_COMMONNAME        = 9;
-    public static final int WITH_SERIALNUMBER      = 10;
+    public static final int WITH_TITLE             = 7; 
+    public static final int WITH_COMMONNAME        = 8; 
+    public static final int WITH_UID               = 9;    
+    public static final int WITH_DNSERIALNUMBER    = 10;    
+    public static final int WITH_SERIALNUMBER      = 11;
 
 
     /** Creates a new instance of AdminEntity */
@@ -89,35 +90,38 @@ public class AdminEntity implements Serializable, Comparable {
            }                     
         }
         else{          
-          parameter = DNFieldExtractor.COMMONNAME;  
+          parameter = DNFieldExtractor.CN;  
           switch(matchwith){
             case WITH_COUNTRY:
-              parameter = DNFieldExtractor.COUNTRY;
+              parameter = DNFieldExtractor.C;
               break;
             case WITH_DOMAINCOMPONENT:
-              parameter = DNFieldExtractor.DOMAINCOMPONENT;
+              parameter = DNFieldExtractor.DC;
               break;              
              case WITH_STATE:    
-              parameter = DNFieldExtractor.LOCALE;
+              parameter = DNFieldExtractor.L;
               break;
             case WITH_LOCALE:
-              parameter = DNFieldExtractor.STATE;
+              parameter = DNFieldExtractor.ST;
               break;              
             case WITH_ORGANIZATION:
-              parameter = DNFieldExtractor.ORGANIZATION;
+              parameter = DNFieldExtractor.O;
               break;
            case WITH_ORGANIZATIONUNIT:
-              parameter = DNFieldExtractor.ORGANIZATIONUNIT;
+              parameter = DNFieldExtractor.OU;
               break;
            case WITH_TITLE:
-              parameter = DNFieldExtractor.TITLE;
+              parameter = DNFieldExtractor.T;
               break;
            case WITH_DNSERIALNUMBER:
-              parameter = DNFieldExtractor.SERIALNUMBER;
+              parameter = DNFieldExtractor.SN;
               break;
            case WITH_COMMONNAME:
-              parameter = DNFieldExtractor.COMMONNAME;
-              break;              
+              parameter = DNFieldExtractor.CN;
+              break;   
+           case WITH_UID:
+              parameter = DNFieldExtractor.UID;
+              break;               
            default:
           }
           size = dn.getNumberOfFields(parameter);

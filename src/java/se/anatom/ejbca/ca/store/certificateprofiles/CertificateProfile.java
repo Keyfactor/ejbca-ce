@@ -11,12 +11,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
-
+import se.anatom.ejbca.SecConst;
 /**
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiless.
  *
  * @author  TomSelleck
- * @version $Id: CertificateProfile.java,v 1.6 2003-01-12 17:16:29 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.7 2003-01-19 09:40:14 herrvendil Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
@@ -37,9 +37,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final String TRUE  = "true";
     public static final String FALSE = "false";
 
-    public static final int TYPE_ENDENTITY  = 0;
-    public static final int TYPE_CA         = 1;
-    public static final int TYPE_ROOTCA     = 2;
+    public static final int TYPE_ENDENTITY  = SecConst.CERTTYPE_ENDENTITY;
+    public static final int TYPE_CA         = SecConst.CERTTYPE_CA;
+    public static final int TYPE_ROOTCA     = SecConst.CERTTYPE_ROOTCA;
     public static final int NUMBER_OF_TYPES = 3;
 
     /** Supported certificate versions. */

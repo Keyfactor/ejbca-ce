@@ -61,13 +61,13 @@
   <env-entry>
     <description>Defines the available languages by languagecodes separated with a comma </description>
     <env-entry-name>AVAILABLELANGUAGES</env-entry-name>
-    <env-entry-value>EN, SE</env-entry-value>
+    <env-entry-value>EN</env-entry-value>
     <env-entry-type>java.lang.String</env-entry-type>
   </env-entry>
   <env-entry>
     <description>Defines the available themes by css-filenames separated with a comma </description>
     <env-entry-name>AVAILABLETHEMES</env-entry-name>
-    <env-entry-value>default_theme.css, second_theme.css</env-entry-value>
+    <env-entry-value>default_theme.css</env-entry-value>
     <env-entry-type>java.lang.String</env-entry-type>
   </env-entry>
   <env-entry>

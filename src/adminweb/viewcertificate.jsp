@@ -9,10 +9,13 @@
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <jsp:useBean id="rabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
 <jsp:setProperty name="rabean" property="*" /> 
+<jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
+<jsp:setProperty name="cabean" property="*" /> 
 <%! // Declarations
  
   static final String USER_PARAMETER             = "username";
   static final String CERTSERNO_PARAMETER        = "certsernoparameter";
+  static final String CACERT_PARAMETER           = "cacert";
 
 
   static final String BUTTON_CLOSE               = "buttonclose"; 
@@ -40,10 +43,13 @@
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ca_functionallity/view_certificate"); 
                                             rabean.initialize(request);
+                                            cabean.initialize(request); 
+
   String THIS_FILENAME            =  globalconfiguration.getAdminWebPath()  + "viewcertificate.jsp";
 
   boolean noparameter             = true;
   boolean notauthorized           = true;
+  boolean cacerts                 = false;
   CertificateView certificatedata = null;
   String certificateserno         = null;
   String username                 = null;         
@@ -52,31 +58,40 @@
   
   if( request.getParameter(USER_PARAMETER ) != null){
      username = request.getParameter(USER_PARAMETER );
+     try{  
+       rabean.loadCertificates(username);
+       notauthorized = false;
+     }catch(AuthorizationDeniedException e){}
      noparameter = false;
   }
 
   if( request.getParameter(CERTSERNO_PARAMETER ) != null){
      certificateserno = request.getParameter(CERTSERNO_PARAMETER );
+     try{  
+       rabean.loadCertificates(new BigInteger(certificateserno,16)); 
+       notauthorized = false;
+     }catch(AuthorizationDeniedException e){}
      noparameter = false;
+  }
+  if( request.getParameter(CACERT_PARAMETER ) != null){
+     currentindex = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
+     try{  
+       ejbcawebbean.isAuthorizedNoLog("/ca_functionallity/basic_functions");
+       rabean.loadCACertificates(cabean.getCAInfo()); 
+       notauthorized = false;
+     }catch(AuthorizationDeniedException e){}
+     noparameter = false;
+     cacerts = true;
   }
 
   if(!noparameter){
     if(request.getParameter(BUTTON_VIEW_PREVIOUS) == null && request.getParameter(BUTTON_VIEW_NEXT) == null && 
        request.getParameter(BUTTON_REVOKE) == null){
-      // load certificates and get the one with latest expiring date.
-      try{
-        if(username != null)
-          rabean.loadCertificates(username);
-        else
-          rabean.loadCertificates(new BigInteger(certificateserno,16));
-        notauthorized = false;
-      }catch(AuthorizationDeniedException e){
-      }
       numberofcertificates = rabean.getNumberOfCertificates();
       if(numberofcertificates > 0)
-        certificatedata = rabean.getCertificate(0);
+        certificatedata = rabean.getCertificate(currentindex);
     }
-    if(request.getParameter(BUTTON_REVOKE) != null && request.getParameter(HIDDEN_INDEX)!= null){
+    if(request.getParameter(BUTTON_REVOKE) != null && request.getParameter(HIDDEN_INDEX)!= null && !cacerts){
       currentindex = Integer.parseInt(request.getParameter(HIDDEN_INDEX)); 
       int reason = Integer.parseInt(request.getParameter(SELECT_REVOKE_REASON));
       certificatedata = rabean.getCertificate(currentindex);
@@ -341,7 +356,9 @@ function confirmrevokation(){
        <tr id="Row0">
           <td>&nbsp;</td>
           <td>
-       <% if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) && !certificatedata.isRevoked()){ %>
+       <% 
+            if(!cacerts && rabean.authorizedToRevokeCert(certificatedata) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
+               && !certificatedata.isRevoked()){ %>
         <input type="submit" name="<%=BUTTON_REVOKE %>" value="<%= ejbcawebbean.getText("REVOKE") %>"
                onClick='return confirmrevokation()'><br>
         <select name="<%=SELECT_REVOKE_REASON %>" >
@@ -350,7 +367,7 @@ function confirmrevokation(){
                <option value='<%= i%>'><%= ejbcawebbean.getText(RevokedInfoView.reasontexts[i]) %></option>
           <%   } 
              }
-          }%> 
+           }%> 
         </select>
           &nbsp;
           </td>

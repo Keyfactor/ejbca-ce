@@ -4,6 +4,16 @@
    String[] connectorreferences = {"AND","OR","ANDNOT","ORNOT"};
    String[] monthreferences     = {"MONTHJAN","MONTHFEB","MONTHMAR","MONTHAPR","MONTHMAY","MONTHJUN","MONTHJUL","MONTHAUG","MONTHSEP"
                                   ,"MONTHOCT","MONTHNOV","MONTHDEC"};
+   int[] matchwithfields        = {UserMatch.MATCH_WITH_USERNAME, UserMatch.MATCH_WITH_UID, UserMatch.MATCH_WITH_COMMONNAME, UserMatch.MATCH_WITH_DNSERIALNUMBER, 
+                                   UserMatch.MATCH_WITH_GIVENNAME,UserMatch.MATCH_WITH_INITIALS, UserMatch.MATCH_WITH_SURNAME, UserMatch.MATCH_WITH_TITLE, 
+                                   UserMatch.MATCH_WITH_ORGANIZATIONUNIT, UserMatch.MATCH_WITH_ORGANIZATION , UserMatch.MATCH_WITH_LOCALE, UserMatch.MATCH_WITH_STATE,
+                                   UserMatch.MATCH_WITH_DOMAINCOMPONENT, UserMatch.MATCH_WITH_COUNTRY, UserMatch.MATCH_WITH_EMAIL, 
+                                   UserMatch.MATCH_WITH_STATUS, UserMatch.MATCH_WITH_ENDENTITYPROFILE, UserMatch.MATCH_WITH_CERTIFICATEPROFILE};
+                                   
+   String[] matchwithtexts      = {"MATCHUSERNAME", "MATCHUID", "MATCHCOMMONNAME", "MATCHDNSERIALNUMBER", "MATCHGIVENNAME", "MATCHINITIALS", "MATCHSURNAME",
+                                   "MATCHTITLE", "MATCHORGANIZATIONUNIT", "MATCHORGANIZATION", "MATCHLOCALE", "MATCHSTATE", "MATCHDOMAINCOMPONENT",
+                                   "MATCHCOUNTRY", "MATCHEMAIL", "MATCHSTATUS", "MATCHENDENTITYPROFILE", "MATCHCERTIFICATEPROFILE"};
+
    Calendar calendar = Calendar.getInstance();
    int dayofmonth    = calendar.get(Calendar.DAY_OF_MONTH);
    int month         = calendar.get(Calendar.MONTH);
@@ -191,62 +201,13 @@ function changematchfields(row){
         <select name="<%=SELECT_MATCHWITH_ROW1 %>" onchange='changematchfields(1)' >
            <option  value='<%= VALUE_NONE %>'><%= ejbcawebbean.getText("NONE") %>
            </option>
-           <option <%  if(tempval == UserMatch.MATCH_WITH_USERNAME)
+           <% for(int i =0; i < matchwithfields.length;i++){ %>
+  
+           <option <%  if(tempval == matchwithfields[i])
                          out.write(" selected ");
-                    %> value='<%= Integer.toString(UserMatch.MATCH_WITH_USERNAME) %>'><%= ejbcawebbean.getText("MATCHUSERNAME") %>
+                    %> value='<%= matchwithfields[i] %>'><%= ejbcawebbean.getText(matchwithtexts[i]) %>
            </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_COMMONNAME)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_COMMONNAME) %>'><%= ejbcawebbean.getText("MATCHCOMMONNAME") %>
-           </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_DNSERIALNUMBER)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_DNSERIALNUMBER) %>'><%= ejbcawebbean.getText("MATCHDNSERIALNUMBER") %>
-           </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_TITLE)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_TITLE) %>'><%= ejbcawebbean.getText("MATCHTITLE") %>
-           </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_ORGANIZATIONUNIT)
-                         out.write(" selected ");
-                         %> value='<%= Integer.toString(UserMatch.MATCH_WITH_ORGANIZATIONUNIT) %>'><%= ejbcawebbean.getText("MATCHORGANIZATIONUNIT") %>
-           </option>
-           <option <%if(tempval == UserMatch.MATCH_WITH_ORGANIZATION)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_ORGANIZATION) %>'><%= ejbcawebbean.getText("MATCHORGANIZATION") %>
-           </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_LOCALE)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_LOCALE) %>'><%= ejbcawebbean.getText("MATCHLOCALE") %>
-           </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_STATE)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_STATE) %>'><%= ejbcawebbean.getText("MATCHSTATE") %>
-          </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_DOMAINCOMPONENT)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_DOMAINCOMPONENT) %>'><%= ejbcawebbean.getText("MATCHDOMAINCOMPONENT") %>
-          </option>
-          <option <%if(tempval == UserMatch.MATCH_WITH_COUNTRY)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_COUNTRY) %>'><%= ejbcawebbean.getText("MATCHCOUNTRY") %>
-          </option>
-          <option <%if(tempval == UserMatch.MATCH_WITH_EMAIL)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_EMAIL) %>'><%= ejbcawebbean.getText("MATCHEMAIL") %>
-          </option>
-          <option <% if(tempval == UserMatch.MATCH_WITH_STATUS)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_STATUS) %>'><%= ejbcawebbean.getText("MATCHSTATUS") %>
-          </option>
-          <option <% if(tempval == UserMatch.MATCH_WITH_ENDENTITYPROFILE)
-                         out.write(" selected ");
-                    %> value='<%= Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE) %>'><%= ejbcawebbean.getText("MATCHENDENTITYPROFILE") %>
-          </option>
-          <option <%if(tempval == UserMatch.MATCH_WITH_CERTIFICATEPROFILE)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE) %>'><%= ejbcawebbean.getText("MATCHCERTIFICATEPROFILE") %>
-          </option> 
+           <% } %>
         </select> &nbsp;&nbsp;
           <%
            tempval = -1;
@@ -377,62 +338,13 @@ function changematchfields(row){
         <select name="<%=SELECT_MATCHWITH_ROW2 %>" onchange='changematchfields(2)' >
            <option  value='<%= VALUE_NONE %>'><%= ejbcawebbean.getText("NONE") %>
            </option>
-           <option <%  if(tempval == UserMatch.MATCH_WITH_USERNAME)
+           <% for(int i =0; i < matchwithfields.length;i++){ %>
+  
+           <option <%  if(tempval == matchwithfields[i])
                          out.write(" selected ");
-                    %> value='<%= Integer.toString(UserMatch.MATCH_WITH_USERNAME) %>'><%= ejbcawebbean.getText("MATCHUSERNAME") %>
+                    %> value='<%= matchwithfields[i] %>'><%= ejbcawebbean.getText(matchwithtexts[i]) %>
            </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_COMMONNAME)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_COMMONNAME) %>'><%= ejbcawebbean.getText("MATCHCOMMONNAME") %>
-           </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_DNSERIALNUMBER)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_DNSERIALNUMBER) %>'><%= ejbcawebbean.getText("MATCHDNSERIALNUMBER") %>
-           </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_TITLE)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_TITLE) %>'><%= ejbcawebbean.getText("MATCHTITLE") %>
-           </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_ORGANIZATIONUNIT)
-                         out.write(" selected ");
-                         %> value='<%= Integer.toString(UserMatch.MATCH_WITH_ORGANIZATIONUNIT) %>'><%= ejbcawebbean.getText("MATCHORGANIZATIONUNIT") %>
-           </option>
-           <option <%if(tempval == UserMatch.MATCH_WITH_ORGANIZATION)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_ORGANIZATION) %>'><%= ejbcawebbean.getText("MATCHORGANIZATION") %>
-           </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_LOCALE)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_LOCALE) %>'><%= ejbcawebbean.getText("MATCHLOCALE") %>
-           </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_STATE)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_STATE) %>'><%= ejbcawebbean.getText("MATCHSTATE") %>
-          </option>
-          <option <% if(tempval == UserMatch.MATCH_WITH_DOMAINCOMPONENT)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_DOMAINCOMPONENT) %>'><%= ejbcawebbean.getText("MATCHDOMAINCOMPONENT") %>
-          </option>
-          <option <%if(tempval == UserMatch.MATCH_WITH_COUNTRY)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_COUNTRY) %>'><%= ejbcawebbean.getText("MATCHCOUNTRY") %>
-          </option>
-          <option <%if(tempval == UserMatch.MATCH_WITH_EMAIL)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_EMAIL) %>'><%= ejbcawebbean.getText("MATCHEMAIL") %>
-          </option>
-          <option <% if(tempval == UserMatch.MATCH_WITH_STATUS)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_STATUS) %>'><%= ejbcawebbean.getText("MATCHSTATUS") %>
-          </option>
-          <option <% if(tempval == UserMatch.MATCH_WITH_ENDENTITYPROFILE)
-                         out.write(" selected ");
-                    %> value='<%= Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE) %>'><%= ejbcawebbean.getText("MATCHENDENTITYPROFILE") %>
-          </option>
-          <option <%if(tempval == UserMatch.MATCH_WITH_CERTIFICATEPROFILE)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE) %>'><%= ejbcawebbean.getText("MATCHCERTIFICATEPROFILE") %>
-          </option> 
+           <% } %>
         </select> &nbsp;&nbsp;
           <%
            tempval = -1;
@@ -554,62 +466,12 @@ function changematchfields(row){
         <select name="<%=SELECT_MATCHWITH_ROW3 %>" onchange='changematchfields(3)' >
            <option  value='<%= VALUE_NONE %>'><%= ejbcawebbean.getText("NONE") %>
            </option>
-           <option <%  if(tempval == UserMatch.MATCH_WITH_USERNAME)
+           <% for(int i =0; i < matchwithfields.length;i++){ %>
+           <option <%  if(tempval == matchwithfields[i])
                          out.write(" selected ");
-                    %> value='<%= Integer.toString(UserMatch.MATCH_WITH_USERNAME) %>'><%= ejbcawebbean.getText("MATCHUSERNAME") %>
+                    %> value='<%= matchwithfields[i] %>'><%= ejbcawebbean.getText(matchwithtexts[i]) %>
            </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_COMMONNAME)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_COMMONNAME) %>'><%= ejbcawebbean.getText("MATCHCOMMONNAME") %>
-           </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_DNSERIALNUMBER)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_DNSERIALNUMBER) %>'><%= ejbcawebbean.getText("MATCHDNSERIALNUMBER") %>
-           </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_TITLE)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_TITLE) %>'><%= ejbcawebbean.getText("MATCHTITLE") %>
-           </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_ORGANIZATIONUNIT)
-                         out.write(" selected ");
-                         %> value='<%= Integer.toString(UserMatch.MATCH_WITH_ORGANIZATIONUNIT) %>'><%= ejbcawebbean.getText("MATCHORGANIZATIONUNIT") %>
-           </option>
-           <option <%if(tempval == UserMatch.MATCH_WITH_ORGANIZATION)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_ORGANIZATION) %>'><%= ejbcawebbean.getText("MATCHORGANIZATION") %>
-           </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_LOCALE)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_LOCALE) %>'><%= ejbcawebbean.getText("MATCHLOCALE") %>
-           </option>
-           <option <% if(tempval == UserMatch.MATCH_WITH_STATE)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_STATE) %>'><%= ejbcawebbean.getText("MATCHSTATE") %>
-          </option>
-          <option <% if(tempval == UserMatch.MATCH_WITH_DOMAINCOMPONENT)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_DOMAINCOMPONENT) %>'><%= ejbcawebbean.getText("MATCHDOMAINCOMPONENT") %>
-          </option>
-          <option <%if(tempval == UserMatch.MATCH_WITH_COUNTRY)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_COUNTRY) %>'><%= ejbcawebbean.getText("MATCHCOUNTRY") %>
-          </option>
-          <option <%if(tempval == UserMatch.MATCH_WITH_EMAIL)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_EMAIL) %>'><%= ejbcawebbean.getText("MATCHEMAIL") %>
-          </option>
-          <option <% if(tempval == UserMatch.MATCH_WITH_STATUS)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_STATUS) %>'><%= ejbcawebbean.getText("MATCHSTATUS") %>
-          </option>
-          <option <% if(tempval == UserMatch.MATCH_WITH_ENDENTITYPROFILE)
-                         out.write(" selected ");
-                    %> value='<%= Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE) %>'><%= ejbcawebbean.getText("MATCHENDENTITYPROFILE") %>
-          </option>
-          <option <%if(tempval == UserMatch.MATCH_WITH_CERTIFICATEPROFILE)
-                         out.write(" selected ");
-                     %> value='<%= Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE) %>'><%= ejbcawebbean.getText("MATCHCERTIFICATEPROFILE") %>
-          </option> 
+           <% } %>
         </select> &nbsp;&nbsp;
           <%
            tempval = -1;

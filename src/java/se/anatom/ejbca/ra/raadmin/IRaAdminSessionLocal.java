@@ -10,7 +10,7 @@ import se.anatom.ejbca.log.Admin;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: IRaAdminSessionLocal.java,v 1.8 2003-01-12 17:16:33 anatom Exp $
+ * @version $Id: IRaAdminSessionLocal.java,v 1.9 2003-01-19 09:40:14 herrvendil Exp $
  * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
  */
 
@@ -35,6 +35,12 @@ public interface IRaAdminSessionLocal extends javax.ejb.EJBLocalObject
 
     public boolean changeAdminPreference(Admin admin, BigInteger serialnumber, AdminPreference adminpreference);
 
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */
+    
+    public boolean changeAdminPreferenceNoLog(Admin admin, BigInteger serialnumber, AdminPreference adminpreference);
+    
     /**
      * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */

@@ -23,9 +23,9 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores certificates and CRL in an LDAP v3 directory.
  *
  * <p>LDAP schema required:<br>
- * Certificates for USER_ENDUSER, USER_RA, USER_RAADMIN, USER_CAADMIN are published
+ * Certificates for CERTTYPE_ENDENTITY are published
  * as attribute 'userCertificate' in objectclass 'inetOrgPerson'.<br>
- * Certificates for USER_CA and USER_ROOTCA are published as attribute cACertificate in
+ * Certificates for CERTTYPE_CA and CERTTYPE_ROOTCA are published as attribute cACertificate in
  * objectclass 'certificationAuthority'.<br>
  * CRLs are published as attribute 'certificateRevocationList' in objectclass
  * 'certificationAuthority'.
@@ -47,7 +47,7 @@ import se.anatom.ejbca.log.LogEntry;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.14 2003-01-12 17:16:29 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.15 2003-01-19 09:40:13 herrvendil Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
 
@@ -304,8 +304,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         LDAPModificationSet modSet = null;
         LDAPAttributeSet attributeSet = null;
         String attribute = null, objectclass = null;
-        if ( ((type & SecConst.USER_ENDUSER) != 0) || ((type & SecConst.USER_CAADMIN) != 0) ||
-        ((type & SecConst.USER_RAADMIN) != 0) || ((type & SecConst.USER_RA) != 0) ) {
+        if ( type == SecConst.CERTTYPE_ENDENTITY ) {
             debug("Publishing end user certificate to "+ldapHost);
             if (oldEntry != null) {
                 // TODO: Are we the correct type objectclass?
@@ -334,7 +333,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                 }catch(RemoteException re){}
                 return false;
             }
-        } else if ( ((type & SecConst.USER_CA) != 0) || ((type & SecConst.USER_ROOTCA) != 0) ) {
+        } else if (type == SecConst.CERTTYPE_CA  || type == SecConst.CERTTYPE_ROOTCA) {
             debug("Publishing CA certificate to "+ldapHost);
             if (oldEntry != null)
                 modSet = getModificationSet(oldEntry, dn, false);

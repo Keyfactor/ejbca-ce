@@ -53,6 +53,14 @@ public class AdminPreferenceDataHandler {
         throw new AdminDoesntExistException("Admin doesn't exists in the database.");
 
     }
+    
+    /** Changes the admin preference for the given admin, without performing any logging. */
+    public void changeAdminPreferenceNoLog(BigInteger certificateserialnumber, AdminPreference adminpreference)
+                              throws AdminDoesntExistException, RemoteException {
+      if(!raadminsession.changeAdminPreferenceNoLog(administrator, certificateserialnumber, adminpreference))
+        throw new AdminDoesntExistException("Admin doesn't exists in the database.");
+
+    }    
 
     /** Checks if admin preference exists in database. */
     public boolean existsAdminPreference(BigInteger certificateserialnumber) throws RemoteException {

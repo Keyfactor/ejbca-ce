@@ -79,7 +79,7 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
           if(dnstring !=null){
             DNFieldExtractor dn = new DNFieldExtractor(dnstring, DNFieldExtractor.TYPE_SUBJECTDN);           
             logentrydata[ADMINCERTSERNO] = logentry.getAdminData();
-            logentrydata[ADMINDATA] = dn.getField(DNFieldExtractor.COMMONNAME,0) + ", " + dn.getField(DNFieldExtractor.ORGANIZATION,0);
+            logentrydata[ADMINDATA] = dn.getField(DNFieldExtractor.CN,0) + ", " + dn.getField(DNFieldExtractor.O,0);
           }  
        }else{
           if(logentry.getAdminType() == Admin.TYPE_PUBLIC_WEB_USER){
@@ -112,7 +112,7 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
           String dnstring = dnproxy.getSubjectDN(logentry.getCertificateSNR()); 
           if(dnstring != null){
             DNFieldExtractor dn = new DNFieldExtractor(dnstring, DNFieldExtractor.TYPE_SUBJECTDN); 
-            logentrydata[CERTIFICATE] = dn.getField(DNFieldExtractor.COMMONNAME,0) + ", " + dn.getField(DNFieldExtractor.ORGANIZATION,0);
+            logentrydata[CERTIFICATE] = dn.getField(DNFieldExtractor.CN,0) + ", " + dn.getField(DNFieldExtractor.O,0);
           }  
        }
        

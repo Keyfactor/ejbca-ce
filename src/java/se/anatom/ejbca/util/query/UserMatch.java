@@ -28,22 +28,26 @@ public class UserMatch extends BasicMatch {
     public final static int MATCH_WITH_ENDENTITYPROFILE    = 3; // Matches the profile id not profilename.
     public final static int MATCH_WITH_CERTIFICATEPROFILE  = 4; // Matches the certificatetype id not name.
         // Subject DN fields.
-    public final static int MATCH_WITH_COMMONNAME       = 100;
-    public final static int MATCH_WITH_DNSERIALNUMBER   = 101;    
-    public final static int MATCH_WITH_TITLE            = 102;      
-    public final static int MATCH_WITH_ORGANIZATIONUNIT = 103;
-    public final static int MATCH_WITH_ORGANIZATION     = 104;
-    public final static int MATCH_WITH_LOCALE           = 105;
-    public final static int MATCH_WITH_STATE            = 106;
-    public final static int MATCH_WITH_DOMAINCOMPONENT  = 107;      
-    public final static int MATCH_WITH_COUNTRY          = 108;    
+    public final static int MATCH_WITH_UID              = 100;    
+    public final static int MATCH_WITH_COMMONNAME       = 101;
+    public final static int MATCH_WITH_DNSERIALNUMBER   = 102;   
+    public final static int MATCH_WITH_GIVENNAME        = 103; 
+    public final static int MATCH_WITH_INITIALS         = 104; 
+    public final static int MATCH_WITH_SURNAME          = 105;      
+    public final static int MATCH_WITH_TITLE            = 106;      
+    public final static int MATCH_WITH_ORGANIZATIONUNIT = 107;
+    public final static int MATCH_WITH_ORGANIZATION     = 108;
+    public final static int MATCH_WITH_LOCALE           = 109;
+    public final static int MATCH_WITH_STATE            = 110;
+    public final static int MATCH_WITH_DOMAINCOMPONENT  = 111;      
+    public final static int MATCH_WITH_COUNTRY          = 112;    
 
     // Private Constants.
     private final static String[] MATCH_WITH_SQLNAMES = {"username", "subjectEmail", "status"
                                                          , "endEntityProfileId", "certificateProfileId"}; // Represents the column names in ra userdata table.
 
     private final static String MATCH_WITH_SUBJECTDN        = "subjectDN";
-    private final static String[] MATCH_WITH_SUBJECTDN_NAMES  = {"CN=", "SN=", "T=", "OU=", "O=", "L=", "ST=", "DC", "C="};        
+    private final static String[] MATCH_WITH_SUBJECTDN_NAMES  = {"UID=","CN=", "SN=", "GIVENNAME=", "INITIALS=", "SURNAME=", "T=", "OU=", "O=", "L=", "ST=", "DC", "C="};        
     
     // Public methods.
     /** Creates a new instance of UserMatch.
@@ -70,8 +74,9 @@ public class UserMatch extends BasicMatch {
       String returnval = "";
       
       if(isSubjectDNMatch()){
-          // Ignore MATCH_TYPE_EQUALS.
-          returnval = MATCH_WITH_SUBJECTDN + " LIKE '%" + MATCH_WITH_SUBJECTDN_NAMES[matchwith -100] + matchvalue + "%'";
+          // Ignore MATCH_TYPE_EQUALS.    
+           returnval = MATCH_WITH_SUBJECTDN + " LIKE '%" + MATCH_WITH_SUBJECTDN_NAMES[matchwith -100] + matchvalue + "%'";
+         
       }
       else{
         if(matchtype == BasicMatch.MATCH_TYPE_EQUALS)

@@ -20,7 +20,7 @@ import se.anatom.ejbca.util.CertTools;
 
 /** Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.8 2003-01-12 17:16:31 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.9 2003-01-19 09:40:13 herrvendil Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -46,12 +46,12 @@ public class CaInitCommand extends BaseCaAdminCommand {
             for (int j=0;j<certs.length;j++) {
                 X509Certificate cert = (X509Certificate)certs[j];
                 String cafingerprint = null;
-                int type = SecConst.USER_CA;
+                int type = SecConst.CERTTYPE_CA;
                 if ( (!CertTools.isSelfSigned(cert)) && ((j+1) < certs.length) )
                     cafingerprint = CertTools.getFingerprintAsString((X509Certificate)certs[j+1]);
                 else {
                     cafingerprint = CertTools.getFingerprintAsString(cert);
-                    type = SecConst.USER_ROOTCA;
+                    type = SecConst.CERTTYPE_ROOTCA;
                 }
                 try {
                     // We will get an exception if the entity already exist

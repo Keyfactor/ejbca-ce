@@ -40,7 +40,7 @@ import org.apache.log4j.*;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.14 2002-11-12 08:25:36 herrvendil Exp $
+ * @version $Id: UserDataBean.java,v 1.15 2003-01-19 09:40:14 herrvendil Exp $
  **/
 
 public abstract class UserDataBean implements javax.ejb.EntityBean {
@@ -142,11 +142,18 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
     public abstract String getKeyStorePassword();
     public abstract void setKeyStorePassword(String keystorepassword);
     
-    
+
     //
     // Public methods used to help us manage passwords
     //
 
+    /** 
+     * Function that sets the BCDN representation of the string.
+     */ 
+    public void setDN(String dn){
+      setSubjectDN(CertTools.stringToBCDNString(dn));        
+    }
+    
     /** Sets password in ahsed form in the database, this way it cannot be read in clear form */
     public void setPassword(String password) throws NoSuchAlgorithmException {
         String passwordHash = makePasswordHash(password);

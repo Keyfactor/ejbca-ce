@@ -27,6 +27,11 @@ public interface IAuthorizationSessionLocal extends javax.ejb.EJBLocalObject
     
     public boolean isAuthorized(AdminInformation admininformation, String resource) throws AuthorizationDeniedException;
     
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+    public boolean isAuthorizedNoLog(AdminInformation admininformation, String resource) throws AuthorizationDeniedException;
+    
      /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 

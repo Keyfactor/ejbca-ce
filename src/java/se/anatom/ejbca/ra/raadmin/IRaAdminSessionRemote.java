@@ -11,7 +11,7 @@ import se.anatom.ejbca.log.Admin;
 
 /**
  *
- * @version $Id: IRaAdminSessionRemote.java,v 1.9 2003-01-12 17:16:33 anatom Exp $
+ * @version $Id: IRaAdminSessionRemote.java,v 1.10 2003-01-19 09:40:14 herrvendil Exp $
  */
 public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
     
@@ -37,6 +37,16 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
      */ 
     
     public boolean changeAdminPreference(Admin admin, BigInteger serialnumber, AdminPreference adminpreference) throws RemoteException;
+ 
+    
+    /**
+     * Changes the admin preference in the database. Without performing any logging.
+     *
+     * @return false if admin doesn't exists.
+     * @throws EJBException if a communication or other error occurs.
+     */ 
+    
+    public boolean changeAdminPreferenceNoLog(Admin admin, BigInteger serialnumber, AdminPreference adminpreference) throws RemoteException;
     
     /**
      * Checks if a admin preference exists in the database.

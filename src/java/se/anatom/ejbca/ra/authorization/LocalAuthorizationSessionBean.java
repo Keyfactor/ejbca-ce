@@ -18,7 +18,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.10 2003-01-12 17:16:30 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.11 2003-01-19 09:40:14 herrvendil Exp $
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
@@ -60,26 +60,10 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
          Collection result = admingrouphome.findAll();
          if(result.size()==0){
           // Authorization table is empty, fill with default and special admingroups.
-           AdminGroupDataLocal ugdl = admingrouphome.create("Default");
-           ugdl.addAdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,"Walter");
+           AdminGroupDataLocal ugdl = admingrouphome.create("Temporary Super Administrator Group");
+           ugdl.addAdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,"SuperAdmin");
            ugdl.addAccessRule("/",AccessRule.RULE_ACCEPT,true);
-           
-           ugdl = admingrouphome.create(AdminGroup.SPECIALADMINGROUP_PUBLICWEBADMIN);
-           ugdl.addAdminEntity(0,AdminEntity.SPECIALADMIN_PUBLICWEBUSER,"");
-           ugdl.addAccessRule("/",AccessRule.RULE_DECLINE,true);   // Temporate
-           
-           ugdl = admingrouphome.create(AdminGroup.SPECIALADMINGROUP_CACOMMANDLINEADMIN);
-           ugdl.addAdminEntity(0,AdminEntity.SPECIALADMIN_CACOMMANDLINEADMIN,"");
-           ugdl.addAccessRule("/",AccessRule.RULE_ACCEPT,true);          
-           
-           ugdl = admingrouphome.create(AdminGroup.SPECIALADMINGROUP_RACOMMANDLINEADMIN);
-           ugdl.addAdminEntity(0,AdminEntity.SPECIALADMIN_RACOMMANDLINEADMIN,"");
-           ugdl.addAccessRule("/",AccessRule.RULE_ACCEPT,true); 
-           
-           ugdl = admingrouphome.create(AdminGroup.SPECIALADMINGROUP_BATCHCOMMANDLINEADMIN);
-           ugdl.addAdminEntity(0,AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN,"");
-           ugdl.addAccessRule("/",AccessRule.RULE_ACCEPT,true);            
-           
+                      
          }
        }catch(FinderException e){
 
@@ -115,6 +99,16 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      */
     public boolean isAuthorized(AdminInformation admininformation, String resource) throws  AuthorizationDeniedException{
       return authorization.isAuthorized(admininformation, resource);  
+    }
+    
+     /** 
+     * Method to check if a user is authorized to a certain resource without performing any logging.
+     *
+     * @param admininformation can be a certificate or special user, see AdminInformation class.
+     * 
+     */
+    public boolean isAuthorizedNoLog(AdminInformation admininformation, String resource) throws AuthorizationDeniedException{
+      return authorization.isAuthorizedNoLog(admininformation, resource);         
     }
     
     /** 

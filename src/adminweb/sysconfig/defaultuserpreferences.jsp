@@ -61,7 +61,7 @@
     <tr  id="Row0"> 
       <td width="50%" valign="top"> 
         <h3><%= ejbcawebbean.getText("THEME") %></h3>
-        <h5><%= ejbcawebbean.getText("THEUSERSTHEMEOFFONTS") %></h5>
+        <h5><%= ejbcawebbean.getText("THEADMINSTHEMEOFFONTS") %></h5>
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_THEME %>">
@@ -93,6 +93,12 @@
       </td>
     </tr>
     <tr  id="Row0"> 
+      <td width="49%" valign="top">&nbsp;</td>
+      <td width="51%" valign="top"> 
+        <h5><%= ejbcawebbean.getText("OBSERVERRESTART") %></h5>
+      </td>
+    </tr>
+    <tr  id="Row1"> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top"> 
         <input type="submit" name="<%= BUTTON_PREVIOUS %>" value="<%= ejbcawebbean.getText("PREVIOUS") %>">

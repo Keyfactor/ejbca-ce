@@ -5,7 +5,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataLocal.java,v 1.5 2003-01-12 17:16:28 anatom Exp $
+ * @version $Id: UserDataLocal.java,v 1.6 2003-01-19 09:40:14 herrvendil Exp $
  **/
 public interface UserDataLocal extends javax.ejb.EJBLocalObject {
 
@@ -24,7 +24,7 @@ public interface UserDataLocal extends javax.ejb.EJBLocalObject {
     public String getUsername();
     public void setUsername(String username);
     public String getSubjectDN();
-    public void setSubjectDN(String subjectDN);
+//    public void setSubjectDN(String subjectDN);
     public String getSubjectAltName();
     public void setSubjectAltName(String subjectAltName);      
     public String getSubjectEmail();
@@ -50,6 +50,7 @@ public interface UserDataLocal extends javax.ejb.EJBLocalObject {
     public int getHardTokenIssuerId();  
     public void setHardTokenIssuerId(int hardtokenissuerid);     
 
+    public void setDN(String dn);
     public void setPassword(String password) throws  NoSuchAlgorithmException;
     public void setOpenPassword(String password) throws  NoSuchAlgorithmException;
     public boolean comparePassword(String password) throws NoSuchAlgorithmException;

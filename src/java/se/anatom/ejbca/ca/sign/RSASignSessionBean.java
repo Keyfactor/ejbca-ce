@@ -47,7 +47,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.63 2003-01-16 10:24:41 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.64 2003-01-19 09:40:14 herrvendil Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -227,11 +227,6 @@ public class RSASignSessionBean extends BaseSessionBean {
             if ((data.getType() & SecConst.USER_INVALID) !=0) {
                 logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"User type is invalid, cannot create certificate for this user.");
             } else {
-                if ( ((data.getType() & SecConst.USER_CA) != 0) || ((data.getType() & SecConst.USER_ROOTCA) != 0) ) {
-                    debug("Setting new keyusage...");
-                    // If this is a CA, we only allow CA-type keyUsage
-                    keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-                }
 
                 ICertificateStoreSessionLocal certificateStore = storeHome.create();
                 // Retrieve the certificate profile this user should have
@@ -239,15 +234,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 CertificateProfile certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
                 // What if certProfile == null?
                 if (certProfile == null) {
-                    if (data.getType() == SecConst.USER_CA) {
-                        certProfileId = SecConst.CERTPROFILE_FIXED_CA;
-                    }
-                    else if (data.getType() == SecConst.USER_ROOTCA) {
-                        certProfileId = SecConst.CERTPROFILE_FIXED_ROOTCA;
-                    }
-                    else {
-                        certProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
-                    }
+                    certProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
                     certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
                 }
                 cat.debug("Using certificate profile with id "+certProfileId);
@@ -266,12 +253,12 @@ public class RSASignSessionBean extends BaseSessionBean {
                 // Verify before returning
                 cert.verify(caCert.getPublicKey());
                 // Store certificate in the database
-                certificateStore.storeCertificate(admin, cert, username, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
+                certificateStore.storeCertificate(admin, cert, username, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, certProfile.getType());
                 // Call authentication session and tell that we are finished with this user
                 for (int i=0;i<publishers.size();i++) {
                     IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(i);
                     IPublisherSessionLocal pub = pubHome.create();
-                    pub.storeCertificate(admin, cert, username, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
+                    pub.storeCertificate(admin, cert, username, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, certProfile.getType());
                 }
                 if (finishUser.booleanValue() == true)
                     authSession.finishUser(admin, username, password);
@@ -530,9 +517,8 @@ public class RSASignSessionBean extends BaseSessionBean {
         // Basic constranits, all subcerts are NOT CAs
         if (certProfile.getUseBasicConstraints() == true) {
             boolean isCA = false;
-            if (((subject.getType() & SecConst.USER_CA) == SecConst.USER_CA)
-                || ((subject.getType() & SecConst.USER_ROOTCA)
-                    == SecConst.USER_ROOTCA))
+            if ((certProfile.getType() == CertificateProfile.TYPE_CA)
+                || (certProfile.getType() == CertificateProfile.TYPE_ROOTCA))
                 isCA = true;
             BasicConstraints bc = new BasicConstraints(isCA);
             certgen.addExtension(

@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * A class representing a web interface view of a user in the ra user database.
  *
- * @version $Id: UserView.java,v 1.7 2003-01-12 17:16:32 anatom Exp $
+ * @version $Id: UserView.java,v 1.8 2003-01-19 09:40:13 herrvendil Exp $
  */
 public class UserView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.
@@ -88,31 +88,37 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
             returnvalue = getUsername().compareTo(((UserView) obj).getUsername());
             break;  
           case SortBy.COMMONNAME : 
-            returnvalue = getSubjectDNField(DNFieldExtractor.COMMONNAME,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.COMMONNAME,0));            
+            returnvalue = getSubjectDNField(DNFieldExtractor.CN,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.CN,0));            
             break;  
           case SortBy.SERIALNUMBER : 
-            returnvalue = getSubjectDNField(DNFieldExtractor.SERIALNUMBER,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.SERIALNUMBER,0));            
+            String value1 =  getSubjectDNField(DNFieldExtractor.SN,0);
+            if(value1.equals(""))
+               value1 = getSubjectDNField(DNFieldExtractor.SN,0);  
+            String value2 = ((UserView) obj).getSubjectDNField(DNFieldExtractor.SERIALNUMBER,0);
+            if(value2.equals(""))
+               value2 = ((UserView) obj).getSubjectDNField(DNFieldExtractor.SERIALNUMBER,0);       
+            returnvalue = value1.compareTo(value2);            
             break;  
           case SortBy.TITLE : 
-            returnvalue = getSubjectDNField(DNFieldExtractor.TITLE,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.TITLE,0));            
+            returnvalue = getSubjectDNField(DNFieldExtractor.T,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.T,0));            
             break;              
           case SortBy.ORGANIZATIONUNIT : 
-            returnvalue = getSubjectDNField(DNFieldExtractor.ORGANIZATIONUNIT,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.ORGANIZATIONUNIT,0));            
+            returnvalue = getSubjectDNField(DNFieldExtractor.OU,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.OU,0));            
             break;  
           case SortBy.ORGANIZATION : 
-            returnvalue = getSubjectDNField(DNFieldExtractor.ORGANIZATION,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.ORGANIZATION,0));             
+            returnvalue = getSubjectDNField(DNFieldExtractor.O,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.O,0));             
             break;  
           case SortBy.LOCALE : 
-            returnvalue = getSubjectDNField(DNFieldExtractor.LOCALE,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.LOCALE,0));           
+            returnvalue = getSubjectDNField(DNFieldExtractor.L,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.L,0));           
             break;  
           case SortBy.STATE : 
-            returnvalue = getSubjectDNField(DNFieldExtractor.STATE,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.STATE,0));           
+            returnvalue = getSubjectDNField(DNFieldExtractor.ST,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.ST,0));           
             break;  
           case SortBy.DOMAINCOMPONENT : 
-            returnvalue = getSubjectDNField(DNFieldExtractor.DOMAINCOMPONENT,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.DOMAINCOMPONENT,0));           
+            returnvalue = getSubjectDNField(DNFieldExtractor.DC,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.DC,0));           
             break;              
           case SortBy.COUNTRY : 
-            returnvalue = getSubjectDNField(DNFieldExtractor.COUNTRY,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.COUNTRY,0));          
+            returnvalue = getSubjectDNField(DNFieldExtractor.C,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.C,0));          
             break;           
           case SortBy.EMAIL : 
             returnvalue = getEmail().compareTo(((UserView) obj).getEmail());            

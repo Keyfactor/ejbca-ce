@@ -272,6 +272,17 @@ function checkallfields(){
       </td>
     </tr>
     <tr  id="Row0"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("ALLOWKEYUSAGEOVERRIDE") %>
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_ALLOWKEYUSAGEOVERRIDE %>"  value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getAllowKeyUsageOverride())
+                 out.write("CHECKED");
+           %>> 
+      </td>
+    </tr>
+    <tr  id="Row1"> 
       <td width="50%" align="right"> 
         <%= ejbcawebbean.getText("AVAILABLEBITLENGTHS") %> <br>&nbsp;
       </td>
@@ -290,7 +301,7 @@ function checkallfields(){
         </select>
       </td>
     </tr>
-    <tr  id="Row1"> 
+    <tr  id="Row0"> 
       <td width="50%" align="right"> 
         <%= ejbcawebbean.getText("TYPE") %> <br>&nbsp;
       </td>
@@ -308,7 +319,7 @@ function checkallfields(){
         </select>
       </td>
     </tr>
-    <tr  id="Row0"> 
+    <tr  id="Row1"> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top"> 
         <input type="submit" name="<%= BUTTON_SAVE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">

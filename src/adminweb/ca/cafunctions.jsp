@@ -62,15 +62,15 @@
               <%= ejbcawebbean.getText("ROOTCA") + " : "%> 
             </td>
             <td>
-               <%= cacerts[index].getSubjectDNField(DNFieldExtractor.COMMONNAME,0)
-                  + ", " +  cacerts[index].getSubjectDNField(DNFieldExtractor.ORGANIZATION,0) 
-                  + ", " + cacerts[index].getSubjectDNField(DNFieldExtractor.COUNTRY,0) %>
+               <%= cacerts[index].getSubjectDNField(DNFieldExtractor.CN,0)
+                  + ", " +  cacerts[index].getSubjectDNField(DNFieldExtractor.O,0) 
+                  + ", " + cacerts[index].getSubjectDNField(DNFieldExtractor.C,0) %>
             </td>
           </tr>
           <tr id="Row0">
             <td>&nbsp;</td>
             <td> 
-              <a href="<%=THIS_FILENAME%>"  onClick="window.open('<%=VIEWCERTIFICATE_LINK%>?certsernoparameter=<%=java.net.URLEncoder.encode(cacerts[index].getSerialNumber(),"UTF-8") %>', 'view_cert',config='height=600,width=550,scrollbars=yes,toolbar=no,resizable=1')";><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;&nbsp;
+              <a href="<%=THIS_FILENAME%>"  onClick="window.open('<%=VIEWCERTIFICATE_LINK%>?cacert=<%=index%>', 'view_cert',config='height=600,width=550,scrollbars=yes,toolbar=no,resizable=1')";><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;&nbsp;
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecacert&level=0"><%= ejbcawebbean.getText("DOWNLOADIE")%></a>&nbsp;&nbsp;&nbsp;
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscacert&level=0"><%= ejbcawebbean.getText("DOWNLOADNS")%></a>&nbsp;&nbsp;&nbsp;
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cacert&level=0"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>
@@ -83,15 +83,15 @@
               <%= ejbcawebbean.getText("SUBORDINATECA") + index + " : "%>  
            </td>  
            <td>
-               <%= cacerts[index].getSubjectDNField(DNFieldExtractor.COMMONNAME,0)
-                  + ", " +  cacerts[index].getSubjectDNField(DNFieldExtractor.ORGANIZATION,0) 
-                  + ", " + cacerts[index].getSubjectDNField(DNFieldExtractor.COUNTRY,0) %> 
+               <%= cacerts[index].getSubjectDNField(DNFieldExtractor.CN,0)
+                  + ", " +  cacerts[index].getSubjectDNField(DNFieldExtractor.O,0) 
+                  + ", " + cacerts[index].getSubjectDNField(DNFieldExtractor.C,0) %> 
            </td> 
           </tr>
           <tr id="Row<%=i%2%>">
             <td>&nbsp;</td>
             <td> 
-              <a href="<%=VIEWCERTIFICATE_LINK%>?subjectdnparameter=<%=java.net.URLEncoder.encode(cacerts[index].getSubjectDN(),"UTF-8")  %>"><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;&nbsp;
+              <a href="<%=THIS_FILENAME%>"  onClick="window.open('<%=VIEWCERTIFICATE_LINK%>?cacert=<%=index%>', 'view_cert',config='height=600,width=550,scrollbars=yes,toolbar=no,resizable=1')";><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;&nbsp;
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecacert&level=<%=index%>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a>&nbsp;&nbsp;&nbsp;
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscacert&level=<%=index%>"><%= ejbcawebbean.getText("DOWNLOADNS")%></a>&nbsp;&nbsp;&nbsp;
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cacert&level=<%=index%>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>

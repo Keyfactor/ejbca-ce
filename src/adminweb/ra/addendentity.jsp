@@ -64,9 +64,11 @@
 %><%
   // Initialize environment.
 
-  String[] subjectfieldtexts = {"","","","OLDEMAILDN","COMMONNAME","SERIALNUMBER","TITLE","ORGANIZATIONUNIT","ORGANIZATION","LOCALE","STATE","DOMAINCOMPONENT","COUNTRY"
-                                , "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME"
-                                ,"EDIPARTNAME", "REGISTEREDID"};
+  String[] subjectfieldtexts = {"","","", "OLDEMAILDN2", "UID", "COMMONNAME", "SERIALNUMBER1", 
+                                "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
+                                "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY",
+                                "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME",
+                                "EDIPARTNAME", "REGISTEREDID"};
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionallity/create_end_entity"); 
                                             rabean.initialize(request);
@@ -220,12 +222,12 @@
            String subjectdn = "";
            int numberofsubjectdnfields = oldprofile.getSubjectDNFieldOrderLength();
            for(int i=0; i < numberofsubjectdnfields; i++){
+             value=null;
              fielddata = oldprofile.getSubjectDNFieldsInOrder(i); 
- 
-             if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.OLDEMAILDN)
+
+             if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.OLDDNE)
                value = request.getParameter(TEXTFIELD_SUBJECTDN+i);
              else{
-               value=null;
                if(request.getParameter(CHECKBOX_SUBJECTDN+i)!=null)
                  if(request.getParameter(CHECKBOX_SUBJECTDN+i).equals(CHECKBOX_VALUE))
                    value = newuser.getEmail();
@@ -405,9 +407,9 @@ function checkallfields(){
        }
        for(int i=0; i < profile.getSubjectDNFieldOrderLength(); i++){
          fielddata = profile.getSubjectDNFieldsInOrder(i);
-         if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.OLDEMAILDN){
+         if( fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.OLDDNE ){
            if(profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ %>
-    if(!checkfieldforlegalchars("document.adduser.<%=TEXTFIELD_SUBJECTDN+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
+    if(!checkfieldforlegaldnchars("document.adduser.<%=TEXTFIELD_SUBJECTDN+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
       illegalfields++;
     <%     if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){%>
     if((document.adduser.<%= TEXTFIELD_SUBJECTDN+i %>.value == "")){
@@ -429,7 +431,7 @@ function checkallfields(){
     if(!checkfieldforipaddess("document.adduser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYNUMBERALSANDDOTS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
       illegalfields++;
            <%  }else{ %>
-    if(!checkfieldforlegalchars("document.adduser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
+    if(!checkfieldforlegaldnchars("document.adduser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
       illegalfields++;
     <%    if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){%>
     if((document.adduser.<%= TEXTFIELD_SUBJECTALTNAME+i %>.value == "")){
@@ -672,7 +674,7 @@ function checkallfields(){
 	 <td align="right"><%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %></td>
 	 <td>      
           <% 
-             if( fielddata[EndEntityProfile.FIELDTYPE]  != EndEntityProfile.OLDEMAILDN ){  
+             if( fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.OLDDNE ){  
                 if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
                  String[] options = new RE(EndEntityProfile.SPLITCHAR, false).split(profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]));
                %>
@@ -910,9 +912,9 @@ function edituser(row){
     <td width="15%"><%= addedusers[i].getUsername() %>
        <input type="hidden" name='<%= HIDDEN_USERNAME + i %>' value='<%= addedusers[i].getUsername() %>'>
     </td>
-    <td width="20%"><%= addedusers[i].getSubjectDNField(DNFieldExtractor.COMMONNAME,0)  %></td>
-    <td width="20%"><%= addedusers[i].getSubjectDNField(DNFieldExtractor.ORGANIZATIONUNIT,0) %></td>
-    <td width="20%"><%= addedusers[i].getSubjectDNField(DNFieldExtractor.ORGANIZATION,0) %></td>
+    <td width="20%"><%= addedusers[i].getSubjectDNField(DNFieldExtractor.CN,0)  %></td>
+    <td width="20%"><%= addedusers[i].getSubjectDNField(DNFieldExtractor.OU,0) %></td>
+    <td width="20%"><%= addedusers[i].getSubjectDNField(DNFieldExtractor.O,0) %></td>
     <td width="25%">
         <A  onclick='viewuser(<%= i %>)'>
         <u><%= ejbcawebbean.getText("VIEWENDENTITY") %></u> </A>

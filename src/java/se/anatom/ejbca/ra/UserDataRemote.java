@@ -8,7 +8,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataRemote.java,v 1.3 2002-10-24 20:10:05 herrvendil Exp $
+ * @version $Id: UserDataRemote.java,v 1.4 2003-01-19 09:40:14 herrvendil Exp $
  **/
 
 public interface UserDataRemote extends javax.ejb.EJBObject {
@@ -26,7 +26,7 @@ public interface UserDataRemote extends javax.ejb.EJBObject {
     public String getUsername() throws RemoteException;
     public void setUsername(String username) throws RemoteException;
     public String getSubjectDN() throws RemoteException;
-    public void setSubjectDN(String subjectDN) throws RemoteException;
+//    public void setSubjectDN(String subjectDN) throws RemoteException;
     public String getSubjectAltName() throws RemoteException;
     public void setSubjectAltName(String subjectAltName) throws RemoteException;     
     public String getSubjectEmail() throws RemoteException;
@@ -52,6 +52,7 @@ public interface UserDataRemote extends javax.ejb.EJBObject {
     public int getHardTokenIssuerId() throws RemoteException;  
     public void setHardTokenIssuerId(int hardtokenissuerid) throws RemoteException;   
 
+    public void setDN(String dn) throws RemoteException;
     public void setPassword(String password) throws RemoteException, NoSuchAlgorithmException;
     public void setOpenPassword(String password) throws RemoteException, NoSuchAlgorithmException;
     public boolean comparePassword(String password) throws RemoteException, NoSuchAlgorithmException;

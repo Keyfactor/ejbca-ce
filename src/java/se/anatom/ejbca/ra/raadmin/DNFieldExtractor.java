@@ -20,31 +20,37 @@ public class DNFieldExtractor {
     public static final int TYPE_SUBJECTDN            = 0;    
     public static final int TYPE_SUBJECTALTNAME       = 1;    
     // Subject DN Fields.
-    public static final int EMAILADDRESS              = 0;    
-    public static final int COMMONNAME                = 1;
-    public static final int SERIALNUMBER              = 2;  
-    public static final int TITLE                     = 3;      
-    public static final int ORGANIZATIONUNIT          = 4;
-    public static final int ORGANIZATION              = 5;
-    public static final int LOCALE                    = 6;
-    public static final int STATE                     = 7;
-    public static final int DOMAINCOMPONENT           = 8;      
-    public static final int COUNTRY                   = 9;
+    public static final int E                         = 0;   
+    public static final int UID                       = 1;    
+    public static final int CN                        = 2;
+    public static final int SN                        = 3;      
+    public static final int SERIALNUMBER              = 4; 
+    public static final int GIVENNAME                 = 5;
+    public static final int INITIALS                  = 6;    
+    public static final int SURNAME                   = 7;    
+    public static final int T                         = 8;      
+    public static final int OU                        = 9;
+    public static final int O                         = 10;
+    public static final int L                         = 11;
+    public static final int ST                        = 12;
+    public static final int DC                        = 13;      
+    public static final int C                         = 14;
 
     // Subject Alternative Names.
-    public static final int OTHERNAME                 = 10;
-    public static final int RFC822NAME                = 11;  
-    public static final int DNSNAME                   = 12;      
-    public static final int IPADDRESS                 = 13;
-    public static final int X400ADDRESS               = 14;
-    public static final int DIRECTORYNAME             = 15;
-    public static final int EDIPARTNAME               = 16;
-    public static final int UNIFORMRESOURCEIDENTIFIER = 17;      
-    public static final int REGISTEREDID              = 18;    
+    public static final int OTHERNAME                 = 15;
+    public static final int RFC822NAME                = 16;  
+    public static final int DNSNAME                   = 17;      
+    public static final int IPADDRESS                 = 18;
+    public static final int X400ADDRESS               = 19;
+    public static final int DIRECTORYNAME             = 20;
+    public static final int EDIPARTNAME               = 21;    
+    public static final int URI                       = 22;     
+    public static final int REGISTEREDID              = 23;    
     
-    public static final int SUBJECTALTERNATIVENAMEBOUNDRARY = 10;
-    
-    public static final String[] SUBJECTDNFIELDS = {"EMAILADDRESS=", "CN=", "SN=", "T=", "OU=", "O=", "L=", "ST=", "DC=", "C="};
+    public static final int SUBJECTALTERNATIVENAMEBOUNDRARY = 15;
+    public static final int NUMBEROFFIELDS                  = 23;
+       
+    public static final String[] SUBJECTDNFIELDS = {"E=", "UID=", "CN=", "SN=", "SERIALNUMBER=", "GIVENNAME=", "INITIALS=", "SURNAME=", "T=", "OU=", "O=", "L=", "ST=", "DC=", "C="};
     
     public static final String[] SUBJECTALTNAME =  {"OTHERNAME=","RFC822NAME=",  "DNSNAME=", "IPADDRESS=", "X400ADDRESS=", "DIRECTORYNAME=", "EDIPARTNAME=", "UNIFORMRESOURCEIDENTIFIER=",
                                                      "REGISTEREDID="};      
@@ -61,6 +67,7 @@ public class DNFieldExtractor {
     
     public void setDN(String dn, int type) {
       String[]  fields;
+      this.type=type;
       
       if(type == TYPE_SUBJECTDN){  
         fieldnumbers = new int[SUBJECTDNFIELDS.length];
@@ -78,21 +85,14 @@ public class DNFieldExtractor {
         for(int i = 0; i < dnexploded.length; i++){ 
           boolean exists = false;  
           for(int j = 0; j < fields.length; j++){
-            if(dnexploded[i].toUpperCase().startsWith("E=") && type == TYPE_SUBJECTDN){ // Special Case
-                exists = true;  
-                String rdn = LDAPDN.unescapeRDN(dnexploded[i]);   
-                dnfields.put(new Integer((EMAILADDRESS * BOUNDRARY) + fieldnumbers[EMAILADDRESS]) ,rdn);             
-            }
-            else{
-              if(dnexploded[i].toUpperCase().startsWith(fields[j])){
-                exists = true;  
-                String rdn = LDAPDN.unescapeRDN(dnexploded[i]);   
-                if(type == TYPE_SUBJECTDN) 
-                  dnfields.put(new Integer((j * BOUNDRARY) + fieldnumbers[j]) ,rdn);  
-                else  
-                  dnfields.put(new Integer(((j+ SUBJECTALTERNATIVENAMEBOUNDRARY) * BOUNDRARY) + fieldnumbers[j]) ,rdn);                 
-                fieldnumbers[j]++;
-              }
+            if(dnexploded[i].toUpperCase().startsWith(fields[j])){
+              exists = true;  
+              String rdn = LDAPDN.unescapeRDN(dnexploded[i]);   
+              if(type == TYPE_SUBJECTDN) 
+                dnfields.put(new Integer((j * BOUNDRARY) + fieldnumbers[j]) ,rdn);  
+              else  
+                dnfields.put(new Integer(((j+ SUBJECTALTERNATIVENAMEBOUNDRARY) * BOUNDRARY) + fieldnumbers[j]) ,rdn);                 
+              fieldnumbers[j]++;
             }
           }  
           if(!exists)
@@ -124,7 +124,12 @@ public class DNFieldExtractor {
     *  Returns the number of one kind of dn field. 
     */
     public int getNumberOfFields(int field){
-      return fieldnumbers[field];  
+      int returnval=0;
+      if(type==TYPE_SUBJECTDN)  
+        returnval=fieldnumbers[field];  
+      else
+        returnval=fieldnumbers[field-OTHERNAME];  
+      return returnval;
     } 
     
     /** 
@@ -161,4 +166,5 @@ public class DNFieldExtractor {
     private ArrayList fieldorder;
     private String  dn;
     private boolean existsother = false;
+    int type;
 }

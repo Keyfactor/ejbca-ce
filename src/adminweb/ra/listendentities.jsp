@@ -600,8 +600,10 @@
                     if(matchvaluerow1.equals("0")) matchvaluerow1 = null;
                  }else{
                     if(matchwithrow1 == UserMatch.MATCH_WITH_STATUS){
+                       oldmatchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
                        matchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
                     }else{
+                       oldmatchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1);
                        matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1);
                     }
                  }
@@ -617,8 +619,10 @@
                     if(matchvaluerow2.equals("0")) matchvaluerow2 = null;
                  }else{
                     if(matchwithrow2 == UserMatch.MATCH_WITH_STATUS){
+                       oldmatchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
                        matchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
                     }else{
+                       oldmatchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW2);
                        matchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW2);
                     }
                  }
@@ -635,9 +639,11 @@
                     if(matchvaluerow3.equals("0")) matchvaluerow3 = null;
                  }else{
                     if(matchwithrow3 == UserMatch.MATCH_WITH_STATUS){
-                       matchvaluerow3 = request.getParameter(SELECT_MATCHVALUE_ROW3);
+                      oldmatchvaluerow3 = request.getParameter(SELECT_MATCHVALUE_ROW3);
+                       matchvaluerow3   = request.getParameter(SELECT_MATCHVALUE_ROW3);
                     }else{
-                       matchvaluerow3 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW3);
+                       oldmatchvaluerow3 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW3);
+                       matchvaluerow3    = request.getParameter(TEXTFIELD_MATCHVALUE_ROW3);
                     }
                  }
               } 

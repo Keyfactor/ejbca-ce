@@ -47,6 +47,7 @@
   static final String CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL       = "checkboxcrldistributionpointcritical";
   static final String CHECKBOX_USECERTIFICATEPOLICIES             = "checkusecertificatepolicies";
   static final String CHECKBOX_CERTIFICATEPOLICIESCRITICAL        = "checkcertificatepoliciescritical";
+  static final String CHECKBOX_ALLOWKEYUSAGEOVERRIDE              = "checkallowkeyusageoverride";
 
 
   static final String SELECT_AVAILABLEBITLENGTHS                  = "selectavailablebitlengths";
@@ -61,7 +62,7 @@
 
   // Initialize environment
   String certprofile = null;
-  String includefile = null;
+  String includefile = "certificateprofilespage.jsp"; 
   boolean  triedtoeditfixedcertificateprofile   = false;
   boolean  triedtodeletefixedcertificateprofile = false;
   boolean  triedtoaddfixedcertificateprofile    = false;
@@ -349,6 +350,13 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
               }
               certificateprofiledata.setType(type);    
               
+              value = request.getParameter(CHECKBOX_ALLOWKEYUSAGEOVERRIDE);
+              if(value != null){
+                 use = value.equals(CHECKBOX_VALUE);
+                 certificateprofiledata.setAllowKeyUsageOverride(use);
+              }
+              else
+                 certificateprofiledata.setAllowKeyUsageOverride(false);
 
               cabean.changeCertificateProfile(certprofile,certificateprofiledata);
            }
@@ -360,11 +368,7 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
       }
     }
   }
-  else{ 
-    // Display main user group editing page. 
-          includefile="certificateprofilespage.jsp"; 
 
-  }
  // Include page
   if( includefile.equals("certificateprofilepage.jsp")){ 
 %>

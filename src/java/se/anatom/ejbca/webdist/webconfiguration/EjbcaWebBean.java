@@ -32,7 +32,7 @@ import se.anatom.ejbca.ra.raadmin.AdminPreference;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.19 2003-01-12 17:16:28 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.20 2003-01-19 09:40:13 herrvendil Exp $
  */
 public class EjbcaWebBean {
 
@@ -127,7 +127,7 @@ public class EjbcaWebBean {
 
        // set User Common Name
         DNFieldExtractor dn = new DNFieldExtractor(userdn, DNFieldExtractor.TYPE_SUBJECTDN);
-        usercommonname = dn.getField(DNFieldExtractor.COMMONNAME,0);
+        usercommonname = dn.getField(DNFieldExtractor.CN,0);
 
         initialized=true;
       }
@@ -171,7 +171,7 @@ public class EjbcaWebBean {
     public void setLogEntriesPerPage(int logentriesperpage) throws Exception{
         currentadminpreference.setLogEntriesPerPage(logentriesperpage);
         if(existsAdminPreference()){
-          changeAdminPreference(currentadminpreference);
+          adminspreferences.changeAdminPreferenceNoLog(certificateserialnumber,currentadminpreference);
         }else{
           addAdminPreference(currentadminpreference);
         }
@@ -181,7 +181,7 @@ public class EjbcaWebBean {
     public void setLastFilterMode(int lastfiltermode) throws Exception{
         currentadminpreference.setLastFilterMode(lastfiltermode);
         if(existsAdminPreference()){
-          changeAdminPreference(currentadminpreference);
+          adminspreferences.changeAdminPreferenceNoLog(certificateserialnumber,currentadminpreference);
         }else{
           addAdminPreference(currentadminpreference);
         }
@@ -190,7 +190,7 @@ public class EjbcaWebBean {
     public void setLastLogFilterMode(int lastlogfiltermode) throws Exception{
         currentadminpreference.setLastLogFilterMode(lastlogfiltermode);
         if(existsAdminPreference()){
-          changeAdminPreference(currentadminpreference);
+          adminspreferences.changeAdminPreferenceNoLog(certificateserialnumber,currentadminpreference);
         }else{
           addAdminPreference(currentadminpreference);
         }
@@ -200,7 +200,7 @@ public class EjbcaWebBean {
     public void setLastEndEntityProfile(int lastprofile) throws Exception{
         currentadminpreference.setLastProfile(lastprofile);
         if(existsAdminPreference()){
-          changeAdminPreference(currentadminpreference);
+          adminspreferences.changeAdminPreferenceNoLog(certificateserialnumber,currentadminpreference);
         }else{
           addAdminPreference(currentadminpreference);
         }

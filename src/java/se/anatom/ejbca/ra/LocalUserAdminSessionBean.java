@@ -33,7 +33,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.32 2003-01-12 17:16:28 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.33 2003-01-19 09:40:14 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -126,7 +126,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
           }  
 
             // Check if administrator is authorized to add user.
-            if(!profileauthproxy.getEndEntityProfileAuthorization(admin, endentityprofileid,EndEntityProfileAuthorizationProxy.CREATE_RIGHTS)){
+            if(!profileauthproxy.getEndEntityProfileAuthorization(admin, endentityprofileid,EndEntityProfileAuthorizationProxy.CREATE_RIGHTS, LogEntry.MODULE_RA)){
               logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDENDENTITY,"Administrator not authorized");   
               throw new AuthorizationDeniedException("Administrator not authorized to create user.");  
             }  
@@ -190,7 +190,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
           throw new UserDoesntFullfillEndEntityProfile(udfp.getMessage());   
         }  
         // Check if administrator is authorized to edit user. 
-          if(!profileauthproxy.getEndEntityProfileAuthorization(admin, endentityprofileid,EndEntityProfileAuthorizationProxy.EDIT_RIGHTS)){
+          if(!profileauthproxy.getEndEntityProfileAuthorization(admin, endentityprofileid,EndEntityProfileAuthorizationProxy.EDIT_RIGHTS, LogEntry.MODULE_RA)){
             logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"Administrator not authorized");               
             throw new AuthorizationDeniedException("Administrator not authorized to edit user.");  
           }  
@@ -200,7 +200,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1= home.findByPrimaryKey(pk);
 
-            data1.setSubjectDN(CertTools.stringToBCDNString(dn));
+            data1.setDN(CertTools.stringToBCDNString(dn));
             if(subjectaltname != null )
                 data1.setSubjectAltName(subjectaltname); 
             
@@ -235,7 +235,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
           try{
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1 = home.findByPrimaryKey(pk);     
-            if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data1.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.DELETE_RIGHTS)){
+            if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data1.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.DELETE_RIGHTS, LogEntry.MODULE_RA)){
                 logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEENDENTITY,"Administrator not authorized");                     
                 throw new AuthorizationDeniedException("Administrator not authorized to delete user."); 
             }    
@@ -268,7 +268,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
           try{
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1 = home.findByPrimaryKey(pk);              
-            if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data1.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.EDIT_RIGHTS)){
+            if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data1.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.EDIT_RIGHTS, LogEntry.MODULE_RA)){
                 logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"Administrator not authorized to change status");                 
                 throw new AuthorizationDeniedException("Administrator not authorized to edit user.");              
             }    
@@ -319,7 +319,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
           // Check if administrator is authorized to edit user.
 
-          if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.EDIT_RIGHTS)){
+          if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.EDIT_RIGHTS, LogEntry.MODULE_RA)){
             logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"Administrator isn't authorized to change password.");               
             throw new AuthorizationDeniedException("Administrator not authorized to edit user.");          
           }  
@@ -354,7 +354,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             throw new UserDoesntFullfillEndEntityProfile("Clearpassword didn't fullfill end entity profile.");   
           }  
           // Check if administrator is authorized to edit user.
-          if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.EDIT_RIGHTS)){
+          if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.EDIT_RIGHTS, LogEntry.MODULE_RA)){
             logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"Administrator isn't authorized to change clearpassword.");               
             throw new AuthorizationDeniedException("Administrator not authorized to edit user.");          
           }  
@@ -394,7 +394,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         }        
          
         if(globalconfiguration.getEnableEndEntityProfileLimitations()){ 
-          if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.REVOKE_RIGHTS)){
+          if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.REVOKE_RIGHTS, LogEntry.MODULE_RA)){
             logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY,"Administrator not authorized");           
             throw new AuthorizationDeniedException("Not authorized to revoke user : " + username + ".");
           }
@@ -423,7 +423,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         }        
          
         if(globalconfiguration.getEnableEndEntityProfileLimitations()){ 
-          if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.REVOKE_RIGHTS)){
+          if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.REVOKE_RIGHTS, LogEntry.MODULE_RA)){
             logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY,"Administrator not authorized");           
             throw new AuthorizationDeniedException("Not authorized to revoke user : " + username + ".");
           }
@@ -452,7 +452,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
         if(globalconfiguration.getEnableEndEntityProfileLimitations()){
           // Check if administrator is authorized to view user.
-          if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS))
+          if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS, LogEntry.MODULE_RA))
             throw new AuthorizationDeniedException("Administrator not authorized to view user.");
         }
 
@@ -482,7 +482,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         }
         if(globalconfiguration.getEnableEndEntityProfileLimitations()){
           // Check if administrator is authorized to view user.
-          if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS))
+          if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS, LogEntry.MODULE_RA))
              throw new AuthorizationDeniedException("Administrator not authorized to view user.");
           }
 
@@ -514,7 +514,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         }
         if(globalconfiguration.getEnableEndEntityProfileLimitations()){
           // Check if administrator is authorized to view user.
-          if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS))
+          if(!profileauthproxy.getEndEntityProfileAuthorization(admin, data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS, LogEntry.MODULE_RA))
              throw new AuthorizationDeniedException("Administrator not authorized to view user.");
           }
 
@@ -581,7 +581,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             userData.setPassword(user.getClearPassword());
             if(globalconfiguration.getEnableEndEntityProfileLimitations()){
               // Check if administrator is authorized to view user.
-              if(profileauthproxy.getEndEntityProfileAuthorization(admin, user.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS))
+              if(profileauthproxy.getEndEntityProfileAuthorization(admin, user.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS, LogEntry.MODULE_RA))
                 ret.add(userData);
             }
             else
@@ -610,7 +610,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             userData.setPassword(user.getClearPassword());
             if(globalconfiguration.getEnableEndEntityProfileLimitations()){
               // Check if administrator is authorized to view user.
-              if(profileauthproxy.getEndEntityProfileAuthorization(admin, user.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS))
+              if(profileauthproxy.getEndEntityProfileAuthorization(admin, user.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS, LogEntry.MODULE_RA))
                 ret.add(userData);
             }
             else
@@ -672,7 +672,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
               if(globalconfiguration.getEnableEndEntityProfileLimitations()){
                 // Check if administrator is authorized to edit user.
-                if(profileauthproxy.getEndEntityProfileAuthorization(admin,data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS))
+                if(profileauthproxy.getEndEntityProfileAuthorization(admin,data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS, LogEntry.MODULE_RA))
                   returnval.add(data);
               }
               else

@@ -10,7 +10,7 @@ if %2() == () goto error
 
 call ra adduser tomcat %2 %1 "" null 1 3
 
-call ra adduser walter foo123 "CN=walter" "" null 65 2
+call ra adduser walter foo123 "CN=SuperUser" "" null 65 2
 
 call ra setclearpwd tomcat %2
 

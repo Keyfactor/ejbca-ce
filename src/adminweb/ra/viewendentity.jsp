@@ -30,9 +30,11 @@
   boolean nouserparameter          = true;
   boolean notauthorized            = false;
 
-   String[] subjectfieldtexts = {"","","","OLDEMAILDN","COMMONNAME","SERIALNUMBER","TITLE","ORGANIZATIONUNIT","ORGANIZATION","LOCALE","STATE","DOMAINCOMPONENT","COUNTRY"
-                                , "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME"
-                                ,"EDIPARTNAME", "REGISTEREDID"};
+  String[] subjectfieldtexts = {"","","", "OLDEMAILDN2", "UID", "COMMONNAME", "SERIALNUMBER1", 
+                                "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
+                                "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY",
+                                "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME",
+                                "EDIPARTNAME", "REGISTEREDID"};
    
    int[] statusids            = {UserDataRemote.STATUS_NEW ,UserDataRemote.STATUS_FAILED, UserDataRemote.STATUS_INITIALIZED, UserDataRemote.STATUS_INPROCESS
                                 , UserDataRemote.STATUS_GENERATED, UserDataRemote.STATUS_REVOKED , UserDataRemote.STATUS_HISTORICAL};

@@ -11,10 +11,11 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.util.CertTools;
 
 /** Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.14 2003-01-12 17:16:31 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.15 2003-01-19 09:40:13 herrvendil Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 
@@ -44,7 +45,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 System.out.println();
                 System.out.println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
                 System.out.println("SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>\"");
-                System.out.println("Type (mask): INVALID=0; END-USER=1; CA=2;  ROOTCA=8; ADMINISTRATOR=64");
+                System.out.println("Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64");
                 System.out.println("Token      : User Generated=" + SecConst.TOKEN_SOFT_BROWSERGEN + "; P12=" + SecConst.TOKEN_SOFT_P12 + "; JKS="
                                     + SecConst.TOKEN_SOFT_JKS + ";  PEM=" + SecConst.TOKEN_SOFT_PEM);
 
@@ -62,7 +63,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 }
                 System.out.print(endentityprofilenames[endentityprofilenames.length-1] + "\n");
 
-                System.out.println("If the user does not have an email address, use the value 'null'. ");
+                System.out.println("If the user does not have a SubjectAltName or an email address, use the value 'null'. ");
                 return;
             }
 
@@ -85,7 +86,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             }
 
             if(args.length == 10){
-              // Use certificate type and profile.
+              // Use certificate type and profile.  
               profileid = raadminsession.getEndEntityProfileId(administrator, args[9]);
               certificatetypeid = certificatesession.getCertificateProfileId(administrator, args[8]);
             }
@@ -119,13 +120,16 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
               System.out.println("Username: "+username);
               System.out.println("Password (hashed only): "+password);
               System.out.println("DN: "+dn);
+              System.out.println("SubjectAltName: "+subjectaltname);
               System.out.println("Email: "+email);
               System.out.println("Type: "+type);
               System.out.println("Token: "+token);
-              if (email.equals("null"))
+              if (subjectaltname.toUpperCase().equals("NULL"))
+                  subjectaltname = null;                       
+              if (email.toUpperCase().equals("NULL"))
                   email = null;
               try{
-                getAdminSession().addUser(administrator, username, password, dn, subjectaltname, email, false, profileid, certificatetypeid,
+                getAdminSession().addUser(administrator, username, password, CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid, certificatetypeid,
                                          (type & SecConst.USER_ADMINISTRATOR) == SecConst.USER_ADMINISTRATOR,
                                          (type & SecConst.USER_KEYRECOVERABLE) == SecConst.USER_KEYRECOVERABLE,
                                           token,0);

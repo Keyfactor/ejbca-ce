@@ -7,14 +7,14 @@ import java.io.Serializable;
 /**
  * A class that represents a group of users and their access rules.
  *
- * @version $Id: AdminGroup.java,v 1.1 2002-10-24 20:06:48 herrvendil Exp $
+ * @version $Id: AdminGroup.java,v 1.2 2003-01-19 09:40:13 herrvendil Exp $
  */
 public class AdminGroup implements Serializable {
                                
-    public static final String SPECIALADMINGROUP_PUBLICWEBADMIN        = "SPECIAL_PUBLIC_WEBADMIN";
+/*    public static final String SPECIALADMINGROUP_PUBLICWEBADMIN        = "SPECIAL_PUBLIC_WEBADMIN";
     public static final String SPECIALADMINGROUP_CACOMMANDLINEADMIN    = "SPECIAL_CA_COMMANDLINEADMIN";
     public static final String SPECIALADMINGROUP_RACOMMANDLINEADMIN    = "SPECIAL_RA_COMMANDLINEADMIN";
-    public static final String SPECIALADMINGROUP_BATCHCOMMANDLINEADMIN = "SPECIAL_BATCH_COMMANDLINEADMIN";
+    public static final String SPECIALADMINGROUP_BATCHCOMMANDLINEADMIN = "SPECIAL_BATCH_COMMANDLINEADMIN"; */
     
     /** Creates a new instance of AdminGroup */
     public AdminGroup() {

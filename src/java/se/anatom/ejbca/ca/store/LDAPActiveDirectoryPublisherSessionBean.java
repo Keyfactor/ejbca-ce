@@ -31,9 +31,9 @@ import org.apache.log4j.*;
  * to get to work with other directory factories as well.
  *
  * <p>LDAP schema required:<br>
- * Certificates for USER_ENDUSER, USER_RA, USER_RAADMIN, USER_CAADMIN are published
+ * Certificates for CERTTYPE_ENDENTITY are published
  * as attribute 'userCertificate' in objectclass 'inetOrgPerson'.<br>
- * Certificates for USER_CA and USER_ROOTCA are published as attribute cACertificate in
+ * Certificates for CERTTYPE_CA andCERTTYPE_ROOTCA are published as attribute cACertificate in
  * objectclass 'certificationAuthority'.<br>
  * CRLs are published as attribute 'certificateRevocationList' in objectclass
  * 'certificationAuthority'.
@@ -55,7 +55,7 @@ import org.apache.log4j.*;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.5 2003-01-12 17:16:28 anatom Exp $
+ * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.6 2003-01-19 09:40:13 herrvendil Exp $
  */
 public class LDAPActiveDirectoryPublisherSessionBean
     extends BaseSessionBean {
@@ -211,10 +211,7 @@ public class LDAPActiveDirectoryPublisherSessionBean
             ctx.close();
         } catch (NamingException e) {
         }
-        if (((type & SecConst.USER_ENDUSER) != 0)
-            || ((type & SecConst.USER_CAADMIN) != 0)
-            || ((type & SecConst.USER_RAADMIN) != 0)
-            || ((type & SecConst.USER_RA) != 0)) {
+        if (type == SecConst.CERTTYPE_ENDENTITY ) {
             if (oldEntry == null) {
                 try {
                     // Create the initial directory context
@@ -300,7 +297,7 @@ public class LDAPActiveDirectoryPublisherSessionBean
 
             }
         } else
-            if (((type & SecConst.USER_CA) != 0) || ((type & SecConst.USER_ROOTCA) != 0))
+            if (type == SecConst.CERTTYPE_CA  || type == SecConst.CERTTYPE_ROOTCA)
                 try {
                     // Create the initial directory context
                     DirContext ctx = new InitialDirContext(env);

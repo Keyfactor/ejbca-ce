@@ -2,9 +2,13 @@
    String[] certificateprofilenames = ejbcarabean.getCertificateProfileNames();
    boolean used = false;
 
-   String[] subjectfieldtexts = {"","","","OLDEMAILDN","COMMONNAME","SERIALNUMBER","TITLE","ORGANIZATIONUNIT","ORGANIZATION","LOCALE","STATE","DOMAINCOMPONENT","COUNTRY"
+   String[] subjectfieldtexts = {"","","", "OLDEMAILDN2", "UID", "COMMONNAME", "SERIALNUMBER1", 
+                                 "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
+                                "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY"
                                 , "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME"
                                 ,"EDIPARTNAME", "REGISTEREDID"};
+   int subjectdnstart = 3;
+   int subjectaltnamestart = 17;
 
    String[] tokentexts = RAInterfaceBean.tokentexts;
    int[] tokenids = RAInterfaceBean.tokenids;
@@ -36,7 +40,7 @@ function checkallfields(){
 
 
     for(var i=0; i < numbersubjectdnfields; i++){
-      if(dnfieldtypes[i] != <%= EndEntityProfile.OLDEMAILDN %>){
+      if( dnfieldtypes[i] != <%= EndEntityProfile.OLDDNE %>){
         fieldname = "document.editprofile.<%=TEXTFIELD_SUBJECTDN%>" + i;
         if(!checkfieldforlegaldncharswithchangeable(fieldname,"<%= ejbcawebbean.getText("ONLYDNCHARACTERS") %>"))
           illegalfields++;
@@ -112,6 +116,15 @@ function checkusetextfield(usefield, value, required, change){
     changebox.checked = false;
     changebox.disabled = true;
   }
+}
+
+function checkemailfield(reqfield){
+  var box = eval("document.editprofile." + reqfield);
+
+  if(box.checked){
+      document.editprofile.<%= CHECKBOX_REQUIRED_EMAIL %>.checked = true;    
+  }
+
 }
 -->
 
@@ -220,7 +233,7 @@ function checkusetextfield(usefield, value, required, change){
       <td width="70%"> 
         <select name="<%=SELECT_ADDSUBJECTDN %>" size="1" >
             <% 
-               for(int i=3; i < 13; i++){ %>
+               for(int i=subjectdnstart; i < subjectaltnamestart; i++){ %>
            <option  value='<%= i%>'><%= ejbcawebbean.getText(subjectfieldtexts[i]) %>
            </option>
             <% } %>
@@ -240,7 +253,7 @@ function checkusetextfield(usefield, value, required, change){
         <%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %> <br>&nbsp;
       </td>
       <td width="70%"> 
-        <% if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.OLDEMAILDN ){ %>
+        <% if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.OLDDNE ){ %>
         <input type="text" name="<%=TEXTFIELD_SUBJECTDN + i%>" size="40" maxlength="1024"
            value="<% if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) out.write(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])); %>"><br> 
         <%= ejbcawebbean.getText("REQUIRED") %>
@@ -258,7 +271,7 @@ function checkusetextfield(usefield, value, required, change){
              emailfieldexists=true; 
               %>
            <%= ejbcawebbean.getText("REQUIRED") %>
-        <input type="checkbox" name="<%=CHECKBOX_REQUIRED_SUBJECTDN + i %>" value="<%=CHECKBOX_VALUE %>"
+        <input type="checkbox" name="<%=CHECKBOX_REQUIRED_SUBJECTDN + i %>" value="<%=CHECKBOX_VALUE %>" onclick='checkemailfield("<%=CHECKBOX_REQUIRED_SUBJECTDN + i %>")'
            <% if(profiledata.isRequired(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]))
                  out.write("CHECKED");
            %>>&nbsp;<%=ejbcawebbean.getText("SEEEMAILCONFIGURATION") %>
@@ -287,7 +300,7 @@ function checkusetextfield(usefield, value, required, change){
       <td width="70%"> 
         <select name="<%=SELECT_ADDSUBJECTALTNAME %>" size="1" >
             <% 
-               for(int i=13; i < subjectfieldtexts.length; i++){ %>
+               for(int i=subjectaltnamestart; i < subjectfieldtexts.length; i++){ %>
            <option  value='<%= i%>'><%= ejbcawebbean.getText(subjectfieldtexts[i]) %>
            </option>
             <% } %>
@@ -326,7 +339,7 @@ function checkusetextfield(usefield, value, required, change){
              emailfieldexists=true; 
               %>
              <%= ejbcawebbean.getText("REQUIRED") %>
-        <input type="checkbox" name="<%=CHECKBOX_REQUIRED_SUBJECTALTNAME + i %>" value="<%=CHECKBOX_VALUE %>"
+        <input type="checkbox" name="<%=CHECKBOX_REQUIRED_SUBJECTALTNAME + i %>" value="<%=CHECKBOX_VALUE %>" onclick='checkemailfield("<%=CHECKBOX_REQUIRED_SUBJECTALTNAME + i %>")'
            <% if(profiledata.isRequired(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]))
                  out.write("CHECKED");
            %>>&nbsp;<%=ejbcawebbean.getText("SEEEMAILCONFIGURATION") %>

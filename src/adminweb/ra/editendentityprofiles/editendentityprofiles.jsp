@@ -95,7 +95,7 @@
 <% 
 
   // Initialize environment
-  String includefile = null;
+  String includefile = "endentityprofilespage.jsp";
   boolean  triedtoeditemptyprofile   = false;
   boolean  triedtodeleteemptyprofile = false;
   boolean  profileexists             = false;
@@ -366,11 +366,6 @@
          }
       }
     }
-  }
-  else{ 
-    // Display main user group editing page. 
-             includefile="endentityprofilespage.jsp";
-
   }
  // Include page
   if( includefile.equals("endentityprofilepage.jsp")){ %>

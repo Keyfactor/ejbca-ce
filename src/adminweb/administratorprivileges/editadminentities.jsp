@@ -95,6 +95,7 @@
           <select name="<%=SELECT_MATCHWITH %>" size="1">
             <option selected value='<%= AdminEntity.WITH_SERIALNUMBER %>'><%= ejbcawebbean.getText("WITHSERIALNUMBER") %></option>
             <option value='<%= AdminEntity.WITH_DNSERIALNUMBER %>'><%= ejbcawebbean.getText("WITHDNSERIALNUMBER") %></option>
+            <option value='<%= AdminEntity.WITH_UID %>'><%= ejbcawebbean.getText("WITHUID") %></option>
             <option value='<%= AdminEntity.WITH_COMMONNAME %>'><%= ejbcawebbean.getText("WITHCOMMONNAME") %></option>
             <option value='<%= AdminEntity.WITH_TITLE %>'><%= ejbcawebbean.getText("WITHTITLE") %></option>
             <option value='<%= AdminEntity.WITH_ORGANIZATIONUNIT %>'><%= ejbcawebbean.getText("WITHORGANIZATIONUNIT") %></option>
@@ -190,6 +191,9 @@
            }
            if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHWITH].equals(String.valueOf(AdminEntity.WITH_COMMONNAME))){
              out.write(ejbcawebbean.getText("WITHCOMMONNAME"));
+           }
+           if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHWITH].equals(String.valueOf(AdminEntity.WITH_UID))){
+             out.write(ejbcawebbean.getText("WITHUID"));
            }
            if(adminentities[i][AuthorizationDataHandler.ADMIN_ENTITY_MATCHWITH].equals(String.valueOf(AdminEntity.WITH_DNSERIALNUMBER))){
              out.write(ejbcawebbean.getText("WITHDNSERIALNUMBER"));

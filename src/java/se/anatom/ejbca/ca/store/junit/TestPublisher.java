@@ -16,7 +16,7 @@ import junit.framework.*;
 
 /** Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.11 2003-01-12 17:16:35 anatom Exp $
+ * @version $Id: TestPublisher.java,v 1.12 2003-01-19 09:40:10 herrvendil Exp $
  */
 public class TestPublisher extends TestCase {
 
@@ -124,14 +124,14 @@ public class TestPublisher extends TestCase {
     public void test05AddCACert() throws Exception {
         cat.debug(">test05AddCACert()");
         X509Certificate cacert = CertTools.getCertfromByteArray(testcacert);
-        boolean ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), cacert, "test05", null, CertificateData.CERT_ACTIVE, SecConst.USER_CA);
+        boolean ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), cacert, "test05", null, CertificateData.CERT_ACTIVE, SecConst.CERTTYPE_CA);
         assertTrue("Storing certificate failed", ret);
         cat.debug("<test05AddCACert()");
     }
     public void test06AddCACertAgain() throws Exception {
         cat.debug(">test06AddCACertAgain()");
         X509Certificate cacert = CertTools.getCertfromByteArray(testcacert);
-        boolean ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), cacert,"test06", null, CertificateData.CERT_ACTIVE, SecConst.USER_CA);
+        boolean ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), cacert,"test06", null, CertificateData.CERT_ACTIVE, SecConst.CERTTYPE_CA);
         assertTrue("Storing certificate failed", ret);
         cat.debug("<test06AddCACertAgain()");
     }
