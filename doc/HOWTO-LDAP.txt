@@ -176,6 +176,14 @@ ldap://<ldap-server-host>/dc=bigcorp,dc=com??sub?(cn=MyName)?(objectclass=*)
 To get a checkbox at the fetched certificate, the CA certificate must be installed in the Windows truststore,
 not only in Mozillas.
 
+To use SSL against an LDAP server with MS Outlook you must make sure the CN in the LDAP servers certificate 
+is the same as the hostname. An example of adding a user for the LDAP server with the CLI interface is:
+./ra.sh adduser ldap password "C=SE,O=Foo,CN=ldap.foo.se" null MyCA null 1 PEM
+where ldap.foo.se is the hostname of the LDAP server that Outlook shoudl use.
+
+The CA certificate must also be imported into Windows properly.
+
+
 CONFIGURE OpenLDAP
 ==================
 The objectclass 'inetOrgPerson' is used by default to store certificates.
