@@ -32,6 +32,7 @@ import org.apache.log4j.*;
  * Certificate Profile (certificateProfileId)
  * Token Type (tokenType)
  * Hard Token Issuer (hardTokenIssuerId)
+ * KeyStore Password (keyStorePassword), reserved for future use.
  * </pre>
  *
  * Passwords should me manipulated through helper functions setPassword() and setOpenPassword().
@@ -39,7 +40,7 @@ import org.apache.log4j.*;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.13 2002-10-24 20:10:12 herrvendil Exp $
+ * @version $Id: UserDataBean.java,v 1.14 2002-11-12 08:25:36 herrvendil Exp $
  **/
 
 public abstract class UserDataBean implements javax.ejb.EntityBean {
@@ -135,6 +136,12 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
      *  Sets tthe hard token issuer id that should genererate for the users hard token. 0 if issuerid is not applicable.
      */     
     public abstract void setHardTokenIssuerId(int hardtokenissuerid);    
+    
+    
+    // Reserved for future use.    
+    public abstract String getKeyStorePassword();
+    public abstract void setKeyStorePassword(String keystorepassword);
+    
     
     //
     // Public methods used to help us manage passwords

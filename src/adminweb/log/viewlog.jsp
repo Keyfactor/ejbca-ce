@@ -103,14 +103,14 @@
   static final String HIDDEN_SORTBY             = "hiddensortby";
   static final String HIDDEN_RECORDNUMBER       = "hiddenrecordnumber"; 
   static final String HIDDEN_USERNAME           = "hiddenusername";
-  static final String HIDDEN_CERTDN             = "hiddencertdn";
-  static final String HIDDEN_ADMINDN            = "hiddenadmindn";
+  static final String HIDDEN_CERTSERNO          = "hiddencertserno";
+  static final String HIDDEN_ADMINSERNO         = "hiddenadminserno";
 
   static final String VALUE_NONE                = "-1";
   static final String ALL_STATUS                = "-1";
 
   static final String USER_PARAMETER            = "username";
-  static final String SUBJECTDN_PARAMETER       = "subjectdnparameter";
+  static final String CERTSERNO_PARAMETER       = "certsernoparameter";
 
   static final String[] VIEWLASTTIMESTEXTS      = {"15MIN", "1HOUR", "6HOURS", "1DAY", "7DAYS"};
   static final int[]    VIEWLASTTIMES           = {15, 60, 360, 1440, 10080};

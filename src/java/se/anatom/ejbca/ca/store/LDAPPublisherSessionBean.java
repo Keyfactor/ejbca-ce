@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.*;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.10 2002-08-26 11:17:28 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.11 2002-11-12 08:25:27 herrvendil Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
 
@@ -183,6 +183,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
      * Publishes a certificate to LDAP. Creates entry if it does not exist.
      *
      * @param incert The certificate to be stored.
+     * @param username username of end entity owning the certificate.*
      * @param chainfp Fingerprint (hex) of the CAs certificate.
      * @param status Status of the certificate (from CertificateData).
      * @param type Type of certificate (from SecConst).
@@ -190,7 +191,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
      * @return true if storage was succesful.
      * @throws EJBException if a communication or other error occurs.
      */
-    public boolean storeCertificate(Certificate incert, String cafp, int status, int type) {
+    public boolean storeCertificate(Certificate incert, String username, String cafp, int status, int type) {
 
         int ldapVersion  = LDAPConnection.LDAP_V3;
         LDAPConnection lc = new LDAPConnection();

@@ -116,7 +116,6 @@
 
   static final String HIDDEN_SORTBY             = "hiddensortby";
   static final String HIDDEN_USERNAME           = "hiddenusername";
-  static final String HIDDEN_USERDN             = "hiddenuserdn";
   static final String HIDDEN_RECORDNUMBER       = "hiddenrecordnumber"; 
 
   static final String VALUE_NONE                = "-1";

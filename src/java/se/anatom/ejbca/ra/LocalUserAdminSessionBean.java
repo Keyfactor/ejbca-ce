@@ -9,6 +9,7 @@ import javax.naming.*;
 import java.rmi.*;
 import javax.rmi.*;
 import javax.ejb.*;
+import java.math.BigInteger;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.util.CertTools;
@@ -34,7 +35,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.29 2002-10-24 20:10:07 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.30 2002-11-12 08:25:36 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -402,10 +403,42 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
           }
         }  
         setUserStatus(username, UserDataRemote.STATUS_REVOKED);
-        certificatesession.setRevokeStatus(data.getSubjectDN(), reason);
+        certificatesession.setRevokeStatus(username, reason);
         logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_REVOKEDENDENTITY,"");    
         debug("<revokeUser()");
     } // revokeUser
+    
+    /**
+     * Method that revokes a certificate.
+     *
+     * @param certserno, the serno of certificate to revoke.
+     * @param username, the username to revoke.
+     * @param reason, the reason of revokation.
+     */
+    public void revokeCert(BigInteger certserno, String username, int reason) throws AuthorizationDeniedException,FinderException, RemoteException{
+        debug(">revokeCert("+certserno+", " + username + ")"); 
+        UserDataPK pk = new UserDataPK(username);
+        UserDataLocal data;
+        try {
+            data = home.findByPrimaryKey(pk);
+        } catch (ObjectNotFoundException oe) {
+            throw new EJBException(oe);            
+        }        
+         
+        if(globalconfiguration.getEnableEndEntityProfileLimitations()){ 
+          if(!profileauthproxy.getEndEntityProfileAuthorization(data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.REVOKE_RIGHTS)){
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY,"Administrator not authorized");           
+            throw new AuthorizationDeniedException("Not authorized to revoke user : " + username + ".");
+          }
+        } 
+        certificatesession.setRevokeStatus(certserno, reason);
+        
+        if(certificatesession.checkIfAllRevoked(username)){          
+          setUserStatus(username, UserDataRemote.STATUS_REVOKED);
+          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_REVOKEDENDENTITY,"");  
+        }  
+        debug("<revokeCert()");
+    } // revokeUser    
 
     /**
     * Implements IUserAdminSession::findUser.

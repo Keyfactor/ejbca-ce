@@ -9,8 +9,6 @@
 function viewuser(row){
     var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
-    var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERDN %>" + row);
-    var userdn = hiddenusernamefield.value;
     var link = "<%= VIEWUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     window.open(link, 'view_cert',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }
@@ -32,9 +30,7 @@ function viewhistory(row){
 function viewcert(row){
     var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
-    var hiddenuserdnfield = eval("document.form.<%= HIDDEN_USERDN %>" + row);
-    var userdn = hiddenuserdnfield.value;
-    var link = "<%= VIEWCERT_LINK %>?<%= SUBJECTDN_PARAMETER %>="+userdn+"&<%= USER_PARAMETER %>="+username;
+    var link = "<%= VIEWCERT_LINK %>?<%= USER_PARAMETER %>="+username;
     window.open(link, 'view_cert',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }
 
@@ -284,7 +280,6 @@ function confirmrevokation(){
       </td>
     <td width="11%"><%= users[i].getUsername() %>
        <input type="hidden" name='<%= HIDDEN_USERNAME + i %>' value='<%= users[i].getUsername() %>'>
-       <input type="hidden" name='<%= HIDDEN_USERDN + i %>' value='<%= java.net.URLEncoder.encode(users[i].getSubjectDN(),"UTF-8") %>'>
     </td>
     <td width="19%"><%= users[i].getSubjectDNField(DNFieldExtractor.COMMONNAME,0) %></td>
     <td width="17%"><%= users[i].getSubjectDNField(DNFieldExtractor.ORGANIZATIONUNIT,0) %></td>

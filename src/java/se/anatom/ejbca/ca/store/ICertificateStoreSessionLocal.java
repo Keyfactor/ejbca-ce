@@ -13,7 +13,7 @@ import se.anatom.ejbca.ca.store.certificateprofiles.*;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: ICertificateStoreSessionLocal.java,v 1.8 2002-10-24 20:04:20 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionLocal.java,v 1.9 2002-11-12 08:25:27 herrvendil Exp $
  * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
  */
 public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject, IPublisherSessionLocal {
@@ -46,7 +46,17 @@ public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject,
     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
     */
     public Collection findCertificatesBySerno(BigInteger serno);
-
+    
+    /**
+    * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+    */
+    public Collection findCertificatesByUsername(String username);   
+    
+    /**
+    * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+    */    
+    public String findUsernameByCertSerno(BigInteger serno);    
+ 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
@@ -62,6 +72,16 @@ public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject,
      */    
     public void setRevokeStatus(String dn, int reason);
     
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */    
+    public void setRevokeStatus(BigInteger serno, int reason);    
+
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */      
+    public boolean checkIfAllRevoked(String username);    
+      
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */

@@ -68,6 +68,8 @@ public interface CertificateData extends javax.ejb.EJBObject {
     public void setRevocationReason(int revocationReason) throws RemoteException;
     public String getBase64Cert() throws RemoteException;
     public void setBase64Cert(String base64Cert) throws RemoteException;
+    public String getUsername() throws RemoteException;
+    public void setUsername(String username) throws RemoteException;    
 
     // Public helper methods, not directly related to persistance
     public Certificate getCertificate() throws RemoteException;

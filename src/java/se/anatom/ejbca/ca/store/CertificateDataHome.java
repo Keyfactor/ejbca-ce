@@ -45,4 +45,11 @@ public interface CertificateDataHome extends javax.ejb.EJBHome {
      */
     public Collection findBySerialNumber(String serialNumber)
         throws FinderException, RemoteException;
+    
+    /** Finds the certificate which a specified Username.
+     * @param username of the certificates that is wanted.
+     * @return Collection of CertificateData in no specified order (should only contain one!).
+     */
+    public Collection findByUsername(String username)
+        throws FinderException, RemoteException;    
 }

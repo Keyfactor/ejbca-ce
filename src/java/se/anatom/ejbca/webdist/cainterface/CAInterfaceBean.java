@@ -48,7 +48,7 @@ import se.anatom.ejbca.log.Admin;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.9 2002-10-24 20:12:01 herrvendil Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.10 2002-11-12 08:25:38 herrvendil Exp $
  */
 public class CAInterfaceBean   {
 
@@ -86,7 +86,7 @@ public class CAInterfaceBean   {
           RevokedCertInfo revinfo = certificatesession.isRevoked(((X509Certificate) chain[i]).getIssuerDN().toString(), ((X509Certificate) chain[i]).getSerialNumber());
           if(revinfo != null)
             revokedinfo = new RevokedInfoView(revinfo);
-          returnval[i] = new CertificateView((X509Certificate) chain[i], revokedinfo);
+          returnval[i] = new CertificateView((X509Certificate) chain[i], revokedinfo,null);
         }
       }
 

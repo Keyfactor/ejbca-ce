@@ -59,7 +59,7 @@ import se.anatom.ejbca.SecConst;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.16 2002-11-07 10:31:09 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.17 2002-11-12 08:25:37 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -162,7 +162,7 @@ public class RAInterfaceBean {
       return success;
     }
 
-    /** Revokes the the given users.
+    /** Revokes the given users.
      *
      * @param users an array of usernames to revoke.
      * @param reason reason(s) of revokation.
@@ -179,6 +179,22 @@ public class RAInterfaceBean {
       } 
       return success;
     }
+    
+    /** Revokes the  certificate with certificate serno.
+     *
+     * @param serno serial number of certificate to revoke.
+     * @param reason reason(s) of revokation.
+     * @return false if administrator wasn't authorized to revoke the given certificate.
+     */
+    public boolean revokeCert(BigInteger serno, String username, int reason) throws  Exception{
+      boolean success = true;
+      try{
+        adminsession.revokeCert(serno, username, reason); 
+      }catch( AuthorizationDeniedException e){
+        success =false;   
+      } 
+      return success;
+    }    
 
     /* Changes the userdata  */
     public void changeUserData(UserView userdata) throws Exception {
@@ -463,10 +479,10 @@ public class RAInterfaceBean {
       profiles.cloneEndEntityProfile(originalname, newname);
     }
 
-    public void loadCertificates(String subjectdn) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
-      Collection certs = certificatesession.findCertificatesBySubject(subjectdn);
+    public void loadCertificates(String username) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
+      Collection certs = certificatesession.findCertificatesByUsername(username);
       
-      UserAdminData user = adminsession.findUserBySubjectDN(subjectdn);
+      UserAdminData user = adminsession.findUser(username);
       
       if(!certs.isEmpty()){
         Iterator j = certs.iterator();
@@ -477,13 +493,36 @@ public class RAInterfaceBean {
           RevokedCertInfo revinfo = certificatesession.isRevoked(cert.getIssuerDN().toString(), cert.getSerialNumber());
           if(revinfo != null)
             revokedinfo = new RevokedInfoView(revinfo);
-           certificates[i] = new CertificateView(cert, revokedinfo);
+           certificates[i] = new CertificateView(cert, revokedinfo, username);
         }
       }
       else{
         certificates = null;
       }
     }
+    
+    public void loadCertificates(BigInteger serno) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
+      Collection certs = certificatesession.findCertificatesBySerno(serno);
+      String username = certificatesession.findUsernameByCertSerno(serno);
+      
+      UserAdminData user = adminsession.findUser(username);
+      
+      if(!certs.isEmpty()){
+        Iterator j = certs.iterator();
+        certificates = new CertificateView[certs.size()];
+        for(int i=0; i< certificates.length; i++){
+          RevokedInfoView revokedinfo = null;
+          X509Certificate cert = (X509Certificate) j.next();
+          RevokedCertInfo revinfo = certificatesession.isRevoked(cert.getIssuerDN().toString(), cert.getSerialNumber());
+          if(revinfo != null)
+            revokedinfo = new RevokedInfoView(revinfo);
+           certificates[i] = new CertificateView(cert, revokedinfo, username);
+        }
+      }
+      else{
+        certificates = null;
+      }
+    }    
 
     public int getNumberOfCertificates(){
       int returnval=0;

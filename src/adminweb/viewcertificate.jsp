@@ -2,8 +2,8 @@
 
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.GlobalConfiguration, 
-                 se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.CertificateView,
+<%@page errorPage="/errorpage.jsp"  import="java.math.BigInteger, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.GlobalConfiguration, 
+                 se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.CertificateView, se.anatom.ejbca.webdist.rainterface.RevokedInfoView,
                  javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.ra.authorization.AuthorizationDeniedException" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -11,13 +11,14 @@
 <jsp:setProperty name="rabean" property="*" /> 
 <%! // Declarations
  
-  static final String SUBJECTDN_PARAMETER        = "subjectdnparameter";
-  static final String USER_PARAMETER             = "userparameter";
+  static final String USER_PARAMETER             = "username";
+  static final String CERTSERNO_PARAMETER        = "certsernoparameter";
 
 
   static final String BUTTON_CLOSE               = "buttonclose"; 
   static final String BUTTON_VIEW_PREVIOUS       = "buttonviewprevious"; 
   static final String BUTTON_VIEW_NEXT           = "buttonviewnext";
+  static final String BUTTON_REVOKE              = "buttonrevoke";
 
   static final String CHECKBOX_DIGITALSIGNATURE  = "checkboxdigitalsignature";
   static final String CHECKBOX_NONREPUDATION     = "checkboxnonrepudation";
@@ -29,6 +30,8 @@
   static final String CHECKBOX_ENCIPHERONLY      = "checkboxencipheronly";
   static final String CHECKBOX_DECIPHERONLY      = "checkboxdecipheronly";
 
+  static final String SELECT_REVOKE_REASON       = "selectrevokationreason";
+
   static final String CHECKBOX_VALUE             = "true";
 
   static final String HIDDEN_INDEX               = "hiddenindex";
@@ -39,25 +42,33 @@
                                             rabean.initialize(request);
   String THIS_FILENAME            =  globalconfiguration.getAdminWebPath()  + "viewcertificate.jsp";
 
-  boolean nosubjectdnparameter    = true;
+  boolean noparameter             = true;
   boolean notauthorized           = true;
   CertificateView certificatedata = null;
-  String certificatesubjectdn     = null;
+  String certificateserno         = null;
   String username                 = null;         
   int numberofcertificates        = 0;
   int currentindex                = 0;
   
-  if( request.getParameter(USER_PARAMETER ) != null ){
-    username = request.getParameter(USER_PARAMETER );
+  if( request.getParameter(USER_PARAMETER ) != null){
+     username = request.getParameter(USER_PARAMETER );
+     noparameter = false;
   }
 
-  if( request.getParameter(SUBJECTDN_PARAMETER) != null ){
-    nosubjectdnparameter = false;
-    if(request.getParameter(BUTTON_VIEW_PREVIOUS) == null && request.getParameter(BUTTON_VIEW_NEXT) == null){
+  if( request.getParameter(CERTSERNO_PARAMETER ) != null){
+     certificateserno = request.getParameter(CERTSERNO_PARAMETER );
+     noparameter = false;
+  }
+
+  if(!noparameter){
+    if(request.getParameter(BUTTON_VIEW_PREVIOUS) == null && request.getParameter(BUTTON_VIEW_NEXT) == null && 
+       request.getParameter(BUTTON_REVOKE) == null){
       // load certificates and get the one with latest expiring date.
-      certificatesubjectdn = request.getParameter(SUBJECTDN_PARAMETER);
       try{
-        rabean.loadCertificates(certificatesubjectdn);
+        if(username != null)
+          rabean.loadCertificates(username);
+        else
+          rabean.loadCertificates(new BigInteger(certificateserno,16));
         notauthorized = false;
       }catch(AuthorizationDeniedException e){
       }
@@ -65,6 +76,23 @@
       if(numberofcertificates > 0)
         certificatedata = rabean.getCertificate(0);
     }
+    if(request.getParameter(BUTTON_REVOKE) != null && request.getParameter(HIDDEN_INDEX)!= null){
+      currentindex = Integer.parseInt(request.getParameter(HIDDEN_INDEX)); 
+      int reason = Integer.parseInt(request.getParameter(SELECT_REVOKE_REASON));
+      certificatedata = rabean.getCertificate(currentindex);
+      rabean.revokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getUsername(),reason);
+      try{
+        if(username != null)
+          rabean.loadCertificates(username);
+        else
+          rabean.loadCertificates(new BigInteger(certificateserno,16));
+        notauthorized = false;
+      }catch(AuthorizationDeniedException e){
+      }
+      numberofcertificates = rabean.getNumberOfCertificates();
+      certificatedata = rabean.getCertificate(currentindex);
+    }
+
     if(request.getParameter(BUTTON_VIEW_PREVIOUS) != null){
        numberofcertificates = rabean.getNumberOfCertificates();
        if(request.getParameter(HIDDEN_INDEX)!= null){
@@ -94,14 +122,29 @@
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
   <script language=javascript src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
+  <script language=javascript>
+<!--
+function confirmrevokation(){
+  var returnval = false;
+  if(document.viewcertificate.<%= SELECT_REVOKE_REASON %>.options.selectedIndex == -1){
+     alert("<%= ejbcawebbean.getText("AREVOKEATIONREASON") %>"); 
+     returnval = false;
+  }else{
+    returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKECERT") %>");
+  } 
+  return returnval;
+}
+-->
+</script>
+
 </head>
 <body >
   <h2 align="center"><%= ejbcawebbean.getText("VIEWCERTIFICATE") %></h2>
   <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("viewcertificate_help.html") %>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A>
   </div>
-  <%if(nosubjectdnparameter){%>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYCERT") + "'" + SUBJECTDN_PARAMETER + "'"%></h4></div> 
+  <%if(noparameter){%>
+  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYCERT") %></h4></div> 
   <% } 
      else{
       if(notauthorized){%>
@@ -114,9 +157,11 @@
          else{ %>
 
   <form name="viewcertificate" action="<%= THIS_FILENAME %>" method="post">
-     <input type="hidden" name='<%= SUBJECTDN_PARAMETER %>' value='<%=certificatesubjectdn %>'> 
      <% if(username != null){ %>
      <input type="hidden" name='<%= USER_PARAMETER %>' value='<%=username %>'> 
+     <% } 
+        if(certificateserno != null){ %>
+     <input type="hidden" name='<%= CERTSERNO_PARAMETER %>' value='<%=certificateserno %>'> 
      <% } %>
      <input type="hidden" name='<%= HIDDEN_INDEX %>' value='<%=currentindex %>'>
      <table border="0" cellpadding="0" cellspacing="2" width="400">
@@ -290,6 +335,23 @@
           <% if(currentindex < numberofcertificates -1 ){ %>
           &nbsp;&nbsp;&nbsp;<input type="submit" name="<%= BUTTON_VIEW_NEXT %>" value="<%= ejbcawebbean.getText("VIEWNEXT") %>" tabindex="3">
           <% } %>
+          &nbsp;
+          </td>
+       </tr> 
+       <tr id="Row0">
+          <td>&nbsp;</td>
+          <td>
+       <% if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) && !certificatedata.isRevoked()){ %>
+        <input type="submit" name="<%=BUTTON_REVOKE %>" value="<%= ejbcawebbean.getText("REVOKE") %>"
+               onClick='return confirmrevokation()'><br>
+        <select name="<%=SELECT_REVOKE_REASON %>" >
+          <% for(int i=0; i < RevokedInfoView.reasontexts.length; i++){ 
+               if(i!= 7){%>
+               <option value='<%= i%>'><%= ejbcawebbean.getText(RevokedInfoView.reasontexts[i]) %></option>
+          <%   } 
+             }
+          }%> 
+        </select>
           &nbsp;
           </td>
        </tr> 

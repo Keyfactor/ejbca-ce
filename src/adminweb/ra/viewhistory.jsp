@@ -42,15 +42,15 @@
   static final String HIDDEN_SORTBY             = "hiddensortby";
   static final String HIDDEN_RECORDNUMBER       = "hiddenrecordnumber"; 
   static final String HIDDEN_USERNAME           = "hiddenusername";
-  static final String HIDDEN_CERTDN             = "hiddencertdn";
-  static final String HIDDEN_ADMINDN            = "hiddenadmindn";
+  static final String HIDDEN_CERTSERNO          = "hiddencertserno";
+  static final String HIDDEN_ADMINSERNO         = "hiddenadminserno";
 
   static final String VALUE_NONE                = "-1";
 
   static final String USER_PARAMETER            = "username";
-  static final String SUBJECTDN_PARAMETER       = "subjectdnparameter";
+  static final String CERTSERNO_PARAMETER       = "certsernoparameter";
 
-  static final String[] ADMINTYPES              = {"CLIENTCERT","PUBLICWEBUSER","RACMDLINE","CACMDLINE"};
+  final String[] ADMINTYPES             = Admin.ADMINTYPETEXTS;
 %><%
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ra_functionallity/view_end_entity_history"); 
@@ -205,19 +205,16 @@ function viewuser(row){
 }
 
 function viewadmincert(row){
-    var username = "";
-    var hiddenuserdnfield = eval("document.form.<%= HIDDEN_ADMINDN %>" + row);
-    var userdn = hiddenuserdnfield.value;
-    var link = "<%= VIEWCERT_LINK %>?<%= SUBJECTDN_PARAMETER %>="+userdn+"&<%= USER_PARAMETER %>="+username;
+    var hiddencertsernofield = eval("document.form.<%= HIDDEN_ADMINSERNO %>" + row);
+    var certserno = hiddencertsernofield.value;
+    var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>="+certserno;
     window.open(link, 'view_cert',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }
 
 function viewcert(row){
-    var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
-    var username = hiddenusernamefield.value;
-    var hiddenuserdnfield = eval("document.form.<%= HIDDEN_CERTDN %>" + row);
-    var userdn = hiddenuserdnfield.value;
-    var link = "<%= VIEWCERT_LINK %>?<%= SUBJECTDN_PARAMETER %>="+userdn+"&<%= USER_PARAMETER %>="+username;
+    var hiddencertsernofield = eval("document.form.<%= HIDDEN_CERTSERNO %>" + row);
+    var certserno = hiddencertsernofield.value;
+    var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>="+certserno;
     window.open(link, 'view_cert',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }
 
@@ -357,8 +354,8 @@ function viewcert(row){
          for(int i=0; i < logentries.length; i++){%>
   <tr id="LogTextRow<%= i%2 %>"> 
        <input type="hidden" name='<%= HIDDEN_USERNAME + i %>' value='<%= logentries[i].getValue(LogEntryView.USERNAME) %>'>
-       <input type="hidden" name='<%= HIDDEN_CERTDN + i %>' value='<% if(logentries[i].getValue(LogEntryView.CERTIFICATEDN) != null) out.print(java.net.URLEncoder.encode(logentries[i].getValue(LogEntryView.CERTIFICATEDN),"UTF-8")); %>'>
-       <input type="hidden" name='<%= HIDDEN_ADMINDN + i %>' value='<% if(logentries[i].getValue(LogEntryView.ADMINCERTDN) != null) out.print(java.net.URLEncoder.encode(logentries[i].getValue(LogEntryView.ADMINCERTDN),"UTF-8")); %>'>
+       <input type="hidden" name='<%= HIDDEN_CERTSERNO + i %>' value='<% if(logentries[i].getValue(LogEntryView.CERTIFICATESERNO) != null) out.print(java.net.URLEncoder.encode(logentries[i].getValue(LogEntryView.CERTIFICATESERNO),"UTF-8")); %>'>
+       <input type="hidden" name='<%= HIDDEN_ADMINSERNO + i %>' value='<% if(logentries[i].getValue(LogEntryView.ADMINCERTSERNO) != null) out.print(java.net.URLEncoder.encode(logentries[i].getValue(LogEntryView.ADMINCERTSERNO),"UTF-8")); %>'>
     <td width="10%"><%= logentries[i].getValue(LogEntryView.TIME) %></td>
     <td width="10%"><%= ejbcawebbean.getText(ADMINTYPES[Integer.parseInt(logentries[i].getValue(LogEntryView.ADMINTYPE))]) %></td>
     <td width="20%">
@@ -380,7 +377,7 @@ function viewcert(row){
         <u><%= logentries[i].getValue(LogEntryView.USERNAME) %></u> </A>
                     <% } %>
     </td>
-    <td width="20%"><% if(logentries[i].getValue(LogEntryView.CERTIFICATEDN) == null)
+    <td width="20%"><% if(logentries[i].getValue(LogEntryView.CERTIFICATESERNO) == null)
                          out.write(ejbcawebbean.getText("NOCERTIFICATEINVOLVED"));
                        else
                          if(logentries[i].getValue(LogEntryView.CERTIFICATE).equals(""))

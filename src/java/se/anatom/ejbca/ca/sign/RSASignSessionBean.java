@@ -48,7 +48,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.49 2002-11-10 10:38:47 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.50 2002-11-12 08:25:37 herrvendil Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -278,12 +278,12 @@ public class RSASignSessionBean extends BaseSessionBean {
                 cert.verify(caCert.getPublicKey());
                 // Store certificate in the database
                 ICertificateStoreSessionLocal certificateStore = storeHome.create(admin);
-                certificateStore.storeCertificate(cert, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
+                certificateStore.storeCertificate(cert, username, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
                 // Call authentication session and tell that we are finished with this user
                 for (int i=0;i<publishers.size();i++) {
                     IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(i);
                     IPublisherSessionLocal pub = pubHome.create();
-                    pub.storeCertificate(cert, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
+                    pub.storeCertificate(cert, username, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
                 }
                 if (finishUser.booleanValue() == true)
                     authSession.finishUser(username, password);

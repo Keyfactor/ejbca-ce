@@ -76,6 +76,9 @@ public abstract class CertificateDataBean implements javax.ejb.EntityBean {
     public abstract void setRevocationReason(int revocationReason);
     public abstract String getBase64Cert();
     public abstract void setBase64Cert(String base64Cert);
+    
+    public abstract String getUsername();
+    public abstract void setUsername(String username);
 
     //
     // Public business methods used to help us manage certificates

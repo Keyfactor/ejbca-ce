@@ -33,7 +33,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.27 2002-10-24 20:04:30 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.28 2002-11-12 08:25:26 herrvendil Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -114,7 +114,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * Implements ICertificateStoreSession::storeCertificate.
      * Implements a mechanism that uses Certificate Entity Bean.
      */
-    public boolean storeCertificate(Certificate incert, String cafp, int status, int type) {
+    public boolean storeCertificate(Certificate incert, String username, String cafp, int status, int type) {
         debug(">storeCertificate("+cafp+", "+status+", "+type+")");
         try {
             X509Certificate cert = (X509Certificate)incert;
@@ -123,6 +123,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE,"");             
             CertificateDataLocal data1=null;
             data1 = certHome.create(cert);
+            data1.setUsername(username);
             data1.setCAFingerprint(cafp);
             data1.setStatus(status);
             data1.setType(type);
@@ -329,14 +330,56 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
     } // findCertificateBySerno
     
+    /**
+     * Implements ICertificateStoreSession::findUsernameByCertSerno.
+     */    
+    public String findUsernameByCertSerno(BigInteger serno){
+        debug(">findUsernameByCertSerno(),  serno="+serno);
+        try {
+            Collection coll = certHome.findBySerialNumber(serno.toString());
+            String ret = null;
+            if (coll != null) {
+                Iterator iter = coll.iterator();
+                while (iter.hasNext()) {
+                    ret = ((CertificateDataLocal)iter.next()).getUsername();
+                }
+            }
+            debug("<findUsernameByCertSerno(), serno="+serno);
+            return ret;
+        } catch (javax.ejb.FinderException fe) {
+            throw new EJBException(fe);
+        }        
+    } // findUsernameByCertSerno
+    
+    /**
+     * Implements ICertificateStoreSession::findCertificatesByUsername.
+     */
+    public Collection findCertificatesByUsername(String username) {
+        debug(">findCertificateBySerno(),  username="+username);
+        try {
+            Collection coll = certHome.findByUsername(username);
+            ArrayList ret = new ArrayList();
+            if (coll != null) {
+                Iterator iter = coll.iterator();
+                while (iter.hasNext()) {
+                    ret.add(((CertificateDataLocal)iter.next()).getCertificate());
+                }
+            }
+            debug("<findCertificateBySerno(), username="+username);
+            return ret;
+        } catch (javax.ejb.FinderException fe) {
+            throw new EJBException(fe);
+        }
+    } // findCertificateByUsername    
+    
     /** 
-     * Set the status of certificates of given dn to revoked.
+     * Set the status of certificates of given username to revoked.
      * @param dn the dn of user to revoke certificates.
      */
-    public void setRevokeStatus(String dn, int reason) {
+    public void setRevokeStatus(String username, int reason) {
        X509Certificate certificate = null; 
        try{ 
-         Collection certs = findCertificatesBySubject(dn);
+         Collection certs = findCertificatesByUsername(username);
           // Revoke all certs
          if (!certs.isEmpty()) {
            Iterator j = certs.iterator();
@@ -360,13 +403,85 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
          
        }catch(FinderException e){
           try{ 
-            logsession.log(admin,  LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT,("Couldn't find certificate with dn :" + dn));     
+            logsession.log(admin,  LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT,("Couldn't find certificate with username :" + username));     
           }catch(RemoteException f){
           throw new EJBException(f);              
           }    
           throw new EJBException(e);           
        }
     } // setRevokeStatus   
+    
+    /** 
+     * Set the status of certificate of serno to revoked.
+     * @param dn the serno of user to revoke certificates.
+     */
+    public void setRevokeStatus(BigInteger serno, int reason) {
+       X509Certificate certificate = null; 
+       try{ 
+         Collection certs = findCertificatesBySerno(serno);
+          // Revoke all certs
+         if (!certs.isEmpty()) {
+           Iterator j = certs.iterator();
+           while (j.hasNext()) {
+             CertificateDataPK revpk = new CertificateDataPK();
+             certificate = (X509Certificate) j.next();
+             revpk.fingerprint = CertTools.getFingerprintAsString(certificate);
+             CertificateDataLocal rev = certHome.findByPrimaryKey(revpk);
+             if (rev.getStatus() != CertificateData.CERT_REVOKED) {  
+              rev.setStatus(CertificateData.CERT_REVOKED);
+              rev.setRevocationDate(new Date());
+              rev.setRevocationReason(reason);
+              try{
+                logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_REVOKEDCERT,("Reason :" + reason)); 
+              }catch(RemoteException re){
+                throw new EJBException(re);              
+              }                
+            }
+          }
+         }
+         
+       }catch(FinderException e){
+          try{ 
+            logsession.log(admin,  LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT,("Couldn't find certificate with serno :" + serno));     
+          }catch(RemoteException f){
+          throw new EJBException(f);              
+          }    
+          throw new EJBException(e);           
+       }
+    } // setRevokeStatus      
+    
+    /**
+     *  Method that checks if a users all certificates have been revoked.
+     *
+     *  @param username the username to check for.
+     *  @return returns true if all certificates are revoked.
+     */
+    public boolean checkIfAllRevoked(String username){
+       boolean returnval = true; 
+       X509Certificate certificate = null; 
+       try{ 
+         Collection certs = findCertificatesByUsername(username);
+          // Revoke all certs
+         if (!certs.isEmpty()) {
+           Iterator j = certs.iterator();
+           while (j.hasNext()) {
+             CertificateDataPK revpk = new CertificateDataPK();
+             certificate = (X509Certificate) j.next();
+             revpk.fingerprint = CertTools.getFingerprintAsString(certificate);
+             CertificateDataLocal rev = certHome.findByPrimaryKey(revpk);
+             if (rev.getStatus() != CertificateData.CERT_REVOKED) {
+                returnval=false; 
+          
+            }
+          }
+         }
+         
+       }catch(FinderException e){
+          throw new EJBException(e);           
+       }        
+        
+       return returnval;
+    }
     
 
     /**

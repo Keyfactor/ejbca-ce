@@ -7,6 +7,7 @@
 package se.anatom.ejbca.webdist.rainterface;
 
 import java.util.Date;
+import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -38,9 +39,10 @@ public class CertificateView {
    
         
     /** Creates a new instance of CertificateView */
-    public CertificateView(X509Certificate certificate, RevokedInfoView revokedinfo) {
+    public CertificateView(X509Certificate certificate, RevokedInfoView revokedinfo, String username) {
       this.certificate=certificate;
       this.revokedinfo= revokedinfo;  
+      this.username=username;
       
       subjectdnfieldextractor = new DNFieldExtractor(certificate.getSubjectDN().toString(), DNFieldExtractor.TYPE_SUBJECTDN); 
       issuerdnfieldextractor  = new DNFieldExtractor(certificate.getIssuerDN().toString(), DNFieldExtractor.TYPE_SUBJECTDN);  
@@ -60,6 +62,10 @@ public class CertificateView {
     public String getSerialNumber() {
       return certificate.getSerialNumber().toString(16).toUpperCase();
     }
+    
+    public BigInteger getSerialNumberBigInt() {
+      return certificate.getSerialNumber();
+    }    
     
     public String getIssuerDN() {
       return certificate.getIssuerDN().toString();  
@@ -191,8 +197,13 @@ public class CertificateView {
       return returnval;
     }
     
+    public String getUsername(){
+      return this.username;  
+    } 
+    
     // Private fields
     private X509Certificate  certificate;    
     private DNFieldExtractor subjectdnfieldextractor, issuerdnfieldextractor;
     private RevokedInfoView  revokedinfo;
+    private String           username;
 }

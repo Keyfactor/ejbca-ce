@@ -242,7 +242,43 @@
       <cmp-field><field-name>endEntityProfileId</field-name></cmp-field>
       <cmp-field><field-name>certificateProfileId</field-name></cmp-field>    
       <cmp-field><field-name>tokenType</field-name></cmp-field> 
-      <cmp-field><field-name>hardTokenIssuerId</field-name></cmp-field>                                      
+      <cmp-field><field-name>hardTokenIssuerId</field-name></cmp-field> 
+      <cmp-field><field-name>keyStorePassword</field-name></cmp-field>      
+      
+      <query>
+      	<query-method>
+      	  <method-name>findBySubjectDN</method-name>
+      	  <method-params>
+      	    <method-param>java.lang.String</method-param>
+      	  </method-params>
+      	</query-method>
+	<ejb-ql>
+	  <![CDATA[SELECT DISTINCT OBJECT(a) from UserDataBean a WHERE a.subjectDN=?1]]>
+	</ejb-ql>
+      </query>    
+      <query>
+      	<query-method>
+      	  <method-name>findBySubjectEmail</method-name>
+      	  <method-params>
+      	    <method-param>java.lang.String</method-param>
+      	  </method-params>
+      	</query-method>
+	<ejb-ql>
+	  <![CDATA[SELECT DISTINCT OBJECT(a) from UserDataBean a WHERE a.subjectEmail=?1]]>
+	</ejb-ql>
+      </query>    
+      <query>
+      	<query-method>
+      	  <method-name>findByStatus</method-name>
+      	  <method-params>
+      	    <method-param>int</method-param>
+      	  </method-params>
+      	</query-method>
+	<ejb-ql>
+	  <![CDATA[SELECT DISTINCT OBJECT(a) from UserDataBean a WHERE a.status=?1]]>
+	</ejb-ql>
+      </query>                
+                                                 
    </entity>
    
    <entity>
@@ -261,6 +297,18 @@
       <cmp-field><field-name>configurationId</field-name></cmp-field>
       <cmp-field><field-name>data</field-name></cmp-field>    
       <primkey-field>configurationId</primkey-field>  
+      
+      <query>
+      	<query-method>
+      	  <method-name>findByConfigurationId</method-name>
+      	  <method-params>
+      	    <method-param>java.lang.String</method-param>
+      	  </method-params>
+      	</query-method>
+	<ejb-ql>
+	  <![CDATA[SELECT DISTINCT OBJECT(a) from GlobalConfigurationDataBean a WHERE a.configurationId=?1]]>
+	</ejb-ql>
+      </query>            
    </entity>
    
    <entity>
@@ -298,6 +346,18 @@
       <cmp-field><field-name>profileName</field-name></cmp-field>
       <cmp-field><field-name>data</field-name></cmp-field>
       <primkey-field>id</primkey-field>  
+      
+      <query>
+      	<query-method>
+      	  <method-name>findByProfileName</method-name>
+      	  <method-params>
+      	    <method-param>java.lang.String</method-param>
+      	  </method-params>
+      	</query-method>
+	<ejb-ql>
+	  <![CDATA[SELECT DISTINCT OBJECT(a) from EndEntityProfileDataBean a WHERE a.profileName=?1]]>
+	</ejb-ql>
+      </query>           
    </entity>   
 
    <entity>
@@ -620,7 +680,11 @@
      <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>revokeUser</method-name>
-     </method>     
+     </method>  
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>revokeCert</method-name>
+     </method>         
      <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>setPassword</method-name>

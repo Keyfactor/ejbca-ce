@@ -15,7 +15,7 @@ import java.security.cert.X509CRL;
  *
  * Remote interface for EJB.
  *
- * @version $Id: IPublisherSessionRemote.java,v 1.2 2002-06-04 14:37:07 anatom Exp $
+ * @version $Id: IPublisherSessionRemote.java,v 1.3 2002-11-12 08:25:26 herrvendil Exp $
  */
 public interface IPublisherSessionRemote extends javax.ejb.EJBObject {
 
@@ -24,13 +24,14 @@ public interface IPublisherSessionRemote extends javax.ejb.EJBObject {
     *
     * @param incert The certificate to be stored.
     * @param chainfp Fingerprint (hex) of the CAs certificate.
+    * @param username username of end entity owning the certificate.
     * @param status Status of the certificate (from CertificateData).
     * @param type Type of certificate (from SecConst).
     *
     * @return true if storage was succesful.
     * @throws EJBException if a communication or other error occurs.
     */
-    public boolean storeCertificate(Certificate incert, String cafp, int status, int type) throws RemoteException;
+    public boolean storeCertificate(Certificate incert, String username, String cafp, int status, int type) throws RemoteException;
 
    /**
     * Published a CRL to a CRL store.

@@ -30,6 +30,8 @@ public interface CertificateDataLocal extends javax.ejb.EJBLocalObject {
     public void setRevocationReason(int revocationReason);
     public String getBase64Cert();
     public void setBase64Cert(String base64Cert);
+    public String getUsername();
+    public void setUsername(String username);        
 
     // Public helper methods, not directly related to persistance
     public Certificate getCertificate();

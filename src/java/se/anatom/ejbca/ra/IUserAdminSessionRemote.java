@@ -1,6 +1,7 @@
 package se.anatom.ejbca.ra;
 
 import java.util.Collection;
+import java.math.BigInteger;
 
 import java.rmi.RemoteException;
 import javax.ejb.FinderException;
@@ -15,7 +16,7 @@ import se.anatom.ejbca.ra.authorization.AdminInformation;
 
 /**
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.10 2002-10-24 20:10:10 herrvendil Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.11 2002-11-12 08:25:36 herrvendil Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
 
@@ -93,7 +94,16 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      */    
     public void revokeUser(String username,int reason) throws AuthorizationDeniedException,FinderException, RemoteException;    
 
-   /**
+    /**
+     * Method that revokes a users certificate and sets users status to revoked if all certificates are revoked.
+     *
+     * @param certserno, the certificate serial number of certificate
+     * @param username, the username to revoke.
+     * @param reason, the reason of revokation.
+     */           
+    public void revokeCert(BigInteger certserno, String username, int reason) throws AuthorizationDeniedException,FinderException, RemoteException;    
+
+    /**
     * Sets a new password for a user.
     *
     * @param username the unique username.

@@ -26,11 +26,11 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
     public static final int TIME              = 0;
     public static final int ADMINTYPE         = 1;
     public static final int ADMINDATA         = 2;
-    public static final int ADMINCERTDN       = 3;
+    public static final int ADMINCERTSERNO    = 3;
     public static final int MODULE            = 4;
     public static final int USERNAME          = 5;
     public static final int CERTIFICATE       = 6;
-    public static final int CERTIFICATEDN     = 7;
+    public static final int CERTIFICATESERNO  = 7;
     public static final int EVENT             = 8;
     public static final int COMMENT           = 9;
    
@@ -86,7 +86,7 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
           String dnstring = dnproxy.getSubjectDN(logentry.getAdminData());
           if(dnstring !=null){
             DNFieldExtractor dn = new DNFieldExtractor(dnstring, DNFieldExtractor.TYPE_SUBJECTDN);           
-            logentrydata[ADMINCERTDN] = dnstring;
+            logentrydata[ADMINCERTSERNO] = logentry.getAdminData();
             logentrydata[ADMINDATA] = dn.getField(DNFieldExtractor.COMMONNAME,0) + ", " + dn.getField(DNFieldExtractor.ORGANIZATION,0);
           }  
        }else{
@@ -109,14 +109,14 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
        if(logentrydata[USERNAME] != null && logentrydata[USERNAME].trim().equals(""))
          logentrydata[USERNAME] = null;  
 
-       logentrydata[CERTIFICATEDN] = logentry.getCertificateSNR();
+       logentrydata[CERTIFICATESERNO] = logentry.getCertificateSNR();
        if(logentry.getCertificateSNR() != null) 
          if(logentry.getCertificateSNR().trim().equals(""))
-            logentrydata[CERTIFICATEDN] = null;
+            logentrydata[CERTIFICATESERNO] = null;
          else   
-            logentrydata[CERTIFICATEDN] = dnproxy.getSubjectDN(logentry.getCertificateSNR());
+            logentrydata[CERTIFICATESERNO] = logentry.getCertificateSNR();
          
-       if(logentrydata[CERTIFICATEDN] != null){
+       if(logentrydata[CERTIFICATESERNO] != null){
           String dnstring = dnproxy.getSubjectDN(logentry.getCertificateSNR()); 
           if(dnstring != null){
             DNFieldExtractor dn = new DNFieldExtractor(dnstring, DNFieldExtractor.TYPE_SUBJECTDN); 

@@ -17,7 +17,7 @@ import junit.framework.*;
 
 /** Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.8 2002-06-04 14:37:11 anatom Exp $
+ * @version $Id: TestPublisher.java,v 1.9 2002-11-12 08:25:35 herrvendil Exp $
  */
 public class TestPublisher extends TestCase {
 
@@ -96,14 +96,14 @@ public class TestPublisher extends TestCase {
     public void test01AddCertificate() throws Exception {
         cat.debug(">test01AddCertificate()");
         X509Certificate cert = CertTools.getCertfromByteArray(testcert);
-        boolean ret = pub.storeCertificate(cert, null, CertificateData.CERT_ACTIVE, SecConst.USER_ENDUSER);
+        boolean ret = pub.storeCertificate(cert, "test01", null, CertificateData.CERT_ACTIVE, SecConst.USER_ENDUSER);
         assertTrue("Storing certificate failed", ret);
         cat.debug("<test01AddCertificate()");
     }
     public void test02AddCertAgain() throws Exception {
         cat.debug(">test02AddCertAgain()");
         X509Certificate cert = CertTools.getCertfromByteArray(testcert);
-        boolean ret = pub.storeCertificate(cert, null, CertificateData.CERT_ACTIVE, SecConst.USER_ENDUSER);
+        boolean ret = pub.storeCertificate(cert, "test02",  null, CertificateData.CERT_ACTIVE, SecConst.USER_ENDUSER);
         assertTrue("Storing certificate failed", ret);
         cat.debug("<test02AddCertAgain()");
     }
@@ -125,14 +125,14 @@ public class TestPublisher extends TestCase {
     public void test05AddCACert() throws Exception {
         cat.debug(">test05AddCACert()");
         X509Certificate cacert = CertTools.getCertfromByteArray(testcacert);
-        boolean ret = pub.storeCertificate(cacert, null, CertificateData.CERT_ACTIVE, SecConst.USER_CA);
+        boolean ret = pub.storeCertificate(cacert, "test05", null, CertificateData.CERT_ACTIVE, SecConst.USER_CA);
         assertTrue("Storing certificate failed", ret);
         cat.debug("<test05AddCACert()");
     }
     public void test06AddCACertAgain() throws Exception {
         cat.debug(">test06AddCACertAgain()");
         X509Certificate cacert = CertTools.getCertfromByteArray(testcacert);
-        boolean ret = pub.storeCertificate(cacert, null, CertificateData.CERT_ACTIVE, SecConst.USER_CA);
+        boolean ret = pub.storeCertificate(cacert,"test06", null, CertificateData.CERT_ACTIVE, SecConst.USER_CA);
         assertTrue("Storing certificate failed", ret);
         cat.debug("<test06AddCACertAgain()");
     }

@@ -21,7 +21,7 @@ import se.anatom.ejbca.ca.store.certificateprofiles.*;
  *
  * Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.7 2002-10-24 20:04:23 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.8 2002-11-12 08:25:27 herrvendil Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote  {
         
@@ -72,6 +72,26 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     *
     */
     public Collection findCertificatesBySerno(BigInteger serno) throws RemoteException;
+    
+    /**
+    * Finds certificate(s) for a given usernaem.
+    * @param username the usernaem of the certificate(s) that will be retrieved
+    * @return Certificate or null if none found.
+    *
+    * @throws EJBException if a communication or other error occurs.
+    *
+    */
+    public Collection findCertificatesByUsername(String username) throws RemoteException;  
+
+    /**
+    * Finds username for a given certificate serial number.
+    * @param serno the serialnumber of the certificate to find username for.
+    * @return username or null if none found.
+    *
+    * @throws EJBException if a communication or other error occurs.
+    *
+    */    
+    public String findUsernameByCertSerno(BigInteger serno) throws RemoteException;      
 
    /**
     * Finds certificate which expire within a specified time.
@@ -90,6 +110,22 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      */
     public void setRevokeStatus(String dn, int reason) throws RemoteException;
 
+     /** 
+     * Set the status of certificate with  given serno to revoked.
+     * @param serno the serno of certificate to revoke.
+     * @param reason the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON constants.)
+     * @throws EJBException if a communication or other error occurs.
+     */   
+    public void setRevokeStatus(BigInteger serno, int reason) throws RemoteException; 
+    
+    /**
+     *  Method that checks if a users all certificates have been revoked.
+     *
+     *  @param username the username to check for.
+     *  @return returns true if all certificates are revoked.
+     */
+    public boolean checkIfAllRevoked(String username) throws RemoteException;
+    
    /**
     * Checks if a certificate is revoked.
     *
