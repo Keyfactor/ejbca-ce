@@ -1,4 +1,4 @@
-$Id: README,v 1.125 2004-03-11 14:13:00 anatom Exp $
+$Id: README,v 1.126 2004-03-12 11:23:52 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -789,7 +789,7 @@ Tested with Cisco VPN client version 4.0.2:
 To enroll using the Cisco VPN client use 'CA URL'='http://127.0.0.1:8080/ejbca/publicweb/apply/scep/pkiclient.exe' 
 and the CA name as 'CA Domain'. In the DN screen simply enter the username (as added in EJBCA) as 'Name [CN]'.
 
-Tested with Cisco PIX:
+Cisco PIX (untested):
 When enrolling for certificate using SCEP with for example a Cisco PIX there is a 'ca_nickname'. This nickname 
 should be the CA-name as defined when creating the CA in EJBCA. For example TestCA. The username in EJBCA should be 
 the name the PIX identifies itself with, example vpn.primekey.se.
