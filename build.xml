@@ -57,7 +57,7 @@
     <property name="createcrlservice.build" value="${tmp}/crlcreateservice.jar" />
     <property name="createcrlservicejar" value="${dist.dir}/crlcreateservice.jar" />
 
-    <property name="jar.extclasspath" value="lib/bcmail-jdk14-124.jar lib/bcprov-jdk14-124.jar lib/log4j-1.2.7.jar lib/ldap.jar lib/commons-lang-2.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar"/>
+    <property name="jar.extclasspath" value="lib/bcmail-jdk14.jar lib/bcprov-jdk14.jar lib/log4j-1.2.7.jar lib/ldap.jar lib/commons-lang-2.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar"/>
 
     <path id="ext.classpath">
         <fileset dir="lib/ext" includes="*.jar" />
@@ -317,8 +317,8 @@ database.password    = ${database.password}
                 <exclude name="META-INF/application.xml" />
             </fileset>
             <fileset dir=".">
-                <include name="${lib}/bcmail-jdk14-124.jar" />
-                <include name="${lib}/bcprov-jdk14-124.jar" />
+                <include name="${lib}/bcmail-jdk14.jar" />
+                <include name="${lib}/bcprov-jdk14.jar" />
                 <include name="${lib}/log4j-1.2.7.jar" />
                 <include name="${lib}/ldap.jar" />
                 <include name="${lib}/commons-lang-2.0.jar" />

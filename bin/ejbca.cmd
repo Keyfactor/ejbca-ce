@@ -41,7 +41,7 @@ rem echo J2EE directory is %J2EE_DIR%
 
 rem library classpath
 set EJBCA_HOME=..
-set EJBCA_CP=%EJBCA_HOME%\lib\ldap.jar;%EJBCA_HOME%\lib\log4j-1.2.7.jar;%EJBCA_HOME%\lib\bcprov-jdk14-124.jar;%EJBCA_HOME%\lib\bcmail-jdk14-124.jar
+set EJBCA_CP=%EJBCA_HOME%\lib\ldap.jar;%EJBCA_HOME%\lib\log4j-1.2.7.jar;%EJBCA_HOME%\lib\bcprov-jdk14.jar;%EJBCA_HOME%\lib\bcmail-jdk14.jar
 set CP=%EJBCA_HOME%\bin\classes
 
 rem check that we have built the classes
