@@ -2,6 +2,7 @@ package se.anatom.ejbca.apply;
 
 import java.io.*;
 import java.security.cert.X509Certificate;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
@@ -27,6 +28,8 @@ public class RequestHelper {
 
     private Admin administrator;
     private ServletDebug debug;
+    
+    private static final Pattern CLASSID = Pattern.compile("\\$CLASSID");
 
     public RequestHelper(Admin administrator, ServletDebug debug) {
         this.administrator = administrator;
@@ -160,7 +163,7 @@ public class RequestHelper {
     * @param sc serveltcontext
     * @param responseTemplate path to responseTemplate
     */
-    static public void sendNewCertToIEClient(byte[] b64cert, OutputStream out, ServletContext sc, String responseTemplate)
+    static public void sendNewCertToIEClient(byte[] b64cert, OutputStream out, ServletContext sc, String responseTemplate, String classid)
         throws Exception {
         if (b64cert.length == 0) {
             log.error("0 length certificate can not be sent to IE client!");
@@ -174,8 +177,9 @@ public class RequestHelper {
             String line=br.readLine();
             if ( line==null )
                 break;
-            if ( line.indexOf("cert =")<0 )
-                ps.println(line);
+            if ( line.indexOf("cert =")<0 ){
+                ps.println(CLASSID.matcher(line).replaceFirst(classid));
+            }    
             else
                 RequestHelper.ieCertFormat(b64cert, ps);
         }
