@@ -47,6 +47,13 @@
         <td width="35%"></td>
       </tr>
     <% } %>
+    <% if(cannotcloneempty){ %> 
+      <tr> 
+        <td width="5%"></td>
+        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("YOUCANNOTUSEEMPTYPROFILE") %></H4></td>
+        <td width="35%"></td>
+      </tr>
+    <% } %>
       <tr> 
         <td width="5%"></td>
         <td width="60%"><H3><%= ejbcawebbean.getText("CURRENTENDENTITYPROFILES") %></H3></td>

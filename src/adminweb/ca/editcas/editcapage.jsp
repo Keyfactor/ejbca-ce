@@ -555,6 +555,7 @@ function checkallfields(){
         &nbsp;
       </td>
     </tr>
+    <% if(ocspcainfo != null){ %>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("OCSPSERVICE") %>
@@ -571,6 +572,7 @@ function checkallfields(){
          <% } %>
       </td>
     </tr>    
+    <% } %>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("FINISHUSER") %>

@@ -109,6 +109,7 @@
   boolean  triedtodeleteemptyprofile = false;
   boolean  profileexists             = false;
   boolean  profiledeletefailed       = false;
+  boolean  cannotcloneempty          = false;
 
   int numberofsubjectdnfields=0;
   int numberofsubjectaltnamefields=0;
@@ -207,10 +208,14 @@
        String oldprofilename = request.getParameter(SELECT_PROFILE);
        if(oldprofilename != null && newprofilename != null){
          if(!newprofilename.trim().equals("") && !oldprofilename.trim().equals("")){
-             try{ 
-               ejbcarabean.cloneEndEntityProfile(oldprofilename.trim(),newprofilename.trim());
-             }catch( EndEntityProfileExistsException e){
-               profileexists=true;
+             if(!oldprofilename.equals(EndEntityProfileDataHandler.EMPTY_PROFILE)){ 
+               try{ 
+                 ejbcarabean.cloneEndEntityProfile(oldprofilename.trim(),newprofilename.trim());
+               }catch( EndEntityProfileExistsException e){
+                 profileexists=true;
+               }
+             }else{
+                cannotcloneempty = true;                
              }
          }
        }      
