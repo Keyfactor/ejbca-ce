@@ -54,14 +54,14 @@ import java.util.HashMap;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.30 2004-08-08 13:47:52 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.31 2004-11-20 23:15:29 sbailliez Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
  * display-name="UserDataEB"
  * name="UserData"
  * view-type="local"
  * type="CMP"
- * reentrant="false"
+ * reentrant="False"
  * cmp-version="2.x"
  * transaction-type="Container"
  * schema="UserDataBean"
