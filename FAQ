@@ -1,5 +1,5 @@
 EJBCA FAQ
-$Id: FAQ,v 1.7 2001-12-03 20:01:29 anatom Exp $
+$Id: FAQ,v 1.8 2001-12-04 10:47:19 anatom Exp $
 ---------
 
 Q: Why are there two versions of all commands, i.e. 'ra.sh' and 'ra.cmd'.
@@ -85,10 +85,14 @@ Now you can take a look at your SUN keystore with:
 
 keytool -list -keystore myks.jks
 
-You can use the same method with a BouncyCastle PKCS12 keystore by adding the following 
+In theory, you can use the same method with a BouncyCastle PKCS12 keystore by adding the following 
 arguments to every command above:
 
 -provider org.bouncycastle.jce.provider.BouncyCastleProvider -storetype PKCS12
+
+unforturnately a bug in keytool prevents this from functioning properly at the moment, therefore I 
+recommend using the 'ca.sh/cmd' to create PKCS12 keystores. It can be used to create keystores generally,
+not just for CAs.
 
 -----
 Q: What aliases do a EJBCA keystore contain?
