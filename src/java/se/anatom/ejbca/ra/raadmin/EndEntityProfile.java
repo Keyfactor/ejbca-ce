@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.7 2003-03-15 21:54:25 herrvendil Exp $
+ * @version $Id: EndEntityProfile.java,v 1.8 2003-03-20 05:26:46 herrvendil Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -124,7 +124,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         setValue(AVAILCERTPROFILES,0,"1;2;3");
         setValue(DEFKEYSTORE,0, "" + SecConst.TOKEN_SOFT_BROWSERGEN);
         setValue(AVAILKEYSTORE,0, SecConst.TOKEN_SOFT_BROWSERGEN + ";" + SecConst.TOKEN_SOFT_P12 +  ";" + SecConst.TOKEN_SOFT_JKS + ";" + SecConst.TOKEN_SOFT_PEM);
-
+         // Do not use hard token issuers by default. 
+        setUse(AVAILTOKENISSUER, 0, false); 
+        
       }else{
          // initialize profile data
          ArrayList numberoffields = new ArrayList(NUMBEROFPARAMETERS);
@@ -146,7 +148,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          addField(AVAILKEYSTORE);
          addField(DEFAULTTOKENISSUER);
          addField(AVAILTOKENISSUER);
-
+         
          setRequired(USERNAME,0,true);
          setRequired(PASSWORD,0,true);
          setRequired(COMMONNAME,0,true);
@@ -158,6 +160,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          setValue(AVAILCERTPROFILES,0,"1;2;3");
          setValue(DEFKEYSTORE,0, "" + SecConst.TOKEN_SOFT_BROWSERGEN);
          setValue(AVAILKEYSTORE,0, SecConst.TOKEN_SOFT_BROWSERGEN + ";" + SecConst.TOKEN_SOFT_P12 +  ";" + SecConst.TOKEN_SOFT_JKS + ";" + SecConst.TOKEN_SOFT_PEM);
+
+         // Do not use hard token issuers by default. 
+         setUse(AVAILTOKENISSUER, 0, false); 
+      
       }
     }
 
@@ -475,7 +481,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
            throw new UserDoesntFullfillEndEntityProfile("Soft tokens cannot have a hardware token issuer.");
       }
       // If Hard token type check if hardware token issuer is among available hardware token issuers.
-      if(tokentype > SecConst.TOKEN_SOFT){ // Hardware token.
+      if(tokentype > SecConst.TOKEN_SOFT && getUse(AVAILTOKENISSUER, 0) ){ // Hardware token.
         String[] availablehardtokenissuers;
         try{
           availablehardtokenissuers = new RE(SPLITCHAR, false).split(getValue(AVAILTOKENISSUER,0));

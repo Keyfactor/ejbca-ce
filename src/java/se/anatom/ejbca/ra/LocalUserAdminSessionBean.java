@@ -37,7 +37,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.53 2003-03-19 09:36:24 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.54 2003-03-20 05:26:51 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -341,9 +341,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         if(globalconfiguration.getEnableEndEntityProfileLimitations()){
           // Check if user fulfills it's profile.
           EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, data.getEndEntityProfileId());
-
+     
           boolean fullfillsprofile = true;
-          if(profile.isModifyable(EndEntityProfile.PASSWORD,0)){
+          System.out.println("Set Password" + password);
+          if(!profile.isModifyable(EndEntityProfile.PASSWORD,0)){
             if(!password.equals(profile.getValue(EndEntityProfile.PASSWORD,0)));
               fullfillsprofile=false;
           }
