@@ -63,7 +63,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.107 2003-10-27 11:31:15 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.108 2003-10-27 11:36:59 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -736,7 +736,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws IllegalKeyException if the public key given is invalid
      * @return Certificate that has been generated and signed by the CA
      */
-    public Certificate createCertificate(Admin admin, UserAuthData data, CA ca, PublicKey pk, int keyusage) throws IllegalKeyException {
+    private Certificate createCertificate(Admin admin, UserAuthData data, CA ca, PublicKey pk, int keyusage) throws IllegalKeyException {
         debug(">createCertificate(pk, ku)");
         try {
             // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
