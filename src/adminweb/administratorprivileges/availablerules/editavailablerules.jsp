@@ -146,8 +146,8 @@
 <div align="center">
   <p><H1><%= ejbcawebbean.getText("AVAILABLEACCESSRULES") %></H1></p>
   <div align="right">
-    <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("authorization_help.html") + "#availableaccessrules" %>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
+<!--    <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("authorization_help.html") + "#availableaccessrules" %>")'>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
   </div>
   <form name="availableaccessrules" method="post" action="<%=THIS_FILENAME %>">
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_AVAILABLERULES %>'>

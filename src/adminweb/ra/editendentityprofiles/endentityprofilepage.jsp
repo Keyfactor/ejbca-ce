@@ -199,8 +199,8 @@ function checkuseemailfield(){
       <td width="50%" valign="top"> 
         <div align="right">
         <A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOPROFILES") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#profiles"%>")'>
-        <u><%= ejbcawebbean.getText("HELP") %></u> </A></div>
+   <!--     <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#profiles"%>")'>
+        <u><%= ejbcawebbean.getText("HELP") %></u> </A></div> -->
       </td>
     </tr>
     <tr id="Row0"> 

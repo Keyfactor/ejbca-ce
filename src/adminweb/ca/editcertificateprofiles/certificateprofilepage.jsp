@@ -102,8 +102,8 @@ function checkallfields(){
       <td width="50%" valign="top"> 
         <div align="right">
         <A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOCERTIFICATEPROFILES") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
-        <u><%= ejbcawebbean.getText("HELP") %></u> </A></div>
+   <!--     <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
+        <u><%= ejbcawebbean.getText("HELP") %></u> </A></div> -->
       </td>
     </tr>
     <tr  id="Row0"> 

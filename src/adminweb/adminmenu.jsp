@@ -206,13 +206,13 @@
  //     throw new AuthorizationDeniedException();
  } 
     // If authorized to view help pages then display related links.
-   try{
+ /*  try{
      if(ejbcawebbean.isAuthorizedNoLog(MAIN_RESOURCE)){ %>
      <br><br><br>
      <u><A onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("index_help.html") %>")' id="menu"><%=ejbcawebbean.getText("HELP") %></A></u>
 
 <%   }
-    }catch(AuthorizationDeniedException e){}%>
+    }catch(AuthorizationDeniedException e){} */%>
 
 
 

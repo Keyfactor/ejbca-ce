@@ -5,8 +5,8 @@
 
 <div align="center">
   <p><H1><%= ejbcawebbean.getText("EDITCERTIFICATEPROFILES") %></H1></p>
-  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
+ <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
   </div>
   <form name="editcertificateprofiles" method="post"  action="<%= THIS_FILENAME%>">
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_CERTIFICATEPROFILES %>'>

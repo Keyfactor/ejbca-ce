@@ -13,8 +13,8 @@
 
 <div align="center">
   <p><H1><%= ejbcawebbean.getText("ADMINPRIVILEGES") %></H1></p>
-  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("authorization_help.html") + "#admingroups" %>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
+<!--  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("authorization_help.html") + "#admingroups" %>")'>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
   </div>
   <form name="editgroup" method="post"  action="<%= THIS_FILENAME%>">
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_GROUPS %>'>

@@ -92,8 +92,8 @@
 </head>
 <body >
   <h2 align="center"><%= ejbcawebbean.getText("VIEWENDENTITY") %></h2>
-  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html")  + "#viewendentity"%>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
+  <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html")  + "#viewendentity"%>")'>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
   </div>
   <%if(nouserparameter){%>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYUSERNAME") %></h4></div> 

@@ -229,8 +229,8 @@ function viewcert(row){
 <body>
 <h2 align="center"><%= ejbcawebbean.getText("VIEWENDENTITYHISTORY") %></h2>
     <div align="right">
-     <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") +"#viewhistory" %>")'>
-     <u><%= ejbcawebbean.getText("HELP") %></u> </A>
+   <!--  <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") +"#viewhistory" %>")'>
+     <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
   </div>
 <form name="form" method="post" action="<%=THIS_FILENAME %>">
   <input type="hidden" name='<%= ACTION %>' value=''>

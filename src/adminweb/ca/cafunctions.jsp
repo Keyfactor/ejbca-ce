@@ -46,8 +46,8 @@
 </head>
 <body>
   <h2 align="center"><%= ejbcawebbean.getText("CAFUNCTIONS") %></h2>
-  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") %>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
+<!--  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") %>")'>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
   </div>
 
   <% // Display CA info

@@ -47,8 +47,8 @@ function viewcert(row){
         <A href='javascript:document.changefiltermode.submit();'><u><%= ejbcawebbean.getText("BASICMODE") %></u></A>
      <% } %>
      &nbsp;&nbsp;&nbsp;
-     <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("log_help.html") +"#viewlog" %>")'>
-     <u><%= ejbcawebbean.getText("HELP") %></u> </A>
+   <!--  <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("log_help.html") +"#viewlog" %>")'>
+     <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
   </div>
   </form> 
 <form name="form" method="post" action="<%=THIS_FILENAME %>">

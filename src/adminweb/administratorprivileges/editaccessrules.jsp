@@ -107,8 +107,8 @@
     <input type="hidden" name='<%= HIDDEN_GROUPNAME %>' value='<%= admingroup %>'>
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ADMINENTITIES%>'>
     <A href='javascript:document.toadminentities.submit();'><u><%= ejbcawebbean.getText("EDITADMINS") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("authorization_help.html") + "#accessrules" %>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
+<!--    <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("authorization_help.html") + "#accessrules" %>")'>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
   </div>
   </form>
   <form name="deleteaccessrules" method="post" action="<%=THIS_FILENAME %>">

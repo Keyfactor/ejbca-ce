@@ -24,8 +24,8 @@
         </div>
       </td>
       <td width="50%" valign="top"> 
-        <div align="right"><A  onclick='displayHelpWindow("/<%=gc.getAdminWebPath() %>/help/configuration_help.en.html#mainconfig")'>
-        <u>Help</u> </A> </div>
+     <!--   <div align="right"><A  onclick='displayHelpWindow("/<%=gc.getAdminWebPath() %>/help/configuration_help.en.html#mainconfig")'>
+        <u>Help</u> </A> </div> -->
       </td>
     </tr>
     <tr id="Row0"> 
@@ -73,7 +73,7 @@
     <tr id="Row1"> 
       <td width="49%" valign="top"> 
         <h3>Enable End Entity Profile Limitations</h3>
-        <h5>Check this field if you want to uses end entity access control. </h5>
+        <h5>Check this field if you want to use end entity access control. </h5>
       </td>
       <td width="51%" valign="top"> 
         <input type="checkbox" name="<%=CHECKBOX_ENABLEEEPROFILELIMITATIONS%>" value="<%=CHECKBOX_VALUE %>" 

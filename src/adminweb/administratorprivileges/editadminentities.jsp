@@ -66,8 +66,8 @@
     <input type="hidden" name='<%= HIDDEN_GROUPNAME %>' value='<%= admingroup %>'>
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ACCESSRULES %>'>
     <A href='javascript:document.toaccessrules.submit();'><u><%= ejbcawebbean.getText("EDITACCESSRULES") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("authorization_help.html") + "#admins"%>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
+<!--    <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("authorization_help.html") + "#admins"%>")'>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
   </div>
   </form>
   <p align="center"></p>

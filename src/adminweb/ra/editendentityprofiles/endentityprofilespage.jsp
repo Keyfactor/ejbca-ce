@@ -13,8 +13,8 @@
 
 <div align="center">
   <p><H1><%= ejbcawebbean.getText("ENDENTITYPROFILES") %></H1></p>
-  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#profiles"%>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
+ <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#profiles"%>")'>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
   </div>
   <form name="editprofiles" method="post"  action="<%= THIS_FILENAME%>">
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_PROFILES %>'>

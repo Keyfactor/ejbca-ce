@@ -28,8 +28,8 @@ function checkselected(){
 
 <div align="center">
   <p><H1><%= ejbcawebbean.getText("EDITHARDTOKENISSUERS") %></H1></p>
-  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("hardtoken_help.html") + "#edithardtokenissuers"%>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
+ <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("hardtoken_help.html") + "#edithardtokenissuers"%>")'>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
   </div>
   <form name="editissuers" method="post"  action="<%= THIS_FILENAME%>">
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ISSUERS %>'>

@@ -142,8 +142,8 @@
         </div>
       </td>
       <td width="50%" valign="top"> 
-        <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("log_configuration_help.html") + "#logconfiguration"%>")'>
-        <u><%= ejbcawebbean.getText("HELP") %></u> </A></div>
+   <!--     <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("log_configuration_help.html") + "#logconfiguration"%>")'>
+        <u><%= ejbcawebbean.getText("HELP") %></u> </A></div> -->
       </td>
     </tr>
    </table>
