@@ -7,7 +7,7 @@
     <datasource-mapping>Oracle8</datasource-mapping>
 </defaults>
 
-<!-- Setting for Oracle in EJBCA version > 1.0. 
+<!-- Setting for Oracle in EJBCA version > 2.0. 
      base64cert and base64crl fields need to hold complete certificates and CRLs which can be long. 
 -->
 
