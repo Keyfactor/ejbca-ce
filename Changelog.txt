@@ -2,6 +2,7 @@
 ---
 - Changed packaging to avoid classes duplication between jars
 - Added ear classloader isolation for JBoss to avoid class leaking between ears
+- Added rough French translation for the admin webapp 
  
 3.0.1
 -----
