@@ -19,6 +19,8 @@ import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.FileTools;
 
+/** Helper class for hadnling certificate request from browsers or general PKCS#10
+*/
 public class RequestHelper {
 
     private static Logger log = Logger.getLogger(RequestHelper.class);
@@ -32,15 +34,19 @@ public class RequestHelper {
     }
     /**
      * Handles NetScape certificate request (KEYGEN), these are constructed as:
-     * <pre><code>
+     * <code>
      *   SignedPublicKeyAndChallenge ::= SEQUENCE {
      *     publicKeyAndChallenge    PublicKeyAndChallenge,
      *     signatureAlgorithm   AlgorithmIdentifier,
      *     signature        BIT STRING
      *   }
-     * </pre>
+     * </code>
      *
      * PublicKey's encoded-format has to be RSA X.509.
+     * @param signsession EJB session to signature bean.
+     * @param reqBytes buffer holding te request from NS.
+     * @param username username in EJBCA for authoriation.
+     * @param the users password for authorization.
      * @return byte[] containing DER-encoded certificate.
      */
     public byte[] nsCertRequest(ISignSessionRemote signsession, byte[] reqBytes, String username, String password)
@@ -69,7 +75,7 @@ public class RequestHelper {
 
     /**
      * Handles PKCS10 certificate request, these are constructed as:
-     * <pre><code>
+     * <code>
      * CertificationRequest ::= SEQUENCE {
      * certificationRequestInfo  CertificationRequestInfo,
      * signatureAlgorithm          AlgorithmIdentifier{{ SignatureAlgorithms }},
@@ -85,7 +91,7 @@ public class RequestHelper {
      * algorithm           AlgorithmIdentifier {{IOSet}},
      * subjectPublicKey    BIT STRING
      * }
-     * </pre>
+     * </code>
      *
      * PublicKey's encoded-format has to be RSA X.509.
      */
@@ -124,6 +130,10 @@ public class RequestHelper {
         return Base64.encode(pkcs7);
     } //ieCertRequest
 
+    /** Formats certificate in form to be received by IE
+    * @param bA input
+    * @param out Output
+    */
     static public void ieCertFormat(byte[] bA, PrintStream out) throws Exception {
         BufferedReader br=new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bA)) );
         int rowNr=0;
@@ -144,6 +154,12 @@ public class RequestHelper {
         }
         out.println();
     }
+    /** Reads template and inserts cert to send back to IE for installation of cert
+    * @param b64cert cert to be installed in IE-client
+    * @param out Output
+    * @param sc serveltcontext
+    * @param responseTemplate path to responseTemplate
+    */
     static public void sendNewCertToIEClient(byte[] b64cert, OutputStream out, ServletContext sc, String responseTemplate)
         throws Exception {
         PrintStream ps = new PrintStream(out);
