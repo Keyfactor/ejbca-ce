@@ -5,7 +5,7 @@ package se.anatom.ejbca.util;
  *  saving it's data to a database in BLOB form. 
  *  
  * @see se.anatom.ejbca.util.IUpgradeableData
- * @version $Id: UpgradeableDataHashMap.java,v 1.1 2002-10-24 20:27:37 herrvendil Exp $
+ * @version $Id: UpgradeableDataHashMap.java,v 1.2 2002-12-16 23:44:01 herrvendil Exp $
  */
 
 
@@ -37,6 +37,8 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData {
      */
     public  void loadData(Object data){
       this.data = (HashMap) data;    
+      if(getLatestVersion() >  getVersion())
+         upgrade();
     }
     
     /**
