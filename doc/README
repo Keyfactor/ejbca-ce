@@ -1,4 +1,4 @@
-$Id: README,v 1.142 2004-05-25 11:24:51 anatom Exp $
+$Id: README,v 1.143 2004-05-27 20:10:51 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -740,17 +740,19 @@ Tested with Cisco VPN client version 4.0.2:
 To enroll using the Cisco VPN client use 'CA URL'='http://127.0.0.1:8080/ejbca/publicweb/apply/scep/pkiclient.exe' 
 and the CA name as 'CA Domain'. In the DN screen simply enter the username (as added in EJBCA) as 'Name [CN]'.
 
-Cisco PIX (not tested):
+Cisco PIX (not working):
+- You must configure JBoss to use port 80 to enroll with PIX, this is done in 
+JBOSS_HOME/server/default/deploy/jbossweb-tomcat41.sar/META-INF/jboss-service.xml (or similar depending on version).
 - When enrolling for certificate using SCEP with for example a Cisco PIX there is a 'ca_nickname'. This nickname 
 should be the CA-name as defined when creating the CA in EJBCA. For example 'vpnca'. 
 - The username in EJBCA must be the name the PIX identifies itself with <name>.<domain>, example pix.primekey.se. 
-- Only use lower-case names when creating the CA in EJBCA, since PIX will change the CA name VpnCA to vpnca. 
-- You must configure JBoss to use port 80 to enroll with PIX.
+- Only use lower-case names when creating the CA in EJBCA, since PIX will change the CA name VpnCA to vpnca when enrolling.
+- Certificates used for PIX must include the DN component unstructuredAddress (fqdn) and could also include unstructuredName (ip).
 - Certificates used for PIX must include the SubjectAltName dNSName beeing the fqdn of the pix, eg <name>.<domain>, 
-iPAddress can also be useful.
-- Cisco does not support use of the 'Domain Component', DC, attribute in DNs.
+iPAddress can also be useful. If unstructuredName is used iPAddress should be used.
+- Cisco does not support use of the 'Domain Component', DC, attribute in DNs, don't use it.
 - When the VPN-client (above) connects to the PIX, the 'ou' part of the clients DN must match a Vpngroup you have specified, 
-otherwise the connection wil- fail.
+otherwise the connection will fail.
 
 Please notice this Cisco note:
 Be sure that the PIX Firewall clock is set to GMT, month, day, and year before configuring CA. 
