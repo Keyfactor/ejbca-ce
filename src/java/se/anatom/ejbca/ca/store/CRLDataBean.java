@@ -38,14 +38,14 @@ import se.anatom.ejbca.util.CertTools;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.17 2004-07-23 11:56:10 sbailliez Exp $
+ * @version $Id: CRLDataBean.java,v 1.18 2004-11-20 21:03:53 sbailliez Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CRLDataEB"
  * name="CRLData"
  * view-type="both"
  * type="CMP"
- * reentrant="false"
+ * reentrant="False"
  * cmp-version="2.x"
  * transaction-type="Container"
  * schema="CRLDataBean"
@@ -77,9 +77,12 @@ import se.anatom.ejbca.util.CertTools;
  * @ejb.finder
  *   view-type="remote"
  *   signature="se.anatom.ejbca.ca.store.CRLData findByIssuerDNAndCRLNumber(java.lang.String issuerdn, int cRLNumber)"
+ *
+ * @jonas.jdbc-mapping
+ *   jndi-name="${datasource.jndi-name}"
  */
 public abstract class CRLDataBean extends BaseEntityBean {
-    private static Logger log = Logger.getLogger(CRLDataBean.class);
+    private static final Logger log = Logger.getLogger(CRLDataBean.class);
 
     /**
      * @ejb.persistence
