@@ -1,7 +1,13 @@
+3.0
+----
+Virtual CAs, run a complete hierarchy in one instance of EJBCA.
+Completed support for OCSP.
+
 2.1.1
 -----
 Improved error handing for batch generation.
 Fixed some SQL for PostgreSQL.
+Set Content-Type on OCSP responses.
 Minor debug cleanups.
 
 2.1
