@@ -48,7 +48,7 @@ import se.anatom.ejbca.util.CertTools;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.20 2004-01-31 14:24:59 herrvendil Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.21 2004-02-05 14:19:28 herrvendil Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
@@ -1017,8 +1017,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
            try{
            	copyof = hardtokenpropertyhome.findByProperty(htd.getTokenSN(), HardTokenPropertyEntityBean.PROPERTY_COPYOF).getValue();         
            }catch(FinderException fe){}         
-         
-           System.out.println("Token SN " + htd.getTokenSN() + "copyof" + copyof);  
+                     
            
            ArrayList copies = null;
            if(copyof == null){
@@ -1238,14 +1237,15 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
    } // existsCertificateProfileInHardTokenProfiles
     
 	private Integer findFreeHardTokenProfileId(){
-	  int id = (new Random((new Date()).getTime())).nextInt();
+	  Random ran = (new Random((new Date()).getTime()));
+	  int id = ran.nextInt();
 	  boolean foundfree = false;
 
 	  while(!foundfree){
 		try{
-		  if(id < 0 || id > SecConst.TOKEN_SOFT)
+		  if(id > SecConst.TOKEN_SOFT)
 			hardtokenprofilehome.findByPrimaryKey(new Integer(id));
-		    id++;
+		    id = ran.nextInt();
 		}catch(FinderException e){
 		   foundfree = true;
 		}
@@ -1254,14 +1254,15 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	} // findFreeHardTokenProfileId
 
     private Integer findFreeHardTokenIssuerId(){
-      int id = (new Random((new Date()).getTime())).nextInt();
+      Random ran = (new Random((new Date()).getTime()));
+      int id = ran.nextInt();
       boolean foundfree = false;
 
       while(!foundfree){
         try{
           if(id > 1)
             hardtokenissuerhome.findByPrimaryKey(new Integer(id));
-          id++;
+            id = ran.nextInt();
         }catch(FinderException e){
            foundfree = true;
         }
