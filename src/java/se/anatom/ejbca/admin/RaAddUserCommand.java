@@ -5,7 +5,7 @@ import java.io.*;
 
 /** Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.2 2002-04-14 09:11:10 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.3 2002-04-18 12:31:15 anatom Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 
@@ -18,7 +18,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
         try {
             if (args.length < 6) {
                 System.out.println("Usage: RA adduser <username> <password> <dn> <email> <type>");
-                System.out.println("Type (mask): INVALID=0; END-USER=1; CA=2; RA=4; ROOTCA=8; CAADMIN=16; RAADMIN=0x32");
+                System.out.println("Type (mask): INVALID=0; END-USER=1; CA=2; RA=4; ROOTCA=8; CAADMIN=16; RAADMIN=32");
                 System.out.println("If the user does not have an email address, use the value 'null'.");
                 return;
             }
@@ -27,7 +27,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             String dn = args[3];
             String email = args[4];
             int type = Integer.parseInt(args[5]);
-            
+
             System.out.println("Trying to add user:");
             System.out.println("Username: "+username);
             System.out.println("Password (hashed only): "+password);
@@ -44,5 +44,5 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             throw new ErrorAdminCommandException(e);
         }
     } // execute
-    
+
 }
