@@ -1221,7 +1221,12 @@ public class RSASignSessionBean extends BaseSessionBean {
 
                 // Store certificate in the database
                 String fingerprint = CertTools.getFingerprintAsString(cert);
-                certificateStore.storeCertificate(admin, cert, data.getUsername(), fingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType());
+                String cafingerprint = null;
+                Certificate cacert = ca.getCACertificate();
+                if (cacert instanceof X509Certificate) {
+                    cafingerprint = CertTools.getFingerprintAsString((X509Certificate)cacert);
+                }
+                certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType());
                 // Store certificate in certificate profiles publishers.
                 IPublisherSessionLocal pub = publishHome.create();
                 if (certProfile.getPublisherList() != null)

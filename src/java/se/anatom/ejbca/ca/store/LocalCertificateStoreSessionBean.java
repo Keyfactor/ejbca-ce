@@ -65,7 +65,7 @@ import java.util.Random;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.75 2004-07-23 17:15:15 sbailliez Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.76 2004-11-04 15:47:23 anatom Exp $
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
  * view-type="both"
@@ -672,7 +672,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public String findUsernameByCertSerno(Admin admin, BigInteger serno, String issuerdn) {
-        debug(">findUsernameByCertSerno(),  serno=" + serno);
+        debug(">findUsernameByCertSerno(), serno: " + serno+", issuerdn: "+issuerdn);
         String dn = CertTools.stringToBCDNString(issuerdn);
         try {
             Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
@@ -680,14 +680,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
             if (coll != null) {
                 Iterator iter = coll.iterator();
-
                 while (iter.hasNext()) {
                     ret = ((CertificateDataLocal) iter.next()).getUsername();
                 }
             }
-
-            debug("<findUsernameByCertSerno(), serno=" + serno);
-
+            debug("<findUsernameByCertSerno(), ret=" + ret);
             return ret;
         } catch (javax.ejb.FinderException fe) {
             throw new EJBException(fe);
