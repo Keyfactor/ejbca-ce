@@ -28,7 +28,7 @@ import se.anatom.ejbca.util.Base64;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.13 2002-05-26 08:50:17 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.14 2002-05-26 11:12:12 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean implements ICertificateStoreSession {
 
@@ -66,7 +66,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
     * Implements ICertificateStoreSession::storeCertificate.
     * Implements a mechanism that uses Certificate Entity Bean.
     */
-    public boolean storeCertificate(Certificate incert, String cafp, int status, int type) throws RemoteException {
+    public boolean storeCertificate(Certificate incert, String cafp, int status, int type) {
         debug(">storeCertificate("+cafp+", "+status+", "+type+")");
 
         try {
@@ -94,7 +94,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
     * Implements ICertificateStoreSession::storeCRL.
     * Implements a mechanism that uses CRL Entity Bean.
     */
-    public boolean storeCRL(byte[] incrl, String cafp, int number) throws RemoteException {
+    public boolean storeCRL(byte[] incrl, String cafp, int number) {
         debug(">storeCRL("+cafp+", "+number+")");
 
         try {
@@ -115,7 +115,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
     * Implements ICertificateStoreSession::listAlLCertificates.
     * Uses select directly from datasource.
     */
-    public String[] listAllCertificates() throws RemoteException {
+    public String[] listAllCertificates() {
         debug(">listAllCertificates()");
 
         Connection con = null;
@@ -154,7 +154,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
     * Implements ICertificateStoreSession::listRevokedCertificates.
     * Uses select directly from datasource.
     */
-    public Collection listRevokedCertificates() throws RemoteException {
+    public Collection listRevokedCertificates() {
         debug(">listRevokedCertificates()");
         Connection con = null;
         PreparedStatement ps = null;;
@@ -244,7 +244,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
     * Implements ICertificateStoreSession::findCertificateByIssuerAndSerno.
     * Uses select directly from datasource.
     */
-    public Certificate findCertificateByIssuerAndSerno(String issuerDN, BigInteger serno) throws RemoteException {
+    public Certificate findCertificateByIssuerAndSerno(String issuerDN, BigInteger serno) {
         debug(">findCertificateByIssuerAndSerno(), dn:"+issuerDN+", serno="+serno);
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(issuerDN);
@@ -272,7 +272,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
     * Implements ICertificateStoreSession::isRevoked.
     * Uses select directly from datasource.
     */
-    public RevokedCertInfo isRevoked(String issuerDN, BigInteger serno) throws RemoteException {
+    public RevokedCertInfo isRevoked(String issuerDN, BigInteger serno) {
         debug(">isRevoked(), dn:"+issuerDN+", serno="+serno);
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(issuerDN);
@@ -312,7 +312,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
             try {
                 CRLDataLocal data = crlHome.findByCRLNumber(maxnumber);
                 crl = data.getCRL();
-            } catch (FinderException e)
+            } catch (FinderException e) {
+                crl = null;
+            }
             debug("<findLatestCRL()");
             if (crl == null)
                 return null;

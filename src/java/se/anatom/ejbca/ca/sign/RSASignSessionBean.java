@@ -19,8 +19,8 @@ import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ca.auth.IAuthenticationSessionHome;
 import se.anatom.ejbca.ca.auth.IAuthenticationSession;
 import se.anatom.ejbca.ca.auth.UserAuthData;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSession;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.IPublisherSession;
 import se.anatom.ejbca.ca.store.IPublisherSessionHome;
 import se.anatom.ejbca.ca.store.IPublisherSession;
@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.25 2002-05-15 07:10:18 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.26 2002-05-26 11:12:12 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -65,7 +65,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
     private SecureRandom random;
 
     /** Home interface to certificate store */
-    private ICertificateStoreSessionHome storeHome = null;
+    private ICertificateStoreSessionLocalHome storeHome = null;
 
     /** A vector of publishers home interfaces where certs and CRLs are stored */
     private Vector publishers = null;
@@ -85,7 +85,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             int result = Security.addProvider(BCJce);
 
             // get home interfaces to other session beans used
-            storeHome = (ICertificateStoreSessionHome) lookup("java:comp/env/ejb/CertificateStoreSession", ICertificateStoreSessionHome.class);
+            storeHome = (ICertificateStoreSessionLocalHome)lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
             authHome = (IAuthenticationSessionHome)lookup("java:comp/env/ejb/AuthenticationSession",IAuthenticationSessionHome.class);
 
             // Init the publisher session beans
@@ -281,7 +281,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
                 // Verify before returning
                 cert.verify(caCert.getPublicKey());
                 // Store certificate in the database
-                ICertificateStoreSession certificateStore = storeHome.create();
+                ICertificateStoreSessionLocal certificateStore = storeHome.create();
                 certificateStore.storeCertificate(cert, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
                 // Call authentication session and tell that we are finished with this user
                 for (int i=0;i<publishers.size();i++) {
@@ -412,7 +412,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
         debug(">createCRL()");
         X509CRL crl = null;
         try {
-            ICertificateStoreSession certificateStore = storeHome.create();
+            ICertificateStoreSessionLocal certificateStore = storeHome.create();
             // Get number of last CRL and increase by 1
             int number = certificateStore.getLastCRLNumber() + 1;
             crl = makeBCCRL(caSubjectName, crlperiod.longValue(), certs, number);

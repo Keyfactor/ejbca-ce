@@ -12,8 +12,8 @@ import java.security.cert.X509CRL;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.IJobRunnerSession;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSession;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.CertificateDataLocalHome;
 import se.anatom.ejbca.ca.store.CertificateData;
 import se.anatom.ejbca.ca.store.CertificateDataLocal;
@@ -26,14 +26,14 @@ import se.anatom.ejbca.ca.sign.ISignSession;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.6 2002-05-26 08:50:17 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.7 2002-05-26 11:12:12 anatom Exp $
  */
 public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerSession {
 
     private Long crlperiod;
 
     /** The home interface of Certificate store */
-    private ICertificateStoreSessionHome storeHome = null;
+    private ICertificateStoreSessionLocalHome storeHome = null;
 
     /** The home interface of Certificate entity bean */
     private CertificateDataLocalHome certHome = null;
@@ -49,7 +49,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
         // Get env variables and read in nessecary data
         crlperiod = (Long)lookup("java:comp/env/CRLPeriod", java.lang.Long.class);
         debug("crlperiod:" + crlperiod);
-        storeHome = (ICertificateStoreSessionHome)lookup("java:comp/env/ejb/CertificateStoreSession", ICertificateStoreSessionHome.class);
+        storeHome = (ICertificateStoreSessionLocalHome)lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
         certHome = (CertificateDataLocalHome)lookup("java:comp/env/ejb/CertificateDataLocal");
         signHome = (ISignSessionHome) lookup("java:comp/env/ejb/SignSession", ISignSessionHome.class);
         debug("<ejbCreate()");
@@ -65,7 +65,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
         debug(">run()");
 
         try {
-            ICertificateStoreSession store = storeHome.create();
+            ICertificateStoreSessionLocal store = storeHome.create();
             // Find all revoked certificates
             Collection revcerts = store.listRevokedCertificates();
             debug("Found "+revcerts.size()+" revoked certificates.");

@@ -1,7 +1,8 @@
 
 package se.anatom.ejbca.ca.store;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
 import java.rmi.RemoteException;
 import java.math.BigInteger;
 
@@ -18,7 +19,7 @@ import se.anatom.ejbca.ca.crl.RevokedCertInfo;
  * retrieve CRLs, check for revocation etc. the CertificateStoreSession implements
  * the interface ICertificateStoreSession.
  *
- * @version $Id: ICertificateStoreSession.java,v 1.7 2002-05-23 14:28:27 anatom Exp $
+ * @version $Id: ICertificateStoreSession.java,v 1.8 2002-05-26 11:12:12 anatom Exp $
  */
 public interface ICertificateStoreSession extends IPublisherSession {
 
