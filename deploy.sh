@@ -38,6 +38,7 @@ then
 fi
 
 # Deploy jar and war files
-cp dist/ca.ear $JBOSS_HOME/deploy
+cp dist/ejbca-ca.ear $JBOSS_HOME/deploy
 cp dist/ra.jar $JBOSS_HOME/deploy
 echo Deployed jar- and war-files in $JBOSS_HOME/deploy
+

@@ -1,6 +1,6 @@
 @echo off
 rem ----
-rem $Id: deploy.cmd,v 1.10 2002-05-10 08:41:05 anatom Exp $
+rem $Id: deploy.cmd,v 1.11 2002-05-11 14:37:22 anatom Exp $
 rem
 rem Deploy script for EJBCA
 rem
@@ -29,11 +29,12 @@ rem Install BouncyCastle provider and ldap.jar
 if exist %JBOSS_HOME%\lib\ext\jce-jdk13-112.jar goto deploy
 xcopy lib\jce-jdk13-112.jar %JBOSS_HOME%\lib\ext /Q /Y
 xcopy lib\ldap.jar %JBOSS_HOME%\lib\ext /Q /Y
-echo Copied jce-jdk13-112.jar and ldap.jar to %JBOSS_HOME%\lib\ext. JBoss must be restared.
+echo Copied jce-jdk13-112.jar and ldap.jar to %JBOSS_HOME%\lib\ext. JBoss must 
+be restared.
 
 rem Deploy jar and war files
 :deploy
-xcopy dist\ca.ear %JBOSS_HOME%\deploy /Q /Y
+xcopy dist\ejbca-ca.ear %JBOSS_HOME%\deploy /Q /Y
 xcopy dist\ra.jar %JBOSS_HOME%\deploy /Q /Y
 echo Deployed jar- and war-files in %JBOSS_HOME%\deploy
 goto end
@@ -42,3 +43,4 @@ goto end
 echo JBOSS_HOME must be set
 
 :end
+

@@ -36,9 +36,10 @@
   <property name="caear.warbuild" value="${tmp}/caear/root" />
   <property name="caear.earbuild" value="${tmp}/caear/ear" />
   <property name="carootwar" value="${caear.earbuild}/caroot.war" />
-  <property name="caear" value="${dist}/ca.ear" />
+  <property name="caear" value="${dist}/ejbca-ca.ear" />
 
-  <!-- Jar with class files needed for administration, i.e. ca, ra, jobrunner -->
+  <!-- Jar with class files needed for administration, i.e. ca, ra, jobrunner 
+-->
   <property name="adminjar.build" value="${tmp}/adminjar" />
   <property name="adminjar" value="./admin.jar" />
 
@@ -65,7 +66,8 @@
     <delete dir="${apidoc}"/>
     <delete file="admin.jar"/>
     <delete>
-        <fileset dir="${javasrc}" includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
+        <fileset dir="${javasrc}" 
+includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </delete>
     
   </target>
@@ -73,7 +75,8 @@
   <!-- =================================================================== -->
   <!-- Build ALL                                                           -->
   <!-- =================================================================== -->
-  <target name="build" depends="compile, apply.war, webdist.war, ca.jar, ca.ear, ra.jar, admin.jar, sampleauth.war">
+  <target name="build" depends="compile, apply.war, webdist.war, ca.jar, 
+ca.ear, ra.jar, admin.jar, sampleauth.war">
   </target>
 
   <!-- =================================================================== -->
@@ -81,7 +84,8 @@
   <!-- =================================================================== -->
   <target name="compile" depends="init">
     <!-- Compile the java code from ${javasrc} into ${build} -->
-    <!-- <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on"> -->
+    <!-- <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" 
+debug="on"> -->
     <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="off">
         <exclude name="**/CVS/**"/>
         <include name="**/*.java"/>
@@ -122,7 +126,8 @@
   </target>
   
   <!-- =================================================================== -->
-  <!-- Build sampleauth part                                                    -->
+  <!-- Build sampleauth part                                                   
+ -->
   <!-- =================================================================== -->
   <target name="sampleauth.war" depends="compile">
     <mkdir    dir="${sampleauth.build}"/>
@@ -196,7 +201,8 @@
   </target>
 
   <!-- =================================================================== -->
-  <!-- Build webdist part                                                    -->
+  <!-- Build webdist part                                                    
+-->
   <!-- =================================================================== -->
   <target name="webdist.war" depends="compile">
     <mkdir    dir="${webdist.build}"/>
@@ -208,10 +214,12 @@
     <copy todir="${webdist.build}/WEB-INF/classes">
         <fileset dir="${build}">
                 <include name="se/anatom/ejbca/webdist/**/*.class"/>
-                <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
+                <include 
+name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
                 <include name="se/anatom/ejbca/ca/sign/ISign*.class"/>
-                <include name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
+                <include 
+name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
                 <include name="se/anatom/ejbca/util/**/Base64*.class"/>
                 <include name="se/anatom/ejbca/util/**/CertTools*.class"/>
                 <include name="se/anatom/ejbca/util/**/Hex*.class"/>
@@ -237,12 +245,15 @@
                 <include name="se/anatom/ejbca/util/*.class"/>
                 <include name="se/anatom/ejbca/admin/*.class"/>
                 <include name="se/anatom/ejbca/batch/*.class"/>
-                <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
+                <include 
+name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
                 <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/RevokedCertInfo*.class"/>
-                <include name="se/anatom/ejbca/ca/store/CertificateData*.class"/>
-                <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
+                <include 
+name="se/anatom/ejbca/ca/store/CertificateData*.class"/>
+                <include 
+name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="se/anatom/ejbca/ra/*.class"/>
                 <include name="se/anatom/ejbca/exception/**/*.class"/>
                 <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
@@ -255,7 +266,8 @@
   </target>
 
   <!-- =================================================================== -->
-  <!-- Build CA-ear                                                           -->
+  <!-- Build CA-ear                                                           
+-->
   <!-- =================================================================== -->
   <target name="ca.ear" depends="apply.war, webdist.war, ca.jar">
     <mkdir dir="${caear.build}"/>
@@ -315,3 +327,4 @@
 -->
 
 </project>
+
