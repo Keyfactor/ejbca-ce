@@ -40,7 +40,7 @@ import java.util.HashMap;
  * name="CertificateProfileData"
  * view-type="local"
  * type="CMP"
- * reentrant="false"
+ * reentrant="False"
  * cmp-version="2.x"
  * transaction-type="Container"
  * schema="CertificateProfileDataBean"
@@ -64,9 +64,15 @@ import java.util.HashMap;
  * @ejb.finder description="findAll"
  * signature="Collection findAll()"
  * query="SELECT DISTINCT OBJECT(a) from CertificateProfileDataBean AS a"
+ *
+ * @ejb.transaction
+ *   type="Supports"
+ *
+ * @jonas.jdbc-mapping
+ *   jndi-name="${datasource.jndi-name}"
  */
 public abstract class CertificateProfileDataBean extends BaseEntityBean {
-    private static Logger log = Logger.getLogger(CertificateProfileDataBean.class);
+    private static final Logger log = Logger.getLogger(CertificateProfileDataBean.class);
 
     /**
      * @ejb.pk-field
