@@ -39,7 +39,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.12 2005-02-23 15:26:56 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.13 2005-02-24 08:34:33 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
@@ -139,15 +139,15 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      * 
      * @jboss.target-relation
      * related-pk-field="PK"
-     * fk-column="AdminGroup_AdminEntities"  
+     * fk-column="AdminGroupData_AdminEntities"  
      * 
      * @weblogic.target-column-map
      * key-column="PK"
-     * foreign-key-column="AdminGroup_AdminEntities"
+     * foreign-key-column="AdminGroupData_AdminEntities"
      * 
      * @sunone.relation
      * column="PK"
-     * target="AdminGroup_AdminEntities"
+     * target="AdminGroupData_AdminEntities"
      */
     public abstract Collection getAdminEntities();
     public abstract void setAdminEntities(Collection adminentities);
@@ -159,15 +159,15 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      * 
      * @jboss.target-relation
      * related-pk-field="PK"
-     * fk-column="AdminGroup_AccessRules"
+     * fk-column="AdminGroupData_AccessRules"
      *      
      * @weblogic.target-column-map
      * key-column="PK"
-     * foreign-key-column="AdminGroup_AccessRules"
+     * foreign-key-column="AdminGroupData_AccessRules"
      * 
      * @sunone.relation
      * column="PK"
-     * target="AdminGroup_AccessRules"
+     * target="AdminGroupData_AccessRules"
      */
     public abstract Collection getAccessRules();
     public abstract void setAccessRules(Collection accessrules);
