@@ -24,7 +24,7 @@ import se.anatom.ejbca.SecConst;
 /**
  * EnhancedEIDProfile with three certificates and key recovery functionallity
  * 
- * @version $Id: EnhancedEIDProfile.java,v 1.3 2004-04-16 07:39:00 anatom Exp $
+ * @version $Id: EnhancedEIDProfile.java,v 1.4 2004-07-23 12:03:16 sbailliez Exp $
  */
 public class EnhancedEIDProfile extends EIDProfile {
 						
@@ -81,9 +81,9 @@ public class EnhancedEIDProfile extends EIDProfile {
 	  data.put(PINTYPE, pintypes);
 	  
 	  ArrayList iskeyrecoverable = new ArrayList(NUMBEROFCERTIFICATES);
-	  iskeyrecoverable.add(new Boolean(false));
-	  iskeyrecoverable.add(new Boolean(false));
-	  iskeyrecoverable.add(new Boolean(true));
+	  iskeyrecoverable.add(Boolean.FALSE);
+	  iskeyrecoverable.add(Boolean.FALSE);
+	  iskeyrecoverable.add(Boolean.TRUE);
 	  data.put(ISKEYRECOVERABLE, iskeyrecoverable);
 
 	  ArrayList minimumkeylength = new ArrayList(NUMBEROFCERTIFICATES);

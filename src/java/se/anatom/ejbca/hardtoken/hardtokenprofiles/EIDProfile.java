@@ -24,7 +24,7 @@ import java.util.List;
  * of eidprofiles in the system.
  *  
  *
- * @version $Id: EIDProfile.java,v 1.2 2004-04-16 07:39:00 anatom Exp $
+ * @version $Id: EIDProfile.java,v 1.3 2004-07-23 12:03:17 sbailliez Exp $
  */
 public abstract class EIDProfile extends HardTokenProfileWithVisualLayout {
 	
@@ -120,7 +120,7 @@ public abstract class EIDProfile extends HardTokenProfileWithVisualLayout {
 	 */
 	public void setIsKeyRecoverable (int certusage, boolean iskeyrecoverable){		
 		List list = (List) data.get(ISKEYRECOVERABLE);	  
-		list.set(certusage, new Boolean(iskeyrecoverable));
+		list.set(certusage, Boolean.valueOf(iskeyrecoverable));
 		data.put(ISKEYRECOVERABLE, list);		
 	}
 
