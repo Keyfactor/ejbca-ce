@@ -16,10 +16,10 @@
          Session bean handling core CA function,signing certificates.
      </description>
      <ejb-name>RSASignSession</ejb-name>
-     <local-home>se.anatom.ejbca.ca.sign.ISignSessionLocalHome</local-home>
-     <local>se.anatom.ejbca.ca.sign.ISignSessionLocal</local>
      <home>se.anatom.ejbca.ca.sign.ISignSessionHome</home>
      <remote>se.anatom.ejbca.ca.sign.ISignSessionRemote</remote>
+     <local-home>se.anatom.ejbca.ca.sign.ISignSessionLocalHome</local-home>
+     <local>se.anatom.ejbca.ca.sign.ISignSessionLocal</local>
      <ejb-class>se.anatom.ejbca.ca.sign.RSASignSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>     
@@ -827,8 +827,7 @@
      <method>
          <ejb-name>PublisherSession</ejb-name>
          <method-name>*</method-name>
-     </method>  -
-
+     </method>
    </method-permission>
 
    <method-permission>
@@ -970,7 +969,6 @@
          <ejb-name>UpgradeSession</ejb-name>
          <method-name>*</method-name>
      </method>
-
    <trans-attribute>Required</trans-attribute>
    </container-transaction>
 
@@ -978,10 +976,6 @@
      <method>
          <ejb-name>RSASignSession</ejb-name>
          <method-name>getCertificateChain</method-name>
-     </method>
-     <method>
-         <ejb-name>RSASignSession</ejb-name>
-         <method-name>getPublisherIdToNameMap</method-name>
      </method>
      <method>
          <ejb-name>CertificateStoreSession</ejb-name>

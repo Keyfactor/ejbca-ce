@@ -206,8 +206,8 @@
       <local-home>se.anatom.ejbca.authorization.AuthorizationTreeUpdateDataLocalHome</local-home>
       <local>se.anatom.ejbca.authorization.AuthorizationTreeUpdateDataLocal</local>
       <ejb-class>se.anatom.ejbca.authorization.AuthorizationTreeUpdateDataBean</ejb-class>
-      <prim-key-class>java.lang.Integer</prim-key-class>
       <persistence-type>Container</persistence-type>
+      <prim-key-class>java.lang.Integer</prim-key-class>
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>AuthorizationTreeUpdateDataBean</abstract-schema-name>
