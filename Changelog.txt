@@ -16,6 +16,7 @@ Fixed small bug if using null revocation date
 Default revocation reason to new reason NOT_REVOKED
 Fixed utitlity method that returned wrong subject key id
 Getroot cert in PEM or DER format
+Fixed bug when saving system configuration in admin-GUI.
 
 2.0.1
 -----
