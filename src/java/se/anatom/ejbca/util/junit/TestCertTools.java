@@ -2,31 +2,32 @@ package se.anatom.ejbca.util.junit;
 
 import se.anatom.ejbca.util.*;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 import junit.framework.*;
 
-/** Tests the CertTools class .
+/**
+ * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.6 2003-01-02 11:00:22 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.7 2003-02-12 10:39:32 scop Exp $
  */
 public class TestCertTools extends TestCase {
 
-    static Category cat = Category.getInstance( TestCertTools.class.getName() );
+    private static Logger log = Logger.getLogger(TestCertTools.class);
 
     public TestCertTools(String name) {
         super(name);
     }
 
     protected void setUp() throws Exception {
-        cat.debug(">setUp()");
-        cat.debug("<setUp()");
+        log.debug(">setUp()");
+        log.debug("<setUp()");
 
     }
     protected void tearDown() throws Exception {
     }
 
     public void test01GetPartFromDN() throws Exception {
-        cat.debug(">test01GetPartFromDN()");
+        log.debug(">test01GetPartFromDN()");
 
         // We try to examine the general case and som special cases, which we want to be able to handle
         String dn0 = "C=SE, O=AnaTom, CN=foo";
@@ -70,12 +71,16 @@ public class TestCertTools extends TestCase {
         String dn11 = "CN=foo,CN=bar, O=CN, C=CN";
         assertEquals(CertTools.getPartFromDN(dn11, "CN"), "foo");
         assertEquals(CertTools.getPartFromDN(dn11, "O"), "CN");
+        String dn12 = "CN=\"foo, OU=bar\", O=baz\\\\\\, quux,C=C";
+        assertEquals(CertTools.getPartFromDN(dn12, "CN"), "foo, OU=bar");
+        assertEquals(CertTools.getPartFromDN(dn12, "O"), "baz\\, quux");
+        assertNull(CertTools.getPartFromDN(dn12, "OU"));
 
-        cat.debug("<test01GetPartFromDN()");
+        log.debug("<test01GetPartFromDN()");
     }
 
     public void test02StringToBCDNString() throws Exception {
-        cat.debug(">test02StringToBCDNString()");
+        log.debug(">test02StringToBCDNString()");
 
         // We try to examine the general case and som special cases, which we want to be able to handle
         String dn1 = "C=SE, O=AnaTom, CN=foo";
@@ -117,12 +122,15 @@ public class TestCertTools extends TestCase {
         assertEquals(CertTools.stringToBCDNString(dn18), "CN=jean,CN=EJBCA,DC=home,DC=jean");
         String dn19 = "C=SE, dc=dc1,DC=DC2,O=EJBCA, O=oo, cn=foo, cn=bar";
         assertEquals(CertTools.stringToBCDNString(dn19), "CN=foo,CN=bar,O=EJBCA,O=oo,DC=dc1,DC=DC2,C=SE");
+        String dn20 = " C=SE,CN=\"foo, OU=bar\",  O=baz\\\\\\, quux  ";
+        // BC always escapes with backslash, it doesn't use quotes.
+        assertEquals(CertTools.stringToBCDNString(dn20), "CN=foo\\, OU=bar,O=baz\\\\\\, quux,C=SE");
 
-        cat.debug("<test02StringToBCDNString()");
+        log.debug("<test02StringToBCDNString()");
     }
 
     public void test03AltNames() throws Exception {
-        cat.debug(">test03AltNames()");
+        log.debug(">test03AltNames()");
 
         // We try to examine the general case and som special cases, which we want to be able to handle
         String alt1 = "rfc822Name=ejbca@primekey.se, dNSName=www.primekey.se, uri=http://www.primekey.se/ejbca";
@@ -137,19 +145,18 @@ public class TestCertTools extends TestCase {
         assertEquals(CertTools.getPartFromDN(alt2, CertTools.URI), "http://www.primekey.se/ejbca");
         String alt3 = "EmailAddress=ejbca@primekey.se, dNSName=www.primekey.se, uniformResourceIdentifier=http://www.primekey.se/ejbca";
         assertEquals(CertTools.getPartFromDN(alt3, CertTools.EMAIL2), "ejbca@primekey.se");
-        cat.debug("<test03AltNames()");
+        log.debug("<test03AltNames()");
     }
 
     public void test04DNComponents() throws Exception {
-        cat.debug(">test04DNComponents()");
+        log.debug(">test04DNComponents()");
 
         // We try to examine the general case and som special cases, which we want to be able to handle
         String dn1 = "CN=CommonName, O=Org, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName, GivenName=GivenName, Initials=Initials, C=SE";
         String bcdn1 = CertTools.stringToBCDNString(dn1);
-        cat.debug("dn1: "+dn1);
-        cat.debug("bcdn1: "+bcdn1);
+        log.debug("dn1: "+dn1);
+        log.debug("bcdn1: "+bcdn1);
         assertEquals(bcdn1, "CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE");
-        cat.debug("<test04DNComponents()");
+        log.debug("<test04DNComponents()");
     }
 }
-
