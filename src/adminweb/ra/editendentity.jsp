@@ -279,7 +279,7 @@
    String[] tokentexts = RAInterfaceBean.tokentexts;
    int[] tokenids = RAInterfaceBean.tokenids;
 
-   if(globalconfiguration.getIssueHardwareTokens()){
+   if(globalconfiguration.getIssueHardwareTokens() && userdata != null){
       AvailableHardToken[] availabletokens = tokenbean.getAvailableHardTokens();
 
       tokentexts = new String[RAInterfaceBean.tokentexts.length + availabletokens.length];
