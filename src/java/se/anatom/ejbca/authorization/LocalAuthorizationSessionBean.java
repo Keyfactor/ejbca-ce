@@ -34,7 +34,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.4 2004-01-08 14:31:26 herrvendil Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.5 2004-02-19 12:16:49 herrvendil Exp $
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
@@ -185,20 +185,12 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
            addAdminGroup(admin, admingroupname, caid); 
            ArrayList adminentities = new ArrayList();
            adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,"SuperAdmin",caid));
+           adminentities.add(new AdminEntity(AdminEntity.SPECIALADMIN_INTERNALUSER));
            
            addAdminEntities(admin, admingroupname, caid, adminentities);
            ArrayList accessrules = new ArrayList();
-           accessrules.add(new AccessRule("/public_web_user",AccessRule.RULE_ACCEPT,false));
-           accessrules.add(new AccessRule("/administrator",AccessRule.RULE_ACCEPT,false));
-           accessrules.add(new AccessRule("/super_administrator",AccessRule.RULE_ACCEPT,false));
 
-           accessrules.add(new AccessRule("/ca_functionality",AccessRule.RULE_ACCEPT,true));
-           accessrules.add(new AccessRule("/ra_functionality",AccessRule.RULE_ACCEPT,true));
-           accessrules.add(new AccessRule("/log_functionality",AccessRule.RULE_ACCEPT,true));
-           accessrules.add(new AccessRule("/system_functionality",AccessRule.RULE_ACCEPT,true));
-           accessrules.add(new AccessRule("/hardtoken_functionality",AccessRule.RULE_ACCEPT,true));           
-           accessrules.add(new AccessRule("/ca",AccessRule.RULE_ACCEPT,true)); 
-           accessrules.add(new AccessRule("/endentityprofilesrules",AccessRule.RULE_ACCEPT,true)); 
+           accessrules.add(new AccessRule("/super_administrator",AccessRule.RULE_ACCEPT,false));
            
            addAccessRules(admin, admingroupname, caid, accessrules);
            
@@ -492,12 +484,20 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
               Iterator iter = agdl.getAccessRuleObjects().iterator();  
               boolean allauthorized = true;
               while(iter.hasNext()){
-                String rule = ((AccessRule) iter.next()).getAccessRule();
-                if(rule.startsWith(AvailableAccessRules.CAPREFIX)){  
-                  if(!authorizedcaids.contains(new Integer(rule.substring(AvailableAccessRules.CAPREFIX.length())))){
-                     allauthorized=false;   
+              	AccessRule accessrule = ((AccessRule) iter.next());
+                String rule = accessrule.getAccessRule();
+                if(rule.equals(AvailableAccessRules.CABASE)){
+                	if(accessrule.getRule() == AccessRule.RULE_ACCEPT && accessrule.isRecursive()){
+                	  allauthorized= true;
+                      break;
+                	}
+                }else{                
+                  if(rule.startsWith(AvailableAccessRules.CAPREFIX) && accessrule.getRule() == AccessRule.RULE_ACCEPT){  
+                    if(!authorizedcaids.contains(new Integer(rule.substring(AvailableAccessRules.CAPREFIX.length())))){
+                       allauthorized=false;   
+                    }
                   }
-                }    
+                }  
               }
               if(allauthorized)
                 if(!(agdl.getAdminGroupName().equals(DEFAULTGROUPNAME) && agdl.getCAId() == ILogSessionLocal.INTERNALCAID))  
@@ -542,7 +542,29 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
       } 
     } // removeAccessRules
 
-
+    /**
+     * Replaces a groups accessrules with a new set of rules
+     *
+     */
+    public void replaceAccessRules(Admin admin, String admingroupname, int caid, Collection accessrules){
+    	if(!(admingroupname.equals(DEFAULTGROUPNAME) && caid == ILogSessionLocal.INTERNALCAID)){
+    		try{
+    			AdminGroupDataLocal agdl = admingrouphome.findByGroupNameAndCAId(admingroupname, caid);
+    			Collection currentrules = agdl.getAdminGroup().getAccessRules();
+    			ArrayList removerules = new ArrayList();
+    			Iterator iter = currentrules.iterator();
+    			while(iter.hasNext()){
+    				removerules.add(((AccessRule) iter.next()).getAccessRule());
+    			}    			    			
+    			agdl.removeAccessRules(removerules);
+    			agdl.addAccessRules(accessrules);
+    			signalForAuthorizationTreeUpdate();
+    			logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Replaced accessrules from admingroup : " + admingroupname );
+    		}catch(Exception e){
+    			logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Error replacing accessrules from admingroup : " + admingroupname );
+    		}
+    	}     	
+    } // replaceAccessRules
 
      /**
      * Adds a Collection of AdminEnity to the admingroup. Changes their values if they already exists.
@@ -721,7 +743,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
         ResultSet rs = null;
         int count = 1; // return true as default.
 
-        String whereclause = "accessRule  LIKE '" + AvailableAccessRules.CAPREFIX + caid + "%'";
+        String whereclause = "accessRule  LIKE '" + AvailableAccessRules.CABASE + "/" + caid + "%'";
 
         try{
            // Construct SQL query.

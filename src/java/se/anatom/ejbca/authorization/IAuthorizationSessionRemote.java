@@ -9,7 +9,7 @@ import se.anatom.ejbca.log.Admin;
 
 /**
  *
- * @version $Id: IAuthorizationSessionRemote.java,v 1.2 2004-01-08 14:31:26 herrvendil Exp $
+ * @version $Id: IAuthorizationSessionRemote.java,v 1.3 2004-02-19 12:16:49 herrvendil Exp $
  */
 public interface IAuthorizationSessionRemote extends javax.ejb.EJBObject {
     
@@ -113,6 +113,12 @@ public interface IAuthorizationSessionRemote extends javax.ejb.EJBObject {
      */
     public void removeAccessRules(Admin admin, String admingroupname, int caid, Collection accessrules) throws RemoteException;
 
+    /**
+     * Replaces a groups accessrules with a new set of rules
+     *
+     */
+    public void replaceAccessRules(Admin admin, String admingroupname, int caid, Collection accessrules) throws RemoteException;    
+    
      /**
      * Adds a Collection of AdminEnity to the admingroup. Changes their values if they already exists.
      *
@@ -125,9 +131,8 @@ public interface IAuthorizationSessionRemote extends javax.ejb.EJBObject {
      * Removes a Collection of AdminEntity from the administrator group.
      *
      */
-    public void removeAdminEntities(Admin admin, String admingroupname, int caid, Collection adminentities) throws RemoteException;
-
-
+    public void removeAdminEntities(Admin admin, String admingroupname, int caid, Collection adminentities) throws RemoteException;    
+    
     /**
      * Method used to collect an administrators available access rules based on which rule
      * he himself is authorized to.

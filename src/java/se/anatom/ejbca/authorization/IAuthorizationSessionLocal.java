@@ -94,6 +94,12 @@ public interface IAuthorizationSessionLocal extends javax.ejb.EJBLocalObject
     /**
      * @see se.anatom.ejbca.authorization.IAuthorizationSessionRemote
      */
+    public void replaceAccessRules(Admin admin, String admingroupname, int caid, Collection accessrules);
+    
+    
+    /**
+     * @see se.anatom.ejbca.authorization.IAuthorizationSessionRemote
+     */
     public void addAdminEntities(Admin admin, String admingroupname, int caid, Collection adminentities);
 
 
