@@ -174,7 +174,7 @@ import se.anatom.ejbca.util.Hex;
  *   extends="javax.ejb.EJBObject"
  *   remote-class="se.anatom.ejbca.ca.sign.ISignSessionRemote"
  *   local-extends="javax.ejb.EJBLocalObject"
- *   local-class="se.anatom.ejbca.ca.sign.ISignSessionHome"
+ *   local-class="se.anatom.ejbca.ca.sign.ISignSessionLocal"
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -209,6 +209,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * Default create for SessionBean without any creation Arguments.
      *
      * @throws CreateException if bean instance can't be created
+     * @ejb.create-method 
      */
     public void ejbCreate() throws CreateException {
         debug(">ejbCreate()");
@@ -263,7 +264,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param admin Information about the administrator or admin preforming the event.
      * @param caid  is the issuerdn.hashCode()
      * @return The certificate chain, never null.
-     * @ejb.permission unchecked
+     * @ejb.permission unchecked="true"
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
@@ -380,7 +381,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws AuthStatusException     If the users status is incorrect.
      * @throws AuthLoginException      If the password is incorrect.
      * @throws IllegalKeyException     if the public key is of wrong type.
-     * @ejb.permission unchecked
+     * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
@@ -410,7 +411,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws AuthStatusException     If the users status is incorrect.
      * @throws AuthLoginException      If the password is incorrect.
      * @throws IllegalKeyException     if the public key is of wrong type.
-     * @ejb.permission unchecked
+     * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, boolean[] keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
@@ -437,7 +438,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws AuthStatusException     If the users status is incorrect.
      * @throws AuthLoginException      If the password is incorrect.
      * @throws IllegalKeyException     if the public key is of wrong type.
-     * @ejb.permission unchecked
+     * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
@@ -469,7 +470,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws AuthStatusException     If the users status is incorrect.
      * @throws AuthLoginException      If the password is incorrect.
      * @throws IllegalKeyException     if the public key is of wrong type.
-     * @ejb.permission unchecked
+     * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, int certificateprofileid) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
@@ -556,7 +557,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws AuthStatusException     If the users status is incorrect.
      * @throws AuthLoginException      If the password is incorrect.
      * @throws IllegalKeyException     if the public key is of wrong type.
-     * @ejb.permission unchecked
+     * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, int certType, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
@@ -609,7 +610,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws IllegalKeyException           if the public key is of wrong type.
      * @throws SignRequestSignatureException if the provided client certificate was not signed by
      *                                       the CA.
-     * @ejb.permission unchecked
+     * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, Certificate incert) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestSignatureException, CADoesntExistsException {
@@ -644,7 +645,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws SignRequestException          if the provided request is invalid.
      * @throws SignRequestSignatureException if the provided client certificate was not signed by
      *                                       the CA.
-     * @ejb.permission unchecked
+     * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
     public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException {
@@ -677,7 +678,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws SignRequestException          if the provided request is invalid.
      * @throws SignRequestSignatureException if the provided client certificate was not signed by
      *                                       the CA.
-     * @ejb.permission unchecked
+     * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      * @see se.anatom.ejbca.ca.store.CertificateData
      * @see se.anatom.ejbca.protocol.IRequestMessage
