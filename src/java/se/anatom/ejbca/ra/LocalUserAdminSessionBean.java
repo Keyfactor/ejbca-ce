@@ -68,7 +68,7 @@ import java.util.Iterator;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.85 2005-02-03 16:59:51 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.86 2005-02-04 16:30:05 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -1315,6 +1315,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     } // makeType
 
     private void sendNotification(Admin admin, EndEntityProfile profile, String username, String password, String dn, String subjectaltname, String email, int caid) {
+        debug(">sendNotification: user="+username+", email="+email);
         try {
             if (email == null) {
                 throw new Exception("Notification cannot be sent to user where email field is null");
@@ -1344,9 +1345,14 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 
             logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_INFO_NOTIFICATION, "Notification to " + email + " sent successfully.");
         } catch (Exception e) {
-            logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_NOTIFICATION, "Error when sending notification to " + email);
-            throw new EJBException(e);
+            error("Error when sending notification to " + email, e);
+            try{
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_NOTIFICATION, "Error when sending notification to " + email );
+            }catch(Exception f){
+                throw new EJBException(f);
+            }
         }
+        debug("<sendNotification: user="+username+", email="+email);
     } // sendNotification
 
     /**
