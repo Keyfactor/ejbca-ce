@@ -103,23 +103,31 @@ public class ProtocolHttpTest extends TestCase {
      * @throws Exception error
      */
     public void test02OpenScep() throws Exception {
-        log.debug(">test02TestOpenScep()");
+        log.debug(">test02OpenScep()");
         ScepRequestMessage msg = new ScepRequestMessage(openscep);
-        // TODO: send message to server and see what happens
-        // (send crap message and get good error)
-        log.debug("<test02TestOpenScep()");
+        // send message to server and see what happens
+        WebConversation wc   = new WebConversation();
+        WebRequest request = new GetMethodWebRequest( httpReqPath + '/' + resourceScep );
+        request.setParameter("operation", "PKIOperation");
+        request.setParameter("message", new String(Base64.encode(openscep)));
+        WebResponse response = wc.getResponse( request );
+        // TODO: invalid CA gives 500 so far...
+        assertEquals( "Response code", 500, response.getResponseCode() );
+        // TODO: send crap message and get good error
+        
+        log.debug("<test02OpenScep()");
     }
     /** Tests ocsp message
      * @throws Exception error
      */
     public void test03Ocsp() throws Exception {
-        log.debug(">test03TestOcsp()");
+        log.debug(">test03Ocsp()");
         // TODO: add user and create certificate with good status, 
         // send message to server and get good response
         // change status of cert to bad status
         // send message and get bad status
         // (send crap message and get good error)
-        log.debug("<test03TestOcsp()");
+        log.debug("<test03Ocsp()");
     }
 
 }
