@@ -31,7 +31,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.6 2002-03-28 08:46:45 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.7 2002-07-22 14:07:28 anatom Exp $
  */
 public class KeyTools {
 
@@ -68,7 +68,7 @@ public class KeyTools {
      * @param cacert CA-certificate or null if only one cert in chain, in that case use 'cert'.
      * @param username user's username
      * @param password user's password
-     * @return byte[] containing PKCS12-file in binary format
+     * @return KeyStore containing PKCS12-keystore
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
     static public KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, X509Certificate cacert)
@@ -82,7 +82,7 @@ public class KeyTools {
         }
         return createP12(alias, privKey, cert, chain);
     } // createP12
-    
+
     /**
      * Creates PKCS12-file that can be imported in IE or Netscape.
      * The alias for the private key is set to 'privateKey' and the private key password is null.
@@ -92,7 +92,7 @@ public class KeyTools {
      * @param cachain CA-certificate chain or null if only one cert in chain, in that case use 'cert'.
      * @param username user's username
      * @param password user's password
-     * @return byte[] containing PKCS12-file in binary format
+     * @return KeyStore containing PKCS12-keystore
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
     static public KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, Certificate[] cachain)
@@ -149,6 +149,43 @@ public class KeyTools {
         return store;
     } // createP12
 
+    /**
+     * Creates JKS-file that can be used with JDK.
+     * The alias for the private key is set to 'privateKey' and the private key password is null.
+     * @param alias the alias used for the key entry
+     * @param privKey RSA private key
+     * @param cert user certificate
+     * @param cachain CA-certificate chain or null if only one cert in chain, in that case use 'cert'.
+     * @param username user's username
+     * @param password user's password
+     * @return KeyStore containing JKS-keystore
+     * @exception Exception if input parameters are not OK or certificate generation fails
+     */
+    static public KeyStore createJKS(String alias, PrivateKey privKey, X509Certificate cert, Certificate[] cachain)
+    throws Exception {
+        cat.debug(">createJKS: privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length) );
+
+        // Certificate chain, only max two levels deep unforturnately, this is a TODO:
+        if (cert == null)
+            throw new IllegalArgumentException("Parameter cert cannot be null.");
+        int len = 1;
+        if (cachain != null)
+            len += cachain.length;
+        Certificate[] chain = new Certificate[len];
+        chain[0] = cert;
+        if (cachain != null)
+            for (int i=0;i<cachain.length;i++) {
+                chain[i+1] = cachain[i];
+            }
+        // store the key and the certificate chain
+        KeyStore store = KeyStore.getInstance("JKS");
+        store.load(null, null);
+        store.setKeyEntry(alias, privKey, null, chain);
+        cat.debug(">createJKS: privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length));
+
+        return store;
+    } // createJKS
+
     /** Retrieves the certificate chain from a keystore.
      * @param ks the keystore, which has been loaded and opened.
      * @param privKeyAlias the alias of the privatekey for which the certchain belongs.
@@ -170,13 +207,13 @@ public class KeyTools {
                 return certchain;
             }
         }
-        
-        // If we came here, we have a cert which is not root cert in 'cert' 
+
+        // If we came here, we have a cert which is not root cert in 'cert'
         ArrayList array = new ArrayList();
         for (int i=0;i<certchain.length;i++) {
             array.add(certchain[i]);
         }
-        
+
         boolean stop = false;
         while (!stop) {
             X509Certificate cert = (X509Certificate)array.get(array.size()-1);
@@ -207,7 +244,7 @@ public class KeyTools {
         cat.debug("<getCertChain: alias='"+privateKeyAlias+"', retlength="+ret.length);
         return ret;
     } // getCertChain
-    
+
     /** create the subject key identifier.
      * @param pubKey the public key
      * @return SubjectKeyIdentifer asn.1 structure
