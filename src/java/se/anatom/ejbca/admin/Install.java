@@ -10,8 +10,11 @@ import java.io.InputStreamReader;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import javax.naming.InitialContext;
+
 import org.ietf.ldap.LDAPDN;
 
+import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /**
@@ -77,10 +80,13 @@ public class Install {
 	}			
 	
 	public void run(){
-		displayWelcomeScreen();
-	    while(!collectData());
-	    runInstall();	
-
+		if(checkRequirements()){;
+		  displayWelcomeScreen();
+	      while(!collectData());
+	      runInstall();	
+		}else{
+	      System.exit(-1);	
+		}
 	}
 					
 	public static void main(String[] args) throws Exception {
@@ -108,11 +114,31 @@ public class Install {
 		
 	}
 	
+	
+	/**
+	 * Method checking if all reuirements are meet before starting the installation.
+	 * If requirements aren't meet then will a error message be  displayed.
+	 * 
+	 * @return true if all requirements are set.
+	 */
+	private boolean checkRequirements(){
+	  boolean retval = false;
+	  
+      // Check that JBOSS is running 	  	  	  
+	  try{
+	    IUserAdminSessionHome home = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow((new InitialContext()).lookup("UserAdminSession"), IUserAdminSessionHome.class );
+	    retval= true;
+	  }catch(Exception e){
+		System.out.println(text.getProperty("APPSERVMUSTBERUNNING"));
+	  }
+
+	  	
+	  return retval;
+	}
+	
 	private void displayWelcomeScreen(){
 		System.out.print(text.getProperty("WELCOMETO"));
 		System.out.print(text.getProperty("THISSCRIPT"));
-		System.out.print(text.getProperty("APPLICATIONSERVERISRUNNING"));
-		System.out.print(text.getProperty("ENVIRONMENTVARIABLESJBOSS"));
 		System.out.print(text.getProperty("THEAPPLICATIONISDEPLOYED"));
 		System.out.print(text.getProperty("YOUSHOULDPERFORM"));
 		System.out.print(text.getProperty("ISTHESEREQUIREMENTSMEET"));
