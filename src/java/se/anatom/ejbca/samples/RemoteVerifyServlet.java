@@ -13,11 +13,23 @@
  
 package se.anatom.ejbca.samples;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.StringTokenizer;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
@@ -45,7 +57,7 @@ import org.apache.log4j.Logger;
  * </p>
  *
  * @author Original code by Peter Neemeth
- * @version $Id: RemoteVerifyServlet.java,v 1.7 2004-04-16 07:39:02 anatom Exp $
+ * @version $Id: RemoteVerifyServlet.java,v 1.8 2004-06-19 15:34:34 anatom Exp $
  */
 public class RemoteVerifyServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(RemoteVerifyServlet.class);
@@ -266,7 +278,7 @@ public class RemoteVerifyServlet extends HttpServlet {
         out.println(" using " + method + " as method.");
 
         try {
-            Hashtable params = HttpUtils.parseQueryString(req.getQueryString());
+            Map params = req.getParameterMap();
 
             if (params.containsKey(STATUS_KEY)) {
                 out.println("\n");
@@ -368,7 +380,7 @@ public class RemoteVerifyServlet extends HttpServlet {
         // Will this work with len == -1 ?? (Unknown length)
         // Don't know, but -1 is possible only if we have a GET
         // and we KNOW this is a POST :-)
-        Hashtable params = HttpUtils.parsePostData(len, in);
+        Map params = req.getParameterMap();
 
         try {
             // Extract parameters from client
@@ -609,7 +621,4 @@ public class RemoteVerifyServlet extends HttpServlet {
 
         users.put(username.toLowerCase(), userData);
     }
-}
-
-
-// RemoteVerifyServlet
+} // RemoteVerifyServlet
