@@ -11,13 +11,14 @@ import javax.rmi.PortableRemoteObject;
 import javax.sql.DataSource;
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
+import javax.mail.Session;
 
 /**
  * A simple implementation of the ServiceLocator/HomeFactory J2EE Pattern.
  * {@link http://developer.java.sun.com/developer/restricted/patterns/ServiceLocator.html}
  *
  * It is used to look up JNDI related resources such as EJB homes, datasources, ...
- * @version $Id: ServiceLocator.java,v 1.1 2004-06-02 20:05:35 anatom Exp $
+ * @version $Id: ServiceLocator.java,v 1.2 2004-08-17 21:14:19 sbailliez Exp $
  */
 public class ServiceLocator {
 
@@ -145,6 +146,20 @@ public class ServiceLocator {
     public String getString(String envName) throws ServiceLocatorException {
         try {
             return (String)ctx.lookup(envName);
+        } catch (NamingException e) {
+            throw new ServiceLocatorException(e);
+        }
+    }
+
+    /**
+     * return a mail session corresponding to the env entry
+     * @param envName the env entry name
+     * @return the mail session corresponding to the env entry.
+     * @throws ServiceLocatorException if the lookup fails
+     */
+    public Session getMailSession(String envName) throws ServiceLocatorException {
+        try {
+            return (Session)ctx.lookup(envName);
         } catch (NamingException e) {
             throw new ServiceLocatorException(e);
         }
