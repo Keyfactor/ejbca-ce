@@ -41,7 +41,7 @@ import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.KeyTools;
 /** Handles and maintains the CA -part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.7 2004-05-13 15:35:49 herrvendil Exp $
+ * @version $Id: OCSPCAService.java,v 1.8 2004-05-19 10:56:39 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -215,6 +215,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	 * @see se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAService#extendedService(se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest)
 	 */
 	public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
+        m_log.debug(">extendedService");
         if (!(request instanceof OCSPCAServiceRequest)) {
             throw new IllegalExtendedCAServiceRequestException();            
         }
@@ -237,7 +238,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
         } catch (NoSuchProviderException nspe) {
             throw new ExtendedCAServiceRequestException(nspe);            
         }
-		  		
+        m_log.debug("<extendedService");		  		
 		return returnval;
 	}
 

@@ -74,7 +74,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.29 2004-04-16 07:38:55 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.30 2004-05-19 10:57:03 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -424,16 +424,6 @@ public class OCSPServlet extends HttpServlet {
                     }
                 }
             
-                /**
-                 * FIXME: tmeckel
-                 * How to implement the list of allowed
-                 * OCSP clients which are allowed to talk?
-                 * 
-                 * check if requestor is allowed to talk
-                 * to the CA, if not send back a 'unauthorized'
-                 * response
-                 */
-                //throw new OCSPUnauthorizedException()
                 Req[] requests = req.getRequestList();
                 if (requests.length <= 0) {
                     String msg = "The OCSP request does not contain any simpleRequest entities.";
@@ -540,7 +530,7 @@ public class OCSPServlet extends HttpServlet {
                             basicRes.addResponse(certId, certStatus);
                         }
                     }
-                    if (basicRes != null) {
+                    if ( (basicRes != null) && (cacert != null) ) {
                         // generate the signed response object
                         BasicOCSPResp basicresp = signOCSPResponse(basicRes, cacert); 
                         ocspresp = res.generate(OCSPRespGenerator.SUCCESSFUL, basicresp);                        
@@ -561,6 +551,8 @@ public class OCSPServlet extends HttpServlet {
                 BasicOCSPResp basicresp = signOCSPResponse(basicRes, cacert); 
                 ocspresp = res.generate(OCSPRespGenerator.SIG_REQUIRED, basicRes);
             } catch (Exception e) {
+                if (e instanceof ServletException)
+                    throw (ServletException)e;
                 m_log.error("Unable to handle OCSP request.", e);
                 // generate the signed response object
                 BasicOCSPResp basicresp = signOCSPResponse(basicRes, cacert); 
