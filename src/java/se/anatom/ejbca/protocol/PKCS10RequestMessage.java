@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.protocol;
 
 import java.io.Serializable;
@@ -28,7 +41,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.21 2003-10-21 13:48:47 herrvendil Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.22 2004-04-16 07:38:55 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(PKCS10RequestMessage.class);

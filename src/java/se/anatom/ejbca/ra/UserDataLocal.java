@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.ra;
 
 import java.security.NoSuchAlgorithmException;
@@ -5,7 +18,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataLocal.java,v 1.11 2003-11-02 10:15:12 anatom Exp $
+ * @version $Id: UserDataLocal.java,v 1.12 2004-04-16 07:38:56 anatom Exp $
  **/
 public interface UserDataLocal extends javax.ejb.EJBLocalObject {
 

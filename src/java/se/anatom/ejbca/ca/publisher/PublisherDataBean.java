@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.ca.publisher;
 
 import java.io.UnsupportedEncodingException;
@@ -21,7 +34,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *  publisher (Data saved concerning the publisher)
  * </pre>
  *
- * @version $Id: PublisherDataBean.java,v 1.1 2004-03-07 12:08:50 herrvendil Exp $
+ * @version $Id: PublisherDataBean.java,v 1.2 2004-04-16 07:38:55 anatom Exp $
  **/
 
 public abstract class PublisherDataBean extends BaseEntityBean {

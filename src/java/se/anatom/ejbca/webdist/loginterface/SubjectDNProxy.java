@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.webdist.loginterface;
 
 import java.math.BigInteger;
@@ -14,7 +27,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * A class used to improve performance by proxying certificatesnr to subjectdn mappings by minimizing the number of needed lockups over rmi.
  *
- * @version $Id: SubjectDNProxy.java,v 1.7 2003-09-04 09:49:46 herrvendil Exp $
+ * @version $Id: SubjectDNProxy.java,v 1.8 2004-04-16 07:38:58 anatom Exp $
  */
 public class SubjectDNProxy {
 

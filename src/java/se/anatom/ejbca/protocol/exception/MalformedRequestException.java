@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.protocol.exception;
 
 import se.anatom.ejbca.exception.EjbcaException;
@@ -6,7 +19,7 @@ import se.anatom.ejbca.exception.EjbcaException;
 /**
  * Error due to malformed request. The cause of failure can be related to ASN.1 issues etc.
  *
- * @version $Id: MalformedRequestException.java,v 1.1 2003-10-26 15:13:53 anatom Exp $
+ * @version $Id: MalformedRequestException.java,v 1.2 2004-04-16 07:39:01 anatom Exp $
  */
 public class MalformedRequestException extends EjbcaException {
     /**

@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.ra.raadmin;
 
 import java.util.HashMap;
@@ -17,7 +30,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * AdminPreference
  * </pre>
  *
- * @version $Id: AdminPreferencesDataBean.java,v 1.7 2003-07-24 08:43:32 anatom Exp $
+ * @version $Id: AdminPreferencesDataBean.java,v 1.8 2004-04-16 07:38:41 anatom Exp $
  */
 public abstract class AdminPreferencesDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(AdminPreferencesDataBean.class);

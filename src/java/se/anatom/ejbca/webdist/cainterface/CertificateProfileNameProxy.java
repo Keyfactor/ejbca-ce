@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.webdist.cainterface;
 
 
@@ -8,7 +21,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * A class used to improve performance by proxying certificateprofile id to certificate name mappings by minimizing the number of needed lockups over rmi.
  * 
- * @version $Id: CertificateProfileNameProxy.java,v 1.6 2003-09-04 09:46:43 herrvendil Exp $
+ * @version $Id: CertificateProfileNameProxy.java,v 1.7 2004-04-16 07:38:59 anatom Exp $
  */
 public class CertificateProfileNameProxy {
     

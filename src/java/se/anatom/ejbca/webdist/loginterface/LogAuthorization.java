@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.webdist.loginterface;
 
 import java.io.Serializable;
@@ -16,7 +29,7 @@ import se.anatom.ejbca.log.LogEntry;
  * A class that looks up the which modules a administrator have right to view.
  * This is done by looking up an administrators privileges in the tree and returning a string to be used in SQL-queries.
  * 
- * @version $Id: LogAuthorization.java,v 1.7 2003-10-01 11:12:14 herrvendil Exp $
+ * @version $Id: LogAuthorization.java,v 1.8 2004-04-16 07:38:58 anatom Exp $
  */
 public class LogAuthorization implements Serializable {
     

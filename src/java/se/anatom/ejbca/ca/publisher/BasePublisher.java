@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.ca.publisher;
 
 import java.io.Serializable;
@@ -13,7 +26,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * of publishers in the system.
  *  
  *
- * @version $Id: BasePublisher.java,v 1.2 2004-03-10 20:23:06 anatom Exp $
+ * @version $Id: BasePublisher.java,v 1.3 2004-04-16 07:38:55 anatom Exp $
  */
 public abstract class BasePublisher extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values

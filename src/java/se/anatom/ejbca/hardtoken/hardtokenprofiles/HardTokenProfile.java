@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.hardtoken.hardtokenprofiles;
 
 import java.io.Serializable;
@@ -14,7 +27,7 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
  * processed. This information could be PIN-type number of certificates, 
  * certificate profiles and so on. 
  *
- * @version $Id: HardTokenProfile.java,v 1.2 2004-01-25 09:37:34 herrvendil Exp $
+ * @version $Id: HardTokenProfile.java,v 1.3 2004-04-16 07:39:00 anatom Exp $
  */
 public abstract class HardTokenProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values

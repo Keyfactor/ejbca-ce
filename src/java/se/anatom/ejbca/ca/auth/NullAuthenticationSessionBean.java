@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.ca.auth;
 
 import java.rmi.*;
@@ -19,7 +32,7 @@ import se.anatom.ejbca.util.CertTools;
  * Approves all authentication requests that contain a DN as the username, password is ignored and
  * the username is returned as DN. Useful for demo purposes to give out certificates to anyone.
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.16 2003-10-21 13:48:48 herrvendil Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.17 2004-04-16 07:39:00 anatom Exp $
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean {
     /** The remote interface of the log session bean */

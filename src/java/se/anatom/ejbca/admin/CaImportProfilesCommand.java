@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.admin;
 
 import java.beans.XMLDecoder;
@@ -21,7 +34,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 /**
  * Export profiles from the databse to XML-files.
  *
- * @version $Id: CaImportProfilesCommand.java,v 1.6 2003-10-12 13:31:48 anatom Exp $
+ * @version $Id: CaImportProfilesCommand.java,v 1.7 2004-04-16 07:38:57 anatom Exp $
  */
 public class CaImportProfilesCommand extends BaseCaAdminCommand {
     /**

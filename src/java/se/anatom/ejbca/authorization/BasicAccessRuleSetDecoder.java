@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.authorization;
 
 import java.util.ArrayList;
@@ -8,7 +21,7 @@ import java.util.Iterator;
  * A class used as a help class for displaying and configuring basic access rules
  *
  * @author  herrvendil 
- * @version $Id: BasicAccessRuleSetDecoder.java,v 1.1 2004-02-19 12:15:50 herrvendil Exp $
+ * @version $Id: BasicAccessRuleSetDecoder.java,v 1.2 2004-04-16 07:38:57 anatom Exp $
  */
 public class BasicAccessRuleSetDecoder implements java.io.Serializable {
 			    

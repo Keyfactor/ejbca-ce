@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.ra.raadmin.junit;
 
 import javax.naming.Context;
@@ -15,7 +28,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 /**
  * Tests the global configuration entity bean.
  *
- * @version $Id: TestGlobalConfiguration.java,v 1.1 2004-03-14 13:56:27 herrvendil Exp $
+ * @version $Id: TestGlobalConfiguration.java,v 1.2 2004-04-16 07:39:01 anatom Exp $
  */
 public class TestGlobalConfiguration extends TestCase {
 	private static Logger log = Logger.getLogger(TestGlobalConfiguration.class);

@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.ca.auth;
 
 import java.io.Serializable;
@@ -8,7 +21,7 @@ import se.anatom.ejbca.util.StringTools;
 /**
  * Holds authentication data collected from an authentication source.
  *
- * @version $Id: UserAuthData.java,v 1.7 2003-09-03 15:34:14 herrvendil Exp $
+ * @version $Id: UserAuthData.java,v 1.8 2004-04-16 07:39:00 anatom Exp $
  */
 public class UserAuthData implements Serializable {
       

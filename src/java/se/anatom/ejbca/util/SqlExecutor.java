@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.util;
 
 import java.io.BufferedReader;
@@ -17,7 +30,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 /** Class to execute a file full of sql commands. Useful for running update scripts.
- * @version $Id: SqlExecutor.java,v 1.1 2004-04-10 10:15:33 anatom Exp $
+ * @version $Id: SqlExecutor.java,v 1.2 2004-04-16 07:38:59 anatom Exp $
  */
 public class SqlExecutor {
     static Logger log = Logger.getLogger(SqlExecutor.class);

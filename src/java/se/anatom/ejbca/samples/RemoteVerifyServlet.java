@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.samples;
 
 import java.io.*;
@@ -32,7 +45,7 @@ import org.apache.log4j.Logger;
  * </p>
  *
  * @author Original code by Peter Neemeth
- * @version $Id: RemoteVerifyServlet.java,v 1.6 2003-07-24 08:43:32 anatom Exp $
+ * @version $Id: RemoteVerifyServlet.java,v 1.7 2004-04-16 07:39:02 anatom Exp $
  */
 public class RemoteVerifyServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(RemoteVerifyServlet.class);

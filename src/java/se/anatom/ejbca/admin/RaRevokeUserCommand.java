@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.admin;
 
 import se.anatom.ejbca.ra.UserAdminData;
@@ -8,7 +21,7 @@ import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 /**
  * Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaRevokeUserCommand.java,v 1.12 2003-09-03 14:32:02 herrvendil Exp $
+ * @version $Id: RaRevokeUserCommand.java,v 1.13 2004-04-16 07:38:57 anatom Exp $
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
     /**

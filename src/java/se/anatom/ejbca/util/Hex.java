@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 /*
  * Copyright 1998-2000 Sun Microsystems, Inc. All Rights Reserved.
  *
@@ -12,7 +25,7 @@ import java.math.BigInteger;
 /**
  * This class implements a hex decoder, decoding a string with hex-characters into the binary form.
  *
- * @version $Id: Hex.java,v 1.5 2003-07-24 08:43:32 anatom Exp $
+ * @version $Id: Hex.java,v 1.6 2004-04-16 07:38:59 anatom Exp $
  */
 public class Hex {
     private static final char[] hex = {

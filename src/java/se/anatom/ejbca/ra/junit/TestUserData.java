@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.ra.junit;
 
 import java.util.Collection;
@@ -23,7 +36,7 @@ import se.anatom.ejbca.ra.UserDataRemote;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.18 2004-03-14 13:55:02 herrvendil Exp $
+ * @version $Id: TestUserData.java,v 1.19 2004-04-16 07:39:02 anatom Exp $
  */
 public class TestUserData extends TestCase {
 

@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.hardtoken;
 import java.rmi.RemoteException;
 import java.util.Collection;
@@ -8,7 +21,7 @@ import se.anatom.ejbca.ra.UserAdminData;
 /**
  * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from RA. 
  *
- * @version $Id: IHardTokenBatchJobSessionRemote.java,v 1.5 2004-01-08 14:31:26 herrvendil Exp $
+ * @version $Id: IHardTokenBatchJobSessionRemote.java,v 1.6 2004-04-16 07:38:56 anatom Exp $
  */
 public interface IHardTokenBatchJobSessionRemote extends javax.ejb.EJBObject {
     

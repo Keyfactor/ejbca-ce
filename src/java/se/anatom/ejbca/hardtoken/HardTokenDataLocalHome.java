@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.hardtoken;
 
 import javax.ejb.CreateException;
@@ -10,7 +23,7 @@ import se.anatom.ejbca.hardtoken.hardtokentypes.HardToken;
 /**
  * For docs, see HardTokenDataBean
  *
- * @version $Id: HardTokenDataLocalHome.java,v 1.4 2003-09-03 12:47:24 herrvendil Exp $
+ * @version $Id: HardTokenDataLocalHome.java,v 1.5 2004-04-16 07:38:56 anatom Exp $
  **/
 
 public interface HardTokenDataLocalHome extends javax.ejb.EJBLocalHome {

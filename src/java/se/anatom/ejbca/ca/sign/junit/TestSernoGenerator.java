@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.ca.sign.junit;
 
 import java.math.BigInteger;
@@ -13,7 +26,7 @@ import se.anatom.ejbca.ca.sign.*;
 /**
  * Tests generation of serial numbers.
  *
- * @version $Id: TestSernoGenerator.java,v 1.7 2003-07-24 08:43:30 anatom Exp $
+ * @version $Id: TestSernoGenerator.java,v 1.8 2004-04-16 07:39:02 anatom Exp $
  */
 public class TestSernoGenerator extends TestCase {
     private static Logger log = Logger.getLogger(TestSernoGenerator.class);

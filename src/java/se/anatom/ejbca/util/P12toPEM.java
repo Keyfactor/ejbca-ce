@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.util;
 
 import java.io.*;
@@ -19,7 +32,7 @@ import org.apache.log4j.PropertyConfigurator;
  * a third file. The PEM files will have the names <i>common name</i>.pem, <i>common
  * name</i>Key.pem and <i>common name</i>CA.pem derived from the DN in user certificate.
  *
- * @version $Id: P12toPEM.java,v 1.12 2003-11-23 09:47:54 anatom Exp $
+ * @version $Id: P12toPEM.java,v 1.13 2004-04-16 07:38:59 anatom Exp $
  */
 public class P12toPEM {
     private static Logger log = Logger.getLogger(P12toPEM.class);

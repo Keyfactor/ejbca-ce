@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.admin;
 
 import java.security.cert.X509Certificate;
@@ -15,7 +28,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * List certificates that will expire within the given number of days.
  *
- * @version $Id: CaListExpiredCommand.java,v 1.9 2003-07-24 08:43:29 anatom Exp $
+ * @version $Id: CaListExpiredCommand.java,v 1.10 2004-04-16 07:38:57 anatom Exp $
  */
 public class CaListExpiredCommand extends BaseCaAdminCommand {
     /**

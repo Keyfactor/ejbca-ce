@@ -1,8 +1,16 @@
-/*
- * Created on 2004-jan-24
- *
- * Class used as an install script of ejbca
- */
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.admin;
 
 import java.io.BufferedReader;
@@ -14,7 +22,8 @@ import org.ietf.ldap.LDAPDN;
 
 import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
 
-/**
+/** Class used as an install script of ejbca
+ * 
  * @author philip
  *
  * The main porpose of this program is to provide easy installment of EJBCA.

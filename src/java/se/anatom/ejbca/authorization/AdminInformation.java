@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 /*
  * AdminInformation.java
  *
@@ -12,7 +25,7 @@ import java.security.cert.X509Certificate;
  * A class used to send user information to the authorization tree. It can contain types of information, a X509Certificate or a
  * special user type when certificates cannot be retrieved. Special usertype constants is specified in AdminEntity class.
  *
- * @version $Id: AdminInformation.java,v 1.2 2004-01-08 14:31:26 herrvendil Exp $
+ * @version $Id: AdminInformation.java,v 1.3 2004-04-16 07:38:57 anatom Exp $
  */
 public class AdminInformation implements java.io.Serializable {
 

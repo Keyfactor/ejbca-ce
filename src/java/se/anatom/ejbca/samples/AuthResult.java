@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.samples;
 
 import java.util.Hashtable;
@@ -7,7 +20,7 @@ import java.util.Hashtable;
  * Class containing the complete result from an authenticateUser request.
  *
  * @author Original code by Peter Neemeth
- * @version $Id: AuthResult.java,v 1.3 2003-06-26 11:43:25 anatom Exp $
+ * @version $Id: AuthResult.java,v 1.4 2004-04-16 07:39:02 anatom Exp $
  */
 public class AuthResult {
     /** Constants for grant and reject */

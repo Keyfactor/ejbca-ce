@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.ra.raadmin;
 import java.rmi.RemoteException;
 import java.util.Collection;
@@ -7,7 +20,7 @@ import se.anatom.ejbca.log.Admin;
 
 /**
  *
- * @version $Id: IRaAdminSessionRemote.java,v 1.15 2004-01-31 14:24:59 herrvendil Exp $
+ * @version $Id: IRaAdminSessionRemote.java,v 1.16 2004-04-16 07:38:41 anatom Exp $
  */
 public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
     

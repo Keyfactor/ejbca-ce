@@ -1,7 +1,20 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 /**
- * $Header: /home/tomas/Dev/cvs2svn/ejbca-cvsbackup/ejbca/src/java/se/anatom/ejbca/protocol/ResponseStatus.java,v 1.2 2003-10-11 08:03:26 anatom Exp $
- * $Revision: 1.2 $
- * $Date: 2003-10-11 08:03:26 $
+ * $Header: /home/tomas/Dev/cvs2svn/ejbca-cvsbackup/ejbca/src/java/se/anatom/ejbca/protocol/ResponseStatus.java,v 1.3 2004-04-16 07:38:55 anatom Exp $
+ * $Revision: 1.3 $
+ * $Date: 2004-04-16 07:38:55 $
  *
  */
 package se.anatom.ejbca.protocol;

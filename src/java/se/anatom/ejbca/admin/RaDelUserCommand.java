@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.admin;
 
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
@@ -6,7 +19,7 @@ import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 /**
  * Deletes a user from the database.
  *
- * @version $Id: RaDelUserCommand.java,v 1.7 2003-09-03 14:32:02 herrvendil Exp $
+ * @version $Id: RaDelUserCommand.java,v 1.8 2004-04-16 07:38:57 anatom Exp $
  */
 public class RaDelUserCommand extends BaseRaAdminCommand {
     /**

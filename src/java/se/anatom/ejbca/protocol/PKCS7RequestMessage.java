@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.protocol;
 
 import java.io.*;
@@ -11,7 +24,7 @@ import org.apache.log4j.Logger;
 /**
  * Class to handle PKCS7 request messages sent to the CA.
  *
- * @version $Id: PKCS7RequestMessage.java,v 1.14 2003-09-08 19:02:40 anatom Exp $
+ * @version $Id: PKCS7RequestMessage.java,v 1.15 2004-04-16 07:38:55 anatom Exp $
  */
 public class PKCS7RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(PKCS7RequestMessage.class);

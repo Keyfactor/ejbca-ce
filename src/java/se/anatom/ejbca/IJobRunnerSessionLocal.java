@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca;
 
 import se.anatom.ejbca.log.Admin;
@@ -7,7 +20,7 @@ import se.anatom.ejbca.log.Admin;
  * JobRunner session wraps around any class and is a general session bean that can be used to
  * launch a specified job.
  *
- * @version $Id: IJobRunnerSessionLocal.java,v 1.1 2004-01-25 09:37:10 herrvendil Exp $
+ * @version $Id: IJobRunnerSessionLocal.java,v 1.2 2004-04-16 07:39:01 anatom Exp $
  */
 public interface IJobRunnerSessionLocal extends javax.ejb.EJBLocalObject  {
     /**

@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.util;
 
 import java.util.*;
@@ -19,7 +32,7 @@ import se.anatom.ejbca.log.Admin;
  * jnp://127.0.0.1:1099) - principal   (the user name is needed) - credentials (the password is
  * needed) - agent       (the JNDI-name of the agent session to start)
  *
- * @version $Id: JobRunner.java,v 1.7 2003-09-04 09:33:53 herrvendil Exp $
+ * @version $Id: JobRunner.java,v 1.8 2004-04-16 07:38:59 anatom Exp $
  */
 public class JobRunner extends java.lang.Object {
     private static Logger log = Logger.getLogger(JobRunner.class);

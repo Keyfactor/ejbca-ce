@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.ca.publisher;
 
 import java.security.cert.Certificate;
@@ -38,7 +51,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalPublisherSessionBean.java,v 1.2 2004-03-10 20:23:06 anatom Exp $
+ * @version $Id: LocalPublisherSessionBean.java,v 1.3 2004-04-16 07:38:55 anatom Exp $
  */
 public class LocalPublisherSessionBean extends BaseSessionBean  {
 

@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.webdist.hardtokeninterface;
 
 import java.io.Serializable;
@@ -18,7 +31,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * A class that looks up the which Hard Token Issuers the administrator is authorized to view and edit
  * 
- * @version $Id: HardTokenAuthorization.java,v 1.3 2004-01-08 14:31:26 herrvendil Exp $
+ * @version $Id: HardTokenAuthorization.java,v 1.4 2004-04-16 07:38:57 anatom Exp $
  */
 public class HardTokenAuthorization implements Serializable {
     

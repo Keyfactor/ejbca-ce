@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.admin;
 
 import java.security.cert.X509Certificate;
@@ -10,7 +23,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Gets and prints info about the CA.
  *
- * @version $Id: CaInfoCommand.java,v 1.8 2003-11-02 08:46:03 anatom Exp $
+ * @version $Id: CaInfoCommand.java,v 1.9 2004-04-16 07:38:57 anatom Exp $
  */
 public class CaInfoCommand extends BaseCaAdminCommand {
     /**

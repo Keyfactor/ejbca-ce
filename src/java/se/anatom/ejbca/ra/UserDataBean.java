@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package se.anatom.ejbca.ra;
 
 import javax.ejb.CreateException;
@@ -41,7 +54,7 @@ import org.apache.log4j.Logger;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.24 2003-09-04 14:36:14 herrvendil Exp $
+ * @version $Id: UserDataBean.java,v 1.25 2004-04-16 07:38:56 anatom Exp $
  */
 public abstract class UserDataBean extends BaseEntityBean {
 
