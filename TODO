@@ -1,4 +1,4 @@
-$Id: TODO,v 1.16 2002-03-18 15:54:08 anatom Exp $
+$Id: TODO,v 1.17 2002-03-20 10:08:53 anatom Exp $
 
 V 1.0
 -----
@@ -14,7 +14,8 @@ V 1.x
 - Return PKCS7 response to IE/Mozilla, response is PKCS7 with whole chain.
 ca.crt is also pkcs7 with whole chain.
 - RA function to generate keystore for user.
-- home object in setSessionContext instead of in ejbCreate?
+- Look over exceptions, some should be application exceptions instead of
+EJBException.
 
 V 2.0
 -----
@@ -39,3 +40,4 @@ environments.
 - RA with self registration for end-entities, RA approves registration.
 - Describe SSL-setup in server.
 - XKMS specifications, and more XML/Soap stuff.
+
