@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.6 2004-05-13 09:22:55 anatom Exp $
+$Id: UPGRADE,v 1.7 2004-05-17 07:29:34 anatom Exp $
 
 UPGRADE
 =======
@@ -12,6 +12,8 @@ software.
 From EJBCA 2.x to EJBCA 3.x
 ---------------------------
 EJBCA 3 has several large database changes due to majur new features.
+
+Backup your database first! If the upgrade fails, you can always go back to the earlier version.
 
 The upgrade process typically consists of:
 1. Stop JBoss
