@@ -232,6 +232,8 @@
      </env-entry>
    </session>
 
+<!-- Uncomment to use LDAP Publisher
+
    <session>
      <ejb-name>PublisherSession1</ejb-name>
      <home>se.anatom.ejbca.ca.store.IPublisherSessionHome</home>
@@ -283,6 +285,8 @@
      	<env-entry-value>certificateAuthority</env-entry-value>
      </env-entry>
    </session>
+
+ END LDAP Publisher section -->
 
    <entity>
       <description>
@@ -368,10 +372,12 @@
          <ejb-name>CRLData</ejb-name>
          <method-name>*</method-name>
      </method>
+<!-- Uncomment for LDAP Publisher
      <method>
          <ejb-name>PublisherSession1</ejb-name>
          <method-name>*</method-name>
      </method>
+-->
      <method>
          <ejb-name>CertificateStoreSession</ejb-name>
          <method-name>storeCRL</method-name>
