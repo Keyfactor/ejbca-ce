@@ -1,6 +1,6 @@
 @echo off
 rem ----
-rem $Id: deploy.cmd,v 1.19 2002-06-27 13:59:47 anatom Exp $
+rem $Id: deploy.cmd,v 1.20 2002-07-16 07:48:59 anatom Exp $
 rem
 rem Deploy script for EJBCA
 rem
@@ -15,7 +15,6 @@ rem Check for proper settings of environment variables
 if "%JBOSS_HOME%" == ""  goto error
 
 rem Install keystore is 'keystore' is given as argument to deploy
-if "%1%" == "" goto install
 if not "%1%" == "keystore" goto install
 if exist %JBOSS_HOME%\server\default\conf\server.p12 goto ksexist
 xcopy %KEYSTORE% %JBOSS_HOME%\server\default\conf /Q /Y
@@ -33,9 +32,12 @@ echo Copied jce-jdk13-114.jar and ldap.jar to %JBOSS_HOME%\lib. JBoss must be re
 
 rem Deploy jar and war files
 :deploy
-xcopy dist\ejbca-ca.ear %JBOSS_HOME%\server\default\deploy /Q /Y
-rem xcopy dist\ra.jar %JBOSS_HOME%\server\default\deploy /Q /Y
-rem xcopy dist\raadmin.war %JBOSS_HOME%\server\default\deploy /Q /Y
+set CAEARSRC=dist\ejbca-ca.ear
+if "%1%" == "nora" set CAEARSRC=dist\ejbca-canora.ear
+echo Copying %CAEARSRC%...
+copy %CAEARSRC% %JBOSS_HOME%\server\default\deploy\ejbca-ca.ear /Y
+rem copy dist\ra.jar %JBOSS_HOME%\server\default\deploy /Y
+rem copy dist\raadmin.war %JBOSS_HOME%\server\default\deploy /Y
 
 echo Deployed jar- and war-files in %JBOSS_HOME%\server\default\deploy
 goto end

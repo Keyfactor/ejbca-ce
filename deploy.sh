@@ -38,7 +38,16 @@ then
 fi
 
 # Deploy jar and war files
-cp dist/ejbca-ca.ear $JBOSS_HOME/server/default/deploy
+CAEARSRC=dist/ejbca-ca.ear
+if [ $1 ]
+then
+    if (( $1==nora )) 
+    then
+      CAEARSRC=dist/ejbca-canora.ear
+    fi
+fi
+echo Copying $CAEARSRC...
+cp $CAEARSRC $JBOSS_HOME/server/default/deploy/ejbca.ca.ear
 # cp dist/ra.jar $JBOSS_HOME/server/default/deploy
 # cp dist/raadmin.war $JBOSS_HOME/server/default/deploy
 echo Deployed jar- and war-files in $JBOSS_HOME/server/default/deploy

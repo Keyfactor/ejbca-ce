@@ -42,8 +42,13 @@
   <property name="carootwar" value="${caear.earbuild}/caroot.war" />
   <property name="caear" value="${dist}/ejbca-ca.ear" />
 
-  <!-- Jar with class files needed for administration, i.e. ca, ra, jobrunner 
--->
+  <property name="caearnora.build" value="${tmp}/canora/ear" />
+  <property name="caearnora.warbuild" value="${tmp}/canora/ear/root" />
+  <property name="caearnora.earbuild" value="${tmp}/canora/ear/ear" />
+  <property name="canorarootwar" value="${caearnora.earbuild}/caroot.war" />
+  <property name="caearnora" value="${dist}/ejbca-canora.ear" />
+
+  <!-- Jar with class files needed for administration, i.e. ca, ra, jobrunner -->
   <property name="adminjar.build" value="${tmp}/adminjar" />
   <property name="adminjar" value="./admin.jar" />
 
@@ -80,7 +85,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- Build ALL                                                           -->
   <!-- =================================================================== -->
   <target name="build" depends="compile, apply.war, webdist.war, ca.jar, 
-ca.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
+ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
   </target>
 
   <!-- =================================================================== -->
@@ -326,6 +331,32 @@ ca.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
     <jar basedir="${caear.earbuild}" jarfile="${caear}"/>    
   </target>
 
+  <!-- =================================================================== -->
+  <!-- Build CA-ear without web-RA                                                        -->
+  <!-- =================================================================== -->
+  <target name="canora.ear" depends="apply.war, webdist.war, ca.jar, ra.jar, raadmin.war">
+    <mkdir dir="${caearnora.build}"/>
+    <copy todir="${caearnora.build}">
+        <fileset dir="${caear.src}"> 
+                <include name="**/*"/>
+        </fileset>
+    </copy>
+    <!-- Jar the ROOT war together -->
+    <jar basedir="${caearnora.warbuild}" jarfile="${canorarootwar}"/>    
+
+    <copy todir="${caearnora.earbuild}">
+        <fileset dir="${dist}">
+                <include name="webdist.war"/>
+                <include name="apply.war"/>
+                <include name="ca.jar"/>
+                <include name="ra.jar"/>
+        </fileset>
+    </copy>
+  
+    <!-- Jar the ear package together -->
+    <jar basedir="${caearnora.earbuild}" jarfile="${caearnora}"/>    
+  </target>
+  
   <!-- =================================================================== -->
   <!-- Build Javadoc part                                                -->
   <!-- =================================================================== -->
