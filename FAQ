@@ -1,5 +1,5 @@
 EJBCA FAQ
-$Id: FAQ,v 1.2 2001-11-28 08:32:52 anatom Exp $
+$Id: FAQ,v 1.3 2001-11-28 13:49:15 anatom Exp $
 ---------
 
 Q: Why are there two versions of all commands, i.e. 'ra.sh' and 'ra.cmd'.
@@ -14,35 +14,82 @@ exception is:
 javax.ejb.EJBException: null
 
 A: When using the LocalAuthenticationSession (default) all users have a STATUS. 
-The status lifecycle beginns with NEW and ends with REVOKED. Only when the status is 
-NEW; FAILED or INPROCESS is it possible to issue a certificate to a user. After a 
-certificate has been issued, the status is set to GENERATED. This works like a one-time-password
-scheme kind of. To issue a new certificate to the user his/her status must be reset to NEW, FAILED or INPROCESS.
+The status lifecycle beginns with NEW and ends with REVOKED. Only when the
+ status is 
+NEW; FAILED or INPROCESS is it possible to issue a certificate to a user. After
+ a 
+certificate has been issued, the status is set to GENERATED. This works like a
+ one-time-password
+scheme kind of. To issue a new certificate to the user his/her status must be
+ reset to NEW, FAILED or INPROCESS.
 This can be done with:
 
 ra.sh/cmd setuserstatus <username> <status>
 
-status '10' is NEW. Just enter 'ra.sh/cmd setuserstatus' to see a list of all ststus codes.
+status '10' is NEW. Just enter 'ra.sh/cmd setuserstatus' to see a list of all
+ ststus codes.
 
 -----
 Q: How do I manipulate keystores using Suns 'keytool'?
 
-A: EJBCA use PKCS12 format for the keystore because it is a standard, and I like standards. 
-Normally keytool (e.g. sun) can read PKCS12 file but not write, so the BouncyCastle JCE is needed to handle PKCS12 keystores.
+A: EJBCA use PKCS12 format for the keystore because it is a standard, and I like
+ standards. 
+Normally keytool (e.g. sun) can read PKCS12 file but not write, so the
+ BouncyCastle JCE is needed to handle PKCS12 keystores.
 
-Put the BouncyCastle provider 'jce-jdk13-<version>.jar' in 'jre/lib/ext', the default classpath for extensions in java.
+Put the BouncyCastle provider 'jce-jdk13-<version>.jar' in 'jre/lib/ext', the
+ default classpath for extensions in java.
 
 Now it should be possible to run:
 
-keytool -list -alias privateKey -keystore server.p12 -storetype PKCS12 -storepass foo123 -provider org.bouncycastle.jce.provider.BouncyCastleProvider
+keytool -list -alias privateKey -keystore server.p12 -storetype PKCS12
+ -storepass foo123 -provider org.bouncycastle.jce.provider.BouncyCastleProvider
 
 It should be possible to import etc as well using keytool.
 
-Note: If this doesn't work, try to add a line in your 'jre/lib/securite/java.security' so the part with security providers look like:
+Note: If this doesn't work, try to add a line in your
+ 'jre/lib/securite/java.security' so the part with security providers look like:
 
 security.provider.1=org.boucycastle.jce.provider.BouncyCastleProvider
 security.provider.2=sun.security.provider.Sun
 security.provider.3=com.sun.rsajca.Provider
 
 -----
+Q: How do I make a keystore using keytool with a real certificate from EJBCA?
 
+A: First generate a new keystore and a keypair:
+
+keytool -genkey -alias mykey -keystore myks.jks -keyalg RSA -dname
+ c=SE,O=AnaTom,CN=Test -keypass foo123 -storepass foo123
+
+You SUN keystore is now in the file 'myks.jks'.
+Next generate a certification request (PKCS10):
+
+keytool -certreq -alias mykey -sigalg SHA1WithRSA -file myreq.p10 -keypass
+ foo123 -keystore myks.jks -storepass foo123
+
+You now hav the certification request in the file 'myreq.p10'.
+
+Open up EJBCA request page in your favorite browser,
+ 'http://127.0.0.1:8080/apply/request/index.html', and select the link for NOT
+ having a browser, 'http://127.0.0.1:8080/apply/request/apply_man.jsp'
+
+Download the Root CA certificate by clicking on the link. Save the certificate as 'ca.pem'.
+
+Anter the username and password of a valid user with status NEW, see question 2.
+Copy and paste the contents of the certification request, 'myreq.p10' into the text field.
+Save the returned certificate as 'cert.pem'.
+
+Import the Root CA certificate into the keystore 'myks.jks':
+
+keytool -import -alias cacert -file ca.pem -keystore myks.jks -storepass foo123
+
+Import the certificate reply into the keystore:
+
+keytool -import -alias mykey -file cert.pem -keystore myks.jks -storepass foo123 -keypass foo123
+
+Now you can take a look at your SUN keystore with:
+
+keytool -list -keystore myks.jks
+
+-----
