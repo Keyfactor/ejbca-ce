@@ -16,12 +16,13 @@ package se.anatom.ejbca.authorization;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.RemoveException;
-import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
+
 import se.anatom.ejbca.BaseEntityBean;
 import se.anatom.ejbca.util.ServiceLocator;
 
@@ -38,7 +39,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.10 2004-08-05 15:26:21 sbailliez Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.11 2004-08-06 07:00:13 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"

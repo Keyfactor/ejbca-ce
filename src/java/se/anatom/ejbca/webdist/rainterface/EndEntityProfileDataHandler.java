@@ -21,15 +21,16 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfileExistsException;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
+import se.anatom.ejbca.ra.raadmin.LocalRaAdminSessionBean;
 import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
 /**
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
- * @version $Id: EndEntityProfileDataHandler.java,v 1.9 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: EndEntityProfileDataHandler.java,v 1.10 2004-08-06 07:00:12 anatom Exp $
  */
 public class EndEntityProfileDataHandler {
 
-    public static final String EMPTY_PROFILE        = IRaAdminSessionLocal.EMPTY_ENDENTITYPROFILE;    
+    public static final String EMPTY_PROFILE        = LocalRaAdminSessionBean.EMPTY_ENDENTITYPROFILE;    
     /** Creates a new instance of EndEntityProfileDataHandler */
     public EndEntityProfileDataHandler(Admin administrator, IRaAdminSessionLocal raadminsession, IAuthorizationSessionLocal authorizationsession, InformationMemory info) {
        this.raadminsession = raadminsession;        
@@ -110,7 +111,7 @@ public class EndEntityProfileDataHandler {
      */
     private boolean authorizedToProfileName(String profilename, boolean editcheck){
        EndEntityProfile profile = null;	
-		if(profilename.equals(IRaAdminSessionLocal.EMPTY_ENDENTITYPROFILE))
+		if(profilename.equals(LocalRaAdminSessionBean.EMPTY_ENDENTITYPROFILE))
 		  profile = null;
 		else    	
           profile = raadminsession.getEndEntityProfile(administrator, profilename);
@@ -124,7 +125,7 @@ public class EndEntityProfileDataHandler {
      */
     private boolean authorizedToProfileId(int profileid, boolean editcheck){      	    	
       EndEntityProfile profile = null;	
-      if(profileid == IRaAdminSessionLocal.EMPTY_ENDENTITYPROFILEID)
+      if(profileid == LocalRaAdminSessionBean.EMPTY_ENDENTITYPROFILEID)
         profile = null;
       else  
        profile = raadminsession.getEndEntityProfile(administrator, profileid);

@@ -13,37 +13,44 @@
  
 package se.anatom.ejbca.webdist.loginterface;
 
-import javax.naming.*;
 import java.rmi.RemoteException;
-import java.util.Collection;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import java.security.cert.X509Certificate;
+import javax.naming.InitialContext;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
 
-import se.anatom.ejbca.log.*;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.authorization.AdminInformation;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.log.ILogSessionLocal;
+import se.anatom.ejbca.log.ILogSessionLocalHome;
+import se.anatom.ejbca.log.LogConfiguration;
+import se.anatom.ejbca.log.LogConstants;
+import se.anatom.ejbca.log.LogEntry;
+import se.anatom.ejbca.util.StringTools;
+import se.anatom.ejbca.util.query.BasicMatch;
+import se.anatom.ejbca.util.query.LogMatch;
+import se.anatom.ejbca.util.query.Query;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
-import se.anatom.ejbca.util.StringTools;
-import se.anatom.ejbca.util.query.*;
 
 
 /**
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.13 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.14 2004-08-06 07:00:11 anatom Exp $
  */
 public class LogInterfaceBean {
 
     // Public constants.
-    public static final int MAXIMUM_QUERY_ROWCOUNT = ILogSessionRemote.MAXIMUM_QUERY_ROWCOUNT;
+    public static final int MAXIMUM_QUERY_ROWCOUNT = LogConstants.MAXIMUM_QUERY_ROWCOUNT;
 
     /** Creates new LogInterfaceBean */
     public LogInterfaceBean(){  

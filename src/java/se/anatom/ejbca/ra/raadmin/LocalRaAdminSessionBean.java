@@ -13,8 +13,6 @@
 
 package se.anatom.ejbca.ra.raadmin;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -26,8 +24,6 @@ import java.util.Random;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
@@ -43,7 +39,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.39 2004-07-23 12:10:33 sbailliez Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.40 2004-08-06 07:00:13 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="RaAdminSB"

@@ -14,7 +14,7 @@
 package se.anatom.ejbca.authorization;
 
 import javax.ejb.CreateException;
-import org.apache.log4j.Logger;
+
 import se.anatom.ejbca.BaseEntityBean;
 
 /** Entity bean should not be used directly, use though Session beans.
