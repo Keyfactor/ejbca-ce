@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.58 2003-11-03 11:47:28 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.59 2003-11-03 20:06:26 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -505,34 +505,28 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 			con = getConnection();
 			ps = con.prepareStatement("SELECT DISTINCT fingerprint"
 									  + " FROM CertificateData WHERE"
-									  + " issuerDN = '" + dn + "'"
+									  + " issuerDN = ?"
 									  + " AND serialNumber IN (" + sb.toString() + ")");
+            ps.setString(1,dn);
 			result = ps.executeQuery();
 
 			vect = new ArrayList();
 			while (result.next()) {
-				vect.add(findCertificateByFingerprint(admin, result.getString(1)));
+                Certificate cert = findCertificateByFingerprint(admin, result.getString(1));
+                if (cert != null) {
+                    vect.add(cert);                    
+                } 
 			}
 
 			debug("<findCertificateByIssuerAndSernos()");
-
 			return vect;
-
 		} catch (Exception fe) {
 			throw new EJBException(fe);
 		} finally {
 		   try {
-				if (result != null) {
-					result.close();
-				}
-
-				if (ps != null) {
-					ps.close();
-				}
-
-				if (con != null) {
-					con.close();
-				}
+				if (result != null) result.close();
+				if (ps != null) ps.close();
+				if (con != null) con.close();
 			} catch (SQLException se) {
 				error("Unable to cleanup after : findCertificateByIssuerAndSernos()", se);
 			}
@@ -781,7 +775,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
 			vect = new ArrayList();
 			while (result.next()) {
-				vect.add(findCertificateByFingerprint(admin, result.getString(1)));
+                Certificate cert = findCertificateByFingerprint(admin, result.getString(1));
+                if (cert != null) {
+                    vect.add(cert);
+                }
 			}
 
 			debug("<findCertificatesByType()");

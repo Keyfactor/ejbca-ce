@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import java.util.Iterator;
 import java.util.Random;
 import java.sql.*;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import javax.sql.DataSource;
 import javax.naming.*;
@@ -33,7 +34,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.15 2003-10-03 10:07:00 herrvendil Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.16 2003-11-03 20:06:26 anatom Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
@@ -763,7 +764,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
          Iterator i = result.iterator();
          while(i.hasNext()){
            htcm = (HardTokenCertificateMapLocal) i.next();
-           returnval.add(getCertificateStoreSession().findCertificateByFingerprint(admin, htcm.getCertificateFingerprint()));
+           Certificate cert = getCertificateStoreSession().findCertificateByFingerprint(admin, htcm.getCertificateFingerprint()); 
+           if (cert != null) {
+               returnval.add(cert);
+           }
          }
        }catch(Exception e){
           throw new EJBException(e);

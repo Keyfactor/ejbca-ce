@@ -62,7 +62,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.110 2003-11-03 13:05:44 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.111 2003-11-03 20:06:18 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -631,42 +631,42 @@ public class RSASignSessionBean extends BaseSessionBean {
         return crl;
     } // createCRL
     
-     /** Method that publishes the given CA certificate chain to the list of publishers.
-     * Is mainly used by CAAdminSessionBean when CA is created.
-     *  @see se.anatom.ejbca.ca.sign.ISignSessionRemote
-     */
-    public void publishCACertificate(Admin admin, Collection certificatechain, Collection usedpublishers, boolean rootca){
-      try{
-        int certtype = CertificateProfile.TYPE_SUBCA;
-        if(rootca)
-          certtype = CertificateProfile.TYPE_ROOTCA;
+    /** Method that publishes the given CA certificate chain to the list of publishers.
+    * Is mainly used by CAAdminSessionBean when CA is created.
+    *  @see se.anatom.ejbca.ca.sign.ISignSessionRemote
+    */
+   public void publishCACertificate(Admin admin, Collection certificatechain, Collection usedpublishers, boolean rootca){
+       try{
+           int certtype = CertificateProfile.TYPE_SUBCA;
+           if(rootca)
+             certtype = CertificateProfile.TYPE_ROOTCA;
       
-        ICertificateStoreSessionLocal certificateStore = storeHome.create();
+           ICertificateStoreSessionLocal certificateStore = storeHome.create();
       
-        Iterator certificates = certificatechain.iterator();
-        while(certificates.hasNext()){
-          Certificate cacert = (Certificate) certificates.next();
+           Iterator certificates = certificatechain.iterator();
+           while(certificates.hasNext()){
+               Certificate cacert = (Certificate) certificates.next();
           
-            //	 Store CA certificate in the database
-		   String fingerprint = CertTools.getFingerprintAsString((X509Certificate) cacert);
-		   
-		   if(certificateStore.findCertificateByFingerprint(admin, fingerprint) == null){		   		   		   		   
-		     certificateStore.storeCertificate(admin, cacert, "SYSTEMCA", fingerprint, CertificateData.CERT_ACTIVE, certtype);
-		   }  
-            // Store cert in ca cert publishers.
-            Iterator iter = usedpublishers.iterator();
-            while(iter.hasNext()){
-              int publisherid = ((Integer) iter.next()).intValue();                                      
-              // Store CA certificate
-              IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(publisherid);
-              IPublisherSessionLocal pub = pubHome.create();
-              pub.storeCertificate(admin, cacert, fingerprint, fingerprint, CertificateData.CERT_ACTIVE, certtype);            
-            }
+                 //     Store CA certificate in the database
+                String fingerprint = CertTools.getFingerprintAsString((X509Certificate) cacert);
+           
+                if(certificateStore.findCertificateByFingerprint(admin, fingerprint) == null){                                
+                    certificateStore.storeCertificate(admin, cacert, "SYSTEMCA", fingerprint, CertificateData.CERT_ACTIVE, certtype);
+                }  
+                // Store cert in ca cert publishers.
+                Iterator iter = usedpublishers.iterator();
+                while(iter.hasNext()){
+                    int publisherid = ((Integer) iter.next()).intValue();                                      
+                    // Store CA certificate
+                    IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(publisherid);
+                    IPublisherSessionLocal pub = pubHome.create();
+                    pub.storeCertificate(admin, cacert, fingerprint, fingerprint, CertificateData.CERT_ACTIVE, certtype);            
+                }
         }
-      }catch(javax.ejb.CreateException ce){
-        throw new EJBException(ce);   
-      }
-    }
+       }catch(javax.ejb.CreateException ce){
+           throw new EJBException(ce);   
+       }
+   }
 
     private String getPassword(String initKey) throws Exception {
         String password;
