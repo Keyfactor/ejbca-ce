@@ -38,7 +38,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Class to handle SCEP request messages sent to the CA.
  *
- * @version  $Id: ScepRequestMessage.java,v 1.10 2003-06-01 19:08:03 anatom Exp $
+ * @version  $Id: ScepRequestMessage.java,v 1.11 2003-06-01 19:24:21 anatom Exp $
  */
 public class ScepRequestMessage implements IRequestMessage, Serializable {
 
@@ -183,108 +183,27 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
             log.error("No enveloped data to decrypt!");
             return;
         }
-        /*
-            CMSEnvelopedData ed = new CMSEnvelopedData(envEncData);
-            RecipientInformationStore  recipients = ed.getRecipientInfos();
-            Collection  c = recipients.getRecipients();
-            Iterator it = c.iterator();
-            byte[] pkcs10Bytes = null;
-            while (it.hasNext())
-            {
-                RecipientInformation   recipient = (RecipientInformation)it.next();
-                pkcs10Bytes = recipient.getContent(privateKey, "BC");
-                break;
-            }
-            */
-
-        Enumeration ris = envData.getRecipientInfos().getObjects();
-        if (ris.hasMoreElements()) {
-            RecipientInfo ri = RecipientInfo.getInstance(ris.nextElement());
-            DEREncodable info = ri.getInfo();
-            if (info instanceof KeyTransRecipientInfo) {
-                KeyTransRecipientInfo kti = (KeyTransRecipientInfo)info;
-                AlgorithmIdentifier keyEncAlg = AlgorithmIdentifier.getInstance(kti.getKeyEncryptionAlgorithm());
-                String id = keyEncAlg.getObjectId().getId();
-                if(id.equals(PKCSObjectIdentifiers.rsaEncryption.getId())) {
-                    log.debug("Found key encrypted with RSA inside message.");
-                    //RecipientIdentifier rid = kti.getRecipientIdentifier();
-                    DEREncodable rid = kti.getRecipientIdentifier().getId();
-                    if (rid instanceof IssuerAndSerialNumber) {
-                        log.debug("Issuer and serialnumer of recipient:");
-                        log.debug("Issuer: "+((IssuerAndSerialNumber)rid).getName().toString());
-                        log.debug("SerialNo: "+((IssuerAndSerialNumber)rid).getSerialNumber().getValue().toString());
-                        log.debug("My key Issuer: "+CertTools.getIssuerDN(cert));
-                        log.debug("My serialNo: "+cert.getSerialNumber().toString());
-                    }
-
-                    //boolean ok = checkKeys(cert.getPublicKey(), privateKey);
-                    //if (!ok) {
-                    //    log.error("Public and private keys do not match!");
-                    //    return;
-                    //}
-
-                    // At least OpenSCEP uses nopadding, go figure...
-                    //Cipher cipher = Cipher.getInstance("RSA/NONE/NOPADDING", "BC");
-//                    Cipher cipher = Cipher.getInstance("RSA/ECB/NOPADDING", "BC");
-//                    Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1PADDING", "BC");
-//                    Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPPADDING", "BC");
-//                    Cipher cipher = Cipher.getInstance("RSA/ECB/ISO9796-1PADDING", "BC");
-//                    Cipher cipher = Cipher.getInstance("RSA/NONE/NOPADDING", "BC");
-//                    Cipher cipher = Cipher.getInstance("RSA/NONE/PKCS1PADDING", "BC");
-//                    Cipher cipher = Cipher.getInstance("RSA/NONE/OAEPPADDING", "BC");
-//                    Cipher cipher = Cipher.getInstance("RSA/NONE/ISO9796-1PADDING", "BC");
-//                    Cipher cipher = Cipher.getInstance("RSA/1/PCKS1PADDING", "BC");
-//                    Cipher cipher = Cipher.getInstance("RSA/2/PCKS1PADDING", "BC");
-                    Cipher cipher = Cipher.getInstance(id, "BC");
-                    log.info("keysize="+((RSAPrivateKey)privateKey).getModulus().bitLength());
-                    cipher.init(Cipher.DECRYPT_MODE, privateKey);
-                    log.info("blocksize="+cipher.getBlockSize());
-                    byte[] encKey = kti.getEncryptedKey().getOctets();
-                    log.info("Encrypted keybytes: "+encKey.length);
-                    byte[] dekBytes = cipher.doFinal(encKey);
-                    log.info("Decrypted keybytes: "+dekBytes.length);
-                    byte[] cekBytes = unpad(dekBytes);
-                    log.info("Unpadded keybytes: "+cekBytes.length);
-                    AlgorithmIdentifier aid = envData.getEncryptedContentInfo().getContentEncryptionAlgorithm();
-                    String alg = aid.getObjectId().getId();
-                    log.info("Symm alg="+alg);
-                    AlgorithmParameterSpec iv = getIv(alg, aid.getParameters());
-                    SecretKey cek = getContentEncryptionKey(cekBytes, alg);
-                    log.debug("Extracted secret key.");
-                    byte[] enc = envData.getEncryptedContentInfo().getEncryptedContent().getOctets();
-                    FileOutputStream fos1 = new FileOutputStream("C:\\pkcs10.enc");
-                    fos1.write(enc);
-                    fos1.close();
-
-                    cipher = getCipher(alg);
-                    if(iv == null) {
-                        log.debug("IV is null.");
-                        cipher.init(Cipher.DECRYPT_MODE, cek);
-                    } else {
-                        log.debug("IV is NOT null.");
-                    log.info("blocksize="+cipher.getBlockSize());
-                    log.info("key alg="+cek.getAlgorithm());
-                    log.info("enc key size="+cekBytes.length);
-                    cipher.init(Cipher.DECRYPT_MODE, cek, iv);
-                    }
-                    byte[] pkcs10Bytes = unpad(cipher.doFinal(enc));
-
-                    FileOutputStream fos = new FileOutputStream("C:\\pkcs10.txt");
-                    fos.write(Base64.encode(pkcs10Bytes));
-                    fos.close();
-                    DERObject derobj = new DERInputStream(new ByteArrayInputStream(pkcs10Bytes)).readObject();
-                    DERConstructedSequence seq = (DERConstructedSequence)derobj;
-                    pkcs10 = new PKCS10CertificationRequest(seq);
-                    log.debug("Successfully extracted PKCS10.");
-                } else {
-                    log.error("Key not encrypted with RSA!");
-                    error = 4;
-                }
-            } else {
-                log.error("RecipientInfo is not KeyTransRecipientInfo!");
-                error = 5;
-            }
+        
+        CMSEnvelopedData ed = new CMSEnvelopedData(envEncData);
+        RecipientInformationStore  recipients = ed.getRecipientInfos();
+        Collection  c = recipients.getRecipients();
+        Iterator it = c.iterator();
+        byte[] pkcs10Bytes = null;
+        while (it.hasNext())
+        {
+            RecipientInformation   recipient = (RecipientInformation)it.next();
+            pkcs10Bytes = recipient.getContent(privateKey, "BC");
+            break;
         }
+            
+        // TODO: this is debug stuff...remove!
+        FileOutputStream fos = new FileOutputStream("C:\\pkcs10.txt");
+        fos.write(Base64.encode(pkcs10Bytes));
+        fos.close();
+        DERObject derobj = new DERInputStream(new ByteArrayInputStream(pkcs10Bytes)).readObject();
+        ASN1Sequence seq = (ASN1Sequence)derobj;
+        pkcs10 = new PKCS10CertificationRequest(seq);
+        log.debug("Successfully extracted PKCS10.");
         
         log.debug("<decrypt");
     } // decrypt
@@ -363,93 +282,4 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
         }
     }
 
-    private static Cipher getCipher(String _alg)
-        throws CMSException, GeneralSecurityException {
-
-        if(_alg.equals(SMIMECapability.dES_CBC.getId())) {
-            return Cipher.getInstance("DES", "BC");
-        } else if(_alg.equals(PKCSObjectIdentifiers.des_EDE3_CBC.getId())) {
-            return Cipher.getInstance("DESEDE/CBC/NoPadding", "BC");
-        }
-        else if(_alg.equals(PKCSObjectIdentifiers.RC2_CBC.getId())) {
-            return Cipher.getInstance("RC2/CBC/NoPadding", "BC");
-        }
-        else {
-            throw new CMSException("Invalid cipher algorithm");
-        }
-    }
-
-    private static SecretKey getContentEncryptionKey(byte[] _keyBytes, String _alg)
-        throws CMSException {
-
-        if(_alg.equals(SMIMECapability.dES_CBC.getId())) {
-            return new SecretKeySpec(_keyBytes, "DES");
-        } else if(_alg.equals(PKCSObjectIdentifiers.des_EDE3_CBC.getId())) {
-            return new SecretKeySpec(_keyBytes, "DESEDE");
-        }
-        else if(_alg.equals(PKCSObjectIdentifiers.RC2_CBC.getId())) {
-            return new SecretKeySpec(_keyBytes, "RC2");
-        }
-        else {
-            throw new CMSException("Invalid content encryption key algorithm");
-        }
-    }
-
-    // RFC 2630 6.3
-    private static byte[] unpad(byte[] _dec) {
-        byte _pad    = _dec[_dec.length - 1];
-        int  _padInt = 0x000000FF & _pad;
-
-        if((_padInt < 1) || (_padInt > 8)) {
-            log.info("Unpadded");
-            return _dec;
-        }
-
-        boolean _padded = true;
-        for(int i = 1; i <= _padInt; i++) {
-            byte _p = _dec[_dec.length - i];
-            if(_p != _pad) {
-                _padded = false;
-                break;
-            }
-        }
-
-        if(_padded) {
-            log.info("Padded");
-
-            byte[] _buf = new byte[_dec.length - _padInt];
-            System.arraycopy(_dec, 0, _buf, 0, _buf.length);
-            return _buf;
-        }
-        log.info("Unpadded");
-
-        return _dec;
-    }
-
-    private static AlgorithmParameterSpec getIv(String alg, DEREncodable tmp)
-        throws CMSException
-    {
-        // get 3des parameter spec
-        log.debug("alg="+alg);
-        if(alg.equals(SMIMECapability.dES_CBC.getId())) {
-            ASN1OctetString iv = (ASN1OctetString)tmp;
-            byte[] ivoct = iv.getOctets();
-            log.info("IV length ="+ivoct.length);
-
-            return new IvParameterSpec( ivoct );
-        } else if(alg.equals(PKCSObjectIdentifiers.des_EDE3_CBC.getId())) {
-            ASN1OctetString iv = (ASN1OctetString)tmp;
-            return new IvParameterSpec( iv.getOctets() );
-        }
-        // get rc2 parameter spec
-        else if(alg.equals(PKCSObjectIdentifiers.RC2_CBC.getId())) {
-            // retrieve key parameter version and spec bytes
-            //TODO:
-        }
-        else
-        {
-            throw new CMSException("Invalid cipher algorithm");
-        }
-        return null;
-    }
 } // ScepRequestMessage
