@@ -66,7 +66,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.81 2004-07-23 17:19:04 sbailliez Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.82 2004-07-26 08:45:36 sbailliez Exp $
  *
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -324,9 +324,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         }
 
         try{
-            UserDataPK pk = new UserDataPK(username);
-            UserDataLocal data1=null;
-            data1 = home.create(pk.toString(), newpassword, dn, caid);
+            UserDataLocal data1 = home.create(username, newpassword, dn, caid);
             if(subjectaltname != null )
                 data1.setSubjectAltName(subjectaltname);
 
