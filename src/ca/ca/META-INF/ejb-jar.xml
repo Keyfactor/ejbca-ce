@@ -493,6 +493,14 @@
         <local>se.anatom.ejbca.log.ILogSessionLocal</local>
         <ejb-link>LogSession</ejb-link>
      </ejb-local-ref>
+     <ejb-local-ref>
+        <description>The CA Admin Session</description>
+        <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal</local>
+        <ejb-link>CAAdminSession</ejb-link>
+     </ejb-local-ref>     
      
    </session>
 

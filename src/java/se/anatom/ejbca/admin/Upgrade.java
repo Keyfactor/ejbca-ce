@@ -27,7 +27,7 @@ import se.anatom.ejbca.upgrade.IUpgradeSessionHome;
 /**
  * Implements call to the upgrade function
  *
- * @version $Id: Upgrade.java,v 1.5 2004-04-23 08:18:20 anatom Exp $
+ * @version $Id: Upgrade.java,v 1.6 2004-04-24 14:58:21 anatom Exp $
  */
 public class Upgrade extends BaseCommand {
 
@@ -44,6 +44,12 @@ public class Upgrade extends BaseCommand {
      debug("ejbcaDB="+database);
      String datasource = System.getProperty("ejbcaDS");
      debug("ejbcaDS="+datasource);
+     String caname= System.getProperty("ejbcaCA");
+     debug("ejbcaCA="+caname);
+     String keystore = System.getProperty("ejbcaKS");
+     debug("ejbcaKS="+keystore);
+     String kspwd = System.getProperty("ejbcaKSPWD");
+     debug("ejbcaKSPWD="+kspwd);
      
      // Check prerequisited
      if (!appServerRunning()) {
@@ -52,9 +58,12 @@ public class Upgrade extends BaseCommand {
      }
      try {
         IUpgradeSessionRemote upgradesession = getUpgradeSessionRemote();
-        String[] args = new String[2];
+        String[] args = new String[5];
         args[0] = database;
         args[1] = datasource;
+        args[2] = caname;
+        args[3] = keystore;
+        args[4] = kspwd;
         upgradesession.upgrade(administrator, args);
      } catch (Exception e) {
      	error("Can't upgrade: ", e);
@@ -71,7 +80,7 @@ public class Upgrade extends BaseCommand {
      }
     
     /**
-     * main RA
+     * main Upgrade
      *
      * @param args command line arguments
      */

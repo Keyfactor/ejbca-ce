@@ -777,9 +777,26 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
 		    addproperty="ejbca.DS"
 		    defaultvalue="java:/DefaultDS"
 		  />
+  		<input
+		    message="CA name(default MyCA):"
+		    addproperty="ejbca.CA"
+		    defaultvalue="MyCA"
+		  />
+  		<input
+		    message="CA keystore filename (default $JBOSS_HOME/server/default/conf/server.p12):"
+		    addproperty="ejbca.KS"
+		    defaultvalue="$JBOSS_HOME/server/default/conf/server.p12"
+		  />
+  		<input
+		    message="CA keystore password:"
+		    addproperty="ejbca.KSPWD"
+		  />
 	  	<java classname="se.anatom.ejbca.admin.Upgrade" fork="true">
              <sysproperty key="ejbcaDB" value="${ejbca.DB}"/>
              <sysproperty key="ejbcaDS" value="${ejbca.DS}"/>
+             <sysproperty key="ejbcaCA" value="${ejbca.CA}"/>
+             <sysproperty key="ejbcaKS" value="${ejbca.KS}"/>
+             <sysproperty key="ejbcaKSPWD" value="${ejbca.KSPWD}"/>
 	  		 <classpath>
                 <pathelement location="."/>
 	  		 	<pathelement location="${adminjar}"/>

@@ -13,6 +13,7 @@
  
 package se.anatom.ejbca.upgrade;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
@@ -28,16 +29,20 @@ import javax.sql.DataSource;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
+import se.anatom.ejbca.ca.caadmin.CAInfo;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
 import se.anatom.ejbca.ca.publisher.IPublisherSessionLocal;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
+import se.anatom.ejbca.util.FileTools;
 import se.anatom.ejbca.util.JDBCUtil;
 import se.anatom.ejbca.util.SqlExecutor;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.10 2004-04-23 08:18:19 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.11 2004-04-24 14:58:20 anatom Exp $
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
@@ -46,6 +51,9 @@ public class UpgradeSessionBean extends BaseSessionBean {
 
     /** The local interface of the log session bean */
     private ILogSessionLocal logsession = null;
+
+    /** The local interface of the ca admin session bean */
+    private ICAAdminSessionLocal caadminsession = null;
 
     /** The local interface of the authorization session bean */
     private IAuthorizationSessionLocal authorizationsession = null;
@@ -88,6 +96,19 @@ public class UpgradeSessionBean extends BaseSessionBean {
         return logsession;
     } //getLogSession
     
+    /** Gets connection to ca admin session bean
+     */
+    private ICAAdminSessionLocal getCaAdminSession() {
+        if(caadminsession == null){
+          try{
+              ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome)lookup("java:comp/env/ejb/CAAdminSessionLocal", ICAAdminSessionLocalHome.class);
+              caadminsession = caadminsessionhome.create();
+          }catch(Exception e){
+             throw new EJBException(e);
+          }
+        }
+        return caadminsession;
+    } //getCaAdminSession
 
     /** Runs a preCheck to see if an upgrade is possible
      * 
@@ -138,12 +159,35 @@ public class UpgradeSessionBean extends BaseSessionBean {
         	dataSource = args[1];
         	debug("Datasource="+dataSource);
         }
+        String caName = "MyCA";
+        if (args.length > 2) {
+            caName = args[2];
+            debug("CaName="+caName);
+        }
+        String keyStore = null;
+        if (args.length > 3) {
+            keyStore = args[3];
+            debug("KeyStore="+keyStore);
+        }
+        String pwd = null;
+        if (args.length > 4) {
+            pwd = args[4];
+            debug("Pwd="+pwd);
+        }
         if (!preCheck()) {
         	info("preCheck failed, no upgrade performed.");
             return false;
         }
+        // Read old keystore file in the beginning so we know it's good
+        byte[] keystorebytes = null;
+        try {
+            keystorebytes = FileTools.readFiletoBuffer(keyStore);
+        } catch (IOException ioe) {
+            error("IOException reading old keystore file: ", ioe);
+            return false;
+        }
         info("Starting upgrade from ejbca2 to ejbca3.");
-        // Fetch the resource file
+        // Fetch the resource file with SQL to modify the database tables
         InputStream in = this.getClass().getResourceAsStream("/upgrade/21_30/21_30-upgrade-"+dbtype+".sql");
         if (in == null) {
         	error("Can not read resource for database type '"+dbtype+"'");
@@ -151,6 +195,8 @@ public class UpgradeSessionBean extends BaseSessionBean {
         }
         // TODO: export and import profiles?
         // TODO: export and import key recovery keys?
+        
+        // Migrate database tables to new columns etc
         Connection con = null;
         info("Start migration of database.");
         try {
@@ -158,16 +204,57 @@ public class UpgradeSessionBean extends BaseSessionBean {
             con = getConnection();
             SqlExecutor sqlex = new SqlExecutor(con, false); 
             sqlex.runCommands(inreader);
-        } catch (Exception e) {
+        } catch (NamingException e) {
             error("Error during database migration: ", e);
+            return false;
+        } catch (SQLException e) {
+            error("SQL error during database migration: ", e);
+            return false;
+        } catch (IOException e) {
+            error("IO error during database migration: ", e);
+            return false;
         } finally {
             JDBCUtil.close(con);
         }
         info("Finished migrating database.");
-        // TODO: import CA from PKCS12 file
-        // TODO: Change fields, i.e. CAId in database tables
+
+        // Import CA from PKCS12 file
+        String privKeyAlias = "privateKey";
+        getCaAdminSession().upgradeFromOldCAKeyStore(admin, caName, keystorebytes, pwd.toCharArray(), pwd.toCharArray(), privKeyAlias);
+
+        // Change fields, i.e. CAId in database tables
+        CAInfo cainfo = getCaAdminSession().getCAInfo(admin, caName);
+        int caId = cainfo.getCAId();
+        PreparedStatement ps1 = null;
+        PreparedStatement ps2 = null;
+        PreparedStatement ps3 = null;
+        try {
+            con = getConnection();
+            ps1 = con.prepareStatement("update admingroupdata set caId=?");
+            ps1.setInt(1, caId);
+            ps1.executeUpdate();
+            
+            ps2 = con.prepareStatement("update logentrydata set caId=?");
+            ps2.setInt(1, caId);
+            ps2.executeUpdate();
+
+            ps3 = con.prepareStatement("update userdata set caId=?");
+            ps3.setInt(1, caId);
+            ps3.executeUpdate();
+        } catch (SQLException sqle) {
+            error("Error updating caId: ", sqle);
+            return false;
+        } catch (NamingException ne) {
+            error("Error getting connection: ", ne);
+            return false;
+        } finally {
+            JDBCUtil.close(ps1);
+            JDBCUtil.close(ps2);
+            JDBCUtil.close(ps3);
+            JDBCUtil.close(con);
+        }
         debug(">upgrade()");
-        return false;
+        return true;
     }
     
 } // UpgradeSessionBean
