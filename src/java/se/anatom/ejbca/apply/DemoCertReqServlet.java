@@ -76,7 +76,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.9 2003-01-28 14:59:19 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.10 2003-01-28 15:54:36 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -110,7 +110,7 @@ public class DemoCertReqServlet extends HttpServlet {
       ctx = new InitialContext();
       signsessionhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class);
       adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class);
-      storesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CertificateStoreSession"), IUserAdminSessionHome.class);
+      storesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class);
     } catch (Exception e) {
       throw new ServletException(e);
     }
