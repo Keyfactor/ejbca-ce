@@ -5,13 +5,14 @@ Tested on Weblogic.
 Function to batch-generate PEM-files for Apache etc.
 Function to rollover subCA with same key pair in ca.sh/cmd.
 Function to change password for user.
+Function to list certificates about to expire.
 New version (112) of BC JCE-provider.
 Architectural overview in documentation.
 Better deployment scripts.
 Sample Linux firewall script.
 Added demo accept-all authentication module, NullAuthenticationSession.
 CA-certs can now be downloaded from webdist.
-Lots of minor cosmetic, architectural and GUI changes.
+Lots of minor cosmetic, architectural, installation and GUI changes.
 
 1.2
 ---
