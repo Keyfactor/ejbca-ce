@@ -1,14 +1,15 @@
 3.0 beta 3
 ----------
+Upgrade function from ejbca2 with MySQL.
 Added password and extendedinformation to publisher interface.
-Fixed CA renew bugg where new certificates wasn't published to publishers
+Fixed CA renew bugg where new certificates wasn't published to publishers.
 Fixed Hard Token Issuer authorization bug.
-Fixed Hard Token Profile authorization bug when logging in as CA Administrator
-Fixed Authorizer.java so it doesn't throw NullPointerException
-Added initial support for HSM plug-ins
-Fixed install script freeze when installing adminweb. Added -noprompt
-Added Sybase as target for 'ant replaceDS'
-Support for JBoss3.2.4/Tomcat5.0
+Fixed Hard Token Profile authorization bug when logging in as CA Administrator.
+Fixed Authorizer.java so it doesn't throw NullPointerException.
+Added initial support for HSM plug-ins.
+Fixed install script freeze when installing adminweb. Added -noprompt.
+Added Sybase as target for 'ant replaceDS'.
+Support for JBoss3.2.4/Tomcat5.0.
 Fixed bugg in Administrative deligations where a CA administrator could edit an superadmin group.
 Changed so 'enable end entity limitations' is enabled by default.
 Strip DN when creating new CAs.

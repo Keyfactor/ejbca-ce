@@ -81,7 +81,7 @@ ALTER TABLE userdata
 
 # Delete preset profiles that is not in DB in ejbca 3
 DELETE from endentityprofiledata where profilename='EMPTY';
-DELETE from certificateprofiledata where profilename='ENDUSER';
-DELETE from certificateprofiledata where profilename='CA';
-DELETE from certificateprofiledata where profilename='ROOTCA';
+DELETE from certificateprofiledata where certificateprofilename='ENDUSER';
+DELETE from certificateprofiledata where certificateprofilename='CA';
+DELETE from certificateprofiledata where certificateprofilename='ROOTCA';
 
