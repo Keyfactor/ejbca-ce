@@ -51,6 +51,10 @@ The JDBC section should look something like:
        <attribute name="URL">jdbc:postgresql://localhost/ejbca</attribute>
        <attribute name="JDBCUser">postgres</attribute>
        <attribute name="Password">yourpassword</attribute>
+       <attribute name="MaxSize">10</attribute>
+       <attribute name="MinSize">0</attribute>
+       <attribute name="IdleTimeout">1800000</attribute>
+       <attribute name="MaxIdleTimeoutPercent">1.0</attribute>
      </mbean>
 
 6. Edit standardjaws.xml. Change the default type-mapping to PostgreSQL.
