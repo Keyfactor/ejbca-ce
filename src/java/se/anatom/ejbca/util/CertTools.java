@@ -23,11 +23,18 @@ import org.apache.log4j.*;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.19 2002-09-21 14:34:09 anatom Exp $
+ * @version $Id: CertTools.java,v 1.20 2002-12-05 19:42:07 anatom Exp $
  */
 public class CertTools {
 
     private static Category cat = Category.getInstance(CertTools.class.getName());
+
+	public static final String EMAIL = "rfc822name";
+	public static final String EMAIL1 = "email";
+	public static final String EMAIL2 = "EmailAddress";
+	public static final String DNS = "dNSName";
+	public static final String URI = "uniformResourceIdentifier";
+	public static final String URI1 = "uri";
 
     /** inhibits creation of new CertTools */
     private CertTools() {

@@ -23,7 +23,7 @@ import se.anatom.ejbca.log.LogEntry;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.16 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.17 2002-12-05 19:42:07 anatom Exp $
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean {
 
@@ -31,9 +31,9 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
     private UserDataHome userHome = null;
 
     /** The remote interface of the log session bean */
-    private ILogSessionRemote logsession;    
+    private ILogSessionRemote logsession;
 
-    
+
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -44,7 +44,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
         userHome = (UserDataHome)lookup("java:comp/env/ejb/UserData", UserDataHome.class);
 
         try{
-          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
+          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);
           logsession = logsessionhome.create();
         }catch(Exception e){
           throw new EJBException(e);
@@ -80,7 +80,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
                  }catch(RemoteException re){
                    throw new EJBException(re);
                  }
-                UserAuthData ret = new UserAuthData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getType(), data.getCertificateProfileId());
+                UserAuthData ret = new UserAuthData(data.getUsername(), data.getSubjectDN(), data.getSubjectAltName(), data.getSubjectEmail(), data.getType(), data.getCertificateProfileId());
                 debug("<authenticateUser("+username+", hiddenpwd)");
                 return ret;
             } else {

@@ -423,6 +423,11 @@ The RA has a command line interface ra.sh/cmd. Options are:
 * adduser - adds a user to the database, after addition a user may apply for a
 certificate. If email address is set to 'null', no email is put in certificates.
 Quote the DN (") so it is treated as one argument.
+Altnames is a string simlar to the DN string nut using alternative names from 
+RFC3280, i.e. "rfc822Name=<email>, dNSName=<host name>, uri=<http://<whatever>" 
+The full list is: otherName, rfc822Name, dNSName, x400Address, directoryName,
+ediPartyName, uniformResourceIdentifier, iPAddress, registeredID
+Only rfc822Name, dNSName and uniformResourceIdentifier (uri) is supported at the moment.
 * deluser - removes a user from the database, any issued certificates
 remain  active and present in the database.
 * setpwd - set a new password for a user. The password is stored as a hash in

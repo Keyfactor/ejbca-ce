@@ -22,21 +22,21 @@ import se.anatom.ejbca.log.LogEntry;
  * the username is returned as DN.
  * Useful for demo purposes to give out certificates to anyone.
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.8 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.9 2002-12-05 19:42:07 anatom Exp $
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean {
 
     /** The remote interface of the log session bean */
-    private ILogSessionRemote logsession;   
-      
+    private ILogSessionRemote logsession;
+
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate () throws CreateException {
         debug(">ejbCreate()");
-        try{ 
-          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
+        try{
+          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);
           logsession = logsessionhome.create();
         }catch(Exception e){
           throw new EJBException(e);
@@ -63,7 +63,7 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
                   throw new EJBException(re);
                 }
                 // Use default certificate profile 0
-                UserAuthData ret = new UserAuthData(username, dn, email, SecConst.USER_ENDUSER, 0);
+                UserAuthData ret = new UserAuthData(username, dn, null, email, SecConst.USER_ENDUSER, 0);
                 debug("<authenticateUser("+username+", hiddenpwd)");
                 return ret;
             } else {

@@ -51,7 +51,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.55 2002-11-24 13:16:33 herrvendil Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.56 2002-12-05 19:42:07 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -513,8 +513,24 @@ public class RSASignSessionBean extends BaseSessionBean {
         certgen.setSignatureAlgorithm(sigAlg);
         // Make DNs
         String dn = subject.getDN();
+        String altName = subject.getAltName();
+        if (subject.getEmail() != null) {
+            String email = null;
+            if (altName != null) {
+                email = CertTools.getPartFromDN(altName, CertTools.EMAIL);
+                if (email == null)
+                    email = CertTools.getPartFromDN(altName, CertTools.EMAIL1);
+                if (email == null)
+                    email = CertTools.getPartFromDN(altName, CertTools.EMAIL2);
+            }
+            if (email == null) {
+                altName = "rfc822Name="+subject.getEmail()+ ((altName == null) ? "":(", "+altName));
+            }
+        }
+        /* This is handled automatically?? (anyway we don't want it)
         if ((subject.getEmail() != null) && (emailindn.booleanValue() == true))
             dn = dn + ", EmailAddress=" + subject.getEmail();
+        */
 
         debug("Subject=" + dn);
         certgen.setSubjectDN(CertTools.stringToBcX509Name(dn));
@@ -571,11 +587,29 @@ public class RSASignSessionBean extends BaseSessionBean {
                 aki);
         }
         // Subject Alternative name
-        if ((certProfile.getUseSubjectAlternativeName() == true) && (subject.getEmail() != null)) {
-            GeneralName gn =
-                new GeneralName(new DERIA5String(subject.getEmail()), 1);
+        if ((certProfile.getUseSubjectAlternativeName() == true) && (altName != null)) {
+            String email = CertTools.getPartFromDN(altName, CertTools.EMAIL);
+            if (email == null)
+                email = CertTools.getPartFromDN(altName, CertTools.EMAIL1);
+            if (email == null)
+                email = CertTools.getPartFromDN(altName, CertTools.EMAIL2);
             DERConstructedSequence seq = new DERConstructedSequence();
-            seq.addObject(gn);
+            if (email != null) {
+                GeneralName gn = new GeneralName(new DERIA5String(email), 1);
+                seq.addObject(gn);
+            }
+            String dns = CertTools.getPartFromDN(altName, CertTools.DNS);
+            if (dns != null) {
+                GeneralName gn = new GeneralName(new DERIA5String(dns), 2);
+                seq.addObject(gn);
+            }
+            String uri = CertTools.getPartFromDN(altName, CertTools.URI);
+            if (uri == null)
+                uri  = CertTools.getPartFromDN(altName, CertTools.URI1);
+            if (uri != null) {
+                GeneralName gn = new GeneralName(new DERIA5String(uri), 6);
+                seq.addObject(gn);
+            }
             GeneralNames san = new GeneralNames(seq);
             certgen.addExtension(
                 X509Extensions.SubjectAlternativeName.getId(),

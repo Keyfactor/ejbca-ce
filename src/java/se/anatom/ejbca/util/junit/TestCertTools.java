@@ -7,7 +7,7 @@ import junit.framework.*;
 
 /** Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.3 2002-08-11 18:08:49 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.4 2002-12-05 19:42:07 anatom Exp $
  */
 public class TestCertTools extends TestCase {
 
@@ -121,5 +121,23 @@ public class TestCertTools extends TestCase {
         cat.debug("<test02StringToBCDNString()");
     }
 
+    public void test03AltNames() throws Exception {
+        cat.debug(">test03AltNames()");
+
+        // We try to examine the general case and som special cases, which we want to be able to handle
+        String alt1 = "rfc822Name=ejbca@primekey.se, dNSName=www.primekey.se, uri=http://www.primekey.se/ejbca";
+        assertEquals(CertTools.getPartFromDN(alt1, CertTools.EMAIL), "ejbca@primekey.se");
+        assertNull(CertTools.getPartFromDN(alt1, CertTools.EMAIL1));
+        assertNull(CertTools.getPartFromDN(alt1, CertTools.EMAIL2));
+        assertEquals(CertTools.getPartFromDN(alt1, CertTools.DNS), "www.primekey.se");
+        assertNull(CertTools.getPartFromDN(alt1, CertTools.URI));
+        assertEquals(CertTools.getPartFromDN(alt1, CertTools.URI1), "http://www.primekey.se/ejbca");
+        String alt2 = "email=ejbca@primekey.se, dNSName=www.primekey.se, uniformResourceIdentifier=http://www.primekey.se/ejbca";
+        assertEquals(CertTools.getPartFromDN(alt2, CertTools.EMAIL1), "ejbca@primekey.se");
+        assertEquals(CertTools.getPartFromDN(alt2, CertTools.URI), "http://www.primekey.se/ejbca");
+        String alt3 = "EmailAddress=ejbca@primekey.se, dNSName=www.primekey.se, uniformResourceIdentifier=http://www.primekey.se/ejbca";
+        assertEquals(CertTools.getPartFromDN(alt3, CertTools.EMAIL2), "ejbca@primekey.se");
+        cat.debug("<test03AltNames()");
+    }
 }
 

@@ -18,7 +18,7 @@ import se.anatom.ejbca.SecConst;
 
 /** Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.11 2002-11-24 13:16:46 herrvendil Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.12 2002-12-05 19:42:07 anatom Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 
@@ -33,22 +33,25 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             Object obj1 = jndicontext.lookup("CertificateStoreSession");
             ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-            ICertificateStoreSessionRemote certificatesession = certificatesessionhome.create();    
-            
+            ICertificateStoreSessionRemote certificatesession = certificatesessionhome.create();
+
             obj1 = jndicontext.lookup("RaAdminSession");
-            IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"), 
+            IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"),
                                                                                  IRaAdminSessionHome.class);
-            IRaAdminSessionRemote raadminsession = raadminsessionhome.create();              
-            
+            IRaAdminSessionRemote raadminsession = raadminsessionhome.create();
+
             String[] certprofnames = (String[]) certificatesession.getCertificateProfileNames(administrator).toArray((Object[]) new String[0]);
             String[] endentityprofilenames = (String[]) raadminsession.getEndEntityProfileNames(administrator).toArray((Object[]) new String[0]);
 
             if (args.length < 8) {
-                System.out.println("Usage: RA adduser <username> <password> <dn> <subjectalternativename> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] ");
+                System.out.println("Usage: RA adduser <username> <password> <dn> <subjectAltName> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] ");
+                System.out.println();
+                System.out.println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
+                System.out.println("SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>\"");
                 System.out.println("Type (mask): INVALID=0; END-USER=1; CA=2;  ROOTCA=8; ADMINISTRATOR=64");
-                System.out.println("Token      : Browser Generated=" + SecConst.TOKEN_SOFT_BROWSERGEN + "; P12=" + SecConst.TOKEN_SOFT_P12 + "; JKS=" 
-                                    + SecConst.TOKEN_SOFT_JKS + ";  PEM=" + SecConst.TOKEN_SOFT_PEM);                
-                
+                System.out.println("Token      : Browser Generated=" + SecConst.TOKEN_SOFT_BROWSERGEN + "; P12=" + SecConst.TOKEN_SOFT_P12 + "; JKS="
+                                    + SecConst.TOKEN_SOFT_JKS + ";  PEM=" + SecConst.TOKEN_SOFT_PEM);
+
                 System.out.print("Existing certificate profiles  : ");
 
                 for(int i=0; i < certprofnames.length-1; i++){
@@ -56,7 +59,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 }
                 System.out.print(certprofnames[certprofnames.length-1] + "\n");
 
-                
+
                 System.out.print("Existing endentity profiles  : ");
                 for(int i=0; i < endentityprofilenames.length-1; i++){
                   System.out.print(endentityprofilenames[i] + ", ");
@@ -80,7 +83,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             boolean error = false;
 
             if(args.length == 9){
-              // Use certificate type, no profile.              
+              // Use certificate type, no profile.
               certificatetypeid = certificatesession.getCertificateProfileId(administrator, args[8]);
               profileid = SecConst.EMPTY_ENDENTITYPROFILE;
             }
@@ -108,8 +111,8 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             // Check if username already exists.
             try{
               if(getAdminSession().findUser(administrator, username) != null){;
-                System.out.println("Error : User already exists in the database." );                
-                error= true;                
+                System.out.println("Error : User already exists in the database." );
+                error= true;
               }
             }catch(FinderException e){
 
@@ -122,11 +125,11 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
               System.out.println("DN: "+dn);
               System.out.println("Email: "+email);
               System.out.println("Type: "+type);
-              System.out.println("Token: "+token);              
+              System.out.println("Token: "+token);
               if (email.equals("null"))
                   email = null;
               try{
-                getAdminSession().addUser(administrator, username, password, dn, subjectaltname, email, false, profileid, certificatetypeid, 
+                getAdminSession().addUser(administrator, username, password, dn, subjectaltname, email, false, profileid, certificatetypeid,
                                          (type & SecConst.USER_ADMINISTRATOR) == SecConst.USER_ADMINISTRATOR,
                                          (type & SecConst.USER_KEYRECOVERABLE) == SecConst.USER_KEYRECOVERABLE,
                                           token,0);
