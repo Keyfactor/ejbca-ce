@@ -6,14 +6,11 @@
 
 <application>
     <display-name>EJBCA-CA</display-name>
-    <description>The EJBCA CA module consists of the CA beans and the web 
+    <description>The EJBCA CA module consists of the CA beans and the web
 application for enrollment (apply) and distribution (webdist).
     </description>
     <module>
-        <web>
-            <web-uri>publicwebroot.war</web-uri>
-            <context-root>/ejbca</context-root>
-        </web>
+        <ejb>log-ejb.jar</ejb>
     </module>
     <module>
         <ejb>ca-ejb.jar</ejb>
@@ -23,16 +20,22 @@ application for enrollment (apply) and distribution (webdist).
     </module>
     <module>
         <ejb>authorization-ejb.jar</ejb>
-    </module> 
-    <module>
-        <ejb>log-ejb.jar</ejb>
-    </module>    
+    </module>
     <module>
         <ejb>hardtoken-ejb.jar</ejb>
     </module>
+	<module>
+        <ejb>log-ejb.jar</ejb>
+    </module>    
     <module>
         <ejb>keyrecovery-ejb.jar</ejb>
-    </module>            
+    </module>
+    <module>
+        <web>
+            <web-uri>publicwebroot.war</web-uri>
+            <context-root>/ejbca</context-root>
+        </web>
+    </module>
     <module>
         <web>
             <web-uri>apply.war</web-uri>
@@ -44,7 +47,7 @@ application for enrollment (apply) and distribution (webdist).
             <web-uri>status.war</web-uri>
             <context-root>/ejbca/publicweb/status</context-root>
         </web>
-    </module>    
+    </module>
     <module>
         <web>
             <web-uri>webdist.war</web-uri>
