@@ -48,7 +48,7 @@ The application server should be run as a special user. The PKCS12 file with the
 CAs private key should be protected so the ONLY the user running the
 application server can access it.
 
-If PKCS12 files are generateed for users, the subdirectory ('p12') where
+If PKCS12 files are generated for users, the subdirectory ('p12') where
 they are stored and the generated files should be protected in the same way.
 
 BEAN PERMISSIONS
