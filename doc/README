@@ -134,6 +134,11 @@ Most important, to run the CA a keystore must be in the directory designated by
  the item 'keyStore' in src/ca/META-INF/ejb-jar.xml (default /tmp/server.p12). A
  test keyStore is provided in 'src/ca/keystore/server.p12'.
 
+NOTE: After running tests with 'runtest.sh/cmd', you might consider deleting the 
+database since some leftovers are left in the database. Also DO NOT run the 
+testscripts on a production database since it will revoke all certificates in the 
+database.
+
 FOR THE IMPATIENT:
 
 1. Build everything with 'ant'.
@@ -495,3 +500,4 @@ For IE to verify client certs, the ordering in the DN must be strictly the same
 
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
+
