@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.*;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.8 2002-06-28 06:58:16 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.9 2002-08-23 09:11:48 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
 
@@ -55,7 +55,10 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
     private String loginPassword  = "foo123";
     private String containerName  = "o=AnaTom,c=SE";
     private String userObjectclass= "inetOrgPerson";
-    private String cAObjectclass= "certificateAuthority";
+    private String cAObjectclass  = "certificateAuthority";
+    private String cRLAttribute   = "certificateRevocationList;binary";
+    private String userCertAttribute = "userCertificate;binary";
+    private String cACertAttribute= "cACertificate;binary";
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -70,6 +73,9 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         containerName = (String)lookup("java:comp/env/containerName", java.lang.String.class);
         userObjectclass = (String)lookup("java:comp/env/userObjectclass", java.lang.String.class);
         cAObjectclass = (String)lookup("java:comp/env/cAObjectclass", java.lang.String.class);
+        cRLAttribute = (String)lookup("java:comp/env/cRLAttribute", java.lang.String.class);
+        userCertAttribute = (String)lookup("java:comp/env/userCertAttribute", java.lang.String.class);
+        cACertAttribute = (String)lookup("java:comp/env/cACertAttribute", java.lang.String.class);
         debug("ldapHost=" + ldapHost);
         debug("loginDN=" + loginDN);
         debug("loginPassword=" + loginPassword);
@@ -136,7 +142,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         else
             attributeSet = getAttributeSet(cAObjectclass, dn, false);
         try {
-            LDAPAttribute crlAttr = new LDAPAttribute( "certificateRevocationList;binary", crl.getEncoded() );
+            LDAPAttribute crlAttr = new LDAPAttribute( cRLAttribute, crl.getEncoded() );
             if (oldEntry != null)
                 modSet.add(LDAPModification.REPLACE, crlAttr);
             else
@@ -263,7 +269,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                     attributeSet.add( mailAttr );
             }
             try {
-                LDAPAttribute certAttr = new LDAPAttribute( "userCertificate;binary", incert.getEncoded() );
+                LDAPAttribute certAttr = new LDAPAttribute( userCertAttribute, incert.getEncoded() );
                 if (oldEntry != null)
                     modSet.add(LDAPModification.REPLACE, certAttr);
                 else
@@ -281,7 +287,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
             else
                 attributeSet = getAttributeSet(cAObjectclass, dn, false);
             try {
-                LDAPAttribute certAttr = new LDAPAttribute( "cACertificate;binary", incert.getEncoded() );
+                LDAPAttribute certAttr = new LDAPAttribute( cACertAttribute, incert.getEncoded() );
                 if (oldEntry != null)
                     modSet.add(LDAPModification.REPLACE, certAttr);
                 else

@@ -116,7 +116,7 @@
         <description>Use CRLDistributionPoint?</description>
         <env-entry-name>CRLDistributionPoint</env-entry-name>
         <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>false</env-entry-value>
+        <env-entry-value>true</env-entry-value>
      </env-entry>
      <env-entry>
         <description>CRLDistributionPoint critical? (RFC2459 says NO)</description>
@@ -402,6 +402,24 @@ END LDAP Publisher -->
         <env-entry-name>cAObjectclass</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>certificateAuthority</env-entry-value>
+     </env-entry>
+     <env-entry>
+        <description>attribute for storing user certificates.</description>
+        <env-entry-name>userCertAttribute</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>userCertificate;binary</env-entry-value>
+     </env-entry>
+     <env-entry>
+        <description>attribute for storing CA certificates.</description>
+        <env-entry-name>cACertAttribute</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>cACertificate;binary</env-entry-value>
+     </env-entry>
+     <env-entry>
+        <description>attribute for storing CRLs.</description>
+        <env-entry-name>cRLAttribute</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>"certificateRevocationList;binary"</env-entry-value>
      </env-entry>
    </session>
 END LDAP Publisher -->
