@@ -46,7 +46,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.17 2004-08-05 18:24:15 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.18 2004-08-06 07:07:30 anatom Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -345,11 +345,11 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         } catch (FinderException e) {
         }
         // Add Special Admin Group
-
+        // Special admin group is a group that is not authenticated with client certificate, such as batch tool etc
         try {
             admingrouphome.findByGroupNameAndCAId(DEFAULTGROUPNAME, ILogSessionLocal.INTERNALCAID);
         } catch (FinderException e) {
-            // Add Default Group
+            // Add Default Special Admin Group
             try {
                 AdminGroupDataLocal agdl = admingrouphome.create(new Integer(findFreeAdminGroupId()), DEFAULTGROUPNAME, ILogSessionLocal.INTERNALCAID);
 
