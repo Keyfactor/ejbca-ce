@@ -1,46 +1,44 @@
 EJBCA FAQ
-$Id: FAQ,v 1.3 2002-02-01 13:29:51 anatom Exp $
+=========
+$Id: FAQ,v 1.4 2002-02-06 19:42:43 anatom Exp $
 ---------
-Q: When using JDK 1.4.x i get a java.io.InvalidClassException.
+Q : When using JDK 1.4.x i get a java.io.InvalidClassException?
 
-A: Since JDK 1.4 introduced incompatibilities dugin class serialization the PublicKey
+A : Since JDK 1.4 introduced incompatibilities during class serialization the PublicKey
 class used as parameter to some versions of the 'createCertificate' method can not be
 passed correctly.
 You must use JDK 1.4 on both server and client, then it works.
 
 -----
-Q: Why are there two versions of all commands, i.e. 'ra.sh' and 'ra.cmd'.
+Q : Why are there two versions of all commands, i.e. 'ra.sh' and 'ra.cmd'?
 
-A: 'ra.sh' is for UNIX and 'ra.cmd' for Windows.
+A : 'ra.sh' is for UNIX and 'ra.cmd' for Windows.
 
 -----
-Q: Why do I get the exception/error:
- 
-User foo has status '40', NEW, FAILED or INPROCESS required.; nested
-exception is: 
-javax.ejb.EJBException: null
+Q : Why do I get the exception/error:
 
-A: When using the LocalAuthenticationSession (default) all users have a STATUS. 
+User foo has status '40', NEW, FAILED or INPROCESS required.; nested
+exception is: javax.ejb.EJBException: null
+
+A : When using the LocalAuthenticationSession (default) all users have a STATUS.
 The status lifecycle beginns with NEW and ends with REVOKED. Only when the
- status is 
-NEW; FAILED or INPROCESS is it possible to issue a certificate to a user. After
- a 
-certificate has been issued, the status is set to GENERATED. This works like a
- one-time-password
-scheme kind of. To issue a new certificate to the user his/her status must be
+ status is
+NEW, FAILED or INPROCESS is it possible to issue a certificate to a user. After
+ a certificate has been issued, the status is set to GENERATED. This works like a
+ one-time-password scheme. To issue a new certificate to the user his/her status must be
  reset to NEW, FAILED or INPROCESS.
 This can be done with:
 
 ra.sh/cmd setuserstatus <username> <status>
 
-status '10' is NEW. Just enter 'ra.sh/cmd setuserstatus' to see a list of all
- ststus codes.
+Status '10' is NEW. Just enter 'ra.sh/cmd setuserstatus' to see a list of all
+ status codes.
 
 -----
-Q: How do I manipulate keystores using Suns 'keytool'?
+Q : How do I manipulate keystores using Suns 'keytool'?
 
-A: EJBCA use PKCS12 format for the keystore because it is a standard, and I like
- standards. 
+A : EJBCA use PKCS12 format for the keystore because it is a standard, and I like
+ standards.
 Normally keytool (e.g. sun) can read PKCS12 file but not write, so the
  BouncyCastle JCE is needed to handle PKCS12 keystores.
 
@@ -55,9 +53,9 @@ keytool -list -alias privateKey -keystore server.p12 -storetype PKCS12
 It should be possible to import etc as well using keytool.
 
 -----
-Q: How do I make a keystore using keytool with a real certificate from EJBCA?
+Q : How do I make a keystore using keytool with a real certificate from EJBCA?
 
-A: First generate a new keystore and a keypair:
+A : First generate a new keystore and a keypair:
 
 keytool -genkey -alias mykey -keystore myks.jks -keyalg RSA -dname
  c=SE,O=AnaTom,CN=Test -keypass foo123 -storepass foo123
@@ -96,21 +94,21 @@ Now you can take a look at your SUN keystore with:
 keytool -list -keystore myks.jks
 
 In theory, you can use the same method with a BouncyCastle PKCS12 keystore by
- adding the following 
+ adding the following
 arguments to every command above:
 
 -provider org.bouncycastle.jce.provider.BouncyCastleProvider -storetype PKCS12
 
 unforturnately a bug in keytool prevents this from functioning properly at the
- moment, therefore I 
+ moment, therefore I
 recommend using the 'ca.sh/cmd' to create PKCS12 keystores. It can be used to
  create keystores generally,
 not just for CAs.
 
 -----
-Q: What aliases do a EJBCA keystore contain?
+Q : What aliases do a EJBCA keystore contain?
 
-A: The keystore EJBCA uses is a PKCS12 keystore. The CAs private key and
+A : The keystore EJBCA uses is a PKCS12 keystore. The CAs private key and
 certificate is cotained in the alias 'privateKey', as configures in
 'src/ca/META-INF/ejb-jar.xml'.
 
@@ -120,20 +118,9 @@ conatined in the alias with the same name as the CN part of the Root CAs DN,
 i.e. the CN part of the issuer DN from the certificate in 'privateKey'.
 
 -----
-Q: Why does the first function in 'dist.html', fetching a users certificate
- return 
-an error 404.
+Q : Why does the first function in 'dist.html', fetching a users certificate
+ return an error 404?
 
-A: You have specified a subject DN to which no certificates have been issued.
-
------
-Q: Why does 'ra.sh/cmd revokeuser <username>' return an exception.
-
-A: You have specified a username (short version e.g. 'foo') that does not exist.
- The exception 
-should be similar to:
-
-javax.ejb.ObjectNotFoundException: Object with primary key foo not found in sto
-rage
+A : You have specified a subject DN to which no certificates have been issued.
 
 -----
