@@ -32,7 +32,7 @@ import junit.framework.*;
 
 /** Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.6 2002-03-24 10:47:23 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.7 2002-05-29 12:52:51 anatom Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -144,8 +144,7 @@ public class TestSignSession extends TestCase {
         }
         if (userExists) {
             cat.debug("user foo already exists.");
-            UserDataPK pk = new UserDataPK();
-            pk.username = "foo";
+            UserDataPK pk = new UserDataPK("foo");
             UserData data = userhome.findByPrimaryKey(pk);
             data.setStatus(UserData.STATUS_NEW);
             cat.debug("Reset status to NEW");
@@ -167,8 +166,7 @@ public class TestSignSession extends TestCase {
 
     public void test03TestBCPKCS10() throws Exception {
         cat.debug(">test03TestBCPKCS10()");
-        UserDataPK pk = new UserDataPK();
-        pk.username = "foo";
+        UserDataPK pk = new UserDataPK("foo");
         UserData data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserData.STATUS_NEW);
         cat.debug("Reset status of 'foo' to NEW");
@@ -198,8 +196,7 @@ public class TestSignSession extends TestCase {
     }
     public void test04TestKeytoolPKCS10() throws Exception {
         cat.debug(">test04TestKeytoolPKCS10()");
-        UserDataPK pk = new UserDataPK();
-        pk.username = "foo";
+        UserDataPK pk = new UserDataPK("foo");
         UserData data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserData.STATUS_NEW);
         cat.debug("Reset status of 'foo' to NEW");
@@ -210,8 +207,7 @@ public class TestSignSession extends TestCase {
     }
     public void test05TestIEPKCS10() throws Exception {
         cat.debug(">test05TestIEPKCS10()");
-        UserDataPK pk = new UserDataPK();
-        pk.username = "foo";
+        UserDataPK pk = new UserDataPK("foo");
         UserData data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserData.STATUS_NEW);
         cat.debug("Reset status of 'foo' to NEW");

@@ -17,7 +17,7 @@ import se.anatom.ejbca.util.CertTools;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.12 2002-05-26 12:06:00 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.13 2002-05-29 12:52:52 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserAdminSession {
 
@@ -47,9 +47,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
         debug(">addUser("+username+", password, "+dn+", "+email+", "+type+")");
 
         try {
-            UserDataPK pk = new UserDataPK();
-            pk.username = username;
-
+            UserDataPK pk = new UserDataPK(username);
             UserData data1=null;
             data1 = home.create(username, password, dn);
             if (email != null)
@@ -73,8 +71,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
         debug(">deleteUser("+username+")");
 
         try {
-            UserDataPK pk = new UserDataPK();
-            pk.username = username;
+            UserDataPK pk = new UserDataPK(username);
             home.remove(pk);
             info("Deleted user "+pk.username);
         }
@@ -92,8 +89,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
     public void setUserStatus(String username, int status) throws FinderException, RemoteException {
         debug(">setUserStatus("+username+", "+status+")");
         // Find user
-        UserDataPK pk = new UserDataPK();
-        pk.username = username;
+        UserDataPK pk = new UserDataPK(username);
         UserData data = home.findByPrimaryKey(pk);
         data.setStatus(status);
         debug("<setUserStatus("+username+", "+status+")");
@@ -106,8 +102,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
     public void setPassword(String username, String password) throws FinderException, RemoteException {
         debug(">setPassword("+username+", hiddenpwd)");
         // Find user
-        UserDataPK pk = new UserDataPK();
-        pk.username = username;
+        UserDataPK pk = new UserDataPK(username);
         UserData data = home.findByPrimaryKey(pk);
         try {
             data.setPassword(password);
@@ -126,8 +121,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
     public void setClearTextPassword(String username, String password) throws FinderException, RemoteException {
         debug(">setClearTextPassword("+username+", hiddenpwd)");
         // Find user
-        UserDataPK pk = new UserDataPK();
-        pk.username = username;
+        UserDataPK pk = new UserDataPK(username);
         UserData data = home.findByPrimaryKey(pk);
         try {
             if (password == null)
@@ -147,8 +141,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
     */
     public UserAdminData findUser(String username) throws FinderException, RemoteException {
         debug(">findUser("+username+")");
-        UserDataPK pk = new UserDataPK();
-        pk.username = username;
+        UserDataPK pk = new UserDataPK(username);
         UserData data;
         try {
             data = home.findByPrimaryKey(pk);
@@ -160,7 +153,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
         debug("<findUser("+username+")");
         return ret;
     } // findUser
-    
+
         /**
 
     * Implements IUserAdminSession::findUserBySubjectDN.
@@ -189,7 +182,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
             debug("found "+ret.size()+" user(s) with subjectdn="+subjectdn);
             debug("<findAllUsersBySubjectDN("+subjectdn+")");
             if( ret.size() > 0 )
-              returnval = (UserAdminData) ret.get(0);  
+              returnval = (UserAdminData) ret.get(0);
             return returnval;
         }
         catch (Exception e) {
@@ -205,7 +198,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
             }
         }
     } // findUserBySubjectDN
- 
+
 
     /**
     * Implements IUserAdminSession::findAllUsersByStatus.

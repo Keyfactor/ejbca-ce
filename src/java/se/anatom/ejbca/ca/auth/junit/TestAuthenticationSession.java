@@ -21,7 +21,7 @@ import junit.framework.*;
 
 /** Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.4 2002-03-24 10:47:23 anatom Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.5 2002-05-29 12:52:51 anatom Exp $
  */
 public class TestAuthenticationSession extends TestCase {
 
@@ -72,8 +72,7 @@ public class TestAuthenticationSession extends TestCase {
         }
         if (userExists) {
             cat.debug("user foo already exists.");
-            UserDataPK pk = new UserDataPK();
-            pk.username = "foo";
+            UserDataPK pk = new UserDataPK("foo");
             UserData data = userhome.findByPrimaryKey(pk);
             data.setStatus(UserData.STATUS_NEW);
             cat.debug("Reset status to NEW");
@@ -98,8 +97,7 @@ public class TestAuthenticationSession extends TestCase {
         // user that we know exists...
         Object obj1 = ctx.lookup("UserData");
         UserDataHome userhome = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj1, UserDataHome.class);
-        UserDataPK pk = new UserDataPK();
-        pk.username = "foo";
+        UserDataPK pk = new UserDataPK("foo");
         UserData data = userhome.findByPrimaryKey(pk);
         // Set status to GENERATED so authentication will fail
         data.setStatus(UserData.STATUS_GENERATED);

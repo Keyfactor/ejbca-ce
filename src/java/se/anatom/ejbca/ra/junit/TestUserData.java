@@ -19,7 +19,7 @@ import junit.framework.*;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.3 2002-05-20 17:52:59 anatom Exp $
+ * @version $Id: TestUserData.java,v 1.4 2002-05-29 12:52:52 anatom Exp $
  */
 public class TestUserData extends TestCase {
 
@@ -89,8 +89,7 @@ public class TestUserData extends TestCase {
     }
     public void test02LookupAndChangeUser() throws Exception {
         cat.debug(">test02LookupAndChangeUser()");
-        UserDataPK pk = new UserDataPK();
-        pk.username = username;
+        UserDataPK pk = new UserDataPK(username);
         cat.debug("pk="+ pk);
 
         UserData data2 = home.findByPrimaryKey(pk);
@@ -119,8 +118,7 @@ public class TestUserData extends TestCase {
     }
     public void test03LookupChangedUser() throws Exception {
         cat.debug(">test03LookupChangedUser()");
-        UserDataPK pk = new UserDataPK();
-        pk.username = username;
+        UserDataPK pk = new UserDataPK(username);
         UserData data = home.findByPrimaryKey(pk);
         cat.debug("found by key! ="+ data);
         cat.debug("username="+data.getUsername());
@@ -143,8 +141,7 @@ public class TestUserData extends TestCase {
     }
     public void test03LookupChangedUser2() throws Exception {
         cat.debug(">test03LookupChangedUser2()");
-        UserDataPK pk = new UserDataPK();
-        pk.username = username;
+        UserDataPK pk = new UserDataPK(username);
         UserData data = home.findByPrimaryKey(pk);
         cat.debug("found by key! ="+ data);
         cat.debug("username="+data.getUsername());
@@ -196,8 +193,7 @@ public class TestUserData extends TestCase {
     }
     public void test06RemoveUser() throws Exception {
         cat.debug(">test06RemoveUser()");
-        UserDataPK pk = new UserDataPK();
-        pk.username = username;
+        UserDataPK pk = new UserDataPK(username);
         home.remove(pk);
         pk.username = username1;
         home.remove(pk);

@@ -17,7 +17,7 @@ import se.anatom.ejbca.ca.exception.AuthLoginException;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.6 2002-05-26 12:42:25 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.7 2002-05-29 12:52:50 anatom Exp $
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean implements IAuthenticationSession {
 
@@ -44,8 +44,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean implements I
         debug(">authenticateUser("+username+", hiddenpwd)");
         try {
             // Find the user with username username
-            UserDataPK pk = new UserDataPK();
-            pk.username = username;
+            UserDataPK pk = new UserDataPK(username);
             UserData data = userHome.findByPrimaryKey(pk);
             int status = data.getStatus();
             if ( (status == UserData.STATUS_NEW) || (status == UserData.STATUS_FAILED) || (status == UserData.STATUS_INPROCESS) ) {
@@ -83,8 +82,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean implements I
         debug(">finishUser("+username+", hiddenpwd)");
         try {
             // Find the user with username username
-            UserDataPK pk = new UserDataPK();
-            pk.username = username;
+            UserDataPK pk = new UserDataPK(username);
             UserData data = userHome.findByPrimaryKey(pk);
             data.setStatus(UserData.STATUS_GENERATED);
             info("Changed status of user '"+username+"' to STATUS_GENERATED.");

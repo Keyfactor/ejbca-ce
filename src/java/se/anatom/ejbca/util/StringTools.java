@@ -5,7 +5,7 @@ import java.io.*;
 
 /** This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.1 2002-05-29 12:40:55 anatom Exp $
+ * @version $Id: StringTools.java,v 1.2 2002-05-29 12:52:52 anatom Exp $
  */
 public class StringTools {
 
@@ -13,7 +13,7 @@ public class StringTools {
         '\'', '\"', '\n', '\r', '/', '\\', ';'
     };
 
-    /** Strips all specialsigns from a String by replacing them with a dash, '-'.
+    /** Strips all specialsigns from a String by replacing them with a forward slash, '/'.
      *
      *
      *@param str the string whose contents will be stripped.
@@ -26,7 +26,7 @@ public class StringTools {
         String ret = str;
         for (int i=0; i<stripChars.length; i++) {
             if (ret.indexOf(stripChars[i]) > -1) {
-                ret = ret.replace(stripChars[i], '-');
+                ret = ret.replace(stripChars[i], '/');
             }
         }
         return ret;

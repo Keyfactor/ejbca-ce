@@ -1,5 +1,7 @@
 package se.anatom.ejbca.ra;
 
+import se.anatom.ejbca.util.StringTools;
+
 /**
  * The primary key of the User is the username fingerprint which should be unique.
  **/
@@ -7,7 +9,7 @@ public class UserDataPK implements java.io.Serializable {
     public String username;
 
     public UserDataPK(String username) {
-        this.username = username;
+        this.username = StringTools.strip(username);
     }
     public UserDataPK() {
     }

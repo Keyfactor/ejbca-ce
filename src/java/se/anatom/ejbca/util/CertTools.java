@@ -21,11 +21,12 @@ import org.apache.log4j.*;
 
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.Hex;
+import se.anatom.ejbca.util.StringTools;
 
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.10 2002-03-25 10:09:11 anatom Exp $
+ * @version $Id: CertTools.java,v 1.11 2002-05-29 12:52:52 anatom Exp $
  */
 public class CertTools {
 
@@ -41,14 +42,16 @@ public class CertTools {
      * <pre>
      * CN, SN, OU, O, L, ST, DC, C
      *
-     * @param dn String containing DN that will be transformed into X509Name, The DN string has the format 
+     * @param dn String containing DN that will be transformed into X509Name, The DN string has the format
 "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in the string will be silently dropped.
      * @return X509Name
      *
      */
     public static X509Name stringToBcX509Name(String dn) {
         cat.debug(">stringToBcX509Name: " + dn);
-        String trimmeddn = dn.trim();
+        // Strip bad chars
+        String stipeddn = StringTools.strip(dn);
+        String trimmeddn = stipeddn.trim();
         StringTokenizer st = new StringTokenizer(trimmeddn, ",=");
         Hashtable dntable = new Hashtable();
         String o = null;
@@ -108,14 +111,14 @@ public class CertTools {
         order.add(X509Name.DC);
         order.add(X509Name.C);
         order.retainAll(coll);
-        
+
         cat.debug(order.toString());
         cat.debug(dntable.toString());
-        
+
         cat.debug("<stringToBcX509Name");
         return new X509Name(order, dntable);
     }
-    
+
     /**
      * Every DN-string should look the same.
      * Creates a name string ordered and looking like we want it...
@@ -311,7 +314,7 @@ public class CertTools {
             }
         } catch (IOException e) {// do nothing
         }
-            
+
         X509Certificate selfcert = certgen.generateX509Certificate(privKey);
         return selfcert;
     } //genselfCert
@@ -320,22 +323,22 @@ public class CertTools {
         byte[] extvalue = cert.getExtensionValue("2.5.29.35");
         if (extvalue == null)
             return null;
-        
+
         DEROctetString oct = (DEROctetString)(new DERInputStream(new ByteArrayInputStream(extvalue)).readObject());
         AuthorityKeyIdentifier keyId = new AuthorityKeyIdentifier((DERConstructedSequence)new DERInputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
         return keyId.getKeyIdentifier();
     } // getAuthorityKeyId
-    
+
     public static byte[] getSubjectKeyId(X509Certificate cert) throws IOException {
         byte[] extvalue = cert.getExtensionValue("2.5.29.14");
         if (extvalue == null)
             return null;
-        
+
         DEROctetString oct = (DEROctetString)(new DERInputStream(new ByteArrayInputStream(extvalue)).readObject());
         SubjectKeyIdentifier keyId = new SubjectKeyIdentifier(oct);
         return keyId.getKeyIdentifier();
     } // getSubjectKeyId
-    
+
     /**
       * Generate SHA1 fingerprint in string representation.
       *
