@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
@@ -29,13 +30,14 @@ import javax.ejb.EJBException;
 import javax.ejb.ObjectNotFoundException;
 
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERConstructedSequence;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.DEREncodableVector;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERInputStream;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -82,7 +84,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.80 2003-03-28 08:59:17 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.81 2003-03-31 09:08:27 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -639,10 +641,11 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
             String upn =  CertTools.getPartFromDN(altName, CertTools.UPN);
             if (upn != null) {
-                DERConstructedSequence upnSeq = new DERConstructedSequence();
-                upnSeq.addObject(new DERObjectIdentifier(CertTools.UPN_OBJECTID));
-                upnSeq.addObject(new DERTaggedObject(true, 0, new DERUTF8String(upn)));
-                GeneralName gn = new GeneralName(upnSeq, 0);
+                ASN1EncodableVector v = new ASN1EncodableVector();
+                v.add(new DERObjectIdentifier(CertTools.UPN_OBJECTID));
+                v.add(new DERTaggedObject(true, 0, new DERUTF8String(upn)));
+                //GeneralName gn = new GeneralName(new DERSequence(v), 0);
+                DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
                 vec.add(gn);
             }
             if (vec.size() > 0) {
@@ -674,6 +677,9 @@ public class RSASignSessionBean extends BaseSessionBean {
                 signingDevice.getPrivateSignKey(),
                 signingDevice.getProvider());
         debug("<makeBCCertificate()");
+        FileOutputStream os = new FileOutputStream("\\foo.crt");
+        os.write(cert.getEncoded());
+        os.close();
         return (X509Certificate) cert;
     } // makeBCCertificate
 
