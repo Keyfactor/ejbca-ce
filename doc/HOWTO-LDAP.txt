@@ -30,6 +30,7 @@ Use forward order like this:
 or
 'cn=Mike Jackson,o=bigcorp,c=se' if using the o,c model.
 
+An example image of an LDAP structure can be seen in HOWTO-LDAP-tree.png.
 
 CONFIGURE LDAP PUBLISHERS
 =========================
@@ -122,6 +123,7 @@ The publisher for AD should have base DN like "cn=Users,dc=security,dc=software,
 
 CONFIGURE OpenLDAP
 ==================
+
 The objectclass 'inetOrgPerson' is used by default to store certificates.
 
 Example:
