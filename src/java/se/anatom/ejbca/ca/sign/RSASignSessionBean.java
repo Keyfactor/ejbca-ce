@@ -38,6 +38,8 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.log.LogEntry;
+import se.anatom.ejbca.protocol.PKCS10RequestMessage;
+import se.anatom.ejbca.protocol.RequestMessage;
 
 import org.bouncycastle.jce.*;
 import org.bouncycastle.asn1.x509.*;
@@ -46,7 +48,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.45 2002-09-17 09:19:47 herrvendil Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.46 2002-10-13 11:40:23 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -215,12 +217,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             certs = chain;
         }
         try {
-            PKCS7SignedData pkcs7 =
-                new PKCS7SignedData(
-                    signingDevice.getPrivateSignKey(),
-                    certs,
-                    "SHA1",
-                    signingDevice.getProvider());
+            PKCS7SignedData pkcs7 = new PKCS7SignedData(signingDevice.getPrivateSignKey(),certs,"SHA1",signingDevice.getProvider());
             debug("<createPKCS7()");
             return pkcs7.getEncoded();
         } catch (Exception e) {
@@ -368,54 +365,47 @@ public class RSASignSessionBean extends BaseSessionBean {
      * Implements ISignSession::createCertificate
      */
 
-    public Certificate createCertificate(String username, String password, byte[] pkcs10req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
-        return createCertificate( username, password, pkcs10req, -1 );
+    public Certificate createCertificate(String username, String password, RequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
+        return createCertificate( username, password, req, -1 );
     }
 
     /**
      * Implements ISignSession::createCertificate
      */
 
-    public Certificate createCertificate(String username, String password, byte[] pkcs10req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
+    public Certificate createCertificate(String username, String password, RequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
         debug(">createCertificate(pkcs10)");
         Certificate ret = null;
-        
-        try{
-          try {
-            DERObject derobj = new DERInputStream(new ByteArrayInputStream(pkcs10req)).readObject();
-            DERConstructedSequence seq = (DERConstructedSequence)derobj;
-            PKCS10CertificationRequest pkcs10 = new PKCS10CertificationRequest(seq);
-            if (pkcs10.verify() == false) {
-                logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"POPO verification failed.");  
-                throw new EJBException("Verification of signature (popo) on PKCS10 request failed.");
-            }
-            // TODO: extract more information or attributes
-            if ( keyUsage < 0 )
-                ret = createCertificate(username, password, pkcs10.getPublicKey());
-            else
-                ret = createCertificate(username, password, pkcs10.getPublicKey(), keyUsage);
-
-          } catch (IOException e) {
-            logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error reading PKCS10-request.");                
-            throw new SignRequestException("Error reading PKCS10-request.");
-
-          } catch (NoSuchAlgorithmException e) {
-            logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error in PKCS10-request, no such algorithm.");                
-            throw new SignRequestException("Error in PKCS10-request, no such algorithm.");
-
-          } catch (NoSuchProviderException e) {
-            logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Internal error processing PKCS10-request.");                
-            throw new SignRequestException("Internal error processing PKCS10-request.");
-          } catch (InvalidKeyException e) {
-            logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error in PKCS10-request, invlid key.");                
-            throw new SignRequestException("Error in PKCS10-request, invalid key.");
-          } catch (SignatureException e) {
-            logsession.log(admin,LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error in PKCS10-signature.");                
-            throw new SignRequestSignatureException("Error in PKCS10-signature.");
-          }
-        }catch(RemoteException re){
-          throw new EJBException(re);   
-        }
+		try {
+			try {
+                if (req.verify() == false) {
+				    logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"POPO verification failed.");
+					throw new EJBException("Verification of signature (popo) on request failed.");
+                }
+				// TODO: extract more information or attributes
+                PublicKey reqpk = req.getRequestPublicKey();
+                if (reqpk == null)
+                    throw new InvalidKeyException("Key is null!");
+                if (keyUsage < 0)
+                    ret =createCertificate(username,password,reqpk);
+                else
+                    ret =createCertificate(username,password,reqpk,keyUsage);
+			} catch (IOException e) {
+				logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error reading PKCS10-request.");
+				throw new SignRequestException("Error reading PKCS10-request.");
+			} catch (NoSuchAlgorithmException e) {
+				logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error in PKCS10-request, no such algorithm.");
+				throw new SignRequestException("Error in PKCS10-request, no such algorithm.");
+			} catch (NoSuchProviderException e) {
+				logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Internal error processing PKCS10-request.");
+				throw new SignRequestException("Internal error processing PKCS10-request.");
+			} catch (InvalidKeyException e) {
+				logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error in PKCS10-request, invlid key.");
+				throw new SignRequestException("Error in PKCS10-request, invalid key.");
+			}
+		} catch (RemoteException re) {
+			throw new EJBException(re);
+		}
         debug("<createCertificate(pkcs10)");
         return ret;
     }

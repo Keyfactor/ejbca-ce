@@ -12,11 +12,12 @@ import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
+import se.anatom.ejbca.protocol.RequestMessage;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown.
  *  Creates certificates.
  *
- * @version $Id: ISignSessionLocal.java,v 1.4 2002-09-10 18:53:41 anatom Exp $
+ * @version $Id: ISignSessionLocal.java,v 1.5 2002-10-13 11:40:24 anatom Exp $
  * @see se.anatom.ejbca.ca.sign.ISignSession
  */
 public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
@@ -52,11 +53,11 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
-    public Certificate createCertificate(String username, String password, byte[] pkcs10req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException;
+    public Certificate createCertificate(String username, String password, RequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException;
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
-    public Certificate createCertificate(String username, String password, byte[] pkcs10req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException;
+    public Certificate createCertificate(String username, String password, RequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException;
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */

@@ -37,6 +37,7 @@ import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 
 /**
  * Servlet used to install a private key with a corresponding certificate in a
@@ -63,7 +64,7 @@ import se.anatom.ejbca.log.Admin;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.19 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: CertReqServlet.java,v 1.20 2002-10-13 11:40:29 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
@@ -335,13 +336,13 @@ public class CertReqServlet extends HttpServlet {
                 // IE PKCS10 Base64 coded request
                 buffer = Base64.decode(b64Encoded);
             }
-
+            /*
             ISignSessionRemote ss = home.create(administrator);
-            cert = (X509Certificate) ss.createCertificate(username, password, buffer);
-            cat.debug("Created certificate for " + username);
+            cert = (X509Certificate) ss.createCertificate(username, password, new PKCS10RequestMessage(buffer));
+            */
         }
         ISignSessionRemote ss = home.create(administrator);
-        cert = (X509Certificate) ss.createCertificate(username, password, buffer);
+        cert = (X509Certificate) ss.createCertificate(username, password, new PKCS10RequestMessage(buffer));
         byte[] pkcs7 = ss.createPKCS7(cert);
         cat.info("Created certificate (PKCS7) for " + username);
         debug.print("<h4>Generated certificate:</h4>");

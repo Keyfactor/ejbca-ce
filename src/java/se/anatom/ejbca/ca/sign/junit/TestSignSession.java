@@ -2,7 +2,6 @@ package se.anatom.ejbca.ca.sign.junit;
 
 import java.util.Random;
 import java.util.*;
-import java.lang.Integer;
 import java.io.*;
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -18,6 +17,7 @@ import javax.naming.NamingException;
 import java.rmi.RemoteException;
 import javax.ejb.DuplicateKeyException;
 
+import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.ca.sign.*;
 import se.anatom.ejbca.util.*;
@@ -33,7 +33,7 @@ import junit.framework.*;
 
 /** Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.10 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: TestSignSession.java,v 1.11 2002-10-13 11:40:47 anatom Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -190,7 +190,7 @@ public class TestSignSession extends TestCase {
         }
         cat.debug("CertificationRequest generated succefully.");
         byte[] bcp10 = bOut.toByteArray();
-        X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", bcp10);
+        X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", new PKCS10RequestMessage(bcp10));
         assertNotNull("Failed to create certificate", cert);
         cat.debug("Cert="+cert.toString());
         cat.debug("<test03TestBCPKCS10()");
@@ -201,7 +201,7 @@ public class TestSignSession extends TestCase {
         UserDataRemote data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
         cat.debug("Reset status of 'foo' to NEW");
-        X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", keytoolp10);
+        X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", new PKCS10RequestMessage(keytoolp10));
         assertNotNull("Failed to create certificate", cert);
         cat.debug("Cert="+cert.toString());
         cat.debug("<test04TestKeytoolPKCS10()");
@@ -212,7 +212,7 @@ public class TestSignSession extends TestCase {
         UserDataRemote data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
         cat.debug("Reset status of 'foo' to NEW");
-        X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", iep10);
+        X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", new PKCS10RequestMessage(iep10));
         assertNotNull("Failed to create certificate", cert);
         cat.debug("Cert="+cert.toString());
         cat.debug("<test05TestIEPKCS10()");

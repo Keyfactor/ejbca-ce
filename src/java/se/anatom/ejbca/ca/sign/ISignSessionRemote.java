@@ -18,11 +18,12 @@ import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
+import se.anatom.ejbca.protocol.RequestMessage;
 
 /** Creates certificates.
  * Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.6 2002-09-11 12:36:09 anatom Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.7 2002-10-13 11:40:24 anatom Exp $
  */
 
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
@@ -168,7 +169,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     *
     * @param username unique username within the instance.
     * @param password password for the user.
-    * @param req a PKCS10 Certification Request in DER format, containing the public key to be put in the created certificate.
+    * @param req a Certification Request message, containing the public key to be put in the created certificate. Currently no additional parameters in requests are considered!
     * Currently no additional parameters in the PKCS10 request is considered!
     *
     * @return The newly created certificate or null.
@@ -178,7 +179,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     */
 
-    public Certificate createCertificate(String username, String password, byte[] pkcs10req) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException;
+    public Certificate createCertificate(String username, String password, RequestMessage req) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException;
 
    /**
     * Requests for a certificate to be created for the passed public key wrapped in a PKCS10 certification request.
@@ -187,7 +188,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     *
     * @param username unique username within the instance.
     * @param password password for the user.
-    * @param req a PKCS10 Certification Request in DER format, containing the public key to be put in the created certificate. Currently no additional parameters in the PKCS10 request is considered!
+    * @param req a Certification Request message, containing the public key to be put in the created certificate. Currently no additional parameters in requests are considered!
     * @param keyusage integer with bit mask describing desired keys usage. Bit mask is packed in in integer using contants from CertificateData.
     * ex. int keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives digitalSignature and nonRepudiation.
     * ex. int keyusage = CertificateData.keyCertSign | CertificateData.cRLSign; gives keyCertSign and cRLSign
@@ -201,7 +202,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     */
 
-    public Certificate createCertificate(String username, String password, byte[] pkcs10req, int keyUsage) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException;
+    public Certificate createCertificate(String username, String password, RequestMessage req, int keyUsage) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException;
 
    /**
     * Requests for a CRL to be created with the passed (revoked) certificates.
