@@ -1,4 +1,4 @@
-$Id: README,v 1.146 2004-05-29 18:56:30 anatom Exp $
+$Id: README,v 1.147 2004-05-30 15:07:24 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -715,10 +715,9 @@ the Sun documentation on the JCE.
 There is a SCEP servlet receiving requests on http://localhost:8080/ejbca/publicweb/apply/scep/pkiclient.exe
 
 Level of SCEP support:
-EJBCA does succesfully receive SCEP 'PKCSReq' requests and send back the certifificate immediately in a proper SCEP reply message.
+EJBCA does succesfully receive SCEP 'PKCSReq' requests and send back the certifificate/CRL immediately in a proper SCEP reply message.
 EJBCA does not support the 'polling' model, EJBCA uses the direct method, where a request is granted or denied immediately.
 EJBCA will not send back proper SCEP error messages in all cases of failure, the error messages are not completely implemented.
-The GetCRL message is not implemented (it is done very bad in the spec).
 
 The CN part of the DN in the PKCS#10 request, which is part of the Scep request, will be used as the 'username' when 
 authenticating the request in EJBCA. Create the Scep request with a CN mathing the username registered in EJBCA.
@@ -727,6 +726,7 @@ authenticating the request in EJBCA. Create the Scep request with a challengePas
 
 The most common errors should be wrong username/password or wrong status (not NEW/10) on the user in EJBCA.
 
+Tested with OpenScep:
 To use the OpenScep (http://openscep.othello.ch/) client to request a certificate from this servlet, use the command:
 ./scep -k test.key -r test.pemreq -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
 rem ./scep -d -k test.key -r test.pemreq -2 -e test.req -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
@@ -736,6 +736,9 @@ test1.req is generated with:
 openssl req -key test.key -new -days 30 -out test.req -outform DER -config ../openssl/openscep.cnf
 and test1.pemreq is generated with:
 openssl req -key test.key -new -days 30 -out test.pemreq -outform PEM -config ../openssl/openscep.cnf
+
+Tested with Simple Scep Client (http://www.klake.org/~jt/sscep/):
+You should only use CN in the users DN (same as for PIX below).
 
 Tested with Cisco VPN client version 4.0.2:
 To enroll using the Cisco VPN client use 'CA URL'='http://127.0.0.1:8080/ejbca/publicweb/apply/scep/pkiclient.exe' 
@@ -748,12 +751,14 @@ JBOSS_HOME/server/default/deploy/jbossweb-tomcat41.sar/META-INF/jboss-service.xm
 should be the CA-name as defined when creating the CA in EJBCA. For example 'vpnca'. 
 - The username in EJBCA must be the name the PIX identifies itself with <name>.<domain>, example pix.primekey.se. 
 - Only use lower-case names when creating the CA in EJBCA, since PIX will change the CA name VpnCA to vpnca when enrolling.
-- Certificates used for PIX must include the DN component unstructuredAddress (fqdn) and could also include unstructuredName (ip).
+- The end-entity DN should only include the DN component CN plus unstructuredXX, ex "CN=pix.primekey.se, unstructuredName=pix.primekey.se",
+no O or C should be in the certificate.
+- Certificates used for PIX must include the DN component unstructuredName (fqdn) and could also include unstructuredAddress (ip).
 - Certificates used for PIX must include the SubjectAltName dNSName beeing the fqdn of the pix, eg <name>.<domain>, 
-iPAddress can also be useful. If unstructuredName is used iPAddress should be used.
+iPAddress can also be useful. If unstructuredAddress is used iPAddress should be used.
 - Cisco does not support use of the 'Domain Component', DC, attribute in DNs, don't use it.
-- The PIX user should have a DN like "unstructuredAddress=192.168.1.33/unstructuredName=pixfirewall.ciscopix.com, CN=pix.primekey.se", 
-KeyUsage "Digital Signature, Key Encipherment", SubjectAltName "DNS:pixfirewall.ciscopix.com, IP Address:192.168.1.33".
+- The PIX user should have a DN like "unstructuredName=pix.primekey.se/unstructuredAddress=192.168.1.33, CN=pix.primekey.se", 
+KeyUsage "Digital Signature, Key Encipherment", SubjectAltName "DNS:pix.primekey.se, IP Address:192.168.1.33".
 - When the VPN-client (above) connects to the PIX, the 'ou' part of the clients DN must match a Vpngroup you have specified, 
 otherwise the connection will fail.
 

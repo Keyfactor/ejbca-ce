@@ -57,7 +57,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.16 2004-05-25 20:54:46 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.17 2004-05-30 15:07:28 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage, Serializable {
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);
@@ -191,12 +191,15 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             // The signed data to be enveloped
             CMSSignedData s = null;
             // Create encrypted response if this is success and NOT a CRL response message
-            if (status.equals(ResponseStatus.SUCCESS) && (crl == null)) {
+            if (status.equals(ResponseStatus.SUCCESS)) {
 
                 CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
                 // Add the issued certificate to the signed portion of the CMS (as signer, degenerate case)
                 ArrayList certList = new ArrayList();
-                if (cert != null) {
+                if (crl != null) {
+                    log.debug("Adding CRL to response message (inner signer)");
+                    certList.add(crl);
+                } else if (cert != null) {
                     log.debug("Adding certificates to response message");
                     certList.add(cert);
                     certList.add(signCert);                    

@@ -56,7 +56,7 @@ import se.anatom.ejbca.util.CertTools;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.29 2004-05-22 11:30:28 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.30 2004-05-30 15:07:28 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);
@@ -141,8 +141,9 @@ public class ScepServlet extends HttpServlet {
                 // Read the message end get the cert, this also checksauthorization
                 byte[] reply = helper.scepCertRequest(scepmsg);
                 if (reply == null) {
-                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                        "Fatal error processing Scep request");
+                	// This is probably a getCert message?
+                    response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED,
+                        "Can not handle request");
                     return;
                 }
                 // Send back Scep response, PKCS#7 which contains the end entity's certificate (or failure)
