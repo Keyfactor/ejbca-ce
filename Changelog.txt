@@ -9,6 +9,7 @@ New cmd line command to export/import profiles to XML files
 Fixed bug in 'ca makereq' when rootCA has no CN
 Added encoding=ascii to javac to fix compile on strange locales
 Fixed API for active directory publisher
+Support for more than two levels of CAs
 
 2.0.1
 -----
