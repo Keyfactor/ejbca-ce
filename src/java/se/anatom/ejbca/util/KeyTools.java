@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.14 2003-02-12 11:23:19 scop Exp $
+ * @version $Id: KeyTools.java,v 1.15 2003-02-21 09:56:13 anatom Exp $
  */
 public class KeyTools {
 
@@ -176,13 +176,23 @@ public class KeyTools {
             }
         }
         // store the key and the certificate chain
-        KeyStore store = KeyStore.getInstance("JKS");
+        KeyStore store = KeyStore.getInstance("JKS", "SUN");
         store.load(null, null);
+        // First load the key entry
+        X509Certificate[] usercert = new X509Certificate[1];
+        usercert[0] = cert;
+        store.setKeyEntry(alias, privKey, password.toCharArray(), usercert);
+        // Add the root cert as trusted
         if (cachain != null) {
+            if (!CertTools.isSelfSigned((X509Certificate)cachain[cachain.length-1])) {
+                throw new IllegalArgumentException("Root cert is not self-signed.");
+            }
             store.setCertificateEntry(caAlias, cachain[cachain.length-1]);
         }
+        // Set the complete chain
+        log.debug("Storing cert chain of length "+chain.length);
         store.setKeyEntry(alias, privKey, password.toCharArray(), chain);
-        log.debug(">createJKS: alias=" + alias + ", privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length));
+        log.debug("<createJKS: alias=" + alias + ", privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length));
 
         return store;
     } // createJKS
