@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.Base64;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.3 2002-01-05 14:40:53 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.4 2002-01-08 11:25:24 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean implements ICertificateStoreSession {
 
@@ -77,15 +77,15 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
     * Implements ICertificateStoreSession::storeCRL.
     * Implements a mechanism that uses CRL Entity Bean.
     */
-    public boolean storeCRL(X509CRL incrl, String cafp, int number) throws RemoteException {
+    public boolean storeCRL(byte[] incrl, String cafp, int number) throws RemoteException {
         debug(">storeCRL("+cafp+", "+number+")");
 
         try {
             CRLDataHome home = (CRLDataHome) lookup("CRLData", CRLDataHome.class);
-
-            CRLData data1 = home.create(incrl, number);
+            X509CRL crl = CertTools.getCRLfromByteArray(incrl);
+            CRLData data1 = home.create(crl, number);
             data1.setCAFingerprint(cafp);
-            info("Stored CRL with fp="+CertTools.getFingerprintAsString(incrl));
+            info("Stored CRL with fp="+CertTools.getFingerprintAsString(crl));
         }
         catch (Exception e) {
             error("Storage of CRL failed.", e);

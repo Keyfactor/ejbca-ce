@@ -14,7 +14,7 @@ import java.security.cert.X509CRL;
  * can only be used to store certificates and CRLs. PublisherSession's implement
  * the interface IPublisherSession.
  *
- * @version $Id: IPublisherSession.java,v 1.1 2001-12-31 15:48:12 anatom Exp $
+ * @version $Id: IPublisherSession.java,v 1.2 2002-01-08 11:25:24 anatom Exp $
  */
 public interface IPublisherSession {
 
@@ -34,13 +34,13 @@ public interface IPublisherSession {
    /**
     * Published a CRL to a CRL store.
     *
-    * @param incrl The CRL to be stored.
+    * @param incrl The DER coded CRL to be stored.
     * @param chainfp Fingerprint (hex) of the CAs certificate.
     * @param number CRL number.
     *
     * @return true if storage was succesful.
     * @throws EJBException if a communication or other error occurs.
     */
-    public boolean storeCRL(X509CRL incrl, String cafp, int number) throws RemoteException;
+    public boolean storeCRL(byte[] incrl, String cafp, int number) throws RemoteException;
 
 }

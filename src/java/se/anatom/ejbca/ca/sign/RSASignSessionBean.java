@@ -37,7 +37,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.7 2002-01-06 10:51:32 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.8 2002-01-08 11:25:24 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -328,7 +328,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             crl.verify(caCert.getPublicKey());
             info("Created CRL with number "+number);
             // Store CRL in the database
-            certificateStore.storeCRL(crl, CertTools.getFingerprintAsString(caCert), number);
+            certificateStore.storeCRL(crl.getEncoded(), CertTools.getFingerprintAsString(caCert), number);
         } catch (Exception e) {
             throw new EJBException(e);
         }

@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.*;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.5 2002-01-08 10:40:30 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.6 2002-01-08 11:25:24 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublisherSession {
 
@@ -82,20 +82,28 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
     /**
      * Published a CRL to LDAP. Creates CA entry if it does not exist.
      *
-     * @param incrl The CRL to be stored.
+     * @param incrl The DER coded CRL to be stored.
      * @param chainfp Fingerprint (hex) of the CAs certificate.
      * @param number CRL number.
      *
      * @return true if storage was succesful.
      * @throws EJBException if a communication or other error occurs.
      */
-    public boolean storeCRL(X509CRL incrl, String cafp, int number) throws RemoteException {
+    public boolean storeCRL(byte[] incrl, String cafp, int number) throws RemoteException {
         
         int ldapVersion  = LDAPConnection.LDAP_V3;
         LDAPConnection lc = new LDAPConnection();
         
+        X509CRL crl;
+        try {
+            crl = CertTools.getCRLfromByteArray(incrl);
+        } catch (Exception e) {
+            error("Error decoding input CRL: ",e);
+            return false;
+        }
+        
         // Extract the users DN from the cert.
-        String dn = CertTools.stringToBCDNString(((X509CRL)incrl).getIssuerDN().toString());
+        String dn = CertTools.stringToBCDNString(crl.getIssuerDN().toString());
 
         if (checkContainerName(dn) == false)
             return false;
@@ -128,7 +136,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
         else
             attributeSet = getAttributeSet(cAObjectclass, dn, false);
         try {
-            LDAPAttribute crlAttr = new LDAPAttribute( "certificateRevocationList;binary", incrl.getEncoded() );
+            LDAPAttribute crlAttr = new LDAPAttribute( "certificateRevocationList;binary", crl.getEncoded() );
             if (oldEntry != null)
                 modSet.add(LDAPModification.REPLACE, crlAttr);
             else
@@ -395,5 +403,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
             }
         }
         return modSet;
-    } // getModificationSet
+    }
+        
+ // getModificationSet
 }
