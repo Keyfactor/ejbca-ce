@@ -5,7 +5,7 @@ import java.rmi.RemoteException;
 
 import java.math.BigInteger;
 
-import se.anatom.ejbca.webdist.webconfiguration.UserPreference;
+import se.anatom.ejbca.ra.raadmin.UserPreference;
 
 /**
 

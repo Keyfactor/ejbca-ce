@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.CertTools;
 
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
-import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
+import se.anatom.ejbca.ra.GlobalConfiguration;
 /**
  * Servlet used to distribute ca certificates <br>
  *
@@ -37,7 +37,7 @@ import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.4 2002-07-04 19:11:43 herrvendil Exp $
+ * @version $Id: CACertServlet.java,v 1.5 2002-07-20 18:40:08 herrvendil Exp $
  *
  */
 public class CACertServlet extends HttpServlet {

@@ -6,9 +6,11 @@ import java.math.BigInteger;
 import java.util.Date;
 import java.util.Vector;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.TreeMap;
 import java.util.Set;
 import java.util.Iterator;
+import java.util.Random;
 import java.sql.*;
 import javax.sql.DataSource;
 import javax.naming.*;
@@ -18,15 +20,15 @@ import javax.ejb.*;
 import org.apache.log4j.*;
 
 import se.anatom.ejbca.BaseSessionBean;
-import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
-import se.anatom.ejbca.webdist.webconfiguration.UserPreference;
-import se.anatom.ejbca.webdist.rainterface.Profile;
+import se.anatom.ejbca.ra.GlobalConfiguration;
+import se.anatom.ejbca.ra.raadmin.UserPreference;
+import se.anatom.ejbca.ra.raadmin.Profile;
 
 /**
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.8 2002-07-10 15:59:51 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.9 2002-07-20 18:40:08 herrvendil Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
@@ -35,14 +37,11 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     /** Var holding JNDI name of datasource */
     private String dataSource = "java:/DefaultDS";
 
-    /** The home interface of  GlobalWebConfiguration entity bean */
-    private GlobalWebConfigurationDataLocalHome globalconfigurationhome = null;
-
     /** The home interface of  UserPreferences entity bean */
     private UserPreferencesDataLocalHome userpreferenceshome=null;
 
-    /** The home interface of  ProfileGroupData entity bean */
-    private ProfileGroupDataLocalHome profilegroupdatahome=null;
+    /** The home interface of  ProfileData entity bean */
+    private ProfileDataLocalHome profiledatahome=null;
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -51,56 +50,22 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         debug(">ejbCreate()");
         dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
         debug("DataSource=" + dataSource);
-        globalconfigurationhome = (GlobalWebConfigurationDataLocalHome)lookup("java:comp/env/ejb/GlobalWebConfigurationDataLocal");
-        userpreferenceshome = (UserPreferencesDataLocalHome)lookup("java:comp/env/ejb/UserPreferencesDataLocal");
-        profilegroupdatahome = (ProfileGroupDataLocalHome)lookup("java:comp/env/ejb/ProfileGroupDataLocal");
+
+        userpreferenceshome = (UserPreferencesDataLocalHome)lookup("java:comp/env/ejb/UserPreferencesDataLocal", UserPreferencesDataLocalHome.class);
+        profiledatahome = (ProfileDataLocalHome)lookup("java:comp/env/ejb/ProfileDataLocal", ProfileDataLocalHome.class);
         debug("<ejbCreate()");
 
     }
 
-    /**
-     * Loads the global configuration from the database.
-     *
-     * @throws EJBException if a communication or other error occurs.
+
+    /** Gets connection to Datasource used for manual SQL searches
+     * @return Connection
      */
-    public GlobalConfiguration loadGlobalConfiguration()  {
-        debug(">loadGlobalConfiguration()");
-        GlobalConfiguration ret=null;
-        try{
-          GlobalWebConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey("0");
-          if(gcdata!=null){
-            ret = gcdata.getGlobalConfiguration();
-          }
-        }catch (javax.ejb.FinderException fe) {
-             // Create new configuration
-             ret = null;
-        }
-        debug("<loadGlobalConfiguration()");
-        return ret;
-    } //loadGlobalConfiguration
-
-    /**
-     * Saves global configuration to the database.
-     *
-     * @throws EJBException if a communication or other error occurs.
-     */
-
-    public void saveGlobalConfiguration( GlobalConfiguration globalconfiguration)  {
-        debug(">saveGlobalConfiguration()");
-        String pk = "0";
-        try {
-          GlobalWebConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey(pk);
-          gcdata.setGlobalConfiguration(globalconfiguration);
-        }catch (javax.ejb.FinderException fe) {
-           // Global configuration doesn't yet exists.
-           try{
-             GlobalWebConfigurationDataLocal data1= globalconfigurationhome.create(pk,globalconfiguration);
-           } catch(CreateException e){
-           }
-        }
-        debug("<saveGlobalConfiguration()");
-     } // saveGlobalConfiguration
-
+    private Connection getConnection() throws SQLException, NamingException {
+        DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
+        return ds.getConnection();
+    } //getConnection
+    
 
      /**
 
@@ -196,133 +161,19 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         return ret;
     }// existsUserPreference
 
-     /**
-     * Adds a profile group to the database
-     */
-
-    public boolean addProfileGroup(String profilegroupname){
-      boolean returnvalue=true;
-      Iterator i=null;
-      try{
-        i = profilegroupdatahome.findAll().iterator();
-      }catch(FinderException e){
-          throw new EJBException(e);
-      }
-      while(i.hasNext()){
-        if(profilegroupname.equals(((ProfileGroupDataLocal) i.next()).getProfileGroupName())){
-          returnvalue=false;
-        }
-      }
-      if(returnvalue){
-        try{
-          profilegroupdatahome.create(profilegroupname);
-        }catch(Exception e){
-           returnvalue = false;
-        }
-      }
-      return returnvalue;
-    } // addProfileGroup
-
-
-    /**
-     * Adds a profile group with the same content as the original profile,
-     */
-    public boolean cloneProfileGroup(String originalprofilegroupname, String newprofilegroupname){
-      boolean returnvalue=true;
-      Iterator i=null;
-      try{
-        i = profilegroupdatahome.findAll().iterator();
-      }catch(FinderException e){
-        throw new EJBException(e);
-      }
-      String groupname;
-
-      while(i.hasNext()){ // Check if new group already exists.
-        groupname = ((ProfileGroupDataLocal) i.next()).getProfileGroupName();
-        if(newprofilegroupname.equals(groupname)){
-          returnvalue=false;
-        }
-      }
-      if(returnvalue){ // Clone group
-        try{
-          ProfileGroupDataLocal pgd = profilegroupdatahome.findByPrimaryKey(originalprofilegroupname);
-          TreeMap profiledatas = pgd.getProfiles();
-          Set profilenames = profiledatas.keySet();
-          ProfileGroupDataLocal newprofilegroup = profilegroupdatahome.create(newprofilegroupname);
-          Iterator j = profilenames.iterator();
-          while(j.hasNext()){
-            String profilename = (String) j.next();
-            Profile profile = (Profile) profiledatas.get(profilenames);
-            newprofilegroup.addProfile(profilename, profile);
-          }
-        }catch(Exception e){
-          returnvalue = false;
-        }
-      }
-      return returnvalue;
-    } // cloneProfileGroup
-
-    /**
-     * Removes a profile group from the database.
-     */
-    public void removeProfileGroup(String profilegroupname){
-      try{
-        profilegroupdatahome.remove(profilegroupname);
-      }catch(Exception e){
-        throw new EJBException(e);
-      }
-    } // removeProfileGroup
-
-     /**
-     * Renames a profile group
-     */
-    public boolean renameProfileGroup(String oldprofilegroupname, String newprofilegroupname){
-      boolean returnvalue=true;
-      Iterator i = null;
-      try{
-         i = profilegroupdatahome.findAll().iterator();
-      }catch(FinderException e){
-        throw new EJBException(e);
-      }
-      String groupname;
-
-      while(i.hasNext()){ // Check if new group already exists.
-        groupname = ((ProfileGroupDataLocal) i.next()).getProfileGroupName();
-        if(newprofilegroupname.equals(groupname)){
-          returnvalue=false;
-        }
-      }
-      if(returnvalue){ // Create new group and delete old one.
-        try{
-          ProfileGroupDataLocal pgd = profilegroupdatahome.findByPrimaryKey(oldprofilegroupname);
-          TreeMap profiledatas = pgd.getProfiles();
-          Set profilenames = profiledatas.keySet();
-          ProfileGroupDataLocal newprofilegroup = profilegroupdatahome.create(newprofilegroupname);
-          Iterator j = profilenames.iterator();
-          while(j.hasNext()){
-            String profilename = (String) j.next();
-            Profile profile = (Profile) profiledatas.get(profilename);
-            newprofilegroup.addProfile(profilename, profile);
-          }
-          profilegroupdatahome.remove(oldprofilegroupname);
-        }catch(Exception e){
-          returnvalue = false;
-        }
-      }
-      return returnvalue;
-    } // renameProfileGroup
-
     /**
      * Adds a profile to the database.
      */
 
-    public boolean addProfile(String profilegroupname, String profilename, Profile profile){
-       boolean returnval=true;
+    public boolean addProfile(String profilename, Profile profile){
+       boolean returnval=false;
        try{
-         ProfileGroupDataLocal pgd = profilegroupdatahome.findByPrimaryKey(profilegroupname);
-         returnval = pgd.addProfile(profilename,profile);
+          profiledatahome.findByProfileName(profilename);
        }catch(FinderException e){
-         returnval = false;
+         try{  
+           profiledatahome.create(findFreeProfileId(),profilename,profile);
+           returnval = true;
+         }catch(Exception f){}  
        }
        return returnval;
     } // addProfile
@@ -330,14 +181,17 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      /**
      * Adds a profile to a group with the same content as the original profile,
      */
-    public boolean cloneProfile(String profilegroupname, String originalprofilename, String newprofilename){
-       boolean returnval=true;
+    public boolean cloneProfile(String originalprofilename, String newprofilename){
+       Profile profile = null; 
+       boolean returnval = false;
        try{
-         ProfileGroupDataLocal pgd = profilegroupdatahome.findByPrimaryKey(profilegroupname);
-         returnval = pgd.cloneProfile(originalprofilename,newprofilename);
-       }catch(FinderException e){
-         returnval = false;
-       }
+         ProfileDataLocal pdl = profiledatahome.findByProfileName(originalprofilename);
+         profile = (Profile) pdl.getProfile().clone();
+         
+         returnval = addProfile(newprofilename, profile);
+       }catch(FinderException e){}
+        catch(CloneNotSupportedException f){}
+       
        return returnval;
     } // cloneProfile
 
@@ -345,124 +199,168 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Removes a profile from the database.
      * @throws EJBException if a communication or other error occurs.
      */
-    public void removeProfile(String profilegroupname, String profilename) {
-        cat.debug(">removeProfile("+profilegroupname+", "+profilename);
-       try{
-         ProfileGroupDataLocal pgd = profilegroupdatahome.findByPrimaryKey(profilegroupname);
-         pgd.removeProfile(profilename);
-       } catch(FinderException e) { }
-         catch(EJBException e) {
-            cat.error("Error in localraadminSessionBean:removeProfile: ",e);
-        }
-        cat.debug(">removeProfile("+profilegroupname+", "+profilename);
+    public void removeProfile(String profilename) {
+      try{
+        ProfileDataLocal pdl = profiledatahome.findByProfileName(profilename);  
+        pdl.remove();
+      }catch(Exception e){}  
     } // removeProfile
 
      /**
      * Renames a profile
      */
-    public boolean renameProfile(String profilegroupname, String oldprofilename, String newprofilename){
-       boolean returnval=true;
+    public boolean renameProfile(String oldprofilename, String newprofilename){
+       boolean returnvalue = false;   
        try{
-         ProfileGroupDataLocal pgd = profilegroupdatahome.findByPrimaryKey(profilegroupname);
-         returnval = pgd.renameProfile(oldprofilename,newprofilename);
-       }catch(Exception e){
-         returnval = false;
-       }
-       return returnval;
+          profiledatahome.findByProfileName(newprofilename); 
+       }catch(FinderException e){
+         try{
+           ProfileDataLocal pdl = profiledatahome.findByProfileName(oldprofilename);   
+           pdl.setProfileName(newprofilename);
+           returnvalue = true;
+         }catch(FinderException f){}
+       }  
+       return returnvalue;   
     } // remameProfile
 
     /**
      * Updates profile data
      */
 
-    public boolean changeProfile(String profilegroupname, String profilename, Profile profile){
-       boolean returnval=true;
+    public boolean changeProfile(String profilename, Profile profile){
+       boolean returnvalue = false;
+       
        try{
-         ProfileGroupDataLocal pgd = profilegroupdatahome.findByPrimaryKey(profilegroupname);
-         returnval = pgd.changeProfile(profilename, profile);
-       }catch(FinderException e){
-         returnval = false;
-       }
-       return returnval;
+         ProfileDataLocal pdl = profiledatahome.findByProfileName(profilename);   
+         pdl.setProfile(profile);
+         returnvalue = true;
+       }catch(FinderException e){}  
+       return returnvalue;   
     }// changeProfile
 
     /**
-     * Retrives profile group names.
+     * Retrives profile names sorted.
      */
-    public Collection getProfileGroupNames(){
-     Vector returnval = new Vector();
-     Collection result = null;
-     try{
-       result = profilegroupdatahome.findAll();
-       Iterator i = result.iterator();
-       while(i.hasNext()){
-          returnval.addElement(((ProfileGroupDataLocal) i.next()).getProfileGroupName());
-       }
-     }catch(FinderException e){
-        throw new EJBException(e);
-     }
-     return returnval;
-    } // getProfileGroupNames
-    /**
-     * Retrives profile names sorted in specified group.
-     */
-    public Collection getProfileNames(String profilegroupname){
-       Collection returnval=null;
-       try{
-         ProfileGroupDataLocal pgd = profilegroupdatahome.findByPrimaryKey(profilegroupname);
-         returnval = pgd.getProfileNames();
-       }catch(FinderException e){
-         throw new EJBException(e);
-       }
-       return returnval;
+    public Collection getProfileNames(){
+      Vector returnval = new Vector();
+      Collection result = null;
+      try{
+        result = profiledatahome.findAll();
+        if(result.size()>0){ 
+          Iterator i = result.iterator();
+          while(i.hasNext()){
+            returnval.add(((ProfileDataLocal) i.next()).getProfileName());
+          }
+        }
+        Collections.sort(returnval);
+      }catch(Exception e){}
+      return returnval;      
     } // getProfileNames
+    
     /**
-     * Retrives profiles sorted by name in specified group.
+     * Retrives profiles sorted by name.
      */
-    public TreeMap getProfiles(String profilegroupname){
-       TreeMap returnval=null;
-       try{
-         ProfileGroupDataLocal pgd = profilegroupdatahome.findByPrimaryKey(profilegroupname);
-         returnval = pgd.getProfiles();
-       }catch(FinderException e){
-         throw new EJBException(e);
-       }
-       return returnval;
+    public TreeMap getProfiles(){
+      TreeMap returnval = new TreeMap();
+      Collection result = null;
+      try{
+        result = profiledatahome.findAll();
+        if(result.size()>0){
+          returnval = new TreeMap();  
+          Iterator i = result.iterator();
+          while(i.hasNext()){
+            ProfileDataLocal pdl = (ProfileDataLocal) i.next();
+            returnval.put(pdl.getProfileName(),pdl.getProfile());
+          }
+        }
+      }catch(FinderException e){}
+      return returnval;    
     } // getProfiles
 
     /**
      * Retrives a named profile.
      */
-    public Profile getProfile(String profilegroupname, String profilename){
+    public Profile getProfile(String profilename){
        Profile returnval=null;
        try{
-         ProfileGroupDataLocal pgd = profilegroupdatahome.findByPrimaryKey(profilegroupname);
-         returnval = pgd.getProfile(profilename);
+         returnval = (profiledatahome.findByProfileName(profilename)).getProfile();
        }catch(FinderException e){
          throw new EJBException(e);
        }
-       return returnval;
+       return returnval;  
     } //  getProfile
 
-    /**
-     * Retrives the numbers of profilegroups in the database.
-     */
-    public int getNumberOfProfileGroups(){
-     int returnval=0;
-     Collection result;
-     try{
-       result = profilegroupdatahome.findAll();
-       returnval = result.size();
-     }catch(FinderException e){}
-     return returnval;
-    }
-
      /**
-     * Retrives the numbers of profiles in the profilegroup.
+     * Finds a profile by id.
+     */       
+    public Profile getProfile(int id){
+       Profile returnval=null;
+       try{
+         returnval = (profiledatahome.findByPrimaryKey(new Integer(id))).getProfile();
+       }catch(FinderException e){
+         throw new EJBException(e);
+       }
+       return returnval;        
+    } // getProfile
+    
+     /**
+     * Retrives the numbers of profiles.
      */
-    public int getNumberOfProfiles(String profilegroupname){
-      return getProfileNames(profilegroupname).size();
+    public int getNumberOfProfiles(){
+      int returnval =0;
+      try{
+        returnval = (profiledatahome.findAll()).size();
+      }catch(FinderException e){}
+      
+      return returnval;                
     }
-
+     
+     /**
+     * Returns a profiles id, given it's profilename
+     *
+     * @return the id or 0 if profile cannot be found.
+     */   
+    public int getProfileId(String profilename){
+      int returnval = 0;  
+      try{  
+        Integer id = (profiledatahome.findByProfileName(profilename)).getId();
+        returnval = id.intValue();
+      }catch(FinderException e){}
+      
+      return returnval;        
+    } // getProfileId
+    
+     /**
+     * Returns a profiles name given it's id. 
+     *
+     * @return profilename or null if profile id doesn't exists.
+     */    
+    public String getProfileName(int id){
+      String returnval = null;  
+      try{  
+        returnval = (profiledatahome.findByPrimaryKey(new Integer(id))).getProfileName();
+      }catch(FinderException e){}
+      
+      return returnval;
+    } // getProfileName
+    
+    // Private methods
+    
+    private Integer findFreeProfileId(){
+      int id = (new Random((new Date()).getTime())).nextInt();
+      boolean foundfree = false;
+      
+      while(!foundfree){
+        try{  
+          if(id != 0)  
+            profiledatahome.findByPrimaryKey(new Integer(id));
+          id++;
+        }catch(FinderException e){
+           foundfree = true;   
+        }
+      }      
+      return new Integer(id);
+    } // findFreeProfileId
+    
 } // LocalRaAdminSessionBean
 

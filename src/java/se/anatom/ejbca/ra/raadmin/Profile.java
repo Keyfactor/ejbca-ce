@@ -4,7 +4,7 @@
  * Created on den 12 april 2002, 11:27
  */
 
-package se.anatom.ejbca.webdist.rainterface;
+package se.anatom.ejbca.ra.raadmin;
 
 /**
  * The model representation of a profile, used in in the ra module of ejbca web interface.

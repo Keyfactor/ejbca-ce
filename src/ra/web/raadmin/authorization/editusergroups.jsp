@@ -26,6 +26,13 @@
         <td width="35%"></td>
       </tr>
     <% } %> 
+    <% if(trytoeditspecialgroup){ %> 
+      <tr> 
+        <td width="5%"></td>
+        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("ITSONLYPOSSIBLETOEDIT") %></H4></td>
+        <td width="35%"></td>
+      </tr>
+    <% } %> 
       <tr> 
         <td width="5%"></td>
         <td width="60%"><H3><%= ejbcawebbean.getText("CURRENTUSERGROUPS") %></H3></td>

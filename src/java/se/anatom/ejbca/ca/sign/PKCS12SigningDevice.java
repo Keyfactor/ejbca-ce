@@ -1,5 +1,7 @@
 package se.anatom.ejbca.ca.sign;
 
+
+
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.PrivateKey;
@@ -13,10 +15,12 @@ import org.apache.log4j.*;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.KeyTools;
 
+
 /** Implements a signing device using PKCS12 keystore, implementes the Singleton pattern.
  *
- * @version $Id: PKCS12SigningDevice.java,v 1.1 2002-06-07 12:21:34 anatom Exp $
+ * @version $Id: PKCS12SigningDevice.java,v 1.2 2002-07-20 18:40:08 herrvendil Exp $
  */
+
 public class PKCS12SigningDevice implements ISigningDevice {
 
     /** Log4j instance for Base */
@@ -26,13 +30,16 @@ public class PKCS12SigningDevice implements ISigningDevice {
     private X509Certificate rootCert;
     private X509Certificate caCert;
 
+
    /**
     * A handle to the unique Singleton instance.
     */
     static private PKCS12SigningDevice instance = null;
 
+
    /** Reads a PKCS12 keystore and inislizes all internal data
     */
+
     protected PKCS12SigningDevice(Properties p) throws Exception {
         cat.debug(">PKCS12SigningDevice()");
         // Get env variables and read in nessecary data
@@ -88,6 +95,7 @@ public class PKCS12SigningDevice implements ISigningDevice {
     * prop Arguments needed för the eventual creation of the object
     * @return An instance of the Signing device.
     */
+
     static public synchronized ISigningDevice instance(Properties prop) throws Exception {
        if(instance == null) {
          instance = new PKCS12SigningDevice(prop);
@@ -99,6 +107,7 @@ public class PKCS12SigningDevice implements ISigningDevice {
     *
     * @return an array of Certificate
     */
+
     public Certificate[] getCertificateChain() {
         cat.debug(">getCertificateChain()");
         // TODO: should support more than 2 levels of CAs
@@ -118,7 +127,10 @@ public class PKCS12SigningDevice implements ISigningDevice {
     *
     * @return PrivateKey object
     */
+
     public PrivateKey getPrivateSignKey() {
         return privateKey;
     }
+
 }
+

@@ -4,18 +4,14 @@
  * Created on den 28 mars 2002, 10:02
  */
 
-package se.anatom.ejbca.webdist.webconfiguration;
+package se.anatom.ejbca.ra;
 
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Properties;
 import javax.naming.InitialContext;
 import javax.naming.Context;
 
+import se.anatom.ejbca.ra.raadmin.UserPreference;
 
 /**
  *  This is a  class containing global configuration parameters and default
@@ -26,45 +22,62 @@ import javax.naming.Context;
 public class GlobalConfiguration implements java.io.Serializable {
   
     // Default Values
+    // Entries to choose from in userpreference part, defines the size of data to be displayed on one page.                                                  
+    private final  String[] POSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};    
     
-    private final  String[] OPENDIRECTORIES        = {"/", "/banners","/images","/help","/themes","/languages"};
-    private final  String[] POSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};
-    
-    private final  String[]  DEFAULT_AVAILABLE_RULES = {"/", "/authorization", "/authorization/availablerules", 
-                                                       "/ca", "/ca/createcrl", "/ca/getcrl", "/config", 
-                                                       "/ra", "/ra/editprofiles"};
+    // Directories made open to all ra administrators, but client certificate is still needed.
+    private final  String[] OPENDIRECTORIES        = {"/raadmin/", "/raadmin/banners","/raadmin/images","/raadmin/help",
+                                                      "/raadmin/themes","/raadmin/languages"};    
+    // Rules available by default i authorization module.
+    private final  String[]  DEFAULT_AVAILABLE_RULES = {"/", "/raadmin/", "/raadmin/authorization", "/raadmin/authorization/availablerules", 
+                                                       "/raadmin/ca", "/raadmin/ca/createcrl", "/raadmin/ca/getcrl", "/raadmin/config", 
+                                                       "/raadmin/ra", "/raadmin/ra/editprofiles"};
                                                       
-    private final String[]  PROFILEGROUP_ENDINGS    = {"/view", "/create", "/edit", "/delete", "/revoke"};    
-    private final String    PROFILEGROUPPREFIX      = "/profilegroups";
+    // Endings to add to profile authorizxation.                                                   
+    private final String[]  PROFILE_ENDINGS        = {"/view", "/create", "/edit", "/delete", "/revoke","/history"};  
+    // Name of profile prefix directory in authorization module.
+    private final String    PROFILEPREFIX          = "/profiles";
    
+    // Name of headbanner in web interface.
     private final  String   HEADBANNER             = "head_banner.jsp";
+    // Name of footbanner page in web interface.
     private final  String   FOOTBANNER             = "foot_banner.jsp";
     
+    // Title of ra admin web interface.
     private final  String   EJBCATITLE             = "Enterprise Java Bean Certificate Authority";
     
-    // Observe the order is important
+    // Language codes. Observe the order is important
     public final  int      EN                 = 0; 
     public final  int      SE                 = 1;
     
     // Public constants.
-    public final  String HEADERFRAME         = "topFrame";
-    public final  String MENUFRAME           = "leftFrame";
-    public final  String MAINFRAME           = "mainFrame";   
+    public final  String HEADERFRAME         = "topFrame";  // Name of header browser frame
+    public final  String MENUFRAME           = "leftFrame"; // Name of menu browser frame
+    public final  String MAINFRAME           = "mainFrame"; // Name of main browser frame  
     
 
     
     /** Creates a new instance of GlobalConfiguration */
-    public GlobalConfiguration() throws javax.naming.NamingException {    
+    public GlobalConfiguration()  {    
        defaultuserpreference = new UserPreference();
        config = new HashMap();
  
-       InitialContext ictx = new InitialContext();
-       Context myenv = (Context) ictx.lookup("java:comp/env");            
-       String tempbaseurl = ((String) myenv.lookup("BASEURL")).trim();
-       String tempraadminpath =  ((String) myenv.lookup("RAADMINDIRECTORY")).trim();
-       String tempavailablelanguages = ((String) myenv.lookup("AVAILABLELANGUAGES")).trim();
-       String tempavailablethemes = ((String) myenv.lookup("AVAILABLETHEMES")).trim(); 
-              
+       setEjbcaTitle(EJBCATITLE);       
+       config.put(P_POSSIBLEENTRIESPERPAGE,POSSIBLEENTRIESPERPAGE);       
+       config.put(P_PROFILE_ENDINGS,PROFILE_ENDINGS);
+       config.put(P_PROFILEPREFIX,PROFILEPREFIX);
+       
+       config.put(P_OPENDIRECTORIES, OPENDIRECTORIES);
+       config.put(P_DEFAULT_AVAILABLE_RULES, DEFAULT_AVAILABLE_RULES);
+    }
+    
+    /** Initializes a new global configuration with data used in ra web interface. */
+    public void initialize(String baseurl, String raadminpath, String availablelanguages, String availablethemes){
+       String tempbaseurl = baseurl;
+       String tempraadminpath =  raadminpath.trim();
+       String tempavailablelanguages = availablelanguages.trim();
+       String tempavailablethemes = availablethemes.trim();        
+        
        if(!tempbaseurl.endsWith("/")){
          tempbaseurl = tempbaseurl + "/";   // Remove ending '/'
        }
@@ -82,30 +95,7 @@ public class GlobalConfiguration implements java.io.Serializable {
        config.put(P_RAADMINPATH,tempraadminpath);
        config.put(P_AVAILABLELANGUAGES,tempavailablelanguages);
        config.put(P_AVAILABLETHEMES,tempavailablethemes);
-       
-       // Add Ra Admin Path to the default open and hidden directories strings.
-       String tempraadminpath2 = tempraadminpath;
-       String[] tempopendirectories = new String[OPENDIRECTORIES.length];
-       String[] tempdefaultrules = new String[DEFAULT_AVAILABLE_RULES.length+1];
-        
-       if(!tempraadminpath.equals(""))
-         tempraadminpath2 = "/" + tempraadminpath.substring(0,tempraadminpath.length() - 1);
-     
-       for(int i=0; i < OPENDIRECTORIES.length ; i++){
-          tempopendirectories[i] = tempraadminpath2 + OPENDIRECTORIES[i]; 
-       }
-       for(int i=0; i < DEFAULT_AVAILABLE_RULES.length ; i++){
-          tempdefaultrules[i] = tempraadminpath2 + DEFAULT_AVAILABLE_RULES[i]; 
-       }
-       tempdefaultrules[DEFAULT_AVAILABLE_RULES.length]="/";
-       
-       config.put(P_OPENDIRECTORIES,tempopendirectories);
-       config.put(P_DEFAULT_AVAILABLE_RULES,tempdefaultrules);
-       config.put(P_PROFILEGROUP_ENDINGS,PROFILEGROUP_ENDINGS);
-       config.put(P_PROFILEGROUPPREFIX,PROFILEGROUPPREFIX);
-       
-       setEjbcaTitle(EJBCATITLE);
-       
+      
        config.put(P_AUTHORIZATION_PATH,tempraadminpath+"authorization");
        config.put(P_BANNERS_PATH,"banners");
        config.put(P_CA_PATH, tempraadminpath+"ca");
@@ -122,23 +112,19 @@ public class GlobalConfiguration implements java.io.Serializable {
        config.put(P_INDEXFILENAME,"index.jsp");
        config.put(P_MENUFILENAME,"ejbcamenu.jsp");
        config.put(P_ERRORPAGE,"errorpage.jsp");
-    
+           
+       defaultuserpreference.setTheme(getAvailableThemes()[0]);    
        setHeadBanner(HEADBANNER);
        setFootBanner(FOOTBANNER);
-       
-       config.put(P_POSSIBLEENTRIESPERPAGE,POSSIBLEENTRIESPERPAGE);
-       
-       defaultuserpreference.setTheme(getAvailableThemes()[0]);    
-   
+        
     }
     
-    // Configurable fields.
-    public   void setBasicWebConfiguration(String burl, String opendirs){
-        setBaseUrl(burl);
-        setOpenDirectories(opendirs);   
+    /** Checks if global configuration have been initialized. */
+    public boolean isInitialized(){
+      return config.get(P_BASEURL)!=null;   
     }
     
-    
+    // Configurable fields.    
     public   String getBaseUrl() {return (String) config.get(P_BASEURL);}
     public   void setBaseUrl(String burl){
       // Add trailing '/' if it doesn't exists.  
@@ -170,10 +156,10 @@ public class GlobalConfiguration implements java.io.Serializable {
     public String[] getDefaultAvailableDirectories(){return (String[]) config.get(P_DEFAULT_AVAILABLE_RULES);}
     
     /** Returns authorization rules applied to profile groups */
-    public String[] getProfileGroupEndings(){return (String[]) config.get(P_PROFILEGROUP_ENDINGS);}
+    public String[] getProfileEndings(){return (String[]) config.get(P_PROFILE_ENDINGS);}
     
     /** Gives the directory profilegroups are placed in auhtorization module. */
-    public String getProfileGroupPrefix(){return (String) config.get(P_PROFILEGROUPPREFIX);} 
+    public String getProfilePrefix(){return (String) config.get(P_PROFILEPREFIX);} 
     
     /** The opendirectories parameter is a comma separated string containing the 
         open directories*/
@@ -269,16 +255,6 @@ public class GlobalConfiguration implements java.io.Serializable {
     public   String getAvailableThenesAsString(){return (String) config.get(P_AVAILABLETHEMES);}         
     
     // Private fields.
-    // Overloaded from the serialize interface. Used to save and restore the configuration.
-    private void writeObject(ObjectOutputStream out) throws IOException {
-      out.writeObject(config);
-      out.writeObject(defaultuserpreference);
-    }    
-
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-      config = (HashMap) in.readObject();
-      defaultuserpreference = (UserPreference) in.readObject();
-    }    
     
     // Private constants
       // Basic configuration
@@ -290,8 +266,8 @@ public class GlobalConfiguration implements java.io.Serializable {
     private final   String P_OPENDIRECTORIES    = "opendirectories"; 
     
     private final   String P_DEFAULT_AVAILABLE_RULES = "defaultavailablerules";
-    private final   String P_PROFILEGROUP_ENDINGS    = "profilegroupendings";
-    private final   String P_PROFILEGROUPPREFIX      = "profilegroupprefix";
+    private final   String P_PROFILE_ENDINGS         = "profileendings";
+    private final   String P_PROFILEPREFIX           = "profileprefix";
     
       // Banner files.
     private final   String P_HEADBANNER         = "headbanner";  
@@ -323,6 +299,5 @@ public class GlobalConfiguration implements java.io.Serializable {
     // Private fields
     private    HashMap        config;
     private    UserPreference defaultuserpreference;
-    private    Properties     basicconfig;
     
 }

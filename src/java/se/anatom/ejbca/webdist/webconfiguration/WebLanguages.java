@@ -11,12 +11,14 @@ import java.io.FileInputStream;
 import java.io.File;
 import java.io.IOException;
 
+import se.anatom.ejbca.ra.GlobalConfiguration;
+
 /**
  * An class interpreting the langage properties files. I contains one method getText that returns
  * the presented text in the users prefered language.
  *
  * @author  Philip Vendil
- * @version $Id: WebLanguages.java,v 1.4 2002-07-16 12:26:40 anatom Exp $
+ * @version $Id: WebLanguages.java,v 1.5 2002-07-20 18:40:08 herrvendil Exp $
  */
 public class WebLanguages {
 

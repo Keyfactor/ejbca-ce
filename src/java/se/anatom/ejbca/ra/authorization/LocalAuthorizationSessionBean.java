@@ -14,14 +14,17 @@ import javax.sql.DataSource;
 import javax.naming.*;
 import javax.rmi.*;
 import javax.ejb.*;
+import java.security.cert.X509Certificate;
 
 import se.anatom.ejbca.BaseSessionBean;
+import se.anatom.ejbca.ra.IUserAdminSessionHome;
+import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 
 /**
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.3 2002-07-10 15:59:51 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.4 2002-07-20 18:40:08 herrvendil Exp $
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
@@ -31,6 +34,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     /** The home interface of  AvailableAccessRulesData entity bean */
     private AvailableAccessRulesDataLocalHome availableaccessruleshome = null;
     private UserGroupDataLocalHome usergrouphome = null;
+    
+    private EjbcaAuthorization authorization = null;
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -38,19 +43,39 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      */
     public void ejbCreate() throws CreateException {
         debug(">ejbCreate()");
-        dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
-        debug("DataSource=" + dataSource);
-        availableaccessruleshome = (AvailableAccessRulesDataLocalHome)lookup("java:comp/env/ejb/AvailableAccessRulesDataLocal");
-        usergrouphome = (UserGroupDataLocalHome)lookup("java:comp/env/ejb/UserGroupDataLocal");
-
+        try{   
+          dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);  
+          debug("DataSource=" + dataSource); 
+          availableaccessruleshome = (AvailableAccessRulesDataLocalHome)lookup("java:comp/env/ejb/AvailableAccessRulesDataLocal");
+          usergrouphome = (UserGroupDataLocalHome)lookup("java:comp/env/ejb/UserGroupDataLocal");
+          IUserAdminSessionHome useradminsessionhome = (IUserAdminSessionHome) lookup("UserAdminSession");
+          IUserAdminSessionRemote useradminsession = useradminsessionhome.create();
+          authorization = new EjbcaAuthorization(getUserGroups(), useradminsession.loadGlobalConfiguration()); 
+        }catch(Exception e){
+           throw new CreateException(e.getMessage());   
+        }
+        
         // Check if usergroup table is empty, if so insert default superuser.
        try{
          Collection result = usergrouphome.findAll();
          if(result.size()==0){
-          // Authorization table is empty, refill with default.
+          // Authorization table is empty, fill with default and special usergroups.
            UserGroupDataLocal ugdl = usergrouphome.create("Default");
            ugdl.addUserEntity(UserEntity.WITH_COMMONNAME,UserEntity.TYPE_EQUALCASEINS,"Walter");
            ugdl.addAccessRule("/",AccessRule.RULE_ACCEPT,true);
+           
+           ugdl = usergrouphome.create(UserGroup.SPECIALUSERGROUP_COMMONWEBUSER);
+           ugdl.addUserEntity(0,UserEntity.SPECIALUSER_COMMONWEBUSER,"");
+           ugdl.addAccessRule("/",AccessRule.RULE_DECLINE,true);   // Temporate
+           
+           ugdl = usergrouphome.create(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN);
+           ugdl.addUserEntity(0,UserEntity.SPECIALUSER_CACOMMANDLINEADMIN,"");
+           ugdl.addAccessRule("/",AccessRule.RULE_ACCEPT,true);          
+           
+           ugdl = usergrouphome.create(UserGroup.SPECIALUSERGROUP_RACOMMANDLINEADMIN);
+           ugdl.addUserEntity(0,UserEntity.SPECIALUSER_RACOMMANDLINEADMIN,"");
+           ugdl.addAccessRule("/",AccessRule.RULE_ACCEPT,true); 
+           
          }
        }catch(FinderException e){
 
@@ -59,6 +84,27 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     }
 
     // Methods used with UserGroupData Entity Beans
+    
+     /** 
+     * Method to check if a user is authorized to a certain resource.
+     *
+     * @param userinformation can be a certificate or special user, see UserInformation class.
+     * 
+     */
+    public boolean isAuthorized(UserInformation userinformation, String resource) throws  AuthorizationDeniedException{
+      return authorization.isAuthorized(userinformation, resource);  
+    }
+    
+    /** 
+     * Method to validate, verify and check revokation of a users certificate.
+     *
+     * @param certificate the users X509Certificate.
+     * 
+     */
+    
+    public void authenticate(X509Certificate certificate) throws AuthenticationFailedException{    
+     authorization.authenticate(certificate);
+    }
 
    /**
     * Method to add an usergroup.
@@ -240,7 +286,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      *
      */
 
-    public void addUserEntity(String usergroupname, int matchwith, int matchtype, String matchvalue){
+    public void addUserEntity(String usergroupname, int matchwith, int matchtype, String matchvalue){  
       try{
         (usergrouphome.findByPrimaryKey(usergroupname)).addUserEntity(matchwith, matchtype, matchvalue);
       }catch(FinderException e){}

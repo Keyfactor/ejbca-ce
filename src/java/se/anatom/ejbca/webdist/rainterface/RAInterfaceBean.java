@@ -25,7 +25,7 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.math.BigInteger;
 
-import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
+import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
@@ -36,12 +36,13 @@ import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ra.UserDataRemote;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
+import se.anatom.ejbca.ra.raadmin.Profile;
 
 /**
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.8 2002-07-05 23:43:18 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.9 2002-07-20 18:40:08 herrvendil Exp $
  */
 public class RAInterfaceBean {
 

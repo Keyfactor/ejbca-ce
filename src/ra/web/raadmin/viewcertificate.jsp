@@ -1,8 +1,8 @@
-<!-- Version: $Id: viewcertificate.jsp,v 1.1 2002-07-16 08:35:23 anatom Exp $ -->
+<!-- Version: $Id: viewcertificate.jsp,v 1.2 2002-07-20 18:40:08 herrvendil Exp $ -->
 
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration, 
+<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.GlobalConfiguration, 
                  se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.CertificateView,
                  javax.ejb.CreateException, java.rmi.RemoteException" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />

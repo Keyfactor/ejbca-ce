@@ -1,5 +1,6 @@
 package se.anatom.ejbca.ra.authorization;
 import java.util.Collection;
+import java.security.cert.X509Certificate;
 
 import java.rmi.RemoteException;
 import javax.ejb.FinderException;
@@ -8,10 +9,27 @@ import javax.ejb.FinderException;
 
 /**
  *
- * @version $Id: IAuthorizationSessionRemote.java,v 1.2 2002-07-04 13:03:17 herrvendil Exp $
+ * @version $Id: IAuthorizationSessionRemote.java,v 1.3 2002-07-20 18:40:08 herrvendil Exp $
  */
 public interface IAuthorizationSessionRemote extends javax.ejb.EJBObject {
     // Methods used with AvailableAccessRulesData Entity beans.
+    
+    /** 
+     * Method to check if a user is authorized to a certain resource.
+     *
+     * @param userinformation can be a certificate or special user, see UserInformation class.
+     * 
+     */
+    public boolean isAuthorized(UserInformation userinformation, String resource) throws RemoteException, AuthorizationDeniedException;
+    
+    /** 
+     * Method to validate, verify and check revokation of a users certificate.
+     *
+     * @param certificate the users X509Certificate.
+     * 
+     */
+    
+    public void authenticate(X509Certificate certificate) throws RemoteException, AuthenticationFailedException;    
     
    /** 
     * Method to add an usergroup. 

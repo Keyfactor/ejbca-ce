@@ -6,8 +6,9 @@ import org.apache.log4j.*;
 
 /** Factory for PKCS12 signingdevice..
  *
- * @version $Id: PKCS12SigningDeviceFactory.java,v 1.1 2002-06-07 12:21:34 anatom Exp $
+ * @version $Id: PKCS12SigningDeviceFactory.java,v 1.2 2002-07-20 18:40:08 herrvendil Exp $
  */
+
 public class PKCS12SigningDeviceFactory {
 
     /** Log4j instance for Base */
@@ -23,4 +24,6 @@ public class PKCS12SigningDeviceFactory {
     public synchronized ISigningDevice makeInstance(Properties prop) throws Exception {
         return new PKCS12SigningDevice(prop);
     }
+
 }
+

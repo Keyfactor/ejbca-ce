@@ -4,7 +4,9 @@
  * Created on den 28 mars 2002, 12:36
  */
 
-package se.anatom.ejbca.webdist.webconfiguration;
+package se.anatom.ejbca.ra.raadmin;
+
+import se.anatom.ejbca.webdist.webconfiguration.WebLanguages;
 
 /**
  * A class representing a users personal preferenses.

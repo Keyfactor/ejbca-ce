@@ -1,6 +1,6 @@
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration, 
+<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, 
                  se.anatom.ejbca.webdist.rainterface.UserView, se.anatom.ejbca.webdist.rainterface.SortBy,
                  se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.ra.UserDataRemote,
                  javax.ejb.CreateException, java.rmi.RemoteException" %>
@@ -18,7 +18,7 @@
 
   static final String VIEWUSER_LINK            = "viewuser.jsp";
   static final String EDITUSER_LINK            = "edituser.jsp";
-  static final String VIEWCERT_LINK            = "viewcertificate.jsp";
+
 
   static final String OLD_ACTION               = "oldaction";
   static final String OLD_ACTION_LISTUSERS     = "oldactionlistusers";
@@ -74,6 +74,8 @@
 %><%
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
+
+  final String VIEWCERT_LINK            = "/" + globalconfiguration.getRaAdminPath() + "viewcertificate.jsp";
 
   String oldaction      = OLD_ACTION_NOACTION; 
   String oldactionvalue = null;

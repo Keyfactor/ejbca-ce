@@ -1,7 +1,7 @@
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration
-               ,se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.Profile, se.anatom.ejbca.webdist.rainterface.Profiles, se.anatom.ejbca.webdist.rainterface.ProfileExistsException"%>
+<%@page errorPage="/errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration
+               ,se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.ra.raadmin.Profile, se.anatom.ejbca.webdist.rainterface.ProfileDataHandler, se.anatom.ejbca.webdist.rainterface.ProfileExistsException"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -112,7 +112,7 @@
          profile = request.getParameter(SELECT_PROFILE);
          if(profile != null){
            if(!profile.trim().equals("")){
-             if(!profile.equals(Profiles.EMPTY_PROFILE)){ 
+             if(!profile.equals(ProfileDataHandler.EMPTY_PROFILE)){ 
                includefile="profilepage.jsp"; 
              }else{
                 triedtoeditemptyprofile=true;
@@ -132,7 +132,7 @@
           profile = request.getParameter(SELECT_PROFILE);
           if(profile != null){
             if(!profile.trim().equals("")){
-              if(!profile.equals(Profiles.EMPTY_PROFILE)){ 
+              if(!profile.equals(ProfileDataHandler.EMPTY_PROFILE)){ 
                 ejbcarabean.removeProfile(profile);
               }else{
                 triedtodeleteemptyprofile=true;
@@ -147,7 +147,7 @@
        String oldprofilename = request.getParameter(SELECT_PROFILE);
        if(oldprofilename != null && newprofilename != null){
          if(!newprofilename.trim().equals("") && !oldprofilename.trim().equals("")){
-           if(!oldprofilename.equals(Profiles.EMPTY_PROFILE)){ 
+           if(!oldprofilename.equals(ProfileDataHandler.EMPTY_PROFILE)){ 
              try{
                ejbcarabean.renameProfile(oldprofilename,newprofilename);
              }catch( ProfileExistsException e){

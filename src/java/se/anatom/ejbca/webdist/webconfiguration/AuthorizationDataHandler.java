@@ -16,12 +16,13 @@ import se.anatom.ejbca.ra.authorization.AccessRule;
 import se.anatom.ejbca.ra.authorization.AvailableDirectories;
 import se.anatom.ejbca.ra.authorization.UsergroupExistsException;
 import se.anatom.ejbca.ra.authorization.UserGroup;
+import se.anatom.ejbca.ra.GlobalConfiguration;
 
 /**
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
  * @author  Philip Vendil
- * @version $Id: AuthorizationDataHandler.java,v 1.3 2002-07-16 12:26:40 anatom Exp $
+ * @version $Id: AuthorizationDataHandler.java,v 1.4 2002-07-20 18:40:08 herrvendil Exp $
  */
 public class AuthorizationDataHandler {
 

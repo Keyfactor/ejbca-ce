@@ -8,22 +8,16 @@ package se.anatom.ejbca.ra.authorization;
 
 /**
  * A class that builds and maintains an accesstree. It should be used to check if a
- * client certificate has access rights to a url or not. isAthorized metod is the one to use.
+ * client certificate has access rights to a resource or not. isAthorized metod is the one to use.
  *
  * @author  Philip Vendil
  */
 import java.security.cert.X509Certificate;
+import java.io.Serializable;
 
-public class AccessTree {
-
+public class AccessTree implements Serializable {
     /** Creates a new instance of AccessTree */
-    public AccessTree(String baseurl, String[] opendirectories) {
-      this.baseurl=baseurl.replace('\\','/');
-      // Remove a trailing '/' if it  exists.
-      if(baseurl.endsWith("/")){
-        this.baseurl=this.baseurl.substring(0,this.baseurl.length()-1);;
-      }
-
+    public AccessTree(String[] opendirectories) {
       // Remove '/' in the end of open direcories if they exists. And add one in the beginging if they doesn't.
       if(opendirectories != null){
         this.opendirectories=opendirectories;
@@ -60,16 +54,15 @@ public class AccessTree {
         }
     }
 
-    /** A method to check if someone is athorized to view the given url */
-    public boolean isAuthorized(X509Certificate certificate, String url){
-        // Remove baseurl from url.
-          String checkurl = url;
+    /** A method to check if someone is athorized to view the given resource */
+    public boolean isAuthorized(UserInformation userinformation, String resource){
+          String checkresource = resource;
         // Must begin with '/'.
-        if((checkurl.toCharArray())[0] != '/')
-          checkurl = "/" + checkurl;
+        if((checkresource.toCharArray())[0] != '/')
+          checkresource = "/" + checkresource;
 
         // Check if user is athorized in the tree.
-        boolean retval = rootnode.isAuthorized(certificate,checkurl);
+        boolean retval = rootnode.isAuthorized(userinformation, checkresource);
         return retval;
     }
 
@@ -77,7 +70,6 @@ public class AccessTree {
 
     // Private fields
     private AccessTreeNode rootnode = null;
-    private String baseurl;
     private String[] opendirectories;
 
 }

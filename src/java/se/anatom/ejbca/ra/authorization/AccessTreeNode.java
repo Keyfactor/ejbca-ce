@@ -5,6 +5,7 @@ import java.util.Vector;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Iterator;
+import java.io.Serializable;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.*;
@@ -14,11 +15,13 @@ import org.apache.log4j.*;
  * The building component of the AccessTree. All nodes consist of these objects.
  *
  * @author  Philip Vendil
- * @version $Id: AccessTreeNode.java,v 1.2 2002-07-09 15:04:22 anatom Exp $
+ * @version $Id: AccessTreeNode.java,v 1.3 2002-07-20 18:40:08 herrvendil Exp $
  */
-public class AccessTreeNode {
+
+public class AccessTreeNode implements Serializable{
 
     private static Category cat = Category.getInstance(AccessTreeNode.class.getName());
+
 
     // Private Constants
     // OBSERVE that the order is important!!
@@ -37,10 +40,10 @@ public class AccessTreeNode {
         leafs = new HashMap();
     }
 
-    /** Checks the tree if the users X509Certificate is athorized to view the requested url */
-    public boolean isAuthorized(X509Certificate certificate, String url) {
-        cat.debug(">isAuthorized: " +url);
-        boolean retval =isAuthorizedRecursive(certificate,url,STATE_DECLINE); // Default is to decline access.
+    /** Checks the tree if the users X509Certificate is athorized to view the requested resource */
+    public boolean isAuthorized(UserInformation userinformation, String resource) {
+        cat.debug(">isAuthorized: " +resource);
+        boolean retval =isAuthorizedRecursive(userinformation,resource,STATE_DECLINE); // Default is to decline access.
         cat.debug("<isAuthorized: returns " + retval);
         return retval;
     }
@@ -120,8 +123,8 @@ public class AccessTreeNode {
       return leafs.size()==0;
     }
 
-    private boolean isAuthorizedRecursive(X509Certificate certificate, String url, int state){
-       cat.debug("isAuthorizedRecursive: " + " url: " + url + " name: "+ this.name + "," +state);
+    private boolean isAuthorizedRecursive(UserInformation userinformation, String resource, int state){
+       cat.debug("isAuthorizedRecursive: " + " resource: " + resource + " name: "+ this.name + "," +state);
        int index;
        int internalstate = STATE_DECLINE;
        boolean returnval = false;
@@ -132,8 +135,8 @@ public class AccessTreeNode {
        Set keys;
        String matchname;
 
-       internalstate = matchCertificate(certificate);
-       if(url.matches(this.name)) {
+       internalstate = matchInformation(userinformation);
+       if(resource.matches(this.name)) {
          // If this directory have state open or accept recursive state is given
          if(this.open || state == STATE_ACCEPT_RECURSIVE || internalstate == STATE_ACCEPT || internalstate == STATE_ACCEPT_RECURSIVE ){
              // If this directory's rule set don't says decline.
@@ -142,11 +145,11 @@ public class AccessTreeNode {
          }
        }
        else{
-         //cat.debug(" url : " + url);
-         nextsubdirectory = url.substring(this.name.length());
+         //cat.debug(" resource : " + resource);
+         nextsubdirectory = resource.substring(this.name.length());
          if((nextsubdirectory.toCharArray()[0])=='/')
          nextsubdirectory = nextsubdirectory.substring(1);
-         //cat.debug(" nexturl : " + nextsubdirectory);
+         //cat.debug(" nextresource : " + nextsubdirectory);
 
          index = nextsubdirectory.indexOf('/');
          if(index != -1){
@@ -158,7 +161,7 @@ public class AccessTreeNode {
        }
          //cat.debug(" nextname : " + nextname);
          next = (AccessTreeNode) leafs.get(nextname);
-         if(next == null){  // Url path doesn't exist
+         if(next == null){  // resource path doesn't exist
             // Se if any key matches a regular expression.
             keys = leafs.keySet();
             for( Iterator i = keys.iterator(); i.hasNext();){
@@ -179,20 +182,20 @@ public class AccessTreeNode {
               returnval=true;
             }
          }
-         if(next != null){ // Url path exists.
+         if(next != null){ // resource path exists.
            // If internalstate is accept recursive or decline recusive.
            if(internalstate == STATE_ACCEPT_RECURSIVE || internalstate == STATE_DECLINE_RECURSIVE){
              state=internalstate;
            }
            //cat.debug(this.name + " --> ");
-           returnval=next.isAuthorizedRecursive(certificate, nextsubdirectory, state);
+           returnval=next.isAuthorizedRecursive(userinformation, nextsubdirectory, state);
          }
        }
-       cat.debug("<isAthorizedRecursive: returns " + returnval + " : " + url + "," +state);
+       cat.debug("<isAthorizedRecursive: returns " + returnval + " : " + resource + "," +state);
        return returnval;
     }
 
-       private int matchCertificate(X509Certificate certificate){
+       private int matchInformation(UserInformation userinformation){
           cat.debug(">matchCertificate");
           final int ACCESSRULE = 0;
           final int USERGROUP  = 1;
@@ -207,7 +210,7 @@ public class AccessTreeNode {
             userentities = ((UserGroup) accessuserpair[USERGROUP]).getUserEntities();
             for(int j = 0; j < userentities.length;j++){
               // If user entity match.
-              if(userentities[j].match(certificate)){
+              if(userentities[j].match(userinformation)){
                 int thisuserstate = ((AccessRule) accessuserpair[ACCESSRULE]).getRuleState();
                 int thisuserstateprio = userentities[j].getPriority();
                 // If rule has higher priority, it's state is to be used.

@@ -1,6 +1,7 @@
 package se.anatom.ejbca.ra.authorization;
 
 import java.util.Collection;
+import java.security.cert.X509Certificate;
 
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see IAuthorizationSessionRemote for docs.
@@ -11,7 +12,17 @@ import java.util.Collection;
 
 public interface IAuthorizationSessionLocal extends javax.ejb.EJBLocalObject
 {
-  //
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+    
+    public boolean isAuthorized(UserInformation userinformation, String resource) throws AuthorizationDeniedException;
+    
+     /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+    
+    public void authenticate(X509Certificate certificate) throws AuthenticationFailedException;     
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 

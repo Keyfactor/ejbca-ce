@@ -18,9 +18,14 @@ import se.anatom.ejbca.webdist.rainterface.DNFieldExtractor;
  * Matchtype constants tells under which contitions the match shall be performed.
  *
  * @author  Philip Vendil
- * @version $Id: UserEntity.java,v 1.2 2002-07-09 15:04:22 anatom Exp $
+ * @version $Id: UserEntity.java,v 1.3 2002-07-20 18:40:08 herrvendil Exp $
  */
 public class UserEntity implements Serializable, Comparable {
+    // Special Users. (Constants cannot have 0 value.
+    public static final int SPECIALUSER_COMMONWEBUSER             = 2000;
+    public static final int SPECIALUSER_CACOMMANDLINEADMIN        = 2001;
+    public static final int SPECIALUSER_RACOMMANDLINEADMIN        = 2002;
+    
     // Match type constants.
     public static final int TYPE_EQUALCASE        = 1000;
     public static final int TYPE_EQUALCASEINS     = 1001;
@@ -30,7 +35,7 @@ public class UserEntity implements Serializable, Comparable {
     public static final int TYPE_NOT_EQUAL_REGEXP = 1005;
 
     // Match with constants.
-    // OBSERVE These constants is also used as a prioroty indicator for access rules.
+    // OBSERVE These constants is also used as a priority indicator for access rules.
     // The higher values the higher priority.
     public static final int WITH_COUNTRY           = 1;
     public static final int WITH_STATE             = 2;
@@ -45,20 +50,30 @@ public class UserEntity implements Serializable, Comparable {
     public UserEntity(int matchwith, int matchtype, String matchvalue) {
         this.matchwith=matchwith;
         this.matchtype=matchtype;
-        this.matchvalue=matchvalue; // REMOVE
+        this.matchvalue=matchvalue; 
     }
+    
+    public UserEntity(int specialuser){
+      this.matchtype=specialuser;
+    }  
 
     // Public methods.
     /** Matches the given client X509Certificate to see if it matches it's requirements. */
-    public boolean match(X509Certificate certificate) {
+    public boolean match(UserInformation userinformation) {
+      boolean returnvalue=false;  
+      
+      if(userinformation.isSpecialUser()){
+        if(this.matchtype ==  userinformation.getSpecialUser()){
+          // There is a match of special user return true;  
+          returnvalue = true;  
+        }
+      }
+      else{
+        X509Certificate certificate = userinformation.getX509Certificate();
         String certstring = certificate.getSubjectX500Principal().toString();
         String serialnumber = certificate.getSerialNumber().toString(16);
- //       System.out.println("UserEntity : match begin : " + certstring + " with " + this.matchwith + " type " + this.matchtype);
-        boolean returnvalue=false;
         String clientstring=null;
-        int startindex=0;
-        int endindex=0;
-
+        
         // Determine part of certificate to match with.
         DNFieldExtractor dn = new DNFieldExtractor(certstring);
         switch(matchwith){
@@ -115,8 +130,8 @@ public class UserEntity implements Serializable, Comparable {
             default:
          }
         }
-     //   System.out.println("UserEntity : match end : returns " + returnvalue + " : " + certstring +" : "+ clientstring);
-        return returnvalue;
+      }
+      return returnvalue;
     }
 
     // Methods to get and set the individual variables.
@@ -143,6 +158,18 @@ public class UserEntity implements Serializable, Comparable {
     public void setMatchValue(String matchvalue){
       this.matchvalue=matchvalue;
     }
+    
+    public int getSpecialUser(){
+      return this.matchtype;   
+    }
+    
+    public void setSpecialUser(int specialuser){
+       this.matchtype=specialuser;
+    }
+    
+    public boolean isSpecialUser(){
+      return this.matchtype >= 2000 && this.matchtype <= 2999;  
+    }
 
     /** Method used by the access tree to determine the priority. The priority is the same as match with value. */
     public int getPriority(){
@@ -160,5 +187,5 @@ public class UserEntity implements Serializable, Comparable {
     private int    matchwith;
     private int    matchtype;
     private String matchvalue;
-
+    
 }

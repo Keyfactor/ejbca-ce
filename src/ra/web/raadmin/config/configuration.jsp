@@ -1,6 +1,6 @@
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration, 
-                se.anatom.ejbca.webdist.webconfiguration.UserPreference, se.anatom.ejbca.webdist.webconfiguration.GlobalConfigurationDataHandler,
+<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, 
+                se.anatom.ejbca.ra.raadmin.UserPreference, se.anatom.ejbca.webdist.webconfiguration.GlobalConfigurationDataHandler,
                 se.anatom.ejbca.webdist.webconfiguration.WebLanguages"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />

@@ -9,13 +9,14 @@ import java.math.BigInteger;
 
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
+import se.anatom.ejbca.ra.raadmin.UserPreference;
 
 /**
  * A class handling the storage of user preferences. Currently all user preferences are
  * save to a database.
  *
  * @author  Philip Vendil
- * @version $Id: UsersPreferenceDataHandler.java,v 1.6 2002-07-16 12:26:40 anatom Exp $
+ * @version $Id: UsersPreferenceDataHandler.java,v 1.7 2002-07-20 18:40:08 herrvendil Exp $
  */
 public class UsersPreferenceDataHandler {
 

@@ -1,11 +1,11 @@
-package se.anatom.ejbca.ra.raadmin;
+package se.anatom.ejbca.ra;
 
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import org.apache.log4j.*;
 import java.math.BigInteger;
 
-import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
+import se.anatom.ejbca.ra.GlobalConfiguration;
 
 
 /** Entity bean should not be used directly, use though Session beans.
@@ -19,9 +19,9 @@ import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
  *
  **/
 
-public abstract class GlobalWebConfigurationDataBean implements javax.ejb.EntityBean {
+public abstract class GlobalConfigurationDataBean implements javax.ejb.EntityBean {
 
-    private static Category log = Category.getInstance( GlobalWebConfigurationDataBean.class.getName() );
+    private static Category log = Category.getInstance( GlobalConfigurationDataBean.class.getName() );
     protected EntityContext  ctx;
 
     public abstract String getConfigurationId();
@@ -35,11 +35,11 @@ public abstract class GlobalWebConfigurationDataBean implements javax.ejb.Entity
 
 
     /**
-     * Entity Bean holding data of raadmin webconfiguration.
+     * Entity Bean holding data of raadmin configuration.
      * Create by sending in the id and string representation of globalconfiguration
      * @param id the unique id of globalconfiguration.
      * @param globalconfiguration is the serialized string representation of the global configuration.
-     * @return GlobalWebConfigurationDataPK primary key
+     * @return GlobalConfigurationDataPK primary key
      *
      **/
 

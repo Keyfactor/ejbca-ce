@@ -53,14 +53,9 @@
           <select name="<%=SELECT_PROFILE%>" size="15"  >
             <% for(int i=0; i < profiles.length ;i++){ %>
               <option value="<%=profiles[i]%>"> 
-              <% if(profiles[i].equals(Profiles.EMPTY_PROFILE)){
-                   out.write(ejbcawebbean.getText("EMPTY"));  
-                 }else{
-                   out.write(profiles[i]);
-                 }
-               /*  if(profiles[i].equals(defaultprofile)){ 
-                   out.write(", " + ejbcawebbean.getText("DEFAULT"));
-                 } */%></option>
+                  <%= profiles[i] %>
+                 
+               </option>
             <%}%>
               <option value="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

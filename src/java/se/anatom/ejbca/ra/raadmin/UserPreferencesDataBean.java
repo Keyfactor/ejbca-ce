@@ -10,7 +10,7 @@ import java.math.BigInteger;
 
 import org.apache.log4j.*;
 
-import se.anatom.ejbca.webdist.webconfiguration.UserPreference;
+import se.anatom.ejbca.ra.raadmin.UserPreference;
 
 
 /** Entity bean should not be used directly, use though Session beans.

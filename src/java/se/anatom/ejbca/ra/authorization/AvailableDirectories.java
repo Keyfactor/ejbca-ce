@@ -15,7 +15,7 @@ import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import java.rmi.RemoteException;
 
-import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
+import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 
@@ -29,8 +29,8 @@ public class AvailableDirectories {
         
     /** Creates a new instance of AvailableDirectories */
     public AvailableDirectories(GlobalConfiguration globalconfiguration) throws NamingException, CreateException, RemoteException {   
-      this.profilegroupendings=globalconfiguration.getProfileGroupEndings();
-      this.profilegroupprefix= globalconfiguration.getProfileGroupPrefix();
+      this.profileendings=globalconfiguration.getProfileEndings();
+      this.profileprefix= globalconfiguration.getProfilePrefix();
 
       InitialContext jndicontext = new InitialContext();     
       Object objl = jndicontext.lookup("RaAdminSession");
@@ -51,7 +51,7 @@ public class AvailableDirectories {
       String[] dummy = {};
       
       insertAvailableRules(directories);
-      insertAvailableProfileGroupRules(directories);
+      insertAvailableProfileRules(directories);
       
       Collections.sort(directories);
       return (String[]) directories.toArray(dummy);  
@@ -64,25 +64,25 @@ public class AvailableDirectories {
       }catch(RemoteException e){}
     }
     
-    private void insertAvailableProfileGroupRules(Vector directories){
+    private void insertAvailableProfileRules(Vector directories){
       try{  
-        Collection profilegroupnames = raadminsession.getProfileGroupNames();
-        if(profilegroupnames != null){
-          Iterator i = profilegroupnames.iterator();
+        Collection profilenames = raadminsession.getProfileNames();
+        if(profilenames != null){
+          Iterator i = profilenames.iterator();
       
           while(i.hasNext()){
-            String groupname = (String) i.next();
-            directories.addElement(profilegroupprefix + "/" + groupname);
-            for(int j=0;j < profilegroupendings.length; j++){
-              directories.addElement(profilegroupprefix + "/" + groupname+profilegroupendings[j]);             
+            String name = (String) i.next();
+            directories.addElement(profileprefix + "/" + name);
+            for(int j=0;j < profileendings.length; j++){
+              directories.addElement(profileprefix + "/" + name+profileendings[j]);             
             }        
           }
         }
       }catch(RemoteException e){}  
     }
     // Private fields
-    private String[] profilegroupendings;
-    private String profilegroupprefix;
+    private String[] profileendings;
+    private String profileprefix;
     private IRaAdminSessionRemote raadminsession;
     private IAuthorizationSessionRemote authorizationsession;
 }

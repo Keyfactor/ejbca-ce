@@ -6,7 +6,7 @@ import javax.ejb.FinderException;
 
 import java.math.BigInteger;
 
-import se.anatom.ejbca.webdist.webconfiguration.UserPreference;
+import se.anatom.ejbca.ra.raadmin.UserPreference;
 
 /**
 

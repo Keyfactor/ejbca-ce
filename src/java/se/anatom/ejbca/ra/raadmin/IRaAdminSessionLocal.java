@@ -1,141 +1,110 @@
 
-
 package se.anatom.ejbca.ra.raadmin;
 
 
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.TreeMap;
-import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
-import se.anatom.ejbca.webdist.webconfiguration.UserPreference;
-import se.anatom.ejbca.webdist.rainterface.Profile;
+import se.anatom.ejbca.ra.GlobalConfiguration;
+import se.anatom.ejbca.ra.raadmin.UserPreference;
+import se.anatom.ejbca.ra.raadmin.Profile;
 
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
  * @version $Id: IRaAdminSessionLocal .java
- * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
+ * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
  */
 
 public interface IRaAdminSessionLocal extends javax.ejb.EJBLocalObject
 
 {
-    /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
-     */ 
-
-    public void saveGlobalConfiguration(GlobalConfiguration globalconfiguration);
-
-    /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
-     */ 
-
-    public GlobalConfiguration loadGlobalConfiguration();
-    
-    /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
-     */ 
     
     public UserPreference getUserPreference(BigInteger serialnumber);
 
     /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */ 
     
     public boolean addUserPreference(BigInteger serialnumber, UserPreference userpreference);
     
     /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */ 
     
     public boolean changeUserPreference(BigInteger serialnumber, UserPreference userpreference);
     
     /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */ 
     
     public boolean existsUserPreference(BigInteger serialnumber);
     
-    /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
-     */ 
-    
-    public boolean addProfileGroup(String profilegroupname);
-    
-    
-    /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
-     */ 
-    
-    public boolean cloneProfileGroup(String originalprofilegroupname, String newprofilegroupname);
-    
-    /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
-     */ 
-    
-    public void removeProfileGroup(String profilegroupname);
-    
-    /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
-     */ 
-    
-    public boolean renameProfileGroup(String oldprofilegroupname, String newprofilegroupname);   
+ 
        
     /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */    
     
-    public boolean addProfile(String Groupname, String profilename, Profile profile);   
+    public boolean addProfile(String profilename, Profile profile);   
     
     /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */ 
     
-    public boolean cloneProfile(String profilegroupname, String originalprofilename, String newprofilename);
+    public boolean cloneProfile(String originalprofilename, String newprofilename);
     
     /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */ 
     
-    public void removeProfile(String profilegroupname, String profilename);
+    public void removeProfile(String profilename);
     
     /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */ 
     
-    public boolean renameProfile(String profilegroupnamme, String oldprofilename, String newprofilename);   
+    public boolean renameProfile(String oldprofilename, String newprofilename);   
 
      /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */ 
     
-    public boolean changeProfile(String profilegroupnamme, String profilename, Profile profile); 
+    public boolean changeProfile(String profilename, Profile profile); 
     
      /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
-     */      
-    public Collection getProfileGroupNames();  
-     /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */       
-    public Collection getProfileNames(String profilegroupname);
+    public Collection getProfileNames();
      /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */     
-    public TreeMap getProfiles(String profilegroupname);
+    public TreeMap getProfiles();
     
      /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */    
-    public Profile getProfile(String profilegroupname, String profilename);
+    public Profile getProfile(String profilename);
+    
      /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
-     */        
-    public int getNumberOfProfileGroups();
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */       
+    public Profile getProfile(int id);
+
      /**
-     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSession
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */      
-    public int getNumberOfProfiles(String profilegroupname);
+    public int getNumberOfProfiles();
+     
+     /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */   
+    public int getProfileId(String profilename);
+    
+     /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */    
+    public String getProfileName(int id);    
     
 }
 

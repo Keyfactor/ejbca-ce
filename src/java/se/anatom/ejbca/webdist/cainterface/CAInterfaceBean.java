@@ -34,13 +34,13 @@ import se.anatom.ejbca.IJobRunnerSessionHome;
 
 import se.anatom.ejbca.webdist.rainterface.CertificateView;
 import se.anatom.ejbca.webdist.rainterface.RevokedInfoView;
-import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
+import se.anatom.ejbca.ra.GlobalConfiguration;
 
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.4 2002-06-27 12:14:03 anatom Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.5 2002-07-20 18:40:08 herrvendil Exp $
  */
 public class CAInterfaceBean   {
 

@@ -201,8 +201,6 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/ra/raadmin/*.class"/>       
                 <include name="se/anatom/ejbca/*.class"/>
                 <include name="se/anatom/ejbca/util/**/*.class"/>
-                <include name="se/anatom/ejbca/webdist/webconfiguration/GlobalConfiguration.class"/>
-                <include name="se/anatom/ejbca/webdist/webconfiguration/UserPreference.class"/>
                 <include name="se/anatom/ejbca/webdist/rainterface/Profile.class"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>           
         </fileset>
@@ -296,6 +294,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/ra/*.class"/>
                 <include name="se/anatom/ejbca/exception/**/*.class"/>
                 <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
+                <include name="se/anatom/ejbca/ra/raadmin/UserPreference.class"/>                
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>

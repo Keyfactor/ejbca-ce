@@ -6,10 +6,11 @@ import java.rmi.RemoteException;
 import javax.ejb.FinderException;
 
 import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.ra.GlobalConfiguration;
 
 /**
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.4 2002-07-05 23:43:18 herrvendil Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.5 2002-07-20 18:40:08 herrvendil Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
 
@@ -107,12 +108,36 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     */
     public Collection findAllUsersByStatus(int status) throws FinderException, RemoteException;
     
-       /**
+    /**
     * Starts an external service that may be needed bu user administration.
     *
     * @throws EJBException if a communication or other error occurs.
     */
     public void startExternalService(String args[]) throws RemoteException;
+    
+     // Functions used to save  Global Configuration
+   /**
+    * Saves global configuration to the database.
+    *
+    * @throws EJBException if a communication or other error occurs.
+    */
+    public void saveGlobalConfiguration(GlobalConfiguration globalconfiguration) throws RemoteException;
+
+   /**
+    * Loads the global configuration from the database.
+    *
+    * @throws EJBException if a communication or other error occurs.
+    */
+    public GlobalConfiguration loadGlobalConfiguration() throws RemoteException;
+    
+    
+    // Functions used by User Preferences
+     /**
+     * Finds the userpreference belonging to a certificate serialnumber
+     * 
+     * @return the users userpreferences.
+     * @throws EJBException if a communication or other error occurs.
+     */ 
 
 }
 

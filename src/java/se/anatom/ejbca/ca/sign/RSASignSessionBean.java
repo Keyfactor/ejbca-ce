@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.33 2002-06-28 06:58:16 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.34 2002-07-20 18:40:08 herrvendil Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -204,11 +204,11 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::createCertificate
      */
+
     public Certificate createCertificate(String username, String password, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">createCertificate(pk)");
         // Standard key usages for end users are: digitalSignature | keyEncipherment or nonRepudiation
         // Default key usage is digitalSignature | keyEncipherment
-
         // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
         boolean[] keyusage = new boolean[9];
         Arrays.fill(keyusage, false);
@@ -236,7 +236,6 @@ public class RSASignSessionBean extends BaseSessionBean {
         try {
             // Authorize user and get DN
             IAuthenticationSessionLocal authSession = authHome.create();
-
             UserAuthData data = authSession.authenticateUser(username, password);
             info("Authorized user " + username + " with DN='" + data.getDN()+"'.");
             debug("type="+ data.getType());
@@ -246,7 +245,6 @@ public class RSASignSessionBean extends BaseSessionBean {
                 if ( ((data.getType() & SecConst.USER_CA) != 0) || ((data.getType() & SecConst.USER_ROOTCA) != 0) ) {
                     debug("Setting new keyusage...");
                     // If this is a CA, we only allow CA-type keyUsage
-
                     keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
                 }
                 X509Certificate cert = makeBCCertificate(data, caSubjectName, validity.longValue(), pk, keyusage);
@@ -284,6 +282,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::createCertificate
      */
+
     public Certificate createCertificate(String username, String password, int certType, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">createCertificate(pk, certType)");
         // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
@@ -327,6 +326,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             error("POPO verification failed for "+username, e);
             throw new SignRequestSignatureException("Verification of signature (popo) on certificate failed.");
         }
+
         // TODO: extract more extensions than just KeyUsage
         Certificate ret = createCertificate(username, password, cert.getPublicKey(), cert.getKeyUsage());
         debug("<createCertificate(cert)");
@@ -336,6 +336,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::createCertificate
      */
+
     public Certificate createCertificate(String username, String password, byte[] pkcs10req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
         return createCertificate( username, password, pkcs10req, -1 );
     }
@@ -343,9 +344,11 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::createCertificate
      */
+
     public Certificate createCertificate(String username, String password, byte[] pkcs10req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
         debug(">createCertificate(pkcs10)");
         Certificate ret = null;
+
         try {
             DERObject derobj = new DERInputStream(new ByteArrayInputStream(pkcs10req)).readObject();
             DERConstructedSequence seq = (DERConstructedSequence)derobj;
@@ -359,12 +362,15 @@ public class RSASignSessionBean extends BaseSessionBean {
                 ret = createCertificate(username, password, pkcs10.getPublicKey());
             else
                 ret = createCertificate(username, password, pkcs10.getPublicKey(), keyUsage);
+
         } catch (IOException e) {
             error("Error reading PKCS10-request.", e);
             throw new SignRequestException("Error reading PKCS10-request.");
+
         } catch (NoSuchAlgorithmException e) {
             error("Error in PKCS10-request, no such algorithm.", e);
             throw new SignRequestException("Error in PKCS10-request, no such algorithm.");
+
         } catch (NoSuchProviderException e) {
             error("Internal error processing PKCS10-request.", e);
             throw new SignRequestException("Internal error processing PKCS10-request.");
@@ -382,6 +388,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::createCRL
      */
+
     public X509CRL createCRL(Vector certs) {
         debug(">createCRL()");
         X509CRL crl = null;
@@ -424,7 +431,6 @@ public class RSASignSessionBean extends BaseSessionBean {
     }
 
     private int sunKeyUsageToBC(boolean[] sku) {
-
         int bcku = 0;
         if (sku[0] == true)
             bcku = bcku | X509KeyUsage.digitalSignature;
@@ -447,22 +453,22 @@ public class RSASignSessionBean extends BaseSessionBean {
         return bcku;
     }
 
+
+
     private X509Certificate makeBCCertificate(UserAuthData subject, X509Name caname,
     long validity, PublicKey publicKey, int keyusage)
     throws Exception {
         debug(">makeBCCertificate()");
-
         final String sigAlg="SHA1WithRSA";
-
         Date firstDate = new Date();
         // Set back startdate ten minutes to avoid some problems with wrongly set clocks.
         firstDate.setTime(firstDate.getTime() - 10*60*1000);
         Date lastDate = new Date();
         // validity in days = validity*24*60*60*1000 milliseconds
         lastDate.setTime(lastDate.getTime() + (validity * 24 * 60 * 60 * 1000));
-
         X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
         // Serialnumber is random bits, where random generator is initialized with Date.getTime() when this
+
         // bean is created.
         byte[] serno = new byte[8];
         random.nextBytes(serno);
@@ -474,6 +480,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         String dn=subject.getDN();
         if ((subject.getEmail() != null) && (emailindn.booleanValue() == true))
             dn=dn+", EmailAddress="+subject.getEmail();
+        
         debug("Subject="+dn);
         certgen.setSubjectDN(CertTools.stringToBcX509Name(dn));
         debug("Issuer="+caname);
@@ -508,7 +515,6 @@ public class RSASignSessionBean extends BaseSessionBean {
             AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
             certgen.addExtension(X509Extensions.AuthorityKeyIdentifier.getId(), akicritical.booleanValue(), aki);
         }
-
         // Subject Alternative name
         if ((usesan.booleanValue() == true) && (subject.getEmail() != null)) {
             GeneralName gn = new GeneralName(new DERIA5String(subject.getEmail()),1);
@@ -528,25 +534,21 @@ public class RSASignSessionBean extends BaseSessionBean {
             DistributionPoint distp = new DistributionPoint(dpn, null, null);
             certgen.addExtension(X509Extensions.CRLDistributionPoints.getId(), crldistcritical.booleanValue(), distp);
         }
-
         X509Certificate cert = certgen.generateX509Certificate(signingDevice.getPrivateSignKey());
-
         debug("<makeBCCertificate()");
         return (X509Certificate)cert;
-
     } // makeBCCertificate
 
     private X509CRL makeBCCRL(X509Name caname, long crlperiod, Vector certs, int crlnumber)
     throws Exception {
         debug(">makeBCCRL()");
-
         final String sigAlg="SHA1WithRSA";
 
         Date thisUpdate = new Date();
         Date nextUpdate = new Date();
+
         // crlperiod is hours = crlperiod*60*60*1000 milliseconds
         nextUpdate.setTime(nextUpdate.getTime() + (crlperiod * 60 * 60 * 1000));
-
         X509V2CRLGenerator crlgen = new X509V2CRLGenerator();
         crlgen.setThisUpdate(thisUpdate);
         crlgen.setNextUpdate(nextUpdate);
@@ -580,6 +582,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         debug("<makeBCCRL()");
         return (X509CRL)crl;
     } // makeBCCRL
-
 } //RSASignSessionBean
+
+
 

@@ -22,22 +22,23 @@ import java.util.Collection;
 
 import org.apache.log4j.*;
 
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.authorization.EjbcaAuthorization;
+import se.anatom.ejbca.ra.authorization.UserInformation;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
+import se.anatom.ejbca.ra.authorization.AuthenticationFailedException;
 import se.anatom.ejbca.webdist.rainterface.DNFieldExtractor;
 import se.anatom.ejbca.webdist.rainterface.UserView;
+import se.anatom.ejbca.ra.GlobalConfiguration;
+import se.anatom.ejbca.ra.raadmin.UserPreference;
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.9 2002-07-16 12:26:40 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.10 2002-07-20 18:40:08 herrvendil Exp $
  */
 public class EjbcaWebBean {
 
@@ -45,7 +46,7 @@ public class EjbcaWebBean {
 
     /** Creates a new instance of EjbcaWebBean */
     public EjbcaWebBean() throws IOException, NamingException, CreateException,
-                                 FinderException, RemoteException{
+                                 FinderException, RemoteException{                           
       globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler();
       globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();
       userspreferences = new UsersPreferenceDataHandler();
@@ -58,7 +59,7 @@ public class EjbcaWebBean {
     // Public Methods.
 
         /* Sets the current user and returns the global configuration */
-    public GlobalConfiguration initialize(HttpServletRequest request) throws AuthorizationDeniedException, IOException,
+    public GlobalConfiguration initialize(HttpServletRequest request) throws AuthorizationDeniedException, AuthenticationFailedException, IOException,
                                                               NamingException, CreateException, java.security.cert.CertificateException,
                                                               java.security.cert.CertificateExpiredException,  java.security.cert.CertificateNotYetValidException,
                                                               javax.ejb.FinderException{
@@ -68,41 +69,20 @@ public class EjbcaWebBean {
       CertificateFactory certfact =  CertificateFactory.getInstance("X.509");
       certificates =   (X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" );
 
-      if(certificates == null) throw new AuthorizationDeniedException("Client certificate required.");
+      if(certificates == null) throw new AuthenticationFailedException("Client certificate required.");
       // Check if certificate is still valid
       if(!initialized){
-        try{
-          for(int i=0; i < certificates.length;i++){
-            certificates[i].checkValidity();
-          }
-        }catch(Exception e){
-           throw new AuthorizationDeniedException("Your certificates vality has expired.");
-        }
-
         userdn = certificates[0].getSubjectX500Principal().toString();
 
-        // Check if user certificae is revoked
+        authorize.authenticate(certificates[0]);
+        
+        // Check if user certificate is revoked
         InitialContext jndicontext = new InitialContext();
 
-        // Get the ICertificateStoreSession instance.
-        Object obj1 = jndicontext.lookup("CertificateStoreSession");
-        ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome)
-                                                               javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-        ICertificateStoreSessionRemote certificatesession = certificatesessionhome.create();
-
-        obj1 = jndicontext.lookup("UserAdminSession");
+        Object obj1 = jndicontext.lookup("UserAdminSession");
         IUserAdminSessionHome adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
         IUserAdminSessionRemote  adminsession = adminsessionhome.create();
 
-       try{
-          if(certificatesession.isRevoked(certificates[0].getIssuerDN().toString(),certificates[0].getSerialNumber()) != null){
-            // Certificate revoked
-            throw new AuthorizationDeniedException("Your certificates has been revoked.");
-          }
-         }
-         catch(RemoteException e){
-            throw new AuthorizationDeniedException("Your certificate cannot be found in database.");
-         }
 
         // Check if certificate belongs to a RA Admin
         cat.debug("Verifying authoirization of '"+userdn);
@@ -204,7 +184,7 @@ public class EjbcaWebBean {
     public boolean isAuthorized(String url) throws AuthorizationDeniedException {
       boolean returnval=false;
       if(certificates != null){
-        returnval= authorize.isAuthorized(certificates[0],url);
+        returnval= authorize.isAuthorized(new UserInformation(certificates[0]),url);
       }
       else{
         throw new  AuthorizationDeniedException("Client certificate required.");
@@ -272,12 +252,21 @@ public class EjbcaWebBean {
       return returnedurl;
     }
 
-    /**  A functions that returns wanted imagefile in prefered language. If none of the language
+    /**  A functions that returns wanted imagefile in prefered language and theme. If none of the language
      *   specific images are found the original imagefilename will be returned.
      *
+     *   The priority of filenames are int the following order
+     *   1. imagename.theme.preferedlanguage.jpg/gif
+     *   2. imagename.theme.secondarylanguage.jpg/gif
+     *   3. imagename.theme.jpg/gif
+     *   4. imagename.preferedlanguage.jpg/gif
+     *   5. imagename.secondarylanguage.jpg/gif
+     *   6. imagename.jpg/gif   
+     *
      *   The parameter imagefilename should the wanted filename without language infix.
-     *   For example: given imagefilename 'caimg.html' would return 'caimg.en.html'
-     *   if english was the users prefered language. */
+     *   For example: given imagefilename 'caimg.gif' would return 'caimg.en.gif'
+     *   if english was the users prefered language. It's important that all letters i imagefilename is lowercase.*/
+    
     public String getImagefileInfix(String imagefilename) {
       String returnedurl=null;
       String prefered = WebLanguages.getAvailableLanguages()[currentuserpreference.getPreferedLanguage()]
@@ -286,13 +275,34 @@ public class EjbcaWebBean {
                                            .toLowerCase();
 
       String imagefile = imagefilename.substring(0,imagefilename.lastIndexOf('.'));
-      String postfix  = imagefilename.substring(imagefilename.lastIndexOf('.')+1);
+      String theme     = currentuserpreference.getTheme().toLowerCase();
+      String postfix   = imagefilename.substring(imagefilename.lastIndexOf('.')+1);
+      
+      String preferedthemefilename = "/" + globalconfiguration .getImagesPath()+"/"
+                                + imagefile + "." + theme + "." + prefered + "." + postfix;
+      String secondarythemefilename = "/" + globalconfiguration .getImagesPath()+"/"
+                                + imagefile + "." + theme + "." + secondary + "." + postfix;
+      String themefilename =  "/" + globalconfiguration .getImagesPath()+"/"
+                                + imagefile + "." + theme + "."  + postfix;
 
       String preferedfilename = "/" + globalconfiguration .getImagesPath()+"/"
                                 + imagefile + "." + prefered + "." + postfix;
 
       String secondaryfilename = "/" + globalconfiguration .getImagesPath()+"/"
                                  + imagefile + "." + secondary + "." + postfix;
+      
+       String preferedthemeurl = globalconfiguration .getBaseUrl() + globalconfiguration .getRaAdminPath()
+                          + globalconfiguration .getImagesPath()+"/"
+                          + imagefile + "." + theme + "." + prefered + "." + postfix;
+
+      String secondarythemeurl = globalconfiguration .getBaseUrl() + globalconfiguration .getRaAdminPath()
+                          + globalconfiguration .getImagesPath()+"/"
+                          + imagefile + "." + theme + "." + secondary + "." + postfix;
+
+      String imagethemeurl     = globalconfiguration .getBaseUrl()  + globalconfiguration .getRaAdminPath()
+                          + globalconfiguration .getImagesPath()+"/"
+                          + imagefile + "." + theme + "." + postfix;     
+      
 
       String preferedurl = globalconfiguration .getBaseUrl() + globalconfiguration .getRaAdminPath()
                           + globalconfiguration .getImagesPath()+"/"
@@ -305,16 +315,26 @@ public class EjbcaWebBean {
       String imageurl     = globalconfiguration .getBaseUrl()  + globalconfiguration .getRaAdminPath()
                           + globalconfiguration .getImagesPath()+"/"
                           + imagefile + "."  + postfix;
-
-      if(this.getClass().getResourceAsStream(preferedfilename) != null)
-        returnedurl = preferedurl;
+      if(this.getClass().getResourceAsStream(preferedthemefilename) != null)
+        returnedurl = preferedthemeurl;
       else{
-        if(this.getClass().getResourceAsStream(secondaryfilename) != null)
-          returnedurl = secondaryurl;
-        else
-          returnedurl = imageurl;
-      }
-
+        if(this.getClass().getResourceAsStream(secondarythemefilename) != null)
+          returnedurl = secondarythemeurl;
+        else{ 
+          if(this.getClass().getResourceAsStream(themefilename) != null)
+            returnedurl = imagethemeurl;
+          else{
+            if(this.getClass().getResourceAsStream(preferedfilename) != null)
+              returnedurl = preferedurl;
+            else{
+              if(this.getClass().getResourceAsStream(secondaryfilename) != null)
+                 returnedurl = secondaryurl;
+              else
+                returnedurl = imageurl;
+            }
+          }
+        } 
+      }  
       return returnedurl;
     }
 
@@ -332,7 +352,6 @@ public class EjbcaWebBean {
     }
 
     public void saveGlobalConfiguration() throws Exception{
-      cat.debug("saving global title : " +  globalconfiguration.getEjbcaTitle() );
       globaldataconfigurationdatahandler.saveGlobalConfiguration(globalconfiguration);
     }
 

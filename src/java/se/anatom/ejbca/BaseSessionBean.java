@@ -13,18 +13,18 @@ import org.apache.log4j.*;
 
 /** Base for Session Beans providing common features, new Session Beans 'extends' BaseSessionBean.
  *
- * @version $Id: BaseSessionBean.java,v 1.4 2002-05-26 08:50:17 anatom Exp $
+ * @version $Id: BaseSessionBean.java,v 1.5 2002-07-20 18:40:08 herrvendil Exp $
  */
-public class BaseSessionBean implements SessionBean {
+public class BaseSessionBean implements SessionBean{
     
     /** Log4j instance for Base */
-    private static Category baseCat = Category.getInstance( BaseSessionBean.class.getName() );
+    transient private static Category baseCat = Category.getInstance( BaseSessionBean.class.getName() );
     /** Log4j instance for actual class */
-    public  Category    cat;
+    transient public  Category    cat;
     
-    private SessionContext  ctx;
+    transient private SessionContext  ctx;
     /** Cached initial context to save JNDI lookups */
-    InitialContext cacheCtx = null;
+    transient InitialContext cacheCtx = null;
     
     /** Initializes logging mechanism per instance */
     public BaseSessionBean() {
@@ -143,6 +143,7 @@ public class BaseSessionBean implements SessionBean {
         
     }
     public void ejbActivate() throws javax.ejb.EJBException, java.rmi.RemoteException {
+      cat = Category.getInstance( this.getClass().getName() );  
     }
     
     public void ejbRemove() throws javax.ejb.EJBException, java.rmi.RemoteException {

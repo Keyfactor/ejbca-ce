@@ -1,6 +1,6 @@
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration,
+<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration,
                                               se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.webdist.rainterface.CertificateView,
                                               se.anatom.ejbca.webdist.rainterface.DNFieldExtractor, se.anatom.ejbca.ra.authorization.AuthorizationDeniedException"%>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
@@ -22,8 +22,7 @@
   final String GETCRL_LINK                  = globalconfiguration.getCaPath() 
                                                   + "/getcrl/getcrl.jsp";
   final String GETCRL_PAGE                  =    "getcrl/getcrl.jsp"; 
-  final String VIEWCERTIFICATE_LINK         = globalconfiguration.getRaAdminPath()
-                                                  +"viewcertificate.jsp";
+  final String VIEWCERTIFICATE_LINK         = "/" +globalconfiguration.getRaAdminPath() + "viewcertificate.jsp";
   final String DOWNLOADCERTIFICATE_LINK     = globalconfiguration.getCaPath() 
                                                   + "/cacert";
   final String DOWNLOADCRL_LINK             = globalconfiguration.getCaPath() 

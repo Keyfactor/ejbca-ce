@@ -15,6 +15,10 @@ import java.io.Serializable;
  * @author  tomselleck
  */
 public class UserGroup implements Serializable {
+    
+    public static final String SPECIALUSERGROUP_COMMONWEBUSER      = "SPECIAL_COMMON_WEBUSER";
+    public static final String SPECIALUSERGROUP_CACOMMANDLINEADMIN = "SPECIAL_CA_COMMANDLINEADMIN";
+    public static final String SPECIALUSERGROUP_RACOMMANDLINEADMIN = "SPECIAL_RA_COMMANDLINEADMIN";   
 
     /** Creates a new instance of UserGroup */
     public UserGroup() {

@@ -1,7 +1,8 @@
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration
+<%@page errorPage="/errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration
                ,se.anatom.ejbca.ra.authorization.AccessRule, se.anatom.ejbca.webdist.webconfiguration.AuthorizationDataHandler,
-                se.anatom.ejbca.ra.authorization.UserEntity, se.anatom.ejbca.ra.authorization.UsergroupExistsException"%>
+                se.anatom.ejbca.ra.authorization.UserEntity, se.anatom.ejbca.ra.authorization.UsergroupExistsException,
+                se.anatom.ejbca.ra.authorization.UserGroup"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -56,6 +57,7 @@
 %>
 <% 
   boolean usergroupexists = false;
+  boolean trytoeditspecialgroup = false;
 
   // Initialize environment
   String includefile = null;
@@ -79,12 +81,19 @@
          usergroup = request.getParameter(SELECT_USERGROUPS);
          if(usergroup != null){
            if(!usergroup.trim().equals("")){
-             includefile="edituserentities.jsp"; 
-           } 
-          else{ 
-            usergroup= null;
-          } 
-        }
+             if(!usergroup.equals(UserGroup.SPECIALUSERGROUP_COMMONWEBUSER) && !usergroup.equals(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN)
+                && !usergroup.equals(UserGroup.SPECIALUSERGROUP_RACOMMANDLINEADMIN)){      
+                 includefile="edituserentities.jsp"; 
+             }
+             else{
+               usergroup = null;
+               trytoeditspecialgroup = true;
+             }
+           }
+           else{ 
+             usergroup= null;
+           }  
+         }
         if(usergroup == null){   
           includefile="editusergroups.jsp";     
         }
@@ -109,7 +118,14 @@
           usergroup = request.getParameter(SELECT_USERGROUPS);
           if(usergroup != null){
             if(!usergroup.trim().equals("")){
-              adh.removeUserGroup(usergroup);
+              if(!usergroup.equals(UserGroup.SPECIALUSERGROUP_COMMONWEBUSER) && !usergroup.equals(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN)
+                 && !usergroup.equals(UserGroup.SPECIALUSERGROUP_RACOMMANDLINEADMIN)){           
+                   adh.removeUserGroup(usergroup);
+               }
+               else{
+                 usergroup = null;
+                 trytoeditspecialgroup = true;
+               }
             }
           }
           includefile="editusergroups.jsp";             
@@ -120,9 +136,16 @@
        String oldusergroup = request.getParameter(SELECT_USERGROUPS);
        if(oldusergroup != null && newusergroup != null){
          if(!newusergroup.trim().equals("") && !oldusergroup.trim().equals("")){
-           try{
-             adh.renameUserGroup(oldusergroup, newusergroup);
-           }catch(UsergroupExistsException e){ usergroupexists = true;}
+           if(!oldusergroup.equals(UserGroup.SPECIALUSERGROUP_COMMONWEBUSER) && !oldusergroup.equals(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN)
+                 && !oldusergroup.equals(UserGroup.SPECIALUSERGROUP_RACOMMANDLINEADMIN) && !newusergroup.equals(UserGroup.SPECIALUSERGROUP_COMMONWEBUSER)
+                 && !newusergroup.equals(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN) && !newusergroup.equals(UserGroup.SPECIALUSERGROUP_RACOMMANDLINEADMIN) ){      
+             try{
+               adh.renameUserGroup(oldusergroup, newusergroup);
+             }catch(UsergroupExistsException e){ usergroupexists = true;}
+           }else{
+              usergroup = null;
+              trytoeditspecialgroup = true; 
+           }
          }
        }      
           includefile="editusergroups.jsp"; 
@@ -132,12 +155,19 @@
          usergroup = request.getParameter(TEXTFIELD_GROUPNAME);
          if(usergroup != null){
            if(!usergroup.trim().equals("")){
-             try{
-               adh.addUserGroup(usergroup);
-             }catch(UsergroupExistsException e){ usergroupexists = true; }
+             if(!usergroup.equals(UserGroup.SPECIALUSERGROUP_COMMONWEBUSER) && !usergroup.equals(UserGroup.SPECIALUSERGROUP_CACOMMANDLINEADMIN)
+                 && !usergroup.equals(UserGroup.SPECIALUSERGROUP_RACOMMANDLINEADMIN)){     
+               try{
+                 adh.addUserGroup(usergroup);
+               }catch(UsergroupExistsException e){ usergroupexists = true; }
+             }
+             else{
+              usergroup = null;
+              trytoeditspecialgroup = true;  
+             }
            }      
          }
-          includefile="editusergroups.jsp"; 
+         includefile="editusergroups.jsp"; 
       }
     }
     if( request.getParameter(ACTION).equals(ACTION_EDIT_ACCESSRULES)){

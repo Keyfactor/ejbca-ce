@@ -64,13 +64,23 @@
         <local>se.anatom.ejbca.ra.UserDataLocal</local>
         <ejb-link>UserData</ejb-link>
      </ejb-local-ref>
+     <ejb-local-ref>
+        <description>
+          The GlobalConfigurationData Entity bean 
+        </description>
+        <ejb-ref-name>ejb/GlobalConfigurationDataLocal</ejb-ref-name>
+        <ejb-ref-type>Entity</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ra.GlobalonfigurationDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.GlobalConfigurationDataLocal</local>
+        <ejb-link>GlobalConfigurationData</ejb-link>
+     </ejb-local-ref>
  
    </session>
    
    <session>
      <description>
-         Session bean handling interface with ra administration web services, uses entity beans GlobalWebConfigurationData,
-         AuthorizationData, ProfileData, UserPreferencesData
+         Session bean handling interface with ra administration web services, uses entity beans 
+         ProfileData ant UserPreferencesData
      </description>
      <ejb-name>RaAdminSession</ejb-name>
      <home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome</home>
@@ -87,16 +97,6 @@
 
      <ejb-local-ref>
         <description>
-          The GlobalWebConfigurationData Entity bean 
-        </description>
-        <ejb-ref-name>ejb/GlobalWebConfigurationDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.raadmin.GlobalWebConfigurationDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.raadmin.GlobalWebConfigurationDataLocal</local>
-        <ejb-link>GlobalWebConfigurationData</ejb-link>
-     </ejb-local-ref>
-     <ejb-local-ref>
-        <description>
           The UserPreferencesData Entity bean 
         </description>
         <ejb-ref-name>ejb/UserPreferencesDataLocal</ejb-ref-name>
@@ -104,16 +104,6 @@
         <local-home>se.anatom.ejbca.ra..raadmin.UserPreferencesDataLocalHome</local-home>
         <local>se.anatom.ejbca.ra.raadmin.UserPreferencesDataLocal</local>
         <ejb-link>UserPreferencesData</ejb-link>
-     </ejb-local-ref>
-     <ejb-local-ref>
-        <description>
-          The ProfileGroupData Entity bean 
-        </description>
-        <ejb-ref-name>ejb/ProfileGroupDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra..raadmin.ProfileGroupDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.raadmin.ProfileGroupDataLocal</local>
-        <ejb-link>ProfileGroupData</ejb-link>
      </ejb-local-ref>
      <ejb-local-ref>
         <description>
@@ -142,7 +132,7 @@
      <home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionHome</home>
      <remote>se.anatom.ejbca.ra.authorization.IAuthorizationSessionRemote</remote>
      <ejb-class>se.anatom.ejbca.ra.authorization.LocalAuthorizationSessionBean</ejb-class>
-     <session-type>Stateless</session-type>
+     <session-type>Stateful</session-type>
      <transaction-type>Container</transaction-type>
      <env-entry>
         <description>JDBC datasource to be used</description>
@@ -190,7 +180,39 @@
         <local-home>se.anatom.ejbca.ra.authorization.UserEntityDataLocalHome</local-home>
         <local>se.anatom.ejbca.ra.authorization.UserEntityDataLocal</local>
         <ejb-link>UserEntityData</ejb-link>
-     </ejb-local-ref>                         
+     </ejb-local-ref>       
+     <ejb-ref>
+        <description>The User Admin sessionbean </description>
+        <ejb-ref-name>ejb/UserAdminSession</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <home>se.anatom.ejbca.ra.IUserAdminSessionHome</home>
+        <remote>se.anatom.ejbca.ra.IUserAdminSessionRemote</remote>
+        <ejb-link>UserAdminSession</ejb-link>
+     </ejb-ref>   
+     <ejb-ref>
+        <description>The User Admin Session bean </description>
+        <ejb-ref-name>ejb/UserAdminSession</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <home>se.anatom.ejbca.ra.IUserAdminSessionHome</home>
+        <remote>se.anatom.ejbca.ra.IUserAdminSessionRemote</remote>
+        <ejb-link>UserAdminSession</ejb-link>
+     </ejb-ref>  
+     <ejb-ref>
+        <description>The Certificate Store Session bean </description>
+        <ejb-ref-name>ejb/CertificateStoreSession</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <home>se.anatom.ejbca.ca.store.ICertificateStoreSessionHome</home>
+        <remote>se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote</remote>
+        <ejb-link>CertificateStoreSession</ejb-link>
+     </ejb-ref>  
+      <ejb-ref>
+        <description>The Sign Session bean </description>
+        <ejb-ref-name>ejb/RSASignSession</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <home>se.anatom.ejbca.ca.sign.ISignSessionHome</home>
+        <remote>se.anatom.ejbca.ca.sign.ISignSessionRemote</remote>
+        <ejb-link>RSASignSession</ejb-link>
+     </ejb-ref>                    
      <security-identity>
         <run-as>
             <role-name>InternalUser</role-name>
@@ -225,17 +247,17 @@
    
    <entity>
       <description>
-            This enterprise bean entity represents global configuration of ra administration web interface.
+            This enterprise bean entity represents global configuration of ra administration.
       </description>
-      <ejb-name>GlobalWebConfigurationData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.raadmin.GlobalWebConfigurationDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.raadmin.GlobalWebConfigurationDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.raadmin.GlobalWebConfigurationDataBean</ejb-class>
+      <ejb-name>GlobalConfigurationData</ejb-name>
+      <local-home>se.anatom.ejbca.ra.GlobalConfigurationDataLocalHome</local-home>
+      <local>se.anatom.ejbca.ra.GlobalConfigurationDataLocal</local>
+      <ejb-class>se.anatom.ejbca.ra.GlobalConfigurationDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
       <prim-key-class>java.lang.String</prim-key-class>            
       <reentrant>False</reentrant>      
       <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>GlobalWebConfigurationDataBean</abstract-schema-name>
+      <abstract-schema-name>GlobalConfigurationDataBean</abstract-schema-name>
       <cmp-field><field-name>configurationId</field-name></cmp-field>
       <cmp-field><field-name>globalConfiguration</field-name></cmp-field>    
       <primkey-field>configurationId</primkey-field>  
@@ -261,55 +283,6 @@
 
    <entity>
       <description>
-            This enterprise bean entity represents a profile group.
-      </description>
-      <ejb-name>ProfileGroupData</ejb-name>
-      <local-home>se.anatom.ejbca.ra.raadmin.ProfileGroupDataLocalHome</local-home>
-      <local>se.anatom.ejbca.ra.raadmin.ProfileGroupDataLocal</local>
-      <ejb-class>se.anatom.ejbca.ra.raadmin.ProfileGroupDataBean</ejb-class>
-      <persistence-type>Container</persistence-type>
-      <prim-key-class>java.lang.String</prim-key-class>  
-      <reentrant>False</reentrant>
-      <cmp-version>2.x</cmp-version>
-      <abstract-schema-name>ProfileGroupDataBean</abstract-schema-name>
-      <cmp-field><field-name>profileGroupName</field-name></cmp-field>
-      <primkey-field>profileGroupName</primkey-field>       
-      <ejb-local-ref>
-        <ejb-ref-name>ejb/ProfileDataLocal</ejb-ref-name>
-        <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.raadmin.ProfileDataLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.raadmin.ProfileDataLocal</local>
-        <ejb-link>ProfileData</ejb-link>
-      </ejb-local-ref>
-      <query>
-       <query-method>
-          <method-name>ejbSelectProfiles</method-name>
-          <method-params>
-            <method-param>java.lang.String</method-param>
-          </method-params>  
-        </query-method>
-        <result-type-mapping>Local</result-type-mapping>
-        <ejb-ql>
-          SELECT OBJECT(pd) FROM ProfileGroupDataBean pgd, IN(pgd.profilesData) pd WHERE pgd.profileGroupName=?1
-        </ejb-ql>        
-      </query>    
-      <query>
-        <query-method>
-          <method-name>ejbSelectProfile</method-name>
-          <method-params>
-            <method-param>java.lang.String</method-param>
-            <method-param>java.lang.String</method-param>
-          </method-params>  
-        </query-method>
-        <result-type-mapping>Local</result-type-mapping>
-        <ejb-ql>
-          SELECT OBJECT(pd) FROM ProfileGroupDataBean pdg, IN(pdg.profilesData) pd  WHERE pdg.profileGroupName=?1 AND pd.profileName=?2 
-        </ejb-ql>
-      </query>          
-   </entity>   
-
-   <entity>
-      <description>
             This enterprise bean entity represents a profile.
       </description>
       <ejb-name>ProfileData</ejb-name>
@@ -317,13 +290,14 @@
       <local>se.anatom.ejbca.ra.raadmin.ProfileDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.raadmin.ProfileDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
-      <prim-key-class>java.lang.String</prim-key-class>    
+      <prim-key-class>java.lang.Integer</prim-key-class>    
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>ProfileDataBean</abstract-schema-name>
+      <cmp-field><field-name>id</field-name></cmp-field>      
       <cmp-field><field-name>profileName</field-name></cmp-field>
       <cmp-field><field-name>profile</field-name></cmp-field>
-      <primkey-field>profileName</primkey-field>  
+      <primkey-field>id</primkey-field>  
    </entity>   
 
    <entity>
@@ -412,30 +386,8 @@
       <primkey-field>name</primkey-field>  
    </entity>
   </enterprise-beans> 
-    
-  <relationships>
-     <ejb-relation>
-       <ejb-relation-name>ProfileGroupToProfiles</ejb-relation-name>
-       <ejb-relationship-role>
-         <ejb-relationship-role-name>ProfileGroupData</ejb-relationship-role-name>
-         <multiplicity>One</multiplicity>
-         <relationship-role-source>
-           <ejb-name>ProfileGroupData</ejb-name>
-         </relationship-role-source>
-         <cmr-field>
-           <cmr-field-name>profilesData</cmr-field-name>
-           <cmr-field-type>java.util.Collection</cmr-field-type>
-         </cmr-field>
-       </ejb-relationship-role>
-       <ejb-relationship-role>
-         <ejb-relationship-role-name>ProfileData</ejb-relationship-role-name>
-         <multiplicity>Many</multiplicity>
-         <relationship-role-source>
-           <ejb-name>ProfileData</ejb-name>
-         </relationship-role-source>
-       </ejb-relationship-role>
-     </ejb-relation>
-     
+ 
+  <relationships>         
      <ejb-relation>
        <ejb-relation-name>UserGroupDataToUserEntities</ejb-relation-name>
        <ejb-relationship-role>
@@ -522,38 +474,211 @@
        Required is used for mission critical methods, which cannot collide.
        Supports is used for methods which only read data.
    -->
-    <container-transaction>
-
+    <container-transaction>     
      <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>findUser</method-name>
      </method>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
+         <method-name>findUserBySubjectDN</method-name>
+     </method>
+    <method>
+         <ejb-name>UserAdminSession</ejb-name>
          <method-name>findAllUsersByStatus</method-name>
+     </method>
+    <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>loadGlobalConfiguration</method-name>
+     </method>     
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>getUserPreference</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>*</method-name>
+         <method-name>existsUserPreference</method-name>
+     </method>
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>getProfileNames</method-name>
+     </method>
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>getProfiles</method-name>
+     </method>
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>getProfile</method-name>
+     </method>
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>getNumberOfProfiles</method-name>
+     </method>
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>getProfileId</method-name>
+     </method>
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>getProfileName</method-name>
+     </method> 
+               
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>isAuthorized</method-name>
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>*</method-name>
+         <method-name>authenticate</method-name>
      </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>getUserGroup</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>getUserGroupnames</method-name>
+     </method>    
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>getUserGroups</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>getNumberOfAccessRules</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>getAccessRules</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>getNumberOfUserEntities</method-name>
+     </method>       
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>getUserEntities</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>getAvailableAccessRules</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>existsAvailableAccessRule</method-name>
+     </method>                          
      <trans-attribute>Supports</trans-attribute> 
    </container-transaction>
+    
    <container-transaction>
      <method>
-         <ejb-name>ProfileGroupData</ejb-name>
-         <method-name>*</method-name>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>addUser</method-name>
      </method>
-     <trans-attribute>Required</trans-attribute>   
-   </container-transaction>   
-   <container-transaction>
      <method>
-         <ejb-name>ProfileData</ejb-name>
-         <method-name>*</method-name>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>changeUser</method-name>
      </method>
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>deleteUser</method-name>
+     </method>   
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>setUserStatus</method-name>
+     </method>
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>setPassword</method-name>
+     </method>
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>setClearTextPassword</method-name>
+     </method>
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>startExternalService</method-name>
+     </method>     
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>saveGlobalConfiguration</method-name>
+     </method>
+         
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>addUserPreference</method-name>
+     </method>
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>changeUserPreference</method-name>
+     </method>
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>addProfile</method-name>
+     </method>
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>cloneProfile</method-name>
+     </method>
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>removeProfile</method-name>
+     </method>
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>renameProfile</method-name>
+     </method>
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>changeProfile</method-name>
+     </method>          
+      
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>addUserGroup</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>removeUserGroup</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>renameUserGroup</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>addAccessRule</method-name>
+     </method>    
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>removeAccessRule</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>addUserEntity</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>removeUserEntity</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>addAvailableAccessRule</method-name>
+     </method>       
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>addAvailableAccessRules</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>removeAvailableAccessRule</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>removeAvailableAccessRules</method-name>
+     </method>   
+                                   
      <trans-attribute>Required</trans-attribute>   
    </container-transaction> 
 

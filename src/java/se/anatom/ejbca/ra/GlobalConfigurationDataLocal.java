@@ -1,10 +1,10 @@
-package se.anatom.ejbca.ra.raadmin;
+package se.anatom.ejbca.ra;
 
 
 import java.rmi.RemoteException;
 import java.math.BigInteger;
 
-import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
+import se.anatom.ejbca.ra.GlobalConfiguration;
 
 /**
 
@@ -12,7 +12,7 @@ import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
 
  **/
 
-public interface GlobalWebConfigurationDataLocal extends javax.ejb.EJBLocalObject {
+public interface GlobalConfigurationDataLocal extends javax.ejb.EJBLocalObject {
     // public methods
 
     public String getConfigurationId();
