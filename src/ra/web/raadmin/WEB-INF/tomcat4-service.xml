@@ -37,7 +37,14 @@ jakarta-tomcat-4.0.3-LE-jdk14 is included as jboss_dist/catalina
             <Connector className = "org.apache.catalina.connector.http.HttpConnector"
                port = "8080" minProcessors = "3" maxProcessors = "10" enableLookups = "true"
                acceptCount = "10" debug = "0" connectionTimeout = "60000"/>
-            <!-- A HTTPS Connector on port 8443 -->
+            <!-- A HTTPS Connector without client cert on port 8442 -->
+            <Connector className="org.apache.catalina.connector.http.HttpConnector"
+                 port="8442" minProcessors="5" maxProcessors="75"
+                 enableLookups="true" acceptCount="10" debug="0" scheme="https" secure="true">
+                 <Factory className="org.apache.catalina.net.SSLServerSocketFactory"
+                   clientAuth="false" protocol="TLS" keystoreFile="../.keystore" keystorePass="foo123"/>
+            </Connector>
+            <!-- A HTTPS Connector requiring client cert on port 8443 -->
             <Connector className="org.apache.catalina.connector.http.HttpConnector"
                  port="8443" minProcessors="5" maxProcessors="75"
                  enableLookups="true"
