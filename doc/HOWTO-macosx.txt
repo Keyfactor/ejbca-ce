@@ -12,6 +12,8 @@ $ sudo ant replaceDS
 $ sudo ant deploy
 
 - Restart JBoss
+- After installation you will probably need to modify the JBoss Tomcat configuration file in server/default/deploy/jbossweb-tomcatxx.sar/server.xml
+since some paths and parameters may differ. So save the original server.xml file to compare later on.
 
 $ sudo chmod u=rwx install.sh
 $ sudo chmod u=rwx ca.sh

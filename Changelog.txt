@@ -19,7 +19,7 @@
 3.0.3
 -----
 Fixed bugg in adduser page where email address wasn't saved when user existed
-Fixed bugg where IPADDRESS,GUID subject altname wasn't shown in certificate view.
+Fixed bugg where IPADDRESS and GUID subject altname wasn't shown in certificate view.
 Fixed email field check bugg in add and edit user jsp pages.
 Fixed bugg in certificate profiles jsp page where critical extended keyusade couldn't be unchecked.
 Added missing class in admin.jar for 'ca processreq'.
