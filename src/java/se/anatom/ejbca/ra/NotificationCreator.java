@@ -8,7 +8,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 /**
  * This class is used to create notification messages
  *
- * @version $Id: NotificationCreator.java,v 1.4 2003-04-20 13:49:26 herrvendil Exp $
+ * @version $Id: NotificationCreator.java,v 1.5 2003-04-20 14:03:31 herrvendil Exp $
  */
 public class NotificationCreator {
 
@@ -31,7 +31,7 @@ public class NotificationCreator {
     private static final Pattern DATE =
       Pattern.compile("\\$DATE", Pattern.CASE_INSENSITIVE);
 
-    private static final Pattern NEWLINE = Pattern.compile("\n");
+    private static final Pattern NEWLINE = Pattern.compile("\\$NL");
 
 
     /**
