@@ -13,7 +13,8 @@
   static final String ACTION_ADDUSER           = "adduser";
 
   static final String BUTTON_ADDUSER          = "buttonadduser"; 
-  static final String BUTTON_RESET             = "buttonreset"; 
+  static final String BUTTON_RESET            = "buttonreset"; 
+  static final String BUTTON_RELOAD           = "buttonreload";
 
   static final String TEXTFIELD_USERNAME          = "textfieldusername";
   static final String TEXTFIELD_PASSWORD          = "textfieldpassword";
@@ -55,7 +56,13 @@
 
   static final String CHECKBOX_VALUE             = "true";
 
+  static final String USER_PARAMETER           = "userparameter";
+  static final String SUBJECTDN_PARAMETER      = "subjectdnparameter";
 
+  static final String VIEWUSER_LINK            = "viewuser.jsp";
+  static final String EDITUSER_LINK            = "edituser.jsp";
+
+  static final String HIDDEN_USERNAME           = "hiddenusername";
 
 %><%
   // Initialize environment.
@@ -72,7 +79,7 @@
 
   if( request.getParameter(ACTION) != null){
     if( request.getParameter(ACTION).equals(ACTION_ADDUSER)){
-      if( request.getParameter(BUTTON_ADDUSER) != null){
+      if( request.getParameter(BUTTON_ADDUSER) != null || request.getParameter(BUTTON_RELOAD) != null ){
          String[] newuser = new String[UserView.NUMBEROF_USERFIELDS];
          String oldprofilename = null;
  
@@ -85,6 +92,7 @@
 
          if(oldprofilename != null){
            oldprofile = rabean.getProfileAsString(oldprofilename);
+           newuser[UserView.PROFILE]= oldprofilename;
          }
 
          String value = request.getParameter(TEXTFIELD_USERNAME);
@@ -236,8 +244,10 @@
                oldprofile[Profile.TYPE_ROOTCA][Profile.VALUE] = Profile.FALSE;   
              }
            }
+
+
            // See if user already exists
-           if(rabean.userExist(newuser[UserView.USERNAME])){
+           if(rabean.userExist(newuser[UserView.USERNAME]) || request.getParameter(BUTTON_RELOAD) != null ){
              userexists = true;
              lastprofilename = oldprofilename;
              useoldprofile = true;   
@@ -245,14 +255,18 @@
            else{
              rabean.addUser(newuser); 
              useradded=true;
-           }
+           }           
          }
       }
     }
   
+
+    int numberofrows = ejbcawebbean.getEntriesPerPage();
+    String[][] addedusers = rabean.getAddedUsers(numberofrows);
+
 %>
 <head>
-  <title><%= globalconfiguration .getEjbcaTitle() %></title>
+  <title><%= globalconfiguration.getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
   <script language=javascript>
@@ -733,7 +747,79 @@ function checkallfields(){
          <td></td>
        </tr> 
      </table> 
-   </form>
+   
+  <script language=javascript>
+<!--
+function viewuser(row){
+    var hiddenusernamefield = eval("document.adduser.<%= HIDDEN_USERNAME %>" + row);
+    var username = hiddenusernamefield.value;
+    var link = "<%= VIEWUSER_LINK %>?<%= USER_PARAMETER %>="+username;
+    window.open(link, 'view_cert',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+}
+
+function edituser(row){
+    var hiddenusernamefield = eval("document.adduser.<%= HIDDEN_USERNAME %>" + row);
+    var username = hiddenusernamefield.value;
+    var link = "<%= EDITUSER_LINK %>?<%= USER_PARAMETER %>="+username;
+    window.open(link, 'edit_user',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+}
+
+-->
+</script>
+
+ 
+
+  <% if(addedusers == null || addedusers.length == 0){     %>
+  <table width="100%" border="0" cellspacing="1" cellpadding="0">
+  <tr id="Row0"> 
+    <td width="10%">&nbsp;</td>
+    <td width="20%">&nbsp;</td>
+    <td width="20%">&nbsp;</td>
+    <td width="20%">&nbsp;</td>
+    <td width="30%">&nbsp;</td>
+  </tr>
+  <% } else{ %>
+  <div align="center"><H4><%= ejbcawebbean.getText("PREVIOUSLYADDEDUSERS") %> </H4></div>
+  <p>
+    <input type="submit" name="<%=BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>">
+  </p>
+  <table width="100%" border="0" cellspacing="1" cellpadding="0">
+  <tr> 
+    <td width="10%"><%= ejbcawebbean.getText("USERNAME") %>              
+    </td>
+    <td width="20%"><%= ejbcawebbean.getText("COMMONNAME") %>
+    </td>
+    <td width="20%"><%= ejbcawebbean.getText("ORGANIZATIONUNIT") %>
+    </td>
+    <td width="20%"><%= ejbcawebbean.getText("ORGANIZATION") %>                 
+    </td>
+    <td width="30%"> &nbsp;
+    </td>
+  </tr>
+    <%   for(int i=0; i < addedusers.length; i++){
+            if(addedusers[i][UserView.USERNAME] != null){ 
+      %>
+     
+  <tr id="Row<%= i%2 %>"> 
+
+    <td width="15%"><%= addedusers[i][UserView.USERNAME] %>
+       <input type="hidden" name='<%= HIDDEN_USERNAME + i %>' value='<%= addedusers[i][UserView.USERNAME] %>'>
+    </td>
+    <td width="20%"><% if(addedusers[i][UserView.COMMONNAME]!= null) out.print(addedusers[i][UserView.COMMONNAME]); %></td>
+    <td width="20%"><% if(addedusers[i][UserView.ORGANIZATIONUNIT]!= null) out.print(addedusers[i][UserView.ORGANIZATIONUNIT]); %></td>
+    <td width="20%"><% if(addedusers[i][UserView.ORGANIZATION]!= null) out.print(addedusers[i][UserView.ORGANIZATION]); %></td>
+    <td width="25%">
+        <A  onclick='viewuser(<%= i %>)'>
+        <u><%= ejbcawebbean.getText("VIEWUSER") %></u> </A>
+        <A  onclick='edituser(<%= i %>)'>
+        <u><%= ejbcawebbean.getText("EDITUSER") %></u> </A>
+    </td>
+  </tr>
+ <%      }
+       }
+     } %>
+  </table>
+  </form>
    <p></p>
 
   <%// Include Footer 

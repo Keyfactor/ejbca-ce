@@ -3,6 +3,8 @@ package se.anatom.ejbca.ra;
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 
+import java.util.Date;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -35,7 +37,7 @@ import org.apache.log4j.*;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.11 2002-07-05 23:43:18 herrvendil Exp $
+ * @version $Id: UserDataBean.java,v 1.12 2002-07-28 23:27:47 herrvendil Exp $
  **/
 
 public abstract class UserDataBean implements javax.ejb.EntityBean {
@@ -76,6 +78,41 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
      */
 
     public abstract void setPasswordHash(String passwordHash);
+    
+    /**
+     *  Returns the time when the user was created.
+     */    
+    public abstract long getTimeCreated();
+    
+    /**
+     * Sets the time when the user was created.
+     */
+    public abstract void setTimeCreated(long createtime);
+    /**
+     *  Returns the time when the user was last modified.
+     */       
+    public abstract long getTimeModified();
+    /**
+     * Sets the time when the user was last modified.
+     */   
+    public abstract void setTimeModified(long createtime);
+    /**
+     *  Returns the profile id the user belongs to.
+     */     
+    public abstract int getProfileId();
+    /**
+     *  Sets the profileid the user should belong to. 0 if profileid is not applicable.
+     */     
+    public abstract void setProfileId(int profileid);
+    /**
+     *  Returns the certificate type id that should be generated for the user.
+     */     
+    public abstract int getCertificateTypeId();
+    /**
+     *  Sets the certificate type id that should be generated for the user. 0 if profileid is not applicable.
+     */     
+    public abstract void setCertificateTypeId(int certificatetypeid);
+    
     
     //
     // Public methods used to help us manage passwords
@@ -159,8 +196,11 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
      *
      **/
 
-    public UserDataPK ejbCreate(String username, String password, String dn) throws CreateException, NoSuchAlgorithmException {
+    public UserDataPK ejbCreate(String username, String password, String dn)
+       throws CreateException, NoSuchAlgorithmException {
 
+        long time = (new Date()).getTime();
+        
         setUsername(username);
         setClearPassword(null);
         setPasswordHash(makePasswordHash(password));
@@ -168,6 +208,10 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
         setSubjectEmail(null);
         setStatus(UserDataLocal.STATUS_NEW);
         setType(SecConst.USER_INVALID);
+        setTimeCreated(time);
+        setTimeModified(time);
+        setProfileId(0);
+        setCertificateTypeId(0);
         
         UserDataPK pk = new UserDataPK(username);
         log.debug("Created user "+username);

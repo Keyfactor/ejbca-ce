@@ -8,7 +8,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataLocal.java,v 1.1 2002-07-05 23:43:18 herrvendil Exp $
+ * @version $Id: UserDataLocal.java,v 1.2 2002-07-28 23:27:47 herrvendil Exp $
  **/
 
 public interface UserDataLocal extends javax.ejb.EJBLocalObject {
@@ -41,6 +41,14 @@ public interface UserDataLocal extends javax.ejb.EJBLocalObject {
     public void setClearPassword(String clearPassword);
     public String getPasswordHash();
     public void setPasswordHash(String passwordHash);
+     
+    public long getTimeCreated();    
+    public long getTimeModified();  
+    public void setTimeModified(long createtime);     
+    public int getProfileId();   
+    public void setProfileId(int profileid);  
+    public int getCertificateTypeId();
+    public void setCertificateTypeId(int certificatetypeid);    
 
     public void setPassword(String password) throws  NoSuchAlgorithmException;
     public void setOpenPassword(String password) throws  NoSuchAlgorithmException;

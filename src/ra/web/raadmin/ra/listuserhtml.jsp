@@ -5,71 +5,29 @@
   <script language=javascript src="<%= globalconfiguration.getRaAdminPath() %>ejbcajslib.js"></script>
   <script language=javascript>
 <!--
-function viewuser(){
-  var returnval = onlyoneselected("document.form.<%= CHECKBOX_SELECT_USER %>", <%= numcheckboxes %>,"<%= ejbcawebbean.getText("YOUCANONLYVIEWONE") %>");
-  var index = 0;
-
-  if(returnval){
-    for (var i = 0; i < <%= numcheckboxes %>; i++) {
-      box = eval("document.form.<%= CHECKBOX_SELECT_USER %>" + i ); 
-      if (box.checked == true){ 
-        index =i;
-        break;
-      }
-    }
-    var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + i);
+function viewuser(row){
+    var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
-    var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERDN %>" + i);
+    var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERDN %>" + row);
     var userdn = hiddenusernamefield.value;
     var link = "<%= VIEWUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     window.open(link, 'view_cert',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
-  }          
-  
-  return returnval;
 }
 
-function edituser(){
-  var returnval = onlyoneselected("document.form.<%= CHECKBOX_SELECT_USER %>", <%= numcheckboxes %>,"<%= ejbcawebbean.getText("YOUCANONLYVIEWONE") %>");
-  var index = 0;
-
-  if(returnval){
-    for (var i = 0; i < <%= numcheckboxes %>; i++) {
-      box = eval("document.form.<%= CHECKBOX_SELECT_USER %>" + i ); 
-      if (box.checked == true){ 
-        index =i;
-        break;
-      }
-    }
-    var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + i);
+function edituser(row){
+    var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
     var link = "<%= EDITUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     window.open(link, 'edit_user',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
-  }         
-  
-  return returnval;
 }
 
-function viewcert(){
-  var returnval = onlyoneselected("document.form.<%= CHECKBOX_SELECT_USER %>", <%= numcheckboxes %>,"<%= ejbcawebbean.getText("YOUCANONLYVIEWCERT") %>");
-  var index = 0;
-
-  if(returnval){
-    for (var i = 0; i < <%= numcheckboxes %>; i++) {
-      box = eval("document.form.<%= CHECKBOX_SELECT_USER %>" + i ); 
-      if (box.checked == true){ 
-        index =i;
-        break;
-      }
-    }
-    var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + i);
+function viewcert(row){
+    var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
-    var hiddenuserdnfield = eval("document.form.<%= HIDDEN_USERDN %>" + i);
+    var hiddenuserdnfield = eval("document.form.<%= HIDDEN_USERDN %>" + row);
     var userdn = hiddenuserdnfield.value;
     var link = "<%= VIEWCERT_LINK %>?<%= SUBJECTDN_PARAMETER %>="+userdn+"&<%= USER_PARAMETER %>="+username;
     window.open(link, 'view_cert',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
-  }         
-  
-  return returnval;
 }
 
 function confirmdelete(){
@@ -86,72 +44,108 @@ function confirmdelete(){
 
 <body>
 <h2 align="center"><%= ejbcawebbean.getText("LISTUSERS") %></h2>
-  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") +"#listusers" %>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
+  <form name="changefiltermode" method="post" action="<%=THIS_FILENAME %>">
+    <div align="right">
+     <% if(filtermode == UserPreference.FILTERMODE_BASIC){ %>
+      <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHANGEFILTERMODETO_ADVANCED %>'>
+      <A href='javascript:document.changefiltermode.submit();'><u><%= ejbcawebbean.getText("ADVANCEDMODE") %></u></A>
+     <% }
+        if(filtermode == UserPreference.FILTERMODE_ADVANCED){ %>
+        <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHANGEFILTERMODETO_BASIC %>'>
+        <A href='javascript:document.changefiltermode.submit();'><u><%= ejbcawebbean.getText("BASICMODE") %></u></A>
+     <% } %>
+     &nbsp;&nbsp;&nbsp;
+     <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") +"#listusers" %>")'>
+     <u><%= ejbcawebbean.getText("HELP") %></u> </A>
   </div>
+  </form> 
 <form name="form" method="post" action="<%=THIS_FILENAME %>">
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_LISTUSERS %>'>
   <input type="hidden" name='<%= OLD_ACTION %>' value='<%=oldaction %>'>
   <input type="hidden" name='<%= OLD_ACTION_VALUE %>' value='<%=oldactionvalue %>'>
+  <% if(oldmatchwithrow1 != null){ %>
+  <input type="hidden" name='<%= OLD_MATCHWITHROW1 %>' value='<%=oldmatchwithrow1 %>'>
+  <% } %>
+  <% if(oldmatchwithrow2 != null){ %>
+  <input type="hidden" name='<%= OLD_MATCHWITHROW2 %>' value='<%=oldmatchwithrow2 %>'>
+  <% } %>
+  <% if(oldmatchwithrow3 != null){ %>
+  <input type="hidden" name='<%= OLD_MATCHWITHROW3 %>' value='<%=oldmatchwithrow3 %>'>
+  <% } %>
+  <% if(oldmatchwithrow4 != null){ %>
+  <input type="hidden" name='<%= OLD_MATCHWITHROW4 %>' value='<%=oldmatchwithrow4 %>'>
+  <% } %>
+  <% if(oldmatchwithrow5 != null){ %>
+  <input type="hidden" name='<%= OLD_MATCHWITHROW5 %>' value='<%=oldmatchwithrow5 %>'>
+  <% } %>
+  <% if(oldmatchtyperow1 != null){ %>
+  <input type="hidden" name='<%= OLD_MATCHTYPEROW1 %>' value='<%=oldmatchtyperow1 %>'>
+  <% } %>
+  <% if(oldmatchtyperow2 != null){ %>
+  <input type="hidden" name='<%= OLD_MATCHTYPEROW2 %>' value='<%=oldmatchtyperow2 %>'>
+  <% } %>
+  <% if(oldmatchtyperow3 != null){ %>
+  <input type="hidden" name='<%= OLD_MATCHTYPEROW2 %>' value='<%=oldmatchtyperow3 %>'>
+  <% } %>
+  <% if(oldmatchvaluerow1 != null){ %>
+  <input type="hidden" name='<%= OLD_MATCHVALUEROW1 %>' value='<%=oldmatchvaluerow1%>'>
+  <% } %>
+  <% if(oldmatchvaluerow2 != null){ %>
+  <input type="hidden" name='<%= OLD_MATCHVALUEROW2 %>' value='<%=oldmatchvaluerow2 %>'>
+  <% } %>
+  <% if(oldmatchvaluerow3 != null){ %>
+  <input type="hidden" name='<%= OLD_MATCHVALUEROW3 %>' value='<%=oldmatchvaluerow3%>'>
+  <% } %>
+  <% if(oldconnectorrow2 != null){ %>
+  <input type="hidden" name='<%= OLD_CONNECTORROW2 %>' value='<%=oldconnectorrow2%>'>
+  <% } %>
+  <% if(oldconnectorrow3 != null){ %>
+  <input type="hidden" name='<%= OLD_CONNECTORROW3 %>' value='<%=oldconnectorrow3%>'>
+  <% } %>
+  <% if(oldconnectorrow4 != null){ %>
+  <input type="hidden" name='<%= OLD_CONNECTORROW4 %>' value='<%=oldconnectorrow4%>'>
+  <% } %>
+  <% if(olddayrow4 != null){ %>
+  <input type="hidden" name='<%= OLD_DAY_ROW4 %>' value='<%=olddayrow4%>'>
+  <% } %>
+  <% if(olddayrow5 != null){ %>
+  <input type="hidden" name='<%= OLD_DAY_ROW5 %>' value='<%=olddayrow5%>'>
+  <% } %>
+  <% if(oldmonthrow4 != null){ %>
+  <input type="hidden" name='<%= OLD_MONTH_ROW4 %>' value='<%=oldmonthrow4%>'>
+  <% } %>
+  <% if(oldmonthrow5 != null){ %>
+  <input type="hidden" name='<%= OLD_MONTH_ROW5 %>' value='<%=oldmonthrow5%>'>
+  <% } %>
+  <% if(oldyearrow4 != null){ %>
+  <input type="hidden" name='<%= OLD_YEAR_ROW4 %>' value='<%=oldyearrow4%>'>
+  <% } %>
+  <% if(oldyearrow5 != null){ %>
+  <input type="hidden" name='<%= OLD_YEAR_ROW5 %>' value='<%=oldyearrow5%>'>
+  <% } %>
+  <% if(oldtimerow4 != null){ %>
+  <input type="hidden" name='<%= OLD_TIME_ROW4 %>' value='<%=oldtimerow4%>'>
+  <% } %>
+  <% if(oldtimerow5 != null){ %>
+  <input type="hidden" name='<%= OLD_TIME_ROW5 %>' value='<%=oldtimerow5%>'>
+  <% } %>
+
   <input type="hidden" name='<%= HIDDEN_RECORDNUMBER %>' value='<%=String.valueOf(record) %>'>
   <input type="hidden" name='<%= HIDDEN_SORTBY  %>' value='<%=sortby %>'>
-  <p><%= ejbcawebbean.getText("FINDUSERWITHUSERNAME") %>
-    <input type="text" name="<%=TEXTFIELD_USERNAME %>" size="40" maxlength="255" 
-     <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_FINDUSER))
-          out.write("value='"+oldactionvalue+"'"); %>
-     >
-    <input type="submit" name="<%=BUTTON_FIND %>" value="<%= ejbcawebbean.getText("FIND") %>">
-  </p>
-  <p><%= ejbcawebbean.getText("ORIFCERTIFICATSERIAL") %>
-    <input type="text" name="<%=TEXTFIELD_SERIALNUMBER %>" size="33" maxlength="255" 
-     <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_ISREVOKED))
-          out.write("value='"+oldactionvalue+"'"); %>
-     >
-    <input type="submit" name="<%=BUTTON_ISREVOKED %>" value="<%= ejbcawebbean.getText("FIND") %>" 
-           onclick='return checkfieldforhexadecimalnumbers("document.form.<%=TEXTFIELD_SERIALNUMBER %>","<%= ejbcawebbean.getText("ONLYHEXNUMBERS") %>")'>
-  </p>
-  <p><%= ejbcawebbean.getText("ORWITHSTATUS") %>
-    <select name="<%=SELECT_LIST_STATUS %>">
-      <option value=''>--</option> 
-      <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_NEW)))
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_NEW) %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
-      <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_FAILED)))
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_FAILED) %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>
-      <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_INITIALIZED)))
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_INITIALIZED) %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>
-      <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_INPROCESS)))
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_INPROCESS) %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>
-      <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_GENERATED)))
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_GENERATED) %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>
-      <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_REVOKED)))
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_REVOKED) %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>
-      <option <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTUSERS))
-                   if(oldactionvalue.equals(Integer.toString(UserDataRemote.STATUS_HISTORICAL)))
-                     out.write("selected"); %>
-              value='<%= Integer.toString(UserDataRemote.STATUS_HISTORICAL) %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
-    </select>
-    <input type="submit" name="<%=BUTTON_LIST %>" value="<%= ejbcawebbean.getText("LIST") %>">
-  </p>
-  <p><%= ejbcawebbean.getText("ORLISTEXPIRING") %>
-    <input type="text" name="<%=TEXTFIELD_DAYS %>" size="3" maxlength="5" 
-     <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTEXPIRED))
-          out.write("value='"+oldactionvalue+"'"); %>
-     > <%= ejbcawebbean.getText("DAYS") %>
-    <input type="submit" name="<%=BUTTON_LISTEXPIRED %>" value="<%= ejbcawebbean.getText("LIST") %>"
-           onclick='return checkfieldfordecimalnumbers("document.form.<%=TEXTFIELD_DAYS %>","<%= ejbcawebbean.getText("ONLYDECNUMBERS") %>")'>
-  </p>
+     <% if(filtermode == UserPreference.FILTERMODE_BASIC){ %>
+        <%@ include file="basicfiltermodehtml.jsp" %>
+     <% }
+        if(filtermode == UserPreference.FILTERMODE_ADVANCED){ %>
+        <%@ include file="advancedfiltermodehtml.jsp" %>
+     <%   } %>
+
+  <% if(illegalquery){ %>
+      <H4 id="alert"><div align="center"><%= ejbcawebbean.getText("INVALIDQUERY") %></div></H4>
+  <% } %>
+  <% if(largeresult){ %>
+     <H4 id="alert"><div align="center" ><%= ejbcawebbean.getText("TOLARGERESULT")  + " " + RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT
+                                             + " " + ejbcawebbean.getText("ROWSWILLBEDISPLAYED") %> </div> </H4>  
+  <% } %>
   <p>
     <input type="submit" name="<%=BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>">
   </p>
@@ -175,9 +169,9 @@ function confirmdelete(){
   </table>
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
   <tr> 
-    <td width="8%"><%= ejbcawebbean.getText("SELECT") %>
+    <td width="5%"><%= ejbcawebbean.getText("SELECT") %>
      </td>
-    <td width="14%"><% if(sortby.equals(SORTBY_USERNAME_ACC)){ %>
+    <td width="11%"><% if(sortby.equals(SORTBY_USERNAME_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_USERNAME_DEC %>" value="submit" ><%= ejbcawebbean.getText("USERNAME") %>              
                    <% }else{
                          if(sortby.equals(SORTBY_USERNAME_DEC)){ %>
@@ -187,7 +181,7 @@ function confirmdelete(){
                    <%    }
                        } %>
     </td>
-    <td width="22%">
+    <td width="19%">
                    <% if(sortby.equals(SORTBY_COMMONNAME_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_COMMONNAME_DEC %>" value="submit" ><%= ejbcawebbean.getText("COMMONNAME") %>              
                    <% }else{
@@ -198,7 +192,7 @@ function confirmdelete(){
                    <%    }
                        } %>
     </td>
-    <td width="20%">
+    <td width="17%">
                    <% if(sortby.equals(SORTBY_ORGANIZATIONUNIT_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATIONUNIT_DEC %>" value="submit" ><%= ejbcawebbean.getText("ORGANIZATIONUNIT") %>              
                    <% }else{
@@ -209,7 +203,7 @@ function confirmdelete(){
                    <%    }
                        } %>
     </td>
-    <td width="21%"><% if(sortby.equals(SORTBY_ORGANIZATION_ACC)){ %>
+    <td width="18%"><% if(sortby.equals(SORTBY_ORGANIZATION_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATION_DEC %>" value="submit" ><%= ejbcawebbean.getText("ORGANIZATION") %>                        
                    <% }else{ 
                          if(sortby.equals(SORTBY_ORGANIZATION_DEC)){ %>
@@ -219,7 +213,7 @@ function confirmdelete(){
                    <%    }
                        } %>
     </td>
-    <td width="15%"><% if(sortby.equals(SORTBY_STATUS_ACC)){ %>
+    <td width="12%"><% if(sortby.equals(SORTBY_STATUS_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_STATUS_DEC %>" value="submit" ><%= ejbcawebbean.getText("STATUS") %>              
                    <% }else{
                          if(sortby.equals(SORTBY_STATUS_DEC)){ %>
@@ -229,44 +223,48 @@ function confirmdelete(){
                    <%    }
                        } %>
     </td>
+    <td width="18%"> &nbsp;
+    </td>
   </tr>
   <% if(blank){ %>
  <tr id="Row0"> 
-   <td width="8%"> 
+   <td width="5%"> 
    </td>
-    <td width="14%">&nbsp;</td>
-    <td width="22%">&nbsp;</td>
-    <td width="20%">&nbsp;</td>
-    <td width="21%">&nbsp;</td>
-    <td width="15%">&nbsp;</td>
+    <td width="11%">&nbsp;</td>
+    <td width="19%">&nbsp;</td>
+    <td width="17%">&nbsp;</td>
+    <td width="18%">&nbsp;</td>
+    <td width="12%">&nbsp;</td>
+    <td width="18%">&nbsp;</td>
   </tr> 
   <% }else{
        if(users == null || users.length == 0){     %>
   <tr id="Row0"> 
    <td width="8%"> 
    </td>
-    <td width="14%">&nbsp;</td>
-    <td width="22%"><%= ejbcawebbean.getText("NOUSERSFOUND") %></td>
-    <td width="20%">&nbsp;</td>
-    <td width="21%">&nbsp;</td>
-    <td width="15%">&nbsp;</td>
+    <td width="11%">&nbsp;</td>
+    <td width="19%"><%= ejbcawebbean.getText("NOUSERSFOUND") %></td>
+    <td width="17%">&nbsp;</td>
+    <td width="18%">&nbsp;</td>
+    <td width="12%">&nbsp;</td>
+    <td width="18%">&nbsp;</td>
   </tr>
   <% } else{
          for(int i=0; i < users.length; i++){%>
   <tr id="Row<%= i%2 %>"> 
-      <td width="8%"> 
+      <td width="5%"> 
         <div align="center">
           <input type="checkbox" name="<%= CHECKBOX_SELECT_USER + i %>" value="<%= CHECKBOX_VALUE %>">
         </div>
       </td>
-    <td width="14%"><%= users[i][UserView.USERNAME] %>
+    <td width="11%"><%= users[i][UserView.USERNAME] %>
        <input type="hidden" name='<%= HIDDEN_USERNAME + i %>' value='<%= users[i][UserView.USERNAME] %>'>
        <input type="hidden" name='<%= HIDDEN_USERDN + i %>' value='<%= java.net.URLEncoder.encode(users[i][UserView.USERDN],"UTF-8") %>'>
     </td>
-    <td width="22%"><%= users[i][UserView.COMMONNAME] %></td>
-    <td width="20%"><%= users[i][UserView.ORGANIZATIONUNIT] %></td>
-    <td width="21%"><%= users[i][UserView.ORGANIZATION] %></td>
-    <td width="15%"><%
+    <td width="19%"><%= users[i][UserView.COMMONNAME] %></td>
+    <td width="17%"><%= users[i][UserView.ORGANIZATIONUNIT] %></td>
+    <td width="18%"><%= users[i][UserView.ORGANIZATION] %></td>
+    <td width="12%"><%
                        if(users[i][UserView.STATUS] != null){
                         switch(Integer.parseInt(users[i][UserView.STATUS])){
                           case UserDataRemote.STATUS_NEW :
@@ -292,6 +290,14 @@ function confirmdelete(){
                             break;
                         }
                       }%></td>
+      <td width="18%">
+        <A  onclick='viewuser(<%= i %>)'>
+        <u><%= ejbcawebbean.getText("VIEWUSER") %></u> </A>
+        <A  onclick='edituser(<%= i %>)'>
+        <u><%= ejbcawebbean.getText("EDITUSER") %></u> </A>
+        <A  onclick='viewcert(<%= i %>)'>
+        <u><%= ejbcawebbean.getText("VIEWCERTIFICATE") %></u> </A>
+      </td>
   </tr>
  <%      }
        }
@@ -326,15 +332,6 @@ function confirmdelete(){
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
     <tr>
       <td>
-        <input type="submit" name="<%=BUTTON_VIEW_USER %>" value="<%= ejbcawebbean.getText("VIEWUSER") %>"
-               onClick='return viewuser()'> 
-        &nbsp;&nbsp;&nbsp;
-        <input type="submit" name="<%=BUTTON_EDIT_USER %>" value="<%= ejbcawebbean.getText("EDITUSER") %>"
-               onClick='return edituser()'>
-        &nbsp;&nbsp;&nbsp;
-        <input type="submit" name="<%=BUTTON_VIEW_CERTIFICATE %>" value="<%= ejbcawebbean.getText("VIEWCERTIFICATE") %>"
-               onClick='return viewcert()'>
-        &nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%=BUTTON_DELETE_USERS %>" value="<%= ejbcawebbean.getText("DELETESELECTED") %>"
                onClick='return confirmdelete()'>
         &nbsp;&nbsp;&nbsp;

@@ -8,7 +8,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataRemote.java,v 1.1 2002-07-05 23:43:18 herrvendil Exp $
+ * @version $Id: UserDataRemote.java,v 1.2 2002-07-28 23:27:47 herrvendil Exp $
  **/
 
 public interface UserDataRemote extends javax.ejb.EJBObject {
@@ -37,6 +37,14 @@ public interface UserDataRemote extends javax.ejb.EJBObject {
     public void setClearPassword(String clearPassword) throws RemoteException;
     public String getPasswordHash() throws RemoteException;
     public void setPasswordHash(String passwordHash) throws RemoteException;
+   
+    public long getTimeCreated() throws RemoteException;    
+    public long getTimeModified() throws RemoteException;  
+    public void setTimeModified(long createtime) throws RemoteException;     
+    public int getProfileId() throws RemoteException;   
+    public void setProfileId(int profileid) throws RemoteException;  
+    public int getCertificateTypeId() throws RemoteException;
+    public void setCertificateTypeId(int certificatetypeid) throws RemoteException;   
 
     public void setPassword(String password) throws RemoteException, NoSuchAlgorithmException;
     public void setOpenPassword(String password) throws RemoteException, NoSuchAlgorithmException;

@@ -12,9 +12,13 @@ import se.anatom.ejbca.webdist.webconfiguration.WebLanguages;
  * A class representing a users personal preferenses.
  *
  * @author  Philip Vendil
- * @version $Id: UserPreference.java,v 1.2 2002-07-22 10:38:48 anatom Exp $
+ * @version $Id: UserPreference.java,v 1.3 2002-07-28 23:27:48 herrvendil Exp $
  */
 public class UserPreference implements java.io.Serializable, Cloneable {
+    
+    // Public constants
+    public static final int FILTERMODE_BASIC     = 0;
+    public static final int FILTERMODE_ADVANCED  = 1;
 
     /** Creates a new instance of UserPreference */
     public UserPreference() {}
@@ -75,12 +79,13 @@ public class UserPreference implements java.io.Serializable, Cloneable {
       this.theme=theme;
     }
 
-    public String getLastProfileGroup(){ return lastprofilegroup;}
-    public void setLastProfileGroup(String lastprofilegroup){this.lastprofilegroup=lastprofilegroup;}
 
     public String getLastProfile(){ return lastprofile;}
     public void setLastProfile(String lastprofile){this.lastprofile=lastprofile;}
-
+    
+    public int getLastFilterMode(){ return lastfiltermode;}
+    public void setLastFilterMode(int lastfiltermode){this.lastfiltermode=lastfiltermode;}
+    
     public Object clone() throws CloneNotSupportedException {
       return super.clone();
     }
@@ -90,7 +95,7 @@ public class UserPreference implements java.io.Serializable, Cloneable {
     private int secondarylanguage;
     private int entriesperpage= 30;
     private String theme;
-    private String lastprofilegroup;
     private String lastprofile;
+    private int lastfiltermode = FILTERMODE_BASIC;
 
 }

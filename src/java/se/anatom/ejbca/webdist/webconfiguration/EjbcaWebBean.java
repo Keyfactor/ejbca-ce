@@ -38,7 +38,7 @@ import se.anatom.ejbca.ra.raadmin.UserPreference;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.10 2002-07-20 18:40:08 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.11 2002-07-28 23:27:47 herrvendil Exp $
  */
 public class EjbcaWebBean {
 
@@ -88,7 +88,7 @@ public class EjbcaWebBean {
         cat.debug("Verifying authoirization of '"+userdn);
         UserAdminData userdata = adminsession.findUserBySubjectDN(userdn);
         if(userdata != null){
-          UserView user = new UserView(userdata);
+          UserView user = new UserView(userdata,null,null);
           if(user.getValue(UserView.TYPE_RAADMIN) == null)
             throw new  AuthorizationDeniedException("Your certificate do not belong to a RA Admin.");
           if(user.getValue(UserView.TYPE_RAADMIN).equals(UserView.FALSE))
@@ -157,9 +157,9 @@ public class EjbcaWebBean {
       return currentuserpreference.getEntriesPerPage();
     }
 
-    public String getLastProfileGroup(){ return currentuserpreference.getLastProfileGroup();}
-    public void setLastProfileGroup(String lastprofilegroup) throws Exception{
-        currentuserpreference.setLastProfileGroup(lastprofilegroup);
+    public int getLastFilterMode(){ return currentuserpreference.getLastFilterMode();}
+    public void setLastFilterMode(int lastfiltermode) throws Exception{
+        currentuserpreference.setLastFilterMode(lastfiltermode);
         if(existsUserPreference()){
           changeUserPreference(currentuserpreference);
         }else{
@@ -347,6 +347,10 @@ public class EjbcaWebBean {
      return DateFormat.getDateInstance(DateFormat.SHORT).format(date);
     }
 
+    public String printDateTime(Date date){
+ return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(date);
+    }    
+    
     public void reloadGlobalConfiguration() throws  Exception {
       globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();
     }

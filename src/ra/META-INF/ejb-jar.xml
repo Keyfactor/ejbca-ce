@@ -243,6 +243,10 @@
       <cmp-field><field-name>type</field-name></cmp-field>
       <cmp-field><field-name>clearPassword</field-name></cmp-field>
       <cmp-field><field-name>passwordHash</field-name></cmp-field>
+      <cmp-field><field-name>timeCreated</field-name></cmp-field>
+      <cmp-field><field-name>timeModified</field-name></cmp-field>
+      <cmp-field><field-name>profileId</field-name></cmp-field>
+      <cmp-field><field-name>certificateTypeId</field-name></cmp-field>                             
    </entity>
    
    <entity>
@@ -347,7 +351,8 @@
       <cmp-field><field-name>pK</field-name></cmp-field>        
       <cmp-field><field-name>matchWith</field-name></cmp-field>
       <cmp-field><field-name>matchType</field-name></cmp-field>
-      <cmp-field><field-name>matchValue</field-name></cmp-field>         
+      <cmp-field><field-name>matchValue</field-name></cmp-field>
+      <primkey-field>pK</primkey-field>                 
    </entity>   
    <entity>
       <description>
@@ -364,7 +369,8 @@
       <abstract-schema-name>AccessRulesDataBean</abstract-schema-name>
       <cmp-field><field-name>pK</field-name></cmp-field> 
       <cmp-field><field-name>directory</field-name></cmp-field>
-      <cmp-field><field-name>accessRule</field-name></cmp-field>
+      <cmp-field><field-name>accessRule</field-name></cmp-field> 
+      <primkey-field>pK</primkey-field>        
    </entity>   
    
    <entity>
@@ -485,10 +491,18 @@
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>findAllUsersByStatus</method-name>
      </method>
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>findAllUsersWithLimit()</method-name>
+     </method>
     <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>loadGlobalConfiguration</method-name>
      </method>     
+    <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>query</method-name>
+     </method>          
      <method>
          <ejb-name>RaAdminSession</ejb-name>
          <method-name>getUserPreference</method-name>

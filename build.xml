@@ -201,6 +201,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/ra/raadmin/*.class"/>       
                 <include name="se/anatom/ejbca/*.class"/>
                 <include name="se/anatom/ejbca/util/**/*.class"/>
+                <include name="se/anatom/ejbca/util/query/*.class"/>                
                 <include name="se/anatom/ejbca/webdist/rainterface/Profile.class"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>           
         </fileset>
@@ -263,6 +264,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
                 <include name="se/anatom/ejbca/util/*.class"/>
+                <include name="se/anatom/ejbca/util/query/*.class"/>                
                 <include name="se/anatom/ejbca/exception/**/*.class"/>
                 <include name="se/anatom/ejbca/ca/exception/**/*.class"/>           
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
@@ -283,6 +285,7 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/IJobRunner*.class"/>
                 <include name="se/anatom/ejbca/SecConst*.class"/>
                 <include name="se/anatom/ejbca/util/*.class"/>
+                <include name="se/anatom/ejbca/util/query/*.class"/>                
                 <include name="se/anatom/ejbca/admin/*.class"/>
                 <include name="se/anatom/ejbca/batch/*.class"/>
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>

@@ -9,7 +9,7 @@ import java.util.Collection;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataLocalHome.java,v 1.1 2002-07-05 23:43:18 herrvendil Exp $
+ * @version $Id: UserDataLocalHome.java,v 1.2 2002-07-28 23:27:47 herrvendil Exp $
  **/
 
 public interface UserDataLocalHome extends javax.ejb.EJBLocalHome {
@@ -31,6 +31,9 @@ public interface UserDataLocalHome extends javax.ejb.EJBLocalHome {
 
     public Collection findByStatus(int status)
         throws FinderException;
+
+    public Collection findAll() 
+        throws FinderException;      
 
 }
 

@@ -2,9 +2,12 @@
 package se.anatom.ejbca.ca.auth;
 
 import java.rmi.*;
+
 import javax.naming.*;
 import javax.rmi.*;
 import javax.ejb.*;
+import java.util.Date;
+
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ra.UserDataPK;
@@ -16,7 +19,7 @@ import se.anatom.ejbca.ca.exception.AuthLoginException;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.10 2002-07-26 09:36:41 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.11 2002-07-28 23:27:47 herrvendil Exp $
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean {
 
@@ -84,6 +87,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
             UserDataPK pk = new UserDataPK(username);
             UserDataRemote data = userHome.findByPrimaryKey(pk);
             data.setStatus(UserDataRemote.STATUS_GENERATED);
+            data.setTimeModified((new Date()).getTime());
             info("Changed status of user '"+username+"' to STATUS_GENERATED.");
             debug("<finishUser("+username+", hiddenpwd)");
         } catch (ObjectNotFoundException oe) {

@@ -46,11 +46,13 @@
   boolean nouserparameter          = true;
 
   String[] userdata = null;
+  UserView user     = null;
   String   username = null;
 
   if( request.getParameter(USER_PARAMETER) != null ){
     username = request.getParameter(USER_PARAMETER);
-    userdata = rabean.findUser(username);
+    user = rabean.findUser(username);
+    userdata = user.getValues();
     nouserparameter = false;
   }
   
@@ -65,6 +67,10 @@
            value=value.trim(); 
            newuserdata[UserView.USERNAME] = value;
          }
+
+         newuserdata[UserView.PROFILE]  = userdata[UserView.PROFILE];  
+         newuserdata[UserView.CERTIFICATETYPE]  = userdata[UserView.CERTIFICATETYPE]; 
+
          value = request.getParameter(TEXTFIELD_PASSWORD);
          if(value !=null){
            value=value.trim(); 
@@ -261,9 +267,15 @@ function checksaveclose(){
      <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDITUSER %>'>
      <input type="hidden" name='<%= USER_PARAMETER %>' value='<%=username %>'>
      <table border="0" cellpadding="0" cellspacing="2" width="400">
-      <tr id="Row0">
+      <tr id="Row1">
 	<td align="right"><%= ejbcawebbean.getText("USERNAME") %></td>
 	<td>     <%=username %>
+        </td>
+      </tr>
+      <tr id="Row0">
+	<td align="right"><%= ejbcawebbean.getText("PROFILE") %></td>
+	<td>     <% if(userdata[UserView.PROFILE] != null) out.write(userdata[UserView.PROFILE]); 
+                    else out.write(ejbcawebbean.getText("NOPROFILEDEFINED")); %>
         </td>
       </tr>
       <tr id="Row1">

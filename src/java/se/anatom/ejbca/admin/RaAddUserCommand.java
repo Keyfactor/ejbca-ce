@@ -2,10 +2,11 @@
 package se.anatom.ejbca.admin;
 
 import java.io.*;
+import se.anatom.ejbca.ra.UserAdminData;
 
 /** Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.3 2002-04-18 12:31:15 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.4 2002-07-28 23:27:47 herrvendil Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 
@@ -36,7 +37,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             System.out.println("Type: "+type);
             if (email.equals("null"))
                 email = null;
-            getAdminSession().addUser(username, password, dn, email, type);
+            getAdminSession().addUser(username, password, dn, email, type,UserAdminData.NO_PROFILE, UserAdminData.NO_CERTIFICATETYPE); 
             System.out.println("User '"+username+"' has been added.");
             System.out.println();
             System.out.println("Note: If batch processing should be possible, \nalso use 'ra setclearpwd "+username+" <pwd>'.");

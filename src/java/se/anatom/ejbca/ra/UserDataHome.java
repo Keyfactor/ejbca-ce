@@ -11,7 +11,7 @@ import java.util.Collection;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataHome.java,v 1.6 2002-07-05 23:43:18 herrvendil Exp $
+ * @version $Id: UserDataHome.java,v 1.7 2002-07-28 23:27:47 herrvendil Exp $
  **/
 
 public interface UserDataHome extends javax.ejb.EJBHome {
@@ -32,6 +32,8 @@ public interface UserDataHome extends javax.ejb.EJBHome {
 
     public Collection findByStatus(int status)
         throws FinderException, RemoteException;
-
+    
+    public Collection findAll() 
+        throws FinderException, RemoteException;    
 }
 

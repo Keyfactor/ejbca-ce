@@ -13,12 +13,14 @@ import javax.ejb.*;
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.ra.GlobalConfiguration;
+import se.anatom.ejbca.util.query.Query;
+import se.anatom.ejbca.util.query.IllegalQueryException;
 
 /**
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.21 2002-07-26 09:26:39 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.22 2002-07-28 23:27:47 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -27,7 +29,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
     private UserDataLocalHome home = null;
     /** Columns in the database used in select */
-    private final String USERDATA_COL = "username, subjectDN, subjectEmail, status, type, clearpassword";
+    private final String USERDATA_COL = "username, subjectDN, subjectEmail, status, type, clearpassword, timeCreated, timeModified, profileId, certificateTypeId";
     /** Var holding JNDI name of datasource */
     private String dataSource = "java:/DefaultDS";
 
@@ -43,12 +45,20 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         debug("DataSource=" + dataSource);
         debug("<ejbCreate()");
     }
-
+    
+    /** Gets connection to Datasource used for manual SQL searches
+     * @return Connection
+     */
+    private Connection getConnection() throws SQLException, NamingException {
+        DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
+        return ds.getConnection();
+    } //getConnection
+    
    /**
     * Implements IUserAdminSession::addUser.
     * Implements a mechanism that uses UserDataEntity Bean.
     */
-    public void addUser(String username, String password, String dn, String email, int type) {
+    public void addUser(String username, String password, String dn, String email, int type, int profileid, int certificatetypeid) {
         debug(">addUser("+username+", password, "+dn+", "+email+", "+type+")");
 
         try {
@@ -58,6 +68,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             if (email != null)
                 data1.setSubjectEmail(email);
             data1.setType(type);
+            data1.setProfileId(profileid);
+            data1.setCertificateTypeId(certificatetypeid);
             info("Added user "+pk.username);
         }
         catch (Exception e) {
@@ -71,7 +83,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * Implements IUserAdminSession::changeUser.
     * Implements a mechanism that uses UserDataEntity Bean.
     */
-    public void changeUser(String username, String dn, String email, int type) {
+    public void changeUser(String username, String dn, String email, int type, int profileid, int certificatetypeid) {
         debug(">changeUser("+username+", "+dn+", "+email+", "+type+")");
 
         try {
@@ -82,6 +94,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             if (email != null)
                 data1.setSubjectEmail(email);
             data1.setType(type);
+            data1.setProfileId(profileid);
+            data1.setCertificateTypeId(certificatetypeid);
+            data1.setTimeModified((new java.util.Date()).getTime());
+            
             info("Changed user "+pk.username);
         }
         catch (Exception e) {
@@ -121,6 +137,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data = home.findByPrimaryKey(pk);
         data.setStatus(status);
+        data.setTimeModified((new java.util.Date()).getTime());        
         debug("<setUserStatus("+username+", "+status+")");
     } // setUserStatus
 
@@ -135,6 +152,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         UserDataLocal data = home.findByPrimaryKey(pk);
         try {
             data.setPassword(password);
+            data.setTimeModified((new java.util.Date()).getTime());
         } catch (java.security.NoSuchAlgorithmException nsae)
         {
             error("NoSuchAlgorithmException while setting password for user "+username);
@@ -153,10 +171,14 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data = home.findByPrimaryKey(pk);
         try {
-            if (password == null)
-                data.setClearPassword(null);
-            else
+            if (password == null){
+                data.setClearPassword("");
+                data.setTimeModified((new java.util.Date()).getTime());
+            }    
+            else{
                 data.setOpenPassword(password);
+                data.setTimeModified((new java.util.Date()).getTime());
+            }    
         } catch (java.security.NoSuchAlgorithmException nsae)
         {
             error("NoSuchAlgorithmException while setting password for user "+username);
@@ -177,7 +199,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         } catch (ObjectNotFoundException oe) {
             return null;
         }
-        UserAdminData ret = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getStatus(), data.getType());
+        UserAdminData ret = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getStatus()
+                                              , data.getType(), data.getProfileId(), data.getCertificateTypeId()
+                                          , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified()) );
         ret.setPassword(data.getClearPassword());
         debug("<findUser("+username+")");
         return ret;
@@ -199,7 +223,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             cat.error("Cannot find user with DN='"+dn+"'");
         }
         if(data != null){
-          returnval = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getStatus(), data.getType());
+          returnval = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getStatus()
+                                        , data.getType(), data.getProfileId(), data.getCertificateTypeId()
+                                        , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified()) );
           returnval.setPassword(data.getClearPassword());
         }
         debug("<findUserBySubjectDN("+subjectdn+")");
@@ -218,7 +244,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         while (iter.hasNext())
         {
             UserDataLocal user = (UserDataLocal) iter.next();
-            UserAdminData userData = new UserAdminData(user.getUsername(),user.getSubjectDN(),user.getSubjectEmail(),user.getStatus(),user.getType());
+            UserAdminData userData = new UserAdminData(user.getUsername(),user.getSubjectDN(),user.getSubjectEmail(),user.getStatus()
+                                                       ,user.getType(), user.getProfileId(), user.getCertificateTypeId()
+                                                       , new java.util.Date(user.getTimeCreated()), new java.util.Date(user.getTimeModified()) );
             userData.setPassword(user.getClearPassword());
             ret.add(userData);
         }
@@ -227,6 +255,26 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         return ret;
     } // findAllUsersByStatus
 
+    /**
+    * Implements IUserAdminSession::findAllUsersWithLimit.
+    */    
+    public Collection findAllUsersWithLimit()  throws FinderException{
+        debug(">findAllUsersWithLimit()");
+        Collection users = home.findAll();
+        Collection ret = new ArrayList();
+        Iterator iter = users.iterator();
+        while (iter.hasNext() && (ret.size() <= IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT ))
+        {
+            UserDataLocal user = (UserDataLocal) iter.next();
+            UserAdminData userData = new UserAdminData(user.getUsername(),user.getSubjectDN(),user.getSubjectEmail(),user.getStatus()
+                                                       ,user.getType(), user.getProfileId(), user.getCertificateTypeId()
+                                                       , new java.util.Date(user.getTimeCreated()), new java.util.Date(user.getTimeModified()) );
+            userData.setPassword(user.getClearPassword());
+            ret.add(userData);
+        }         
+        debug("<findAllUsersWithLimit()");  
+        return ret;
+    }
 
    /**
     * Implements IUserAdminSession::startExternalService.
@@ -258,8 +306,56 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             throw new EJBException("Error starting external service", e);
         }
     } // startExternalService
-
-     /**
+    
+    /**
+     * Method to execute a customized query on the ra user data. The parameter query should be a legal Query object.
+     * 
+     * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
+     * @return a collection of UserAdminData. Maximum size of Collection is defined i IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT
+     * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
+     * @see se.anatom.ejbca.util.query.Query 
+     */
+    public Collection query(Query query) throws IllegalQueryException{
+        debug(">query()");
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        ArrayList returnval = new ArrayList();
+        
+        // Check if query is legal.
+        if(!query.isLegalQuery()) 
+          throw new IllegalQueryException();
+        try{
+           // Construct SQL query.            
+            con = getConnection();
+            ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where " + query.getQueryString());
+            // Execute query.
+            rs = ps.executeQuery();
+            // Assemble result.            
+            while(rs.next() && returnval.size() <= IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT){
+              UserAdminData data = new UserAdminData(rs.getString(1), rs.getString(2), rs.getString(3), rs.getInt(4), rs.getInt(5)
+                                               , rs.getInt(9), rs.getInt(10)
+                                               , new java.util.Date(rs.getLong(7)), new java.util.Date(rs.getLong(8)));
+              data.setPassword(rs.getString(6));
+              returnval.add(data);
+            }
+            debug("<query()");  
+            return returnval;
+            
+        }catch(Exception e){
+          throw new EJBException(e);   
+        }finally{
+           try{
+             if(rs != null) rs.close();
+             if(ps != null) ps.close();
+             if(con!= null) con.close();
+           }catch(SQLException se){
+              se.printStackTrace();   
+           }
+        }       
+    } // query
+    
+     /** 
      * Loads the global configuration from the database.
      *
      * @throws EJBException if a communication or other error occurs.

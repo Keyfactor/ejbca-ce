@@ -7,13 +7,19 @@ import javax.ejb.FinderException;
 
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.GlobalConfiguration;
+import se.anatom.ejbca.util.query.Query;
+import se.anatom.ejbca.util.query.IllegalQueryException;
 
 /**
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.5 2002-07-20 18:40:08 herrvendil Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.6 2002-07-28 23:27:47 herrvendil Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
 
+    // Public constants
+    public static final int MAXIMUM_QUERY_ROWCOUNT = 300; // The maximun number of rows passed back in a query.
+    // Public methods
+    
    /**
     * Adds a user in the database.
     *
@@ -22,10 +28,13 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @param dn the DN the subject is given in his certificate.
     * @param email the email of the subject or null.
     * @param type the type of entity (from 'SecConst').
+    * @param profileid the id number of the profile bound to this user.
+    * @param certificatetypeid the id number of the certificate type that should be generated for the user.
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public void addUser(String username, String password, String dn, String email, int type) throws RemoteException;
+    public void addUser(String username, String password, String dn, String email, int type, int profileid, int certificatetypeid)
+      throws RemoteException;
     
     /**
     * Changes data for a user in the database speciefied by username.
@@ -35,10 +44,13 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @param dn the DN the subject is given in his certificate.
     * @param email the email of the subject or null.
     * @param type the type of entity (from 'SecConst').
+    * @param profileid the id number of the profile bound to this user.
+    * @param certificatetypeid the id number of the certificate type that should be generated for the user.
     *
     * @throws EJBException if a communication or other error occurs.
     */   
-    public void changeUser(String username, String dn, String email, int type) throws RemoteException;    
+    public void changeUser(String username, String dn, String email, int type, int profileid, int certificatetypeid) 
+       throws RemoteException;    
 
    /**
     * Deletes a user from the database. The users certificates must be revoked BEFORE this method is called.
@@ -107,6 +119,15 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @see se.anatom.ejbca.ra.UserAdminData
     */
     public Collection findAllUsersByStatus(int status) throws FinderException, RemoteException;
+
+   /**
+    * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
+    *
+    * @return Collection of UserAdminData
+    * @throws EJBException if a communication or other error occurs.
+    * @see se.anatom.ejbca.ra.UserAdminData
+    */    
+    public Collection findAllUsersWithLimit()  throws FinderException, RemoteException;
     
     /**
     * Starts an external service that may be needed bu user administration.
@@ -114,6 +135,16 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     */
     public void startExternalService(String args[]) throws RemoteException;
+    
+    /**
+     * Method to execute a customized query on the ra user data. The parameter query should be a legal Query object.
+     * 
+     * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
+     * @return a collection of UserAdminData. Maximum size of Collection is defined i IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT
+     * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
+     * @see se.anatom.ejbca.util.query.Query 
+     */
+     public Collection query(Query query) throws IllegalQueryException , RemoteException;    
     
      // Functions used to save  Global Configuration
    /**

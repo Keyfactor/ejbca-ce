@@ -121,6 +121,10 @@ public class ProfileDataHandler {
         throw new ProfileExistsException(newname);        
       }       
     }
+    
+    public int getProfileId(String profilename) throws RemoteException{
+      return raadminsession.getProfileId(profilename);  
+    }
    
     public String[][] getLastProfileAsString(String lastprofile) throws RemoteException{
       return raadminsession.getProfile(lastprofile).getAllValues();  

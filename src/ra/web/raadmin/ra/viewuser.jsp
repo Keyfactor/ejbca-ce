@@ -33,10 +33,12 @@
 
   String[] userdata = null;
   String   username = null;
+  UserView user     = null;
 
   if( request.getParameter(USER_PARAMETER) != null ){
     username = request.getParameter(USER_PARAMETER);
-    userdata = rabean.findUser(username);
+    user = rabean.findUser(username);
+    userdata = user.getValues();
     nouserparameter = false;
   }  
 %>
@@ -63,9 +65,15 @@
   <form name="adduser" action="<%= THIS_FILENAME %>" method="post">
      <input type="hidden" name='<%= USER_PARAMETER %>' value='<%=username %>'>
      <table border="0" cellpadding="0" cellspacing="2" width="400">
-      <tr id="Row1">
+      <tr id="Row0">
 	<td align="right"><%= ejbcawebbean.getText("USERNAME") %></td>
 	<td><% if(userdata[UserView.USERNAME] != null) out.write(userdata[UserView.USERNAME]); %>
+        </td>
+      </tr>
+      <tr id="Row1">
+	<td align="right"><%= ejbcawebbean.getText("PROFILE") %></td>
+	<td><% if(userdata[UserView.PROFILE] != null) out.write(userdata[UserView.PROFILE]);
+               else out.write(ejbcawebbean.getText("NOPROFILEDEFINED")); %>
         </td>
       </tr>
       <tr id="Row0">
@@ -179,6 +187,22 @@
                    out.write("CHECKED");%> disabled="true"> 
       </td>
     </tr>
+    <tr id="Row1">
+      <td>&nbsp;</td>
+      <td>&nbsp</td>
+    </tr> 
+    <tr id="Row0">
+      <td><%= ejbcawebbean.getText("CREATED") %></td>
+      <td>
+         <%= ejbcawebbean.printDateTime(user.getTimeCreated()) %>
+       </td>
+    </tr> 
+    <tr id="Row1">
+      <td><%= ejbcawebbean.getText("MODIFIED") %></td>
+      <td>
+         <%= ejbcawebbean.printDateTime(user.getTimeModified()) %>
+       </td>
+     </tr> 
        <tr id="Row0">
 	 <td></td>
 	 <td>

@@ -23,6 +23,10 @@ public class SortBy {
     public static final int COUNTRY          = 7;
     public static final int EMAIL            = 8;
     public static final int STATUS           = 9; 
+    public static final int PROFILE          = 10;     
+    public static final int CERTIFICATETYPE  = 11; 
+    public static final int TIMECREATED      = 12;     
+    public static final int TIMEMODIFIED     = 13;     
     
     public static final int ACCENDING        = 0;
     public static final int DECENDING        = 1;

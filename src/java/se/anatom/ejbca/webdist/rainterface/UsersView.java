@@ -9,6 +9,10 @@ import java.util.Vector;
 import java.util.Collections;
 import java.util.Collection;
 import java.util.Iterator;
+import java.rmi.RemoteException;
+import javax.ejb.CreateException;
+import javax.ejb.FinderException;
+import javax.naming.NamingException;
 import se.anatom.ejbca.ra.UserAdminData;
 /**
  * A class representing a set of users w
@@ -22,16 +26,17 @@ public class UsersView {
       sortby = new SortBy();
     }
     
-    public UsersView(UserAdminData importuser){
+    public UsersView(UserAdminData importuser) throws RemoteException, NamingException, FinderException, CreateException{
       users = new Vector();
       sortby = new SortBy();  
-
-      users.addElement(new UserView(importuser)); 
+      ProfileNameProxy profilenameproxy = new ProfileNameProxy(); 
+      
+      users.addElement(new UserView(importuser, profilenameproxy.getProfileName(importuser.getProfileId()),"NO_CERTIFICATE_TYPE" )); 
       
       Collections.sort(users); 
     }
     
-    public UsersView(Collection importusers){ 
+    public UsersView(Collection importusers) throws RemoteException, NamingException, FinderException, CreateException{ 
       users = new Vector();
       sortby = new SortBy();
       
@@ -77,12 +82,13 @@ public class UsersView {
       Collections.sort(this.users);
     }
     
-    public void setUsers(UserAdminData[] users){
+    public void setUsers(UserAdminData[] users) throws RemoteException, NamingException, FinderException, CreateException {
+      ProfileNameProxy profilenameproxy = new ProfileNameProxy();  
       UserView user;  
       this.users.clear();
       if(users !=null && users.length > 0){ 
         for(int i=0; i< users.length; i++){
-          user = new UserView(users[i]);
+          user = new UserView(users[i],profilenameproxy.getProfileName(users[i].getProfileId()),"NO_CERTIFICATE_TYPE"); // TEMPORATE.
           user.setSortBy(this.sortby);
           this.users.addElement(user);
         }
@@ -90,14 +96,16 @@ public class UsersView {
       }
     }
 
-    public void setUsers(Collection importusers){  
+    public void setUsers(Collection importusers) throws RemoteException, NamingException, FinderException, CreateException{ 
+      ProfileNameProxy profilenameproxy = new ProfileNameProxy();  
       UserView user;  
       Iterator i;  
       this.users.clear();
       if(importusers!=null && importusers.size() > 0){
         i=importusers.iterator();
         while(i.hasNext()){
-          user = new UserView((UserAdminData) i.next());
+          UserAdminData nextuser = (UserAdminData) i.next();  
+          user = new UserView(nextuser,profilenameproxy.getProfileName(nextuser.getProfileId()),"NO_CERTIFICATE_TYPE"); // TEMPORATE. 
           user.setSortBy(this.sortby);
           users.addElement(user);
         }

@@ -8,6 +8,7 @@ package se.anatom.ejbca.webdist.rainterface;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.UserDataRemote;
+import java.util.Date;
 
 /**
  * A class representing an user in the ra user database.
@@ -27,35 +28,45 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
     public static final int COUNTRY           = 8;
     public static final int EMAIL             = 9;
     public static final int STATUS            = 10;
-    public static final int TYPE_MASK         = 11; // Used with database representation.
-    public static final int TYPE_INVALID      = 11;
-    public static final int TYPE_ENDUSER      = 12;
-    public static final int TYPE_CA           = 13;
-    public static final int TYPE_RA           = 14;
-    public static final int TYPE_ROOTCA       = 15;
-    public static final int TYPE_CAADMIN      = 16;
-    public static final int TYPE_RAADMIN      = 17;
-    public static final int USERDN            = 18;
+    public static final int PROFILE           = 11;
+    public static final int CERTIFICATETYPE   = 12;
+    public static final int TYPE_MASK         = 13; // Used with database representation.
+    public static final int TYPE_INVALID      = 13;
+    public static final int TYPE_ENDUSER      = 14;
+    public static final int TYPE_CA           = 15;
+    public static final int TYPE_RA           = 16;
+    public static final int TYPE_ROOTCA       = 17;
+    public static final int TYPE_CAADMIN      = 18;
+    public static final int TYPE_RAADMIN      = 19;
+    public static final int USERDN            = 20;
     
     public static final String TRUE = "T";
     public static final String FALSE = "F";
     
-    public static final int NUMBEROF_USERFIELDS=19;
-    public static final int NUMBEROF_USERFIELDS_WITHTYPEMASK=12;  
+    public static final int NUMBEROF_USERFIELDS=21;
+    public static final int NUMBEROF_USERFIELDS_WITHTYPEMASK=14;  
     
     /** Creates a new instance of UserView */
     public UserView() {
       userdata = new String[NUMBEROF_USERFIELDS];   
     }
     
-    public UserView(UserAdminData newuserdata){
+    public UserView(UserAdminData newuserdata, String profilename, String certificatetypename){
       userdata = new String[NUMBEROF_USERFIELDS];          
-      setValues(newuserdata);
+      setValues(newuserdata, profilename, certificatetypename);
+      this.timecreated= newuserdata.getTimeCreated();
+      this.timemodified= newuserdata.getTimeModified();     
+      this.profileid= newuserdata.getProfileId();
+      this.certificatetypeid= newuserdata.getCertificateTypeId();
     }
     
-    public UserView(String[] newuserdata){
+    public UserView(String[] newuserdata, Date timecreated, Date timemodified, int profileid, int certificatetypeid){
       userdata = new String[NUMBEROF_USERFIELDS]; 
        setValues(newuserdata);     
+       this.timecreated= timecreated;
+       this.timemodified= timemodified;
+       this.profileid= profileid;
+       this.certificatetypeid=certificatetypeid;
     }
     
     // Public methods.
@@ -81,7 +92,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
     }
     
     /** Method to convert the user data model betwwen the one used in web interface and the one used internal*/
-    public UserAdminData convertToUserAdminData(){
+    public UserAdminData convertToUserAdminData() throws NumberFormatException{
       String dn = "";
       boolean first = true;
       if(userdata[COMMONNAME]!= null){
@@ -137,14 +148,15 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
       }
         
       UserAdminData returnuser = new UserAdminData(userdata[USERNAME],dn,userdata[EMAIL], 
-                                                   Integer.parseInt(userdata[STATUS]), getHexType());
+                                                   Integer.parseInt(userdata[STATUS]), getHexType(), profileid,
+                                                   certificatetypeid, timecreated, timemodified);
       returnuser.setPassword(userdata[PASSWORD]);
         
       return returnuser;
     }
     
     /* Sets the values according to the values in the UserAdminData object.*/ 
-    public void setValues(UserAdminData newuserdata){
+    public void setValues(UserAdminData newuserdata, String profilename, String certificatetypename){
        int startindex, endindex =0;
        String userdn= newuserdata.getDN(); 
        
@@ -170,6 +182,8 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
        userdata[STATE]              = dn.getField(DNFieldExtractor.STATE);
        userdata[COUNTRY]            = dn.getField(DNFieldExtractor.COUNTRY);       
        userdata[USERDN]             = userdn; 
+       userdata[PROFILE]            = profilename;
+       userdata[CERTIFICATETYPE]    = certificatetypename;
        
     }
     
@@ -257,7 +271,19 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
             break;   
           case SortBy.STATUS : 
             returnvalue = userdata[STATUS].compareTo(((UserView) obj).getValue(STATUS));            
-            break;               
+            break;
+          case SortBy.PROFILE : 
+            returnvalue = userdata[PROFILE].compareTo(((UserView) obj).getValue(PROFILE));            
+            break;
+          case SortBy.CERTIFICATETYPE : 
+            returnvalue = userdata[CERTIFICATETYPE].compareTo(((UserView) obj).getValue(CERTIFICATETYPE));            
+            break;
+          case SortBy.TIMECREATED : 
+            returnvalue = timecreated.compareTo(((UserView) obj).getTimeCreated());            
+            break;
+          case SortBy.TIMEMODIFIED : 
+            returnvalue = timemodified.compareTo(((UserView) obj).getTimeModified());            
+            break;            
           default:
             returnvalue = userdata[USERNAME].compareTo(((UserView) obj).getValue(USERNAME));             
       }
@@ -271,9 +297,17 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
       this.sortby=sortby;   
     }
     
+    public Date getTimeCreated(){return timecreated;}
+    public Date getTimeModified(){return timemodified;}  
+    public int getProfileId(){return profileid;}
+    public int getCertificateTypeId(){return certificatetypeid;}
     // Private constants.  
     
     // Private methods.
     private String[] userdata; 
     private SortBy sortby; 
+    private Date timecreated;
+    private Date timemodified;
+    private int profileid;
+    private int certificatetypeid;
 }
