@@ -1,4 +1,4 @@
-$Id: README,v 1.145 2004-05-29 12:14:08 anatom Exp $
+$Id: README,v 1.146 2004-05-29 18:56:30 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -203,6 +203,7 @@ setuserstatus
 Converting OpenSSL CA:
 You can convert a PEM-style CA key to a PKCS12file that can be imported in EJBCA.
 openssl pkcs12 -export -out server1.p12 -inkey cakey.pem -in ca.pem -name privateKey
+(note improt of pkcs12 files is not supported in ejbca 3.0)
 
 Deploy
 ======
