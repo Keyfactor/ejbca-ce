@@ -21,7 +21,7 @@ import junit.framework.*;
 /**
  * Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.1 2004-03-07 12:07:24 herrvendil Exp $
+ * @version $Id: TestPublisher.java,v 1.2 2004-03-14 13:49:48 herrvendil Exp $
  */
 public class TestPublisher extends TestCase {
 
@@ -221,7 +221,7 @@ public class TestPublisher extends TestCase {
      * @throws Exception error
      */	
     public void test06EditPublisher() throws Exception {
-    	log.debug(">test06clonePublisher()");
+    	log.debug(">test06EditPublisher()");
 
         boolean ret = false;
         
@@ -234,7 +234,7 @@ public class TestPublisher extends TestCase {
 
     	
     	
-    	log.debug("<test06clonePublisher()");
+    	log.debug("<test06EditPublisher()");
     }
     
     /**
@@ -286,7 +286,7 @@ public class TestPublisher extends TestCase {
           pub.removePublisher(admin,"TESTCLONEDUMMYCUSTOM");
           ret = true;
         }catch(Exception pee){}                 
-        assertTrue("Editing Custom Publisher failed", ret);
+        assertTrue("Removing Publisher failed", ret);
         
         log.debug("<test09removePublishers()");
     }

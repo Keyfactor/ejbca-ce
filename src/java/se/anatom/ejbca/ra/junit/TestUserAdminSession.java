@@ -19,7 +19,7 @@ import se.anatom.ejbca.ra.exception.NotFoundException;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserAdminSession.java,v 1.1 2003-11-02 14:30:46 anatom Exp $
+ * @version $Id: TestUserAdminSession.java,v 1.2 2004-03-14 13:55:02 herrvendil Exp $
  */
 public class TestUserAdminSession extends TestCase {
 
@@ -44,7 +44,7 @@ public class TestUserAdminSession extends TestCase {
 
         log.debug(">setUp()");
         ctx = getInitialContext();
-        caid = "TODO".hashCode();
+        caid = "CN=TEST".hashCode();
         Object obj = ctx.lookup("UserAdminSession");        
         IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);        
         usersession = userhome.create();

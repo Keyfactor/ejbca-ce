@@ -48,7 +48,7 @@ import se.anatom.ejbca.util.CertTools;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.23 2004-02-20 14:06:22 herrvendil Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.24 2004-03-14 13:50:36 herrvendil Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
@@ -480,7 +480,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
          try{
            hardtokenissuerhome.create(findFreeHardTokenIssuerId(), alias, admingroupid, issuerdata);
            returnval = true;
-         }catch(Exception g){}         
+         }catch(Exception g){}
        }
      
        if(returnval)
@@ -551,8 +551,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      * @throws EJBException if a communication or other error occurs.
      */
     public void removeHardTokenIssuer(Admin admin, String alias){
-      debug(">removeHardTokenIssuer(alias: " + alias + ")");
-      int caid = ILogSessionLocal.INTERNALCAID;
+      debug(">removeHardTokenIssuer(alias: " + alias + ")");     
       try{
         HardTokenIssuerDataLocal htih = hardtokenissuerhome.findByAlias(alias);        
         htih.remove();
@@ -610,7 +609,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       	  System.out.println("admingroupid " +  admingroupid);      	  
 		  returnval = getAuthorizationSession(admin).isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens");
 		  System.out.println("isAuthorizedNoLog " +  returnval );
-      	  returnval = returnval && authorizationsession.existsAdministratorInGroup(admin, admingroupid);      	 
+      	  returnval = returnval && authorizationsession.existsAdministratorInGroup(admin, admingroupid);
       	  System.out.println("existsAdministratorInGroup " +  returnval );
         }catch(FinderException fe){}
           catch(AuthorizationDeniedException ade){}
@@ -908,6 +907,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         caid = htd.getSignificantIssuerDN().hashCode();
         htd.remove();
         
+        // Remove all certificate mappings.
+        removeHardTokenCertificateMappings(admin, tokensn);
+        
+        
         // Remove all copyof references id property database.
        try{
         	hardtokenpropertyhome.findByProperty(tokensn, HardTokenPropertyEntityBean.PROPERTY_COPYOF).remove();         
@@ -1123,7 +1126,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        * @param admin, the administrator calling the function
        * @param certificate, the certificate to map to.
        *
-       * @return true if removal went successful.
+       *
        * @throws EJBException if a communication or other error occurs.
        */
     public void removeHardTokenCertificateMapping(Admin admin, X509Certificate certificate){
@@ -1143,6 +1146,37 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       }
       debug("<removeHardTokenCertificateMapping()");
     } // removeHardTokenCertificateMapping
+    
+    
+    /**
+     * Removes all mappings between a hard token and a certificate
+     *
+     * @param admin, the administrator calling the function
+     * @param tokensn, the serial number to remove.
+     *
+     *
+     * @throws EJBException if a communication or other error occurs.
+     */
+    private void removeHardTokenCertificateMappings(Admin admin, String tokensn){     
+      debug(">removeHardTokenCertificateMappings(tokensn: " + tokensn + ")");
+	  int caid = admin.getCAId();
+      try{
+      	Iterator result = hardtokencertificatemaphome.findByTokenSN(tokensn).iterator();
+      	while(result.hasNext()){
+          HardTokenCertificateMapLocal htcm = (HardTokenCertificateMapLocal) result.next();
+          htcm.remove();
+         
+      	}
+      	 getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENCERTIFICATEMAP, "All certificate mappings with tokensn: "  + tokensn +" removed");
+        }catch(Exception e){
+           try{
+             getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENCERTIFICATEMAP, "Error removing certificate mapping with tokensn " + tokensn + ".");
+           }catch(Exception re){
+              throw new EJBException(e);
+           }
+         }
+         debug("<removeHardTokenCertificateMappings()");
+     } // removeHardTokenCertificateMapping
 
        /**
        * Returns all the X509Certificates places in a hard token.

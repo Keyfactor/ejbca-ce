@@ -1,4 +1,4 @@
-package se.anatom.ejbca.ca.store.junit;
+package se.anatom.ejbca.ca.caadmin.junit;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
@@ -9,10 +9,10 @@ import junit.framework.*;
 /**
  * main test class
  *
- * @version $Id: TestRunner.java,v 1.7 2004-03-14 13:50:07 herrvendil Exp $
+ * @version $Id: TestRunnerEnd.java,v 1.1 2004-03-14 13:49:02 herrvendil Exp $
  */
-public class TestRunner extends Object {
-    private static Logger log = Logger.getLogger(TestRunner.class);
+public class TestRunnerEnd extends Object {
+    private static Logger log = Logger.getLogger(TestRunnerEnd.class);
 
     /**
      * main
@@ -38,9 +38,7 @@ public class TestRunner extends Object {
         log.debug(">suite()");
 
         TestSuite suite = new TestSuite();
-        suite.addTest(new TestSuite(TestCertificateData.class));
-		suite.addTest( new TestSuite( TestCertificateRetrival.class ));
-		suite.addTest( new TestSuite( TestCertificateProfile.class ));
+		suite.addTest( new TestSuite( TestRemoveCA.class ));
         log.debug("<suite()");
 
         return suite;

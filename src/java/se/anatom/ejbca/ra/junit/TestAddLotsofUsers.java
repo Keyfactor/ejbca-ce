@@ -20,7 +20,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestAddLotsofUsers.java,v 1.8 2003-09-04 09:02:22 herrvendil Exp $
+ * @version $Id: TestAddLotsofUsers.java,v 1.9 2004-03-14 13:55:02 herrvendil Exp $
  */
 public class TestAddLotsofUsers extends TestCase {
 	private static Logger log = Logger.getLogger(TestAddLotsofUsers.class);
@@ -59,7 +59,7 @@ public class TestAddLotsofUsers extends TestCase {
                 Context jndiContext = getInitialContext();
                 Object obj1 = jndiContext.lookup("UserAdminSession");
                 cacheHome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-                caid = "TODO".hashCode();
+                caid = "CN=TEST".hashCode();
                 
             }
 

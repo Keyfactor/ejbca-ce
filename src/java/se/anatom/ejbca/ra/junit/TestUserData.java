@@ -23,7 +23,7 @@ import se.anatom.ejbca.ra.UserDataRemote;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.17 2003-11-02 14:30:46 anatom Exp $
+ * @version $Id: TestUserData.java,v 1.18 2004-03-14 13:55:02 herrvendil Exp $
  */
 public class TestUserData extends TestCase {
 
@@ -54,7 +54,7 @@ public class TestUserData extends TestCase {
 
         Object obj = ctx.lookup("UserData");
         home = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj, UserDataHome.class);
-        caid = "TODO".hashCode();
+        caid = "CN=TEST".hashCode();
 
         obj = ctx.lookup("UserAdminSession");        
         IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);        
