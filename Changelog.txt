@@ -3,6 +3,7 @@
 
 2.0.1
 -----
+Java 1.4.x is now required.
 Support for JBoss_Jetty and JBoss 3.2.x.
 Microsoft UPN altName and smart card logon extended key usage.
 Enrollment page can now handle both patched and unpatched IE
