@@ -72,7 +72,7 @@ then
 elif [ -f $JBOSS_HOME/server/default/deploy/jbossweb-jetty.sar/META-INF/jboss-service.xml ]
 then
 	SERVER_XML=jetty32.xml
-# JBoss 3.2.2
+# JBoss 3.2.2/3.2.3
 elif [ -f $JBOSS_HOME/server/default/deploy/jbossweb-tomcat41.sar/META-INF/jboss-service.xml ]
 then
 	SERVER_XML=tomcat41-jboss32.xml

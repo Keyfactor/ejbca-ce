@@ -35,7 +35,7 @@ if exist "%JBOSS_HOME%\server\default\deploy\tomcat41-service.xml" set SERVER_XM
 if exist "%JBOSS_HOME%\server\default\deploy\jbossweb.sar\META-INF\jboss-service.xml" set SERVER_XML=jetty.xml
 rem JBoss 3.2.0
 if exist "%JBOSS_HOME%\server\default\deploy\jbossweb-jetty.sar\META-INF\jboss-service.xml" set SERVER_XML=jetty32.xml
-rem JBoss 3.2.2
+rem JBoss 3.2.2/3.2.3
 if exist "%JBOSS_HOME%\server\default\deploy\jbossweb-tomcat41.sar\META-INF\jboss-service.xml" set SERVER_XML=tomcat41-jboss32.xml
 
 if %SERVER_XML% == UNKNOWN goto unknown_jboss

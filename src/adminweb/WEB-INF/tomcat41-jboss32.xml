@@ -103,9 +103,21 @@
                   useURIValidationHack="false"
                   protocolHandlerClassName="org.apache.jk.server.JkCoyoteHandler"/>
 
-               <!-- SSL/TLS Connector configuration using the SSL domain keystore -->
+               <!-- SSL/TLS Connector not requiring client cert on port 8442 -->
                <Connector className = "org.apache.coyote.tomcat4.CoyoteConnector"
-                 address="${jboss.bind.address}" port="8443" scheme="https" secure="true">
+                 address="${jboss.bind.address}" port="8442" minProcessors="5" maxProcessors="75" 
+                 enableLookups="true" acceptCount="10" debug="0" scheme="https" secure="true">
+                 <Factory className = "org.apache.coyote.tomcat4.CoyoteServerSocketFactory"
+                   keystoreFile="../../bin/.keystore"
+                   keystorePass="foo123"
+                   protocol = "TLS"
+                   clientAuth="false"/>
+               </Connector>
+
+               <!-- SSL/TLS Connector requiring client cert on port 8443 -->
+               <Connector className = "org.apache.coyote.tomcat4.CoyoteConnector"
+                 address="${jboss.bind.address}" port="8443" minProcessors="5" maxProcessors="75" 
+                 enableLookups="true" acceptCount="10" debug="0" scheme="https" secure="true">
                  <Factory className = "org.apache.coyote.tomcat4.CoyoteServerSocketFactory"
                    keystoreFile="../../bin/.keystore"
                    keystorePass="foo123"
