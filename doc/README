@@ -159,9 +159,11 @@ Options in AuthenticationSession:
 An example is provided in sampleauth of a remoteely operated database where communication from the CA to the RA is done with a HTTP-based protocol.
 The Authentication module is configured by exchanging the session bean 'AuthenticationSession'.
 
+Options in CertificateStoreSession:
+-Datasource to be used when finding things in the database.
 
 Configuring databases:
-The session beans use direct database communication (from a connection pool) in some cases. In these cases the JNDI name if the Datasource used is always 'java:/DefaultDS'.
+The session beans use direct database communication (from a connection pool) in some cases. In these cases the JNDI name if the Datasource used is configured in ejb-jar.xml and jaws.xml, (default 'java:/DefaultDS').
 
 
 Batch creation of certificates:
@@ -179,6 +181,11 @@ recrep - receives a certification reply (from another CA) for the above generate
 processreq - processes a certification request for a subordinate CA and creates a certification reply.
 createcrl - issues a CRL.
 getcrl - retrieves the latest CRL.
+
+Configuring RA:
+
+Options in UserAdminSession:
+-Datasource to be used when finding things in the database.
 
 Administrating RA:
 

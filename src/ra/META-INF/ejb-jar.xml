@@ -12,6 +12,14 @@
      <ejb-class>se.anatom.ejbca.ra.LocalUserAdminSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
+   
+     <env-entry>
+     	<description>JDBC datasource to be used</description>
+     	<env-entry-name>DataSource</env-entry-name>
+     	<env-entry-type>java.lang.String</env-entry-type>
+     	<env-entry-value>java:/DefaultDS</env-entry-value>
+     </env-entry>
+
    </session>
 
    <entity>

@@ -24,12 +24,14 @@ import se.anatom.ejbca.util.Base64;
 
 /**
  * Stores a certificate in the database using Certificate Entity Bean.
- * Uses JNDI name "java:/DefaultDS" to get database DataSource when needed.
+ * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.1.1.1 2001-11-15 14:58:16 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.2 2002-01-03 12:10:55 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean implements ICertificateStoreSession {
 
+    /** Var holding JNDI name of datasource */
+    private String dataSource = "java:/DefaultDS";
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -37,6 +39,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
      */
     public void ejbCreate () throws CreateException {
         debug(">ejbCreate()");
+        dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
+        debug("DataSource=" + dataSource);
         debug("<ejbCreate()");
     }
 
@@ -93,13 +97,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
     } // storeCRL
 
     private Connection getConnection() throws SQLException, NamingException {
-           DataSource ds = (DataSource)getInitialContext().lookup("java:/DefaultDS");
+           DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
            return ds.getConnection();
     } //getConnection
 
    /**
     * Implements ICertificateStoreSession::listAlLCertificates.
-    * Uses select from java:/DefaultDS.
+    * Uses select directly from datasource.
     */
     public String[] listAllCertificates() throws RemoteException {
         debug(">listAllCertificates()");
@@ -136,7 +140,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
 
    /**
     * Implements ICertificateStoreSession::listRevokedCertificates.
-    * Uses select from java:/DefaultDS.
+    * Uses select directly from datasource.
     */
     public String[] listRevokedCertificates() throws RemoteException {
         debug(">listRevokedCertificates()");
@@ -176,7 +180,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
 
    /**
     * Implements ICertificateStoreSession::findCertificatesBySubject.
-    * Uses select from java:/DefaultDS.
+    * Uses select directly from datasource.
     */
     public Certificate[] findCertificatesBySubject(String subjectDN) {
         debug(">findCertificatesBySubject(), dn="+subjectDN);
@@ -219,7 +223,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
 
    /**
     * Implements ICertificateStoreSession::findCertificateByIssuerAndSerno.
-    * Uses select from java:/DefaultDS.
+    * Uses select directly from datasource.
     */
     public Certificate findCertificateByIssuerAndSerno(String issuerDN, BigInteger serno) throws RemoteException {
         debug(">findCertificateByIssuerAndSerno(), dn:"+issuerDN+", serno="+serno);
@@ -261,7 +265,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
 
    /**
     * Implements ICertificateStoreSession::isRevoked.
-    * Uses select from java:/DefaultDS.
+    * Uses select directly from datasource.
     */
     public RevokedCertInfo isRevoked(String issuerDN, BigInteger serno) throws RemoteException {
         debug(">isRevoked(), dn:"+issuerDN+", serno="+serno);
@@ -315,7 +319,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
     
    /**
     * Implements ICertificateStoreSession::getLastCRL.
-    * Uses select from java:/DefaultDS.
+    * Uses select directly from datasource.
     */
     public byte[] getLastCRL() {
         debug(">findLatestCRL()");
@@ -361,7 +365,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
 
    /**
     * Implements ICertificateStoreSession::getLastCRLNumber.
-    * Uses select from java:/DefaultDS.
+    * Uses select directly from datasource.
     */
     public int getLastCRLNumber() {
         debug(">getLastCRLNumber()");

@@ -15,14 +15,18 @@ import se.anatom.ejbca.BaseSessionBean;
 
 /**
  * Administrates users in the database using UserData Entity Bean.
- * Uses JNDI name "java:/DefaultDS" to get database DataSource when needed.
+ * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.1.1.1 2001-11-15 14:58:17 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.2 2002-01-03 12:10:55 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserAdminSession {
 
     private UserDataHome home = null;
+    /** Columns in the database used in select */
     private final String USERDATA_COL = "username, subjectDN, subjectEmail, status, type, password";
+    /** Var holding JNDI name of datasource */
+    private String dataSource = "java:/DefaultDS";
+
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -30,6 +34,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
     public void ejbCreate () throws CreateException {
         debug(">ejbCreate()");
         home = (UserDataHome) lookup("UserData", UserDataHome.class);
+        dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
+        debug("DataSource=" + dataSource);
         debug("<ejbCreate()");
     }
 
@@ -117,7 +123,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
     } // setClearTextPassword
 
     private Connection getConnection() throws SQLException, NamingException {
-           DataSource ds = (DataSource)getInitialContext().lookup("java:/DefaultDS");
+           DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
            return ds.getConnection();
     } //getConnection
 
