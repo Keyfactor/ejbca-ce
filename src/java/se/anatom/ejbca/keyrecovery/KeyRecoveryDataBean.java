@@ -8,6 +8,7 @@ import java.security.KeyPair;
 import org.apache.log4j.*;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.StringTools;
 
 /** Entity bean should not be used directly, use though Session beans.
  *
@@ -22,7 +23,7 @@ import se.anatom.ejbca.util.CertTools;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.2 2003-02-19 10:20:39 anatom Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.3 2003-02-27 08:43:25 anatom Exp $
  **/
 
 public abstract class KeyRecoveryDataBean implements javax.ejb.EntityBean {
@@ -42,6 +43,9 @@ public abstract class KeyRecoveryDataBean implements javax.ejb.EntityBean {
     public abstract void setIssuerDN(String issuerdn);
 
     public abstract String getUsername();
+    /** username must be called 'striped' using StringTools.strip()
+    * @see se.anatom.ejbca.util.StringTools
+    */
     public abstract void setUsername(String username);
 
     public abstract boolean getMarkedAsRecoverable();
@@ -70,7 +74,7 @@ public abstract class KeyRecoveryDataBean implements javax.ejb.EntityBean {
         setPK(pk.pK);
         setCertificateSN(certificatesn);
         setIssuerDN(issuerdn);
-        setUsername(username);
+        setUsername(StringTools.strip(username));
         setMarkedAsRecoverable(false);
         setKeyPair(keypair);
 

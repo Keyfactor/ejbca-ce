@@ -80,7 +80,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.18 2003-02-20 22:13:04 herrvendil Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.19 2003-02-27 08:43:14 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -193,6 +193,8 @@ public class DemoCertReqServlet extends HttpServlet {
         username = CertTools.getPartFromDN(dn, "CN");
     }
     username = username + "("+(new Date()).toString()+")";
+    // Strip dangerous chars
+    username = StringTools.strip(username);
     // need null check here?
     // Before doing anything else, check if the user name is unique and ok.
     boolean check = checkUsername(admin,username, useradminsession);

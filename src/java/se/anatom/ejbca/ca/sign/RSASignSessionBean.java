@@ -46,7 +46,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.72 2003-02-23 16:43:17 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.73 2003-02-27 08:43:24 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -223,7 +223,8 @@ public class RSASignSessionBean extends BaseSessionBean {
             UserAuthData data = authSession.authenticateUser(admin, username, password);
             debug("Authorized user " + username + " with DN='" + data.getDN()+"'.");
             debug("type="+ data.getType());
-            if ((data.getType() & SecConst.USER_INVALID) !=0) {
+            // If the user is of type USER_INVALUD, it cannot have any other type (in the mask)
+            if (data.getType() == SecConst.USER_INVALID) {
                 logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"User type is invalid, cannot create certificate for this user.");
             } else {
 
@@ -285,7 +286,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             throw new EJBException(e);
         }
         debug("<createCertificate(pk, ku)");
-	log.error("Invalid user type for user "+username);
+    log.error("Invalid user type for user "+username);
         throw new EJBException("Invalid user type for user "+username);
     } // createCertificate
 

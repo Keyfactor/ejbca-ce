@@ -28,9 +28,10 @@ import se.anatom.ejbca.ca.crl.RevokedCertInfo;
  * Expiration date (expireDate)
  * Revocation date (revocationDate)
  * Revocation reason (revocationReason)
+ * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.14 2003-02-12 11:23:17 scop Exp $
+ * @version $Id: CertificateDataBean.java,v 1.15 2003-02-27 08:43:24 anatom Exp $
  */
 public abstract class CertificateDataBean implements javax.ejb.EntityBean {
 
@@ -80,6 +81,9 @@ public abstract class CertificateDataBean implements javax.ejb.EntityBean {
     public abstract void setBase64Cert(String base64Cert);
 
     public abstract String getUsername();
+    /** username must be called 'striped' using StringTools.strip()
+    * @see se.anatom.ejbca.util.StringTools
+    */
     public abstract void setUsername(String username);
 
     //

@@ -4,18 +4,20 @@ import java.io.Serializable;
 
 import java.util.Date;
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.util.StringTools;
+
 /**
  * Hols admin data collected from UserData in the database.
  *
- * @version $Id: UserAdminData.java,v 1.5 2003-02-20 22:13:02 herrvendil Exp $
+ * @version $Id: UserAdminData.java,v 1.6 2003-02-27 08:43:26 anatom Exp $
  */
 public class UserAdminData implements Serializable {
-    
+
     // Public constants
     static final public int NO_ENDENTITYPROFILE    = 0;
     static final public int NO_CERTIFICATEPROFILE  = 0;
-    
-    
+
+
     private String username;
     private String subjectDN;
     private String subjectAltName;
@@ -40,7 +42,7 @@ public class UserAdminData implements Serializable {
      */
     public UserAdminData(String user, String dn, String subjectaltname, String email, int status, int type, int endentityprofileid, int certificateprofileid,
                          Date timecreated, Date timemodified, int tokentype, int hardtokenissuerid) {
-        this.username=user;
+        this.username=StringTools.strip(user);
         this.password=null;
         this.subjectDN=dn;
         this.subjectAltName=subjectaltname;
@@ -54,7 +56,7 @@ public class UserAdminData implements Serializable {
         this.tokentype = tokentype;
         this.hardtokenissuerid = hardtokenissuerid;
     }
-    public void setUsername(String user) { this.username=user;}
+    public void setUsername(String user) { this.username=StringTools.strip(user);}
     public String getUsername() {return username;}
     public void setDN(String dn) {this.subjectDN=dn;}
     public String getDN() {return subjectDN;}
@@ -67,51 +69,51 @@ public class UserAdminData implements Serializable {
     public void setStatus(int status) {this.status=status;}
     public int getStatus() {return status;}
     public void setType(int type) {this.type=type;}
-    public int getType() {return type;} 
+    public int getType() {return type;}
     public void setEndEntityProfileId(int endentityprofileid) { this.endentityprofileid=endentityprofileid; }
     public int getEndEntityProfileId(){ return this.endentityprofileid; }
     public void setCertificateProfileId(int certificateprofileid) { this.certificateprofileid=certificateprofileid; }
     public int getCertificateProfileId() {return this.certificateprofileid;}
     public void setTimeCreated(Date timecreated) { this.timecreated=timecreated; }
-    public Date getTimeCreated() {return this.timecreated;}    
+    public Date getTimeCreated() {return this.timecreated;}
     public void setTimeModified(Date timemodified) { this.timemodified=timemodified; }
-    public Date getTimeModified() {return this.timemodified;} 
+    public Date getTimeModified() {return this.timemodified;}
     public int getTokenType(){ return this.tokentype;}
     public void setTokenType(int tokentype) {this.tokentype=tokentype;}
     public int getHardTokenIssuerId() {return this.hardtokenissuerid;}
     public void setHardTokenIssuerId(int hardtokenissuerid) { this.hardtokenissuerid=hardtokenissuerid;}
-    
+
     public boolean getAdministrator(){
-      return (type & SecConst.USER_ADMINISTRATOR) == SecConst.USER_ADMINISTRATOR;  
+      return (type & SecConst.USER_ADMINISTRATOR) == SecConst.USER_ADMINISTRATOR;
     }
-    
+
     public void setAdministrator(boolean administrator){
       if(administrator)
-        type = type | SecConst.USER_ADMINISTRATOR;  
+        type = type | SecConst.USER_ADMINISTRATOR;
       else
-        type = type & (~SecConst.USER_ADMINISTRATOR);  
+        type = type & (~SecConst.USER_ADMINISTRATOR);
     }
-    
+
     public boolean getKeyRecoverable(){
-      return (type & SecConst.USER_KEYRECOVERABLE) == SecConst.USER_KEYRECOVERABLE;          
+      return (type & SecConst.USER_KEYRECOVERABLE) == SecConst.USER_KEYRECOVERABLE;
     }
-    
+
     public void setKeyRecoverable(boolean keyrecoverable){
       if(keyrecoverable)
-        type = type | SecConst.USER_KEYRECOVERABLE;  
+        type = type | SecConst.USER_KEYRECOVERABLE;
       else
-        type = type & (~SecConst.USER_KEYRECOVERABLE);          
+        type = type & (~SecConst.USER_KEYRECOVERABLE);
     }
-    
+
     public boolean getSendNotification(){
-      return (type & SecConst.USER_SENDNOTIFICATION) == SecConst.USER_SENDNOTIFICATION;          
+      return (type & SecConst.USER_SENDNOTIFICATION) == SecConst.USER_SENDNOTIFICATION;
     }
-    
+
     public void setSendNotification(boolean sendnotification){
       if(sendnotification)
-        type = type | SecConst.USER_SENDNOTIFICATION;  
+        type = type | SecConst.USER_SENDNOTIFICATION;
       else
-        type = type & (~SecConst.USER_SENDNOTIFICATION);          
+        type = type & (~SecConst.USER_SENDNOTIFICATION);
     }
-    
+
 }

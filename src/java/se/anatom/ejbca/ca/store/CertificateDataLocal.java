@@ -31,7 +31,10 @@ public interface CertificateDataLocal extends javax.ejb.EJBLocalObject {
     public String getBase64Cert();
     public void setBase64Cert(String base64Cert);
     public String getUsername();
-    public void setUsername(String username);        
+    /** username must be called 'striped' using StringTools.strip()
+    * @see se.anatom.ejbca.util.StringTools
+    */
+    public void setUsername(String username);
 
     // Public helper methods, not directly related to persistance
     public Certificate getCertificate();

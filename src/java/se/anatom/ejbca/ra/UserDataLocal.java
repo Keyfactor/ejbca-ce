@@ -5,7 +5,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataLocal.java,v 1.7 2003-02-12 13:21:30 herrvendil Exp $
+ * @version $Id: UserDataLocal.java,v 1.8 2003-02-27 08:43:27 anatom Exp $
  **/
 public interface UserDataLocal extends javax.ejb.EJBLocalObject {
 
@@ -18,16 +18,19 @@ public interface UserDataLocal extends javax.ejb.EJBLocalObject {
     public static final int STATUS_GENERATED = 40;  // A certificate has been generated for the user
     public static final int STATUS_REVOKED = 50;  // The user has been revoked and should not have any more certificates issued
     public static final int STATUS_HISTORICAL = 60; // The user is old and archived
-    public static final int STATUS_KEYRECOVERY  = 70; // The user is should use key recovery functions in next certificate generation.      
-    
+    public static final int STATUS_KEYRECOVERY  = 70; // The user is should use key recovery functions in next certificate generation.
+
     // public methods
 
     public String getUsername();
+    /** username must be called 'striped' using StringTools.strip()
+    * @see se.anatom.ejbca.util.StringTools
+    */
     public void setUsername(String username);
     public String getSubjectDN();
 //    public void setSubjectDN(String subjectDN);
     public String getSubjectAltName();
-    public void setSubjectAltName(String subjectAltName);      
+    public void setSubjectAltName(String subjectAltName);
     public String getSubjectEmail();
     public void setSubjectEmail(String subjectEmail);
     public int getStatus();
@@ -38,18 +41,18 @@ public interface UserDataLocal extends javax.ejb.EJBLocalObject {
     public void setClearPassword(String clearPassword);
     public String getPasswordHash();
     public void setPasswordHash(String passwordHash);
-     
-    public long getTimeCreated();    
-    public long getTimeModified();  
-    public void setTimeModified(long createtime);     
-    public int getEndEntityProfileId();   
-    public void setEndEntityProfileId(int endentityprofileid);  
+
+    public long getTimeCreated();
+    public long getTimeModified();
+    public void setTimeModified(long createtime);
+    public int getEndEntityProfileId();
+    public void setEndEntityProfileId(int endentityprofileid);
     public int getCertificateProfileId();
-    public void setCertificateProfileId(int certificateprofileid);      
-    public int getTokenType();  
-    public void setTokenType(int tokentype);   
-    public int getHardTokenIssuerId();  
-    public void setHardTokenIssuerId(int hardtokenissuerid);     
+    public void setCertificateProfileId(int certificateprofileid);
+    public int getTokenType();
+    public void setTokenType(int tokentype);
+    public int getHardTokenIssuerId();
+    public void setHardTokenIssuerId(int hardtokenissuerid);
 
     public void setDN(String dn);
     public void setPassword(String password) throws  NoSuchAlgorithmException;

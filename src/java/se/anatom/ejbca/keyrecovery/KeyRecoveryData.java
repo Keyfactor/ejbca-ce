@@ -1,52 +1,49 @@
-/*
- * KeyRecoveryData.java
- *
- * Created on den 6 februari 2003, 22:27
- */
-
 package se.anatom.ejbca.keyrecovery;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
 
+import se.anatom.ejbca.util.StringTools;
+
 /**
- *  This is a value class containing the data relating to key saved for recovery for a user, sent between 
+ *  This is a value class containing the data relating to key saved for recovery for a user, sent between
  *  server and clients.
  *
  * @author  TomSelleck
+ * @version $Id: KeyRecoveryData.java,v 1.2 2003-02-27 08:43:24 anatom Exp $
  */
 
 public class KeyRecoveryData implements java.io.Serializable {
-  
+
     // Public Constructors
     public KeyRecoveryData(BigInteger certificatesn, String issuerdn, String username, boolean markedasrecoverable, KeyPair keypair){
       this.certificatesn=certificatesn;
       this.issuerdn=issuerdn;
-      this.username=username;     
+      this.username=StringTools.strip(username);
       this.markedasrecoverable=markedasrecoverable;
       this.keypair=keypair;
     }
-    
+
     public KeyRecoveryData(){
-    }    
-    
-    // Public Methods    
-    
-    public BigInteger getCertificateSN(){ return this.certificatesn; }   
+    }
+
+    // Public Methods
+
+    public BigInteger getCertificateSN(){ return this.certificatesn; }
     public void setCertificateSN(BigInteger certificatesn){ this.certificatesn=certificatesn; }
-    
-    public String getIssuerDN(){ return this.issuerdn; }   
-    public void setIssuerDN(String issuerdn){ this.issuerdn=issuerdn; }       
-    
-    public String getUsername(){ return this.username; }   
-    public void setUsername(String username){ this.username=username; }    
-    
-    public boolean getMarkedAsRecoverable(){ return this.markedasrecoverable; }   
+
+    public String getIssuerDN(){ return this.issuerdn; }
+    public void setIssuerDN(String issuerdn){ this.issuerdn=issuerdn; }
+
+    public String getUsername(){ return this.username; }
+    public void setUsername(String username){ this.username=StringTools.strip(username); }
+
+    public boolean getMarkedAsRecoverable(){ return this.markedasrecoverable; }
     public void setMarkedAsRecoverable(boolean markedasrecoverable){ this.markedasrecoverable=markedasrecoverable; }
-    
-    public KeyPair getKeyPair(){ return this.keypair; }   
+
+    public KeyPair getKeyPair(){ return this.keypair; }
     public void setKeyPair(KeyPair keypair){ this.keypair=keypair; }
-          
+
     // Private fields
     private     BigInteger       certificatesn;
     private     String           issuerdn;

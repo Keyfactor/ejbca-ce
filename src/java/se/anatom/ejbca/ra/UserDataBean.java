@@ -9,6 +9,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.StringTools;
 import se.anatom.ejbca.util.Hex;
 import se.anatom.ejbca.SecConst;
 
@@ -40,7 +41,7 @@ import org.apache.log4j.Logger;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.17 2003-02-12 11:23:18 scop Exp $
+ * @version $Id: UserDataBean.java,v 1.18 2003-02-27 08:43:26 anatom Exp $
  */
 public abstract class UserDataBean implements javax.ejb.EntityBean {
 
@@ -49,6 +50,9 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
 
 
     public abstract String getUsername();
+    /** username must be called 'striped' using StringTools.strip()
+    * @see se.anatom.ejbca.util.StringTools
+    */
     public abstract void setUsername(String username);
 
     public abstract String getSubjectDN();
@@ -244,7 +248,7 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
 
         long time = (new Date()).getTime();
 
-        setUsername(username);
+        setUsername(StringTools.strip(username));
         setClearPassword(null);
         setPasswordHash(makePasswordHash(password));
         setSubjectDN(CertTools.stringToBCDNString(dn));

@@ -22,6 +22,7 @@ import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.StringTools;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.ILogSessionHome;
@@ -31,7 +32,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.36 2003-02-12 13:21:38 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.37 2003-02-27 08:43:24 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -108,6 +109,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp, int status, int type) {
         debug(">storeCertificate("+cafp+", "+status+", "+type+")");
         try {
+            // Strip dangerous chars
+            username = StringTools.strip(username);
+
             X509Certificate cert = (X509Certificate)incert;
             CertificateDataPK pk = new CertificateDataPK();
             pk.fingerprint = CertTools.getFingerprintAsString(cert);
@@ -348,6 +352,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     public Collection findCertificatesByUsername(Admin admin, String username) {
         debug(">findCertificateBySerno(),  username="+username);
         try {
+            // Strip dangerous chars
+            username = StringTools.strip(username);
+
             Collection coll = certHome.findByUsername(username);
             ArrayList ret = new ArrayList();
             if (coll != null) {
@@ -362,7 +369,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             throw new EJBException(fe);
         }
     } // findCertificateByUsername
-   
+
     /**
      * Implements ICertificateStoreSession::findCertificateByFingerprint.
      */
@@ -370,13 +377,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         debug(">findCertificateByFingerprint()");
         try {
             CertificateDataLocal res = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
-            Certificate ret = res.getCertificate(); 
+            Certificate ret = res.getCertificate();
             debug("<findCertificateByFingerprint()");
             return ret;
         } catch (Exception fe) {
             throw new EJBException(fe);
         }
-    } // findCertificateByFingerprint    
+    } // findCertificateByFingerprint
 
     /**
      * Set the status of certificates of given username to revoked.
@@ -386,6 +393,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public void setRevokeStatus(Admin admin, String username, int reason) {
        X509Certificate certificate = null;
+       // Strip dangerous chars
+       username = StringTools.strip(username);
        try{
          Collection certs = findCertificatesByUsername(admin, username);
           // Revoke all certs
@@ -469,6 +478,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     public boolean checkIfAllRevoked(Admin admin, String username){
        boolean returnval = true;
        X509Certificate certificate = null;
+       // Strip dangerous chars
+       username = StringTools.strip(username);
        try{
          Collection certs = findCertificatesByUsername(admin, username);
           // Revoke all certs

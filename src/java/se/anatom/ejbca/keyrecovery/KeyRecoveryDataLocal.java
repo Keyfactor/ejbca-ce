@@ -6,26 +6,29 @@ import java.security.KeyPair;
 /**
  * For docs, see KeyRecoveryDataBean
  *
- * @version $Id: KeyRecoveryDataLocal.java,v 1.1 2003-02-12 13:21:30 herrvendil Exp $
+ * @version $Id: KeyRecoveryDataLocal.java,v 1.2 2003-02-27 08:43:25 anatom Exp $
  **/
 
 public interface KeyRecoveryDataLocal extends javax.ejb.EJBLocalObject {
 
     // Public methods
 
-    public BigInteger getCertificateSN();   
-    public void setCertificateSN(BigInteger certificatesn);   
- 
-    public String getIssuerDN();   
-    public void setIssuerDN(String issuerdn);   
-    
+    public BigInteger getCertificateSN();
+    public void setCertificateSN(BigInteger certificatesn);
+
+    public String getIssuerDN();
+    public void setIssuerDN(String issuerdn);
+
     public String getUsername();
-    public void setUsername(String username);                       
-        
-    public boolean getMarkedAsRecoverable();   
+    /** username must be called 'striped' using StringTools.strip()
+    * @see se.anatom.ejbca.util.StringTools
+    */
+    public void setUsername(String username);
+
+    public boolean getMarkedAsRecoverable();
     public void setMarkedAsRecoverable(boolean markedasrecoverable);
-    
-    public KeyPair getKeyPair(); 
+
+    public KeyPair getKeyPair();
     public void setKeyPair(KeyPair keypair);
 }
 

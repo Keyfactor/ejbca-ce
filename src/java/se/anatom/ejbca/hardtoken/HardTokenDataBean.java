@@ -7,6 +7,7 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 import se.anatom.ejbca.hardtoken.hardtokentypes.*;
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.util.StringTools;
 
 /**
  * Entity bean should not be used directly, use though Session beans.
@@ -14,14 +15,15 @@ import se.anatom.ejbca.SecConst;
  * Entity Bean representing a hard token in the ra.
  * Information stored:
  * <pre>
- *  tokensn (Primary key)
- *  ctime (createtime)
- *  mtime (modifytime)
- *  tokentype 
- *  tokendata (Data saved concerning the hard token)
+ *  tokenSN (Primary key)
+ *  cTime (createtime)
+ *  username (username)
+ *  mTime (modifytime)
+ *  tokenType  (tokentype)
+ *  data (Data saved concerning the hard token)
  * </pre>
  *
- * @version $Id: HardTokenDataBean.java,v 1.2 2003-02-12 11:23:17 scop Exp $
+ * @version $Id: HardTokenDataBean.java,v 1.3 2003-02-27 08:43:24 anatom Exp $
  */
 public abstract class HardTokenDataBean implements javax.ejb.EntityBean {
 
@@ -32,59 +34,62 @@ public abstract class HardTokenDataBean implements javax.ejb.EntityBean {
     protected EntityContext ctx;
     public abstract String getTokenSN();
     public abstract void setTokenSN(String tokensn);
-    
+
     public abstract String getUsername();
-    public abstract void setUsername(String username);                  
+    /** username must be called 'striped' using StringTools.strip()
+    * @see se.anatom.ejbca.util.StringTools
+    */
+    public abstract void setUsername(String username);
 
     public abstract long getCTime();
     public abstract void setCTime(long createtime);
-    
+
     public abstract long getMTime();
     public abstract void setMTime(long modifytime);
-    
+
     public abstract int getTokenType();
-    public abstract void setTokenType(int tokentype);    
+    public abstract void setTokenType(int tokentype);
 
     public abstract HashMap getData();
     public abstract void setData(HashMap data);
-    
+
     public Date getCreateTime(){ return new Date(getCTime()); }
-    
-    public void setCreateTime(Date createtime){ setCTime(createtime.getTime()); } 
+
+    public void setCreateTime(Date createtime){ setCTime(createtime.getTime()); }
 
     public Date getModifyTime(){ return new Date(getMTime()); }
-    
-    public void setModifyTime(Date modifytime){ setMTime(modifytime.getTime()); } 
-   
-    /** 
+
+    public void setModifyTime(Date modifytime){ setMTime(modifytime.getTime()); }
+
+    /**
      * Method that returns the hard token issuer data and updates it if nessesary.
-     */    
-    
+     */
+
     public HardToken getHardToken(){
-      HardToken returnval = null;        
+      HardToken returnval = null;
       HashMap data = getData();
       int tokentype = ((Integer) data.get(HardToken.TOKENTYPE)).intValue();
-      
+
       switch(tokentype){
           case SecConst.TOKEN_EID :
              returnval = new EIDHardToken();
              break;
           default:
              returnval = new EIDHardToken();
-             break;              
+             break;
       }
 
       returnval.loadData((Object) data);
-      return returnval;              
+      return returnval;
     }
-    
-    /** 
+
+    /**
      * Method that saves the hard token issuer data to database.
-     */    
+     */
     public void setHardToken(HardToken tokendata){
-       setData((HashMap) tokendata.saveData());          
+       setData((HashMap) tokendata.saveData());
     }
-    
+
 
     //
     // Fields required by Container
@@ -100,12 +105,12 @@ public abstract class HardTokenDataBean implements javax.ejb.EntityBean {
 
     public String ejbCreate(String tokensn, String username, Date createtime, Date modifytime, int tokentype, HardToken tokendata) throws CreateException {
         setTokenSN(tokensn);
-        setUsername(username);
+        setUsername(StringTools.strip(username));
         setCTime(createtime.getTime());
-        setMTime(modifytime.getTime());        
-        setTokenType(tokentype);       
+        setMTime(modifytime.getTime());
+        setTokenType(tokentype);
         setHardToken(tokendata);
-        
+
         log.debug("Created Hard Token "+ tokensn );
         return tokensn;
     }

@@ -78,7 +78,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * </dl>
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.4 2003-02-12 11:23:14 scop Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.5 2003-02-27 08:43:14 anatom Exp $
  */
 public class AdminCertReqServlet extends HttpServlet {
 
@@ -171,6 +171,8 @@ public class AdminCertReqServlet extends HttpServlet {
     if (username == null || username.trim().length() == 0) {
       username = dn;
     }
+    // Strip dangerous chars
+    username = StringTools.strip(username);
     // need null check here?
     // Before doing anything else, check if the user name is unique and ok.
     username = checkUsername(rabean, username);

@@ -4,6 +4,8 @@ import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import java.util.Date;
 
+import se.anatom.ejbca.util.StringTools;
+
 
 /** Entity bean should not be used directly, use though Session beans.
  *
@@ -20,7 +22,7 @@ import java.util.Date;
  *  comment an optional comment of the event.
  * </pre>
  *
- * @version $Id: LogEntryDataBean.java,v 1.2 2002-09-17 09:19:46 herrvendil Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.3 2003-02-27 08:43:25 anatom Exp $
  **/
 
 public abstract class LogEntryDataBean implements javax.ejb.EntityBean {
@@ -32,35 +34,38 @@ public abstract class LogEntryDataBean implements javax.ejb.EntityBean {
 
     public abstract int getAdminType();
     public abstract void setAdminType(int admintype);
-    
+
     public abstract String getAdminData();
-    public abstract void setAdminData(String admindata);    
-    
+    public abstract void setAdminData(String admindata);
+
     // Indicates the module (CA,RA ...) using the logsession bean.
     public abstract int getModule();
     public abstract void setModule(int module);
 
     public abstract long getTime();
     public abstract void setTime(long time);
-    
+
     public abstract String getUsername();
-    public abstract void setUsername(String username);   
+    /** username must be called 'striped' using StringTools.strip()
+    * @see se.anatom.ejbca.util.StringTools
+    */
+    public abstract void setUsername(String username);
 
     public abstract String getCertificateSNR();
-    public abstract void setCertificateSNR(String certificatesnr);   
+    public abstract void setCertificateSNR(String certificatesnr);
 
     public abstract int getEvent();
-    public abstract void setEvent(int event);       
-    
+    public abstract void setEvent(int event);
+
     public abstract String getComment();
-    public abstract void setComment(String comment);       
+    public abstract void setComment(String comment);
 
     public Date getTimeAsDate(){
-      return new Date(getTime());  
-    } 
-    
+      return new Date(getTime());
+    }
+
     public LogEntry getLogEntry(){
-      return new LogEntry( getAdminType(), getAdminData(), getModule(), getTimeAsDate(), getUsername(), getCertificateSNR(), getEvent(), getComment()); 
+      return new LogEntry( getAdminType(), getAdminData(), getModule(), getTimeAsDate(), getUsername(), getCertificateSNR(), getEvent(), getComment());
     }
     //
     // Fields required by Container
@@ -72,10 +77,10 @@ public abstract class LogEntryDataBean implements javax.ejb.EntityBean {
         setAdminData(admindata);
         setModule(module);
         setTime(time.getTime());
-        setUsername(username);
-        setCertificateSNR(certificatesnr);            
-        setEvent(event); 
-        setComment(comment);       
+        setUsername(StringTools.strip(username));
+        setCertificateSNR(certificatesnr);
+        setEvent(event);
+        setComment(comment);
         return id;
     }
 
