@@ -59,6 +59,13 @@ public class ca {
             System.out.println("Usage: CA info | makeroot | getrootcert | makereq | recrep | processreq | init | createcrl | getcrl | rolloverroot | rolloversub | listexpired");
             return;
         }
+        /* TODO, complete this 
+        IAdminCommand cmd = CaAdminCommandFactory(args);
+        if (cmd != null) {
+            cmd.execute();
+        }
+         */
+        
         try {
             org.apache.log4j.PropertyConfigurator.configure();
             // Install BouncyCastle provider

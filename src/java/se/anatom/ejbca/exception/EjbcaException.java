@@ -14,7 +14,7 @@ package se.anatom.ejbca.exception;
  * }
  * </code>
  *
- * @version $Id: EjbcaException.java,v 1.1 2002-03-22 10:11:24 anatom Exp $
+ * @version $Id: EjbcaException.java,v 1.2 2002-04-07 09:55:29 anatom Exp $
  */
 public class EjbcaException extends Exception {
 
@@ -26,5 +26,14 @@ public class EjbcaException extends Exception {
     */
    public EjbcaException(String message) {
        super(message);
+   }
+   /**
+    * Constructor used to create exception with an embedded exception.
+    * Calls the same constructor in baseclass <code>Exception</code>.
+    *
+    * @param exception exception to be embedded.
+    */
+   public EjbcaException(Exception exception) {
+       super(exception);
    }
 }
