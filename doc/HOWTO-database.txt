@@ -31,8 +31,10 @@ to set the correct type-mappings for 'base64cert' and 'base64crl' for the
 database used.
 
 2. Do the same with src/ra/META-INF/jbosscmp-jdbc-<database>.xml
-
-3. Do the same with src/log/META-INF/jbosscmp-jdbc-<database>.xml
+   Do the same with src/log/META-INF/jbosscmp-jdbc-<database>.xml
+   Do the same with src/hardtoken/META-INF/jbosscmp-jdbc-<database>.xml
+   Do the same with src/keyrecovery/META-INF/jbosscmp-jdbc-<database>.xml
+   
 
 4. Build EJBCA with 'ant' and deploy with 'deploy.sh/cmd'.
 
