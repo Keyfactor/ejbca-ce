@@ -23,7 +23,7 @@ import org.apache.log4j.*;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.26 2003-01-02 11:01:03 anatom Exp $
+ * @version $Id: CertTools.java,v 1.27 2003-01-12 15:10:48 anatom Exp $
  */
 public class CertTools {
 
@@ -199,6 +199,9 @@ public class CertTools {
      */
     public static String getPartFromDN(String dn, String dnpart) {
         cat.debug(">getPartFromDN: dn:'" + dn+"', dnpart="+dnpart);
+        if (dn == null) {
+            return null;
+        }
         String trimmeddn = dn.trim();
         String part = null, o = null;
         dnpart += "="; // we search for 'CN=' etc.
