@@ -32,11 +32,15 @@
   static final String BUTTON_SAVE              = "buttonsave";
   static final String BUTTON_CANCEL            = "buttoncancel";
  
-  static final String TEXTFIELD_USERNAME         = "textfieldusername";
-  static final String TEXTFIELD_PASSWORD         = "textfieldpassword";
-  static final String TEXTFIELD_SUBJECTDN        = "textfieldsubjectdn";
-  static final String TEXTFIELD_SUBJECTALTNAME   = "textfieldsubjectaltname";
-  static final String TEXTFIELD_EMAIL            = "textfieldemail";
+  static final String TEXTFIELD_USERNAME             = "textfieldusername";
+  static final String TEXTFIELD_PASSWORD             = "textfieldpassword";
+  static final String TEXTFIELD_SUBJECTDN            = "textfieldsubjectdn";
+  static final String TEXTFIELD_SUBJECTALTNAME       = "textfieldsubjectaltname";
+  static final String TEXTFIELD_EMAIL                = "textfieldemail";
+  static final String TEXTFIELD_NOTIFICATIONSENDER   = "textfieldnotificationsender";
+  static final String TEXTFIELD_NOTIFICATIONSUBJECT  = "textfieldnotificationsubject";
+
+  static final String TEXTAREA_NOTIFICATIONMESSAGE  = "textareanotificationmessage";
 
   static final String CHECKBOX_CLEARTEXTPASSWORD          = "checkboxcleartextpassword";
   static final String CHECKBOX_ADMINISTRATOR              = "checkboxadministrator";
@@ -141,6 +145,7 @@
          if(profile != null){
            if(!profile.trim().equals("")){
              if(!profile.equals(EndEntityProfileDataHandler.EMPTY_PROFILE)){ 
+               ejbcarabean.setTemporaryEndEntityProfile(null);
                includefile="endentityprofilepage.jsp"; 
              }else{
                 triedtoeditemptyprofile=true;
@@ -227,57 +232,16 @@
        profile = request.getParameter(HIDDEN_PROFILENAME);
        if(profile != null){
          if(!profile.trim().equals("")){
-           if(request.getParameter(BUTTON_DELETESUBJECTDN) != null){
-             profiledata = ejbcarabean.getEndEntityProfile(profile);
-             numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();
-             int pointer = 0;
-             for(int i=0; i < numberofsubjectdnfields; i++){
-               if(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_SELECTSUBJECTDN + i))){
-                 fielddata = profiledata.getSubjectDNFieldsInOrder(pointer);  
-                 profiledata.removeField(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]);
-               }
-               else
-                 pointer++;
+           if(request.getParameter(BUTTON_SAVE) != null || 
+              request.getParameter(BUTTON_DELETESUBJECTDN) != null ||
+              request.getParameter(BUTTON_ADDSUBJECTDN) != null ||
+              request.getParameter(BUTTON_DELETESUBJECTALTNAME) != null ||
+              request.getParameter(BUTTON_ADDSUBJECTALTNAME) != null){
+               
+             profiledata = ejbcarabean.getTemporaryEndEntityProfile();
+             if(profiledata == null){
+               profiledata = ejbcarabean.getEndEntityProfile(profile);
              }
-             ejbcarabean.changeEndEntityProfile(profile,profiledata);    
-             includefile="endentityprofilepage.jsp";       
-           }
-           if(request.getParameter(BUTTON_ADDSUBJECTDN) != null){
-             profiledata = ejbcarabean.getEndEntityProfile(profile);
-             value = request.getParameter(SELECT_ADDSUBJECTDN);
-             if(value!=null){
-               profiledata.addField(Integer.parseInt(value));
-               ejbcarabean.changeEndEntityProfile(profile,profiledata);  
-             }      
-             includefile="endentityprofilepage.jsp"; 
-           }
-           if(request.getParameter(BUTTON_DELETESUBJECTALTNAME) != null){
-             profiledata = ejbcarabean.getEndEntityProfile(profile);
-             numberofsubjectaltnamefields = profiledata.getSubjectAltNameFieldOrderLength();
-             int pointer = 0;
-             for(int i=0; i < numberofsubjectaltnamefields; i++){
-               if(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_SELECTSUBJECTALTNAME+i))){
-                 fielddata = profiledata.getSubjectAltNameFieldsInOrder(pointer);  
-                 profiledata.removeField(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]);
-               }
-               else
-                 pointer++;
-             }
-             ejbcarabean.changeEndEntityProfile(profile,profiledata);    
-             includefile="endentityprofilepage.jsp";          
-           }
-           if(request.getParameter(BUTTON_ADDSUBJECTALTNAME) != null){
-             profiledata = ejbcarabean.getEndEntityProfile(profile);
-             value = request.getParameter(SELECT_ADDSUBJECTALTNAME);
-             if(value!=null){
-               profiledata.addField(Integer.parseInt(value));
-               ejbcarabean.changeEndEntityProfile(profile,profiledata);  
-             }
-          
-             includefile="endentityprofilepage.jsp"; 
-           }
-           if(request.getParameter(BUTTON_SAVE) != null){
-             profiledata = ejbcarabean.getEndEntityProfile(profile);
              // Save changes.
              profiledata.setValue(EndEntityProfile.USERNAME , 0, request.getParameter(TEXTFIELD_USERNAME));
              profiledata.setRequired(EndEntityProfile.USERNAME, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_USERNAME)));
@@ -418,12 +382,59 @@
                profiledata.setValue(EndEntityProfile.AVAILTOKENISSUER, 0, availablehardtokenissuers);
                profiledata.setRequired(EndEntityProfile.AVAILTOKENISSUER, 0, true);    
              }
+
+             profiledata.setNotificationSender(request.getParameter(TEXTFIELD_NOTIFICATIONSENDER));
+             profiledata.setNotificationSubject(request.getParameter(TEXTFIELD_NOTIFICATIONSUBJECT));
+             profiledata.setNotificationMessage(request.getParameter(TEXTAREA_NOTIFICATIONMESSAGE));
           
-             ejbcarabean.changeEndEntityProfile(profile,profiledata);
-             includefile="endentityprofilespage.jsp";
+             if(request.getParameter(BUTTON_DELETESUBJECTDN) != null){  
+               numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();
+               int pointer = 0;
+               for(int i=0; i < numberofsubjectdnfields; i++){
+                 if(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_SELECTSUBJECTDN + i))){
+                   fielddata = profiledata.getSubjectDNFieldsInOrder(pointer);  
+                   profiledata.removeField(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]);
+                 }
+                 else
+                   pointer++;
+               }                          
+             }
+             if(request.getParameter(BUTTON_ADDSUBJECTDN) != null){             
+               value = request.getParameter(SELECT_ADDSUBJECTDN);
+               if(value!=null){
+                 profiledata.addField(Integer.parseInt(value));             
+               }                   
+             }
+             if(request.getParameter(BUTTON_DELETESUBJECTALTNAME) != null){             
+               numberofsubjectaltnamefields = profiledata.getSubjectAltNameFieldOrderLength();
+               int pointer = 0;
+               for(int i=0; i < numberofsubjectaltnamefields; i++){
+                 if(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_SELECTSUBJECTALTNAME+i))){
+                   fielddata = profiledata.getSubjectAltNameFieldsInOrder(pointer);  
+                   profiledata.removeField(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]);
+                 }
+                 else
+                   pointer++;
+               }             
+             }
+             if(request.getParameter(BUTTON_ADDSUBJECTALTNAME) != null){             
+               value = request.getParameter(SELECT_ADDSUBJECTALTNAME);
+               if(value!=null){
+                 profiledata.addField(Integer.parseInt(value));                
+               }                       
+             }
+             includefile="endentityprofilepage.jsp";
+             ejbcarabean.setTemporaryEndEntityProfile(profiledata);
+           
+             if(request.getParameter(BUTTON_SAVE) != null){             
+               ejbcarabean.changeEndEntityProfile(profile,profiledata);
+               ejbcarabean.setTemporaryEndEntityProfile(null);
+               includefile="endentityprofilespage.jsp";  
+             }
            }
            if(request.getParameter(BUTTON_CANCEL) != null){
               // Don't save changes.
+             ejbcarabean.setTemporaryEndEntityProfile(null);
              includefile="endentityprofilespage.jsp";
            }
          }

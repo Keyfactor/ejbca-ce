@@ -1,4 +1,8 @@
-<% profiledata = ejbcarabean.getEndEntityProfile(profile);
+<%
+  profiledata = ejbcarabean.getTemporaryEndEntityProfile();
+  if(profiledata == null){
+    profiledata = ejbcarabean.getEndEntityProfile(profile);
+  }
    TreeMap certificateprofilenames = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityCertificateProfileNames();
    boolean used = false;
 
@@ -105,7 +109,7 @@ function checkallfields(){
     } 
   
 
-    if(!checkfieldforlegalemailcharswithchangeable("document.editprofile.<%=TEXTFIELD_EMAIL%>","<%= ejbcawebbean.getText("ONLYEMAILCHARS") %>"))
+    if(!checkfieldforlegalemailcharswithoutatwithchangeable("document.editprofile.<%=TEXTFIELD_EMAIL%>","<%= ejbcawebbean.getText("ONLYEMAILCHARSNOAT") %>"))
       illegalfields++;
  
     if(document.editprofile.<%= SELECT_DEFAULTCERTPROFILE %>.options.selectedIndex == -1){
@@ -119,6 +123,25 @@ function checkallfields(){
     }
     <% } %>
 
+    if(document.editprofile.<%=CHECKBOX_USE_SENDNOTIFICATION%>.checked){            
+      if(trim(document.editprofile.<%=TEXTFIELD_NOTIFICATIONSENDER%>.value) == ""){
+        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONSENDER") %>");
+        illegalfields++;
+      } 
+
+      if(!checkfieldforlegalemailchars("document.editprofile.<%=TEXTFIELD_NOTIFICATIONSENDER%>","<%= ejbcawebbean.getText("NOTIFICATIONSENDERNOTVALID") %>"))
+      illegalfields++;
+
+      if(trim(document.editprofile.<%=TEXTFIELD_NOTIFICATIONSUBJECT%>.value) == ""){
+        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONSUBJECT") %>");
+        illegalfields++;
+      } 
+      if(trim(document.editprofile.<%=TEXTAREA_NOTIFICATIONMESSAGE%>.value) == ""){
+        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONMESSAGE") %>");
+        illegalfields++;
+      } 
+    }
+
     if(illegalfields == 0){
       document.editprofile.<%= CHECKBOX_CLEARTEXTPASSWORD %>.disabled = false;
       document.editprofile.<%= CHECKBOX_REQUIRED_CLEARTEXTPASSWORD %>.disabled = false; 
@@ -131,7 +154,7 @@ function checkallfields(){
       document.editprofile.<%= CHECKBOX_KEYRECOVERABLE %>.disabled = false;
       <% } %>
       document.editprofile.<%= CHECKBOX_REQUIRED_SENDNOTIFICATION %>.disabled = false;
-      document.editprofile.<%= CHECKBOX_SENDNOTIFICATION %>.disabled = false;
+      document.editprofile.<%= CHECKBOX_SENDNOTIFICATION %>.disabled = false;      
     }
 
 
@@ -151,6 +174,18 @@ function checkusecheckbox(usefield, value, required){
     valuefield.disabled = true;
     reqbox.checked = false;
     reqbox.disabled = true;
+  }
+}
+
+function usenotificationchange(){
+  if(document.editprofile.<%=CHECKBOX_USE_SENDNOTIFICATION%>.checked){
+     document.editprofile.<%=TEXTFIELD_NOTIFICATIONSENDER%>.disabled = false;
+     document.editprofile.<%=TEXTFIELD_NOTIFICATIONSUBJECT%>.disabled = false;
+     document.editprofile.<%=TEXTAREA_NOTIFICATIONMESSAGE%>.disabled = false;
+  }else{
+     document.editprofile.<%=TEXTFIELD_NOTIFICATIONSENDER%>.disabled = true;
+     document.editprofile.<%=TEXTFIELD_NOTIFICATIONSUBJECT%>.disabled = true;
+     document.editprofile.<%=TEXTAREA_NOTIFICATIONMESSAGE%>.disabled = true;                  
   }
 }
 
@@ -468,7 +503,7 @@ function checkuseemailfield(){
          &nbsp;
       </td>
       <td width="25%" align="right"> 
-        <%= ejbcawebbean.getText("EMAIL") %> <br>&nbsp;
+        <%= ejbcawebbean.getText("EMAILDOMAIN") %> <br><%= ejbcawebbean.getText("USEONLYDOMAIN") %>
       </td>
       <td width="70%"> 
         <% used = false;
@@ -761,7 +796,7 @@ function checkuseemailfield(){
       <td width="70%"> 
         <% used = profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0); %>
          <%= ejbcawebbean.getText("USE") %> 
-        <input type="checkbox" name="<%=CHECKBOX_USE_SENDNOTIFICATION %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusecheckbox('<%=CHECKBOX_USE_SENDNOTIFICATION %>', '<%=CHECKBOX_SENDNOTIFICATION%>', '<%=CHECKBOX_REQUIRED_SENDNOTIFICATION %>'); checkuseemailfield()"
+        <input type="checkbox" name="<%=CHECKBOX_USE_SENDNOTIFICATION %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusecheckbox('<%=CHECKBOX_USE_SENDNOTIFICATION %>', '<%=CHECKBOX_SENDNOTIFICATION%>', '<%=CHECKBOX_REQUIRED_SENDNOTIFICATION %>'); checkuseemailfield();usenotificationchange()"
            <% if(used)
                  out.write("CHECKED");
            %>> <br>
@@ -776,6 +811,48 @@ function checkuseemailfield(){
            <% if(profiledata.isRequired(EndEntityProfile.SENDNOTIFICATION,0) && used)
                 out.write("CHECKED");
            %>> 
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%" align="right"> 
+        <%= ejbcawebbean.getText("NOTIFICATIONSENDER") %><br>(<%= ejbcawebbean.getText("EMAILADDRESS") %>)
+      </td>
+      <td width="70%"> 
+        <% used = profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0); %>
+        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSENDER%>" size="40" maxlength="1024" 
+           value="<%= profiledata.getNotificationSender() %>"            
+           <% if(!used)
+                 out.write(" disabled ");
+           %>>                  
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%" align="right"> 
+        <%= ejbcawebbean.getText("NOTIFICATIONSUBJECT") %> <br>&nbsp;
+      </td>
+      <td width="70%">         
+        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSUBJECT%>" size="40" maxlength="1024" 
+           value="<%= profiledata.getNotificationSubject() %>" 
+           <% if(!used)
+                 out.write(" disabled ");
+           %>>                  
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%" align="right"> 
+        <%= ejbcawebbean.getText("NOTIFICATIONMESSAGE") %> <br>&nbsp;
+      </td>
+      <td width="70%">       
+        <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE%>" cols=40 rows=8 <% if(!used) out.write(" disabled ");%>><%= profiledata.getNotificationMessage()%></textarea>  
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
