@@ -7,7 +7,7 @@
     <classpathentry kind="lib" path="lib/jboss-j2ee.jar"/>
     <classpathentry kind="lib" path="lib/jboss-jdbc_ext.jar"/>
     <classpathentry kind="lib" path="lib/jbosssx-client.jar"/>
-    <classpathentry kind="lib" path="lib/jce-jdk13-114.jar"/>
+    <classpathentry kind="lib" path="lib/jce-jdk13-115.jar"/>
     <classpathentry kind="lib" path="lib/jnp-client.jar"/>
     <classpathentry kind="lib" path="lib/junit.jar"/>
     <classpathentry kind="lib" path="lib/ldap.jar"/>

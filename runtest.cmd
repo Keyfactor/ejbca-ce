@@ -2,10 +2,10 @@
 cd src\java
 
 rem JBoss
-set TEST_CP=.;..\..\lib\jnp-client.jar;..\..\lib\jboss-client.jar;..\..\lib\jboss-j2ee.jar;..\..\lib\jbosssx-client.jar;..\..\lib\jboss-common-client.jar;..\..\lib\junit.jar;..\..\lib\log4j-1.2.jar;..\..\lib\jce-jdk13-114.jar
+set TEST_CP=.;..\..\lib\jnp-client.jar;..\..\lib\jboss-client.jar;..\..\lib\jboss-j2ee.jar;..\..\lib\jbosssx-client.jar;..\..\lib\jboss-common-client.jar;..\..\lib\junit.jar;..\..\lib\log4j-1.2.jar;..\..\lib\jce-jdk13-115.jar
 
 rem Weblogic
-rem set TEST_CP=.;..\..\lib\weblogic.jar;..\..\lib\junit.jar;..\..\lib\log4j-1.2.jar;..\..\lib\jce-jdk13-114.jar
+rem set TEST_CP=.;..\..\lib\weblogic.jar;..\..\lib\junit.jar;..\..\lib\log4j-1.2.jar;..\..\lib\jce-jdk13-115.jar
 
 
 echo Testing utils
