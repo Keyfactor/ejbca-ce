@@ -311,8 +311,10 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
     <copy todir="${caear.build}">
         <fileset dir="${caear.src}"> 
                 <include name="**/*"/>
+                <exclude name="ear/META-INF/application-nora.xml"/>
         </fileset>
     </copy>
+    
     <!-- Jar the ROOT war together -->
     <jar basedir="${caear.warbuild}" jarfile="${carootwar}"/>    
 
@@ -331,15 +333,19 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
   </target>
 
   <!-- =================================================================== -->
-  <!-- Build CA-ear without web-RA                                                        -->
+  <!-- Build CA-ear without web-RA                                         -->
   <!-- =================================================================== -->
-  <target name="canora.ear" depends="apply.war, webdist.war, ca.jar, ra.jar, raadmin.war">
+  <target name="canora.ear" depends="apply.war, webdist.war, ca.jar, ra.jar">
     <mkdir dir="${caearnora.build}"/>
     <copy todir="${caearnora.build}">
         <fileset dir="${caear.src}"> 
                 <include name="**/*"/>
+                <exclude name="ear/META-INF/application.xml"/>
         </fileset>
     </copy>
+    <!-- Rename application.xml without web-RA -->
+    <move file="${caearnora.build}/ear/META-INF/application-nora.xml" tofile="${caearnora.build}/ear/META-INF/application.xml"/>
+    
     <!-- Jar the ROOT war together -->
     <jar basedir="${caearnora.warbuild}" jarfile="${canorarootwar}"/>    
 
