@@ -55,7 +55,26 @@ public class ProtocolHttpTest extends TestCase {
             "BPcw4NPIt4nMOFKSGg5oM1nGDPGFN7eorZV+/2uWiQfdtK4B4lzCTuNxWRT853dW" +
             "dRDzXBCGEArlG8ef+vDD/HP9SX3MQ0NJWym48VI9bTpP/mJlUKSsfgDYHohvUlVI" +
             "E5QFC6ILVLUmuWPGchUEAb8t30DDnmeXs8QxdqHfbQ==").getBytes());
-    
+
+    static byte[] ocspcert = Base64.decode(("MIICfjCCAeegAwIBAgIIZTV+M+6x7q8wDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE" +
+            "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAzMTIx" +
+            "NTE0MDEyNloXDTA1MTIxNDE0MTEyNlowLzENMAsGA1UEAxMEVGVzdDERMA8GA1UE" +
+            "ChMIUHJpbWVLZXkxCzAJBgNVBAYTAlNFMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCB" +
+            "iQKBgQCZSidwhgAWl79g3p2ZcBBIhKMSobNol10Gjl7QZMD6rUqxsh+H08Ni1Vld" +
+            "dC9Lexiz+kp19LFzUEzuvZ8YcImemIHKUliO2ldRao2exq07rTAs4223MnFNeot2" +
+            "1IgV/MSdPE5y8ZM9jgwD5W2eOyJa6Trn2YXj2S6I+Y2m21zhbwIDAQABo4GiMIGf" +
+            "MA8GA1UdEwEB/wQFMAMBAQAwDwYDVR0PAQH/BAUDAwegADA7BgNVHSUENDAyBggr" +
+            "BgEFBQcDAQYIKwYBBQUHAwIGCCsGAQUFBwMEBggrBgEFBQcDBQYIKwYBBQUHAwcw" +
+            "HQYDVR0OBBYEFFJN5Z8dFNQEOVySeuz5celOKQYCMB8GA1UdIwQYMBaAFIed05jl" +
+            "6vEGOIJw7X61o03WDfkvMA0GCSqGSIb3DQEBBQUAA4GBABDU2mB8ti0XKhEyI957" +
+            "PPDpz+Bcd8fG2K7HkIC3DU2E61gSAXD05CFolCmGWxINU+eobrdXS8BWwc0fWi48" +
+            "/BI8lmrDYNKodjfsn36jyi1M96ljSLwm/oWbxWdVQdC90tJz/S0BoP7tynCpRxdr" +
+            "eIrDbfGEmrxcOBpUPTkK0tqL").getBytes());
+
+    static byte[] ocspreq = Base64.decode(("MHAwbqACBQAwRTBDMEEwCQYFKw4DAhoFAAQUleclaLzPjnIsGxKO0zDiqGjYYgoE" +
+            "FIed05jl6vEGOIJw7X61o03WDfkvAghlNX4z7rHur6IhMB8wHQYJKwYBBQUHMAEC" +
+            "BBBgNVPKHnmzW70ZU1R8Nnw+").getBytes());
+            
     public static void main( String args[] ) {
         junit.textui.TestRunner.run( suite() );
     }
@@ -126,7 +145,7 @@ public class ProtocolHttpTest extends TestCase {
      */
     public void test03Ocsp() throws Exception {
         log.debug(">test03Ocsp()");
-        // TODO: add user and create certificate with good status, 
+        // TODO: add  certificate with good status, 
         // send message to server and get good response
         // change status of cert to bad status
         // send message and get bad status

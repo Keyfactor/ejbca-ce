@@ -42,6 +42,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.exception.MalformedRequestException;
 import se.anatom.ejbca.util.Hex;
+import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 
 /** 
@@ -49,7 +50,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.5 2003-12-12 14:59:54 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.6 2003-12-15 15:24:57 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -160,6 +161,12 @@ public class OCSPServlet extends HttpServlet {
                             + cwd.getAbsolutePath()
                             + "'");
             }
+
+            InitialContext ctx = new InitialContext();
+            ICertificateStoreSessionLocalHome castorehome = 
+                (ICertificateStoreSessionLocalHome) ctx.lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
+            m_certStore = castorehome.create();
+            m_adm = new Admin(Admin.TYPE_INTERNALUSER);
             
             // Parameters for OCSP signing (private) key
             kspwd = config.getInitParameter("keyStorePass").trim();
@@ -232,6 +239,7 @@ public class OCSPServlet extends HttpServlet {
                 X509Extension ext = null;
 
                 OCSPReq req = new OCSPReq(request.getInputStream());
+                m_log.debug("OCSpReq: "+new String(Base64.encode(req.getEncoded())));
 
                 cacerts = loadCertificates();
             
