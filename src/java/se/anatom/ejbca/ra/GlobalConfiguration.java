@@ -5,7 +5,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.13 2003-03-06 05:53:03 herrvendil Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.14 2003-04-01 11:27:23 scop Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -32,9 +32,9 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
 
     public static final String[] LOGMODULERESOURCES = { "/log_functionallity/view_log/ca_entries","/log_functionallity/view_log/ra_entries","/log_functionallity/view_log/log_entries",
                                                         "/log_functionallity/view_log/publicweb_entries","/log_functionallity/view_log/adminweb_entries","/log_functionallity/view_log/hardtoken_entries",
-                                                        "/log_functionallity/view_log/keyrecovery_entries"};                                                   
-                                                    
-    // Available end entity profile authorization rules.                                                   
+                                                        "/log_functionallity/view_log/keyrecovery_entries"};
+
+    // Available end entity profile authorization rules.
     public static final String VIEW_RIGHTS = "/view_end_entity";
     public static final String EDIT_RIGHTS = "/edit_end_entity";
     public static final String CREATE_RIGHTS = "/create_end_entity";
@@ -247,16 +247,16 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     public   String getAvailableThenesAsString(){return (String) data.get(AVAILABLETHEMES);}
 
     public   boolean getEnableEndEntityProfileLimitations(){return ((Boolean) data.get(ENABLEEEPROFILELIMITATIONS)).booleanValue();}
-    public   void    setEnableEndEntityProfileLimitations(boolean value){ data.put(ENABLEEEPROFILELIMITATIONS,value ? Boolean.TRUE : Boolean.FALSE);}
+    public   void    setEnableEndEntityProfileLimitations(boolean value){ data.put(ENABLEEEPROFILELIMITATIONS, Boolean.valueOf(value));}
 
     public   boolean getEnableAuthenticatedUsersOnly(){return ((Boolean) data.get(ENABLEAUTHENTICATEDUSERSONLY)).booleanValue();}
-    public   void    setEnableAuthenticatedUsersOnly(boolean value){ data.put(ENABLEAUTHENTICATEDUSERSONLY,value ? Boolean.TRUE : Boolean.FALSE);}
+    public   void    setEnableAuthenticatedUsersOnly(boolean value){ data.put(ENABLEAUTHENTICATEDUSERSONLY, Boolean.valueOf(value));}
 
     public   boolean getEnableKeyRecovery(){return ((Boolean) data.get(ENABLEKEYRECOVERY)).booleanValue();}
-    public   void    setEnableKeyRecovery(boolean value){ data.put(ENABLEKEYRECOVERY,value ? Boolean.TRUE : Boolean.FALSE);}
+    public   void    setEnableKeyRecovery(boolean value){ data.put(ENABLEKEYRECOVERY, Boolean.valueOf(value));}
 
     public   boolean getIssueHardwareTokens(){return ((Boolean) data.get(ISSUEHARDWARETOKENS)).booleanValue();}
-    public   void    setIssueHardwareTokens(boolean value){ data.put(ISSUEHARDWARETOKENS,value ? Boolean.TRUE : Boolean.FALSE);}
+    public   void    setIssueHardwareTokens(boolean value){ data.put(ISSUEHARDWARETOKENS, Boolean.valueOf(value));}
 
 
     /** Implemtation of UpgradableDataHashMap function getLatestVersion */

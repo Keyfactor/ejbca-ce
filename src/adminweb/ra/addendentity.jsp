@@ -1,6 +1,6 @@
 <html> 
 <%@page contentType="text/html"%>
-<%@page  errorPage="/errorpage.jsp" import="RegularExpression.RE, java.util.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, se.anatom.ejbca.webdist.rainterface.UserView,
+<%@page  errorPage="/errorpage.jsp" import="java.util.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, se.anatom.ejbca.webdist.rainterface.UserView,
                  se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.EndEntityProfileDataHandler, se.anatom.ejbca.ra.raadmin.EndEntityProfile, se.anatom.ejbca.ra.UserDataRemote,
                  javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.ra.raadmin.DNFieldExtractor, se.anatom.ejbca.ra.UserAdminData, se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, 
                  se.anatom.ejbca.hardtoken.HardTokenIssuer, se.anatom.ejbca.hardtoken.HardTokenIssuerData, se.anatom.ejbca.hardtoken.AvailableHardToken,  se.anatom.ejbca.SecConst" %>
@@ -401,8 +401,8 @@
       }
    }
 
-    String[] availabletokens = new RE(EndEntityProfile.SPLITCHAR, false).split(profile.getValue(EndEntityProfile.AVAILKEYSTORE,0));
-    String[] availablehardtokenissuers = new RE(EndEntityProfile.SPLITCHAR, false).split(profile.getValue(EndEntityProfile.AVAILTOKENISSUER,0));
+    String[] availabletokens = profile.getValue(EndEntityProfile.AVAILKEYSTORE, 0).split(EndEntityProfile.SPLITCHAR);
+    String[] availablehardtokenissuers = profile.getValue(EndEntityProfile.AVAILTOKENISSUER, 0).split(EndEntityProfile.SPLITCHAR);
     if(lastselectedhardtokenissuer==-1){
       String value = profile.getValue(EndEntityProfile.DEFAULTTOKENISSUER,0);
       if(value != null && !value.equals(""))
@@ -700,7 +700,7 @@ function checkallfields(){
 	<td align="right"><%= ejbcawebbean.getText("USERNAME") %></td> 
 	<td>
             <% if(!profile.isModifyable(EndEntityProfile.USERNAME,0)){ 
-                 String[] options = new RE(EndEntityProfile.SPLITCHAR, false).split(profile.getValue(EndEntityProfile.USERNAME,0));
+                 String[] options = profile.getValue(EndEntityProfile.USERNAME, 0).split(EndEntityProfile.SPLITCHAR);
                %>
            <select name="<%= SELECT_USERNAME %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
@@ -789,7 +789,7 @@ function checkallfields(){
 	 <td align="right"><%= ejbcawebbean.getText("EMAIL") %></td>
 	 <td>      
           <% if(!profile.isModifyable(EndEntityProfile.EMAIL,0)){ 
-                 String[] options = new RE(EndEntityProfile.SPLITCHAR, false).split(profile.getValue(EndEntityProfile.EMAIL,0));
+                 String[] options = profile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
                %>
            <select name="<%= SELECT_EMAIL %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
@@ -824,7 +824,7 @@ function checkallfields(){
           <% 
              if( fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.OLDDNE ){  
                 if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
-                 String[] options = new RE(EndEntityProfile.SPLITCHAR, false).split(profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]));
+                 String[] options = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]).split(EndEntityProfile.SPLITCHAR);
                %>
            <select name="<%= SELECT_SUBJECTDN + i %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
@@ -875,7 +875,7 @@ function checkallfields(){
           <%
              if( fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME ){
                if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
-                 String[] options = new RE(EndEntityProfile.SPLITCHAR, false).split(profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]));
+                 String[] options = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]).split(EndEntityProfile.SPLITCHAR);
                %>
            <select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
@@ -917,7 +917,7 @@ function checkallfields(){
 	 <td>
          <select name="<%= SELECT_CERTIFICATEPROFILE %>" size="1" tabindex="<%=tabindex++%>">
          <%
-           String[] availablecertprofiles = new RE(EndEntityProfile.SPLITCHAR, false).split(profile.getValue(EndEntityProfile.AVAILCERTPROFILES,0));
+           String[] availablecertprofiles = profile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
            if(lastselectedcertificateprofile.equals(""))
              lastselectedcertificateprofile= profile.getValue(EndEntityProfile.DEFAULTCERTPROFILE,0);
 

@@ -65,7 +65,7 @@ import se.anatom.ejbca.log.Admin;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.31 2003-03-11 09:47:39 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.32 2003-04-01 11:27:09 scop Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
@@ -281,7 +281,6 @@ public class CertReqServlet extends HttpServlet {
     private void sendPEMTokens(KeyStore ks, String username, String kspassword,HttpServletResponse out)
        throws Exception {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        RegularExpression.RE re  = new RegularExpression.RE(",",false);
         String alias = "";
 
         // Find the key private key entry in the keystore
@@ -309,8 +308,9 @@ public class CertReqServlet extends HttpServlet {
         byte output[] = userX509Certificate.getEncoded();
         String sn = CertTools.getSubjectDN(userX509Certificate);
 
-        String subjectdnpem = re.replace(sn,"/");
-        String issuerdnpem = re.replace(CertTools.getIssuerDN(userX509Certificate),"/");
+        String subjectdnpem = sn.replace(',', '/');
+        String issuerdnpem =
+          CertTools.getIssuerDN(userX509Certificate).replace(',', '/');
 
         buffer.write(bagattributes);
         buffer.write(friendlyname);
@@ -348,8 +348,9 @@ public class CertReqServlet extends HttpServlet {
                 sn = CertTools.getSubjectDN(tmpX509Cert);
                 String cn = CertTools.getPartFromDN(sn, "CN");
 
-                subjectdnpem = re.replace(sn,"/");
-                issuerdnpem = re.replace(CertTools.getIssuerDN(tmpX509Cert),"/");
+                subjectdnpem = sn.replace(',', '/');
+                issuerdnpem =
+                  CertTools.getIssuerDN(tmpX509Cert).replace(',', '/');
 
                 buffer.write(bagattributes);
                 buffer.write(friendlyname);

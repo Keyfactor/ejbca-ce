@@ -1,7 +1,5 @@
 package se.anatom.ejbca.ra.raadmin;
 
-import RegularExpression.RE;
-
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +13,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.9 2003-03-27 22:50:50 herrvendil Exp $
+ * @version $Id: EndEntityProfile.java,v 1.10 2003-04-01 11:27:24 scop Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -70,7 +68,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
     public static final int NUMBEROFPARAMETERS = 37;
 
-    public static final String SPLITCHAR          = ";";
+    public static final String SPLITCHAR       = ";";
 
     public static final String TRUE  = "true";
     public static final String FALSE = "false";
@@ -125,9 +123,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         setValue(AVAILCERTPROFILES,0,"1;2;3");
         setValue(DEFKEYSTORE,0, "" + SecConst.TOKEN_SOFT_BROWSERGEN);
         setValue(AVAILKEYSTORE,0, SecConst.TOKEN_SOFT_BROWSERGEN + ";" + SecConst.TOKEN_SOFT_P12 +  ";" + SecConst.TOKEN_SOFT_JKS + ";" + SecConst.TOKEN_SOFT_PEM);
-         // Do not use hard token issuers by default. 
-        setUse(AVAILTOKENISSUER, 0, false); 
-        
+         // Do not use hard token issuers by default.
+        setUse(AVAILTOKENISSUER, 0, false);
+
       }else{
          // initialize profile data
          ArrayList numberoffields = new ArrayList(NUMBEROFPARAMETERS);
@@ -149,7 +147,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          addField(AVAILKEYSTORE);
          addField(DEFAULTTOKENISSUER);
          addField(AVAILTOKENISSUER);
-         
+
          setRequired(USERNAME,0,true);
          setRequired(PASSWORD,0,true);
          setRequired(COMMONNAME,0,true);
@@ -162,9 +160,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          setValue(DEFKEYSTORE,0, "" + SecConst.TOKEN_SOFT_BROWSERGEN);
          setValue(AVAILKEYSTORE,0, SecConst.TOKEN_SOFT_BROWSERGEN + ";" + SecConst.TOKEN_SOFT_P12 +  ";" + SecConst.TOKEN_SOFT_JKS + ";" + SecConst.TOKEN_SOFT_PEM);
 
-         // Do not use hard token issuers by default. 
-         setUse(AVAILTOKENISSUER, 0, false); 
-      
+         // Do not use hard token issuers by default.
+         setUse(AVAILTOKENISSUER, 0, false);
+
       }
     }
 
@@ -259,15 +257,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     }
 
     public void setUse(int parameter, int number, boolean use){
-          data.put(new Integer((USE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), use ? Boolean.TRUE : Boolean.FALSE);
+          data.put(new Integer((USE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(use));
     }
 
     public void setRequired(int parameter, int number,  boolean isrequired) {
-      data.put(new Integer((ISREQUIRED*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), isrequired ? Boolean.TRUE : Boolean.FALSE);
+      data.put(new Integer((ISREQUIRED*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(isrequired));
     }
 
     public void setModifyable(int parameter, int number, boolean changeable) {
-       data.put(new Integer((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), changeable ? Boolean.TRUE : Boolean.FALSE);
+       data.put(new Integer((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(changeable));
     }
 
     public String getValue(int parameter, int number) {
@@ -337,8 +335,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     }
 
 
-    public void doesUserFullfillEndEntityProfile(String username, String password, String dn, String subjectaltname, String email,  int certificateprofileid, 
-                                                 boolean clearpwd, boolean administrator, boolean keyrecoverable, boolean sendnotification, 
+    public void doesUserFullfillEndEntityProfile(String username, String password, String dn, String subjectaltname, String email,  int certificateprofileid,
+                                                 boolean clearpwd, boolean administrator, boolean keyrecoverable, boolean sendnotification,
                                                  int tokentype, int hardwaretokenissuerid)
        throws UserDoesntFullfillEndEntityProfile{
 
@@ -367,8 +365,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
     }
 
-    public void doesUserFullfillEndEntityProfileWithoutPassword(String username,  String dn, String subjectaltname, String email,  int certificateprofileid, 
-                                                                boolean administrator, boolean keyrecoverable, boolean sendnotification, 
+    public void doesUserFullfillEndEntityProfileWithoutPassword(String username,  String dn, String subjectaltname, String email,  int certificateprofileid,
+                                                                boolean administrator, boolean keyrecoverable, boolean sendnotification,
                                                                 int tokentype, int hardwaretokenissuerid) throws UserDoesntFullfillEndEntityProfile{
       DNFieldExtractor subjectdnfields = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
       DNFieldExtractor subjectaltnames   = new DNFieldExtractor(subjectaltname, DNFieldExtractor.TYPE_SUBJECTALTNAME);
@@ -391,7 +389,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
       //  Check Email address.
      if(email == null)
-       email = "";  
+       email = "";
      checkIfDataFullfillProfile(EMAIL,0,email,"Email",null);
 
       // Check contents of Subject DN fields.
@@ -439,12 +437,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
            throw new UserDoesntFullfillEndEntityProfile("Email notification is required.");
         if(getValue(SENDNOTIFICATION,0).equals(FALSE) && sendnotification)
            throw new UserDoesntFullfillEndEntityProfile("Email notification cannot be set in current end entity profile.");
-      }      
+      }
 
       // Check if certificate profile is among available certificate profiles.
       String[] availablecertprofiles;
       try{
-        availablecertprofiles = new RE(SPLITCHAR, false).split(getValue(AVAILCERTPROFILES,0));
+        availablecertprofiles = getValue(AVAILCERTPROFILES,0).split(SPLITCHAR);
       }catch(Exception e){
           throw new UserDoesntFullfillEndEntityProfile("Error parsing end entity profile.");
       }
@@ -464,7 +462,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       // Check if tokentype is among available  token types.
       String[] availablesofttokentypes;
       try{
-        availablesofttokentypes = new RE(SPLITCHAR, false).split(getValue(AVAILKEYSTORE,0));
+        availablesofttokentypes = getValue(AVAILKEYSTORE,0).split(SPLITCHAR);
       }catch(Exception e){
         throw new UserDoesntFullfillEndEntityProfile("Error parsing end entity profile.");
       }
@@ -487,7 +485,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       if(tokentype > SecConst.TOKEN_SOFT && getUse(AVAILTOKENISSUER, 0) ){ // Hardware token.
         String[] availablehardtokenissuers;
         try{
-          availablehardtokenissuers = new RE(SPLITCHAR, false).split(getValue(AVAILTOKENISSUER,0));
+          availablehardtokenissuers = getValue(AVAILTOKENISSUER, 0).split(SPLITCHAR);
         }catch(Exception e){
           throw new UserDoesntFullfillEndEntityProfile("Error parsing end entity profile.");
         }
@@ -533,13 +531,13 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     if(getVersion() < 1){
           ArrayList numberarray = (ArrayList)   data.get(NUMBERARRAY);
           while(numberarray.size() < 37){
-             numberarray.add(new Integer(0)); 
+             numberarray.add(new Integer(0));
           }
-          data.put(NUMBERARRAY,numberarray);  
+          data.put(NUMBERARRAY,numberarray);
         }
-          
+
         data.put(VERSION, new Float(LATEST_VERSION));
-         
+
       }
     }
 
@@ -564,7 +562,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         if(!isModifyable(field,number)){
           String[] values;
           try{
-            values = new RE(SPLITCHAR, false).split(getValue(field,number));
+            values = getValue(field, number).split(SPLITCHAR);
           }catch(Exception e){
             throw new UserDoesntFullfillEndEntityProfile("Error parsing end entity profile.");
           }

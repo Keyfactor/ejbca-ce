@@ -26,7 +26,7 @@ keytool -alias EJBCA-CA -import -trustcacerts -file tmp\rootca.der -keystore %JA
 
 del tmp\rootca.der
 
-set CP=.;.\admin.jar;.\lib\regexp1_0_0.jar
+set CP=.;.\admin.jar
 
 set SERVER_XML=tomcat41-service.xml
 if exist "%JBOSS_HOME%\server\default\deploy\tomcat4-service.xml" set SERVER_XML=tomcat4-service.xml

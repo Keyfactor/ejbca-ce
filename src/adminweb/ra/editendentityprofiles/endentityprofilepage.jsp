@@ -488,7 +488,7 @@ function checkuseemailfield(){
       </td>
       <td width="70%"> 
         <select name="<%=SELECT_AVAILABLECERTPROFILES %>" size="7" multiple >
-            <% String[] availablecertprofs = new RE(EndEntityProfile.SPLITCHAR, false).split(profiledata.getValue(EndEntityProfile.AVAILCERTPROFILES ,0)); 
+            <% String[] availablecertprofs = profiledata.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
                for(int i=0; i < certificateprofilenames.length;i++){
                int certprofid = ejbcarabean.getCertificateProfileId(certificateprofilenames[i]); %>
            <option <% for(int j=0;j< availablecertprofs.length;j++){
@@ -532,7 +532,7 @@ function checkuseemailfield(){
       </td>
       <td width="70%"> 
         <select name="<%=SELECT_AVAILABLETOKENTYPES %>" size="7" multiple >
-            <% String[] profileavailabletokens = new RE(EndEntityProfile.SPLITCHAR, false).split(profiledata.getValue(EndEntityProfile.AVAILKEYSTORE, 0 )); 
+            <% String[] profileavailabletokens = profiledata.getValue(EndEntityProfile.AVAILKEYSTORE, 0).split(EndEntityProfile.SPLITCHAR);
                for(int i=0; i < tokentexts.length;i++){ %>
            <option <% for(int j=0;j< profileavailabletokens.length;j++){
                          if(profileavailabletokens[j].equals(Integer.toString(tokenids[i])))
@@ -591,7 +591,7 @@ function checkuseemailfield(){
       </td>
       <td width="70%"> 
         <select name="<%=SELECT_AVAILABLEHARDTOKENISSUERS %>" size="7" multiple <% if(!used) out.write(" disabled "); %>>
-            <% String[] availableissuers = new RE(EndEntityProfile.SPLITCHAR, false).split(profiledata.getValue(EndEntityProfile.AVAILTOKENISSUER, 0 )); 
+            <% String[] availableissuers = profiledata.getValue(EndEntityProfile.AVAILTOKENISSUER, 0).split(EndEntityProfile.SPLITCHAR); 
                for(int i=0; i < hardtokenissueraliases.length;i++){ %>
            <option <% for(int j=0;j< availableissuers.length;j++){
                          if(availableissuers[j].equals(Integer.toString(hardtokenissuerids[i])))

@@ -1,3 +1,11 @@
+EJBCA V2.1b1
+------------
+
+Java >= 1.4 is now required.
+
+Delete bcmail-jdk13*, jce-jdk13* and regexp1_0_0.jar from
+$JBOSS_HOME/server/default/lib.
+
 EJBCA V2.0
 ----------
 Name of initial temporary super administrator changed from "CN=Walter" to "CN=

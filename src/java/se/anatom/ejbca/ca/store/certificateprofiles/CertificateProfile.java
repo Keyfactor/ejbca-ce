@@ -12,7 +12,7 @@ import se.anatom.ejbca.SecConst;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.14 2003-03-27 08:16:02 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.15 2003-04-01 11:27:10 scop Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
@@ -140,40 +140,40 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setValidity(long validity) { data.put(VALIDITY,new Long(validity));}
 
     public boolean getUseBasicConstraints(){ return ((Boolean)data.get(USEBASICCONSTRAINTS)).booleanValue(); }
-    public void setUseBasicConstraints(boolean usebasicconstraints) {data.put(USEBASICCONSTRAINTS,usebasicconstraints ? Boolean.TRUE : Boolean.FALSE);}
+    public void setUseBasicConstraints(boolean usebasicconstraints) {data.put(USEBASICCONSTRAINTS, Boolean.valueOf(usebasicconstraints));}
 
     public boolean getBasicConstraintsCritical(){ return ((Boolean) data.get(BASICCONSTRAINTSCRITICAL)).booleanValue(); }
-    public void setBasicConstraintsCritical(boolean basicconstraintscritical) { data.put(BASICCONSTRAINTSCRITICAL,basicconstraintscritical ? Boolean.TRUE : Boolean.FALSE);}
+    public void setBasicConstraintsCritical(boolean basicconstraintscritical) { data.put(BASICCONSTRAINTSCRITICAL, Boolean.valueOf(basicconstraintscritical));}
 
     public boolean getUseKeyUsage(){ return ((Boolean) data.get(USEKEYUSAGE)).booleanValue(); }
-    public void setUseKeyUsage(boolean usekeyusage) { data.put(USEKEYUSAGE, usekeyusage ? Boolean.TRUE : Boolean.FALSE);}
+    public void setUseKeyUsage(boolean usekeyusage) { data.put(USEKEYUSAGE, Boolean.valueOf(usekeyusage));}
 
     public boolean getKeyUsageCritical(){ return ((Boolean) data.get(KEYUSAGECRITICAL)).booleanValue(); }
-    public void setKeyUsageCritical(boolean keyusagecritical) { data.put(KEYUSAGECRITICAL, keyusagecritical ? Boolean.TRUE : Boolean.FALSE);}
+    public void setKeyUsageCritical(boolean keyusagecritical) { data.put(KEYUSAGECRITICAL, Boolean.valueOf(keyusagecritical));}
 
     public boolean getUseSubjectKeyIdentifier(){ return ((Boolean) data.get(USESUBJECTKEYIDENTIFIER)).booleanValue(); }
-    public void setUseSubjectKeyIdentifier(boolean usesubjectkeyidentifier) { data.put(USESUBJECTKEYIDENTIFIER, usesubjectkeyidentifier ? Boolean.TRUE : Boolean.FALSE);}
+    public void setUseSubjectKeyIdentifier(boolean usesubjectkeyidentifier) { data.put(USESUBJECTKEYIDENTIFIER, Boolean.valueOf(usesubjectkeyidentifier));}
 
     public boolean getSubjectKeyIdentifierCritical(){ return ((Boolean) data.get(SUBJECTKEYIDENTIFIERCRITICAL)).booleanValue(); }
-    public void setSubjectKeyIdentifierCritical(boolean subjectkeyidentifiercritical) { data.put(SUBJECTKEYIDENTIFIERCRITICAL, subjectkeyidentifiercritical ? Boolean.TRUE : Boolean.FALSE);}
+    public void setSubjectKeyIdentifierCritical(boolean subjectkeyidentifiercritical) { data.put(SUBJECTKEYIDENTIFIERCRITICAL, Boolean.valueOf(subjectkeyidentifiercritical));}
 
     public boolean getUseAuthorityKeyIdentifier(){ return ((Boolean) data.get(USEAUTHORITYKEYIDENTIFIER)).booleanValue(); }
-    public void setUseAuthorityKeyIdentifier(boolean useauthoritykeyidentifier) { data.put(USEAUTHORITYKEYIDENTIFIER,useauthoritykeyidentifier ? Boolean.TRUE : Boolean.FALSE);}
+    public void setUseAuthorityKeyIdentifier(boolean useauthoritykeyidentifier) { data.put(USEAUTHORITYKEYIDENTIFIER, Boolean.valueOf(useauthoritykeyidentifier));}
 
     public boolean getAuthorityKeyIdentifierCritical(){ return ((Boolean) data.get(AUTHORITYKEYIDENTIFIERCRITICAL)).booleanValue(); }
-    public void setAuthorityKeyIdentifierCritical(boolean authoritykeyidentifiercritical) { data.put(AUTHORITYKEYIDENTIFIERCRITICAL,authoritykeyidentifiercritical ? Boolean.TRUE : Boolean.FALSE);}
+    public void setAuthorityKeyIdentifierCritical(boolean authoritykeyidentifiercritical) { data.put(AUTHORITYKEYIDENTIFIERCRITICAL, Boolean.valueOf(authoritykeyidentifiercritical));}
 
     public boolean getUseSubjectAlternativeName(){ return ((Boolean) data.get(USESUBJECTALTERNATIVENAME)).booleanValue(); }
-    public void setUseSubjectAlternativeName(boolean usesubjectalternativename) { data.put(USESUBJECTALTERNATIVENAME, usesubjectalternativename ? Boolean.TRUE : Boolean.FALSE);}
+    public void setUseSubjectAlternativeName(boolean usesubjectalternativename) { data.put(USESUBJECTALTERNATIVENAME, Boolean.valueOf(usesubjectalternativename));}
 
     public boolean getSubjectAlternativeNameCritical(){ return ((Boolean) data.get(SUBJECTALTERNATIVENAMECRITICAL)).booleanValue(); }
-    public void setSubjectAlternativeNameCritical(boolean subjectalternativenamecritical) { data.put(SUBJECTALTERNATIVENAMECRITICAL, subjectalternativenamecritical ? Boolean.TRUE : Boolean.FALSE);}
+    public void setSubjectAlternativeNameCritical(boolean subjectalternativenamecritical) { data.put(SUBJECTALTERNATIVENAMECRITICAL, Boolean.valueOf(subjectalternativenamecritical));}
 
     public boolean getUseCRLDistributionPoint(){ return ((Boolean) data.get(USECRLDISTRIBUTIONPOINT)).booleanValue(); }
-    public void setUseCRLDistributionPoint(boolean usecrldistributionpoint) { data.put(USECRLDISTRIBUTIONPOINT, usecrldistributionpoint ? Boolean.TRUE : Boolean.FALSE);}
+    public void setUseCRLDistributionPoint(boolean usecrldistributionpoint) { data.put(USECRLDISTRIBUTIONPOINT, Boolean.valueOf(usecrldistributionpoint));}
 
     public boolean getCRLDistributionPointCritical(){ return ((Boolean) data.get(CRLDISTRIBUTIONPOINTCRITICAL)).booleanValue(); }
-    public void setCRLDistributionPointCritical(boolean crldistributionpointcritical) { data.put(CRLDISTRIBUTIONPOINTCRITICAL, crldistributionpointcritical ? Boolean.TRUE : Boolean.FALSE);}
+    public void setCRLDistributionPointCritical(boolean crldistributionpointcritical) { data.put(CRLDISTRIBUTIONPOINTCRITICAL, Boolean.valueOf(crldistributionpointcritical));}
 
     public String getCRLDistributionPointURI(){ return (String) data.get(CRLDISTRIBUTIONPOINTURI); }
     public void setCRLDistributionPointURI(String crldistributionpointuri) {
@@ -184,9 +184,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public boolean getUseCertificatePolicies() { return ((Boolean) data.get(USECERTIFICATEPOLICIES)).booleanValue(); }
-    public void  setUseCertificatePolicies(boolean usecertificatepolicies) { data.put(USECERTIFICATEPOLICIES, usecertificatepolicies ? Boolean.TRUE : Boolean.FALSE);}
+    public void  setUseCertificatePolicies(boolean usecertificatepolicies) { data.put(USECERTIFICATEPOLICIES, Boolean.valueOf(usecertificatepolicies));}
     public boolean getCertificatePoliciesCritical() { return ((Boolean) data.get(CERTIFICATEPOLICIESCRITICAL)).booleanValue(); }
-    public void  setCertificatePoliciesCritical(boolean certificatepoliciescritical) { data.put(CERTIFICATEPOLICIESCRITICAL, certificatepoliciescritical ? Boolean.TRUE : Boolean.FALSE);}
+    public void  setCertificatePoliciesCritical(boolean certificatepoliciescritical) { data.put(CERTIFICATEPOLICIESCRITICAL, Boolean.valueOf(certificatepoliciescritical));}
     public String getCertificatePolicyId() { return (String) data.get(CERTIFICATEPOLICYID); }
     public void  setCertificatePolicyId(String policyid){
       if(policyid == null)
@@ -253,31 +253,31 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       ArrayList keyuse = new ArrayList(keyusage.length);
 
       for(int i=0;i< keyusage.length;i++){
-        keyuse.add(keyusage[i] ? Boolean.TRUE : Boolean.FALSE);
+        keyuse.add(Boolean.valueOf(keyusage[i]));
       }
       data.put(KEYUSAGE, keyuse);
     }
 
     public void setKeyUsage(int keyusageconstant, boolean value){
-      ((ArrayList) data.get(KEYUSAGE)).set(keyusageconstant, value ? Boolean.TRUE : Boolean.FALSE);
+      ((ArrayList) data.get(KEYUSAGE)).set(keyusageconstant, Boolean.valueOf(value));
     }
 
     public void setAllowKeyUsageOverride(boolean override) {
-        data.put(ALLOWKEYUSAGEOVERRIDE, override ? Boolean.TRUE : Boolean.FALSE);
+        data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.valueOf(override));
     }
     public boolean getAllowKeyUsageOverride() {
         return ((Boolean) data.get(ALLOWKEYUSAGEOVERRIDE)).booleanValue();
     }
 
     public void setUseExtendedKeyUsage(boolean use) {
-        data.put(USEEXTENDEDKEYUSAGE, use ? Boolean.TRUE : Boolean.FALSE);
+        data.put(USEEXTENDEDKEYUSAGE, Boolean.valueOf(use));
     }
     public boolean getUseExtendedKeyUsage() {
         return ((Boolean) data.get(USEEXTENDEDKEYUSAGE)).booleanValue();
     }
 
     public void setExtendedKeyUsageCritical(boolean critical) {
-        data.put(EXTENDEDKEYUSAGECRITICAL, critical ? Boolean.TRUE : Boolean.FALSE);
+        data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.valueOf(critical));
     }
     public boolean getExtendedKeyUsageCritical() {
         return ((Boolean) data.get(EXTENDEDKEYUSAGECRITICAL)).booleanValue();

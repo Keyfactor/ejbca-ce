@@ -15,11 +15,8 @@ import javax.naming.*;
 import javax.ejb.*;
 
 import org.apache.log4j.Logger;
-import RegularExpression.RE;
 
 import se.anatom.ejbca.BaseSessionBean;
-import se.anatom.ejbca.ra.raadmin.AdminPreference;
-import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.log.Admin;
@@ -30,7 +27,7 @@ import se.anatom.ejbca.SecConst;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.24 2003-03-20 06:19:09 herrvendil Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.25 2003-04-01 11:27:24 scop Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
@@ -78,7 +75,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
             adminpreferenceshome.create(DEFAULTUSERPREFERENCE,new AdminPreference());
         }
 
-        try{           
+        try{
           profiledatahome.findByProfileName(EMPTY_ENDENTITYPROFILE);
         }catch(FinderException e){
             profiledatahome.create(new Integer(EMPTY_ENDENTITYPROFILEID),EMPTY_ENDENTITYPROFILE,new EndEntityProfile(true));
@@ -292,7 +289,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
          if(returnvalue)
            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ENDENTITYPROFILE,"End entity profile " + oldprofilename + " renamed to " + newprofilename +  "." );
          else
-           logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE," Error renaming end entity profile " + oldprofilename + " to " + newprofilename +  "." );                          
+           logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE," Error renaming end entity profile " + oldprofilename + " to " + newprofilename +  "." );
        }catch(RemoteException e){}
 
        return returnvalue;
@@ -313,7 +310,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
        try{
          if(returnvalue)
 
-           logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ENDENTITYPROFILE,"End entity profile " +  profilename + " edited.");                          
+           logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ENDENTITYPROFILE,"End entity profile " +  profilename + " edited.");
 
          else
            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,"Error editing end entity profile " + profilename + ".");
@@ -442,7 +439,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         Collection result = profiledatahome.findAll();
         Iterator i = result.iterator();
         while(i.hasNext() && !exists){
-          availablecertprofiles = new RE(EndEntityProfile.SPLITCHAR, false).split(((EndEntityProfileDataLocal) i.next()).getProfile().getValue(EndEntityProfile.AVAILCERTPROFILES,0));
+          availablecertprofiles = ((EndEntityProfileDataLocal) i.next()).getProfile().getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
           for(int j=0; j < availablecertprofiles.length; j++){
             if(Integer.parseInt(availablecertprofiles[j]) == certificateprofileid){
               exists=true;

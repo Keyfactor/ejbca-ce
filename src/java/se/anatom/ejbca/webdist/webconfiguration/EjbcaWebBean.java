@@ -33,7 +33,7 @@ import se.anatom.ejbca.util.CertTools;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.26 2003-03-11 12:17:54 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.27 2003-04-01 11:27:25 scop Exp $
  */
 public class EjbcaWebBean {
 
@@ -288,7 +288,7 @@ public class EjbcaWebBean {
       boolean returnval=false;
       if(certificates != null){
         if(raauthorized[resource] == null)
-          raauthorized[resource] = authorizedatahandler.isAuthorizedNoLog(new AdminInformation(certificates[0]),AUTHORIZED_RA_RESOURCES[resource]) ? Boolean.TRUE : Boolean.FALSE;
+          raauthorized[resource] = Boolean.valueOf(authorizedatahandler.isAuthorizedNoLog(new AdminInformation(certificates[0]),AUTHORIZED_RA_RESOURCES[resource]));
 
         returnval = raauthorized[resource].booleanValue();
       }

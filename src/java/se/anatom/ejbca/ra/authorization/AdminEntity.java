@@ -1,8 +1,8 @@
 package se.anatom.ejbca.ra.authorization;
 
-import java.security.cert.X509Certificate;
 import java.io.Serializable;
-
+import java.security.cert.X509Certificate;
+import java.util.regex.Pattern;
 
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import se.anatom.ejbca.util.CertTools;
@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.CertTools;
  * Matchtype constants tells under which contitions the match shall be performed.
  *
  * @author  Philip Vendil
- * @version $Id: AdminEntity.java,v 1.8 2003-03-16 18:44:27 herrvendil Exp $
+ * @version $Id: AdminEntity.java,v 1.9 2003-04-01 11:27:23 scop Exp $
  */
 public class AdminEntity implements Serializable, Comparable {
     // Special Users. (Constants cannot have 0 value).
@@ -48,6 +48,8 @@ public class AdminEntity implements Serializable, Comparable {
     public static final int WITH_DNSERIALNUMBER    = 10;
     public static final int WITH_SERIALNUMBER      = 11;
 
+    private static final Pattern serialPattern =
+      Pattern.compile("\\bSERIALNUMBER=", Pattern.CASE_INSENSITIVE);
 
     /** Creates a new instance of AdminEntity */
     public AdminEntity(int matchwith, int matchtype, String matchvalue) {
@@ -76,9 +78,8 @@ public class AdminEntity implements Serializable, Comparable {
         X509Certificate certificate = admininformation.getX509Certificate();
         String certstring = CertTools.getSubjectDN(certificate);
         //String serialnumber = certificate.getSerialNumber().toString(16);
-        try{
-          certstring = new RegularExpression.RE("SERIALNUMBER=",false).replace(certstring,"SN=");
-        }catch(Exception e){}
+        certstring = serialPattern.matcher(certstring).replaceAll("SN=");
+
         int parameter;
         int size=0;
         String[] clientstrings=null;
@@ -91,14 +92,14 @@ public class AdminEntity implements Serializable, Comparable {
               case TYPE_EQUALCASE:
               case TYPE_EQUALCASEINS:
                   try{
-                    returnvalue = (new java.math.BigInteger(matchvalue,16)).equals(certificate.getSerialNumber()); 
+                    returnvalue = (new java.math.BigInteger(matchvalue,16)).equals(certificate.getSerialNumber());
                   }catch(java.lang.NumberFormatException nfe){}
                 break;
               case TYPE_NOT_EQUALCASE:
               case TYPE_NOT_EQUALCASEINS:
                   try{
-                    returnvalue = !(new java.math.BigInteger(matchvalue,16)).equals(certificate.getSerialNumber()); 
-                  }catch(java.lang.NumberFormatException nfe){}                 
+                    returnvalue = !(new java.math.BigInteger(matchvalue,16)).equals(certificate.getSerialNumber());
+                  }catch(java.lang.NumberFormatException nfe){}
                 break;
                default:
              }
@@ -181,7 +182,7 @@ public class AdminEntity implements Serializable, Comparable {
             }
         }
       }
-      
+
       return returnvalue;
     }
 

@@ -1,31 +1,39 @@
 package se.anatom.ejbca.ra;
 
 import java.util.Date;
+import java.util.regex.Pattern;
 import java.text.DateFormat;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 
 /**
  * This class is used to create notification messages
  *
- * @version $Id: NotificationCreator.java,v 1.1 2003-02-21 12:13:58 herrvendil Exp $
+ * @version $Id: NotificationCreator.java,v 1.2 2003-04-01 11:27:23 scop Exp $
  */
 public class NotificationCreator {
-    
-    
-    /** Availabe vairables used to replace text i message, message is retrived from ejb-jar.xml 
+
+
+    /** Availabe vairables used to replace text i message, message is retrived from ejb-jar.xml
      *  Variable text are case-insensitive.
      */
-    private static String USERNAME = "$Username";
-    private static String PASSWORD = "$Password";
-    private static String CN       = "$CN";
-    private static String O        = "$O";
-    private static String OU       = "$OU";
-    private static String C        = "$C";    
-    private static String DATE     = "$DATE";    
-    
-    private static String NEWLINE  = "\\n";
+    private static final Pattern USERNAME =
+      Pattern.compile("$Username", Pattern.CASE_INSENSITIVE);
+    private static final Pattern PASSWORD =
+      Pattern.compile("$Password", Pattern.CASE_INSENSITIVE);
+    private static final Pattern CN =
+      Pattern.compile("$CN", Pattern.CASE_INSENSITIVE);
+    private static final Pattern O =
+      Pattern.compile("$O", Pattern.CASE_INSENSITIVE);
+    private static final Pattern OU =
+      Pattern.compile("$OU", Pattern.CASE_INSENSITIVE);
+    private static final Pattern C =
+      Pattern.compile("$C", Pattern.CASE_INSENSITIVE);
+    private static final Pattern DATE =
+      Pattern.compile("$DATE", Pattern.CASE_INSENSITIVE);
 
-    
+    private static final Pattern NEWLINE = Pattern.compile("\\n");
+
+
     /**
      * Creates a notification creator.
      * @param sender is the address of the sender sending the message.
@@ -33,41 +41,40 @@ public class NotificationCreator {
      * @param message is the actual message sent in the email. Should contain the supported variables.
      *
      */
-    public NotificationCreator(String sender, String subject, String message){   
+    public NotificationCreator(String sender, String subject, String message){
       this.sender=sender;
       this.subject=subject;
       this.message=message;
     }
-    
+
     public String getSender(){
-      return sender;   
-    } 
-    
+      return sender;
+    }
+
     public String getSubject(){
       return subject;
-    } 
-    
+    }
+
     public String getMessage(String username, String password, String dn, String subjectaltname, String email) throws Exception{
       String returnval = new String(message);
-      DNFieldExtractor dnfields = new DNFieldExtractor(dn,DNFieldExtractor.TYPE_SUBJECTDN);      
-      // DNFieldExtractor subaltnamefields = new DNFieldExtractor(dn,DNFieldExtractor.TYPE_SUBJECTALTNAME); 
+      DNFieldExtractor dnfields = new DNFieldExtractor(dn,DNFieldExtractor.TYPE_SUBJECTDN);
+      // DNFieldExtractor subaltnamefields = new DNFieldExtractor(dn,DNFieldExtractor.TYPE_SUBJECTALTNAME);
       String currentdate = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date());
       String newline = System.getProperty("line.separator");
 
-      
-      returnval = new RegularExpression.RE(USERNAME,false).replace(returnval,username);   
-      returnval = new RegularExpression.RE(PASSWORD,false).replace(returnval,password);        
-      returnval = new RegularExpression.RE(CN,false).replace(returnval,dnfields.getField(DNFieldExtractor.CN,0));
-      returnval = new RegularExpression.RE(OU,false).replace(returnval,dnfields.getField(DNFieldExtractor.OU,0));       
-      returnval = new RegularExpression.RE(O,false).replace(returnval,dnfields.getField(DNFieldExtractor.O,0));   
-      returnval = new RegularExpression.RE(C,false).replace(returnval,dnfields.getField(DNFieldExtractor.C,0));           
-      returnval = new RegularExpression.RE(DATE,false).replace(returnval,currentdate); 
-      
-      returnval = new RegularExpression.RE(NEWLINE,false).replace(returnval,newline); 
-      
+      returnval = USERNAME.matcher(returnval).replaceAll(username);
+      returnval = PASSWORD.matcher(returnval).replaceAll(password);
+      returnval = CN.matcher(returnval).replaceAll(dnfields.getField(DNFieldExtractor.CN, 0));
+      returnval = OU.matcher(returnval).replaceAll(dnfields.getField(DNFieldExtractor.OU, 0));
+      returnval = O.matcher(returnval).replaceAll(dnfields.getField(DNFieldExtractor.O, 0));
+      returnval = C.matcher(returnval).replaceAll(dnfields.getField(DNFieldExtractor.C, 0));
+      returnval = DATE.matcher(returnval).replaceAll(currentdate);
+
+      returnval = NEWLINE.matcher(returnval).replaceAll(newline);
+
       return returnval;
     }
-    
+
     // Provate Variables
     private String sender;
     private String subject;

@@ -49,7 +49,7 @@ su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -import -trustcacerts -file tmp/ro
 
 rm tmp/rootca.der
 
-export CP=.:./admin.jar:./lib/regexp1_0_0.jar
+export CP=.:./admin.jar
 
 if [ -f $JBOSS_HOME/server/default/deploy/tomcat4-service.xml ]
 then

@@ -16,7 +16,6 @@ import javax.naming.*;
 import javax.ejb.*;
 
 import org.apache.log4j.Logger;
-import RegularExpression.RE;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ra.UserAdminData;
@@ -37,7 +36,7 @@ import se.anatom.ejbca.ra.IUserAdminSessionHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.9 2003-03-15 21:54:30 herrvendil Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.10 2003-04-01 11:27:10 scop Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
@@ -813,11 +812,11 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         String hardtokensidstring    = (String)lookup("java:comp/env/hardTokenIds", java.lang.String.class);
 
         try{
-          hardtokensclasses = new RE(";", false).split(hardtokensclassstring);
-          hardtokensnames  = new RE(";", false).split(hardtokensnamestring);
-          hardtokensids  = new RE(";", false).split(hardtokensidstring);
+          hardtokensclasses = hardtokensclassstring.split(";");
+          hardtokensnames  = hardtokensnamestring.split(";");
+          hardtokensids  = hardtokensidstring.split(";");
         }catch(Exception e){
-            throw new EJBException(e);
+          throw new EJBException(e);
         }
 
         availablehardtokens = new AvailableHardToken[hardtokensclasses.length];

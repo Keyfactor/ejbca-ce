@@ -7,7 +7,6 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Vector;
-import java.util.HashMap;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import javax.servlet.http.HttpServletRequest;
@@ -34,6 +33,7 @@ import se.anatom.ejbca.hardtoken.IHardTokenSessionHome;
 import se.anatom.ejbca.hardtoken.HardTokenData;
 import se.anatom.ejbca.util.query.*;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.StringTools;
 import se.anatom.ejbca.webdist.cainterface.CertificateProfileNameProxy;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.LogEntry;
@@ -45,7 +45,7 @@ import org.apache.log4j.Logger;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.35 2003-03-11 09:47:43 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.36 2003-04-01 11:27:25 scop Exp $
  */
 public class RAInterfaceBean {
 
@@ -309,9 +309,7 @@ public class RAInterfaceBean {
         sIIN = (String) myenv.lookup("ISSUERIDENTIFICATIONNUMBER");
       }
 
-      try{
-        tokensn = new RegularExpression.RE(" ",false).replace(tokensn,"");
-      }catch(Exception e){}
+      tokensn = StringTools.stripWhitespace(tokensn);
 
       if(useprefix)
         tokensn = calculateCardNumber(tokensn, sIIN);
@@ -338,9 +336,7 @@ public class RAInterfaceBean {
                                                                                                    NamingException,
                                                                                                    NumberFormatException,
                                                                                                    CreateException{
-      try{
-        serialnumber = new RegularExpression.RE(" ",false).replace(serialnumber,"");
-      }catch(Exception e){}
+      serialnumber = StringTools.stripWhitespace(serialnumber);
       Collection certs =certificatesession.findCertificatesBySerno(administrator, new BigInteger(serialnumber,16));
       Vector uservector = new Vector();
       UserView[] returnval = null;

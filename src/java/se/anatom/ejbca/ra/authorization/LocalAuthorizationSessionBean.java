@@ -14,11 +14,13 @@ import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.LogEntry;
+import se.anatom.ejbca.util.StringTools;
+
 /**
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.14 2003-03-21 12:27:47 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.15 2003-04-01 11:27:23 scop Exp $
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
@@ -373,9 +375,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     public void addAdminEntity(Admin admin, String admingroupname, int matchwith, int matchtype, String matchvalue){
       try{
         if(matchwith == AdminEntity.WITH_SERIALNUMBER){
-          try{
-            matchvalue = new RegularExpression.RE(" ",false).replace(matchvalue,"");
-          }catch(Exception e){}
+          matchvalue = StringTools.stripWhitespace(matchvalue);
         }
 
         (admingrouphome.findByPrimaryKey(admingroupname)).addAdminEntity(matchwith, matchtype, matchvalue);

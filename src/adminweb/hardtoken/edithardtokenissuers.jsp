@@ -1,6 +1,6 @@
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp" import="java.util.ArrayList, java.util.TreeMap, java.util.Iterator, RegularExpression.RE, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, se.anatom.ejbca.SecConst
+<%@page errorPage="/errorpage.jsp" import="java.util.ArrayList, java.util.TreeMap, java.util.Iterator, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, se.anatom.ejbca.SecConst
                ,se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, se.anatom.ejbca.hardtoken.HardTokenIssuer, se.anatom.ejbca.hardtoken.HardTokenIssuerData, se.anatom.ejbca.hardtoken.HardTokenIssuerExistsException,
                se.anatom.ejbca.hardtoken.HardTokenIssuerDoesntExistsException, se.anatom.ejbca.hardtoken.AvailableHardToken, se.anatom.ejbca.webdist.rainterface.CertificateView"%>
 
