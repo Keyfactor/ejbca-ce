@@ -139,7 +139,7 @@ function confirmrevokation(){
      alert("<%= ejbcawebbean.getText("AREVOKEATIONREASON") %>"); 
      returnval = false;
   }else{
-    returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKECERT") %>");
+    returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKETOKEN") %>");
   } 
   return returnval;
 }
@@ -307,8 +307,7 @@ function viewcert(){
             &nbsp; 
           </td>
           <td>
-       <% 
-            if(rabean.authorizedToRevokeCert(username) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
+       <%    if(rabean.authorizedToRevokeCert(username) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
                && !rabean.isAllTokenCertificatesRevoked(token.getTokenSN(), username)){ %>
         <input type="submit" name="<%=BUTTON_REVOKE %>" value="<%= ejbcawebbean.getText("REVOKE") %>"
                onClick='return confirmrevokation()'><br>

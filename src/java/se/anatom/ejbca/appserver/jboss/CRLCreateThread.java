@@ -50,12 +50,11 @@ public class CRLCreateThread extends Thread
    	    }
    	    
    	    try{
-            Context context = new InitialContext();
-            ICreateCRLSessionHome home = (ICreateCRLSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-                        "CreateCRLSession"), ICreateCRLSessionHome.class);
-            this.createcrlsession = home.create();
-   	    	
-   	    }catch(Exception e){
+                Context context = new InitialContext();
+                ICreateCRLSessionHome home = (ICreateCRLSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
+                          "CreateCRLSession"), ICreateCRLSessionHome.class);
+                this.createcrlsession = home.create(); 
+        }catch(Exception e){
    	    	throw new EJBException(e);
    	    }   	      
    	    
@@ -68,8 +67,9 @@ public class CRLCreateThread extends Thread
        while(run){
        	  try{       	  	       	   
        	    sleep(getTimeToNextPoll());       	    
-       	    try{       	    	
-       	      this.createcrlsession.createCRLs(administrator);
+       	    try{      
+       	      if(run)	
+       	        this.createcrlsession.createCRLs(administrator);
        	      System.out.println("CRLCreateThread: createCRLs");
        	    }catch(Exception e){
        	    	throw new EJBException(e);

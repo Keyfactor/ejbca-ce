@@ -10,7 +10,7 @@ import java.util.Iterator;
  * A class used as a help class for displaying and configuring basic access rules
  *
  * @author  herrvendil 
- * @version $Id: BasicAccessRuleSetEncoder.java,v 1.2 2004-02-19 12:16:49 herrvendil Exp $
+ * @version $Id: BasicAccessRuleSetEncoder.java,v 1.3 2004-02-24 11:53:31 herrvendil Exp $
  */
 public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 
@@ -32,21 +32,14 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
      * Sets the forceadvanced flag if encoding isn't possible.
      */
     public BasicAccessRuleSetEncoder(Collection currentaccessrules, Collection availableaccessrules, boolean usehardtokens, boolean usekeyrecovery){
-    	 System.out.println("BasicAccessRuleSetEncoder: >init ");
     	 HashSet aar = new HashSet();
-    	 aar.addAll(availableaccessrules);    	
-    	 System.out.println("BasicAccessRuleSetEncoder: force  " + this.forceadvanced);
-    	 initAvailableRoles(aar);
-    	 System.out.println("BasicAccessRuleSetEncoder: force  " + this.forceadvanced);
-    	 initAvailableRules(usehardtokens, usekeyrecovery, availableaccessrules);
-    	 System.out.println("BasicAccessRuleSetEncoder: force  " + this.forceadvanced);
+    	 aar.addAll(availableaccessrules);    	    	 
+    	 initAvailableRoles(aar);    	 
+    	 initAvailableRules(usehardtokens, usekeyrecovery, availableaccessrules);    	 
     	 
-    	 initCurrentRole(currentaccessrules);
-    	 System.out.println("BasicAccessRuleSetEncoder: force  " + this.forceadvanced);
+    	 initCurrentRole(currentaccessrules);    	 
     	 initCurrentRules(currentaccessrules);
-    	 System.out.println("BasicAccessRuleSetEncoder: force  " + this.forceadvanced);
 
-     	 System.out.println("BasicAccessRuleSetEncoder: <init ");
     }
     
         
