@@ -26,7 +26,7 @@ import se.anatom.ejbca.util.KeyTools;
  * NOTE: Support for SSL has been commented out in this sample, since it requires JSSE. This sample
  * class generates a PKCS10 request and POSTs to the CAs web interface. The reply is received and
  * printed to stdout. Takes arguments:
- * 
+ *
  * <ul>
  * <li>
  * requesturl - URL to the CA web (servlet where requests are POSTed),
@@ -39,9 +39,9 @@ import se.anatom.ejbca.util.KeyTools;
  * password - password for the above user.
  * </li>
  * </ul>
- * 
  *
- * @version $Id: HttpGetCert.java,v 1.11 2003-09-04 09:31:01 herrvendil Exp $
+ *
+ * @version $Id: HttpGetCert.java,v 1.12 2003-10-08 07:23:51 anatom Exp $
  */
 public class HttpGetCert {
     private static Logger log = Logger.getLogger(HttpGetCert.class);
@@ -188,8 +188,8 @@ public class HttpGetCert {
 
         // POST it
         PrintWriter out = new PrintWriter(con.getOutputStream());
-        out.println("pkcs10req=" + URLEncoder.encode(request) + "&user=" +
-            URLEncoder.encode(username) + "&password=" + URLEncoder.encode(password) +
+        out.println("pkcs10req=" + URLEncoder.encode(request,"UTF-8") + "&user=" +
+            URLEncoder.encode(username,"UTF-8") + "&password=" + URLEncoder.encode(password,"UTF-8") +
             "&submit=Submit+Query");
         out.close();
 

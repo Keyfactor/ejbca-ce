@@ -20,7 +20,7 @@ import se.anatom.ejbca.log.LogEntry;
 /**
  * Authenticates users towards a remote user database, using HTTP-based protocol.
  *
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.11 2003-09-03 15:34:14 herrvendil Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.12 2003-10-08 07:23:46 anatom Exp $
  */
 public class RemoteAuthenticationSessionBean extends BaseSessionBean {
     private static String REMOTE_PROTOCOL_VER = "1.0";
@@ -29,10 +29,10 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
     String remoteurl = null;
 
     /** The remote interface of the log session bean */
-    private ILogSessionRemote logsession;         
-    
+    private ILogSessionRemote logsession;
 
-    
+
+
     /**
      * Default create for SessionBean without any creation Arguments.
      *
@@ -81,10 +81,10 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
         // Only end users can be authenticated on remote database (so far...)
         ret.setType(SecConst.USER_ENDUSER);
         try{
-          logsession.log(admin, ret.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"Autenticated user");       
+          logsession.log(admin, ret.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"Autenticated user");
         }catch(RemoteException re){
-           throw new EJBException(re);                
-        }          
+           throw new EJBException(re);
+        }
         debug(">authenticateUser("+username+", hiddenpwd)");
         return ret;
     }
@@ -127,9 +127,9 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
 
         {
             PrintWriter out = new PrintWriter(connection.getOutputStream());
-            out.print("version=" + URLEncoder.encode(version) + '&');
-            out.print("username=" + URLEncoder.encode(user) + '&');
-            out.print("password=" + URLEncoder.encode(password));
+            out.print("version=" + URLEncoder.encode(version,"UTF-8") + '&');
+            out.print("username=" + URLEncoder.encode(user,"UTF-8") + '&');
+            out.print("password=" + URLEncoder.encode(password,"UTF-8"));
             out.close();
         }
 
