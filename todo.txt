@@ -1,12 +1,13 @@
-$Id: todo.txt,v 1.12 2001-11-22 09:52:02 anatom Exp $
+$Id: todo.txt,v 1.13 2001-11-26 12:11:23 anatom Exp $
 
 V 1.0
 -----
 
-- Use ant for command line commands, i.e. 'ant -f runtime.xml ca <args>'
+- NONE
 
 V 2.0
 -----
+- Look into using ant for command line commands, i.e. 'ant -f runtime.xml ca <args>'
 - Return PKCS7 response to IE/Mozilla, response is PKCS7 with whole chain. ca.crt is also pkcs7 with whole chain.
 - Add administration interface web-GUI (through servlets/JSP).
 - Remote secure administration through browser CA-admin and RA-admin.
