@@ -3,7 +3,6 @@
     <property environment="env"/>
 
     <property file="${user.home}/ejbca.properties"/>
-    <property file="ejbca.properties"/>
     <property file="${ejbca.home}/ejbca.properties"/>
     <!-- this sucks because we have a dependency with JBoss just for the jndi provider -->
     <property name="jboss.home" value="${env.JBOSS_HOME}"/>
@@ -15,7 +14,7 @@
     <path id="classpath">
          <!-- need to pickup jndi.properties and log4j.properties -->
         <pathelement path="${ejbca.home}"/>
-        <fileset dir="${ejbca.home}/dist" includes="*.jar"/>
+        <pathelement path="${ejbca.home}/bin/classes"/>
         <fileset dir="${lib.dir}" includes="*.jar"/>
         <fileset dir="${jboss.home}/client" includes="*.jar"/>
     </path>
