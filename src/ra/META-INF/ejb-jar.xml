@@ -77,7 +77,7 @@
         </description>
         <ejb-ref-name>ejb/GlobalConfigurationDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.GlobalonfigurationDataLocalHome</local-home>
+        <local-home>se.anatom.ejbca.ra.GlobalConfigurationDataLocalHome</local-home>
         <local>se.anatom.ejbca.ra.GlobalConfigurationDataLocal</local>
         <ejb-link>GlobalConfigurationData</ejb-link>
      </ejb-local-ref>
@@ -133,7 +133,9 @@
      </ejb-local-ref>     
                
      <security-identity>
+        <description></description>
         <run-as>
+            <description></description>
             <role-name>InternalUser</role-name>
         </run-as>
       </security-identity>
@@ -207,7 +209,9 @@
         <ejb-link>AdminEntityData</ejb-link>
      </ejb-local-ref>                  
      <security-identity>
+        <description></description>
         <run-as>
+        <description></description>
             <role-name>InternalUser</role-name>
         </run-as>
       </security-identity>
