@@ -20,6 +20,8 @@ import javax.ejb.EJBException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
+import org.apache.log4j.Logger;
+
 import se.anatom.ejbca.ca.crl.ICreateCRLSessionHome;
 import se.anatom.ejbca.ca.crl.ICreateCRLSessionRemote;
 import se.anatom.ejbca.log.Admin;
@@ -31,7 +33,9 @@ import se.anatom.ejbca.log.Admin;
 */
 public class CRLCreateThread extends Thread 
 { 
-  /** Constants used internally. */
+    private static Logger log = Logger.getLogger(CRLCreateThread.class);
+
+    /** Constants used internally. */
   private static final int CHECK_DAILY     = 1;
   private static final int CHECK_HOURLY = 2;
   private static final int CHECK_30MIN    = 3;
@@ -83,7 +87,7 @@ public class CRLCreateThread extends Thread
        	    try{      
        	      if(run)	
        	        this.createcrlsession.createCRLs(administrator);
-       	      System.out.println("CRLCreateThread: createCRLs");
+              log.debug("CRLCreateThread: createCRLs");
        	    }catch(Exception e){
        	    	throw new EJBException(e);
        	    }       	    

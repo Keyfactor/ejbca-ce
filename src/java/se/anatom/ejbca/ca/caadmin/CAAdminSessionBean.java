@@ -87,7 +87,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.23 2004-05-13 15:35:17 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.24 2004-05-19 07:01:01 anatom Exp $
  */
 public class CAAdminSessionBean extends BaseSessionBean {
     
@@ -316,13 +316,13 @@ public class CAAdminSessionBean extends BaseSessionBean {
                 // create selfsigned certificate
                 Certificate cacertificate = null;
                
-                System.out.println("CAAdminSessionBean : " + cainfo.getSubjectDN());
+                log.debug("CAAdminSessionBean : " + cainfo.getSubjectDN());
                 
                 UserAuthData cadata = new UserAuthData("nobody", null, cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), x509cainfo.getSubjectAltName(), null, 
                                                        0,  cainfo.getCertificateProfileId(), null);
                 cacertificate = ca.generateCertificate(cadata, catoken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN),-1, cainfo.getValidity(), certprofile);
                 
-                System.out.println("CAAdminSessionBean : " + ((X509Certificate) cacertificate).getSubjectDN().toString());
+                log.debug("CAAdminSessionBean : " + ((X509Certificate) cacertificate).getSubjectDN().toString());
                 
                 // Build Certificate Chain
                 certificatechain = new ArrayList();

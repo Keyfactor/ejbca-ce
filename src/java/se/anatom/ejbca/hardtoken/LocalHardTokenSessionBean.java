@@ -35,8 +35,6 @@ import javax.ejb.FinderException;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
-
 import se.anatom.ejbca.BasePropertyDataLocal;
 import se.anatom.ejbca.BasePropertyDataLocalHome;
 import se.anatom.ejbca.BaseSessionBean;
@@ -61,11 +59,9 @@ import se.anatom.ejbca.util.CertTools;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.27 2004-05-15 14:53:09 herrvendil Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.28 2004-05-19 07:00:46 anatom Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
-
-    private static Logger log = Logger.getLogger(LocalHardTokenSessionBean.class);
 
     /** Var holding JNDI name of datasource */
     private String dataSource = "";
@@ -617,7 +613,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      * @return true if administrator is authorized to issue hardtoken with given alias.
      */
     public boolean getAuthorizedToHardTokenIssuer(Admin admin, String alias){
-      System.out.println(">getAuthorizedToHardTokenIssuer(" +  alias + ")");
+      debug(">getAuthorizedToHardTokenIssuer(" +  alias + ")");
       boolean returnval = false;      
         try{
         	
@@ -626,8 +622,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       	  returnval = returnval && authorizationsession.existsAdministratorInGroup(admin, admingroupid);      	  
         }catch(FinderException fe){}
           catch(AuthorizationDeniedException ade){}
-
-          System.out.println("<getAuthorizedToHardTokenIssuer(" +  returnval + ")");
+          debug("<getAuthorizedToHardTokenIssuer(" +  returnval + ")");
       return returnval;	
     }
 

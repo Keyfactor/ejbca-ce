@@ -57,7 +57,7 @@ import com.novell.ldap.LDAPModificationSet;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.4 2004-05-13 15:36:11 herrvendil Exp $
+ * @version $Id: LdapPublisher.java,v 1.5 2004-05-19 07:00:31 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher{
 	 	
@@ -524,7 +524,7 @@ public class LdapPublisher extends BasePublisher{
             // disconnect with the server
             lc.disconnect();
             
-            System.out.println("Entry" + entry.toString());
+            log.debug("Entry" + entry.toString());
             
             if(entry == null)
               throw new PublisherConnectionException("Couldn't find bindDN.");
@@ -936,7 +936,7 @@ public class LdapPublisher extends BasePublisher{
       
       retval = retval + "," + this.getBaseDN();
             
-      System.out.println("LdapPublisher: constructed DN: " + retval );
+      log.debug("LdapPublisher: constructed DN: " + retval );
       return retval;	
     }
     

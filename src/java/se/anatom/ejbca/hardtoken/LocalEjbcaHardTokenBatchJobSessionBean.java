@@ -25,8 +25,6 @@ import javax.ejb.EJBException;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
-
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.log.Admin;
@@ -40,11 +38,9 @@ import se.anatom.ejbca.ra.UserDataLocalHome;
 /**
  * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from EJBCA RA.
  *
- * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.16 2004-04-16 07:38:56 anatom Exp $
+ * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.17 2004-05-19 07:00:59 anatom Exp $
  */
 public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
-
-    private static Logger log = Logger.getLogger(LocalEjbcaHardTokenBatchJobSessionBean.class);
 
     /** Columns in the database used in select */
     private final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId, cAId";
@@ -137,12 +133,11 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
     public UserAdminData getNextHardTokenToGenerate(Admin admin, String alias) throws UnavailableTokenException{
       debug(">getNextHardTokenToGenerate()");
-      System.out.println(">getNextHardTokenToGenerate()");
-      System.out.println("alias " + alias);
+      debug("alias " + alias);
       UserAdminData returnval=null;
       int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
   
-      System.out.println("issuerid " + issuerid);      
+      debug("issuerid " + issuerid);      
       
       if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
         Connection con = null;
@@ -151,7 +146,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         
         try{
            // Construct SQL query.
-        	System.out.println("HERE");
+        	debug("HERE");
             con = getConnection();            
             ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)" );
             ps.setInt(1,issuerid);
@@ -170,7 +165,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
                                                , new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9))
                                                ,  rs.getInt(12), rs.getInt(13));
               returnval.setPassword(rs.getString(7));
-              System.out.println("found user" + returnval.getUsername());
+              debug("found user" + returnval.getUsername());
             }
             if(returnval !=null){
               getHardTokenSession().getIsHardTokenProfileAvailableToIssuer(admin, issuerid, returnval);
@@ -190,7 +185,6 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         }
       }
       
-      System.out.println("<getNextHardTokenToGenerate()");
       debug("<getNextHardTokenToGenerate()");
       return returnval;
     }// getNextHardTokenToGenerate

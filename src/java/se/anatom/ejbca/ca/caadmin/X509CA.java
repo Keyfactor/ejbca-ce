@@ -99,7 +99,7 @@ import se.anatom.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.23 2004-05-10 04:35:10 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.24 2004-05-19 07:01:00 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -326,10 +326,10 @@ public class X509CA extends CA implements Serializable {
                 new SubjectPublicKeyInfo(
                     (ASN1Sequence) new DERInputStream(new ByteArrayInputStream(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN).getEncoded())).readObject());
              }catch(CATokenOfflineException e){
-             	System.out.println("X509CA : Setting STATUS OFFLINE " + this.getName());	
-         	    this.setStatus(SecConst.CA_OFFLINE);
-         	   System.out.println("X509CA : New STATUS  " + this.getStatus());
-         	   throw new CATokenOfflineException(e.getMessage()); 
+                 log.debug("X509CA : Setting STATUS OFFLINE " + this.getName());    
+                 this.setStatus(SecConst.CA_OFFLINE);
+                 log.debug("X509CA : New STATUS  " + this.getStatus());
+                 throw new CATokenOfflineException(e.getMessage()); 
             }
             AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
             certgen.addExtension(
@@ -416,9 +416,9 @@ public class X509CA extends CA implements Serializable {
            cert = certgen.generateX509Certificate(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), 
                                             getCAToken().getProvider());
          }catch(CATokenOfflineException e){
-         	System.out.println("X509CA : Setting STATUS OFFLINE");
-         	this.setStatus(SecConst.CA_OFFLINE);
-         	throw e; 
+             log.debug("X509CA : Setting STATUS OFFLINE");
+             this.setStatus(SecConst.CA_OFFLINE);
+             throw e; 
          }
         
         // Verify before returning

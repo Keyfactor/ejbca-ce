@@ -28,7 +28,7 @@ import se.anatom.ejbca.ca.caadmin.AvailableHardCAToken;
 public class HardCATokenManager {
 	
     /** Log4j instance for Base */
-    private static transient Logger baseLog = Logger.getLogger(HardCATokenManager.class);
+    private static transient Logger log = Logger.getLogger(HardCATokenManager.class);
 
     private static ArrayList availablehardcatokens = new ArrayList();
 
@@ -82,16 +82,16 @@ public class HardCATokenManager {
 		boolean retval = false;		
 		try {             
 		   // Check that class exists	
-		   System.out.println("HardCATokenManager registering " + classpath);	
+		   log.debug("HardCATokenManager registering " + classpath);	
 			
 		   Class.forName(classpath).getName();	
 			
 		   availablehardcatokens.add(new AvailableHardCAToken(classpath, name, translateable, use));
 			
 		   retval = true;
-           baseLog.debug("Registered " + classpath + "Successfully.");
+           log.debug("Registered " + classpath + "Successfully.");
 		} catch (ClassNotFoundException e) {
-	       baseLog.error("Error registering " + classpath + " couldn't find classpath");
+	       log.error("Error registering " + classpath + " couldn't find classpath");
 		}			
 		
 		return retval;

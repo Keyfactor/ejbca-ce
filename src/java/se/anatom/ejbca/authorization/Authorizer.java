@@ -37,7 +37,7 @@ import se.anatom.ejbca.util.CertTools;
  *
  * The main metod are isAthorized and authenticate.
  *
- * @version $Id: Authorizer.java,v 1.7 2004-05-10 16:10:56 herrvendil Exp $
+ * @version $Id: Authorizer.java,v 1.8 2004-05-19 07:00:46 anatom Exp $
  */
 public class Authorizer extends Object implements java.io.Serializable{
 
@@ -185,7 +185,7 @@ public class Authorizer extends Object implements java.io.Serializable{
         boolean verified = false;
         for(int i=0; i < this.cacertificatechain.length; i++){
            try{
-//            System.out.println("Authorizer: authenticate : Comparing : "  + CertTools.getIssuerDN(certificate) + " With " + CertTools.getSubjectDN((X509Certificate) cacertificatechain[i]));
+//            log.debug("Authorizer: authenticate : Comparing : "  + CertTools.getIssuerDN(certificate) + " With " + CertTools.getSubjectDN((X509Certificate) cacertificatechain[i]));
 //            if(LDAPDN.equals(CertTools.getIssuerDN(certificate), CertTools.getSubjectDN((X509Certificate) cacertificatechain[i]))){
                certificate.verify(cacertificatechain[i].getPublicKey());
                verified = true;

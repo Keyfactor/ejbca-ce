@@ -33,7 +33,7 @@ import com.novell.ldap.LDAPModificationSet;
 /**
  * ActiveDirectoryPublisher is a class handling a publishing to Active Directory catalouges.  
  *
- * @version $Id: ActiveDirectoryPublisher.java,v 1.4 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: ActiveDirectoryPublisher.java,v 1.5 2004-05-19 07:00:27 anatom Exp $
  */
 public class ActiveDirectoryPublisher extends LdapPublisher{
 	
@@ -147,7 +147,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
      * @return LDAPAtributeSet created...
      */
     protected LDAPAttributeSet getAttributeSet(X509Certificate cert, String objectclass, String dn, boolean extra, boolean person) {
-    	System.out.println("ADPublisher : getAttributeSet");
+    	log.debug("ADPublisher : getAttributeSet");
         LDAPAttributeSet attributeSet = super.getAttributeSet(cert, objectclass, dn, extra, person);
         String cn = CertTools.getPartFromDN(dn, "CN");
         // Add AD specific attributes
