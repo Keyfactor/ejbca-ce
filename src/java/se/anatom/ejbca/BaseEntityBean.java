@@ -21,21 +21,102 @@ import javax.ejb.EntityContext;
 import javax.ejb.EJBLocalHome;
 import javax.ejb.EJBException;
 
+import org.apache.log4j.Logger;
+
 
 /**
  * Base class for entity beans implementing required methods and helpers.
  *
- * @version $Id: BaseEntityBean.java,v 1.5 2004-11-08 21:10:36 sbailliez Exp $
+ * @version $Id: BaseEntityBean.java,v 1.6 2005-03-13 14:14:20 anatom Exp $
  */
 public class BaseEntityBean implements EntityBean {
 
-    protected transient EntityContext ctx;
+	/** Log4j instance for actual implementation class */
+	public transient Logger log;
+	protected EntityContext ctx;
 
     /**
      * Creates a new BaseEntityBean object.
      */
     public BaseEntityBean() {
         super();
+        log = Logger.getLogger(this.getClass());
+    }
+
+    /**
+     * Logs a message with priority DEBUG
+     *
+     * @param msg Message
+     */
+    public void debug(String msg) {
+    	log.debug(msg);
+    }
+
+    /**
+     * Logs a message and an exception with priority DEBUG
+     *
+     * @param msg Message
+     * @param t Exception
+     */
+    public void debug(String msg, Throwable t) {
+    	log.debug(msg, t);
+    }
+
+    /**
+     * Logs a message with priority INFO
+     *
+     * @param msg Message
+     */
+    public void info(String msg) {
+    	log.info(msg);
+    }
+
+    /**
+     * Logs a message and an exception with priority INFO
+     *
+     * @param msg Message
+     * @param t Exception
+     */
+    public void info(String msg, Throwable t) {
+    	log.info(msg, t);
+    }
+
+    /**
+     * Logs a message with priority WARN
+     *
+     * @param msg Message
+     */
+    public void warn(String msg) {
+    	log.warn(msg);
+    }
+
+    /**
+     * Logs a message and an exception with priority WARN
+     *
+     * @param msg Message
+     * @param t Exception
+     */
+    public void warn(String msg, Throwable t) {
+    	log.warn(msg, t);
+    }
+
+    /**
+     * Logs a message with priority ERROR
+     *
+     * @param msg Message
+     */
+    public void error(String msg) {
+    	log.error(msg);
+    }
+
+    /**
+     * Logs a message and an exception with priority ERROR
+     *
+     * @param msg Message
+     * @param t Exception
+     */
+    public void error(String msg, Throwable t) {
+    	log.error(msg, t);
     }
 
     /**

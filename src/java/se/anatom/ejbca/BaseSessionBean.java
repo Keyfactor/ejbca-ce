@@ -25,13 +25,13 @@ import se.anatom.ejbca.util.ServiceLocator;
 /**
  * Base for Session Beans providing common features, new Session Beans should extend this.
  *
- * @version $Id: BaseSessionBean.java,v 1.14 2005-03-08 08:51:25 anatom Exp $
+ * @version $Id: BaseSessionBean.java,v 1.15 2005-03-13 14:14:19 anatom Exp $
  */
 public class BaseSessionBean implements SessionBean {
 
     /** Log4j instance for actual implementation class */
     public transient Logger log;
-    private transient SessionContext ctx;
+    private SessionContext ctx;
 
     /** Cached initial context to save JNDI lookups */
     transient InitialContext cacheCtx = null;

@@ -22,7 +22,7 @@ package se.anatom.ejbca.authorization;
  * If needed it can easily be replaced with an int pk and programatic logic to handle 
  * constraints. From the database view the pk is just an int.
  * 
- * @version $Id: AdminEntityPK.java,v 1.7 2005-03-11 11:25:00 anatom Exp $
+ * @version $Id: AdminEntityPK.java,v 1.8 2005-03-13 14:14:39 anatom Exp $
  */
 public final class AdminEntityPK implements java.io.Serializable {
 
@@ -44,6 +44,16 @@ public final class AdminEntityPK implements java.io.Serializable {
     public AdminEntityPK() {
     }
 
+    public int getPK()
+	{
+    	return PK;
+    }
+
+    public void setPK(int PK)
+	{
+    	this.PK = PK;
+    }
+
     /**
      * @see java.lang.Object#equals(java.lang.Object)
      */
@@ -62,4 +72,13 @@ public final class AdminEntityPK implements java.io.Serializable {
         return this.PK;
     }
 
+    /** @return String representation of this pk in the form of [.field1.field2.field3]. */
+    public String toString()
+	{
+    	StringBuffer toStringValue = new StringBuffer("[.");
+    	toStringValue.append(this.PK).append('.');
+    	toStringValue.append(']');
+    	return toStringValue.toString();
+    }
+    
 }

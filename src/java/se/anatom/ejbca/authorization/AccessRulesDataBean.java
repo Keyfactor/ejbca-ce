@@ -15,8 +15,6 @@ package se.anatom.ejbca.authorization;
 
 import javax.ejb.CreateException;
 
-import org.apache.log4j.Logger;
-
 import se.anatom.ejbca.BaseEntityBean;
 
 /** Entity bean should not be used directly, use though Session beans.
@@ -64,8 +62,6 @@ import se.anatom.ejbca.BaseEntityBean;
  */
 public abstract class AccessRulesDataBean extends BaseEntityBean
 {
-    private static Logger log = Logger.getLogger(AccessRulesDataBean.class);
-
     /**
      * @ejb.persistence column-name="pK"
      * @ejb.pk-field
@@ -113,7 +109,7 @@ public abstract class AccessRulesDataBean extends BaseEntityBean
         setAccessRule(accessrule);
         setRule(rule);
         setIsRecursive(isrecursive);
-        log.debug("Created accessrule : "+ accessrule);
+        debug("Created accessrule : "+ accessrule);
         return ret;
     }
 

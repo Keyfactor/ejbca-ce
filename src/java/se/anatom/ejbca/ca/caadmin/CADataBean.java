@@ -37,7 +37,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.11 2005-03-10 13:36:07 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.12 2005-03-13 14:14:39 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -186,17 +186,13 @@ public abstract class CADataBean extends BaseEntityBean {
      * Method that saves the CA to database.
      * @ejb.interface-method
      */
-    public void setCA(CA ca)  {
+    public void setCA(CA ca) throws UnsupportedEncodingException {
        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
        
        java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
        encoder.writeObject(ca.saveData());
        encoder.close();
-        try {
-            setData(baos.toString("UTF8"));
-        } catch (UnsupportedEncodingException e){
-            throw (IllegalStateException)new IllegalStateException().initCause(e);
-        }
+       setData(baos.toString("UTF8"));
        this.ca = ca;
        ca.setOwner(this);
     }   
@@ -224,21 +220,27 @@ public abstract class CADataBean extends BaseEntityBean {
      * @ejb.create-method
      */
     public Integer ejbCreate(String subjectdn, String name, int status, CA ca) throws CreateException {
-                
-        setCaId(new Integer(subjectdn.hashCode()));
-        setName(name);        
-        setSubjectDN(subjectdn);
-        setStatus(status);        
-        
-        
-        if(ca instanceof X509CA && ca.getCertificateChain().size() != 0){
-          setExpireTime(((X509Certificate) ca.getCACertificate()).getNotAfter().getTime());  
-          ca.setExpireTime(((X509Certificate) ca.getCACertificate()).getNotAfter()); 
-        }  
-          
-        setCA(ca);        
-        log.debug("Created CA "+ name);
-        return new Integer(subjectdn.hashCode());
+    	try {
+    		
+    		setCaId(new Integer(subjectdn.hashCode()));
+    		setName(name);        
+    		setSubjectDN(subjectdn);
+    		setStatus(status);        
+    		
+    		
+    		if(ca instanceof X509CA && ca.getCertificateChain().size() != 0){
+    			setExpireTime(((X509Certificate) ca.getCACertificate()).getNotAfter().getTime());  
+    			ca.setExpireTime(((X509Certificate) ca.getCACertificate()).getNotAfter()); 
+    		}  
+    		
+    		setCA(ca);        
+    		
+    		log.debug("Created CA "+ name);
+    		return new Integer(subjectdn.hashCode());
+    	} catch(java.io.UnsupportedEncodingException e) {
+    		log.error("CAData caught exception trying to create: ", e);
+    		throw new CreateException(e.toString());
+    	}
     }
 
     public void ejbPostCreate(String subjectdn, String name, int status, CA ca) {

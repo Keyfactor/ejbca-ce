@@ -21,8 +21,6 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.RemoveException;
 
-import org.apache.log4j.Logger;
-
 import se.anatom.ejbca.BaseEntityBean;
 import se.anatom.ejbca.util.ServiceLocator;
 
@@ -39,7 +37,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.17 2005-03-11 09:59:13 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.18 2005-03-13 14:14:39 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
@@ -95,8 +93,6 @@ import se.anatom.ejbca.util.ServiceLocator;
  *
  */
 public abstract class AdminGroupDataBean extends BaseEntityBean {
-
-    private static final Logger log = Logger.getLogger(AdminGroupDataBean.class);
 
     /**
      * @ejb.persistence column-name="pK"
@@ -186,14 +182,15 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
                         try {
                             ar.remove();
                         } catch (RemoveException e) {
-                            throw new EJBException(e.getMessage());
+                        	error("Error adding AccessRules: ", e);
+                        	throw new EJBException(e);
                         }
                         break;
                     }
                 }
                 getAccessRules().add(data);
             } catch (Exception e) {
-                log.error("Error adding AccessRules: ", e);
+                error("Error adding AccessRules: ", e);
             }
         }
     } // addAccessRules
@@ -215,7 +212,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
                     try {
                         ar.remove();
                     } catch (RemoveException e) {
-                        throw new EJBException(e.getMessage());
+                    	error("Error removing AccessRules: ", e);
+                    	throw new EJBException(e);
                     }
                     break;
                 }
@@ -271,13 +269,15 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
                         try {
                             ue.remove();
                         } catch (RemoveException e) {
-                            throw new EJBException(e.getMessage());
+                        	error("Error adding AdminEntities: ", e);
+                        	throw new EJBException(e);
                         }
                         break;
                     }
                 }
                 getAdminEntities().add(data);
             } catch (Exception e) {
+            	error("Error adding AdminEntities: ", e);
             }
         }
     } // addAdminEntities
@@ -304,7 +304,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
                     try {
                         ue.remove();
                     } catch (RemoveException e) {
-                        throw new EJBException(e);
+                    	error("Error removing AdminEntities: ", e);
+                    	throw new EJBException(e);
                     }
                     break;
                 }
@@ -388,8 +389,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
         setPK(pk);
         setAdminGroupName(admingroupname);
         setCaId(caid);
-        log.debug("Created admingroup : " + admingroupname);
-
+        debug("Created admingroup : " + admingroupname);
         return pk;
     }
 

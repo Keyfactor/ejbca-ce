@@ -13,7 +13,9 @@
  
 package se.anatom.ejbca.webdist.webconfiguration;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
 
@@ -22,7 +24,7 @@ import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
  * the presented text in the users prefered language.
  *
  * @author  Philip Vendil
- * @version $Id: WebLanguages.java,v 1.13 2004-04-16 07:39:01 anatom Exp $
+ * @version $Id: WebLanguages.java,v 1.14 2005-03-13 14:14:39 anatom Exp $
  */
 public class WebLanguages {
 
@@ -43,9 +45,15 @@ public class WebLanguages {
          languages = new LanguageProperties[availablelanguages.length];
          for(int i = 0; i < availablelanguages.length; i++){
            languages[i] = new LanguageProperties();
-           languages[i].load(this.getClass().getResourceAsStream("/" + globalconfiguration .getLanguagePath() + "/"
-                                                                    + globalconfiguration .getLanguageFilename() + "."
-                                                                    + availablelanguages[i].toLowerCase() +".properties"));
+           String propsfile = "/" + globalconfiguration .getLanguagePath() + "/"
+		   						+ globalconfiguration .getLanguageFilename() + "."
+								+ availablelanguages[i].toLowerCase() +".properties";
+           InputStream is = this.getClass().getResourceAsStream(propsfile);          
+           if(is==null) {
+           	  //if not available as stream, try it as a file
+           	  is = new FileInputStream("/tmp"+propsfile);
+           }
+           languages[i].load(is);
          }
       }
     }

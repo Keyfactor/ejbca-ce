@@ -46,7 +46,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.21 2005-03-11 09:59:13 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.22 2005-03-13 14:14:39 anatom Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -316,19 +316,18 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, "SuperAdmin", caid));
                 addAdminEntities(admin, admingroupname, caid, adminentities);
                 ArrayList accessrules = new ArrayList();
-
                 accessrules.add(new AccessRule("/super_administrator", AccessRule.RULE_ACCEPT, false));
-
                 addAccessRules(admin, admingroupname, caid, accessrules);
-
             }
         } catch (FinderException e) {
+        	debug("initialize: FinderEx, findAll failed.");
         }
         // Add Special Admin Group
         // Special admin group is a group that is not authenticated with client certificate, such as batch tool etc
         try {
             admingrouphome.findByGroupNameAndCAId(DEFAULTGROUPNAME, ILogSessionLocal.INTERNALCAID);
         } catch (FinderException e) {
+        	debug("initialize: FinderEx, add default group.");
             // Add Default Special Admin Group
             try {
                 AdminGroupDataLocal agdl = admingrouphome.create(new Integer(findFreeAdminGroupId()), DEFAULTGROUPNAME, ILogSessionLocal.INTERNALCAID);
@@ -356,6 +355,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
                 signalForAuthorizationTreeUpdate();
             } catch (CreateException ce) {
+            	error("initialize continues after Exception: ", ce);
             }
         }
         // Add Public Web Group
@@ -363,12 +363,14 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
             admingrouphome.findByGroupNameAndCAId(PUBLICWEBGROUPNAME, caid);
             this.removeAdminGroup(admin, PUBLICWEBGROUPNAME, caid);
         } catch (FinderException e) {
+        	debug("initialize: FinderEx, can't find public web group.");
         }
 
         try {
             admingrouphome.findByGroupNameAndCAId(PUBLICWEBGROUPNAME, caid);
         } catch (FinderException e) {
-            try {
+        	debug("initialize: FinderEx, create public web group.");
+        	try {
                 AdminGroupDataLocal agdl = admingrouphome.create(new Integer(findFreeAdminGroupId()), PUBLICWEBGROUPNAME, caid);
 
                 ArrayList adminentities = new ArrayList();
@@ -390,6 +392,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
                 signalForAuthorizationTreeUpdate();
             } catch (CreateException ce) {
+            	error("initialize continues after Exception: ", ce);
             }
         }
     }
@@ -505,7 +508,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                     admingrouphome.create(new Integer(findFreeAdminGroupId()), admingroupname, caid);
                     success = true;
                 } catch (CreateException e) {
-                    error("Can't add admingroup:" + e.getMessage());
+                    error("Can't add admingroup: ", e);
                     success = false;
                 }
             }
@@ -574,7 +577,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                     agl.setCaId(caid);
                     signalForAuthorizationTreeUpdate();
                 } catch (Exception e) {
-                    error("Can't rename admingroup:" + e.getMessage());
+                    error("Can't rename admingroup: ", e);
                     success = false;
                 }
             }
@@ -599,7 +602,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         try {
             returnval = (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).getAdminGroup();
         } catch (Exception e) {
-            error("Can't get admingroup:" + e.getMessage());
+            error("Can't get admingroup: ", e);
         }
         return returnval;
     } // getAdminGroup
@@ -715,7 +718,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 signalForAuthorizationTreeUpdate();
                 logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, "Added accessrules to admingroup : " + admingroupname);
             } catch (Exception e) {
-                error("Can't add access rule:" + e.getMessage());
+                error("Can't add access rule: ", e);
                 logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, "Error adding accessrules to admingroup : " + admingroupname);
             }
         }
@@ -734,7 +737,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 signalForAuthorizationTreeUpdate();
                 logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, "Removed accessrules from admingroup : " + admingroupname);
             } catch (Exception e) {
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, "Error removing accessrules from admingroup : " + admingroupname);
+            	error("Can't remove access rules: ", e);
+            	logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, "Error removing accessrules from admingroup : " + admingroupname);
             }
         }
     } // removeAccessRules
@@ -759,6 +763,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 signalForAuthorizationTreeUpdate();
                 logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, "Replaced accessrules from admingroup : " + admingroupname);
             } catch (Exception e) {
+            	error("Can't replace access rules: ", e);
                 logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, "Error replacing accessrules from admingroup : " + admingroupname);
             }
         }
@@ -796,7 +801,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 signalForAuthorizationTreeUpdate();
                 logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, "Removed administrator entities from administratorgroup " + admingroupname);
             } catch (Exception e) {
-                error("Can't add admin entities: ", e);
+                error("Can't remove admin entities: ", e);
                 logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, "Error removing administrator entities from administratorgroup " + admingroupname);
             }
         }
