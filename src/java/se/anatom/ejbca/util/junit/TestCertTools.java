@@ -7,7 +7,7 @@ import junit.framework.*;
 
 /** Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.5 2003-01-02 10:32:18 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.6 2003-01-02 11:00:22 anatom Exp $
  */
 public class TestCertTools extends TestCase {
 
@@ -144,12 +144,11 @@ public class TestCertTools extends TestCase {
         cat.debug(">test04DNComponents()");
 
         // We try to examine the general case and som special cases, which we want to be able to handle
-        //String dn1 = "CN=CommonName, O=Org, OU=OrgUnit, SN=SerialNumber, SurName=SurName, GivenName=GivenName, Initial=Initial, C=SE";
-        String dn1 = "CN=CommonName, O=Org, OU=OrgUnit, SerialNumber=SerialNumber, C=SE";
+        String dn1 = "CN=CommonName, O=Org, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName, GivenName=GivenName, Initials=Initials, C=SE";
         String bcdn1 = CertTools.stringToBCDNString(dn1);
         cat.debug("dn1: "+dn1);
         cat.debug("bcdn1: "+bcdn1);
-        assertEquals(bcdn1, "CN=CommonName,SN=SerialNumber,OU=OrgUnit,O=Org,C=SE");
+        assertEquals(bcdn1, "CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE");
         cat.debug("<test04DNComponents()");
     }
 }
