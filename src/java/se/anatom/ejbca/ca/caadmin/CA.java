@@ -40,6 +40,7 @@ import se.anatom.ejbca.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRespons
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAService;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
+import se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenManager;
 import se.anatom.ejbca.ca.exception.IllegalKeyStoreException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
@@ -50,7 +51,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.12 2005-03-02 11:25:41 anatom Exp $
+ * @version $Id: CA.java,v 1.13 2005-03-30 06:52:13 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -181,27 +182,38 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     
     public int getCertificateProfileId() {return ((Integer) data.get(CERTIFICATEPROFILEID)).intValue();}
     
+    /** Returns the CAs token. The token is fetched from the token registry, or created and added to the token registry.
+     * 
+     * @return The CAs token, be it soft or hard.
+     * @throws IllegalKeyStoreException If the token keystore is invalid (crypto error thrown by crypto provider), or the CA token type is undefined.
+     */
     public CAToken getCAToken() throws IllegalKeyStoreException {
-      if(catoken == null){            
-
-      	      	
-        switch(((Integer) ((HashMap)data.get(CATOKENDATA)).get(CAToken.CATOKENTYPE)).intValue()){
+        CAToken ret = HardCATokenManager.instance().getCAToken(getCAId());
+        if (ret == null) {
+            switch(((Integer) ((HashMap)data.get(CATOKENDATA)).get(CAToken.CATOKENTYPE)).intValue()) {
             case CATokenInfo.CATOKENTYPE_P12:
-              catoken = (CAToken) new SoftCAToken((HashMap)data.get(CATOKENDATA));
-              break;
+                ret = (CAToken) new SoftCAToken((HashMap)data.get(CATOKENDATA));
+                break;
             case CATokenInfo.CATOKENTYPE_HSM:
-              catoken = (CAToken) new HardCATokenContainer((HashMap)data.get(CATOKENDATA)); 
-              break;
+                ret = (CAToken) new HardCATokenContainer((HashMap)data.get(CATOKENDATA)); 
+                break;
             case CATokenInfo.CATOKENTYPE_NULL:
-              catoken = new NullCAToken();  
-        }
-      }
-      return catoken;
+                ret = new NullCAToken();
+            default:
+                throw new IllegalKeyStoreException("No CA Token type defined!");
+            }
+            HardCATokenManager.instance().addCAToken(getCAId(), ret);
+        }            
+      return ret;
     }    
         
+    /** Sets the CA token. Adds or updates the token in the token registry.
+     * 
+     * @param catoken The CAs token, be it soft or hard.
+     */
     public void setCAToken(CAToken catoken){
        data.put(CATOKENDATA, (HashMap) catoken.saveData());        
-       this.catoken = catoken;
+       HardCATokenManager.instance().addCAToken(getCAId(), catoken);
     }
     
     public Collection getRequestCertificateChain(){
@@ -429,7 +441,6 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	  this.owner = owner;	
 	}
     
-    private CAToken catoken = null;
     private HashMap extendedcaservicemap = null;
     private ArrayList certificatechain = null;
     private ArrayList requestcertchain = null;

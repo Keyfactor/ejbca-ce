@@ -92,19 +92,21 @@ public class HardCATokenManager {
         return (CAToken)caTokenRegistry.get(new Integer(caid));
     }
     
-    /** Adds a CA token to the token registry.
+    /** Adds a CA token to the token registry. If a token already exists for the given CAid, 
+     * the old one is removed and replaced with the new. If the token passed is null, an existing token is removed.
      * 
      * @param caid the id of the CA whose CAToken you want to fetch.
      * @param token the token to be added
-     * @return true if the new token was added to the registry, false if a token already exists for the given caid.
      */
-    public synchronized boolean addCAToken(int caid, CAToken token) {
-        if (!caTokenRegistry.contains(new Integer(caid))) {
-            caTokenRegistry.put(new Integer(caid), token);
-            log.debug("Added CA token for CA: "+caid);
-            return true;
+    public synchronized void addCAToken(int caid, CAToken token) {
+        if (caTokenRegistry.contains(new Integer(caid))) {
+            caTokenRegistry.remove(new Integer(caid));
+            log.debug("Removed old CA token for CA: "+caid);
         }
-        return false;
+        if (token != null) {
+            caTokenRegistry.put(new Integer(caid), token);            
+            log.debug("Added CA token for CA: "+caid);
+        }
     }
     
     
