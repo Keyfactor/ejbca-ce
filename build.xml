@@ -81,11 +81,6 @@
   <property name="ksname" value="server.p12"/>
   <property name="keystore" value="src/ca/ca/keyStore/${ksname}"/>
   
-  <!-- libs to be copied to Jboss lib directory -->
-  <property name="lib.bcmail" value="${lib}/bcmail-jdk14-119.jar"/>
-  <property name="lib.jce" value="${lib}/bcprov-jdk14-119.jar"/>
-  <property name="lib.ldap" value="${lib}/ldap.jar"/>
-
   <!-- =================================================================== -->
   <!-- Create the time stamp and build directory -->
   <!-- =================================================================== -->
