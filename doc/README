@@ -637,6 +637,13 @@ Note on IE certs:
 For IE to verify client certs, the ordering in the DN must be strictly the same
  in both client and CA certs. Possibly that it must also be in a specific order.
 
+Microsoft Smart Card Logon certificates:
+http://support.microsoft.com/default.aspx?scid=kb;EN-US;q281245
+http://support.microsoft.com/default.aspx?scid=kb;EN-US;q291010
+http://www.microsoft.com/windows2000/en/server/help/default.asp?url=
+/windows2000/en/server/help/sag_CS_CertTemps.htm
+
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
+
 
