@@ -9,6 +9,17 @@
         <transaction-descriptor>
           <trans-timeout-seconds>900</trans-timeout-seconds>
         </transaction-descriptor>
+        <reference-descriptor>
+        <resource-description>
+	<res-ref-name>
+	  mail/DefaultMail
+	</res-ref-name>
+        <jndi-name>
+	  DefaultMail
+        </jndi-name>
+     </resource-description>
+        
+        </reference-descriptor>
         <jndi-name>UserAdminSession</jndi-name>
     </weblogic-enterprise-bean>
 
@@ -23,9 +34,9 @@
   <weblogic-enterprise-bean>
     <ejb-name>UserData</ejb-name>   
     <entity-descriptor>
-      <entity-cache>    
+      <!-- pfa <entity-cache>    
         <max-beans-in-cache>1</max-beans-in-cache>
-      </entity-cache>    
+      </entity-cache>    -->
       <persistence>
         <persistence-type>
           <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
@@ -44,9 +55,9 @@
     <weblogic-enterprise-bean>
       <ejb-name>GlobalConfigurationData</ejb-name>
       <entity-descriptor>
-        <entity-cache>
+        <!-- pfa <entity-cache>
           <max-beans-in-cache>1</max-beans-in-cache>
-        </entity-cache>
+        </entity-cache> -->
         <persistence>
           <persistence-type>
             <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
@@ -65,9 +76,9 @@
     <weblogic-enterprise-bean>
       <ejb-name>AdminPreferencesData</ejb-name>
       <entity-descriptor>
-        <entity-cache>
+        <!-- pfa <entity-cache>
           <max-beans-in-cache>1</max-beans-in-cache>
-        </entity-cache>
+        </entity-cache> -->
         <persistence>
           <persistence-type>
             <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
@@ -86,9 +97,9 @@
     <weblogic-enterprise-bean>
       <ejb-name>EndEntityProfileData</ejb-name>
       <entity-descriptor>
-        <entity-cache>
+        <!-- pfa <entity-cache>
           <max-beans-in-cache>1</max-beans-in-cache>
-        </entity-cache>
+        </entity-cache> -->
         <persistence>
           <persistence-type>
             <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
@@ -107,6 +118,10 @@
    <security-role-assignment>
       <role-name>InternalUser</role-name>
       <principal-name>system</principal-name>
+   </security-role-assignment>
+   <security-role-assignment>
+      <role-name>SuperAdmin</role-name>
+      <principal-name>CH</principal-name>
    </security-role-assignment>
    <security-role-assignment>
       <role-name>everyone</role-name>

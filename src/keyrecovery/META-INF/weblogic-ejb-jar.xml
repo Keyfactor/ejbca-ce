@@ -39,6 +39,10 @@
       <principal-name>system</principal-name>
    </security-role-assignment>
    <security-role-assignment>
+      <role-name>SuperAdmin</role-name>
+      <principal-name>CH</principal-name>
+   </security-role-assignment>
+   <security-role-assignment>
       <role-name>everyone</role-name>
       <principal-name>everyone</principal-name>
    </security-role-assignment>

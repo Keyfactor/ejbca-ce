@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 
 <!DOCTYPE weblogic-rdbms-jar PUBLIC
- '-//BEA Systems, Inc.//DTD WebLogic 7.0.0 EJB RDBMS Persistence//EN'
- 'http://www.bea.com/servers/wls700/dtd/weblogic-rdbms20-persistence-700.dtd'>
+ '-//BEA Systems, Inc.//DTD WebLogic 8.1.0 EJB RDBMS Persistence//EN'
+ 'http://www.bea.com/servers/wls810/dtd/weblogic-rdbms20-persistence-810.dtd'>
 
 <weblogic-rdbms-jar>
 
@@ -20,6 +20,11 @@
                 <dbms-column>alias</dbms-column>
             </field-map>
             <field-map>
+                <cmp-field>adminGroupId</cmp-field>
+                <dbms-column>adminGroupId</dbms-column>
+            </field-map>
+<!--
+            <field-map>
                 <cmp-field>certificateSN</cmp-field>
                 <dbms-column>certificateSN</dbms-column>
             </field-map>
@@ -27,6 +32,7 @@
                 <cmp-field>certIssuerDN</cmp-field>
                 <dbms-column>certIssuerDN</dbms-column>
             </field-map>
+-->
             <field-map>
                 <cmp-field>data</cmp-field>
                 <dbms-column>data</dbms-column>
@@ -63,8 +69,74 @@
                 <cmp-field>data</cmp-field>
                 <dbms-column>data</dbms-column>
             </field-map>
+            <field-map>
+                <cmp-field>significantIssuerDN</cmp-field>
+                <dbms-column>significantIssuerDN</dbms-column>
+            </field-map>
         </table-map>
     </weblogic-rdbms-bean>
 
-    <create-default-dbms-tables>False</create-default-dbms-tables>
+
+    <weblogic-rdbms-bean>
+        <ejb-name>HardTokenProfileData</ejb-name>
+        <data-source-name>DefaultDS</data-source-name>
+        <table-map>
+            <table-name>HARDTOKENPROFILEDATA</table-name>
+            <field-map>
+                <cmp-field>id</cmp-field>
+                <dbms-column>id</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>name</cmp-field>
+                <dbms-column>name</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>updateCounter</cmp-field>
+                <dbms-column>updateCounter</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>data</cmp-field>
+                <dbms-column>data</dbms-column>
+            </field-map>
+        </table-map>
+    </weblogic-rdbms-bean>
+
+
+    <weblogic-rdbms-bean>
+        <ejb-name>HardTokenCertificateMap</ejb-name>
+        <data-source-name>DefaultDS</data-source-name>
+        <table-map>
+            <table-name>HARDTOKENCERTIFICATEMAP</table-name>
+            <field-map>
+                <cmp-field>certificateFingerprint</cmp-field>
+                <dbms-column>certificateFingerprint</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>tokenSN</cmp-field>
+                <dbms-column>tokenSN</dbms-column>
+            </field-map>
+        </table-map>
+    </weblogic-rdbms-bean>
+    
+    <weblogic-rdbms-bean>
+        <ejb-name>HardTokenPropertyData</ejb-name>
+        <data-source-name>DefaultDS</data-source-name>
+        <table-map>
+            <table-name>HARDTOKENPROPERTYDATA</table-name>
+            <field-map>
+                <cmp-field>id</cmp-field>
+                <dbms-column>id</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>property</cmp-field>
+                <dbms-column>property</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>value</cmp-field>
+                <dbms-column>value</dbms-column>
+            </field-map>
+        </table-map>
+    </weblogic-rdbms-bean>
+    
+    <!-- <create-default-dbms-tables>AlterOrCreate</create-default-dbms-tables> -->
 </weblogic-rdbms-jar>

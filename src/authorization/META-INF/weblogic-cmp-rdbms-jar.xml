@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 
 <!DOCTYPE weblogic-rdbms-jar PUBLIC
- '-//BEA Systems, Inc.//DTD WebLogic 7.0.0 EJB RDBMS Persistence//EN'
- 'http://www.bea.com/servers/wls700/dtd/weblogic-rdbms20-persistence-700.dtd'>
+ '-//BEA Systems, Inc.//DTD WebLogic 8.1.0 EJB RDBMS Persistence//EN'
+ 'http://www.bea.com/servers/wls810/dtd/weblogic-rdbms20-persistence-810.dtd'>
 
 <weblogic-rdbms-jar>
 
@@ -10,10 +10,18 @@
         <ejb-name>AdminGroupData</ejb-name>
         <data-source-name>DefaultDS</data-source-name>
         <table-map>
-            <table-name>ADMINGROUP</table-name>
+            <table-name>ADMINGROUPDATA</table-name>
+            <field-map>
+                <cmp-field>pK</cmp-field>
+                <dbms-column>pK</dbms-column>
+            </field-map>
             <field-map>
                 <cmp-field>adminGroupName</cmp-field>
                 <dbms-column>adminGroupName</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>cAId</cmp-field>
+                <dbms-column>cAId</dbms-column>
             </field-map>
         </table-map>
     </weblogic-rdbms-bean>
@@ -22,11 +30,17 @@
         <ejb-name>AdminEntityData</ejb-name>
         <data-source-name>DefaultDS</data-source-name>
         <table-map>
-            <table-name>ADMINENTITY</table-name>
+            <table-name>ADMINENTITYDATA</table-name>
             <field-map>
                 <cmp-field>pK</cmp-field>
                 <dbms-column>pK</dbms-column>
             </field-map>
+
+            <field-map>
+                <cmp-field>adminGroupFK</cmp-field>
+                <dbms-column>adminGroupFK</dbms-column>
+            </field-map>
+
             <field-map>
                 <cmp-field>matchWith</cmp-field>
                 <dbms-column>matchWith</dbms-column>
@@ -46,21 +60,55 @@
         <ejb-name>AccessRulesData</ejb-name>
         <data-source-name>DefaultDS</data-source-name>
         <table-map>
-            <table-name>ACCESSRULES</table-name>
+            <table-name>ACCESSRULESDATA</table-name>
             <field-map>
                 <cmp-field>pK</cmp-field>
                 <dbms-column>pK</dbms-column>
             </field-map>
             <field-map>
+                <cmp-field>adminGroupFK</cmp-field>
+                <dbms-column>adminGroupFK</dbms-column>
+            </field-map>
+<!--
+            <field-map>
                 <cmp-field>resource</cmp-field>
                 <dbms-column>resource</dbms-column>
             </field-map>
+-->
+
             <field-map>
                 <cmp-field>accessRule</cmp-field>
                 <dbms-column>accessRule</dbms-column>
             </field-map>
+            <field-map>
+                <cmp-field>isRecursive</cmp-field>
+                <dbms-column>isRecursive</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>rule</cmp-field>
+                <dbms-column>rule</dbms-column>
+            </field-map>
         </table-map>
-    </weblogic-rdbms-bean>    
+    </weblogic-rdbms-bean>   
+    
+    
+    <weblogic-rdbms-bean>
+        <ejb-name>AuthorizationTreeUpdateData</ejb-name>
+        <data-source-name>DefaultDS</data-source-name>
+        <table-map>
+            <table-name>AUTHORIZATIONTREEUPDATEDATA</table-name>
+            <field-map>
+                <cmp-field>pK</cmp-field>
+                <dbms-column>pK</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>authorizationTreeUpdateNumber</cmp-field>
+                <dbms-column>authorizationTreeUpdateNumber</dbms-column>
+            </field-map>
+        </table-map>
+    </weblogic-rdbms-bean>   
+    
+    
 
     <weblogic-rdbms-relation>
       <relation-name>AdminGroupDataToAccessRules</relation-name>
@@ -68,8 +116,8 @@
           <relationship-role-name>AccessRulesData</relationship-role-name>
           <relationship-role-map>
                 <column-map>
-                  <foreign-key-column>adminGroupName</foreign-key-column>
-                  <key-column>adminGroupName</key-column>
+                  <foreign-key-column>AdminGroupFK</foreign-key-column><!-- pfa -->
+                  <key-column>pK</key-column>
                 </column-map>
           </relationship-role-map>
         </weblogic-relationship-role>
@@ -81,12 +129,12 @@
           <relationship-role-name>AdminEntityData</relationship-role-name>
           <relationship-role-map>
                 <column-map>
-                  <foreign-key-column>adminGroupName</foreign-key-column>
-                  <key-column>adminGroupName</key-column>
+                  <foreign-key-column>AdminGroupFK</foreign-key-column><!-- pfa -->
+                  <key-column>pK</key-column>
                 </column-map>
           </relationship-role-map>
         </weblogic-relationship-role>
     </weblogic-rdbms-relation>
 
-    <create-default-dbms-tables>False</create-default-dbms-tables>
+<!--    <create-default-dbms-tables>AlterOrCreate</create-default-dbms-tables> -->
 </weblogic-rdbms-jar>

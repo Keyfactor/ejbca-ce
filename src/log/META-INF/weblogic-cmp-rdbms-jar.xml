@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 
 <!DOCTYPE weblogic-rdbms-jar PUBLIC
- '-//BEA Systems, Inc.//DTD WebLogic 7.0.0 EJB RDBMS Persistence//EN'
- 'http://www.bea.com/servers/wls700/dtd/weblogic-rdbms20-persistence-700.dtd'>
+ '-//BEA Systems, Inc.//DTD WebLogic 8.1.0 EJB RDBMS Persistence//EN'
+ 'http://www.bea.com/servers/wls810/dtd/weblogic-rdbms20-persistence-810.dtd'>
 
 <weblogic-rdbms-jar>
 
@@ -22,6 +22,10 @@
             <field-map>
                 <cmp-field>adminData</cmp-field>
                 <dbms-column>adminData</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>caId</cmp-field>
+                <dbms-column>caId</dbms-column>
             </field-map>
             <field-map>
                 <cmp-field>module</cmp-field>
@@ -70,5 +74,6 @@
         </table-map>
     </weblogic-rdbms-bean>
 
-    <create-default-dbms-tables>False</create-default-dbms-tables>
+    <!-- <create-default-dbms-tables>AlterOrCreate</create-default-dbms-tables> -->
+
 </weblogic-rdbms-jar>

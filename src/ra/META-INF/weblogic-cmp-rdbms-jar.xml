@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 
 <!DOCTYPE weblogic-rdbms-jar PUBLIC
- '-//BEA Systems, Inc.//DTD WebLogic 7.0.0 EJB RDBMS Persistence//EN'
- 'http://www.bea.com/servers/wls700/dtd/weblogic-rdbms20-persistence-700.dtd'>
+ '-//BEA Systems, Inc.//DTD WebLogic 8.1.0 EJB RDBMS Persistence//EN'
+ 'http://www.bea.com/servers/wls810/dtd/weblogic-rdbms20-persistence-810.dtd'>
 
 <weblogic-rdbms-jar>
 
@@ -10,7 +10,7 @@
         <ejb-name>AdminPreferencesData</ejb-name>
         <data-source-name>DefaultDS</data-source-name>
         <table-map>
-            <table-name>ADMINPREFS</table-name>
+            <table-name>ADMINPREFERENCESDATA</table-name>
             <field-map>
                 <cmp-field>id</cmp-field>
                 <dbms-column>id</dbms-column>
@@ -26,7 +26,7 @@
         <ejb-name>EndEntityProfileData</ejb-name>
         <data-source-name>DefaultDS</data-source-name>
         <table-map>
-            <table-name>ENDENTITYPROFILE</table-name>
+            <table-name>ENDENTITYPROFILEDATA</table-name>
             <field-map>
                 <cmp-field>id</cmp-field>
                 <dbms-column>id</dbms-column>
@@ -46,7 +46,7 @@
         <ejb-name>GlobalConfigurationData</ejb-name>
         <data-source-name>DefaultDS</data-source-name>
         <table-map>
-            <table-name>GLOBALCONFIG</table-name>
+            <table-name>GLOBALCONFIGURATIONDATA</table-name>
             <field-map>
                 <cmp-field>data</cmp-field>
                 <dbms-column>data</dbms-column>
@@ -66,6 +66,10 @@
             <field-map>
                 <cmp-field>username</cmp-field>
                 <dbms-column>username</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>cAId</cmp-field>
+                <dbms-column>cAId</dbms-column>
             </field-map>
             <field-map>
                 <cmp-field>clearPassword</cmp-field>
@@ -123,9 +127,13 @@
                 <cmp-field>keyStorePassword</cmp-field>
                 <dbms-column>keyStorePassword</dbms-column>
             </field-map>
+            <field-map>
+                <cmp-field>extendedInformationData</cmp-field>
+                <dbms-column>extendedInformationData</dbms-column>
+            </field-map>
         </table-map>
     </weblogic-rdbms-bean>
 
 
-    <create-default-dbms-tables>False</create-default-dbms-tables>
+    <!-- <create-default-dbms-tables>AlterOrCreate</create-default-dbms-tables> -->
 </weblogic-rdbms-jar>

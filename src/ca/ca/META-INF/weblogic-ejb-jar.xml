@@ -13,16 +13,28 @@
   </weblogic-enterprise-bean>
 
   <weblogic-enterprise-bean>
+    <ejb-name>CAAdminSession</ejb-name>
+    <run-as-identity-principal>InternalUser</run-as-identity-principal>
+    <jndi-name>CAAdminSession</jndi-name>
+  </weblogic-enterprise-bean>
+  
+  <weblogic-enterprise-bean>
+    <ejb-name>RSASignSession</ejb-name>
+    <run-as-identity-principal>InternalUser</run-as-identity-principal>
+  </weblogic-enterprise-bean>
+
+  <weblogic-enterprise-bean>
+    <ejb-name>PublisherSession</ejb-name>
+  </weblogic-enterprise-bean>
+  
+  <weblogic-enterprise-bean>
     <ejb-name>AuthenticationSession</ejb-name>
     <transaction-descriptor>
       <trans-timeout-seconds>900</trans-timeout-seconds>
     </transaction-descriptor>
-    <reference-descriptor>
-        <ejb-reference-description>
-            <ejb-ref-name>ejb/UserData</ejb-ref-name>
-            <jndi-name>UserData</jndi-name>
-        </ejb-reference-description>
-    </reference-descriptor>
+    <run-as-identity-principal>
+      InternalUser
+   </run-as-identity-principal>
     <jndi-name>AuthenticationSession</jndi-name>
   </weblogic-enterprise-bean>
 
@@ -42,6 +54,14 @@
     <jndi-name>CreateCRLSession</jndi-name>
   </weblogic-enterprise-bean>
 
+  <weblogic-enterprise-bean>
+    <ejb-name>UpgradeSession</ejb-name>
+    <transaction-descriptor>
+      <trans-timeout-seconds>900</trans-timeout-seconds>
+    </transaction-descriptor>
+    <jndi-name>UpgradeSession</jndi-name>
+  </weblogic-enterprise-bean>
+
 <!-- Uncomment to use LDAP Publisher
 
   <weblogic-enterprise-bean>
@@ -57,9 +77,6 @@
   <weblogic-enterprise-bean>
     <ejb-name>CertificateData</ejb-name>   
     <entity-descriptor>
-      <entity-cache>    
-        <max-beans-in-cache>1</max-beans-in-cache>
-      </entity-cache>    
       <persistence>
         <persistence-type>
           <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
@@ -78,9 +95,6 @@
   <weblogic-enterprise-bean>
     <ejb-name>CRLData</ejb-name>   
     <entity-descriptor>
-      <entity-cache>    
-        <max-beans-in-cache>1</max-beans-in-cache>
-      </entity-cache>    
       <persistence>
         <persistence-type>
           <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
@@ -99,9 +113,6 @@
     <weblogic-enterprise-bean>
       <ejb-name>CertificateProfileData</ejb-name>
       <entity-descriptor>
-        <entity-cache>
-          <max-beans-in-cache>1</max-beans-in-cache>
-        </entity-cache>
         <persistence>
           <persistence-type>
             <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
@@ -117,9 +128,55 @@
       <jndi-name>CertificateProfileData</jndi-name>
     </weblogic-enterprise-bean>
 
-   <security-role-assignment>
+   <weblogic-enterprise-bean>
+      <ejb-name>PublisherData</ejb-name>
+      <entity-descriptor>
+        <!-- <entity-cache>
+          <max-beans-in-cache>1</max-beans-in-cache>
+        </entity-cache> -->
+        <persistence>
+          <persistence-type>
+            <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
+            <type-version>7.0</type-version>
+            <type-storage>META-INF/weblogic-cmp-rdbms-jar.xml</type-storage>
+          </persistence-type>
+          <persistence-use>
+            <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
+            <type-version>7.0</type-version>
+          </persistence-use>
+        </persistence>
+      </entity-descriptor>
+      <jndi-name>PublisherData</jndi-name>
+    </weblogic-enterprise-bean>
+    
+    <weblogic-enterprise-bean>
+      <ejb-name>CAData</ejb-name>
+      <entity-descriptor>
+        <!-- <entity-cache>
+          <max-beans-in-cache>1</max-beans-in-cache>
+        </entity-cache> -->
+        <persistence>
+          <persistence-type>
+            <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
+            <type-version>7.0</type-version>
+            <type-storage>META-INF/weblogic-cmp-rdbms-jar.xml</type-storage>
+          </persistence-type>
+          <persistence-use>
+            <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
+            <type-version>7.0</type-version>
+          </persistence-use>
+        </persistence>
+      </entity-descriptor>
+      <jndi-name>CAData</jndi-name>
+    </weblogic-enterprise-bean>
+    
+    <security-role-assignment>
       <role-name>InternalUser</role-name>
       <principal-name>system</principal-name>
+   </security-role-assignment>
+    <security-role-assignment>
+      <role-name>SuperAdmin</role-name>
+      <principal-name>CH</principal-name>
    </security-role-assignment>
    <security-role-assignment>
       <role-name>everyone</role-name>
