@@ -1,26 +1,32 @@
 package se.anatom.ejbca.ca.auth.junit;
 
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.Date;
+import java.util.Random;
 
 import javax.ejb.DuplicateKeyException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import junit.framework.*;
-
 import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ca.auth.*;
+import se.anatom.ejbca.ca.auth.IAuthenticationSessionHome;
+import se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote;
+import se.anatom.ejbca.ca.auth.UserAuthData;
+import se.anatom.ejbca.ca.sign.ISignSessionHome;
+import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.*;
-
+import se.anatom.ejbca.ra.UserDataHome;
+import se.anatom.ejbca.ra.UserDataPK;
+import se.anatom.ejbca.ra.UserDataRemote;
 
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.13 2003-07-24 08:43:30 anatom Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.14 2003-09-03 15:40:36 herrvendil Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthenticationSession.class);
@@ -29,6 +35,7 @@ public class TestAuthenticationSession extends TestCase {
     private static IAuthenticationSessionRemote remote;
     private static String username;
     private static String pwd;
+    private static int caid;
 
     /**
      * Creates a new TestAuthenticationSession object.
@@ -44,9 +51,14 @@ public class TestAuthenticationSession extends TestCase {
         ctx = getInitialContext();
 
         Object obj = ctx.lookup("AuthenticationSession");
-        home = (IAuthenticationSessionHome) javax.rmi.PortableRemoteObject.narrow(obj,
-                IAuthenticationSessionHome.class);
+        home = (IAuthenticationSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IAuthenticationSessionHome.class);
         remote = home.create();
+        obj = ctx.lookup("RSASignSession");        
+        ISignSessionHome signhome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);        
+        ISignSessionRemote signsession = signhome.create();
+        
+        this.caid = 0; // TODO
+        
         log.debug("<setUp()");
     }
 
@@ -64,7 +76,7 @@ public class TestAuthenticationSession extends TestCase {
 
     private String genRandomUserName() throws Exception {
         // Gen random user
-        Random rand = new Random(new Date().getTime() + 4711);
+        Random rand = new Random(new Date().getTime()+4711);
         String username = "";
 
         for (int i = 0; i < 6; i++) {
@@ -75,12 +87,11 @@ public class TestAuthenticationSession extends TestCase {
         log.debug("Generated random username: username =" + username);
 
         return username;
-    }
+    } // genRandomUserName
 
-    // genRandomUserName
     private String genRandomPwd() throws Exception {
         // Gen random pwd
-        Random rand = new Random(new Date().getTime() + 4812);
+        Random rand = new Random(new Date().getTime()+4812);
         String password = "";
 
         for (int i = 0; i < 8; i++) {
@@ -91,9 +102,8 @@ public class TestAuthenticationSession extends TestCase {
         log.debug("Generated random pwd: password=" + password);
 
         return password;
-    }
+    } // genRandomPwd
 
-    // genRandomPwd
 
     /**
      * tests creation of new users
@@ -105,27 +115,23 @@ public class TestAuthenticationSession extends TestCase {
 
         // Make user that we know later...
         Object obj1 = ctx.lookup("UserData");
-        UserDataHome userhome = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj1,
-                UserDataHome.class);
+        UserDataHome userhome = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj1, UserDataHome.class);
         username = genRandomUserName();
         pwd = genRandomPwd();
 
         try {
-            UserDataRemote createdata = userhome.create(username, pwd,
-                    "C=SE, O=AnaTom, CN=" + username);
-            assertNotNull("Failed to create user " + username, createdata);
+            UserDataRemote createdata = userhome.create(username, pwd, "C=SE, O=AnaTom, CN="+username, caid);
+            assertNotNull("Failed to create user "+username, createdata);
             createdata.setType(SecConst.USER_ENDUSER);
-            createdata.setSubjectEmail(username + "@anatom.se");
-            log.debug("created user: " + username + ", " + pwd + ", C=SE, O=AnaTom, CN=" +
-                username);
+            createdata.setSubjectEmail(username+"@anatom.se");
+            log.debug("created user: "+username+", "+pwd+", C=SE, O=AnaTom, CN="+username);
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
-                assertNotNull("Cannot create random user " + username, null);
+                assertNotNull("Cannot create random user "+username, null);
             }
         } catch (DuplicateKeyException dke) {
-            assertNotNull("Cannot create random user " + username, null);
+            assertNotNull("Cannot create random user "+username, null);
         }
-
         log.debug("<test01CreateNewUser()");
     }
 
@@ -136,19 +142,17 @@ public class TestAuthenticationSession extends TestCase {
      */
     public void test02AuthenticateUser() throws Exception {
         log.debug(">test02AuthenticateUser()");
-
         // user that we know exists...
-        UserAuthData data = remote.authenticateUser(new Admin(Admin.TYPE_INTERNALUSER), username,
-                pwd);
+        UserAuthData data = remote.authenticateUser(new Admin(Admin.TYPE_INTERNALUSER), username, pwd);
 
-        log.debug("DN: " + data.getDN());
+        log.debug("DN: "+data.getDN());
         assertTrue("DN is wrong", data.getDN().indexOf(username) != -1);
 
-        log.debug("Email: " + data.getEmail());
+        log.debug("Email: "+data.getEmail());
         assertNotNull("Email should not be null", data.getEmail());
-        assertTrue("Email is wrong", data.getEmail().equals(username + "@anatom.se"));
+        assertTrue("Email is wrong", data.getEmail().equals(username+"@anatom.se"));
 
-        log.debug("Type: " + data.getType());
+        log.debug("Type: "+data.getType());
         assertTrue("Type is wrong", data.getType() == SecConst.USER_ENDUSER);
         log.debug("<test02AuthenticateUser()");
     }
@@ -163,8 +167,7 @@ public class TestAuthenticationSession extends TestCase {
 
         // user that we know exists...
         Object obj1 = ctx.lookup("UserData");
-        UserDataHome userhome = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj1,
-                UserDataHome.class);
+        UserDataHome userhome = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj1, UserDataHome.class);
         UserDataPK pk = new UserDataPK(username);
         UserDataRemote data = userhome.findByPrimaryKey(pk);
 
@@ -174,8 +177,7 @@ public class TestAuthenticationSession extends TestCase {
         boolean authfailed = false;
 
         try {
-            UserAuthData auth = remote.authenticateUser(new Admin(Admin.TYPE_INTERNALUSER),
-                    username, pwd);
+            UserAuthData auth = remote.authenticateUser(new Admin(Admin.TYPE_INTERNALUSER), username, pwd);
         } catch (Exception e) {
             authfailed = true;
         }
@@ -196,8 +198,7 @@ public class TestAuthenticationSession extends TestCase {
         boolean authfailed = false;
 
         try {
-            UserAuthData auth = remote.authenticateUser(new Admin(Admin.TYPE_INTERNALUSER),
-                    username, "abc123");
+            UserAuthData auth = remote.authenticateUser(new Admin(Admin.TYPE_INTERNALUSER), username, "abc123");
         } catch (Exception e) {
             authfailed = true;
         }
