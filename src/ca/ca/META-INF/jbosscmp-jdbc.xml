@@ -7,29 +7,4 @@
     <datasource-mapping>mySQL</datasource-mapping>
 </defaults>
 
-<!-- Default setting for mySQL in EJBCA version > 1.0. 
-     base64cert and base64crl fields is too long form default mapping with some databases. 
-     If using another database (the default HypersonicDB for ex.), simply remove (or edit) 
-     the <entity> sections below if things don't work. -->
-
-<enterprise-beans>
- <!--   <entity>
-        <ejb-name>CertificateData</ejb-name>
-        <cmp-field>
-            <field-name>base64Cert</field-name>
-            <jdbc-type>LONGVARCHAR</jdbc-type>
-            <sql-type>TEXT</sql-type>
-        </cmp-field>
-    </entity>
-
-    <entity>
-        <ejb-name>CRLData</ejb-name>
-        <cmp-field>
-            <field-name>base64Crl</field-name>
-            <jdbc-type>LONGVARCHAR</jdbc-type>
-            <sql-type>TEXT</sql-type>
-        </cmp-field>
-    </entity> -->
-</enterprise-beans>
-
 </jbosscmp-jdbc>
