@@ -4,6 +4,7 @@ import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import java.util.HashMap;
 import org.apache.log4j.Logger;
+import se.anatom.ejbca.BaseEntityBean;
 
 
 /** Entity bean should not be used directly, use though Session beans.
@@ -15,12 +16,11 @@ import org.apache.log4j.Logger;
  * GlobalConfiguration
  * </pre>
  *
- * @version $Id: GlobalConfigurationDataBean.java,v 1.4 2003-02-12 11:23:18 scop Exp $
+ * @version $Id: GlobalConfigurationDataBean.java,v 1.5 2003-02-28 09:32:29 koen_serry Exp $
  */
-public abstract class GlobalConfigurationDataBean implements javax.ejb.EntityBean {
+public abstract class GlobalConfigurationDataBean extends BaseEntityBean {
 
     private static Logger log = Logger.getLogger(GlobalConfigurationDataBean.class);
-    protected EntityContext  ctx;
 
     public abstract String getConfigurationId();
     public abstract void setConfigurationId(String id);
@@ -70,33 +70,4 @@ public abstract class GlobalConfigurationDataBean implements javax.ejb.EntityBea
     public void ejbPostCreate(String id, GlobalConfiguration globalconfiguration) {
         // Do nothing. Required.
     }
-
-    public void setEntityContext(EntityContext ctx) {
-        this.ctx = ctx;
-    }
-
-    public void unsetEntityContext() {
-        this.ctx = null;
-    }
-
-    public void ejbActivate() {
-        // Not implemented.
-    }
-
-    public void ejbPassivate() {
-        // Not implemented.
-    }
-
-    public void ejbLoad() {
-        // Not implemented.
-    }
-
-    public void ejbStore() {
-        // Not implemented.
-    }
-
-    public void ejbRemove() {
-        // Not implemented.
-    }
-
 }

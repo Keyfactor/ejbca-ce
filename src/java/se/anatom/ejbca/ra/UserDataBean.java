@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.StringTools;
 import se.anatom.ejbca.util.Hex;
+import se.anatom.ejbca.BaseEntityBean;
 import se.anatom.ejbca.SecConst;
 
 import org.apache.log4j.Logger;
@@ -41,13 +42,11 @@ import org.apache.log4j.Logger;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.18 2003-02-27 08:43:26 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.19 2003-02-28 09:32:29 koen_serry Exp $
  */
-public abstract class UserDataBean implements javax.ejb.EntityBean {
+public abstract class UserDataBean extends BaseEntityBean {
 
     private static Logger log = Logger.getLogger(UserDataBean.class);
-    protected EntityContext  ctx;
-
 
     public abstract String getUsername();
     /** username must be called 'striped' using StringTools.strip()
@@ -271,33 +270,4 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
     public void ejbPostCreate(String username, String password, String dn) {
         // Do nothing. Required.
     }
-
-    public void setEntityContext(EntityContext ctx) {
-        this.ctx = ctx;
-    }
-
-    public void unsetEntityContext() {
-        this.ctx = null;
-    }
-
-    public void ejbActivate() {
-        // Not implemented.
-    }
-
-    public void ejbPassivate() {
-        // Not implemented.
-    }
-
-    public void ejbLoad() {
-        // Not implemented.
-    }
-
-    public void ejbStore() {
-        // Not implemented.
-    }
-
-    public void ejbRemove() {
-        // Not implemented.
-    }
-
 }

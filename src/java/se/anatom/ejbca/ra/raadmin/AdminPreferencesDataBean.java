@@ -4,6 +4,7 @@ import java.util.HashMap;
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import org.apache.log4j.Logger;
+import se.anatom.ejbca.BaseEntityBean;
 
 /** Entity bean should not be used directly, use though Session beans.
  *
@@ -14,12 +15,11 @@ import org.apache.log4j.Logger;
  * AdminPreference
  * </pre>
  *
- * @version $Id: AdminPreferencesDataBean.java,v 1.3 2003-02-12 11:23:19 scop Exp $
+ * @version $Id: AdminPreferencesDataBean.java,v 1.4 2003-02-28 09:32:17 koen_serry Exp $
  */
-public abstract class AdminPreferencesDataBean implements javax.ejb.EntityBean {
+public abstract class AdminPreferencesDataBean extends BaseEntityBean {
 
     private static Logger log = Logger.getLogger(AdminPreferencesDataBean.class);
-    protected EntityContext  ctx;
 
     public abstract String getId();
     public abstract void setId(String id);
@@ -68,33 +68,4 @@ public abstract class AdminPreferencesDataBean implements javax.ejb.EntityBean {
     public void ejbPostCreate(String id, AdminPreference adminpreference) {
         // Do nothing. Required.
     }
-
-    public void setEntityContext(EntityContext ctx) {
-        this.ctx = ctx;
-    }
-
-    public void unsetEntityContext() {
-        this.ctx = null;
-    }
-
-    public void ejbActivate() {
-        // Not implemented.
-    }
-
-    public void ejbPassivate() {
-        // Not implemented.
-    }
-
-    public void ejbLoad() {
-        // Not implemented.
-    }
-
-    public void ejbStore() {
-        // Not implemented.
-    }
-
-    public void ejbRemove() {
-        // Not implemented.
-    }
-
 }

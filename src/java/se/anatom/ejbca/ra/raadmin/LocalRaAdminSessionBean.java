@@ -30,14 +30,14 @@ import se.anatom.ejbca.SecConst;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.21 2003-02-12 11:23:19 scop Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.22 2003-02-28 09:32:17 koen_serry Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
     private static Logger log = Logger.getLogger(LocalRaAdminSessionBean.class);
 
     /** Var holding JNDI name of datasource */
-    private String dataSource = "java:/DefaultDS";
+    private String dataSource = "";
 
     /** The home interface of  AdminPreferences entity bean */
     private AdminPreferencesDataLocalHome adminpreferenceshome=null;
