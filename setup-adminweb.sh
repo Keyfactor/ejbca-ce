@@ -25,7 +25,7 @@ then
     exit
 fi
 
-./ra.sh adduser tomcat $2 \"$1\" null null 1 3
+./ra.sh adduser tomcat $2 $1 null null 1 3
 
 ./ra.sh adduser superadmin $3 "CN=SuperAdmin" null null 65 2
 
@@ -42,8 +42,9 @@ cp p12/tomcat.jks $JBOSS_HOME/.keystore
 #This command must be run as root
 echo
 echo Importing certs in the JAVA trust store requires root privileges
-echo
+echo Enter the root password when prompted:
 su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -delete -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass $4"
+echo and again...
 su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -import -trustcacerts -file tmp/rootca.der -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass $4"
 
 rm tmp/rootca.der
