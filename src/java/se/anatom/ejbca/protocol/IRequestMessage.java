@@ -10,7 +10,7 @@ import java.security.cert.X509Certificate;
 /** Base interface for request messages sent to the CA.
 * Implementors of this interface must also implement Serializable if they are to be sent to any EJB bussiness methods.
 *
-* @version  $Id: IRequestMessage.java,v 1.4 2003-06-11 12:20:02 anatom Exp $
+* @version  $Id: IRequestMessage.java,v 1.5 2003-06-15 11:58:32 anatom Exp $
 */
 public interface  IRequestMessage {
 
@@ -49,4 +49,13 @@ public interface  IRequestMessage {
      * @param key private key.
      */
     public void setKeyInfo(X509Certificate cert, PrivateKey key);
+
+    /** Returns an error number after an error has occured processing the request
+     * @return class specific error number
+     */
+    public int getErrorNo();
+    /** Returns an error message after an error has occured processing the request
+     * @return class specific error message
+     */
+    public String getErrorText();
 }

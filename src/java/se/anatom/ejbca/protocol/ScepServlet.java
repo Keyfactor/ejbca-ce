@@ -41,7 +41,7 @@ import se.anatom.ejbca.util.Base64;
 * 6. sign the reply data (PKCS#7) from the previous step
 * 7. output the result as a der encoded block on stdout
 * -----
-* @version  $Id: ScepServlet.java,v 1.15 2003-06-14 11:29:10 anatom Exp $
+* @version  $Id: ScepServlet.java,v 1.16 2003-06-15 11:58:32 anatom Exp $
 */
 public class ScepServlet extends HttpServlet {
 
@@ -73,6 +73,7 @@ public class ScepServlet extends HttpServlet {
     public void doGet(HttpServletRequest request,  HttpServletResponse response) throws java.io.IOException, ServletException {
         log.debug(">doGet()");
         try {
+            log.debug("query string="+request.getQueryString());
             String operation = request.getParameter("operation");
             String message = request.getParameter("message");
             if ((operation == null) || (message == null)) {
@@ -87,11 +88,12 @@ public class ScepServlet extends HttpServlet {
                 ISignSessionRemote signsession = signhome.create();
                 ScepPkiOpHelper helper = new ScepPkiOpHelper(administrator, signsession);
                 // We are not ready yet, so lets deny all requests for now...
-                response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
+                //response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
                 // Read the message end get the cert, this also checksauthorization
                 byte[] reply = helper.scepCertRequest(scepmsg);
                 if (reply == null) {
                     response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Fatal error processing Scep request");
+                    return;
                 }
                 // Send back Scep response, PKCS#7 which contains the end entity's certificate (or failure)
                 RequestHelper.sendBinaryBytes(reply, response, "application/x-pki-message");

@@ -27,7 +27,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.13 2003-06-14 10:20:47 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.14 2003-06-15 11:58:32 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
 
@@ -37,11 +37,16 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
      * Raw form of the PKCS10 message
      */
     protected byte[] p10msg;
-
     /**
-     * The pkcs10 request message
+     * The pkcs10 request message, not serialized.
      */
     protected transient PKCS10CertificationRequest pkcs10 = null;
+    /** Type of error
+     */
+    private int error = 0;
+    /** Error text
+     */
+    private String errorText = null;
 
     /**
      * Constructs a new empty PKCS#10 message handler object.
@@ -93,8 +98,13 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     * @return challenge password from certification request.
     */
     public String getPassword() {
-        if (pkcs10 == null) 
+        try {
+            if (pkcs10 == null)
+                init();
+        } catch (IllegalArgumentException e) {
+            log.error("PKCS10 not inited!");
             return null;
+        }
         String ret = null;
         // Get attributes
         CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
@@ -127,8 +137,13 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     * @return subject DN from certification request.
     */
     public String getRequestDN() {
-        if (pkcs10 == null) 
+        try {
+            if (pkcs10 == null)
+                init();
+        } catch (IllegalArgumentException e) {
+            log.error("PKCS10 not inited!");
             return null;
+        }
         String ret = null;
         // Get subject name from request
         CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
@@ -145,7 +160,13 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
      */
     public PKCS10CertificationRequest getCertificationRequest()
     {
-        if (pkcs10 == null) init();
+        try {
+            if (pkcs10 == null)
+                init();
+        } catch (IllegalArgumentException e) {
+            log.error("PKCS10 not inited!");
+            return null;
+        }
         return pkcs10;
     }
 
@@ -173,6 +194,12 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     }
 
     public void setKeyInfo(X509Certificate cert, PrivateKey key) {
+    }
+    public int getErrorNo() {
+        return error;
+    }
+    public String getErrorText() {
+        return errorText;
     }
 
 } // PKCS10RequestMessage

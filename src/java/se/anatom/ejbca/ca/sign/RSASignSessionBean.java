@@ -85,7 +85,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.85 2003-06-14 11:29:13 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.86 2003-06-15 11:58:35 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -441,6 +441,9 @@ public class RSASignSessionBean extends BaseSessionBean {
         }
         String username = req.getUsername();
         String pwd = req.getPassword();
+        if ((username == null ) || (pwd == null)) {
+            throw new SignRequestException("No username/password in request!");
+        }
         Certificate cert = createCertificate(admin,username,pwd,req,keyUsage);
         try {
             ret = (IResponseMessage)responseClass.newInstance();
@@ -453,6 +456,8 @@ public class RSASignSessionBean extends BaseSessionBean {
             ret.setCertificate(cert);
             ret.setStatus(IResponseMessage.STATUS_OK);
             ret.create();
+            // TODO: handle returning errors as response message,
+            // javax.ejb.ObjectNotFoundException and the others thrown...
         } catch (NoSuchProviderException e) {
             log.error("Cannot create class for response message: ", e);
         } catch (InvalidKeyException e) {

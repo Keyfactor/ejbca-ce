@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 /**
  * Class to handle PKCS7 request messages sent to the CA.
  *
- * @version  $Id: PKCS7RequestMessage.java,v 1.7 2003-06-11 12:20:01 anatom Exp $
+ * @version  $Id: PKCS7RequestMessage.java,v 1.8 2003-06-15 11:58:32 anatom Exp $
  */
 public class PKCS7RequestMessage implements IRequestMessage, Serializable {
 
@@ -19,6 +19,12 @@ public class PKCS7RequestMessage implements IRequestMessage, Serializable {
     /** Raw form of the PKCS7 message
      */
     private byte[] msg;
+    /** Type of error
+     */
+    private int error = 0;
+    /** Error text
+     */
+    private String errorText = null;
 
 
     /** Constucts a new PKCS7 message handler object.
@@ -60,6 +66,12 @@ public class PKCS7RequestMessage implements IRequestMessage, Serializable {
         return false;
     }
     public void setKeyInfo(X509Certificate cert, PrivateKey key) {
+    }
+    public int getErrorNo() {
+        return error;
+    }
+    public String getErrorText() {
+        return errorText;
     }
 
 } // PKCS7RequestMessage

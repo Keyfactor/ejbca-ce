@@ -11,12 +11,16 @@ import java.security.cert.Certificate;
 
 /** A response message consisting of a single X509 Certificate.
 *
-* @version  $Id: X509ResponseMessage.java,v 1.3 2003-06-14 11:29:10 anatom Exp $
+* @version  $Id: X509ResponseMessage.java,v 1.4 2003-06-15 11:58:32 anatom Exp $
 */
 public class  X509ResponseMessage implements IResponseMessage {
 
-    private transient Certificate cert = null;
-    private transient int status = 0;
+    /** Certificate to be in response message,
+     */
+    private Certificate cert = null;
+    /** status for the response
+     */
+    private int status = 0;
     
     /** Sets the complete certificate in the response message.
      * @param cert certificate in the response message.

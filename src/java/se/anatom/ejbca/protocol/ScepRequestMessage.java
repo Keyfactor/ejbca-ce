@@ -30,7 +30,7 @@ import org.bouncycastle.cms.*;
  * TODO: extract senderNonce
  * TODO: extract transactionId
  *
- * @version  $Id: ScepRequestMessage.java,v 1.17 2003-06-14 11:29:10 anatom Exp $
+ * @version  $Id: ScepRequestMessage.java,v 1.18 2003-06-15 11:58:32 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
 
@@ -49,7 +49,28 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
     /** Raw form of the Scep message
      */
-    private transient byte[] scepmsg;
+    private byte[] scepmsg;
+    /** The messageType attribute specify the type of operation performed by the
+     * transaction. This attribute is required in all PKI messages. Currently, the following message types are defined:
+     * PKCSReq (19)  -- Permits use of PKCS#10 certificate request
+     * CertRep (3)   -- Response to certificate or CRL request
+     * GetCertInitial (20)  -- Certificate polling in manual enrollment
+     * GetCert (21)  -- Retrieve a certificate
+     * GetCRL  (22)  -- Retrieve a CRL
+     */
+    private int messageType = 0;
+    /** SenderNonce in a request is used as recipientNonce when the server sends back a reply to the client
+    */
+    private String senderNonce = null;
+    /** transaction id
+    */
+    private String transactionId = null;
+    /** Type of error
+     */
+    private int error = 0;
+    /** Error text
+     */
+    private String errorText = null;
 
     /** Signed data, the whole enchilada to to speak...
      */
@@ -63,26 +84,10 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
     /** Certificate used for decryption, verification
      */
-    private X509Certificate cert=null;
+    private transient X509Certificate cert=null;
     /** Private key used for decryption.
      */
-    private PrivateKey privateKey=null;
-
-    /** The messageType attribute specify the type of operation performed by the
-     * transaction. This attribute is required in all PKI messages. Currently, the following message types are defined:
-     * PKCSReq (19)  -- Permits use of PKCS#10 certificate request
-     * CertRep (3)   -- Response to certificate or CRL request
-     * GetCertInitial (20)  -- Certificate polling in manual enrollment
-     * GetCert (21)  -- Retrieve a certificate
-     * GetCRL  (22)  -- Retrieve a CRL
-     */
-    private int messageType = 0;
-    /** SenderNonce in a request is used as recipientNonce when the server sends back a reply to the client
-    */
-    private String sendeNonce = null;
-    /** Type of error
-     */
-    private int error = 0;
+    private transient PrivateKey privateKey=null;
 
     /** Constucts a new SCEP/PKCS7 message handler object.
      * @param msg The DER encoded PKCS7 request.
@@ -144,20 +149,24 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                     if (ctoid.equals(CMSObjectIdentifiers.envelopedData.getId())) {
                         envData = new EnvelopedData((ASN1Sequence)envEncData.getContent());
                     } else {
-                        log.error("EncapsulatedContentInfo does not contain PKCS7 envelopedData: "+ctoid);
+                        errorText="EncapsulatedContentInfo does not contain PKCS7 envelopedData: ";
+                        log.error(errorText+ctoid);
                         error = 2;
                     }
                 } else {
-                    log.error("EncapsulatedContentInfo is not of type 'data': "+ctoid);
+                    errorText="EncapsulatedContentInfo is not of type 'data': ";
+                    log.error(errorText+ctoid);
                     error = 3;
                 }
 
             } else {
-                log.error("This is not a certification request!");
+                errorText="This is not a certification request!";
+                log.error(errorText);
                 error = 4;
             }
         } else {
-            log.error("PKCSReq does not contain 'signedData': "+ctoid);
+            errorText="PKCSReq does not contain 'signedData': ";
+            log.error(errorText+ctoid);
             error = 1;
         }
         log.debug("<init");
@@ -169,11 +178,15 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         // Now we are getting somewhere (pheew),
         // Now we just have to get the damn key...to decrypt the PKCS10
         if (privateKey == null) {
-            log.error("Need private key to decrypt!");
+            errorText="Need private key to decrypt!";
+            error=5;
+            log.error(errorText);
             return;
         }
         if (envEncData == null) {
-            log.error("No enveloped data to decrypt!");
+            errorText="No enveloped data to decrypt!";
+            error=6;
+            log.error(errorText);
             return;
         }
         
@@ -243,7 +256,79 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         log.debug("<verify()");
         return ret;
     }
-
+    /** Returns the challenge password from the certificattion request.
+    * @return challenge password from certification request.
+    */
+    public String getPassword() {
+        log.debug(">getPassword()");
+        String ret = null;
+        try {
+            if (pkcs10 == null) {
+                init();
+                decrypt();
+            }
+            ret = super.getPassword();
+        } catch (IOException e) {
+            log.error("PKCS7 not inited!");
+            return null;
+        } catch (GeneralSecurityException e) {
+            log.error("Error in PKCS7:", e);
+            return null;
+        } catch (CMSException e) {
+            log.error("Error in PKCS7:", e);
+            return null;
+        }
+        log.debug("<getPassword()");
+        return ret;
+    }
+    /** Returns the string representation of the CN field from the DN of the certification request, to be used as username.
+    * @return username, which is the CN field from the subject DN in certification request.
+    */
+    public String getUsername() {
+        String ret = null;
+        try {
+            if (pkcs10 == null) {
+                init();
+                decrypt();
+            }
+            ret = super.getUsername();
+        } catch (IOException e) {
+            log.error("PKCS7 not inited!");
+            return null;
+        } catch (GeneralSecurityException e) {
+            log.error("Error in PKCS7:", e);
+            return null;
+        } catch (CMSException e) {
+            log.error("Error in PKCS7:", e);
+            return null;
+        }
+        return ret;
+    }
+    /** Returns the string representation of the subject DN from the certification request.
+    * @return subject DN from certification request.
+    */
+    public String getRequestDN() {
+        log.debug(">getRequestDN()");
+        String ret = null;
+        try {
+            if (pkcs10 == null) {
+                init();
+                decrypt();
+            }
+            ret = super.getRequestDN();
+        } catch (IOException e) {
+            log.error("PKCS7 not inited!");
+            return null;
+        } catch (GeneralSecurityException e) {
+            log.error("Error in PKCS7:", e);
+            return null;
+        } catch (CMSException e) {
+            log.error("Error in PKCS7:", e);
+            return null;
+        }
+        log.debug("<getRequestDN()");
+        return ret;
+    }
     public boolean requireKeyInfo() {
         return true;
     }
@@ -252,8 +337,11 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         this.privateKey = key;
     }
 
-    public int getError() {
+    public int getErrorNo() {
         return error;
+    }
+    public String getErrorText() {
+        return errorText;
     }
     //
     // Private helper methods

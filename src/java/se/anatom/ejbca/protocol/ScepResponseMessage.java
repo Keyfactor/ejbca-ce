@@ -32,21 +32,29 @@ import org.bouncycastle.cms.CMSSignedDataGenerator;
 
 /** A response message for scep (pkcs7).
 *
-* @version  $Id: ScepResponseMessage.java,v 1.2 2003-06-14 11:29:10 anatom Exp $
+* @version  $Id: ScepResponseMessage.java,v 1.3 2003-06-15 11:58:32 anatom Exp $
 */
 public class  ScepResponseMessage implements IResponseMessage {
 
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);
 
+    /** The response message itself
+     */
+    private CMSSignedData signedData = null;
+    /** status for the response
+     */
+    private int status = 0;
+    /** Possible fail information in the response. Defaults to 'badRequest (2)'. 
+     */
+    private String failInfo = "2";
+    /** Certificate to be in response message, not serialized
+     */
     private transient Certificate cert = null;
-    private transient int status = 0;
-    private transient String failInfo = "You suck Bruce";
-    private transient CMSSignedData signedData = null;
 
-    private X509Certificate signCert = null;
-    private PrivateKey signKey = null;
-    private X509Certificate encCert = null;
-    private PrivateKey encKey = null;
+    private transient X509Certificate signCert = null;
+    private transient PrivateKey signKey = null;
+    private transient X509Certificate encCert = null;
+    private transient PrivateKey encKey = null;
         
     /** Sets the complete certificate in the response message.
      * @param cert certificate in the response message.
@@ -88,7 +96,9 @@ public class  ScepResponseMessage implements IResponseMessage {
         try {
             // Add the issued certificate to the signed portion of the CMS (as signer, degenerate case)
             ArrayList certList = new ArrayList();
-            certList.add(cert);
+            if (status == IResponseMessage.STATUS_OK) {
+                certList.add(cert);
+            }
             certList.add(signCert);
             CertStore certs = CertStore.getInstance("Collection", new CollectionCertStoreParameters(certList), "BC");
             // Create the signed CMS message to be contained inside the envelope
@@ -99,7 +109,9 @@ public class  ScepResponseMessage implements IResponseMessage {
             CMSSignedData s = gen.generate(msg, true, "BC");
             // Envelope the CMS message
             CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
-            edGen.addKeyTransRecipient((X509Certificate)cert);
+            if (status == IResponseMessage.STATUS_OK) {
+                edGen.addKeyTransRecipient((X509Certificate)cert);
+            }
             CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(s.getEncoded()), 
                     CMSEnvelopedDataGenerator.DES_EDE3_CBC, "BC");
              // Create the outermost signed data
@@ -115,9 +127,11 @@ public class  ScepResponseMessage implements IResponseMessage {
             // status
             oid = new DERObjectIdentifier(ScepRequestMessage.id_pkiStatus);
             if (status == IResponseMessage.STATUS_OK) {
-                value = new DERSet(new DERPrintableString("SUCCESS"));
+                //value = new DERSet(new DERPrintableString("SUCCESS"));
+                value = new DERSet(new DERPrintableString("0"));
             } else {
-                value = new DERSet(new DERPrintableString("FAILURE"));
+                //value = new DERSet(new DERPrintableString("FAILURE"));
+                value = new DERSet(new DERPrintableString("2"));
             }
             attr = new Attribute(oid, value);
             attributes.put(attr.getAttrType(), attr);
