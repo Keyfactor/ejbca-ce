@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.31 2003-03-04 11:40:04 anatom Exp $
+ * @version $Id: CertTools.java,v 1.32 2003-03-07 12:16:55 anatom Exp $
  */
 public class CertTools {
 
@@ -205,6 +205,20 @@ public class CertTools {
         return part;
     } //getCNFromDN
 
+    /**
+     * Gets subject DN in the format we are sure about (BouncyCastle),supporting UTF8.
+     *
+     * @param cert X409Certificate
+     * @return String containing the subjects DN.
+     */
+    public static String getSubjectDN(X509Certificate cert) {
+        log.debug(">getSubjectDN:");
+        CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
+        X509Certificate x509cert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(cert.getEncoded()));
+        log.debug("Created certificate of class: "+x509cert.getClass().getName());
+        log.debug("<getSubjectDN:");
+        return stringToBCDNString(x509cert.getSubjectDN().toString());
+    } // getCertfromByteArray
 
     /**
      * Reads a certificate in PEM-format from a file. The file may contain other things,
