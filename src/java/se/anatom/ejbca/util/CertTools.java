@@ -30,7 +30,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.58 2004-05-22 15:37:57 anatom Exp $
+ * @version $Id: CertTools.java,v 1.59 2004-05-25 20:55:11 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -49,6 +49,10 @@ public class CertTools {
     /** ObjectID for upn altName for windows smart card logon */
     public static final String UPN_OBJECTID = "1.3.6.1.4.1.311.20.2.3";
     private static final String[] EMAILIDS = { EMAIL, EMAIL1, EMAIL2, EMAIL3 };
+    /** ObjectID for unstructuredName DN attribute */
+    public static final DERObjectIdentifier unstructuredName = new DERObjectIdentifier("1.2.840.113549.1.9.2");
+    /** ObjectID for unstructuredAddress DN attribute */
+    public static final DERObjectIdentifier unstructuredAddress = new DERObjectIdentifier("1.2.840.113549.1.9.8");
 
     /**
      * inhibits creation of new CertTools
@@ -78,15 +82,17 @@ public class CertTools {
         oids.put("emailaddress", X509Name.EmailAddress);
         oids.put("e", X509Name.EmailAddress);
         oids.put("email", X509Name.EmailAddress);
+        oids.put("unstructuredname", unstructuredName);
+        oids.put("unstructuredaddress", unstructuredAddress);
     };
 
     private static final String[] dNObjectsForward = {
-        "emailaddress", "e", "email", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
+        "unstructuredaddress", "unstructuredname", "emailaddress", "e", "email", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
         "initials", "surname", "t", "ou", "o", "l", "st", "dc", "c"
     };
     private static final String[] dNObjectsReverse = {
         "c", "dc", "st", "l", "o", "ou", "t", "surname", "initials",
-        "givenname", "gn", "serialnumber", "sn", "cn", "uid", "email", "e", "emailaddress"
+        "givenname", "gn", "serialnumber", "sn", "cn", "uid", "email", "e", "emailaddress", "unstructuredname", "unstructuredaddress"
     };
     /** Change this if you want reverse order */
     private static final String[] dNObjects = dNObjectsForward;    
@@ -137,7 +143,7 @@ public class CertTools {
         int index = -1;
 
         for (int i = 0; i < dNObjects.length; i++) {
-            //log.debug("Looking for "+objects[i]);
+            //log.debug("Looking for "+dNObjects[i]);
             String object = dNObjects[i];
 
             while ((index = oldordering.indexOf(object)) != -1) {
@@ -156,7 +162,7 @@ public class CertTools {
             }
         }
 
-        /*
+        
         if (log.isDebugEnabled()) {
             Iterator i1 = ordering.iterator();
             Iterator i2 = values.iterator();
@@ -168,7 +174,7 @@ public class CertTools {
             while (i2.hasNext()) {
                 log.debug((String)i2.next());
             }
-        } */
+        } 
 
         //log.debug("<stringToBcX509Name");
         return new X509Name(ordering, values);
@@ -322,7 +328,6 @@ public class CertTools {
             dn = x509crl.getIssuerDN().toString();
         } catch (CRLException ce) {
             log.error("CRLException: ", ce);
-
             return null;
         }
         //log.debug("<getIssuerDN(crl):"+dn);
