@@ -43,7 +43,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.19 2002-07-26 09:26:39 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.20 2002-07-31 16:39:46 anatom Exp $
  *
  */
 
@@ -224,7 +224,9 @@ public class BatchMakeP12 {
         }
 
         // Use CommonName as alias in the keystore
-        String alias = CertTools.getPartFromDN(cert.getSubjectDN().toString(), "CN");
+        //String alias = CertTools.getPartFromDN(cert.getSubjectDN().toString(), "CN");
+        // Use username as alias in the keystore
+        String alias = username;
         // Store keys and certificates in keystore.
         KeyStore ks = null;
         if (createJKS)
