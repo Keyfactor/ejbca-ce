@@ -45,6 +45,8 @@ same session bean.
      </method>
      -->
 
+Do the same in 'ra/META-INF/ejb-jar.xml'.
+
 This will configure an LDAPPublisherSession so be deployed as
 'PublisherSession1', which will be found by the CA.
 
