@@ -37,7 +37,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.48 2003-03-04 14:43:30 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.49 2003-03-07 15:54:44 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -196,7 +196,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                               throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException {
         // String used in SQL so strip it
         String dn = StringTools.strip(subjectdn);
-        boolean statuschanged = false; 
+        boolean statuschanged = false;
         debug(">changeUser("+username+", "+dn+", "+email+")");
         int oldstatus;
         // Check if user fulfills it's profile.
@@ -221,14 +221,14 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1= home.findByPrimaryKey(pk);
 
-            if(password != null){  
-              if(clearpwd){                 
+            if(password != null){
+              if(clearpwd){
                 setClearTextPassword(admin, username, password);
-              }  
-              else{                     
+              }
+              else{
                 setPassword(admin, username, password);
               }
-            }  
+            }
 
             data1.setDN(dn);
             if(subjectaltname != null )
@@ -243,7 +243,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             data1.setTokenType(tokentype);
             data1.setHardTokenIssuerId(hardwaretokenissuerid);
             oldstatus = data1.getStatus();
-            statuschanged = status != oldstatus; 
+            statuschanged = status != oldstatus;
             data1.setStatus(status);
 
             data1.setTimeModified((new java.util.Date()).getTime());
@@ -253,7 +253,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             if(statuschanged)
               logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"New status: "+ status);
             else
-              logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"");               
+              logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"");
         }
         catch (Exception e) {
             logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"");
@@ -634,7 +634,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     /**
     * Implements IUserAdminSession::findAllUsersWithLimit.
     */
-    public Collection findAllUsersWithLimit(Admin admin)  throws FinderException, RemoteException{
+    public Collection findAllUsersWithLimit(Admin admin) throws FinderException, RemoteException{
         debug(">findAllUsersWithLimit()");
         Connection con = null;
         PreparedStatement ps = null;
@@ -664,6 +664,55 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                 returnval.add(data);
             }
             debug("<findAllUsersWithLimit()");
+            return returnval;
+
+        }catch(Exception e){
+          throw new EJBException(e);
+        }finally{
+           try{
+             if(rs != null) rs.close();
+             if(ps != null) ps.close();
+             if(con!= null) con.close();
+           }catch(SQLException se){
+              se.printStackTrace();
+           }
+        }
+    }
+
+    /**
+    * Implements IUserAdminSession::findAllUsersWithLimit.
+    */
+    public Collection findAllUsersByStatusWithLimit(Admin admin, int status) throws FinderException, RemoteException{
+        debug(">findAllUsersByStatusWithLimit()");
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        ArrayList returnval = new ArrayList();
+
+        try{
+           // Construct SQL query.
+            con = getConnection();
+            ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where status=?");
+            ps.setInt(1,status);
+            // Execute query.
+            rs = ps.executeQuery();
+            // Assemble result.
+           while(rs.next() && returnval.size() <= IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT){
+              UserAdminData data = new UserAdminData(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
+                                               , rs.getInt(10), rs.getInt(11)
+                                               , new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9))
+                                               ,  rs.getInt(12), rs.getInt(13));
+              data.setPassword(rs.getString(7));
+
+              if(globalconfiguration.getEnableEndEntityProfileLimitations()){
+                // Check if administrator is authorized to view user.
+                if(profileauthproxy.getEndEntityProfileAuthorization(admin,data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS, LogEntry.MODULE_RA))
+                  returnval.add(data);
+              }
+              else
+                returnval.add(data);
+            }
+            debug("<findAllUsersByStatusWithLimit()");
             return returnval;
 
         }catch(Exception e){

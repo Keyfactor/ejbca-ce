@@ -18,7 +18,7 @@ import se.anatom.ejbca.log.Admin;
 
 /**
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.17 2003-03-04 14:43:30 herrvendil Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.18 2003-03-07 15:53:48 anatom Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
 
@@ -170,7 +170,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     * @see se.anatom.ejbca.ra.UserAdminData
     */
-    public Collection findAllUsersByStatus(Admin admin, int status) throws AuthorizationDeniedException, FinderException, RemoteException;
+    public Collection findAllUsersByStatus(Admin admin, int status) throws FinderException, RemoteException;
 
    /**
     * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
@@ -179,7 +179,16 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     * @see se.anatom.ejbca.ra.UserAdminData
     */
-    public Collection findAllUsersWithLimit(Admin admin)  throws  FinderException, RemoteException;
+    public Collection findAllUsersWithLimit(Admin admin) throws FinderException, RemoteException;
+   /**
+    * Finds all users with a specified status and returns the first MAXIMUM_QUERY_ROWCOUNT.
+    *
+    * @param status the new status, from 'UserData'.
+    * @return Collection of UserAdminData
+    * @throws EJBException if a communication or other error occurs.
+    * @see se.anatom.ejbca.ra.UserAdminData
+    */
+    public Collection findAllUsersByStatusWithLimit(Admin admin, int status) throws FinderException, RemoteException;
 
     /**
     * Starts an external service that may be needed bu user administration.
