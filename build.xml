@@ -436,6 +436,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/ca/crl/RevokedCertInfo*.class"/>
                 <include name="se/anatom/ejbca/ca/store/CertificateData*.class"/>
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/> 
+                <include name="se/anatom/ejbca/ca/caadmin/CAInfo*.class"/> 
                 <include name="se/anatom/ejbca/ra/*.class"/> 
                 <include name="se/anatom/ejbca/exception/**/*.class"/>
                 <include name="se/anatom/ejbca/ca/exception/**/*.class"/> 
