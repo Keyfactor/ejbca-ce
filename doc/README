@@ -158,6 +158,25 @@ which can be done through administration with the RA, 'ra.sh/cmd setuserstatus
  <username> <status>'. For a list of all available statuscodes run 'ra.sh/cmd
  setuserstatus'.
 
+Issue CRLS:
+CRLs should be issued regularly. There is a special session bean with JNDI
+name 'CreatCRLSession' deployed in order to create CRLs. This bean can be run
+with 'jobrunner.sh/cmd'.
+
+jobrunner.sh CreateCRLSession
+
+This job should be scheduled with cron on UNIX (and something else on Windows).
+The job should be scheduled to run as often as the CRL period is configured to
+in ca/META-INF/ejb-jar.xml (default 24 hours).
+
+Example crontab entry:
+
+PATH=$PATH:/usr/java/jdk1.3.1_01/bin
+@hourly cd /home/ejbca;/home/ejbca/jobrunner.sh CreateCRLSession;
+
+where '/usr/java/jdk1.3.1_01/bin' is the path to where 'java' can be found.
+'/home/ejbca' is where ejbca is installed and 'jobrunner.sh' located.
+
 DEPLOY
 ------
 After configuration, if you have edited the xml-files manually, please run "ant"
