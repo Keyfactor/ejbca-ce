@@ -24,18 +24,21 @@ Flexible, component based architecture.
 Multiple levels of CAs.
 Standalone or integrated in any J2EE application.
 Individual enrollment or batch production of certificates.
-Enrollment through browsers and/or other applications through open APIs and
- tools.
+Server and client certificates can be exported as PKCS12 or PEM.
+Browser enrollment with Netscape, Mozilla, IE, etc.
+Enrollment for other applications through open APIs and tools.
 Follows X509 and PKIX (RFC2459) standards where applicable.
 Configurable certificate contents.
-Revocation of certificates and CRL creation using scheduled jobs.
+Revocation and Certificate Revocation Lists (CRLs).
+CRL creation using scheduled jobs.
 URL-based CRLDistribution Points according to (RFC2459).
 Stores Certificates and CRLs in any SQL database (handled by application
  server).
 Component based architecture for publishing certificates and CRLs to different
  sources.
-Existing publisher for LDAP (optional during configuration).
-Component based architecture for authorizing entities when issuing certificates.
+Optional publisher for LDAP (configuration) publisher certificates and CRLs
+in LDAP.
+Component based architecture for various authorization methods of entities when issuing certificates.
 
 SECURITY
 ========
