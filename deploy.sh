@@ -20,7 +20,7 @@ then
             cp $KEYSTORE $JBOSS_HOME/conf
             echo Copied $KEYSTORE to $JBOSS_HOME/conf.
         else
-            echo $KEYSTORE already exist, no files copied.
+            echo $JBOSS_HOME/conf/server.p12 already exist, no files copied.
         fi
     fi
 fi

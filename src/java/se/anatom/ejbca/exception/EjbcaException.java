@@ -14,7 +14,7 @@ package se.anatom.ejbca.exception;
  * }
  * </code>
  *
- * @version $Id: EjbcaException.java,v 1.2 2002-04-07 09:55:29 anatom Exp $
+ * @version $Id: EjbcaException.java,v 1.3 2002-04-17 15:14:19 anatom Exp $
  */
 public class EjbcaException extends Exception {
 
@@ -34,6 +34,6 @@ public class EjbcaException extends Exception {
     * @param exception exception to be embedded.
     */
    public EjbcaException(Exception exception) {
-       super(exception);
+       super(exception.toString());
    }
 }

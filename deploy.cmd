@@ -1,6 +1,6 @@
 @echo off
 rem ----
-rem $Id: deploy.cmd,v 1.8 2002-04-01 12:58:26 anatom Exp $
+rem $Id: deploy.cmd,v 1.9 2002-04-17 15:14:18 anatom Exp $
 rem
 rem Deploy script for EJBCA
 rem
@@ -22,7 +22,7 @@ xcopy %KEYSTORE% %JBOSS_HOME%\conf /Q /Y
 echo Copied %KEYSTORE% to %JBOSS_HOME%\conf.
 goto install
 :ksexist
-echo %KEYSTORE% already exist, no files copied.
+echo %JBOSS_HOME%\conf\server.p12 already exist, no files copied.
 
 rem Install BouncyCastle provider and ldap.jar
 :install
