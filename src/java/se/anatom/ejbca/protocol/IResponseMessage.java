@@ -1,5 +1,6 @@
 package se.anatom.ejbca.protocol;
 
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -21,7 +22,7 @@ import java.security.cert.Certificate;
 * byte[] responseMessage = resp.getResponseMessage();
 * </code>
 *
-* @version  $Id: IResponseMessage.java,v 1.1 2003-06-11 13:27:39 anatom Exp $
+* @version  $Id: IResponseMessage.java,v 1.2 2003-06-13 19:54:19 anatom Exp $
 */
 public interface  IResponseMessage {
 
@@ -44,13 +45,14 @@ public interface  IResponseMessage {
      * If needed setSignKeyInfo and setEncKeyInfo must be called before this method.
      * After this is called the response message can be retrieved with getResponseMessage();
      * @return True if signature/encryption was successful, false if it failed, request should not be sent back i failed.
+     * @throws IOException If input/output or encoding failed.
      * @throws InvalidKeyException If the key used for signing/encryption is invalid.
      * @throws NoSuchProviderException if there is an error with the Provider.
      * @throws NoSuchAlgorithmException if the signature on the request is done with an unhandled algorithm.
      * @see #setSignKeyInfo()
      * @see #setEncKeyInfo()
      */
-    public boolean create() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException;
+    public boolean create() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException;
     /** indicates if this message needs recipients public and private key to sign.
      * If this returns true, setSignKeyInfo() should be called.
      * @return True if public and private key is needed.

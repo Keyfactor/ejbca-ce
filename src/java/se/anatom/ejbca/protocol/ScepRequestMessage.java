@@ -26,8 +26,10 @@ import org.bouncycastle.cms.*;
 
 /**
  * Class to handle SCEP request messages sent to the CA.
+ * TODO: don't forget extensions, e.g. KeyUsage requested by end entity
+ * TODO: extract senderNonce
  *
- * @version  $Id: ScepRequestMessage.java,v 1.15 2003-06-11 12:20:01 anatom Exp $
+ * @version  $Id: ScepRequestMessage.java,v 1.16 2003-06-13 19:54:19 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
 
