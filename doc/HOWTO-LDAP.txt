@@ -1,6 +1,6 @@
 
 Configuring LDAP Publishers:
-
+ 
 A Publisher is a session bean that implements the IPublishSession interface and
 is used to store certificates and CRLs for entities.
 EJBCA have support for endless number of publishers. Simply by deploying session
