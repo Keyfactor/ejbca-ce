@@ -3,6 +3,8 @@ package se.anatom.ejbca.batch.junit;
 import java.io.File;
 import java.util.Date;
 import java.util.Random;
+import java.util.Iterator;
+import java.util.Collection;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -16,11 +18,12 @@ import se.anatom.ejbca.batch.BatchMakeP12;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.25 2003-09-03 15:07:12 herrvendil Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.26 2003-11-03 14:09:27 anatom Exp $
  */
 
 public class TestBatchMakeP12 extends TestCase {
@@ -32,6 +35,7 @@ public class TestBatchMakeP12 extends TestCase {
     private static String pwd;
     private static String pwd1;
     private static int caid;
+    private static Admin admin;
 
     /**
      * Creates a new TestBatchMakeP12 object.
@@ -44,10 +48,21 @@ public class TestBatchMakeP12 extends TestCase {
 
     protected void setUp() throws Exception {
         log.debug(">setUp()");
+        admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
         ctx = getInitialContext();
         Object obj = ctx.lookup("UserAdminSession");        
         home = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
-        obj = ctx.lookup("RSASignSession");        
+
+        obj = ctx.lookup("CAAdminSession");
+        ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
+        ICAAdminSessionRemote casession = cahome.create();          
+        Collection caids = casession.getAvailableCAs(admin);
+        Iterator iter = caids.iterator();
+        if (iter.hasNext()) {
+            caid = ((Integer)iter.next()).intValue();
+        } else {
+            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
+        }
         log.debug("<setUp()");
     }
 
@@ -108,10 +123,10 @@ public class TestBatchMakeP12 extends TestCase {
 
         Object o = null;
         try{
-          data1.addUser(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username, "foo123", "C=SE, O=AnaTom, CN="+username, "", username+"@anatom.se",  false,
+          data1.addUser(admin, username, "foo123", "C=SE, O=AnaTom, CN="+username, "", username+"@anatom.se",  false,
                         SecConst.EMPTY_ENDENTITYPROFILE, SecConst.PROFILE_NO_PROFILE,
-                        SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12,0,"TODO".hashCode());
-          data1.setClearTextPassword(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username,"foo123");
+                        SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12,0,caid);
+          data1.setClearTextPassword(admin, username,"foo123");
           o = new String("");
         }catch(Exception e){
           assertNotNull("Failed to create user "+username, o);
@@ -122,10 +137,10 @@ public class TestBatchMakeP12 extends TestCase {
         String username1 = genRandomUserName();
         o = null;
         try{
-          data1.addUser(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username1, "foo123", "C=SE, O=AnaTom, CN="+username1, "",username1+"@anatom.se", false,
+          data1.addUser(admin, username1, "foo123", "C=SE, O=AnaTom, CN="+username1, "",username1+"@anatom.se", false,
                         SecConst.EMPTY_ENDENTITYPROFILE, SecConst.PROFILE_NO_PROFILE,
-                        SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12,0,"TODO".hashCode());
-          data1.setClearTextPassword(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username1,"foo123");
+                        SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12,0,caid);
+          data1.setClearTextPassword(admin, username1,"foo123");
           o = new String("");
         }catch(Exception e){
           assertNotNull("Failed to create user "+username1, o);
