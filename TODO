@@ -1,4 +1,4 @@
-$Id: TODO,v 1.49 2002-09-16 15:21:28 anatom Exp $
+$Id: TODO,v 1.50 2002-09-21 11:11:01 anatom Exp $
 
 V 1.x
 -----
@@ -21,6 +21,7 @@ using keytool, as well as JDK 1.4 stuff.
 - Create Windows logon certificates, i.e. add "Extended Key Usage",
 http://support.microsoft.com/default.aspx?scid=kb;EN-US;q281245
 - Implement SCEP, http://openscep.othello.ch/
+- Test LDAP with mod_authz_ldap in apache
 
 Future
 ------
