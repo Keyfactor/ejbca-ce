@@ -2,6 +2,8 @@
 CONFIGURING Weblogic
 ====================
 
+Note: Probably outdated, EJBCA 2.x should work fine with Weblogic 7.x/8.x
+
 Note: This howto is for EJBCA 1.x, and should be modified for EJBCA 2.x
 
 1. In the database configured for DefaultPool and DefaultDS in Weblogic, create

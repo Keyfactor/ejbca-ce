@@ -2,6 +2,8 @@
 CONFIGURING LDAP PUBLISHERS
 ===========================
 
+Note: Slighly old documentation, consider also checking INSTALL-guide.txt in the source package.
+
 A good free LDAP server can be found at http://www.openldap.org/
  
 A Publisher is a session bean that implements the IPublishSession interface and
