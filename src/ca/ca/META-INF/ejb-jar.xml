@@ -962,13 +962,13 @@
          <ejb-name>CRLData</ejb-name>
          <method-name>*</method-name>
      </method>
-          <method>
+     <method>
          <ejb-name>PublisherSession</ejb-name>
          <method-name>*</method-name>
+     </method>
      <method>
          <ejb-name>UpgradeSession</ejb-name>
          <method-name>*</method-name>
-     </method>
      </method>
 
    <trans-attribute>Required</trans-attribute>

@@ -7,6 +7,7 @@ Better check on altnames when adding user with cli.
 Fix CRL import in Mozilla.
 Allow . in usernames i webGUI.
 SCEP GetCRL method.
+Fixed nested <method> tag in ejb-jar.xml.
 
 3.0 beta 3
 ----------
