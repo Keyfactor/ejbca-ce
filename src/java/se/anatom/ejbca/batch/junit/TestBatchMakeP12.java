@@ -3,6 +3,7 @@ package se.anatom.ejbca.batch.junit;
 import java.util.Random;
 import java.util.*;
 import java.lang.Integer;
+import java.io.File;
 
 import javax.naming.InitialContext;
 import javax.naming.Context;
@@ -20,7 +21,7 @@ import junit.framework.*;
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.1.1.1 2001-11-15 14:58:14 anatom Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.2 2001-11-24 09:41:55 anatom Exp $
  */
 public class TestBatchMakeP12 extends TestCase {
 
@@ -102,7 +103,9 @@ public class TestBatchMakeP12 extends TestCase {
     public void test02MakeP12() throws Exception {
         cat.debug(">test02MakeP12()");
         BatchMakeP12 makep12 = new BatchMakeP12();
-        makep12.setMainStoreDir("/tmp");
+        File tmpfile = File.createTempFile("ejbca", "p12");
+        //System.out.println("tempdir="+tmpfile.getParent());
+        makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew();
         cat.debug("<test02MakeP12()");
     }
