@@ -18,7 +18,7 @@ import java.rmi.RemoteException;
 import javax.ejb.DuplicateKeyException;
 
 import se.anatom.ejbca.protocol.PKCS10RequestMessage;
-import se.anatom.ejbca.protocol.PKCS7RequestMessage;
+import se.anatom.ejbca.protocol.ScepRequestMessage;
 import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.ca.sign.*;
 import se.anatom.ejbca.util.*;
@@ -34,7 +34,7 @@ import junit.framework.*;
 
 /** Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.12 2002-10-16 13:50:12 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.13 2002-10-17 15:24:47 anatom Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -191,6 +191,7 @@ public class TestSignSession extends TestCase {
         }
         cat.debug("<test01CreateNewUser()");
     }
+
     public void test02SignSession() throws Exception {
         cat.debug(">test02SignSession()");
         keys = genKeys();
@@ -256,18 +257,19 @@ public class TestSignSession extends TestCase {
         cat.debug("Cert="+cert.toString());
         cat.debug("<test05TestIEPKCS10()");
     }
-    /*
+
+/*
     public void test06TestOpenScep() throws Exception {
         cat.debug(">test06TestOpenScep()");
         UserDataPK pk = new UserDataPK("foo");
         UserDataRemote data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
         cat.debug("Reset status of 'foo' to NEW");
-        X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", new PKCS7RequestMessage(openscep));
+        X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", new ScepRequestMessage(openscep));
         assertNotNull("Failed to create certificate", cert);
         cat.debug("Cert="+cert.toString());
         cat.debug("<test06TestOpenScep()");
     }
-    */
+*/
 }
 

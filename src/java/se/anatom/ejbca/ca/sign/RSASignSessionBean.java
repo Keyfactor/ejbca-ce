@@ -48,7 +48,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.47 2002-10-16 13:50:10 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.48 2002-10-17 15:24:46 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -378,12 +378,12 @@ public class RSASignSessionBean extends BaseSessionBean {
         Certificate ret = null;
         try {
             try {
+                if (req.requireKeyInfo()) {
+                    req.setKeyInfo(caCert, signingDevice.getPrivateSignKey());
+                }
                 if (req.verify() == false) {
                     logsession.log(admin,LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"POPO verification failed.");
                     throw new EJBException("Verification of signature (popo) on request failed.");
-                }
-                if (req.requireKeyInfo()) {
-                    req.setKeyInfo(caCert, signingDevice.getPrivateSignKey());
                 }
                 // TODO: extract more information or attributes
                 PublicKey reqpk = req.getRequestPublicKey();
