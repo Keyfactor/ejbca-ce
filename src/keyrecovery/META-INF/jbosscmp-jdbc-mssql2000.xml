@@ -14,7 +14,7 @@
         <cmp-field>
             <field-name>keyData</field-name>
             <jdbc-type>LONGVARCHAR</jdbc-type>
-            <sql-type>VARCHAR(2000)</sql-type>
+            <sql-type>TEXT</sql-type>
         </cmp-field>
     </entity>
 
