@@ -37,7 +37,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.49 2003-03-07 15:54:44 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.50 2003-03-09 11:45:27 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -104,7 +104,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                                                       (String)lookup("java:comp/env/message", java.lang.String.class));
 
       }catch(Exception e){
-        throw new EJBException(e.getMessage());
+          error("Error creating session bean:",e);
+          throw new EJBException(e);
       }
 
     }
@@ -181,7 +182,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
         }catch (Exception e) {
             logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDENDENTITY,"");
-            throw new EJBException(e.getMessage());
+            error("AddUser:",e);
+            throw new EJBException(e);
         }
 
         debug("<addUser("+username+", password, "+dn+", "+email+")");
@@ -257,7 +259,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         }
         catch (Exception e) {
             logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"");
-            throw new EJBException(e.getMessage());
+            error("ChangeUser:",e);
+            throw new EJBException(e);
         }
         debug("<changeUser("+username+", password, "+dn+", "+email+")");
     } // changeUser
