@@ -1,4 +1,4 @@
-$Id: TODO,v 1.36 2002-07-16 12:26:38 anatom Exp $
+$Id: TODO,v 1.37 2002-07-25 07:44:17 anatom Exp $
 
 V 1.x
 -----
@@ -8,9 +8,13 @@ V 2.x
 -----
 - Installation procedure, including installation of Web-RA.
 - Put keystores in db to not break EJB contract.
-- Make to work with JDK 1.3 (problems with importing certificate chains in jks
-using keytool).
+- Make to work with JDK 1.3, problems with importing certificate chains in jks
+using keytool, as well as JDK 1.4 stuff.
+- Verify suppoer for different databases.
+- Verify support different app-servers (Weblogic).
+- More automated testing, Junit as well as web-stuff.
 - Make a database model similar to architecture model.
+- Describe SSL-setup in server.
 - Add a 'Service Locator' to concentrate code for lookups.
 - Use a 'Value List Handler' for listing of all certificates, clrs and users.
 - Better architecture for JSPs (MVC - ModelViewController?).
@@ -32,6 +36,5 @@ Secure remote RA, RA authenticates requests.
 - Make CA/RA for off-line authorization of requests for high security
 environments.
 - RA with self registration for end-entities, RA approves registration.
-- Describe SSL-setup in server.
 - XKMS specifications, and more XML/Soap stuff.
 
