@@ -20,7 +20,7 @@ import se.anatom.ejbca.log.Admin;
  * check for revocation etc. the CertificateStoreSession implements the interface
  * ICertificateStoreSession. Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.24 2003-10-21 13:48:48 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.25 2003-10-25 08:52:37 anatom Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote {
 
@@ -175,7 +175,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
 	 * Certficate rootCA = ...
 	 * String issuer = rootCA.getSubjectDN();
 	 * Collection certs = itf.findCertificatesByType(adm,
-	 *                                               SecConst.CERTTYPE_CA,
+	 *                                               SecConst.CERTTYPE_SUBCA,
 	 *                                               issuer);
 	 * ...
 	 * </code>
@@ -186,8 +186,8 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
 	 * ...
 	 * ICertificateStoreSessionRemote itf = ...
 	 * Collection certs = itf.findCertificatesByType(adm,
-	 *                                               SecConst.CERTTYPE_CA
-	 *                                               + CERTTYPE_CA,
+	 *                                               SecConst.CERTTYPE_SUBCA
+	 *                                               + CERTTYPE_ROOTCA,
 	 *                                               null);
 	 * ...
 	 * </code>
@@ -195,7 +195,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
 	 * </ol>
 	 *
 	 * @param admin
-	 * @param type
+	 * @param type CERTTYPE_* types from SecConst 
 	 * @param issuerDN get all certificates issued by a specific issuer.
 	 *                 If <tt>null</tt> or empty return certificates regardless of
 	 *                 the issuer.

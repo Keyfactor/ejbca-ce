@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.56 2003-10-21 13:48:48 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.57 2003-10-25 08:52:37 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -716,7 +716,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 	 * Certficate rootCA = ...
 	 * String issuer = rootCA.getSubjectDN();
 	 * Collection certs = itf.findCertificatesByType(adm, 
-	 *                                               SecConst.CERTTYPE_CA,
+	 *                                               SecConst.CERTTYPE_SUBCA,
 	 *                                               issuer);
 	 * ...
 	 * </code>
@@ -727,8 +727,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 	 * ...
 	 * ICertificateStoreSessionRemote itf = ...
 	 * Collection certs = itf.findCertificatesByType(adm,
-	 *                                               SecConst.CERTTYPE_CA 
-	 *                                               + CERTTYPE_CA, 
+	 *                                               SecConst.CERTTYPE_SUBCA 
+	 *                                               + CERTTYPE_ROOTCA, 
 	 *                                               null);
 	 * ...
 	 * </code>
@@ -736,7 +736,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 	 * </ol>
 	 *
 	 * @param admin
-	 * @paran type
+	 * @paran type CERTTYPE_* types from SecConst 
 	 * @param issuerDN get all certificates issued by a specific issuer.
 	 *                 If <tt>null</tt> or empty return certificates regardless of
 	 *                 the issuer.
