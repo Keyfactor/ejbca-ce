@@ -23,7 +23,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a hard token profile jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.1 2003-12-05 14:50:27 herrvendil Exp $
+ * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.2 2004-03-17 04:02:35 herrvendil Exp $
  */
 public class EditHardTokenProfileJSPHelper {
 	
@@ -392,6 +392,7 @@ public class EditHardTokenProfileJSPHelper {
 		}
 		
 		if( action.equals(ACTION_CHANGE_PROFILETYPE)){
+		  this.profilename = request.getParameter(HIDDEN_HARDTOKENPROFILENAME);
 		  String value = request.getParameter(SELECT_HARDTOKENTYPE);
 		  if(value!=null){        
 			int profiletype = Integer.parseInt(value);

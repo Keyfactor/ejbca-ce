@@ -19,7 +19,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a publisher jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditPublisherJSPHelper.java,v 1.1 2004-03-07 12:15:51 herrvendil Exp $
+ * @version $Id: EditPublisherJSPHelper.java,v 1.2 2004-03-17 04:02:21 herrvendil Exp $
  */
 public class EditPublisherJSPHelper {
 	
@@ -380,6 +380,7 @@ public class EditPublisherJSPHelper {
 		}
 		
 		if( action.equals(ACTION_CHANGE_PUBLISHERTYPE)){
+	      this.publishername = request.getParameter(HIDDEN_PUBLISHERNAME);
 		  String value = request.getParameter(SELECT_PUBLISHERTYPE);
 		  if(value!=null){        
 			int profiletype = Integer.parseInt(value);
