@@ -107,6 +107,9 @@ For the impatient:
 4. Start JBoss, jars and wars should be deployed.
 5. Run the tests with 'runtest.sh/cmd'.
 
+Please note that '/tmp' is often regularly cleand on UNIX systems, so it might
+be wise to change the location of the keystore in 'src/ca/META-INF/ejb-jar.xml'.
+
 For the others:
 
 If another database than the default Hypersonic database (for example mySQL)
