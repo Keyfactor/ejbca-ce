@@ -5,6 +5,7 @@ package se.anatom.ejbca.authorization;
 
 /**
  * Local interface for AdminEntityData.
+ * @todo Write migration script
  */
 public interface AdminEntityDataLocal
    extends javax.ejb.EJBLocalObject

@@ -73,7 +73,7 @@ public interface IAuthorizationSessionLocal
    public se.anatom.ejbca.authorization.AdminGroup getAdminGroup( se.anatom.ejbca.log.Admin admin,java.lang.String admingroupname,int caid ) ;
 
    /**
-    * Returns a Collection of AdminGroup the administrator is authorized to. SuperAdmin is autorized to all groups Other admins are only authorized to the groups cointaining a subset of authorized CA that the admin himself is authorized to. The AdminGroup objects only contains only name and caid and no accessdata
+    * Returns a Collection of AdminGroup the administrator is authorized to. <p/> SuperAdmin is autorized to all groups Other admins are only authorized to the groups cointaining a subset of authorized CA that the admin himself is authorized to. <p/> The AdminGroup objects only contains only name and caid and no accessdata
     */
    public java.util.Collection getAuthorizedAdminGroupNames( se.anatom.ejbca.log.Admin admin ) ;
 

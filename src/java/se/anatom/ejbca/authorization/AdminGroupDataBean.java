@@ -23,6 +23,7 @@ import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
 import se.anatom.ejbca.BaseEntityBean;
+import se.anatom.ejbca.util.ServiceLocator;
 
 
 /** Entity bean should not be used directly, use though Session beans.
@@ -37,7 +38,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.9 2004-07-23 12:58:42 sbailliez Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.10 2004-08-05 15:26:21 sbailliez Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
@@ -97,7 +98,7 @@ import se.anatom.ejbca.BaseEntityBean;
  */
 public abstract class AdminGroupDataBean extends BaseEntityBean {
 
-    private static Logger log = Logger.getLogger(AdminGroupDataBean.class);
+    private static final Logger log = Logger.getLogger(AdminGroupDataBean.class);
 
     /**
      * @ejb.persistence
@@ -137,19 +138,18 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
     public abstract void setCAId(int caid);
 
     /**
+     * @ejb.relation name="AdminGroupDataToAdminEntities" role-name="AdminGroupData"
+     * target-role-name="AdminEntityData" target-ejb="AdminEntityData"
      */
     public abstract Collection getAdminEntities();
-
-    /**
-     */
     public abstract void setAdminEntities(Collection adminentities);
 
     /**
+     * @ejb.relation
+     * name="AdminGroupDataToAccessRules" role-name="AdminGroupData"
+     * target-role-name="AccessRulesData" target-ejb="AccessRulesData"
      */
     public abstract Collection getAccessRules();
-
-    /**
-     */
     public abstract void setAccessRules(Collection accessrules);
 
     /**
@@ -224,16 +224,15 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      * @ejb.interface-method view-type="local"
      */
     public Collection getAccessRuleObjects() {
-        ArrayList returnval = new ArrayList();
-        if (getAccessRules() != null) {
-            Iterator i = getAccessRules().iterator();
-            while (i.hasNext()) {
-                AccessRulesDataLocal ar = (AccessRulesDataLocal) i.next();
-                returnval.add(ar.getAccessRuleObject());
-            }
+        final Collection rules = getAccessRules();
+        ArrayList objects = new ArrayList(rules.size());
+        Iterator i = rules.iterator();
+        while (i.hasNext()) {
+            AccessRulesDataLocal ar = (AccessRulesDataLocal) i.next();
+            objects.add(ar.getAccessRuleObject());
         }
-        return returnval;
-    } // getAccessRules
+        return objects;
+    }
 
     /**
      * Adds a Collection of AdminEntity to the database. Changing their values if they already exists
@@ -292,7 +291,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
                     try {
                         ue.remove();
                     } catch (RemoveException e) {
-                        throw new EJBException(e.getMessage());
+                        throw new EJBException(e);
                     }
                     break;
                 }
@@ -328,12 +327,10 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      */
     public Collection getAdminEntityObjects() {
         ArrayList returnval = new ArrayList();
-        if (getAdminEntities() != null) {
-            Iterator i = getAdminEntities().iterator();
-            while (i.hasNext()) {
-                AdminEntityDataLocal ae = (AdminEntityDataLocal) i.next();
-                returnval.add(ae.getAdminEntity(getCAId()));
-            }
+        Iterator i = getAdminEntities().iterator();
+        while (i.hasNext()) {
+            AdminEntityDataLocal ae = (AdminEntityDataLocal) i.next();
+            returnval.add(ae.getAdminEntity(getCAId()));
         }
         return returnval;
     } // getAdminEntityObjects
@@ -347,20 +344,16 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
         ArrayList adminentities = new ArrayList();
 
         Iterator i = null;
-        if (getAdminEntities() != null) {
-            i = getAdminEntities().iterator();
-            while (i.hasNext()) {
-                AdminEntityDataLocal ae = (AdminEntityDataLocal) i.next();
-                adminentities.add(ae.getAdminEntity(getCAId()));
-            }
+        i = getAdminEntities().iterator();
+        while (i.hasNext()) {
+            AdminEntityDataLocal ae = (AdminEntityDataLocal) i.next();
+            adminentities.add(ae.getAdminEntity(getCAId()));
         }
 
-        if (getAccessRules() != null) {
-            i = getAccessRules().iterator();
-            while (i.hasNext()) {
-                AccessRulesDataLocal ar = (AccessRulesDataLocal) i.next();
-                accessrules.add(ar.getAccessRuleObject());
-            }
+        i = getAccessRules().iterator();
+        while (i.hasNext()) {
+            AccessRulesDataLocal ar = (AccessRulesDataLocal) i.next();
+            accessrules.add(ar.getAccessRuleObject());
         }
 
         return new AdminGroup(getPK().intValue(), getAdminGroupName(), getCAId(), accessrules, adminentities);
@@ -399,19 +392,17 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
     }
 
     // Private Methods.
-    private AdminEntityDataLocal createAdminEntity(AdminEntity adminentity) throws CreateException, javax.naming.NamingException {
-        AdminEntityDataLocal returnval = null;
-        InitialContext initial = new InitialContext();
-        AdminEntityDataLocalHome home = (AdminEntityDataLocalHome) initial.lookup("java:comp/env/ejb/AdminEntityDataLocal");
-        returnval = home.create(getAdminGroupName(), getCAId(), adminentity.getMatchWith(), adminentity.getMatchType(), adminentity.getMatchValue());
+    private AdminEntityDataLocal createAdminEntity(AdminEntity adminentity) throws CreateException {
+        AdminEntityDataLocalHome home = (AdminEntityDataLocalHome) ServiceLocator.getInstance().getLocalHome(AdminEntityDataLocalHome.COMP_NAME);
+        AdminEntityDataLocal returnval = home.create(getAdminGroupName(), getCAId(), adminentity.getMatchWith(),
+                adminentity.getMatchType(), adminentity.getMatchValue());
         return returnval;
-    } // createAdminEntity
+    }
 
-    private AccessRulesDataLocal createAccessRule(AccessRule accessrule) throws CreateException, javax.naming.NamingException {
-        AccessRulesDataLocal returnval = null;
-        InitialContext initial = new InitialContext();
-        AccessRulesDataLocalHome home = (AccessRulesDataLocalHome) initial.lookup("java:comp/env/ejb/AccessRulesDataLocal");
-        returnval = home.create(getAdminGroupName(), getCAId(), accessrule);
+    private AccessRulesDataLocal createAccessRule(AccessRule accessrule) throws CreateException {
+        AccessRulesDataLocalHome home = (AccessRulesDataLocalHome) ServiceLocator.getInstance().getLocalHome(AccessRulesDataLocalHome.COMP_NAME);
+        AccessRulesDataLocal returnval = home.create(getAdminGroupName(), getCAId(), accessrule.getAccessRule(),
+                accessrule.getRule(), accessrule.isRecursive());
         return returnval;
-    } // createAccessRule
+    }
 }

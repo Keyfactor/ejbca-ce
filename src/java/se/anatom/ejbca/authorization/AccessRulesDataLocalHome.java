@@ -5,6 +5,7 @@ package se.anatom.ejbca.authorization;
 
 /**
  * Local home interface for AccessRulesData.
+ * @todo Write migration script
  */
 public interface AccessRulesDataLocalHome
    extends javax.ejb.EJBLocalHome
@@ -12,7 +13,7 @@ public interface AccessRulesDataLocalHome
    public static final String COMP_NAME="java:comp/env/ejb/AccessRulesDataLocal";
    public static final String JNDI_NAME="AccessRulesDataLocal";
 
-   public se.anatom.ejbca.authorization.AccessRulesDataLocal create(java.lang.String admingroupname , int caid , se.anatom.ejbca.authorization.AccessRule accessrule)
+   public se.anatom.ejbca.authorization.AccessRulesDataLocal create(java.lang.String admingroupname , int caid , java.lang.String accessrule , int rule , boolean isrecursive)
       throws javax.ejb.CreateException;
 
    public se.anatom.ejbca.authorization.AccessRulesDataLocal findByPrimaryKey(se.anatom.ejbca.authorization.AccessRulesPK pk)

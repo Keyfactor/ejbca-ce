@@ -5,6 +5,7 @@ package se.anatom.ejbca.authorization;
 
 /**
  * Primary key for AccessRulesData.
+ * @todo Write migration script
  */
 public class AccessRulesPK
    extends java.lang.Object
@@ -13,17 +14,21 @@ public class AccessRulesPK
 
    public java.lang.String adminGroupName;
    public int caId;
-   public se.anatom.ejbca.authorization.AccessRule accessRuleObject;
+   public java.lang.String accessRule;
+   public int rule;
+   public boolean isRecursive;
 
    public AccessRulesPK()
    {
    }
 
-   public AccessRulesPK( java.lang.String adminGroupName,int caId,se.anatom.ejbca.authorization.AccessRule accessRuleObject )
+   public AccessRulesPK( java.lang.String adminGroupName,int caId,java.lang.String accessRule,int rule,boolean isRecursive )
    {
       this.adminGroupName = adminGroupName;
       this.caId = caId;
-      this.accessRuleObject = accessRuleObject;
+      this.accessRule = accessRule;
+      this.rule = rule;
+      this.isRecursive = isRecursive;
    }
 
    public java.lang.String getAdminGroupName()
@@ -34,9 +39,17 @@ public class AccessRulesPK
    {
       return caId;
    }
-   public se.anatom.ejbca.authorization.AccessRule getAccessRuleObject()
+   public java.lang.String getAccessRule()
    {
-      return accessRuleObject;
+      return accessRule;
+   }
+   public int getRule()
+   {
+      return rule;
+   }
+   public boolean getIsRecursive()
+   {
+      return isRecursive;
    }
 
    public void setAdminGroupName(java.lang.String adminGroupName)
@@ -47,9 +60,17 @@ public class AccessRulesPK
    {
       this.caId = caId;
    }
-   public void setAccessRuleObject(se.anatom.ejbca.authorization.AccessRule accessRuleObject)
+   public void setAccessRule(java.lang.String accessRule)
    {
-      this.accessRuleObject = accessRuleObject;
+      this.accessRule = accessRule;
+   }
+   public void setRule(int rule)
+   {
+      this.rule = rule;
+   }
+   public void setIsRecursive(boolean isRecursive)
+   {
+      this.isRecursive = isRecursive;
    }
 
    public int hashCode()
@@ -57,7 +78,9 @@ public class AccessRulesPK
       int _hashCode = 0;
          if (this.adminGroupName != null) _hashCode += this.adminGroupName.hashCode();
          _hashCode += (int)this.caId;
-         if (this.accessRuleObject != null) _hashCode += this.accessRuleObject.hashCode();
+         if (this.accessRule != null) _hashCode += this.accessRule.hashCode();
+         _hashCode += (int)this.rule;
+         _hashCode += this.isRecursive ? 1 : 0;
 
       return _hashCode;
    }
@@ -85,14 +108,16 @@ public class AccessRulesPK
             eq = eq && ( pk.getAdminGroupName() == null );
          }
          eq = eq && this.caId == pk.caId;
-         if( this.accessRuleObject != null )
+         if( this.accessRule != null )
          {
-            eq = eq && this.accessRuleObject.equals( pk.getAccessRuleObject() );
+            eq = eq && this.accessRule.equals( pk.getAccessRule() );
          }
-         else  // this.accessRuleObject == null
+         else  // this.accessRule == null
          {
-            eq = eq && ( pk.getAccessRuleObject() == null );
+            eq = eq && ( pk.getAccessRule() == null );
          }
+         eq = eq && this.rule == pk.rule;
+         eq = eq && this.isRecursive == pk.isRecursive;
       }
 
       return eq;
@@ -104,7 +129,9 @@ public class AccessRulesPK
       StringBuffer toStringValue = new StringBuffer("[.");
          toStringValue.append(this.adminGroupName).append('.');
          toStringValue.append(this.caId).append('.');
-         toStringValue.append(this.accessRuleObject).append('.');
+         toStringValue.append(this.accessRule).append('.');
+         toStringValue.append(this.rule).append('.');
+         toStringValue.append(this.isRecursive).append('.');
       toStringValue.append(']');
       return toStringValue.toString();
    }

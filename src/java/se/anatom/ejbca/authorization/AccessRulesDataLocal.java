@@ -5,6 +5,7 @@ package se.anatom.ejbca.authorization;
 
 /**
  * Local interface for AccessRulesData.
+ * @todo Write migration script
  */
 public interface AccessRulesDataLocal
    extends javax.ejb.EJBLocalObject
@@ -14,6 +15,16 @@ public interface AccessRulesDataLocal
 
    public int getCaId(  ) ;
 
+   public java.lang.String getAccessRule(  ) ;
+
+   public int getRule(  ) ;
+
+   public boolean getIsRecursive(  ) ;
+
+   /**
+    * Return the access rule transfer object
+    * @return the access rule transfer object
+    */
    public se.anatom.ejbca.authorization.AccessRule getAccessRuleObject(  ) ;
 
 }

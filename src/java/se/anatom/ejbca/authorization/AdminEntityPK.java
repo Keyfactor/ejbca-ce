@@ -5,6 +5,7 @@ package se.anatom.ejbca.authorization;
 
 /**
  * Primary key for AdminEntityData.
+ * @todo Write migration script
  */
 public class AdminEntityPK
    extends java.lang.Object
