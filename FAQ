@@ -1,5 +1,5 @@
 EJBCA FAQ
-$Id: FAQ,v 1.6 2001-11-30 10:04:08 anatom Exp $
+$Id: FAQ,v 1.7 2001-12-03 20:01:29 anatom Exp $
 ---------
 
 Q: Why are there two versions of all commands, i.e. 'ra.sh' and 'ra.cmd'.
@@ -46,15 +46,6 @@ keytool -list -alias privateKey -keystore server.p12 -storetype PKCS12
  -storepass foo123 -provider org.bouncycastle.jce.provider.BouncyCastleProvider
 
 It should be possible to import etc as well using keytool.
-
-Note: If this alone doesn't work, try to add a line in your
- 'jre/lib/securite/java.security' so the part with security providers look like:
-
-security.provider.1=org.boucycastle.jce.provider.BouncyCastleProvider
-security.provider.2=sun.security.provider.Sun
-security.provider.3=com.sun.rsajca.Provider
-
-Now BouncyCastle will be used as default for crypto stuff.
 
 -----
 Q: How do I make a keystore using keytool with a real certificate from EJBCA?
