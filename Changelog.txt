@@ -1,3 +1,7 @@
+3.0 beta 3
+----------
+Added Sybase as target for 'ant replaceDS'
+
 3.0 beta 2
 ----------
 Fixed serious bug that caused certs to be signed by wrong CA after ejbPassivate.
