@@ -30,7 +30,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.66 2004-10-20 12:21:54 anatom Exp $
+ * @version $Id: CertTools.java,v 1.67 2004-11-05 08:42:26 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -111,6 +111,8 @@ public class CertTools {
      * are: <code> EmailAddress, UID, CN, SN (SerialNumber), GivenName, Initials, SurName, T, OU,
      * O, L, ST, DC, C </code>
      * To change order edit 'dnObjects' in this source file.
+     * Important NOT to mess with the ordering within this class, since cert vierification 
+     * on some clients (IE :-() might depend on order.
      *
      * @param dn String containing DN that will be transformed into X509Name, The DN string has the
      *        format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in the string will be silently
@@ -194,6 +196,9 @@ public class CertTools {
      */
     public static String stringToBCDNString(String dn) {
         //log.debug(">stringToBcDNString: "+dn);
+    	if (isDNReversed(dn)) {
+    		dn = reverseDN(dn);
+    	}
         String ret = stringToBcX509Name(dn).toString();
         //log.debug("<stringToBcDNString: "+ret);
         return ret;
@@ -210,17 +215,92 @@ public class CertTools {
      */
     public static String getEmailFromDN(String dn) {
         log.debug(">getEmailFromDN(" + dn + ")");
-
         String email = null;
-
         for (int i = 0; (i < EMAILIDS.length) && (email == null); i++) {
             email = getPartFromDN(dn, EMAILIDS[i]);
         }
-
         log.debug("<getEmailFromDN(" + dn + "): " + email);
-
         return email;
     }
+    
+    /**
+     * Takes a DN and reverses it completely so the first attribute ends up last. 
+     * C=SE,O=Foo,CN=Bar becomes CN=Bar,O=Foo,C=SE.
+     *
+     * @param dn String containing DN to be reversed, The DN string has the format "C=SE, O=xx, OU=yy, CN=zz".
+     *
+     * @return String containing reversed DN
+     */
+    public static String reverseDN(String dn) {
+        log.debug(">reverseDN: dn: " + dn);
+        String ret = null;
+        if (dn != null) {
+            String o;
+            BasicX509NameTokenizer xt = new BasicX509NameTokenizer(dn);
+            StringBuffer buf = new StringBuffer();
+            boolean first = true;
+            while (xt.hasMoreTokens()) {
+                o = xt.nextToken();
+                //log.debug("token: "+o);
+                if (!first) {
+                	buf.insert(0,",");
+                } else {
+                    first = false;                	
+                }
+                buf.insert(0,o);
+            }
+            if (buf.length() > 0) {
+            	ret = buf.toString();
+            }
+        }
+        
+        log.debug("<reverseDN: resulting DN=" + ret);
+        return ret;
+    } //reverseDN
+
+    /**
+     * Tries to determine if a DN is in reversed form. It does this by taking the last attribute 
+     * and the first attribute. If the last attribute comes before the first in the dNObjects array
+     * the DN is assumed to be in reversed order.
+     *
+     * @param dn String containing DN to be checked, The DN string has the format "C=SE, O=xx, OU=yy, CN=zz".
+     *
+     * @return true if the DN is believed to be in reversed order, false otherwise
+     */
+    public static boolean isDNReversed(String dn) {
+        //log.debug(">isDNReversed: dn: " + dn);
+        boolean ret = false;
+        if (dn != null) {
+            String first = null;
+            String last = null;
+            X509NameTokenizer xt = new X509NameTokenizer(dn);
+            if (xt.hasMoreTokens()) {
+            	first = xt.nextToken();
+            }
+            while (xt.hasMoreTokens()) {
+                last = xt.nextToken();
+            }
+            if ( (first != null) && (last != null) ) {
+            	first = first.substring(0,first.indexOf('='));
+            	last = last.substring(0,last.indexOf('='));
+            	int firsti = 0, lasti = 0;
+            	for (int i = 0; i < dNObjects.length; i++) {
+            		if (first.toLowerCase().equals(dNObjectsForward[i])) {
+            			firsti = i;
+            		}
+            		if (last.toLowerCase().equals(dNObjectsForward[i])) {
+            			lasti = i;
+            		}
+            	}
+            	if (lasti < firsti) {
+            		ret = true;
+            	}
+            	
+            }
+        }
+        //log.debug("<isDNReversed: " + ret);
+        return ret;
+    } //isDNReversed
 
     /**
      * Gets a specified part of a DN. Specifically the first occurrence it the DN contains several
@@ -233,18 +313,13 @@ public class CertTools {
      */
     public static String getPartFromDN(String dn, String dnpart) {
         log.debug(">getPartFromDN: dn:'" + dn + "', dnpart=" + dnpart);
-
         String part = null;
-
         if ((dn != null) && (dnpart != null)) {
             String o;
             dnpart += "="; // we search for 'CN=' etc.
-
             X509NameTokenizer xt = new X509NameTokenizer(dn);
-
             while (xt.hasMoreTokens()) {
                 o = xt.nextToken();
-
                 //log.debug("checking: "+o.substring(0,dnpart.length()));
                 if ((o.length() > dnpart.length()) &&
                         o.substring(0, dnpart.length()).equalsIgnoreCase(dnpart)) {
@@ -254,9 +329,7 @@ public class CertTools {
                 }
             }
         }
-
         log.debug("<getpartFromDN: resulting DN part=" + part);
-
         return part;
     } //getPartFromDN
 
@@ -884,4 +957,86 @@ public class CertTools {
         return null;
     } // generateMD5Fingerprint
     
+    /**
+     * class for breaking up an X500 Name into it's component tokens, ala
+     * java.util.StringTokenizer. Taken from BouncyCastle, but does NOT
+     * use or consider escaped characters. Used for reversing DNs without unescaping.
+     */
+    private static class BasicX509NameTokenizer
+    {
+        private String          oid;
+        private int             index;
+        private StringBuffer    buf = new StringBuffer();
+
+        public BasicX509NameTokenizer(
+            String oid)
+        {
+            this.oid = oid;
+            this.index = -1;
+        }
+
+        public boolean hasMoreTokens()
+        {
+            return (index != oid.length());
+        }
+
+        public String nextToken()
+        {
+            if (index == oid.length())
+            {
+                return null;
+            }
+
+            int     end = index + 1;
+            boolean quoted = false;
+            boolean escaped = false;
+
+            buf.setLength(0);
+
+            while (end != oid.length())
+            {
+                char    c = oid.charAt(end);
+                
+                if (c == '"')
+                {
+                    if (!escaped)
+                    {
+                        buf.append(c);
+                        quoted = !quoted;
+                    }
+                    else
+                    {
+                        buf.append(c);
+                    }
+                    escaped = false;
+                }
+                else
+                { 
+                    if (escaped || quoted)
+                    {
+                        buf.append(c);
+                        escaped = false;
+                    }
+                    else if (c == '\\')
+                    {
+                        buf.append(c);
+                        escaped = true;
+                    }
+                    else if ( (c == ',') && (!escaped) )
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        buf.append(c);
+                    }
+                }
+                end++;
+            }
+
+            index = end;
+            return buf.toString().trim();
+        }
+    }
+
 } // CertTools
