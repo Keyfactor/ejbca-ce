@@ -2,8 +2,6 @@ package se.anatom.ejbca.util.junit;
 
 import java.io.ByteArrayInputStream;
 import java.security.KeyStore;
-import java.security.Provider;
-import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
@@ -15,7 +13,7 @@ import junit.framework.*;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestKeyTools.java,v 1.5 2003-11-20 15:23:23 anatom Exp $
+ * @version $Id: TestKeyTools.java,v 1.6 2003-11-23 09:47:53 anatom Exp $
  */
 public class TestKeyTools extends TestCase {
 

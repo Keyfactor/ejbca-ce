@@ -7,10 +7,8 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.Provider;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.security.cert.*;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
@@ -66,7 +64,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.115 2003-11-20 15:23:23 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.116 2003-11-23 09:47:53 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     

@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.security.Provider;
-import java.security.Security;
 import java.util.Date;
 import java.util.Enumeration;
 import javax.ejb.CreateException;
@@ -80,7 +78,7 @@ import se.anatom.ejbca.ra.UserAdminData;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.31 2003-11-20 15:23:22 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.32 2003-11-23 09:47:50 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 

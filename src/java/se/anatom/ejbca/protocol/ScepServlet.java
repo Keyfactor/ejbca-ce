@@ -2,8 +2,6 @@ package se.anatom.ejbca.protocol;
 
 import java.io.*;
 
-import java.security.Provider;
-import java.security.Security;
 import java.security.cert.Certificate;
 import javax.naming.InitialContext;
 import javax.rmi.PortableRemoteObject;
@@ -41,7 +39,7 @@ import se.anatom.ejbca.util.CertTools;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.23 2003-11-20 15:23:23 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.24 2003-11-23 09:47:53 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);

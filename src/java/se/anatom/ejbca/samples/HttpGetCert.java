@@ -9,8 +9,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.security.KeyPair;
-import java.security.Provider;
-import java.security.Security;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
@@ -41,7 +39,7 @@ import se.anatom.ejbca.util.KeyTools;
  * </ul>
  *
  *
- * @version $Id: HttpGetCert.java,v 1.13 2003-11-20 15:23:23 anatom Exp $
+ * @version $Id: HttpGetCert.java,v 1.14 2003-11-23 09:47:53 anatom Exp $
  */
 public class HttpGetCert {
     private static Logger log = Logger.getLogger(HttpGetCert.class);

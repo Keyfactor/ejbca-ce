@@ -6,7 +6,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.*;
 import java.util.Enumeration;
@@ -14,16 +13,13 @@ import java.util.Enumeration;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import org.bouncycastle.jce.provider.*;
-
-
 /**
  * P12toPEM is used to export PEM files from a single p12 file. The class exports the user
  * certificate, user private key in seperated files and the chain of sub ca and ca certifikate in
  * a third file. The PEM files will have the names <i>common name</i>.pem, <i>common
  * name</i>Key.pem and <i>common name</i>CA.pem derived from the DN in user certificate.
  *
- * @version $Id: P12toPEM.java,v 1.11 2003-11-20 15:23:23 anatom Exp $
+ * @version $Id: P12toPEM.java,v 1.12 2003-11-23 09:47:54 anatom Exp $
  */
 public class P12toPEM {
     private static Logger log = Logger.getLogger(P12toPEM.class);

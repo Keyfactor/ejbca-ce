@@ -3,8 +3,6 @@ package se.anatom.ejbca.protocol.junit;
 import java.io.*;
 import java.security.KeyStore;
 import java.security.PrivateKey;
-import java.security.Provider;
-import java.security.Security;
 import java.security.cert.*;
 
 import org.apache.log4j.Logger;

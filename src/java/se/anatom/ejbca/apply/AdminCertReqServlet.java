@@ -2,8 +2,6 @@ package se.anatom.ejbca.apply;
 
 import java.beans.Beans;
 import java.io.IOException;
-import java.security.Provider;
-import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -100,7 +98,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * 
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.13 2003-11-20 15:23:22 anatom Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.14 2003-11-23 09:47:50 anatom Exp $
  */
 public class AdminCertReqServlet extends HttpServlet {
   private final static Logger log = Logger.getLogger(AdminCertReqServlet.class);

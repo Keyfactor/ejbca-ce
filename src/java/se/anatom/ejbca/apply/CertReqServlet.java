@@ -5,8 +5,6 @@ import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PrivateKey;
-import java.security.Provider;
-import java.security.Security;
 import java.security.cert.*;
 import java.util.*;
 
@@ -63,7 +61,7 @@ import se.anatom.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.41 2003-11-20 15:23:22 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.42 2003-11-23 09:47:50 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);

@@ -7,7 +7,6 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.*;
 import java.util.Collection;
@@ -18,9 +17,6 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-
-import org.bouncycastle.jce.provider.*;
-
 
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
@@ -44,7 +40,7 @@ import se.anatom.ejbca.util.P12toPEM;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.44 2003-11-20 15:23:22 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.45 2003-11-23 09:47:53 anatom Exp $
  */
 public class BatchMakeP12 {
     /** For logging */

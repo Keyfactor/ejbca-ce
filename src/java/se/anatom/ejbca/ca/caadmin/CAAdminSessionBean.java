@@ -3,9 +3,7 @@ package se.anatom.ejbca.ca.caadmin;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyStore;
 import java.security.PrivateKey;
-import java.security.Provider;
 import java.security.PublicKey;
-import java.security.Security;
 import java.security.cert.*;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -62,7 +60,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.8 2003-11-20 15:23:22 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.9 2003-11-23 09:47:54 anatom Exp $
  */
 public class CAAdminSessionBean extends BaseSessionBean {
     

@@ -8,8 +8,6 @@ import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.Provider;
-import java.security.Security;
 import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,7 +33,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.16 2003-11-20 15:23:21 anatom Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.17 2003-11-23 09:47:53 anatom Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
     /** Private key alias in PKCS12 keystores */
