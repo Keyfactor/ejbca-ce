@@ -17,9 +17,6 @@ import javax.ejb.CreateException;
  */
 public abstract class BasePropertyEntityBean extends BaseEntityBean {
 
-    public abstract PropertyEntityPK getPK();
-	public abstract void setPK(PropertyEntityPK pK);
-    
 	public abstract String getId();
 	public abstract void setId(String id);
 
@@ -42,14 +39,13 @@ public abstract class BasePropertyEntityBean extends BaseEntityBean {
 	 * Entity Bean holding data of a raadmin profile.
 	 *
 	 * 
-	 * @return null
+	 * @return PropertyEntityPK beeing the PrimaryKey for the created entity
 	 */
 	public PropertyEntityPK ejbCreate(String id, String property, String value)
 	       throws CreateException {
 	       	
 	    PropertyEntityPK pk = new PropertyEntityPK(id,property); 
 
-	    setPK(pk); 
 		setId(id);
 		setProperty(property);
 		setValue(value);
