@@ -82,7 +82,7 @@ import java.util.Iterator;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.35 2004-11-20 22:54:28 sbailliez Exp $
+ * @version  $Id: OCSPServlet.java,v 1.36 2004-12-31 14:20:05 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -555,9 +555,9 @@ public class OCSPServlet extends HttpServlet {
                 BasicOCSPResp basicresp = signOCSPResponse(basicRes, cacert);
                 ocspresp = res.generate(OCSPRespGenerator.SIG_REQUIRED, basicRes);
             } catch (Exception e) {
+                m_log.error("Unable to handle OCSP request.", e);
                 if (e instanceof ServletException)
                     throw (ServletException) e;
-                m_log.error("Unable to handle OCSP request.", e);
                 // generate the signed response object
                 BasicOCSPResp basicresp = signOCSPResponse(basicRes, cacert);
                 ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, basicRes);
