@@ -11,11 +11,12 @@ import java.util.ArrayList;
 /**
  * CACertificateProfile is a class defining the fixed characteristics of a CA certificate profile.
  *
- * @author TomSelleck
+ * @author  TomSelleck
  */
-public class CACertificateProfile extends CertificateProfile {
+public class CACertificateProfile extends CertificateProfile{
+
     // Public Constants
-    public static final String CERTIFICATEPROFILENAME = "CA";
+    public final static  String CERTIFICATEPROFILENAME =  "SUBCA";
 
     // Public Methods
 
@@ -23,66 +24,76 @@ public class CACertificateProfile extends CertificateProfile {
      * Creates a certificate with the characteristics of an end user.
      */
     public CACertificateProfile() {
-        setCertificateVersion(VERSION_X509V3);
-        setValidity(730);
 
-        setUseBasicConstraints(true);
-        setBasicConstraintsCritical(true);
+      setCertificateVersion(VERSION_X509V3);
+      setValidity(730);
 
-        setUseSubjectKeyIdentifier(true);
-        setSubjectKeyIdentifierCritical(false);
+      setUseBasicConstraints(true);
+      setBasicConstraintsCritical(true);
 
-        setUseAuthorityKeyIdentifier(true);
-        setAuthorityKeyIdentifierCritical(false);
+      setUseSubjectKeyIdentifier(true);
+      setSubjectKeyIdentifierCritical(false);
 
-        setUseSubjectAlternativeName(true);
-        setSubjectAlternativeNameCritical(false);
+      setUseAuthorityKeyIdentifier(true);
+      setAuthorityKeyIdentifierCritical(false);
 
-        setUseCRLDistributionPoint(false);
-        setCRLDistributionPointCritical(false);
-        setCRLDistributionPointURI("");
+      setUseSubjectAlternativeName(true);
+      setSubjectAlternativeNameCritical(false);
 
-        setUseCertificatePolicies(false);
-        setCertificatePoliciesCritical(false);
-        setCertificatePolicyId("2.5.29.32.0");
-        setType(TYPE_CA);
+      setUseCRLDistributionPoint(false);
+      setCRLDistributionPointCritical(false);
+      setCRLDistributionPointURI("");
 
-        int[] bitlengths = { 512, 1024, 2048, 4096 };
-        setAvailableBitLengths(bitlengths);
+      setUseCertificatePolicies(false);
+      setCertificatePoliciesCritical(false);
+      setCertificatePolicyId("2.5.29.32.0");
+      setType(TYPE_SUBCA);
 
-        setUseKeyUsage(true);
-        setKeyUsage(new boolean[9]);
-        setKeyUsage(KEYCERTSIGN, true);
-        setKeyUsage(CRLSIGN, true);
-        setKeyUsageCritical(true);
 
-        setUseExtendedKeyUsage(false);
-        setExtendedKeyUsage(new ArrayList());
-        setExtendedKeyUsageCritical(false);
+      int[] bitlengths = {512,1024,2048,4096};
+      setAvailableBitLengths(bitlengths);
+
+      setUseKeyUsage(true);
+      setKeyUsage(new boolean[9]);
+      setKeyUsage(KEYCERTSIGN,true);
+      setKeyUsage(CRLSIGN,true);
+      setKeyUsageCritical(true);
+
+      setUseExtendedKeyUsage(false);
+      setExtendedKeyUsage(new ArrayList());
+      setExtendedKeyUsageCritical(false);
+      
+      ArrayList availablecas = new ArrayList();
+      availablecas.add(new Integer(ANYCA));
+      setAvailableCAs(availablecas);      
+      setPublisherList(new ArrayList());
     }
 
     // Public Methods.
-    public void upgrade() {
-        if (LATEST_VERSION != getVersion()) {
-            // New version of the class, upgrade
-            data.put(VERSION, new Float(LATEST_VERSION));
+    public void upgrade(){
+      if(LATEST_VERSION != getVersion()){
+        // New version of the class, upgrade
 
-            if (data.get(ALLOWKEYUSAGEOVERRIDE) == null) {
-                data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
-            }
-
-            if (data.get(USEEXTENDEDKEYUSAGE) == null) {
-                data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
-            }
-
-            if (data.get(EXTENDEDKEYUSAGE) == null) {
-                data.put(EXTENDEDKEYUSAGE, new ArrayList());
-            }
-
-            if (data.get(EXTENDEDKEYUSAGECRITICAL) == null) {
-                data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
-            }
+        data.put(VERSION, new Float(LATEST_VERSION));
+        if(data.get(ALLOWKEYUSAGEOVERRIDE) == null)
+          data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
+        if(data.get(USEEXTENDEDKEYUSAGE) ==null)
+          data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
+        if(data.get(EXTENDEDKEYUSAGE) ==null)
+          data.put(EXTENDEDKEYUSAGE, new ArrayList());
+        if(data.get(EXTENDEDKEYUSAGECRITICAL) == null)
+          data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
+        
+        if(data.get(AVAILABLECAS) == null){
+          ArrayList availablecas = new ArrayList();
+          availablecas.add(new Integer(ANYCA));
+          data.put(AVAILABLECAS, availablecas);
         }
+        
+        if(data.get(USEDPUBLISHERS) == null){
+          data.put(USEDPUBLISHERS, new ArrayList());   
+        }        
+      }
     }
 
     // Private fields.

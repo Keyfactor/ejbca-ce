@@ -2,101 +2,109 @@ package se.anatom.ejbca.ca.store.certificateprofiles;
 
 import java.util.ArrayList;
 
-
 /**
- * EndUserCertificateProfile is a class defining the fixed characteristics of an enduser
- * certificate type
+ * EndUserCertificateProfile is a class defining the fixed characteristics of an enduser certificate type
  *
- * @version $Id: EndUserCertificateProfile.java,v 1.10 2003-06-26 11:43:23 anatom Exp $
- */
-public class EndUserCertificateProfile extends CertificateProfile {
+* @version $Id: EndUserCertificateProfile.java,v 1.11 2003-09-03 13:35:16 herrvendil Exp $
+  */
+public class EndUserCertificateProfile extends CertificateProfile{
+
     // Public Constants
-    public static final String CERTIFICATEPROFILENAME = "ENDUSER";
+
+    public final static String CERTIFICATEPROFILENAME =  "ENDUSER";
 
     // Public Methods
-
-    /**
-     * Creates a certificate with the characteristics of an end user.
-     */
+    /** Creates a certificate with the characteristics of an end user. */
     public EndUserCertificateProfile() {
-        setCertificateVersion(VERSION_X509V3);
-        setValidity(730);
 
-        setUseBasicConstraints(true);
-        setBasicConstraintsCritical(true);
+      setCertificateVersion(VERSION_X509V3);
+      setValidity(730);
 
-        setUseSubjectKeyIdentifier(true);
-        setSubjectKeyIdentifierCritical(false);
+      setUseBasicConstraints(true);
+      setBasicConstraintsCritical(true);
 
-        setUseAuthorityKeyIdentifier(true);
-        setAuthorityKeyIdentifierCritical(false);
 
-        setUseSubjectAlternativeName(true);
-        setSubjectAlternativeNameCritical(false);
+      setUseSubjectKeyIdentifier(true);
+      setSubjectKeyIdentifierCritical(false);
 
-        setUseCRLDistributionPoint(false);
-        setCRLDistributionPointCritical(false);
-        setCRLDistributionPointURI("");
+      setUseAuthorityKeyIdentifier(true);
+      setAuthorityKeyIdentifierCritical(false);
 
-        setUseCertificatePolicies(false);
-        setCertificatePoliciesCritical(false);
-        setCertificatePolicyId("2.5.29.32.0");
+      setUseSubjectAlternativeName(true);
+      setSubjectAlternativeNameCritical(false);
 
-        setType(TYPE_ENDENTITY);
+      setUseCRLDistributionPoint(false);
+      setCRLDistributionPointCritical(false);
+      setCRLDistributionPointURI("");
 
-        int[] bitlengths = { 512, 1024, 2048, 4096 };
-        setAvailableBitLengths(bitlengths);
+      setUseCertificatePolicies(false);
+      setCertificatePoliciesCritical(false);
+      setCertificatePolicyId("2.5.29.32.0");
 
-        // Standard key usages for end users are: digitalSignature | keyEncipherment or nonRepudiation
-        // Default key usage is digitalSignature | keyEncipherment
-        // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
-        setUseKeyUsage(true);
-        setKeyUsage(new boolean[9]);
-        setKeyUsage(DIGITALSIGNATURE, true);
-        setKeyUsage(KEYENCIPHERMENT, true);
-        setKeyUsageCritical(true);
+      setType(TYPE_ENDENTITY);
 
-        setUseExtendedKeyUsage(true);
+      int[] bitlengths = {512,1024,2048,4096};
+      setAvailableBitLengths(bitlengths);
 
-        ArrayList eku = new ArrayList();
-        eku.add(new Integer(SERVERAUTH));
-        eku.add(new Integer(CLIENTAUTH));
-        eku.add(new Integer(EMAILPROTECTION));
-        eku.add(new Integer(IPSECENDSYSTEM));
-        eku.add(new Integer(IPSECUSER));
-        setExtendedKeyUsage(eku);
-        setExtendedKeyUsageCritical(false);
+      // Standard key usages for end users are: digitalSignature | keyEncipherment or nonRepudiation
+      // Default key usage is digitalSignature | keyEncipherment
+      // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
+      setUseKeyUsage(true);
+      setKeyUsage(new boolean[9]);
+      setKeyUsage(DIGITALSIGNATURE,true);
+      setKeyUsage(KEYENCIPHERMENT,true);
+      setKeyUsageCritical(true);
+
+      setUseExtendedKeyUsage(true);
+      ArrayList eku = new ArrayList();
+      eku.add(new Integer(SERVERAUTH));
+      eku.add(new Integer(CLIENTAUTH));
+      eku.add(new Integer(EMAILPROTECTION));
+      eku.add(new Integer(IPSECENDSYSTEM));
+      eku.add(new Integer(IPSECUSER));
+      setExtendedKeyUsage(eku);
+      setExtendedKeyUsageCritical(false);
+      
+      ArrayList availablecas = new ArrayList();
+      availablecas.add(new Integer(ANYCA));
+      setAvailableCAs(availablecas);      
+      setPublisherList(new ArrayList());
     }
 
     // Public Methods.
-    public void upgrade() {
-        if (LATEST_VERSION != getVersion()) {
-            // New version of the class, upgrade
-            data.put(VERSION, new Float(LATEST_VERSION));
+    public void upgrade(){
+      if(LATEST_VERSION != getVersion()){
+        // New version of the class, upgrade
 
-            if (data.get(ALLOWKEYUSAGEOVERRIDE) == null) {
-                data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
-            }
-
-            if (data.get(USEEXTENDEDKEYUSAGE) == null) {
-                data.put(USEEXTENDEDKEYUSAGE, Boolean.TRUE);
-            }
-
-            if (data.get(EXTENDEDKEYUSAGE) == null) {
-                ArrayList eku = new ArrayList();
-                eku.add(new Integer(SERVERAUTH));
-                eku.add(new Integer(CLIENTAUTH));
-                eku.add(new Integer(EMAILPROTECTION));
-                eku.add(new Integer(IPSECENDSYSTEM));
-                eku.add(new Integer(IPSECUSER));
-                data.put(EXTENDEDKEYUSAGE, eku);
-            }
-
-            if (data.get(EXTENDEDKEYUSAGECRITICAL) == null) {
-                data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
-            }
+        data.put(VERSION, new Float(LATEST_VERSION));
+        if(data.get(ALLOWKEYUSAGEOVERRIDE) == null)
+          data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
+        if(data.get(USEEXTENDEDKEYUSAGE) ==null)
+          data.put(USEEXTENDEDKEYUSAGE, Boolean.TRUE);
+        if(data.get(EXTENDEDKEYUSAGE) ==null){
+           ArrayList eku = new ArrayList();
+           eku.add(new Integer(SERVERAUTH));
+           eku.add(new Integer(CLIENTAUTH));
+           eku.add(new Integer(EMAILPROTECTION));
+           eku.add(new Integer(IPSECENDSYSTEM));
+           eku.add(new Integer(IPSECUSER));
+           data.put(EXTENDEDKEYUSAGE, eku);
         }
+        if(data.get(EXTENDEDKEYUSAGECRITICAL) == null)
+          data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
+        
+        if(data.get(AVAILABLECAS) == null){
+          ArrayList availablecas = new ArrayList();
+          availablecas.add(new Integer(ANYCA));
+          data.put(AVAILABLECAS, availablecas);
+        }
+        if(data.get(USEDPUBLISHERS) == null){
+          data.put(USEDPUBLISHERS, new ArrayList());   
+        }        
+      }
     }
 
+
     // Private fields.
+
 }
