@@ -28,6 +28,7 @@ Handle double type encoding in install.en.properties for other languages.
 Tested with JBoss 4.0.1.
 Support for PostgreSQL 8.0 on JBoss 4.
 Fix for 'rule' column name in config for MS SQL server 2000.
+Fixed problem where requiring RFC822Name caused error when editing end entity.
 
 3.0.4
 -----
