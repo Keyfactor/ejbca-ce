@@ -224,7 +224,7 @@
          String[] usernames = new String[indexes.size()];
          for(int i = 0; i < indexes.size(); i++){
            index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
-           usernames[i] = request.getParameter(HIDDEN_USERNAME+index);
+           usernames[i] = java.net.URLDecoder.decode(request.getParameter(HIDDEN_USERNAME+index),"UTF-8");
          }
          notauthorizeddeleteall = !rabean.deleteUsers(usernames);
        }
