@@ -1,0 +1,17 @@
+<cmp-field>
+  <field-name>adminGroupName</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>caId</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>accessRule</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>rule</field-name>
+  <column-name>rule_</column-name>
+</cmp-field>
+<cmp-field>
+  <field-name>isRecursive</field-name>
+</cmp-field>
+
