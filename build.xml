@@ -73,7 +73,7 @@
   <!-- =================================================================== -->
   <!-- Build ALL                                                           -->
   <!-- =================================================================== -->
-  <target name="build" depends="compile, apply.war, webdist.war, sampleauth.war, ca.jar, ra.jar, admin.jar">
+  <target name="build" depends="compile, apply.war, webdist.war, ca.jar, ca.ear, ra.jar, admin.jar, sampleauth.war">
   </target>
 
   <!-- =================================================================== -->

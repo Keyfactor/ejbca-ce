@@ -1,6 +1,6 @@
 @echo off
 rem ----
-rem $Id: deploy.cmd,v 1.9 2002-04-17 15:14:18 anatom Exp $
+rem $Id: deploy.cmd,v 1.10 2002-05-10 08:41:05 anatom Exp $
 rem
 rem Deploy script for EJBCA
 rem
@@ -33,8 +33,8 @@ echo Copied jce-jdk13-112.jar and ldap.jar to %JBOSS_HOME%\lib\ext. JBoss must b
 
 rem Deploy jar and war files
 :deploy
-xcopy dist\*.war %JBOSS_HOME%\deploy /Q /Y
-xcopy dist\*.jar %JBOSS_HOME%\deploy /Q /Y
+xcopy dist\ca.ear %JBOSS_HOME%\deploy /Q /Y
+xcopy dist\ra.jar %JBOSS_HOME%\deploy /Q /Y
 echo Deployed jar- and war-files in %JBOSS_HOME%\deploy
 goto end
 
@@ -42,4 +42,3 @@ goto end
 echo JBOSS_HOME must be set
 
 :end
-
