@@ -508,7 +508,7 @@
                    query.add(startdate, enddate);
               }
 
-              if(query.isLegalQuery()){
+              if(query.isLegalQuery() && !query.hasIllegalSqlChars()){
                 users = rabean.filterByQuery(query,record,size);  
               }else{
                  illegalquery = true;
@@ -712,7 +712,7 @@
                    query.add(startdate, enddate);
               }
 
-              if(query.isLegalQuery()){
+              if(query.isLegalQuery() && !query.hasIllegalSqlChars()){
                 users = rabean.filterByQuery(query,record,size);  
               }else{
                  illegalquery = true;

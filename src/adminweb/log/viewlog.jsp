@@ -280,7 +280,7 @@
               }
 
 
-              if(query.isLegalQuery()){
+              if(query.isLegalQuery() && !query.hasIllegalSqlChars()){
                 logentries  = logbean.filterByQuery(query,record,size);  
               }else{
                  illegalquery = true;
@@ -433,7 +433,7 @@
                    query.add(startdate, enddate);
               }
 
-              if(query.isLegalQuery()){
+              if(query.isLegalQuery() && !query.hasIllegalSqlChars()){
                 logentries  = logbean.filterByQuery(query,record,size);  
               }else{
                  illegalquery = true;

@@ -22,6 +22,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
+import se.anatom.ejbca.util.StringTools;
+
 
 /**
  * A class used to produce advanced querys from the log and user data tables. It's main function is
@@ -31,6 +35,7 @@ import java.util.Vector;
  * @author tomselleck
  */
 public class Query implements java.io.Serializable {
+    private static Logger log = Logger.getLogger(Query.class);
     // Public Constants.
     public static final int TYPE_LOGQUERY = 0;
     public static final int TYPE_USERQUERY = 1;
@@ -120,13 +125,13 @@ public class Query implements java.io.Serializable {
         switch (this.type) {
         case TYPE_LOGQUERY:
             matches.addElement(new LogMatch(matchwith, matchtype, matchvalue));
-
             break;
-
         case TYPE_USERQUERY:
             matches.addElement(new UserMatch(matchwith, matchtype, matchvalue));
-
             break;
+        }
+        if (StringTools.hasStripChars(matchvalue)) {
+            hasIllegalSqlChars = true;
         }
     }
 
@@ -146,16 +151,16 @@ public class Query implements java.io.Serializable {
         switch (this.type) {
         case TYPE_LOGQUERY:
             matches.addElement(new LogMatch(matchwith, matchtype, matchvalue));
-
             break;
-
         case TYPE_USERQUERY:
             matches.addElement(new UserMatch(matchwith, matchtype, matchvalue));
-
             break;
         }
-
         connectors.addElement(new Integer(connector));
+
+        if (StringTools.hasStripChars(matchvalue)) {
+            hasIllegalSqlChars = true;
+        }
     }
 
     /**
@@ -208,6 +213,18 @@ public class Query implements java.io.Serializable {
         return returnval;
     }
 
+    /**
+     * Checks if the present query contains illegal SQL string charcters as set by add(String) methods.
+     * The add(String) methods checks against StringTools.hasStripChars.
+     *
+     * @return true if the query is legal, false otherwise
+     * @see se.anatom.ejbca.util.StringTools#hasStripChars
+     */
+    public boolean hasIllegalSqlChars() {
+        log.debug("hasIllegalSqlChars: "+hasIllegalSqlChars);
+        return hasIllegalSqlChars;
+    }
+
     // Private Constants.
     static final String[] CONNECTOR_SQL_NAMES = { " AND ", " OR ", " AND NOT ", " OR NOT " };
 
@@ -215,4 +232,5 @@ public class Query implements java.io.Serializable {
     private Vector matches = null; // Should only contain BasicMatch objects.
     private Vector connectors = null; // Should only containg CONNECTOR constants.
     private int type = 0;
+    private boolean hasIllegalSqlChars = false;
 }

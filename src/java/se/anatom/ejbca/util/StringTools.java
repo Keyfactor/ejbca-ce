@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.19 2004-05-22 15:37:57 anatom Exp $
+ * @version $Id: StringTools.java,v 1.20 2004-12-22 09:00:42 anatom Exp $
  */
 public class StringTools {
     private static Logger log = Logger.getLogger(StringTools.class);
@@ -51,9 +51,7 @@ public class StringTools {
         if (str == null) {
             return null;
         }
-
         String ret = str;
-
         for (int i = 0; i < stripChars.length; i++) {
             if (ret.indexOf(stripChars[i]) > -1) {
                 // If it is an escape char, we have to process manually
@@ -68,7 +66,6 @@ public class StringTools {
                             }
                         }
                         if (!allowed) {
-                            StringUtils.overlay("abcdef", "zzzz", 2, 4);
                             ret = StringUtils.overlay(ret,"/",index,index+1);
                         }
                         index = ret.indexOf('\\',index+1);
@@ -80,22 +77,56 @@ public class StringTools {
         }
         return ret;
     } // strip
+    /**
+     * Checks if a string contains characters that would be stripped by 'strip'
+     *
+     * @param str the string whose contents would be stripped.
+     * @return true if some chars in the string would be stripped, false if not.
+     * @see #strip
+     */
+    public static boolean hasStripChars(String str) {
+        if (str == null) {
+            return false;
+        }
+        String ret = str;
+        for (int i = 0; i < stripChars.length; i++) {
+            if (ret.indexOf(stripChars[i]) > -1) {
+                // If it is an escape char, we have to process manually
+                if (stripChars[i] == '\\') {
+                    // If it is an escaped char, allow it if it is an allowed escapechar
+                    int index = ret.indexOf('\\');
+                    while (index > -1) {
+                        boolean allowed = false;
+                        for (int j = 0; j < allowedEscapeChars.length; j++) {
+                            if (ret.charAt(index+1) == allowedEscapeChars[j]) {
+                                allowed = true;
+                            }
+                        }
+                        if (!allowed) {
+                            return true;
+                        }
+                        index = ret.indexOf('\\',index+1);
+                    }
+                } else {
+                    return true;
+                }
+            }
+        }
+        return false;
+    } // hasStripChars
 
     
     /**
      * Strips all whitespace including space, tabs, newlines etc from the given string.
      *
      * @param str the string
-     *
      * @return the string with all whitespace removed
-     *
      * @since 2.1b1
      */
     public static String stripWhitespace(String str) {
         if (str == null) {
             return null;
         }
-
         return WS.matcher(str).replaceAll("");
     }
     
