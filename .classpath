@@ -2,13 +2,8 @@
 <classpath>
     <classpathentry kind="src" path="src/java"/>
     <classpathentry kind="var" path="JRE_LIB" rootpath="JRE_SRCROOT" sourcepath="JRE_SRC"/>
-    <classpathentry kind="lib" path="lib/jboss-client.jar"/>
-    <classpathentry kind="lib" path="lib/jboss-common-client.jar"/>
     <classpathentry kind="lib" path="lib/jboss-j2ee.jar"/>
-    <classpathentry kind="lib" path="lib/jboss-jdbc_ext.jar"/>
-    <classpathentry kind="lib" path="lib/jbosssx-client.jar"/>
     <classpathentry kind="lib" path="lib/jce-jdk13-115.jar"/>
-    <classpathentry kind="lib" path="lib/jnp-client.jar"/>
     <classpathentry kind="lib" path="lib/junit.jar"/>
     <classpathentry kind="lib" path="lib/ldap.jar"/>
     <classpathentry kind="lib" path="lib/log4j-1.2.jar"/>

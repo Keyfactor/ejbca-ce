@@ -1,8 +1,11 @@
 
 cd src\java
 
+rem Check for proper settings of environment variables
+if "%JBOSS_HOME%" == ""  goto error
+
 rem JBoss
-set TEST_CP=.;..\..\lib\jnp-client.jar;..\..\lib\jboss-client.jar;..\..\lib\jboss-j2ee.jar;..\..\lib\jbosssx-client.jar;..\..\lib\jboss-common-client.jar;..\..\lib\junit.jar;..\..\lib\log4j-1.2.jar;..\..\lib\jce-jdk13-115.jar
+set TEST_CP=.;%JBOSS_HOME%\client\jnp-client.jar;%JBOSS_HOME%\client\jboss-client.jar;%JBOSS_HOME%\client\jboss-j2ee.jar;%JBOSS_HOME%\client\jbosssx-client.jar;%JBOSS_HOME%\client\jboss-common-client.jar;..\..\lib\junit.jar;..\..\lib\log4j-1.2.jar;..\..\lib\jce-jdk13-115.jar
 
 rem Weblogic
 rem set TEST_CP=.;..\..\lib\weblogic.jar;..\..\lib\junit.jar;..\..\lib\log4j-1.2.jar;..\..\lib\jce-jdk13-115.jar
@@ -24,3 +27,8 @@ echo Testing batch
 java -cp %TEST_CP% se.anatom.ejbca.batch.junit.TestRunner
 
 cd ..\..
+
+goto end
+:error 
+echo JBOSS_HOME must be set
+:end

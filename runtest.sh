@@ -1,9 +1,16 @@
 #!/bin/sh
 
+# Check for proper settings of environment variables
+if [ -f $JBOSS_HOME ]
+then
+        echo JBOSS_HOME must be set to deploy automagically.
+        exit
+fi
+
 cd src/java
 
 # JBoss
-TEST_CP=.:../../lib/jnp-client.jar:../../lib/jboss-j2ee.jar:../../lib/jboss-client.jar:../../lib/jbosssx-client.jar:../../lib/jboss-common-client.jar:../../lib/junit.jar:../../lib/log4j-1.2.jar:../../lib/jce-jdk13-115.jar
+TEST_CP=.:$JBOSS_HOME/client/jnp-client.jar:$JBOSS_HOME/client/jboss-j2ee.jar:$JBOSS_HOME/client/jboss-client.jar:$JBOSS_HOME/client/jbosssx-client.jar:$JBOSS_HOME/client/jboss-common-client.jar:../../lib/junit.jar:../../lib/log4j-1.2.jar:../../lib/jce-jdk13-115.jar
 
 # Weblogic
 #TEST_CP=.:../../lib/weblogic.jar:../../lib/junit.jar:../../lib/log4j-1.2.jar:../../lib/jce-jdk13-115.jar
