@@ -35,9 +35,12 @@ import org.apache.commons.lang.StringUtils;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
+import se.anatom.ejbca.ca.exception.CADoesntExistsException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
@@ -55,7 +58,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.17 2003-12-30 19:29:42 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.18 2004-01-01 16:41:44 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -80,6 +83,13 @@ public class OCSPServlet extends HttpServlet {
      */
     private String m_defaultResponderId;
 
+    protected class OcspSigningMaterial {
+        protected PrivateKey pk = null;
+        protected X509Certificate[] certchain = null;
+        public PrivateKey getPrivateKey() { return pk; }
+        public X509Certificate [] getCertChain() { return certchain; }
+         
+    }
     /** Loads cacertificates but holds a cache so it's reloaded only every five minutes is needed.
     */
     protected synchronized void loadCertificates() 
@@ -180,6 +190,22 @@ public class OCSPServlet extends HttpServlet {
         return res;
     }
     
+    protected OcspSigningMaterial setupOcspSigningMaterial(X509Certificate cacert) 
+    throws CADoesntExistsException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
+        // Find the OCSP signing key and cert for the issuer
+        String issuerdn = CertTools.stringToBCDNString(cacert.getSubjectDN().toString()); 
+        int caid = issuerdn.hashCode();
+        // Call extended CA services to get our OCSP stuff
+        OCSPCAServiceResponse caserviceresp = (OCSPCAServiceResponse)m_signsession.extendedService(m_adm,caid, new OCSPCAServiceRequest(0));
+        // Now we can use the returned OCSPServiceResponse to get private key and cetificate chain to sign the ocsp response
+        OcspSigningMaterial ret = new OcspSigningMaterial();
+        ret.pk = caserviceresp.getOCSPSigningKey();
+        Collection coll = caserviceresp.getOCSPSigningCertificateChain();
+        m_log.debug("Cert chain for OCSP signing is of size "+coll.size());
+        ret.certchain = (X509Certificate[])caserviceresp.getOCSPSigningCertificateChain().toArray(new X509Certificate[coll.size()]);
+        return ret;         
+    }
+    
     public void init(ServletConfig config) 
         throws ServletException {
         super.init(config);
@@ -234,8 +260,7 @@ public class OCSPServlet extends HttpServlet {
             OCSPResp ocspresp = null;
             BasicOCSPRespGenerator basicRes = null;
             OCSPRespGenerator res = new OCSPRespGenerator();
-            OCSPCAServiceResponse caserviceresp = null;
-            X509Certificate[] ocspSigningCertchain = null;
+            OcspSigningMaterial ocspSign = null;
             try {
                 X509Extension ext = null;
 
@@ -305,53 +330,53 @@ public class OCSPServlet extends HttpServlet {
                 if (requests.length <= 0) {
                     String msg = "The OCSP request does not contain any simpleRequest entities.";
                     m_log.error(msg);
+                    {
+                        // All this just so we can create an error response
+                        X509Certificate cacert = findCertificateBySubject(m_defaultResponderId, m_cacerts);
+                        ocspSign = setupOcspSigningMaterial(cacert);
+                        // Create a basicRes, just to create an error response 
+                        basicRes = createOCSPResponse(req, cacert);
+                    }
                     throw new MalformedRequestException(msg);
                 } else {
-                    X509Certificate cacert = null;
                     for (int i=0;i<requests.length;i++) {
                         CertificateID certId = requests[i].getCertID();
-                        boolean unknownCA = false;
-                        // We only look for CA-certificate the first time around, 
-                        // we sign the response with the CA mathing the first certificate
-                        if (cacert == null) {
-                            try {
-                                cacert = findCAByHash(certId, m_cacerts);
-                                if (cacert == null) {
-                                    // We could not find certificate for this request so get certificate for default responder
-                                    cacert = findCertificateBySubject(m_defaultResponderId, m_cacerts);
-                                    unknownCA = true;
-                                }
-                            } catch (OCSPException e) {
-                                m_log.error("Unable to generate CA certificate hash.", e);    
-                                cacert = null;
-                                continue;
+                        boolean unknownCA = false; // if the certId was issued by an unknown CA
+                        X509Certificate cacert = null;
+                        // The algorithm here:
+                        // We will sign the response with the CA that issued the first 
+                        // certificate(certId) in the request. If the issuing CA is not available
+                        // on this server, we sign the response with the default responderId (from params in web.xml).
+                        // We have to look up the ca-certificate for each certId in the request though, as we will check
+                        // for revocation on the ca-cert as well when checking for revocation on the certId. 
+                        try {
+                            cacert = findCAByHash(certId, m_cacerts);
+                            if (cacert == null) {
+                                // We could not find certificate for this request so get certificate for default responder
+                                cacert = findCertificateBySubject(m_defaultResponderId, m_cacerts);
+                                unknownCA = true;
                             }
-                            // Create a basic response using the first issuer we find
-                            if (cacert != null) {
-                                basicRes = createOCSPResponse(req, cacert);
-                                // Find the OCSP signing key and cert for the issuer
-                                String issuerdn = CertTools.stringToBCDNString(cacert.getSubjectDN().toString()); 
-                                int caid = issuerdn.hashCode();
-                                // Call extended CA services to get our OCSP stuff
-                                caserviceresp = (OCSPCAServiceResponse)m_signsession.extendedService(m_adm,caid, new OCSPCAServiceRequest(0));
-                                // Now we can use the returned OCSPServiceResponse to get private key and cetificate chain to sign the ocsp response
-                                caserviceresp.getOCSPSigningKey();
-                                Collection coll = caserviceresp.getOCSPSigningCertificateChain();
-                                m_log.debug("Cert chain for OCSP signing is of size "+coll.size());
-                                ocspSigningCertchain = (X509Certificate[])caserviceresp.getOCSPSigningCertificateChain().toArray(new X509Certificate[coll.size()]); 
-                            } else if (cacert == null) {
-                                final String msg = "Unable to find CA certificate by issuer name hash: "+Hex.encode(certId.getIssuerNameHash())+", or even the default responder: "+m_defaultResponderId;
-                                m_log.error(msg);
-                                continue;                    
-                            }                            
-                            if (unknownCA == true) {
-                                final String msg = "Unable to find CA certificate by issuer name hash: "+Hex.encode(certId.getIssuerNameHash())+", using the default reponder to send 'UnknownStatus'";
-                                m_log.info(msg);
-                                // If we can not find the CA, answer UnknowStatus
-                                basicRes.addResponse(certId, new UnknownStatus());
-                                continue;                    
-                            }                            
+                        } catch (OCSPException e) {
+                            m_log.error("Unable to generate CA certificate hash.", e);    
+                            cacert = null;
+                            continue;
                         }
+                        // Create a basic response (if we haven't done it already) using the first issuer we find, or the default one
+                        if ( (cacert != null) && (basicRes == null) ) {
+                            basicRes = createOCSPResponse(req, cacert);
+                            ocspSign = setupOcspSigningMaterial(cacert);
+                        } else if (cacert == null) {
+                            final String msg = "Unable to find CA certificate by issuer name hash: "+Hex.encode(certId.getIssuerNameHash())+", or even the default responder: "+m_defaultResponderId;
+                            m_log.error(msg);
+                            continue;                    
+                        }                            
+                        if (unknownCA == true) {
+                            final String msg = "Unable to find CA certificate by issuer name hash: "+Hex.encode(certId.getIssuerNameHash())+", using the default reponder to send 'UnknownStatus'";
+                            m_log.info(msg);
+                            // If we can not find the CA, answer UnknowStatus
+                            basicRes.addResponse(certId, new UnknownStatus());
+                            continue;                    
+                        }                            
 
 
                         /*
@@ -403,9 +428,9 @@ public class OCSPServlet extends HttpServlet {
                             basicRes.addResponse(certId, certStatus);
                         }
                     }
-                    if (cacert != null) {
+                    if (basicRes != null) {
                         // generate the signed response object
-                        BasicOCSPResp basicresp = basicRes.generate("SHA1WithRSA", caserviceresp.getOCSPSigningKey(), ocspSigningCertchain, new Date(), "BC" );
+                        BasicOCSPResp basicresp = basicRes.generate("SHA1WithRSA", ocspSign.getPrivateKey(), ocspSign.getCertChain(), new Date(), "BC" );
                         ocspresp = res.generate(OCSPRespGenerator.SUCCESSFUL, basicresp);                        
                     } else {
                         final String msg = "Unable to find CA certificate and key to generate OCSP response!";
@@ -417,7 +442,7 @@ public class OCSPServlet extends HttpServlet {
                 m_log.info("MalformedRequestException caught : ", e);
                 // generate the signed response object
                 try {                    
-                    BasicOCSPResp basicresp = basicRes.generate("SHA1WithRSA", caserviceresp.getOCSPSigningKey(), ocspSigningCertchain, new Date(), "BC" );
+                    BasicOCSPResp basicresp = basicRes.generate("SHA1WithRSA", ocspSign.getPrivateKey(), ocspSign.getCertChain(), new Date(), "BC" );
                     ocspresp = res.generate(OCSPRespGenerator.MALFORMED_REQUEST, basicRes);
                 } catch (NoSuchProviderException nspe) {
                     m_log.error("Can't generate any type of OCSP response: ", e);
@@ -428,7 +453,7 @@ public class OCSPServlet extends HttpServlet {
                 m_log.info("SignRequestException caught : ", e);
                 // generate the signed response object
                 try {                    
-                    BasicOCSPResp basicresp = basicRes.generate("SHA1WithRSA", caserviceresp.getOCSPSigningKey(), ocspSigningCertchain, new Date(), "BC" );
+                    BasicOCSPResp basicresp = basicRes.generate("SHA1WithRSA", ocspSign.getPrivateKey(), ocspSign.getCertChain(), new Date(), "BC" );
                     ocspresp = res.generate(OCSPRespGenerator.SIG_REQUIRED, basicRes);
                 } catch (NoSuchProviderException nspe) {
                     m_log.error("Can't generate any type of OCSP response: ", e);
@@ -438,7 +463,7 @@ public class OCSPServlet extends HttpServlet {
                 m_log.error("Unable to handle OCSP request.", e);
                 // generate the signed response object
                 try {                    
-                    BasicOCSPResp basicresp = basicRes.generate("SHA1WithRSA", caserviceresp.getOCSPSigningKey(), ocspSigningCertchain, new Date(), "BC" );
+                    BasicOCSPResp basicresp = basicRes.generate("SHA1WithRSA", ocspSign.getPrivateKey(), ocspSign.getCertChain(), new Date(), "BC" );
                     ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, basicRes);
                 } catch (NoSuchProviderException nspe) {
                     m_log.error("Can't generate any type of OCSP response: ", e);
