@@ -58,6 +58,11 @@
     <ejb-name>CertificateData</ejb-name>   
     <entity-descriptor>
       <persistence>
+        <persistence-type>
+          <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
+          <type-version>5.1.0</type-version>
+          <type-storage>META-INF/weblogic-cmp-rdbms-jar-cert.xml</type-storage>
+        </persistence-type>
         <persistence-use>
           <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
           <type-version>5.1.0</type-version>
@@ -71,6 +76,11 @@
     <ejb-name>CRLData</ejb-name>   
     <entity-descriptor>
       <persistence>
+        <persistence-type>
+          <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
+          <type-version>5.1.0</type-version>
+          <type-storage>META-INF/weblogic-cmp-rdbms-jar-crl.xml</type-storage>
+        </persistence-type>
         <persistence-use>
           <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
           <type-version>5.1.0</type-version>
