@@ -36,7 +36,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a hard token profile jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.3 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.4 2005-03-15 11:56:22 anatom Exp $
  */
 public class EditHardTokenProfileJSPHelper {
 	
@@ -94,6 +94,10 @@ public class EditHardTokenProfileJSPHelper {
 	
 	public static final int UPLOADMODE_ENVELOPE = 0; 
 	public static final int UPLOADMODE_VISUAL   = 1;
+    
+    public static final String PAGE_HARDTOKENPROFILE = "hardtokenprofilepage.jspf";
+    public static final String PAGE_HARDTOKENPROFILES = "hardtokenprofilespage.jspf";
+    public static final String PAGE_UPLOADTEMPLATE = "uploadtemplate.jspf";
 
     /** Creates new LogInterfaceBean */
     public EditHardTokenProfileJSPHelper(){     	    	
@@ -119,7 +123,7 @@ public class EditHardTokenProfileJSPHelper {
     }
     
     public String parseRequest(HttpServletRequest request) throws AuthorizationDeniedException{
-      String includefile = "hardtokenprofilespage.jsp"; 
+      String includefile = PAGE_HARDTOKENPROFILES; 
 	  String profile = null;
 	  HardTokenProfileDataHandler handler  = hardtokenbean.getHardTokenProfileDataHandler();	
       String action = null;
@@ -160,10 +164,10 @@ public class EditHardTokenProfileJSPHelper {
 		  }
 	  	}catch(IOException e){
 	  	  fileuploadfailed = true;
-		  includefile="hardtokenprofilepage.jsp";	  
+		  includefile=PAGE_HARDTOKENPROFILE;	  
 	  	}catch(FileUploadException e){
 		  fileuploadfailed = true;	  
-		  includefile="hardtokenprofilepage.jsp";
+		  includefile=PAGE_HARDTOKENPROFILE;
 	    }
 	  }else{
 		action = request.getParameter(ACTION);
@@ -178,7 +182,7 @@ public class EditHardTokenProfileJSPHelper {
 			 profile = request.getParameter(SELECT_HARDTOKENPROFILES);
 			 if(profile != null){
 			   if(!profile.trim().equals("")){
-				   includefile="hardtokenprofilepage.jsp";
+				   includefile=PAGE_HARDTOKENPROFILE;
 				   this.profilename = profile;
 				   this.profiledata = handler.getHardTokenProfile(profilename);  
 			   } 
@@ -187,7 +191,7 @@ public class EditHardTokenProfileJSPHelper {
 			  } 
 			}
 			if(profile == null){   
-			  includefile="hardtokenprofilespage.jsp";     
+			  includefile=PAGE_HARDTOKENPROFILES;     
 			}
 		  }
 		  if( request.getParameter(BUTTON_DELETE_HARDTOKENPROFILES) != null) {
@@ -198,7 +202,7 @@ public class EditHardTokenProfileJSPHelper {
 					hardtokenprofiledeletefailed = handler.removeHardTokenProfile(profile);          
 				}
 			  }
-			  includefile="hardtokenprofilespage.jsp";             
+			  includefile=PAGE_HARDTOKENPROFILES;             
 		  }
 		  if( request.getParameter(BUTTON_RENAME_HARDTOKENPROFILES) != null){ 
 			 // Rename selected profile and display profilespage.
@@ -213,7 +217,7 @@ public class EditHardTokenProfileJSPHelper {
 			   }
 			 }
 		   }      
-		   includefile="hardtokenprofilespage.jsp"; 
+		   includefile=PAGE_HARDTOKENPROFILES; 
 		  }
 		  if( request.getParameter(BUTTON_ADD_HARDTOKENPROFILES) != null){
 			 // Add profile and display profilespage.
@@ -227,7 +231,7 @@ public class EditHardTokenProfileJSPHelper {
 				 }             
 			   }      
 			 }
-			 includefile="hardtokenprofilespage.jsp"; 
+			 includefile=PAGE_HARDTOKENPROFILES; 
 		  }
 		  if( request.getParameter(BUTTON_CLONE_HARDTOKENPROFILES) != null){
 			 // clone profile and display profilespage.
@@ -242,7 +246,7 @@ public class EditHardTokenProfileJSPHelper {
 			   }
 			 }
 		   }      
-			  includefile="hardtokenprofilespage.jsp"; 
+			  includefile=PAGE_HARDTOKENPROFILES; 
 		  }
 		}
 		if( action.equals(ACTION_EDIT_HARDTOKENPROFILE)){
@@ -383,21 +387,21 @@ public class EditHardTokenProfileJSPHelper {
              				 				 
 				 if(request.getParameter(BUTTON_SAVE) != null){
 				   handler.changeHardTokenProfile(profile,profiledata);					
-				   includefile="hardtokenprofilespage.jsp";
+				   includefile=PAGE_HARDTOKENPROFILES;
 				 }				 
 				 if(request.getParameter(BUTTON_UPLOADENVELOPETEMP) != null){
 				   uploadmode = UPLOADMODE_ENVELOPE;
-				   includefile="uploadtemplate.jsp";
+				   includefile=PAGE_UPLOADTEMPLATE;
 				 }
 				 if(request.getParameter(BUTTON_UPLOADVISUALTEMP) != null){
 				   uploadmode =	UPLOADMODE_VISUAL;
-				   includefile="uploadtemplate.jsp";
+				   includefile=PAGE_UPLOADTEMPLATE;
 				 }				 
 				 
 			   }
 			   if(request.getParameter(BUTTON_CANCEL) != null){
 				  // Don't save changes.
-				 includefile="hardtokenprofilespage.jsp";
+				 includefile=PAGE_HARDTOKENPROFILES;
 			   }
 
 			 }
@@ -419,7 +423,7 @@ public class EditHardTokenProfileJSPHelper {
 			}   
 		  }
 
-		  includefile="hardtokenprofilepage.jsp";
+		  includefile=PAGE_HARDTOKENPROFILE;
 		}
 		if( action.equals(ACTION_UPLOADENVELOPETEMP)){
           if(buttonupload){
@@ -441,7 +445,7 @@ public class EditHardTokenProfileJSPHelper {
 			  }            	 
 			}
           }
-		  includefile="hardtokenprofilepage.jsp";
+		  includefile=PAGE_HARDTOKENPROFILE;
 		}
 		if( action.equals(ACTION_UPLOADVISUALTEMP)){
 			if(profiledata instanceof IVisualLayoutSettings){
@@ -461,7 +465,7 @@ public class EditHardTokenProfileJSPHelper {
 				fileuploadfailed = true;              	 
 			  }
 			}
-		  includefile="hardtokenprofilepage.jsp";
+		  includefile=PAGE_HARDTOKENPROFILE;
 		}		
 						
 	  }    
