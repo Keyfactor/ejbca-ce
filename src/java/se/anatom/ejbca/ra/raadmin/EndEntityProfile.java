@@ -31,7 +31,7 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.23 2004-05-22 16:02:51 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.24 2004-05-25 20:55:50 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -458,14 +458,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
                                                                 int tokentype, int hardwaretokenissuerid, int caid) throws UserDoesntFullfillEndEntityProfile{
       DNFieldExtractor subjectdnfields = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
       if (subjectdnfields.isIllegal()) {
-          throw new UserDoesntFullfillEndEntityProfile("Subject IS is illegal.");
+          throw new UserDoesntFullfillEndEntityProfile("Subject DN is illegal.");
       }
       DNFieldExtractor subjectaltnames   = new DNFieldExtractor(subjectaltname, DNFieldExtractor.TYPE_SUBJECTALTNAME);
       if (subjectaltnames.isIllegal()) {
           throw new UserDoesntFullfillEndEntityProfile("Subject alt names are illegal.");
       }
-      String dnfield;
-      String[] values;
 
       // Check that no other than supported dn fields exists in the subject dn.
       if(subjectdnfields.existsOther())
