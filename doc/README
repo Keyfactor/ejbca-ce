@@ -1,4 +1,4 @@
-$Id: README,v 1.86 2003-06-01 08:33:12 anatom Exp $
+$Id: README,v 1.87 2003-06-01 19:26:49 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -868,7 +868,12 @@ $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 
 SCEP
 =====
-TODO: Scep is not functional yet! 
+TODO: Scep is not fully functional yet! 
+
+Since SCEP uses encryption, you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
+The policy files can be found at the same place as the JDK 1.4 download. Further information on this can be found in 
+the Sun documentation on the JCE.
+
 There is a SCEP servlet receiving requests on http://localhost:8080/ejbca/publicweb/apply/scep/pkiclient.exe
 To use the OpenScep (http://openscep.othello.ch/) client to request a certificate from this servlet, use the command:
 ./scep -d -k test1.key -r test1.req -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
