@@ -34,14 +34,14 @@ import se.anatom.ejbca.log.Admin;
  * <li>lastcert - gets latest certificate of a user, takes argument 'subject=<subjectDN>'.
  * <li>listcerts - lists all certificates of a user, takes argument 'subject=<subjectDN>'.
  * <li>revoked - checks if a certificate is revoked, takes arguments 'subject=<subjectDN>&serno=<serial number>'.
- * <li>cacert - returns ca certificate in PEM-format
- * <li>nscacert - returns ca certificate for Netscape/Mozilla
- * <li>iecacert - returns ca certificate for Internet Explorer
+ * <li>cacert - returns ca certificate in PEM-format, takes argument 'issuer=<issuerDN>&level=<ca-level, 0=root>'
+ * <li>nscacert - returns ca certificate for Netscape/Mozilla, same args as above
+ * <li>iecacert - returns ca certificate for Internet Explorer, same args as above
  * </ul>
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.23 2004-01-01 17:05:52 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.24 2004-01-01 19:44:15 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
