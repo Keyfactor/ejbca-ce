@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.27 2002-05-26 12:42:25 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.28 2002-05-26 12:44:59 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -203,8 +203,8 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             * machine dependent, some not. This information is then hashed together
             * with the 20 seed bytes. */
         } catch( Exception e ) {
-            error("Caught exception in ejbCreate(): "+e.toString());
-            throw new EJBException(e.toString());
+            error("Caught exception in ejbCreate(): ", e);
+            throw new EJBException(e);
         }
         debug("<ejbCreate()");
     }
