@@ -87,5 +87,26 @@
     <home>se.anatom.ejbca.ca.sign.ISignSessionHome</home>
     <remote>se.anatom.ejbca.ca.sign.ISignSessionRemote</remote>
     <ejb-link>RSASignSession</ejb-link>
-  </ejb-ref>  
+  </ejb-ref>   
+  <ejb-ref>
+    <ejb-ref-name>RaAdminSession</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome</home>
+    <remote>se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote</remote>
+    <ejb-link>RaAdminSession</ejb-link>
+  </ejb-ref>   
+  <ejb-ref>
+    <ejb-ref-name>CertificateStoreSession</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <home>se.anatom.ejbca.ca.store.ICertificateStoreSessionHome</home>
+    <remote>se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote</remote>
+    <ejb-link>CertificateStoreSession</ejb-link>
+  </ejb-ref>   
+  <ejb-ref>
+    <ejb-ref-name>UserAdminSession</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <home>se.anatom.ejbca.ra.IUserAdminSessionHome</home>
+    <remote>se.anatom.ejbca.ra.IUserAdminSessionRemote</remote>
+    <ejb-link>UserAdminSession</ejb-link>
+  </ejb-ref>     
 </web-app>

@@ -19,6 +19,9 @@ application for enrollment (apply) and distribution (webdist).
         <ejb>ca.jar</ejb>
     </module>
     <module>
+        <ejb>ra.jar</ejb>
+    </module>
+    <module>
         <web>
             <web-uri>apply.war</web-uri>
             <context-root>/apply</context-root>
@@ -28,6 +31,12 @@ application for enrollment (apply) and distribution (webdist).
         <web>
             <web-uri>webdist.war</web-uri>
             <context-root>/webdist</context-root>
+        </web>
+    </module>
+    <module>
+        <web>
+            <web-uri>raadmin.war</web-uri>
+            <context-root>/raadmin</context-root>
         </web>
     </module>
 </application>

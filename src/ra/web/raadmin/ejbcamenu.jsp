@@ -27,7 +27,7 @@
   final String AUTHORIZATION_LINK       = GlobalConfiguration.getAuthorizationPath() 
                                                   + "/ejbcaauthorization.jsp";
   final String USERPREFERENCES_LINK     = GlobalConfiguration.getRaAdminPath() + "userpreferences.jsp";
-  final String HELP_LINK                = GlobalConfiguration.getHelpPath() 
+  final String HELP_LINK                = GlobalConfiguration.getRaAdminPath() + GlobalConfiguration.getHelpPath() 
                                                   + "/index_help.html";
 %>
 <%  

@@ -81,8 +81,6 @@
      <ejb-name>RaAdminSession</ejb-name>
      <home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome</home>
      <remote>se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote</remote>
-     <local-home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome</local-home>
-     <local>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal</local>
      <ejb-class>se.anatom.ejbca.ra.raadmin.LocalRaAdminSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
@@ -159,8 +157,6 @@
             This enterprise bean entity represents global configuration of ra administration web interface.
       </description>
       <ejb-name>GlobalWebConfigurationData</ejb-name>
-      <home>se.anatom.ejbca.ra.raadmin.GlobalWebConfigurationDataHome</home>
-      <remote>se.anatom.ejbca.ra.raadmin.GlobalWebConfigurationData</remote>
       <local-home>se.anatom.ejbca.ra.raadmin.GlobalWebConfigurationDataLocalHome</local-home>
       <local>se.anatom.ejbca.ra.raadmin.GlobalWebConfigurationDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.raadmin.GlobalWebConfigurationDataBean</ejb-class>
@@ -179,8 +175,6 @@
             This enterprise bean entity represents a ra admins user preference.
       </description>
       <ejb-name>UserPreferencesData</ejb-name>
-      <home>se.anatom.ejbca.ra.raadmin.UserPreferencesDataHome</home>
-      <remote>se.anatom.ejbca.ra.raadmin.UserPreferencesData</remote>
       <local-home>se.anatom.ejbca.ra.raadmin.UserPreferencesDataLocalHome</local-home>
       <local>se.anatom.ejbca.ra.raadmin.UserPreferencesDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.raadmin.UserPreferencesDataBean</ejb-class>

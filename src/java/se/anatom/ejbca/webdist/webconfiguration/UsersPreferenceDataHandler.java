@@ -17,7 +17,7 @@ import java.rmi.RemoteException;
 import java.math.BigInteger;
 
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSession;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 
 /**
  * A class handling the storage of user preferences. Currently all user preferences are
@@ -72,5 +72,5 @@ public class UsersPreferenceDataHandler {
         
     }
    
-    private IRaAdminSession raadminsession;    
+    private IRaAdminSessionRemote raadminsession;    
 }

@@ -342,7 +342,7 @@ public class RAInterfaceBean extends Object implements java.io.Serializable {
     private ProfileDataHandler             profiledatahandler;
     
     private InitialContext                 jndicontext; 
-    private IUserAdminSession              adminsession;
+    private IUserAdminSessionRemote        adminsession;
     private IUserAdminSessionHome          adminsessionhome;
     private ICertificateStoreSessionRemote certificatesession; 
     private ICertificateStoreSessionHome   certificatesessionhome;

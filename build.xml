@@ -221,12 +221,10 @@ ca.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
     <copy todir="${webdist.build}/WEB-INF/classes">
         <fileset dir="${build}">
                 <include name="se/anatom/ejbca/webdist/*.class"/>
-                <include 
-name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
+                <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
                 <include name="se/anatom/ejbca/ca/sign/ISign*.class"/>
-                <include 
-name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
+                <include name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
                 <include name="se/anatom/ejbca/util/**/Base64*.class"/>
                 <include name="se/anatom/ejbca/util/**/CertTools*.class"/>
                 <include name="se/anatom/ejbca/util/**/Hex*.class"/>
@@ -254,19 +252,17 @@ name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
     <copy todir="${raadmin.build}/WEB-INF/classes">
         <fileset dir="${build}">
                 <include name="se/anatom/ejbca/webdist/**/*.class"/>
+                <include name="se/anatom/ejbca/ca/store/CertificateData*.class"/>                
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>           
                 <include name="se/anatom/ejbca/ra/*.class"/>
                 <include name="se/anatom/ejbca/ra/raadmin/*.class"/>
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
-                <include name="se/anatom/ejbca/ca/sign/ISign*.class"/>
+                <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
-                <include name="se/anatom/ejbca/util/**/Base64*.class"/>
-                <include name="se/anatom/ejbca/util/**/CertTools*.class"/>
-                <include name="se/anatom/ejbca/util/**/Hex*.class"/>
+                <include name="se/anatom/ejbca/util/*.class"/>
                 <include name="se/anatom/ejbca/exception/**/*.class"/>
                 <include name="se/anatom/ejbca/ca/exception/**/*.class"/>           
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
-                <exclude name="se/anatom/ejbca/ra/*Bean.class"/>
         </fileset>
     </copy>
      
@@ -286,15 +282,12 @@ name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
                 <include name="se/anatom/ejbca/util/*.class"/>
                 <include name="se/anatom/ejbca/admin/*.class"/>
                 <include name="se/anatom/ejbca/batch/*.class"/>
-                <include 
-name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
+                <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
                 <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/RevokedCertInfo*.class"/>
-                <include 
-name="se/anatom/ejbca/ca/store/CertificateData*.class"/>
-                <include 
-name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
+                <include name="se/anatom/ejbca/ca/store/CertificateData*.class"/>
+                <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="se/anatom/ejbca/ra/*.class"/>
                 <include name="se/anatom/ejbca/exception/**/*.class"/>
                 <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
@@ -310,7 +303,7 @@ name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
   <!-- Build CA-ear                                                           
 -->
   <!-- =================================================================== -->
-  <target name="ca.ear" depends="apply.war, webdist.war, ca.jar">
+  <target name="ca.ear" depends="apply.war, webdist.war, ca.jar, ra.jar, raadmin.war">
     <mkdir dir="${caear.build}"/>
     <copy todir="${caear.build}">
         <fileset dir="${caear.src}"> 
@@ -325,6 +318,8 @@ name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="webdist.war"/>
                 <include name="apply.war"/>
                 <include name="ca.jar"/>
+                <include name="ra.jar"/>
+                <include name="raadmin.war"/>
         </fileset>
     </copy>
   

@@ -17,9 +17,9 @@ import se.anatom.ejbca.util.CertTools;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.14 2002-06-10 10:40:54 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.15 2002-06-10 16:21:04 herrvendil Exp $
  */
-public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserAdminSession {
+public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
     private UserDataHome home = null;
     /** Columns in the database used in select */

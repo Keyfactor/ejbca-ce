@@ -27,7 +27,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
-import se.anatom.ejbca.ra.IUserAdminSession;
+import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.UserAdminData;
 
 import se.anatom.ejbca.webdist.ejbcaathorization.EjbcaAthorization;
@@ -44,12 +44,18 @@ public class EjbcaWebBean {
         
     /** Creates a new instance of EjbcaWebBean */
     public EjbcaWebBean() throws IOException, FileNotFoundException, NamingException, CreateException,
-                                 FinderException, RemoteException{                          
-      globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler();    
-      globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();      
-      userspreferences = new UsersPreferenceDataHandler();       
+                                 FinderException, RemoteException{             
+      System.out.println("HERE1");                               
+      globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler();  
+            System.out.println("HERE2");  
+      globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();    
+            System.out.println("HERE3");  
+      userspreferences = new UsersPreferenceDataHandler();      
+            System.out.println("HERE4");  
       authorize = new EjbcaAthorization();
+            System.out.println("HERE5");  
       weblanguages = new WebLanguages(); 
+            System.out.println("HERE6");  
     }
         
     // Public Methods.
@@ -88,10 +94,10 @@ public class EjbcaWebBean {
         ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome) 
                                                                javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
         ICertificateStoreSessionRemote certificatesession = certificatesessionhome.create(); 
-        
+  
         obj1 = jndicontext.lookup("UserAdminSession");
         IUserAdminSessionHome adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-        IUserAdminSession adminsession = adminsessionhome.create(); 
+        IUserAdminSessionRemote  adminsession = adminsessionhome.create();  
        
        try{
           if(certificatesession.isRevoked(certificates[0].getIssuerDN().toString(),certificates[0].getSerialNumber()) != null){
@@ -208,7 +214,6 @@ public class EjbcaWebBean {
     
     /* Returns the global configuration */
     public GlobalConfiguration getGlobalConfiguration() {
-            System.out.println("EjbcaWebBean get global");  
       return globalconfiguration;  
     }
         

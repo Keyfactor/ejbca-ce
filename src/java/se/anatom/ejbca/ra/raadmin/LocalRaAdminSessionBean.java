@@ -22,9 +22,9 @@ import se.anatom.ejbca.webdist.rainterface.Profile;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.1 2002-06-09 09:52:26 herrvendil Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.2 2002-06-10 16:21:05 herrvendil Exp $
  */
-public class LocalRaAdminSessionBean extends BaseSessionBean implements IRaAdminSession {
+public class LocalRaAdminSessionBean extends BaseSessionBean  {
     
     /** Var holding JNDI name of datasource */
     private String dataSource = "java:/DefaultDS";

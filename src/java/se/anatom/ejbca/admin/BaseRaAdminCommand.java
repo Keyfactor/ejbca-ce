@@ -6,16 +6,16 @@ import javax.ejb.CreateException;
 import java.rmi.RemoteException;
 
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
-import se.anatom.ejbca.ra.IUserAdminSession;
+import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 
 /** Base for RA commands, contains comom functions for RA operations
  *
- * @version $Id: BaseRaAdminCommand.java,v 1.2 2002-04-14 08:49:31 anatom Exp $
+ * @version $Id: BaseRaAdminCommand.java,v 1.3 2002-06-10 16:21:04 herrvendil Exp $
  */
 public abstract class BaseRaAdminCommand extends BaseAdminCommand {
 
     /** UserAdminSession handle, not static since different object should go to different session beans concurrently */
-    private IUserAdminSession cacheAdmin;
+    private IUserAdminSessionRemote cacheAdmin;
     /** Handle to AdminSessionHome */
     private static IUserAdminSessionHome cacheHome;
     
@@ -28,7 +28,7 @@ public abstract class BaseRaAdminCommand extends BaseAdminCommand {
     /** Gets user admin session
      *@return InitialContext
      */
-    protected IUserAdminSession getAdminSession() throws CreateException, NamingException, RemoteException {
+    protected IUserAdminSessionRemote getAdminSession() throws CreateException, NamingException, RemoteException {
         debug(">getAdminSession()");
         try {
             if( cacheAdmin == null ) {
