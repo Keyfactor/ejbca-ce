@@ -61,7 +61,7 @@ import se.anatom.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.42 2003-11-23 09:47:50 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.43 2004-03-04 11:25:18 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
@@ -489,10 +489,9 @@ public class CertReqServlet extends HttpServlet {
             keyrecoverysession.addKeyRecoveryData(administrator, cert, username, rsaKeys);
         }
 
-        // Use CommonName as alias in the keystore
-        //String alias = CertTools.getPartFromDN(cert.getSubjectDN().toString(), "CN");
-        // Use username as alias in the keystore
-        String alias = username;
+        // Use CN if as alias in the keystore, if CN is not present use username
+        String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
+        if (alias == null) alias = username;
 
         // Store keys and certificates in keystore.
         KeyStore ks = null;
