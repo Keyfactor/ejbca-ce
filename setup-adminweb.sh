@@ -49,8 +49,14 @@ rm tmp/rootca.der
 
 export CP=.:./admin.jar:./lib/regexp1_0_0.jar
 
-java -cp $CP se.anatom.ejbca.util.TomcatServiceXMLPasswordReplace src/adminweb/WEB-INF/tomcat4-service.xml tmp/tomcat4-service.xml $2
+if [ -f $JBOSS_HOME/server/default/deploy/tomcat4-service.xml ]
+then
+	TOMCAT_XML=tomcat4-service.xml
+else
+	TOMCAT_XML=tomcat41-service.xml
+fi
+java -cp $CP se.anatom.ejbca.util.TomcatServiceXMLPasswordReplace src/adminweb/WEB-INF/$TOMCAT_XML tmp/$TOMCAT_XML $2
 
-cp tmp/tomcat4-service.xml $JBOSS_HOME/server/default/deploy/tomcat4-service.xml
+cp tmp/$TOMCAT_XML $JBOSS_HOME/server/default/deploy/$TOMCAT_XML
 
-rm tmp/tomcat4-service.xml
+rm tmp/$TOMCAT_XML

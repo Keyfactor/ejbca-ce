@@ -27,11 +27,14 @@ del tmp\rootca.der
 
 set CP=.;.\admin.jar;.\lib\regexp1_0_0.jar
 
-java -cp %CP% se.anatom.ejbca.util.TomcatServiceXMLPasswordReplace src\adminweb\WEB-INF\tomcat4-service.xml tmp\tomcat4-service.xml %2
+if exist "%JBOSS_HOME%\server\default\conf\tomcat4-service.xml" set TOMCAT_XML=tomcat4-service.xml
+if exist "%JBOSS_HOME%\server\default\conf\tomcat41-service.xml" set TOMCAT_XML=tomcat41-service.xml
 
-copy tmp\tomcat4-service.xml %JBOSS_HOME%\server\default\deploy\tomcat4-service.xml
+java -cp %CP% se.anatom.ejbca.util.TomcatServiceXMLPasswordReplace src\adminweb\WEB-INF\%TOMCAT_XML% tmp\%TOMCAT_XML% %2
 
-del tmp\tomcat4-service.xml
+copy tmp\%TOMCAT_XML% %JBOSS_HOME%\server\default\deploy\%TOMCAT_XML%
+
+del tmp\%TOMCAT_XML%
 
 goto end
 :error
