@@ -1,5 +1,9 @@
-2.0b2
+2.1b1
 -----
+Support for JBoss_Jetty.
+
+2.0
+---
 
 Added Hard Token funtionallity, EJBCA can now store store pin/puk data in
 database.

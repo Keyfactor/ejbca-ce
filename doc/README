@@ -1,4 +1,4 @@
-$Id: README,v 1.77 2003-03-19 09:40:36 anatom Exp $
+$Id: README,v 1.78 2003-03-26 08:56:44 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source Initiative.
@@ -683,6 +683,10 @@ JBOSS/JETTY:
 To get client certificates to work with Jetty add:
  <Set name="NeedClientAuth">true</Set>
 to the SSL listener configuration.
+
+Swedish characters in Java/Jboss:
+Add the following options to the JVM by modifying JAVA_OPTIONS in run.sh/cmd.
+-Duser.region=SE -Duser.language=sv -Dfile.encoding=ISO-8859-1
 
 PGP:
 PKCS12 files generated from EJBCA works excellent as PGP-keys.

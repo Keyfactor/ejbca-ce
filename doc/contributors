@@ -22,5 +22,5 @@ Lars Silven <lars(at)primekey.se>, external connection to smart card
 personalisation, various additions.
 Gösta Bäckström <gosta.backstrom(at)goyada.com>, initial PKCS7 to browsers.
 Ville Skyttä <ville.skytta(at)secgo.com>, AdminCertReqServlet, various patches
-Koen Serry <koen(at)serry.org>, various improvments.
+Koen Serry <koen(at)serry.org>, many improvements.
 Dickon Field <Dickon.Field(at)concise.co.uk>, Weblogic 7.1
