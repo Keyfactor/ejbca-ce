@@ -29,6 +29,8 @@ import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
@@ -74,7 +76,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.8 2003-01-23 09:40:14 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.9 2003-01-28 14:59:19 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -83,6 +85,7 @@ public class DemoCertReqServlet extends HttpServlet {
   private InitialContext ctx = null;
   private ISignSessionHome signsessionhome = null;
   private IUserAdminSessionHome adminsessionhome = null;
+  private ICertificateStoreSessionHome storesessionhome = null;
 
   private final static byte[] BEGIN_CERT =
     "-----BEGIN CERTIFICATE-----".getBytes();
@@ -107,6 +110,7 @@ public class DemoCertReqServlet extends HttpServlet {
       ctx = new InitialContext();
       signsessionhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class);
       adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class);
+      storesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CertificateStoreSession"), IUserAdminSessionHome.class);
     } catch (Exception e) {
       throw new ServletException(e);
     }
@@ -141,10 +145,12 @@ public class DemoCertReqServlet extends HttpServlet {
     ServletDebug debug = new ServletDebug(request, response);
 
     ISignSessionRemote signsession = null;
+    ICertificateStoreSessionRemote storesession = null;
     IUserAdminSessionRemote adminsession = null;
     try {
         adminsession = adminsessionhome.create();
         signsession = signsessionhome.create();
+        storesession = storesessionhome.create();
     } catch (CreateException e) {
       throw new ServletException(e);
     }
@@ -219,7 +225,7 @@ public class DemoCertReqServlet extends HttpServlet {
 
     int cProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
     if (request.getParameter("certificateprofile") != null) {
-      // TODO: resolve cProfile's Id
+        cProfileId = storesession.getCertificateProfileId(admin, request.getParameter("certificateprofile"));
     }
     // TODO: check that we're authorized to use the profile
     newuser.setCertificateProfileId(cProfileId);
