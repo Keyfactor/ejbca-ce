@@ -7,7 +7,6 @@ CA to be used either standalone or integrated into any J2EE application.
 
 FEATURES
 --------
-
 Built on the EJB 1.1 specification.
 
 Flexible, component based architecture.
@@ -22,13 +21,14 @@ URL-based CRLDistribution Points according to (RFC2459).
 
 SECURITY
 --------
-
 Security is discussed below in the chapter about configuration and in 'security.txt'. 
 Please take a minute to thorougly consider the security implications and make sure you know what you are doing when you are setting up a CA.
 
 DEPENDENCIES
 ------------
-EJBCA uses the OpenSource JCE crypto provider from Bouncycastle (www.bouncycastle.org).
+EJBCA uses the OpenSource JCE crypto provider from Bouncycastle (www.bouncycastle.org). 
+The provider is distributed with EJBCA as 'bcprov-<version>.jar. The latest version of the JCE provider can always be downloaded from www.bouncycastle.org.
+
 EJBCA is developed on the OpenSource J2EE application server JBoss (www.jboss.org).
 
 PLATFORMS
@@ -38,15 +38,15 @@ Development and testing is performed On Linux and Windows2000 platforms.
 
 BUILD
 -----
-
 Needed to build and run are:
 JDK (1.3.1_x)
 JBOSS 2.4.x (with Tomcat) (www.jboss.org)
 Ant 1.4 to build (http://jakarta.apache.org/ant/)
+(Bouncycastle JCE provider, distributed with EJBCA see above)
 
 Simply unpack the archive in a directory and run "ant" to build everything.
 
-Copy the Boucycastle JCE provider lib/bcprov.jar to the directory jboss/lib/ext in, it will be added to JBoss's classpath 
+Copy the Bouncycastle JCE provider lib/bcprov-<version>.jar to the directory jboss/lib/ext in, it will be added to JBoss's classpath 
 automatically when JBoss is started.
 
 Set the environment variable JBOSS_HOME to the directory where JBoss's root is (/jboss). This is done so the deploy script will know where files are to be copied, they are copied to the $JBOSS_HOME/deploy directory.
@@ -192,3 +192,4 @@ Client certificates also need AuthorityKeyIdentifier
 
 Note on IE certs:
 For IE to verify client certs, the ordering in the DN must be strictly the same in both client and CA certs. Possibly that it must also be in a specific order.
+
