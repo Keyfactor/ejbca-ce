@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.Hex;
 
 /** Creates a new root certificate with new validity, using the same key.
  *
- * @version $Id: CaRolloverSubCommand.java,v 1.2 2002-08-07 10:27:46 anatom Exp $
+ * @version $Id: CaRolloverSubCommand.java,v 1.3 2002-09-16 15:21:27 anatom Exp $
  */
 public class CaRolloverSubCommand extends BaseCaAdminCommand {
 
@@ -26,7 +26,7 @@ public class CaRolloverSubCommand extends BaseCaAdminCommand {
 
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
-            if (args.length < 4) {
+            if (args.length < 5) {
                 System.out.println("Usage: CA rolloversub <validity-days> <keystore filename> <storepassword> <certrequest filename>");
                 System.out.println("Rolloversub is used to generate a new subCA certificate using an existing keypair. This updates the current subCA keystore.");
                 return;
@@ -54,7 +54,7 @@ public class CaRolloverSubCommand extends BaseCaAdminCommand {
             if (chain.length > 1)
                 cacert = (X509Certificate)chain[0];
             if (cacert == null) {
-                System.out.println("No subCA certificate found in keystore, this is not a subCA or keystore was not generated with EJBCA?");
+                System.out.println("No subCA certificate found in keystore, this is not a subCA or keystore was not generated with EJBCA.");
                 return;
             }
             System.out.println("Generating new certificate request for CA with DN '"+cacert.getSubjectDN().toString()+"'.");
@@ -67,7 +67,8 @@ public class CaRolloverSubCommand extends BaseCaAdminCommand {
             // Make a KeyPair
             KeyPair keyPair = new KeyPair(cacert.getPublicKey(), privateKey);
             // verify that the old and new keyidentifieras are the same
-            X509Certificate newselfcert = CertTools.genSelfCert(cacert.getSubjectDN().toString(), validity, privateKey, cacert.getPublicKey(), true);
+            String policyId = CertTools.getCertificatePolicyId(cacert);
+            X509Certificate newselfcert = CertTools.genSelfCert(cacert.getSubjectDN().toString(), validity, policyId, privateKey, cacert.getPublicKey(), true);
             String oldKeyId = Hex.encode(CertTools.getSubjectKeyId(cacert));
             String newKeyId = Hex.encode(CertTools.getSubjectKeyId(newselfcert));
             System.out.println("Old key id: "+oldKeyId);

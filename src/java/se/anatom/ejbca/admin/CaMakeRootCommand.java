@@ -12,7 +12,7 @@ import se.anatom.ejbca.util.CertTools;
 
 /** makeroot CA admin command, generates keys and creates a keystore (PKCS12) to be used by the CA
  *
- * @version $Id: CaMakeRootCommand.java,v 1.2 2002-04-13 18:11:27 anatom Exp $
+ * @version $Id: CaMakeRootCommand.java,v 1.3 2002-09-16 15:21:28 anatom Exp $
  */
 public class CaMakeRootCommand extends BaseCaAdminCommand {
 
@@ -25,18 +25,24 @@ public class CaMakeRootCommand extends BaseCaAdminCommand {
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
                 // Generates keys and creates a keystore (PKCS12) to be used by the CA
                 if (args.length < 6) {
-                    throw new IllegalAdminCommandException("Usage: CA makeroot <DN> <keysize> <validity-days> <filename> <storepassword>");
+                    String msg = "Usage: CA makeroot <DN> <keysize> <validity-days> <policyID> <filename> <storepassword>";
+                    msg += "\npolicyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0'.";
+                    throw new IllegalAdminCommandException(msg);
                 } 
                 String dn = args[1];
                 int keysize = Integer.parseInt(args[2]);
                 int validity = Integer.parseInt(args[3]);
-                String filename = args[4];
-                String storepwd = args[5];
+                String policyId = args[4];
+                String filename = args[5];
+                String storepwd = args[6];
+                if (policyId.equals("null"))
+                    policyId = null;
 
                 System.out.println("Generating rootCA keystore:");
                 System.out.println("DN: "+dn);
                 System.out.println("Keysize: "+keysize);
                 System.out.println("Validity (days): "+validity);
+                System.out.println("Policy ID: "+policyId);
                 System.out.println("Storing in: "+filename);
                 System.out.println("Protected with storepassword: "+storepwd);
 
@@ -44,7 +50,7 @@ public class CaMakeRootCommand extends BaseCaAdminCommand {
                     // Generate keys
                     System.out.println("Generating keys, please wait...");
                     KeyPair rsaKeys = KeyTools.genKeys(keysize);
-                    X509Certificate rootcert = CertTools.genSelfCert(dn, validity, rsaKeys.getPrivate(), rsaKeys.getPublic(), true);
+                    X509Certificate rootcert = CertTools.genSelfCert(dn, validity, policyId, rsaKeys.getPrivate(), rsaKeys.getPublic(), true);
                     KeyStore ks = KeyTools.createP12(privKeyAlias, rsaKeys.getPrivate(), rootcert, (X509Certificate)null);
                     
                     FileOutputStream os = new FileOutputStream(filename);

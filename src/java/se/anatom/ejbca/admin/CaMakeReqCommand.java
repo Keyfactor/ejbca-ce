@@ -13,7 +13,7 @@ import se.anatom.ejbca.util.KeyTools;
 
 /** Generates keys and creates a keystore (PKCS12) to be used by the CA.
  *
- * @version $Id: CaMakeReqCommand.java,v 1.1 2002-04-13 18:11:27 anatom Exp $
+ * @version $Id: CaMakeReqCommand.java,v 1.2 2002-09-16 15:21:28 anatom Exp $
  */
 public class CaMakeReqCommand extends BaseCaAdminCommand {
 
@@ -25,9 +25,9 @@ public class CaMakeReqCommand extends BaseCaAdminCommand {
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
             if (args.length < 7) {
-                System.out.println("Usage: CA makereq <DN> <keysize> <rootca-certificate> <request-file> <keystore-file> <storepassword>");
-                System.out.println("Generates a certification request for a subCA for sending to a RootCA.");
-                return;
+                String msg = "Usage: CA makereq <DN> <keysize> <rootca-certificate> <request-file> <keystore-file> <storepassword>";
+                msg += "Generates a certification request for a subCA for sending to a RootCA.";
+                throw new IllegalAdminCommandException(msg);
             }
             String dn = args[1];
             int keysize = Integer.parseInt(args[2]);
@@ -51,7 +51,7 @@ public class CaMakeReqCommand extends BaseCaAdminCommand {
             System.out.println("Generating keys, please wait...");
             KeyPair rsaKeys = KeyTools.genKeys(keysize);
             // Create selfsigned cert...
-            X509Certificate selfcert = CertTools.genSelfCert(dn, 365, rsaKeys.getPrivate(), rsaKeys.getPublic(), true);
+            X509Certificate selfcert = CertTools.genSelfCert(dn, 365, null, rsaKeys.getPrivate(), rsaKeys.getPublic(), true);
             
             // Create certificate request
             makeCertRequest(dn, rsaKeys, reqfile);

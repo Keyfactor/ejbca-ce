@@ -23,7 +23,7 @@ import org.apache.log4j.*;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.17 2002-08-22 15:22:14 anatom Exp $
+ * @version $Id: CertTools.java,v 1.18 2002-09-16 15:21:23 anatom Exp $
  */
 public class CertTools {
 
@@ -297,7 +297,7 @@ public class CertTools {
         return ret;
     } // isSelfSigned
 
-    public static X509Certificate genSelfCert(String dn, long validity, PrivateKey privKey, PublicKey pubKey, boolean isCA)
+    public static X509Certificate genSelfCert(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey, boolean isCA)
     throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         // Create self signed certificate
         String sigAlg="SHA1WithRSA";
@@ -324,7 +324,12 @@ public class CertTools {
         // Basic constranits is always critical and MUST be present at-least in CA-certificates.
         BasicConstraints bc = new BasicConstraints(isCA);
         certgen.addExtension(X509Extensions.BasicConstraints.getId(), true, bc);
-
+        // Put critical KeyUsage in CA-certificates
+        if (isCA == true) {
+            int keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+            X509KeyUsage ku = new X509KeyUsage(keyusage);
+            certgen.addExtension(X509Extensions.KeyUsage.getId(), true, ku);
+        }
         // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Mozilla.
         try {
             if (isCA == true) {
@@ -340,6 +345,11 @@ public class CertTools {
                 certgen.addExtension(X509Extensions.AuthorityKeyIdentifier.getId(), false, aki);
             }
         } catch (IOException e) {// do nothing
+        }
+        // CertificatePolicies extension if supplied policy ID, always non-critical
+        if (policyId != null) {
+            CertificatePolicies cp = new CertificatePolicies(policyId);
+            certgen.addExtension(X509Extensions.CertificatePolicies.getId(), false, cp);
         }
 
         X509Certificate selfcert = certgen.generateX509Certificate(privKey);
@@ -365,6 +375,17 @@ public class CertTools {
         SubjectKeyIdentifier keyId = new SubjectKeyIdentifier(oct);
         return keyId.getKeyIdentifier();
     } // getSubjectKeyId
+
+    public static String getCertificatePolicyId(X509Certificate cert) throws IOException {
+        byte[] extvalue = cert.getExtensionValue("2.5.29.32");
+        if (extvalue == null)
+            return null;
+
+        DEROctetString oct = (DEROctetString)(new DERInputStream(new ByteArrayInputStream(extvalue)).readObject());
+        CertificatePolicies cp = new CertificatePolicies((DERConstructedSequence)new DERInputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
+        String id = cp.getPolicy(0);
+        return id;
+    } // getCertificatePolicyId
 
     /**
       * Generate SHA1 fingerprint in string representation.

@@ -10,7 +10,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 
 /** Retrieves the latest CRL from the CA.
  *
- * @version $Id: CaGetCrlCommand.java,v 1.4 2002-09-12 18:14:15 herrvendil Exp $
+ * @version $Id: CaGetCrlCommand.java,v 1.5 2002-09-16 15:21:28 anatom Exp $
  */
 public class CaGetCrlCommand extends BaseCaAdminCommand {
 
@@ -20,23 +20,22 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
     }
 
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-        try {
-            if (args.length < 2) {
-                System.out.println("Usage: CA getcrl <outfile>");
-                return;
-            }
-            String outfile = args[1];
-            Context context = getInitialContext();
-            ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class);
-            ICertificateStoreSessionRemote store = storehome.create(administrator);
-            byte[] crl = store.getLastCRL();
-            FileOutputStream fos = new FileOutputStream(outfile);
-            fos.write(crl);
-            fos.close();
-            System.out.println("Wrote latest CRL to " + outfile+ ".");
-        } catch (Exception e) {
-            throw new ErrorAdminCommandException(e);
-        }
+			if (args.length < 2) {
+				throw new IllegalAdminCommandException("Usage: CA getcrl <outfile>");
+			}
+			try {
+				String outfile = args[1];
+				Context context = getInitialContext();
+				ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CertificateStoreSession"),ICertificateStoreSessionHome.class);
+				ICertificateStoreSessionRemote store = storehome.create(administrator);
+				byte[] crl = store.getLastCRL();
+				FileOutputStream fos = new FileOutputStream(outfile);
+				fos.write(crl);
+				fos.close();
+				System.out.println("Wrote latest CRL to " + outfile + ".");
+			} catch (Exception e) {
+				throw new ErrorAdminCommandException(e);
+			}
     } // execute
 
 }

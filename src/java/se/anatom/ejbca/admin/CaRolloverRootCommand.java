@@ -14,7 +14,7 @@ import se.anatom.ejbca.util.Hex;
 
 /** Creates a new root certificate with new validity, using the same key.
  *
- * @version $Id: CaRolloverRootCommand.java,v 1.2 2002-04-13 18:40:15 anatom Exp $
+ * @version $Id: CaRolloverRootCommand.java,v 1.3 2002-09-16 15:21:27 anatom Exp $
  */
 public class CaRolloverRootCommand extends BaseCaAdminCommand {
 
@@ -57,7 +57,9 @@ public class CaRolloverRootCommand extends BaseCaAdminCommand {
                 return;
             }
             // Generate the new root certificate
-            X509Certificate newrootcert = CertTools.genSelfCert(rootcert.getSubjectDN().toString(), validity, privateKey, rootcert.getPublicKey(), true);
+            String policyId = CertTools.getCertificatePolicyId(rootcert);
+            System.out.println("Certificate policy Id is '"+policyId+"'.");
+            X509Certificate newrootcert = CertTools.genSelfCert(rootcert.getSubjectDN().toString(), validity, policyId, privateKey, rootcert.getPublicKey(), true);
             // verify that the old and new keyidentifieras are the same
             String oldKeyId = Hex.encode(CertTools.getAuthorityKeyId(rootcert));
             String newKeyId = Hex.encode(CertTools.getAuthorityKeyId(newrootcert));
