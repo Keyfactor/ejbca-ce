@@ -18,6 +18,7 @@
 3.0.4
 -----
 Fixed integer overflow when setting CRLPeriod longer than 596 hours.
+CLI command to import a CA from an existing PKCS12 file (openssl CA).
 
 3.0.3
 -----
