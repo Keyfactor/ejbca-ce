@@ -74,7 +74,6 @@
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
   <script language=javascript src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
 
 <body>

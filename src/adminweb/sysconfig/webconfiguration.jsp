@@ -7,7 +7,6 @@
   <title><%= gc.getEjbcaTitle() %></title>
   <link rel=STYLESHEET href="/<%= ejbcawebbean.getCssFile() %>">
   <script language=javascript src="/<%= gc.getAdminWebPath() %>ejbcajslib.js"></script>
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
 
 <body>
