@@ -1,13 +1,14 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.18 2004-02-04 13:51:44 anatom Exp $
+$Id: FAQ,v 1.19 2004-02-04 13:54:18 anatom Exp $
 
 ---------
 Q : When running then 'Install' command on windows I get the following error:
 java.io.IOException: CreateProcess: ca.cmd init foo "cn=foo" 1024 23 null error=5
 
 A : If you have Cygwin or similar installed execute permissions may be needed on 
-.cmd files. Run the command 'chmod a+x *.cmd' in the ejbca directory.
+.cmd files. Run the command 'chmod a+x *.cmd' in the ejbca directory. 
+Alt. make the file executable in windows properties->security.
 
 ---------
 Q : How do I connect to, and alter data in the built-in 'Hypersonic SQL'
