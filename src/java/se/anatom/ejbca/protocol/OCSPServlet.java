@@ -50,7 +50,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.6 2003-12-15 15:24:57 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.7 2003-12-16 14:46:11 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -63,14 +63,23 @@ public class OCSPServlet extends HttpServlet {
     private X509Certificate [] m_signcerts;
     private int m_responderIdx;
     private boolean m_reqMustBeSigned;
+    private Collection cacerts = null;
+    /** Cache time counter */
+    private long certValidTo = 0;
+    /** Cached list of cacerts is valid 5 minutes */
+    private static final long VALID_TIME = 5 * 60 * 1000;
 
-    protected Collection loadCertificates() 
+    /** Loads cacertificates but holds a cache so it's reloaded only every five minutes is needed.
+    */
+    protected synchronized void loadCertificates() 
         throws IOException {
+        // Kolla om vi har en cachad collection och om den inte är för gammal
+        if ( cacerts != null && certValidTo > new Date().getTime() ) {
+            return;
+        }
         try {
-            Collection cl;
-            Iterator iter;
-            
-            return m_certStore.findCertificatesByType(m_adm, SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ROOTCA, null);
+            cacerts = m_certStore.findCertificatesByType(m_adm, SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ROOTCA, null);
+            certValidTo = new Date().getTime() + VALID_TIME;
         } catch (Exception e) {
             m_log.error("Unable to load CA certificates from CA store.", e);
             throw new IOException(e.toString());
@@ -235,13 +244,12 @@ public class OCSPServlet extends HttpServlet {
             BasicOCSPRespGenerator basicRes = null;
             OCSPRespGenerator res = new OCSPRespGenerator();
             try {
-                Collection cacerts;
                 X509Extension ext = null;
 
                 OCSPReq req = new OCSPReq(request.getInputStream());
                 m_log.debug("OCSpReq: "+new String(Base64.encode(req.getEncoded())));
 
-                cacerts = loadCertificates();
+                loadCertificates();
             
                 if (m_log.isDebugEnabled()) {
                     StringBuffer certInfo = new StringBuffer();
