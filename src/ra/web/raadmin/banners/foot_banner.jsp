@@ -1,0 +1,10 @@
+<%@page contentType="text/html"%>
+<%@page errorPage="../errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration"%>
+<jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
+<jsp:setProperty name="ejbcawebbean" property="*" /> 
+<%   // Initialize environment
+  ejbcawebbean.initialize(request); 
+%>
+ <br>
+Detta är en footer
+

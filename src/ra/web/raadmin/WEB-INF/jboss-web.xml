@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-web>
+    <!-- A reference to an EJB in the same server with a custom JNDI binding -->
+    <ejb-ref>
+        <ejb-ref-name>RSASignSession</ejb-ref-name>
+        <jndi-name>jnp://127.0.0.1:1099/ca/RSASignSession</jndi-name>
+    </ejb-ref>
+</jboss-web>
