@@ -65,7 +65,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.25 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.26 2004-05-13 15:38:58 herrvendil Exp $
  */
 public class CAInterfaceBean   {
 
@@ -244,7 +244,7 @@ public class CAInterfaceBean   {
     }
     
     public HashMap getAvailablePublishers() throws NamingException, CreateException{
-      return signsession.getPublisherIdToNameMap(administrator);
+      return publishersession.getPublisherIdToNameMap(administrator);
     }
     
     public PublisherDataHandler getPublisherDataHandler() {    
