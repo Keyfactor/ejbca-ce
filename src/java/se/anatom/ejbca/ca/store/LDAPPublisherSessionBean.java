@@ -46,7 +46,7 @@ import se.anatom.ejbca.log.LogEntry;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.20 2003-06-13 15:24:26 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.21 2003-06-13 16:34:32 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
 
@@ -298,12 +298,10 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
      * Revokes a certificate (already revoked by the CA), the Publisher decides what to do, if anything.
      *
      * @param cert The DER coded Certificate that has been revoked.
-     * @return true if revocation was successful.
      * @throws EJBException if a communication or other error occurs.
      */
-     public boolean revokeCertificate(Admin admin, Certificate cert) {
+     public void revokeCertificate(Admin admin, Certificate cert, int reason) {
          // TODO: remove revoked certificate from LDAP
-         return true;
      } //revokeCertificate
      
     /**

@@ -85,7 +85,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.83 2003-06-11 13:28:07 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.84 2003-06-13 16:34:51 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -296,12 +296,13 @@ public class RSASignSessionBean extends BaseSessionBean {
                 cert.verify(caCert.getPublicKey());
                 // Store certificate in the database
                 certificateStore.storeCertificate(admin, cert, username, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, certProfile.getType());
-                // Call authentication session and tell that we are finished with this user
+                // Store certificate in publishers
                 for (int i=0;i<publishers.size();i++) {
                     IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(i);
                     IPublisherSessionLocal pub = pubHome.create();
                     pub.storeCertificate(admin, cert, username, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, certProfile.getType());
                 }
+                // Call authentication session and tell that we are finished with this user
                 if (finishUser.booleanValue() == true)
                     authSession.finishUser(admin, username, password);
                 debug("<createCertificate(pk, ku)");
@@ -474,6 +475,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
             // Store CRL in the database
             certificateStore.storeCRL(admin, crl.getEncoded(), CertTools.getFingerprintAsString(caCert), number);
+            // Store CRL in publishers
             for (int i=0;i<publishers.size();i++) {
                 IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(i);
                 IPublisherSessionLocal pub = pubHome.create();

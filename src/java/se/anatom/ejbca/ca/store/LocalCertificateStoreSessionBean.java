@@ -32,7 +32,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.40 2003-06-11 13:39:00 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.41 2003-06-13 16:34:31 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -503,6 +503,18 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
           throw new EJBException(e);
        }
     } // setRevokeStatus
+
+    /**
+     * Revokes a certificate (already revoked by the CA), the Publisher decides what to do, if anything.
+     *
+     * @param cert The DER coded Certificate that has been revoked.
+     * @throws EJBException if a communication or other error occurs.
+     */
+     public void revokeCertificate(Admin admin, Certificate cert, int reason) {
+         if (cert instanceof X509Certificate) {
+             setRevokeStatus(admin, ((X509Certificate)cert).getSerialNumber(), reason);
+         }
+     } //revokeCertificate
 
     /**
      *  Method that checks if a users all certificates have been revoked.

@@ -15,7 +15,7 @@ import se.anatom.ejbca.log.Admin;
  *
  * Remote interface for EJB.
  *
- * @version $Id: IPublisherSessionRemote.java,v 1.7 2003-06-13 15:24:26 anatom Exp $
+ * @version $Id: IPublisherSessionRemote.java,v 1.8 2003-06-13 16:34:32 anatom Exp $
  */
 public interface IPublisherSessionRemote extends javax.ejb.EJBObject {
 
@@ -49,9 +49,8 @@ public interface IPublisherSessionRemote extends javax.ejb.EJBObject {
      * Revokes a certificate (already revoked by the CA), the Publisher decides what to do, if anything.
      *
      * @param cert The DER coded Certificate that has been revoked.
-     * @return true if revocation was successful.
      * @throws EJBException if a communication or other error occurs.
      */
-     public boolean revokeCertificate(Admin admin, Certificate cert) throws RemoteException;
+     public void revokeCertificate(Admin admin, Certificate cert, int reason) throws RemoteException;
 
 }

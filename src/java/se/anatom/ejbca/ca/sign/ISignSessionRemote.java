@@ -26,7 +26,7 @@ import se.anatom.ejbca.log.Admin;
 /** Creates certificates.
  * Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.13 2003-06-11 13:28:08 anatom Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.14 2003-06-13 16:34:53 anatom Exp $
  */
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
 
@@ -234,7 +234,7 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
      * @throws AuthLoginException If the password is incorrect.
      * @throws EJBException if a communication or other error occurs.
      */
-    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException;
+    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException;
 
    /**
     * Requests for a CRL to be created with the passed (revoked) certificates.

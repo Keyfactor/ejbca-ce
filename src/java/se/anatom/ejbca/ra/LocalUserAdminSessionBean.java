@@ -2,6 +2,8 @@ package se.anatom.ejbca.ra;
 
 import java.util.*;
 
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.sql.*;
 import javax.sql.DataSource;
 import javax.naming.*;
@@ -20,6 +22,8 @@ import se.anatom.ejbca.ra.authorization.EndEntityProfileAuthorizationProxy;
 import se.anatom.ejbca.util.query.*;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
+import se.anatom.ejbca.ca.store.IPublisherSessionRemote;
+import se.anatom.ejbca.ca.store.IPublisherSessionHome;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocal;
@@ -37,7 +41,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.54 2003-03-20 05:26:51 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.55 2003-06-13 16:34:53 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -52,6 +56,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
     /** The remote interface of the certificate store session bean */
     private ICertificateStoreSessionRemote certificatesession;
+
+    /** A vector of publishers home interfaces where certs and CRLs are stored */
+    private ArrayList publishers = null;
 
     /** The remote interface of the log session bean */
     private ILogSessionRemote logsession;
@@ -81,6 +88,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         home = (UserDataLocalHome) lookup("java:comp/env/ejb/UserDataLocal", UserDataLocalHome.class);
         globalconfigurationhome = (GlobalConfigurationDataLocalHome)lookup("java:comp/env/ejb/GlobalConfigurationDataLocal", GlobalConfigurationDataLocalHome.class);
         dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
+        debug("DataSource=" + dataSource);
 
         this.globalconfiguration = loadGlobalConfiguration(new Admin(Admin.TYPE_INTERNALUSER));
 
@@ -96,8 +104,22 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
         ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome) lookup("java:comp/env/ejb/CertificateStoreSession", ICertificateStoreSessionHome.class);
         certificatesession = certificatesessionhome.create();
+        // Init the publisher session beans
+        int i = 1;
+        publishers = new ArrayList();
+        try {
+            while (true) {
+                String jndiName = "java:comp/env/ejb/PublisherSession" + i;
+                IPublisherSessionHome pubHome = (IPublisherSessionHome)lookup(jndiName);
+                publishers.add(pubHome);
+                debug("Added publisher class '"+pubHome.getClass().getName()+"'");
+                i++;
+            }
+        } catch (EJBException e) {
+            // We could not find this publisher
+            debug("Failed to find publisher at index '"+i+"', no more publishers.");
+        }
         profileauthproxy = new EndEntityProfileAuthorizationProxy(authorizationsession);
-        debug("DataSource=" + dataSource);
 
         notificationcreator = new NotificationCreator((String)lookup("java:comp/env/sender", java.lang.String.class),
                                                       (String)lookup("java:comp/env/subject", java.lang.String.class),
@@ -470,6 +492,28 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
           }
         }
         certificatesession.setRevokeStatus(admin, certserno, reason);
+        // Revoke certificate in publishers
+        if (publishers.size() > 0) {
+            Collection certs = certificatesession.findCertificatesBySubject(admin, data.getSubjectDN());
+            Iterator iter = certs.iterator();
+            while (iter.hasNext()){
+                Certificate cert = (Certificate)iter.next();
+                if (cert instanceof X509Certificate) {
+                    X509Certificate x509cert = (X509Certificate)cert; 
+                    if (x509cert.getSerialNumber().compareTo(certserno) == 0) {
+                        for (int i=0;i<publishers.size();i++) {
+                            try {
+                                IPublisherSessionHome pubHome = (IPublisherSessionHome)publishers.get(i);
+                                IPublisherSessionRemote pub = pubHome.create();
+                                pub.revokeCertificate(admin, cert, reason);
+                            } catch (CreateException e) {
+                                log.debug("Error creating publisher session: ", e);
+                            }
+                        }
+                    }
+                }
+            }
+        } // if (publishers.size() > 0)
 
         if(certificatesession.checkIfAllRevoked(admin, username)){
           setUserStatus(admin, username, UserDataRemote.STATUS_REVOKED);
