@@ -16,7 +16,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 /**
  * 
  *
- * @version $Id: AvailableAccessRules.java,v 1.4 2003-12-05 14:50:27 herrvendil Exp $
+ * @version $Id: AvailableAccessRules.java,v 1.5 2004-02-11 10:43:15 herrvendil Exp $
  */
 public class AvailableAccessRules {
         
@@ -43,28 +43,48 @@ public class AvailableAccessRules {
         // Name of ca prefix directory in access rules.
     public static final String    CAPREFIX          = "/ca/";
     
+    public static final String REGULAR_CAFUNCTIONALTY                                 = "/ca_functionality";
+    public static final String REGULAR_CABASICFUNCTIONS                             = "/ca_functionality/basic_functions";    
+    public static final String REGULAR_VIEWCERTIFICATE                                 = "/ca_functionality/view_certificate";    
+    public static final String REGULAR_CREATECRL                                           = "/ca_functionality/create_crl";    
+    public static final String REGULAR_EDITCERTIFICATEPROFILES                    = "/ca_functionality/edit_certificate_profiles";
+    public static final String REGULAR_CREATECERTIFICATE                              = "/ca_functionality/create_certificate";
+    public static final String REGULAR_STORECERTIFICATE                               = "/ca_functionality/store_certificate";    
+    public static final String REGULAR_RAFUNCTIONALITY                                 = "/ra_functionality";
+    public static final String REGULAR_EDITENDENTITYPROFILES                       = "/ra_functionality/edit_end_entity_profiles";    
+    public static final String REGULAR_VIEWENDENTITY                                     = "/ra_functionality/view_end_entity";    
+    public static final String REGULAR_CREATEENDENTITY                                 = "/ra_functionality/create_end_entity";
+    public static final String REGULAR_EDITENDENTITY                                      = "/ra_functionality/edit_end_entity";
+    public static final String REGULAR_DELETEENDENTITY                                  = "/ra_functionality/delete_end_entity";
+    public static final String REGULAR_REVOKEENDENTITY                                 = "/ra_functionality/revoke_end_entity";    
+    public static final String REGULAR_VIEWENDENTITYHISTORY                        = "/ra_functionality/view_end_entity_history";
+    public static final String REGULAR_LOGFUNCTIONALITY                                = "/log_functionality"; 
+    public static final String REGULAR_VIEWLOG                                                = "/log_functionality/view_log"; 
+    public static final String REGULAR_LOGCONFIGURATION                              = "/log_functionality/edit_log_configuration"; 
+    public static final String REGULAR_SYSTEMCONFIGURATION                         = "/system_functionality";
+    public static final String REGULAR_EDITADMINISTRATORPRIVILEDGES           = "/system_functionality/edit_administrator_privileges";
     
         // Standard Regular Access Rules
-    private  final  String[] STANDARDREGULARACCESSRULES = {"/ca_functionality", 
-                                                           "/ca_functionality/basic_functions",
-                                                           "/ca_functionality/view_certificate", 
-                                                           "/ca_functionality/create_crl",
-                                                           "/ca_functionality/edit_certificate_profiles",
-                                                           "/ca_functionality/create_certificate",
-                                                           "/ca_functionality/store_certificate",
-                                                           "/ra_functionality", 
-                                                           "/ra_functionality/edit_end_entity_profiles",
-                                                           "/ra_functionality/view_end_entity",
-                                                           "/ra_functionality/create_end_entity", 
-                                                           "/ra_functionality/edit_end_entity", 
-                                                           "/ra_functionality/delete_end_entity",
-                                                           "/ra_functionality/revoke_end_entity",
-                                                           "/ra_functionality/view_end_entity_history",
-                                                           "/log_functionality",
-                                                           "/log_functionality/view_log",
-                                                           "/log_functionality/edit_log_configuration",
-                                                           "/system_functionality",
-                                                           "/system_functionality/edit_administrator_privileges"};
+    private  final  String[] STANDARDREGULARACCESSRULES = {REGULAR_CAFUNCTIONALTY, 
+                                                           REGULAR_CABASICFUNCTIONS,
+                                                           REGULAR_VIEWCERTIFICATE, 
+                                                           REGULAR_CREATECRL,
+                                                           REGULAR_EDITCERTIFICATEPROFILES,
+                                                           REGULAR_CREATECERTIFICATE,
+                                                           REGULAR_STORECERTIFICATE,
+                                                           REGULAR_RAFUNCTIONALITY, 
+                                                           REGULAR_EDITENDENTITYPROFILES,
+                                                           REGULAR_VIEWENDENTITY,
+                                                           REGULAR_CREATEENDENTITY, 
+                                                           REGULAR_EDITENDENTITY, 
+                                                           REGULAR_DELETEENDENTITY,
+                                                           REGULAR_REVOKEENDENTITY,
+                                                           REGULAR_VIEWENDENTITYHISTORY,
+                                                           REGULAR_LOGFUNCTIONALITY,
+                                                           REGULAR_VIEWLOG,
+                                                           REGULAR_LOGCONFIGURATION,
+                                                           REGULAR_SYSTEMCONFIGURATION,
+                                                           REGULAR_EDITADMINISTRATORPRIVILEDGES};
                                                        
         // Role Access Rules
     public static final  String[] ROLEACCESSRULES =       {  "/public_web_user",
