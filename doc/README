@@ -514,7 +514,8 @@ Installation procedure will be enhanced eventually.
 
 
 1. Copy src/ra/web/raadmin/WEB-INF/tomcat4-service.xml to
-$JBOSS_HOME/server/default/deploy
+$JBOSS_HOME/server/default/deploy. Edit the file so 'keyStorePass' is the
+same as the password you specify below for 'tomcat-user'.
 
 2. Edit parameters in src/ra/web/raadmin/WEB-INF/web.xml.
 
