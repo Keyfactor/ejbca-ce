@@ -73,8 +73,8 @@
         <local>se.anatom.ejbca.log.ILogSessionLocal</local>
         <ejb-link>LogSession</ejb-link>
      </ejb-local-ref>
-<!-- Uncomment to use LDAP publisher
-     <ejb-ref>
+<!-- Uncomment to use LDAP publisher -->
+<!--     <ejb-ref>
         <description>
                 Publishers are configured to store certificates and CRLs in addiotional places
                 from the main database. Publishers runs as local beans.
@@ -84,8 +84,8 @@
         <home>se.anatom.ejbca.ca.store.IPublisherSessionHome</home>
         <remote>se.anatom.ejbca.ca.store.IPublisherSessionRemote</remote>
         <ejb-link>PublisherSession1</ejb-link>
-     </ejb-ref>
-END LDAP Publisher -->
+     </ejb-ref> -->
+<!-- END LDAP Publisher -->
      <ejb-local-ref>
         <description>The Authorization session bean</description>
         <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>

@@ -421,7 +421,7 @@
    </session>
 
 <!-- Uncomment to use LDAP publisher -->
-   <session>
+<!--   <session>
      <ejb-name>PublisherSession1</ejb-name>
      <home>se.anatom.ejbca.ca.store.IPublisherSessionHome</home>
      <remote>se.anatom.ejbca.ca.store.IPublisherSessionRemote</remote>
@@ -499,7 +499,7 @@
         <local>se.anatom.ejbca.log.ILogSessionLocal</local>
         <ejb-link>LogSession</ejb-link>
      </ejb-local-ref>
-   </session>
+   </session> -->
 <!-- END LDAP Publisher -->
 
    <entity>
@@ -777,12 +777,12 @@
          <ejb-name>CAAdminSession</ejb-name>
          <method-name>*</method-name>
      </method>
-<!-- Uncomment to use LDAP publisher
-     <method>
+<!-- Uncomment to use LDAP publisher -->
+<!--     <method>
          <ejb-name>PublisherSession1</ejb-name>
          <method-name>*</method-name>
-     </method>
-END LDAP Publisher -->
+     </method>  -->
+<!-- END LDAP Publisher -->
    </method-permission>
 
    <method-permission>
@@ -916,12 +916,12 @@ END LDAP Publisher -->
          <ejb-name>CRLData</ejb-name>
          <method-name>*</method-name>
      </method>
-<!-- Uncomment to use LDAP publisher
-     <method>
+<!-- Uncomment to use LDAP publisher -->
+<!--     <method>
          <ejb-name>PublisherSession1</ejb-name>
          <method-name>*</method-name>
-     </method>
-END LDAP Publisher -->
+     </method> -->
+<!-- END LDAP Publisher -->
 
    <trans-attribute>Required</trans-attribute>
    </container-transaction>
