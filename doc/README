@@ -1,4 +1,4 @@
-$Id: README,v 1.107 2003-12-15 15:24:57 anatom Exp $
+$Id: README,v 1.108 2004-01-04 16:38:32 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -847,6 +847,8 @@ and signing certificate.
 
 Example to generate OCSP request using OpenSSL:
 openssl ocsp -issuer Test-CA.pem -cert Test.pem -req_text -url http://localhost:8080/ejbca/publicweb/status/ocsp
+
+If Mozilla should accept OCSP-responses from a CA, the CAs certificate should include the KeyUsage 'Digital Signature'.
 
 EXPORT/IMPORT PROFILES
 =======================

@@ -145,11 +145,19 @@ public class ProtocolHttpTest extends TestCase {
      */
     public void test03Ocsp() throws Exception {
         log.debug(">test03Ocsp()");
-        // TODO: add  certificate with good status, 
-        // send message to server and get good response
+
+        // find a CA (TestCA?) create a user and generate his cert
+        // send OCSP req to server and get good response
         // change status of cert to bad status
-        // send message and get bad status
+        // send OCSP req and get bad status
         // (send crap message and get good error)
+
+        /* TODO: 
+        CertificateID   id = new CertificateID(CertificateID.HASH_SHA1, testCert, BigInteger.valueOf(1));
+        OCSPReqGenerator    gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, testCert, BigInteger.valueOf(1)));
+        OCSPReq         req = gen.generate();
+        */
         log.debug("<test03Ocsp()");
     }
 
