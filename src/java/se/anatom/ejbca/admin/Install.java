@@ -25,26 +25,27 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
 /** Class used as an install script of ejbca
  * 
  * @author philip
- * @version $Id: Install.java,v 1.14 2004-05-13 15:33:59 herrvendil Exp $
+ * @version $Id: Install.java,v 1.15 2004-06-15 11:08:34 koen_serry Exp $
  *
  * The main porpose of this program is to provide easy installment of EJBCA.
  */
 public class Install extends BaseCommand {
 
 	public static int ARG_COMMAND   =  0;
-	public static int ARG_OS               =  1;
-	public static int ARG_LANGUAGE   =  2;
-	public static int ARG_VERSION      =  3;
-	public static int ARG_APPSERVER  =  4;
+	public static int ARG_OS        =  1;
+	public static int ARG_LANGUAGE  =  2;
+	public static int ARG_VERSION   =  3;
+	public static int ARG_APPSERVER =  4;
 	public static int ARG_WEBSERVER =  5;
 	
-	private final static int OS_UNIX          = 0; 
+	private final static int OS_UNIX     = 0; 
 	private final static int OS_WINDOWS  = 1;
 		
-	private final static int APPSERVER_JBOSS         = 0; 
-	private final static int APPSERVER_WEBLOGIC  = 1;
+	private final static int APPSERVER_JBOSS_TOMCAT = 0; 
+	private final static int APPSERVER_JBOSS_JETTY = 1; 
+	private final static int APPSERVER_WEBLOGIC     = 2;
 	
-    private int appserver = APPSERVER_JBOSS;
+    private int appserver = APPSERVER_JBOSS_TOMCAT;
 
     private int os = OS_UNIX;
     
@@ -68,7 +69,7 @@ public class Install extends BaseCommand {
 	
 	private BufferedReader reader = null;
 	
-	public Install(String osstring, String language, String version, String appserverstring) throws Exception{
+	public Install(String osstring, String language, String version, String appserverstring,String webstring) throws Exception{
 			
         super();
 		reader = new BufferedReader(new InputStreamReader(System.in));
@@ -85,6 +86,9 @@ public class Install extends BaseCommand {
         if(appserverstring.equalsIgnoreCase("weblogic")){
             this.appserver = APPSERVER_WEBLOGIC;
         }
+        if(webstring.equalsIgnoreCase("jetty")){
+        	this.appserver = APPSERVER_JBOSS_JETTY;
+        }	
 	}			
 	
 	public void run(){
@@ -99,12 +103,12 @@ public class Install extends BaseCommand {
 					
 	public static void main(String[] args) throws Exception {
 		if(args.length != 5){
-			System.out.println("Usage: install install <unix|windows> <language> <ejbca|primeca> <jboss|weblogic>\n" +
-					                     " Or : install displayendmessage <unix|windows> <language> <ejbca|primeca> <jboss|weblogic>");
+			System.out.println("Usage: install install <unix|windows> <language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>\n" +
+					                     " Or : install displayendmessage <unix|windows> <language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>");
 			System.exit(-1);
 		}
 		
-		Install install = new Install(args[ARG_OS], args[ARG_LANGUAGE], args[ARG_VERSION], args[ARG_APPSERVER]);
+		Install install = new Install(args[ARG_OS], args[ARG_LANGUAGE], args[ARG_VERSION], args[ARG_APPSERVER], args[ARG_WEBSERVER]);
 		
 		if(args.length == 5){
 			if(args[Install.ARG_COMMAND].equalsIgnoreCase("install")){
@@ -113,8 +117,8 @@ public class Install extends BaseCommand {
 			  if(args[Install.ARG_COMMAND].equalsIgnoreCase("displayendmessage")){		
 			  	install.displayEndMessage();    
 			  }else{
-				System.out.println("Usage: install install <unix|windows> <language> <ejbca> <jboss|weblogic>\n" +
-				" Or : install displayendmessage <unix|windows><language> <ejbca> <jboss|weblogic>");
+				System.out.println("Usage: install install <unix|windows> <language> <ejbca> <jboss|weblogic> <jetty|tomcat>\n" +
+				" Or : install displayendmessage <unix|windows><language> <ejbca> <jboss|weblogic> <jetty|tomcat>");
 				System.exit(-1);
 			  }
 		    }
@@ -334,26 +338,8 @@ public class Install extends BaseCommand {
         
 		if(this.os == OS_WINDOWS){
 			try {
-				String[] command = new String[7];
-				command[0] = "ca.cmd";
-				command[1] = "init";
-				command[2] = this.caname;
-				command[3] = "\"" + this.cadn + "\"";
-				command[4] = Integer.toString(this.keysize);
-				command[5] = Integer.toString(this.validity);
-				command[6] = this.policyid.trim();
-				Process runcainit = Runtime.getRuntime().exec(command);
-				
-				BufferedReader br = new BufferedReader(new InputStreamReader(runcainit.getInputStream()));
-				Thread.sleep(1000);
-				String line = "";
-				while((line = br.readLine()) != null){
-					System.out.println(line);
-				}
-				if(runcainit.waitFor() != 0){					
-					System.out.println(text.getProperty("ERRORINITCA"));
-					System.exit(-1);
-				}				
+				String command[] = {"init",this.caname,this.cadn,""+keysize,""+validity,this.policyid.trim()};
+				ca.main(command);
 			} catch (Exception e) {				
 		    	System.out.println(text.getProperty("ERRORINITCA") + e);
 				System.exit(-1);
@@ -378,18 +364,8 @@ public class Install extends BaseCommand {
 					System.out.println(text.getProperty("ERRORSETTINGUPADMINWEB"));
 					System.exit(-1);
 				}
-				command = new String[5];
-				command[0] = "ca.cmd";
-				command[1] = "getrootcert";
-				command[2] = this.caname;
-				command[3] = "tmp\\rootca.der";
-				command[4] = "-der";
-				Process getrootcert = Runtime.getRuntime().exec(command);
-				
-				if(getrootcert.waitFor() != 0){
-					System.out.println(text.getProperty("ERRORSETTINGUPADMINWEB"));
-					System.exit(-1);
-				}				
+				command = new String[]{"getrootcert",this.caname,"tmp\\rootca.der","-der"};
+				ca.main(command);
 			} catch (Exception e) {		
 				System.out.println(text.getProperty("ERRORSETTINGUPADMINWEB") + e);
 				System.exit(-1);
@@ -397,26 +373,8 @@ public class Install extends BaseCommand {
 		}
 		if(os == OS_UNIX){			
 			try {
-				String[] command = new String[7];
-				command[0] = "./ca.sh";
-			    command[1] = "init";
-				command[2] = this.caname;
-				command[3] = this.cadn;
-				command[4] = Integer.toString(this.keysize);
-				command[5] = Integer.toString(this.validity);
-				command[6] = this.policyid.trim();
-				Process runcainit = Runtime.getRuntime().exec(command);
-			    								
-				BufferedReader br = new BufferedReader(new InputStreamReader(runcainit.getInputStream()));
-				Thread.sleep(1000);
-				String line = "";
-				while((line = br.readLine()) != null){
-					System.out.println(line);
-				}	
-				if(runcainit.waitFor() != 0){
-					System.out.println(text.getProperty("ERRORINITCA"));
-					System.exit(-1);
-				}				
+				String command[] = {"init",this.caname,this.cadn,""+keysize,""+validity,this.policyid.trim()};
+				ca.main(command);
 			} catch (Exception e) {
 				System.out.println(text.getProperty("ERRORINITCA") + e);
 				System.exit(-1);
@@ -439,19 +397,8 @@ public class Install extends BaseCommand {
 					System.exit(-1);
 				}
 
-				command = new String[5];
-				command[0] = "./ca.sh";
-				command[1] = "getrootcert";
-				command[2] = this.caname;
-				command[3] = "tmp/rootca.der";
-				command[4] = "-der";
-				Process getrootcert = Runtime.getRuntime().exec(command);											   			   
-											
-				if(getrootcert.waitFor() != 0){
-					System.out.println(text.getProperty("ERRORSETTINGUPADMINWEB"));
-					System.exit(-1);
-				}
-								
+				command = new String[]{"getrootcert",this.caname,"/tmp/rootca.der","-der"};
+				ca.main(command);
 			} catch (Exception e) {
 				System.out.println(text.getProperty("ERRORSETTINGUPADMINWEB") + e);
 				System.exit(-1);
