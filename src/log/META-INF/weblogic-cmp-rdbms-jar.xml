@@ -1,87 +1,74 @@
 <?xml version="1.0"?>
 
-<!DOCTYPE weblogic-rdbms-bean PUBLIC '-//BEA Systems, Inc.//DTD WebLogic 5.1.0 EJB RDBMS Persistence//EN' 'http://www.bea.com/servers/wls510/dtd/weblogic-rdbms-persistence.dtd'>
-
-
-<weblogic-rdbms-bean>
-
-  <pool-name>DefaultPool</pool-name>
-  <table-name>USERDATA</table-name>
-  <attribute-map>
-    <object-link>
-       <bean-field>username</bean-field>
-       <dbms-column>username</dbms-column>
-    </object-link>
-    <object-link>
-       <bean-field>password</bean-field>
-       <dbms-column>password</dbms-column>
-    </object-link>
-    <object-link>
-      <bean-field>passwordHash</bean-field>
-      <dbms-column>passwordHash</dbms-column>
-    </object-link>
-    <object-link>
-      <bean-field>subjectDN</bean-field>
-      <dbms-column>subjectDN</dbms-column>
-    </object-link>
-    <object-link>
-      <bean-field>subjectEmail</bean-field>
-      <dbms-column>subjectEmail</dbms-column>
-    </object-link>
-    <object-link>
-      <bean-field>status</bean-field>
-      <dbms-column>status</dbms-column>
-    </object-link>
-    <object-link>
-      <bean-field>type</bean-field>
-      <dbms-column>type</dbms-column>
-    </object-link>
-  </attribute-map>
-
-</weblogic-rdbms-bean>
-
-
-<!-- EJB 2.0 Stuff below...
-
-<!DOCTYPE weblogic-rdbms-jar PUBLIC '-//BEA Systems, Inc.//DTD WebLogic 6.0.0 EJB RDBMS20 Persistence//EN' 'http://www.bea.com/servers/wls600/dtd/weblogic-rdbms20-persistence-600.dtd'>
+<!DOCTYPE weblogic-rdbms-jar PUBLIC
+ '-//BEA Systems, Inc.//DTD WebLogic 7.0.0 EJB RDBMS Persistence//EN'
+ 'http://www.bea.com/servers/wls700/dtd/weblogic-rdbms20-persistence-700.dtd'>
 
 <weblogic-rdbms-jar>
 
     <weblogic-rdbms-bean>
-        <ejb-name>UserData</ejb-name>
-        <data-source-name>DafaultDS</data-source-name>
-        <table-name>USERDATA</table-name>
-
-        <field-map>
-            <cmp-field>username</cmp-field>
-            <dbms-column>username</dbms-column>
-        </field-map>
-        <field-map>
-            <cmp-field>password</cmp-field>
-            <dbms-column>password</dbms-column>
-        </field-map>
-        <field-map>
-            <cmp-field>passwordHash</cmp-field>
-            <dbms-column>passwordHash</dbms-column>
-        </field-map>
-        <field-map>
-            <cmp-field>subjectDN</cmp-field>
-            <dbms-column>subjectDN</dbms-column>
-        </field-map>
-        <field-map>
-            <cmp-field>subjectEmail</cmp-field>
-            <dbms-column>subjectEmail</dbms-column>
-        </field-map>
-        <field-map>
-            <cmp-field>status</cmp-field>
-            <dbms-column>status</dbms-column>
-        </field-map>
-        <field-map>
-            <cmp-field>type</cmp-field>
-            <dbms-column>type</dbms-column>
-        </field-map>
+        <ejb-name>LogEntryData</ejb-name>
+        <data-source-name>DefaultDS</data-source-name>
+        <table-map>
+            <table-name>LOGENTRYDATA</table-name>
+            <field-map>
+                <cmp-field>id</cmp-field>
+                <dbms-column>id</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>adminType</cmp-field>
+                <dbms-column>adminType</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>adminData</cmp-field>
+                <dbms-column>adminData</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>module</cmp-field>
+                <dbms-column>module</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>time</cmp-field>
+                <dbms-column>time</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>certificateSNR</cmp-field>
+                <dbms-column>certificateSNR</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>username</cmp-field>
+                <dbms-column>username</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>event</cmp-field>
+                <dbms-column>event</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>comment</cmp-field>
+                <dbms-column>comment</dbms-column>
+            </field-map>
+        </table-map>
     </weblogic-rdbms-bean>
 
-</weblogic-rdbms-jar>
+    <weblogic-rdbms-bean>
+        <ejb-name>LogConfigurationData</ejb-name>
+        <data-source-name>DefaultDS</data-source-name>
+        <table-map>
+            <table-name>LOGCONFIGURATIONDATA</table-name>
+            <field-map>
+                <cmp-field>id</cmp-field>
+                <dbms-column>id</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>logConfiguration</cmp-field>
+                <dbms-column>logConfiguration</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>logEntryRowNumber</cmp-field>
+                <dbms-column>logEntryRowNumber</dbms-column>
+            </field-map>
+        </table-map>
+    </weblogic-rdbms-bean>
 
--->
+    <create-default-dbms-tables>False</create-default-dbms-tables>
+</weblogic-rdbms-jar>
