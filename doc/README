@@ -152,11 +152,11 @@ There are several ways to generate a keystore depending on if the CA is a root
 
 Root CA:
 run 'ca.sh/bat makeroot' and enter all required parameters.
-Ex: 'ca.sh makeroot C=SE,O=AnaTom,CN=EJBCA 1024 365 /tmp/server.p12 foo123
+Ex: 'ca.sh makeroot "C=SE,O=AnaTom,CN=EJBCA" 1024 365 /tmp/server.p12 foo123
 will create a root CA with the DN 'C=SE,O=AnaTom,CN=EJBCA'. The keylength is
  1024 bit (RSA) and the validity of the root certificate is 365 days. The CAs
  keystore will be stored in 'tmp/server.p12' and be protected by the password
- 'foo123'.
+ 'foo123'. Quote the DN  so it is treated as one argument.
 Now edit 'src/ca/META-INF/ejb-jar.xml' to reflect the values you entered for
  'keyStore' and 'keyStorePass'.
 
@@ -299,10 +299,11 @@ Options in CertificateStoreSession:
 Administrating CA
 -----------------
 The CA has a command line interface ca.sh/cmd. Options are:
-makeroot - creates a new Root CA keystore (only used by Root CA).
+makeroot - creates a new Root CA keystore (only used by Root CA). 
+Quote the DN  so it is treated as one argument.
 getrootcert - exports the Root CA certificate to file.
 makereq - generates a certification request to create a keystore for a
-subordinate CA.
+subordinate CA. Quote the DN  so it is treated as one argument.
 recrep - receives a certification reply (from another CA) for
 the above  generated request.
 processreq - processes a certification request for
@@ -321,6 +322,7 @@ Administrating RA
 The RA has a command line interface ra.sh/cmd. Options are:
 adduser - adds a user to the database, after addition a user may apply for a
 certificate. If email address is set to 'null', no email is put in certificates.
+Quote the DN  so it is treated as one argument. 
 deluser - removes a user from the database, any issued certificates
 remain  active and present in the database.
 setclearpwd - set a clear text
