@@ -167,9 +167,7 @@ public class TestMessages extends TestCase {
     protected void tearDown() throws Exception {
     }
 
-    /**
-     * TODO: tests scep message from OpenScep
-     *
+    /** Tests scep message from OpenScep
      * @throws Exception error
      */
     public void test01TestOpenScep() throws Exception {

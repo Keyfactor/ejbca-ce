@@ -23,7 +23,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.16 2003-10-03 14:34:20 herrvendil Exp $
+ * @version $Id: CaInitCommand.java,v 1.17 2003-10-04 10:12:40 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
     /** Pointer to main certificate store */
@@ -123,9 +123,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
-    }
-
-    // execute
+    } // execute
     
     // TODO
     private void initAuthorizationModule(int caid) throws Exception{

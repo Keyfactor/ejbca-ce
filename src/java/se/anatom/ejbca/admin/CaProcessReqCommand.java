@@ -7,15 +7,17 @@ import javax.naming.Context;
 
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
+import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 import se.anatom.ejbca.util.Base64;
+import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.FileTools;
 
 
 /**
  * Receive certification request and create certificate to send back.
  *
- * @version $Id: CaProcessReqCommand.java,v 1.9 2003-09-03 14:32:02 herrvendil Exp $
+ * @version $Id: CaProcessReqCommand.java,v 1.10 2003-10-04 10:12:40 anatom Exp $
  */
 public class CaProcessReqCommand extends BaseCaAdminCommand {
     /**
@@ -34,10 +36,6 @@ public class CaProcessReqCommand extends BaseCaAdminCommand {
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-        System.out.println("TODO");
-        //TODO
-        
-        /*        
         try {
             if (args.length < 5) {
                 System.out.println(
@@ -75,8 +73,11 @@ public class CaProcessReqCommand extends BaseCaAdminCommand {
             ISignSessionHome home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup(
                         "RSASignSession"), ISignSessionHome.class);
             ISignSessionRemote ss = home.create();
-            X509Certificate cert = (X509Certificate) ss.createCertificate(administrator, username,
-                    password, new PKCS10RequestMessage(buffer));
+            PKCS10RequestMessage p10 = new PKCS10RequestMessage(buffer);
+            p10.setUsername(username);
+            p10.setPassword(password);
+            IResponseMessage resp = ss.createCertificate(administrator, p10, Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
+            X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
             FileOutputStream fos = new FileOutputStream(outfile);
             fos.write("-----BEGIN CERTIFICATE-----\n".getBytes());
             fos.write(Base64.encode(cert.getEncoded()));
@@ -86,9 +87,5 @@ public class CaProcessReqCommand extends BaseCaAdminCommand {
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
-         */
     } // execute
-
-
-    // execute
 }

@@ -14,7 +14,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Creates a new root certificate with new validity, using the same key.
  *
- * @version $Id: CaRolloverRootCommand.java,v 1.8 2003-09-03 14:32:02 herrvendil Exp $
+ * @version $Id: CaRolloverRootCommand.java,v 1.9 2003-10-04 10:12:40 anatom Exp $
  */
 public class CaRolloverRootCommand extends BaseCaAdminCommand {
     /**
@@ -33,10 +33,6 @@ public class CaRolloverRootCommand extends BaseCaAdminCommand {
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-         System.out.println("TODO");
-        //TODO
-        
-        /*
         try {
             if (args.length < 4) {
                 System.out.println(
@@ -51,18 +47,19 @@ public class CaRolloverRootCommand extends BaseCaAdminCommand {
             String filename = args[2];
             String storepwd = args[3];
 
+            // Load keys store
+            KeyStore keyStore = KeyStore.getInstance("PKCS12", "BC");
+            InputStream is = new FileInputStream(filename);
+            keyStore.load(is, storepwd.toCharArray());
             // Get old root certificate
-            Certificate[] chain = getCertChain();
-
+            Certificate[] chain = KeyTools.getCertChain(keyStore,privKeyAlias);
             if (chain.length > 2) {
                 System.out.println(
                     "Certificate chain too long, this P12 was not generated with EJBCA?");
 
                 return;
             }
-
             X509Certificate rootcert = (X509Certificate) chain[chain.length - 1];
-
             if (!CertTools.isSelfSigned(rootcert)) {
                 System.out.println("Root certificate is not self signed???");
 
@@ -70,16 +67,10 @@ public class CaRolloverRootCommand extends BaseCaAdminCommand {
             }
 
             X509Certificate cacert = null;
-
             if (chain.length > 1) {
                 cacert = (X509Certificate) chain[chain.length - 2];
             }
-
             // Get private key
-            KeyStore keyStore = KeyStore.getInstance("PKCS12", "BC");
-            InputStream is = new FileInputStream(filename);
-            keyStore.load(is, storepwd.toCharArray());
-
             PrivateKey privateKey = (PrivateKey) keyStore.getKey(privKeyAlias, privateKeyPass);
 
             if (privateKey == null) {
@@ -120,8 +111,5 @@ public class CaRolloverRootCommand extends BaseCaAdminCommand {
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
-         */
     } // execute
-
-    // execute
 }

@@ -26,16 +26,17 @@ import se.anatom.ejbca.ra.UserDataRemote;
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.14 2003-09-03 15:40:36 herrvendil Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.15 2003-10-04 10:12:41 anatom Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthenticationSession.class);
-    private static Context ctx;
-    private static IAuthenticationSessionHome home;
-    private static IAuthenticationSessionRemote remote;
-    private static String username;
-    private static String pwd;
-    private static int caid;
+    
+    private Context ctx;
+    private IAuthenticationSessionHome home;
+    private IAuthenticationSessionRemote remote;
+    private String username;
+    private String pwd;
+    private int caid;
 
     /**
      * Creates a new TestAuthenticationSession object.
