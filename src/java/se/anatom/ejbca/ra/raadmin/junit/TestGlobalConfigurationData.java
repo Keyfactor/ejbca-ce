@@ -20,7 +20,7 @@ import junit.framework.*;
 
 /** Tests the GlobalConfiguration entity bean and some parts of RaAdminSession.
  *
- * @version $Id: TestGlobalConfigurationData.java,v 1.1 2002-06-13 10:55:36 herrvendil Exp $
+ * @version $Id: TestGlobalConfigurationData.java,v 1.2 2002-06-13 13:52:57 anatom Exp $
  */
 
 public class TestGlobalConfigurationData extends TestCase {
@@ -53,11 +53,11 @@ public class TestGlobalConfigurationData extends TestCase {
         cat.debug("<getInitialContext");
         return ctx;
     }
-    
+
     public void test01CreateGlobalConfiguration() throws Exception {
         cat.debug(">test01CreateGlobalConfiguration()");
         title= "CREATED!";
-        title2= "CHANGED!";        
+        title2= "CHANGED!";
         GlobalConfiguration globalconfiguration = new GlobalConfiguration();
         globalconfiguration.setEjbcaTitle(title);
         IRaAdminSessionRemote raadminsession = home.create();
@@ -67,23 +67,25 @@ public class TestGlobalConfigurationData extends TestCase {
     }
 
     public void test02LookupAndChangeTitle() throws Exception {
-        GlobalConfiguration gc;
         cat.debug(">test02LookupAndChangeUser()");
+        GlobalConfiguration gc;
         IRaAdminSessionRemote raadminsession = home.create();
-        gc = raadminsession.loadGlobalConfiguration(); 
+        gc = raadminsession.loadGlobalConfiguration();
         cat.debug("Title="+gc.getEjbcaTitle());
         assertTrue( "wrong title", gc.getEjbcaTitle().equals(title) );
         gc.setEjbcaTitle(title2);
-        raadminsession.saveGC(gc);
+        cat.debug("New title="+gc.getEjbcaTitle());
+        raadminsession.saveGlobalConfiguration(gc);
         cat.debug("Changed it");
         cat.debug("<test02LookupAndChangeUser()");
     }
 
     public void test03LookupChangedTitle() throws Exception {
+        cat.debug(">test03LookupChangedUser()");
         GlobalConfiguration gc;
-        cat.debug(">test03LookupChangedUser()");      
         IRaAdminSessionRemote raadminsession = home.create();
-        gc = raadminsession.loadGlobalConfiguration(); 
+        gc = raadminsession.loadGlobalConfiguration();
+        assertNotNull(gc);
         cat.debug("loaded global configuration! =");
         cat.debug("title="+gc.getEjbcaTitle());
         assertTrue( "wrong title", gc.getEjbcaTitle().equals(title2) );

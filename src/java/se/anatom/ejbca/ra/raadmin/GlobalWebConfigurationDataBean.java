@@ -17,7 +17,7 @@ import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
 
  * <pre>
 
- * ConfigurationId (Should always be 0) 
+ * ConfigurationId (Should always be 0)
 
  * GlobalConfiguration
 
@@ -41,12 +41,12 @@ public abstract class GlobalWebConfigurationDataBean implements javax.ejb.Entity
 
     public abstract String getConfigurationId();
 
-    public abstract void setConfigurationId(String id);
+    public abstract void setConfigurationId(String configurationId);
 
     public abstract GlobalConfiguration getGlobalConfiguration();
 
-    public abstract void setGlobalConfiguration(GlobalConfiguration globalconfiguration);
-    
+    public abstract void setGlobalConfiguration(GlobalConfiguration globalConfiguration);
+
 
     //
 
@@ -72,13 +72,13 @@ public abstract class GlobalWebConfigurationDataBean implements javax.ejb.Entity
 
      **/
 
-    public String ejbCreate(String id, GlobalConfiguration globalconfiguration) throws CreateException {
+    public String ejbCreate(String configurationId, GlobalConfiguration globalConfiguration) throws CreateException {
 
-        setConfigurationId(id);
+        setConfigurationId(configurationId);
 
-        setGlobalConfiguration(globalconfiguration);
+        setGlobalConfiguration(globalConfiguration);
 
-        log.debug("Created global configuration "+id);
+        log.debug("Created global configuration "+configurationId);
 
         return null;
 
