@@ -1,4 +1,4 @@
-$Id: todo.txt,v 1.5 2001-11-18 11:38:56 anatom Exp $
+$Id: todo.txt,v 1.6 2001-11-19 13:57:18 anatom Exp $
 
 V 1.0
 -----
@@ -22,3 +22,4 @@ V 2.0
 - Try 'real' databases (MySQL, PostgreSQL) with jboss.
 - Run on other appservers, ie Weblogic, Websphere etc.
 - Add smart card support (PKCS15) in CA for protection of private key.
+- Update to EJB 2.0 spec (when JBoss is ready).

@@ -151,6 +151,13 @@
      	<env-entry-type>java.lang.Boolean</env-entry-type>
      	<env-entry-value>true</env-entry-value>
      </env-entry>
+
+    <security-identity>
+ ???    <run-as>
+ ???????    <role-name>InternalUser</role-name>
+ ???    </run-as>
+ ???</security-identity>
+
    </session>
 
 <!-- Commented out, use LocalAuthenticationSession, move comment if RemoteAuthentication should be used
@@ -178,6 +185,13 @@
      <ejb-class>se.anatom.ejbca.ca.auth.LocalAuthenticationSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
+
+    <security-identity>
+ ???    <run-as>
+ ???????    <role-name>InternalUser</role-name>
+ ???    </run-as>
+ ???</security-identity>
+
    </session>
 
    <session>
@@ -187,6 +201,13 @@
      <ejb-class>se.anatom.ejbca.ca.store.LocalCertificateStoreSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>     
+
+    <security-identity>
+ ???    <run-as>
+ ???????    <role-name>InternalUser</role-name>
+ ???    </run-as>
+ ???</security-identity>
+
    </session>
 
    <session>
@@ -266,12 +287,81 @@
       </description>
      <role-name>everyone</role-name>
    </security-role>
+   <security-role>
+      <description>
+         This role represents an internal process
+      </description>
+????? <role-name>internalUser</role-name>
+?? </security-role>
 
    <method-permission>
-     <role-name>everyone</role-name>
+     <role-name>internalUser</role-name>
      <method>
          <ejb-name>AuthenticationSession</ejb-name>
          <method-name>*</method-name>
+     </method>
+     <method>
+         <ejb-name>RSASignSession</ejb-name>
+         <method-name>createCRL</method-name>
+     </method>
+     <method>
+         <ejb-name>CreateCRLSession</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateData</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
+         <ejb-name>CRLData</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>storeCRL</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>storeCertificate</method-name>
+     </method>
+   </method-permission>
+   <method-permission>
+     <role-name>everyone</role-name>
+     <method>
+         <ejb-name>RSASignSession</ejb-name>
+         <method-name>getCertificateChain</method-name>
+     </method>
+     <method>
+         <ejb-name>RSASignSession</ejb-name>
+         <method-name>createCertificate</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>listAllCertificates</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>findCertificatesBySubject</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>findCertificateByIssuerAndSerno</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>isRevoked</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>listRevokedCertificates</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>getLastCRL</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>getLastCRLNumber</method-name>
      </method>
    </method-permission>
 

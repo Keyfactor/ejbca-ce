@@ -59,4 +59,4 @@ All methods are protected and can only be accessed from the internalUser.
 
 SERVLETS
 ========
-Servlets is available to the public.
+Servlets are available to the public.

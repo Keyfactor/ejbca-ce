@@ -7,6 +7,9 @@ CA to be used either standalone or integrated into any J2EE application.
 
 FEATURES
 --------
+
+Build on EJB 1.1 specification.
+
 Flexible, component based architecture.
 Multiple levels of CAs.
 Standalone or integrated in any J2EE application.
