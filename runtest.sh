@@ -10,10 +10,10 @@ fi
 cd src/java
 
 # JBoss
-TEST_CP=.:$JBOSS_HOME/client/jnp-client.jar:$JBOSS_HOME/client/jboss-j2ee.jar:$JBOSS_HOME/client/jboss-client.jar:$JBOSS_HOME/client/jbosssx-client.jar:$JBOSS_HOME/client/jboss-common-client.jar:../../lib/junit.jar:../../lib/log4j-1.2.jar:../../lib/jce-jdk13-117.jar:../../lib/bcmail-jdk13-117.jar
+TEST_CP=.:$JBOSS_HOME/client/jnp-client.jar:$JBOSS_HOME/client/jboss-j2ee.jar:$JBOSS_HOME/client/jboss-client.jar:$JBOSS_HOME/client/jbosssx-client.jar:$JBOSS_HOME/client/jboss-common-client.jar:../../lib/junit.jar:../../lib/log4j-1.2.7.jar:../../lib/jce-jdk13-117.jar:../../lib/bcmail-jdk13-117.jar
 
 # Weblogic
-#TEST_CP=.:../../lib/weblogic.jar:../../lib/junit.jar:../../lib/log4j-1.2.jar:../../lib/jce-jdk13-117.jar:../../lib/bcmail-jdk13-117.jar
+#TEST_CP=.:../../lib/weblogic.jar:../../lib/junit.jar:../../lib/log4j-1.2.7.jar:../../lib/jce-jdk13-117.jar:../../lib/bcmail-jdk13-117.jar
 
 echo Testing utils
 java -cp $TEST_CP se.anatom.ejbca.util.junit.TestRunner

@@ -9,10 +9,10 @@ then
 fi
 
 # JBoss
-CP=.:./admin.jar:$JBOSS_HOME/client/jnp-client.jar:$JBOSS_HOME/client/jboss-j2ee.jar:$JBOSS_HOME/client/jboss-client.jar:$JBOSS_HOME/client/jbosssx-client.jar:$JBOSS_HOME/client/jboss-common-client.jar:lib/junit.jar:lib/log4j-1.2.jar:lib/jce-jdk13-117.jar
+CP=.:./admin.jar:$JBOSS_HOME/client/jnp-client.jar:$JBOSS_HOME/client/jboss-j2ee.jar:$JBOSS_HOME/client/jboss-client.jar:$JBOSS_HOME/client/jbosssx-client.jar:$JBOSS_HOME/client/jboss-common-client.jar:lib/junit.jar:lib/log4j-1.2.7.jar:lib/jce-jdk13-117.jar
 
 # Weblogic
-#CP=.:./admin.jar:./lib/weblogic.jar:./lib/junit.jar:./lib/log4j-1.2.jar:./lib/jce-jdk13-117.jar
+#CP=.:./admin.jar:./lib/weblogic.jar:./lib/junit.jar:./lib/log4j-1.2.7.jar:./lib/jce-jdk13-117.jar
 
 # JBoss
 java -cp $CP se.anatom.ejbca.admin.ca $*
