@@ -68,7 +68,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.91 2005-03-02 11:25:41 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.92 2005-03-07 09:37:49 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -95,7 +95,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  *   description="Defines de sender of the notification message"
  *   name="sender"
  *   type="java.lang.String"
- *   value="philip@primekey.se"
+ *   value="mail@nowhere.dom"
  *
  * @ejb.env-entry
  *   description="Defines the subject used in the notification message"
