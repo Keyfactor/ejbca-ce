@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="src/test"/>
 	<classpathentry kind="lib" path="lib/jboss-j2ee.jar"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
@@ -23,5 +24,5 @@
 	<classpathentry kind="lib" path="lib/batik-util.jar"/>
 	<classpathentry kind="lib" path="lib/batik-css.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-jdk14-122.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="output" path="tmp/classes"/>
 </classpath>
