@@ -1,4 +1,4 @@
-$Id: README,v 1.83 2003-04-03 14:36:58 anatom Exp $
+$Id: README,v 1.84 2003-04-10 14:41:01 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -923,6 +923,11 @@ REFERENCES
 
 Request for Comments: 3280 - Certificate and CRL profile
 Request for Comments: 2253 - DN string representation
+
+MySQL:
+Create ALTER-scrips automatically to upgrade database from old
+version to latest development version:
+http://www.mysqldiff.org/
 
 JBOSS/JETTY:
 To get client certificates to work with Jetty add:
