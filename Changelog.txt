@@ -5,6 +5,7 @@ Added Sybase as target for 'ant replaceDS'
 Support for JBoss3.2.4/Tomcat5.0
 Fixed bugg in Administrative deligations where a CA administrator could edit an superadmin group.
 Changed so 'enable end entity limitations' is enabled by default.
+Allow '&' in DNs and strip DNs when creating new CAs.
 
 3.0 beta 2
 ----------
