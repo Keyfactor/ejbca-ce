@@ -22,6 +22,7 @@ import java.util.Iterator;
 import javax.ejb.CreateException;
 import javax.naming.NamingException;
 
+import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
@@ -29,7 +30,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 /**
  * 
  *
- * @version $Id: AvailableAccessRules.java,v 1.9 2004-11-13 00:42:16 herrvendil Exp $
+ * @version $Id: AvailableAccessRules.java,v 1.10 2005-02-03 09:07:24 herrvendil Exp $
  */
 public class AvailableAccessRules {
         
@@ -256,14 +257,17 @@ public class AvailableAccessRules {
         // Add all authorized End Entity Profiles                    
         Iterator iter = raadminsession.getAuthorizedEndEntityProfileIds(admin).iterator();
         while(iter.hasNext()){
-            // Check if profiles available CAs is a subset of administrators authorized CAs
+            
             int profileid = ((Integer) iter.next()).intValue();
             
+            // Do not add empty profile, since only superadministrator should have access to it.
+            if(profileid != SecConst.EMPTY_ENDENTITYPROFILE){
               // Administrator is authorized to this End Entity Profile, add it.
                 try{
                   authorizer.isAuthorizedNoLog(admin, ENDENTITYPROFILEPREFIX + profileid);  
                   addEndEntityProfile( profileid, accessrules);
                 }catch(AuthorizationDeniedException e){}
+            }
             
         }
     }
