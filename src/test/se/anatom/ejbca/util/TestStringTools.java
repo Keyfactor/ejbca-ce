@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestStringTools.java,v 1.2 2005-02-11 13:12:00 anatom Exp $
+ * @version $Id: TestStringTools.java,v 1.3 2005-02-13 11:46:19 anatom Exp $
  */
 public class TestStringTools extends TestCase {
     private static Logger log = Logger.getLogger(TestStringTools.class);
@@ -64,6 +64,13 @@ public class TestStringTools extends TestCase {
             log.debug("octs["+i+"]="+(int)octs[i]);
         }
         log.debug(">test02IpStringToOctets()");
-
+    }
+    public void test03Strip() throws Exception {
+    	log.debug(">test03Strip()");
+    	String strip1 = "foo$bar:far%";
+    	String stripped = StringTools.strip(strip1);
+    	assertTrue("String has chars that should be stripped!", StringTools.hasStripChars(strip1));
+    	assertEquals("String not stripped correctly!", stripped, "foo/bar/far/");
+		log.debug("<test03Strip()");
     }
 }

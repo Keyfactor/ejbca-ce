@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.21 2005-02-11 13:12:27 anatom Exp $
+ * @version $Id: StringTools.java,v 1.22 2005-02-13 11:46:31 anatom Exp $
  */
 public class StringTools {
     private static Logger log = Logger.getLogger(StringTools.class);
@@ -57,13 +57,7 @@ public class StringTools {
                     // If it is an escaped char, allow it if it is an allowed escapechar
                     int index = ret.indexOf('\\');
                     while (index > -1) {
-                        boolean allowed = false;
-                        for (int j = 0; j < allowedEscapeChars.length; j++) {
-                            if (ret.charAt(index+1) == allowedEscapeChars[j]) {
-                                allowed = true;
-                            }
-                        }
-                        if (!allowed) {
+                    	if (isAllowed(ret.charAt(index+1))) {
                             ret = StringUtils.overlay(ret,"/",index,index+1);
                         }
                         index = ret.indexOf('\\',index+1);
@@ -94,13 +88,7 @@ public class StringTools {
                     // If it is an escaped char, allow it if it is an allowed escapechar
                     int index = ret.indexOf('\\');
                     while (index > -1) {
-                        boolean allowed = false;
-                        for (int j = 0; j < allowedEscapeChars.length; j++) {
-                            if (ret.charAt(index+1) == allowedEscapeChars[j]) {
-                                allowed = true;
-                            }
-                        }
-                        if (!allowed) {
+                        if (isAllowed(ret.charAt(index+1))) {
                             return true;
                         }
                         index = ret.indexOf('\\',index+1);
@@ -113,6 +101,21 @@ public class StringTools {
         return false;
     } // hasStripChars
 
+    /** Checks if a character is an allowed escape characted according to allowedEscapeChars
+     * 
+     * @param ch the char to check
+     * @return true if char is an allowed escape character, false if now
+     */ 
+    private static boolean isAllowed(char ch) {
+    	boolean allowed = false;
+    	for (int j = 0; j < allowedEscapeChars.length; j++) {
+    		if (ch == allowedEscapeChars[j]) {
+    			allowed = true;
+    			break;
+    		}
+    	}
+    	return allowed;
+    }
     
     /**
      * Strips all whitespace including space, tabs, newlines etc from the given string.
