@@ -82,7 +82,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.29 2004-08-08 13:09:31 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.30 2004-11-02 08:22:08 anatom Exp $
  *
  * @ejb.bean description="Session bean manging CAs"
  *   display-name="CAAdminSB"
@@ -1196,7 +1196,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
                                                signedby,
                                                (Collection) certificatechain,
                                                catoken.getCATokenInfo(),
-                                               "Old Imported EJBCA version",
+                                               "Imported CA",
                                                -1, null, // revokationreason, revokationdate
                                                "", // PolicyId
                                                24, // CRLPeriod
