@@ -49,7 +49,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.21 2005-01-04 10:04:19 anatom Exp $
+ * @version $Id: CACertServlet.java,v 1.22 2005-02-09 08:30:54 anatom Exp $
  *
  * @web.servlet name = "CACert"
  *              display-name = "CACertServlet"
@@ -81,15 +81,14 @@ public class CACertServlet extends HttpServlet {
     private ISignSessionLocalHome signhome = null;
 
     public void init(ServletConfig config) throws ServletException {
-    super.init(config);
-       try {
-           // FIXME this should be the remote home !
-		signhome = (ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
+        super.init(config);
+        try {
+            signhome = (ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
         } catch( Exception e ) {
             throw new ServletException(e);
         }
     }
-
+    
     public void doPost(HttpServletRequest req, HttpServletResponse res)
         throws IOException, ServletException {
         log.debug(">doPost()");
@@ -148,6 +147,14 @@ public class CACertServlet extends HttpServlet {
                 }
                 X509Certificate cacert = (X509Certificate)chain[level];
                 byte[] enccert = cacert.getEncoded();
+                if (res.containsHeader("Pragma")) {
+                    log.debug("Removing Pragma header to avoid caching issues in IE");
+                    res.setHeader("Pragma",null);
+                }
+                if (res.containsHeader("Cache-Control")) {
+                    log.debug("Removing Cache-Control header to avoid caching issues in IE");
+                    res.setHeader("Cache-Control",null);
+                }
                 if (command.equalsIgnoreCase(COMMAND_NSCACERT)) {
                     res.setContentType("application/x-x509-ca-cert");
                     res.setContentLength(enccert.length);

@@ -48,7 +48,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java,v 1.19 2004-11-08 21:18:25 sbailliez Exp $
+ * @version $Id: GetCRLServlet.java,v 1.20 2005-02-09 08:30:54 anatom Exp $
  */
 public class GetCRLServlet extends HttpServlet {
 
@@ -133,6 +133,14 @@ public class GetCRLServlet extends HttpServlet {
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);
                 String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
+                if (res.containsHeader("Pragma")) {
+                    log.debug("Removing Pragma header to avoid caching issues in IE");
+                    res.setHeader("Pragma",null);
+                }
+                if (res.containsHeader("Cache-Control")) {
+                    log.debug("Removing Cache-Control header to avoid caching issues in IE");
+                    res.setHeader("Cache-Control",null);
+                }
                 res.setHeader("Content-disposition", "attachment; filename=" +  filename);
                 res.setContentType("application/pkix-crl");
                 res.setContentLength(crl.length);

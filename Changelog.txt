@@ -38,6 +38,7 @@ Fixed weblink to force a browser type when using an unknown browser.
 Added cli method to re-publish a CA and all it's users to ldap.
 Fixed so EMPTY profile is not selectable for admin groups not authorized to it.
 Fixed sending of notification messages not working on certain occasions. 
+Fixed cache control issues with download of ca cert and CRL from admin pages to IE.
 
 3.0.4
 -----
