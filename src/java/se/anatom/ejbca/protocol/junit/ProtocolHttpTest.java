@@ -5,7 +5,6 @@ import org.apache.log4j.Logger;
 import junit.framework.*;
 
 import com.meterware.httpunit.*;
-import com.meterware.pseudoserver.HttpUserAgentTest;
 
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.protocol.ScepRequestMessage;

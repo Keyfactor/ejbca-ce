@@ -2,7 +2,6 @@ package se.anatom.ejbca.webdist.junit;
 
 import junit.framework.*;
 import com.meterware.httpunit.*;
-import com.meterware.pseudoserver.HttpUserAgentTest;
 
 /** Tests http pages of public webdist
  **/
