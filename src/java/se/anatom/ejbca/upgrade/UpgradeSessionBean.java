@@ -20,7 +20,7 @@ import se.anatom.ejbca.util.JDBCUtil;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.2 2004-04-12 16:15:42 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.3 2004-04-15 13:45:01 anatom Exp $
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
@@ -98,8 +98,8 @@ public class UpgradeSessionBean extends BaseSessionBean {
         } catch (Exception e) {
         	// ignore, will return false
         } finally {
-            JDBCUtil.close(con);
             JDBCUtil.close(ps);
+            JDBCUtil.close(con);
         }            
         debug("<preCheck("+ret+")");
         return ret;
@@ -114,8 +114,10 @@ public class UpgradeSessionBean extends BaseSessionBean {
     public boolean upgrade(Admin admin) {
         debug(">upgrade("+admin.toString()+")");
         if (!preCheck()) {
+        	info("preCheck failed, no upgrade performed.");
             return false;
         }
+        info("Starting upgrade from ejbca2 to ejbca3.");
         // TODO:
         debug(">upgrade()");
         return false;

@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 /**
  * Base for all AdminCommands, contains functions for getting initial context and logging
  *
- * @version $Id: BaseAdminCommand.java,v 1.8 2003-07-24 08:43:29 anatom Exp $
+ * @version $Id: BaseAdminCommand.java,v 1.9 2004-04-15 13:45:01 anatom Exp $
  */
 public abstract class BaseAdminCommand implements IAdminCommand {
     /** Log4j instance for Base */
@@ -53,9 +53,7 @@ public abstract class BaseAdminCommand implements IAdminCommand {
             baseLog.error("Can't get InitialContext", e);
             throw e;
         }
-    }
-
-    // getInitialContext
+    } // getInitialContext
 
     /**
      * Logs a message with priority DEBUG

@@ -459,7 +459,6 @@
         <local>se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal</local>
         <ejb-link>CAAdminSession</ejb-link>
      </ejb-local-ref>
-
      <ejb-local-ref>
         <description>The Log session bean</description>
         <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
@@ -470,6 +469,32 @@
      </ejb-local-ref>
    </session> 
 
+   <session>
+     <description>Upgrades the database for a new version of ejbca</description>
+     <ejb-name>UpgradeSession</ejb-name>
+     <home>se.anatom.ejbca.upgrade.IUpgradeSessionHome</home>
+     <remote>se.anatom.ejbca.upgrade.IUpgradeSessionRemote</remote>
+     <local-home>se.anatom.ejbca.upgrade.IUpgradeSessionLocalHome</local-home>
+     <local>se.anatom.ejbca.upgrade.IUpgradeSessionLocal</local>
+     <ejb-class>se.anatom.ejbca.upgrade.UpgradeSessionBean</ejb-class>
+     <session-type>Stateless</session-type>
+     <transaction-type>Container</transaction-type>
+     <env-entry>
+        <description>JDBC datasource to be used</description>
+        <env-entry-name>DataSource</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>java:/DefaultDS</env-entry-value>
+     </env-entry>
+     <ejb-local-ref>
+        <description>The Log session bean</description>
+        <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.log.ILogSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.log.ILogSessionLocal</local>
+        <ejb-link>LogSession</ejb-link>
+     </ejb-local-ref>
+     
+   </session>
 
    <entity>
       <description>

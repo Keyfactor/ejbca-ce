@@ -4,13 +4,14 @@ import javax.naming.*;
 
 import org.apache.log4j.Logger;
 
-import se.anatom.ejbca.ra.IUserAdminSessionHome;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
+import se.anatom.ejbca.log.Admin;
 
 
 /**
  * Base for Commands, contains useful functions
  *
- * @version $Id: BaseCommand.java,v 1.1 2004-04-10 17:12:26 anatom Exp $
+ * @version $Id: BaseCommand.java,v 1.2 2004-04-15 13:45:01 anatom Exp $
  */
 public abstract class BaseCommand {
     /** Log4j instance for Base */
@@ -19,12 +20,17 @@ public abstract class BaseCommand {
     /** Log4j instance for actual class */
     private Logger log;
 
+    /** Cached initial context to save JNDI lookups */
+    private static InitialContext cacheCtx = null;
+    protected Admin administrator = null;
+
     /**
      * Creates a new instance of the class
      *
      */
     public BaseCommand() {
         log = Logger.getLogger(this.getClass());
+        administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     }
 
     /**
@@ -35,12 +41,33 @@ public abstract class BaseCommand {
 	protected boolean appServerRunning() {
 		// Check that the application server is running by getting a home interface for user admin session
 		try {
-			IUserAdminSessionHome home = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow((new InitialContext()).lookup("UserAdminSession"),IUserAdminSessionHome.class);
+	        Context ctx = getInitialContext();
+			ICAAdminSessionHome home = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"),ICAAdminSessionHome.class);
 			return true;
 		} catch (Exception e) {
+			error("Appserver not running: ", e);
             return false;
         }
 	}
+
+    /**
+     * Gets InitialContext
+     *
+     * @return InitialContext
+     */
+    protected InitialContext getInitialContext() throws NamingException {
+        baseLog.debug(">getInitialContext()");
+        try {
+            if (cacheCtx == null) {
+                cacheCtx = new InitialContext();
+            }
+            baseLog.debug("<getInitialContext()");
+            return cacheCtx;
+        } catch (NamingException e) {
+            baseLog.error("Can't get InitialContext", e);
+            throw e;
+        }
+    } // getInitialContext
 
     /**
      * Logs a message with priority DEBUG

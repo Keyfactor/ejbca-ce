@@ -604,6 +604,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceNotActiveException.class"/>
                 <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/OCSPCAServiceInfo.class"/>
                 <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceInfo.class"/>
+                <include name="se/anatom/ejbca/upgrade/*.class"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/> 
        </fileset>
       </copy>
@@ -777,6 +778,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
              <sysproperty key="ejbcaDB" value="${ejbca.DB}"/>
              <sysproperty key="ejbcaDS" value="${ejbca.DS}"/>
 	  		 <classpath>
+                <pathelement location="."/>
 	  		 	<pathelement location="${adminjar}"/>
 	  		 	<fileset dir="${env.JBOSS_HOME}/client" includes="**/*.jar"/>
 	  		 	<fileset dir="${lib}" includes="**/*.jar"/>
