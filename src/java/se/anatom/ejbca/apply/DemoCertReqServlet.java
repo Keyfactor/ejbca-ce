@@ -22,6 +22,8 @@ import org.apache.log4j.Category;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ra.*;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
@@ -76,7 +78,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.10 2003-01-28 15:54:36 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.11 2003-01-29 11:40:21 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -84,7 +86,8 @@ public class DemoCertReqServlet extends HttpServlet {
 
   private InitialContext ctx = null;
   private ISignSessionHome signsessionhome = null;
-  private IUserAdminSessionHome adminsessionhome = null;
+  private IUserAdminSessionHome useradminsessionhome = null;
+  private IRaAdminSessionHome raadminsessionhome = null;
   private ICertificateStoreSessionHome storesessionhome = null;
 
   private final static byte[] BEGIN_CERT =
@@ -109,7 +112,8 @@ public class DemoCertReqServlet extends HttpServlet {
       // Get EJB context and home interfaces
       ctx = new InitialContext();
       signsessionhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class);
-      adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class);
+      useradminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class);
+      raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("RaAdminSession"), IRaAdminSessionHome.class);
       storesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class);
     } catch (Exception e) {
       throw new ServletException(e);
@@ -146,9 +150,11 @@ public class DemoCertReqServlet extends HttpServlet {
 
     ISignSessionRemote signsession = null;
     ICertificateStoreSessionRemote storesession = null;
-    IUserAdminSessionRemote adminsession = null;
+    IUserAdminSessionRemote useradminsession = null;
+    IRaAdminSessionRemote raadminsession = null;
     try {
-        adminsession = adminsessionhome.create();
+        useradminsession = useradminsessionhome.create();
+        raadminsession = raadminsessionhome.create();
         signsession = signsessionhome.create();
         storesession = storesessionhome.create();
     } catch (CreateException e) {
@@ -187,7 +193,7 @@ public class DemoCertReqServlet extends HttpServlet {
     }
     // need null check here?
     // Before doing anything else, check if the user name is unique and ok.
-    boolean check = checkUsername(admin,username, adminsession);
+    boolean check = checkUsername(admin,username, useradminsession);
     if (check == false) {
         String msg = "User '"+username+"' already exist.";
         cat.error(msg);
@@ -218,7 +224,7 @@ public class DemoCertReqServlet extends HttpServlet {
 
     int eProfileId = SecConst.EMPTY_ENDENTITYPROFILE;
     if (request.getParameter("entityprofile") != null) {
-      // TODO: resolve eProfile's Id
+        eProfileId = raadminsession.getEndEntityProfileId(admin, request.getParameter("entityprofile"));
     }
     // TODO: check that we're authorized to use the profile
     newuser.setEndEntityProfileId(eProfileId);
@@ -236,7 +242,7 @@ public class DemoCertReqServlet extends HttpServlet {
     newuser.setClearTextPassword(false);
 
     try {
-        adminsession.addUser(admin, newuser.getUsername(), newuser.getPassword(), newuser.getSubjectDN(), newuser.getSubjectAltName()
+        useradminsession.addUser(admin, newuser.getUsername(), newuser.getPassword(), newuser.getSubjectDN(), newuser.getSubjectAltName()
                                ,newuser.getEmail(), newuser.getClearTextPassword(), newuser.getEndEntityProfileId(),
                                 newuser.getCertificateProfileId(), newuser.getAdministrator(),
                                 newuser.getKeyRecoverable(), newuser.getTokenType(), newuser.getHardTokenIssuerId());
