@@ -23,7 +23,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.18 2003-10-21 13:48:48 herrvendil Exp $
+ * @version $Id: CaInitCommand.java,v 1.19 2003-11-01 13:59:07 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
     /** Pointer to main certificate store */
@@ -48,17 +48,14 @@ public class CaInitCommand extends BaseCaAdminCommand {
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-        try {
-            System.out.println("Initializing CA");
+        // Create new CA.
+        if (args.length < 6) {
+           String msg = "Usage: CA init <caname> <dn> <keysize> <validity-days> <policyID>";
+           msg += "\npolicyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0'.";
+           throw new IllegalAdminCommandException(msg);
+        }
             
-            // Create new CA.
-            if (args.length < 6) {
-               String msg = "Usage: CA init <caname> <dn> <keysize> <validity-days> <policyID>";
-               msg += "\npolicyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0'.";
-               throw new IllegalAdminCommandException(msg);
-            }
-            
-        
+        try {        
             String caname = args[1];
             String dn = CertTools.stringToBCDNString(args[2]);
             int keysize = Integer.parseInt(args[3]);
@@ -67,6 +64,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             if (policyId.equals("null"))
               policyId = null;
               
+            System.out.println("Initializing CA");            
             Context context = getInitialContext();
             ICAAdminSessionHome caadminsessionhome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CAAdminSession"), ICAAdminSessionHome.class);
             ICAAdminSessionRemote caadminsession = caadminsessionhome.create();
@@ -76,7 +74,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             }else{
                 
               System.out.println("Generating rootCA keystore:");
-              System.out.println("DN (UFT-8): "+dn);
+              System.out.println("DN: "+dn);
               System.out.println("Keysize: "+keysize);
               System.out.println("Validity (days): "+validity);
               System.out.println("Policy ID: "+policyId);
@@ -109,6 +107,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                                                false, // CRL Number Critical
                                                true); // Finish User           
             
+              System.out.println("Creating CA...");
               caadminsession.createCA(administrator, cainfo);
             
               int caid = caadminsession.getCAInfo(administrator, caname).getCAId();
@@ -122,9 +121,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
-    }
-
-    // execute
+    } // execute
     
     private void initAuthorizationModule(int caid) throws Exception{
       System.out.println("Initalizing Temporary Authorization Module.");  
