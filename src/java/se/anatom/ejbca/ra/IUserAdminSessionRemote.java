@@ -23,7 +23,7 @@ import javax.ejb.RemoveException;
 /**
  * Interface for User admin session
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.20 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.21 2003-07-21 08:17:55 anatom Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     // Public constants
@@ -34,11 +34,13 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     /**
      * Adds a user in the database.
      *
+     * @param admin the administrator pwrforming the action
      * @param username the unique username.
      * @param password the password used for authentication.
-     * @param dn the DN the subject is given in his certificate.
+     * @param subjectdn the DN the subject is given in his certificate.
      * @param subjectaltname the Subject Alternative Name to be used.
      * @param email the email of the subject or null.
+     * @param clearpwd true if the password will be stored in clear form in the db, otherwise it is hashed.
      * @param endentityprofileid the id number of the end entity profile bound to this user.
      * @param certificateprofileid the id number of the certificate profile that should be
      *        generated for the user.
@@ -56,11 +58,13 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     /**
      * Changes data for a user in the database speciefied by username.
      *
+     * @param admin the administrator pwrforming the action
      * @param username the unique username.
      * @param password the password used for authentication.
      * @param dn the DN the subject is given in his certificate.
      * @param subjectaltname the Subject Alternative Name to be used.
      * @param email the email of the subject or null.
+     * @param clearpwd true if the password will be stored in clear form in the db, otherwise it is hashed.
      * @param endentityprofileid the id number of the end entity profile bound to this user.
      * @param certificateprofileid the id number of the certificate profile that should be
      *        generated for the user.
@@ -79,6 +83,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * Deletes a user from the database. The users certificates must be revoked BEFORE this method
      * is called.
      *
+     * @param admin the administrator pwrforming the action
      * @param username the unique username.
      *
      * @throws EJBException if a communication or other error occurs.
@@ -90,6 +95,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     /**
      * Changes status of a user.
      *
+     * @param admin the administrator pwrforming the action
      * @param username the unique username.
      * @param status the new status, from 'UserData'.
      *
@@ -101,7 +107,9 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     /**
      * Method that revokes a user.
      *
+     * @param admin the administrator pwrforming the action
      * @param username , the username to revoke.
+     * @param reason the reason of revokation.
      */
     public void revokeUser(Admin admin, String username, int reason)
         throws AuthorizationDeniedException, FinderException, RemoteException;
@@ -110,9 +118,10 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * Method that revokes a users certificate and sets users status to revoked if all certificates
      * are revoked.
      *
-     * @param certserno , the certificate serial number of certificate
-     * @param username , the username to revoke.
-     * @param reason , the reason of revokation.
+     * @param admin the administrator pwrforming the action
+     * @param certserno the certificate serial number of certificate
+     * @param username the username to revoke.
+     * @param reason the reason of revokation.
      */
     public void revokeCert(Admin admin, BigInteger certserno, String username, int reason)
         throws AuthorizationDeniedException, FinderException, RemoteException;
@@ -120,6 +129,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     /**
      * Sets a new password for a user.
      *
+     * @param admin the administrator pwrforming the action
      * @param username the unique username.
      * @param password the new password for the user, NOT null.
      *
@@ -132,6 +142,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     /**
      * Sets a clear text password for a user.
      *
+     * @param admin the administrator pwrforming the action
      * @param username the unique username.
      * @param password the new password to be stored in clear text. Setting password to 'null'
      *        effectively deletes any previous clear text password.
@@ -145,6 +156,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     /**
      * Finds a user.
      *
+     * @param admin the administrator pwrforming the action
      * @param username username.
      *
      * @return UserAdminData or null if the user is not found.
@@ -157,6 +169,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     /**
      * Finds a user by its subjectDN.
      *
+     * @param admin the administrator pwrforming the action
      * @param subjectdn
      *
      * @return UserAdminData or null if the user is not found.
@@ -169,6 +182,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     /**
      * Finds a user by its Email.
      *
+     * @param admin the administrator pwrforming the action
      * @param subjectdn
      *
      * @return UserAdminData or null if the user is not found.
@@ -182,6 +196,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * Method that checks if user with specified users certificate exists in database and is set as
      * administrator.
      *
+     * @param admin the administrator pwrforming the action
      * @param subjectdn
      *
      * @throws AuthorizationDeniedException if user isn't an administrator.
@@ -193,6 +208,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     /**
      * Finds all users with a specified status.
      *
+     * @param admin the administrator pwrforming the action
      * @param status the new status, from 'UserData'.
      *
      * @return Collection of UserAdminData
@@ -207,6 +223,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     /**
      * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
      *
+     * @param admin the administrator pwrforming the action
      * @return Collection of UserAdminData
      *
      * @throws EJBException if a communication or other error occurs.
@@ -219,8 +236,9 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     /**
      * Finds all users with a specified status and returns the first MAXIMUM_QUERY_ROWCOUNT.
      *
+     * @param admin the administrator pwrforming the action
      * @param status the new status, from 'UserData'.
-     * @param onlybatchusers , only returns uses meant to be processed through batch tool.
+     * @param onlybatchusers only returns uses meant to be processed through batch tool.
      *
      * @return Collection of UserAdminData
      *
@@ -242,6 +260,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * Method to execute a customized query on the ra user data. The parameter query should be a
      * legal Query object.
      *
+     * @param admin the administrator pwrforming the action
      * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
      *
      * @return a collection of UserAdminData. Maximum size of Collection is defined i
@@ -257,6 +276,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * Methods that checks if a user exists in the database having the given endentityprofileid.
      * This function is mainly for avoiding desyncronisation when end entity profile is deleted.
      *
+     * @param admin the administrator pwrforming the action
      * @param endentityprofileid the id of profile to look for.
      *
      * @return true if endentityprofileid exists in userdatabase.
@@ -268,6 +288,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * Methods that checks if a user exists in the database having the given certificateprofileid.
      * This function is mainly for avoiding desyncronisation when a certificateprofile is deleted.
      *
+     * @param admin the administrator pwrforming the action
      * @param certificateprofileid the id of certificateprofile to look for.
      *
      * @return true if certificaterofileid exists in userdatabase.
@@ -280,6 +301,8 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     /**
      * Saves global configuration to the database.
      *
+     * @param admin the administrator pwrforming the action
+     * @param blobalconfiguration global configuration object
      * @throws EJBException if a communication or other error occurs.
      */
     public void saveGlobalConfiguration(Admin admin, GlobalConfiguration globalconfiguration)
@@ -288,6 +311,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     /**
      * Loads the global configuration from the database.
      *
+     * @param admin the administrator pwrforming the action
      * @return GlobalConfiguration
      *
      * @throws EJBException if a communication or other error occurs.

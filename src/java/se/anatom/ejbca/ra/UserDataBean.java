@@ -39,7 +39,7 @@ import javax.ejb.CreateException;
  * both the hashed password and the clear text password. The method comparePassword() is used to
  * verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.21 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.22 2003-07-21 08:17:55 anatom Exp $
  */
 public abstract class UserDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(UserDataBean.class);
@@ -145,7 +145,7 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Returns hashed password or null.
      *
-     * @return DOCUMENT ME!
+     * @return the hash of the password
      */
     public abstract String getPasswordHash();
 
@@ -160,7 +160,7 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Returns the time when the user was created.
      *
-     * @return DOCUMENT ME!
+     * @return seconds since 1970...
      */
     public abstract long getTimeCreated();
 
@@ -172,7 +172,7 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Returns the time when the user was last modified.
      *
-     * @return DOCUMENT ME!
+     * @return seconds since 1970...
      */
     public abstract long getTimeModified();
 
@@ -270,7 +270,7 @@ public abstract class UserDataBean extends BaseEntityBean {
      * Sets the password in clear form in the database, needed for machine processing, also sets
      * the hashed password to the same value
      *
-     * @param password DOCUMENT ME!
+     * @param password password to be stored in clear format
      */
     public void setOpenPassword(String password) throws NoSuchAlgorithmException {
         String passwordHash = makePasswordHash(password);
@@ -281,9 +281,9 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Verifies password by verifying against passwordhash
      *
-     * @param password DOCUMENT ME!
+     * @param password password to be compared to stored one
      *
-     * @return DOCUMENT ME!
+     * @return true if same, false of not
      */
     public boolean comparePassword(String password) throws NoSuchAlgorithmException {
         log.debug(">comparePassword()");

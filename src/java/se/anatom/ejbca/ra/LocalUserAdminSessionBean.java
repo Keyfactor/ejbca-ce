@@ -49,7 +49,7 @@ import javax.sql.DataSource;
  * Administrates users in the database using UserData Entity Bean. Uses JNDI name for datasource as
  * defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.57 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.58 2003-07-21 08:17:55 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean {
     /** The home interface of  GlobalConfiguration entity bean */
@@ -163,19 +163,22 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 
     /**
      * Implements IUserAdminSession::addUser. Implements a mechanism that uses UserDataEntity Bean.
+     * Adds a user in the database.
      *
-     * @param admin DOCUMENT ME!
-     * @param username DOCUMENT ME!
-     * @param password DOCUMENT ME!
-     * @param subjectdn DOCUMENT ME!
-     * @param subjectaltname DOCUMENT ME!
-     * @param email DOCUMENT ME!
-     * @param clearpwd DOCUMENT ME!
-     * @param endentityprofileid DOCUMENT ME!
-     * @param certificateprofileid DOCUMENT ME!
-     * @param type DOCUMENT ME!
-     * @param tokentype DOCUMENT ME!
-     * @param hardwaretokenissuerid DOCUMENT ME!
+     * @param admin the administrator pwrforming the action
+     * @param username the unique username.
+     * @param password the password used for authentication.
+     * @param subjectdn the DN the subject is given in his certificate.
+     * @param subjectaltname the Subject Alternative Name to be used.
+     * @param email the email of the subject or null.
+     * @param clearpwd true if the password will be stored in clear form in the db, otherwise it is hashed.
+     * @param endentityprofileid the id number of the end entity profile bound to this user.
+     * @param certificateprofileid the id number of the certificate profile that should be
+     *        generated for the user.
+     * @param type of user i.e administrator, keyrecoverable and/or sendnotification
+     * @param tokentype the type of token to be generated, one of SecConst.TOKEN constants
+     * @param hardtokenissuerid , if token should be hard, the id of the hard token issuer, else 0.
+     *
      */
     public void addUser(Admin admin, String username, String password, String subjectdn,
         String subjectaltname, String email, boolean clearpwd, int endentityprofileid,
