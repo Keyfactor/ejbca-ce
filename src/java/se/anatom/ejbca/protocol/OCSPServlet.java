@@ -55,7 +55,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.15 2003-12-29 16:44:55 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.16 2003-12-30 18:42:42 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -75,6 +75,10 @@ public class OCSPServlet extends HttpServlet {
     private long m_certValidTo = 0;
     /** Cached list of cacerts is valid 5 minutes */
     private static final long VALID_TIME = 5 * 60 * 1000;
+    /** String used to identify default responder id, used to generatwe responses when a request
+     * for a certificate not signed by a CA on this server is received.
+     */
+    private String m_defaultResponderId;
 
     /** Loads cacertificates but holds a cache so it's reloaded only every five minutes is needed.
     */
@@ -129,29 +133,31 @@ public class OCSPServlet extends HttpServlet {
         return null;
     }
 
-    protected int findCertificateIndexBySubject(X509Certificate [] certs, String subject) 
+    protected X509Certificate findCertificateBySubject(String subjectDN, Collection certs) 
     {
-        if (certs == null || null == subject) {
+        if (certs == null || null == subjectDN) {
             throw new IllegalArgumentException();
         }
 
-        if (certs.length <= 0 || subject.length() <= 0) {
-            return -1;
+        if (null == certs || certs.isEmpty()) {
+            m_log.info("The passed certificate collection is empty.");
+            return null;
         }
-
-        for (int i=0; i<certs.length; i++) {
+        String dn = CertTools.stringToBCDNString(subjectDN);
+        Iterator iter = certs.iterator();
+        while (iter.hasNext()) {
+            X509Certificate cacert = (X509Certificate)iter.next();
             if (m_log.isDebugEnabled()) {
-                m_log.debug("Checking certificate '"
-                            + certs[i].getSubjectDN().getName()
-                            + "' against '"
-                            + subject
-                            + "'");
+                m_log.debug("Comparing the following certificates:\n"
+                            + " CA certificate DN: " + cacert.getSubjectDN()
+                            + "\n Subject DN: " + dn);
             }
-            if (subject.equalsIgnoreCase(CertTools.stringToBCDNString(certs[i].getSubjectDN().getName()))) {
-                return i;
+            if (dn.equalsIgnoreCase(CertTools.stringToBCDNString(cacert.getSubjectDN().getName()))) {
+                return cacert;
             }
         }
-        return -1;
+        m_log.info("Did not find matching CA-cert for DN: "+subjectDN);
+        return null;
     }
 
     protected BasicOCSPRespGenerator createOCSPResponse(OCSPReq req, X509Certificate cacert) throws OCSPException {
@@ -176,11 +182,6 @@ public class OCSPServlet extends HttpServlet {
         super.init(config);
         
         try {
-            String pkpass;
-            String kspwd;
-            String pkalias;
-            String certalias;
-            
             {
                 File cwd = new File(".");
                 m_log.debug("OCSPServlet current working directory : '"
@@ -199,27 +200,11 @@ public class OCSPServlet extends HttpServlet {
             m_signsession = signhome.create();
             
             // Parameters for OCSP signing (private) key
-            kspwd = config.getInitParameter("keyStorePass").trim();
-            if (StringUtils.isEmpty(kspwd)) {
-                m_log.error("Keystore password not defined in initialization parameters.");
-                throw new ServletException("Missing keystore password.");
+            m_defaultResponderId = config.getInitParameter("defaultResponderID").trim();
+            if (StringUtils.isEmpty(m_defaultResponderId)) {
+                m_log.error("Default responder id not defined in initialization parameters.");
+                throw new ServletException("Missing default responder id.");
             }
-            pkalias = config.getInitParameter("privateKeyAlias").trim();
-            if (StringUtils.isEmpty(pkalias)) {
-                pkalias = "ocspsignkey";
-            }            
-            pkpass = config.getInitParameter("privateKeyPass").trim();
-            if (StringUtils.isEmpty(pkpass)) {
-                pkpass = null;
-            }
-            certalias = config.getInitParameter("certificateAlias").trim();
-            if (StringUtils.isEmpty(certalias)) {
-                certalias = "ocspsigncert";
-            }
-            if (m_log.isDebugEnabled()) {
-                m_log.debug("Certificate alias : '" + certalias + "'\n");
-            }
-
             String initparam = config.getInitParameter("enforceRequestSigning").trim();
             if (m_log.isDebugEnabled()) {
                 m_log.debug("Enforce request signing : '" 
@@ -322,34 +307,49 @@ public class OCSPServlet extends HttpServlet {
                     X509Certificate cacert = null;
                     for (int i=0;i<requests.length;i++) {
                         CertificateID certId = requests[i].getCertID();
-                        RevokedCertInfo rci;
-                        try {
-                            cacert = findCAByHash(certId, m_cacerts);
-                        } catch (OCSPException e) {
-                            m_log.error("Unable to generate CA certificate hash.", e);    
-                            cacert = null;
-                            continue;
+                        boolean unknownCA = false;
+                        // We only look for CA-certificate the first time around, 
+                        // we sign the response with the CA mathing the first certificate
+                        if (cacert == null) {
+                            try {
+                                cacert = findCAByHash(certId, m_cacerts);
+                                if (cacert == null) {
+                                    // We could not find certificate for this request so get certificate for default responder
+                                    cacert = findCertificateBySubject(m_defaultResponderId, m_cacerts);
+                                    unknownCA = true;
+                                }
+                            } catch (OCSPException e) {
+                                m_log.error("Unable to generate CA certificate hash.", e);    
+                                cacert = null;
+                                continue;
+                            }
+                            // Create a basic response using the first issuer we find
+                            if ( (cacert != null) && (basicRes == null) ) {
+                                basicRes = createOCSPResponse(req, cacert);
+                                // Find the OCSP signing key and cert for the issuer
+                                String issuerdn = CertTools.stringToBCDNString(cacert.getSubjectDN().toString()); 
+                                int caid = issuerdn.hashCode();
+                                // Call extended CA services to get our OCSP stuff
+                                caserviceresp = (OCSPCAServiceResponse)m_signsession.extendedService(m_adm,caid, new OCSPCAServiceRequest(0));
+                                // Now we can use the returned OCSPServiceResponse to get private key and cetificate chain to sign the ocsp response
+                                caserviceresp.getOCSPSigningKey();
+                                Collection coll = caserviceresp.getOCSPSigningCertificateChain();
+                                m_log.debug("Cert chain for OCSP signing is of size "+coll.size());
+                                ocspSigningCertchain = (X509Certificate[])caserviceresp.getOCSPSigningCertificateChain().toArray(new X509Certificate[coll.size()]); 
+                            } else if (cacert == null) {
+                                final String msg = "Unable to find CA certificate by issuer name hash: "+Hex.encode(certId.getIssuerNameHash())+", or even the default responder: "+m_defaultResponderId;
+                                m_log.error(msg);
+                                continue;                    
+                            }                            
+                            if (unknownCA == true) {
+                                final String msg = "Unable to find CA certificate by issuer name hash: "+Hex.encode(certId.getIssuerNameHash())+", using the default reponder to send 'UnknownStatus'";
+                                m_log.info(msg);
+                                // If we can not find the CA, answer UnknowStatus
+                                basicRes.addResponse(certId, new UnknownStatus());
+                                continue;                    
+                            }                            
                         }
-                        // Create a basic response using the first issuer we find
-                        if ( (cacert != null) && (basicRes == null) ) {
-                            basicRes = createOCSPResponse(req, cacert);
-                            // Find the OCSP signing key and cert for the issuer
-                            String issuerdn = CertTools.stringToBCDNString(cacert.getSubjectDN().toString()); 
-                            int caid = issuerdn.hashCode();
-                            // Call extended CA services to get our OCSP stuff
-                            caserviceresp = (OCSPCAServiceResponse)m_signsession.extendedService(m_adm,caid, new OCSPCAServiceRequest(0));
-                            // Now we can use the returned OCSPServiceResponse to get private key and cetificate chain to sign the ocsp response
-                            caserviceresp.getOCSPSigningKey();
-                            Collection coll = caserviceresp.getOCSPSigningCertificateChain();
-                            m_log.debug("Cert chain for OCSP signing is of size "+coll.size());
-                            ocspSigningCertchain = (X509Certificate[])caserviceresp.getOCSPSigningCertificateChain().toArray(new X509Certificate[coll.size()]); 
-                        } else if (cacert == null) {
-                            final String msg = "Unable to find CA certificate by issuer name hash: "+Hex.encode(certId.getIssuerNameHash());
-                            m_log.error(msg);
-                            // throw new ServletException(msg);
-                            //basicRes.addResponse(certId, new UnknownStatus());
-                            continue;                    
-                        }
+
 
                         /*
                          * Implement logic according to
@@ -360,6 +360,7 @@ public class OCSPServlet extends HttpServlet {
                          *    been compromised, it MAY return the revoked state for all
                          *    certificates issued by that CA.
                          */
+                        RevokedCertInfo rci;
                         rci = m_certStore.isRevoked(m_adm
                                                , cacert.getIssuerDN().getName()
                                                , cacert.getSerialNumber());
