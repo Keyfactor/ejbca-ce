@@ -35,7 +35,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.3 2001-12-07 11:45:13 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.4 2001-12-10 09:32:25 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -156,7 +156,10 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             // We are not concerned about the security of the random bits, only that they are different every time.
             // Extracting 64 bit random numbers out of this should give us 2^32 (4 294 967 296) serialnumbers before
             // collisions (which are seriously BAD), well anyhow sufficien for pretty large scale installations.
-            random.setSeed((long)(new Date().getTime()));
+            // Design criteria: 1. No counter to keep track on. 2. Multiple thereads can generate numbers at once, in
+            // a clustered environment etc.
+            long seed = (new Date().getTime()) + this.hashCode();
+            random.setSeed(seed);
         } catch( Exception e ) {
             throw new EJBException(e);
         }
