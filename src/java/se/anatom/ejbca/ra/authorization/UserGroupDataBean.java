@@ -20,11 +20,12 @@ import org.apache.log4j.*;
  * Information stored:
  * <pre>
  * Usergroupname
- * 
+ *
  * AccessRules
  * Userentities
  * </pre>
  *
+ * @version $Id: UserGroupDataBean.java,v 1.2 2002-07-23 16:02:58 anatom Exp $
  **/
 
 public abstract class UserGroupDataBean implements javax.ejb.EntityBean {
@@ -35,79 +36,79 @@ public abstract class UserGroupDataBean implements javax.ejb.EntityBean {
 
     public abstract String getUserGroupName();
     public abstract void setUserGroupName(String usergroupname);
-    
+
     public abstract Collection getUserEntities();
     public abstract void setUserEntities(Collection userentities);
-            
+
     public abstract Collection getAccessRules();
     public abstract void setAccessRules(Collection accessrules);
-    
+
      /**
      * @see se.anatom.ejbca.ra.raadmin.UserGroupDataLocal
-     */           
-    
-    public void addAccessRule(String directory, int rule, boolean recursive){         
+     */
+
+    public void addAccessRule(String directory, int rule, boolean recursive){
       try{
         AccessRulesDataLocal data = createAccessRule(directory,rule,recursive);
 
-        Iterator i =  getAccessRules().iterator();        
-        while(i.hasNext()){    
+        Iterator i =  getAccessRules().iterator();
+        while(i.hasNext()){
           AccessRulesDataLocal ar = (AccessRulesDataLocal) i.next();
           if(ar.getDirectory().equals(directory)){
-            getAccessRules().remove(ar);     
+            getAccessRules().remove(ar);
             try{
               ar.remove();
             }catch(RemoveException e){ throw new EJBException(e.getMessage());}
-            break;              
-         }    
-       }  
-       getAccessRules().add(data); 
+            break;
+         }
+       }
+       getAccessRules().add(data);
      }catch(Exception e){}
    } // addAccessRule
-    
+
     public void addAccessRules(AccessRule[] accessrules){
       if(accessrules!=null){
-        for(int i = 0; i< accessrules.length ; i++){  
+        for(int i = 0; i< accessrules.length ; i++){
           addAccessRule(accessrules[i].getDirectory(),accessrules[i].getRule()
                                                     ,accessrules[i].isRecursive());
        }
      }
    } // addAccessRules
-    
+
      /**
      * @see se.anatom.ejbca.ra.raadmin.UserGroupDataLocal
-     */   
+     */
     public void removeAccessRule(String directory){
-      Iterator i =  getAccessRules().iterator();        
-      while(i.hasNext()){    
+      Iterator i =  getAccessRules().iterator();
+      while(i.hasNext()){
         AccessRulesDataLocal ar = (AccessRulesDataLocal) i.next();
         if(ar.getDirectory().equals(directory)){
-          getAccessRules().remove(ar);     
+          getAccessRules().remove(ar);
           try{
-            ar.remove();          
+            ar.remove();
           }catch(RemoveException e){ throw new EJBException(e.getMessage());}
-          break;              
-       }    
-     }        
+          break;
+       }
+     }
     } // removeAccessRule
-    
+
      /**
      * @see se.anatom.ejbca.ra.raadmin.UserGroupDataLocal
-     */   
+     */
     public int getNumberOfAccessRules(){
-       return  getAccessRules().size();  
+       return  getAccessRules().size();
     } // getNumberOfAccessRules
-    
+
      /**
      * @see se.anatom.ejbca.ra.raadmin.UserGroupDataLocal
-     */   
-    public AccessRule[] getAccessRulesAsArray(){  
-      AccessRule[] returnval = null;  
+     */
+    public AccessRule[] getAccessRulesAsArray(){
+      AccessRule[] returnval = null;
       if(getAccessRules() != null){
         returnval = new AccessRule[getAccessRules().size()];
-        Iterator i =  getAccessRules().iterator();   
+        Iterator i =  getAccessRules().iterator();
         int j=0;
-        while(i.hasNext()){    
+        while(i.hasNext()){
           AccessRulesDataLocal ar = (AccessRulesDataLocal) i.next();
           returnval[j] = ar.getAccessRule();
           j++;
@@ -116,116 +117,116 @@ public abstract class UserGroupDataBean implements javax.ejb.EntityBean {
       }
       return returnval;
     } // getAccessRules
-    
+
      /**
      * @see se.anatom.ejbca.ra.raadmin.UserGroupDataLocal
-     */   
-    
+     */
+
     public void addUserEntity(int matchwith, int matchtype, String matchvalue){
       try{
         UserEntityDataLocal data = createUserEntity(matchwith,matchtype,matchvalue);
         UserEntityPK datapk = new UserEntityPK(getUserGroupName(), matchwith,matchtype,matchvalue);
-        
-        Iterator i =  getUserEntities().iterator();        
-        while(i.hasNext()){    
+
+        Iterator i =  getUserEntities().iterator();
+        while(i.hasNext()){
           UserEntityDataLocal ue = (UserEntityDataLocal) i.next();
           UserEntityPK uepk= new UserEntityPK(getUserGroupName(), ue.getMatchWith().intValue()
                                               ,ue.getMatchType().intValue(),ue.getMatchValue());
           if(uepk.equals(datapk)){
-            getUserEntities().remove(ue);     
+            getUserEntities().remove(ue);
             try{
               ue.remove();
             }catch(RemoveException e){ throw new EJBException(e.getMessage());}
-            break;              
-         }    
+            break;
+         }
        }
-       getUserEntities().add(data); 
-     }catch(Exception e){}        
+       getUserEntities().add(data);
+     }catch(Exception e){}
     } // addUserEntity
-    
+
     public void addUserEntities(UserEntity[] userentities){
       if(userentities!=null){
-        for(int i = 0; i< userentities.length ; i++){  
+        for(int i = 0; i< userentities.length ; i++){
           addUserEntity(userentities[i].getMatchWith(),userentities[i].getMatchType()
                                                     ,userentities[i].getMatchValue());
         }
-      }     
-    } // addUserEntities   
-   
+      }
+    } // addUserEntities
+
      /**
      * @see se.anatom.ejbca.ra.raadmin.UserGroupDataLocal
-     */   
+     */
     public void removeUserEntity(int matchwith, int matchtype, String matchvalue){
       UserEntityPK datapk = new UserEntityPK(getUserGroupName(), matchwith,matchtype,matchvalue);
-        
-      Iterator i =  getUserEntities().iterator();        
-      while(i.hasNext()){    
+
+      Iterator i =  getUserEntities().iterator();
+      while(i.hasNext()){
         UserEntityDataLocal ue = (UserEntityDataLocal) i.next();
         UserEntityPK uepk= new UserEntityPK(getUserGroupName(), ue.getMatchWith().intValue(),ue.getMatchType().intValue(),ue.getMatchValue());
         if(uepk.equals(datapk)){
-          getUserEntities().remove(ue);     
+          getUserEntities().remove(ue);
           try{
             ue.remove();
           }catch(RemoveException e){ throw new EJBException(e.getMessage());}
-          break;              
-       }    
-     }        
+          break;
+       }
+     }
     } // removeUserEntity
-    
+
      /**
      * @see se.anatom.ejbca.ra.raadmin.UserGroupDataLocal
-     */   
+     */
     public int getNumberOfUserEntities(){
-      return getUserEntities().size();  
+      return getUserEntities().size();
     } // getNumberOfUserEntities
-    
+
      /**
      * @see se.anatom.ejbca.ra.raadmin.UserGroupDataLocal
-     */   
+     */
     public UserEntity[] getUserEntitiesAsArray(){
       UserEntity[] returnval = null;
       if(getUserEntities() != null){
         returnval = new UserEntity[getUserEntities().size()];
-        Iterator i =  getUserEntities().iterator();   
+        Iterator i =  getUserEntities().iterator();
         int j=0;
-        while(i.hasNext()){    
+        while(i.hasNext()){
           UserEntityDataLocal ue = (UserEntityDataLocal) i.next();
           returnval[j] = ue.getUserEntity();
           j++;
         }
         Arrays.sort(returnval);
       }
-      return returnval;       
+      return returnval;
     } // getUserEntities
 
      /**
      * @see se.anatom.ejbca.ra.raadmin.UserGroupDataLocal
-     */   
+     */
     public UserGroup getUserGroup(){
       Vector accessrules = new Vector();
       Vector userentities = new Vector();
-      
+
       Iterator i = null;
       if(getUserEntities()!=null){
-        i =  getUserEntities().iterator();   
-        while(i.hasNext()){    
+        i =  getUserEntities().iterator();
+        while(i.hasNext()){
           UserEntityDataLocal ue = (UserEntityDataLocal) i.next();
           userentities.addElement(ue.getUserEntity());
-        }          
+        }
       }
-        
+
       if(getAccessRules()!=null){
-        i =  getAccessRules().iterator();   
-        while(i.hasNext()){    
-          AccessRulesDataLocal ar = (AccessRulesDataLocal) i.next();  
+        i =  getAccessRules().iterator();
+        while(i.hasNext()){
+          AccessRulesDataLocal ar = (AccessRulesDataLocal) i.next();
           accessrules.addElement(ar.getAccessRule());
         }
       }
-      
+
       return new UserGroup(accessrules, userentities);
     } // getUserGroup
-    
-    
+
+
     //
 
     // Fields required by Container
@@ -243,7 +244,7 @@ public abstract class UserGroupDataBean implements javax.ejb.EntityBean {
      **/
 
     public String ejbCreate(String usergroupname) throws CreateException {
-        
+
         setUserGroupName(usergroupname);
 
         log.debug("Created usergroup : "+usergroupname);
@@ -294,23 +295,23 @@ public abstract class UserGroupDataBean implements javax.ejb.EntityBean {
     }
 
     public void ejbRemove() {
- 
+
     }
-    
+
     // Private Methods.
     private UserEntityDataLocal createUserEntity(int matchwith, int matchtype, String matchvalue) throws CreateException, javax.naming.NamingException{
-      UserEntityDataLocal returnval = null;  
+      UserEntityDataLocal returnval = null;
       InitialContext initial = new InitialContext();
       UserEntityDataLocalHome home = (UserEntityDataLocalHome) initial.lookup("java:comp/env/ejb/UserEntityDataLocal");
       returnval= home.create(getUserGroupName(), matchwith, matchtype, matchvalue);
-      return returnval; 
+      return returnval;
     } // createProfileData
-    
+
     private AccessRulesDataLocal createAccessRule(String directory, int rule, boolean recursive) throws CreateException, javax.naming.NamingException{
-      AccessRulesDataLocal returnval = null;    
+      AccessRulesDataLocal returnval = null;
       InitialContext initial = new InitialContext();
       AccessRulesDataLocalHome home = (AccessRulesDataLocalHome) initial.lookup("java:comp/env/ejb/AccessRulesDataLocal");
       returnval= home.create(getUserGroupName(), directory, new AccessRule(directory,rule,recursive));
-      return returnval; 
+      return returnval;
     } // createProfileData
 }

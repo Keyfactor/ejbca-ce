@@ -5,9 +5,9 @@ import javax.ejb.FinderException;
 import java.util.Collection;
 
 /**
-
  * For docs, see UserEnityDataDataBean
-
+ *
+ * @version $Id: UserEntityDataLocalHome.java,v 1.2 2002-07-23 16:02:58 anatom Exp $
  **/
 
 public interface UserEntityDataLocalHome extends javax.ejb.EJBLocalHome {
@@ -18,7 +18,7 @@ public interface UserEntityDataLocalHome extends javax.ejb.EJBLocalHome {
 
     public UserEntityDataLocal findByPrimaryKey(UserEntityPK primarykey)
         throws FinderException;
-    
+
 
 }
 

@@ -6,6 +6,8 @@ import javax.ejb.FinderException;
 
 /**
  * For docs, see UserGroupDataBean
+ *
+ * @version $Id: UserGroupDataLocalHome.java,v 1.2 2002-07-23 16:02:58 anatom Exp $
  **/
 
 public interface UserGroupDataLocalHome extends javax.ejb.EJBLocalHome {
@@ -15,9 +17,9 @@ public interface UserGroupDataLocalHome extends javax.ejb.EJBLocalHome {
 
     public UserGroupDataLocal findByPrimaryKey(String usergroupname)
         throws FinderException;
-    
+
     public Collection findAll()
-        throws FinderException;    
+        throws FinderException;
 
 }
 

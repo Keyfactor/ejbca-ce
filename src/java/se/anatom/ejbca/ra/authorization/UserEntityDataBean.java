@@ -15,6 +15,7 @@ import org.apache.log4j.*;
  *   matchvalue
  * </pre>
  *
+ * @version $Id: UserEntityDataBean.java,v 1.2 2002-07-23 16:02:58 anatom Exp $
  **/
 
 public abstract class UserEntityDataBean implements javax.ejb.EntityBean {
@@ -22,36 +23,36 @@ public abstract class UserEntityDataBean implements javax.ejb.EntityBean {
     private static Category log = Category.getInstance( UserEntityDataBean.class.getName() );
     protected EntityContext  ctx;
 
-    public abstract UserEntityPK getPK();    
+    public abstract UserEntityPK getPK();
     public abstract Integer      getMatchWith();
     public abstract Integer      getMatchType();
     public abstract String       getMatchValue();
 
-    public abstract void setPK(UserEntityPK pk);    
+    public abstract void setPK(UserEntityPK pk);
     public abstract void setMatchWith(Integer matchwith);
     public abstract void setMatchType(Integer matchtype);
     public abstract void setMatchValue(String matchvalue);
 
-    
+
     public UserEntity getUserEntity(){
       return new UserEntity(getMatchWith().intValue(), getMatchType().intValue(), getMatchValue());
     }
-    
-    
+
+
     //
     // Fields required by Container
-    // 
+    //
 
 
     public UserEntityPK ejbCreate(String usergroupname, int matchwith, int matchtype, String matchvalue) throws CreateException {
 
-        UserEntityPK pk = new UserEntityPK(usergroupname, matchwith,matchtype,matchvalue); 
+        UserEntityPK pk = new UserEntityPK(usergroupname, matchwith,matchtype,matchvalue);
         setPK(pk);
         setMatchWith(new Integer(matchwith));
         setMatchType(new Integer(matchtype));
         setMatchValue(matchvalue);
 
-        
+
         log.debug("Created user entity "+ matchvalue);
         return pk;
     }
@@ -61,8 +62,8 @@ public abstract class UserEntityDataBean implements javax.ejb.EntityBean {
     }
 
     public void setEntityContext(EntityContext ctx) {
-        this.ctx = ctx; 
-    }  
+        this.ctx = ctx;
+    }
 
     public void unsetEntityContext() {
         this.ctx = null;
