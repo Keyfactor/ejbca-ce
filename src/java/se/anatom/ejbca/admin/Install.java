@@ -25,6 +25,7 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
 /** Class used as an install script of ejbca
  * 
  * @author philip
+ * @version $Id: Install.java,v 1.13 2004-05-08 10:13:28 anatom Exp $
  *
  * The main porpose of this program is to provide easy installment of EJBCA.
  */
@@ -132,8 +133,17 @@ public class Install extends BaseCommand {
 	  boolean retval = appServerRunning();
       if (!retval) {
         System.out.println(text.getProperty("APPSERVMUSTBERUNNING"));
-      }	  
-	  return retval;
+        //return false;
+      }
+      try {
+          retval = strongCryptoInstalled();          
+          System.out.println(text.getProperty("STRONGCRYPTOMUSTBEINSTALLED"));
+          return false;
+      } catch (Exception e) {
+          System.out.println(text.getProperty("STRONGCRYPTOMUSTBEINSTALLED"));
+          return false;
+      }
+	  //return retval;
 	}
 	
 	private void displayWelcomeScreen(){
