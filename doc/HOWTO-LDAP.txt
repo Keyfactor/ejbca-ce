@@ -1,5 +1,7 @@
 
 Configuring LDAP Publishers:
+
+A good free LDAP server can be found at http://www.openldap.org/
  
 A Publisher is a session bean that implements the IPublishSession interface and
 is used to store certificates and CRLs for entities.
