@@ -45,14 +45,14 @@ import se.anatom.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.28 2004-07-23 11:49:28 sbailliez Exp $
+ * @version $Id: CertificateDataBean.java,v 1.29 2004-11-20 21:33:18 sbailliez Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a certificate with accompanying data"
  * display-name="CertificateDataEB"
  * name="CertificateData"
  * view-type="local"
  * type="CMP"
- * reentrant="false"
+ * reentrant="False"
  * cmp-version="2.x"
  * transaction-type="Container"
  * schema="CertificateDataBean"
@@ -98,29 +98,32 @@ import se.anatom.ejbca.util.CertTools;
  * @ejb.finder description="findByUsername"
  * signature="Collection findByUsername(java.lang.String username)"
  * query="SELECT DISTINCT OBJECT(a) from CertificateDataBean a WHERE  a.username=?1"
+ *
+ * @jonas.jdbc-mapping
+ *   jndi-name="${datasource.jndi-name}"
  */
 public abstract class CertificateDataBean extends BaseEntityBean {
 
     /** Certificate doesn't belong to anyone */
-    public static int CERT_UNASSIGNED = 0;
+    public static final int CERT_UNASSIGNED = 0;
 
     /** Assigned, but not yet active */
-    public static int CERT_INACTIVE = 10;
+    public static final int CERT_INACTIVE = 10;
 
     /** Certificate is active and assigned */
-    public static int CERT_ACTIVE = 20;
+    public static final int CERT_ACTIVE = 20;
 
     /** Certificate is temporarily blocked (reversible) */
-    public static int CERT_TEMP_REVOKED = 30;
+    public static final int CERT_TEMP_REVOKED = 30;
 
     /** Certificate is permanently blocked (terminated) */
-    public static int CERT_REVOKED = 40;
+    public static final int CERT_REVOKED = 40;
 
     /** Certificate is expired */
-    public static int CERT_EXPIRED = 50;
+    public static final int CERT_EXPIRED = 50;
 
     /** Certificate is expired and kept for archive purpose */
-    public static int CERT_ARCHIVED = 60;
+    public static final int CERT_ARCHIVED = 60;
 
     // Certificate types used to create certificates
     /** Certificate used for encryption. */
@@ -156,7 +159,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
     public static final int encipherOnly = (1 << 0);
     public static final int decipherOnly = (1 << 15);
 
-    private static Logger log = Logger.getLogger(CertificateDataBean.class);
+    private static final Logger log = Logger.getLogger(CertificateDataBean.class);
 
     /**
      * DN of issuer of certificate
@@ -513,7 +516,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
             setSerialNumber(tmpcert.getSerialNumber().toString());
 
             // Default values for status and type
-            setStatus(CertificateDataBean.CERT_UNASSIGNED);
+            setStatus(CERT_UNASSIGNED);
             setType(SecConst.USER_INVALID);
             setCAFingerprint(null);
             setExpireDate(tmpcert.getNotAfter());
@@ -521,13 +524,9 @@ public abstract class CertificateDataBean extends BaseEntityBean {
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);
         } catch (CertificateEncodingException cee) {
             log.error("Can't extract DER encoded certificate information.", cee);
-
-            return null;
+            // TODO should throw an exception
         }
-
-        CertificateDataPK pk = new CertificateDataPK(getFingerprint());
-
-        return pk;
+        return null;
     }
 
     /**
