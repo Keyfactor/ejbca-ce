@@ -36,7 +36,11 @@ database used.
    Do the same with src/keyrecovery/META-INF/jbosscmp-jdbc-<database>.xml
 
 
-4. Build EJBCA with 'ant' and deploy with 'deploy.sh/cmd'.
+3. Build EJBCA with 'ant' and deploy with 'deploy.sh/cmd'.
+
+4. If you want to use another datasource than 'java:/DefaultDS' use the commands
+'ant replaceDS' followed by 'ant deploy'. This replaces all occurences of 'java:/DefaultDS'
+with a new one that you choose.
 
 Configuring JBoss
 -----------------
@@ -57,18 +61,18 @@ Database configuration files in JBoss (with Tomcat or Jetty) is located in the
 
 2. Put the JDBC driver for the database in <jboss-home>/server/default/lib/.
 
-4. Copy the proper <database>-service.xml file to <jboss-home>
+3. Copy the proper <database>-service.xml file to <jboss-home>
 /server/default/deploy. The JDBC-driver must be inluded and the database set up
 as DefaultDS. Current <database>-service.xml files can be obtained from
 jboss.org, provided here are snapshots that work for me.
 
-5. Remove the standard database driver, hsqldb-service.xml, from <jboss-home>
+4. Remove the standard database driver, hsqldb-service.xml, from <jboss-home>
 /server/default/deploy.
 
-6. Edit standardjbosscmp-jdbc.xml. Change the default type-
+5. Edit standardjbosscmp-jdbc.xml. Change the default type-
 mapping to match the chosen database (see below).
 
-7. DONE! Start JBoss. Run all tests with 'runtest.sh/cmd'.
+6. DONE! Start JBoss. Run all tests with 'runtest.sh/cmd'.
    Use your favorite database graphic editor to look at the beautiful tables.
 
 MySQL specifics
