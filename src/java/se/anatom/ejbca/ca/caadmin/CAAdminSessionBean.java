@@ -29,8 +29,6 @@ import java.security.cert.PKIXCertPathValidatorResult;
 import java.security.cert.PKIXParameters;
 import java.security.cert.TrustAnchor;
 import java.security.cert.X509Certificate;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -41,8 +39,6 @@ import java.util.Iterator;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
@@ -80,17 +76,15 @@ import se.anatom.ejbca.protocol.IRequestMessage;
 import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 import se.anatom.ejbca.protocol.X509ResponseMessage;
-import se.anatom.ejbca.ra.IUserAdminSessionLocal;
-import se.anatom.ejbca.ra.IUserAdminSessionLocalHome;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.KeyTools;
 
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.28 2004-07-23 10:24:44 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.29 2004-08-08 13:09:31 anatom Exp $
  *
- * @ejb.bean description="Session bean handling core CA function,signing certificates"
+ * @ejb.bean description="Session bean manging CAs"
  *   display-name="CAAdminSB"
  *   name="CAAdminSession"
  *   jndi-name="CAAdminSession"
@@ -102,31 +96,6 @@ import se.anatom.ejbca.util.KeyTools;
  * @ejb.transaction type="Required"
  *
  * @ejb.permission role-name="InternalUser"
- *
- * @ejb.env-entry description="JDBC datasource to be used"
- *   name="DataSource"
- *   type="java.lang.String"
- *   value="java:/${datasource.jndi-name}"
- *
- * @ejb.env-entry description="Used internally to keystores in database"
- *   name="keyStorePass"
- *   type="java.lang.String"
- *   value="foo123"
-  *
- * @ejb.env-entry description="Used internally to store keys in keystore in database"
- *   name="privateKeyPass"
- *   type="java.lang.String"
- *   value="null"
- *
- * @ejb.env-entry description="Password for OCSP keystores"
- *   name="OCSPKeyStorePass"
- *   type="java.lang.String"
- *   value="foo123"
- *
- * @ejb.env-entry description="Password for OCSP keystores private key protection"
- *   name="privateOCSPKeyPass"
- *   type="java.lang.String"
- *   value="foo123"
  *
  * @ejb.ejb-external-ref description="The CA entity bean"
  *   view-type="local"
@@ -176,14 +145,6 @@ import se.anatom.ejbca.util.KeyTools;
  *   business="se.anatom.ejbca.ca.crl.ICreateCRLSessionLocal"
  *   link="CreateCRLSession"
  *
- * @ejb.ejb-external-ref description="The User Admin Session Bean"
- *   view-type="local"
- *   ejb-name="UserAdminSessionLocal"
- *   type="Session"
- *   home="se.anatom.ejbca.ra.IUserAdminSessionLocalHome"
- *   business="se.anatom.ejbca.ra.IUserAdminStoreSessionLocal"
- *   link="CertificateStoreSession"
- *
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
  *   remote-class="se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome"
@@ -201,9 +162,6 @@ import se.anatom.ejbca.util.KeyTools;
  */
 public class CAAdminSessionBean extends BaseSessionBean {
 
-    /** Var holding JNDI name of datasource */
-    private String dataSource = "";
-
     /** The local home interface of CAData.*/
     private CADataLocalHome cadatahome;
 
@@ -212,9 +170,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
     /** The local interface of the authorization session bean */
     private IAuthorizationSessionLocal authorizationsession;
-
-    /** The local interface of the user admin session bean */
-    private IUserAdminSessionLocal useradminsession;
 
     /** The local interface of the certificate store session bean */
     private ICertificateStoreSessionLocal certificatestoresession;
@@ -226,29 +181,17 @@ public class CAAdminSessionBean extends BaseSessionBean {
     private ICreateCRLSessionLocal jobrunner;
 
 
-
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() throws CreateException {
         debug(">ejbCreate()");
-        dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
-        debug("DataSource=" + dataSource);
         cadatahome = (CADataLocalHome)lookup("java:comp/env/ejb/CADataLocal");
         // Install BouncyCastle provider
         CertTools.installBCProvider();
         debug("<ejbCreate()");
     }
-
-    /** Gets connection to Datasource used for manual SQL searches
-     * @return Connection
-     */
-    private Connection getConnection() throws SQLException, NamingException {
-        DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
-        return ds.getConnection();
-    } //getConnection
-
 
     /** Gets connection to log session bean
      */
@@ -295,21 +238,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
       return jobrunner;
     }
 
-    /** Gets connection to user admin session bean
-     * @return Connection
-     */
-    private IUserAdminSessionLocal getUserAdminSession() {
-        if(useradminsession == null){
-            try{
-                IUserAdminSessionLocalHome useradminsessionhome = (IUserAdminSessionLocalHome) lookup("java:comp/env/ejb/UserAdminSessionLocal",IUserAdminSessionLocalHome.class);
-                useradminsession = useradminsessionhome.create();
-            }catch(Exception e){
-                throw new EJBException(e);
-            }
-        }
-        return useradminsession;
-    } //getUserAdminSession
-
     /** Gets connection to certificate store session bean
      * @return Connection
      */
@@ -338,7 +266,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
             }
         }
         return signsession;
-    } //getCertificateStoreSession
+    } //getSignSession
 
 
     /**

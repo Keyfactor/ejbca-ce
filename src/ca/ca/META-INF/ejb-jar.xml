@@ -190,36 +190,6 @@
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
 
-     <env-entry>
-        <description>JDBC datasource to be used</description>
-        <env-entry-name>DataSource</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>java:/DefaultDS</env-entry-value>
-     </env-entry>         
-     <env-entry>
-        <description>Used internally to keystores in database.</description>
-        <env-entry-name>keyStorePass</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>foo123</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Used internally to store keys in keystore in database.</description>
-        <env-entry-name>privateKeyPass</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>null</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Password for OCSP keystores.</description>
-        <env-entry-name>OCSPKeyStorePass</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>foo123</env-entry-value>
-     </env-entry>
-      <env-entry>
-        <description>Password for OCSP keystores private key protection.</description>
-        <env-entry-name>privateOCSPKeyPass</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>foo123</env-entry-value>
-     </env-entry>
      <ejb-local-ref> 
         <description>The CA entity bean.</description>
         <ejb-ref-name>ejb/CADataLocal</ejb-ref-name>
@@ -269,14 +239,6 @@
         <ejb-link>CreateCRLSession</ejb-link>
      </ejb-local-ref>  
      
-     <ejb-local-ref>
-        <description>The User Admin Session Bean</description>
-        <ejb-ref-name>ejb/UserAdminSessionLocal</ejb-ref-name>
-        <ejb-ref-type>Session</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ra.IUserAdminSessionLocalHome</local-home>
-        <local>se.anatom.ejbca.ra.IUserAdminStoreSessionLocal</local>
-        <ejb-link>CertificateStoreSession</ejb-link>
-     </ejb-local-ref>     
     <security-identity>
         <description></description>
         <run-as>
