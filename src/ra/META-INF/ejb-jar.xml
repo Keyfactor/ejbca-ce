@@ -1,8 +1,7 @@
-﻿
+<?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE ejb-jar PUBLIC
 	"-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN"
 	"http://java.sun.com/dtd/ejb-jar_2_0.dtd">
-
 <ejb-jar>
 
  <description></description>
@@ -53,7 +52,7 @@
         <description>Defines the actual message of the notification. Use the values $Username, $Password, $CN, $O, $OU, $C, $DATE to indicate which texts that should be replaced (Case insensitive), $NL stands for newline.</description>
         <env-entry-name>message</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>Hej $CN$NL$NL Detta är en test på en notification.$NL$NL Du har användarnamn: $Username$NL lösenord: $Password$NL$NL Du skall nu INTE gå ngnstans och hämta ditt certifikat för detta är bara på skoj och för att bevisa för er att det fungerar nu. </env-entry-value>
+        <env-entry-value>Hej $CN$NL$NL Detta är en test på en notification. $NL$NL Du har användarnamn: $Username$NL lösenord: $Password$NL$NL Du skall nu INTE gå ngnstans och hämta ditt certifikat för detta Är bara på skoj och för att bevisa för er att det fungerar nu.</env-entry-value>
      </env-entry>          
      <!-- END Env-entries used for notification configuration -->     
      <ejb-ref>
