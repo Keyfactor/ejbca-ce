@@ -13,19 +13,25 @@
  
 package se.anatom.ejbca.apply;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PrivateKey;
-import java.security.cert.*;
-import java.util.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.Enumeration;
 
-import javax.ejb.*;
+import javax.ejb.ObjectNotFoundException;
 import javax.naming.InitialContext;
 import javax.rmi.PortableRemoteObject;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
@@ -39,14 +45,13 @@ import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionHome;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote;
 import se.anatom.ejbca.keyrecovery.KeyRecoveryData;
-
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.UserAdminData;
-import se.anatom.ejbca.ra.UserDataRemote;
+import se.anatom.ejbca.ra.UserDataLocal;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.KeyTools;
@@ -74,7 +79,7 @@ import se.anatom.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.46 2004-06-22 11:06:00 herrvendil Exp $
+ * @version $Id: CertReqServlet.java,v 1.47 2004-08-08 11:11:11 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
@@ -179,7 +184,7 @@ public class CertReqServlet extends HttpServlet {
             }
 
             boolean savekeys = data.getKeyRecoverable() && usekeyrecovery;
-            boolean loadkeys = (data.getStatus() == UserDataRemote.STATUS_KEYRECOVERY) &&
+            boolean loadkeys = (data.getStatus() == UserDataLocal.STATUS_KEYRECOVERY) &&
                 usekeyrecovery;
 
             // get users Token Type.

@@ -184,8 +184,6 @@
             This enterprise bean entity represents a User with accompanying data.
       </description>
       <ejb-name>UserData</ejb-name>
-      <home>se.anatom.ejbca.ra.UserDataHome</home>
-      <remote>se.anatom.ejbca.ra.UserDataRemote</remote>
       <local-home>se.anatom.ejbca.ra.UserDataLocalHome</local-home>
       <local>se.anatom.ejbca.ra.UserDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.UserDataBean</ejb-class>

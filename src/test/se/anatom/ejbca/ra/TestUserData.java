@@ -27,13 +27,12 @@ import se.anatom.ejbca.log.Admin;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.1 2004-06-10 16:17:44 sbailliez Exp $
+ * @version $Id: TestUserData.java,v 1.2 2004-08-08 11:06:50 anatom Exp $
  */
 public class TestUserData extends TestCase {
 
     private static Logger log = Logger.getLogger(TestUserData.class);
     private static Context ctx;
-    private static UserDataHome home;
     private static IUserAdminSessionRemote usersession;
     private static String username;
     private static String username1;
@@ -52,15 +51,12 @@ public class TestUserData extends TestCase {
     }
 
     protected void setUp() throws Exception {
-
         log.debug(">setUp()");
         ctx = getInitialContext();
 
-        Object obj = ctx.lookup("UserData");
-        home = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj, UserDataHome.class);
         caid = "CN=TEST".hashCode();
 
-        obj = ctx.lookup("UserAdminSession");
+        Object obj = ctx.lookup("UserAdminSession");
         IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
         usersession = userhome.create();
         admin = new Admin(Admin.TYPE_INTERNALUSER);
@@ -116,13 +112,9 @@ public class TestUserData extends TestCase {
      */
     public void test01CreateNewUser() throws Exception {
         log.debug(">test01CreateNewUser()");
-        UserDataRemote data1 = null;
         username = genRandomUserName();
         pwd = genRandomPwd();
-        data1 = home.create(username, pwd, "C=SE, O=AnaTom, CN=" + username, caid);
-        assertNotNull("Error creating", data1);
-        data1.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
-        data1.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
+        usersession.addUser(admin,username,pwd,"C=SE,O=AnaTom,CN="+username,null,null,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_INVALID,SecConst.TOKEN_SOFT_PEM,0,caid);
         log.debug("created it!");
         log.debug("<test01CreateNewUser()");
     }
@@ -135,28 +127,24 @@ public class TestUserData extends TestCase {
     public void test02LookupAndChangeUser() throws Exception {
         log.debug(">test02LookupAndChangeUser()");
 
-        UserDataPK pk = new UserDataPK(username);
-        log.debug("pk=" + pk);
-        UserDataRemote data2 = home.findByPrimaryKey(pk);
+        log.debug("username=" + username);
+        UserAdminData data2 = usersession.findUser(admin,username);
         log.debug("found by key! =" + data2);
         log.debug("username=" + data2.getUsername());
         assertTrue("wrong username", data2.getUsername().equals(username));
-        log.debug("subject=" + data2.getSubjectDN());
-        assertTrue("wrong DN", data2.getSubjectDN().indexOf(username) != -1);
-        log.debug("email=" + data2.getSubjectEmail());
-        assertNull("wrong email", data2.getSubjectEmail());
+        log.debug("subject=" + data2.getDN());
+        assertTrue("wrong DN", data2.getDN().indexOf(username) != -1);
+        log.debug("email=" + data2.getEmail());
+        assertNull("wrong email", data2.getEmail());
         log.debug("status=" + data2.getStatus());
-        assertTrue("wrong status", data2.getStatus() == UserDataRemote.STATUS_NEW);
+        assertTrue("wrong status", data2.getStatus() == UserDataLocal.STATUS_NEW);
         log.debug("type=" + data2.getType());
         assertTrue("wrong type", data2.getType() == SecConst.USER_INVALID);
-        log.debug("password foo123 returned " + data2.comparePassword("foo123"));
-        assertTrue("wrong pwd (foo123 works)", data2.comparePassword("foo123") == false);
-        log.debug("password " + pwd + " returned " + data2.comparePassword(pwd));
-        assertTrue("wrong pwd " + pwd, data2.comparePassword(pwd));
-        data2.setStatus(UserDataRemote.STATUS_GENERATED);
-        data2.setType(SecConst.USER_ENDUSER);
-        data2.setPassword("foo123");
-        data2.setSubjectEmail(username + "@anatom.se");
+        assertTrue("wrong pwd (foo123 works)", usersession.verifyPassword(admin,username,"foo123") == false);
+        assertTrue("wrong pwd " + pwd, usersession.verifyPassword(admin,username,pwd));
+
+        // Change DN
+        usersession.changeUser(admin,username,"foo123","C=SE,O=AnaTom,OU=Engineering, CN="+username,null,username+"@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataLocal.STATUS_GENERATED,caid);
         log.debug("Changed it");
         log.debug("<test02LookupAndChangeUser()");
     }
@@ -169,25 +157,25 @@ public class TestUserData extends TestCase {
     public void test03LookupChangedUser() throws Exception {
         log.debug(">test03LookupChangedUser()");
 
-        UserDataPK pk = new UserDataPK(username);
-        UserDataRemote data = home.findByPrimaryKey(pk);
+        UserAdminData data = usersession.findUser(admin,username);
         log.debug("found by key! =" + data);
         log.debug("username=" + data.getUsername());
         assertTrue("wrong username", data.getUsername().equals(username));
-        log.debug("subject=" + data.getSubjectDN());
-        assertTrue("wrong DN", data.getSubjectDN().indexOf(username) != -1);
-        log.debug("email=" + data.getSubjectEmail());
-        assertNotNull("Email should not be null now.", data.getSubjectEmail());
-        assertTrue("wrong email", data.getSubjectEmail().equals(username + "@anatom.se"));
+        log.debug("subject=" + data.getDN());
+        assertTrue("wrong DN (cn)", data.getDN().indexOf(username) != -1);
+        assertTrue("wrong DN (ou)", data.getDN().indexOf("Engineering") != -1);
+        log.debug("email=" + data.getEmail());
+        assertNotNull("Email should not be null now.", data.getEmail());
+        assertTrue("wrong email", data.getEmail().equals(username + "@anatom.se"));
         log.debug("status=" + data.getStatus());
-        assertTrue("wrong status", data.getStatus() == UserDataRemote.STATUS_GENERATED);
+        assertTrue("wrong status", data.getStatus() == UserDataLocal.STATUS_GENERATED);
         log.debug("type=" + data.getType());
         assertTrue("wrong type", data.getType() == SecConst.USER_ENDUSER);
-        log.debug("password foo123 returned " + data.comparePassword("foo123"));
-        assertTrue("wrong pwd foo123", data.comparePassword("foo123"));
-        log.debug("password " + pwd + " returned " + data.comparePassword(pwd));
-        assertTrue("wrong pwd (" + pwd + " works)", data.comparePassword(pwd) == false);
-        data.setOpenPassword("foo234");
+        assertTrue("wrong pwd foo123", usersession.verifyPassword(admin,username,"foo123"));
+        assertTrue("wrong pwd (" + pwd + " works)" + pwd, usersession.verifyPassword(admin,username,pwd) == false);
+
+        // Use clear text pwd instead, new email, reverse DN again
+        usersession.changeUser(admin,username,"foo234","C=SE,O=AnaTom,CN="+username,null,username+"@anatom.nu",true,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataLocal.STATUS_GENERATED,caid);
         log.debug("<test03LookupChangedUser()");
     }
 
@@ -199,26 +187,25 @@ public class TestUserData extends TestCase {
     public void test03LookupChangedUser2() throws Exception {
         log.debug(">test03LookupChangedUser2()");
 
-        UserDataPK pk = new UserDataPK(username);
-        UserDataRemote data = home.findByPrimaryKey(pk);
+        UserAdminData data = usersession.findUser(admin,username);
         log.debug("found by key! =" + data);
         log.debug("username=" + data.getUsername());
         assertTrue("wrong username", data.getUsername().equals(username));
-        log.debug("subject=" + data.getSubjectDN());
-        assertTrue("wrong DN", data.getSubjectDN().indexOf(username) != -1);
-        log.debug("email=" + data.getSubjectEmail());
-        assertNotNull("Email should not be null now.", data.getSubjectEmail());
-        assertTrue("wrong email", data.getSubjectEmail().equals(username + "@anatom.se"));
+        log.debug("subject=" + data.getDN());
+        assertTrue("wrong DN", data.getDN().indexOf(username) != -1);
+        assertTrue("wrong DN", data.getDN().indexOf("Engineering") == -1);
+        log.debug("email=" + data.getEmail());
+        assertNotNull("Email should not be null now.", data.getEmail());
+        assertTrue("wrong email", data.getEmail().equals(username + "@anatom.nu"));
         log.debug("status=" + data.getStatus());
-        assertTrue("wrong status", data.getStatus() == UserDataRemote.STATUS_GENERATED);
+        assertTrue("wrong status", data.getStatus() == UserDataLocal.STATUS_GENERATED);
         log.debug("type=" + data.getType());
         assertTrue("wrong type", data.getType() == SecConst.USER_ENDUSER);
-        log.debug("password foo234 returned " + data.comparePassword("foo234"));
-        assertTrue("wrong pwd foo234", data.comparePassword("foo234"));
-        assertEquals("wrong clear pwd foo234", data.getClearPassword(), "foo234");
-        log.debug("password " + pwd + " returned " + data.comparePassword(pwd));
-        assertTrue("wrong pwd (" + pwd + " works)", data.comparePassword(pwd) == false);
-        data.setOpenPassword("foo234");
+        assertTrue("wrong pwd foo234", usersession.verifyPassword(admin,username,"foo234"));
+        assertEquals("wrong clear pwd foo234", data.getPassword(), "foo234");
+        assertTrue("wrong pwd (" + pwd + " works)", usersession.verifyPassword(admin,username,pwd) == false);
+        
+        usersession.setPassword(admin,username,"foo234");
         log.debug("<test03LookupChangedUser2()");
     }
 
@@ -229,13 +216,9 @@ public class TestUserData extends TestCase {
      */
     public void test04CreateNewUser() throws Exception {
         log.debug(">test04CreateNewUser()");
-        UserDataRemote data4 = null;
         username1 = genRandomUserName();
         pwd1 = genRandomPwd();
-        data4 = home.create(username1, pwd1, "C=SE, O=AnaTom, CN=" + username, caid);
-        assertNotNull("Error creating", data4);
-        data4.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
-        data4.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
+        usersession.addUser(admin,username1,pwd1,"C=SE,O=AnaTom,CN="+username1,null,null,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_INVALID,SecConst.TOKEN_SOFT_PEM,0,caid);
         log.debug("created it again!");
         log.debug("<test04CreateNewUser()");
     }
@@ -251,16 +234,16 @@ public class TestUserData extends TestCase {
         Object obj1 = ctx.lookup("UserAdminSession");
         IUserAdminSessionHome adminhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
         IUserAdminSessionRemote admin = adminhome.create();
-        Collection coll = admin.findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataRemote.STATUS_NEW);
+        Collection coll = admin.findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataLocal.STATUS_NEW);
         Iterator iter = coll.iterator();
         while (iter.hasNext()) {
 
             UserAdminData data = (UserAdminData) iter.next();
             log.debug("New user: " + data.getUsername() + ", " + data.getDN() + ", " + data.getEmail() + ", " + data.getStatus() + ", " + data.getType());
-            admin.setUserStatus(new Admin(Admin.TYPE_INTERNALUSER), data.getUsername(), UserDataRemote.STATUS_GENERATED);
+            admin.setUserStatus(new Admin(Admin.TYPE_INTERNALUSER), data.getUsername(), UserDataLocal.STATUS_GENERATED);
         }
 
-        Collection coll1 = admin.findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataRemote.STATUS_NEW);
+        Collection coll1 = admin.findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataLocal.STATUS_NEW);
         assertTrue("found NEW users though there should be none!", coll1.isEmpty());
         log.debug("<test05ListNewUser()");
     }
@@ -273,10 +256,8 @@ public class TestUserData extends TestCase {
     public void test06RemoveUser() throws Exception {
         log.debug(">test06RemoveUser()");
 
-        UserDataPK pk = new UserDataPK(username);
-        home.remove(pk);
-        pk.username = username1;
-        home.remove(pk);
+        usersession.deleteUser(admin,username);
+        usersession.deleteUser(admin,username1);
         log.debug("Removed it!");
         log.debug("<test06RemoveUser()");
     }

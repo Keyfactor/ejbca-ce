@@ -24,14 +24,12 @@ import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.UserDataHome;
-import se.anatom.ejbca.ra.UserDataPK;
-import se.anatom.ejbca.ra.UserDataRemote;
+import se.anatom.ejbca.ra.UserDataLocal;
 
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.1 2004-06-10 16:17:43 sbailliez Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.2 2004-08-08 11:02:45 anatom Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthenticationSession.class);
@@ -153,14 +151,8 @@ public class TestAuthenticationSession extends TestCase {
      */
     public void test03FailAuthenticateUser() throws Exception {
         log.debug(">test03FailAuthenticateUser()");
-
-        // user that we know exists...
-        Object obj1 = ctx.lookup("UserData");
-        UserDataHome userhome = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj1, UserDataHome.class);
-        UserDataPK pk = new UserDataPK(username);
-        UserDataRemote data = userhome.findByPrimaryKey(pk);
         // Set status to GENERATED so authentication will fail
-        data.setStatus(UserDataRemote.STATUS_GENERATED);
+        usersession.setUserStatus(admin,username,UserDataLocal.STATUS_GENERATED);
         boolean authfailed = false;
         try {
             UserAuthData auth = remote.authenticateUser(admin, username, pwd);

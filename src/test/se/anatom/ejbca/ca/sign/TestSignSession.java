@@ -22,14 +22,17 @@ import java.security.interfaces.RSAPrivateKey;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+
 import javax.ejb.DuplicateKeyException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
@@ -37,9 +40,9 @@ import se.anatom.ejbca.ca.exception.IllegalKeyException;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.protocol.PKCS10RequestMessage;
-import se.anatom.ejbca.ra.UserDataHome;
-import se.anatom.ejbca.ra.UserDataPK;
-import se.anatom.ejbca.ra.UserDataRemote;
+import se.anatom.ejbca.ra.IUserAdminSessionHome;
+import se.anatom.ejbca.ra.IUserAdminSessionRemote;
+import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 
@@ -47,7 +50,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.2 2004-07-23 10:24:42 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.3 2004-08-08 11:03:54 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -121,7 +124,7 @@ public class TestSignSession extends TestCase {
     private static Context ctx;
     private static ISignSessionHome home;
     private static ISignSessionRemote remote;
-    private static UserDataHome userhome;
+    private static IUserAdminSessionRemote usersession;
     private static KeyPair keys;
     private static int caid = 0;
     private Admin admin;
@@ -158,8 +161,9 @@ public class TestSignSession extends TestCase {
         home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
         remote = home.create();
 
-        obj = ctx.lookup("UserData");
-        userhome = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj, UserDataHome.class);
+        obj = ctx.lookup("UserAdminSession");
+        IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
+        usersession = userhome.create();
 
         log.debug("<setUp()");
     }
@@ -187,9 +191,7 @@ public class TestSignSession extends TestCase {
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA", "BC");
         keygen.initialize(512);
         log.debug("Generating keys, please wait...");
-
         KeyPair rsaKeys = keygen.generateKeyPair();
-
         log.debug("Generated " + rsaKeys.getPrivate().getAlgorithm() + " keys with length" +
                 ((RSAPrivateKey) rsaKeys.getPrivate()).getModulus().bitLength());
 
@@ -206,14 +208,8 @@ public class TestSignSession extends TestCase {
 
         // Make user that we know...
         boolean userExists = false;
-
         try {
-            UserDataRemote createdata = userhome.create("foo", "foo123", "C=SE, O=AnaTom, CN=foo", caid);
-            assertNotNull("Failed to create user foo", createdata);
-            createdata.setType(SecConst.USER_ENDUSER);
-            createdata.setSubjectEmail("foo@anatom.se");
-            createdata.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
-            createdata.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
+            usersession.addUser(admin,"foo","foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
@@ -222,13 +218,9 @@ public class TestSignSession extends TestCase {
         } catch (DuplicateKeyException dke) {
             userExists = true;
         }
-
         if (userExists) {
-            log.debug("User foo already exists.");
-
-            UserDataPK pk = new UserDataPK("foo");
-            UserDataRemote data = userhome.findByPrimaryKey(pk);
-            data.setStatus(UserDataRemote.STATUS_NEW);
+            log.info("User foo already exists, resetting status.");
+            usersession.setUserStatus(admin,"foo",UserDataLocal.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 
@@ -262,12 +254,8 @@ public class TestSignSession extends TestCase {
      */
     public void test03TestBCPKCS10() throws Exception {
         log.debug(">test03TestBCPKCS10()");
-
-        UserDataPK pk = new UserDataPK("foo");
-        UserDataRemote data = userhome.findByPrimaryKey(pk);
-        data.setStatus(UserDataRemote.STATUS_NEW);
+        usersession.setUserStatus(admin,"foo",UserDataLocal.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
-
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), keys.getPublic(), null,
@@ -280,15 +268,12 @@ public class TestSignSession extends TestCase {
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
         boolean verify = req2.verify();
         log.debug("Verify returned " + verify);
-
         if (verify == false) {
             log.debug("Aborting!");
 
             return;
         }
-
         log.debug("CertificationRequest generated successfully.");
-
         byte[] bcp10 = bOut.toByteArray();
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("foo");
@@ -309,9 +294,7 @@ public class TestSignSession extends TestCase {
     public void test04TestKeytoolPKCS10() throws Exception {
         log.debug(">test04TestKeytoolPKCS10()");
 
-        UserDataPK pk = new UserDataPK("foo");
-        UserDataRemote data = userhome.findByPrimaryKey(pk);
-        data.setStatus(UserDataRemote.STATUS_NEW);
+        usersession.setUserStatus(admin,"foo",UserDataLocal.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(keytoolp10);
@@ -333,9 +316,7 @@ public class TestSignSession extends TestCase {
     public void test05TestIEPKCS10() throws Exception {
         log.debug(">test05TestIEPKCS10()");
 
-        UserDataPK pk = new UserDataPK("foo");
-        UserDataRemote data = userhome.findByPrimaryKey(pk);
-        data.setStatus(UserDataRemote.STATUS_NEW);
+        usersession.setUserStatus(admin,"foo",UserDataLocal.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(iep10);
@@ -357,41 +338,32 @@ public class TestSignSession extends TestCase {
     public void test06KeyUsage() throws Exception {
         log.debug(">test06KeyUsage()");
 
-        UserDataPK pk = new UserDataPK("foo");
-        UserDataRemote data = userhome.findByPrimaryKey(pk);
-        data.setStatus(UserDataRemote.STATUS_NEW);
+        usersession.setUserStatus(admin,"foo",UserDataLocal.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
         boolean[] keyusage1 = new boolean[9];
         Arrays.fill(keyusage1, false);
-
         // digitalSignature
         keyusage1[0] = true;
-
         // keyEncipherment
         keyusage1[2] = true;
 
         X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", keys.getPublic(), keyusage1);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
-
         boolean[] retKU = cert.getKeyUsage();
         assertTrue("Fel KeyUsage, digitalSignature finns ej!", retKU[0]);
         assertTrue("Fel KeyUsage, keyEncipherment finns ej!", retKU[2]);
         assertTrue("Fel KeyUsage, cRLSign finns!", !retKU[6]);
 
-        pk = new UserDataPK("foo");
-        data = userhome.findByPrimaryKey(pk);
-        data.setStatus(UserDataRemote.STATUS_NEW);
+        usersession.setUserStatus(admin,"foo",UserDataLocal.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         boolean[] keyusage2 = new boolean[9];
         Arrays.fill(keyusage2, false);
-
         // keyCertSign
         keyusage2[5] = true;
-
         // cRLSign
         keyusage2[6] = true;
 
@@ -414,9 +386,7 @@ public class TestSignSession extends TestCase {
     public void test07DSAKey() throws Exception {
         log.debug(">test07DSAKey()");
 
-        UserDataPK pk = new UserDataPK("foo");
-        UserDataRemote data = userhome.findByPrimaryKey(pk);
-        data.setStatus(UserDataRemote.STATUS_NEW);
+        usersession.setUserStatus(admin,"foo",UserDataLocal.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         try {
@@ -445,13 +415,8 @@ public class TestSignSession extends TestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            UserDataRemote createdata = userhome.create("swede", "foo123", "C=SE, O=?????????, CN=?????????", caid);
-            assertNotNull("Failed to create user foo", createdata);
-            createdata.setType(SecConst.USER_ENDUSER);
-            createdata.setSubjectEmail("swede@anatom.se");
-            createdata.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
-            createdata.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
-            log.debug("created user: swede, foo123, C=SE, O=?????????, CN=?????????");
+            usersession.addUser(admin,"swede","foo123","C=SE,O=??????,CN=??????",null,"swede@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
+            log.debug("created user: swede, foo123, C=SE, O=??????, CN=??????");
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
                 userExists = true;
@@ -462,9 +427,7 @@ public class TestSignSession extends TestCase {
         if (userExists) {
             log.debug("user swede already exists.");
 
-            UserDataPK pk = new UserDataPK("swede");
-            UserDataRemote data = userhome.findByPrimaryKey(pk);
-            data.setStatus(UserDataRemote.STATUS_NEW);
+            usersession.setUserStatus(admin,"swede",UserDataLocal.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 
@@ -474,7 +437,7 @@ public class TestSignSession extends TestCase {
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         assertEquals("Wrong DN med swedechars", CertTools.getSubjectDN(cert),
-                CertTools.stringToBCDNString("C=SE, O=?????????, CN=?????????"));
+                CertTools.stringToBCDNString("C=SE, O=??????, CN=??????"));
         //FileOutputStream fos = new FileOutputStream("swedecert.crt");
         //fos.write(cert.getEncoded());
         //fos.close();
