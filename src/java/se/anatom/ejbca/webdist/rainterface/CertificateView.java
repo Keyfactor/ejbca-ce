@@ -39,7 +39,7 @@ import se.anatom.ejbca.util.Hex;
  * by JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: CertificateView.java,v 1.17 2004-09-16 22:02:41 herrvendil Exp $
+ * @version $Id: CertificateView.java,v 1.18 2005-02-18 13:15:02 anatom Exp $
  */
 public class CertificateView {
 
@@ -315,6 +315,9 @@ public class CertificateView {
 				case SUBALTNAME_EDIPARTYNAME:
 				  //TODO Implement EDIPARTYNAME
 				  break;              	                	  
+                case SUBALTNAME_DIRECTORYNAME:
+                  //TODO Implement EDIPARTYNAME
+                  break;                                      
 				case SUBALTNAME_URI:
 		          if(!subjectaltnamestring.equals(""))
 					 subjectaltnamestring += ", ";
