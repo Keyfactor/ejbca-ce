@@ -1,4 +1,3 @@
-
 package se.anatom.ejbca.webdist.cainterface;
 
 import java.io.*;
@@ -21,12 +20,13 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 /**
  * Servlet used to distribute  CRLs.<br>
  *
- * The servlet is called with method GET and syntax 'command=<command>'.
- * <p>The follwing commads are supported:<br>
+ * The servlet is called with method GET or POST and syntax
+ * <code>command=&lt;command&gt;</code>.
+ * <p>The follwing commands are supported:<br>
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java,v 1.9 2003-01-12 17:16:34 anatom Exp $
+ * @version $Id: GetCRLServlet.java,v 1.10 2003-02-03 12:55:15 scop Exp $
  */
 public class GetCRLServlet extends HttpServlet {
 
@@ -36,11 +36,11 @@ public class GetCRLServlet extends HttpServlet {
     private static final String COMMAND_CRL = "crl";
 
     private InitialContext ctx = null;
-    ICertificateStoreSessionHome storehome = null;
+    private ICertificateStoreSessionHome storehome = null;
 
 
     public void init(ServletConfig config) throws ServletException {
-    super.init(config);
+        super.init(config);
         try {
 
             // Get EJB context and home interfaces
@@ -55,8 +55,7 @@ public class GetCRLServlet extends HttpServlet {
     public void doPost(HttpServletRequest req, HttpServletResponse res)
         throws IOException {
         cat.debug(">doPost()");
-        res.setContentType("text/html");
-        res.getOutputStream().println("The certificate/CRL distribution servlet only handles GET method.");
+        doGet(req, res);
         cat.debug("<doPost()");
     } //doPost
 
