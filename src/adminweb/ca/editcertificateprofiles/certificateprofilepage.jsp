@@ -62,6 +62,17 @@ function checkuseocspservicelocatorfield(){
 }
 
 
+function typechanged(){
+  var seltype = document.editcertificateprofile.<%=SELECT_TYPE %>.options.selectedIndex;
+  var type = document.editcertificateprofile.<%=SELECT_TYPE %>.options[seltype].value; 
+
+  if(type == <%= SecConst.CERTTYPE_ENDENTITY %>){    
+    document.editcertificateprofile.<%=SELECT_AVAILABLEPUBLISHERS %>.disabled=false;
+  }else{
+    document.editcertificateprofile.<%=SELECT_AVAILABLEPUBLISHERS %>.disabled=true;
+  } 
+}
+
 function checkusecertificatepoliciesfield(){
   if(document.editcertificateprofile.<%=CHECKBOX_USECERTIFICATEPOLICIES %>.checked){
     document.editcertificateprofile.<%= CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>.disabled = false;
@@ -425,7 +436,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("PUBLISHERS") %> <br>&nbsp;
       </td>
       <td width="50%"> 
-        <select name="<%=SELECT_AVAILABLEPUBLISHERS%>" size="5" multiple >
+        <select name="<%=SELECT_AVAILABLEPUBLISHERS%>" size="5" multiple  <% if(certificateprofiledata.getType() != SecConst.CERTTYPE_ENDENTITY) out.write(" disabled "); %>
            <%   Collection usedpublishers = certificateprofiledata.getPublisherList(); 
                 iter = publisheridtonamemap.keySet().iterator(); 
                 while(iter.hasNext()){
@@ -445,7 +456,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("TYPE") %> <br>&nbsp;
       </td>
       <td width="50%"> 
-        <select name="<%=SELECT_TYPE%>" size="1" >
+        <select name="<%=SELECT_TYPE%>" size="1" onchange='typechanged()' >
            <%  int type = certificateprofiledata.getType();
                 for(int i=0; i<TYPE_IDS.length;i++){ %>
            <option  value="<%= TYPE_IDS[i] %>" 
