@@ -28,7 +28,14 @@
     <servlet-class>se.anatom.ejbca.apply.AdminCertReqServlet</servlet-class>
     <load-on-startup>99</load-on-startup>
   </servlet>
-
+  <servlet>
+    <servlet-name>CACertReq</servlet-name>
+    <display-name>CACertReqServlet</display-name>
+    <description>Used to retrive CA certificate request and Processed CA Certificates from AdminWeb GUI</description>
+    <servlet-class>se.anatom.ejbca.webdist.cainterface.CACertReqServlet</servlet-class>
+    <load-on-startup>10</load-on-startup>
+  </servlet>
+  
   <servlet-mapping>
     <servlet-name>AdminCertReq</servlet-name>
     <url-pattern>/ca/certreq</url-pattern>
@@ -41,7 +48,12 @@
     <servlet-name>CACert</servlet-name>
     <url-pattern>/ca/cacert</url-pattern>
   </servlet-mapping>
-
+  <servlet-mapping>
+    <servlet-name>CACertReq</servlet-name>
+    <url-pattern>/ca/editcas/cacertreq</url-pattern>
+  </servlet-mapping>
+  
+  
   <session-config>
     <session-timeout>30</session-timeout>
   </session-config>

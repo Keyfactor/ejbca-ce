@@ -2,7 +2,7 @@
 <%@page contentType="text/html"%>
 <%@page errorPage="/errorpage.jsp"  import=" java.util.*, java.security.cert.Certificate, java.security.cert.X509Certificate, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration,
                                               se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.webdist.rainterface.CertificateView,
-                                              se.anatom.ejbca.ca.caadmin.CAInfo, se.anatom.ejbca.ca.store.CRLInfo, se.anatom.ejbca.authorization.AuthorizationDeniedException"%>
+                                              se.anatom.ejbca.ca.caadmin.CAInfo, se.anatom.ejbca.ca.store.CRLInfo, se.anatom.ejbca.authorization.AuthorizationDeniedException, se.anatom.ejbca.SecConst"%>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
@@ -149,7 +149,11 @@
 <br> 
 <input type='hidden' name='<%=HIDDEN_CASUBJECTDN + number %>' value='<%=java.net.URLEncoder.encode(subjectdn,"UTF-8")%>'> 
 <%=ejbcawebbean.getText("CREATENEWCRL") + " : " %>
+       <% if(cainfo.getCAInfo().getStatus() == SecConst.CA_ACTIVE){ %>
 <input type='submit' name='<%=BUTTON_CREATECRL + number %>' value='<%=ejbcawebbean.getText("CREATECRL") %>'>
+       <% }else{
+           out.write(ejbcawebbean.getText("CAISNTACTIVE"));
+          } %> 
 <br>          
 <%    } %>
 <br>

@@ -1,5 +1,6 @@
 package se.anatom.ejbca.webdist.cainterface;
 
+import java.io.ByteArrayOutputStream;
 import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -13,9 +14,14 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
+
 import se.anatom.ejbca.IJobRunnerSessionHome;
+import se.anatom.ejbca.apply.RequestHelper;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
+import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
@@ -30,6 +36,7 @@ import se.anatom.ejbca.ra.IUserAdminSessionLocal;
 import se.anatom.ejbca.ra.IUserAdminSessionLocalHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
+import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.webdist.rainterface.CertificateView;
 import se.anatom.ejbca.webdist.rainterface.RevokedInfoView;
@@ -41,7 +48,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.19 2003-10-01 11:12:14 herrvendil Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.20 2003-10-21 13:48:47 herrvendil Exp $
  */
 public class CAInterfaceBean   {
 
@@ -76,20 +83,21 @@ public class CAInterfaceBean   {
                                                                                  IRaAdminSessionLocalHome.class);
         raadminsession = raadminsessionhome.create();               
         
+		ISignSessionLocalHome home = (ISignSessionLocalHome)javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/SignSessionLocal"), ISignSessionLocalHome.class );
+	    signsession = home.create();
+        
         this.informationmemory = ejbcawebbean.getInformationMemory();
           
         certificateprofiles = new CertificateProfileDataHandler(administrator, certificatesession, authorizationsession, informationmemory);
-        cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, ejbcawebbean);        
+        cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, signsession, ejbcawebbean);        
         initialized =true;
       }
     }
 
     public CertificateView[] getCACertificates(int caid) throws RemoteException, NamingException, CreateException {
       CertificateView[] returnval = null;      
-      InitialContext jndicontext = new InitialContext();
-      ISignSessionLocalHome home = (ISignSessionLocalHome)javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/SignSessionLocal"), ISignSessionLocalHome.class );
-      ISignSessionLocal ss = home.create();
-      Collection chain = ss.getCertificateChain(administrator, caid);
+      
+      Collection chain = signsession.getCertificateChain(administrator, caid);
       
       returnval = new CertificateView[chain.size()];
       Iterator iter = chain.iterator();
@@ -98,7 +106,7 @@ public class CAInterfaceBean   {
         Certificate next = (Certificate) iter.next();  
         RevokedInfoView revokedinfo = null;
         RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN((X509Certificate) next), ((X509Certificate) next).getSerialNumber());
-        if(revinfo != null)
+        if(revinfo != null && revinfo.getReason() != RevokedCertInfo.NOT_REVOKED)
           revokedinfo = new RevokedInfoView(revinfo);
         returnval[i] = new CertificateView((X509Certificate) next, revokedinfo,null);
         i++;
@@ -206,11 +214,7 @@ public class CAInterfaceBean   {
     }
     
     public HashMap getAvailablePublishers() throws NamingException, CreateException{
-      InitialContext jndicontext = new InitialContext();
-      ISignSessionLocalHome home = (ISignSessionLocalHome)javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/SignSessionLocal"), ISignSessionLocalHome.class );
-      ISignSessionLocal ss = home.create(); 
-      
-      return ss.getPublisherIdToNameMap(administrator);
+      return signsession.getPublisherIdToNameMap(administrator);
     }
     
     public CADataHandler getCADataHandler(){
@@ -225,6 +229,58 @@ public class CAInterfaceBean   {
       return cadatahandler.getCAInfo(caid);   
     }    
     
+    public void saveRequestInfo(CAInfo cainfo){
+    	this.cainfo = cainfo;
+    }
+    
+    public CAInfo getRequestInfo(){
+    	return this.cainfo;
+    }
+    
+	public void savePKCS10RequestData(PKCS10CertificationRequest request){
+		this.request = request;
+	}
+    
+	public PKCS10CertificationRequest getPKCS10RequestData(){
+		return this.request;
+	}    
+	
+	public String getPKCS10RequestDataAsString() throws Exception{
+	  String returnval = null;	
+	  if(request != null ){
+	  						  				  
+ 	    ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+	    DEROutputStream dOut = new DEROutputStream(bOut);
+	    dOut.writeObject(request);
+	    dOut.close();
+	      	  
+	    returnval = RequestHelper.BEGIN_CERTIFICATE_REQUEST_WITH_NL
+	                   + new String(Base64.encode(bOut.toByteArray()))
+                       + RequestHelper.END_CERTIFICATE_REQUEST_WITH_NL;  
+	    
+	  }      
+	  return returnval;
+   }
+    
+   public void saveProcessedCertificate(Certificate cert){
+	   this.processedcert =cert;
+   }
+    
+   public Certificate getProcessedCertificate(){
+	   return this.processedcert;
+   }    
+	
+   public String getProcessedCertificateAsString() throws Exception{
+	 String returnval = null;	
+	 if(request != null ){
+		byte[] b64cert = se.anatom.ejbca.util.Base64.encode(this.processedcert.getEncoded());
+		returnval = RequestHelper.BEGIN_CERTIFICATE_WITH_NL;
+		returnval += new String(b64cert);
+		returnval += RequestHelper.END_CERTIFICATE_WITH_NL;  	    
+	 }      
+	 return returnval;
+  }
+    
     // Private methods
 
     // Private fields
@@ -233,9 +289,13 @@ public class CAInterfaceBean   {
     private IAuthorizationSessionLocal         authorizationsession;
     private IUserAdminSessionLocal             adminsession;
     private IRaAdminSessionLocal               raadminsession;
+    private ISignSessionLocal                      signsession;
     private CertificateProfileDataHandler      certificateprofiles;
     private CADataHandler                      cadatahandler;
     private boolean                            initialized;
     private Admin                              administrator;
     private InformationMemory                  informationmemory;
+    private CAInfo                                      cainfo;
+    private PKCS10CertificationRequest       request;
+    private Certificate	                             processedcert;    
 }

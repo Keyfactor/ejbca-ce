@@ -18,7 +18,7 @@ import se.anatom.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.2 2003-09-04 19:52:45 anatom Exp $
+ * @version $Id: SoftCAToken.java,v 1.3 2003-10-21 13:48:45 herrvendil Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
 
@@ -44,8 +44,7 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
     
     public SoftCAToken(HashMap data) throws IllegalArgumentException, IllegalKeyStoreException {
       loadData(data);  
-      if(data.get(KEYSTORE) != null){  
-        System.out.println("SoftCAToken: init: KEYSTORE isn't null");  
+      if(data.get(KEYSTORE) != null){    
          // lookup keystore passwords      
          String privatekeypass = null;
          String keystorepass = null;
@@ -110,22 +109,19 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
        Certificate[] certchain = new Certificate[1];
        certchain[0] = CertTools.genSelfCert("CN=dummy", 36500, null, signkeys.getPrivate(), signkeys.getPublic(), true);
        
-       keystore.setKeyEntry(PRIVATESIGNKEYALIAS,signkeys.getPrivate(),pkpass, certchain);
-       System.out.println("SOFTCATOKENHERE1");       
+       keystore.setKeyEntry(PRIVATESIGNKEYALIAS,signkeys.getPrivate(),pkpass, certchain);             
        
        // generate enc keys.  
        KeyPair enckeys = KeyTools.genKeys(keysize);
        // generate dummy certificate
        certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, enckeys.getPrivate(), enckeys.getPublic(), true);
-       keystore.setKeyEntry(PRIVATEDECKEYALIAS,enckeys.getPrivate(),pkpass,certchain);       
-       System.out.println("HERE2");
+       keystore.setKeyEntry(PRIVATEDECKEYALIAS,enckeys.getPrivate(),pkpass,certchain);              
        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
        keystore.store(baos, keystorepass.toCharArray());
        data.put(KEYSTORE, new String(Base64.encode(baos.toByteArray())));
        data.put(KEYSIZE, new Integer(keysize));
        data.put(KEYALGORITHM, info.getAlgorithm());
        data.put(SIGNATUREALGORITHM, info.getSignatureAlgorithm());
-       System.out.println("SoftCAToken: Sigalg=" + info.getSignatureAlgorithm());
        // initalize CAToken
        this.publicSignKey  = signkeys.getPublic();
        this.privateSignKey = signkeys.getPrivate();
@@ -188,8 +184,7 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
      info.setKeySize(((Integer) data.get(KEYSIZE)).intValue());
      info.setAlgorithm((String) data.get(KEYALGORITHM));  
      info.setSignatureAlgorithm((String) data.get(SIGNATUREALGORITHM));
-   
-     System.out.println("CATOKENINFO returning keysize :" + info.getKeySize());
+        
      return info;
    }
    

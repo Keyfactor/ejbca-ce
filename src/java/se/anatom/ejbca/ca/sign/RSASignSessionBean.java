@@ -11,9 +11,7 @@ import java.security.Provider;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
-import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
+import java.security.cert.*;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,7 +63,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.105 2003-10-20 07:56:43 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.106 2003-10-21 13:48:48 herrvendil Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -192,7 +190,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      *
      * @param admin Information about the administrator or admin preforming the event.
      * @param cert client certificate which we want ancapsulated in a PKCS7 together with
-     *        certificate chain.
+     *        certificate chain. If null, a PKCS7 with only CA certificate chain is returned.
      *
      * @return The DER-encoded PKCS7 message.
      *
@@ -252,11 +250,13 @@ public class RSASignSessionBean extends BaseSessionBean {
          X509Certificate cacert = (X509Certificate) ca.getCACertificate();                  
          try{
            cacert.checkValidity();                   
-         }catch(Exception e){
+         }catch(CertificateExpiredException e){
            // Signers Certificate has expired.   
            cadata.setStatus(SecConst.CA_EXPIRED);         
            throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " has expired");   
-         }
+         } catch (CertificateNotYetValidException cve) {
+			throw new CADoesntExistsException(cve);
+		 }           
         
          returnval = ca.createPKCS7(cert);
          debug("<createPKCS7()");
@@ -305,15 +305,23 @@ public class RSASignSessionBean extends BaseSessionBean {
                throw new EJBException(uee);   
             }
             // Check that CA hasn't expired.
-            X509Certificate cacert = (X509Certificate) ca.getCACertificate();                  
+            X509Certificate cacert = (X509Certificate) ca.getCACertificate();         
+            
+            if(ca.getStatus() != SecConst.CA_ACTIVE){
+		      getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " isn't active.");
+			  throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");             
+            }
+                     
             try{
                 cacert.checkValidity();                   
-            }catch(Exception e){
+            }catch(CertificateExpiredException cee){
                  // Signers Certificate has expired.   
                 cadata.setStatus(SecConst.CA_EXPIRED);  
-                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " has expired",e);
+                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " has expired",cee);
                 throw new EJBException("Signing CA " + cadata.getSubjectDN() + " has expired");   
-            }                
+            } catch (CertificateNotYetValidException cve) {
+				throw new EJBException(cve);
+			}                
             // Now finally after all these checks, get the certificate
             Certificate cert = createCertificate(admin, data, ca, pk, keyusage);
             // Call authentication session and tell that we are finished with this user
@@ -435,24 +443,32 @@ public class RSASignSessionBean extends BaseSessionBean {
             } else {
                 throw new CADoesntExistsException();
             }
-        } catch(javax.ejb.FinderException fe) {
+        }catch(javax.ejb.FinderException fe){
             getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Invalid CA Id",fe);  
             throw new CADoesntExistsException(fe);                   
         }
         try {
             CA ca = cadata.getCA();
             CAToken catoken = ca.getCAToken();
+            
+			if(ca.getStatus() != SecConst.CA_ACTIVE){
+			  getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " isn't active.");
+			  throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");             
+			}
+			
             // Check that CA hasn't expired.
             X509Certificate cacert = (X509Certificate) ca.getCACertificate();                  
-            try{
+            try{	
                 cacert.checkValidity();                   
-            } catch(Exception e) {
+            }catch(CertificateExpiredException cee){
                  // Signers Certificate has expired.   
                 cadata.setStatus(SecConst.CA_EXPIRED);  
-                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " has expired",e);
+                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " has expired",cee);
                 throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " has expired");   
-            }                
-            // Make sure we can decrypt the request
+            } catch (CertificateNotYetValidException cve) {
+				throw new CADoesntExistsException(cve); 
+			}                
+            
             if (req.requireKeyInfo()) {
                 req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateDecKey());
             }
@@ -562,17 +578,23 @@ public class RSASignSessionBean extends BaseSessionBean {
           }catch(java.io.UnsupportedEncodingException uee){
             throw new EJBException(uee);   
           }
+		  if(ca.getStatus() != SecConst.CA_ACTIVE){
+			getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Signing CA " + cadata.getSubjectDN() + " isn't active.");
+			throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");             
+		  }
                 
           // Check that CA hasn't expired.
           X509Certificate cacert = (X509Certificate) ca.getCACertificate();                  
           try{
             cacert.checkValidity();                   
-          }catch(Exception e){
+          }catch(CertificateExpiredException e){
             // Signers Certificate has expired.   
             cadata.setStatus(SecConst.CA_EXPIRED);  
             getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECRL,"Signing CA " + cadata.getSubjectDN() + " has expired",e);
             throw new EJBException("Signing CA " + cadata.getSubjectDN() + " has expired");   
-          }             
+          }catch(CertificateNotYetValidException e){
+          	 throw new EJBException(e);             
+          }
           
           
           ICertificateStoreSessionLocal certificateStore = storeHome.create();
@@ -615,15 +637,18 @@ public class RSASignSessionBean extends BaseSessionBean {
       
         Iterator certificates = certificatechain.iterator();
         while(certificates.hasNext()){
-          Certificate cacert = (Certificate) certificates.next();        
+          Certificate cacert = (Certificate) certificates.next();
+          
+            //	 Store CA certificate in the database
+		   String fingerprint = CertTools.getFingerprintAsString((X509Certificate) cacert);
+		   
+		   if(certificateStore.findCertificateByFingerprint(admin, fingerprint) == null){		   		   		   		   
+		     certificateStore.storeCertificate(admin, cacert, "SYSTEMCA", fingerprint, CertificateData.CERT_ACTIVE, certtype);
+		   }  
             // Store crl in ca CRL publishers.
             Iterator iter = usedpublishers.iterator();
             while(iter.hasNext()){
-              int publisherid = ((Integer) iter.next()).intValue();
-                        
-              // Store CA certificate in the database
-              String fingerprint = CertTools.getFingerprintAsString((X509Certificate) cacert);
-              certificateStore.storeCertificate(admin, cacert, fingerprint, fingerprint, CertificateData.CERT_ACTIVE, certtype);
+              int publisherid = ((Integer) iter.next()).intValue();                                      
             
               // Store CA certificate
               IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(publisherid);

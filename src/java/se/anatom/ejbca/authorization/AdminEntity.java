@@ -16,7 +16,7 @@ import se.anatom.ejbca.util.StringTools;
  * Matchtype constants tells under which contitions the match shall be performed.
  *
  * @author  Philip Vendil
- * @version $Id: AdminEntity.java,v 1.2 2003-10-01 11:12:06 herrvendil Exp $
+ * @version $Id: AdminEntity.java,v 1.3 2003-10-21 13:48:47 herrvendil Exp $
  */
 public class AdminEntity implements Serializable, Comparable {
     // Special Users. (Constants cannot have 0 value).
@@ -70,8 +70,7 @@ public class AdminEntity implements Serializable, Comparable {
     public boolean match(AdminInformation admininformation) {
       boolean returnvalue=false;
 
-      if(admininformation.isSpecialUser()){
-        System.out.println("AdminEntity: Matching Special User :" + this.matchtype + " = " + admininformation.getSpecialUser());   
+      if(admininformation.isSpecialUser()){         
         if(this.matchtype ==  admininformation.getSpecialUser()){
           // There is a match of special admin return true;
           returnvalue = true;
@@ -88,8 +87,7 @@ public class AdminEntity implements Serializable, Comparable {
         int parameter;
         int size=0;
         String[] clientstrings=null;
-
-       System.out.println("AdminEntity, match : caid " + caid + " admincaid " + admincaid);
+       
 
         // First check that issuers match.
         if(this.caid == admincaid){

@@ -13,7 +13,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
 
 /** Local interface of CAAdmin sessio bean for EJB. Manages CAs
  *
- * @version $Id: ICAAdminSessionLocal.java,v 1.2 2003-10-03 14:34:20 herrvendil Exp $
+ * @version $Id: ICAAdminSessionLocal.java,v 1.3 2003-10-21 13:48:45 herrvendil Exp $
  */
 public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
  
@@ -85,6 +85,14 @@ public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
    */  
   public HashMap getCAIdToNameMap(Admin admin);
   
+  /**
+   *  Method returning id's of all CA's avaible to the system. i.e. not have status 
+   * "external" or "waiting for certificate response"
+   *      
+   * @return a Collection (Integer) of available CA id's
+   */
+  public Collection getAvailableCAs(Admin admin);
+  
   
   /**
    *  Creates a certificate request that should be sent to External Root CA for process before
@@ -104,11 +112,10 @@ public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
 
   /**
    *  Processes a Certificate Request from an external CA. 
-   *  The external CA should first have been added to the user database.
-   *  As much data from the database will be used and not from the certificaterequest. ??
-   *
+   *  
+   * @return the processed certificate chain
    */  
-  public Collection processRequest(Admin admin, String username, String password, IRequestMessage requestmessage) throws CADoesntExistsException, AuthorizationDeniedException;
+  public IResponseMessage processRequest(Admin admin, CAInfo cainfo, IRequestMessage requestmessage) throws CAExistsException, CADoesntExistsException, AuthorizationDeniedException;
 
   /**
    *  Renews a existing CA certificate using the same keys as before. Data  about new CA is taken

@@ -17,13 +17,11 @@ public class AccessTree implements Serializable {
     /** Builds an accesstree out of the given admingroup data. */
     public void buildTree(Collection admingroups) {
         rootnode = new AccessTreeNode("/");
-        System.out.println(" AccessTree : buildtree");
                   
         Iterator iter = admingroups.iterator();
         // Add all admingroups accessrules.
         while(iter.hasNext()){
           AdminGroup admingroup = (AdminGroup) iter.next(); 
-          System.out.println(" adding admingroup to tree '" + admingroup.getAdminGroupName() + "' rules : " + admingroup.getAccessRules().size());
           Iterator iter2 = admingroup.getAccessRules().iterator();
           while(iter2.hasNext()){
             AccessRule accessrule = (AccessRule) iter2.next();  

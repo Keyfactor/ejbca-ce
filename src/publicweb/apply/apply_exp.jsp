@@ -223,14 +223,14 @@ try  {
     ISignSessionHome home = home = (ISignSessionHome) PortableRemoteObject.narrow(
             ctx.lookup("RSASignSession"), ISignSessionHome.class );
     ISignSessionRemote ss = home.create();
-    Certificate[] chain = ss.getCertificateChain(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()));
-    if (chain.length == 0) {
+    Collection chain = ss.getCertificateChain(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()), caid);
+    if (chain.size() == 0) {
         out.println("No CA certificates exist");
     } else {
-        out.println("<li><a href=\"../webdist/certdist?cmd=iecacert&level=0\">Root CA</a></li>");
-        if (chain.length > 1) {
-            for (int i=chain.length-1;i>0;i--) {
-                out.println("<li><a href=\"../webdist/certdist?cmd=iecacert&level="+i+"\">CA</a></li>");
+        out.println("<li><a href=\"../webdist/certdist?cmd=iecacert&level=0&caid="+caid+"\">Root CA</a></li>");
+        if (chain.size() > 1) {
+            for (int i=chain.size()-1;i>0;i--) {
+                out.println("<li><a href=\"../webdist/certdist?cmd=iecacert&level="+i+"&caid="+caid+"\">CA</a></li>");
             }
         }
     }

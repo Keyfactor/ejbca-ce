@@ -31,6 +31,24 @@ public class RequestHelper {
     private ServletDebug debug;
     private static final Pattern CLASSID = Pattern.compile("\\$CLASSID");
 
+	public static final  String BEGIN_CERTIFICATE_REQUEST  = "-----BEGIN CERTIFICATE REQUEST-----";
+	public static final  String END_CERTIFICATE_REQUEST     = "-----END CERTIFICATE REQUEST-----";
+	public static final  String BEGIN_CERTIFICATE_REQUEST_WITH_NL = "-----BEGIN CERTIFICATE REQUEST-----\n";
+	public static final  String END_CERTIFICATE_REQUEST_WITH_NL    = "\n-----END CERTIFICATE REQUEST-----\n";
+
+	public static final  String BEGIN_CERTIFICATE                = "-----BEGIN CERTIFICATE-----";
+	public static final  String END_CERTIFICATE                    = "-----END CERTIFICATE-----";    
+	public static final  String BEGIN_CERTIFICATE_WITH_NL = "-----BEGIN CERTIFICATE-----\n";
+	public static final  String END_CERTIFICATE_WITH_NL    = "\n-----END CERTIFICATE-----\n";
+
+	public static final  String BEGIN_PKCS7  = "-----BEGIN PKCS7-----\n";
+	public static final  String END_PKCS7     = "\n-----END PKCS7-----\n";	
+	public static final  String BEGIN_PKCS7_WITH_NL = "-----BEGIN PKCS7-----\n";
+	public static final  String END_PKCS7_WITH_NL    = "\n-----END PKCS7-----\n";
+	
+	public static final int ENCODED_CERTIFICATE = 1;
+	public static final int ENCODED_PKCS7          = 2;
+	
     /**
      * Creates a new RequestHelper object.
      *
@@ -107,47 +125,30 @@ public class RequestHelper {
      * @param b64Encoded base64 encoded pkcs10 request message
      * @param username username of requesting user
      * @param password password of requesting user
+     * @param resulttype should indicate if a PKCS7 or just the certificate is wanted.
      *
-     * @return Base64 encoded PKCS7
+     * @return Base64 encoded byte[] 
      */
     public byte[] pkcs10CertRequest(ISignSessionRemote signsession, byte[] b64Encoded,
-        String username, String password) throws Exception {
+        String username, String password, int resulttype) throws Exception {
+        byte[] result = null;	
         X509Certificate cert=null;
-        byte[] buffer;
-
-        try {
-            // A real PKCS10 PEM request
-            String beginKey = "-----BEGIN CERTIFICATE REQUEST-----";
-            String endKey = "-----END CERTIFICATE REQUEST-----";
-            buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
-        } catch (IOException e) {
-            try {
-                // Keytool PKCS10 PEM request
-                String beginKey = "-----BEGIN NEW CERTIFICATE REQUEST-----";
-                String endKey = "-----END NEW CERTIFICATE REQUEST-----";
-                buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
-            } catch (IOException ioe) {
-                // IE PKCS10 Base64 coded request
-                buffer = Base64.decode(b64Encoded);
-            }
-        }
-
-        if (buffer == null) {
-            return null;
-        }
-        PKCS10RequestMessage req = new PKCS10RequestMessage(buffer);
-        req.setUsername(username);
+		PKCS10RequestMessage req = genPKCS10RequestMessageFromPEM(b64Encoded);
+		req.setUsername(username);
         req.setPassword(password);
         IResponseMessage resp = signsession.createCertificate(administrator,req,Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
         cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
-        byte[] pkcs7 = signsession.createPKCS7(administrator, cert);
+        if(resulttype == ENCODED_CERTIFICATE)
+          result = cert.getEncoded();
+        else  
+          result = signsession.createPKCS7(administrator, cert);
         log.debug("Created certificate (PKCS7) for " + username);
         debug.print("<h4>Generated certificate:</h4>");
         debug.printInsertLineBreaks(cert.toString().getBytes());
-        return Base64.encode(pkcs7);
-    }
-
-    //ieCertRequest
+        return Base64.encode(result);
+    } //pkcs10CertReq
+    
+    
 
     /**
      * Formats certificate in form to be received by IE
@@ -258,10 +259,11 @@ public class RequestHelper {
      *
      * @param b64cert base64 encoded certificate to be returned
      * @param out output stream to send to
-     *
+     * @param beginKey, String contaitning key information, ie BEGIN_CERTIFICATE_WITH_NL or BEGIN_PKCS7_WITH_NL
+     * @param beginKey, String contaitning key information, ie END_CERTIFICATE_WITH_NL or END_PKCS7_WITH_NL
      * @throws Exception on error
      */
-    public static void sendNewB64Cert(byte[] b64cert, HttpServletResponse out)
+    public static void sendNewB64Cert(byte[] b64cert, HttpServletResponse out, String beginKey, String endKey)
         throws Exception {
         if (b64cert.length == 0) {
             log.error("0 length certificate can not be sent to client!");
@@ -270,18 +272,16 @@ public class RequestHelper {
         }
 
         // Set content-type to general file
-        out.setContentType("application/octet-stream");
+        out.setContentType("application/octet-stream");        
         out.setHeader("Content-disposition", "filename=cert.pem");
 
-        String beg = "-----BEGIN CERTIFICATE-----\n";
-        String end = "\n-----END CERTIFICATE-----\n";
-        out.setContentLength(b64cert.length + beg.length() + end.length());
+        out.setContentLength(b64cert.length + beginKey.length() + endKey.length());
 
         // Write the certificate
         ServletOutputStream os = out.getOutputStream();
-        os.write(beg.getBytes());
+        os.write(beginKey.getBytes());
         os.write(b64cert);
-        os.write(end.getBytes());
+        os.write(endKey.getBytes());
         out.flushBuffer();
         log.debug("Sent reply to client");
         log.debug(new String(b64cert));
@@ -328,4 +328,30 @@ public class RequestHelper {
         out.flushBuffer();
         log.debug("Sent " + bytes.length + " bytes to client");
     }
+    
+    public static PKCS10RequestMessage genPKCS10RequestMessageFromPEM(byte[] b64Encoded){ 
+	  byte[] buffer = null;
+	  try {
+		// A real PKCS10 PEM request
+		String beginKey = BEGIN_CERTIFICATE_REQUEST;
+		String endKey = END_CERTIFICATE_REQUEST;
+		buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
+	 } catch (IOException e) {	 	
+		try {
+			// Keytool PKCS10 PEM request
+			String beginKey = "-----BEGIN NEW CERTIFICATE REQUEST-----";
+			String endKey = "-----END NEW CERTIFICATE REQUEST-----";
+			buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
+		} catch (IOException ioe) {
+			// IE PKCS10 Base64 coded request
+			buffer = Base64.decode(b64Encoded);
+		}
+	 }
+
+	  if (buffer == null) {
+		return null;
+	  }	  
+	  return new PKCS10RequestMessage(buffer);
+    }
+    
 }

@@ -13,7 +13,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 /**
  * A class representing a view of a CA Information view..
  *
- * @version $Id: CAInfoView.java,v 1.3 2003-10-03 14:34:20 herrvendil Exp $
+ * @version $Id: CAInfoView.java,v 1.4 2003-10-21 13:48:47 herrvendil Exp $
  */
 public class CAInfoView implements java.io.Serializable, Cloneable {
     // Public constants.
@@ -60,7 +60,10 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
         cainfodata[NAME]       = cainfo.getName();
         cainfodata[CATYPE]     = ejbcawebbean.getText("X509");
         cainfodata[4]          = "&nbsp;"; // blank line
-        cainfodata[EXPIRETIME] = ejbcawebbean.printDateTime(cainfo.getExpireTime());
+        if(cainfo.getExpireTime() == null)
+		  cainfodata[EXPIRETIME] = "";
+		else
+          cainfodata[EXPIRETIME] = ejbcawebbean.printDateTime(cainfo.getExpireTime());
         
         switch(cainfo.getStatus()){
             case SecConst.CA_ACTIVE :
@@ -73,10 +76,11 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
               cainfodata[STATUS]     = ejbcawebbean.getText("INACTIVE");
               break;
             case SecConst.CA_REVOKED :
-              cainfodata[STATUS]     = ejbcawebbean.getText("CAREVOKED") + ", " + 
-                                       ejbcawebbean.getText("REASON") + " :<br>&nbsp;&nbsp;" +
-                                       ejbcawebbean.getText(RevokedInfoView.reasontexts[cainfo.getRevokationReason()])
-			                           + "<br>&nbsp;&nbsp;" + ejbcawebbean.getText("REVOKATIONDATE") + ejbcawebbean.printDateTime(cainfo.getRevokationDate());
+              cainfodata[STATUS]     = ejbcawebbean.getText("CAREVOKED") + "<br>&nbsp;&nbsp;" + 
+                                                    ejbcawebbean.getText("REASON") + " : <br>&nbsp;&nbsp;&nbsp;&nbsp;" + 
+                                                    ejbcawebbean.getText(RevokedInfoView.reasontexts[cainfo.getRevokationReason()]) + "<br>&nbsp;&nbsp;" +
+			                                        ejbcawebbean.getText("REVOKATIONDATE") + "<br>&nbsp;&nbsp;&nbsp;&nbsp;" + 
+			                                        ejbcawebbean.printDateTime(cainfo.getRevokationDate());
               break;
             case SecConst.CA_WAITING_CERTIFICATE_RESPONSE :
               cainfodata[STATUS]     = ejbcawebbean.getText("WAITINGFORCERTRESPONSE");

@@ -80,7 +80,7 @@ import se.anatom.ejbca.ra.UserAdminData;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.29 2003-09-04 14:38:11 herrvendil Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.30 2003-10-21 13:48:48 herrvendil Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -286,7 +286,7 @@ public class DemoCertReqServlet extends HttpServlet {
               RequestHelper.sendNewCertToNSClient(certs, response);
         }
         if (type == 2) {
-              byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password);
+              byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, RequestHelper.ENCODED_PKCS7);
               debug.ieCertFix(b64cert);
               RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"), classid);
         }

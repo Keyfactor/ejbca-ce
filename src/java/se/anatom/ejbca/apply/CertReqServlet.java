@@ -63,7 +63,7 @@ import se.anatom.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.39 2003-09-04 14:38:11 herrvendil Exp $
+ * @version $Id: CertReqServlet.java,v 1.40 2003-10-21 13:48:48 herrvendil Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
@@ -129,7 +129,12 @@ public class CertReqServlet extends HttpServlet {
             String username = request.getParameter("user");
             String password = request.getParameter("password");
             String keylengthstring = request.getParameter("keylength");
-            int keylength = 1024;
+			int keylength = 1024;
+			
+            int resulttype = 0;
+            if(request.getParameter("resulttype") != null)
+              resulttype = Integer.parseInt(request.getParameter("resulttype")); // Indicates if certificate or PKCS7 should be returned on manual PKCS10 request.
+            
 
             String classid = "clsid:127698e4-e730-4e5c-a2b1-21490a70c8a1\" CODEBASE=\"/CertControl/xenroll.cab#Version=5,131,3659,0";
 
@@ -198,16 +203,16 @@ public class CertReqServlet extends HttpServlet {
                       reqBytes=request.getParameter("PKCS10").getBytes();
                   log.debug("Received IE request:"+new String(reqBytes));
                   if (reqBytes != null) {
-                      byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password);
+                      byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, RequestHelper.ENCODED_PKCS7);
                       debug.ieCertFix(b64cert);
                       RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"),classid);
                   }
-              } else if (request.getParameter("pkcs10req") != null) {
+              } else if (request.getParameter("pkcs10req") != null && resulttype != 0) {
                   // if not IE, check if it's manual request
                   byte[] reqBytes=request.getParameter("pkcs10req").getBytes();
                   if (reqBytes != null) {
-                      byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password);
-                    RequestHelper.sendNewB64Cert(b64cert, response);
+                      byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, resulttype);
+                    RequestHelper.sendNewB64Cert(b64cert, response, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
                   }
               }
             }

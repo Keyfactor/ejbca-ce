@@ -30,7 +30,7 @@ import se.anatom.ejbca.util.query.Query;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalLogSessionBean.java,v 1.16 2003-10-01 11:12:07 herrvendil Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.17 2003-10-21 13:48:47 herrvendil Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean  {
 
@@ -129,8 +129,7 @@ public class LocalLogSessionBean extends BaseSessionBean  {
     public void log(Admin admin, int caid, int module,  Date time, String username, X509Certificate certificate, int event, String comment){
       try{
         LogConfiguration logconfiguration = loadLogConfiguration(caid);
-        
-		System.out.println("LocalLogSessionBean : log  : caid = " + caid + " Use logdb" + logconfiguration.useLogDB());
+        		
           
         // Get logging configuration
         if(logconfiguration.logEvent(event)){
@@ -181,7 +180,7 @@ public class LocalLogSessionBean extends BaseSessionBean  {
       try{
         LogConfiguration logconfiguration = loadLogConfiguration(caid);   
          
-		System.out.println("LocalLogSessionBean : log  : caid = " + caid + " Use logdb" + logconfiguration.useLogDB());
+		
         // Get logging configuration
         if(logconfiguration.logEvent(event)){
           if(logconfiguration.useLogDB()){
@@ -247,14 +246,9 @@ public class LocalLogSessionBean extends BaseSessionBean  {
            // Construct SQL query.
             con = getConnection();
             if(viewlogprivileges.equals("")){            
-				System.out.println("LocalLogSessionBean : query: select " + LOGENTRYDATA_COL + " from LogEntryData where (" + query.getQueryString() + ") and (" 
-				+ viewlogprivileges + ") and (" + capriviledges + ")");
                 ps = con.prepareStatement("select " + LOGENTRYDATA_COL + " from LogEntryData where ( " + query.getQueryString() + 
-                                    ") and (" + capriviledges + ")");
-			                                         
-            }else{
-              System.out.println("LocalLogSessionBean : query: select " + LOGENTRYDATA_COL + " from LogEntryData where (" + query.getQueryString() + ") and (" 
-			  + viewlogprivileges + ") and (" + capriviledges + ")");	            
+                                    ") and (" + capriviledges + ")");			                                         
+            }else{              	            
               ps = con.prepareStatement("select " + LOGENTRYDATA_COL + " from LogEntryData where (" + query.getQueryString() + ") and (" 
                                          + viewlogprivileges + ") and (" + capriviledges + ")");
                                        
@@ -269,8 +263,7 @@ public class LocalLogSessionBean extends BaseSessionBean  {
                                                , rs.getInt(8), rs.getString(9));
               returnval.add(data);
             }
-            debug("<query()");
-			System.out.println("LocalLogSessionBean : query: result size : " + returnval.size());
+            debug("<query()");			
             return returnval;
 
         }catch(Exception e){

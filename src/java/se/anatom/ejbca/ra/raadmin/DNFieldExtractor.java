@@ -125,6 +125,7 @@ public class DNFieldExtractor {
                     }
                 }
             } catch (Exception e) {
+				illegal = true;
                 if (type == TYPE_SUBJECTDN) {
                     dnfields.put(new Integer((CN * BOUNDRARY)), "Illegal DN : " + dn);
                 } else {
@@ -230,11 +231,16 @@ public class DNFieldExtractor {
         return fieldnumbers;
     }
 
+    public boolean isIllegal(){
+    	return illegal;
+    }
+
     private static final int BOUNDRARY = 100;
     private int[] fieldnumbers;
     private HashMap dnfields;
     private ArrayList fieldorder;
     private String dn;
     private boolean existsother = false;
+    private boolean illegal = false;
     int type;
 }

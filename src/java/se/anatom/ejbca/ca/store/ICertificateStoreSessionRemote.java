@@ -20,7 +20,7 @@ import se.anatom.ejbca.log.Admin;
  * check for revocation etc. the CertificateStoreSession implements the interface
  * ICertificateStoreSession. Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.23 2003-10-06 11:47:12 anatom Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.24 2003-10-21 13:48:48 herrvendil Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote {
 
@@ -112,7 +112,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     /**
      * Finds certificate with specified fingerprint.
      *
-     * @return certificate
+     * @return certificate or null if certificate doesn't exists
      *
      * @throws RemoteException if a communication or other error occurs.
      */

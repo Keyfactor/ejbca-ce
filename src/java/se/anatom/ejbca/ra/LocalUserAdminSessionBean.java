@@ -54,7 +54,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.65 2003-10-03 10:06:50 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.66 2003-10-21 13:48:48 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -154,8 +154,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     
     private boolean authorizedToCA(Admin admin, int caid){
       boolean returnval = false;
-      try{
-        System.out.println("LocalUserAdminSession:authorizedToCA:   Checking authorization against " + AvailableAccessRules.CAPREFIX + caid); 
+      try{        
         returnval = authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid);
       }catch(AuthorizationDeniedException e){}    
       return returnval;  
@@ -455,8 +454,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
           // Check if user fulfills it's profile.
           EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, data.getEndEntityProfileId());
      
-          boolean fullfillsprofile = true;
-          System.out.println("Set Password" + password);
+          boolean fullfillsprofile = true;          
           if(!profile.isModifyable(EndEntityProfile.PASSWORD,0)){
             if(!password.equals(profile.getValue(EndEntityProfile.PASSWORD,0)));
               fullfillsprofile=false;

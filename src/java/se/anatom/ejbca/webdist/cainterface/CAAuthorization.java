@@ -17,7 +17,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * A class that looks up the which CA:s and certificate profiles the administrator is authorized to view.
  * 
- * @version $Id: CAAuthorization.java,v 1.2 2003-10-01 11:12:14 herrvendil Exp $
+ * @version $Id: CAAuthorization.java,v 1.3 2003-10-21 13:48:47 herrvendil Exp $
  */
 public class CAAuthorization implements Serializable {
     
@@ -122,24 +122,31 @@ public class CAAuthorization implements Serializable {
         
     
     
-    public TreeMap getCANames(){
-      System.out.println("CAAuthorization : >getCANames ");  
-      if(canames==null){
-        System.out.println("CAAuthorization : getCANames , not null");    
+    public TreeMap getCANames(){        
+      if(canames==null){        
         canames = new TreeMap();        
         HashMap idtonamemap = this.caadminsession.getCAIdToNameMap(admin);
         Iterator iter = getAuthorizedCAIds().iterator();
         while(iter.hasNext()){          
-          Integer id = (Integer) iter.next();
-          System.out.println("CAAuthorization : getCANames , found " + idtonamemap.get(id));
+          Integer id = (Integer) iter.next();          
           canames.put(idtonamemap.get(id),id);
         }        
-      }
-      System.out.println("CAAuthorization : <getCANames ");  
+      }       
       return canames;  
     }
     
-    
+	public TreeMap getAllCANames(){        
+	  if(allcanames==null){        
+		allcanames = new TreeMap();        
+		HashMap idtonamemap = this.caadminsession.getCAIdToNameMap(admin);
+		Iterator iter = idtonamemap.keySet().iterator();
+		while(iter.hasNext()){          
+		  Integer id = (Integer) iter.next();          
+		  allcanames.put(idtonamemap.get(id),id);
+		}        
+	  }       
+	  return allcanames;  
+	}    
     public void clear(){
       authcas=null;
       profilenamesendentity = null;
@@ -147,6 +154,7 @@ public class CAAuthorization implements Serializable {
       profilenamesrootca = null;
       allprofilenames = null;
       canames=null;
+      allcanames=null;
     }    
     
     // Private fields.
@@ -155,6 +163,7 @@ public class CAAuthorization implements Serializable {
     private TreeMap profilenamessubca = null;
     private TreeMap profilenamesrootca = null;
     private TreeMap canames = null;
+	private TreeMap allcanames = null;
     private TreeMap allprofilenames = null;
     private Admin admin;
     private ICAAdminSessionLocal caadminsession;

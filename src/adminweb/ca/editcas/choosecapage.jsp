@@ -1,7 +1,7 @@
 <%
-  TreeMap canames     = info.getCANames(); 
+  TreeMap canames     = info.getAllCANames(); 
 
-  String[] statustexts = {"", "ACTIVE", "WAITINGFORCERTRESPONSE", "EXPIRED", "REVOKED", "INACTIVE"};
+  String[] statustexts = {"", "ACTIVE", "WAITINGFORCERTRESPONSE", "EXPIRED", "REVOKED", "INACTIVE","EXTERNALCA"};
 
 %>
 
@@ -28,10 +28,38 @@
         <td width="35%"></td>
       </tr>
     <% } %>
+    <% if(caactivated){ %> 
+      <tr> 
+        <td width="5%"></td>
+        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("CAACTIVATED") %></H4></td>
+        <td width="35%"></td>
+      </tr>
+    <% } %>
     <% if(illegaldnoraltname){ %> 
       <tr> 
         <td width="5%"></td>
         <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("INVALIDSUBJECTDN") %></H4></td>
+        <td width="35%"></td>
+      </tr>
+    <% } %>
+    <% if(errorrecievingfile){ %> 
+      <tr> 
+        <td width="5%"></td>
+        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("ERRORRECIEVINGFILE") %></H4></td>
+        <td width="35%"></td>
+      </tr>
+    <% } %>
+    <% if(carenewed){ %> 
+      <tr> 
+        <td width="5%"></td>
+        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("CARENEWED") %></H4></td>
+        <td width="35%"></td>
+      </tr>
+    <% } %>
+    <% if(capublished){ %> 
+      <tr> 
+        <td width="5%"></td>
+        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("CAPUBLISHED") %></H4></td>
         <td width="35%"></td>
       </tr>
     <% } %>
@@ -98,7 +126,8 @@
         <td width="95%"> 
           <input type="text" name="<%=TEXTFIELD_CANAME%>" size="40" maxlength="255">   
           <input type="submit" name="<%= BUTTON_CREATE_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("CREATE") %>">&nbsp;&nbsp;&nbsp;
-          <input type="submit" name="<%= BUTTON_RENAME_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("RENAMESELECTED") %>">
+          <input type="submit" name="<%= BUTTON_RENAME_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("RENAMESELECTED") %>"><br>
+          <input type="submit" name="<%= BUTTON_PROCESSREQUEST%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("PROCESSREQUEST") %>">
         </td>
       </tr>
       <tr> 

@@ -41,12 +41,10 @@ public class AuthorizationProxy implements Serializable {
         // Check if name is in hashmap
       returnval = (Boolean) authstore.get(new Integer(tmp));
       
-      if(returnval != null) System.out.println("AuthorizationProxy :  resource " + resource + ", result " + returnval);
       if(returnval==null){          
         // Get authorization from access tree
           returnval = new Boolean(accesstree.isAuthorized(admin, resource));
-          authstore.put(new Integer(tmp),returnval);
-          System.out.println("AuthorizationProxy :  returnval = null, resource " + resource + ", result " + returnval.booleanValue());
+          authstore.put(new Integer(tmp),returnval);      
         }
 
       return returnval.booleanValue();

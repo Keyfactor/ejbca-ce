@@ -32,7 +32,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.2 2003-10-01 11:12:07 herrvendil Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.3 2003-10-21 13:48:47 herrvendil Exp $
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
@@ -237,8 +237,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 	   this.removeAdminGroup(admin, "Public Web Users",  ILogSessionLocal.INTERNALCAID);
 	   try{
 		  admingrouphome.findByPrimaryKey(new AdminGroupPK("Public Web Users", ILogSessionLocal.INTERNALCAID));   
-	   }catch(FinderException e){	   
-	   	 System.out.println("Adding public web group");
+	   }catch(FinderException e){	   	   	 
 	     try{           	   	 
 		   AdminGroupDataLocal agdl = admingrouphome.create("Public Web Users",  ILogSessionLocal.INTERNALCAID);
         
@@ -735,16 +734,14 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      * @returns true if update is needed.
      */
     
-    private boolean updateNeccessary(){
-      System.out.println("Update neccessary :" + (getAuthorizationTreeUpdateData().updateNeccessary(this.authorizationtreeupdate) && lastupdatetime < ((new java.util.Date()).getTime() - IAuthorizationSessionRemote.MINTIMEBETWEENUPDATES)));           
+    private boolean updateNeccessary(){                 
        return getAuthorizationTreeUpdateData().updateNeccessary(this.authorizationtreeupdate) && lastupdatetime < ((new java.util.Date()).getTime() - IAuthorizationSessionRemote.MINTIMEBETWEENUPDATES);      
     } // updateNeccessary
     
     /**
      * method updating authorization tree.
      */
-    private void updateAuthorizationTree(Admin admin){
-      System.out.println("Time to update authorization tree.");  
+    private void updateAuthorizationTree(Admin admin){        
       authorizer.buildAccessTree(getAdminGroups(admin));  
       this.authorizationtreeupdate= getAuthorizationTreeUpdateData().getAuthorizationTreeUpdateNumber();
       this.lastupdatetime = (new java.util.Date()).getTime();  
@@ -755,8 +752,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      * to other beans that they should reconstruct their accesstrees. 
      *
      */    
-    private void signalForAuthorizationTreeUpdate(){
-              System.out.println("Signal for update."); 
+    private void signalForAuthorizationTreeUpdate(){              
        getAuthorizationTreeUpdateData().incrementAuthorizationTreeUpdateNumber();
     }
     

@@ -12,7 +12,7 @@ package se.anatom.ejbca;
  * types. Constants for Token Types Token type is constructed of integer constants since only one
  * token type can be generated.
  *
- * @version $Id: SecConst.java,v 1.15 2003-09-03 14:27:43 herrvendil Exp $
+ * @version $Id: SecConst.java,v 1.16 2003-10-21 13:48:48 herrvendil Exp $
  */
 public class SecConst extends Object {
     // User types
@@ -107,6 +107,7 @@ public class SecConst extends Object {
     public static final int CA_EXPIRED = 3;
     public static final int CA_REVOKED = 4;
     public static final int CA_INACTIVE = 5;
+    public static final int CA_EXTERNAL = 6;
 
 
     /**

@@ -19,11 +19,11 @@ try  {
     ISignSessionHome home = home = (ISignSessionHome) PortableRemoteObject.narrow(
             ctx.lookup("RSASignSession"), ISignSessionHome.class );
     ISignSessionRemote ss = home.create();
-    Certificate[] chain = ss.getCertificateChain(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()));
-    if (chain.length == 0) {
+    Collection chain = ss.getCertificateChain(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()),caid);
+    if (chain.size() == 0) {
         out.println("No CA certificates exist");
     } else {
-        out.println("<li><a href=\"../webdist/certdist?cmd=nscacert\">Certificate chain</a></li>");
+        out.println("<li><a href=\"../webdist/certdist?cmd=nscacert&caid="+caid+"\">Certificate chain</a></li>");
     }
 } catch(Exception ex) {
     ex.printStackTrace();

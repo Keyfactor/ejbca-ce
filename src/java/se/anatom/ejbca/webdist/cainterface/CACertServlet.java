@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
+import se.anatom.ejbca.apply.RequestHelper;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
@@ -36,7 +37,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.17 2003-10-01 11:12:14 herrvendil Exp $
+ * @version $Id: CACertServlet.java,v 1.18 2003-10-21 13:48:47 herrvendil Exp $
  *
  */
 public class CACertServlet extends HttpServlet {
@@ -60,7 +61,7 @@ public class CACertServlet extends HttpServlet {
             // Get EJB context and home interfaces
             InitialContext ctx = new InitialContext();
 
-            signhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
+		signhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
         } catch( Exception e ) {
             throw new ServletException(e);
         }
@@ -137,9 +138,9 @@ public class CACertServlet extends HttpServlet {
                     log.debug("Sent CA cert to IE client, len="+enccert.length+".");
                 } else if (command.equalsIgnoreCase(COMMAND_CACERT)) {
                     byte[] b64cert = Base64.encode(enccert);
-                    String out = "-----BEGIN CERTIFICATE-----\n";
+                    String out = RequestHelper.BEGIN_CERTIFICATE_WITH_NL;                   
                     out += new String(b64cert);
-                    out += "\n-----END CERTIFICATE-----\n";
+                    out += RequestHelper.END_CERTIFICATE_WITH_NL;
                     res.setHeader("Content-disposition", "attachment; filename=ca.pem");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(out.length());

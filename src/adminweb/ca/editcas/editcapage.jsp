@@ -10,19 +10,32 @@
   int[]    availablecatokentypes = {CATokenInfo.CATOKENTYPE_P12};  
   String[] availablecatokentypetexts = {"SOFTCATOKEN"};
  
-  int row = 0;
+  row = 0;
 
   CAInfo cainfo = null;
   X509CAInfo x509cainfo = null;
   String catokentext = null;
   CATokenInfo catokeninfo = null;
+  
+  boolean revokable = true;
+  boolean signbyexternal = false;
+  boolean isexternal = false;
+  boolean waitingresponse = false;  
+
   if(editca){
     cainfo = cabean.getCAInfo(caid).getCAInfo();
     catokeninfo = cainfo.getCATokenInfo();
 
     if(catokeninfo instanceof SoftCATokenInfo)
       catokentext = ejbcawebbean.getText("SOFT"); 
+
+    revokable = cainfo.getStatus() != SecConst.CA_REVOKED && cainfo.getStatus() != SecConst.CA_EXTERNAL && cainfo.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE;
+
+    signbyexternal = cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA;
+    isexternal = cainfo.getStatus() == SecConst.CA_EXTERNAL;
+    waitingresponse = cainfo.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE;
   }
+
 %>
 <SCRIPT language="JavaScript">
 <!--  
@@ -71,8 +84,57 @@ function fillCertProfileField(){
      
    }
 }
-<% } %>  
 
+  <% if(!processrequest){ %>
+function isExternal(){
+   var makebutton     =  document.ca.<%= BUTTON_MAKEREQUEST %>; 
+   var createbutton   =  document.ca.<%= BUTTON_CREATE %>; 
+   var validityfield  =  document.ca.<%=TEXTFIELD_VALIDITY%>;
+   var certproffield  =  document.ca.<%=SELECT_CERTIFICATEPROFILE %>;
+   var subjectaltname =  document.ca.<%=TEXTFIELD_SUBJECTALTNAME%>;
+   var policyidfield  =  document.ca.<%=TEXTFIELD_POLICYID%>;
+
+   makebutton.disabled = true;
+   createbutton.disabled = false; 
+   validityfield.disabled = false; 
+   certproffield.disabled = false; 
+   subjectaltname.disabled = false; 
+   policyidfield.disabled = false; 
+
+   if(document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value == <%= CAInfo.SIGNEDBYEXTERNALCA %>){
+      makebutton.disabled = false;   
+      createbutton.disabled = true;
+      validityfield.disabled = true; 
+      certproffield.disabled = true; 
+      subjectaltname.disabled = true; 
+      policyidfield.disabled = true;   
+   } 
+}
+
+
+    <% } %>
+<% }
+   if(revokable){ %>
+function confirmrevokation(){
+  var returnval = false;
+  if(document.ca.<%= SELECT_REVOKEREASONS %>.options.selectedIndex == -1){
+     alert("<%= ejbcawebbean.getText("AREVOKEATIONREASON") %>"); 
+     returnval = false;
+  }else{
+    returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKECA") %>");
+  } 
+  return returnval;
+}
+
+<%  }  
+
+   if(editca && !isexternal){ %>
+function confirmrenewal(){
+    
+  return confirm("<%= ejbcawebbean.getText("AREYOUSURERENEWCA") %>") && checkallfields();     
+}
+
+<%  }  %>  
 
 function checkusefield(usefield, criticalfield){
   var usebox = eval("document.ca." + usefield);
@@ -88,6 +150,7 @@ function checkusefield(usefield, criticalfield){
 
 function checkallfields(){
     var illegalfields = 0;
+    
 
     <% if(!editca){ %>
     if(!checkfieldforcompletednchars("document.ca.<%=TEXTFIELD_SUBJECTDN%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText("SUBJECTDN") %>"))
@@ -97,27 +160,32 @@ function checkallfields(){
       illegalfields++;
     }
    <% } %> 
+
+    <% if(!editca || (editca && cainfo.getSignedBy() != CAInfo.SIGNEDBYEXTERNALCA)){ %>
     if(!checkfieldfordecimalnumbers("document.ca.<%=TEXTFIELD_VALIDITY%>","<%= ejbcawebbean.getText("ONLYDECNUMBERSINVALIDITY") %>"))
       illegalfields++;
-    if((document.ca.<%= TEXTFIELD_VALIDITY %>.value == "")){
+    if((document.ca.<%= TEXTFIELD_VALIDITY %>.value == "") && document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value != <%= CAInfo.SIGNEDBYEXTERNALCA %>){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("VALIDITY")%>");
       illegalfields++;
-    }
+    }   
+    <% }
 
-    <% if(catype == CAInfo.CATYPE_X509){ 
+       if(catype == CAInfo.CATYPE_X509){ 
          if(!editca){%>        
     if(!checkfieldforcompletednchars("document.ca.<%=TEXTFIELD_SUBJECTALTNAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText("SUBJECTALTNAME")%>"))
       illegalfields++;
    if(!checkfieldforipaddess("document.ca.<%=TEXTFIELD_POLICYID%>","<%= ejbcawebbean.getText("ONLYNUMBERALSANDDOTS") + ejbcawebbean.getText("POLICYID")%>"))
       illegalfields++;
       <% } %>
+      <% if(!processrequest){ %>
     if(!checkfieldfordecimalnumbers("document.ca.<%=TEXTFIELD_CRLPERIOD%>","<%= ejbcawebbean.getText("ONLYDECNUMBERSINCRLPERIOD") %>"))
       illegalfields++;
     if((document.ca.<%= TEXTFIELD_CRLPERIOD %>.value == "")){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("CRLPERIOD")%>");
       illegalfields++;
     }
-    <% } %> 
+    <%  } 
+      }  %> 
      return illegalfields == 0;  
    } 
 -->
@@ -125,14 +193,19 @@ function checkallfields(){
 </SCRIPT>
 <body <% if(!editca) out.write(" onload='fillCertProfileField()' "); %>> 
 <div align="center"> 
-  <% if(editca){ %>
+  <% if(processrequest){ %>
+  <h2><%= ejbcawebbean.getText("PROCESSREQUEST") %><br></h2>
+  <h3><%= ejbcawebbean.getText("CANAME")+ " : " + caname %><br>
+      <%= ejbcawebbean.getText("ONLYTHEPUBLICKEY") %></h3>
+  <% }else{
+       if(editca){ %>
   <h2><%= ejbcawebbean.getText("EDITCA") %><br></h2>
   <h3><%= ejbcawebbean.getText("CANAME")+ " : " + cainfo.getName() %> </h3>
-  <% }else{ %>
+  <%   }else{ %>
    <h2><%= ejbcawebbean.getText("CREATECA") %><br></h2>
    <h3><%= ejbcawebbean.getText("CANAME")+ " : " + caname %> </h3>
-  <% } %>
-
+  <%   }
+     }%>
 </div>
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
@@ -148,6 +221,7 @@ function checkallfields(){
         <u><%= ejbcawebbean.getText("HELP") %></u> </A></div> -->
       </td>
     </tr>
+   <% if(!processrequest){ %>
     <form name="changecatype" action="<%= THIS_FILENAME %>" method="post">
       <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHOOSE_CATYPE %>'>
       <tr id="Row<%=row++%2%>"> 
@@ -159,7 +233,9 @@ function checkallfields(){
         </td>
       </tr>
     </form>
-    <% if(editca){ %>
+
+    <% if(!isexternal) {
+         if(editca){ %>
         <tr id="Row<%=row++%2%>">
           <td width="50%"  align="right">          
             <%= ejbcawebbean.getText("CATOKENTYPE") %>
@@ -168,7 +244,7 @@ function checkallfields(){
          </td>	
       </tr>
 
-    <% }else{ %>
+    <%   }else{ %>
     <form name="changecatokentype" action="<%= THIS_FILENAME %>" method="post">
        <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHOOSE_CATOKENTYPE %>'>
        <tr>
@@ -187,19 +263,27 @@ function checkallfields(){
          </td>	
       </tr>
     </form>
-    <% } %>
-  <form name="ca" method="post" action="<%=THIS_FILENAME %>">
+    <%   }
+       }
+     }%>
+  <form name="ca" method="post" action="<%=THIS_FILENAME %>" ENCTYPE="post">
     <input type="hidden" name='<%= HIDDEN_CATOKENTYPE %>' value='<%=catokentype %>'>
     <input type="hidden" name='<%= HIDDEN_CATYPE %>' value='<%=catype %>'>
-  <% if(editca){ %>  
+  <% if(processrequest){ %>  
+    <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_PROCESSREQUEST2 %>'>
+    <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%=caname %>'>
+  <% } else { %>
+  <%   if(editca){ %>  
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_CA %>'>
     <input type="hidden" name='<%= HIDDEN_CAID %>' value='<%=caid %>'>
-  <% } else { %>
+    <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%=cainfo.getName() %>'>
+  <%   } else { %>
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CREATE_CA %>'>
     <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%=caname %>'>
-  <% }
+  <%   }
+     }
 
-   if( catokentype == CATokenInfo.CATOKENTYPE_P12 ){ %>
+   if( catokentype == CATokenInfo.CATOKENTYPE_P12 && !processrequest && !isexternal){ %>
    <%@ include file="softcatokenpage.jsp" %> 
 <%}  %>
     <tr  id="Row<%=row++%2%>"> 
@@ -210,7 +294,7 @@ function checkallfields(){
         <% if(editca){
               out.write(cainfo.getSubjectDN() + "<br>"); 
            }else{ %>
-        <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="40" maxlength="255">
+        <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="40" <% if(processrequest) out.write(" value='" + processedsubjectdn + "'"); %> maxlength="255">
         <% } %>
       </td>
     </tr>
@@ -218,8 +302,17 @@ function checkallfields(){
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("SIGNEDBY") %>
       </td>
-      <td width="50%"> 
-           <% if(editca){
+      <td width="50%">
+           <% if(processrequest){ %>
+                <select name="<%=SELECT_SIGNEDBY %>" size="1" onchange="fillCertProfileField();">                
+                <% Iterator iter = casigners.keySet().iterator();
+                   while(iter.hasNext()){
+                     String nameofca = (String) iter.next();  %>              
+                     <option value="<%= casigners.get(nameofca)%>"><%= nameofca %></option>  
+                <% } %> 
+	        </select> 
+           <% }else{
+                if(editca){
                 if(cainfo.getSignedBy() >= 0 && cainfo.getSignedBy() <= CAInfo.SPECIALCAIDBORDER){
                   if(cainfo.getSignedBy() == CAInfo.SELFSIGNED)
                     out.write(ejbcawebbean.getText("SELFSIGNED"));
@@ -228,15 +321,17 @@ function checkallfields(){
                 }else
                   out.write((String) caidtonamemap.get(new Integer(cainfo.getSignedBy())));
               }else{%>
-        <select name="<%=SELECT_SIGNEDBY %>" size="1" onchange="fillCertProfileField()">
+        <select name="<%=SELECT_SIGNEDBY %>" size="1" onchange="fillCertProfileField(); isExternal()">
                 <option value="<%= CAInfo.SELFSIGNED%>" selected><%= ejbcawebbean.getText("SELFSIGNED") %></option>  
+                <option value="<%= CAInfo.SIGNEDBYEXTERNALCA%>"><%= ejbcawebbean.getText("EXTERNALCA") %></option>  
                 <% Iterator iter = casigners.keySet().iterator();
                    while(iter.hasNext()){
                      String nameofca = (String) iter.next();  %>              
                      <option value="<%= casigners.get(nameofca)%>"><%= nameofca %></option>  
                 <% } %> 
 	 </select>
-           <% } %> 
+           <%   }
+              }%> 
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
@@ -245,7 +340,10 @@ function checkallfields(){
       </td>
       <td width="50%"> 
            <% if(editca){
-                out.write((String) certprofileidtonamemap.get(new Integer(cainfo.getCertificateProfileId())));
+                if(cainfo.getCertificateProfileId() != 0)
+                  out.write((String) certprofileidtonamemap.get(new Integer(cainfo.getCertificateProfileId())));
+                else
+                  out.write(ejbcawebbean.getText("NOTUSED"));
               }else{%>
         <select name="<%=SELECT_CERTIFICATEPROFILE %>" size="1" >                
 	</select>
@@ -257,10 +355,17 @@ function checkallfields(){
         <%= ejbcawebbean.getText("VALIDITY") %> (<%= ejbcawebbean.getText("DAYS") %>)
       </td>
       <td width="50%"> 
+        <% if(isexternal || (editca && cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA)){
+              if(cainfo.getValidity() != 0)
+                out.write("" + cainfo.getValidity());
+              else
+                out.write(ejbcawebbean.getText("NOTUSED"));
+           }else{ %>
         <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="5" maxlength="255" 
            <% if(editca) out.write(" value='" +cainfo.getValidity() + "'> <i>" + 
                                     ejbcawebbean.getText("USEDINCARENEWAL") + "</i>");
-              else out.write(">");%>
+              else out.write(">");
+           }%>
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
@@ -268,7 +373,11 @@ function checkallfields(){
         <%= ejbcawebbean.getText("DESCRIPTION") %>
       </td>
       <td width="50%"> 
+        <% if(isexternal){
+              out.write(cainfo.getDescription());
+           }else{ %>
         <textarea name="<%=TEXTFIELD_DESCRIPTION%>" cols=40 rows=6><% if(editca) out.write(cainfo.getDescription());%></textarea>
+       <% } %>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
@@ -313,6 +422,7 @@ function checkallfields(){
          <% } %>   
       </td>
     </tr> 
+   <% if(!processrequest && !isexternal){ %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("CRLSPECIFICDATA") %>
@@ -329,11 +439,12 @@ function checkallfields(){
            <input type="checkbox" name="<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>" onClick="checkusefield('<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>', '<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
            <% if((editca && x509cainfo.getUseAuthorityKeyIdentifier()) || !editca)
                  out.write("CHECKED");
+              if(isexternal) out.write(" disabled ");
            %>> <br> 
           <input type="checkbox" name="<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
            <%
              if(editca){
-               if(!x509cainfo.getUseAuthorityKeyIdentifier())
+               if(!x509cainfo.getUseAuthorityKeyIdentifier() || isexternal)
                  out.write(" disabled ");  
                else
                if(x509cainfo.getAuthorityKeyIdentifierCritical())
@@ -349,11 +460,12 @@ function checkallfields(){
            <input type="checkbox" name="<%=CHECKBOX_USECRLNUMBER %>" onClick="checkusefield('<%=CHECKBOX_USECRLNUMBER %>', '<%=CHECKBOX_CRLNUMBERCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
            <% if((editca && x509cainfo.getUseCRLNumber()) || !editca)
                  out.write("CHECKED");
+              if(isexternal) out.write(" disabled "); 
            %>> <br> 
           <input type="checkbox" name="<%=CHECKBOX_CRLNUMBERCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
            <%
              if(editca){
-               if(!x509cainfo.getUseCRLNumber())
+               if(!x509cainfo.getUseCRLNumber() || isexternal)
                  out.write(" disabled ");  
                else
                if(x509cainfo.getCRLNumberCritical())
@@ -366,10 +478,14 @@ function checkallfields(){
         <%= ejbcawebbean.getText("CRLPERIOD") %> (<%= ejbcawebbean.getText("HOURS") %>)
       </td>
       <td width="50%">
+           <% if(isexternal){
+                out.write("" + x509cainfo.getCRLPeriod());
+              }else{ %>
          <input type="text" name="<%=TEXTFIELD_CRLPERIOD%>" size="40" maxlength="255"
             <% if(editca) out.write(" value='" + x509cainfo.getCRLPeriod()+ "'");%>>
+           <% } %> 
       </td>
-    </tr> 
+    </tr>    
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
         <%= ejbcawebbean.getText("CRLPUBLISHERS") %> <br>&nbsp;
@@ -409,17 +525,73 @@ function checkallfields(){
                  out.write("CHECKED");%>>         
       </td>
     </tr>
-   <% } %>
+   <%  } 
+    } %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top"> 
-        <% if(editca){ %>
+      <% if(!isexternal){ 
+           if(processrequest){ %>
+          <input type="submit" name="<%= BUTTON_PROCESSREQUEST %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("PROCESSREQUEST") %>">
+      <% }else{
+            if(editca){ %>
           <input type="submit" name="<%= BUTTON_SAVE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
-        <% }else{ %>
+        <%  }else{ %>
           <input type="submit" name="<%= BUTTON_CREATE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("CREATE") %>">
-        <% } %>   
+        <%  }
+         } %>   
         <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
+        <% }else{ %>
+        <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("BACK") %>">
+        <% } %>
       </td>
     </tr>
+       <% if(editca && revokable){ %>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="49%" valign="top">&nbsp;</td>
+      <td width="51%" valign="top">         
+        <select name="<%=SELECT_REVOKEREASONS %>" >
+          <% for(int i=0; i < RevokedInfoView.reasontexts.length; i++){ 
+               if(i!= 7){%>
+               <option value='<%= i%>'><%= ejbcawebbean.getText(RevokedInfoView.reasontexts[i]) %></option>
+          <%   } 
+             } %>
+        </select>
+        <input type="submit" name="<%= BUTTON_REVOKECA %>" value="<%= ejbcawebbean.getText("REVOKE") %>" onClick='return confirmrevokation()'>     
+      </td>
+    </tr>
+        <% } %>   
+       <% if(!editca && !processrequest){ %>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="49%" valign="top" align="right"></td>
+      <td width="51%" valign="top">             
+        <input type="submit" disabled name="<%= BUTTON_MAKEREQUEST %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("MAKEREQUEST") %>" >
+      </td>
+    </tr>
+        <% } %>   
+       <% if(editca && !isexternal){ %>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="49%" valign="top" align="right"></td>
+      <td width="51%" valign="top">             
+        <input type="submit" name="<%= BUTTON_RENEWCA %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("RENEWCA") %>" >
+      </td>
+    </tr>
+        <% } %>   
+       <% if(editca && waitingresponse){ %>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="49%" valign="top" align="right"></td>
+      <td width="51%" valign="top">             
+        <input type="submit" name="<%= BUTTON_RECEIVEREQUEST %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("RECIEVEREQUEST") %>" >
+      </td>
+    </tr>
+        <% } %>   
+       <% if(editca){ %>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="49%" valign="top" align="right"></td>
+      <td width="51%" valign="top">             
+        <input type="submit" name="<%= BUTTON_PUBLISHCA %>"  value="<%= ejbcawebbean.getText("REPUBLISHCA") %>" >
+      </td>
+    </tr>
+        <% } %>   
   </form>
   </table>

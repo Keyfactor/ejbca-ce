@@ -46,7 +46,7 @@ import se.anatom.ejbca.util.CertTools;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.33 2003-10-03 10:07:00 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.34 2003-10-21 13:48:47 herrvendil Exp $
  */
 public class EjbcaWebBean {
 
@@ -327,8 +327,7 @@ public class EjbcaWebBean {
     /* Checks if the admin have authorization to view the resource */
     public boolean isAuthorized(String resource) throws AuthorizationDeniedException {
       boolean returnval=false;
-      if(certificates != null){
-        System.out.println("Authorizing administrator " + administrator.getAdminType());  
+      if(certificates != null){         
         returnval= authorizedatahandler.isAuthorized(administrator,resource);
       }
       else{
@@ -575,6 +574,10 @@ public class EjbcaWebBean {
     
     public InformationMemory getInformationMemory(){
       return this.informationmemory;   
+    }
+    
+    public Admin getAdminObject(){
+    	return this.administrator;    
     }
 
 }

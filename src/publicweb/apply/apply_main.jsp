@@ -30,6 +30,7 @@
   String password = "";
   String browser  = null;
   int[] availablekeylengths = null;
+  int caid =0;
 
 try  {
    if( request.getParameter(ACTION) != null){
@@ -41,6 +42,7 @@ try  {
        if(username != null && password != null && browser != null){
          int tokentype = applybean.getTokenType(username);
          availablekeylengths = applybean.availableBitLengths(username);
+         caid = applybean.getCAId(username);
          if(tokentype == 0){
             request.setAttribute("ErrorMessage","User does not exist : " + username);
             request.getRequestDispatcher("error.jsp").forward(request, response);

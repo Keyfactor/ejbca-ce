@@ -1,8 +1,13 @@
 package se.anatom.ejbca.webdist.cainterface;
 
+import java.io.InputStream;
 import java.io.Serializable;
+import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
@@ -10,12 +15,17 @@ import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.exception.CADoesntExistsException;
 import se.anatom.ejbca.ca.exception.CAExistsException;
+import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
+import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.IRequestMessage;
 import se.anatom.ejbca.protocol.IResponseMessage;
+import se.anatom.ejbca.protocol.PKCS10RequestMessage;
+import se.anatom.ejbca.protocol.X509ResponseMessage;
 import se.anatom.ejbca.ra.IUserAdminSessionLocal;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
+import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
 
@@ -34,6 +44,7 @@ public class CADataHandler implements Serializable {
                          IRaAdminSessionLocal raadminsession, 
                          ICertificateStoreSessionLocal certificatesession,
                          IAuthorizationSessionLocal authorizationsession,
+                         ISignSessionLocal signsession,
                          EjbcaWebBean ejbcawebbean) {
                             
        this.caadminsession = caadminsession;           
@@ -42,6 +53,7 @@ public class CADataHandler implements Serializable {
        this.certificatesession = certificatesession;
        this.raadminsession = raadminsession;
        this.administrator = administrator;          
+       this.signsession = signsession;
        this.info = ejbcawebbean.getInformationMemory();       
        this.ejbcawebbean = ejbcawebbean;
     }
@@ -123,36 +135,45 @@ public class CADataHandler implements Serializable {
   /**
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
    */  
-  public IRequestMessage  makeRequest(Admin admin, int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException{
-      // Todo
-      info.cAsEdited();
-      
-      return null;
-  }
+  public PKCS10CertificationRequest  makeRequest(int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException{
+  	
+	  PKCS10RequestMessage result = (PKCS10RequestMessage) caadminsession.makeRequest(administrator, caid,cachain,setstatustowaiting);
+	  return result.getCertificationRequest();    
+  }	    
 
   /**
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
    */  
-  public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage) throws CADoesntExistsException, AuthorizationDeniedException{
-     // TODO 
+  public void receiveResponse(int caid, InputStream is) throws Exception{
+  	 Collection certs = CertTools.getCertsFromPEM(is);
+  	 Iterator iter = certs.iterator();
+  	 Certificate cert = (Certificate) iter.next();
+  	 X509ResponseMessage resmes = new X509ResponseMessage();
+  	 resmes.setCertificate(cert);
+  
+     caadminsession.receiveResponse(administrator, caid, resmes);
      info.cAsEdited(); 
   }
 
   /**
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
    */  
-  public Collection processRequest(Admin admin, String username, String password, IRequestMessage requestmessage) throws CADoesntExistsException, AuthorizationDeniedException{
-      // Todo
+  public Certificate processRequest(CAInfo cainfo, IRequestMessage requestmessage) throws Exception {      
+      Certificate returnval = null;
+      IResponseMessage result = caadminsession.processRequest(administrator, cainfo, requestmessage);
+      if(result instanceof X509ResponseMessage){
+         returnval = ((X509ResponseMessage) result).getCertificate();      
+      }            
       info.cAsEdited();
       
-      return null;      
+      return returnval;      
   }
 
   /**
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
    */  
   public void renewCA(int caid, IResponseMessage responsemessage) throws CADoesntExistsException, AuthorizationDeniedException{
-      // Todo      
+      caadminsession.renewCA(administrator, caid, responsemessage);
       info.cAsEdited();
   }
 
@@ -160,10 +181,18 @@ public class CADataHandler implements Serializable {
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
    */  
   public void revokeCA(int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException{
-      // Todo
+      caadminsession.revokeCA(administrator, caid, reason);
       info.cAsEdited();
   }
       
+  /**
+   *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+   */  
+ public void publishCA(int caid){
+ 	CAInfo cainfo = caadminsession.getCAInfo(administrator, caid);
+ 	CertificateProfile certprofile = certificatesession.getCertificateProfile(administrator, cainfo.getCertificateProfileId());
+ 	signsession.publishCACertificate(administrator, cainfo.getCertificateChain(), certprofile.getPublisherList() , cainfo.getSignedBy() == CAInfo.SELFSIGNED);
+ }
    
   private ICAAdminSessionLocal           caadminsession; 
   private Admin                          administrator;
@@ -173,4 +202,5 @@ public class CADataHandler implements Serializable {
   private IRaAdminSessionLocal           raadminsession; 
   private ICertificateStoreSessionLocal  certificatesession;                          
   private EjbcaWebBean                   ejbcawebbean;
+  private ISignSessionLocal               signsession;
 }

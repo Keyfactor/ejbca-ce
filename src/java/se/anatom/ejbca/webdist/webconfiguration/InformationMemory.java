@@ -154,11 +154,21 @@ public class InformationMemory {
     
     /**
      * Returns a CA names as a treemap of name (String) -> id (Integer).
+     * Doesn't include external CAs.
      */
     public TreeMap getCANames(){
       return this.caauthorization.getCANames();   
     }     
  
+	/**
+	 * Returns a CA names as a treemap of name (String) -> id (Integer).
+	 * Also includes external CAs
+	 */
+	public TreeMap getAllCANames(){
+	  return this.caauthorization.getAllCANames();   
+	}     
+
+
     /**
      * Returns string used in view log queries.
      */

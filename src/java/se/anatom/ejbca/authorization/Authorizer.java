@@ -24,7 +24,7 @@ import se.anatom.ejbca.util.CertTools;
  *
  * The main metod are isAthorized and authenticate.
  *
- * @version $Id: Authorizer.java,v 1.3 2003-10-01 11:12:07 herrvendil Exp $
+ * @version $Id: Authorizer.java,v 1.4 2003-10-21 13:48:47 herrvendil Exp $
  */
 public class Authorizer extends Object implements java.io.Serializable{
 
@@ -139,26 +139,19 @@ public class Authorizer extends Object implements java.io.Serializable{
      * is authorized to access.
      */
        
-    public Collection getAuthorizedCAIds(Admin admin){
-      System.out.println("Authorizer : >getAuthorizedCAIds() ");    
+    public Collection getAuthorizedCAIds(Admin admin){         
       ArrayList returnval = new ArrayList();  
-      Iterator iter = caadminsession.getCAIdToNameMap(admin).keySet().iterator();      
+      Iterator iter = caadminsession.getAvailableCAs(admin).iterator();      
            
       while(iter.hasNext()){
         Integer caid = (Integer) iter.next();
-        try{
-          System.out.println("Authorizer : getAuthorizedCAIds() : trying caid : " + caid.intValue());  
-          isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid.toString());     
-          System.out.println("Authorizer : getAuthorizedCAIds() : Authorized to caid : " + caid.intValue());
+        try{           
+          isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid.toString());               
           returnval.add(caid); 
         }catch(AuthorizationDeniedException e){}
-                   
-      } 
-      
-      System.out.println("Authorizer : <getAuthorizedCAIds() ");
-      
+      }                         
       return returnval;
-    }   
+    }		   
     
     /**
      * Method used to return an Collection of Integers indicating which end entity profiles

@@ -26,7 +26,7 @@ import se.anatom.ejbca.ra.UserDataRemote;
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.15 2003-10-04 10:12:41 anatom Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.16 2003-10-21 13:48:48 herrvendil Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthenticationSession.class);
@@ -58,7 +58,6 @@ public class TestAuthenticationSession extends TestCase {
         ISignSessionHome signhome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);        
         ISignSessionRemote signsession = signhome.create();
         
-        this.caid = 0; // TODO
         
         log.debug("<setUp()");
     }

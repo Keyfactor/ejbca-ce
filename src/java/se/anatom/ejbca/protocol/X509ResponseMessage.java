@@ -7,13 +7,16 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+
+import se.anatom.ejbca.util.CertTools;
 
 
 /**
  * A response message consisting of a single X509 Certificate.
  *
- * @version $Id: X509ResponseMessage.java,v 1.11 2003-10-09 08:46:27 anatom Exp $
+ * @version $Id: X509ResponseMessage.java,v 1.12 2003-10-21 13:48:47 herrvendil Exp $
  */
 public class X509ResponseMessage implements IResponseMessage {
     /** Certificate to be in response message, */
@@ -33,6 +36,15 @@ public class X509ResponseMessage implements IResponseMessage {
     public void setCertificate(Certificate cert) {
         this.cert = cert;
     }
+    
+	/**
+	 * Gets the complete certificate in the response message.
+	 *
+	 * @return certificate in the response message.
+	 */
+	public Certificate getCertificate() throws CertificateEncodingException, CertificateException, IOException {
+		return CertTools.getCertfromByteArray(getResponseMessage());
+	}    
 
     /**
      * Gets the response message in the default encoding format.

@@ -24,7 +24,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.1 2003-09-03 16:21:29 herrvendil Exp $
+ * @version $Id: CADataBean.java,v 1.2 2003-10-21 13:48:45 herrvendil Exp $
  */
 public abstract class CADataBean extends BaseEntityBean {
 
@@ -68,6 +68,10 @@ public abstract class CADataBean extends BaseEntityBean {
         }      
       }
       
+      ca.setName(getName());
+      ca.setStatus(getStatus());
+      ca.setExpireTime(new Date(getExpireTime()));
+      
       return ca;              
     }
     
@@ -79,13 +83,7 @@ public abstract class CADataBean extends BaseEntityBean {
        
        java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
        encoder.writeObject(ca.saveData());
-       encoder.close();
-       
-       String outdata = baos.toString("UTF8");
-       System.out.println("CABEAN, SETCA DATA:");
-       System.out.println("Size : " + outdata.length());
-       System.out.println("Data : " + outdata);
-       System.out.println("Certificatechain size : " + ca.getCertificateChain().size());
+       encoder.close();       
        setData(baos.toString("UTF8"));
        
        this.ca = ca;
@@ -108,23 +106,19 @@ public abstract class CADataBean extends BaseEntityBean {
      **/
 
     public Integer ejbCreate(String subjectdn, String name, int status, CA ca) throws CreateException, java.io.UnsupportedEncodingException {
-        
-        System.out.print("CADATABEAN: create : starting ");
+                
         setCAId(new Integer(subjectdn.hashCode()));
-        setName(name);
-        System.out.print("CADATABEAN: create : 1 ");
+        setName(name);        
         setSubjectDN(subjectdn);
-        setStatus(status);
-        System.out.print("CADATABEAN: create : 2 ");
+        setStatus(status);        
         
         
-        if(ca instanceof X509CA){
+        if(ca instanceof X509CA && ca.getCertificateChain().size() != 0){
           setExpireTime(((X509Certificate) ca.getCACertificate()).getNotAfter().getTime());  
           ca.setExpireTime(((X509Certificate) ca.getCACertificate()).getNotAfter()); 
         }  
           
-        setCA(ca);
-        System.out.print("CADATABEAN: create : 3 ");
+        setCA(ca);        
         log.debug("Created CA "+ name);
         return new Integer(subjectdn.hashCode());
     }

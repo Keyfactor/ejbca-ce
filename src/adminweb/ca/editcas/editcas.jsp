@@ -1,9 +1,9 @@
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp" import="java.util.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst, se.anatom.ejbca.authorization.AuthorizationDeniedException,
+<%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, org.apache.commons.fileupload.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst, se.anatom.ejbca.util.FileTools, se.anatom.ejbca.util.CertTools, se.anatom.ejbca.authorization.AuthorizationDeniedException,
                se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.ca.caadmin.CAInfo, se.anatom.ejbca.ca.caadmin.X509CAInfo, se.anatom.ejbca.ca.caadmin.CATokenInfo, se.anatom.ejbca.ca.caadmin.SoftCATokenInfo, se.anatom.ejbca.webdist.cainterface.CADataHandler,
-               se.anatom.ejbca.ca.caadmin.CATokenInfo, se.anatom.ejbca.ca.caadmin.SoftCATokenInfo, se.anatom.ejbca.webdist.webconfiguration.InformationMemory, org.bouncycastle.asn1.x509.X509Name,  
-               se.anatom.ejbca.ca.exception.CAExistsException, se.anatom.ejbca.ca.exception.CADoesntExistsException"%>
+               se.anatom.ejbca.webdist.rainterface.RevokedInfoView, se.anatom.ejbca.ca.caadmin.CATokenInfo, se.anatom.ejbca.ca.caadmin.SoftCATokenInfo, se.anatom.ejbca.webdist.webconfiguration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.bouncycastle.jce.PKCS10CertificationRequest, 
+               se.anatom.ejbca.protocol.PKCS10RequestMessage, se.anatom.ejbca.ca.exception.CAExistsException, se.anatom.ejbca.ca.exception.CADoesntExistsException"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
@@ -15,9 +15,13 @@
   static final String ACTION_CREATE_CA                    = "createca";
   static final String ACTION_CHOOSE_CATYPE                = "choosecatype";
   static final String ACTION_CHOOSE_CATOKENTYPE           = "choosecatokentype";
+  static final String ACTION_MAKEREQUEST                  = "makerequest";
   static final String ACTION_RECEIVERESPONSE              = "receiveresponse";
   static final String ACTION_PROCESSREQUEST               = "processrequest";
-  static final String ACTION_RENEWCA                      = "renewca";
+  static final String ACTION_PROCESSREQUEST2              = "processrequest2";
+  static final String ACTION_RENEWCA_MAKEREQUEST          = "renewcamakeresponse";  
+  static final String ACTION_RENEWCA_RECIEVERESPONSE      = "renewcarecieveresponse";  
+
 
 
   static final String CHECKBOX_VALUE           = "true";
@@ -44,8 +48,10 @@
   static final String BUTTON_MAKEREQUEST       = "buttonmakerequest";
   static final String BUTTON_RECEIVEREQUEST    = "buttonreceiverequest";
   static final String BUTTON_RENEWCA           = "buttonrenewca";
-  static final String BUTTON_REVOKECA          = "buttonrevokeca";       
- 
+  static final String BUTTON_REVOKECA          = "buttonrevokeca";  
+  static final String BUTTON_RECIEVEFILE       = "buttonrecievefile";     
+  static final String BUTTON_PUBLISHCA         = "buttonpublishca";     
+
   static final String TEXTFIELD_SUBJECTDN           = "textfieldsubjectdn";
   static final String TEXTFIELD_SUBJECTALTNAME      = "textfieldsubjectaltname";  
   static final String TEXTFIELD_CRLPERIOD           = "textfieldcrlperiod";
@@ -59,7 +65,7 @@
   static final String CHECKBOX_CRLNUMBERCRITICAL                  = "checkboxcrlnumbercritical";
   static final String CHECKBOX_FINISHUSER                         = "checkboxfinishuser";
   
-  static final String HIDDEN_CATOKEN                              = "hiddencatoken";
+  static final String HIDDEN_CATOKEN                              = "hiddencatoken";  
 
   static final String SELECT_REVOKEREASONS                        = "selectrevokereasons";
   static final String SELECT_CATYPE                               = "selectcatype";  
@@ -70,46 +76,100 @@
   static final String SELECT_CERTIFICATEPROFILE                   = "selectcertificateprofile";
   static final String SELECT_SIGNATUREALGORITHM                   = "selectsignaturealgorithm";
 
-  // Declare Language file.
+  static final String FILE_RECIEVEFILE                            = "filerecievefile";
+  static final String FILE_CACERTFILE                             = "filecacertfile";
+  static final String FILE_REQUESTFILE                            = "filerequestfile";  
 
+  static final String LINK_DOWNLOAD                               = "TODO";
+
+  static final int    MAKEREQUESTMODE     = 0;
+  static final int    RECIEVERESPONSEMODE = 1;
+  static final int    PROCESSREQUESTMODE  = 2;   
+  
+  static final int    CERTREQGENMODE      = 0;
+  static final int    CERTGENMODE         = 1;
 %>
 <% 
-
+         
   // Initialize environment
   int caid = 0;
   String caname = null;
   String includefile = "choosecapage.jsp"; 
+  String processedsubjectdn = "";
   int catype = CAInfo.CATYPE_X509;  // default
   int catokentype = CATokenInfo.CATOKENTYPE_P12; // default
+
+  InputStream file = null;
 
   boolean  caexists             = false;
   boolean  cadeletefailed       = false;
   boolean  illegaldnoraltname   = false;
+  boolean  errorrecievingfile   = false;
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/super_administrator"); 
                                             cabean.initialize(request, ejbcawebbean); 
 
   CADataHandler cadatahandler = cabean.getCADataHandler(); 
   String THIS_FILENAME            =  globalconfiguration.getCaPath()  + "/editcas/editcas.jsp";
+  String action = "";
   
   boolean issuperadministrator = false;
   boolean editca = false;
+  boolean processrequest = false;
+  boolean buttoncancel = false; 
+  boolean caactivated = false;
+  boolean carenewed = false;
+  boolean capublished = false;
+
+  int filemode = 0;
+  int row = 0;
 
   HashMap caidtonamemap = cabean.getCAIdToNameMap();
   InformationMemory info = ejbcawebbean.getInformationMemory();
+
 %>
  
 <head>
   <title><%= globalconfiguration .getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
+  <script language=javascript src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 
 
-<%  // Determine action 
-  if( request.getParameter(ACTION) != null){
-    if( request.getParameter(ACTION).equals(ACTION_EDIT_CAS)){
+<%
+   if(FileUpload.isMultipartContent(request)){     
+     errorrecievingfile = true;
+     DiskFileUpload upload = new DiskFileUpload();
+     upload.setSizeMax(60000);                   
+     upload.setSizeThreshold(59999);
+     List /* FileItem */ items = upload.parseRequest(request);     
+
+     Iterator iter = items.iterator();
+     while (iter.hasNext()) {     
+     FileItem item = (FileItem) iter.next();
+
+
+       if (item.isFormField()) {         
+         if(item.getFieldName().equals(ACTION))
+           action = item.getString(); 
+         if(item.getFieldName().equals(HIDDEN_CAID))
+           caid = Integer.parseInt(item.getString());
+         if(item.getFieldName().equals(HIDDEN_CANAME))
+           caname = item.getString();
+         if(item.getFieldName().equals(BUTTON_CANCEL))
+           buttoncancel = true; 
+       }else{         
+         file = item.getInputStream(); 
+         errorrecievingfile = false;                          
+       }
+     } 
+   }else{
+     action = request.getParameter(ACTION);
+   }
+  // Determine action 
+  if( action != null){
+    if( action.equals(ACTION_EDIT_CAS)){
       // Actions in the choose CA page.
       if( request.getParameter(BUTTON_EDIT_CA) != null){
           // Display  profilepage.jsp         
@@ -160,11 +220,17 @@
          }         
       }
       if( request.getParameter(BUTTON_PROCESSREQUEST) != null){
-         // TODO Implement process request
-         includefile="choosecapage.jsp"; 
+         caname = request.getParameter(TEXTFIELD_CANAME);
+         if(caname != null){
+           caname = caname.trim();
+           if(!caname.equals("")){             
+             filemode = PROCESSREQUESTMODE;
+             includefile="recievefile.jsp";               
+           }      
+         }                        
       }
     }
-    if( request.getParameter(ACTION).equals(ACTION_CREATE_CA)){
+    if( action.equals(ACTION_CREATE_CA)){
       if( request.getParameter(BUTTON_CREATE)  != null || request.getParameter(BUTTON_MAKEREQUEST)  != null){
          // Create and save CA                          
          caname = request.getParameter(HIDDEN_CANAME);
@@ -191,20 +257,36 @@
          }catch(Exception e){
            illegaldnoraltname = true;
          }
-         int certprofileid = Integer.parseInt(request.getParameter(SELECT_CERTIFICATEPROFILE));
-         int signedby = Integer.parseInt(request.getParameter(SELECT_SIGNEDBY));
+         int certprofileid = 0;
+         if(request.getParameter(SELECT_CERTIFICATEPROFILE) != null)
+           certprofileid = Integer.parseInt(request.getParameter(SELECT_CERTIFICATEPROFILE));
+         int signedby = 0;
+         if(request.getParameter(SELECT_SIGNEDBY) != null)
+            signedby = Integer.parseInt(request.getParameter(SELECT_SIGNEDBY));
          String description = request.getParameter(TEXTFIELD_DESCRIPTION);        
          if(description == null)
            description = "";
-         int validity = Integer.parseInt(request.getParameter(TEXTFIELD_VALIDITY));
+         
+         int validity = 0;
+         if(request.getParameter(TEXTFIELD_VALIDITY) != null)
+           validity = Integer.parseInt(request.getParameter(TEXTFIELD_VALIDITY));  
 
-         if(catoken != null && catype != 0 && subjectdn != null && caname != null && 
-            certprofileid != 0 && signedby != 0 && validity !=0 ){
+         if(catoken != null && catype != 0 && subjectdn != null && caname != null 
+            && signedby != 0  ){
            if(catype == CAInfo.CATYPE_X509){
               // Create a X509 CA
               String subjectaltname = request.getParameter(TEXTFIELD_SUBJECTALTNAME);             
               if(subjectaltname == null)
                 subjectaltname = ""; 
+              else{
+                if(!subjectaltname.trim().equals("")){
+                   se.anatom.ejbca.ra.raadmin.DNFieldExtractor subtest = 
+                     new se.anatom.ejbca.ra.raadmin.DNFieldExtractor(subjectaltname,se.anatom.ejbca.ra.raadmin.DNFieldExtractor.TYPE_SUBJECTALTNAME);                   
+                   if(subtest.isIllegal() || subtest.existsOther()){
+                     illegaldnoraltname = true;
+                   }
+                }
+              }    
 
               String policyid = request.getParameter(TEXTFIELD_POLICYID);
               if(policyid == null || policyid.trim().equals(""))
@@ -256,7 +338,7 @@
                  X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, 0, subjectaltname,
                                                         certprofileid, validity, 
                                                         null, catype, signedby,
-                                                        null, catoken, description, -1, 
+                                                        null, catoken, description, -1, null,
                                                         policyid, crlperiod, crlpublishers, 
                                                         useauthoritykeyidentifier, 
                                                         authoritykeyidentifiercritical,
@@ -268,23 +350,23 @@
                  }catch(CAExistsException caee){
                     caexists = true; 
                  }
+                 includefile="choosecapage.jsp"; 
                }
                if(request.getParameter(BUTTON_MAKEREQUEST) != null){
-                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, 0, subjectaltname,
+                 caid = CertTools.stringToBCDNString(subjectdn).hashCode();  
+                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, caid, subjectaltname,
                                                         certprofileid, validity,
                                                         null, catype, CAInfo.SIGNEDBYEXTERNALCA,
-                                                        null, catoken, description, -1, 
+                                                        null, catoken, description, -1, null, 
                                                         policyid, crlperiod, crlpublishers, 
                                                         useauthoritykeyidentifier, 
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 
                                                         crlnumbercritical, 
                                                         finishuser);
-                 try{
-                   cadatahandler.createCA((CAInfo) x509cainfo);
-                 }catch(CAExistsException caee){
-                    caexists = true; 
-                 }
+                 cabean.saveRequestInfo(x509cainfo);                
+                 filemode = MAKEREQUESTMODE;
+                 includefile="recievefile.jsp"; 
                }
              }                          
            } 
@@ -292,17 +374,18 @@
        } 
        if(request.getParameter(BUTTON_CANCEL) != null){
          // Don't save changes.
-       }               
-
          includefile="choosecapage.jsp"; 
+       }                        
       }
-    if( request.getParameter(ACTION).equals(ACTION_EDIT_CA)){
+    if( action.equals(ACTION_EDIT_CA)){
       if( request.getParameter(BUTTON_SAVE)  != null || 
           request.getParameter(BUTTON_RECEIVEREQUEST)  != null || 
           request.getParameter(BUTTON_RENEWCA)  != null ||
-          request.getParameter(BUTTON_REVOKECA)  != null){
+          request.getParameter(BUTTON_REVOKECA)  != null ||
+          request.getParameter(BUTTON_PUBLISHCA) != null){
          // Create and save CA                          
          caid = Integer.parseInt(request.getParameter(HIDDEN_CAID));
+         caname = request.getParameter(HIDDEN_CANAME);
          catype = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
          
          CATokenInfo catoken = null;
@@ -317,10 +400,12 @@
           
          String description = request.getParameter(TEXTFIELD_DESCRIPTION);        
 
-         int validity = Integer.parseInt(request.getParameter(TEXTFIELD_VALIDITY));
+         int validity = 0;
+         if(request.getParameter(TEXTFIELD_VALIDITY) != null)
+           validity = Integer.parseInt(request.getParameter(TEXTFIELD_VALIDITY));
             
 
-         if(caid != 0 && description != null && catype !=0 && validity != 0){
+         if(caid != 0 && description != null && catype !=0 ){
            if(catype == CAInfo.CATYPE_X509){
               // Edit X509 CA data              
               
@@ -379,19 +464,34 @@
                cadatahandler.editCA((CAInfo) x509cainfo);
                  
 
-
+               
                if(request.getParameter(BUTTON_SAVE) != null){
                   // Do nothing More
+
                   includefile="choosecapage.jsp"; 
                }
-               if(request.getParameter(BUTTON_RECEIVEREQUEST) != null){
-                 // TODO 
+               if(request.getParameter(BUTTON_RECEIVEREQUEST) != null){                  
+                  filemode = RECIEVERESPONSEMODE;
+                  includefile="recievefile.jsp"; 
                }
                if(request.getParameter(BUTTON_RENEWCA) != null){
-                 // TODO 
+                 int signedby = cadatahandler.getCAInfo(caid).getCAInfo().getSignedBy();
+                 if(signedby != CAInfo.SIGNEDBYEXTERNALCA){
+                   cadatahandler.renewCA(caid, null);
+                   carenewed = true;
+                 }else{                   
+                   includefile="renewexternal.jsp"; 
+                 }  
                }
                if(request.getParameter(BUTTON_REVOKECA) != null){
-                 // TODO
+                 int revokereason = Integer.parseInt(request.getParameter(SELECT_REVOKEREASONS));
+                 cadatahandler.revokeCA(caid, revokereason);                   
+                 includefile="choosecapage.jsp"; 
+               }                 
+               if(request.getParameter(BUTTON_PUBLISHCA) != null){
+                 cadatahandler.publishCA(caid);
+                 capublished = true;             
+                 includefile="choosecapage.jsp"; 
                }
              }                          
            } 
@@ -404,20 +504,190 @@
 
          
       }
+      if( action.equals(ACTION_MAKEREQUEST)){         
+       if(!buttoncancel){
+         try{
+           Collection certchain = CertTools.getCertsFromPEM(file);           
+           try{
+             CAInfo cainfo = cabean.getRequestInfo();              
+             cadatahandler.createCA(cainfo);             
+             PKCS10CertificationRequest certreq = cadatahandler.makeRequest(caid, certchain, true);
+             cabean.savePKCS10RequestData(certreq);   
+               
+             filemode = CERTREQGENMODE;
+             includefile = "displayresult.jsp";
 
-      if( request.getParameter(ACTION).equals(ACTION_RECEIVERESPONSE)){
-        // TODO Implement
+           }catch(CAExistsException caee){
+              caexists = true; 
+           } 
+         }catch(Exception e){
+           errorrecievingfile = true; 
+         } 
+       }else{
+         cabean.saveRequestInfo((CAInfo) null); 
+       }
       }
-      if( request.getParameter(ACTION).equals(ACTION_PROCESSREQUEST)){
-        // TODO Implement
+
+      if( action.equals(ACTION_RECEIVERESPONSE)){        
+        if(!buttoncancel){
+          try{                                                                                     
+            if (caid != 0) {                             
+              cadatahandler.receiveResponse(caid, file);   
+              caactivated = true;
+            }           
+          }catch(Exception e){                       
+            errorrecievingfile = true; 
+          }  
+        }
       }
-      if( request.getParameter(ACTION).equals(ACTION_RENEWCA)){
-        // TODO Implement
+      if( action.equals(ACTION_PROCESSREQUEST)){       
+       if(!buttoncancel){
+         try{           
+           BufferedReader bufRdr = new BufferedReader(new InputStreamReader(file));
+           while (bufRdr.ready()) {
+            ByteArrayOutputStream ostr = new ByteArrayOutputStream();
+            PrintStream opstr = new PrintStream(ostr);
+            String temp;
+            while ((temp = bufRdr.readLine()) != null){            
+              opstr.print(temp + "\n");                
+            }  
+            opstr.close();                
+                                         
+            PKCS10RequestMessage certreq = se.anatom.ejbca.apply.RequestHelper.genPKCS10RequestMessageFromPEM(ostr.toByteArray());
+            
+             if (certreq != null) {               
+               cabean.savePKCS10RequestData(certreq.getCertificationRequest());                                
+               processedsubjectdn = certreq.getCertificationRequest().getCertificationRequestInfo().getSubject().toString();
+               processrequest = true;
+               includefile="editcapage.jsp";
+             }
+           }
+         }catch(Exception e){                      
+           errorrecievingfile = true; 
+         } 
+       }else{
+         cabean.savePKCS10RequestData((org.bouncycastle.jce.PKCS10CertificationRequest) null);  
+       }
       }
-      if( request.getParameter(ACTION).equals(ACTION_CHOOSE_CATYPE)){
+      if( action.equals(ACTION_PROCESSREQUEST2)){        
+        if(request.getParameter(BUTTON_CANCEL) == null){
+         // Create and process CA                          
+         caname = request.getParameter(HIDDEN_CANAME);
+          
+         catype  = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
+         String subjectdn = request.getParameter(TEXTFIELD_SUBJECTDN);
+         try{
+           X509Name dummy = new X509Name(subjectdn);
+         }catch(Exception e){
+           illegaldnoraltname = true;
+         }
+         
+         int certprofileid = 0;
+         if(request.getParameter(SELECT_CERTIFICATEPROFILE) != null)
+           certprofileid = Integer.parseInt(request.getParameter(SELECT_CERTIFICATEPROFILE));
+         int signedby = 0;
+         if(request.getParameter(SELECT_SIGNEDBY) != null)
+            signedby = Integer.parseInt(request.getParameter(SELECT_SIGNEDBY));
+         String description = request.getParameter(TEXTFIELD_DESCRIPTION);        
+         if(description == null)
+           description = "";
+         
+         int validity = 0;
+         if(request.getParameter(TEXTFIELD_VALIDITY) != null)
+           validity = Integer.parseInt(request.getParameter(TEXTFIELD_VALIDITY));         
+
+         if(catype != 0 && subjectdn != null && caname != null && 
+            certprofileid != 0 && signedby != 0 && validity !=0 ){
+           if(catype == CAInfo.CATYPE_X509){
+              // Create a X509 CA
+              String subjectaltname = request.getParameter(TEXTFIELD_SUBJECTALTNAME);             
+              if(subjectaltname == null)
+                subjectaltname = ""; 
+              else{
+                if(!subjectaltname.trim().equals("")){
+                   se.anatom.ejbca.ra.raadmin.DNFieldExtractor subtest = 
+                     new se.anatom.ejbca.ra.raadmin.DNFieldExtractor(subjectaltname,se.anatom.ejbca.ra.raadmin.DNFieldExtractor.TYPE_SUBJECTALTNAME);                   
+                   if(subtest.isIllegal() || subtest.existsOther()){
+                     illegaldnoraltname = true;
+                   }
+                }
+              }
+
+              String policyid = request.getParameter(TEXTFIELD_POLICYID);
+              if(policyid == null || policyid.trim().equals(""))
+                 policyid = null; 
+
+              int crlperiod = 0;
+
+              boolean useauthoritykeyidentifier = false;
+              boolean authoritykeyidentifiercritical = false;              
+
+              boolean usecrlnumber = false;
+              boolean crlnumbercritical = false;                            
+              
+              boolean finishuser = false;
+              ArrayList crlpublishers = new ArrayList(); 
+              
+             if(!illegaldnoraltname){
+               if(request.getParameter(BUTTON_PROCESSREQUEST) != null){
+                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, 0, subjectaltname,
+                                                        certprofileid, validity, 
+                                                        null, catype, signedby,
+                                                        null, null, description, -1, null,
+                                                        policyid, crlperiod, crlpublishers, 
+                                                        useauthoritykeyidentifier, 
+                                                        authoritykeyidentifiercritical,
+                                                        usecrlnumber, 
+                                                        crlnumbercritical, 
+                                                        finishuser);
+                 try{
+                   PKCS10CertificationRequest req = cabean.getPKCS10RequestData(); 
+                   java.security.cert.Certificate result = cadatahandler.processRequest(x509cainfo, new PKCS10RequestMessage(req));
+                   cabean.saveProcessedCertificate(result);
+                   filemode = CERTGENMODE;   
+                   includefile="displayresult.jsp";
+                 }catch(CAExistsException caee){
+                    caexists = true;
+                 }                  
+               }
+             }
+           }
+         }
+        } 
+      }
+
+      if( action.equals(ACTION_RENEWCA_MAKEREQUEST)){
+        if(!buttoncancel){
+          try{
+           Collection certchain = CertTools.getCertsFromPEM(file);                       
+           PKCS10CertificationRequest certreq = cadatahandler.makeRequest(caid, certchain, false);
+           cabean.savePKCS10RequestData(certreq);   
+               
+           filemode = CERTREQGENMODE;
+           includefile = "displayresult.jsp";
+          }catch(Exception e){
+           errorrecievingfile = true; 
+          } 
+        }else{
+          cabean.saveRequestInfo((CAInfo) null); 
+        }      
+      }
+      if( action.equals(ACTION_RENEWCA_RECIEVERESPONSE)){
+        if(!buttoncancel){
+          try{                                                                                     
+            if (caid != 0) {                             
+              cadatahandler.receiveResponse(caid, file);   
+              carenewed = true;
+            }           
+          }catch(Exception e){                       
+            errorrecievingfile = true; 
+          }  
+        }        
+      }
+      if( action.equals(ACTION_CHOOSE_CATYPE)){
         // Currently not need        
       }
-      if( request.getParameter(ACTION).equals(ACTION_CHOOSE_CATOKENTYPE)){
+      if( action.equals(ACTION_CHOOSE_CATOKENTYPE)){
         // TODO Implement
         catokentype = Integer.parseInt(request.getParameter(SELECT_CATOKEN));   
         editca = false;
@@ -434,7 +704,17 @@
 <%}
   if( includefile.equals("choosecapage.jsp")){ %>
    <%@ include file="choosecapage.jsp" %> 
+<%}  
+  if( includefile.equals("recievefile.jsp")){ %>
+   <%@ include file="recievefile.jsp" %> 
+<%} 
+  if( includefile.equals("displayresult.jsp")){ %>
+   <%@ include file="displayresult.jsp" %> 
 <%}
+  if( includefile.equals("renewexternal.jsp")){ %>
+   <%@ include file="renewexternal.jsp" %> 
+<%}
+
 
    // Include Footer 
    String footurl =   globalconfiguration.getFootBanner(); %>

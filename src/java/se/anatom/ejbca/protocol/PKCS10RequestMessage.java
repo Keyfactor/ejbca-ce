@@ -28,7 +28,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.20 2003-09-09 12:53:49 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.21 2003-10-21 13:48:47 herrvendil Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(PKCS10RequestMessage.class);
@@ -338,6 +338,4 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
         return null;
     }
 }
-
-
 // PKCS10RequestMessage

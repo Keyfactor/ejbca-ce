@@ -14,7 +14,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
 
 /** Remote interface of CAAdmin session bean for EJB. Manages CAs
  *
- * @version $Id: ICAAdminSessionRemote.java,v 1.1 2003-09-03 16:21:29 herrvendil Exp $
+ * @version $Id: ICAAdminSessionRemote.java,v 1.2 2003-10-21 13:48:45 herrvendil Exp $
  */
 public interface ICAAdminSessionRemote extends javax.ejb.EJBObject {
  
@@ -55,7 +55,11 @@ public interface ICAAdminSessionRemote extends javax.ejb.EJBObject {
    */
   public HashMap getCAIdToNameMap(Admin admin) throws RemoteException;
   
-  
+  /**
+   *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+   */
+  public Collection getAvailableCAs(Admin admin) throws RemoteException;
+    
   /**
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
    */
@@ -69,7 +73,7 @@ public interface ICAAdminSessionRemote extends javax.ejb.EJBObject {
   /**
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
    */
-  public Collection processRequest(Admin admin, String username, String password, IRequestMessage requestmessage) throws CADoesntExistsException, AuthorizationDeniedException, RemoteException;
+  public IResponseMessage processRequest(Admin admin, CAInfo cainfo, IRequestMessage requestmessage) throws CAExistsException, CADoesntExistsException, AuthorizationDeniedException, RemoteException;
 
   /**
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal

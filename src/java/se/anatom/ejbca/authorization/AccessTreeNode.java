@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
  * The building component of the AccessTree. All nodes consist of these objects.
  *
  * @author  Philip Vendil
- * @version $Id: AccessTreeNode.java,v 1.1 2003-09-04 14:26:37 herrvendil Exp $
+ * @version $Id: AccessTreeNode.java,v 1.2 2003-10-21 13:48:47 herrvendil Exp $
  */
 public class AccessTreeNode implements Serializable{
 
@@ -54,7 +54,6 @@ public class AccessTreeNode implements Serializable{
 
        if(subresource.equals(this.name)){ // Root is a special case.
            Object[] accessadmingroupair = {accessrule,admingroup};
-           System.out.println("Adding access group " + admingroup.getAdminGroupName() + " to " + subresource);
            useraccesspairs.add(accessadmingroupair);
        }
        else{
@@ -75,8 +74,7 @@ public class AccessTreeNode implements Serializable{
               leafs.put(nextname, next);
            }        
            //log.debug(this.name + " --> ");
-
-           System.out.println("Adding access group " + admingroup.getAdminGroupName() + " to " + subresource);           
+                    
            next.addAccessRule(nextsubresource, accessrule, admingroup);
        }
        log.debug("<addAccessRule: " + subresource);

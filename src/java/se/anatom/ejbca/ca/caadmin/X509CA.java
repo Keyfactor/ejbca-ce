@@ -54,7 +54,7 @@ import se.anatom.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.5 2003-10-03 14:34:20 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.6 2003-10-21 13:48:45 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -178,7 +178,6 @@ public class X509CA extends CA implements Serializable {
                                            long validity,
                                            CertificateProfile certProfile) throws Exception{
                                                
-        System.out.println("X509 : signalg="+getCAToken().getCATokenInfo().getSignatureAlgorithm());
         final String sigAlg = getCAToken().getCATokenInfo().getSignatureAlgorithm();
         Date firstDate = new Date();
         // Set back startdate ten minutes to avoid some problems with wrongly set clocks.

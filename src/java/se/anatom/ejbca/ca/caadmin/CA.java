@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.4 2003-10-03 14:34:20 herrvendil Exp $
+ * @version $Id: CA.java,v 1.5 2003-10-21 13:48:45 herrvendil Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -51,6 +51,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected static final String CRLPERIOD                      = "crlperiod";
     protected static final String CRLPUBLISHERS                  = "crlpublishers";
 	protected static final String FINISHUSER                     = "finishuser";
+	protected static final String REQUESTCERTCHAIN        = "requestcertchain";
     
     // Public Methods
     /** Creates a new instance of CA, this constuctor should be used when a new CA is created */
@@ -118,11 +119,15 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public int getCertificateProfileId() {return ((Integer) data.get(CERTIFICATEPROFILEID)).intValue();}
     
     public CAToken getCAToken() throws IllegalKeyStoreException {
-      if(catoken == null){         
+      if(catoken == null){            
+
+      	      	
         switch(((Integer) ((HashMap)data.get(CATOKENDATA)).get(CAToken.CATOKENTYPE)).intValue()){
             case CATokenInfo.CATOKENTYPE_P12:
               catoken = (CAToken) new SoftCAToken((HashMap)data.get(CATOKENDATA));
               break;
+            case CATokenInfo.CATOKENTYPE_NULL:
+              catoken = new NullCAToken();  
         }
       }
       return catoken;
@@ -133,26 +138,26 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
        this.catoken = catoken;
     }
     
-    public Collection getCertificateChain(){
-      if(certificatechain == null){
-        Collection storechain = (Collection) data.get(CERTIFICATECHAIN);
+    public Collection getRequestCertificateChain(){
+      if(requestcertchain == null){
+        Collection storechain = (Collection) data.get(REQUESTCERTCHAIN);
         Iterator iter = storechain.iterator();
-        this.certificatechain = new ArrayList();
+        this.requestcertchain = new ArrayList();
         while(iter.hasNext()){
           String b64Cert = (String) iter.next();
           try{
-            this.certificatechain.add(CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes())));
+            this.requestcertchain.add(CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes())));
           }catch(Exception e){
              throw new EJBException(e);   
           }
         }        
       }
         
-      return (Collection) certificatechain; 
+      return (Collection) requestcertchain; 
     }
     
-    public void setCertificateChain(Collection certificatechain){
-      Iterator iter = certificatechain.iterator();
+    public void setRequestCertificateChain(Collection requestcertificatechain){
+      Iterator iter = requestcertificatechain.iterator();
       ArrayList storechain = new ArrayList();
       while(iter.hasNext()){
         Certificate cert = (Certificate) iter.next();
@@ -163,11 +168,48 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
           throw new EJBException(e);  
         }  
       }
-      data.put(CERTIFICATECHAIN,storechain);  
+      data.put(REQUESTCERTCHAIN,storechain);  
       
-      this.certificatechain = new ArrayList();
-      this.certificatechain.addAll(certificatechain);
+      this.requestcertchain = new ArrayList();
+      this.requestcertchain.addAll(requestcertificatechain);
     }
+
+	public Collection getCertificateChain(){
+	  if(certificatechain == null){
+		Collection storechain = (Collection) data.get(CERTIFICATECHAIN);
+		Iterator iter = storechain.iterator();
+		this.certificatechain = new ArrayList();
+		while(iter.hasNext()){
+		  String b64Cert = (String) iter.next();
+		  try{
+			this.certificatechain.add(CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes())));
+		  }catch(Exception e){
+			 throw new EJBException(e);   
+		  }
+		}        
+	  }
+        
+	  return (Collection) certificatechain; 
+	}
+    
+	public void setCertificateChain(Collection certificatechain){
+	  Iterator iter = certificatechain.iterator();
+	  ArrayList storechain = new ArrayList();
+	  while(iter.hasNext()){
+		Certificate cert = (Certificate) iter.next();
+		try{ 
+		  String b64Cert = new String(Base64.encode(cert.getEncoded()));
+		  storechain.add(b64Cert);
+		}catch(Exception e){
+		  throw new EJBException(e);  
+		}  
+	  }
+	  data.put(CERTIFICATECHAIN,storechain);  
+      
+	  this.certificatechain = new ArrayList();
+	  this.certificatechain.addAll(certificatechain);
+	}
+
     
     public Certificate getCACertificate(){       
        if(certificatechain == null){
@@ -225,5 +267,6 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     
     private CAToken catoken = null;
     private ArrayList certificatechain = null;
+    private ArrayList requestcertchain = null;
 
 }
