@@ -1,6 +1,8 @@
 2.0b2
 -----
-allowOverrideKeyUsage in certifcate profiles.
+Added allowOverrideKeyUsage in certifcate profiles.
+New fields in DN, givenname, surname, initials.
+
 
 2.0b1
 -----
