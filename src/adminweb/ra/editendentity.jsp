@@ -91,7 +91,7 @@
   boolean usekeyrecovery           = false;
   
   if( request.getParameter(USER_PARAMETER) != null ){
-    username = request.getParameter(USER_PARAMETER);
+    username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
     try{
       userdata = rabean.findUserForEdit(username);
       if(userdata != null){

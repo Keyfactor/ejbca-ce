@@ -1095,7 +1095,7 @@ function edituser(row){
   <tr id="Row<%= i%2 %>"> 
 
     <td width="15%"><%= addedusers[i].getUsername() %>
-       <input type="hidden" name='<%= HIDDEN_USERNAME + i %>' value='<%= addedusers[i].getUsername() %>'>
+       <input type="hidden" name='<%= HIDDEN_USERNAME + i %>' value='<%=java.net.URLEncoder.encode(addedusers[i].getUsername(),"UTF-8")%>'>
     </td>
     <td width="20%"><%= addedusers[i].getSubjectDNField(DNFieldExtractor.CN,0)  %></td>
     <td width="20%"><%= addedusers[i].getSubjectDNField(DNFieldExtractor.OU,0) %></td>

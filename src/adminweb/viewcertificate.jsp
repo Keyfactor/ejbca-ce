@@ -60,7 +60,7 @@
   int currentindex                = 0;
   
   if( request.getParameter(HARDTOKENSN_PARAMETER) != null && request.getParameter(USER_PARAMETER ) != null){
-     username = request.getParameter(USER_PARAMETER );
+     username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
      tokensn  = request.getParameter(HARDTOKENSN_PARAMETER);
      try{  
        rabean.loadTokenCertificates(tokensn,username);
@@ -70,7 +70,7 @@
   }
 
   if( request.getParameter(USER_PARAMETER ) != null && request.getParameter(HARDTOKENSN_PARAMETER) == null){
-     username = request.getParameter(USER_PARAMETER);
+     username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
      try{  
        rabean.loadCertificates(username);
        notauthorized = false;
