@@ -1,4 +1,4 @@
-$Id: TODO,v 1.38 2002-07-26 09:36:41 anatom Exp $
+$Id: TODO,v 1.39 2002-07-26 15:28:03 anatom Exp $
 
 V 1.x
 -----
@@ -10,6 +10,7 @@ V 2.x
 - Describe SSL-setup in server.
 - Fix user 'walter' in admin web-GUI.
 - Remote secure administration through browser CA-admin and RA-admin.
+- Add new elements in DN (from BC 114) in CertTools.
 - Make EJBCA handle DNs like "cn=jean,cn=EJBCA,dc=home,dc=jean" for
 ActiveDirectory.
 - Use properties instead to select Authentication and Publishers.
