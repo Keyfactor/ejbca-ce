@@ -14,11 +14,12 @@
 package se.anatom.ejbca.webdist.hardtokeninterface;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.HashSet;
 
+import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.hardtoken.HardTokenProfileExistsException;
 import se.anatom.ejbca.hardtoken.IHardTokenSessionLocal;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.EIDProfile;
@@ -36,10 +37,11 @@ public class HardTokenProfileDataHandler implements Serializable {
     
     
     /** Creates a new instance of HardTokenProfileDataHandler */
-    public HardTokenProfileDataHandler(Admin administrator, IHardTokenSessionLocal hardtokensession, IAuthorizationSessionLocal authorizationsession, 
+    public HardTokenProfileDataHandler(Admin administrator, IHardTokenSessionLocal hardtokensession, ICertificateStoreSessionLocal certificatesession, IAuthorizationSessionLocal authorizationsession, 
                                        IUserAdminSessionLocal useradminsession, InformationMemory info) {
        this.hardtokensession = hardtokensession;           
        this.authorizationsession = authorizationsession;
+       this.certificatesession = certificatesession;
        this.useradminsession = useradminsession;
        this.administrator = administrator;          
        this.info = info;       
@@ -153,26 +155,27 @@ public class HardTokenProfileDataHandler implements Serializable {
         if(editcheck)        
           authorizationsession.isAuthorizedNoLog(administrator, "/hardtoken_functionality/edit_hardtoken_profiles");
           
-        HashSet authorizedcertprofilesids = new HashSet(info.getAuthorizedEndEntityCertificateProfileNames().entrySet());
-       
-        if(profile != null){
-          
-          if(profile instanceof EIDProfile){
-			Collection availablecertprofileids = ((EIDProfile) profile).getAllCertificateProfileIds();
-			returnval = authorizedcertprofilesids.containsAll(availablecertprofileids);     
-          }else{          		      
-	        // Implement other card types
-	        returnval = false; 
-	      }                           
-        }
+        
+  	      HashSet authorizedcertprofiles = new HashSet(certificatesession.getAuthorizedCertificateProfileIds(administrator, SecConst.CERTTYPE_HARDTOKEN));	  	   	  
+        		  
+		  if(profile instanceof EIDProfile){		  	
+		  	if(authorizedcertprofiles.containsAll(((EIDProfile) profile).getAllCertificateProfileIds())){
+		  	  returnval = true;			  	   
+		  	}		  	
+		  }else{
+		  	//Implement for other profile types
+		  }		   		  	   	  	  
+        
       }catch(AuthorizationDeniedException e){}
-         
+    
+      
       return returnval;  
     }    
    
     private IHardTokenSessionLocal         hardtokensession; 
     private Admin                          administrator;
     private IAuthorizationSessionLocal     authorizationsession;
+    private ICertificateStoreSessionLocal  certificatesession;
     private IUserAdminSessionLocal         useradminsession;
     private InformationMemory              info;
 }

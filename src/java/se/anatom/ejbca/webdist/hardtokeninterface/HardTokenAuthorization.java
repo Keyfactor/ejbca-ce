@@ -31,7 +31,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * A class that looks up the which Hard Token Issuers the administrator is authorized to view and edit
  * 
- * @version $Id: HardTokenAuthorization.java,v 1.4 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: HardTokenAuthorization.java,v 1.5 2004-05-10 16:11:49 herrvendil Exp $
  */
 public class HardTokenAuthorization implements Serializable {
     
@@ -148,8 +148,7 @@ public class HardTokenAuthorization implements Serializable {
         Iterator iter = authorizationsession.getAuthorizedAdminGroupNames(admin).iterator();
         while(iter.hasNext()){
           AdminGroup next = (AdminGroup) iter.next();	
-          try {
-          	System.out.println("Checking if Group is authorized :" + next.getAdminGroupName());
+          try {          	
 			if(authorizationsession.isGroupAuthorizedNoLog(admin, next.getAdminGroupId() ,"/hardtoken_functionality/issue_hardtokens"))
 			  authissueingadmgrps.add(next);
 		  } catch (AuthorizationDeniedException e) {}	          

@@ -26,6 +26,8 @@ import se.anatom.ejbca.authorization.AdminGroup;
 import se.anatom.ejbca.authorization.AdminInformation;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.hardtoken.HardTokenData;
 import se.anatom.ejbca.hardtoken.HardTokenIssuer;
 import se.anatom.ejbca.hardtoken.HardTokenIssuerData;
@@ -82,12 +84,16 @@ public class HardTokenInterfaceBean {
 		IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionLocalHome.class);
 		IUserAdminSessionLocal useradminsession = adminsessionhome.create();
 
+		obj1 = jndicontext.lookup("java:comp/env/CertificateStoreSessionLocal");
+		ICertificateStoreSessionLocalHome certificatestorehome = (ICertificateStoreSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionLocalHome.class);
+		ICertificateStoreSessionLocal certificatesession = certificatestorehome.create();
+
+		
         initialized=true;
         
         this.informationmemory = ejbcawebbean.getInformationMemory();
-              
-        
-        this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, authorizationsession , useradminsession, informationmemory);
+                      
+        this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, certificatesession, authorizationsession , useradminsession, informationmemory);
 		
       }
     }

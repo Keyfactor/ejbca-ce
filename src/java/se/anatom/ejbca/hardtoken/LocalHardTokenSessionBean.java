@@ -61,7 +61,7 @@ import se.anatom.ejbca.util.CertTools;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.25 2004-04-16 07:38:56 anatom Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.26 2004-05-10 16:11:32 herrvendil Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
@@ -351,8 +351,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	  ArrayList returnval = new ArrayList();
 	  Collection result = null;
       
-	  HashSet authorizedcertprofiles = new HashSet(getCertificateStoreSession().getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_HARDTOKEN));
-      
+	  HashSet authorizedcertprofiles = new HashSet(getCertificateStoreSession().getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_HARDTOKEN));	  	   	  
+	  
 	  try{
 		result = this.hardtokenprofilehome.findAll();
 		Iterator i = result.iterator();
@@ -362,13 +362,16 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 		  
 		  if(profile instanceof EIDProfile){		  	
 		  	if(authorizedcertprofiles.containsAll(((EIDProfile) profile).getAllCertificateProfileIds())){
-		  	  returnval.add(next.getId());	
+		  	  returnval.add(next.getId());			  	   
 		  	}		  	
 		  }else{
 		  	//Implement for other profile types
 		  }
-		}  
+		}  		
 	  }catch(Exception e){}
+	  
+	  
+	  
 	  return returnval;
 	} // getAuthorizedHardTokenProfileIds    
 
@@ -618,12 +621,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       boolean returnval = false;      
         try{
         	
-      	  int admingroupid = hardtokenissuerhome.findByAlias(alias).getAdminGroupId();
-      	  System.out.println("admingroupid " +  admingroupid);      	  
-		  returnval = getAuthorizationSession(admin).isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens");
-		  System.out.println("isAuthorizedNoLog " +  returnval );
-      	  returnval = returnval && authorizationsession.existsAdministratorInGroup(admin, admingroupid);
-      	  System.out.println("existsAdministratorInGroup " +  returnval );
+      	  int admingroupid = hardtokenissuerhome.findByAlias(alias).getAdminGroupId();      	        	  
+		  returnval = getAuthorizationSession(admin).isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens");		  
+      	  returnval = returnval && authorizationsession.existsAdministratorInGroup(admin, admingroupid);      	  
         }catch(FinderException fe){}
           catch(AuthorizationDeniedException ade){}
 
@@ -632,7 +632,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     }
 
       /**
-       * Returns the available hard token issuers.
+       * Returns the available hard token issuers authorized to the administrator.
        *
        * @return A collection of available HardTokenIssuerData.
        * @throws EJBException if a communication or other error occurs.
@@ -642,13 +642,15 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       ArrayList returnval = new ArrayList();
       Collection result = null;
       HardTokenIssuerDataLocal htih = null;
+      Collection authorizedhardtokenprofiles = this.getAuthorizedHardTokenProfileIds(admin);      
       try{
         result = hardtokenissuerhome.findAll();
         if(result.size()>0){
           Iterator i = result.iterator();
           while(i.hasNext()){
             htih = (HardTokenIssuerDataLocal) i.next();
-            returnval.add(new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer()));
+            if(authorizedhardtokenprofiles.containsAll(htih.getHardTokenIssuer().getAvailableHardTokenProfiles()))
+              returnval.add(new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer()));
           }
         }
         Collections.sort(returnval);
@@ -659,7 +661,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     } // getHardTokenIssuers
 
       /**
-       * Returns the available hard token issuer alliases.
+       * Returns the available hard token issuer alliases authorized to the administrator.
        *
        * @return A collection of available hard token issuer aliases.
        * @throws EJBException if a communication or other error occurs.
@@ -668,6 +670,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       debug(">getHardTokenIssuerAliases()");
       ArrayList returnval = new ArrayList();
       Collection result = null;
+      Collection authorizedhardtokenprofiles = this.getAuthorizedHardTokenProfileIds(admin);
       HardTokenIssuerDataLocal htih = null;
       try{
         result = hardtokenissuerhome.findAll();
@@ -675,7 +678,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
           Iterator i = result.iterator();
           while(i.hasNext()){
             htih = (HardTokenIssuerDataLocal) i.next();
-            returnval.add(htih.getAlias());
+            if(authorizedhardtokenprofiles.containsAll(htih.getHardTokenIssuer().getAvailableHardTokenProfiles()))
+              returnval.add(htih.getAlias());
           }
         }
         Collections.sort(returnval);
@@ -686,13 +690,14 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     }// getHardTokenIssuerAliases
 
       /**
-       * Returns the available hard token issuers.
+       * Returns the available hard token issuers authorized to the administrator.
        *
        * @return A treemap of available hard token issuers.
        * @throws EJBException if a communication or other error occurs.
        */
     public TreeMap getHardTokenIssuers(Admin admin){
       debug(">getHardTokenIssuers()");
+      Collection authorizedhardtokenprofiles = this.getAuthorizedHardTokenProfileIds(admin);
       TreeMap returnval = new TreeMap();
       Collection result = null;
       try{
@@ -701,7 +706,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
           Iterator i = result.iterator();
           while(i.hasNext()){
             HardTokenIssuerDataLocal htih = (HardTokenIssuerDataLocal) i.next();
-            returnval.put(htih.getAlias(), new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer()));
+            if(authorizedhardtokenprofiles.containsAll(htih.getHardTokenIssuer().getAvailableHardTokenProfiles()))
+              returnval.put(htih.getAlias(), new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer()));
           }
         }
       }catch(FinderException e){}
