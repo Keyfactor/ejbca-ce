@@ -534,8 +534,21 @@ INSTALLING WEB RA-ADMIN
 Preliminary documentation - TODO:
 Installation procedure will be enhanced eventually.
 
-0. Edit the file 'src/adminweb/WEB-INF/web.xml'. Change BASEURL to reflect your 
-hostname, to be able to use the adminpages from external machines, this must be 
+Automatic method
+----------------
+
+1. Run the script 'setup-adminweb.cmd'
+
+NOTE: On Linux the script works fine, but the keystore generated will not work
+perfectly with Tomcat. Tobefixed.
+
+2. Import the certificate from 'ejbca/p12/SuperAdmin.p12' in your browser and go
+to 'https://localhost:8443/ejbca
+
+Manual method
+-------------
+0. Edit the file 'src/adminweb/WEB-INF/web.xml'. Change BASEURL to reflect your
+hostname, to be able to use the adminpages from external machines, this must be
 a real hostname or ip-address.
 Run 'ant' and 'deploy' to install the changes.
 
@@ -551,7 +564,7 @@ certificate request that is processed by EJBCA, and last import the returned
 certificate and the CA-certificate into the keystore).
 
 Create a user in EJBCA, DN="C=SE,O=PrimeKey,CN=<your-host-name>".
-./ra.sh adduser tomcat foo123 "C=SE,O=PrimeKey,CN=<your-host-name>" null 1
+./ra.sh adduser tomcat foo123 "C=SE,O=PrimeKey,CN=<your-host-name>" null 1 3
 
 Set a clear text password for the tomcat:
 ./ra.sh setclearpwd tomcat foo123
@@ -564,7 +577,7 @@ Generate a JKS-keystore for tomcat:
 cp ./p12/tomcat.jks $JBOSS_HOME/.keystore
 
 5. Download the CA certificate in PEM-format from
-http://localhost:8080/webdist/cacert.jsp (call it ejbca-ca.pem).
+http://localhost:8080/ejbca/publicweb/webdist/cacert.jsp (call it ejbca-ca.pem).
 
 6. Add the EJBCA CA certificate to the Java trust-keystore in
 $JAVA_HOME/jre/lib/security/cacerts
@@ -572,16 +585,16 @@ $JAVA_HOME/jre/lib/security/cacerts
 keytool -import -trustcacerts -file ejbca-ca.pem -keystore
 $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 
-7. Create a user for EJBCA admin with CN=walter and the RAADMIN bit
-(temporarily CN=walter gives admin rights).
-./ra.sh adduser raadmin foo123 "C=SE,O=PrimeKey,CN=walter"
-walter@primekey.se 32
+7. Create a user for EJBCA admin with CN=SuperAdmin and the RAADMIN bit
+(temporarily CN=SuperAdmin gives admin rights).
+./ra.sh adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin"
+null 65 1
 
 Alternative:
-Create a PKCS12 file with EJBCA for a user with CN=walter and the RAADMIN bit
-(temporarily CN=walter gives adminrights).
-./ra.sh adduser raadmin foo123 "C=SE,O=PrimeKey,CN=walter"
-walter@primekey.se 32
+Create a PKCS12 file with EJBCA for a user with CN=SuperAdmin and the RAADMIN
+bit (temporarily CN=SuperAdmin gives adminrights).
+./ra.sh adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin"
+null 65 2
 ./ra.sh setclearpwd raadmin foo123
 ./batch.sh
 
@@ -595,19 +608,24 @@ In IE it is done by double-clicking on the .p12 file.
 
 9. Start JBoss.
 
-10. Go to https://localhost:8443/raadmin
+10. Go to https://localhost:8443/ejbca
 
 Reference: to generate a JKS with keytool
-keytool -genkey -alias tomcat -keystore tomcat.jks -keyalg RSA -dname "C=SE,O=AnaTom,CN=hostname" -storepass foo123
-keytool -certreq -alias tomcat -keystore tomcat.jks -sigalg SHA1WithRSA -storepass foo123 -file tomcat.req
+keytool -genkey -alias tomcat -keystore tomcat.jks -keyalg RSA -dname "C=SE,O=
+AnaTom,CN=hostname" -storepass foo123
+keytool -certreq -alias tomcat -keystore tomcat.jks -sigalg SHA1WithRSA -
+storepass foo123 -file tomcat.req
 ra.sh adduser tomcat foo123 "C=SE,O=AnaTom,CN=hostname" null, null 1 1
 ca.sh processreq tomcat foo123 tomcat.req tomcat.pem
 ca.sh getrootcert ca.der
-keytool -import -trustcacerts -alias cacert -file ca.der -keystore tomcat.jks -storepass foo123
-keytool -import -alias tomcat -file tomcat.pem -keystore tomcat.jks -storepass foo123
+keytool -import -trustcacerts -alias cacert -file ca.der -keystore tomcat.jks -
+storepass foo123
+keytool -import -alias tomcat -file tomcat.pem -keystore tomcat.jks -storepass
+foo123
 
 run as root:
-keytool -import -trustcacerts -file ca.der -keystore $JAVA_HOME/jre/lib/security/cacerta -storepass changeit
+keytool -import -trustcacerts -file ca.der -keystore
+$JAVA_HOME/jre/lib/security/cacerta -storepass changeit
 
 SAMPLES
 =======
@@ -679,6 +697,9 @@ http://www.microsoft.com/windows2000/en/server/help/default.asp?url=
 
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
+
+
+
 
 
 
