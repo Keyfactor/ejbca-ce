@@ -359,11 +359,6 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
-    <copy todir="${adminweb.build}/WEB-INF/lib">
-        <fileset dir="${lib}">
-                <include name="regexp1_0_0.jar"/>
-        </fileset>
-    </copy>     
     <!-- Jar the adminweb.war package together -->
     <jar basedir="${adminweb.build}" jarfile="${adminwebjar}"/>    
   </target>
