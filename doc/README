@@ -1,4 +1,4 @@
-$Id: README,v 1.95 2003-07-24 15:25:07 anatom Exp $
+$Id: README,v 1.96 2003-08-23 09:29:16 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -899,6 +899,19 @@ test1.req is generated with:
 openssl req -key test.key -new -days 30 -out test.req -outform DER -config ../openssl/openscep.cnf
 and test1.pemreq is generated with:
 openssl req -key test.key -new -days 30 -out test.pemreq -outform PEM -config ../openssl/openscep.cnf
+
+EXPORT/IMPORT PROFILES
+=======================
+Certificate and End Entity profiles can be exported as XML files and imported in another instance of EJBCA,
+or in the same instance after removal of the old ones. 
+
+When exporting profiles (ca.sh exportprofiles), all profiles will be exported to the specified directory. The 
+exported files will be given unique names containing profile name and profile id.
+When importing profiles the profile name and id will be read from the filename. All profiles present in the specified
+directory will be imported.
+
+Fixed profiles will not be imported, they will simply be skipped during import.
+If a profiles with the same name as the one beeing imported already exist, the profiles will not be imported.
 
 SAMPLES
 =======
