@@ -39,7 +39,7 @@ import se.anatom.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.28 2004-05-06 16:27:19 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.29 2004-05-30 16:09:38 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
     /** Pointer to main certificate store */
@@ -141,6 +141,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             System.out.println("-Created and published initial CRL.");
             System.out.println("CA initialized");
         } catch (Exception e) {
+        	debug("An error occured: ", e);
             throw new ErrorAdminCommandException(e);
         }
     } // execute
