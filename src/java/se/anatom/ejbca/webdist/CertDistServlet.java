@@ -58,7 +58,7 @@ import se.anatom.ejbca.log.Admin;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.26 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.27 2004-05-23 13:00:12 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -81,6 +81,7 @@ public class CertDistServlet extends HttpServlet {
     private static final String ISSUER_PROPERTY = "issuer";
     private static final String SERNO_PROPERTY = "serno";
     private static final String LEVEL_PROPERTY = "level";
+    private static final String MOZILLA_PROPERTY = "moz";
 
     private ICertificateStoreSessionLocalHome storehome = null;
     private ISignSessionLocalHome signhome = null;
@@ -159,8 +160,11 @@ public class CertDistServlet extends HttpServlet {
                 byte[] crl = store.getLastCRL(administrator, issuerdn);
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);
-                String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
-                res.setHeader("Content-disposition", "attachment; filename=" +  filename);
+                String moz = req.getParameter(MOZILLA_PROPERTY);
+                if ((moz == null) || !moz.equalsIgnoreCase("y")) {
+                    String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
+                    res.setHeader("Content-disposition", "attachment; filename=" +  filename);                    
+                }
                 res.setContentType("application/x-x509-crl");
                 res.setContentLength(crl.length);
                 res.getOutputStream().write(crl);

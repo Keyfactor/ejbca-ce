@@ -27,7 +27,9 @@ try  {
 <hr>
 <div align="center">CA: <%= ca.getName() %></div>
 </p>
-<div align="center"><a href="certdist?cmd=crl&issuer=<%= urlsubjectdn %>">Root CA</a></div>
+<div align="center">
+<a href="certdist?cmd=crl&issuer=<%= urlsubjectdn %>">Root CA</a> | <a href="certdist?cmd=crl&issuer=<%= urlsubjectdn %>&moz=y">Import </a>in Mozilla/Netscape
+</div>
 <div align="center">
 <%
     }

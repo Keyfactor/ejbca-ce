@@ -4,6 +4,7 @@ Cleaned system.out debug logs.
 Digital signature in default key usage to make ocsp work out of the box.
 Added support for iPAddress alternative name.
 Better check on altnames when adding user with cli.
+Fix CRL import in Mozilla.
 
 3.0 beta 3
 ----------
