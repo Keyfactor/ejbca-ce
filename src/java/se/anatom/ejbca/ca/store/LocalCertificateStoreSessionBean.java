@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.Base64;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.19 2002-06-04 14:37:07 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.20 2002-07-09 15:04:22 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -182,7 +182,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * Implements ICertificateStoreSession::findCertificatesBySubject.
      */
     public Collection findCertificatesBySubject(String subjectDN) {
-        debug(">findCertificatesBySubject(), dn="+subjectDN);
+        debug(">findCertificatesBySubject(), dn='"+subjectDN+"'");
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(subjectDN);
         debug("Looking for cert with (transformed)DN: " + dn);
@@ -195,7 +195,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     ret.add( ((CertificateDataLocal)iter.next()).getCertificate() );
                 }
             }
-            debug("<findCertificatesBySubject(), dn="+subjectDN);
+            debug("<findCertificatesBySubject(), dn='"+subjectDN+"'");
             return ret;
         } catch (javax.ejb.FinderException fe) {
             cat.error(fe);

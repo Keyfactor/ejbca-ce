@@ -15,6 +15,8 @@ import javax.naming.*;
 import javax.rmi.*;
 import javax.ejb.*;
 
+import org.apache.log4j.*;
+
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration;
 import se.anatom.ejbca.webdist.webconfiguration.UserPreference;
@@ -24,9 +26,11 @@ import se.anatom.ejbca.webdist.rainterface.Profile;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.6 2002-07-04 13:03:18 herrvendil Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.7 2002-07-09 15:04:22 anatom Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
+
+    private static Category cat = Category.getInstance(LocalRaAdminSessionBean.class.getName());
 
     /** Var holding JNDI name of datasource */
     private String dataSource = "java:/DefaultDS";
@@ -47,11 +51,11 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         debug(">ejbCreate()");
         dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
         debug("DataSource=" + dataSource);
-        globalconfigurationhome = (GlobalWebConfigurationDataLocalHome)lookup("java:comp/env/ejb/GlobalWebConfigurationDataLocal");      
+        globalconfigurationhome = (GlobalWebConfigurationDataLocalHome)lookup("java:comp/env/ejb/GlobalWebConfigurationDataLocal");
         userpreferenceshome = (UserPreferencesDataLocalHome)lookup("java:comp/env/ejb/UserPreferencesDataLocal");
         profilegroupdatahome = (ProfileGroupDataLocalHome)lookup("java:comp/env/ejb/ProfileGroupDataLocal");
         debug("<ejbCreate()");
-        
+
     }
 
     /** Gets connection to Datasource used for manual SQL searches
@@ -63,7 +67,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     } //getConnection
 
 
-    /** 
+    /**
      * Loads the global configuration from the database.
      *
      * @throws EJBException if a communication or other error occurs.
@@ -94,19 +98,19 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         debug(">saveGlobalConfiguration()");
         String pk = "0";
         try {
-          GlobalWebConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey(pk);  
+          GlobalWebConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey(pk);
           gcdata.setGlobalConfiguration(globalconfiguration);
         }catch (javax.ejb.FinderException fe) {
-           // Global configuration doesn't yet exists. 
-           try{ 
-             GlobalWebConfigurationDataLocal data1= globalconfigurationhome.create(pk,globalconfiguration);     
-           } catch(CreateException e){         
+           // Global configuration doesn't yet exists.
+           try{
+             GlobalWebConfigurationDataLocal data1= globalconfigurationhome.create(pk,globalconfiguration);
+           } catch(CreateException e){
            }
-        }         
+        }
         debug("<saveGlobalConfiguration()");
-     } // saveGlobalConfiguration     
-        
-    
+     } // saveGlobalConfiguration
+
+
      /**
 
      * Finds the userpreference belonging to a certificate serialnumber. Returns null if user doesn't exists.
@@ -145,7 +149,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         catch (Exception e) {
           ret = false;
         }
-        debug("<addUserPreference()"); 
+        debug("<addUserPreference()");
         return ret;
     } // addUserPreference
 
@@ -161,15 +165,15 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         try {
             UserPreferencesDataLocal updata = userpreferenceshome.findByPrimaryKey(serialnumber);
             userpreferenceshome.remove(serialnumber);
-            try{ 
-                UserPreferencesDataLocal updata2 = userpreferenceshome.findByPrimaryKey(serialnumber);  
-            }  catch (javax.ejb.FinderException fe) {    
-            }                  
+            try{
+                UserPreferencesDataLocal updata2 = userpreferenceshome.findByPrimaryKey(serialnumber);
+            }  catch (javax.ejb.FinderException fe) {
+            }
             updata= userpreferenceshome.create(serialnumber,userpreference);
-            try{ 
+            try{
                 UserPreferencesDataLocal updata3 = userpreferenceshome.findByPrimaryKey(serialnumber);
-            }  catch (javax.ejb.FinderException fe) {  
-            }      
+            }  catch (javax.ejb.FinderException fe) {
+            }
             ret = true;
         } catch (javax.ejb.FinderException fe) {
              ret=false;
@@ -350,15 +354,17 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Removes a profile from the database.
      * @throws EJBException if a communication or other error occurs.
      */
-    public void removeProfile(String profilegroupname, String profilename){
+    public void removeProfile(String profilegroupname, String profilename) {
+        cat.debug(">removeProfile("+profilegroupname+", "+profilename);
        try{
-                System.out.println("localraadminSessionBean:removeProfile: 1");   
          ProfileGroupDataLocal pgd = profilegroupdatahome.findByPrimaryKey(profilegroupname);
-                System.out.println("localraadminSessionBean:removeProfile: 2"); 
          pgd.removeProfile(profilename);
-       }catch(FinderException e){ }
-        catch(EJBException e){ System.out.println("localraadminSessionBean:removeProfile: EJBException"); } 
-    } // removeProfileGroup
+       } catch(FinderException e) { }
+         catch(EJBException e) {
+            cat.error("Error in localraadminSessionBean:removeProfile: ",e);
+        }
+        cat.debug(">removeProfile("+profilegroupname+", "+profilename);
+    } // removeProfile
 
      /**
      * Renames a profile
@@ -399,7 +405,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
        result = profilegroupdatahome.findAll();
        Iterator i = result.iterator();
        while(i.hasNext()){
-          returnval.addElement(((ProfileGroupDataLocal) i.next()).getProfileGroupName());    
+          returnval.addElement(((ProfileGroupDataLocal) i.next()).getProfileGroupName());
        }
      }catch(FinderException e){
         throw new EJBException(e);
@@ -432,7 +438,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
        }
        return returnval;
     } // getProfiles
-    
+
     /**
      * Retrives a named profile.
      */
@@ -449,23 +455,23 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
     /**
      * Retrives the numbers of profilegroups in the database.
-     */    
+     */
     public int getNumberOfProfileGroups(){
      int returnval=0;
      Collection result;
-     try{   
-       result = profilegroupdatahome.findAll();     
+     try{
+       result = profilegroupdatahome.findAll();
        returnval = result.size();
      }catch(FinderException e){}
      return returnval;
     }
-    
+
      /**
      * Retrives the numbers of profiles in the profilegroup.
-     */    
+     */
     public int getNumberOfProfiles(String profilegroupname){
-      return getProfileNames(profilegroupname).size();  
-    }   
-    
+      return getProfileNames(profilegroupname).size();
+    }
+
 } // LocalRaAdminSessionBean
 

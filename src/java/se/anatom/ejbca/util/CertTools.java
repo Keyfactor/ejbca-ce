@@ -26,7 +26,7 @@ import se.anatom.ejbca.util.StringTools;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.12 2002-06-27 12:10:15 anatom Exp $
+ * @version $Id: CertTools.java,v 1.13 2002-07-09 15:04:22 anatom Exp $
  */
 public class CertTools {
 
@@ -130,7 +130,7 @@ public class CertTools {
         cat.debug(">stringToBcDNString:"+dn);
         String name = stringToBcX509Name(dn).toString();
 
-        // Older worksround for bug in BC X509Name.java, kept for fun...
+        // Older workaround for bug in BC X509Name.java, kept for fun...
         //X509Name name = stringToBcX509Name(dn);
         //DERObject obj =name.getDERObject();
         //X509Name ret = new X509Name((DERConstructedSequence)obj);

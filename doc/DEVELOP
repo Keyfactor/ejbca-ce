@@ -17,7 +17,7 @@ Logging is then done with:
     log.info("message");
     log.debug("message");
 
-There is also a version of the command that takes an aditional Exception as
+There is also a version of the command that takes an additional Exception as
 argument, were the exception stack will be printed to the log.
 
 Where the log ends up is defined in 'log4j.properties'.
@@ -34,6 +34,18 @@ define their own logger, but can simply use:
     info("message");
     debug("message");
 
+Debugging output for entrance and exit in methods can be added in the following
+way:
+
+public int myMethod(int arg) {
+  log.debug(">myMethod("+arg+")");
+
+  int ret = 0;
+  ...
+
+  log.debug("<meMethod: return "+ret);
+  return ret;
+}
 
 Making session beans
 --------------------
@@ -95,4 +107,5 @@ This architecture gives us the choice of for example an SQL database aa
 CertificateStoreSession where we also publish certificates to an LDAP directory,
 or the LDAP directory as the primary CertificateStoreSession where we also
 publish certificates to a specific SQL database for a specific purpose.
+
 

@@ -25,13 +25,14 @@ import java.text.DateFormat;
 import java.rmi.RemoteException;
 import java.util.Collection;
 
+import org.apache.log4j.*;
+
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
-import se.anatom.ejbca.ra.IUserAdminSessionHome; 
+import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.UserAdminData;
-
 import se.anatom.ejbca.ra.authorization.EjbcaAuthorization;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.webdist.rainterface.DNFieldExtractor;
@@ -41,16 +42,19 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
+ * @version $Id: EjbcaWebBean.java,v 1.8 2002-07-09 15:04:22 anatom Exp $
  */
 public class EjbcaWebBean {
 
+    private static Category cat = Category.getInstance(EjbcaWebBean.class.getName());
+
     /** Creates a new instance of EjbcaWebBean */
-    public EjbcaWebBean() throws IOException, NamingException, CreateException, 
+    public EjbcaWebBean() throws IOException, NamingException, CreateException,
                                  FinderException, RemoteException{
       globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler();
       globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();
       userspreferences = new UsersPreferenceDataHandler();
-      authorizedatahandler = new AuthorizationDataHandler(globalconfiguration);      
+      authorizedatahandler = new AuthorizationDataHandler(globalconfiguration);
       authorize = new EjbcaAuthorization(authorizedatahandler.getUserGroups(), globalconfiguration);
       weblanguages = new WebLanguages(globalconfiguration);
       initialized=false;
@@ -106,6 +110,7 @@ public class EjbcaWebBean {
          }
 
         // Check if certificate belongs to a RA Admin
+        cat.debug("Verifying authoirization of '"+userdn);
         UserAdminData userdata = adminsession.findUserBySubjectDN(userdn);
         if(userdata != null){
           UserView user = new UserView(userdata);
@@ -228,8 +233,8 @@ public class EjbcaWebBean {
     }
 
     public AuthorizationDataHandler getAuthorizationDataHandler(){
-       return  authorizedatahandler;    
-    } 
+       return  authorizedatahandler;
+    }
 
     /* Returns the global configuration */
     public GlobalConfiguration getGlobalConfiguration() {
@@ -332,7 +337,7 @@ public class EjbcaWebBean {
     }
 
     public void saveGlobalConfiguration() throws Exception{
-      System.out.println("saving global title : " +  globalconfiguration.getEjbcaTitle() );
+      cat.debug("saving global title : " +  globalconfiguration.getEjbcaTitle() );
       globaldataconfigurationdatahandler.saveGlobalConfiguration(globalconfiguration);
     }
 

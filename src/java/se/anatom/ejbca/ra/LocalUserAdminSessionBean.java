@@ -17,7 +17,7 @@ import se.anatom.ejbca.util.CertTools;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.17 2002-07-05 23:43:18 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.18 2002-07-09 15:04:22 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -72,12 +72,12 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         try {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1= home.findByPrimaryKey(pk);
-       
-            data1.setSubjectDN(dn); 
+
+            data1.setSubjectDN(dn);
             if (email != null)
                 data1.setSubjectEmail(email);
             data1.setType(type);
-            info("Changed user "+pk.username);            
+            info("Changed user "+pk.username);
         }
         catch (Exception e) {
             error("change user failed.", e);
@@ -85,8 +85,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         }
         debug("<changeUser("+username+", password, "+dn+", "+email+", "+type+")");
     } // changeUser
-    
-    
+
+
    /**
     * Implements IUserAdminSession::deleteUser.
     * Implements a mechanism that uses UserData Entity Bean.
@@ -182,19 +182,22 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * Implements IUserAdminSession::findUserBySubjectDN.
     */
     public UserAdminData findUserBySubjectDN(String subjectdn) {
-        debug(">findAllUsersBySubjectDN("+subjectdn+")");
-        debug("Looking for users with subjectdn: " + subjectdn);
+        debug(">findUserBySubjectDN("+subjectdn+")");
         String dn = CertTools.stringToBCDNString(subjectdn);
+        debug("Looking for users with subjectdn: " + dn);
         UserAdminData returnval = null;
 
         UserDataLocal data = null;
         try{
           data = home.findBySubjectDN(dn);
-        }catch( FinderException e){} 
-        if(data != null){  
-          returnval = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getStatus(), data.getType());
-          returnval.setPassword(data.getClearPassword());        
+        } catch( FinderException e) {
+            cat.error("Cannot find user with DN='"+dn+"'");
         }
+        if(data != null){
+          returnval = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getStatus(), data.getType());
+          returnval.setPassword(data.getClearPassword());
+        }
+        debug("<findUserBySubjectDN("+subjectdn+")");
         return returnval;
     } // findUserBySubjectDN
 
