@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="bin/gensrc"/>
 	<classpathentry kind="src" path="src/test"/>
-	<classpathentry kind="lib" path="lib/ext/jboss-j2ee.jar"/>
 	<classpathentry kind="lib" path="lib/ext/junit-3.8.1.jar"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
 	<classpathentry kind="lib" path="lib/ext/servlet-2.3.jar"/>
@@ -24,5 +24,7 @@
 	<classpathentry kind="lib" path="lib/batik-util.jar"/>
 	<classpathentry kind="lib" path="lib/batik-css.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-jdk14-122.jar"/>
+	<classpathentry kind="var" path="JBOSS_HOME/client/jboss-j2ee.jar"/>
+	<classpathentry kind="var" path="JBOSS_HOME/client/jbossall-client.jar"/>
 	<classpathentry kind="output" path="tmp/classes"/>
 </classpath>
