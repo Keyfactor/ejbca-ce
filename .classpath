@@ -23,8 +23,5 @@
 	<classpathentry kind="lib" path="lib/batik-util.jar"/>
 	<classpathentry kind="lib" path="lib/batik-css.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-jdk14-122.jar"/>
-	<classpathentry kind="lib" path="/usr/java/jboss/lib/jboss-common.jar"/>
-	<classpathentry kind="lib" path="/usr/java/jboss/lib/jboss-jmx.jar"/>
-	<classpathentry kind="lib" path="/usr/java/jboss/lib/jboss-system.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
