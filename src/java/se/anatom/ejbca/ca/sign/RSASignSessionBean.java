@@ -35,7 +35,6 @@ import se.anatom.ejbca.ca.caadmin.CA;
 import se.anatom.ejbca.ca.caadmin.CADataLocal;
 import se.anatom.ejbca.ca.caadmin.CADataLocalHome;
 import se.anatom.ejbca.ca.caadmin.CAToken;
-import se.anatom.ejbca.ca.caadmin.X509CA;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.CADoesntExistsException;
@@ -63,7 +62,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.108 2003-10-27 11:36:59 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.109 2003-10-29 19:44:59 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
