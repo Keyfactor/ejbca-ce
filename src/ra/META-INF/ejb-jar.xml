@@ -311,6 +311,15 @@
 	  <![CDATA[SELECT DISTINCT OBJECT(a) from UserDataBean a WHERE a.status=?1]]>
 	</ejb-ql>
       </query>
+      <query>
+        <query-method>
+         <method-name>findAll</method-name>
+         <method-params></method-params>
+        </query-method>
+        <ejb-ql>
+          <![CDATA[SELECT DISTINCT OBJECT(a) from UserDataBean a]]>
+        </ejb-ql>
+      </query>
 
    </entity>
 
@@ -391,6 +400,17 @@
 	  <![CDATA[SELECT DISTINCT OBJECT(a) from EndEntityProfileDataBean a WHERE a.profileName=?1]]>
 	</ejb-ql>
       </query>
+       <query>
+           <query-method>
+             <method-name>findAll</method-name>
+             <method-params>
+             </method-params>
+           </query-method>
+         <ejb-ql>
+           <![CDATA[SELECT DISTINCT OBJECT(a) from EndEntityProfileDataBean a]]>
+         </ejb-ql>
+       </query>
+       
    </entity>
 
    <entity>
@@ -422,6 +442,15 @@
         <local>se.anatom.ejbca.ra.authorization.AccessRulesDataLocal</local>
         <ejb-link>AccessRulesData</ejb-link>
       </ejb-local-ref>
+      <query>
+        <query-method>
+          <method-name>findAll</method-name>
+            <method-params></method-params>
+        </query-method>
+        <ejb-ql>
+          <![CDATA[SELECT DISTINCT OBJECT(a) from AdminGroupDataBean a]]>
+        </ejb-ql>
+      </query>
    </entity>
 
    <entity>
@@ -475,7 +504,17 @@
       <abstract-schema-name>AvailableAccessRulesDataBean</abstract-schema-name>
       <cmp-field><field-name>name</field-name></cmp-field>
       <primkey-field>name</primkey-field>
+      <query>
+        <query-method>
+          <method-name>findAll</method-name>
+          <method-params></method-params>
+        </query-method>
+        <ejb-ql>
+          <![CDATA[SELECT DISTINCT OBJECT(a) from AvailableAccessRulesDataBean a]]>
+        </ejb-ql>
+      </query>
    </entity>
+   
   </enterprise-beans>
 
   <relationships>
@@ -580,7 +619,7 @@
      </method>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
-         <method-name>CheckIfSubjectDNisAdmin</method-name>
+         <method-name>checkIfSubjectDNisAdmin</method-name>
      </method>
     <method>
          <ejb-name>UserAdminSession</ejb-name>
@@ -592,11 +631,11 @@
      </method>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
-         <method-name>checkForProfileId</method-name>
+         <method-name>checkForEndEntityProfileId</method-name>
      </method>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
-         <method-name>checkForCertificateTypeId</method-name>
+         <method-name>checkForCertificateProfileId</method-name>
      </method>
     <method>
          <ejb-name>UserAdminSession</ejb-name>
@@ -616,27 +655,27 @@
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getProfileNames</method-name>
+         <method-name>getEndEntityProfileNames</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getProfiles</method-name>
+         <method-name>getEndEntityProfiles</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getProfile</method-name>
+         <method-name>getEndEntityProfile</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getNumberOfProfiles</method-name>
+         <method-name>getNumberOfEndEntityProfiles</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getProfileId</method-name>
+         <method-name>getEndEntityProfileId</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getProfileName</method-name>
+         <method-name>getEndEntityProfileName</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
