@@ -13,6 +13,7 @@ Support for more than two levels of CAs
 Initial support for OCSP
 Fixed small bug if using null revocation date
 Default revocation reason to new reason NOT_REVOKED
+Fixed utitlity method that returned wrong subject key id
 
 2.0.1
 -----
