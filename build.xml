@@ -127,6 +127,7 @@
         <fileset dir="${build}">
                 <include name="se/anatom/ejbca/samples/AuthResult*.class"/>
                 <include name="se/anatom/ejbca/samples/RemoteVerify*.class"/>
+                <include name="se/anatom/ejbca/exception/**/*.class"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
@@ -205,6 +206,7 @@
                 <include name="se/anatom/ejbca/util/**/Base64*.class"/>
                 <include name="se/anatom/ejbca/util/**/CertTools*.class"/>
                 <include name="se/anatom/ejbca/util/**/Hex*.class"/>
+                <include name="se/anatom/ejbca/exception/**/*.class"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
