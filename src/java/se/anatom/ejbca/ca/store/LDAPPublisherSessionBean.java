@@ -47,7 +47,7 @@ import se.anatom.ejbca.log.LogEntry;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.16 2003-01-22 09:06:11 scop Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.17 2003-01-25 18:56:12 scop Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
 
@@ -245,7 +245,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                 ByteArrayInputStream bIn = new ByteArrayInputStream(subjAltNameValue);
                 DEROctetString asn1 = (DEROctetString)new DERInputStream(bIn).readObject();
                 ByteArrayInputStream bIn1 = new ByteArrayInputStream(asn1.getOctets());
-                DERSequence san = (DERSequence)new DERInputStream(bIn1).readObject();
+                ASN1Sequence san = (ASN1Sequence)new DERInputStream(bIn1).readObject();
                 for (int i=0;i<san.size();i++) {
                     DERTaggedObject gn = (DERTaggedObject)san.getObjectAt(i);
                     if (gn.getTagNo() == 1) {
