@@ -2,8 +2,8 @@ package se.anatom.ejbca.protocol.junit;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -24,7 +24,9 @@ import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.OCSPResp;
 import org.bouncycastle.ocsp.RespData;
+import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
+import org.bouncycastle.ocsp.UnknownStatus;
 
 import junit.framework.*;
 
@@ -41,7 +43,6 @@ import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.ca.store.CertificateData;
 import se.anatom.ejbca.ca.store.CertificateDataHome;
 import se.anatom.ejbca.ca.store.CertificateDataPK;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.ScepRequestMessage;
 import se.anatom.ejbca.ra.UserDataHome;
@@ -95,33 +96,29 @@ public class ProtocolHttpTest extends TestCase {
             "dRDzXBCGEArlG8ef+vDD/HP9SX3MQ0NJWym48VI9bTpP/mJlUKSsfgDYHohvUlVI" +
             "E5QFC6ILVLUmuWPGchUEAb8t30DDnmeXs8QxdqHfbQ==").getBytes());
 
-    static byte[] ocspcert = Base64.decode(("MIICfjCCAeegAwIBAgIIZTV+M+6x7q8wDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE" +
-            "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAzMTIx" +
-            "NTE0MDEyNloXDTA1MTIxNDE0MTEyNlowLzENMAsGA1UEAxMEVGVzdDERMA8GA1UE" +
-            "ChMIUHJpbWVLZXkxCzAJBgNVBAYTAlNFMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCB" +
-            "iQKBgQCZSidwhgAWl79g3p2ZcBBIhKMSobNol10Gjl7QZMD6rUqxsh+H08Ni1Vld" +
-            "dC9Lexiz+kp19LFzUEzuvZ8YcImemIHKUliO2ldRao2exq07rTAs4223MnFNeot2" +
-            "1IgV/MSdPE5y8ZM9jgwD5W2eOyJa6Trn2YXj2S6I+Y2m21zhbwIDAQABo4GiMIGf" +
-            "MA8GA1UdEwEB/wQFMAMBAQAwDwYDVR0PAQH/BAUDAwegADA7BgNVHSUENDAyBggr" +
-            "BgEFBQcDAQYIKwYBBQUHAwIGCCsGAQUFBwMEBggrBgEFBQcDBQYIKwYBBQUHAwcw" +
-            "HQYDVR0OBBYEFFJN5Z8dFNQEOVySeuz5celOKQYCMB8GA1UdIwQYMBaAFIed05jl" +
-            "6vEGOIJw7X61o03WDfkvMA0GCSqGSIb3DQEBBQUAA4GBABDU2mB8ti0XKhEyI957" +
-            "PPDpz+Bcd8fG2K7HkIC3DU2E61gSAXD05CFolCmGWxINU+eobrdXS8BWwc0fWi48" +
-            "/BI8lmrDYNKodjfsn36jyi1M96ljSLwm/oWbxWdVQdC90tJz/S0BoP7tynCpRxdr" +
-            "eIrDbfGEmrxcOBpUPTkK0tqL").getBytes());
+    static byte[] unknowncacertBytes = Base64.decode(("MIICLDCCAZWgAwIBAgIIbzEhUVZYO3gwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE" +
+            "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDcw" +
+            "OTEyNDc1OFoXDTA0MDgxNTEyNTc1OFowLzEPMA0GA1UEAxMGVGVzdENBMQ8wDQYD" +
+            "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB" +
+            "hwKBgQDZlACHRwJnQKlgpMqlZQmxvCrJPpPFyhxvjDHlryhp/AQ6GCm+IkGUVlwL" +
+            "sCnjgZH5BXDNaVXpkmME8334HFsxVlXqmZ2GqyP6kptMjbWZ2SRLBRKjAcI7EJIN" +
+            "FPDIep9ZHXw1JDjFGoJ4TLFd99w9rQ3cB6zixORoyCZMw+iebwIBEaNTMFEwDwYD" +
+            "VR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUY3v0dqhUJI6ldKV3RKb0Xg9XklEwHwYD" +
+            "VR0jBBgwFoAUY3v0dqhUJI6ldKV3RKb0Xg9XklEwDQYJKoZIhvcNAQEFBQADgYEA" +
+            "i1P53jnSPLkyqm7i3nLNi+hG7rMgF+kRi6ZLKhzIPyKcAWV8iZCI8xl/GurbZ8zd" +
+            "nTiIOfQIP9eD/nhIIo7n4JOaTUeqgyafPsEgKdTiZfSdXjvy6rj5GiZ3DaGZ9SNK" +
+            "FgrCpX5kBKVbbQLO6TjJKCjX29CfoJ2TbP1QQ6UbBAY=").getBytes());
 
-    static byte[] ocspreq = Base64.decode(("MHAwbqACBQAwRTBDMEEwCQYFKw4DAhoFAAQUleclaLzPjnIsGxKO0zDiqGjYYgoE" +
-            "FIed05jl6vEGOIJw7X61o03WDfkvAghlNX4z7rHur6IhMB8wHQYJKwYBBQUHMAEC" +
-            "BBBgNVPKHnmzW70ZU1R8Nnw+").getBytes());
-            
     private static Context ctx;
     private static ISignSessionHome home;
     private static ISignSessionRemote remote;
     private static UserDataHome userhome;
     private static CertificateDataHome certhome;
     private static int caid=0;
-    private Admin admin;
-    private X509Certificate cacert = null;
+    private static Admin admin;
+    private static X509Certificate cacert = null;
+    private static X509Certificate ocspTestCert = null;
+    private static X509Certificate unknowncacert = null;
 
     public static void main( String args[] ) {
         junit.textui.TestRunner.run( suite() );
@@ -170,13 +167,12 @@ public class ProtocolHttpTest extends TestCase {
         obj = ctx.lookup("RSASignSession");
         home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
         remote = home.create();
-        
         obj = ctx.lookup("UserData");
         userhome = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj, UserDataHome.class);
-
         obj = ctx.lookup("CertificateData");
         certhome = (CertificateDataHome) javax.rmi.PortableRemoteObject.narrow(obj, CertificateDataHome.class);
 
+        unknowncacert = CertTools.getCertfromByteArray(unknowncacertBytes);
         log.debug("<setUp()");
     }
 
@@ -245,8 +241,8 @@ public class ProtocolHttpTest extends TestCase {
     /** Tests ocsp message
      * @throws Exception error
      */
-    public void test03Ocsp() throws Exception {
-        log.debug(">test03Ocsp()");
+    public void test03OcspGood() throws Exception {
+        log.debug(">test03OcspGood()");
 
         // find a CA (TestCA?) create a user and generate his cert
         // send OCSP req to server and get good response
@@ -282,13 +278,12 @@ public class ProtocolHttpTest extends TestCase {
         KeyPair keys = genKeys();
 
         // user that we know exists...
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "ocsptest", "foo123", keys.getPublic());
-        assertNotNull("Misslyckades skapa cert", cert);
+        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "ocsptest", "foo123", keys.getPublic());
+        assertNotNull("Misslyckades skapa cert", ocspTestCert);
 
         // And an OCSP request
-        CertificateID   id = new CertificateID(CertificateID.HASH_SHA1, cacert, cert.getSerialNumber());
         OCSPReqGenerator    gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, cert.getSerialNumber()));
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
         OCSPReq req = gen.generate();
         // POST the OCSP request
         WebConversation wc   = new WebConversation();
@@ -296,6 +291,7 @@ public class ProtocolHttpTest extends TestCase {
         PostMethodWebRequest request   = new PostMethodWebRequest( httpReqPath + '/' + resourceOcsp , bais, "application/ocsp-request");
         WebResponse webresponse = wc.getResponse( request );
         assertEquals( "Response code", 200, webresponse.getResponseCode() );
+        assertEquals("Content-Type", "application/ocsp-response", webresponse.getContentType());
         // Extract the response
         InputStreamReader in = new InputStreamReader(webresponse.getInputStream());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -319,51 +315,154 @@ public class ProtocolHttpTest extends TestCase {
         assertEquals("No of SingResps shoudl be 1.", singleResps.length, 1);
         SingleResp singleResp = singleResps[0];
         CertificateID certId = singleResp.getCertID();
-        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), cert.getSerialNumber());
+        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
         assertEquals("Status is not null (good)", status, null);
-                        
+        log.debug("<test03OcspGood()");
+    }
+
+    /** Tests ocsp message
+     * @throws Exception error
+     */
+    public void test04OcspRevoked() throws Exception {
+        log.debug(">test04OcspRevoked()");                        
         // Now revoke the certificate and try again
         CertificateDataPK pk = new CertificateDataPK();
-        pk.fingerprint = CertTools.getFingerprintAsString(cert);
+        pk.fingerprint = CertTools.getFingerprintAsString(ocspTestCert);
         CertificateData data2 = certhome.findByPrimaryKey(pk);
         assertNotNull("Failed to find cert", data2);
         data2.setStatus(CertificateData.CERT_REVOKED);
         data2.setRevocationDate(new Date());
         data2.setRevocationReason(RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);        
+        // And an OCSP request
+        OCSPReqGenerator    gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+        OCSPReq req = gen.generate();
         // POST the OCSP request
         WebConversation wc1   = new WebConversation();
-        request   = new PostMethodWebRequest( httpReqPath + '/' + resourceOcsp , bais, "application/ocsp-request");
-        webresponse = wc1.getResponse( request );
+        ByteArrayInputStream bais = new ByteArrayInputStream(req.getEncoded());
+        PostMethodWebRequest request   = new PostMethodWebRequest( httpReqPath + '/' + resourceOcsp , bais, "application/ocsp-request");
+        WebResponse webresponse = wc1.getResponse( request );
         assertEquals( "Response code", 200, webresponse.getResponseCode() );
+        assertEquals("Content-Type", "application/ocsp-response", webresponse.getContentType());
         // Extract the response
-        in = new InputStreamReader(webresponse.getInputStream());
-        baos = new ByteArrayOutputStream();
+        InputStreamReader in = new InputStreamReader(webresponse.getInputStream());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // This works for small requests, and OCSP requests are small
-        b = in.read(); 
+        int b = in.read(); 
         while (b != -1) {
             baos.write(b);
             b = in.read();
         }
         baos.flush();
         in.close();
-        respBytes = baos.toByteArray();
-        response = new OCSPResp(new ByteArrayInputStream(respBytes));
+        byte[] respBytes = baos.toByteArray();
+        OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
         assertEquals("Response status not zero.", response.getStatus(), 0);
-        brep = (BasicOCSPResp)response.getResponseObject();
-        chain = brep.getCerts("BC");
-        verify = brep.verify(chain[0].getPublicKey(), "BC");
+        BasicOCSPResp brep = (BasicOCSPResp)response.getResponseObject();
+        X509Certificate[] chain = brep.getCerts("BC");
+        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
         assertTrue("Response failed to verify.", verify);
-        respData = brep.getResponseData();
-        singleResps = respData.getResponses();
-        assertEquals("No of SingResps shoudl be 1.", singleResps.length, 1);
-        singleResp = singleResps[0];
-        certId = singleResp.getCertID();
-        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), cert.getSerialNumber());
-        status = singleResp.getCertStatus();
-        assertEquals("Status is not null (good)", status, null);
+        RespData respData = brep.getResponseData();
+        SingleResp[] singleResps = respData.getResponses();
+        assertEquals("No of SingResps should be 1.", singleResps.length, 1);
+        SingleResp singleResp = singleResps[0];
+        CertificateID certId = singleResp.getCertID();
+        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
+        Object status = singleResp.getCertStatus();
+        assertTrue("Status is not RevokedStatus", status instanceof RevokedStatus);
 
-        log.debug("<test03Ocsp()");
+        log.debug("<test04OcspRevoked()");
     }
+    /** Tests ocsp message
+     * @throws Exception error
+     */
+    public void test05OcspUnknown() throws Exception {
+        log.debug(">test05OcspUnknown()");                        
+        // An OCSP request for an unknown certificate (not exist in db)
+        OCSPReqGenerator    gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, new BigInteger("1")));
+        OCSPReq req = gen.generate();
+        // POST the OCSP request
+        WebConversation wc1   = new WebConversation();
+        ByteArrayInputStream bais = new ByteArrayInputStream(req.getEncoded());
+        PostMethodWebRequest request   = new PostMethodWebRequest( httpReqPath + '/' + resourceOcsp , bais, "application/ocsp-request");
+        WebResponse webresponse = wc1.getResponse( request );
+        assertEquals( "Response code", 200, webresponse.getResponseCode() );
+        assertEquals("Content-Type", "application/ocsp-response", webresponse.getContentType());
+        // Extract the response
+        InputStreamReader in = new InputStreamReader(webresponse.getInputStream());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // This works for small requests, and OCSP requests are small
+        int b = in.read(); 
+        while (b != -1) {
+            baos.write(b);
+            b = in.read();
+        }
+        baos.flush();
+        in.close();
+        byte[] respBytes = baos.toByteArray();
+        OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
+        assertEquals("Response status not zero.", response.getStatus(), 0);
+        BasicOCSPResp brep = (BasicOCSPResp)response.getResponseObject();
+        X509Certificate[] chain = brep.getCerts("BC");
+        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
+        assertTrue("Response failed to verify.", verify);
+        RespData respData = brep.getResponseData();
+        SingleResp[] singleResps = respData.getResponses();
+        assertEquals("No of SingResps should be 1.", singleResps.length, 1);
+        SingleResp singleResp = singleResps[0];
+        CertificateID certId = singleResp.getCertID();
+        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), new BigInteger("1"));
+        Object status = singleResp.getCertStatus();
+        assertTrue("Status is not Unknown", status instanceof UnknownStatus);
 
+        log.debug("<test05OcspUnknown()");
+    }
+    /** Tests ocsp message
+     * @throws Exception error
+     */
+    public void test06OcspUnknownCA() throws Exception {
+        log.debug(">test06OcspUnknownCA()");                        
+        // An OCSP request for a certificate from an unknwon CA
+        OCSPReqGenerator    gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, unknowncacert, new BigInteger("1")));
+        OCSPReq req = gen.generate();
+        // POST the OCSP request
+        WebConversation wc1   = new WebConversation();
+        ByteArrayInputStream bais = new ByteArrayInputStream(req.getEncoded());
+        PostMethodWebRequest request   = new PostMethodWebRequest( httpReqPath + '/' + resourceOcsp , bais, "application/ocsp-request");
+        WebResponse webresponse = wc1.getResponse( request );
+        assertEquals( "Response code", 200, webresponse.getResponseCode() );
+        assertEquals("Content-Type", "application/ocsp-response", webresponse.getContentType());
+        // Extract the response
+        InputStreamReader in = new InputStreamReader(webresponse.getInputStream());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // This works for small requests, and OCSP requests are small
+        int b = in.read(); 
+        while (b != -1) {
+            baos.write(b);
+            b = in.read();
+        }
+        baos.flush();
+        in.close();
+        byte[] respBytes = baos.toByteArray();
+        OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
+        assertEquals("Response status not zero.", response.getStatus(), 0);
+        BasicOCSPResp brep = (BasicOCSPResp)response.getResponseObject();
+        X509Certificate[] chain = brep.getCerts("BC");
+        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
+        assertTrue("Response failed to verify.", verify);
+        RespData respData = brep.getResponseData();
+        SingleResp[] singleResps = respData.getResponses();
+        assertEquals("No of SingResps should be 1.", singleResps.length, 1);
+        SingleResp singleResp = singleResps[0];
+        CertificateID certId = singleResp.getCertID();
+        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), new BigInteger("1"));
+        Object status = singleResp.getCertStatus();
+        assertTrue("Status is not Unknown", status instanceof UnknownStatus);
+
+        log.debug("<test06OcspUnknownCA()");
+    }
+    
 }
