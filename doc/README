@@ -34,11 +34,14 @@ Individual enrollment or batch production of certificates.
 Server and client certificates can be exported as PKCS12 or PEM.
 Browser enrollment with Netscape, Mozilla, IE, etc.
 Enrollment for other applications through open APIs and tools.
-Follows X509 and PKIX (RFC2459) standards where applicable.
-Configurable certificate contents.
+Web based administration GUI using strong authentication.
+Multiple levels of amdministrators with specified privileges and user groups.
+Configurable certificate profile for different types of certificates and users.
+Configurable certificate content.
+Follows X509 and PKIX (RFC3280) standards where applicable.
 Revocation and Certificate Revocation Lists (CRLs).
 CRL creation using scheduled jobs.
-URL-based CRLDistribution Points according to RFC2459.
+URL-based CRLDistribution Points according to RFC3280.
 Stores Certificates and CRLs in any SQL database (handled by application
  server).
 Component based architecture for publishing certificates and CRLs to different
@@ -124,19 +127,18 @@ Build
 Needed to build and run are:
 JDK (1.4.x, also works with 1.3.1_x)
 JBOSS 3.0.x (with Tomcat or Jetty)
-Ant 1.4.x to build (http://jakarta.apache.org/ant/)
+Ant 1.4.x/1.5.x to build (http://jakarta.apache.org/ant/)
 (Bouncycastle JCE provider, distributed with EJBCA see above)
 
 Simply unpack the archive in a directory and run "ant" to build everything.
 
 Set the environment variable JBOSS_HOME to the directory where JBoss's root is
- (/jboss). This is done so the deploy script will know where files are to be
+ (/jboss-<version>_Tomcat-<version>). This is done so the deploy script will know where files are to be
  copied, they are copied to the $JBOSS_HOME/deploy directory.
 
-Copy the Bouncycastle JCE provider 'lib/jce-jdk13-<version>.jar' and the LDAP
-library 'lib/ldap.jar' to the directory $JBOSS_HOME/lib/ext, it will be added to
-JBoss's classpath
-automatically when JBoss is started.
+Run 'deploy.cmd/sh', this will copy the Bouncycastle JCE provider, the LDAP
+library and the regexp library to the directory $JBOSS_HOME/server/default/lib, it will be added to
+JBoss's classpath automatically when JBoss is started.
 
 You can also build javadoc on all APIs used with 'ant javadoc'.
 
