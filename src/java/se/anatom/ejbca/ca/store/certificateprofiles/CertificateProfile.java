@@ -77,8 +77,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setCertificatePoliciesCritical(false);
       setCertificatePolicyId("2.5.29.32.0");
 
-      setCRLPeriod(24);
-      setFinishUser(true);
       setType(TYPE_ENDENTITY);
 
       int[] bitlengths = {512,1024,2048,4096};
@@ -157,13 +155,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean isTypeCA() { return ((Integer) data.get(TYPE)).intValue() == TYPE_CA; }
     public boolean isTypeRootCA() { return ((Integer) data.get(TYPE)).intValue() == TYPE_ROOTCA; }
     public boolean isTypeEndEntity() { return ((Integer) data.get(TYPE)).intValue() == TYPE_ENDENTITY; }
-
-
-    public long getCRLPeriod(){ return ((Long) data.get(CRLPERIOD)).longValue(); }
-    public void setCRLPeriod(long crlperiod){data.put(CRLPERIOD,new Long(crlperiod));}
-
-    public boolean getFinishUser(){ return ((Boolean) data.get(FINISHUSER)).booleanValue(); }
-    public void setFinishUser(boolean finishuser) { data.put(FINISHUSER,new Boolean(finishuser));}
 
     public int[] getAvailableBitLengths(){
       ArrayList availablebitlengths = (ArrayList) data.get(AVAILABLEBITLENGTHS);
@@ -275,8 +266,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USECRLDISTRIBUTIONPOINT        = "usecrldistributionpoint";
     protected static final String CRLDISTRIBUTIONPOINTCRITICAL   = "crldistributionpointcritical";
     protected static final String CRLDISTRIBUTIONPOINTURI        = "crldistributionpointuri";
-    protected static final String CRLPERIOD                      = "crlperiod";
-    protected static final String FINISHUSER                     = "finishuser";
     protected static final String USECERTIFICATEPOLICIES         = "usecertificatepolicies";
     protected static final String CERTIFICATEPOLICIESCRITICAL    = "certificatepoliciescritical";
     protected static final String CERTIFICATEPOLICYID            = "certificatepolicyid";

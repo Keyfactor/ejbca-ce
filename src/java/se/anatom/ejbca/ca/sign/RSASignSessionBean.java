@@ -49,24 +49,17 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.51 2002-11-13 12:35:24 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.52 2002-11-13 14:08:45 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
     transient X509Certificate caCert;
     transient X509Name caSubjectName;
-    private Long validity;
+    // CRL parameters
     private Long crlperiod;
-    private Boolean usebc, bccritical;
-    private Boolean useku, kucritical;
-    private Boolean useski, skicritical;
     private Boolean useaki, akicritical;
     private Boolean usecrln, crlncritical;
-    private Boolean usesan, sancritical;
-    private Boolean usecertpol, certpolcritical;
-    private String certpolid;
-    private Boolean usecrldist, crldistcritical;
-    String crldisturi;
+
     private Boolean emailindn;
     private Boolean finishUser;
     transient ISigningDevice signingDevice;
@@ -148,34 +141,16 @@ public class RSASignSessionBean extends BaseSessionBean {
             caCert = (X509Certificate)certs[0];
             caSubjectName = new X509Name(caCert.getSubjectDN().toString());
 
-            // The validity in days is specified in environment
-            validity = (Long)lookup("java:comp/env/validity", java.lang.Long.class);
-
-            // Should extensions be used? Critical or not?
-            if ((usebc = (Boolean)lookup("java:comp/env/BasicConstraints", java.lang.Boolean.class)).booleanValue() == true)
-                bccritical = (Boolean)lookup("java:comp/env/BasicConstraintsCritical", java.lang.Boolean.class);
-            if ((useku = (Boolean)lookup("java:comp/env/KeyUsage", java.lang.Boolean.class)).booleanValue() == true)
-                kucritical = (Boolean)lookup("java:comp/env/KeyUsageCritical", java.lang.Boolean.class);
-            if ((useski = (Boolean)lookup("java:comp/env/SubjectKeyIdentifier", java.lang.Boolean.class)).booleanValue() == true)
-                skicritical = (Boolean)lookup("java:comp/env/SubjectKeyIdentifierCritical", java.lang.Boolean.class);
+            // Should extensions be used in CRLs? Critical or not?
             if ((useaki = (Boolean)lookup("java:comp/env/AuthorityKeyIdentifier", java.lang.Boolean.class)).booleanValue() == true)
                 akicritical = (Boolean)lookup("java:comp/env/AuthorityKeyIdentifierCritical", java.lang.Boolean.class);
             if ((usecrln = (Boolean)lookup("java:comp/env/CRLNumber", java.lang.Boolean.class)).booleanValue() == true)
                 crlncritical = (Boolean)lookup("java:comp/env/CRLNumberCritical", java.lang.Boolean.class);
-            if ((usesan = (Boolean)lookup("java:comp/env/SubjectAlternativeName", java.lang.Boolean.class)).booleanValue() == true)
-                sancritical = (Boolean)lookup("java:comp/env/SubjectAlternativeNameCritical", java.lang.Boolean.class);
-            if ((usecertpol = (Boolean)lookup("java:comp/env/CertificatePolicies", java.lang.Boolean.class)).booleanValue() == true) {
-                certpolcritical = (Boolean)lookup("java:comp/env/CertificatePoliciesCritical", java.lang.Boolean.class);
-                certpolid = (String)lookup("java:comp/env/CertificatePolicyId", java.lang.String.class);
-            }
-            if ((usecrldist = (Boolean)lookup("java:comp/env/CRLDistributionPoint", java.lang.Boolean.class)).booleanValue() == true) {
-                crldistcritical = (Boolean)lookup("java:comp/env/CRLDistributionPointCritical", java.lang.Boolean.class);
-                crldisturi = (String)lookup("java:comp/env/CRLDistURI", java.lang.String.class);
-            }
-            // Use old style email address in DN? (really deprecated but old habits die hard...)
-            emailindn = (Boolean)lookup("java:comp/env/EmailInDN", java.lang.Boolean.class);
             // The period between CRL issue
             crlperiod = (Long)lookup("java:comp/env/CRLPeriod", java.lang.Long.class);
+
+            // Use old style email address in DN? (really deprecated but old habits die hard...)
+            emailindn = (Boolean)lookup("java:comp/env/EmailInDN", java.lang.Boolean.class);
             // Should we set user to finished state after generating certificate? Probably means onyl one cert can be issued
             // without resetting users state in user DB
             finishUser = (Boolean)lookup("java:comp/env/FinishUser", java.lang.Boolean.class);
@@ -273,17 +248,23 @@ public class RSASignSessionBean extends BaseSessionBean {
                 }
                 ICertificateStoreSessionLocal certificateStore = storeHome.create(admin);
                 // Retrieve the certificate profile this user should have
-                CertificateProfile certProfile = certificateStore.getCertificateProfile(data.getCertProfileId());
+                int certProfileId = data.getCertProfileId();
+                CertificateProfile certProfile = certificateStore.getCertificateProfile(certProfileId);
                 // What if certProfile == null?
                 if (certProfile == null) {
-                    if (data.getType() == SecConst.USER_CA)
-                        certProfile = certificateStore.getCertificateProfile(SecConst.PROFILE_FIXED_CA);
-                    else if (data.getType() == SecConst.USER_ROOTCA)
-                        certProfile = certificateStore.getCertificateProfile(SecConst.PROFILE_FIXED_ROOTCA);
-                    else
-                        certProfile = certificateStore.getCertificateProfile(SecConst.PROFILE_FIXED_ENDUSER);
+                    if (data.getType() == SecConst.USER_CA) {
+                        certProfileId = SecConst.PROFILE_FIXED_CA;
+                    }
+                    else if (data.getType() == SecConst.USER_ROOTCA) {
+                        certProfileId = SecConst.PROFILE_FIXED_ROOTCA;
+                    }
+                    else {
+                        certProfileId = SecConst.PROFILE_FIXED_ENDUSER;
+                    }
+                    certProfile = certificateStore.getCertificateProfile(certProfileId);
                 }
-                X509Certificate cert = makeBCCertificate(data, caSubjectName, validity.longValue(), pk, keyusage, certProfile);
+                cat.debug("Using certificate profile with id "+certProfileId);
+                X509Certificate cert = makeBCCertificate(data, caSubjectName, pk, keyusage, certProfile);
                 logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, cert, LogEntry.EVENT_INFO_CREATECERTIFICATE,"");
                 debug("Generated certificate with SerialNumber '" + Hex.encode(cert.getSerialNumber().toByteArray())+"' for user '"+username+"'.");
                 debug(cert.toString());
@@ -503,8 +484,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     }
 
 
-
-    private X509Certificate makeBCCertificate(UserAuthData subject, X509Name caname, long validity,
+    private X509Certificate makeBCCertificate(UserAuthData subject, X509Name caname,
         PublicKey publicKey, int keyusage, CertificateProfile certProfile) throws Exception {
         debug(">makeBCCertificate()");
         final String sigAlg = "SHA1WithRSA";
@@ -513,7 +493,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         firstDate.setTime(firstDate.getTime() - 10 * 60 * 1000);
         Date lastDate = new Date();
         // validity in days = validity*24*60*60*1000 milliseconds
-        lastDate.setTime(lastDate.getTime() + (validity * 24 * 60 * 60 * 1000));
+        lastDate.setTime(lastDate.getTime() + (certProfile.getValidity() * 24 * 60 * 60 * 1000));
         X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
         // Serialnumber is random bits, where random generator is initialized when this
         // bean is created.

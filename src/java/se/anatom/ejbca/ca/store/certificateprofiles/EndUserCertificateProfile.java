@@ -14,56 +14,54 @@ import java.util.Vector;
  * @author  TomSelleck
  */
 public class EndUserCertificateProfile extends CertificateProfile{
-    
+
     // Public Constants
 
     public final static String CERTIFICATEPROFILENAME =  "ENDUSER";
-    
+
     // Public Methods
     /** Creates a certificate with the characteristics of an end user. */
     public EndUserCertificateProfile() {
-        
-      setCertificateVersion(VERSION_X509V3);  
+
+      setCertificateVersion(VERSION_X509V3);
       setValidity(730);
-    
+
       setUseBasicConstraints(true);
-      setBasicConstraintsCritical(true); 
-    
+      setBasicConstraintsCritical(true);
+
       setUseKeyUsage(true);
       setKeyUsageCritical(true);
-    
+
       setUseSubjectKeyIdentifier(true);
-      setSubjectKeyIdentifierCritical(false);    
-   
+      setSubjectKeyIdentifierCritical(false);
+
       setUseAuthorityKeyIdentifier(true);
       setAuthorityKeyIdentifierCritical(false);
-    
+
       setUseSubjectAlternativeName(true);
       setSubjectAlternativeNameCritical(false);
-    
+
       setUseCRLDistributionPoint(false);
       setCRLDistributionPointCritical(false);
       setCRLDistributionPointURI("");
 
       setUseCertificatePolicies(false);
       setCertificatePoliciesCritical(false);
-      setCertificatePolicyId("2.5.29.32.0");      
-      
-      setCRLPeriod(24);
-      setFinishUser(true);
-      setType(TYPE_ENDENTITY);      
-    
-      int[] bitlengths = {512,1024,2048,4096};
-      setAvailableBitLengths(bitlengths); 
+      setCertificatePolicyId("2.5.29.32.0");
 
-      setKeyUsage(new boolean[9]);        
+      setType(TYPE_ENDENTITY);
+
+      int[] bitlengths = {512,1024,2048,4096};
+      setAvailableBitLengths(bitlengths);
+
+      setKeyUsage(new boolean[9]);
       setKeyUsage(DIGITALSIGNATURE,true);
-      setKeyUsage(KEYENCIPHERMENT,true);      
-   
+      setKeyUsage(KEYENCIPHERMENT,true);
+
     }
-    
+
     // Public Methods.
 
-    
+
     // Private fields.
 }
