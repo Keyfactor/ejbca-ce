@@ -146,6 +146,8 @@ In Mozilla you can for example enter a URL like:
 ldap://ap-address-of-ldap-server:389/cn=Tomas Gustavsson,dc=se,dc=bigcorp,dc=com
 and it will fetch an adress book entry with the information about the user, including the certificate.
 
+The LDAP url format is described in rfc2255: http://www.ietf.org/rfc/rfc2255.txt
+
 CONFIGURE OpenLDAP
 ==================
 
