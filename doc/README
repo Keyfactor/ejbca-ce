@@ -1,4 +1,4 @@
-$Id: README,v 1.113 2004-01-07 10:15:46 anatom Exp $
+$Id: README,v 1.114 2004-01-08 09:13:03 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -16,7 +16,7 @@ EJBCA Homepage can be found at <http://ejbca.sourceforge.net/>.
 Information about contacting the EJBCA team, contributing to
 EJBCA, etc can be found through the Homepage.
 
-All documentation can also be found on the homepage.
+Documentation can also be found on the homepage.
 
 There is an IRC channel for support at
 irc.freenode.net, channel #ejbca.
@@ -39,6 +39,7 @@ FEATURES
 - Server and client certificates can be exported as PKCS12, JKS or PEM.
 - Browser enrollment with Netscape, Mozilla, IE, etc.
 - Enrollment for other applications through open APIs and tools.
+- Support for issuing hard tokens through flexible interface.
 - Supports the Simple Certificate Enrollment Protocol (SCEP).
 - Powerful Web based administration GUI using strong authentication.
 - Command line administration for scripts etc.
@@ -48,9 +49,8 @@ FEATURES
 - Configurable certificate content.
 - Follows X509 and PKIX (RFC3280) standards where applicable.
 - Revocation and Certificate Revocation Lists (CRLs).
-- Supports the Online Certificate Status Protocol (OCSP).
-- CRL creation using scheduled jobs.
-- URL-based CRLDistribution Points according to RFC3280.
+- Fully supports the Online Certificate Status Protocol (OCSP).
+- CRL creation using scheduled jobs and URL-based CRLDistribution Points according to RFC3280.
 - E-mail notification to new users added by RA.
 - Stores Certificates and CRLs in any SQL database (handled by application server).
 - Component based architecture for publishing certificates and
@@ -101,7 +101,7 @@ JBoss
 EJBCA is developed on the open source J2EE application server
 JBoss
 <http://www.jboss.org/>. We expect a JBoss with an integrated
-Servlet engine, such as JBoss with Tomcat or Jetty.
+Servlet engine.
 
 JBoss and jars from JBoss are Copyright (c) 1999-2001 jboss.org.
 
@@ -129,6 +129,11 @@ distributed with EJBCA.
 JUnit is released under the IBM Public License
 <http://oss.software.ibm.com/developerworks/opensource/license10.html>.
 
+HttpJUnit
+----------
+Httpjunit is an extension to junit used to test web pages and forms. 
+Httpjunit can be fund on httpjunit.sourceforge.net
+
 OpenLDAP
 --------
 
@@ -153,8 +158,8 @@ Build
 
 Needed to build and run are:
 JDK 1.4.x
-JBOSS 3.2.x or 3.0.x (with Jetty or Tomcat 4.1.x)
-Ant 1.4.x/1.5.x to build (http://jakarta.apache.org/ant/)
+JBOSS 3.2.x or 3.0.x 
+Ant 1.5.x to build (http://jakarta.apache.org/ant/)
 
 Simply unpack the archive in a directory and run "ant" to build
 everything.
@@ -170,7 +175,7 @@ You can also build javadoc on all APIs used with 'ant javadoc'.
 Configure
 ---------
 
-Now when everything is installed, there are a few things to
+Now when everything is prepared, there are a few things to
 configure before starting JBOSS and running everything.
 
 FOR THE IMPATIENT:
@@ -180,7 +185,7 @@ FOR THE IMPATIENT:
 3. Create and initialize a root-CA with 'ca.sh/cmd init'.
 4. Setup the admin web-GUI with 'setup-adminweb.sh/cmd'.
 
-If you want to run a thorough test of your new CA run the automated tests with 'runtest.sh/cmd'.
+If you want to run a thorough test of your new CA, run the automated tests with 'runtest.sh/cmd'.
 
 NOTE-1: After running tests with 'runtest.sh/cmd', you might
 consider deleting
@@ -205,7 +210,7 @@ Start JBoss:
 At this point it is a good idea to start JBoss.
 
 You CA can be either a root CA, a subordinate CA to another CA in EJBCA 
-or a subordinate CA to an external CA. Initially you must setup a RootCA so 
+or a subordinate CA to an external CA. Initially you shoud setup a RootCA so 
 you can access the admin-GUI.
 
 Root CA:
@@ -223,7 +228,7 @@ and stored/published.
 
 
 Subordinate CA:
-run 'ca.sh/cmd init' and enter all required parameters.
+run 'ca.sh/cmd makereq' and enter all required parameters.
 TODO
 The result will be a PKCS10 certificate request which must be
 processed by the
@@ -240,7 +245,7 @@ EJBCA can process certification requests as well by running
  processreq' to produce a certification response for subordinate
  CAs
 
-OBS! Don't forget to configure JBoss for security! See
+NOTE! Don't forget to configure JBoss for security! See
 'security.txt'.
 Security is CRITICAL for a CA.
 
@@ -262,7 +267,7 @@ CRLs should be issued regularly. There is a special session bean
 with JNDI name 'CreatCRLSession' deployed in order to create CRLs. 
 This bean can be run with 'jobrunner.sh/cmd'.
 
-jobrunner.sh CreateCRLSession
+jobrunner.sh CreateCRLSession <caname>
 
 This job should be scheduled with cron on UNIX (and something
 else on Windows).
@@ -272,15 +277,15 @@ in ca/ca/META-INF/ejb-jar.xml (default 24 hours).
 
 Example crontab entry:
 
-PATH=$PATH:/usr/java/jdk1.3.1_01/bin
+PATH=$PATH:/usr/java/jdk1.4.2_01/bin
 @daily cd /home/ejbca;/home/ejbca/jobrunner.sh CreateCRLSession;
 
-where '/usr/java/jdk1.3.1_01/bin' is the path to where 'java'
+where '/usr/java/jdk1.4.2_01/bin' is the path to where 'java'
 can be found.
 '/home/ejbca' is where ejbca is installed and 'jobrunner.sh'
 located.
 
-CRL can also be created with the 'ca.sh/cmd createcrl <caname>' command.
+CRLs can also be created with the 'ca.sh/cmd createcrl <caname>' command.
 
 Deploy
 ======
@@ -296,7 +301,7 @@ Run
 ===
 
 Start JBoss with 'run.sh/bat'. JBoss should start up and deploy
-our beans and servlets without error messages.
+ejbca beans and servlets without error messages.
 
 Run the testprograms with 'runtests.sh/cmd' and watch the lovely
 debug output and logs in JBoss.
@@ -321,7 +326,7 @@ certificates for
 http://127.0.0.1:8080/ejbca/publicweb/apply/apply_man.jsp and
 fill in the form.
 
-Use the 'ca.sh/cmd' and 'ra.sh/cmd' scripts to administer EJBCA.
+Use the admin-GUI or 'ca.sh/cmd' and 'ra.sh/cmd' scripts to administer EJBCA.
 
 Note that application for certificates only work when the status
 of a user is
@@ -336,15 +341,15 @@ all available
 statuscodes run 'ra.sh/cmd setuserstatus'.
 During batch generation of certificates, users with status NEW
 or FAILED are
-generated. This is due to the if a batch generation for some
-reason failed,
+generated. This is due to the possibility that a batch generation for some
+reason failed. If it fails
 status is set to FAILED and you can try again after fixing the
 error.
 
 Create server certificates
 --------------------------
 The best way to create server certificates is to generate a
-PKCS12 file for the
+PKCS12/JKS/PEM file for the
 server.
 To do this:
 
@@ -352,7 +357,7 @@ To do this:
 domain name in
 CommonName (CN). Example DN for webserver: "C=SE,O=AnaTom,CN=
 www.anatom.se", or
-for mailserver "C=SE,O=AnaTom,OU=Engineering,CN=mail.anatom.se".
+for mailserver "C=SE,O=AnaTom,OU=Engineering,CN=mail.anatom.se". Set the user type to match the kind of token that should be generated for your server.
 
 2. To be able to batch-generate certificates, the batch
 generation program must
@@ -363,21 +368,18 @@ form, so the
 password must be stored in clear text form by:
 ra.sh/cmd setclearpwd <username> <password>
 
-3. Generate private keys and certificates in PKCS12 files by:
+3. Generate private keys and certificates  by:
 batch.sh/cmd
 
 4. Many servers (ex Apache, Tomcat) wants keys and certificates
 in PEM-format or
-SUN JKS, not PKCS12.
-To generate PEM-files as well as PKCS12-files, add the parameter
-'-pem' after
-the 'batch.cmd/sh' command. The PEM-files will be stored in a
+SUN JKS.
+To generate PEM-files use user type 4. The PEM-files will be stored in a
 separate
 subdirectory, 'pem'. The generated PEM-files can be used with
 Apache etc,
 and are NOT protected by any password.
-To generate JKS-files, add the parameter '-jks' after
-the 'batch.cmd/sh' command. The JKS-files will be stored in the
+To generate JKS-files use user type 3. The JKS-files will be stored in the
 subdirectory, 'p12' instead of PKCS12-files. The generated JKS-
 files can be used
 with Tomcat etc, and are protected (both private key password
@@ -420,7 +422,7 @@ JBOSS_HOME=/usr/local/jboss
 00 0    * * *   cd /root/ejbca;./jobrunner.sh CreateCRLSession
 --
 
-A new CA should always issue an (empty) CRL. This is done by 'ca.sh/cmd init' 
+A new CA should always issue an (empty) CRL. This is done when the ca is created
 and can also be done by running 'ca.sh/cmd createcrl <caname>'.
 
 Note on CRL Distribution Points (CDPs): it is possible to configure
@@ -1022,5 +1024,6 @@ url=
 
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
+
 
 
