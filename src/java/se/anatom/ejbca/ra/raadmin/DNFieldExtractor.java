@@ -101,6 +101,7 @@ public class DNFieldExtractor {
       }
       else
         this.dn = null;
+      
      }  
     
     public String getDN() {

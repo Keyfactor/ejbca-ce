@@ -44,7 +44,7 @@ import org.apache.log4j.Logger;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.32 2003-03-06 05:53:03 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.33 2003-03-07 08:17:30 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -570,7 +570,9 @@ public class RAInterfaceBean {
     
     public boolean revokeTokenCertificates(String tokensn, String username, int reason) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
        boolean success = true;
+               
        Collection certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
+       System.out.println("revokeTokenCertificates : Certificates " + certs.size() + " Tokensn " + tokensn + " Username : " + username + ", reason " + reason);        
        Iterator i = certs.iterator();
        try{
          while(i.hasNext()){  
@@ -589,11 +591,14 @@ public class RAInterfaceBean {
       UserAdminData user = adminsession.findUser(administrator, username);
       boolean allrevoked = true;
 
+          System.out.println("isAllTokenCertificatesRevoked : Certificates " + certs.size() + " Tokensn " + tokensn + " Username : " + username);      
+      
       if(!certs.isEmpty()){
         Iterator j = certs.iterator();
         while(j.hasNext()){
           X509Certificate cert = (X509Certificate) j.next();
           RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, cert.getIssuerDN().toString(), cert.getSerialNumber());
+          System.out.println("isAllTokenCertificatesRevoked : Certificate " + cert.getSerialNumber() + " is revoked " + (revinfo == null));
           if(revinfo == null)
             allrevoked = false;
         }

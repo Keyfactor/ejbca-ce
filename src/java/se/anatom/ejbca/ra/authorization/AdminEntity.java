@@ -12,7 +12,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * Matchtype constants tells under which contitions the match shall be performed.
  *
  * @author  Philip Vendil
- * @version $Id: AdminEntity.java,v 1.4 2003-02-06 15:35:48 herrvendil Exp $
+ * @version $Id: AdminEntity.java,v 1.5 2003-03-07 08:17:30 herrvendil Exp $
  */
 public class AdminEntity implements Serializable, Comparable {
     // Special Users. (Constants cannot have 0 value).
@@ -132,7 +132,6 @@ public class AdminEntity implements Serializable, Comparable {
           
         }  
         
-         
         // Determine how to match.
         if(clientstrings!=null){
           switch(matchtype){

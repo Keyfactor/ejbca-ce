@@ -77,7 +77,7 @@
        token = tokenbean.getHardTokenViewWithIndex(username, index);
         if(rabean.authorizedToRevokeCert(username) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
           && !rabean.isAllTokenCertificatesRevoked(token.getTokenSN(), username))
-          rabean.revokeTokenCertificates(tokensn, username, Integer.parseInt(reasonstring));  
+          rabean.revokeTokenCertificates(token.getTokenSN(), username, Integer.parseInt(reasonstring));  
      }         
    }
   } 
@@ -132,7 +132,7 @@
   <% if(token!=null){ %>
 function confirmrevokation(){
   var returnval = false;
-  if(document.viewcertificate.<%= SELECT_REVOKE_REASON %>.options.selectedIndex == -1){
+  if(document.viewtoken.<%= SELECT_REVOKE_REASON %>.options.selectedIndex == -1){
      alert("<%= ejbcawebbean.getText("AREVOKEATIONREASON") %>"); 
      returnval = false;
   }else{
@@ -167,7 +167,7 @@ function viewcert(){
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOVIEWTOKEN") %></h4></div> 
      <%  }else{%>
 
-  <form name="adduser" action="<%= THIS_FILENAME %>" method="post">
+  <form name="viewtoken" action="<%= THIS_FILENAME %>" method="post">
      <input type="hidden" name='<%= USER_PARAMETER %>' value='<%=username %>'>
      <% if (tokensn != null){ %>
      <input type="hidden" name='<%= TOKENSN_PARAMETER %>' value='<%=tokensn %>'>
@@ -274,7 +274,7 @@ function viewcert(){
           <td>
        <% 
             if(rabean.authorizedToRevokeCert(username) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
-               && !rabean.isAllTokenCertificatesRevoked(tokensn, username)){ %>
+               && !rabean.isAllTokenCertificatesRevoked(token.getTokenSN(), username)){ %>
         <input type="submit" name="<%=BUTTON_REVOKE %>" value="<%= ejbcawebbean.getText("REVOKE") %>"
                onClick='return confirmrevokation()'><br>
         <select name="<%=SELECT_REVOKE_REASON %>" >
