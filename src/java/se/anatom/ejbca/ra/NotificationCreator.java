@@ -23,7 +23,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 /**
  * This class is used to create notification messages
  *
- * @version $Id: NotificationCreator.java,v 1.10 2004-04-16 07:38:56 anatom Exp $
+ * @version $Id: NotificationCreator.java,v 1.11 2004-08-18 09:12:16 sbailliez Exp $
  */
 public class NotificationCreator {
     /**
@@ -36,7 +36,7 @@ public class NotificationCreator {
     private static final Pattern O = Pattern.compile("\\$O", Pattern.CASE_INSENSITIVE);
     private static final Pattern OU = Pattern.compile("\\$OU", Pattern.CASE_INSENSITIVE);
     private static final Pattern C = Pattern.compile("\\$C", Pattern.CASE_INSENSITIVE);
-    private static final Pattern DATE = Pattern.compile("\\DATE", Pattern.CASE_INSENSITIVE);
+    private static final Pattern DATE = Pattern.compile("\\$DATE", Pattern.CASE_INSENSITIVE);
     private static final Pattern NEWLINE = Pattern.compile("\\$NL", Pattern.CASE_INSENSITIVE);
 
 
