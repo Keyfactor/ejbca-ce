@@ -731,7 +731,6 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- ========================================================================== -->
   <!-- Replace every occurrence of the DefaultDS to something else (here ejbcaDS) -->
   <!-- ========================================================================== -->
-
   <target name="checkForDS" unless="ejbca.DS">
 	<fail message="Please run ant with -Dejbca.DS=&lt;your-datasource&gt; ( eg.java:/DefaultDS )"/> 
   </target>
@@ -759,17 +758,43 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         </replace>
   </target>
 
+  <!-- ========================================================================== -->
+  <!-- Upgrades the database for a new version of ejbca                           -->
+  <!-- ========================================================================== -->
+  <target name="upgrade" depends="admin.jar">
+		<!-- Get input -->
+  		<input
+		    message="Type of database:"
+		    validargs="hsql,oracle,mssql,mysql,postgres,sapdb,hsqldb,sybase"
+		    addproperty="ejbca.DB"
+		  />
+  		<input
+		    message="Data source (default java:/DefaultDS):"
+		    addproperty="ejbca.DS"
+		    defaultvalue="java:/DefaultDS"
+		  />
+	  	<java classname="se.anatom.ejbca.admin.Upgrade" fork="true">
+             <sysproperty key="ejbcaDB" value="${ejbca.DB}"/>
+             <sysproperty key="ejbcaDS" value="${ejbca.DS}"/>
+	  		 <classpath>
+	  		 	<pathelement location="${adminjar}"/>
+	  		 	<fileset dir="${env.JBOSS_HOME}/client" includes="**/*.jar"/>
+	  		 	<fileset dir="${lib}" includes="**/*.jar"/>
+	  		 </classpath>
+	  	</java>
+  </target>
+
   <!-- ============================================================================= -->
   <!-- Batch generate certificates for users with clear text password and right type -->
   <!-- ============================================================================= -->
   <target name="batch" depends="admin.jar">
-  	<java classname="se.anatom.ejbca.batch.BatchMakeP12" fork="true">
-  		 <classpath>
-  		 	<pathelement location="${adminjar}"/>
-  		 	<fileset dir="${env.JBOSS_HOME}/client" includes="**/*.jar"/>
-  		 	<fileset dir="${lib}" includes="**/*.jar"/>
-  		 </classpath>
-  	</java>
+	  	<java classname="se.anatom.ejbca.batch.BatchMakeP12" fork="true">
+	  		 <classpath>
+	  		 	<pathelement location="${adminjar}"/>
+	  		 	<fileset dir="${env.JBOSS_HOME}/client" includes="**/*.jar"/>
+	  		 	<fileset dir="${lib}" includes="**/*.jar"/>
+	  		 </classpath>
+	  	</java>
   </target>
 
   <!-- =================================================================== -->
