@@ -57,7 +57,7 @@ import com.novell.ldap.LDAPModificationSet;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.7 2004-08-24 07:56:41 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.8 2004-08-25 08:46:37 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher{
 	 	
@@ -226,12 +226,12 @@ public class LdapPublisher extends BasePublisher{
 
             if (oldEntry != null) {
                 // TODO: Are we the correct type objectclass?
-                modSet = getModificationSet(oldEntry, certdn, false, true);
+                modSet = getModificationSet(oldEntry, certdn, true, true);
             } else {
                 objectclass = getUserObjectClass(); // just used for logging
+                attributeSet = getAttributeSet(getUserObjectClass(), certdn, true, true);
             }
 
-            attributeSet = getAttributeSet(getUserObjectClass(), certdn, true, true);
             if (email != null) {
             	//log.debug("Adding email attribute: "+email);
                 LDAPAttribute mailAttr = new LDAPAttribute("mail", email);
@@ -257,11 +257,12 @@ public class LdapPublisher extends BasePublisher{
             log.debug("Publishing CA certificate to " + getHostname());
 
             if (oldEntry != null) {
+            	// Ändra inte extra attribut för CAs
                 modSet = getModificationSet(oldEntry, certdn, false, false);
             } else {
                 objectclass = getCAObjectClass(); // just used for logging
+                attributeSet = getAttributeSet(getCAObjectClass(), certdn, true, false);
             }
-            attributeSet = getAttributeSet(getCAObjectClass(), certdn, true, false);
             try {
                 attribute = getCACertAttribute();
                 LDAPAttribute certAttr = new LDAPAttribute(getCACertAttribute(), incert.getEncoded());
@@ -287,7 +288,6 @@ public class LdapPublisher extends BasePublisher{
         }
 
         try {
-        
             lc.connect(getHostname(), Integer.parseInt(getPort()));
             // authenticate to the server
             lc.bind(ldapVersion, getLoginDN(), getLoginPassword());            
@@ -459,9 +459,7 @@ public class LdapPublisher extends BasePublisher{
             }
         }
 
-        
-        LDAPModificationSet modSet = null;
-                                
+        LDAPModificationSet modSet = null;               
         if (((X509Certificate) cert).getBasicConstraints() == -1) {
             log.debug("Removing end user certificate from " + getHostname());
 
@@ -487,7 +485,6 @@ public class LdapPublisher extends BasePublisher{
         }
 
         try {
-        
             lc.connect(getHostname(), Integer.parseInt(getPort()));
             // authenticate to the server
             lc.bind(ldapVersion, getLoginDN(), getLoginPassword());            
@@ -847,10 +844,23 @@ public class LdapPublisher extends BasePublisher{
             if (ou != null) {
                 attributeSet.add(new LDAPAttribute("ou", ou));
             }
+            String o = CertTools.getPartFromDN(dn, "O");
+            if (o != null) {
+                attributeSet.add(new LDAPAttribute("o", o));
+            }
             String uid = CertTools.getPartFromDN(dn, "uid");
             if (uid != null) {
                 attributeSet.add(new LDAPAttribute("uid", uid));
-            }        }
+            }        
+            String initials = CertTools.getPartFromDN(dn, "initials");
+            if (initials != null) {
+                attributeSet.add(new LDAPAttribute("initials", initials));
+            }        
+            String title = CertTools.getPartFromDN(dn, "T");
+            if (title != null) {
+                attributeSet.add(new LDAPAttribute("title", title));
+            }    
+        }
         return attributeSet;
     } // getAttributeSet
 	
@@ -920,10 +930,23 @@ public class LdapPublisher extends BasePublisher{
             if (ou != null) {
                 modSet.add(LDAPModification.REPLACE, new LDAPAttribute("ou", ou));
             }
+            String o = CertTools.getPartFromDN(dn, "O");
+            if (o != null) {
+            	modSet.add(LDAPModification.REPLACE, new LDAPAttribute("o", o));
+            }
             String uid = CertTools.getPartFromDN(dn, "uid");
             if (uid != null) {
                 modSet.add(LDAPModification.REPLACE, new LDAPAttribute("uid", uid));
-            }        }
+            }
+            String initials = CertTools.getPartFromDN(dn, "initials");
+            if (initials != null) {
+            	modSet.add(LDAPModification.REPLACE, new LDAPAttribute("initials", initials));
+            }        
+            String title = CertTools.getPartFromDN(dn, "T");
+            if (title != null) {
+            	modSet.add(LDAPModification.REPLACE, new LDAPAttribute("title", title));
+            }
+        }
         return modSet;
     } // getModificationSet
     

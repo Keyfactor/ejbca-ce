@@ -23,6 +23,7 @@ Fixes to demo servlet.
 Fixed minor error in authorization log text.
 Fixed error for DATE var in notifications.
 Fixed bug adding email and uid attributes in LDAP.
+Added more extra attributes to LDAP publisher.
 
 3.0.2
 -----
