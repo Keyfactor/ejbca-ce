@@ -333,7 +333,7 @@ Administrating RA:
 
 The RA has a command line interface ra.sh/cmd. Options are:
 adduser - adds a user to the database, after addition a user may apply for a
-certificate.
+certificate. If email address is set to 'null', no email is put in certificates.
 deluser - removes a user from the database, any issued certificates
 remain  active and present in the database.
 setclearpwd - set a clear text
