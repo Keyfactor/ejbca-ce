@@ -1,4 +1,4 @@
-$Id: TODO,v 1.73 2003-10-06 06:29:18 anatom Exp $
+$Id: TODO,v 1.74 2003-10-06 06:32:53 anatom Exp $
 
 V 1.x
 -----
@@ -22,7 +22,7 @@ V 3.x
 - Import utility to get users from external datasources.
 - Command line to edit/change users.
 - Better command line tools for batch stuff.
-- OCSP, with responder cert signed by CA, better NONCE-handling.
+- OCSP, with responder cert signed by CA.
 - AuthorityInfoAcess extension required by OCSP (id-ad-ocsp for the accessMethod),
 and ocspSigning extendedKeyUsage + id-pkix-ocsp-check extensions.
 - Encrypt key recoverable keys stored in database.
