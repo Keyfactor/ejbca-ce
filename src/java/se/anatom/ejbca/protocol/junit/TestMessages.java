@@ -248,8 +248,8 @@ public class TestMessages extends TestCase {
     /** Tests scep message from Cisco PIX
      * @throws Exception error
      */
-    public void test01TestPixScep() throws Exception {
-        log.debug(">test01TestPixScep()");
+    public void test02TestPixScep() throws Exception {
+        log.debug(">test02TestPixScep()");
         ScepRequestMessage msg = new ScepRequestMessage(pixscep);
         // You should be able to get issuer DN before anything else
         String issuerdn = msg.getIssuerDN();
@@ -266,7 +266,7 @@ public class TestMessages extends TestCase {
         log.debug("Pwd: " + pwd);
         assertEquals("foo123", pwd);
         assertTrue("Failed to verify SCEP message from PIX.", ret);
-        log.debug("<test01TestPixScep()");
+        log.debug("<test02TestPixScep()");
     }
     
 }
