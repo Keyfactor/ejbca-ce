@@ -32,7 +32,6 @@ import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.FileTools;
-import se.anatom.ejbca.util.KeyTools;
 import se.anatom.ejbca.webdist.cainterface.CAInterfaceBean;
 import se.anatom.ejbca.webdist.rainterface.RAInterfaceBean;
 import se.anatom.ejbca.webdist.rainterface.UserView;
@@ -42,8 +41,11 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * This is a servlet that is used for creating a user into EJBCA and
  * retrieving her certificate. This servlet requires authentication of the
  * administrator, specifically it requires that the
- * client certificate has the priviledge "/ra_functionallity/create_end_entity",
+ * client certificate has the privilege "/ra_functionallity/create_end_entity",
  * as defined in the admin-GUI.
+ * <p>
+ * This implementation handles only the POST method.
+ * </p>
  * <p>
  *   The CGI parameters for requests are the following.
  * </p>
@@ -76,14 +78,13 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * </dl>
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.2 2003-01-29 12:32:54 anatom Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.3 2003-02-03 09:46:07 scop Exp $
  */
 public class AdminCertReqServlet extends HttpServlet {
 
   private final static Category cat = Category.getInstance(AdminCertReqServlet.class.getName());
 
-  private InitialContext ctx = null;
-  ISignSessionHome home = null;
+  private ISignSessionHome signhome = null;
 
   private final static byte[] BEGIN_CERT =
     "-----BEGIN CERTIFICATE-----".getBytes();
@@ -106,8 +107,8 @@ public class AdminCertReqServlet extends HttpServlet {
       int result = Security.addProvider(p);
 
       // Get EJB context and home interfaces
-      ctx = new InitialContext();
-      home = (ISignSessionHome) PortableRemoteObject
+      InitialContext ctx = new InitialContext();
+      signhome = (ISignSessionHome) PortableRemoteObject
         .narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class);
     } catch (Exception e) {
       throw new ServletException(e);
@@ -231,7 +232,7 @@ public class AdminCertReqServlet extends HttpServlet {
 
     ISignSessionRemote ss;
     try {
-      ss = home.create();
+      ss = signhome.create();
     } catch (CreateException e) {
       throw new ServletException(e);
     }
@@ -274,7 +275,8 @@ public class AdminCertReqServlet extends HttpServlet {
     throws IOException, ServletException
   {
     cat.debug(">doGet()");
-    response.sendError(HttpServletResponse.SC_NOT_FOUND, "The certificate request servlet only handles POST method.");
+    response.setHeader("Allow", "POST");
+    response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "The certificate request servlet only handles the POST method.");
     cat.debug("<doGet()");
   } // doGet
 
