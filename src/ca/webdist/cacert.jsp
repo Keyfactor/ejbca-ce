@@ -3,12 +3,13 @@
 <HTML>
 <HEAD>
 <TITLE>EJBCA - Fetch CA Certificate</TITLE>
+<link rel="stylesheet" href="../indexmall.css" type="text/css">
 </HEAD>
-<BODY bgcolor="#ffffff" link="black" vlink="black" alink="black">
-
-<h1>EJBCA Fetch CA Certificate</h1>
-
-<%
+<BODY>
+<p align="center"><span class="E">E</span><span class="J">J</span><span class="B">B</span><span class="C">C</span><span class="A">A 
+  </span> <span class="titel">Fetch CA Certificate</span> </p>
+<p align="center"> 
+  <%
 try  {
     InitialContext ctx = new InitialContext();
     ISignSessionHome home = home = (ISignSessionHome) PortableRemoteObject.narrow(
@@ -17,41 +18,70 @@ try  {
     Certificate[] chain = ss.getCertificateChain();
     if (chain.length == 0) {
 %>
-No CA certificates exist
-<%
+  No CA certificates exist 
+  <%
     } else {
 %>
-<hr>In PEM format:<br>
-<li><a href="certdist?cmd=cacert&level=0">Root CA</a></li>
-<%
+</p>
+<div align="center">In PEM format:<br>
+</div>
+<li>
+  <div align="center"><a href="certdist?cmd=cacert&level=0">Root CA</a></div>
+</li>
+<div align="center">
+  <%
         int i = 0;
         if (chain.length > 1) {
             for (i=chain.length-1;i>0;i--) {
 %>
-<li><a href="certdist?cmd=cacert&level=<%= i %>">CA</a></li>
-<%
+</div>
+<li>
+  <div align="center"><a href="certdist?cmd=cacert&level=<%= i %>">CA</a></div>
+</li>
+<div align="center">
+  <%
             }
         }
 %>
-<hr>For Netscape/Mozilla:<br>
-<li><a href="certdist?cmd=nscacert&level=0">Root CA</a></li>
-<%
+</div>
+<br>
+<div align="center">For Netscape/Mozilla:<br>
+</div>
+<li>
+  <div align="center"><a href="certdist?cmd=nscacert&level=0">Root CA</a></div>
+</li>
+<div align="center">
+  <%
         if (chain.length > 1) {
             for (i=chain.length-1;i>0;i--) {
 %>
-<li><a href="certdist?cmd=nscacert&level=<%= i %>">CA</a></li>
-<%
+</div>
+<li>
+  <div align="center"><a href="certdist?cmd=nscacert&level=<%= i %>">CA</a></div>
+</li>
+<div align="center">
+  <%
             }
         }
 %>
-<hr>For Internet Explorer:<br>
-<li><a href="certdist?cmd=iecacert&level=0">Root CA</a></li>
-<%
+</div>
+<br>
+<div align="center">For Internet Explorer:<br>
+</div>
+<li>
+  <div align="center"><a href="certdist?cmd=iecacert&level=0">Root CA</a></div>
+</li>
+<div align="center">
+  <%
         if (chain.length > 1) {
             for (i=chain.length-1;i>0;i--) {
 %>
-<li><a href="certdist?cmd=iecacert&level=<%= i %>">CA</a></li>
-<%
+</div>
+<li>
+  <div align="center"><a href="certdist?cmd=iecacert&level=<%= i %>">CA</a></div>
+</li>
+<div align="center">
+  <%
             }
         }
     }
@@ -59,6 +89,6 @@ No CA certificates exist
     ex.printStackTrace();
 }                                             
 %>
-<hr>
+</div>
 </BODY>
 </HTML>

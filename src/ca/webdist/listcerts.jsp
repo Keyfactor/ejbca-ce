@@ -1,17 +1,17 @@
 <%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.net.*,java.security.cert.*,java.math.BigInteger,se.anatom.ejbca.ca.store.*,se.anatom.ejbca.util.Hex"%>
 <html>
-<head><title>EJBCA - List certificates</title></head>
+<head><title>EJBCA - List certificates</title>
+<link rel="stylesheet" href="../indexmall.css" type="text/css">
+</head>
 <body>
-
-<h2>Certificates for <%=request.getParameter("subject")%></h2>
-<hr>
-<%
+<div align="center"><span class="titel">Certificates for</span> <%=request.getParameter("subject")%> 
+  <%
 try  {
     String dn=request.getParameter("subject");
     if (dn == null) {
 %>
-Usage: listcerts.jsp?subject=<DN>
-<%
+  <p>Usage: listcerts.jsp?subject=<DN> 
+  <%
     } else {
         InitialContext ctx = new InitialContext();
         ICertificateStoreSessionHome home = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
@@ -28,27 +28,27 @@ Usage: listcerts.jsp?subject=<DN>
             BigInteger serno = x509cert.getSerialNumber();
             String hexSerno = Hex.encode(serno.toByteArray());
             String urlEncIssuer = URLEncoder.encode(issuer);
-%>            
-<pre>Subject: <%=subject%>
+%>
+  <pre>Subject: <%=subject%>
 Issuer: <%=issuer%>
 NotBefore: <%=notBefore.toString()%>
 NotAfter: <%=notAfter.toString()%>
 Serial number: <%=hexSerno%>
 </pre>
-<a href="revoked.jsp?issuer=<%=urlEncIssuer%>&serno=<%=hexSerno%>">Check if certificate is revoked</a>
-<hr>
-<%
+  <a href="revoked.jsp?issuer=<%=urlEncIssuer%>&serno=<%=hexSerno%>">Check if 
+  certificate is revoked</a> 
+  <%
         }
         if (certs.isEmpty()) {
 %>
-No certificates exists for '<%=dn%>'.
-<%
+  <p>No certificates exists for '<%=dn%>'. 
+  <%
         }
     }
 } catch(Exception ex) {
     ex.printStackTrace();
 }                                             
 %>
-
+</div>
 </body>
 </html>

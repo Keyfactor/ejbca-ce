@@ -1,0 +1,14 @@
+a:active {  font-family: Helvetica, sans-serif, Arial; font-size: small; color: #00CC99; text-decoration: none}
+a:link {  font-family: Helvetica, sans-serif, Arial; font-size: small; color: #CC33CC; text-decoration: underline}
+a:visited {  font-family: Helvetica, sans-serif, Arial; font-size: small; color: #0066FF; text-decoration: underline}
+body {  text-decoration: none; background-color: #FFFFFF}
+.B {  font-family: Helvetica, sans-serif, Arial; font-size: 36px; font-style: normal; line-height: normal; font-weight: bold; color: #6699FF}
+.E { font-family: Helvetica, sans-serif, Arial; font-size: 36px; font-style: normal; line-height: normal; font-weight: bold; color: #00CC99}
+.J { font-family: Helvetica, sans-serif, Arial; font-size: 36px; font-style: normal; line-height: normal; font-weight: bold; color: #CC99FF}
+.C { font-family: Helvetica, sans-serif, Arial; font-size: 36px; font-style: normal; line-height: normal; font-weight: bold; color: #FFCCFF}
+.titel { font-family: Helvetica, sans-serif, Arial; font-size: 14pt; font-style: normal; line-height: normal; font-weight: normal; color: #6699FF}
+.A { font-family: Helvetica, sans-serif, Arial; font-size: 36px; font-style: normal; line-height: normal; font-weight: bold; color: #FF99FF }
+a:hover { font-family: Helvetica, sans-serif, Arial; font-size: small; color: #00CC99; text-decoration: underline}
+.input {  color: #0066FF; font-family: Helvetica, sans-serif, Arial; border-top-width: auto; border-right-width: auto; border-bottom-width: auto; border-left-width: auto}
+.titel2 { font-family: Helvetica, sans-serif, Arial; font-size: 18px; font-style: normal; line-height: normal; font-weight: normal; color: #6699FF }
+.txt { font-family: Helvetica, sans-serif, Arial; font-size: small; font-style: normal; line-height: normal; font-weight: normal; color: #0066FF}

@@ -4,7 +4,9 @@
 <HEAD>
 <TITLE>EJBCA IE Certificate Enroll</TITLE>
 
- <object
+ 
+<link rel="stylesheet" href="../indexmall.css" type="text/css">
+<object
    classid="clsid:43F8F289-7A20-11D0-8F06-00C04FC295E1"
    id="encoder">
  </object>
@@ -53,8 +55,8 @@
 </HEAD>
 <BODY onLoad="GetProviderList()" bgcolor="#ffffff" link="black" vlink="black" alink="black">
 <center>
-<FONT face=arial size="3"><strong>EJBCA IE Certificate Enrollment
-</strong></FONT>
+  <strong class="titel"><span class="E">E</span><span class="J">J</span><span class="B">B</span><span class="C">C</span><span class="A">A</span> 
+  IE Certificate Enrollment </strong> 
 </center>
 
 <HR>
@@ -73,10 +75,10 @@ try  {
     if (chain.length == 0) {
         out.println("No CA certificates exist");
     } else {
-        out.println("<li><a href=\"/webdist/certdist?cmd=iecacert&level=0\">Root CA</a></li>");
+        out.println("<li><a href=\"../webdist/certdist?cmd=iecacert&level=0\">Root CA</a></li>");
         if (chain.length > 1) {
             for (int i=chain.length-2;i>=0;i--) {
-                out.println("<li><a href=\"/webdist/certdist?cmd=iecacert&level="+i+"\">CA</a></li>");
+                out.println("<li><a href=\"../webdist/certdist?cmd=iecacert&level="+i+"\">CA</a></li>");
             }
         }
     }
@@ -84,9 +86,8 @@ try  {
     ex.printStackTrace();
 }                                             
 %>
-
 <HR>
-<FORM NAME="CertReqForm" ACTION="/apply/certreq" ENCTYPE=x-www-form-encoded METHOD=POST>
+<FORM NAME="CertReqForm" ACTION="certreq" ENCTYPE=x-www-form-encoded METHOD=POST>
  Please give your username and password, then click OK to fetch your certificate.<BR>
 
         Username: <input type=text size=10 name=user value="foo"><br>
