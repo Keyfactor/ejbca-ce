@@ -17,7 +17,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Receive certificate reply as result of certificate request.
  *
- * @version $Id: CaRecRepCommand.java,v 1.8 2003-09-07 10:19:09 anatom Exp $
+ * @version $Id: CaRecRepCommand.java,v 1.9 2004-03-04 11:18:39 anatom Exp $
  */
 public class CaRecRepCommand extends BaseCaAdminCommand {
     /**
@@ -53,13 +53,12 @@ public class CaRecRepCommand extends BaseCaAdminCommand {
             System.out.println("Storing KeyStore in: " + ksfile);
             System.out.println("Protected with storepassword: " + storepwd);
 
-            String privAlias = "privateKey";
             X509Certificate cert = CertTools.getCertfromByteArray(FileTools.readFiletoBuffer(certfile));
             X509Certificate rootcert = null;
             KeyStore store = KeyStore.getInstance("PKCS12", "BC");
             FileInputStream fis = new FileInputStream(ksfile);
             store.load(fis, storepwd.toCharArray());
-            Certificate[] certchain = store.getCertificateChain(privAlias);
+            Certificate[] certchain = store.getCertificateChain(privKeyAlias);
             System.out.println("Loaded certificate chain with length " + certchain.length + " with alias 'privateKey'.");
             if (certchain.length == 0) {
                 System.out.println("No certificate in chain with alias 'privateKey' in keystore '"+ksfile +"'");
@@ -71,7 +70,7 @@ public class CaRecRepCommand extends BaseCaAdminCommand {
                 System.out.println("Reply NOT received!");
                 return;
             }
-            PrivateKey privKey = (PrivateKey) store.getKey("privateKey", null);
+            PrivateKey privKey = (PrivateKey) store.getKey(privKeyAlias, null);
             // check if the private and public keys match
             Signature sign = Signature.getInstance("SHA1WithRSA");
             sign.initSign(privKey);
@@ -89,13 +88,13 @@ public class CaRecRepCommand extends BaseCaAdminCommand {
             ArrayList cacerts = new ArrayList();
             while (aliases.hasMoreElements()) {
                 String alias = (String)aliases.nextElement();
-                if (!privAlias.equals(alias)) {
+                if (!privKeyAlias.equals(alias)) {
                     Certificate cacert = store.getCertificate(alias);
                     cacerts.add(cacert);
                 }
             }
             // Create new keyStore
-            KeyStore ks = KeyTools.createP12("privateKey", privKey, cert, cacerts);
+            KeyStore ks = KeyTools.createP12(privKeyAlias, privKey, cert, cacerts);
             FileOutputStream os = new FileOutputStream(ksfile);
             ks.store(os, storepwd.toCharArray());
             System.out.println("Keystore '" + ksfile + "' generated successfully.");
