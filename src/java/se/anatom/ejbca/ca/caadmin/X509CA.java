@@ -101,7 +101,7 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.29 2004-11-01 09:08:54 anatom Exp $
+ * @version $Id: X509CA.java,v 1.30 2004-11-16 21:55:16 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -123,6 +123,8 @@ public class X509CA extends CA implements Serializable {
     protected static final String USECRLNUMBER                   = "usecrlnumber";
     protected static final String CRLNUMBERCRITICAL              = "crlnumbercritical";
 
+    /** OID used for creating MS Templates */
+    protected static final String OID_MSTEMPLATE = "1.3.6.1.4.1.311.20.2";
       
     // Public Methods
     /** Creates a new instance of CA, this constuctor should be used when a new CA is created */
@@ -430,6 +432,13 @@ public class X509CA extends CA implements Serializable {
              GeneralName ocspLocation = new GeneralName(new DERIA5String(ocspUrl), 6);
              certgen.addExtension(X509Extensions.AuthorityInfoAccess.getId(),
                  false, new AuthorityInformationAccess(X509ObjectIdentifiers.ocspAccessMethod, ocspLocation));
+         }
+         
+         // Microsoft Template
+         if (certProfile.getUseMicrosoftTemplate() == true) {
+             String mstemplate = certProfile.getMicrosoftTemplate();             
+             DERObjectIdentifier oid = new DERObjectIdentifier(OID_MSTEMPLATE);                           
+             certgen.addExtension(oid, false, new DERIA5String(mstemplate));             
          }
 		          
          X509Certificate cert;

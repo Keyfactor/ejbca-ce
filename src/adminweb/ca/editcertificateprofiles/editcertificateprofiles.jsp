@@ -52,6 +52,7 @@
   static final String CHECKBOX_USEEXTENDEDKEYUSAGE                = "checkuseextendedkeyusage";
   static final String CHECKBOX_EXTENDEDKEYUSAGECRITICAL           = "checkboxextendedkeyusagecritical";
   static final String CHECKBOX_USEOCSPSERVICELOCATOR              = "checkuseocspservicelocator";
+  static final String CHECKBOX_USEMSTEMPLATE                      = "checkusemstemplate";
 
   static final String SELECT_AVAILABLEBITLENGTHS                  = "selectavailablebitlengths";
   static final String SELECT_KEYUSAGE                             = "selectkeyusage";
@@ -59,6 +60,7 @@
   static final String SELECT_TYPE                                 = "selecttype";
   static final String SELECT_AVAILABLECAS                         = "selectavailablecas";
   static final String SELECT_AVAILABLEPUBLISHERS                  = "selectavailablepublishers";
+  static final String SELECT_MSTEMPLATE                           = "selectmstemplate";
 
   // Declare Language file.
 
@@ -430,7 +432,24 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
              else{
                  certificateprofiledata.setUseOCSPServiceLocator(false);                 
                  certificateprofiledata.setOCSPServiceLocatorURI("");
-             } 
+             }
+              
+             use = false;
+             value = request.getParameter(CHECKBOX_USEMSTEMPLATE);
+             if(value != null){
+                 use = value.equals(CHECKBOX_VALUE);
+                 certificateprofiledata.setUseMicrosoftTemplate(use);
+
+                 value = request.getParameter(SELECT_MSTEMPLATE);
+                 if(value != null){
+                   value=value.trim();
+                   certificateprofiledata.setMicrosoftTemplate(value);
+                 } 
+             }
+             else{
+                 certificateprofiledata.setUseMicrosoftTemplate(false);                 
+                 certificateprofiledata.setMicrosoftTemplate("");
+             }
 
               cabean.changeCertificateProfile(certprofile,certificateprofiledata);
            }

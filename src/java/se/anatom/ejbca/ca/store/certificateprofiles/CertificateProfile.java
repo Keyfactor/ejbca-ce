@@ -28,12 +28,12 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.23 2004-07-23 10:24:43 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.24 2004-11-16 21:55:16 herrvendil Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static Logger log = Logger.getLogger(CertificateProfile.class);
     // Default Values
-    public static final float LATEST_VERSION = 8;
+    public static final float LATEST_VERSION = 9;
 
     /** KeyUsage constants */
     public static final int DIGITALSIGNATURE = 0;
@@ -62,6 +62,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final String[] EXTENDEDKEYUSAGEOIDSTRINGS = {"1.3.6.1.5.5.7.3.0", "1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2", "1.3.6.1.5.5.7.3.3", "1.3.6.1.5.5.7.3.4",
                                                               "1.3.6.1.5.5.7.3.5", "1.3.6.1.5.5.7.3.6", "1.3.6.1.5.5.7.3.7", "1.3.6.1.5.5.7.3.8", "1.3.6.1.4.1.311.20.2.2", "1.3.6.1.5.5.7.3.9"};
 
+	/** Microsoft Template Constants */
+	public static final String MSTEMPL_DOMAINCONTROLLER  = "DomainController";
+	
+	public static final String[] AVAILABLE_MSTEMPLATES = {MSTEMPL_DOMAINCONTROLLER};
+    
     public static final String TRUE  = "true";
     public static final String FALSE = "false";
 
@@ -110,7 +115,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String AVAILABLECAS                   = "availablecas";
     protected static final String USEDPUBLISHERS                 = "usedpublishers";         
 	protected static final String USEOCSPSERVICELOCATOR          = "useocspservicelocator";	
-	protected static final String OCSPSERVICELOCATORURI          = "ocspservicelocatoruri";   
+	protected static final String OCSPSERVICELOCATORURI          = "ocspservicelocatoruri";
+	protected static final String USEMICROSOFTTEMPLATE           = "usemicrosofttemplate";
+	protected static final String MICROSOFTTEMPLATE              = "microsofttemplate"; 
      
     // Public Methods
 
@@ -164,7 +171,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	  setUseOCSPServiceLocator(false);	  
 	  setOCSPServiceLocatorURI("");
 
-      
+	  setUseMicrosoftTemplate(false);	  
+	  setMicrosoftTemplate("");
+
     }
 
     // Public Methods.
@@ -337,6 +346,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return (ArrayList) data.get(EXTENDEDKEYUSAGE);
     }
 
+    public boolean getUseMicrosoftTemplate(){
+    	return ((Boolean) data.get(USEMICROSOFTTEMPLATE)).booleanValue();	
+    }
+    
+    public void setUseMicrosoftTemplate(boolean use){
+    	data.put(USEMICROSOFTTEMPLATE, Boolean.valueOf(use));	
+    }
+
+    public String getMicrosoftTemplate(){
+    	return (String) data.get(MICROSOFTTEMPLATE);	
+    }
+    
+    public void setMicrosoftTemplate(String mstemplate){
+    	data.put(MICROSOFTTEMPLATE, mstemplate);	
+    }
+    
     /**
      * Returns an ArrayList of OID.strings defined in constant EXTENDEDKEYUSAGEOIDSTRINGS.
      */
@@ -454,6 +479,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setUseOCSPServiceLocator(false);            
                 setOCSPServiceLocatorURI("");
             }
+            
+            if(data.get(USEMICROSOFTTEMPLATE) == null){
+                setUseMicrosoftTemplate(false);            
+                setMicrosoftTemplate("");
+            }          
         }
         log.debug("<upgrade");
     }

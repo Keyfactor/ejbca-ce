@@ -63,6 +63,14 @@ function checkuseocspservicelocatorfield(){
   }
 }
 
+function checkusemstemplatefield(){
+  if(document.editcertificateprofile.<%=CHECKBOX_USEMSTEMPLATE %>.checked){    
+    document.editcertificateprofile.<%= SELECT_MSTEMPLATE %>.disabled = false;    
+  }
+  else{
+    document.editcertificateprofile.<%= SELECT_MSTEMPLATE %>.disabled = true;
+  }
+}
 
 function typechanged(){
   var seltype = document.editcertificateprofile.<%=SELECT_TYPE %>.options.selectedIndex;
@@ -382,6 +390,34 @@ function checkallfields(){
               <% for(int j=0; j < eku.size(); j++) 
                    if(((Integer) eku.get(j)).intValue() == i ) out.write(" selected "); %>> 
               <%= ejbcawebbean.getText(extendedkeyusagetexts[i]) %>
+           </option>
+           <%   } %> 
+        </select>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("USEMSTEMPLATE") %> 
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_USEMSTEMPLATE %>"  onclick="checkusemstemplatefield()" value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getUseMicrosoftTemplate())
+                 out.write("CHECKED");
+           %>>
+      </td>
+    </tr>    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <%= ejbcawebbean.getText("MSTEMPLATE") %> <br><%= ejbcawebbean.getText("ONLYVALUE") %>
+      </td>
+      <td width="50%"> 
+        <select name="<%=SELECT_MSTEMPLATE%>"  <% if(!certificateprofiledata.getUseMicrosoftTemplate()) out.write(" disabled "); %>>
+           <%  
+                for(int i=0; i < CertificateProfile.AVAILABLE_MSTEMPLATES.length;i++){ %>
+           <option  value="<%= CertificateProfile.AVAILABLE_MSTEMPLATES[i] %>" 
+              <% 
+                   if(CertificateProfile.AVAILABLE_MSTEMPLATES[i] == certificateprofiledata.getMicrosoftTemplate() ) out.write(" selected "); %>> 
+              <%=  CertificateProfile.AVAILABLE_MSTEMPLATES[i] %>
            </option>
            <%   } %> 
         </select>
