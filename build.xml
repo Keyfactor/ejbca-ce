@@ -51,7 +51,8 @@
     <property name="root.warsrc" value="${src}/publicweb/root" />
     <property name="rootwar" value="${dist.dir}/publicwebroot.war" />
 
-    <property name="caear.src" value="${src}/ca/ear" />
+    <property name="ejbdd.src" value="${src}/deploy/ejb" />
+    <property name="eardd.src" value="${src}/deploy/ear" />
     <property name="caear" value="${dist.dir}/ejbca.ear" />
 
     <property name="createcrlservice.build" value="${tmp}/crlcreateservice.jar" />
@@ -170,11 +171,12 @@ database.password    = ${database.password}
             <entitypk />
             <session />
             <deploymentdescriptor destdir="${src.dd}/META-INF" validatexml="false" />
-            <jboss version="3.2" 
+             <jboss version="3.2" 
                 unauthenticatedPrincipal="nobody" 
                 xmlencoding="UTF-8" 
                 validatexml="false" 
                 destdir="${src.dd}/META-INF" 
+                mergeDir="${ejbdd.src}/merge"
                 datasource="java:/${datasource.jndi-name}" 
                 datasourcemapping="Hypersonic SQL" />
             <jonas version="3.0" 
@@ -312,8 +314,8 @@ database.password    = ${database.password}
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
     <target name="ca.ear" depends="apply.war, status.war, webdist.war, adminweb.war, publicwebroot.war, ejbca-ejb.jar">
-        <ear destfile="${caear}" appxml="${caear.src}/META-INF/application.xml"> 
-            <fileset dir="${caear.src}">
+        <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
+            <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />
             </fileset>
             <fileset dir=".">
