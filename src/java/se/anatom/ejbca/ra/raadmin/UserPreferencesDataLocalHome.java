@@ -11,17 +11,17 @@ import se.anatom.ejbca.ra.raadmin.UserPreference;
 /**
  * For docs, see UserPreferencesDataBean
  *
- * @version $Id: UserPreferencesDataLocalHome.java,v 1.3 2002-07-22 10:38:48 anatom Exp $
+ * @version $Id: UserPreferencesDataLocalHome.java,v 1.4 2002-07-22 23:00:41 herrvendil Exp $
  **/
 
 public interface UserPreferencesDataLocalHome extends javax.ejb.EJBLocalHome {
 
-    public UserPreferencesDataLocal create(BigInteger id, UserPreference userpreference)
+    public UserPreferencesDataLocal create(String id, UserPreference userpreference)
         throws CreateException;
 
 
 
-    public UserPreferencesDataLocal findByPrimaryKey(BigInteger id)
+    public UserPreferencesDataLocal findByPrimaryKey(String id)
 
         throws FinderException;
 

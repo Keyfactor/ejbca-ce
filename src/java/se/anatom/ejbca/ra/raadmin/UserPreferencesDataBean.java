@@ -1,15 +1,8 @@
 package se.anatom.ejbca.ra.raadmin;
 
-
-
 import javax.ejb.EntityContext;
-
 import javax.ejb.CreateException;
-
-import java.math.BigInteger;
-
 import org.apache.log4j.*;
-
 import se.anatom.ejbca.ra.raadmin.UserPreference;
 
 
@@ -22,7 +15,7 @@ import se.anatom.ejbca.ra.raadmin.UserPreference;
  * UserPreference
  * </pre>
  *
- * @version $Id: UserPreferencesDataBean.java,v 1.4 2002-07-22 10:38:48 anatom Exp $
+ * @version $Id: UserPreferencesDataBean.java,v 1.5 2002-07-22 22:59:11 herrvendil Exp $
  **/
 
 public abstract class UserPreferencesDataBean implements javax.ejb.EntityBean {
@@ -30,8 +23,8 @@ public abstract class UserPreferencesDataBean implements javax.ejb.EntityBean {
     private static Category log = Category.getInstance(UserPreferencesDataBean.class.getName() );
     protected EntityContext  ctx;
 
-    public abstract BigInteger getId();
-    public abstract void setId(BigInteger id);
+    public abstract String getId();
+    public abstract void setId(String id);
     public abstract UserPreference getUserPreference();
     public abstract void setUserPreference(UserPreference userpreference);
 
@@ -39,8 +32,6 @@ public abstract class UserPreferencesDataBean implements javax.ejb.EntityBean {
     //
     // Fields required by Container
     //
-
-
 
     /**
      * Entity Bean holding data of raadmin userpreferences.
@@ -50,7 +41,7 @@ public abstract class UserPreferencesDataBean implements javax.ejb.EntityBean {
      *
      **/
 
-    public BigInteger ejbCreate(BigInteger id, UserPreference userpreference) throws CreateException {
+    public String ejbCreate(String id, UserPreference userpreference) throws CreateException {
 
         setId(id);
         setUserPreference(userpreference);
@@ -59,7 +50,7 @@ public abstract class UserPreferencesDataBean implements javax.ejb.EntityBean {
         return id;
     }
 
-    public void ejbPostCreate(BigInteger id, UserPreference userpreference) {
+    public void ejbPostCreate(String id, UserPreference userpreference) {
         // Do nothing. Required.
     }
 

@@ -28,7 +28,7 @@ import se.anatom.ejbca.ra.raadmin.Profile;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.9 2002-07-20 18:40:08 herrvendil Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.10 2002-07-22 22:58:42 herrvendil Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
@@ -77,7 +77,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         debug(">getUserPreference()");
         UserPreference ret =null;
         try {
-            UserPreferencesDataLocal updata = userpreferenceshome.findByPrimaryKey(serialnumber);
+            UserPreferencesDataLocal updata = userpreferenceshome.findByPrimaryKey(serialnumber.toString());
             ret = updata.getUserPreference();
         } catch (javax.ejb.FinderException fe) {
              // Create new configuration
@@ -99,7 +99,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         debug(">addUserPreference(serial : " + serialnumber + ")");
         boolean ret = false;
         try {
-            UserPreferencesDataLocal updata= userpreferenceshome.create(serialnumber,userpreference);
+            UserPreferencesDataLocal updata= userpreferenceshome.create(serialnumber.toString(),userpreference);
             ret = true;
         }
         catch (Exception e) {
@@ -119,15 +119,15 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
        debug(">changeUserPreference(serial : " + serialnumber + ")");
        boolean ret = false;
         try {
-            UserPreferencesDataLocal updata = userpreferenceshome.findByPrimaryKey(serialnumber);
-            userpreferenceshome.remove(serialnumber);
+            UserPreferencesDataLocal updata = userpreferenceshome.findByPrimaryKey(serialnumber.toString());
+            userpreferenceshome.remove(serialnumber.toString());
             try{
-                UserPreferencesDataLocal updata2 = userpreferenceshome.findByPrimaryKey(serialnumber);
+                UserPreferencesDataLocal updata2 = userpreferenceshome.findByPrimaryKey(serialnumber.toString());
             }  catch (javax.ejb.FinderException fe) {
             }
-            updata= userpreferenceshome.create(serialnumber,userpreference);
+            updata= userpreferenceshome.create(serialnumber.toString(),userpreference);
             try{
-                UserPreferencesDataLocal updata3 = userpreferenceshome.findByPrimaryKey(serialnumber);
+                UserPreferencesDataLocal updata3 = userpreferenceshome.findByPrimaryKey(serialnumber.toString());
             }  catch (javax.ejb.FinderException fe) {
             }
             ret = true;
@@ -150,7 +150,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
        debug(">existsUserPreference(serial : " + serialnumber + ")");
        boolean ret = false;
         try {
-            UserPreferencesDataLocal updata = userpreferenceshome.findByPrimaryKey(serialnumber);
+            UserPreferencesDataLocal updata = userpreferenceshome.findByPrimaryKey(serialnumber.toString());
             ret = true;
         } catch (javax.ejb.FinderException fe) {
              ret=false;

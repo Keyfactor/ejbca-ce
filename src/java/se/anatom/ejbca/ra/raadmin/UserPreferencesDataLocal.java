@@ -10,7 +10,7 @@ import se.anatom.ejbca.ra.raadmin.UserPreference;
 /**
  * For docs, see UserPreferencesDataBean
  *
- * @version $Id: UserPreferencesDataLocal.java,v 1.3 2002-07-22 10:38:48 anatom Exp $
+ * @version $Id: UserPreferencesDataLocal.java,v 1.4 2002-07-22 22:59:58 herrvendil Exp $
  **/
 
 public interface UserPreferencesDataLocal extends javax.ejb.EJBLocalObject {
@@ -19,9 +19,9 @@ public interface UserPreferencesDataLocal extends javax.ejb.EJBLocalObject {
 
     // public methods
 
-    public BigInteger getId();
+    public String getId();
 
-    public void setId(BigInteger id);
+    public void setId(String id);
 
     public UserPreference getUserPreference();
 

@@ -272,7 +272,7 @@
       <local>se.anatom.ejbca.ra.raadmin.UserPreferencesDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.raadmin.UserPreferencesDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
-      <prim-key-class>java.math.BigInteger</prim-key-class>    
+      <prim-key-class>java.lang.String</prim-key-class>    
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>UserPreferencesDataBean</abstract-schema-name>
