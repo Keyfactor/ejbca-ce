@@ -1,4 +1,4 @@
-$Id: README,v 1.164 2004-10-13 08:45:37 anatom Exp $
+$Id: README,v 1.165 2004-11-02 08:12:21 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -126,6 +126,12 @@ Configure
 
 Now when everything is prepared, there are a few things to
 configure before starting JBOSS and running everything.
+
+In a production environment you should use something like the following structure:
+1. Go through the install process creating an AdminCA. Use a simple DN. 
+This CA is only used to issue the initial superadmin certificate. Not published in LDAP.
+2. Once installed, create all your REAL CAs using the admin-GUI. Now you can use the certificate 
+profiles etc that you like. These certificates can be published in LDAP.
 
 FOR THE IMPATIENT:
 
