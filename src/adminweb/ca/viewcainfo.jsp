@@ -36,7 +36,7 @@
    
 
   if( request.getParameter(CA_PARAMETER) != null ){
-    caid = Integer.parseInt(java.net.URLDecoder.decode(request.getParameter(CA_PARAMETER),"UTF-8"));
+    caid = Integer.parseInt(request.getParameter(CA_PARAMETER));
     try{
       cainfo = cabean.getCAInfo(caid);
       ocspcert = cainfo.getOCSPSignerCertificate();

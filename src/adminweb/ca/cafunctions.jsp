@@ -39,7 +39,7 @@
   if(request.getParameter(HIDDEN_NUMBEROFCAS) != null){
     int numberofcas = Integer.parseInt(request.getParameter(HIDDEN_NUMBEROFCAS));
     for(int i = 0; i < numberofcas; i++){       
-       String casubjectdn = java.net.URLDecoder.decode(request.getParameter(HIDDEN_CASUBJECTDN+i),"UTF-8");
+       String casubjectdn = request.getParameter(HIDDEN_CASUBJECTDN+i);
        if( request.getParameter(BUTTON_CREATECRL+i) != null ){      
          // Check if user id authorized to create new crl.
          ejbcawebbean.isAuthorized(CREATECRL_LINK);
@@ -58,7 +58,6 @@
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
 
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <script language=javascript src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 <body>
@@ -101,9 +100,9 @@
           <tr id="Row<%=row%2%>">
             <td>&nbsp;</td>
             <td>               
-              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecacert&level=<%= j%>&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a>&nbsp;&nbsp;&nbsp;
-              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscacert&level=<%= j%>&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>"><%= ejbcawebbean.getText("DOWNLOADNS")%></a>&nbsp;&nbsp;&nbsp;
-              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cacert&level=<%= j%>&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>
+              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecacert&level=<%= j%>&issuer=<%= subjectdn %>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a>&nbsp;&nbsp;&nbsp;
+              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscacert&level=<%= j%>&issuer=<%= subjectdn %>"><%= ejbcawebbean.getText("DOWNLOADNS")%></a>&nbsp;&nbsp;&nbsp;
+              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cacert&level=<%= j%>&issuer=<%= subjectdn %>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>
             </td>   
           </tr> 
           <%   }else{ %> 
@@ -119,9 +118,9 @@
           <tr id="Row<%=row%2%>">
             <td>&nbsp;</td>
             <td>               
-              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecacert&level=<%= j%>&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a>&nbsp;&nbsp;&nbsp;
-              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscacert&level=<%= j%>&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>"><%= ejbcawebbean.getText("DOWNLOADNS")%></a>&nbsp;&nbsp;&nbsp;
-              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cacert&level=<%= j%>&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>
+              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecacert&level=<%= j%>&issuer=<%= subjectdn %>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a>&nbsp;&nbsp;&nbsp;
+              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscacert&level=<%= j%>&issuer=<%= subjectdn %>"><%= ejbcawebbean.getText("DOWNLOADNS")%></a>&nbsp;&nbsp;&nbsp;
+              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cacert&level=<%= j%>&issuer=<%= subjectdn %>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>
             </td>   
           </tr>
           <% }
@@ -142,13 +141,13 @@
               out.write(ejbcawebbean.getText("EXPIRES") + " " + ejbcawebbean.printDateTime(crlinfo.getExpireDate()));
            } 
            out.write(", " + ejbcawebbean.getText("NUMBER") + " " + crlinfo.getLastCRLNumber()); %>  
-<i><a href="<%=DOWNLOADCRL_LINK%>?cmd=crl&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>" ><%=ejbcawebbean.getText("GETCRL") %></a></i>
+<i><a href="<%=DOWNLOADCRL_LINK%>?cmd=crl&issuer=<%= subjectdn %>" ><%=ejbcawebbean.getText("GETCRL") %></a></i>
 <br>
-<% // Display createcrl is admin is authorized
+<% // Display createcrl if admin is authorized
       }
       if(createcrlrights){ %>
 <br> 
-<input type='hidden' name='<%=HIDDEN_CASUBJECTDN + number %>' value='<%=java.net.URLEncoder.encode(subjectdn,"UTF-8")%>'> 
+<input type='hidden' name='<%=HIDDEN_CASUBJECTDN + number %>' value='<%=subjectdn%>'> 
 <%=ejbcawebbean.getText("CREATENEWCRL") + " : " %>
        <% if(cainfo.getCAInfo().getStatus() == SecConst.CA_ACTIVE){ %>
 <input type='submit' name='<%=BUTTON_CREATECRL + number %>' value='<%=ejbcawebbean.getText("CREATECRL") %>'>

@@ -19,6 +19,7 @@
 3.0.3
 -----
 Fixed wrong encoding of BasicConstraints when false.
+Fixed bug in CA functions page viewing certificates with intl chars.
 Fixed bugg in the publisher page where the top publisher wasn't shown.
 Fixed bugg in adduser page where email address wasn't saved when user existed.
 Fixed bugg where IPADDRESS and GUID subject altname wasn't shown in certificate view.
