@@ -100,6 +100,9 @@ EJBCA can process certification requests as well by running 'ca.sh/bat processre
 OBS! Don't forget to configure JBoss for security! See 'security.txt'.
 Security is CRITICAL for a CA.
 
+Note that application for certificates only work when the status of a user is NEW (one time password thing). The status is set to GENERATED after a certificate has been issued. To issue a new certificate, the status must be reset to NEW,
+which can be done through administration with the RA, 'ra.sh/cmd setuserstatus <username> <status>'. For a list of all available statuscodes run 'ra.sh/cmd setuserstatus'.
+
 DEPLOY
 ------
 After configuration, if you have edited the xml-files manually, please run "ant" to rebuild jars and wars. If youe are using a deployment tool, this may not be needed, consult your documentation for the tool.
@@ -115,16 +118,17 @@ Run the testprograms with 'runtests.sh/bat' and watch the lovely debug output an
 
 To enroll for certificates using browsers, open http://127.0.0.1:8080/apply/request/index.html (assuming Tomcat listens to port 8080) and use the links for your browser.
 
-To enroll for certificates using manual methods (for server certificates for example) open  
+To enroll for certificates using manual methods (for server certificates for example) open
 http://127.0.0.1:8080/apply/request/apply_man.html and fill in the form.
 
 Use the 'ra.sh/cmd' and 'ca.sh/cmd' scripts to administer EJBCA.
 
-Note that application for certificates only work when the status of a user is NEW (one time password thing). The status is sert to GENERATED after a certificate has been issued. To issue a new certificate, the status must be reset to new, 
-which can be done through administration of the RA.
+Note that application for certificates only work when the status of a user is NEW (one time password thing). The status is set to GENERATED after a certificate has been issued. To issue a new certificate, the status must be reset to NEW,
+which can be done through administration with the RA, 'ra.sh/cmd setuserstatus <username> <status>'. For a list of all available statuscodes run 'ra.sh/cmd setuserstatus'.
+//TODO: more documentation about user statuscodes, how it can be used in batchgeneration etc.
 
-To create a crl a JobRunnerSession bean is running with JNDI name 'CreateCRLSession'. To run the session and create a CRL, 
-run 'jobrunner.sh/cmd CreateCRLSession'. This job should be run with regular intervals in a production CA, therefore the 
+To create a crl a JobRunnerSession bean is running with JNDI name 'CreateCRLSession'. To run the session and create a CRL,
+run 'jobrunner.sh/cmd CreateCRLSession'. This job should be run with regular intervals in a production CA, therefore the
 job should be launched from CRON. There must be a 'jndi.properties' file in the classpath when 'jobrunner.sh' is run.
 
 A new CA should always issue an (empty) CRL. This can be done by running 'ca.sh/cmd createcrl'.
@@ -139,27 +143,25 @@ The CA is modular in that all parts are different session beans which implement 
 Replaceable session beans are RSASession (interface ISignSession), AuthenticationSession (interface IAuthenticationSession), CertificateStoreSession (interface ICertificateStoreSession) and CreateCRLSession (interface IJobRunnerSession).
 
 Options in RSASession:
-- Keystore for the CAs private key and certificate chain.
--Certificate lifetime and extensions. Which certificate extensions should be in issued certificates and if they should be critical or not. The default values should be good, unless CRLDistributionPoint is desired. 
+-Keystore for the CAs private key and certificate chain.
+-Certificate lifetime and extensions. Which certificate extensions should be in issued certificates and if they should be critical or not. The default values should be good, unless CRLDistributionPoint is desired.
 
 Options in CreateCRLSession:
 -CRL lifetime and extensions. Default values should be ok.
 
 Options in AuthenticationSession:
--Authentication module. The CA authenticates certification requests with a specified bean defined in se.anatom.ejbca.ca.auth.IAuthenticationSession. The default authentication session authenticates towards a local databes held by the RA. 
+-Authentication module. The CA authenticates certification requests with a specified bean defined in se.anatom.ejbca.ca.auth.IAuthenticationSession. The default authentication session authenticates towards a local databes held by the RA.
 An example is provided in sampleauth of a remoteely operated database where communication from the CA to the RA is done with a HTTP-based protocol.
 The Authentication module is configured by exchanging the session bean 'AuthenticationSession'.
 
 
 Configuring databases:
-
 The session beans use direct database communication (from a connection pool) in some cases. In these cases the JNDI name if the Datasource used is always 'java:/DefaultDS'.
 
 
 Batch creation of certificates:
-
 Certificates can be created batch-wise with EJBCA. The class se.anatom.ejbca.batch.BatchMakeP12 creates PKCS12 keystores for all users designated as NEW in the local RA database.
-To be able to batch generate certificates, the users must be registered with clear text passwords.
+To be able to batch generate certificates, the users must be registered with clear text passwords. To set a clear text password for a user use 'ra.sh/cmd setclearpwd <username> <password>'.
 //TODO: more documentation to come here...
 
 
@@ -190,7 +192,7 @@ Certificates and CRLs can be fetched through the web-interface as defined in 'we
 
 Other deployment scenarios:
 
-EJBCA can be run with servlets and EJBs or only with EJBs. The servlets are only a publicly available front-end to the beans. It the CA is deployed integrated in another J2EE application, 
+EJBCA can be run with servlets and EJBs or only with EJBs. The servlets are only a publicly available front-end to the beans. It the CA is deployed integrated in another J2EE application,
 this front-end may not be needed.
 The sampleauth servlet is only an example and should never be deployed in a real production environment.
 
