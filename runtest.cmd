@@ -33,7 +33,8 @@ goto end
 
 :webtest
 echo Testing webdist web
-java -cp %TEST_CP% se.anatom.ejbca.webdist.junit.TestRunner
+java -cp %TEST_CP% se.anatom.ejbca.webdist.junit.TestRunner web
+java -cp %TEST_CP% se.anatom.ejbca.protocol.junit.TestRunner web
 goto end
 
 :error 
