@@ -35,8 +35,6 @@ import javax.ejb.FinderException;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import se.anatom.ejbca.BasePropertyDataLocal;
-import se.anatom.ejbca.BasePropertyDataLocalHome;
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
@@ -113,8 +111,8 @@ import se.anatom.ejbca.util.JDBCUtil;
  *   view-type="local"
  *   ejb-name="HardTokenPropertyData"
  *   type="Entity"
- *   home="se.anatom.ejbca.BasePropertyDataLocalHome"
- *   business="se.anatom.ejbca.BasePropertyDataLocal"
+ *   home="se.anatom.ejbca.hardtoken.HardTokenPropertyLocalHome"
+ *   business="se.anatom.ejbca.hardtoken.HardTokenPropertyLocal"
  *   link="HardTokenPropertyData"
  *
  * @ejb.ejb-external-ref
@@ -189,7 +187,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     private HardTokenCertificateMapLocalHome hardtokencertificatemaphome = null;
 
     /** The local home interface of hard token property entity bean. */
-    private BasePropertyDataLocalHome hardtokenpropertyhome = null;
+    private HardTokenPropertyLocalHome hardtokenpropertyhome = null;
 
     /** The local interface of authorization session bean */
     private IAuthorizationSessionLocal authorizationsession = null;
@@ -218,7 +216,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         hardtokendatahome = (HardTokenDataLocalHome) lookup("java:comp/env/ejb/HardTokenData", HardTokenDataLocalHome.class);
         hardtokencertificatemaphome = (HardTokenCertificateMapLocalHome) lookup("java:comp/env/ejb/HardTokenCertificateMap", HardTokenCertificateMapLocalHome.class);
 		hardtokenprofilehome = (HardTokenProfileDataLocalHome) lookup("java:comp/env/ejb/HardTokenProfileData", HardTokenProfileDataLocalHome.class);
-		hardtokenpropertyhome = (BasePropertyDataLocalHome) lookup("java:comp/env/ejb/HardTokenPropertyData", BasePropertyDataLocalHome.class);
+		hardtokenpropertyhome = (HardTokenPropertyLocalHome) lookup("java:comp/env/ejb/HardTokenPropertyData", HardTokenPropertyLocalHome.class);
 
         debug("<ejbCreate()");
       }catch(Exception e){
@@ -1079,7 +1077,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
           Collection copieslocal = hardtokenpropertyhome.findIdsByPropertyAndValue(HardTokenPropertyEntityBean.PROPERTY_COPYOF , tokensn);
           Iterator iter = copieslocal.iterator();
           while(iter.hasNext()){
-        	 ((BasePropertyDataLocal) iter.next()).remove();
+        	 ((HardTokenPropertyLocal) iter.next()).remove();
            }
         }catch(FinderException fe){}
         getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENDATA,"Hard token with sn " + tokensn + " removed.");
@@ -1147,7 +1145,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
                copies = new ArrayList();
 		       Iterator iter = copieslocal.iterator();
                while(iter.hasNext()){
-           	      copies.add(((BasePropertyDataLocal) iter.next()).getId());
+           	      copies.add(((HardTokenPropertyLocal) iter.next()).getId());
                }
              }
 		   }catch(FinderException fe){}
@@ -1198,7 +1196,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
            			copies = new ArrayList();
            			Iterator iter = copieslocal.iterator();
            			while(iter.hasNext()){
-           				copies.add(((BasePropertyDataLocal) iter.next()).getId());
+           				copies.add(((HardTokenPropertyLocal) iter.next()).getId());
            			}
            		}
            	 }catch(FinderException fe){}
@@ -1313,8 +1311,6 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      *
      *
      * @throws EJBException if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     private void removeHardTokenCertificateMappings(Admin admin, String tokensn){
       debug(">removeHardTokenCertificateMappings(tokensn: " + tokensn + ")");
