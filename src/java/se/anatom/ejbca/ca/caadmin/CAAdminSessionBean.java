@@ -81,7 +81,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.35 2005-03-02 11:25:41 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.36 2005-03-07 16:50:27 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -101,11 +101,6 @@ import se.anatom.ejbca.util.KeyTools;
  *   type="java.lang.String"
  *   value="foo123"
   *
- * @ejb.env-entry description="Used internally to store keys in keystore in database"
- *   name="privateKeyPass"
- *   type="java.lang.String"
- *   value="null"
- *
  * @ejb.env-entry description="Password for OCSP keystores"
  *   name="OCSPKeyStorePass"
  *   type="java.lang.String"

@@ -36,7 +36,7 @@ import se.anatom.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.10 2004-11-08 21:35:45 sbailliez Exp $
+ * @version $Id: SoftCAToken.java,v 1.11 2005-03-07 16:50:27 anatom Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
 
@@ -77,9 +77,8 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
              keystorepass = (String) ictx.lookup("java:comp/env/keyStorePass");      
              if (keystorepass == null)
                  throw new IllegalArgumentException("Missing keyStorePass property.");
-             privatekeypass = (String) ictx.lookup("java:comp/env/privateKeyPass");
          } catch (NamingException ne) {
-             throw new IllegalArgumentException("Missing keyStorePass or privateKeyPass property.");
+             throw new IllegalArgumentException("Missing keyStorePass property.");
          }
         char[] pkpass = null;
         if ("null".equals(privatekeypass))
@@ -116,13 +115,6 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
       if (keystorepass == null)
         throw new IllegalArgumentException("Missing keyStorePass property.");
         
-      String privatekeypass = (String) ictx.lookup("java:comp/env/privateKeyPass");
-      char[] pkpass = null;
-      if ((privatekeypass).equals("null"))
-          pkpass = null;
-      else
-          pkpass = privatekeypass.toCharArray();       
-       
        // Currently only RSA keys are supported
        SoftCATokenInfo info = (SoftCATokenInfo) catokeninfo;       
        int keysize = info.getKeySize();  
@@ -135,14 +127,14 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
        Certificate[] certchain = new Certificate[1];
        certchain[0] = CertTools.genSelfCert("CN=dummy", 36500, null, signkeys.getPrivate(), signkeys.getPublic(), true);
        
-       keystore.setKeyEntry(PRIVATESIGNKEYALIAS,signkeys.getPrivate(),pkpass, certchain);             
+       keystore.setKeyEntry(PRIVATESIGNKEYALIAS,signkeys.getPrivate(),null, certchain);             
        
        // generate enc keys.  
        KeyPair enckeys = KeyTools.genKeys(keysize);
        // generate dummy certificate
        certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, enckeys.getPrivate(), enckeys.getPublic(), true);
        this.encCert = certchain[0]; 
-       keystore.setKeyEntry(PRIVATEDECKEYALIAS,enckeys.getPrivate(),pkpass,certchain);              
+       keystore.setKeyEntry(PRIVATEDECKEYALIAS,enckeys.getPrivate(),null,certchain);              
        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
        keystore.store(baos, keystorepass.toCharArray());
        data.put(KEYSTORE, new String(Base64.encode(baos.toByteArray())));
@@ -168,13 +160,6 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
       if (keystorepass == null)
         throw new IllegalArgumentException("Missing keyStorePass property.");
         
-      String privatekeypass = (String) ictx.lookup("java:comp/env/privateKeyPass");
-      char[] pkpass = null;
-      if ((privatekeypass).equals("null"))
-          pkpass = null;
-      else
-          pkpass = privatekeypass.toCharArray();       
-       
        // Currently only RSA keys are supported
        KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
        keystore.load(null,null);
@@ -184,13 +169,13 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
        log.debug("KeySize="+keysize);
        Certificate[] certchain = new Certificate[1];
        certchain[0] = CertTools.genSelfCert("CN=dummy1", 1000, null, p12privatekey, p12publickey, true);
-       keystore.setKeyEntry(PRIVATESIGNKEYALIAS, p12privatekey,pkpass,certchain);       
+       keystore.setKeyEntry(PRIVATESIGNKEYALIAS, p12privatekey,null,certchain);       
      
        // generate enc keys.  
        KeyPair enckeys = KeyTools.genKeys(keysize);
        certchain[0] = CertTools.genSelfCert("CN=dummy2", 1000, null, enckeys.getPrivate(), enckeys.getPublic(), true);
        this.encCert = certchain[0];
-       keystore.setKeyEntry(PRIVATEDECKEYALIAS,enckeys.getPrivate(),pkpass,certchain);       
+       keystore.setKeyEntry(PRIVATEDECKEYALIAS,enckeys.getPrivate(),null,certchain);       
      
        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
        keystore.store(baos, keystorepass.toCharArray());

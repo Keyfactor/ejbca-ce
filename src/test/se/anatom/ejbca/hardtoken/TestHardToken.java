@@ -28,7 +28,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests the hard token related entity beans.
  *
- * @version $Id: TestHardToken.java,v 1.1 2004-06-10 16:17:44 sbailliez Exp $
+ * @version $Id: TestHardToken.java,v 1.2 2005-03-07 16:50:31 anatom Exp $
  */
 public class TestHardToken extends TestCase {
     private static Logger log = Logger.getLogger(TestHardToken.class);
@@ -70,7 +70,7 @@ public class TestHardToken extends TestCase {
         if (cacheAdmin == null) {
             if (cacheHome == null) {
                 Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup("HardTokenSession");
+                Object obj1 = jndiContext.lookup(IHardTokenSessionHome.JNDI_NAME);
                 cacheHome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IHardTokenSessionHome.class);
 
             }

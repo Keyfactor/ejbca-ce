@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.3 2004-11-05 08:42:27 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.4 2005-03-07 16:50:27 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -232,7 +232,7 @@ public class TestCertTools extends TestCase {
         String dn21 = "C=SE,O=Foo\\, Inc, OU=Foo\\, Dep, CN=Foo\\'";
         String bcdn21 = CertTools.stringToBCDNString(dn21);
         assertEquals(bcdn21, "CN=Foo\',OU=Foo\\, Dep,O=Foo\\, Inc,C=SE");
-        assertEquals(StringTools.strip(bcdn21), "CN=Foo/,OU=Foo\\, Dep,O=Foo\\, Inc,C=SE");
+        assertEquals(StringTools.strip(bcdn21), "CN=Foo/,OU=Foo/, Dep,O=Foo/, Inc,C=SE");
 
         log.debug("<test02StringToBCDNString()");
     }
@@ -352,11 +352,11 @@ public class TestCertTools extends TestCase {
     public void test08TestUnstructured() throws Exception {
         log.debug(">test08TestUnstructured()");
         // We try to examine the that we handle modern dc components for ldap correctly
-        String dn1 = "C=SE,O=PrimeKey,1.2.840.113549.1.9.2=10.1.1.2,1.2.840.113549.1.9.8=foo.bar.se,cn=test";
+        String dn1 = "C=SE,O=PrimeKey,unstructuredName=10.1.1.2,unstructuredAddress=foo.bar.se,cn=test";
         String bcdn1 = CertTools.stringToBCDNString(dn1);
         log.debug("dn1: " + dn1);
         log.debug("bcdn1: " + bcdn1);
-        assertEquals("1.2.840.113549.1.9.8=foo.bar.se,1.2.840.113549.1.9.2=10.1.1.2,CN=test,O=PrimeKey,C=SE", bcdn1);
+        assertEquals("unstructuredAddress=foo.bar.se,unstructuredName=10.1.1.2,CN=test,O=PrimeKey,C=SE", bcdn1);
         log.debug("<test08TestUnstructured()");
     }
 
@@ -402,7 +402,7 @@ public class TestCertTools extends TestCase {
        String dn21 = "C=SE,O=Foo\\, Inc, OU=Foo\\, Dep, CN=Foo\\'";
        String bcdn21 = CertTools.stringToBCDNString(dn21);
        assertEquals("CN=Foo\',OU=Foo\\, Dep,O=Foo\\, Inc,C=SE", bcdn21);        
-       assertEquals("CN=Foo/,OU=Foo\\, Dep,O=Foo\\, Inc,C=SE", StringTools.strip(bcdn21));        
+       assertEquals("CN=Foo/,OU=Foo/, Dep,O=Foo/, Inc,C=SE", StringTools.strip(bcdn21));        
        log.debug("<test10TestMultipleReversed()");
    }
     

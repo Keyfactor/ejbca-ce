@@ -39,7 +39,7 @@ import java.util.Iterator;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.26 2005-03-02 11:25:43 anatom Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.27 2005-03-07 16:50:28 anatom Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -63,7 +63,7 @@ import java.util.Iterator;
  * @ejb.ejb-external-ref
  *   description="The key recovery data entity bean"
  *   view-type="local"
- *   ejb-name="KeyRecoveryData"
+ *   ejb-name="KeyRecoveryDataLocal"
  *   type="Entity"
  *   home="se.anatom.ejbca.keyrecovery.KeyRecoveryDataLocalHome"
  *   business="se.anatom.ejbca.keyrecovery.KeyRecoveryDataLocal"
@@ -72,7 +72,7 @@ import java.util.Iterator;
  * @ejb.ejb-external-ref
  *   description="The Sign Session Bean"
  *   view-type="local"
- *   ejb-name="RSASignSession"
+ *   ejb-name="RSASignSessionLocal"
  *   type="Session"
  *   home="se.anatom.ejbca.ca.sign.ISignSessionLocalHome"
  *   business="se.anatom.ejbca.ca.sign.ISignSessionLocal"
@@ -81,7 +81,7 @@ import java.util.Iterator;
  * @ejb.ejb-external-ref
  *   description="The Certificate Store session bean"
  *   view-type="local"
- *   ejb-name="CertificateStoreSession"
+ *   ejb-name="CertificateStoreSessionLocal"
  *   type="Session"
  *   home="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome"
  *   business="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal"

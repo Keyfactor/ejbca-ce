@@ -80,7 +80,7 @@ import se.anatom.ejbca.util.JDBCUtil;
  * @ejb.ejb-external-ref
  *   description="The hard token profile data entity bean"
  *   view-type="local"
- *   ejb-name="HardTokenProfileData"
+ *   ejb-name="HardTokenProfileDataLocal"
  *   type="Entity"
  *   home="se.anatom.ejbca.hardtoken.HardTokenProfileDataLocalHome"
  *   business="se.anatom.ejbca.hardtoken.HardTokenProfileDataLocal"
@@ -89,7 +89,7 @@ import se.anatom.ejbca.util.JDBCUtil;
  * @ejb.ejb-external-ref
  *   description="The hard token issuers data entity bean"
  *   view-type="local"
- *   ejb-name="HardTokenIssuerData"
+ *   ejb-name="HardTokenIssuerDataLocal"
  *   type="Entity"
  *   home="se.anatom.ejbca.hardtoken.HardTokenIssuerDataLocalHome"
  *   business="se.anatom.ejbca.hardtoken.HardTokenIssuerDataLocal"
@@ -98,7 +98,7 @@ import se.anatom.ejbca.util.JDBCUtil;
  * @ejb.ejb-external-ref
  *   description="The hard token data entity bean"
  *   view-type="local"
- *   ejb-name="HardTokenData"
+ *   ejb-name="HardTokenDataLocal"
  *   type="Entity"
  *   home="se.anatom.ejbca.hardtoken.HardTokenDataLocalHome"
  *   business="se.anatom.ejbca.hardtoken.HardTokenDataLocal"
@@ -107,7 +107,7 @@ import se.anatom.ejbca.util.JDBCUtil;
  * @ejb.ejb-external-ref
  *   description="The hard token property data entity bean"
  *   view-type="local"
- *   ejb-name="HardTokenPropertyData"
+ *   ejb-name="HardTokenPropertyDataLocal"
  *   type="Entity"
  *   home="se.anatom.ejbca.hardtoken.HardTokenPropertyLocalHome"
  *   business="se.anatom.ejbca.hardtoken.HardTokenPropertyLocal"
@@ -116,7 +116,7 @@ import se.anatom.ejbca.util.JDBCUtil;
  * @ejb.ejb-external-ref
  *   description="The hard token to certificate map data entity bean"
  *   view-type="local"
- *   ejb-name="HardTokenCertificateMap"
+ *   ejb-name="HardTokenCertificateMapLocal"
  *   type="Entity"
  *   home="se.anatom.ejbca.hardtoken.HardTokenCertificateMapLocalHome"
  *   business="se.anatom.ejbca.hardtoken.HardTokenCertificateMapLocal"

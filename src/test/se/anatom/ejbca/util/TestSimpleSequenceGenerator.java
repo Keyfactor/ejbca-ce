@@ -17,6 +17,15 @@ public class TestSimpleSequenceGenerator extends TestCase {
 
     private final static int IT = 100000;
 
+    /**
+     * Creates a new TestSimpleSequenceGenerator object.
+     *
+     * @param name DOCUMENT ME!
+     */
+    public TestSimpleSequenceGenerator(String name) {
+        super(name);
+    }
+
     public void testUnableToFindFreeID() throws Exception {
         try {
             // use a map that always return non null to fake that it always find an existing id

@@ -1,4 +1,4 @@
-$Id: README,v 1.175 2005-02-13 18:26:05 anatom Exp $
+$Id: README,v 1.176 2005-03-07 16:49:38 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -167,10 +167,10 @@ You will need administrative privileges (e.g. root) for the CA-certificate to be
 in Javas trust-keystore ($JAVA_HOME/jre/lib/security/cacerts, default pwd 'changeit').
 TODO: what if the default password was changed?
 
-6) Stop JBoss (ctrl +c or whatever)
+6) Stop JBoss (ctrl+c or whatever)
 
 7) type 'ant deploy', this will deploy everything again and configure the servlet
-container with the keystore file. (this is why we needed to stop the container)
+container with the keystore file (this is why we needed to stop the container).
 
 8) Start JBoss again and go to https://localhost:8443/ejbca/ to access the admin-GUI, 
 or http://localhost:8080/ejbca for the public pages.
@@ -181,7 +181,7 @@ you're set. You can now debug your application.
 
 If you want to run a thorough test of your new CA, run the automated tests with 'ant test:run'.
 
-NOTE-1: After running tests with 'ant test:run', you might
+NOTE: After running tests with 'ant test:run', you might
 consider deleting the database since some leftovers are left in the database.
 Runtest will create and revoke some test certificates, so after
 runtest your CRLs will be populated with a few entries.

@@ -31,7 +31,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.71 2005-03-04 12:20:23 anatom Exp $
+ * @version $Id: CertTools.java,v 1.72 2005-03-07 16:50:29 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -55,9 +55,9 @@ public class CertTools {
     
     private static final String[] EMAILIDS = { EMAIL, EMAIL1, EMAIL2, EMAIL3 };
     /** ObjectID for unstructuredName DN attribute */
-    public static final DERObjectIdentifier unstructuredName = new DERObjectIdentifier("1.2.840.113549.1.9.2");
+    //public static final DERObjectIdentifier unstructuredName = new DERObjectIdentifier("1.2.840.113549.1.9.2");
     /** ObjectID for unstructuredAddress DN attribute */
-    public static final DERObjectIdentifier unstructuredAddress = new DERObjectIdentifier("1.2.840.113549.1.9.8");
+    //public static final DERObjectIdentifier unstructuredAddress = new DERObjectIdentifier("1.2.840.113549.1.9.8");
 
     /**
      * inhibits creation of new CertTools
@@ -87,18 +87,18 @@ public class CertTools {
         oids.put("emailaddress", X509Name.EmailAddress);
         oids.put("e", X509Name.EmailAddress);
         oids.put("email", X509Name.EmailAddress);
-        oids.put("1.2.840.113549.1.9.2", unstructuredName); //unstructuredName 
-        oids.put("1.2.840.113549.1.9.8", unstructuredAddress); //unstructuredAddress
+        oids.put("unstructuredname", X509Name.UnstructuredName); //unstructuredName 
+        oids.put("unstructuredaddress", X509Name.UnstructuredAddress); //unstructuredAddress
     }
 
     private static final String[] dNObjectsForward = {
-        "1.2.840.113549.1.9.8", "1.2.840.113549.1.9.2", "emailaddress", "e", "email", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
+        "unstructuredaddress", "unstructuredname", "emailaddress", "e", "email", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
         "initials", "surname", "t", "ou", "o", "l", "st", "dc", "c"
     };
     /*
     private static final String[] dNObjectsReverse = {
         "c", "dc", "st", "l", "o", "ou", "t", "surname", "initials",
-        "givenname", "gn", "serialnumber", "sn", "cn", "uid", "email", "e", "emailaddress", "1.2.840.113549.1.9.2", "1.2.840.113549.1.9.8"
+        "givenname", "gn", "serialnumber", "sn", "cn", "uid", "email", "e", "emailaddress", "unstructuredname", "unstructuredaddress"
     };
     */
     /** Uncomment above and change this if you want reverse order */
