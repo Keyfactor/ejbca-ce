@@ -598,6 +598,8 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
             <include name="bcprov-jdk14-120.jar"/>
             <include name="log4j-1.2.7.jar"/>
             <include name="ldap.jar"/>
+            <include name="commons-lang-1.0.jar"/>
+            <include name="commons-collections.jar"/>
         </fileset>
     </copy>
   
@@ -645,6 +647,8 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
             <include name="bcprov-jdk14-120.jar"/>
             <include name="log4j-1.2.7.jar"/>
             <include name="ldap.jar"/>
+            <include name="commons-lang-1.0.jar"/>
+            <include name="commons-collections.jar"/>
         </fileset>
     </copy>
   
