@@ -176,7 +176,7 @@ public class TestMessages extends TestCase {
         String dn = msg.getRequestDN();
         log.debug("DN: "+dn);
         assertEquals(dn,"C=Se,O=PrimeKey,CN=Tomas G");
-        String pwd = msg.getRequestPassword();
+        String pwd = msg.getPassword();
         log.debug("Pwd: "+pwd);        
         assertEquals(pwd,"foo123");
         assertTrue("Failed to verify SCEP message.", ret);

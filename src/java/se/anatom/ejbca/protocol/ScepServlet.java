@@ -1,7 +1,6 @@
 package se.anatom.ejbca.protocol;
 
 import java.io.*;
-import java.util.Enumeration;
 import java.security.Provider;
 import java.security.Security;
 import java.security.cert.Certificate;
@@ -16,15 +15,10 @@ import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
-import se.anatom.ejbca.ca.exception.IllegalKeyException;
-import se.anatom.ejbca.ca.exception.SignRequestException;
-import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.IUserAdminSessionHome;
-import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.apply.RequestHelper;
 import se.anatom.ejbca.util.Base64;
 
@@ -47,14 +41,13 @@ import se.anatom.ejbca.util.Base64;
 * 6. sign the reply data (PKCS#7) from the previous step
 * 7. output the result as a der encoded block on stdout
 * -----
-* @version  $Id: ScepServlet.java,v 1.12 2003-06-06 09:12:38 anatom Exp $
+* @version  $Id: ScepServlet.java,v 1.13 2003-06-11 12:35:09 anatom Exp $
 */
 public class ScepServlet extends HttpServlet {
 
     private static Logger log = Logger.getLogger(ScepServlet.class);
 
     private ISignSessionHome signhome = null;
-    private IUserAdminSessionHome useradminhome = null;
 
     public void init(ServletConfig config) throws ServletException {
     super.init(config);
@@ -66,7 +59,6 @@ public class ScepServlet extends HttpServlet {
             // Get EJB context and home interfaces
             InitialContext ctx = new InitialContext();
             signhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
-            useradminhome = (IUserAdminSessionHome) PortableRemoteObject.narrow(ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class );
         } catch( Exception e ) {
             throw new ServletException(e);
         }
@@ -92,9 +84,8 @@ public class ScepServlet extends HttpServlet {
             log.debug("Message: "+message);
             if (operation.equals("PKIOperation")) {
                 byte[] scepmsg = Base64.decode(message.getBytes());
-                IUserAdminSessionRemote adminsession = useradminhome.create();
                 ISignSessionRemote signsession = signhome.create();
-                ScepPkiOpHelper helper = new ScepPkiOpHelper(administrator, adminsession, signsession);
+                ScepPkiOpHelper helper = new ScepPkiOpHelper(administrator, signsession);
                 // We are not ready yet, so lets deny all requests for now...
                 response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
                 // Read the message end get the cert, this also checksauthorization
