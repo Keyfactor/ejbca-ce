@@ -13,15 +13,6 @@
 
 package se.anatom.ejbca.keyrecovery;
 
-import java.security.KeyPair;
-import java.security.cert.X509Certificate;
-import java.util.Collection;
-import java.util.Iterator;
-
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRequest;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceResponse;
@@ -34,14 +25,21 @@ import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.ServiceLocator;
+
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+import javax.ejb.FinderException;
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.Iterator;
 
 
 /**
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.23 2004-11-20 22:41:56 sbailliez Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.24 2004-11-20 22:43:30 sbailliez Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"

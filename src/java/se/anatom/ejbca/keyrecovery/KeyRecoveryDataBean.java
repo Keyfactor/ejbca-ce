@@ -13,13 +13,13 @@
 
 package se.anatom.ejbca.keyrecovery;
 
-import java.math.BigInteger;
-import javax.ejb.CreateException;
-
 import org.apache.log4j.Logger;
 import se.anatom.ejbca.BaseEntityBean;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.StringTools;
+
+import javax.ejb.CreateException;
+import java.math.BigInteger;
 
 
 /**
@@ -34,7 +34,7 @@ import se.anatom.ejbca.util.StringTools;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.17 2004-11-20 22:41:56 sbailliez Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.18 2004-11-20 22:43:30 sbailliez Exp $
  *
  * @ejb.bean
  *   description="Stores key recovery data"
