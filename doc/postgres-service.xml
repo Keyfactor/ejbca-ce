@@ -81,7 +81,7 @@
     </depends>
     <depends optional-attribute-name="CachedConnectionManager">jboss.jca:service=CachedConnectionManager</depends>
 
-    <depends optional-attribute-name="JaasSecurityManagerService">jboss.security:name=JaasSecurityManager</depends>
+    <depends optional-attribute-name="JaasSecurityManagerService">jboss.security:service=JaasSecurityManager</depends>
 
     <attribute name="TransactionManager">java:/TransactionManager</attribute>
     <!--make the rar deploy! hack till better deployment-->
