@@ -1,4 +1,4 @@
-$Id: README,v 1.132 2004-03-24 08:05:24 anatom Exp $
+$Id: README,v 1.133 2004-04-10 17:10:37 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -75,76 +75,6 @@ If running on Linux, you should consider using the sample
 firewall script provided in 'ejbcafirewall.sh'. If running on Windows, a
 similar aproach should be taken with some firewall software/hardware.
 
-DEPENDENCIES
-============
-
-For ease of installation most dependencies are distributed with EJBCA.
-The minimal requirements to download and install are JBoss and Ant.
-
-Bouncycastle
-------------
-For cryptography and creation of certificates and CRLs, EJBCA
-uses the open source JCE crypto provider from Bouncy Castle,
-<http://www.bouncycastle.org/>.
-
-The provider is distributed with EJBCA as 'bcprov-
-jdk14-<version>.jar' and 'bcmail-jdk14-<version>.jar'.  
-The latest version of the JCE provider can always be obtained from Bouncy Castle.
-
-Bouncy Castle JCE is Copyright (c) 2000 The Legion Of The Bouncy
-Castle, <http://www.bouncycastle.org/>.
-See doc/LICENSE-BC for license conditions of the Bouncy Castle JCE.
-
-JBoss
------
-EJBCA is developed on the open source J2EE application server
-JBoss
-<http://www.jboss.org/>. We expect a JBoss with an integrated
-Servlet engine.
-
-JBoss and jars from JBoss are Copyright (c) 1999-2001 jboss.org.
-
-Jar files needed to run EJBCA is distributed with EJBCA. 
-See doc/LICENSE-JBOSS for license conditions of JBoss.
-
-Ant and Log4J
--------------
-Ant (used for building) and Log4j (used for logging) is
-Copyright
-1999-2001, Apache Software Foundation and can be obtained from
-<http://ant.apache.org/> and <http://jakarta.apache.org/>.
-
-Jar file for Log4j is distributed with EJBCA. 
-See doc/LICENSE-APACHE for license conditions of Ant and Log4j.
-
-JUnit
------
-For automated testing JUnit is used and can be obtained from
-<http://www.junit.org/>. Jar file needed to run JUnit tests is
-distributed with EJBCA. 
-
-JUnit is released under the IBM Public License
-<http://oss.software.ibm.com/developerworks/opensource/license10.html>.
-
-HttpJUnit
-----------
-Httpjunit is an extension to junit used to test web pages and forms. 
-Httpjunit can be fund on httpjunit.sourceforge.net
-
-OpenLDAP
---------
-OpenLDAP is an Open Source LDAP directory which can be obtained
-from
-<http://www.openldap.org/>. This jar fil is needed by EJBCA to store
-certificates and CRLs in LDAP directories. The jar is redistributed
-with EJBCA.  See doc/LICENSE-JLDAP for license conditions of OpenLDAP.
-
-Batik
------
-Batik is a part of the Apache project and can be obtained from 
-http://xml.apache.org/batik/index.html.
-See doc/LICENSE-APACHE for license conditions of Batik.
-
 PLATFORMS
 =========
 
@@ -166,7 +96,7 @@ Further information on this can be found in the Sun documentation on the JCE.
 Needed to build and run are:
 JDK 1.4.x
 JBOSS 3.2.x or 3.0.x 
-Ant 1.5.x to build (http://jakarta.apache.org/ant/)
+Ant 1.6.x to build (http://jakarta.apache.org/ant/)
 
 Simply unpack the archive in a directory and run "ant" to build
 everything.
@@ -966,6 +896,7 @@ The certificate reply containing a PEM-formatted certificate is
 printed to the
  screen.
 
+
 Troubleshooting
 ===============
 Add Debug output from the console administration commands by
@@ -976,6 +907,78 @@ replacing:
 in the file 'log4j.properties' with:
 
     log4j.rootCategory=DEBUG, Console
+
+
+DEPENDENCIES
+============
+
+For ease of installation most dependencies are distributed with EJBCA.
+The minimal requirements to download and install are JBoss and Ant.
+
+Bouncycastle
+------------
+For cryptography and creation of certificates and CRLs, EJBCA
+uses the open source JCE crypto provider from Bouncy Castle,
+<http://www.bouncycastle.org/>.
+
+The provider is distributed with EJBCA as 'bcprov-
+jdk14-<version>.jar' and 'bcmail-jdk14-<version>.jar'.  
+The latest version of the JCE provider can always be obtained from Bouncy Castle.
+
+Bouncy Castle JCE is Copyright (c) 2000 The Legion Of The Bouncy
+Castle, <http://www.bouncycastle.org/>.
+See doc/LICENSE-BC for license conditions of the Bouncy Castle JCE.
+
+JBoss
+-----
+EJBCA is developed on the open source J2EE application server
+JBoss
+<http://www.jboss.org/>. We expect a JBoss with an integrated
+Servlet engine.
+
+JBoss and jars from JBoss are Copyright (c) 1999-2001 jboss.org.
+
+Jar files needed to run EJBCA is distributed with EJBCA. 
+See doc/LICENSE-JBOSS for license conditions of JBoss.
+
+Ant and Log4J
+-------------
+Ant (used for building) and Log4j (used for logging) is
+Copyright
+1999-2001, Apache Software Foundation and can be obtained from
+<http://ant.apache.org/> and <http://jakarta.apache.org/>.
+
+Jar file for Log4j is distributed with EJBCA. 
+See doc/LICENSE-APACHE for license conditions of Ant and Log4j.
+
+JUnit
+-----
+For automated testing JUnit is used and can be obtained from
+<http://www.junit.org/>. Jar file needed to run JUnit tests is
+distributed with EJBCA. 
+
+JUnit is released under the IBM Public License
+<http://oss.software.ibm.com/developerworks/opensource/license10.html>.
+
+HttpJUnit
+----------
+Httpjunit is an extension to junit used to test web pages and forms. 
+Httpjunit can be fund on httpjunit.sourceforge.net
+
+OpenLDAP
+--------
+OpenLDAP is an Open Source LDAP directory which can be obtained
+from
+<http://www.openldap.org/>. This jar fil is needed by EJBCA to store
+certificates and CRLs in LDAP directories. The jar is redistributed
+with EJBCA.  See doc/LICENSE-JLDAP for license conditions of OpenLDAP.
+
+Batik
+-----
+Batik is a part of the Apache project and can be obtained from 
+http://xml.apache.org/batik/index.html.
+See doc/LICENSE-APACHE for license conditions of Batik.
+
 
 REFERENCES
 ==========
