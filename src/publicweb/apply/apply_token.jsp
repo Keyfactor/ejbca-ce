@@ -1,4 +1,4 @@
-<HEAD><TITLE>EJBCA Mozilla Certificate enroll</TITLE></HEAD>
+<HEAD><TITLE>EJBCA Certificate enroll</TITLE></HEAD>
 <BODY bgcolor="#ffffff" link="black" vlink="black" alink="black">
 
 <center>
@@ -40,6 +40,7 @@ Key length
               <%=availablekeylengths[i]%> bits
            </option>
            <% } %>
+           </SELECT>
      
 <INPUT type="submit" value="OK">
 
