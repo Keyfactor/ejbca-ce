@@ -13,12 +13,11 @@ import se.anatom.ejbca.log.Admin;
 
 /**
  *
- * @version $Id: IRaAdminSessionRemote.java,v 1.7 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: IRaAdminSessionRemote.java,v 1.8 2002-11-24 13:16:46 herrvendil Exp $
  */
 public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
     
     public final static String EMPTY_ENDENTITYPROFILE = LocalRaAdminSessionBean.EMPTY_ENDENTITYPROFILE;
-    public final static int EMPTY_ENDENTITYPROFILEID  = LocalRaAdminSessionBean.EMPTY_ENDENTITYPROFILEID;
     
     
     public AdminPreference getAdminPreference(Admin admin, BigInteger serialnumber) throws RemoteException;

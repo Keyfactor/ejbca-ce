@@ -18,7 +18,7 @@ import se.anatom.ejbca.SecConst;
 
 /** Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.10 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.11 2002-11-24 13:16:46 herrvendil Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 
@@ -75,14 +75,14 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             String email = args[5];
             int type  = Integer.parseInt(args[6]);
             int token = Integer.parseInt(args[7]);
-            int profileid =  IRaAdminSessionRemote.EMPTY_ENDENTITYPROFILEID;
-            int certificatetypeid = SecConst.PROFILE_FIXED_ENDUSER;
+            int profileid =  SecConst.EMPTY_ENDENTITYPROFILE;
+            int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
             boolean error = false;
 
             if(args.length == 9){
               // Use certificate type, no profile.              
               certificatetypeid = certificatesession.getCertificateProfileId(administrator, args[8]);
-              profileid = IRaAdminSessionRemote.EMPTY_ENDENTITYPROFILEID;
+              profileid = SecConst.EMPTY_ENDENTITYPROFILE;
             }
 
             if(args.length == 10){

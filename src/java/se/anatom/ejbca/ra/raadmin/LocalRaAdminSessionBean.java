@@ -29,12 +29,13 @@ import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
+import se.anatom.ejbca.SecConst;
 
 /**
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.15 2002-11-17 14:01:39 herrvendil Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.16 2002-11-24 13:16:46 herrvendil Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
@@ -57,7 +58,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * @throws CreateException if bean instance can't be created
      */
     public final static String EMPTY_ENDENTITYPROFILE   = "EMPTY"; 
-    public final static int    EMPTY_ENDENTITYPROFILEID = 1;
+    public final static int    EMPTY_ENDENTITYPROFILEID = SecConst.EMPTY_ENDENTITYPROFILE;
     
     private static final String DEFAULTUSERPREFERENCE = "default";    
     

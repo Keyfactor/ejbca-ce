@@ -25,7 +25,7 @@ import junit.framework.*;
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.16 2002-11-18 11:18:11 anatom Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.17 2002-11-24 13:16:46 herrvendil Exp $
  */
 
 public class TestBatchMakeP12 extends TestCase {
@@ -94,7 +94,7 @@ public class TestBatchMakeP12 extends TestCase {
         Object o = null;
         try{
           data1.addUser(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username, "foo123", "C=SE, O=AnaTom, CN="+username, "", username+"@anatom.se",  false,
-                        IRaAdminSessionRemote.EMPTY_ENDENTITYPROFILEID, SecConst.PROFILE_NO_CERTIFICATEPROFILE,
+                        SecConst.EMPTY_ENDENTITYPROFILE, SecConst.PROFILE_NO_CERTIFICATEPROFILE,
                         false, false, SecConst.TOKEN_SOFT_P12,0);
           data1.setClearTextPassword(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username,"foo123");
           o = new String("");
@@ -108,7 +108,7 @@ public class TestBatchMakeP12 extends TestCase {
         o = null;
         try{
           data1.addUser(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username1, "foo123", "C=SE, O=AnaTom, CN="+username1, "",username1+"@anatom.se", false,
-                        IRaAdminSessionRemote.EMPTY_ENDENTITYPROFILEID, SecConst.PROFILE_NO_CERTIFICATEPROFILE,
+                        SecConst.EMPTY_ENDENTITYPROFILE, SecConst.PROFILE_NO_CERTIFICATEPROFILE,
                         false, false, SecConst.TOKEN_SOFT_P12,0);
           data1.setClearTextPassword(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username1,"foo123");
           o = new String("");

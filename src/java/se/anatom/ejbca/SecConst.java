@@ -23,7 +23,7 @@ package se.anatom.ejbca;
  * Constants for Token Types
  * Token type is constructed of integer constants since only one token type can be generated.
  *
- * @version $Id: SecConst.java,v 1.6 2002-11-13 12:22:44 anatom Exp $
+ * @version $Id: SecConst.java,v 1.7 2002-11-24 13:16:46 herrvendil Exp $
  */
 public class SecConst extends Object {
 
@@ -75,9 +75,11 @@ public class SecConst extends Object {
     public final static int FIXED_CERTIFICATEPROFILE_BOUNDRY = 1000;
 
     public final static int PROFILE_NO_CERTIFICATEPROFILE = 0;
-    public final static int PROFILE_FIXED_ENDUSER = 1;
-    public final static int PROFILE_FIXED_CA = 2;
-    public final static int PROFILE_FIXED_ROOTCA = 3;
+    public final static int CERTPROFILE_FIXED_ENDUSER = 1;
+    public final static int CERTPROFILE_FIXED_CA = 2;
+    public final static int CERTPROFILE_FIXED_ROOTCA = 3;
+    
+    public final static int EMPTY_ENDENTITYPROFILE = 1; 
 
     /** Prevents creation of new SecConst **/
     private SecConst() {
