@@ -562,7 +562,6 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
 		  />
         <replace dir="${src}" value="${ejbca.DS}">
 	        <include name="**/*.xml"/>
-	        <include name="**/*.java"/>
 	        <replacetoken>java:/DefaultDS</replacetoken>
         </replace>
 
