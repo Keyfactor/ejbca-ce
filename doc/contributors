@@ -8,11 +8,16 @@ Anna Diruba Christensen <dilnet@hotmail.com>, project homepage design.
 Nathan Phelps <nphelps@solarc.com>, testing, bugfinding and suggestions.
 Leo Tai <hkleo@users.sourceforge.net>, Oracle database configuration.
 Timothy Fisher <timothyf@users.sourceforge.net>, architecture overview.
-Karl-K?nig K?nigsson <karlkoenig@users.sourceforge.net>, better deployment scripts.
+Karl-K?nig K?nigsson <karlkoenig@users.sourceforge.net>, better deployment
+scripts.
 Thomas Karlsson <thomas.karlsson@planet.eu.org>, firewall script.
 Magnus Broqvist <magnus@han.pp.se>, initial P12toPEM implementation.
 Slava Sklarewski <Slava.Sklarewski@de.gi-de.com>, data flow diagram.
-Leonardo Souza Mario Bueno <isbueno@users.sourceforge.net>, patch for request template path.
-Jean ? <icejean@21cn.com>, support for Sybase.
-Philip Vendil <philip@primekey.se>, web administration 
-Lars Silven <lars@primekey.se>, external connection to smart card personalisation, various additions.
+Leonardo Souza Mario Bueno <isbueno@users.sourceforge.net>, patch for request
+template path.
+Jean ? <icejean@21cn.com>, support for Sybase and Active Directory, port to Java
+1.2/EJB 1.0, suggestions and bugfixes.
+Philip Vendil <philip@primekey.se>, web administration
+Lars Silven <lars@primekey.se>, external connection to smart card
+personalisation, various additions.
+
