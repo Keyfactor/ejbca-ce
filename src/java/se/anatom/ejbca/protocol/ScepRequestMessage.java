@@ -4,17 +4,12 @@ import java.io.*;
 import java.security.PublicKey;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPrivateKey;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchProviderException;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.spec.AlgorithmParameterSpec;
 import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.BadPaddingException;
 
@@ -26,19 +21,15 @@ import org.apache.log4j.Logger;
 
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.asn1.*;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.smime.SMIMECapability;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.cms.*;
 import org.bouncycastle.cms.*;
 
 import se.anatom.ejbca.util.Base64;
-import se.anatom.ejbca.util.CertTools;
 
 /**
  * Class to handle SCEP request messages sent to the CA.
  *
- * @version  $Id: ScepRequestMessage.java,v 1.11 2003-06-01 19:24:21 anatom Exp $
+ * @version  $Id: ScepRequestMessage.java,v 1.12 2003-06-04 20:06:02 anatom Exp $
  */
 public class ScepRequestMessage implements IRequestMessage, Serializable {
 
@@ -197,7 +188,7 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
         }
             
         // TODO: this is debug stuff...remove!
-        FileOutputStream fos = new FileOutputStream("C:\\pkcs10.txt");
+        FileOutputStream fos = new FileOutputStream("pkcs10.txt");
         fos.write(Base64.encode(pkcs10Bytes));
         fos.close();
         DERObject derobj = new DERInputStream(new ByteArrayInputStream(pkcs10Bytes)).readObject();
@@ -229,6 +220,16 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
         }
         log.debug("<getRequestPublicKey()");
         return ret;
+    }
+    
+    public String getRequestDN() {
+        // TODO:
+        return "foo";
+    }
+    
+    public String getRequestChallengePwd() {
+        // TODO:
+        return "foo123";
     }
 
     public boolean verify() {
@@ -266,7 +267,7 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
     // Private helper methods
     //
     private static boolean checkKeys(PublicKey pubK, PrivateKey privK) {
-        String in = "foo123";
+        String in = "TheTopSecretTestString";
         byte[] text = in.getBytes();
         try {
             Cipher cipher1 = Cipher.getInstance("RSA/ECB/PKCS1PADDING", "BC");

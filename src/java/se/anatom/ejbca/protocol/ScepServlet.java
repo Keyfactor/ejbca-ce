@@ -16,6 +16,8 @@ import org.apache.log4j.Logger;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ra.IUserAdminSessionHome;
+import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.util.Base64;
 
 /** Servlet implementing server side of the Simple Certificate Enrollment Protocol (SCEP)
@@ -37,13 +39,14 @@ import se.anatom.ejbca.util.Base64;
 * 6. sign the reply data (PKCS#7) from the previous step
 * 7. output the result as a der encoded block on stdout
 * -----
-* @version  $Id: ScepServlet.java,v 1.8 2003-06-01 11:26:58 anatom Exp $
+* @version  $Id: ScepServlet.java,v 1.9 2003-06-04 20:06:02 anatom Exp $
 */
 public class ScepServlet extends HttpServlet {
 
     private static Logger log = Logger.getLogger(ScepServlet.class);
 
-    private ISignSessionHome home = null;
+    private ISignSessionHome signhome = null;
+    private IUserAdminSessionHome useradminhome = null;
 
     public void init(ServletConfig config) throws ServletException {
     super.init(config);
@@ -54,8 +57,8 @@ public class ScepServlet extends HttpServlet {
 
             // Get EJB context and home interfaces
             InitialContext ctx = new InitialContext();
-            home = (ISignSessionHome) PortableRemoteObject.narrow(
-            ctx.lookup("RSASignSession"), ISignSessionHome.class );
+            signhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
+            useradminhome = (IUserAdminSessionHome) PortableRemoteObject.narrow(ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class );
         } catch( Exception e ) {
             throw new ServletException(e);
         }
@@ -69,48 +72,43 @@ public class ScepServlet extends HttpServlet {
 
     public void doGet(HttpServletRequest request,  HttpServletResponse response) throws java.io.IOException, ServletException {
         log.debug(">doGet()");
-        Debug debug = new Debug(request, response);
         try {
             String operation = request.getParameter("operation");
             String message = request.getParameter("message");
             if ((operation == null) || (message == null)) {
-                debug.print("<h3>Parameters 'operation' and 'message' must be supplied!</h3>");
-                debug.print((operation == null) ? "operation" : "message" + "is null.");
-                debug.printDebugInfo();
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parameters 'operation' and 'message' must be supplied!");
                 return;
             }
             Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
             log.debug("Got request '" + operation + "'");
-            debug.print("<h3>Operation: " + operation + "</h3>");
             log.debug("Message: "+message);
-            ISignSessionRemote ss = home.create();
             if (operation.equals("PKIOperation")) {
                 byte[] scepmsg = Base64.decode(message.getBytes());
-                ScepPkiOpHelper helper = new ScepPkiOpHelper(scepmsg);
+                IUserAdminSessionRemote adminsession = useradminhome.create();
+                ISignSessionRemote signsession = signhome.create();
+                ScepPkiOpHelper helper = new ScepPkiOpHelper(administrator, adminsession, signsession);
+                // We are not ready yet, so lets deny all requests for now...
+                // TODO:
+                response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
+                
+                // helper.scepCertRequest(scepmsg);                    
             } else if (operation.equals("GetCACert")) {
+                // TODO:
+                response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
             } else if (operation.equals("GetCACertChain")) {
+                // TODO:
+                response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
             } else {
                 log.error("Invalid parameter '"+operation);
-                debug.print("<h3>Invalid parameter '"+operation+"'!</h3>");
-                debug.printDebugInfo();
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameter: "+operation);
             }
         } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
             log.error("Empty or invalid request received.", ae);
-            debug.printMessage("Empty or invalid request!");
-            debug.printMessage("Please supply a correct request.");
-            debug.printDebugInfo();
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, ae.getMessage());
             return;
         } catch (Exception e) {
             log.error("Error in ScepServlet:", e);
-            debug.print("<h3>parameter name and values: </h3>");
-            Enumeration paramNames = request.getParameterNames();
-            while (paramNames.hasMoreElements()) {
-                String name = paramNames.nextElement().toString();
-                String parameter = request.getParameter(name);
-                debug.print("<h4>" + name + ":</h4>" + parameter + "<br>");
-            }
-            debug.takeCareOfException(e);
-            debug.printDebugInfo();
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
         log.debug("<doGet()");
     } // doGet
