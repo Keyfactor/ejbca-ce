@@ -65,7 +65,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.120 2004-01-02 15:33:15 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.121 2004-01-25 11:00:28 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -657,7 +657,8 @@ public class RSASignSessionBean extends BaseSessionBean {
                 // Store cert in ca cert publishers.
                 Iterator iter = usedpublishers.iterator();
                 while(iter.hasNext()){
-                    int publisherid = ((Integer) iter.next()).intValue();                                      
+                    int publisherid = ((Integer) iter.next()).intValue(); 
+                    debug("Storing certificate in publisher: "+publisherid);                                     
                     // Store CA certificate
                     IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(publisherid);
                     IPublisherSessionLocal pub = pubHome.create();
@@ -811,7 +812,8 @@ public class RSASignSessionBean extends BaseSessionBean {
                 iter = certProfile.getPublisherList().iterator();
                 while(iter.hasNext()){
                   int publisherid = ((Integer) iter.next()).intValue();
-                  IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(publisherid);
+                  debug("Storing certificate with publisher: "+publisherid);
+                  IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(publisherid-1);
                   IPublisherSessionLocal pub = pubHome.create();
                   pub.storeCertificate(admin, cert, data.getUsername(), fingerprint, CertificateData.CERT_ACTIVE, certProfile.getType());                    
                 }                                                

@@ -68,7 +68,7 @@ import com.novell.ldap.LDAPModificationSet;
  * </pre>
  * </p>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.24 2003-09-03 19:57:54 herrvendil Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.25 2004-01-25 11:00:29 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
     private String ldapHost = "localhost";
@@ -134,8 +134,8 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
      *
      * @throws EJBException if a communication or other error occurs.
      */
-    public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp,
-        int status, int type) {
+    public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp, int status, int type) {
+        debug(">storeCertificate(username="+username+")");
         int ldapVersion = LDAPConnection.LDAP_V3;
         LDAPConnection lc = new LDAPConnection();
 
@@ -145,11 +145,9 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
             // Extract the users DN from the cert.
             dn = CertTools.getSubjectDN((X509Certificate) incert);
         } catch (Exception e) {
-            error("Error decoding input certificate: ", e);
-            
+            error("Error decoding input certificate: ", e);            
              logsession.log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert,
                     LogEntry.EVENT_ERROR_STORECERTIFICATE, "Error decoding input certificate.");
-
             return false;
         }
 
@@ -171,36 +169,30 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
 
                 for (int i = 0; i < san.size(); i++) {
                     DERTaggedObject gn = (DERTaggedObject) san.getObjectAt(i);
-
                     if (gn.getTagNo() == 1) {
                         // This is rfc822Name!
                         DERIA5String str;
-
                         if (gn.getObject() instanceof DERIA5String) {
                             str = (DERIA5String) gn.getObject();
                         } else {
                             str = new DERIA5String(((DEROctetString) gn.getObject()).getOctets());
                         }
-
                         email = str.getString();
                     }
                 }
             } catch (IOException e) {
                 error("IOException when getting subjectAltNames extension.");
-                
-                    logsession.log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), null,
-                        (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,
-                        "IOException when getting subjectAltNames extension.");
+                logsession.log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), null,
+                    (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,
+                    "IOException when getting subjectAltNames extension.");
             }
         }
 
         if (checkContainerName(dn) == false) {
-            info("DN not part of containername, aborting store operation.");
-                                                         
+            info("DN not part of containername, aborting store operation.");                                                         
             logsession.log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), null,
                     (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,
                     "DN not part of containername, aborting store operation.");            
-
             return false;
         }
 
@@ -210,29 +202,23 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         try {
             // connect to the server
             lc.connect(ldapHost, ldapPort);
-
             // authenticate to the server
             lc.bind(ldapVersion, loginDN, loginPassword);
-
             // try to read the old object
             oldEntry = lc.read(dn);
-
             // disconnect with the server
             lc.disconnect();
         } catch (LDAPException e) {
             if (e.getLDAPResultCode() == LDAPException.NO_SUCH_OBJECT) {
                 debug("No old entry exist for '" + dn + "'.");
-                
                 logsession.log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), null,
                         (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE,
                         "No old entry exist for '" + dn + "'.");                
             } else {
                 error("Error binding to and reading from LDAP server: ", e);
-               
-                 logsession.log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), null,
-                        (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,
-                        "Error binding to and reading from LDAP server.");
-                
+                logsession.log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), null,
+                       (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,
+                       "Error binding to and reading from LDAP server.");                
                 return false;
             }
         }
@@ -254,10 +240,8 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
             }
 
             attributeSet = getAttributeSet(userObjectclass, dn, true);
-
             if (email != null) {
                 LDAPAttribute mailAttr = new LDAPAttribute("mail", email);
-
                 if (oldEntry != null) {
                     modSet.add(LDAPModification.REPLACE, mailAttr);
                 } else {
@@ -267,9 +251,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
 
             try {
                 attribute = userCertAttribute;
-
                 LDAPAttribute certAttr = new LDAPAttribute(userCertAttribute, incert.getEncoded());
-
                 if (oldEntry != null) {
                     modSet.add(LDAPModification.REPLACE, certAttr);
                 } else {
@@ -277,12 +259,9 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                 }
             } catch (CertificateEncodingException e) {
                 error("Error encoding certificate when storing in LDAP: ", e);
-                
-                 logsession.log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), null,
-                        (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,
-                        "Error encoding certificate when storing in LDAP.");
-
-
+                logsession.log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), null,
+                       (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,
+                       "Error encoding certificate when storing in LDAP.");
                 return false;
             }
         } else if ((type == SecConst.CERTTYPE_SUBCA) || (type == SecConst.CERTTYPE_ROOTCA)) {
@@ -293,19 +272,14 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
             } else {
                 objectclass = cAObjectclass;
             }
-
             attributeSet = getAttributeSet(cAObjectclass, dn, false);
-
             try {
                 attribute = cACertAttribute;
-
                 LDAPAttribute certAttr = new LDAPAttribute(cACertAttribute, incert.getEncoded());
-
                 if (oldEntry != null) {
                     modSet.add(LDAPModification.REPLACE, certAttr);
                 } else {
                     attributeSet.add(certAttr);
-
                     // Also create using the crlattribute, it may be required
                     LDAPAttribute crlAttr = new LDAPAttribute(cRLAttribute, "");
                     attributeSet.add(crlAttr);
@@ -313,35 +287,28 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                 }
             } catch (CertificateEncodingException e) {
                 error("Error encoding certificate when storing in LDAP: ", e);
-                
                 logsession.log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), null,
                         (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,
                         "Error encoding certificate when storing in LDAP.");
-
                 return false;
             }
         } else {
             info("Certificate of type '" + type + "' will not be published.");
-            
                 logsession.log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), null,
                     (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,
                     "Certificate of type '" + type + "' will not be published.");          
-
             return false;
         }
 
         try {
             // connect to the server
             lc.connect(ldapHost, ldapPort);
-
             // authenticate to the server
             lc.bind(ldapVersion, loginDN, loginPassword);
-
             // Add or modify the entry
             if (oldEntry != null) {
                 lc.modify(dn, modSet);
-                debug("\nModified object: " + dn + " successfully.");
-                
+                debug("\nModified object: " + dn + " successfully.");  
                 logsession.log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), null,
                         (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE,
                         "Modified object: " + dn + " successfully in LDAP.");
@@ -349,32 +316,24 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                 if (oldEntry == null) {
                     newEntry = new LDAPEntry(dn, attributeSet);
                 }
-
                 lc.add(newEntry);
                 debug("\nAdded object: " + dn + " successfully.");
-                
                 logsession.log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), null,
                         (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE,
                         "Added object: " + dn + " successfully in LDAP.");
             }
-
             // disconnect with the server
             lc.disconnect();
         } catch (LDAPException e) {
-            error("Error storing certificate (" + attribute + ") in LDAP (" + objectclass + "): ", e);
-            
+            error("Error storing certificate (" + attribute + ") in LDAP (" + objectclass + "): ", e);  
              logsession.log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), null,
                     (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,
                     "Error storing certificate (" + attribute + ") in LDAP (" + objectclass + ").");
-
-
             return false;
         }
-
+        debug("<storeCertificate()");
         return true;
-    }
-
-    // storeCertificate
+    } // storeCertificate
 
     /**
      * Revokes a certificate (already revoked by the CA), the Publisher decides what to do, if
@@ -568,6 +527,12 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
      */
     private LDAPAttributeSet getAttributeSet(String objectclass, String dn, boolean extra) {
         LDAPAttributeSet attributeSet = new LDAPAttributeSet();
+        LDAPAttribute attr = new LDAPAttribute("objectclass");
+        attr.addValue("top");
+        attr.addValue("person");
+        attr.addValue(objectclass);
+        attributeSet.add(attr);
+        
 
         /* To Add an entry to the directory,
          *   -- Create the attributes of the entry and add them to an attribute set
@@ -575,44 +540,32 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
          *   -- Create an LDAPEntry object with the DN and the attribute set
          *   -- Call the LDAPConnection add method to add it to the directory
          */
-        attributeSet.add(new LDAPAttribute("objectclass", objectclass));
+        //attributeSet.add(new LDAPAttribute("objectclass", objectclass));
 
         if (extra) {
             String cn = CertTools.getPartFromDN(dn, "CN");
-
             if (cn != null) {
                 attributeSet.add(new LDAPAttribute("cn", cn));
             }
-
             String sn = CertTools.getPartFromDN(dn, "SN");
-
             if (sn != null) {
                 attributeSet.add(new LDAPAttribute("sn", sn));
             }
-
             String l = CertTools.getPartFromDN(dn, "L");
-
             if (l != null) {
                 attributeSet.add(new LDAPAttribute("l", l));
             }
-
             String st = CertTools.getPartFromDN(dn, "ST");
-
             if (st != null) {
                 attributeSet.add(new LDAPAttribute("st", st));
             }
-
             String ou = CertTools.getPartFromDN(dn, "OU");
-
             if (ou != null) {
                 attributeSet.add(new LDAPAttribute("ou", ou));
             }
         }
-
         return attributeSet;
-    }
-
-    // getAttributeSet
+    } // getAttributeSet
 
     /**
      * Creates an LDAPModificationSet.
