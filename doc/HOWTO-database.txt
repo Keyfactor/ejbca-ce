@@ -24,17 +24,17 @@ NOW ON TO THE HOWTO!
 Configuring EJBCA
 -----------------
 
-1. Rename src/ca/META-INF/jbosscmp-jdbc-<database>.xml to jbosscmp-jdbc.xml. If
+1. Rename src/ca/ca/META-INF/jbosscmp-jdbc-<database>.xml to jbosscmp-jdbc.xml. If
 no specific jbosscmp-jdbc-<database>.xml file is supplied the default jbosscmp-
-jdbc.xml is used. Make sure src/ca/META-INF/jbosscmp-jdbc.xml contains entries
+jdbc.xml is used. Make sure src/ca/ca/META-INF/jbosscmp-jdbc.xml contains entries
 to set the correct type-mappings for 'base64cert' and 'base64crl' for the
 database used.
 
 2. Do the same with src/ra/META-INF/jbosscmp-jdbc-<database>.xml
+   Do the same with src/authorization/META-INF/jbosscmp-jdbc-<database>.xml
    Do the same with src/log/META-INF/jbosscmp-jdbc-<database>.xml
    Do the same with src/hardtoken/META-INF/jbosscmp-jdbc-<database>.xml
    Do the same with src/keyrecovery/META-INF/jbosscmp-jdbc-<database>.xml
-
 
 3. Build and deploy EJBCA with 'ant deploy'.
 
@@ -61,9 +61,9 @@ Database configuration files in JBoss (with Tomcat or Jetty) is located in the
 
 2. Put the JDBC driver for the database in <jboss-home>/server/default/lib/.
 
-3. Copy the proper <database>-service.xml file to <jboss-home>
+3. Copy the proper <database>-ds.xml file to <jboss-home>
 /server/default/deploy. The JDBC-driver must be inluded and the database set up
-as DefaultDS. Current <database>-service.xml files can be obtained from
+as DefaultDS. Current <database>-ds.xml files can be obtained from
 jboss.org, provided here are snapshots that work for me.
 
 4. Remove the standard database, hsqldb-ds.xml, from <jboss-home>
@@ -79,13 +79,14 @@ MySQL specifics
 ---------------
 Jaws configuration file: jbosscmp-jdbc-mysql.xml
 
-JDBC driver: mysql-connector-java-3.0.x.jar (preferably 3.0.7 or higher).
+JDBC driver: mysql-connector-java-3.0.x.jar (preferably 3.0.9 or higher).
 
 Download JDBC driver for mySQL from http://www.mysql.com/
 
-Copy mysql-service.xml to server/default/deploy
-In mysql-service.xml is defined the databas instance (EJBCA) and the database
-username (EJBCA) and password (EJBCA).These must be changed to your values.
+Copy mysql-ds.xml to server/default/deploy
+In mysql-ds.xml is defined the databas instance (EJBCA), in the connection-URL,
+and the database username (EJBCA) and password (EJBCA).
+These must be changed to your values.
 The item 'ConnectionURL' must be edited to match your database.
 
 Type mapping:
@@ -106,9 +107,10 @@ JBoss.
 
 Download JDBC driver for PostgreSQL from http://jdbc.postgresql.org/.
 
-Copy postgres-service.xml to server/default/deploy
-In postgres-service.xml is defined the databas instance (EJBCA) and the database
-username (EJBCA) and password (EJBCA).These must be changed to your values.
+Copy postgres-ds.xml to server/default/deploy
+In postgres-ds.xml is defined the databas instance (EJBCA), in the connection-URL, 
+and the database username (EJBCA) and password (EJBCA).
+These must be changed to your values.
 The item 'ConnectionURL' must be edited to match your database.
 
 Type mapping:
@@ -123,9 +125,10 @@ JBoss configuration file: oracle-service.xml
 
 JDBC driver: classes12.zip (can be downloaded from http://www.oracle.com/).
 
-Copy oracle-service.xml to server/default/deploy
-In oracle-service.xml is defined the databas instance (EJBCA) and the database
-username (EJBCA) and password (EJBCA). These must be changed to your values.
+Copy oracle-ds.xml to server/default/deploy
+In oracle-ds.xml is defined the database instance (EJBCA), in the connection-URL, 
+and the database username (EJBCA) and password (EJBCA). 
+These must be changed to your values.
 The item 'ConnectionURL' must be edited to match your database.
 
 Type mapping:
@@ -133,8 +136,23 @@ Type mapping:
      <datasource>java:/DefaultDS</datasource>
      <type-mapping>Oracle8</type-mapping>
 
+MS-SQL specifics
+----------------
+Jaws configuration file: jbosscmp-jdbc-mssql2000.xml
+JBoss configuration file: mssql-ds.xml
 
+JDBC driver: http://msdn.microsoft.com/downloads/default.asp?url=/downloads/sample.asp?url=/MSDN-FILES/027/001/779/msdncompositedoc.xml&frame=true
 
+Copy mssql-ds.xml to server/default/deploy
+In mssql-ds.xml is defined the database instance (EJBCA), in the connection-URL, 
+and the database username (EJBCA) and password (EJBCA). 
+These must be changed to your values.
+The item 'ConnectionURL' must be edited to match your database.
+
+Type mapping:
+
+     <datasource>java:/DefaultDS</datasource>
+     <type-mapping>MS SQLSERVER2000</type-mapping>
 
 
 

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Datasource config for MySQL using 3.0.x driver -->
+
+<datasources>
+   <local-tx-datasource>
+
+      <!-- The jndi name of the DataSource, it is prefixed with java:/ -->
+      <!-- Datasources are not available outside the virtual machine -->
+      <jndi-name>DefaultDS</jndi-name>
+
+      <connection-url>jdbc:mysql://localhost:3306/ejbca
+      </connection-url>
+
+      <!-- The driver class -->
+      <driver-class>com.mysql.jdbc.Driver</driver-class>
+
+      <!-- The login and password -->
+      <user-name>ejbca</user-name>
+      <password>ejbca</password>
+
+      <!-- The minimum connections in a pool/sub-pool. Pools are lazily constructed on first use -->
+      <min-pool-size>5</min-pool-size>
+
+      <!-- The maximum connections in a pool/sub-pool -->
+      <max-pool-size>20</max-pool-size>
+
+      <!-- The time before an unused connection is destroyed -->
+      <!-- NOTE: This is the check period. It will be destroyed somewhere between 1x and 2x this timeout after last use -->
+      <idle-timeout-minutes>15</idle-timeout-minutes>
+
+      <!-- sql to call when connection is created
+        <new-connection-sql>some arbitrary sql</new-connection-sql>
+      -->
+
+      <!-- sql to call on an existing pooled connection when it is obtained from pool 
+         <check-valid-connection-sql>some arbitrary sql</check-valid-connection-sql>
+      -->
+
+      <!-- example of how to specify a class that determines a connection is valid before it is handed out from the pool
+         <valid-connection-checker-class-name>org.jboss.resource.adapter.jdbc.vendor.DummyValidConnectionChecker</valid-connection-checker-class-name>
+      -->
+
+      <!-- Whether to check all statements are closed when the connection is returned to the pool,
+           this is a debugging feature that should be turned off in production -->
+      <track-statements>true</track-statements>
+
+   </local-tx-datasource>
+</datasources>
+

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ======================================================================-->
+<!-- New ConnectionManager setup for Microsoft SQL Server 2000  driver     -->
+<!-- You may download the latest Microsoft JDBC driver from *Microsoft*    -->
+<!-- http://msdn.microsoft.com/downloads/default.asp?url=/downloads/sample.asp?url=/MSDN-FILES/027/001/779/msdncompositedoc.xml&frame=true -->
+<!-- ===================================================================== -->
+
+<datasources>
+  <local-tx-datasource>
+    <jndi-name>DefaultDS</jndi-name>
+    <connection-url>jdbc:microsoft:sqlserver://localhost:1433;DatabaseName=ejbca</connection-url>
+    <driver-class>com.microsoft.jdbc.sqlserver.SQLServerDriver</driver-class>
+    <user-name>ejbca</user-name>
+    <password>ejbca</password>
+        <!-- sql to call when connection is created
+        <new-connection-sql>some arbitrary sql</new-connection-sql>
+        -->
+
+        <!-- sql to call on an existing pooled connection when it is obtained from pool 
+        <check-valid-connection-sql>some arbitrary sql</check-valid-connection-sql>
+        -->
+
+  </local-tx-datasource>
+
+</datasources>
+

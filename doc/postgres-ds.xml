@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ==================================================================== -->
+<!--  Datasource config for Postgres                                      -->
+<!-- ==================================================================== -->
+
+
+<datasources>
+  <local-tx-datasource>
+    <jndi-name>DeafultDS</jndi-name>
+    <connection-url>jdbc:postgresql://[servername]:[port]/ejbca</connection-url>
+    <driver-class>org.postgresql.Driver</driver-class>
+    <user-name>ejbca</user-name>
+    <password>ejbca</password>
+        <!-- sql to call when connection is created
+        <new-connection-sql>some arbitrary sql</new-connection-sql>
+        -->
+
+        <!-- sql to call on an existing pooled connection when it is obtained from pool 
+        <check-valid-connection-sql>some arbitrary sql</check-valid-connection-sql>
+        -->
+
+  </local-tx-datasource>
+
+</datasources>
