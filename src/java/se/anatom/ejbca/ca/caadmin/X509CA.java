@@ -1,6 +1,7 @@
 package se.anatom.ejbca.ca.caadmin;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.NoSuchProviderException;
@@ -36,6 +37,7 @@ import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.CRLNumber;
+import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
@@ -74,7 +76,7 @@ import se.anatom.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.14 2004-01-07 13:28:30 anatom Exp $
+ * @version $Id: X509CA.java,v 1.15 2004-01-08 08:42:03 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -344,18 +346,22 @@ public class X509CA extends CA implements Serializable {
          if (certProfile.getUseCRLDistributionPoint() == true) {
              // Multiple CDPs are spearated with the ';' sign
             StringTokenizer tokenizer = new StringTokenizer(certProfile.getCRLDistributionPointURI(), ";", false);
-            DEREncodableVector vec = new DEREncodableVector();
+            ArrayList distpoints = new ArrayList();
             while (tokenizer.hasMoreTokens()) {
                 // 6 is URI
-                GeneralName gn = new GeneralName(new DERIA5String(tokenizer.nextToken()), 6);
-                GeneralNames gns = new GeneralNames(new DERSequence(gn));
+                String uri = tokenizer.nextToken();
+                GeneralName gn = new GeneralName(new DERIA5String(uri), 6);
+                log.debug("Added CRL distpoint: "+uri);
+                ASN1EncodableVector vec = new ASN1EncodableVector();
+                vec.add(gn);
+                GeneralNames gns = new GeneralNames(new DERSequence(vec));
                 DistributionPointName dpn = new DistributionPointName(0, gns);
-                DistributionPoint distp = new DistributionPoint(dpn, null, null);
-                vec.add(distp);
+                distpoints.add(new DistributionPoint(dpn, null, null));
             }
-            if (vec.size() > 0) {
+            if (distpoints.size() > 0) {
+                CRLDistPoint ext = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[0]));
                 certgen.addExtension(X509Extensions.CRLDistributionPoints.getId(),
-                    certProfile.getCRLDistributionPointCritical(), new DERSequence(vec));
+                    certProfile.getCRLDistributionPointCritical(), ext);
             }
          }
          // Authority Information Access (OCSP url)
@@ -374,6 +380,9 @@ public class X509CA extends CA implements Serializable {
         
         // Verify before returning
         cert.verify(getCAToken().getPublicSignKey());
+            FileOutputStream os = new FileOutputStream("\\foo.crt");
+            os.write(cert.getEncoded());
+            os.close();
         
       return (X509Certificate) cert;                                                                                        
     }
