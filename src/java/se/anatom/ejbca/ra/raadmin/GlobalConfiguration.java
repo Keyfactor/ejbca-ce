@@ -5,7 +5,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.2 2003-10-31 14:41:25 herrvendil Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.3 2004-01-06 14:20:13 anatom Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -24,7 +24,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private final  String   DEFAULTCRLDISTURIPATH  = "ejbca/webdist/certdist?cmd=crl";
 
     // Path added to baseurl used as default vaule in OCSP Service Locator URI field in Certificate Profile definitions.
-	private final  String   DEFAULTOCSPSERVICELOCATORURIPATH = "TODO";
+	private final  String   DEFAULTOCSPSERVICELOCATORURIPATH = "ejbca/publicweb/status/ocsp";
 
     // Default name of headbanner in web interface.
     private final  String   DEFAULTHEADBANNER             = "head_banner.jsp";
