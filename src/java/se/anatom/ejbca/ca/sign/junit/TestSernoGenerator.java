@@ -11,7 +11,7 @@ import junit.framework.*;
 
 /** Tests generation of serial numbers.
  *
- * @version $Id: TestSernoGenerator.java,v 1.2 2002-09-05 08:22:27 anatom Exp $
+ * @version $Id: TestSernoGenerator.java,v 1.3 2002-09-05 09:14:33 anatom Exp $
  */
 public class TestSernoGenerator extends TestCase {
 
@@ -35,12 +35,7 @@ public class TestSernoGenerator extends TestCase {
         String hex=null;
         for (int j=0;j<300;j++) {
             for (int i=0;i<1000;i++) {
-                byte[] serno = gen.getSerno();
-                if (serno.length != 8) {
-                    System.out.println("Serno size != 8!!!");
-                    break;
-                }
-                BigInteger bi = (new java.math.BigInteger(serno)).abs();
+                BigInteger bi = gen.getSerno();
                 //hex = Hex.encode(serno);
                 hex = bi.toString();
                 if (map.put(hex,hex) != null) {
