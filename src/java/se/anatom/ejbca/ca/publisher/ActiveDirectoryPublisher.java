@@ -20,7 +20,7 @@ import com.novell.ldap.LDAPModificationSet;
 /**
  * ActiveDirectoryPublisher is a class handling a publishing to Active Directory catalouges.  
  *
- * @version $Id: ActiveDirectoryPublisher.java,v 1.2 2004-03-14 13:49:21 herrvendil Exp $
+ * @version $Id: ActiveDirectoryPublisher.java,v 1.3 2004-03-17 04:03:02 herrvendil Exp $
  */
 public class ActiveDirectoryPublisher extends LdapPublisher{
 	
@@ -31,10 +31,11 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
 	public static final int TYPE_ADPUBLISHER = 3;
 	
 	// Constants indicating characteristics of created user accounts
-	public static final int UAC_DISABLE = 2;
-	public static final int UAC_NORMAL = 512;
-	public static final int UAC_NEVEREXPIRE = 66048;
-
+	public static final int UAC_DISABLE           = 2;
+	public static final int UAC_NORMAL            = 512;
+	public static final int UAC_NEVEREXPIRE       = 66048;
+	public static final int UAC_SMARTCARDREQUIRED = 0x40000;
+	
 	// Default Values	
 	public static final int DEFAULT_UAC         = UAC_NEVEREXPIRE;
     
@@ -177,7 +178,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
         	// TODO fix better
         	String password = "foo123"; 
           //Can only set password through SSL connection
-        	attributeSet.add(new LDAPAttribute("userPassword", password));	
+        	//attributeSet.add(new LDAPAttribute("userPassword", password));	
           
 
           //Start out by taking the password and enclosing it in quotes, as in
