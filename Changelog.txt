@@ -1,5 +1,7 @@
 3.0 beta 3
 ----------
+Added password and extendedinformation to publisher interface.
+Fixed CA renew bugg where new certificates wasn't published to publishers
 Fixed Hard Token Issuer authorization bug.
 Fixed Hard Token Profile authorization bug when logging in as CA Administrator
 Fixed Authorizer.java so it doesn't throw NullPointerException
