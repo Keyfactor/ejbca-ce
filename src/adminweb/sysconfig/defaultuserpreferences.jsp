@@ -10,7 +10,7 @@
 
 <body>
 <div align="center"> 
-  <h2><%= ejbcawebbean.getText("EJBCADEFAULTUSERPREF") %><br>
+  <h2><%= ejbcawebbean.getText("EJBCADEFAULTADMINPREF") %><br>
   </h2>
 </div>
 <form name="defaultuserpreferences" method="post" action="<%= globalconfiguration .getConfigPath() + "/" + THIS_FILENAME %>">
