@@ -446,10 +446,13 @@ ca.ear, canora.ear, ra.jar, adminweb.war, admin.jar, sampleauth.war">
   <!-- Replace every occurrence of the DefaultDS to something else (here ejbcaDS) -->
   <!-- =================================================================== -->
 
-  <target name="replaceDS">
+  <target name="checkForDS" unless="ejbca.DS">
+	<fail message="Please run ant with -Dejbca.DS=&lt;your-datasource&gt;"/> 
+  </target>
+
+  <target name="replaceDS" if="ejbca.DS" depends="checkForDS">
 
 		<!-- Replace every occurence in the files of the Datasource -->
-  		<fail unless="ejbca.DS" message="Please run ant with -Dejbca.DS=&lt;your-datasource&gt;"/>
   		<input
 		    message="Type of database :"
 		    validargs="oracle,mysql,postgres,sapdb,hsqldb"
