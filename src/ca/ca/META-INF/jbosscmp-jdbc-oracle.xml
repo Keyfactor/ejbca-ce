@@ -2,7 +2,9 @@
 
 <jbosscmp-jdbc>
 
-<datasource>DefaultDS</datasource>
+<defaults>
+    <datasource>java:/DefaultDS</datasource>
+</defaults>
 
 <!-- Setting for Oracle in EJBCA version > 1.0. 
      base64cert and base64crl fields need to hold complete certificates and CRLs which can be long. 

@@ -2,9 +2,8 @@
 
 <jbosscmp-jdbc>
 
-<datasource>DefaultDS</datasource>
-   <default-entity>
-       <debug>true</debug>
-   </default-entity>
+<defaults>
+    <datasource>java:/DefaultDS</datasource>
+</defaults>
 
 </jbosscmp-jdbc>
