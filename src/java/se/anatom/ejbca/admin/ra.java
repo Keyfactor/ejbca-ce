@@ -28,7 +28,7 @@ public class ra {
     public static void main(String [] args){
         if (args.length < 1) {
             System.out.println("Usage: RA adduser|deluser|setclearpwd|setuserstatus|finduser|listnewusers|revokeuser");
-            System.exit(1);
+            return;
         }
         try {
             org.apache.log4j.BasicConfigurator.configure();
@@ -42,7 +42,7 @@ public class ra {
                 if (args.length < 6) {
                     System.out.println("Usage: RA adduser username password dn email type");
                     System.out.println("Type (mask): INVALID=0; END-USER=1; CA=2; RA=4; ROOTCA=8; CAADMIN=16; RAADMIN=0x32");
-                    System.exit(1);
+                    return;
                 }
                 String username = args[1];
                 String password = args[2];
@@ -61,7 +61,7 @@ public class ra {
             {
                 if (args.length < 2) {
                     System.out.println("Usage: RA deluser username");
-                    System.exit(1);
+                    return;
                 }
                 String username = args[1];
                 System.out.println("Deleting user "+username);
@@ -70,7 +70,7 @@ public class ra {
             {
                 if (args.length < 3) {
                     System.out.println("Usage: RA setclearpwd username password");
-                    System.exit(1);
+                    return;
                 }
                 String username = args[1];
                 String password = args[2];
@@ -81,7 +81,7 @@ public class ra {
                 if (args.length < 3) {
                     System.out.println("Usage: RA setuserstatus username status");
                     System.out.println("Status: NEW=10; FAILED=11; INITIALIZED=20; INPROCESS=30; GENERATED=40; HISTORICAL=50");
-                    System.exit(1);
+                    return;
                 }
                 String username = args[1];
                 int status = Integer.parseInt(args[2]);
@@ -91,7 +91,7 @@ public class ra {
             {
                 if (args.length < 2) {
                     System.out.println("Usage: RA finduser username");
-                    System.exit(1);
+                    return;
                 }
                 String username = args[1];
                 UserAdminData data = admin.findUser(username);
@@ -116,7 +116,7 @@ public class ra {
                 // TODO:
                 if (args.length < 2) {
                     System.out.println("Usage: RA revokeuser username");
-                    System.exit(1);
+                    return;
                 }
                 String username = args[1];
                 UserAdminData data = admin.findUser(username);

@@ -39,7 +39,7 @@ public class ca {
     public static void main(String [] args){
         if (args.length < 1) {
             System.out.println("Usage: CA makeroot | rootcert | makereq | recrep | processreq | createcrl | getcrl");
-            System.exit(1);
+            return;
         }
         try {
             org.apache.log4j.BasicConfigurator.configure();
@@ -51,7 +51,7 @@ public class ca {
                 // Generates keys and creates a keystore (PKCS12) to be used by the CA
                 if (args.length < 6) {
                     System.out.println("Usage: CA makeroot <DN> <keysize> <validity-days> <filename> <storepassword>");
-                    System.exit(1);
+                    return;
                 }
                 String dn = args[1];
                 int keysize = Integer.parseInt(args[2]);
@@ -80,7 +80,7 @@ public class ca {
                 if (args.length < 2) {
                     System.out.println("Save root CA certificate to file.");
                     System.out.println("Usage: CA rootcert <filename>");
-                    System.exit(1);
+                    return;
                 }
                 String filename = args[1];
                 Context ctx = getInitialContext();
@@ -96,7 +96,7 @@ public class ca {
                 // Generates keys and creates a keystore (PKCS12) to be used by the CA
                 if (args.length < 7) {
                     System.out.println("Usage: CA makereq <DN> <keysize> <rootca-cert> <reqfile> <ksfile> <storepassword>");
-                    System.exit(1);
+                    return;
                 }
                 String dn = args[1];
                 int keysize = Integer.parseInt(args[2]);
@@ -157,7 +157,7 @@ public class ca {
                 // Receive certificate reply as result of certificate request
                 if (args.length < 4) {
                     System.out.println("Usage: CA recrep <cert-file> <ksfile> <storepassword>");
-                    System.exit(1);
+                    return;
                 }
                 String certfile = args[1];
                 String ksfile = args[2];
@@ -179,11 +179,11 @@ public class ca {
                     // We have whole chain at once
                     if (!CertTools.isSelfSigned((X509Certificate)certchain[1])) {
                         System.out.println("Last certificate in chain with alias 'privateKey' in keystore '"+ksfile +"' is not root certificate (selfsigned)");
-                        System.exit(1);
+                        return;
                     }
                     if (certchain.length > 2) {
                         System.out.println("Certificate chain length is larger than 2, only 2 is supported.");
-                        System.exit(1);
+                        return;
 
                     }
                     rootcert = (X509Certificate)certchain[1];
@@ -193,11 +193,11 @@ public class ca {
                     System.out.println("Loaded certificate chain with length "+ chain1.length+" with alias '"+ialias+"'.");
                     if (chain1.length == 0) {
                         System.out.println("No CA-certificate found!");
-                        System.exit(1);
+                        return;
                     }
                     if (!CertTools.isSelfSigned((X509Certificate)chain1[0])) {
                         System.out.println("Certificate in chain with alias '"+ialias+"' in keystore '"+ksfile +"' is not root certificate (selfsigned)");
-                        System.exit(1);
+                        return;
                     }
                     rootcert = (X509Certificate)chain1[0];
                 }
@@ -211,7 +211,7 @@ public class ca {
                 sign.update("foooooooooooooooo".getBytes());
                 if (sign.verify(signature) == false) {
                     System.out.println("Public key in received certificate does not match private key.");
-                    System.exit(1);
+                    return;
                 }
 
                 // Create new keyStore
@@ -223,7 +223,7 @@ public class ca {
                 // Receive certification request and create certificate to send back
                 if (args.length < 5) {
                     System.out.println("Usage: CA processreq <username> <password> <req-file> <outfile>");
-                    System.exit(1);
+                    return;
                 }
                 String username = args[1];
                 String password = args[2];
@@ -260,7 +260,7 @@ public class ca {
             } else if (args[0].equals("getcrl")) {
                 if (args.length < 2) {
                     System.out.println("Usage: CA getcrl <outfile>");
-                    System.exit(1);
+                    return;
                 }
                 String outfile = args[1];
                 Context context = getInitialContext();
