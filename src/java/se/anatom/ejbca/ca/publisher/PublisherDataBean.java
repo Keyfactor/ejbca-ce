@@ -13,15 +13,13 @@
 
 package se.anatom.ejbca.ca.publisher;
 
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
+import org.apache.log4j.Logger;
+import se.anatom.ejbca.BaseEntityBean;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
-
-import org.apache.log4j.Logger;
-
-import se.anatom.ejbca.BaseEntityBean;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 
 /**
  * Entity bean should not be used directly, use though Session beans.
@@ -43,7 +41,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *   local-jndi-name="PublisherDataLocal"
  *   view-type="local"
  *   type="CMP"
- *   reentrant="false"
+ *   reentrant="False"
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="PublisherDataBean"
@@ -73,10 +71,16 @@ import se.anatom.ejbca.BaseEntityBean;
  *   description="findAll"
  *   signature="Collection findAll()"
  *   query="SELECT DISTINCT OBJECT(a) from PublisherDataBean a"
+ *
+ * @ejb.transaction
+ *   type="Supports"
+ *
+ * @jonas.jdbc-mapping
+ *   jndi-name="${datasource.jndi-name}"
  */
 public abstract class PublisherDataBean extends BaseEntityBean {
 
-    private static Logger log = Logger.getLogger(PublisherDataBean.class);
+    private static final Logger log = Logger.getLogger(PublisherDataBean.class);
 
     private BasePublisher publisher = null;
 
@@ -108,12 +112,12 @@ public abstract class PublisherDataBean extends BaseEntityBean {
      * @ejb.persistence column-name="ABCCounter"
      * @ejb.interface-method view-type="local"
      */
-	public abstract int getUpdateCounter();
+    public abstract int getUpdateCounter();
 
     /**
      * 
      */
-	public abstract void setUpdateCounter(int updatecounter);
+    public abstract void setUpdateCounter(int updatecounter);
 
     /**
      * @ejb.persistence
@@ -127,62 +131,63 @@ public abstract class PublisherDataBean extends BaseEntityBean {
 
     /**
      * Method that returns the publisher data and updates it if nessesary.
+     *
      * @ejb.interface-method view-type="local"
      */
-    public BasePublisher getPublisher(){
+    public BasePublisher getPublisher() {
 
-  	  if(publisher == null){
-	    java.beans.XMLDecoder decoder;
-		try {
-		  decoder =
-			new java.beans.XMLDecoder(
-					new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
-		} catch (UnsupportedEncodingException e) {
-		  throw new EJBException(e);
-		}
-		HashMap data = (HashMap) decoder.readObject();
-		decoder.close();
+        if (publisher == null) {
+            java.beans.XMLDecoder decoder;
+            try {
+                decoder =
+                        new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
+            } catch (UnsupportedEncodingException e) {
+                throw new EJBException(e);
+            }
+            HashMap data = (HashMap) decoder.readObject();
+            decoder.close();
 
-		switch (((Integer) (data.get(BasePublisher.TYPE))).intValue()) {
-		  case LdapPublisher.TYPE_LDAPPUBLISHER :
-		    publisher = new LdapPublisher();
-		    break;
-		  case ActiveDirectoryPublisher.TYPE_ADPUBLISHER:
-		    publisher =  new ActiveDirectoryPublisher();
-		    break;
-		  case CustomPublisherContainer.TYPE_CUSTOMPUBLISHERCONTAINER:
-		  	publisher =  new CustomPublisherContainer();
-		  	break;
-		}
+            switch (((Integer) (data.get(BasePublisher.TYPE))).intValue()) {
+                case LdapPublisher.TYPE_LDAPPUBLISHER:
+                    publisher = new LdapPublisher();
+                    break;
+                case ActiveDirectoryPublisher.TYPE_ADPUBLISHER:
+                    publisher = new ActiveDirectoryPublisher();
+                    break;
+                case CustomPublisherContainer.TYPE_CUSTOMPUBLISHERCONTAINER:
+                    publisher = new CustomPublisherContainer();
+                    break;
+            }
 
-		publisher.loadData(data);
-	  }
+            publisher.loadData(data);
+        }
 
-		return publisher;
+        return publisher;
     }
 
     /**
      * Method that saves the publisher data to database.
+     *
      * @ejb.interface-method view-type="local"
      */
-    public void setPublisher(BasePublisher publisher){
-		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+    public void setPublisher(BasePublisher publisher) {
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
 
-		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
-		encoder.writeObject(publisher.saveData());
-		encoder.close();
+        java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
+        encoder.writeObject(publisher.saveData());
+        encoder.close();
 
-		try {
+        try {
             if (log.isDebugEnabled()) {
                 log.debug("Profiledata: \n" + baos.toString("UTF8"));
             }
-			setData(baos.toString("UTF8"));
-		} catch (UnsupportedEncodingException e) {
-          throw new EJBException(e);
-		}
+            setData(baos.toString("UTF8"));
+        } catch (UnsupportedEncodingException e) {
+            throw new EJBException(e);
+        }
 
-		this.publisher = publisher;
-        setUpdateCounter(getUpdateCounter() +1);
+        this.publisher = publisher;
+        setUpdateCounter(getUpdateCounter() + 1);
     }
 
 
@@ -202,15 +207,15 @@ public abstract class PublisherDataBean extends BaseEntityBean {
      *
      * @return null
      * @ejb.create-method view-type="local"
-     **/
+     */
     public Integer ejbCreate(Integer id, String name, BasePublisher publisher) throws CreateException {
         setId(id);
         setName(name);
         this.setUpdateCounter(0);
-        if(publisher != null)
-          setPublisher(publisher);
+        if (publisher != null)
+            setPublisher(publisher);
 
-        log.debug("Created Hard Token Profile "+ name );
+        log.debug("Created Hard Token Profile " + name);
         return id;
     }
 
