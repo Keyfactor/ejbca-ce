@@ -15,7 +15,6 @@ package se.anatom.ejbca.ca.caadmin;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -102,7 +101,7 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.27 2004-05-31 16:20:33 anatom Exp $
+ * @version $Id: X509CA.java,v 1.28 2004-06-30 08:30:51 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -445,9 +444,6 @@ public class X509CA extends CA implements Serializable {
         
         // Verify before returning
         cert.verify(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN));
-            FileOutputStream os = new FileOutputStream("\\foo.crt");
-            os.write(cert.getEncoded());
-            os.close();
         log.debug(">X509CA: generate certificate, CA "+ this.getCAId() + " for DN=" + subject.getDN());
             
       return (X509Certificate) cert;                                                                                        
