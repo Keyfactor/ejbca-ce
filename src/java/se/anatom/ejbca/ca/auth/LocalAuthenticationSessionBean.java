@@ -20,6 +20,7 @@ import javax.ejb.EJBException;
 import javax.ejb.ObjectNotFoundException;
 
 import se.anatom.ejbca.BaseSessionBean;
+import se.anatom.ejbca.util.ServiceLocator;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.log.Admin;
@@ -34,7 +35,49 @@ import se.anatom.ejbca.ra.UserDataPK;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.27 2004-06-10 14:19:04 sbailliez Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.28 2004-07-05 15:16:43 sbailliez Exp $
+ *
+ * @ejb.bean
+ *   display-name="AuthenticationSB"
+ *   name="AuthenticationSession"
+ *   view-type="both"
+ *   type="Stateless"
+ *   transaction-type="Container"
+ *
+ * @ejb.security-identity run-as="InternalUser"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The User entity bean"
+ *   view-type="local"
+ *   ejb-name="UserDataLocal"
+ *   type="Entity"
+ *   home="se.anatom.ejbca.ca.store.UserDataLocalHome"
+ *   business="se.anatom.ejbca.ca.store.UserDataLocal"
+ *   link="UserData"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Log session bean"
+ *   view-type="local"
+ *   ejb-name="LogSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.log.ILogSessionLocalHome"
+ *   business="se.anatom.ejbca.log.ILogSessionLocal"
+ *   link="LogSession"
+ *
+ * @ejb.home
+ *   extends="javax.ejb.EJBHome"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.ca.auth.IAuthenticationSessionLocalHome"
+ *   remote-class="se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote"
+ *
+ * @ejb.interface
+ *   extends="javax.ejb.EJBObject"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal"
+ *   remote-class="se.anatom.ejbca.ca.auth.IAuthenticationSessionHome"
+ *
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean {
     /** home interface to user entity bean */
@@ -53,27 +96,24 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
 
         // Look up the UserDataLocal entity bean home interface
         userHome = (UserDataLocalHome)lookup("java:comp/env/ejb/UserDataLocal", UserDataLocalHome.class);
-
-        try{
           ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup(ILogSessionLocalHome.COMP_NAME,ILogSessionLocalHome.class);
           logsession = logsessionhome.create();
-        }catch(Exception e){
-          throw new EJBException(e);
-        }
 
         debug("<ejbCreate()");
     }
 
     /**
-     * Implements IAuthenticationSession::authenticateUser. Implements a mechanism that queries a
-     * local database directly. Only allows authentication when user status is STATUS_NEW,
-     * STATUS_FAILED or STATUS_INPROCESS.
+     * Authenticates a user to the user database and returns the user DN.
      *
-     * @param admin administrator performing this task
-     * @param username username to be authenticated
-     * @param password password for user to be authenticated
+     * @param username unique username within the instance
+     * @param password password for the user
      *
-     * @return UserData for authenticated user
+     * @return UserAuthData, never returns null
+     *
+     * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException If the users status is incorrect.
+     * @throws AuthLoginException If the password is incorrect.
+     * @ejb.interface-method
      */
     public UserAuthData authenticateUser(Admin admin, String username, String password)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
@@ -114,12 +154,15 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
     } //authenticateUser
 
     /**
-     * Implements IAuthenticationSession::finishUser. Implements a mechanism that uses a local
-     * database directly to set users status to UserDataRemote.STATUS_GENERATED.
+     * Set the status of a user to finished, called when a user has been successfully processed. If
+     * possible sets users status to UserData.STATUS_GENERATED, which means that the user cannot
+     * be authenticated anymore. NOTE: May not have any effect of user database is remote.
      *
-     * @param admin administrator performing this task
-     * @param username username to be finished
-     * @param password password for user to be finished
+     * @param username unique username within the instance
+     * @param password password for the user
+     *
+     * @throws ObjectNotFoundException if the user does not exist.
+     * @ejb.interface-method
      */
     public void finishUser(Admin admin, String username, String password)
         throws ObjectNotFoundException {
