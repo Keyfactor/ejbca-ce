@@ -342,25 +342,26 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     <!-- Jar the webdist.war package together -->
     <jar basedir="${webdist.build}" jarfile="${webdistjar}"/>    
   </target>
-  
+
   <!-- =================================================================== -->
-  <!-- Build admin web part                                              -->
+  <!-- Build admin web part                                                -->
   <!-- =================================================================== -->
   <target name="adminweb.war" depends="compile">
-    <mkdir    dir="${adminweb.build}"/>
+    <mkdir dir="${adminweb.build}"/>
     <copy todir="${adminweb.build}">
-        <fileset dir="${adminweb.src}"> 
-                <include name="**/**"/>
-        </fileset>
+      <fileset dir="${adminweb.src}">
+        <include name="**/**"/>
+        <exclude name="**/tomcat*-service.xml"/>
+      </fileset>
     </copy>
     <copy todir="${adminweb.build}/WEB-INF/classes">
-        <fileset dir="${build}">
-                <include name="se/anatom/ejbca/util/*.class"/>
-                <exclude name="se/anatom/ejbca/**/*Test*"/>
-        </fileset>
+      <fileset dir="${build}">
+        <include name="se/anatom/ejbca/util/*.class"/>
+        <exclude name="se/anatom/ejbca/**/*Test*"/>
+      </fileset>
     </copy>
     <!-- Jar the adminweb.war package together -->
-    <jar basedir="${adminweb.build}" jarfile="${adminwebjar}"/>    
+    <jar basedir="${adminweb.build}" jarfile="${adminwebjar}"/>
   </target>
 
   <!-- =================================================================== -->
