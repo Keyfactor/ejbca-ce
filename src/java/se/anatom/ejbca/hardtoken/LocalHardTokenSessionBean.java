@@ -37,7 +37,7 @@ import se.anatom.ejbca.ra.IUserAdminSessionHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.8 2003-03-11 09:47:41 anatom Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.9 2003-03-15 21:54:30 herrvendil Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
@@ -677,7 +677,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
          htd = hardtokendatahome.findByPrimaryKey(tokensn);
          if(htd != null){
            returnval = new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),htd.getHardToken());
-           getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENDATA,"Hard token with sn " + tokensn + " viewed.");
+           getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENVIEWED,"Hard token with sn " + tokensn + " viewed.");
          }
        }catch(Exception e){}
 
@@ -704,7 +704,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
          while(i.hasNext()){
            htd = (HardTokenDataLocal) i.next();
            returnval.add(new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),htd.getHardToken()));
-           getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENDATA,"Hard token with sn " + htd.getTokenSN() + " viewed.");
+           getLogSession().log(admin, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENVIEWED,"Hard token with sn " + htd.getTokenSN() + " viewed.");
          }
        }catch(Exception e){}
 

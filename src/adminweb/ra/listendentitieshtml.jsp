@@ -292,7 +292,7 @@ function confirmrevokation(){
         </div>
       </td>
     <td width="11%"><%= users[i].getUsername() %>
-       <input type="hidden" name='<%= HIDDEN_USERNAME + i %>' value='<%= users[i].getUsername() %>'>
+       <input type="hidden" name='<%= HIDDEN_USERNAME + i %>' value="<%= (new java.net.URI(users[i].getUsername())).toString() %>" >
     </td>
     <td width="19%"><%= users[i].getCommonName() %></td>
     <td width="17%"><%= users[i].getSubjectDNField(DNFieldExtractor.OU,0) %></td>

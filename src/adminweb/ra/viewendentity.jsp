@@ -91,7 +91,7 @@
   <script language=javascript src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 <body >
-  <h2 align="center"><%= ejbcawebbean.getText("VIEWENDENTITY") %></h2>
+  <h2 align="center"><%= ejbcawebbean.getText("VIEWENDENTITY2") %></h2>
   <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html")  + "#viewendentity"%>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
   </div>

@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.6 2003-02-20 22:13:00 herrvendil Exp $
+ * @version $Id: EndEntityProfile.java,v 1.7 2003-03-15 21:54:25 herrvendil Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -411,13 +411,13 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
            throw new UserDoesntFullfillEndEntityProfile("Administrator flag cannot be set in current end entity profile.");
       }
    // Check for keyrecoverable flag.
-      if(!getUse(KEYRECOVERABLE,0) &&  administrator)
+      if(!getUse(KEYRECOVERABLE,0) &&  keyrecoverable)
           throw new UserDoesntFullfillEndEntityProfile("Key Recoverable cannot be used.");
 
       if(isRequired(KEYRECOVERABLE,0)){
-        if(getValue(KEYRECOVERABLE,0).equals(TRUE) && !administrator)
+        if(getValue(KEYRECOVERABLE,0).equals(TRUE) && !keyrecoverable)
            throw new UserDoesntFullfillEndEntityProfile("Key Recoverable is required.");
-        if(getValue(KEYRECOVERABLE,0).equals(FALSE) && administrator)
+        if(getValue(KEYRECOVERABLE,0).equals(FALSE) && keyrecoverable)
            throw new UserDoesntFullfillEndEntityProfile("Key Recoverable cannot be set in current end entity profile.");
       }
 

@@ -4,7 +4,7 @@ package se.anatom.ejbca.util;
 
 /** This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.5 2003-01-29 16:16:01 anatom Exp $
+ * @version $Id: StringTools.java,v 1.6 2003-03-15 21:54:30 herrvendil Exp $
  */
 public class StringTools {
 
@@ -22,7 +22,7 @@ public class StringTools {
         String ret = str;
         for (int i=0; i<stripChars.length; i++) {
             if (ret.indexOf(stripChars[i]) > -1) {
-                ret = ret.replace(stripChars[i], '/');
+                ret = ret.replace(stripChars[i], '_');
             }
         }
         return ret;
