@@ -55,7 +55,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.13 2003-12-29 16:10:11 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.14 2003-12-29 16:27:31 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -380,7 +380,8 @@ public class OCSPServlet extends HttpServlet {
                                 if (rci.getReason() != RevokedCertInfo.NOT_REVOKED) {
                                     certStatus = new RevokedStatus(new RevokedInfo(
                                         new DERGeneralizedTime(rci.getRevocationDate()), 
-                                        new CRLReason(rci.getReason())));
+                                        /*new CRLReason(rci.getReason())*/null));
+                                        // TODO: Temporary workaround for bug in BC
                                 } else {
                                     certStatus = null;
                                 }
