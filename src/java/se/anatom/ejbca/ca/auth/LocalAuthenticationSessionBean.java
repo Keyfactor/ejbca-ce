@@ -21,7 +21,7 @@ import se.anatom.ejbca.ra.UserDataPK;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.22 2003-09-03 15:34:14 herrvendil Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.23 2003-10-08 10:32:21 anatom Exp $
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean {
     /** home interface to user entity bean */
@@ -95,11 +95,10 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
         } catch (AuthLoginException le) {
             throw le;
         } catch (Exception e) {
+            error("Unexpected error in authenticateUser(): ", e);
             throw new EJBException(e.toString());
         }
-    }
-
-    //authenticateUser
+    } //authenticateUser
 
     /**
      * Implements IAuthenticationSession::finishUser. Implements a mechanism that uses a local
@@ -125,9 +124,8 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
             logsession.log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request for nonexisting user.");            
             throw oe;
         } catch (Exception e) {
+            error("Unexpected error in finnishUser(): ", e);
             throw new EJBException(e.toString());
         }
-    }
-
-    //finishUser
+    } //finishUser
 }
