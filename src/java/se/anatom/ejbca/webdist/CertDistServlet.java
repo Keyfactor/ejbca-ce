@@ -32,7 +32,7 @@ import se.anatom.ejbca.util.CertTools;
  * <li>revoked - checks if a certificate is revoked, takes arguments 'subject=<subjectDN>&serno=<serial number>'.
  * </ul>
  *
- * @version $Id: CertDistServlet.java,v 1.1.1.1 2001-11-15 14:58:19 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.2 2002-01-06 10:51:32 anatom Exp $
  *
  */
 public class CertDistServlet extends HttpServlet {
@@ -87,7 +87,7 @@ public class CertDistServlet extends HttpServlet {
                 byte[] crl = store.getLastCRL();
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = x509crl.getIssuerDN().toString();
-                String filename = CertTools.getCNFromDN(dn)+".crl";
+                String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
                 res.setHeader("Content-disposition", "attachment; filename=" +  filename);
                 res.setContentType("application/octet-stream");
                 res.setContentLength(crl.length);
@@ -127,7 +127,7 @@ public class CertDistServlet extends HttpServlet {
                     }
                     if (latestcertno > -1) {
                         byte[] cert = certs[latestcertno].getEncoded();
-                        String filename = CertTools.getCNFromDN(dn)+".cer";
+                        String filename = CertTools.getPartFromDN(dn,"CN")+".cer";
                         res.setHeader("Content-disposition", "attachment; filename=" +  filename);
                         res.setContentType("application/octet-stream");
                         res.setContentLength(cert.length);

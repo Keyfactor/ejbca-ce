@@ -37,7 +37,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.6 2002-01-01 11:25:59 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.7 2002-01-06 10:51:32 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -116,7 +116,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
                 if (certchain.length > 1)
                     rootCert = (X509Certificate)certchain[2];
                 else {
-                    String ialias = CertTools.getCNFromDN(caCert.getIssuerDN().toString());
+                    String ialias = CertTools.getPartFromDN(caCert.getIssuerDN().toString(), "CN");
                     Certificate[] chain1 = keyStore.getCertificateChain(ialias);
                     System.out.println("Loaded certificate chain with length "+ chain1.length+" with alias '"+ialias+"'.");
                     if (chain1.length == 0) {

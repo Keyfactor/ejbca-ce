@@ -30,7 +30,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.2 2001-11-24 14:53:59 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.3 2002-01-06 10:51:32 anatom Exp $
  */
 public class KeyTools {
 
@@ -88,7 +88,7 @@ public class KeyTools {
             chain[1] = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(cacert.getEncoded()));
             // Set attributes on CA-cert
             PKCS12BagAttributeCarrier   caBagAttr = (PKCS12BagAttributeCarrier)chain[1];
-            String cafriendly = CertTools.getCNFromDN(cacert.getSubjectDN().toString());
+            String cafriendly = CertTools.getPartFromDN(cacert.getSubjectDN().toString(), "CN");
             caBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(cafriendly));
         }
         chain[0] = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(cert.getEncoded()));

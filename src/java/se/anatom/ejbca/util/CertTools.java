@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.4 2001-11-21 09:53:26 anatom Exp $
+ * @version $Id: CertTools.java,v 1.5 2002-01-06 10:51:32 anatom Exp $
  */
 public class CertTools {
 
@@ -60,6 +60,10 @@ public class CertTools {
             else if (o.trim().equalsIgnoreCase("O")) {
                 oid = X509Name.O;
                 coll.add(X509Name.O);
+            }
+            else if (o.trim().equalsIgnoreCase("DC")) {
+                oid = X509Name.DC;
+                coll.add(X509Name.DC);
             }
             else if (o.trim().equalsIgnoreCase("OU")) {
                 oid = X509Name.OU;
@@ -97,6 +101,7 @@ public class CertTools {
         order.add(X509Name.ST);
         order.add(X509Name.L);
         order.add(X509Name.OU);
+        order.add(X509Name.DC);
         order.add(X509Name.O);
         order.add(X509Name.C);
         order.retainAll(coll);
@@ -131,24 +136,25 @@ public class CertTools {
 
 
     /**
-     * Gets the CN part of a DN.
+     * Gets a specified part of a DN.
      *
      * @param dn String containing DN, The DN string has the format "C=SE, O=xx, OU=yy, CN=zz".
-     * @return String containing CN or null if CN is not present
+     * @param dnpart String specifying which part of the DN to get, should be "CN" or "OU" etc.
+     * @return String containing dnpart or null if dnpart is not present
      */
-    public static String getCNFromDN(String dn) {
-        cat.debug(">getCNFromDN: dn=" + dn);
+    public static String getPartFromDN(String dn, String dnpart) {
+        cat.debug(">getPartFromDN: dn=" + dn+", dnpart="+dnpart);
         String trimmeddn = dn.trim();
-        String cn = null, o = null;
+        String part = null, o = null;
         StringTokenizer st = new StringTokenizer(trimmeddn, ",=");
         while (st.hasMoreTokens()) {
             o = st.nextToken();
-            if (o.trim().equalsIgnoreCase("CN")) {
-                cn = st.nextToken();
+            if (o.trim().equalsIgnoreCase(dnpart)) {
+                part = st.nextToken();
             }
         }
-        cat.debug("<getCNFromDN: cn="+cn);
-        return cn;
+        cat.debug("<getpartFromDN: dnpart="+part);
+        return part;
     } //getCNFromDN
 
 

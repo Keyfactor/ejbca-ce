@@ -194,7 +194,7 @@ public class ca {
                     }
                     rootcert = (X509Certificate)certchain[1];
                 } else {
-                    String ialias = CertTools.getCNFromDN(cert.getIssuerDN().toString());
+                    String ialias = CertTools.getPartFromDN(cert.getIssuerDN().toString(), "CN");
                     Certificate[] chain1 = store.getCertificateChain(ialias);
                     System.out.println("Loaded certificate chain with length "+ chain1.length+" with alias '"+ialias+"'.");
                     if (chain1.length == 0) {

@@ -4,13 +4,17 @@ package se.anatom.ejbca.ca.store;
 import java.rmi.*;
 import javax.rmi.*;
 import javax.ejb.*;
+import java.io.*;
 
 import com.novell.ldap.*;
 
-import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
+import java.security.cert.*;
+
+import org.bouncycastle.asn1.*;
+import org.bouncycastle.asn1.x509.*;
 
 import se.anatom.ejbca.BaseSessionBean;
+import se.anatom.ejbca.util.*;
 
 /**
  * Stores certificates and CRL in an LDAP v3 directory.
@@ -19,7 +23,18 @@ import se.anatom.ejbca.BaseSessionBean;
  * Certificates are published as 'userCertificate' in objectclass 'inetOrgPerson'.<br>
  * CRLs are published as 'certificateRevocationList' in objectclass 'certificationAuthority'.
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.1 2002-01-05 15:50:11 anatom Exp $
+ * <p>In inetOrgPerson the following attributes are set if present in the certificate:
+ * <pre>
+ * cn
+ * ou
+ * l
+ * st
+ * sn
+ * mail
+ * userCertificate
+ * </pre>
+ *
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.2 2002-01-06 10:51:32 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublisherSession {
 
@@ -79,16 +94,48 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
 
         int ldapVersion  = LDAPConnection.LDAP_V3;             
         LDAPConnection lc = new LDAPConnection();
-        LDAPAttribute  attribute = null;
-        LDAPAttributeSet attributeSet = new LDAPAttributeSet();
-        LDAPAttribute  certattribute = null;
-        LDAPAttributeSet certattributeSet = new LDAPAttributeSet();
 
      
-        // TODO: Extract the users DN from the cert.
-        // Extract the ysers email from the cert.
+        // Extract the users DN from the cert.
+        String dn = CertTools.stringToBCDNString(((X509Certificate)incert).getSubjectDN().toString());
+        
+        // Extract the users email from the cert.
+        // First see if we have subjectAltNames extension
+        String email = null;
+        byte[] subjAltNameValue = ((X509Certificate)incert).getExtensionValue("2.5.29.17");
+        // If not, see if we have old styld email-in-DN
+        if (subjAltNameValue == null)
+            email = CertTools.getPartFromDN(dn, "EmailAddress");
+        else {
+            try {
+                // Get extension value
+                ByteArrayInputStream bIn = new ByteArrayInputStream(subjAltNameValue);
+                DERConstructedSequence san = (DERConstructedSequence)new DERInputStream(bIn).readObject();
+                for (int i=0;i<san.getSize();i++) {
+                    DERTaggedObject gn = (DERTaggedObject)san.getObjectAt(i);
+                    if (gn.getTagNo() == 1) {
+                        // This is rfc822Name!
+                        DERIA5String str = (DERIA5String)gn.getObject();
+                        email = str.getString();
+                    }
+                }
+            } catch (IOException e) {
+                error("IOException when getting subjectAltNames extension.");
+            }
+            
+        }
+        
         // Match users DN with 'containerName'?
-        // TODO: Extract other stuff from certificate if present.
+        // Normalize string lo lower case so we don't care about matching case (we are not THAT picky about
+        // different case inside O,C etc, it will fail later in that case.
+        if (dn.toLowerCase().indexOf(containerName.toLowerCase()) == -1)
+        {
+            info("SubjectDN '"+dn+"' is not part of containerName '"+containerName+"' for LDAP server.");
+            return false;
+        }
+        
+        // TODO: different objectclasses for different certificate types
+        // CA etc.
         
         /* To Add an entry to the directory,
          *   -- Create the attributes of the entry and add them to an attribute set
@@ -96,21 +143,15 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
          *   -- Create an LDAPEntry object with the DN and the attribute set
          *   -- Call the LDAPConnection add method to add it to the directory
          */           
-        String objectclass_values[] = { "inetOrgPerson" };
-        attribute = new LDAPAttribute( "objectclass", objectclass_values );
-        attributeSet.add( attribute );      
-        String cn_values[] = { "James Smith", "Jim Smith", "Jimmy Smith" };
-        attribute = new LDAPAttribute( "cn", cn_values );
-        attributeSet.add( attribute );
-        String givenname_values[] = { "James", "Jim", "Jimmy" };
-        attribute = new LDAPAttribute( "givenname", givenname_values );
-        attributeSet.add( attribute );
-        attributeSet.add( new LDAPAttribute( "sn", "Smith" ) );
-        attributeSet.add( new LDAPAttribute( "telephonenumber",
-                                                     "1 801 555 1212" ) );   
-        attributeSet.add( new LDAPAttribute( "mail", "JSmith@Acme.com" ) );        
-        //attributeSet.add( new LDAPAttribute( "userCertificate", incert ) );
-        String  dn  = "cn=SmithJam," + containerName;      
+        LDAPAttributeSet attributeSet = getAttributeSet("inetOrgPerson", dn);
+        if (email != null)
+            attributeSet.add( new LDAPAttribute( "mail", email ) ); 
+        try {
+            attributeSet.add( new LDAPAttribute( "userCertificate;binary", incert.getEncoded() ) );
+        } catch (CertificateEncodingException e) {
+            error("Error encoding certificate when storing in LDAP: ",e);
+            return false;
+        }
         LDAPEntry newEntry = new LDAPEntry( dn, attributeSet );
         try {  
             // connect to the server
@@ -119,19 +160,42 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
             lc.bind( ldapVersion, loginDN, loginPassword );
 
             lc.add( newEntry );
-            System.out.println( "\nAdded object: " + dn + " successfully." );
+            debug( "\nAdded object: " + dn + " successfully." );
 
             // disconnect with the server
             lc.disconnect();
         }
         catch( LDAPException e ) {
-            System.out.println( "Error: " + e.toString() );
+            error( "Error storing certificate in LDAP: ", e);
+            return false;
         }   
         
         // TODO: If the entry was already present, we will update it with the new certificate.
         
-        return false;
+        return true;
     } // storeCertificate
     
-    
+    private LDAPAttributeSet getAttributeSet(String objectclass, String dn) 
+    {
+        LDAPAttributeSet attributeSet = new LDAPAttributeSet();
+
+        attributeSet.add( new LDAPAttribute( "objectclass", objectclass ) );      
+        String cn = CertTools.getPartFromDN(dn,"CN");
+        if (cn!=null)
+            attributeSet.add(new LDAPAttribute( "cn", cn));
+        String sn = CertTools.getPartFromDN(dn,"SN");
+        if (sn!=null)
+            attributeSet.add( new LDAPAttribute( "sn", sn ) );
+        String l = CertTools.getPartFromDN(dn,"L");
+        if (l!=null)
+            attributeSet.add( new LDAPAttribute( "l", l ) );
+        String st = CertTools.getPartFromDN(dn,"ST");
+        if (st!=null)
+            attributeSet.add( new LDAPAttribute( "st", st ) );
+        String ou = CertTools.getPartFromDN(dn,"OU");
+        if (ou!=null)
+            attributeSet.add( new LDAPAttribute( "ou", ou ) );
+            
+        return attributeSet;
+    } // getAttributeSet
 }
