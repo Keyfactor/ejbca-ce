@@ -281,9 +281,7 @@
               }else{
                  illegalquery = true;
               } 
-              if(logentries  != null)
-                if(logentries .length >= LogInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
-                 largeresult = true; 
+
      }
      else{
        if( request.getParameter(BUTTON_VIEWLAST) != null){
@@ -459,9 +457,7 @@
               }else{
                  illegalquery = true;
               }
-              if(logentries  != null)
-                if(logentries .length >= LogInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
-                 largeresult = true; 
+
               
  
             }else{
@@ -570,6 +566,9 @@
      logentries  = logbean.getEntries (record,size);
    }
 
+   if(logentries  != null)
+     if(logbean.getResultSize() >= LogInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
+        largeresult = true; 
 
 %>
 

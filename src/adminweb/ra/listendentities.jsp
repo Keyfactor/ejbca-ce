@@ -368,9 +368,7 @@
                  users = rabean.filterByQuery(query,record,size);
                }
 
-               if(users != null)
-                 if(users.length >= RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
-                  largeresult = true; 
+
          }
        }
      }else{
@@ -395,9 +393,7 @@
          if(days != null){
            if(!days.trim().equals("")){
              users = rabean.filterByExpiringCertificates(days.trim(),record,size);
-             if(users != null)
-               if(users.length >= RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
-                 largeresult = true; 
+
          }
        }
      }else{
@@ -473,9 +469,7 @@
               }else{
                  illegalquery = true;
               } 
-              if(users != null)
-                if(users.length >= RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
-                 largeresult = true; 
+
      }
      else{
        if( request.getParameter(BUTTON_FIND) != null){
@@ -504,10 +498,6 @@
                  query.add(UserMatch.MATCH_WITH_STATUS,BasicMatch.MATCH_TYPE_EQUALS,status);
                  users = rabean.filterByQuery(query,record,size);
                }
-
-               if(users != null)
-                 if(users.length >= RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
-                  largeresult = true; 
                oldaction=OLD_ACTION_LISTUSERS;
                oldactionvalue=status;
              }
@@ -548,9 +538,7 @@
                  if(!days.equals("")){                
                    record=0;   
                    users = rabean.filterByExpiringCertificates(days,record,size);
-                   if(users != null)
-                     if(users.length >= RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
-                       largeresult = true; 
+
                    oldaction=OLD_ACTION_LISTEXPIRED;
                    oldactionvalue=days; 
                  }
@@ -713,9 +701,7 @@
               }else{
                  illegalquery = true;
               }
-              if(users != null)
-                if(users.length >= RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
-                 largeresult = true; 
+
               
  
             }else{
@@ -750,6 +736,10 @@
       availablestatuses=tempintarray;
       availablestatustexts=tempstringarray; 
     }
+
+    if(users != null)
+      if(rabean.getResultSize() >= RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
+        largeresult = true; 
 
 %>
 

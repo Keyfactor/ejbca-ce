@@ -19,7 +19,7 @@ import se.anatom.ejbca.hardtoken.AvailableHardToken;
 
 /** Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.21 2003-02-20 22:13:03 herrvendil Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.22 2003-03-05 07:40:44 herrvendil Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 
@@ -92,8 +92,8 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                   System.out.print(endentityprofilenames[i] + ", ");
                 }
                 System.out.print(endentityprofilenames[endentityprofilenames.length-1] + "\n");
-                if( usehardtokens){                
-                  System.out.print("Existing endentity profiles  : ");
+                if( usehardtokens && hardtokenissueraliases.length > 0){                
+                  System.out.print("Existing hardtoken issuers  : ");
                   for(int i=0; i < hardtokenissueraliases.length-1; i++){
                     System.out.print(hardtokenissueraliases[i] + ", ");
                   }

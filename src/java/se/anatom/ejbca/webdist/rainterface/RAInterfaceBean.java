@@ -44,7 +44,7 @@ import org.apache.log4j.Logger;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.30 2003-02-26 22:27:39 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.31 2003-03-05 07:40:44 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -392,6 +392,10 @@ public class RAInterfaceBean {
 
       return users.getUsers(index,size);
     }
+    
+    public int getResultSize(){
+     return users.size();   
+    }
 
     public boolean isAuthorizedToViewUserHistory(String username) throws Exception {
       UserAdminData user = adminsession.findUser(administrator, username);
@@ -564,6 +568,40 @@ public class RAInterfaceBean {
         certificates = null;
       }
     }
+    
+    public boolean revokeTokenCertificates(String tokensn, String username, int reason) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
+       boolean success = true;
+       Collection certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
+       Iterator i = certs.iterator();
+       try{
+         while(i.hasNext()){  
+           adminsession.revokeCert(administrator, ((X509Certificate) i.next()).getSerialNumber(), username, reason);
+         }
+       }catch( AuthorizationDeniedException e){
+         success =false;
+       }
+       
+       return success;
+    }
+    
+    public boolean isAllTokenCertificatesRevoked(String tokensn, String username) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
+      Collection certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
+
+      UserAdminData user = adminsession.findUser(administrator, username);
+      boolean allrevoked = true;
+
+      if(!certs.isEmpty()){
+        Iterator j = certs.iterator();
+        while(j.hasNext()){
+          X509Certificate cert = (X509Certificate) j.next();
+          RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, cert.getIssuerDN().toString(), cert.getSerialNumber());
+          if(revinfo == null)
+            allrevoked = false;
+        }
+      }
+      
+      return allrevoked;
+    }
 
     public void loadCACertificates(CertificateView[] cacerts) {
         certificates = cacerts;
@@ -628,9 +666,9 @@ public class RAInterfaceBean {
       return profileauthproxy.getEndEntityProfileAuthorizationNoLog(administrator, profileid, EndEntityProfileAuthorizationProxy.HARDTOKEN_VIEW_RIGHTS);
     }
 
-    public boolean authorizedToRevokeCert(CertificateView certinfo) throws FinderException, RemoteException, AuthorizationDeniedException{
+    public boolean authorizedToRevokeCert(String username) throws FinderException, RemoteException, AuthorizationDeniedException{
       boolean returnval=false;
-      int profileid = (adminsession.findUser(administrator, certinfo.getUsername())).getEndEntityProfileId();
+      int profileid = (adminsession.findUser(administrator, username)).getEndEntityProfileId();
 
       if(globalconfiguration.getEnableEndEntityProfileLimitations())
        returnval= profileauthproxy.getEndEntityProfileAuthorizationNoLog(administrator, profileid, EndEntityProfileAuthorizationProxy.REVOKE_RIGHTS);
@@ -639,6 +677,7 @@ public class RAInterfaceBean {
 
       return returnval;
     }
+        
     
     public boolean keyRecoveryPossible(CertificateView certificatedata) throws Exception{
       boolean returnval = true;  

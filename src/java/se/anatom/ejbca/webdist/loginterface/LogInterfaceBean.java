@@ -22,7 +22,7 @@ import se.anatom.ejbca.util.query.*;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.5 2003-01-12 17:16:20 anatom Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.6 2003-03-05 07:40:44 herrvendil Exp $
  */
 public class LogInterfaceBean {
 
@@ -118,6 +118,11 @@ public class LogInterfaceBean {
       return logentriesview.getEntries(index,size);        
     }            
 
+    /* Method that returns the size of a query search */
+    public int getResultSize(){
+     return logentriesview.size();   
+    }
+    
     /* Method to resort filtered user data. */
     public void sortUserData(int sortby, int sortorder){
       logentriesview.sortBy(sortby,sortorder);

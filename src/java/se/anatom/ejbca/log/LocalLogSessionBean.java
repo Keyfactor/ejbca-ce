@@ -23,13 +23,13 @@ import se.anatom.ejbca.util.query.*;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalLogSessionBean.java,v 1.8 2003-02-28 09:26:12 koen_serry Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.9 2003-03-05 07:40:33 herrvendil Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean  {
 
     private static Logger log = Logger.getLogger(LocalLogSessionBean.class);
     
-    public static final int MAXIMUM_QUERY_ROWCOUNT = 500;
+    public static final int MAXIMUM_QUERY_ROWCOUNT = 300;
 
     /** Var holding JNDI name of datasource */
     private String dataSource = "";
@@ -212,10 +212,13 @@ public class LocalLogSessionBean extends BaseSessionBean  {
             if(viewlogprivileges.equals(""))
               ps = con.prepareStatement("select " + LOGENTRYDATA_COL + " from LogEntryData where " + query.getQueryString() );
             else
-              ps = con.prepareStatement("select " + LOGENTRYDATA_COL + " from LogEntryData where (" + query.getQueryString() + ") and " + viewlogprivileges);                
+              ps = con.prepareStatement("select " + LOGENTRYDATA_COL + " from LogEntryData where (" + query.getQueryString() + ") and " + viewlogprivileges);   
+            
+            //ps.setFetchDirection(ResultSet.FETCH_REVERSE);
+            ps.setFetchSize(MAXIMUM_QUERY_ROWCOUNT +1 );
             // Execute query.
             rs = ps.executeQuery();
-            // Assemble result.            
+            // Assemble result. 
             while(rs.next() && returnval.size() <= MAXIMUM_QUERY_ROWCOUNT){
               LogEntry data = new LogEntry(rs.getInt(1), rs.getString(2), rs.getInt(3),  new java.util.Date(rs.getLong(4)), rs.getString(5), rs.getString(6)
                                                , rs.getInt(7), rs.getString(8));   
