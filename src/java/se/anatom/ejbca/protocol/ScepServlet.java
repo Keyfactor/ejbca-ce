@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.Enumeration;
 import java.security.Provider;
 import java.security.Security;
+import java.security.cert.Certificate;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -24,6 +25,7 @@ import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
+import se.anatom.ejbca.apply.RequestHelper;
 import se.anatom.ejbca.util.Base64;
 
 /** Servlet implementing server side of the Simple Certificate Enrollment Protocol (SCEP)
@@ -45,7 +47,7 @@ import se.anatom.ejbca.util.Base64;
 * 6. sign the reply data (PKCS#7) from the previous step
 * 7. output the result as a der encoded block on stdout
 * -----
-* @version  $Id: ScepServlet.java,v 1.11 2003-06-05 13:08:31 anatom Exp $
+* @version  $Id: ScepServlet.java,v 1.12 2003-06-06 09:12:38 anatom Exp $
 */
 public class ScepServlet extends HttpServlet {
 
@@ -96,31 +98,52 @@ public class ScepServlet extends HttpServlet {
                 // We are not ready yet, so lets deny all requests for now...
                 response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
                 // Read the message end get the cert, this also checksauthorization
-                helper.scepCertRequest(scepmsg);                    
+                byte[] cert = helper.scepCertRequest(scepmsg);
+                // TODO: 
+                // Send back Success response, PKCS#7 which contains the end entity's certificate
             } else if (operation.equals("GetCACert")) {
-                // TODO:
-                response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
+                // TODO: check CA_IDENT for this request if we have more than one CA
+                // Send back DER-encoded CA cert with content-type 'application/x-x509-ca-cert'
+                ISignSessionRemote signsession = signhome.create();
+                Certificate[] certs = signsession.getCertificateChain(administrator);
+                if (certs.length == 0) {
+                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error getting CA certificate");
+                }
+                RequestHelper.sendNewX509CaCert(certs[0].getEncoded(), response);
             } else if (operation.equals("GetCACertChain")) {
-                // TODO:
-                response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
+                // TODO: check CA_IDENT for this request if we have more than one CA
+                // Send back DER-encoded CA cert with content-type 'application/x-x509-ca-cert'
+                ISignSessionRemote signsession = signhome.create();
+                // Create pkcs7 with chain and send bach with content-type 'application/x-x509-ca-ra-cert-chain'
+                byte[] pkcs7 = signsession.createPKCS7(administrator, null);
+                if (pkcs7.length == 0) {
+                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error getting CA certificate chain");
+                }
+                RequestHelper.sendBinaryBytes(pkcs7, response, "application/x-x509-ca-ra-cert-chain");
             } else {
                 log.error("Invalid parameter '"+operation);
+                // TODO: Send back proper Failure Response
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameter: "+operation);
             }
         } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
             log.error("Empty or invalid request received.", ae);
+            // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, ae.getMessage());
         } catch (AuthorizationDeniedException ae) {
             log.error("Authorization denied.", ae);
+            // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
         } catch (AuthLoginException ae) {
             log.error("Authorization denied.", ae);
+            // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
         } catch (AuthStatusException ae) {
             log.error("Wrong client status.", ae);
+            // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
         } catch (Exception e) {
             log.error("Error in ScepServlet:", e);
+            // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
         log.debug("<doGet()");

@@ -223,5 +223,25 @@ public class RequestHelper {
         log.debug("Sent reply to client");
         log.debug(new String(b64cert));
     }
+    static public void sendNewX509CaCert(byte[] cert, HttpServletResponse out)
+        throws Exception {
+        // Set content-type to CA-cert
+        sendBinaryBytes(cert, out, "application/x-x509-ca-cert");
+    }
+    static public void sendBinaryBytes(byte[] bytes, HttpServletResponse out, String contentType)
+        throws Exception {
+        if (bytes.length == 0) {
+            log.error("0 length can not be sent to client!");
+            return;
+        }
+        // Set content-type to general file
+        out.setContentType(contentType);
+        out.setContentLength(bytes.length);
+        // Write the certificate
+        ServletOutputStream os = out.getOutputStream();
+        os.write(bytes);
+        out.flushBuffer();
+        log.debug("Sent "+bytes.length+" bytes to client");
+    }
 
 }
