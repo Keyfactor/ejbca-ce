@@ -19,7 +19,7 @@ import junit.framework.*;
 /**
  * Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.16 2003-03-11 09:47:41 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.17 2003-03-18 16:27:43 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -137,6 +137,7 @@ public class TestCertificateData extends TestCase {
             CertificateData rev = home.findByPrimaryKey(revpk);
             if (rev.getStatus() != CertificateData.CERT_REVOKED) {
                 rev.setStatus(CertificateData.CERT_REVOKED);
+                rev.setRevocationReason(RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED);
                 rev.setRevocationDate(new Date());
                 log.debug("Revoked cert "+fp);
             } else {
