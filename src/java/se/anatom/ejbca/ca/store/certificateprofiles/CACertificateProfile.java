@@ -24,7 +24,7 @@ import java.util.ArrayList;
 /**
  * CACertificateProfile is a class defining the fixed characteristics of a CA certificate profile.
  *
- * @author  TomSelleck
+ * @version $Id: CACertificateProfile.java,v 1.15 2005-02-14 08:04:05 anatom Exp $
  */
 public class CACertificateProfile extends CertificateProfile{
 
