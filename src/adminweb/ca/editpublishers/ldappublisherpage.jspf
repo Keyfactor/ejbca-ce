@@ -63,6 +63,8 @@
       <td width="50%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("BASEDN") %>
+          <br>
+          <%= ejbcawebbean.getText("BASEDNDESCR") %>
         </div>
       </td>
       <td width="50%" valign="top"> 

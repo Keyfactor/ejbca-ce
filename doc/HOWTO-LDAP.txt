@@ -67,6 +67,9 @@ EJBCA have support for endless number of publishers simply by defining publisher
 in the admin-GUI.. The user of EJBCA can implement own publishers, but EJBCA 
 already comes with a publisher for LDAP.
 
+EJBCA uses a notion of base DN to publish to different LDAP structures. The
+DN used in the certificate can be different from the LDAP structure. 
+
 Configuring EJBCA
 -----------------
 To configure the publisher for LDAP:
@@ -114,10 +117,11 @@ publisher by the CA. Default 'certificateRevocationList;binary'
 publisher by the CA. Default 'authorityRevocationList;binary' 
 (note that pure ARLs are not implemented yet in EJBCA)
 
+- 'LDAP location fields from cert DN'
 When configuring the LDAP publisher the BaseDN will be used as the base for the DN published in LDAP,
-and the DN components selected to be used when publishing will be appended to this.
+and it will be appended to the LDAP location fields selected to be used.
 example: If the user DN in EJBCA is "cn=tomas gustavsson, uid=tomasg, O=PrimeKey Solutions AB, C=SE"
-and the BaseDN is "dc=PrimeKey,dc=SE" and the selected dn components are "CN". 
+and the BaseDN is "dc=PrimeKey,dc=SE" and the selected LDAP location fields are "CN". 
 The LDAP DN used for publishing will be "cn=tomas gustavsson, dc=PrimeKey, dc=SE", and the "uid=tomasg" 
 will be added as an attribute in LDAP. The certificate stored under "cn=tomas gustavsson, dc=PrimeKey, dc=SE"
 will have the subjectDN "cn=tomas gustavsson, uid=tomasg, O=PrimeKey Solutions AB, C=SE".
@@ -153,6 +157,15 @@ http://support.microsoft.com/default.aspx?scid=kb;en-us;321051&sd=tech
 
 The same certificate is used for both the AD an global catalouge.
 Remember to add the CA certificate to the machine stores trusted root certificates.
+
+Custom publishers
+-----------------
+If your setup makes it very complex to configure multiple certificate profiles 
+and multiple publishers you might consider writing a custom publisher that 
+handles things directly according to you demands.
+Look in the directory src/java/se/anatom/ejbca/ca/publishers for more information 
+about writing your own solution. There is an empty custom publisher called 
+DummyCustomPublisher.java that can be extended.
 
 
 USING LDAP
