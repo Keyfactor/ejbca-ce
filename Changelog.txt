@@ -7,6 +7,11 @@
 - Lots of minor and structural changes.
 - Changed database configuration to make it more flexible for deployment 
 
+3.0.2
+-----
+Removed wirting of testfile foo.crt.
+Changed version in web-GUI.
+
 3.0.1
 -----
 Fixed subject DN field removal bugg of UNSTRUCTURED IPADDRESS and UNSTRUCTURED NAME
