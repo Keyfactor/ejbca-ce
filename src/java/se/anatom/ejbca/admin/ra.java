@@ -118,6 +118,21 @@ public class ra {
                     UserAdminData data = (UserAdminData)iter.next();
                     System.out.println("New user: "+data.getUsername()+", \""+data.getDN()+"\", "+data.getEmail()+", "+data.getStatus()+", "+data.getType());
                 }
+            } else if (args[0].equals("listusers"))
+            {
+                if (args.length < 2) {
+                    System.out.println("Usage: RA listusers <status>");
+                    System.out.println("Status: NEW=10; FAILED=11; INITIALIZED=20; INPROCESS=30; GENERATED=40; HISTORICAL=50");
+                    return;
+                }
+                int status = Integer.parseInt(args[1]);
+                Collection coll = admin.findAllUsersByStatus(status);
+                Iterator iter = coll.iterator();
+                while (iter.hasNext())
+                {
+                    UserAdminData data = (UserAdminData)iter.next();
+                    System.out.println("New user: "+data.getUsername()+", \""+data.getDN()+"\", "+data.getEmail()+", "+data.getStatus()+", "+data.getType());
+                }
             } else if (args[0].equals("revokeuser"))
             {
                 if (args.length < 2) {
