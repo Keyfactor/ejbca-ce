@@ -34,8 +34,8 @@ Attributes like uid, l, serialNumber etc will not work to publish to LDAP at the
 there will be a 'naming vialoation'.
 To publish in LDAP, keep to simple DNs like the one above, only cn and the baseDN.
 
-CONFIGURING LDAP PUBLISHERS
-===========================
+CONFIGURE LDAP PUBLISHERS
+=========================
 
 Note: Slighly old documentation, consider also checking INSTALL-guide.txt in the source package.
 
@@ -43,67 +43,29 @@ A good free LDAP server can be found at http://www.openldap.org/
 
 A Publisher is a session bean that implements the IPublishSession interface and
 is used to store certificates and CRLs for entities.
-EJBCA have support for endless number of publishers. Simply by deploying session
-beans (PublisherSession1, PublisherSession2, ...) on the application server. The
-user of EJBCA can implement own publishers, but EJBCA already comes with  a
-publisher for LDAP.
+EJBCA have support for endless number of publishers simply by defining publishers 
+in the admin-GUI.. The user of EJBCA can implement own publishers, but EJBCA 
+already comes with a publisher for LDAP.
 
 Configuring EJBCA
 -----------------
 To configure the publisher for LDAP:
-By default the LDAP publisher is not enabled. To deploy the LDAP Publisher
-session bean, uncomment the section for the session bean 'PublisherSession1' in
-'ca/META-INF/ejb-jar.xml'.
- 
-      <!-- Uncomment to use LDAP Publisher -->
-      <!-- <session>
-        <ejb-name>PublisherSession1</ejb-name>
-        <home>se.anatom.ejbca.ca.store.IPublisherSessionHome</home>
-        <remote>se.anatom.ejbca.ca.store.IPublisherSessionRemote</remote>
-        <ejb-class>se.anatom.ejbca.ca.store.LDAPPublisherSessionBean</ejb-class>
-        <session-type>Stateless</session-type>
-        <transaction-type>Container</transaction-type>
+Choose 'Edit Publishers' in the admin-GUI.
+Add a new publisher with a name you define yourself. Edit the publisher and fill 
+in all the neccesary fields.
 
-        <env-entry>
-     	   <description>LDAP host</description>
-     	   <env-entry-name>ldapHost</env-entry-name>
-     	   <env-entry-type>java.lang.String</env-entry-type>
-     	   <env-entry-value>localhost</env-entry-value>
-        </env-entry>
-     ...snip! removed text...
-     </session> -->
-     <!-- END LDAP Publisher section -->
+Parameters to LDAP Publisher:
 
-Also uncomment the section for method permissions for the
-same session bean.
+- 'Hostname' is the host where the LDAP server is located.
 
-     <!-- Uncomment for LDAP Publisher -->
-     <!-- <method>
-         <ejb-name>PublisherSession1</ejb-name>
-         <method-name>*</method-name>
-     </method> -->
-     <!-- END LDAP Publisher section -->
+- 'Port' is the port on which the LDAP server listens, default non-SSL is 389.
 
-Do the same in 'ra/META-INF/ejb-jar.xml'.
-
-This will configure an LDAPPublisherSession so be deployed as
-'PublisherSession1', which will be found by the CA.
-
-'PublisherSession1' must be configured to match your LDAP server.
-
-Parameters to LDAP Publisher (in ca/ca/META-INF/ejb-jar.xml):
-
-- ldapHost is the host where the LDAP server is located.
-
-- ldapPort is the port on which the LDAP server listens (SSL is not yet
-supported).
-
-- loginDN is the DN of a user on the LDAP server with permissions to add and
+- 'Login DN' is the DN of a user on the LDAP server with permissions to add and
 update enties.
 
-- loginPassword is the password for the user above.
+- 'Login Password' is the password for the user above.
 
-- userObjectClass is the objectclass for the LDAP entries for users, where user
+- 'User Object Class' is the objectclass for the LDAP entries for users, where user
 certificates are published. The entry is hierarchical separated by ';' to build 
 a structure like:
 objectclass: top
@@ -113,34 +75,35 @@ objectclass: inetOrgPerson
 This objectclass must allow the attribute 'userCertificate;binary'. 
 Default 'top;person;organizationalPerson;inetOrgPerson'
 
-- cAObjectClass is the objectclass for the LDAP entries for CAs, where CA
+- 'CA Object Class' is the objectclass for the LDAP entries for CAs, where CA
 certificates and CRLs are published. The entry is hierarchical separated by ';' 
 to build a structure. This objectclass must allow the attributes
 'cACertificate;binary', 'certificateRevocationList;binary' and 'authorityRevocationList;binary'.
 Default 'top;applicationProcess;certificationAuthority'
 
-- userCertAttribute is the attribute name, in the userObjectClass, for the users 
+- 'User Certificate Attribute' is the attribute name, in the userObjectClass, for the users 
 certificate. Default 'userCertificate;binary'
 
-- cACertAttribute is the attribute name, in the cAObjectClass, for the CAs 
+- 'CA Certificate Attribute' is the attribute name, in the cAObjectClass, for the CAs 
 certificate. Default 'cACertificate;binary'
 
-- cRLAttribute is the attribute name, in the cAObjectClass, for CRLs (user CRLs) 
+- 'CRL Attribute' is the attribute name, in the cAObjectClass, for CRLs (user CRLs) 
 publisher by the CA. Default 'certificateRevocationList;binary'
 
-- aRLAttribute is the attribute name, in the cAObjectClass, for ARLs (CA CRLs) 
-publisher by the CA. Default 'authorityRevocationList;binary'
+- 'ARL Attribute' is the attribute name, in the cAObjectClass, for ARLs (CA CRLs) 
+publisher by the CA. Default 'authorityRevocationList;binary' 
+(note that pure ARLs are not implemented yet in EJBCA)
 
 Setting up certificate profiles
 -------------------------------
 To publish in LDAP you must create a Certificate profile in EJBCA that publishes 
-to LDAP. If the above is configured, the will be a section for 'Publishers' available
-when creating/editing a certificate profile. Choose this, and then when adding 
-end-entities, make sure they use the new certificate profile and voila, the certs will 
-be published.
+to LDAP. If the above is configured, there will be a section for 'Publishers' available
+when creating/editing a certificate profile (with 'Edit Certificate Profiles'. 
+Choose this, and then when adding end-entities, make sure they use the new certificate 
+profile and voila, the certs will be published.
 
-Configure OpenLDAP
-------------------
+CONFIGURE OpenLDAP
+==================
 The objectclass 'inetOrgPerson' is used by default to store certificates.
 
 Example:
@@ -188,4 +151,8 @@ ldapadd -x -D "cn=Admin,o=AnaTom,c=SE" -W -f org.ldif
 
 Check what you have in the LDAP by:
 /usr/local/bin/ldapsearch -x -b 'o=AnaTom,c=SE' '(objectclass=*)'
+
+Configure SSL
+-------------
+TODO
 
