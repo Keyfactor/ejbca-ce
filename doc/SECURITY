@@ -32,6 +32,15 @@ For more advanced security configurations utilizing Bean permissions as defined
  the JBoss manual at:
 http://www.jboss.org/online-manual/HTML/ch09.html
 
+File permission
+---------------
+The application server should be run as a special user. The PKCS12 file with the
+CAs private key should be protected so the ONLY the user running the
+application server can access it.
+
+If PKCS12 files are generateed for users, the subdirectory ('p12') where
+they are stored and the generated files should be protected in the same way.
+
 BEAN PERMISSIONS
 ----------------
 
@@ -42,6 +51,7 @@ internalUser means that the method should not be available to the public, only
  the server.
 
 Bean permissions are set in the 'ejb-jar.xml' files.
+
 CA BEAN
 =======
 
@@ -67,7 +77,7 @@ CreateCRLSession
 All methods are protected and can only be accessed from the internalUser, i.e.
  cronjob running timely.
 
-CertificateDate
+CertificateData
 ---------------
 All methods are protected and can only be accessed from the internalUser.
 
@@ -81,7 +91,6 @@ RA BEAN
 UserAdminSession
 ----------------
 All methods are protected and can only be accessed from the internalUser.
-
 
 UserData
 --------

@@ -224,14 +224,15 @@ http://127.0.0.1:8080/apply/request/apply_man.html and fill in the form.
 Use the 'ra.sh/cmd' and 'ca.sh/cmd' scripts to administer EJBCA.
 
 Note that application for certificates only work when the status of a user is
- NEW (one time password thing). The status is set to GENERATED after a
- certificate has been issued. To issue a new certificate, the status must be
- reset to NEW,
-which can be done through administration with the RA, 'ra.sh/cmd setuserstatus
- <username> <status>'. For a list of all available statuscodes run 'ra.sh/cmd
- setuserstatus'.
-//TODO: more documentation about user statuscodes, how it can be used in
- batchgeneration etc.
+NEW (or FAILED or INPROCESS) (one time password thing). The status is set to 
+GENERATED after a certificate has been issued. To issue a new certificate, the 
+status must be reset to NEW, which can be done through administration with the 
+RA, 'ra.sh/cmd setuserstatus <username> <status>'. For a list of all available 
+statuscodes run 'ra.sh/cmd setuserstatus'.
+During batch generation of certificates, users with status NEW or FAILED are 
+generated. This is due to the if a batch generation for some reason failed, 
+status is set to FAILED and you can try again after fixing the error.
+
 
 To create a crl a JobRunnerSession bean is running with JNDI name
  'CreateCRLSession'. To run the session and create a CRL,
@@ -305,6 +306,10 @@ clear text password for a user use 'ra.sh/cmd setclearpwd <username>
 To generate PKCS12 files for all users with status NEW or FAILED, run
 'batch.sh/cmd'. This will generate files for users if their clear text passwords
 are NOT null.
+Generates PKCS12 files are stored in a subdirectory (to the current directory)
+called 'p12'. If the directory does not exist, it will be created.
+Make sure this directory is WELL protected, since the information contained
+in PCS12 files are secret (private keys).
 
 Administrating CA:
 
