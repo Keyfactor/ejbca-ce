@@ -29,7 +29,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <p>The follwing commads are supported:<br>
  * <ul>
  * <li>crl - gets the latest CRL.
- * 
+ *
  */
 public class GetCRLServlet extends HttpServlet {
 
@@ -47,11 +47,11 @@ public class GetCRLServlet extends HttpServlet {
         try {
 
             // Get EJB context and home interfaces
-            
+
            /* java.util.Properties jndienv = new java.util.Properties();
             jndienv.load(this.getClass().getResourceAsStream("/WEB-INF/jndi.properties"));*/
             ctx = new InitialContext();
-            
+
         } catch( Exception e ) {
             throw new ServletException(e);
         }
@@ -67,11 +67,11 @@ public class GetCRLServlet extends HttpServlet {
 
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
         cat.debug(">doGet()");
-        
+
         // Check if authorized
         EjbcaWebBean ejbcawebbean= (se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean)
                                    req.getSession().getAttribute("ejbcawebbean");
-        if ( ejbcawebbean == null ){ 
+        if ( ejbcawebbean == null ){
           try {
             ejbcawebbean = (se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), "se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean");
            } catch (ClassNotFoundException exc) {
@@ -81,20 +81,20 @@ public class GetCRLServlet extends HttpServlet {
            }
            req.getSession().setAttribute("ejbcawebbean", ejbcawebbean);
         }
-        
+
         try{
-          ejbcawebbean.initialize(req); 
+          ejbcawebbean.initialize(req);
         } catch(Exception e){
-           throw new java.io.IOException("Authorization Denied");  
+           throw new java.io.IOException("Authorization Denied");
         }
-        
+
         try{
           if(storehome == null){
             storehome = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
-              ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );           
+              ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
           }
         } catch(Exception e){
-           throw new java.io.IOException("Authorization Denied");  
+           throw new java.io.IOException("Authorization Denied");
         }
         String command;
         // Keep this for logging.
@@ -118,11 +118,10 @@ public class GetCRLServlet extends HttpServlet {
                 PrintStream ps = new PrintStream(res.getOutputStream());
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting latest CRL.");
                 e.printStackTrace(ps);
-                cat.error("Error sending latest CRL to " + remoteAddr);
-                cat.error(e);
+                cat.error("Error sending latest CRL to " + remoteAddr, e);
                 return;
             }
-        } 
+        }
 
     } // doGet
 
