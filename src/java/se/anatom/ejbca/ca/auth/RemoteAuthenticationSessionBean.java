@@ -9,15 +9,15 @@ import javax.naming.*;
 import javax.rmi.*;
 import javax.ejb.*;
 
-
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
-
+import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.ca.exception.AuthLoginException;
 
 /**
  * Authenticates users towards a remote user database, using HTTP-based protocol.
  *
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.2 2002-03-07 15:00:36 anatom Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.3 2002-05-26 12:42:25 anatom Exp $
  */
 public class RemoteAuthenticationSessionBean extends BaseSessionBean implements IAuthenticationSession {
 
@@ -41,7 +41,7 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean implements 
      * Implements IAuthenticationSession::authenticateUser.
      * Implements a mechanism that queries a remote database through a HTTP-based protocol.
      */
-    public UserAuthData authenticateUser(String username, String password) throws RemoteException {
+    public UserAuthData authenticateUser(String username, String password) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">authenticateUser("+username+", hiddenpwd)");
 
         UserAuthData ret;
@@ -63,7 +63,7 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean implements 
      * Implements IAuthenticationSession::finishUser.
      * Does nothing!.
      */
-    public void finishUser(String username, String password) throws RemoteException {
+    public void finishUser(String username, String password) throws ObjectNotFoundException {
 
     }
 

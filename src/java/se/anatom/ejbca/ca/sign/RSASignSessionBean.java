@@ -16,8 +16,8 @@ import java.security.cert.X509CRL;
 import java.security.*;
 
 import se.anatom.ejbca.BaseSessionBean;
-import se.anatom.ejbca.ca.auth.IAuthenticationSessionHome;
-import se.anatom.ejbca.ca.auth.IAuthenticationSession;
+import se.anatom.ejbca.ca.auth.IAuthenticationSessionLocalHome;
+import se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal;
 import se.anatom.ejbca.ca.auth.UserAuthData;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.26 2002-05-26 11:12:12 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.27 2002-05-26 12:42:25 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -71,7 +71,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
     private Vector publishers = null;
 
     /* Home interface to Authentication session */
-    private IAuthenticationSessionHome authHome = null;
+    private IAuthenticationSessionLocalHome authHome = null;
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -86,7 +86,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
 
             // get home interfaces to other session beans used
             storeHome = (ICertificateStoreSessionLocalHome)lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
-            authHome = (IAuthenticationSessionHome)lookup("java:comp/env/ejb/AuthenticationSession",IAuthenticationSessionHome.class);
+            authHome = (IAuthenticationSessionLocalHome)lookup("java:comp/env/ejb/AuthenticationSessionLocal");
 
             // Init the publisher session beans
             int i = 1;
@@ -261,7 +261,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
 
         try {
             // Authorize user and get DN
-            IAuthenticationSession authSession = authHome.create();
+            IAuthenticationSessionLocal authSession = authHome.create();
 
             UserAuthData data = authSession.authenticateUser(username, password);
             info("Authorized user " + username + " with DN='" + data.getDN()+"'.");

@@ -17,7 +17,7 @@ import se.anatom.ejbca.ca.exception.AuthLoginException;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.5 2002-03-22 11:21:49 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.6 2002-05-26 12:42:25 anatom Exp $
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean implements IAuthenticationSession {
 
@@ -40,7 +40,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean implements I
     * Implements a mechanism that queries a local database directly. Only allows authentication when user status is
     * STATUS_NEW, STATUS_FAILED or STATUS_INPROCESS.
     */
-    public UserAuthData authenticateUser(String username, String password) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException {
+    public UserAuthData authenticateUser(String username, String password) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">authenticateUser("+username+", hiddenpwd)");
         try {
             // Find the user with username username
@@ -79,7 +79,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean implements I
     * Implements IAuthenticationSession::finishUser.
     * Implements a mechanism that uses a local database directly to set users status to UserData.STATUS_GENERATED.
     */
-    public void finishUser(String username, String password) throws RemoteException, ObjectNotFoundException {
+    public void finishUser(String username, String password) throws ObjectNotFoundException {
         debug(">finishUser("+username+", hiddenpwd)");
         try {
             // Find the user with username username

@@ -162,18 +162,18 @@
         <local>se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal</local>
         <ejb-link>CertificateStoreSession</ejb-link>
      </ejb-local-ref>
-     <ejb-ref>
+     <ejb-local-ref>
         <description>
              The Authentication session used to authenticate users when issuing certificates 
              alter this to enable a custom made authentication session implementing the 
              IAuthenticationSession interface.
         </description>
-        <ejb-ref-name>ejb/AuthenticationSession</ejb-ref-name>
+        <ejb-ref-name>ejb/AuthenticationSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.ca.store.IAuthenticationSessionHome</home>
-        <remote>se.anatom.ejbca.ca.store.IAuthenticationSessionRemote</remote>
+        <local-home>se.anatom.ejbca.ca.store.IAuthenticationSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.store.IAuthenticationSessionLocal</local>
         <ejb-link>AuthenticationSession</ejb-link>
-     </ejb-ref>
+     </ejb-local-ref>
 
     <security-identity>
         <run-as>
@@ -187,6 +187,8 @@
      <ejb-name>RemoteAuthenticationSession</ejb-name>
      <home>se.anatom.ejbca.ca.auth.IAuthenticationSessionHome</home>
      <remote>se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote</remote>
+     <local-home>se.anatom.ejbca.ca.auth.IAuthenticationSessionLocalHome</local-home>
+     <local>se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal</local>
      <ejb-class>se.anatom.ejbca.ca.auth.RemoteAuthenticationSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
@@ -210,6 +212,8 @@
      <ejb-name>AuthenticationSession</ejb-name>
      <home>se.anatom.ejbca.ca.auth.IAuthenticationSessionHome</home>
      <remote>se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote</remote>
+     <local-home>se.anatom.ejbca.ca.auth.IAuthenticationSessionLocalHome</local-home>
+     <local>se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal</local>
      <ejb-class>se.anatom.ejbca.ca.auth.LocalAuthenticationSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>

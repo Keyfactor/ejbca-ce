@@ -11,13 +11,14 @@ import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
+import se.anatom.ejbca.ca.exception.AuthStatusException;
 
 /**
  * Approves all authentication requests that contain a DN as the username, password is ignored and 
  * the username is returned as DN.
  * Useful for demo purposes to give out certificates to anyone.
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.2 2002-04-14 17:07:39 anatom Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.3 2002-05-26 12:42:25 anatom Exp $
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean implements IAuthenticationSession {
 
@@ -36,7 +37,7 @@ public class NullAuthenticationSessionBean extends BaseSessionBean implements IA
     * contains a DN. Only returns entities of type USER_ENDUSER.
     * STATUS_NEW, STATUS_FAILED or STATUS_INPROCESS.
     */
-    public UserAuthData authenticateUser(String username, String password) throws AuthLoginException,RemoteException {
+    public UserAuthData authenticateUser(String username, String password) throws ObjectNotFoundException,AuthStatusException,AuthLoginException {
         debug(">authenticateUser("+username+", hiddenpwd)");
         try {
             // Does the username contain a DN?
@@ -62,7 +63,7 @@ public class NullAuthenticationSessionBean extends BaseSessionBean implements IA
     * Implements IAuthenticationSession::finishUser.
     * Does nothing...
     */
-    public void finishUser(String username, String password) throws RemoteException {
+    public void finishUser(String username, String password) throws ObjectNotFoundException {
         debug(">finishUser("+username+", hiddenpwd)");
         debug("<finishUser("+username+", hiddenpwd)");
     } //finishUser
