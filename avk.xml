@@ -1,0 +1,65 @@
+<project name="avk" default="avk:check"  xmlns:avk="avk">
+	<!--
+	 
+	 Java Application Verification Kit (AVK) for the Enterprise User's Guide
+	 
+	 The Java Application Verification Kit (AVK) for the Enterprise is a tool intended to help developers test
+	 their applications for correct use of J2EE APIs and portability across J2EE compatible application servers,
+	 and to help developers avoid inadvertently writing non-portable code. 
+	 
+	 http://java.sun.com/j2ee/verified/avk_enterprise.html
+	 
+	  -->
+
+	<!--property name="avk.home" location="/some/path"/-->
+	
+	<path id="avk.classpath">
+		<pathelement location="${avk.home}/appserver/lib/sun-appserv-ant.jar"/>
+		<pathelement location="${avk.home}/lib/javke-ant.jar"/>
+	</path>
+	
+	
+	<!--
+		@appname       the name of the ear file to test
+		@partitionOpts Limit the verification process to one or more component types.
+		You can specify any of the following, using a comma as separator: 
+		     - ejb Enterprise bean module tests
+		     - web Web module tests 
+		     - webservices  Web services (both EJB and Web) tests 
+		     - connector Connector tests 
+		     - app Application module tests 
+		     - appclient Application client tests 
+		     - webservicesclient Web services client tests 		
+		@reportingOpts Changes the level of reporting. Specify any of the following values:
+		     - w or "" Report only warning and failure results (default) 
+             - f Report only failure results 
+             - a Report all results, including passed tests and tests that are not applicable 
+	    @jvmargs extra arguments to pass to the jvm
+	    @failonerror   true|false to indicate whether or not to fail the build
+	    @resultdir     the directory where to store the test results
+	  -->
+	<taskdef name="avk:static-archive-test"
+		classname="org.apache.tools.ant.taskdefs.optional.sun.verification.StaticArchiveTest"
+		classpathref="avk.classpath" />
+	
+	
+	<!--
+		@srcdir      the source directory to test
+		@srcserver	 the name of the directory to test againt
+		     - sunone    Sun ONE Application Server 6.x or Sun Java System Application Server 7.x 
+		     - weblogic5 BEA WebLogic 5.x 
+		     - weblogic6 BEA WebLogic 6.x 
+		     - websphere IBM WebSphere 3.x or 4.x 
+		     - jboss     JBoss 3.x
+		     - tomcat    Tomcat 4.x
+	    @jvmargs     extra arguments to pass to the jvm
+	    @failonerror true|false to indicate whether or not to fail the build
+	    @resultdir   the directory where to store the test results
+	  -->
+	<taskdef name="avk:scan-source"
+		classname="org.apache.tools.ant.taskdefs.optional.sun.verification.SourceScan"
+		classpathref="avk.classpath"/>	
+	
+	
+		
+</project>
