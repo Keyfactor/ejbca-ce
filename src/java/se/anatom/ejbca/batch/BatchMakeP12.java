@@ -41,7 +41,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.5 2002-01-14 14:51:50 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.6 2002-01-16 11:45:32 anatom Exp $
  *
  */
 
@@ -254,7 +254,8 @@ public class BatchMakeP12 {
                     failcount++;
                     admin.setUserStatus(data.getUsername(), UserData.STATUS_FAILED);
                 }
-            }
+            } else
+                cat.debug("User '"+data.getUsername()+"' does not have clear text password.");
         }
         if (failedusers != "")
             throw new Exception("BatchMakeP12 failed for " + failcount + " users (" + successcount + " succeeded) - " + failedusers);
@@ -308,7 +309,10 @@ public class BatchMakeP12 {
                 // Make P12 for specified user
                 makep12.createUser(args[0]);
             } else {
-                makep12.setMainStoreDir(".");
+                // Create subdirectory 'p12' if it does not exist
+                File dir = new File("./p12");
+                dir.mkdir();
+                makep12.setMainStoreDir("./p12");
                 // Make P12 for all NEW users in local DB
                 makep12.createAllNew();
                 // Make P12 for all FAILED users in local DB
