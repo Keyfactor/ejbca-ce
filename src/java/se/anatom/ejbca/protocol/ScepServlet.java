@@ -1,8 +1,9 @@
 package se.anatom.ejbca.protocol;
 
 import java.io.*;
-
-import java.security.cert.Certificate;
+import java.util.Collection;
+import java.util.Iterator;
+import java.security.cert.X509Certificate;
 import javax.naming.InitialContext;
 import javax.rmi.PortableRemoteObject;
 import javax.servlet.*;
@@ -15,6 +16,9 @@ import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
+import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.util.Base64;
@@ -39,11 +43,12 @@ import se.anatom.ejbca.util.CertTools;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.24 2003-11-23 09:47:53 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.25 2004-03-10 16:00:10 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);
     private ISignSessionHome signhome = null;
+    private ICAAdminSessionHome caadminhome = null;
 
     /**
      * Inits the SCEP servlet
@@ -63,6 +68,8 @@ public class ScepServlet extends HttpServlet {
             InitialContext ctx = new InitialContext();
             signhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"),
                     ISignSessionHome.class);
+            caadminhome = (ICAAdminSessionHome) PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"), 
+                    ICAAdminSessionHome.class );            
         } catch (Exception e) {
             throw new ServletException(e);
         }
@@ -106,7 +113,6 @@ public class ScepServlet extends HttpServlet {
             if ((operation == null) || (message == null)) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST,
                     "Parameters 'operation' and 'message' must be supplied!");
-
                 return;
             }
 
@@ -124,39 +130,48 @@ public class ScepServlet extends HttpServlet {
                 if (reply == null) {
                     response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                         "Fatal error processing Scep request");
-
                     return;
                 }
                 // Send back Scep response, PKCS#7 which contains the end entity's certificate (or failure)
                 RequestHelper.sendBinaryBytes(reply, response, "application/x-pki-message");
             } else if (operation.equals("GetCACert")) {
-                // TODO: check CA_IDENT for this request if we have more than one CA
-                // Send back DER-encoded CA cert with content-type 'application/x-x509-ca-cert'
+                // The response has the content type tagged as application/x-x509-ca-cert. 
+                // The body of the response is a DER encoded binary X.509 certificate. 
+                // For example: "Content-Type:application/x-x509-ca-cert\n\n"<BER-encoded X509>
+                
+                // CA_IDENT is the message for this request to indicate which CA we are talking about
                 ISignSessionRemote signsession = signhome.create();
-                Certificate[] certs = null;
-                // TODO:
-                // certs = signsession.getCertificateChain(administrator);
-
-                if (certs.length == 0) {
-                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                        "Error getting CA certificate");
+                Collection certs = null;
+                ICAAdminSessionRemote caadminsession = caadminhome.create();          
+                CAInfo cainfo = caadminsession.getCAInfo(administrator, message);
+                if (cainfo != null) {
+                    certs = cainfo.getCertificateChain();
                 }
-
-                RequestHelper.sendNewX509CaCert(certs[0].getEncoded(), response);
+                if ( (certs != null) && (certs.size() > 0) ) {
+                    // CAs certificate is in the first position in the Collection
+                    Iterator iter = certs.iterator();
+                    X509Certificate cert = (X509Certificate)iter.next();
+                    RequestHelper.sendNewX509CaCert(cert.getEncoded(), response);
+                } else {
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                        "No CA certificates found.");
+                }
             } else if (operation.equals("GetCACertChain")) {
-                // TODO: check CA_IDENT for this request if we have more than one CA
-                // Send back DER-encoded CA cert with content-type 'application/x-x509-ca-cert'
+                // The response for GetCACertChain is a certificates-only PKCS#7 
+                // SignedDatato carry the certificates to the end entity, with a 
+                // Content-Type of application/x-x509-ca-ra-cert-chain.
+                
+                // CA_IDENT is the message for this request to indicate which CA we are talking about
+                ICAAdminSessionRemote caadminsession = caadminhome.create();          
+                CAInfo cainfo = caadminsession.getCAInfo(administrator, message);
                 ISignSessionRemote signsession = signhome.create();
-
-                // Create pkcs7 with chain and send bach with content-type 'application/x-x509-ca-ra-cert-chain'
-                byte[] pkcs7 = signsession.createPKCS7(administrator, 0);
-
-                if (pkcs7.length == 0) {
-                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                        "Error getting CA certificate chain");
+                byte[] pkcs7 = signsession.createPKCS7(administrator, cainfo.getCAId());
+                if ( (pkcs7 != null) && (pkcs7.length > 0) ) {
+                    RequestHelper.sendBinaryBytes(pkcs7, response, "application/x-x509-ca-ra-cert-chain");
+                } else {
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                        "No CA certificates found.");
                 }
-
-                RequestHelper.sendBinaryBytes(pkcs7, response, "application/x-x509-ca-ra-cert-chain");
             } else {
                 log.error("Invalid parameter '" + operation);
 
