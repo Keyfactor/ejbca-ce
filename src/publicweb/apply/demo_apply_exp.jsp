@@ -72,7 +72,7 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
 <BODY onLoad="GetProviderList()" bgcolor="#ffffff" link="black" vlink="black" alink="black">
 <center>
   <strong><span class="E">E</span><span class="J">J</span><span class="B">B</span><span class="C">C</span><span class="A">A 
-  </span><span class="titel"> IE Demo Certificate Enrollment</span> </strong> 
+  </span><span class="titel">IE Demo Certificate Enrollment</span> </strong> 
 </center>
 
 <HR width="450">
@@ -80,31 +80,29 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
   If you haven't done so already, you must first install <br>
   the CA certificate(s) in your browser. </div>
 <P align="center">Install CA certificates: 
-  <%
+<%
 try  {
     InitialContext ctx = new InitialContext();
     ISignSessionHome home = home = (ISignSessionHome) PortableRemoteObject.narrow(
             ctx.lookup("RSASignSession"), ISignSessionHome.class );
     ISignSessionRemote ss = home.create();
     Certificate[] chain = ss.getCertificateChain(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()));
-    out.println("<div align=\"center\">");
     if (chain.length == 0) {
         out.println("No CA certificates exist");
     } else {
-        out.println("<li><a href=\"/webdist/certdist?cmd=iecacert&level=0\">Root CA</a></li>");
+        out.println("<li><a href=\"../webdist/certdist?cmd=iecacert&level=0\">Root CA</a></li>");
         if (chain.length > 1) {
-            for (int i=chain.length-2;i>=0;i--) {
-                out.println("<li><a href=\"/webdist/certdist?cmd=iecacert&level="+i+"\">CA</a></li>");
+            for (int i=chain.length-1;i>0;i--) {
+                out.println("<li><a href=\"../webdist/certdist?cmd=iecacert&level="+i+"\">CA</a></li>");
             }
         }
     }
-    out.println("</div>");
 } catch(Exception ex) {
     ex.printStackTrace();
 }                                             
 %>
 <HR align="center" width="550">
-<FORM NAME="CertReqForm" ACTION="certreq" ENCTYPE=x-www-form-encoded METHOD=POST>
+<FORM NAME="CertReqForm" ACTION="democertreq" ENCTYPE=x-www-form-encoded METHOD=POST>
   <div align="center">PLEASE NOTE! Certificates issued by this CA comes with absolutely<br>
     NO WARRANTY whatsoever. NO AUTHENTICATION is<br>
     performed on the information entered below. </div>
@@ -126,7 +124,7 @@ try  {
     <p>
       <SELECT NAME="CspProvider">
       </SELECT>
-      <INPUT TYPE="hidden" NAME="pkcs10" VALUE="">
+      <INPUT TYPE="hidden" NAME="pkcs10req" VALUE="">
     </p>
     <p>
       <INPUT type="button" value="OK" name="GenReq">
@@ -137,7 +135,7 @@ try  {
 <SCRIPT LANGUAGE=VBS>
     Function CSR(keyflags)
        CSR = ""
-       szName          = "CN=6AEK347fw8vWE424"
+       szName = Document.CertReqForm.user.value
        encoder.HashAlgorithm = "MD5"
        err.clear
        On Error Resume Next
@@ -196,7 +194,7 @@ try  {
           result = MsgBox("Unable to generate PKCS#10 certificate request.", 0, "Alert")
           Exit Sub
        end if
-       TheForm.pkcs10.Value = result
+       TheForm.pkcs10req.Value = result
        TheForm.Submit
        Exit Sub
     End Sub
