@@ -9,7 +9,7 @@
 <HR>
 Welcome to certificate enrollment. <BR>
 <p>
-If you you want to, you can manually install the CA certificate(s) in your browser, otherwise this will be done automatically 
+If you want to, you can manually install the CA certificate(s) in your browser, otherwise this will be done automatically 
 when your certificate is retrieved.
 
 <P>Install CA certificates:

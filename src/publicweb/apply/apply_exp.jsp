@@ -212,7 +212,7 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
 <HR>
 Welcome to certificate enrollment. <BR>
 <p>
-If you you want to, you can manually install the CA certificate(s) in your browser, otherwise this will be done automatically 
+If you want to, you can manually install the CA certificate(s) in your browser, otherwise this will be done automatically 
 when your certificate is retrieved.
 
 <P>Install CA certificates:
