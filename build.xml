@@ -12,38 +12,40 @@
   <property name="apidoc" value="./doc/api"/>
   
   <property name="apply.src" value="${src}/ca/apply" />
-  <property name="apply.build" value="${tmp}/ca/apply" />
+  <property name="apply.build" value="${tmp}/ca/apply.war" />
   <property name="applyjar" value="${dist}/apply.war" />
   
   <property name="webdist.src" value="${src}/ca/webdist" />
-  <property name="webdist.build" value="${tmp}/ca/webdist" />
+  <property name="webdist.build" value="${tmp}/ca/webdist.war" />
   <property name="webdistjar" value="${dist}/webdist.war" />
 
   <property name="sampleauth.src" value="${src}/ca/sampleauth" />
-  <property name="sampleauth.build" value="${tmp}/ca/sampleauth" />
+  <property name="sampleauth.build" value="${tmp}/ca/sampleauth.war" />
   <property name="sampleauthjar" value="${dist}/sampleauth.war" />
 
   <property name="ca.src" value="${src}/ca/ca" />
-  <property name="ca.build" value="${tmp}/ca/ca" />
+  <property name="ca.build" value="${tmp}/ca/ca.jar" />
   <property name="cajar" value="${dist}/ca.jar" />
 
   <property name="ra.src" value="${src}/ra" />
-  <property name="ra.build" value="${tmp}/ra" />
+  <property name="ra.build" value="${tmp}/ra.jar" />
   <property name="rajar" value="${dist}/ra.jar" />
   
   <property name="raadmin.src" value="${src}/ra/web/raadmin" />
-  <property name="raadmin.build" value="${tmp}/raadmin" />
+  <property name="raadmin.build" value="${tmp}/raadmin.war" />
   <property name="raadminjar" value="${dist}/raadmin.war" />  
 
   <property name="caear.src" value="${src}/ca/ear" />
+  <property name="caear.earsrc" value="${caear.src}/ear" />
+  <property name="caear.warsrc" value="${caear.src}/root" />
   <property name="caear.build" value="${tmp}/ca/ear" />
-  <property name="caear.warbuild" value="${tmp}/ca/ear/root" />
+  <property name="caear.warbuild" value="${tmp}/ca/ear/caroot.war" />
   <property name="caear.earbuild" value="${tmp}/ca/ear/ear" />
   <property name="carootwar" value="${caear.earbuild}/caroot.war" />
   <property name="caear" value="${dist}/ejbca-ca.ear" />
 
   <property name="caearnora.build" value="${tmp}/canora/ear" />
-  <property name="caearnora.warbuild" value="${tmp}/canora/ear/root" />
+  <property name="caearnora.warbuild" value="${tmp}/canora/ear/caroot.war" />
   <property name="caearnora.earbuild" value="${tmp}/canora/ear/ear" />
   <property name="canorarootwar" value="${caearnora.earbuild}/caroot.war" />
   <property name="caearnora" value="${dist}/ejbca-canora.ear" />
@@ -322,10 +324,15 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
   <!-- =================================================================== -->
   <target name="ca.ear" depends="apply.war, webdist.war, ca.jar, ra.jar, raadmin.war">
     <mkdir dir="${caear.build}"/>
-    <copy todir="${caear.build}">
-        <fileset dir="${caear.src}"> 
+    <copy todir="${caear.earbuild}">
+        <fileset dir="${caear.earsrc}"> 
                 <include name="**/*"/>
-                <exclude name="ear/META-INF/application-nora.xml"/>
+                <exclude name="META-INF/application-nora.xml"/>
+        </fileset>
+    </copy>
+    <copy todir="${caear.warbuild}">
+        <fileset dir="${caear.warsrc}"> 
+                <include name="**/*"/>
         </fileset>
     </copy>
     
@@ -351,12 +358,18 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
   <!-- =================================================================== -->
   <target name="canora.ear" depends="apply.war, webdist.war, ca.jar, ra.jar">
     <mkdir dir="${caearnora.build}"/>
-    <copy todir="${caearnora.build}">
-        <fileset dir="${caear.src}"> 
+    <copy todir="${caearnora.earbuild}">
+        <fileset dir="${caear.earsrc}"> 
                 <include name="**/*"/>
-                <exclude name="ear/META-INF/application.xml"/>
+                <exclude name="META-INF/application.xml"/>
         </fileset>
     </copy>
+    <copy todir="${caearnora.warbuild}">
+        <fileset dir="${caear.warsrc}"> 
+                <include name="**/*"/>
+        </fileset>
+    </copy>
+    
     <!-- Rename application.xml without web-RA -->
     <move file="${caearnora.build}/ear/META-INF/application-nora.xml" tofile="${caearnora.build}/ear/META-INF/application.xml"/>
     

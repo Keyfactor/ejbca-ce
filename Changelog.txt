@@ -8,6 +8,7 @@ Made type of signing device completely soft configurable.
 New access control on method invocation.
 Option to generate JKS keystores.
 Added CertificatePolicies extension.
+Return PKCS7 with full path to browsers.
 Many small improvements.
 Many bugfixes:
 all fixes from v1.4,
