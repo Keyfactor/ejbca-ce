@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE weblogic-ejb-jar PUBLIC "-//BEA Systems, Inc.//DTD WebLogic 6.0.0 EJB//EN" "http://www.bea.com/servers/wls600/dtd/weblogic-ejb-jar.dtd" >
+
+<weblogic-ejb-jar>
+
+  <weblogic-enterprise-bean>
+    <ejb-name>RSASignSession</ejb-name>
+    <transaction-descriptor>
+      <trans-timeout-seconds>900</trans-timeout-seconds>
+    </transaction-descriptor>
+    <jndi-name>RSASignSession</jndi-name>
+  </weblogic-enterprise-bean>
+
+  <weblogic-enterprise-bean>
+    <ejb-name>AuthenticationSession</ejb-name>
+    <transaction-descriptor>
+      <trans-timeout-seconds>900</trans-timeout-seconds>
+    </transaction-descriptor>
+    <reference-descriptor>
+        <ejb-reference-description>
+            <ejb-ref-name>ejb/UserData</ejb-ref-name>
+            <jndi-name>UserData</jndi-name>
+        </ejb-reference-description>
+    </reference-descriptor>
+    <jndi-name>AuthenticationSession</jndi-name>
+  </weblogic-enterprise-bean>
+
+  <weblogic-enterprise-bean>
+    <ejb-name>CertificateStoreSession</ejb-name>
+    <transaction-descriptor>
+      <trans-timeout-seconds>900</trans-timeout-seconds>
+    </transaction-descriptor>
+    <jndi-name>CertificateStoreSession</jndi-name>
+  </weblogic-enterprise-bean>
+
+  <weblogic-enterprise-bean>
+    <ejb-name>CreateCRLSession</ejb-name>
+    <transaction-descriptor>
+      <trans-timeout-seconds>900</trans-timeout-seconds>
+    </transaction-descriptor>
+    <jndi-name>CreateCRLSession</jndi-name>
+  </weblogic-enterprise-bean>
+
+<!-- Uncomment to use LDAP Publisher
+
+  <weblogic-enterprise-bean>
+    <ejb-name>PublisherSession1</ejb-name>
+    <transaction-descriptor>
+      <trans-timeout-seconds>900</trans-timeout-seconds>
+    </transaction-descriptor>
+    <jndi-name>PublisherSession1</jndi-name>
+  </weblogic-enterprise-bean>
+  
+ END LDAP Publisher section -->
+
+  <weblogic-enterprise-bean>
+    <ejb-name>CertificateData</ejb-name>   
+    <entity-descriptor>
+      <entity-cache>    
+        <max-beans-in-cache>1</max-beans-in-cache>
+      </entity-cache>    
+      <persistence>
+        <persistence-type>
+          <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
+          <type-version>5.1.0</type-version>
+          <type-storage>META-INF/weblogic-cmp-rdbms-jar-cert.xml</type-storage>
+        </persistence-type>
+        <persistence-use>
+          <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
+          <type-version>5.1.0</type-version>
+        </persistence-use>
+      </persistence>
+    </entity-descriptor>
+    <jndi-name>CertificateData</jndi-name>
+  </weblogic-enterprise-bean>
+
+  <weblogic-enterprise-bean>
+    <ejb-name>CRLData</ejb-name>   
+    <entity-descriptor>
+      <entity-cache>    
+        <max-beans-in-cache>1</max-beans-in-cache>
+      </entity-cache>    
+      <persistence>
+        <persistence-type>
+          <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
+          <type-version>5.1.0</type-version>
+          <type-storage>META-INF/weblogic-cmp-rdbms-jar-crl.xml</type-storage>
+        </persistence-type>
+        <persistence-use>
+          <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
+          <type-version>5.1.0</type-version>
+        </persistence-use>
+      </persistence>
+    </entity-descriptor>
+    <jndi-name>CRLData</jndi-name>
+  </weblogic-enterprise-bean>
+
+   <security-role-assignment>
+      <role-name>InternalUser</role-name>
+      <principal-name>system</principal-name>
+   </security-role-assignment>
+   <security-role-assignment>
+      <role-name>everyone</role-name>
+      <principal-name>everyone</principal-name>
+   </security-role-assignment>
+
+</weblogic-ejb-jar>
