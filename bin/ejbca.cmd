@@ -30,8 +30,8 @@ if not "%JBOSS_HOME%" == ""  (
     set J2EE_CP=%JBOSS_HOME%\client\jnp-client.jar;%JBOSS_HOME%\client\jboss-j2ee.jar;%JBOSS_HOME%\client\jbossall-client.jar;%JBOSS_HOME%\client\jboss-client.jar;%JBOSS_HOME%\client\jbosssx-client.jar;%JBOSS_HOME%\client\jboss-common-client.jar
 ) else if not "%WEBLOGIC_HOME%" == ""  ( 
     echo Using Weblogic JNDI provider...
-    set J2EE_DIR=%WEBLOGIC_HOME%\client
-    set J2EE_CP=%WEBLOGIC_HOME%\weblogic.jar
+    set J2EE_DIR=%WEBLOGIC_HOME%\server
+    set J2EE_CP=%WEBLOGIC_HOME%\server\lib\weblogic.jar
 ) else (
     echo Could not find a valid J2EE server for JNDI provider.
     echo Specify a JBOSS_HOME or WEBLOGIC_HOME environment variable
@@ -57,7 +57,7 @@ rem automgically construct the classpath, as we can du with unices.
 rem 
 rem SETLOCAL ENABLEDELAYEDEXPANSION
 rem IF ERRORLEVEL 1 echo Unable to enable extensions
-rem for %%i in (%J2EE_DIR%\*.jar) do set JBOSS_CP=%%i;!JBOSS_CP!
+rem for %%i in (%J2EE_DIR%\*.jar) do set J2EE_CP=%%i;!J2EE_CP!
 rem for %%i in (%EJBCA_HOME%\lib\*.jar) do set CP=%%i;!CP!
 rem for %%i in (%EJBCA_HOME%\dist\*.jar) do set CP=%%i;!CP!
 

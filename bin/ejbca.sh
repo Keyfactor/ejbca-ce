@@ -40,7 +40,7 @@ if [ -n "$JBOSS_HOME" ]; then
     J2EE_DIR="${JBOSS_HOME}"/client
 elif [ -n "$WEBLOGIC_HOME" ]; then
     echo "Using Weblogic JNDI provider..."
-    J2EE_DIR="${WEBLOGIC_HOME}"/lib
+    J2EE_DIR="${WEBLOGIC_HOME}"/server/lib
 else
     echo "Could not find a valid J2EE server for JNDI provider.."
     echo "Specify a JBOSS_HOME or WEBLOGIC_HOME environment variable"

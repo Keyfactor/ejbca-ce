@@ -9,13 +9,17 @@ tables if weblogic does not do it automagically.
 
 See the file create-tables-ejbca3.sql for table definitions.
 
-2. Set the environment variable WEBLOGIC_HOME pointing to where weblogic.jar is located.
+2. Set the environment variable WEBLOGIC_HOME pointing to for example /bea/weblogic81 
+(weblogic.jar is located under WEBLOGIC_HOME/server/lib).
 
-3. To build the ear file you probably need to copy weblogic.jar to EJBCA_HOME/lib/ext.
+3. Unforturnately you must also point JBOSS_HOME to where JBoss is located in order for the build 
+script to work, at least until someone provides a weblogic.xml corresponding to bin/jboss.xml.
 
-4. Deploy the ear file in weblogic, it should works straight away.
+4. To build the ear file you probably need to copy weblogic.jar to EJBCA_HOME/lib/ext.
 
-5. Edit 'jndi.properties' in the directories 'ejbca' and 'ejbca/src/java' to
+5. Deploy the ear file in weblogic, it should works straight away.
+
+6. Edit 'jndi.properties' in the directories 'ejbca' and 'ejbca/src/java' to
 call Weblogic instead of JBoss.
 
-6. Run 'ant test:run' to test the setup.
+7. Run 'ant test:run' to test the setup.
