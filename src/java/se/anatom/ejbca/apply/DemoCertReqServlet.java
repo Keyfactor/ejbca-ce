@@ -74,7 +74,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.4 2003-01-12 17:16:32 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.5 2003-01-16 08:44:56 anatom Exp $
  */
 public class DemoCertReqServlet
   extends HttpServlet {
@@ -179,7 +179,7 @@ public class DemoCertReqServlet
       // abort here, no request received
       throw new ServletException("A certification request must be provided!");
     }
-    
+
       String username = request.getParameter("username");
       if (username == null || username.trim().length() == 0) {
           username = CertTools.getPartFromDN(dn, "CN");
@@ -192,6 +192,7 @@ public class DemoCertReqServlet
         cat.error(msg);
         debug.printMessage(msg);
         debug.printDebugInfo();
+        return;
     }
 
     UserView newuser = new UserView();
@@ -243,12 +244,12 @@ public class DemoCertReqServlet
     try {
         if (type == 1) {
               byte[] certs = helper.nsCertRequest(reqBytes, username, password);
-			  RequestHelper.sendNewCertToNSClient(certs, response);            
+              RequestHelper.sendNewCertToNSClient(certs, response);
         }
         if (type == 2) {
               byte[] b64cert=helper.pkcs10CertRequest(reqBytes, username, password);
               debug.ieCertFix(b64cert);
-			  RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"));            
+              RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"));
         }
 
     //} catch (java.security.cert.CertificateEncodingException e) {
@@ -381,7 +382,7 @@ private void sendNewB64Cert(byte[] b64cert, HttpServletResponse out)
      } catch (Exception e) {
         throw new ServletException("Error checking username '" + username +": ", e);
      }
-    return username==null ? true:false;
+    return (tmpuser==null) ? true:false;
   }
 
 }
