@@ -179,7 +179,6 @@
      <remote>se.anatom.ejbca.ra.authorization.IAuthorizationSessionRemote</remote>
      <local-home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome</local-home>
      <local>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocal</local>
-
      <ejb-class>se.anatom.ejbca.ra.authorization.LocalAuthorizationSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
@@ -655,6 +654,10 @@
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
+         <method-name>getDefaultAdminPreference</method-name>
+     </method>
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
          <method-name>getEndEntityProfileNames</method-name>
      </method>
      <method>
@@ -679,11 +682,15 @@
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>existsCertificateTypeInProfiles</method-name>
+         <method-name>existsCertificateProfileInEndEntityProfiles</method-name>
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>isAuthorized</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>isAuthorizedNoLog</method-name>
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
@@ -692,6 +699,10 @@
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>getAdminGroup</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>getNumberOfAdminGroups</method-name>
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
@@ -727,7 +738,7 @@
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
-         <method-name>existsProfileInRules</method-name>
+         <method-name>existsEndEntityProfileInRules</method-name>
      </method>
      <trans-attribute>Supports</trans-attribute>
    </container-transaction>
@@ -751,19 +762,19 @@
      </method>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
-         <method-name>revokeUser</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>revokeCert</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
          <method-name>setPassword</method-name>
      </method>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>setClearTextPassword</method-name>
+     </method>
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>revokeUser</method-name>
+     </method>
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>revokeCert</method-name>
      </method>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
@@ -773,7 +784,6 @@
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>saveGlobalConfiguration</method-name>
      </method>
-
      <method>
          <ejb-name>RaAdminSession</ejb-name>
          <method-name>addAdminPreference</method-name>
@@ -784,25 +794,36 @@
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>addProfile</method-name>
+         <method-name>changeAdminPreferenceNoLog</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>cloneProfile</method-name>
+         <method-name>saveDefaultAdminPreference</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>removeProfile</method-name>
+         <method-name>addEndEntityProfile</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>renameProfile</method-name>
+         <method-name>cloneEndEntityProfile</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>changeProfile</method-name>
+         <method-name>removeEndEntityProfile</method-name>
      </method>
-
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>renameEndEntityProfile</method-name>
+     </method>
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>changeEndEntityProfile</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>init</method-name>
+     </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>addAdminGroup</method-name>
