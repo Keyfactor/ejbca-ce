@@ -2,7 +2,7 @@
 IFS=
 
 # This script sets up the administrative web interface with client cert authentication.
-# Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <java cacert keystore passwd>
+# Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd>
 
 if [ -f $1 ]
 then
