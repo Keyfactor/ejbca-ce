@@ -54,7 +54,7 @@ import org.apache.log4j.Logger;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.25 2004-04-16 07:38:56 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.26 2004-05-13 15:38:02 herrvendil Exp $
  */
 public abstract class UserDataBean extends BaseEntityBean {
 
@@ -258,8 +258,11 @@ public abstract class UserDataBean extends BaseEntityBean {
      *  Non-searchable information about a user. for future use.
      */
     public  ExtendedInformation getExtendedInformation(){
-      ExtendedInformation returnval = new ExtendedInformation();
-      returnval.loadData(getExtendedInformationData());
+      ExtendedInformation returnval = null;	
+      if(getExtendedInformationData() != null){	
+    	returnval = new ExtendedInformation();
+        returnval.loadData(getExtendedInformationData());
+      }  
       return returnval;
     }
 
