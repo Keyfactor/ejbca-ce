@@ -3,34 +3,70 @@ package se.anatom.ejbca;
 import javax.ejb.EntityBean;
 import javax.ejb.EntityContext;
 
-public class BaseEntityBean implements EntityBean
-{
-    transient protected EntityContext  ctx;
 
-	public BaseEntityBean()
-	{
-		super();
-	}
+/**
+ * Base class for entity beans implementing required methods and helpers.
+ *
+ * @version $Id: BaseEntityBean.java,v 1.3 2003-06-26 11:43:16 anatom Exp $
+ */
+public class BaseEntityBean implements EntityBean {
+    protected transient EntityContext ctx;
 
-    public void setEntityContext(EntityContext ctx){
-         this.ctx=ctx;
+    /**
+     * Creates a new BaseEntityBean object.
+     */
+    public BaseEntityBean() {
+        super();
     }
-    public void unsetEntityContext(){
-         this.ctx=null;
+
+    /**
+     * Sets current entity context
+     *
+     * @param ctx current entity context
+     */
+    public void setEntityContext(EntityContext ctx) {
+        this.ctx = ctx;
     }
-    public void ejbActivate(){
+
+    /**
+     * Removes (nulls) current entity context
+     */
+    public void unsetEntityContext() {
+        this.ctx = null;
+    }
+
+    /**
+     * Activates bean, does nothing for base entity.
+     */
+    public void ejbActivate() {
         // Not implemented.
     }
-    public void ejbPassivate(){
+
+    /**
+     * Passivates bean, does nothing for base entity.
+     */
+    public void ejbPassivate() {
         // Not implemented.
     }
-    public void ejbLoad(){
+
+    /**
+     * Loads bean, does nothing for base entity.
+     */
+    public void ejbLoad() {
         // Not implemented.
     }
-    public void ejbStore(){
+
+    /**
+     * Stores bean, does nothing for base entity.
+     */
+    public void ejbStore() {
         // Not implemented.
     }
-    public void ejbRemove(){
+
+    /**
+     * Removes bean, does nothing for base entity.
+     */
+    public void ejbRemove() {
         // Not implemented.
     }
 }

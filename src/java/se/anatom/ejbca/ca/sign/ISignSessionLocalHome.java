@@ -1,17 +1,20 @@
-
 package se.anatom.ejbca.ca.sign;
 
 import javax.ejb.CreateException;
 
+
 /**
- * @version $Id: ISignSessionLocalHome.java,v 1.3 2002-11-17 14:01:38 herrvendil Exp $
+ * Local Home interface for session bean
+ *
+ * @version $Id: ISignSessionLocalHome.java,v 1.4 2003-06-26 11:43:23 anatom Exp $
  */
 public interface ISignSessionLocalHome extends javax.ejb.EJBLocalHome {
-
     /**
      * Default create method. Maps to ejbCreate in implementation.
-     * @throws CreateException
+     *
      * @return ISignSessionRemote interface
+     *
+     * @throws CreateException
      */
     ISignSessionLocal create() throws CreateException;
 }

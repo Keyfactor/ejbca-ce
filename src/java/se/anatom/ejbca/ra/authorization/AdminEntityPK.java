@@ -1,27 +1,30 @@
-
 package se.anatom.ejbca.ra.authorization;
 
 /**
- * @version $Id: AdminEntityPK.java,v 1.1 2002-10-24 20:06:50 herrvendil Exp $
+ * DOCUMENT ME!
+ *
+ * @version $Id: AdminEntityPK.java,v 1.2 2003-06-26 11:43:24 anatom Exp $
  */
-
 public final class AdminEntityPK implements java.io.Serializable {
-
-
     public int pK;
 
-
-    public AdminEntityPK(java.lang.String admingroupname, int matchwith, int matchtype, java.lang.String matchvalue) {
-        this.pK =
-        ((admingroupname==null?0:admingroupname.hashCode())
-        ^
-        ((int) matchwith)
-        ^
-        (matchvalue==null?0:matchvalue.hashCode())
-        ^
-        ((int) matchtype));
+    /**
+     * Creates a new AdminEntityPK object.
+     *
+     * @param admingroupname DOCUMENT ME!
+     * @param matchwith DOCUMENT ME!
+     * @param matchtype DOCUMENT ME!
+     * @param matchvalue DOCUMENT ME!
+     */
+    public AdminEntityPK(java.lang.String admingroupname, int matchwith, int matchtype,
+        java.lang.String matchvalue) {
+        this.pK = (((admingroupname == null) ? 0 : admingroupname.hashCode()) ^ ((int) matchwith) ^
+            ((matchvalue == null) ? 0 : matchvalue.hashCode()) ^ ((int) matchtype));
     }
 
+    /**
+     * Creates a new AdminEntityPK object.
+     */
     public AdminEntityPK() {
     }
 
@@ -32,7 +35,9 @@ public final class AdminEntityPK implements java.io.Serializable {
         if (!(otherOb instanceof se.anatom.ejbca.ra.authorization.AdminEntityPK)) {
             return false;
         }
+
         se.anatom.ejbca.ra.authorization.AdminEntityPK other = (se.anatom.ejbca.ra.authorization.AdminEntityPK) otherOb;
+
         return (this.pK == other.pK);
     }
 
@@ -40,9 +45,6 @@ public final class AdminEntityPK implements java.io.Serializable {
      * @see java.lang.Object#hashCode()
      */
     public int hashCode() {
-
         return this.pK;
-
     }
-
 }

@@ -1,46 +1,53 @@
 package se.anatom.ejbca.samples;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
+
+import org.bouncycastle.asn1.*;
+
+import org.bouncycastle.jce.*;
+
+import se.anatom.ejbca.util.*;
+
 import java.io.*;
+
 import java.net.*;
+
 // Use for SSL connections
+
 /*
 import javax.net.ssl.*;
 import com.sun.net.ssl.*;
 */
-
 import java.security.KeyPair;
-import java.security.cert.*;
 import java.security.Provider;
 import java.security.Security;
+import java.security.cert.*;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
-
-import org.bouncycastle.jce.*;
-import org.bouncycastle.asn1.*;
-
-import se.anatom.ejbca.util.*;
 
 /**
- * NOTE: Support for SSL has been commented out in this sample, since it requires JSSE.
+ * NOTE: Support for SSL has been commented out in this sample, since it requires JSSE. This sample
+ * class generates a PKCS10 request and POSTs to the CAs web interface. The reply is received and
+ * printed to stdout. Takes arguments:
  *
- * This sample class generates a PKCS10 request and POSTs to the CAs web interface.
- * The reply is received and printed to stdout.
- *
- * Takes arguments:
  * <ul>
- * <li>requesturl - URL to the CA web (servlet where requests are POSTed), http://127.0.0.1/apply/apply_man.jsp.
- * <li>username - username of a user registered with the CA with status NEW.
- * <li>password - password for the above user.
+ * <li>
+ * requesturl - URL to the CA web (servlet where requests are POSTed),
+ * http://127.0.0.1/apply/apply_man.jsp.
+ * </li>
+ * <li>
+ * username - username of a user registered with the CA with status NEW.
+ * </li>
+ * <li>
+ * password - password for the above user.
+ * </li>
  * </ul>
  *
- * @version $Id: HttpGetCert.java,v 1.7 2003-02-12 11:23:19 scop Exp $
  *
+ * @version $Id: HttpGetCert.java,v 1.8 2003-06-26 11:43:25 anatom Exp $
  */
 public class HttpGetCert {
-
     private static Logger log = Logger.getLogger(HttpGetCert.class);
-
     private X509Certificate webcert = null;
 
     /**
@@ -55,34 +62,48 @@ public class HttpGetCert {
         java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         */
         log.debug("<HttpGetCert:");
-    } // HttpGetCert
+    }
+     // HttpGetCert
 
     /**
-     * Sets the CA certificate used to verify the web server's certificate. We only support a single self-signed CA certificate here.
+     * Sets the CA certificate used to verify the web server's certificate. We only support a
+     * single self-signed CA certificate here.
      *
-     * @param cert servercertificate
+     * @param url servercertificate
+     *
+     * @return DOCUMENT ME!
+     *
      * @exception java.security.cert.CertificateException if the certificate is not correct.
      * @throws IllegalArgumentException if webcert is not a self-signed certificate
      */
-        // Use for SSL connections
-        /*
+
+    // Use for SSL connections
+
+    /*
     public void setSSLTrustedServerCert(byte[] cert) throws java.security.cert.CertificateException {
-        log.debug(">setSSLTrustedServerCert:");
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        webcert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(cert));
-        if ( CertTools.isSelfSigned( webcert ) )
-            throw new IllegalArgumentException("Webcert certificate is not self signed (not a root CA certificate).");
-        log.debug("<setSSLTrustedServerCert:");
+    log.debug(">setSSLTrustedServerCert:");
+    CertificateFactory cf = CertificateFactory.getInstance("X.509");
+    webcert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(cert));
+    if ( CertTools.isSelfSigned( webcert ) )
+        throw new IllegalArgumentException("Webcert certificate is not self signed (not a root CA certificate).");
+    log.debug("<setSSLTrustedServerCert:");
 
     } // setSSLTrustedServerCert
     */
 
     /**
      * Creates a SSLSocketFactory to communicate with the server using HTTPS.
+     *
+     * @param url DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     *
      * @throws IllegalArgumentException if webcert is not set.
      * @throws Exception error in setting up SSLContext.
      */
+
     // Use for SSL connections
+
     /*
     private SSLSocketFactory getSSLFactory() throws IllegalArgumentException, Exception {
         log.debug( ">getSSLFactory" );
@@ -118,12 +139,16 @@ public class HttpGetCert {
 
     /**
      * Creates a URLConnection either HTTP or HTTPS.
-     * @param URL the URL (http:// or https://
+     *
+     * @param url the URL (http:// or https://
+     *
      * @return URLConnection
      */
     private URLConnection getUrlConnection(URL url) throws Exception {
         URLConnection con = url.openConnection();
-       // Use for SSL connections
+
+        // Use for SSL connections
+
         /*
         if( con instanceof HttpsURLConnection ) {
             HttpsURLConnection httpscon = (HttpsURLConnection) con;
@@ -136,72 +161,92 @@ public class HttpGetCert {
     /**
      * Sends a certificate request (PKCS10) to the CA and receives the reply.
      *
+     * @param requestUrl DOCUMENT ME!
      * @param request Base64 encoded PKCS10-request (PEM-format)
      * @param username username
      * @param password password
-     * @return byte array with received certificate
+     *
      * @exception IllegalArgumentException if requesturl is not a vlid HTTP or HTTPS url.
      * @exception Exception if the trusted webcert is not a correct certificate.
      * @exception Exception if we get back a HTTP response code != 200 from the CA.
      * @exception Exception if the reply is not a correct certificate.
      */
     public void sendHttpReq(String requestUrl, String request, String username, String password)
-    throws Exception {
-        log.debug(">sendHttpReq: request=" + request.toString() + ", username=" + username + ", password=" + password);
-        if (requestUrl == null)
+        throws Exception {
+        log.debug(">sendHttpReq: request=" + request.toString() + ", username=" + username +
+            ", password=" + password);
+
+        if (requestUrl == null) {
             throw new IllegalArgumentException("requesturl can not be  null.");
+        }
 
         log.debug("Sending request to: " + requestUrl);
 
         URL url = new URL(requestUrl);
-        HttpURLConnection con = (HttpURLConnection)getUrlConnection(url);
+        HttpURLConnection con = (HttpURLConnection) getUrlConnection(url);
+
         // we are going to do a POST
         con.setDoOutput(true);
         con.setRequestMethod("POST");
 
         // POST it
         PrintWriter out = new PrintWriter(con.getOutputStream());
-        out.println("pkcs10req=" + URLEncoder.encode(request) +
-        "&user=" + URLEncoder.encode(username) +
-        "&password=" + URLEncoder.encode(password) +
-        "&submit=Submit+Query");
+        out.println("pkcs10req=" + URLEncoder.encode(request) + "&user=" +
+            URLEncoder.encode(username) + "&password=" + URLEncoder.encode(password) +
+            "&submit=Submit+Query");
         out.close();
 
         // Read the reqponse
         BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
         String inputLine;
+
         while ((inputLine = in.readLine()) != null) {
             System.out.println(inputLine);
         }
-        if (con.getResponseCode() == 200)
+
+        if (con.getResponseCode() == 200) {
             log.debug("Received certificate reply.");
-        else
+        } else {
             throw new Exception("Error sending PKCS10-request.");
+        }
 
         // We are done, disconnect
         con.disconnect();
 
         log.debug("<sendHttpReq:");
+    }
+     // sendHttpReq
 
-    } // sendHttpReq
-
-    public static void main(String args[])  throws Exception {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param args DOCUMENT ME!
+     *
+     * @throws Exception DOCUMENT ME!
+     */
+    public static void main(String[] args) throws Exception {
         //Configure Log4j
         BasicConfigurator.configure();
+
         // Install BouncyCastle provider
         Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
         int result = Security.addProvider(BCJce);
 
         // Generate keys (512 bit for sample purposes)
         System.out.print("Generating 512 bit RSA keys.");
+
         KeyPair rsaKeys = KeyTools.genKeys(512);
         System.out.println("Keys generated.");
+
         // Generate PKCS10 certificate request
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("C=SE,O=AnaTom,CN=HttpTest"), rsaKeys.getPublic(), null, rsaKeys.getPrivate());
+        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
+                CertTools.stringToBcX509Name("C=SE,O=AnaTom,CN=HttpTest"), rsaKeys.getPublic(),
+                null, rsaKeys.getPrivate());
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
         dOut.writeObject(req);
         dOut.close();
+
         ByteArrayOutputStream bos1 = new ByteArrayOutputStream();
         bos1.write("-----BEGIN CERTIFICATE REQUEST-----\n".getBytes());
         bos1.write(Base64.encode(bOut.toByteArray()));
@@ -212,8 +257,10 @@ public class HttpGetCert {
 
         // Now send the request
         System.out.println("Trying to send request...");
-        HttpGetCert getter = new HttpGetCert();
-        getter.sendHttpReq("http://127.0.0.1:8080/apply/certreq", new String(bos1.toByteArray()), "foo", "foo123");
-    }
 
-}  // class CertRequest
+        HttpGetCert getter = new HttpGetCert();
+        getter.sendHttpReq("http://127.0.0.1:8080/apply/certreq", new String(bos1.toByteArray()),
+            "foo", "foo123");
+    }
+}
+ // class CertRequest

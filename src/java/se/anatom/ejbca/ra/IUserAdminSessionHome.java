@@ -1,21 +1,24 @@
-
 package se.anatom.ejbca.ra;
 
 import java.rmi.RemoteException;
+
 import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
 
+
 /**
- * @version $Id: IUserAdminSessionHome.java,v 1.6 2002-11-17 14:01:40 herrvendil Exp $
+ * DOCUMENT ME!
+ *
+ * @version $Id: IUserAdminSessionHome.java,v 1.7 2003-06-26 11:43:24 anatom Exp $
  */
 public interface IUserAdminSessionHome extends EJBHome {
-
     /**
      * Default create method. Maps to ejbCreate in implementation.
+     *
+     * @return IUserAdminSessionRemote interface
+     *
      * @throws CreateException
      * @throws RemoteException
-     * @return IUserAdminSessionRemote interface
      */
     IUserAdminSessionRemote create() throws CreateException, RemoteException;
-
 }

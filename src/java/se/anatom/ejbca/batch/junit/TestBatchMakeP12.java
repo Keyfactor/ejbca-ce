@@ -1,27 +1,28 @@
 package se.anatom.ejbca.batch.junit;
 
-import java.util.*;
+import junit.framework.*;
+
+import org.apache.log4j.Logger;
+
+import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.batch.*;
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ra.*;
+
 import java.io.File;
+
+import java.util.*;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import se.anatom.ejbca.batch.*;
-import se.anatom.ejbca.ra.*;
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.log.Admin;
 
-import org.apache.log4j.Logger;
-import junit.framework.*;
-
-
-/** Tests the batch making of soft cards.
+/**
+ * Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.21 2003-03-01 14:30:30 anatom Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.22 2003-06-26 11:43:22 anatom Exp $
  */
-
 public class TestBatchMakeP12 extends TestCase {
-
     private static Logger log = Logger.getLogger(TestBatchMakeP12.class);
     private static Context ctx;
     private static IUserAdminSessionHome home;
@@ -30,6 +31,11 @@ public class TestBatchMakeP12 extends TestCase {
     private static String pwd;
     private static String pwd1;
 
+    /**
+     * Creates a new TestBatchMakeP12 object.
+     *
+     * @param name name
+     */
     public TestBatchMakeP12(String name) {
         super(name);
     }
@@ -37,8 +43,10 @@ public class TestBatchMakeP12 extends TestCase {
     protected void setUp() throws Exception {
         log.debug(">setUp()");
         ctx = getInitialContext();
+
         Object obj = ctx.lookup("UserAdminSession");
-        home = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
+        home = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj,
+                IUserAdminSessionHome.class);
         log.debug("<setUp()");
     }
 
@@ -47,78 +55,109 @@ public class TestBatchMakeP12 extends TestCase {
 
     private Context getInitialContext() throws NamingException {
         log.debug(">getInitialContext");
+
         Context ctx = new javax.naming.InitialContext();
         log.debug("<getInitialContext");
+
         return ctx;
     }
 
     private String genRandomUserName() throws Exception {
         // Gen random user
-        Random rand = new Random(new Date().getTime()+4711);
+        Random rand = new Random(new Date().getTime() + 4711);
         String username = "";
+
         for (int i = 0; i < 6; i++) {
             int randint = rand.nextInt(9);
             username += (new Integer(randint)).toString();
         }
-        log.debug("Generated random username: username =" + username);
-        return username;
-    } // genRandomUserName
 
+        log.debug("Generated random username: username =" + username);
+
+        return username;
+    }
+
+    // genRandomUserName
     private String genRandomPwd() throws Exception {
         // Gen random pwd
-        Random rand = new Random(new Date().getTime()+4812);
+        Random rand = new Random(new Date().getTime() + 4812);
 
         String password = "";
+
         for (int i = 0; i < 8; i++) {
             int randint = rand.nextInt(9);
             password += (new Integer(randint)).toString();
         }
-        log.debug("Generated random pwd: password=" + password);
-        return password;
-    } // genRandomPwd
 
+        log.debug("Generated random pwd: password=" + password);
+
+        return password;
+    }
+
+    // genRandomPwd
+
+    /**
+     * test creation of new user
+     *
+     * @throws Exception error
+     */
     public void test01CreateNewUsers() throws Exception {
         log.debug(">test01CreateNewUser()");
-        IUserAdminSessionRemote data1=null;
+
+        IUserAdminSessionRemote data1 = null;
         String username = genRandomUserName();
 
         data1 = home.create();
+
         Object o = null;
-        try{
-          data1.addUser(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username, "foo123", "C=SE, O=AnaTom, CN="+username, "", username+"@anatom.se",  false,
-                        SecConst.EMPTY_ENDENTITYPROFILE, SecConst.PROFILE_NO_CERTIFICATEPROFILE,
-                        SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12,0);
-          data1.setClearTextPassword(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username,"foo123");
-          o = new String("");
-        }catch(Exception e){
-          assertNotNull("Failed to create user "+username, o);
+
+        try {
+            data1.addUser(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username, "foo123",
+                "C=SE, O=AnaTom, CN=" + username, "", username + "@anatom.se", false,
+                SecConst.EMPTY_ENDENTITYPROFILE, SecConst.PROFILE_NO_CERTIFICATEPROFILE,
+                SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0);
+            data1.setClearTextPassword(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username,
+                "foo123");
+            o = new String("");
+        } catch (Exception e) {
+            assertNotNull("Failed to create user " + username, o);
         }
 
-        log.debug("created "+username+ ", pwd=foo123");
+        log.debug("created " + username + ", pwd=foo123");
 
         String username1 = genRandomUserName();
         o = null;
-        try{
-          data1.addUser(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username1, "foo123", "C=SE, O=AnaTom, CN="+username1, "",username1+"@anatom.se", false,
-                        SecConst.EMPTY_ENDENTITYPROFILE, SecConst.PROFILE_NO_CERTIFICATEPROFILE,
-                        SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12,0);
-          data1.setClearTextPassword(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username1,"foo123");
-          o = new String("");
-        }catch(Exception e){
-          assertNotNull("Failed to create user "+username1, o);
+
+        try {
+            data1.addUser(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username1, "foo123",
+                "C=SE, O=AnaTom, CN=" + username1, "", username1 + "@anatom.se", false,
+                SecConst.EMPTY_ENDENTITYPROFILE, SecConst.PROFILE_NO_CERTIFICATEPROFILE,
+                SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0);
+            data1.setClearTextPassword(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username1,
+                "foo123");
+            o = new String("");
+        } catch (Exception e) {
+            assertNotNull("Failed to create user " + username1, o);
         }
-        log.debug("created "+username1+ ", pwd=foo123");
+
+        log.debug("created " + username1 + ", pwd=foo123");
         log.debug("<test01CreateNewUsers()");
     }
 
+    /**
+     * Tests creation of P12 file
+     *
+     * @throws Exception error
+     */
     public void test02MakeP12() throws Exception {
         log.debug(">test02MakeP12()");
+
         BatchMakeP12 makep12 = new BatchMakeP12();
         File tmpfile = File.createTempFile("ejbca", "p12");
+
         //System.out.println("tempdir="+tmpfile.getParent());
         makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew();
         log.debug("<test02MakeP12()");
     }
-
 }

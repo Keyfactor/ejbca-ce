@@ -2,20 +2,20 @@ package se.anatom.ejbca.hardtoken;
 
 import javax.ejb.CreateException;
 
+
 /**
- * @version $Id: IHardTokenBatchJobSessionLocalHome.java,v 1.1 2003-02-06 15:35:46 herrvendil Exp $
+ * DOCUMENT ME!
+ *
+ * @version $Id: IHardTokenBatchJobSessionLocalHome.java,v 1.2 2003-06-26 11:43:24 anatom Exp $
  */
-
 public interface IHardTokenBatchJobSessionLocalHome extends javax.ejb.EJBLocalHome {
-
     /**
      * Default create method. Maps to ejbCreate in implementation.
+     *
+     * @return IHardTokenBatchJobSessionLocal interface
+     *
      * @throws CreateException
      * @throws RemoteException
-     * @return IHardTokenBatchJobSessionLocal interface
      */
-
     IHardTokenBatchJobSessionLocal create() throws CreateException;
-
 }
-

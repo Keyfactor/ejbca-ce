@@ -1,38 +1,39 @@
 package se.anatom.ejbca.util;
 
-import java.io.*;
-
 import org.apache.log4j.Logger;
+
+import java.io.*;
 
 
 /**
  * Tools to handle some common file operations.
  *
- * @version $Id: FileTools.java,v 1.3 2003-02-12 11:23:19 scop Exp $
+ * @version $Id: FileTools.java,v 1.4 2003-06-26 11:43:25 anatom Exp $
  */
 public class FileTools {
-
     private static Logger log = Logger.getLogger(FileTools.class);
 
-    /** Creates new FileTools */
+    /**
+     * Creates new FileTools
+     */
     public FileTools() {
     }
 
     /**
-     * Reads binary bytes from a PEM-file. The PEM-file may contain other stuff,
-     * the first item between beginKey and endKey is read.
-     * <p>Example:
-     *<pre>
-     *-----BEGIN CERTIFICATE REQUEST-----
-     *<base64 encoded PKCS10 certification request>
-     *-----END CERTIFICATE REQUEST-----
+     * Reads binary bytes from a PEM-file. The PEM-file may contain other stuff, the first item
+     * between beginKey and endKey is read. Example: <code>-----BEGIN CERTIFICATE REQUEST-----
+     * base64 encoded PKCS10 certification request -----END CERTIFICATE REQUEST----- </code>
      *
      * @param inbuf input buffer containing PEM-formatted stuff.
+     * @param beginKey begin line of PEM message
+     * @param endKey end line of PEM message
+     *
      * @return byte[] containing binary Base64 decoded bytes.
-     * @exception IOException if the PEM file does not contain the right keys.
+     *
+     * @throws IOException if the PEM file does not contain the right keys.
      */
     public static byte[] getBytesFromPEM(byte[] inbuf, String beginKey, String endKey)
-    throws IOException {
+        throws IOException {
         log.debug(">getBytesFromPEM");
 
         ByteArrayInputStream instream = new ByteArrayInputStream(inbuf);
@@ -40,41 +41,58 @@ public class FileTools {
         ByteArrayOutputStream ostr = new ByteArrayOutputStream();
         PrintStream opstr = new PrintStream(ostr);
         String temp;
-        while ((temp = bufRdr.readLine()) != null &&
-        !temp.equals(beginKey))
+
+        while (((temp = bufRdr.readLine()) != null) && !temp.equals(beginKey)) {
             continue;
-        if (temp == null)
+        }
+
+        if (temp == null) {
             throw new IOException("Error in input buffer, missing " + beginKey + " boundary");
-        while ((temp = bufRdr.readLine()) != null &&
-        !temp.equals(endKey))
+        }
+
+        while (((temp = bufRdr.readLine()) != null) && !temp.equals(endKey)) {
             opstr.print(temp);
-        if (temp == null)
+        }
+
+        if (temp == null) {
             throw new IOException("Error in input buffer, missing " + endKey + " boundary");
+        }
+
         opstr.close();
 
         byte[] bytes = Base64.decode(ostr.toByteArray());
 
         log.debug("<getBytesFromPEM");
+
         return bytes;
-    } // getBytesfromPEM
+    }
+     // getBytesfromPEM
 
     /**
      * Helpfunction to read a file to a byte array.
      *
-     *@param file filename of file.
-     *@return byte[] containing the contents of the file.
-     *@exception IOException if the file does not exist or cannot be read.
-     **/
-    public static byte[] readFiletoBuffer(String file) throws IOException {
+     * @param file filename of file.
+     *
+     * @return byte[] containing the contents of the file.
+     *
+     * @throws IOException if the file does not exist or cannot be read.
+     */
+    public static byte[] readFiletoBuffer(String file)
+        throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         InputStream in = new FileInputStream(file);
         int len = 0;
-        byte buf[] = new byte[1024];
-        while ((len = in.read(buf)) > 0)
+        byte[] buf = new byte[1024];
+
+        while ((len = in.read(buf)) > 0) {
             os.write(buf, 0, len);
+        }
+
         in.close();
         os.close();
-        return os.toByteArray();
-    } // readFiletoBuffer
 
-} // FileTools
+        return os.toByteArray();
+    }
+     // readFiletoBuffer
+}
+ // FileTools

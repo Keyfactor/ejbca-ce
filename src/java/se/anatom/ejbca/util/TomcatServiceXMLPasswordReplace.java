@@ -1,42 +1,50 @@
 package se.anatom.ejbca.util;
 
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.BufferedReader;
+
 
 /**
+ * DOCUMENT ME!
  *
- * @version $Id: TomcatServiceXMLPasswordReplace.java,v 1.2 2003-04-01 11:27:24 scop Exp $
+ * @version $Id: TomcatServiceXMLPasswordReplace.java,v 1.3 2003-06-26 11:43:25 anatom Exp $
  */
 public class TomcatServiceXMLPasswordReplace {
-
-    /** Creates a new instance of TomcatServiceXMLPasswordReplace */
+    /**
+     * Creates a new instance of TomcatServiceXMLPasswordReplace
+     */
     public TomcatServiceXMLPasswordReplace() {
     }
 
-
+    /**
+     * DOCUMENT ME!
+     *
+     * @param args DOCUMENT ME!
+     */
     public static void main(String[] args) {
-      try {
-             // Check number of parameter.
-           if(args.length != 3 ) {
-               System.out.println("Required parameters : <tomcatservice.xml infile> <tomcatservice.xml outfile> <replacementpassword>");
-               System.exit(0);
+        try {
+            // Check number of parameter.
+            if (args.length != 3) {
+                System.out.println(
+                    "Required parameters : <tomcatservice.xml infile> <tomcatservice.xml outfile> <replacementpassword>");
+                System.exit(0);
             }
 
             BufferedReader br = new BufferedReader(new FileReader(args[0]));
-            FileWriter fwr    = new FileWriter(args[1]);
+            FileWriter fwr = new FileWriter(args[1]);
             String line = null;
 
-            while((line = br.readLine()) != null) {
-              fwr.write(line.replaceAll("foo123", args[2]) + "\n");
+            while ((line = br.readLine()) != null) {
+                fwr.write(line.replaceAll("foo123", args[2]) + "\n");
             }
 
             br.close();
             fwr.close();
-         } catch( Exception e ) {
+        } catch (Exception e) {
             e.printStackTrace();
-         }
-    } // main
-
-
-} //  TomcatServiceXMLPasswordReplace
+        }
+    }
+     // main
+}
+ //  TomcatServiceXMLPasswordReplace

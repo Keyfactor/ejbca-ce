@@ -1,24 +1,24 @@
 package se.anatom.ejbca.keyrecovery;
 
 import java.rmi.RemoteException;
+
 import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
 
 
 /**
- * @version $Id: IKeyRecoverySessionHome.java,v 1.1 2003-02-12 13:21:30 herrvendil Exp $
+ * DOCUMENT ME!
+ *
+ * @version $Id: IKeyRecoverySessionHome.java,v 1.2 2003-06-26 11:43:24 anatom Exp $
  */
-
 public interface IKeyRecoverySessionHome extends EJBHome {
-
     /**
      * Default create method. Maps to ejbCreate in implementation.
+     *
+     * @return IKeyRecoverySessionRemote interface
+     *
      * @throws CreateException
      * @throws RemoteException
-     * @return IKeyRecoverySessionRemote interface
      */
-
     IKeyRecoverySessionRemote create() throws CreateException, RemoteException;
-
 }
-

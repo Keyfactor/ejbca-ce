@@ -1,53 +1,56 @@
 package se.anatom.ejbca.log;
 
-import java.util.Date;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Properties;
-import java.sql.*;
-import javax.sql.DataSource;
-import javax.naming.*;
-import javax.ejb.*;
-import java.lang.reflect.Method;
-import java.security.cert.X509Certificate;
-
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.util.query.*;
 
+import java.lang.reflect.Method;
+
+import java.security.cert.X509Certificate;
+
+import java.sql.*;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Properties;
+
+import javax.ejb.*;
+
+import javax.naming.*;
+
+import javax.sql.DataSource;
+
 
 /**
- * Stores data used by web server clients.
- * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
+ * Stores data used by web server clients. Uses JNDI name for datasource as defined in env
+ * 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalLogSessionBean.java,v 1.11 2003-06-14 10:28:28 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.12 2003-06-26 11:43:24 anatom Exp $
  */
-public class LocalLogSessionBean extends BaseSessionBean  {
-
+public class LocalLogSessionBean extends BaseSessionBean {
     private static Logger log = Logger.getLogger(LocalLogSessionBean.class);
-
     public static final int MAXIMUM_QUERY_ROWCOUNT = 300;
 
     /** Var holding JNDI name of datasource */
     private String dataSource = "";
 
     /** The home interface of  LogEntryData entity bean */
-    private LogEntryDataLocalHome logentryhome=null;
+    private LogEntryDataLocalHome logentryhome = null;
 
     /** The home interface of  LogConfigurationData entity bean */
-    private LogConfigurationDataLocalHome logconfigurationhome=null;
+    private LogConfigurationDataLocalHome logconfigurationhome = null;
 
     /** The remote interface of the LogConfigurationData entity bean */
-    private LogConfigurationDataLocal logconfigurationdata=null;
+    private LogConfigurationDataLocal logconfigurationdata = null;
 
     /** The logconfiguration data, store for performance */
     private LogConfiguration logconfiguration;
 
     /** Collection of available log devices, i.e Log4j etc */
     private ArrayList logdevices = null;
-
     private static final int LOGCONFIGURATION_ID = 0;
 
     /** Columns in the database used in select */
@@ -55,15 +58,18 @@ public class LocalLogSessionBean extends BaseSessionBean  {
 
     /**
      * Default create for SessionBean without any creation Arguments.
+     *
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() throws Exception {
         debug(">ejbCreate()");
-        dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
+        dataSource = (String) lookup("java:comp/env/DataSource", java.lang.String.class);
         debug("DataSource=" + dataSource);
 
-        logentryhome = (LogEntryDataLocalHome)lookup("java:comp/env/ejb/LogEntryDataLocal", LogEntryDataLocalHome.class);
-        logconfigurationhome = (LogConfigurationDataLocalHome)lookup("java:comp/env/ejb/LogConfigurationDataLocal", LogConfigurationDataLocalHome.class);
+        logentryhome = (LogEntryDataLocalHome) lookup("java:comp/env/ejb/LogEntryDataLocal",
+                LogEntryDataLocalHome.class);
+        logconfigurationhome = (LogConfigurationDataLocalHome) lookup("java:comp/env/ejb/LogConfigurationDataLocal",
+                LogConfigurationDataLocalHome.class);
 
         // Check if log configuration exists, else create one.
         loadLogConfiguration();
@@ -72,214 +78,288 @@ public class LocalLogSessionBean extends BaseSessionBean  {
         logdevices = new ArrayList();
 
         // Get configuration of log device classes from ejb-jar.xml
-        String factoryclassesstring = (String)lookup("java:comp/env/logDeviceFactories", java.lang.String.class);
-        String propertyfilesstring  = (String)lookup("java:comp/env/logDevicePropertyFiles", java.lang.String.class);
+        String factoryclassesstring = (String) lookup("java:comp/env/logDeviceFactories",
+                java.lang.String.class);
+        String propertyfilesstring = (String) lookup("java:comp/env/logDevicePropertyFiles",
+                java.lang.String.class);
 
         String[] factoryclasses = factoryclassesstring.split(";");
-        String[] propertyfiles  = propertyfilesstring.split(";");
+        String[] propertyfiles = propertyfilesstring.split(";");
 
         Properties[] properties = new Properties[propertyfiles.length];
-        for(int i= 0; i < propertyfiles.length; i++){
-            properties[i] =  new Properties();
-            if(!(propertyfiles[i] == null || propertyfiles[i].trim().equals("")))
-              properties[i].load(this.getClass().getResourceAsStream("/logdeviceproperties/" + propertyfiles[i].trim()));
+
+        for (int i = 0; i < propertyfiles.length; i++) {
+            properties[i] = new Properties();
+
+            if (!((propertyfiles[i] == null) || propertyfiles[i].trim().equals(""))) {
+                properties[i].load(this.getClass().getResourceAsStream("/logdeviceproperties/" +
+                        propertyfiles[i].trim()));
+            }
         }
 
-        for(int i=0; i < factoryclasses.length; i++){
-            Class implClass = Class.forName( factoryclasses[i].trim() );
+        for (int i = 0; i < factoryclasses.length; i++) {
+            Class implClass = Class.forName(factoryclasses[i].trim());
             Object fact = implClass.newInstance();
             Class[] paramTypes = new Class[1];
             paramTypes[0] = properties[0].getClass();
+
             Method method = implClass.getMethod("makeInstance", paramTypes);
             Object[] params = new Object[1];
-            if(i < properties.length)
-              params[0] = properties[i];
-            else
-              params[0] = new Properties();
-            logdevices.add((ILogDevice)method.invoke(fact, params));
+
+            if (i < properties.length) {
+                params[0] = properties[i];
+            } else {
+                params[0] = new Properties();
+            }
+
+            logdevices.add((ILogDevice) method.invoke(fact, params));
         }
+
         debug("<ejbCreate()");
     }
 
-
-    /** Gets connection to Datasource used for manual SQL searches
+    /**
+     * Gets connection to Datasource used for manual SQL searches
+     *
      * @return Connection
      */
     private Connection getConnection() throws SQLException, NamingException {
-        DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
+        DataSource ds = (DataSource) getInitialContext().lookup(dataSource);
+
         return ds.getConnection();
-    } //getConnection
+    }
+     //getConnection
 
     /**
      * Session beans main function. Takes care of the logging functionality.
      *
      * @param admin the administrator performing the event.
+     * @param module DOCUMENT ME!
      * @param time the time the event occured.
      * @param username the name of the user involved or null if no user is involved.
-     * @param certificate the certificate involved in the event or null if no certificate is involved.
-     * @param event id of the event, should be one of the se.anatom.ejbca.log.LogEntry.EVENT_ constants.
+     * @param certificate the certificate involved in the event or null if no certificate is
+     *        involved.
+     * @param event id of the event, should be one of the se.anatom.ejbca.log.LogEntry.EVENT_
+     *        constants.
      * @param comment comment of the event.
      */
-    public void log(Admin admin, int module,  Date time, String username, X509Certificate certificate, int event, String comment){
-      try{
-        // Get logging configuration
-        if(logconfiguration.logEvent(event)){
-          if(logconfiguration.useLogDB()){
-            try{
-               // Log to the local database.
-               if(certificate != null)
-                 logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), module, time, username,
-                                     certificate.getSerialNumber().toString(16), event, comment);
-               else
-                 logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), module, time, username,
-                                     null, event, comment);
-            }catch(javax.ejb.DuplicateKeyException dke){
-              logconfigurationdata.getAndIncrementRowCount();
-            }
-          }
-          if(logconfiguration.useExternalLogDevices()){
-            // Log to external devices. I.e Log4j etc
-            Iterator i = logdevices.iterator();
-            while(i.hasNext()){
-               ((ILogDevice) i.next()).log(admin, module,  time, username, certificate, event, comment);
-            }
-          }
-        }
-      }catch(Exception e){
-        throw new EJBException(e);
-      }
+    public void log(Admin admin, int module, Date time, String username,
+        X509Certificate certificate, int event, String comment) {
+        try {
+            // Get logging configuration
+            if (logconfiguration.logEvent(event)) {
+                if (logconfiguration.useLogDB()) {
+                    try {
+                        // Log to the local database.
+                        if (certificate != null) {
+                            logentryhome.create(logconfigurationdata.getAndIncrementRowCount(),
+                                admin.getAdminType(), admin.getAdminData(), module, time, username,
+                                certificate.getSerialNumber().toString(16), event, comment);
+                        } else {
+                            logentryhome.create(logconfigurationdata.getAndIncrementRowCount(),
+                                admin.getAdminType(), admin.getAdminData(), module, time, username,
+                                null, event, comment);
+                        }
+                    } catch (javax.ejb.DuplicateKeyException dke) {
+                        logconfigurationdata.getAndIncrementRowCount();
+                    }
+                }
 
-    } // log
+                if (logconfiguration.useExternalLogDevices()) {
+                    // Log to external devices. I.e Log4j etc
+                    Iterator i = logdevices.iterator();
 
-    /**
-    * Overloaded function that also logs an exception
-    * See function above for more documentation.
-    *
-    * @param exception the exception that has occured
-    */
-    public void log(Admin admin, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception){
-      try{
-        // Get logging configuration
-        if(logconfiguration.logEvent(event)){
-          if(logconfiguration.useLogDB()){
-            try{
-               // Log to the local database.
-               if(certificate != null)
-                 logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), module, time, username,
-                                     certificate.getSerialNumber().toString(16), event, comment);
-               else
-                 logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), module, time, username,
-                                     null, event, comment);
-            }catch(javax.ejb.DuplicateKeyException dke){
-              logconfigurationdata.getAndIncrementRowCount();
+                    while (i.hasNext()) {
+                        ((ILogDevice) i.next()).log(admin, module, time, username, certificate,
+                            event, comment);
+                    }
+                }
             }
-          }
-          if(logconfiguration.useExternalLogDevices()){
-            // Log to external devices. I.e Log4j etc
-            Iterator i = logdevices.iterator();
-            while(i.hasNext()){
-               ((ILogDevice) i.next()).log(admin, module,  time, username, certificate, event, comment, exception);
-            }
-          }
+        } catch (Exception e) {
+            throw new EJBException(e);
         }
-      }catch(Exception e){
-        throw new EJBException(e);
-      }
     }
+     // log
+
     /**
-     * Method to execute a customized query on the log db data. The parameter query should be a legal Query object.
+     * Overloaded function that also logs an exception See function above for more documentation.
+     *
+     * @param admin DOCUMENT ME!
+     * @param module DOCUMENT ME!
+     * @param time DOCUMENT ME!
+     * @param username DOCUMENT ME!
+     * @param certificate DOCUMENT ME!
+     * @param event DOCUMENT ME!
+     * @param comment DOCUMENT ME!
+     * @param exception the exception that has occured
+     */
+    public void log(Admin admin, int module, Date time, String username,
+        X509Certificate certificate, int event, String comment, Exception exception) {
+        try {
+            // Get logging configuration
+            if (logconfiguration.logEvent(event)) {
+                if (logconfiguration.useLogDB()) {
+                    try {
+                        // Log to the local database.
+                        if (certificate != null) {
+                            logentryhome.create(logconfigurationdata.getAndIncrementRowCount(),
+                                admin.getAdminType(), admin.getAdminData(), module, time, username,
+                                certificate.getSerialNumber().toString(16), event, comment);
+                        } else {
+                            logentryhome.create(logconfigurationdata.getAndIncrementRowCount(),
+                                admin.getAdminType(), admin.getAdminData(), module, time, username,
+                                null, event, comment);
+                        }
+                    } catch (javax.ejb.DuplicateKeyException dke) {
+                        logconfigurationdata.getAndIncrementRowCount();
+                    }
+                }
+
+                if (logconfiguration.useExternalLogDevices()) {
+                    // Log to external devices. I.e Log4j etc
+                    Iterator i = logdevices.iterator();
+
+                    while (i.hasNext()) {
+                        ((ILogDevice) i.next()).log(admin, module, time, username, certificate,
+                            event, comment, exception);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new EJBException(e);
+        }
+    }
+
+    /**
+     * Method to execute a customized query on the log db data. The parameter query should be a
+     * legal Query object.
      *
      * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
      * @param viewlogprivileges is a sql query string returned by a LogAuthorization object.
-     * @return a collection of LogEntry. Maximum size of Collection is defined i ILogSessionRemote.MAXIMUM_QUERY_ROWCOUNT
+     *
+     * @return a collection of LogEntry. Maximum size of Collection is defined i
+     *         ILogSessionRemote.MAXIMUM_QUERY_ROWCOUNT
+     *
      * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
+     *
      * @see se.anatom.ejbca.util.query.Query
      */
-    public Collection query(Query query, String viewlogprivileges) throws IllegalQueryException{
+    public Collection query(Query query, String viewlogprivileges)
+        throws IllegalQueryException {
         debug(">query()");
+
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
         ArrayList returnval = new ArrayList();
 
         // Check if query is legal.
-        if(!query.isLegalQuery())
-          throw new IllegalQueryException();
-        try{
-           // Construct SQL query.
+        if (!query.isLegalQuery()) {
+            throw new IllegalQueryException();
+        }
+
+        try {
+            // Construct SQL query.
             con = getConnection();
-            if(viewlogprivileges.equals(""))
-              ps = con.prepareStatement("select " + LOGENTRYDATA_COL + " from LogEntryData where " + query.getQueryString() );
-            else
-              ps = con.prepareStatement("select " + LOGENTRYDATA_COL + " from LogEntryData where (" + query.getQueryString() + ") and " + viewlogprivileges);
+
+            if (viewlogprivileges.equals("")) {
+                ps = con.prepareStatement("select " + LOGENTRYDATA_COL +
+                        " from LogEntryData where " + query.getQueryString());
+            } else {
+                ps = con.prepareStatement("select " + LOGENTRYDATA_COL +
+                        " from LogEntryData where (" + query.getQueryString() + ") and " +
+                        viewlogprivileges);
+            }
 
             //ps.setFetchDirection(ResultSet.FETCH_REVERSE);
-            ps.setFetchSize(MAXIMUM_QUERY_ROWCOUNT +1 );
+            ps.setFetchSize(MAXIMUM_QUERY_ROWCOUNT + 1);
+
             // Execute query.
             rs = ps.executeQuery();
-            // Assemble result.
-            while(rs.next() && returnval.size() <= MAXIMUM_QUERY_ROWCOUNT){
-              LogEntry data = new LogEntry(rs.getInt(1), rs.getString(2), rs.getInt(3),  new java.util.Date(rs.getLong(4)), rs.getString(5), rs.getString(6)
-                                               , rs.getInt(7), rs.getString(8));
-              returnval.add(data);
-            }
-            debug("<query()");
-            return returnval;
 
-        }catch(Exception e){
-          throw new EJBException(e);
-        }finally{
-           try{
-             if(rs != null) rs.close();
-             if(ps != null) ps.close();
-             if(con!= null) con.close();
-           }catch(SQLException se){
-               error("Fel vid upprensning: ", se);
-           }
+            // Assemble result.
+            while (rs.next() && (returnval.size() <= MAXIMUM_QUERY_ROWCOUNT)) {
+                LogEntry data = new LogEntry(rs.getInt(1), rs.getString(2), rs.getInt(3),
+                        new java.util.Date(rs.getLong(4)), rs.getString(5), rs.getString(6),
+                        rs.getInt(7), rs.getString(8));
+                returnval.add(data);
+            }
+
+            debug("<query()");
+
+            return returnval;
+        } catch (Exception e) {
+            throw new EJBException(e);
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+
+                if (ps != null) {
+                    ps.close();
+                }
+
+                if (con != null) {
+                    con.close();
+                }
+            } catch (SQLException se) {
+                error("Fel vid upprensning: ", se);
+            }
         }
-    } // query
+    }
+     // query
 
     /**
      * Loads the log configuration from the database.
      *
      * @return the logconfiguration
      */
-    public LogConfiguration loadLogConfiguration(){
+    public LogConfiguration loadLogConfiguration() {
         // Check if log configuration exists, else create one.
-      try{
-        logconfigurationdata = logconfigurationhome.findByPrimaryKey(new Integer(LOGCONFIGURATION_ID));
-        logconfiguration = logconfigurationdata.loadLogConfiguration();
-      }catch(FinderException e){
-         try{
-           logconfiguration = new LogConfiguration();
-           logconfigurationdata = logconfigurationhome.create(new Integer(LOGCONFIGURATION_ID),logconfiguration);
-         }catch(CreateException f){
-           throw new EJBException(f);
-         }
-      }
+        try {
+            logconfigurationdata = logconfigurationhome.findByPrimaryKey(new Integer(
+                        LOGCONFIGURATION_ID));
+            logconfiguration = logconfigurationdata.loadLogConfiguration();
+        } catch (FinderException e) {
+            try {
+                logconfiguration = new LogConfiguration();
+                logconfigurationdata = logconfigurationhome.create(new Integer(LOGCONFIGURATION_ID),
+                        logconfiguration);
+            } catch (CreateException f) {
+                throw new EJBException(f);
+            }
+        }
 
-      return logconfiguration;
-    } // loadLogConfiguration
+        return logconfiguration;
+    }
+     // loadLogConfiguration
 
     /**
      * Saves the log configuration to the database.
      *
+     * @param admin DOCUMENT ME!
      * @param logconfiguration the logconfiguration to save.
      */
-    public void saveLogConfiguration(Admin admin, LogConfiguration logconfiguration){
-      this.logconfiguration = logconfiguration;
-      try{
-        try{
-          (logconfigurationhome.findByPrimaryKey(new Integer(LOGCONFIGURATION_ID))).saveLogConfiguration(logconfiguration);
-          log(admin, LogEntry.MODULE_LOG, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITLOGCONFIGURATION,"");
-        }catch(FinderException e){
-           logconfigurationhome.create(new Integer(LOGCONFIGURATION_ID),logconfiguration);
-           log(admin, LogEntry.MODULE_LOG, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITLOGCONFIGURATION,"");
-        }
-      }catch(Exception e){
-            log(admin, LogEntry.MODULE_LOG, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITLOGCONFIGURATION,"");
-         throw new EJBException(e);
-      }
-    } // saveLogConfiguration
+    public void saveLogConfiguration(Admin admin, LogConfiguration logconfiguration) {
+        this.logconfiguration = logconfiguration;
 
-} // LocalLogSessionBean
+        try {
+            try {
+                (logconfigurationhome.findByPrimaryKey(new Integer(LOGCONFIGURATION_ID))).saveLogConfiguration(logconfiguration);
+                log(admin, LogEntry.MODULE_LOG, new java.util.Date(), null, null,
+                    LogEntry.EVENT_INFO_EDITLOGCONFIGURATION, "");
+            } catch (FinderException e) {
+                logconfigurationhome.create(new Integer(LOGCONFIGURATION_ID), logconfiguration);
+                log(admin, LogEntry.MODULE_LOG, new java.util.Date(), null, null,
+                    LogEntry.EVENT_INFO_EDITLOGCONFIGURATION, "");
+            }
+        } catch (Exception e) {
+            log(admin, LogEntry.MODULE_LOG, new java.util.Date(), null, null,
+                LogEntry.EVENT_ERROR_EDITLOGCONFIGURATION, "");
+            throw new EJBException(e);
+        }
+    }
+     // saveLogConfiguration
+}
+ // LocalLogSessionBean

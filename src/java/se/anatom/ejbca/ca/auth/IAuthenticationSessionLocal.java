@@ -1,25 +1,31 @@
-
 package se.anatom.ejbca.ca.auth;
 
-import javax.ejb.ObjectNotFoundException;
-import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
+import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.log.Admin;
 
-/** Interface used for authenticating entities when issuing their certificates.
-/** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown.
+import javax.ejb.ObjectNotFoundException;
+
+
+/**
+ * Interface used for authenticating entities when issuing their certificates. Local interface for
+ * EJB, unforturnately this must be a copy of the remote interface except that RemoteException is
+ * not thrown.
  *
- * @version $Id: IAuthenticationSessionLocal.java,v 1.5 2003-01-29 16:15:22 anatom Exp $
+ * @version $Id: IAuthenticationSessionLocal.java,v 1.6 2003-06-26 11:43:22 anatom Exp $
+ *
  * @see se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote
  */
 public interface IAuthenticationSessionLocal extends javax.ejb.EJBLocalObject {
+    /**
+     * @see se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote
+     */
+    public UserAuthData authenticateUser(Admin administrator, String username, String password)
+        throws ObjectNotFoundException, AuthStatusException, AuthLoginException;
 
     /**
      * @see se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote
      */
-    public UserAuthData authenticateUser(Admin administrator, String username, String password) throws ObjectNotFoundException, AuthStatusException, AuthLoginException;
-    /**
-     * @see se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote
-     */
-    public void finishUser(Admin administrator, String username, String password) throws ObjectNotFoundException;
+    public void finishUser(Admin administrator, String username, String password)
+        throws ObjectNotFoundException;
 }

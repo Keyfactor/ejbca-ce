@@ -1,58 +1,145 @@
 package se.anatom.ejbca.hardtoken;
 
-import java.util.Date;
-
 import se.anatom.ejbca.hardtoken.hardtokentypes.HardToken;
 import se.anatom.ejbca.util.StringTools;
 
+import java.util.Date;
+
+
 /**
- *  This is a value class containing the data relating to a hard token sent between
- *  server and clients.
+ * This is a value class containing the data relating to a hard token sent between server and
+ * clients.
  *
- * @author  TomSelleck
- * @version $Id: HardTokenData.java,v 1.2 2003-02-27 08:43:24 anatom Exp $
+ * @author TomSelleck
+ * @version $Id: HardTokenData.java,v 1.3 2003-06-26 11:43:24 anatom Exp $
  */
-
 public class HardTokenData implements java.io.Serializable {
-
     // Public Constructors
-    public HardTokenData(String tokensn, String username, Date createtime,  Date modifytime, int tokentype, HardToken hardtoken){
-      this.tokensn=tokensn;
-      this.username=StringTools.strip(username);
-      this.createtime=createtime;
-      this.modifytime=modifytime;
-      this.tokentype=tokentype;
-      this.hardtoken=hardtoken;
+    public HardTokenData(String tokensn, String username, Date createtime, Date modifytime,
+        int tokentype, HardToken hardtoken) {
+        this.tokensn = tokensn;
+        this.username = StringTools.strip(username);
+        this.createtime = createtime;
+        this.modifytime = modifytime;
+        this.tokentype = tokentype;
+        this.hardtoken = hardtoken;
     }
 
-    public HardTokenData(){
+    /**
+     * Creates a new HardTokenData object.
+     */
+    public HardTokenData() {
     }
 
     // Public Methods
+    public String getTokenSN() {
+        return this.tokensn;
+    }
 
-    public String getTokenSN(){ return this.tokensn; }
-    public void setTokenSN(String tokensn){ this.tokensn=tokensn; }
+    /**
+     * DOCUMENT ME!
+     *
+     * @param tokensn DOCUMENT ME!
+     */
+    public void setTokenSN(String tokensn) {
+        this.tokensn = tokensn;
+    }
 
-    public String getUsername(){ return this.username; }
-    public void setUsername(String username){ this.username=StringTools.strip(username); }
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public String getUsername() {
+        return this.username;
+    }
 
-    public Date getCreateTime(){ return this.createtime; }
-    public void setCreateTime(Date createtime){ this.createtime=createtime; }
+    /**
+     * DOCUMENT ME!
+     *
+     * @param username DOCUMENT ME!
+     */
+    public void setUsername(String username) {
+        this.username = StringTools.strip(username);
+    }
 
-    public Date getModifyTime(){ return this.modifytime; }
-    public void setModifyTime(Date modifytime){ this.modifytime=modifytime; }
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public Date getCreateTime() {
+        return this.createtime;
+    }
 
-    public int getTokenType(){ return this.tokentype; }
-    public void setTokenType(int tokentype){ this.tokentype=tokentype; }
+    /**
+     * DOCUMENT ME!
+     *
+     * @param createtime DOCUMENT ME!
+     */
+    public void setCreateTime(Date createtime) {
+        this.createtime = createtime;
+    }
 
-    public HardToken getHardToken(){ return this.hardtoken; }
-    public void setHardToken(HardToken hardtoken){ this.hardtoken=hardtoken; }
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public Date getModifyTime() {
+        return this.modifytime;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param modifytime DOCUMENT ME!
+     */
+    public void setModifyTime(Date modifytime) {
+        this.modifytime = modifytime;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public int getTokenType() {
+        return this.tokentype;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param tokentype DOCUMENT ME!
+     */
+    public void setTokenType(int tokentype) {
+        this.tokentype = tokentype;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public HardToken getHardToken() {
+        return this.hardtoken;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param hardtoken DOCUMENT ME!
+     */
+    public void setHardToken(HardToken hardtoken) {
+        this.hardtoken = hardtoken;
+    }
 
     // Private fields
-    private    String          tokensn;
-    private    String          username;
-    private    Date            createtime;
-    private    Date            modifytime;
-    private    int             tokentype;
-    private    HardToken       hardtoken;
+    private String tokensn;
+    private String username;
+    private Date createtime;
+    private Date modifytime;
+    private int tokentype;
+    private HardToken hardtoken;
 }

@@ -1,30 +1,79 @@
 package se.anatom.ejbca.hardtoken;
 
+import java.math.BigInteger;
+
+import java.util.Collection;
+
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
-import java.util.Collection;
-import java.math.BigInteger;
+
 
 /**
  * For docs, see HardTokenIssuerDataBean
  *
- * @version $Id: HardTokenIssuerDataLocalHome.java,v 1.2 2003-02-09 14:56:16 anatom Exp $
- **/
+ * @version $Id: HardTokenIssuerDataLocalHome.java,v 1.3 2003-06-26 11:43:24 anatom Exp $
+ */
 public interface HardTokenIssuerDataLocalHome extends javax.ejb.EJBLocalHome {
-
-    public HardTokenIssuerDataLocal create(Integer id, String alias, BigInteger certificatesn, String certissuerdn,  HardTokenIssuer issuerdata)
+    /**
+     * DOCUMENT ME!
+     *
+     * @param id DOCUMENT ME!
+     * @param alias DOCUMENT ME!
+     * @param certificatesn DOCUMENT ME!
+     * @param certissuerdn DOCUMENT ME!
+     * @param issuerdata DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     *
+     * @throws CreateException DOCUMENT ME!
+     */
+    public HardTokenIssuerDataLocal create(Integer id, String alias, BigInteger certificatesn,
+        String certissuerdn, HardTokenIssuer issuerdata)
         throws CreateException;
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param id DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     *
+     * @throws FinderException DOCUMENT ME!
+     */
     public HardTokenIssuerDataLocal findByPrimaryKey(Integer id)
         throws FinderException;
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param alias DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     *
+     * @throws FinderException DOCUMENT ME!
+     */
     public HardTokenIssuerDataLocal findByAlias(String alias)
         throws FinderException;
-    
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param certificatesn DOCUMENT ME!
+     * @param certissuerdn DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     *
+     * @throws FinderException DOCUMENT ME!
+     */
     public HardTokenIssuerDataLocal findByCertificateSN(String certificatesn, String certissuerdn)
-        throws FinderException;    
-
-    public Collection findAll()
         throws FinderException;
-}
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     *
+     * @throws FinderException DOCUMENT ME!
+     */
+    public Collection findAll() throws FinderException;
+}

@@ -2,75 +2,84 @@ package se.anatom.ejbca.ca.store.certificateprofiles;
 
 import java.util.ArrayList;
 
+
 /**
- * RootCACertificateProfile is a class defining the fixed characteristics of a root ca certificate profile.
+ * RootCACertificateProfile is a class defining the fixed characteristics of a root ca certificate
+ * profile.
  *
- * @version $Id: RootCACertificateProfile.java,v 1.7 2003-06-11 13:38:59 anatom Exp $
+ * @version $Id: RootCACertificateProfile.java,v 1.8 2003-06-26 11:43:23 anatom Exp $
  */
-public class RootCACertificateProfile extends CertificateProfile{
-
+public class RootCACertificateProfile extends CertificateProfile {
     // Public Constants
-
-    public final static String CERTIFICATEPROFILENAME =  "ROOTCA";
+    public static final String CERTIFICATEPROFILENAME = "ROOTCA";
 
     // Public Methods
-    /** Creates a certificate with the characteristics of an end user. */
+
+    /**
+     * Creates a certificate with the characteristics of an end user.
+     */
     public RootCACertificateProfile() {
+        setCertificateVersion(VERSION_X509V3);
+        setValidity(730);
 
-      setCertificateVersion(VERSION_X509V3);
-      setValidity(730);
+        setUseBasicConstraints(true);
+        setBasicConstraintsCritical(true);
 
-      setUseBasicConstraints(true);
-      setBasicConstraintsCritical(true);
+        setUseSubjectKeyIdentifier(true);
+        setSubjectKeyIdentifierCritical(false);
 
-      setUseSubjectKeyIdentifier(true);
-      setSubjectKeyIdentifierCritical(false);
+        setUseAuthorityKeyIdentifier(true);
+        setAuthorityKeyIdentifierCritical(false);
 
-      setUseAuthorityKeyIdentifier(true);
-      setAuthorityKeyIdentifierCritical(false);
+        setUseSubjectAlternativeName(true);
+        setSubjectAlternativeNameCritical(false);
 
-      setUseSubjectAlternativeName(true);
-      setSubjectAlternativeNameCritical(false);
+        setUseCRLDistributionPoint(false);
+        setCRLDistributionPointCritical(false);
+        setCRLDistributionPointURI("");
 
-      setUseCRLDistributionPoint(false);
-      setCRLDistributionPointCritical(false);
-      setCRLDistributionPointURI("");
+        setUseCertificatePolicies(false);
+        setCertificatePoliciesCritical(false);
+        setCertificatePolicyId("2.5.29.32.0");
 
-      setUseCertificatePolicies(false);
-      setCertificatePoliciesCritical(false);
-      setCertificatePolicyId("2.5.29.32.0");
+        setType(TYPE_ROOTCA);
 
-      setType(TYPE_ROOTCA);
+        int[] bitlengths = { 512, 1024, 2048, 4096 };
+        setAvailableBitLengths(bitlengths);
 
-      int[] bitlengths = {512,1024,2048,4096};
-      setAvailableBitLengths(bitlengths);
+        setUseKeyUsage(true);
+        setKeyUsage(new boolean[9]);
+        setKeyUsage(KEYCERTSIGN, true);
+        setKeyUsage(CRLSIGN, true);
+        setKeyUsageCritical(true);
 
-      setUseKeyUsage(true);
-      setKeyUsage(new boolean[9]);
-      setKeyUsage(KEYCERTSIGN,true);
-      setKeyUsage(CRLSIGN,true);
-      setKeyUsageCritical(true);
-
-      setUseExtendedKeyUsage(false);
-      setExtendedKeyUsage(new ArrayList());
+        setUseExtendedKeyUsage(false);
+        setExtendedKeyUsage(new ArrayList());
     }
 
     // Public Methods.
+    public void upgrade() {
+        if (LATEST_VERSION != getVersion()) {
+            // New version of the class, upgrade
+            data.put(VERSION, new Float(LATEST_VERSION));
 
-    public void upgrade(){
-      if(LATEST_VERSION != getVersion()){
-        // New version of the class, upgrade
+            if (data.get(ALLOWKEYUSAGEOVERRIDE) == null) {
+                data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
+            }
 
-        data.put(VERSION, new Float(LATEST_VERSION));
-        if(data.get(ALLOWKEYUSAGEOVERRIDE) == null)
-          data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
-        if(data.get(USEEXTENDEDKEYUSAGE) ==null)
-          data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
-        if(data.get(EXTENDEDKEYUSAGE) ==null)
-          data.put(EXTENDEDKEYUSAGE, new ArrayList());
-        if(data.get(EXTENDEDKEYUSAGECRITICAL) == null)
-          data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
-      }
+            if (data.get(USEEXTENDEDKEYUSAGE) == null) {
+                data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
+            }
+
+            if (data.get(EXTENDEDKEYUSAGE) == null) {
+                data.put(EXTENDEDKEYUSAGE, new ArrayList());
+            }
+
+            if (data.get(EXTENDEDKEYUSAGECRITICAL) == null) {
+                data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
+            }
+        }
     }
+
     // Private fields.
 }
