@@ -56,6 +56,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
 import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.StringTools;
+import se.anatom.ejbca.util.JDBCUtil;
 import se.anatom.ejbca.util.query.BasicMatch;
 import se.anatom.ejbca.util.query.IllegalQueryException;
 import se.anatom.ejbca.util.query.Query;
@@ -65,7 +66,108 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.78 2004-06-10 15:09:34 sbailliez Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.79 2004-07-05 09:52:14 sbailliez Exp $
+ *
+ * @ejb.bean
+ *   display-name="UserAdminSB"
+ *   name="UserAdminSession"
+ *   view-type="both"
+ *   type="Stateless"
+ *   transaction-type="Container"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.env-entry
+ *   name="Datasource"
+ *   type="java.lang.String"
+ *   value="java:/${datasource.jndi-name}"
+ *
+ * @ejb.env-entry
+ *   description="Factory class can dynamically link to external implementation class"
+ *   name="RMIFactory"
+ *   type="java.lang.String"
+ *   value="se.walter.cardPersonalization.ra.ejbca.RMIFactoryImpl"
+ *
+ * @ejb.env-entry
+ *   description="Defines de sender of the notification message"
+ *   name="sender"
+ *   type="java.lang.String"
+ *   value="philip@primekey.se"
+ *
+ * @ejb.env-entry
+ *   description="Defines the subject used in the notification message"
+ *   name="subject"
+ *   type="java.lang.String"
+ *   value="Retrieve your certificate"
+ *
+ * @ejb.env-entry
+ *   description="Defines the actual message of the notification. Use the values $Username, $Password, $CN, $O, $OU, $C, $DATE to indicate which texts that should be replaced (Case insensitive), $NL stands for newline."
+ *   name="sender"
+ *   type="java.lang.String"
+ *   value="Hello $CN$NL$NL This is a notification. $NL$NL Your username: $Username$NL password: $Password$NL$NL Your are NOT supposed to go and fetch your certificate, this is only a test."
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Certificate Store session bean"
+ *   view-type="local"
+ *   ejb-name="CertificateStoreSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome"
+ *   business="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal"
+ *   link="CertificateStoreSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Log session bean"
+ *   view-type="local"
+ *   ejb-name="LogSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.log.ILogSessionLocalHome"
+ *   business="se.anatom.ejbca.log.ILogSessionLocal"
+ *   link="LogSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Authorization session bean"
+ *   view-type="local"
+ *   ejb-name="AuthorizationSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome"
+ *   business="se.anatom.ejbca.authorization.IAuthorizationSessionLocal"
+ *   link="AuthorizationSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Ra Admin session bean"
+ *   view-type="local"
+ *   ejb-name="RaAdminSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome"
+ *   business="se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal"
+ *   link="RaAdminSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The User entity bean"
+ *   view-type="local"
+ *   ejb-name="UserDataLocal"
+ *   type="Entity"
+ *   home="se.anatom.ejbca.ra.UserDataLocalHome"
+ *   business="se.anatom.ejbca.ra.UserDataLocal"
+ *   link="UserData"
+ *
+ * @ejb.resource-ref
+ *   res-ref-name="mail/DefaultMail"
+ *   res-type="javax.mail.Session"
+ *   res-auth="Container"
+ *
+ * @ejb.home
+ *   extends="javax.ejb.EJBHome"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.ra.IUserAdminSessionLocalHome"
+ *   remote-class="se.anatom.ejbca.ra.IUserAdminSessionHome"
+ *
+ * @ejb.interface
+ *   extends="javax.ejb.EJBObject,UserAdminModel"
+ *   local-extends="javax.ejb.EJBLocalObject,UserAdminModel"
+ *   local-class="se.anatom.ejbca.ra.IUserAdminSessionLocal"
+ *   remote-class="se.anatom.ejbca.ra.IUserAdminSessionRemote"
+ *
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -92,7 +194,6 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
     /**
      * Default create for SessionBean.
-     * @param administrator information about the administrator using this sessionbean.
      * @throws CreateException if bean instance can't be created
      * @see se.anatom.ejbca.log.Admin
      */
@@ -178,6 +279,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
      * @param tokentype the type of token to be generated, one of SecConst.TOKEN constants
      * @param hardwaretokenissuerid , if token should be hard, the id of the hard token issuer,
      *        else 0.
+    * @ejb.interface-method
     */
     public void addUser(Admin admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd, int endentityprofileid, int certificateprofileid,
                         int type, int tokentype, int hardwaretokenissuerid, int caid)
@@ -270,22 +372,22 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     } // addUser
 
    /**
-    * Implements IUserAdminSession::changeUser.
-    * Implements a mechanism that uses UserDataEntity Bean.
+    * Changes data for a user in the database speciefied by username.
     *
-    * @param admin DOCUMENT ME!
-    * @param username DOCUMENT ME!
-    * @param password DOCUMENT ME!
-    * @param subjectdn DOCUMENT ME!
-    * @param subjectaltname DOCUMENT ME!
-    * @param email DOCUMENT ME!
-    * @param clearpwd DOCUMENT ME!
-    * @param endentityprofileid DOCUMENT ME!
-    * @param certificateprofileid DOCUMENT ME!
-    * @param type DOCUMENT ME!
-    * @param tokentype DOCUMENT ME!
-    * @param hardwaretokenissuerid DOCUMENT ME!
-    * @param status DOCUMENT ME!
+    * @param username the unique username.
+    * @param password the password used for authentication.*
+    * @param subjectdn the DN the subject is given in his certificate.
+    * @param subjectaltname the Subject Alternative Name to be used.
+    * @param email the email of the subject or null.
+    * @param endentityprofileid the id number of the end entity profile bound to this user.
+    * @param certificateprofileid the id number of the certificate profile that should be generated for the user.
+    * @param type of user i.e administrator, keyrecoverable and/or sendnotification
+    * @param tokentype the type of token to be generated, one of SecConst.TOKEN constants
+    * @param hardwaretokenissuerid if token should be hard, the id of the hard token issuer, else 0.
+    * @param caid the id of the CA that should be used to issue the users certificate
+    *
+    * @throws EJBException if a communication or other error occurs.
+    * @ejb.interface-method
     */
     public void changeUser(Admin admin, String username, String password,  String subjectdn, String subjectaltname, String email,  boolean clearpwd, int endentityprofileid, int certificateprofileid,
                            int type, int tokentype, int hardwaretokenissuerid, int status, int caid)
@@ -379,8 +481,13 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
 
    /**
-    * Implements IUserAdminSession::deleteUser.
-    * Implements a mechanism that uses UserData Entity Bean.
+    * Deletes a user from the database. The users certificates must be revoked BEFORE this method is called.
+    *
+    * @param username the unique username.
+    *
+    * @throws NotFoundException if the user does not exist
+    * @throws RemoveException if the user could not be removed
+    * @ejb.interface-method
     */
     public void deleteUser(Admin admin, String username) throws AuthorizationDeniedException, NotFoundException, RemoveException {
         debug(">deleteUser("+username+")");
@@ -418,8 +525,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     } // deleteUser
 
    /**
-    * Implements IUserAdminSession::setUserStatus.
-    * Implements a mechanism that uses UserData Entity Bean.
+    * Changes status of a user.
+    *
+    * @param username the unique username.
+    * @param status the new status, from 'UserData'.
+    * @ejb.interface-method
     */
     public void setUserStatus(Admin admin, String username, int status) throws AuthorizationDeniedException, FinderException {
         debug(">setUserStatus("+username+", "+status+")");
@@ -457,8 +567,12 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     } // setUserStatus
 
    /**
-    * Implements IUserAdminSession::setPassword.
-    * Implements a mechanism that uses UserData Entity Bean.
+     * Sets a new password for a user.
+     *
+     * @param admin the administrator pwrforming the action
+     * @param username the unique username.
+     * @param password the new password for the user, NOT null.
+    * @ejb.interface-method
     */
     public void setPassword(Admin admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException{
         debug(">setPassword("+username+", hiddenpwd)");
@@ -504,8 +618,13 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     } // setPassword
 
    /**
-    * Implements IUserAdminSession::setClearTextPassword.
-    * Implements a mechanism that uses UserData Entity Bean.
+     * Sets a clear text password for a user.
+     *
+     * @param admin the administrator pwrforming the action
+     * @param username the unique username.
+     * @param password the new password to be stored in clear text. Setting password to 'null'
+     *        effectively deletes any previous clear text password.
+    * @ejb.interface-method
     */
     public void setClearTextPassword(Admin admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,FinderException{
         debug(">setClearTextPassword("+username+", hiddenpwd)");
@@ -563,7 +682,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     /**
      * Method that revokes a user.
      *
-     * @param username, the username to revoke.
+     * @param username the username to revoke.
+     * @ejb.interface-method
      */
     public void revokeUser(Admin admin, String username, int reason) throws AuthorizationDeniedException,FinderException{
         debug(">revokeUser("+username+")");
@@ -598,9 +718,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     /**
      * Method that revokes a certificate.
      *
-     * @param certserno, the serno of certificate to revoke.
-     * @param username, the username to revoke.
-     * @param reason, the reason of revokation.
+     * @param certserno the serno of certificate to revoke.
+     * @param username the username to revoke.
+     * @param reason the reason of revokation.
+     * @ejb.interface-method
      */
     public void revokeCert(Admin admin, BigInteger certserno, String issuerdn, String username, int reason) throws AuthorizationDeniedException,FinderException{
         debug(">revokeCert("+certserno+", IssuerDN: " + issuerdn + ", username, " + username + ")");
@@ -638,7 +759,13 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     } // revokeCert
 
     /**
-    * Implements IUserAdminSession::findUser.
+     * Finds a user.
+     *
+     * @param admin the administrator pwrforming the action
+     * @param username username.
+     *
+     * @return UserAdminData or null if the user is not found.
+     * @ejb.interface-method
     */
     public UserAdminData findUser(Admin admin, String username) throws FinderException, AuthorizationDeniedException {
         debug(">findUser("+username+")");
@@ -670,7 +797,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     } // findUser
 
    /**
-    * Implements IUserAdminSession::findUserBySubjectDN.
+    * Finds a user by its subjectDN.
+    *
+    * @param subjectdn
+    * @return UserAdminData or null if the user is not found.
+    * @ejb.interface-method
     */
     public UserAdminData findUserBySubjectDN(Admin admin, String subjectdn, String issuerdn) throws AuthorizationDeniedException {
         debug(">findUserBySubjectDN("+subjectdn+")");
@@ -710,7 +841,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     } // findUserBySubjectDN
 
    /**
-    * Implements IUserAdminSession::findUserBySubjectDN.
+    * Finds a user by its Email.
+    *
+    * @param email
+    * @return UserAdminData or null if the user is not found.
+    * @ejb.interface-method
     */
     public Collection findUserByEmail(Admin admin, String email) throws AuthorizationDeniedException {
         debug(">findUserByEmail("+email+")");
@@ -750,7 +885,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     } // findUserBySubjectDN
 
    /**
-    * Implements IUserAdminSession::checkIfCertificateBelongToAdmin.
+    * Method that checks if user with specified users certificate exists in database and is set as administrator.
+    *
+    * @param subjectdn
+    * @throws AuthorizationDeniedException if user isn't an administrator.
+    * @ejb.interface-method
     */
     public void checkIfCertificateBelongToAdmin(Admin admin, BigInteger certificatesnr, String issuerdn) throws AuthorizationDeniedException {
         debug(">checkIfCertificateBelongToAdmin("+certificatesnr+")");
@@ -783,7 +922,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
 
     /**
-    * Implements IUserAdminSession::findAllUsersByStatus.
+    * Finds all users with a specified status.
+    *
+    * @param status the new status, from 'UserData'.
+    * @return Collection of UserAdminData
+     * @ejb.interface-method
     */
     public Collection findAllUsersByStatus(Admin admin, int status) throws FinderException {
         debug(">findAllUsersByStatus("+status+")");
@@ -802,7 +945,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     }
 
     /**
-    * Implements IUserAdminSession::findAllUsersWithLimit.
+    * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
+    *
+    * @return Collection of UserAdminData
+     * @ejb.interface-method
     */
     public Collection findAllUsersWithLimit(Admin admin) throws FinderException{
       debug(">findAllUsersWithLimit()");
@@ -815,7 +961,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     }
 
     /**
-    * Implements IUserAdminSession::findAllUsersWithLimit.
+    * Finds all users with a specified status and returns the first MAXIMUM_QUERY_ROWCOUNT.
+    *
+    * @param status the new status, from 'UserData'.
+     * @ejb.interface-method
     */
     public Collection findAllUsersByStatusWithLimit(Admin admin, int status, boolean onlybatchusers) throws FinderException{
        debug(">findAllUsersByStatusWithLimit()");
@@ -833,7 +982,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     }
 
    /**
-    * Implements IUserAdminSession::startExternalService.
+    * Starts an external service that may be needed bu user administration.
+    * @ejb.interface-method
     */
     public void startExternalService( String[] args ) {
         debug(">startService()");
@@ -859,6 +1009,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
      * @return a collection of UserAdminData. Maximum size of Collection is defined i IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT
      * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
      * @see se.anatom.ejbca.util.query.Query
+     * @ejb.interface-method
      */
     public Collection query(Admin admin, Query query, String caauthorizationstring, String endentityprofilestring) throws IllegalQueryException{
       return query(admin, query, true, caauthorizationstring, endentityprofilestring, false);
@@ -947,13 +1098,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
          }catch(Exception e){
            throw new EJBException(e);
          }finally{
-           try{
-             if(rs != null) rs.close();
-             if(ps != null) ps.close();
-             if(con!= null) con.close();
-           }catch(SQLException se){
-               error("Fel vid upprensning: ", se);
-           }
+           JDBCUtil.close(con, ps, rs);
          }
 
     } // query
@@ -964,6 +1109,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
      *
      * @param endentityprofileid the id of end entity profile to look for.
      * @return true if endentityprofileid exists in userdatabase.
+     * @ejb.interface-method
      */
     public boolean checkForEndEntityProfileId(Admin admin, int endentityprofileid){
         debug(">checkForEndEntityProfileId()");
@@ -991,13 +1137,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         }catch(Exception e){
           throw new EJBException(e);
         }finally{
-           try{
-             if(rs != null) rs.close();
-             if(ps != null) ps.close();
-             if(con!= null) con.close();
-           }catch(SQLException se){
-               error("Fel vid upprensning: ", se);
-           }
+           JDBCUtil.close(con, ps, rs);
         }
 
 
@@ -1009,6 +1149,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
      *
      * @param certificateprofileid the id of certificateprofile to look for.
      * @return true if certificateproileid exists in userdatabase.
+     * @ejb.interface-method
      */
     public boolean checkForCertificateProfileId(Admin admin, int certificateprofileid){
         debug(">checkForCertificateProfileId()");
@@ -1036,13 +1177,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         }catch(Exception e){
           throw new EJBException(e);
         }finally{
-           try{
-             if(rs != null) rs.close();
-             if(ps != null) ps.close();
-             if(con!= null) con.close();
-           }catch(SQLException se){
-               error("Fel vid upprensning: ", se);
-           }
+           JDBCUtil.close(con, ps, rs);
         }
     } // checkForCertificateProfileId
 
@@ -1052,6 +1187,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
      *
      * @param caid the id of CA to look for.
      * @return true if caid exists in userdatabase.
+     * @ejb.interface-method
      */
     public boolean checkForCAId(Admin admin, int caid){
         debug(">checkForCAId()");
@@ -1079,13 +1215,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         }catch(Exception e){
           throw new EJBException(e);
         }finally{
-           try{
-             if(rs != null) rs.close();
-             if(ps != null) ps.close();
-             if(con!= null) con.close();
-           }catch(SQLException se){
-               error("Fel vid upprensning: ", se);
-           }
+           JDBCUtil.close(con, ps, rs);
         }
     } // checkForCAId
 
@@ -1096,6 +1226,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 	 *
 	 * @param profileid of hardtokenprofile to look for.
 	 * @return true if proileid exists in userdatabase.
+     * @ejb.interface-method
 	 */
 	public boolean checkForHardTokenProfileId(Admin admin, int profileid){
 		debug(">checkForHardTokenProfileId()");
@@ -1123,13 +1254,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 		}catch(Exception e){
 		  throw new EJBException(e);
 		}finally{
-		   try{
-			 if(rs != null) rs.close();
-			 if(ps != null) ps.close();
-			 if(con!= null) con.close();
-		   }catch(SQLException se){
-			   error("Error on cleanup: ", se);
-		   }
+            JDBCUtil.close(con, ps, rs);
 		}
 	} // checkForHardTokenProfileId
 
@@ -1174,7 +1299,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
    /**
     *  Method checking if username already exists in database.
     *
-    *  @return true if username already exists.
+    * @return true if username already exists.
+    * @ejb.interface-method
     */
    public boolean existsUser(Admin admin, String username){
       boolean returnval = true;

@@ -38,29 +38,62 @@ import se.anatom.ejbca.util.CertTools;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.14 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: CRLDataBean.java,v 1.15 2004-07-05 09:57:30 sbailliez Exp $
+ *
+ * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
+ * display-name="CRLDataEB"
+ * name="CRLData"
+ * view-type="both"
+ * type="CMP"
+ * reentrant="false"
+ * cmp-version="2.x"
+ * transaction-type="Container"
+ * schema="CRLDataBean"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.pk class="se.anatom.ejbca.ca.store.CRLDataPK"
+ * extends="java.lang.Object"
+ * implements="java.io.Serializable"
+ *
+ * @ejb.home extends="javax.ejb.EJBHome"
+ * local-extends="javax.ejb.EJBLocalHome"
+ * local-class="se.anatom.ejbca.ca.store.CRLDataLocalHome"
+ * remote-class="se.anatom.ejbca.ca.store.CRLDataHome"
+ *
+ * @ejb.interface extends="javax.ejb.EJBObject"
+ * local-extends="javax.ejb.EJBLocalObject"
+ * local-class="se.anatom.ejbca.ca.store.CRLDataLocal"
+ * remote-class="se.anatom.ejbca.ca.store.CRLData"
+ *
+ * @ejb.finder
+ *   description="findByIssuerDNAndCRLNumber"
+ *   view-type="local"
+ *   signature="CRLDataLocal findByIssuerDNAndCRLNumber(java.lang.String issuerdn, int cRLNumber)"
+ *   query="SELECT DISTINCT OBJECT(a) from CRLDataBean a WHERE a.issuerDN=?1 AND a.cRLNumber=?2"
+ *
+ * @ejb.finder
+ *   view-type="remote"
+ *   signature="CRLData findByIssuerDNAndCRLNumber(java.lang.String issuerdn, int cRLNumber)"
  */
 public abstract class CRLDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(CRLDataBean.class);
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract int getCRLNumber();
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param cRLNumber DOCUMENT ME!
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract void setCRLNumber(int cRLNumber);
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract String getIssuerDN();
 
@@ -68,78 +101,79 @@ public abstract class CRLDataBean extends BaseEntityBean {
      * Use setIssuer instead
      *
      * @see #setIssuer(String)
+     * @ejb.persistence
      */
     public abstract void setIssuerDN(String issuerDN);
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @ejb.pk-field
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract String getFingerprint();
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param fingerprint DOCUMENT ME!
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract void setFingerprint(String fingerprint);
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract String getCAFingerprint();
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param cAFingerprint DOCUMENT ME!
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract void setCAFingerprint(String cAFingerprint);
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract long getThisUpdate();
 
     /**
      * Date formated as seconds since 1970 (== Date.getTime())
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract void setThisUpdate(long thisUpdate);
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract long getNextUpdate();
 
     /**
      * Date formated as seconds since 1970 (== Date.getTime())
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract void setNextUpdate(long nextUpdate);
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract String getBase64Crl();
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param base64Crl DOCUMENT ME!
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract void setBase64Crl(String base64Crl);
 
     //
     // Public methods used to help us manage CRLs
     //
+    /**
+     * @ejb.interface-method
+     */
     public X509CRL getCRL() {
         X509CRL crl = null;
 
@@ -164,9 +198,7 @@ public abstract class CRLDataBean extends BaseEntityBean {
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param incrl DOCUMENT ME!
+     * @ejb.interface-method
      */
     public void setCRL(X509CRL incrl) {
         try {
@@ -178,18 +210,14 @@ public abstract class CRLDataBean extends BaseEntityBean {
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param dn DOCUMENT ME!
+     * @ejb.interface-method
      */
     public void setIssuer(String dn) {
         setIssuerDN(CertTools.stringToBCDNString(dn));
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param thisUpdate DOCUMENT ME!
+     * @ejb.interface-method
      */
     public void setThisUpdate(Date thisUpdate) {
         if (thisUpdate == null) {
@@ -200,9 +228,7 @@ public abstract class CRLDataBean extends BaseEntityBean {
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param nextUpdate DOCUMENT ME!
+     * @ejb.interface-method
      */
     public void setNextUpdate(Date nextUpdate) {
         if (nextUpdate == null) {
@@ -224,7 +250,7 @@ public abstract class CRLDataBean extends BaseEntityBean {
      * @param incrl the (X509)CRL to be stored in the database.
      * @param number monotonically increasnig CRL number
      *
-     * @return DOCUMENT ME!
+     * @ejb.create-method
      */
     public CRLDataPK ejbCreate(X509CRL incrl, int number)
         throws CreateException {

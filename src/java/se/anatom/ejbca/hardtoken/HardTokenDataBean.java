@@ -181,8 +181,8 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
 
     /**
      * Method that returns the hard token issuer data and updates it if nessesary.
+     * @ejb.interface-method view-type="local"
      */
-
     public HardToken getHardToken(){
       HardToken returnval = null;
       HashMap data = getData();
@@ -209,6 +209,7 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
 
     /**
      * Method that saves the hard token issuer data to database.
+     * @ejb.interface-method view-type="local"
      */
     public void setHardToken(HardToken tokendata){
        setData((HashMap) tokendata.saveData());

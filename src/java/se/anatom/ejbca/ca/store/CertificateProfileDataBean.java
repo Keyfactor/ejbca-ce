@@ -10,17 +10,18 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.ca.store;
 
-import java.util.HashMap;
+import org.apache.log4j.Logger;
+import se.anatom.ejbca.BaseEntityBean;
+import se.anatom.ejbca.ca.store.certificateprofiles.CACertificateProfile;
+import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
+import se.anatom.ejbca.ca.store.certificateprofiles.EndUserCertificateProfile;
+import se.anatom.ejbca.ca.store.certificateprofiles.RootCACertificateProfile;
 
 import javax.ejb.CreateException;
-
-import org.apache.log4j.Logger;
-
-import se.anatom.ejbca.BaseEntityBean;
-import se.anatom.ejbca.ca.store.certificateprofiles.*;
+import java.util.HashMap;
 
 
 /**
@@ -33,71 +34,92 @@ import se.anatom.ejbca.ca.store.certificateprofiles.*;
  * </pre>
  *
  * @version $Id: ProfileDataBean.java,v 1.4 2002/07/22 10:38:48 anatom Exp $
+ *
+ * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
+ * display-name="CertificateProfileDataEB"
+ * name="CertificateProfileData"
+ * view-type="local"
+ * type="CMP"
+ * reentrant="false"
+ * cmp-version="2.x"
+ * transaction-type="Container"
+ * schema="CertificateProfileDataBean"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.pk class="java.lang.Integer"
+ * generate="false"
+ *
+ * @ejb.home local-extends="javax.ejb.EJBLocalHome"
+ * local-class="se.anatom.ejbca.ca.store.CertificateProfileDataLocalHome"
+ *
+ * @ejb.interface local-extends="javax.ejb.EJBLocalObject"
+ * local-class="se.anatom.ejbca.ca.store.CertificateProfileDataLocal"
+ *
+ * @ejb.finder description="findByCertificateProfileName"
+ * signature="CRLDataLocal findByCertificateProfileName(java.lang.String name)"
+ * query="SELECT DISTINCT OBJECT(a) from CertificateProfileDataBean a WHERE a.certificateProfileName=?1"
+ *
+ * @ejb.finder description="findAll"
+ * signature="Collection findAll()"
+ * query="SELECT DISTINCT OBJECT(a) from CertificateProfileDataBean AS a"
  */
 public abstract class CertificateProfileDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(CertificateProfileDataBean.class);
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @ejb.pk-field
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract Integer getId();
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param id DOCUMENT ME!
+     * @ejb.persistence
      */
     public abstract void setId(Integer id);
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract String getCertificateProfileName();
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param certificateprofilename DOCUMENT ME!
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract void setCertificateProfileName(String certificateprofilename);
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @ejb.persistence
      */
     public abstract HashMap getData();
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param data DOCUMENT ME!
+     * @ejb.persistence
      */
     public abstract void setData(HashMap data);
 
     /**
      * Method that returns the certificate profiles and updates it if nessesary.
      *
-     * @return DOCUMENT ME!
+     * @ejb.interface-method
      */
     public CertificateProfile getCertificateProfile() {
         CertificateProfile returnval = null;
 
         switch (((Integer) (((HashMap) getData()).get(CertificateProfile.TYPE))).intValue()) {
-        case CertificateProfile.TYPE_ROOTCA:
-            returnval = new RootCACertificateProfile();
+            case CertificateProfile.TYPE_ROOTCA:
+                returnval = new RootCACertificateProfile();
 
-            break;
-          case CertificateProfile.TYPE_SUBCA :
-            returnval =  new CACertificateProfile();      
-            break;  
-          case CertificateProfile.TYPE_ENDENTITY  :
-          default :
-            returnval = new EndUserCertificateProfile();
+                break;
+            case CertificateProfile.TYPE_SUBCA:
+                returnval = new CACertificateProfile();
+                break;
+            case CertificateProfile.TYPE_ENDENTITY:
+            default :
+                returnval = new EndUserCertificateProfile();
         }
 
         returnval.loadData((Object) getData());
@@ -108,7 +130,7 @@ public abstract class CertificateProfileDataBean extends BaseEntityBean {
     /**
      * Method that saves the certificate profile to database.
      *
-     * @param profile DOCUMENT ME!
+     * @ejb.interface-method
      */
     public void setCertificateProfile(CertificateProfile profile) {
         setData((HashMap) profile.saveData());
@@ -123,12 +145,11 @@ public abstract class CertificateProfileDataBean extends BaseEntityBean {
      *
      * @param certificateprofilename DOCUMENT ME!
      * @param certificateprofilename
-     * @param certificateprofile is the CertificateProfile.
-     *
-     * @return null
+     * @param certificateprofile     is the CertificateProfile.
+     * @ejb.create-method
      */
     public Integer ejbCreate(Integer id, String certificateprofilename,
-        CertificateProfile certificateprofile) throws CreateException {
+                             CertificateProfile certificateprofile) throws CreateException {
         setId(id);
         setCertificateProfileName(certificateprofilename);
         setCertificateProfile(certificateprofile);
@@ -137,15 +158,8 @@ public abstract class CertificateProfileDataBean extends BaseEntityBean {
         return id;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param id DOCUMENT ME!
-     * @param certificateprofilename DOCUMENT ME!
-     * @param certificateprofile DOCUMENT ME!
-     */
     public void ejbPostCreate(Integer id, String certificateprofilename,
-        CertificateProfile certificateprofile) {
+                              CertificateProfile certificateprofile) {
         // Do nothing. Required.
     }
 }
