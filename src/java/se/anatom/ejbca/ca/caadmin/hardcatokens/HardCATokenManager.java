@@ -13,9 +13,8 @@
 
 package se.anatom.ejbca.ca.caadmin.hardcatokens;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
 
@@ -30,7 +29,7 @@ public class HardCATokenManager {
     /** Log4j instance for Base */
     private static transient Logger log = Logger.getLogger(HardCATokenManager.class);
 
-    private static ArrayList availablehardcatokens = new ArrayList();
+    private static Hashtable availablehardcatokens = new Hashtable();
 
     /**
      * Static intialization block used to register all plug-in classes to the manager.
@@ -74,13 +73,11 @@ public class HardCATokenManager {
 	public static boolean register(String classpath, String name, boolean translateable, boolean use) {
 		boolean retval = false;		
 		try {             
-		   // Check that class exists	
-		   log.debug("HardCATokenManager registering " + classpath);	
-			
+		   log.debug("HardCATokenManager registering " + classpath);				
+           // Check that class exists   
 		   Class.forName(classpath).getName();	
-			
-		   availablehardcatokens.add(new AvailableHardCAToken(classpath, name, translateable, use));
-			
+           // Add to the available tokens
+		   availablehardcatokens.put(classpath, new AvailableHardCAToken(classpath, name, translateable, use));			
 		   retval = true;
            log.debug("Registered " + classpath + "Successfully.");
 		} catch (ClassNotFoundException e) {
@@ -96,27 +93,18 @@ public class HardCATokenManager {
 	 */
 	
 	public static Collection getAvailableHardCATokens(){
-	   return availablehardcatokens;	
+	   return availablehardcatokens.values();	
 	}
 
 	/**
-	 * Method returning to the available hardcatoken with given classpath
-	 * .
+	 * Method returning to the available hardcatoken with given classpath.
 	 * 
 	 * @return the corresponding AvailableHardCAToken or null of classpath couldn't be found
 	 */
 	
 	public static AvailableHardCAToken getAvailableHardCAToken(String classpath){
-		AvailableHardCAToken retval = null;
-        Iterator iter = availablehardcatokens.iterator();
-        while(iter.hasNext()){
-        	AvailableHardCAToken next = (AvailableHardCAToken) iter.next();
-        	if(next.getClassPath().equals(classpath)){
-        	  retval = next;
-        	  break;
-        	}  
-        }
-		return retval;	
+        if (classpath == null) { return null; }
+	    return (AvailableHardCAToken)availablehardcatokens.get(classpath);
 	}
 	
 }
