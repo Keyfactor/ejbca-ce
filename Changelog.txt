@@ -2,6 +2,7 @@
 ---
 Commands for batch processing, and other batch fixes.
 Better error messages when user applies for cert with browser.
+Bugfixes
 
 1.1
 ---

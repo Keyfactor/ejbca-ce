@@ -38,7 +38,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.10 2002-01-13 10:51:54 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.11 2002-01-24 14:31:51 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -524,7 +524,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
         Date thisUpdate = new Date();
         Date nextUpdate = new Date();
         // crlperiod is hours = crlperiod*60*60*1000 milliseconds
-        nextUpdate.setTime(nextUpdate.getTime() - (crlperiod * 60 * 60 * 1000));
+        nextUpdate.setTime(nextUpdate.getTime() + (crlperiod * 60 * 60 * 1000));
 
         X509V2CRLGenerator crlgen = new X509V2CRLGenerator();
         crlgen.setThisUpdate(thisUpdate);
