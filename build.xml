@@ -168,7 +168,7 @@ database.password    = ${database.password}
         <taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
             <classpath refid="xdoclet.classpath" />
         </taskdef>
-        <ejbdoclet destdir="${src.gen}" ejbspec="2.0" excludedtags="@version,@author" force="true">
+        <ejbdoclet destdir="${src.gen}" ejbspec="2.0" excludedtags="@version,@author">
             <fileset dir="${javasrc}">
                 <include name="**/*Bean.java" />
                 <exclude name="**/BaseEntityBean.java" />
@@ -380,7 +380,8 @@ database.password    = ${database.password}
         <patternset id="webdist.pattern">
             <include name="se/anatom/ejbca/webdist/**" />
         </patternset>
-        <javac srcdir="${javasrc}" classpathref="compile.classpath" destdir="${build}" debug="on" includeantruntime="no">
+        <javac srcdir="${javasrc}" classpathref="compile.classpath" 
+            destdir="${build}" debug="on" includeantruntime="no">
             <patternset refid="webdist.pattern" />
             <classpath path="${build}" />
         </javac>
@@ -390,7 +391,10 @@ database.password    = ${database.password}
             </fileset>
         </jar>
 
-        <war basedir="${webdist.build}" destfile="${webdistjar}" webxml="${webdist.build}/WEB-INF/web.xml" excludes="WEB-INF/web.xml">
+        <war basedir="${webdist.build}" 
+            destfile="${webdistjar}" 
+            webxml="${webdist.build}/WEB-INF/web.xml" 
+            excludes="WEB-INF/web.xml">
         </war>
     </target>
 
@@ -405,29 +409,20 @@ database.password    = ${database.password}
                 <!--exclude name="languages/**"/-->
             </fileset>
         </copy>
-
-        <!-- copy resource bundles and escape them in unicode -->
-        <!--copy todir="${adminweb.build}/WEB-INF/classes">
-            <fileset dir="${adminweb.src}">
-            <include name="languages/*_*.properties"/>
-            </fileset>
-            <filterchain>
-            <filterreader classname="org.apache.tools.ant.filters.EscapeUnicode"/>
-            </filterchain>
-        </copy-->
-
-        <jar jarfile="${adminweb.build}/WEB-INF/lib/adminweb.jar">
+        <copy todir="${adminweb.build}/WEB-INF/classes">
             <fileset dir="${build}">
                 <include name="se/anatom/ejbca/webdist/**" />
                 <include name="se/anatom/ejbca/apply/**" />
             </fileset>
-        </jar>
+        </copy>
 
-        <war basedir="${adminweb.build}" 
-            destfile="${dist}/adminweb.war" 
-            webxml="${adminweb.build}/WEB-INF/web.xml" 
-            excludes="WEB-INF/web.xml">
-        </war>
+
+        <jar basedir="${adminweb.build}" jarfile="${dist}/adminweb.war">
+            <manifest>
+                <!-- todo: autogenerate this from a fileset -->
+                <attribute name="Class-Path" value="lib/bcmail-jdk14-122.jar lib/bcprov-jdk14-122.jar lib/log4j-1.2.7.jar lib/ldap.jar lib/commons-lang-2.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar" />
+            </manifest>
+        </jar>
     </target>
 
     <!-- =================================================================== -->
@@ -545,9 +540,6 @@ database.password    = ${database.password}
     <!-- Build admin jar                                                     -->
     <!-- =================================================================== -->
     <target name="admin.jar" depends="compile">
-        <!--javac srcdir="src/cli/src/main" destdir="${build}" debug="on" includeantruntime="no">
-		    <classpath refid="compile.classpath"/>
-		</javac-->
         <mkdir dir="${adminjar.build}" />
         <javac srcdir="${javasrc}" classpathref="compile.classpath" destdir="${build}" debug="on" includeantruntime="no">
             <include name="se/anatom/ejbca/client/**" />
@@ -613,7 +605,9 @@ database.password    = ${database.password}
             </fileset>
         </copy>
 
-        <ear destfile="${caear}" basedir="${caear.earbuild}" appxml="${caear.earbuild}/META-INF/application.xml" excludes="META-INF/application.xml" />
+        <ear destfile="${caear}" basedir="${caear.earbuild}" 
+            appxml="${caear.earbuild}/META-INF/application.xml" 
+            excludes="META-INF/application.xml" />
     </target>
 
     <!-- =================================================================== -->
