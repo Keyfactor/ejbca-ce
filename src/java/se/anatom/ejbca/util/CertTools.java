@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.35 2003-03-13 12:13:25 scop Exp $
+ * @version $Id: CertTools.java,v 1.36 2003-03-26 19:56:15 anatom Exp $
  */
 public class CertTools {
 
@@ -33,6 +33,11 @@ public class CertTools {
     public static final String DNS    = "dNSName";
     public static final String URI    = "uniformResourceIdentifier";
     public static final String URI1   = "uri";
+    /** Microsoft altName for windows smart card logon */
+    public static final String UPN   = "upn";
+    /** ObjectID for upn altName for windows smart card logon */
+    public static final String UPN_OBJECTID  = "1.3.6.1.4.1.311.20.2.3";
+    
 
     private static final String[] EMAILIDS = { EMAIL, EMAIL1, EMAIL2, EMAIL3 };
 

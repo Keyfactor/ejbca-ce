@@ -29,11 +29,13 @@ import javax.ejb.EJBException;
 import javax.ejb.ObjectNotFoundException;
 
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERConstructedSequence;
 import org.bouncycastle.asn1.DEREncodableVector;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERInputStream;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.CRLNumber;
@@ -79,7 +81,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.76 2003-03-11 09:47:40 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.77 2003-03-26 19:55:31 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -623,11 +625,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         }
         // Subject Alternative name
         if ( (certProfile.getUseSubjectAlternativeName() == true) && (altName != null) && (altName.length() > 0) ) {
-            String email = CertTools.getPartFromDN(altName, CertTools.EMAIL);
-            if (email == null)
-                email = CertTools.getPartFromDN(altName, CertTools.EMAIL1);
-            if (email == null)
-                email = CertTools.getPartFromDN(altName, CertTools.EMAIL2);
+            String email = CertTools.getEmailFromDN(altName);
             DEREncodableVector vec = new DEREncodableVector();
             if (email != null) {
                 GeneralName gn = new GeneralName(new DERIA5String(email), 1);
@@ -645,6 +643,14 @@ public class RSASignSessionBean extends BaseSessionBean {
                 GeneralName gn = new GeneralName(new DERIA5String(uri), 6);
                 vec.add(gn);
             }
+            String upn =  CertTools.getPartFromDN(altName, CertTools.UPN);
+            if (upn != null) {
+                DERConstructedSequence upnSeq = new DERConstructedSequence();
+                upnSeq.addObject(new DERObjectIdentifier(CertTools.UPN_OBJECTID));
+                upnSeq.addObject(new DERUTF8String(upn));
+                GeneralName gn = new GeneralName(upnSeq, 0);
+                vec.add(gn);
+            }            
             if (vec.size() > 0) {
                 GeneralNames san = new GeneralNames(new DERSequence(vec));
                 certgen.addExtension(X509Extensions.SubjectAlternativeName.getId(), certProfile.getSubjectAlternativeNameCritical(), san);
