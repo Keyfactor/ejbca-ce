@@ -10,13 +10,14 @@ import javax.ejb.*;
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.ca.exception.AuthLoginException;
 
 /**
  * Approves all authentication requests that contain a DN as the username, password is ignored and 
  * the username is returned as DN.
  * Useful for demo purposes to give out certificates to anyone.
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.1 2002-03-16 16:46:10 anatom Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.2 2002-04-14 17:07:39 anatom Exp $
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean implements IAuthenticationSession {
 
@@ -35,12 +36,12 @@ public class NullAuthenticationSessionBean extends BaseSessionBean implements IA
     * contains a DN. Only returns entities of type USER_ENDUSER.
     * STATUS_NEW, STATUS_FAILED or STATUS_INPROCESS.
     */
-    public UserAuthData authenticateUser(String username, String password) throws RemoteException {
+    public UserAuthData authenticateUser(String username, String password) throws AuthLoginException,RemoteException {
         debug(">authenticateUser("+username+", hiddenpwd)");
         try {
             // Does the username contain a DN?
             String dn = CertTools.stringToBCDNString(username);
-            if (dn != null) {
+            if ( (dn != null) && (dn.length()>0) ){
                 String email = CertTools.getPartFromDN(dn, "EmailAddress");
                 info("NULL-Authenticated user with DN='"+dn+"' and email='"+email+"'.");
                 UserAuthData ret = new UserAuthData(username, dn, email, SecConst.USER_ENDUSER);
@@ -48,8 +49,10 @@ public class NullAuthenticationSessionBean extends BaseSessionBean implements IA
                 return ret;
             } else {
                 error("User "+username+" does not contain a DN.");
-                throw new SecurityException("User "+username+" does not contain a DN.");
+                throw new AuthLoginException("User "+username+" does not contain a DN.");
             }
+        } catch (AuthLoginException le) {
+            throw le;
         } catch (Exception e) {
             throw new EJBException(e.toString());
         }
