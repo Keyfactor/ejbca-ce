@@ -158,14 +158,14 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.9 2003-03-11 09:46:04 anatom Exp $
+@version $Id: DEVELOP,v 1.10 2003-07-21 08:17:28 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.9 2003-03-11 09:46:04 anatom Exp $
+ * @version $Id: DEVELOP,v 1.10 2003-07-21 08:17:28 anatom Exp $
  */
 
 CA KeyStore architecture/creating a custom CA Keystore
@@ -227,3 +227,27 @@ CertificateStoreSession where we also publish certificates to an LDAP directory,
 or the LDAP directory as the primary CertificateStoreSession where we also
 publish certificates to a specific SQL database for a specific purpose.
 
+Clear or hashed passwords
+-------------------------
+Passwords for users are normally stored SHA1-hashed in the database.
+
+You can retrieve and use the password IF it is stored in clear text.
+
+Use something like this to get the password (snip from BatchMakeP12.java):
+
+IUserAdminSessionRemote admin = adminhome.create();
+UserAdminData data = admin.findUser(administrator, username);
+if ((data.getPassword() != null) && (data.getPassword().length() > 0) {
+...
+}
+
+When creating the user, you must specify that the password should be in clear text, 
+otherwise it will be stored in hashed form, which will obvoiusly be of no use to you.
+
+If using the Web-GUI there is a checkbox for storing the password in clear format.
+
+If using the command line gui there is a command 'ra setclearpwd'
+
+If using programatically:
+In IUserAdminSession there is a flag 'clearpwd' to the method addUser, or you can use 
+the method setOpenPassword on the UserDataBean object returned from findUser.
