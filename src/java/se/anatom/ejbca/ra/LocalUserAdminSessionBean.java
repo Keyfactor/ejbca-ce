@@ -65,7 +65,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.75 2004-04-16 07:38:56 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.76 2004-05-27 16:23:29 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -202,7 +202,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                                                     (type & SecConst.USER_ADMINISTRATOR) != 0, (type & SecConst.USER_KEYRECOVERABLE) != 0, (type & SecConst.USER_SENDNOTIFICATION) != 0,
                                                     tokentype, hardwaretokenissuerid, caid);
           }catch( UserDoesntFullfillEndEntityProfile udfp){
-            logsession.log(admin, caid, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDENDENTITY,"Userdata didn'nt fullfill end entity profile. " + udfp.getMessage() );
+            logsession.log(admin, caid, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDENDENTITY,"Userdata did not fullfill end entity profile. " + udfp.getMessage() );
             throw new UserDoesntFullfillEndEntityProfile(udfp.getMessage());
           }
 

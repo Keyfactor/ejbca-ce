@@ -30,7 +30,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.59 2004-05-25 20:55:11 anatom Exp $
+ * @version $Id: CertTools.java,v 1.60 2004-05-27 16:23:29 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -162,7 +162,7 @@ public class CertTools {
             }
         }
 
-        
+        /*
         if (log.isDebugEnabled()) {
             Iterator i1 = ordering.iterator();
             Iterator i2 = values.iterator();
@@ -174,7 +174,7 @@ public class CertTools {
             while (i2.hasNext()) {
                 log.debug((String)i2.next());
             }
-        } 
+        } */
 
         //log.debug("<stringToBcX509Name");
         return new X509Name(ordering, values);
