@@ -1,4 +1,4 @@
-$Id: README,v 1.90 2003-06-06 08:15:46 anatom Exp $
+$Id: README,v 1.91 2003-06-15 11:59:47 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -868,6 +868,7 @@ $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 SCEP
 =====
 TODO: Scep is not fully functional yet! 
+OpenScep seems to create garbage request strings in 4 out of 5 tries, just try again until it works...
 
 Since SCEP uses encryption, you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
 The policy files can be found at the same place as the JDK 1.4 download. Further information on this can be found in 
@@ -881,7 +882,8 @@ The challengePassword in the PKCS#10 request, which is part of the Scep request,
 authenticating the request in EJBCA. Create the Scep request with a challengePassword mathing the password registered in EJBCA.
 
 To use the OpenScep (http://openscep.othello.ch/) client to request a certificate from this servlet, use the command:
-./scep -d -k test.key -r test.pemreq -2 -e test.req -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
+./scep -k test.key -r test.pemreq -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
+rem ./scep -d -k test.key -r test.pemreq -2 -e test.req -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
 Where test.key is generated with:
 openssl genrsa -out test.key
 test1.req is generated with:
