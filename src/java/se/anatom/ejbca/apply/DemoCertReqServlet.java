@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.security.Provider;
 import java.security.Security;
+import java.util.Date;
 import javax.ejb.CreateException;
 import javax.ejb.ObjectNotFoundException;
 import javax.naming.InitialContext;
@@ -78,7 +79,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.12 2003-01-29 11:53:20 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.13 2003-01-31 09:37:43 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -201,6 +202,7 @@ public class DemoCertReqServlet extends HttpServlet {
         debug.printDebugInfo();
         return;
     }
+    username = username + "("+(new Date()).toString()+")";
 
     String includeEmail = request.getParameter("includeemail");
     cat.debug("includeEmail="+includeEmail);
