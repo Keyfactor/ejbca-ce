@@ -1,3 +1,8 @@
+EJBCA V3.0Beta3
+---------------
+This is a plugin-upgrade from beta2.
+There is an upgrade function from EJBCA2->EJBCA3 for the MySQL database, see doc/UPGRADE.
+
 EJBCA V3.0Beta2
 ---------------
 Thanks to a bug in Beta1 the database table 'HardTokenPropertyData' has changed. If you have been
@@ -6,8 +11,8 @@ using the HardToken features in Beta1, or plan to use them in the future, this t
 
 Apart from this, it is a plug-in upgrade.
 
-EJBCA V3.0
--------------
+EJBCA V3.0beta1
+---------------
 EJBCA 3.0 is a major new release taking the Open Source CA to new heights. 
 The most noteworthy change is that it is now possible to run a complete (or several)
 PKI infrastructure within one single instance of EJBCA.
