@@ -82,7 +82,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.2 2003-01-09 16:22:27 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.3 2003-01-12 15:37:42 anatom Exp $
  */
 public class DemoCertReqServlet
   extends HttpServlet {
@@ -153,7 +153,7 @@ public class DemoCertReqServlet
   public void doPost(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException
   {
-    Debug debug = new Debug(request, response);
+    ServletDebug debug = new ServletDebug(request, response);
 
     try {
         adminsession = adminsessionhome.create();
@@ -162,25 +162,45 @@ public class DemoCertReqServlet
       throw new ServletException(e);
     }
 
-    Admin admin = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
-    //Admin admin = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
-    byte[] buffer = pkcs10Bytes(request.getParameter("pkcs10req"));
-    if (buffer == null) {
-      // abort here, no PKCS#10 received
+     Admin admin = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
+     RequestHelper helper = new RequestHelper(home, admin, debug);
+
+      String dn = null;
+      dn = request.getParameter("user");
+      byte[] reqBytes = null;
+      int type = 0;
+      if (request.getParameter("keygen") != null) {
+          reqBytes=request.getParameter("keygen").getBytes();
+          cat.debug("Received NS request:"+new String(reqBytes));
+          if (reqBytes != null) {
+              type = 1;
+          }
+      } else if (request.getParameter("pkcs10req") != null) {
+          // if not netscape, check if it's IE
+          reqBytes=request.getParameter("pkcs10req").getBytes();
+          cat.debug("Received IE request:"+new String(reqBytes));
+          if (reqBytes != null) {
+              type = 2;
+          }
+      }
+    if (reqBytes == null) {
+      // abort here, no request received
       throw new ServletException("A certification request must be provided!");
     }
-
-    // Decompose the PKCS#10 request, and create the user.
-    PKCS10RequestMessage p10 = new PKCS10RequestMessage(buffer);
-    String dn = p10.getCertificationRequest().getCertificationRequestInfo().getSubject().toString();
-
-    String username = request.getParameter("username");
-    if (username == null || username.trim().length() == 0) {
-      username = CertTools.getPartFromDN(dn, "CN");
-    }
+    
+      String username = request.getParameter("username");
+      if (username == null || username.trim().length() == 0) {
+          username = CertTools.getPartFromDN(dn, "CN");
+      }
     // need null check here?
     // Before doing anything else, check if the user name is unique and ok.
-    username = checkUsername(admin,username);
+    boolean check = checkUsername(admin,username);
+    if (check == false) {
+        String msg = "User '"+username+"' already exist.";
+        cat.error(msg);
+        debug.printMessage(msg);
+        debug.printDebugInfo();
+    }
 
     UserView newuser = new UserView();
     newuser.setUsername(username);
@@ -229,13 +249,15 @@ public class DemoCertReqServlet
 
     byte[] pkcs7;
     try {
-      X509Certificate cert =
-        (X509Certificate) ss.createCertificate(admin, username, password, p10);
-      pkcs7 = ss.createPKCS7(admin, cert);
-      //pkcs7 = cert.getEncoded();
-
-    //sendNewB64Cert(Base64.encode(pkcs7), response);
-    sendNewCertToIEClient(Base64.encode(pkcs7), response.getOutputStream());
+        if (type == 1) {
+              byte[] certs = helper.nsCertRequest(reqBytes, username, password);
+              helper.sendNewCertToNSClient(certs, response);            
+        }
+        if (type == 2) {
+              byte[] b64cert=helper.pkcs10CertRequest(reqBytes, username, password);
+              debug.ieCertFix(b64cert);
+              helper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"));            
+        }
 
     //} catch (java.security.cert.CertificateEncodingException e) {
     //  throw new ServletException(e);
@@ -276,34 +298,12 @@ public class DemoCertReqServlet
     throws IOException, ServletException
   {
     cat.debug(">doGet()");
-    Debug debug = new Debug(request,response);
+    ServletDebug debug = new ServletDebug(request,response);
     debug.print("The certificate request servlet only handles POST method.");
     debug.printDebugInfo();
     cat.debug("<doGet()");
   } // doGet
 
-
-private void ieCertFormat(byte[] bA, PrintStream out) throws Exception {
-    BufferedReader br=new BufferedReader(
-        new InputStreamReader(new ByteArrayInputStream(bA)) );
-    int rowNr=0;
-    while ( true ){
-        String line=br.readLine();
-        if (line==null)
-            break;
-        if ( line.indexOf("END CERT")<0 ) {
-            if ( line.indexOf(" CERT")<0 ) {
-                if ( ++rowNr>1 )
-                    out.println(" & _ ");
-                else
-                    out.print("    cert = ");
-                out.print('\"'+line+'\"');
-            }
-        } else
-            break;
-    }
-    out.println();
-}
 
 private void sendNewCertToIEClient(byte[] b64cert, OutputStream out) throws Exception {
     PrintStream ps = new PrintStream(out);
@@ -319,7 +319,7 @@ private void sendNewCertToIEClient(byte[] b64cert, OutputStream out) throws Exce
         if ( line.indexOf("cert =")<0 )
             ps.println(line);
         else
-            ieCertFormat(b64cert, ps);
+            RequestHelper.ieCertFormat(b64cert, ps);
     }
     ps.close();
     cat.info("Sent reply to IE client");
@@ -373,9 +373,9 @@ private void sendNewB64Cert(byte[] b64cert, HttpServletResponse out)
   }
 
   /**
-   *
+   * @return true if the username is ok (does not already exist), false otherwise
    */
-  private final String checkUsername(Admin admin, String username)
+  private final boolean checkUsername(Admin admin, String username)
     throws ServletException
   {
     if (username != null) username = username.trim();
@@ -383,66 +383,13 @@ private void sendNewB64Cert(byte[] b64cert, HttpServletResponse out)
       throw new ServletException("Username must not be empty.");
     }
 
+    UserAdminData tmpuser = null;
     try {
-        UserAdminData tmpuser = adminsession.findUser(admin, username);
-        if (tmpuser != null) {
-            throw new ServletException("User '" + username + "' already exists.");
-        }
-    } catch (Exception e) {
-      throw new ServletException("Error checking username '" + username +
-                                 ": ", e);
-    }
-    return username;
-  }
-
-
-  /**
-   * Prints debug info back to browser client
-   */
-  private class Debug {
-    final private ByteArrayOutputStream buffer;
-    final private PrintStream printer;
-    final private HttpServletRequest request;
-    final private HttpServletResponse response;
-    Debug(HttpServletRequest request, HttpServletResponse response){
-      buffer=new ByteArrayOutputStream();
-      printer=new PrintStream(buffer);
-      this.request=request;
-      this.response=response;
-    }
-
-    void printDebugInfo() throws IOException, ServletException {
-      request.setAttribute("ErrorMessage",new String(buffer.toByteArray()));
-      request.getRequestDispatcher("/ejbca/adminweb/error.jsp").forward(request, response);
-    }
-
-    void print(Object o) {
-      printer.println(o);
-    }
-    void printMessage(String msg) {
-      print("<p>"+msg);
-    }
-    void printInsertLineBreaks( byte[] bA ) throws Exception {
-      BufferedReader br=new BufferedReader(
-                                           new InputStreamReader(new ByteArrayInputStream(bA)) );
-      while ( true ){
-        String line=br.readLine();
-        if (line==null)
-          break;
-        print(line.toString()+"<br>");
-      }
-    }
-    void takeCareOfException(Throwable t ) {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      t.printStackTrace(new PrintStream(baos));
-      print("<h4>Exception:</h4>");
-      try {
-        printInsertLineBreaks( baos.toByteArray() );
-      } catch (Exception e) {
-        e.printStackTrace(printer);
-      }
-      request.setAttribute("Exception", "true");
-    }
+        tmpuser = adminsession.findUser(admin, username);
+     } catch (Exception e) {
+        throw new ServletException("Error checking username '" + username +": ", e);
+     }
+    return username==null ? true:false;
   }
 
 }
