@@ -18,7 +18,7 @@ import se.anatom.ejbca.util.KeyTools;
 
 /** Implements a signing device using PKCS12 keystore, implementes the Singleton pattern.
  *
- * @version $Id: PKCS12SigningDevice.java,v 1.2 2002-07-20 18:40:08 herrvendil Exp $
+ * @version $Id: PKCS12SigningDevice.java,v 1.3 2002-07-21 12:12:12 anatom Exp $
  */
 
 public class PKCS12SigningDevice implements ISigningDevice {
@@ -37,7 +37,7 @@ public class PKCS12SigningDevice implements ISigningDevice {
     static private PKCS12SigningDevice instance = null;
 
 
-   /** Reads a PKCS12 keystore and inislizes all internal data
+   /** Reads a PKCS12 keystore and initializes all internal data
     */
 
     protected PKCS12SigningDevice(Properties p) throws Exception {
@@ -92,10 +92,9 @@ public class PKCS12SigningDevice implements ISigningDevice {
     }
 
    /** Creates (if needed) the signing device and returns the object.
-    * prop Arguments needed för the eventual creation of the object
+    * @param prop Arguments needed fo?r the eventual creation of the object
     * @return An instance of the Signing device.
     */
-
     static public synchronized ISigningDevice instance(Properties prop) throws Exception {
        if(instance == null) {
          instance = new PKCS12SigningDevice(prop);
@@ -107,7 +106,6 @@ public class PKCS12SigningDevice implements ISigningDevice {
     *
     * @return an array of Certificate
     */
-
     public Certificate[] getCertificateChain() {
         cat.debug(">getCertificateChain()");
         // TODO: should support more than 2 levels of CAs
@@ -127,10 +125,17 @@ public class PKCS12SigningDevice implements ISigningDevice {
     *
     * @return PrivateKey object
     */
-
     public PrivateKey getPrivateSignKey() {
         return privateKey;
     }
+    
+    /** Weuse the BouncyCastle provider to sign stuff
+     * @return String "BC"
+     */
+    public String getProvider() {
+    	return "BC";
+    }
+    
 
 }
 

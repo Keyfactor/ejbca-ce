@@ -6,9 +6,10 @@ import java.util.Properties;
 
 /** Handles maintenance of the device producing signatures and handling the private key.
  * Classes implementing this interface should be Singletons, since they will be created
- * using the getINstance() method.
+ * using the getInstance() method.
+ * 
  *
- * @version $Id: ISigningDevice.java,v 1.1 2002-06-07 12:21:34 anatom Exp $
+ * @version $Id: ISigningDevice.java,v 1.2 2002-07-21 12:12:12 anatom Exp $
  */
 public interface ISigningDevice {
 
@@ -23,4 +24,10 @@ public interface ISigningDevice {
     * @return PrivateKey object
     */
     public PrivateKey getPrivateSignKey();
+    
+    /** Returns the signature Provider that should be used to sign things with
+     *  the PrivateKey object returned by this signingdevice implementation.
+     * @return String the name of the Provider
+     */
+    public String getProvider();
 }

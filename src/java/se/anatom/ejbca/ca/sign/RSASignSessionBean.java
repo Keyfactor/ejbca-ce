@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.34 2002-07-20 18:40:08 herrvendil Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.35 2002-07-21 12:12:12 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -534,7 +534,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             DistributionPoint distp = new DistributionPoint(dpn, null, null);
             certgen.addExtension(X509Extensions.CRLDistributionPoints.getId(), crldistcritical.booleanValue(), distp);
         }
-        X509Certificate cert = certgen.generateX509Certificate(signingDevice.getPrivateSignKey());
+        X509Certificate cert = certgen.generateX509Certificate(signingDevice.getPrivateSignKey(), signingDevice.getProvider());
         debug("<makeBCCertificate()");
         return (X509Certificate)cert;
     } // makeBCCertificate
@@ -577,7 +577,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             CRLNumber crlnum = new CRLNumber(BigInteger.valueOf(crlnumber));
             crlgen.addExtension(X509Extensions.CRLNumber.getId(), crlncritical.booleanValue(), crlnum);
         }
-        X509CRL crl = crlgen.generateX509CRL(signingDevice.getPrivateSignKey());
+        X509CRL crl = crlgen.generateX509CRL(signingDevice.getPrivateSignKey(), signingDevice.getProvider());
 
         debug("<makeBCCRL()");
         return (X509CRL)crl;
