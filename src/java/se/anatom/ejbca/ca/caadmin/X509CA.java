@@ -85,7 +85,7 @@ import se.anatom.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.18 2004-01-27 08:50:10 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.19 2004-01-28 14:47:51 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -95,6 +95,8 @@ public class X509CA extends CA implements Serializable {
     public static final float LATEST_VERSION = 1;
 
     private X509Name subjectx509name = null;
+    
+    private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
     
     // protected fields.
@@ -504,16 +506,14 @@ public class X509CA extends CA implements Serializable {
     	
     	CertTools.installBCProvider();
     		
-       CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();    	    	    	
-    	
-       System.out.println("X509CA : encrypyKeys : first " + baos.toByteArray().length);
+        CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();    	    	    	    	      
        
     	CMSEnvelopedData ed;
 		try {
-			edGen.addKeyTransRecipient((X509Certificate) this.getCACertificate());
+			edGen.addKeyTransRecipient( this.getCAToken().getPublicEncKey(), this.keyId);
 			ed = edGen.generate(
-					new CMSProcessableByteArray(baos.toByteArray()),
-					SMIMECapability.dES_CBC.getId(), getCAToken().getProvider());
+					new CMSProcessableByteArray(baos.toByteArray()), CMSEnvelopedDataGenerator.AES256_CBC,
+					              getCAToken().getProvider());
 		} catch (Exception e) {
 			e.printStackTrace();
           throw new IOException(e.getMessage());		

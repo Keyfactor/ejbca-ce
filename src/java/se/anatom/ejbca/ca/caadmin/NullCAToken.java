@@ -7,7 +7,7 @@ import java.util.HashMap;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: NullCAToken.java,v 1.2 2004-01-25 09:37:11 herrvendil Exp $
+ * @version $Id: NullCAToken.java,v 1.3 2004-01-28 14:47:51 herrvendil Exp $
  */
 public class NullCAToken extends CAToken implements java.io.Serializable{
 
@@ -75,13 +75,7 @@ public class NullCAToken extends CAToken implements java.io.Serializable{
       return null;        
     }
     
-    /** Returns a certificate with the public key (if possible) used for encryption.
-     *
-     * @return Certificate object
-     */
-    public Certificate getEncCert(){
-    	return null;    	
-    }
+
 
     /** Returns the signature Provider that should be used to sign things with
      *  the PrivateKey object returned by this signingdevice implementation.

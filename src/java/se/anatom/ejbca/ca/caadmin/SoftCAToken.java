@@ -18,7 +18,7 @@ import se.anatom.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.4 2004-01-25 09:37:11 herrvendil Exp $
+ * @version $Id: SoftCAToken.java,v 1.5 2004-01-28 14:47:51 herrvendil Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
 
@@ -233,13 +233,7 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
       return publicEncKey;        
     }
     
-    /** Returns a certificate with the public key (if possible) used for encryption.
-     *
-     * @return Certificate object
-     */
-    public Certificate getEncCert(){
-    	return encCert;    	
-    }
+
 
     /** Returns the signature Provider that should be used to sign things with
      *  the PrivateKey object returned by this signingdevice implementation.
