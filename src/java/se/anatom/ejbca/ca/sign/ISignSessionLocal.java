@@ -40,7 +40,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
  * Local interface for EJB, unforturnately this must be a copy of the remote interface except that
  * RemoteException is not thrown. Creates certificates.
  *
- * @version $Id: ISignSessionLocal.java,v 1.23 2004-05-13 15:36:31 herrvendil Exp $
+ * @version $Id: ISignSessionLocal.java,v 1.24 2004-05-22 12:58:52 anatom Exp $
  *
  * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
  */
@@ -117,6 +117,12 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
         Class responseClass)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException, 
             IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException;
+
+    /**
+     * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
+     */
+    public IResponseMessage getCRL(Admin admin, IRequestMessage req, Class responseClass)
+        throws IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException;
 
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote

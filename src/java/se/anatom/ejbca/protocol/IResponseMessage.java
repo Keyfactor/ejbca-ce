@@ -19,6 +19,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -39,7 +40,7 @@ import java.security.cert.X509Certificate;
  * byte[] responseMessage = resp.getResponseMessage(); 
  * </code>
  *
- * @version $Id: IResponseMessage.java,v 1.12 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: IResponseMessage.java,v 1.13 2004-05-22 12:58:52 anatom Exp $
  */
 public interface IResponseMessage {
 
@@ -50,6 +51,13 @@ public interface IResponseMessage {
      */
     public void setCertificate(Certificate cert);
 
+    /**
+     * Sets the CRL (if present) in the response message.
+     *
+     * @param crl crl in the response message.
+     */
+    public void setCrl(CRL crl);
+    
     /**
      * Gets the response message in the default encoding format.
      *

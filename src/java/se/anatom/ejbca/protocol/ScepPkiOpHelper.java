@@ -14,7 +14,6 @@
 package se.anatom.ejbca.protocol;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.cert.CertificateEncodingException;
 
@@ -38,7 +37,7 @@ import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version  $Id: ScepPkiOpHelper.java,v 1.25 2004-04-16 07:38:55 anatom Exp $
+ * @version  $Id: ScepPkiOpHelper.java,v 1.26 2004-05-22 12:58:51 anatom Exp $
  */
 public class ScepPkiOpHelper {
     private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);
@@ -84,16 +83,18 @@ public class ScepPkiOpHelper {
                 // Get the certificate
                 IResponseMessage resp = signsession.createCertificate(admin, reqmsg, -1,
                         Class.forName("se.anatom.ejbca.protocol.ScepResponseMessage"));
-
                 if (resp != null) {
                     ret = resp.getResponseMessage();
                 }                
             }
             if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCRL) {
-                // TODO: create the stupid encrypted CRL message, the below can actually only be made 
+                // create the stupid encrypted CRL message, the below can actually only be made 
                 // at the CA, since CAs privvate key is needed to decrypt
-                String issuerDN = reqmsg.getCRLIssuerDN();
-                BigInteger serno = reqmsg.getCRLSerialNo();
+                IResponseMessage resp = signsession.getCRL(admin, reqmsg,
+                        Class.forName("se.anatom.ejbca.protocol.ScepResponseMessage"));
+                if (resp != null) {
+                    ret = resp.getResponseMessage();
+                }                
             }
         } catch (IOException e) {
             log.error("Error receiving ScepMessage: ", e);

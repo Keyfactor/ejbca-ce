@@ -21,6 +21,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.cert.CRL;
 import java.security.cert.CertStore;
 import java.security.cert.CertStoreException;
 import java.security.cert.Certificate;
@@ -56,7 +57,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.14 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.15 2004-05-22 12:58:51 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage, Serializable {
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);
@@ -90,6 +91,7 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
 
     /** Certificate to be in response message, not serialized */
     private transient Certificate cert = null;
+    private transient CRL crl = null;
     private transient X509Certificate signCert = null;
     private transient PrivateKey signKey = null;
 
@@ -102,6 +104,15 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
         this.cert = cert;
     }
 
+    /**
+     * Sets the CRL (if present) in the response message.
+     *
+     * @param crl crl in the response message.
+     */
+    public void setCrl(CRL crl) {
+        this.crl = crl;
+    }
+    
     /**
      * Gets the response message in the default encoding format.
      *
@@ -184,8 +195,15 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
                 CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
                 // Add the issued certificate to the signed portion of the CMS (as signer, degenerate case)
                 ArrayList certList = new ArrayList();
-                certList.add(cert);
-                certList.add(signCert);
+                if (cert != null) {
+                    log.debug("Adding certificates to response message");
+                    certList.add(cert);
+                    certList.add(signCert);                    
+                }
+                if (crl != null) {
+                    log.debug("Adding CRL to response message");
+                    certList.add(crl);
+                }
                 CertStore certs = CertStore.getInstance("Collection",
                         new CollectionCertStoreParameters(certList), "BC");
 

@@ -40,7 +40,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
 /**
  * Creates certificates. Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.28 2004-05-13 15:36:31 herrvendil Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.29 2004-05-22 12:58:52 anatom Exp $
  */
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
 	/**
@@ -291,7 +291,37 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
         throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, 
             IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException;
 
-	/**
+    /**
+     * Requests for a CRL to be sent back in the requested response format (ex SCEP).  
+     * The information used to find out which CRL is taken from the request message. 
+     * Verification of the signature (proof-of-possesion) on the request is performed, 
+     * and an exception thrown if verification fails. 
+     *
+     * @param admin Information about the administrator or admin preforming the event.
+     * @param req a CRL Request message
+     * @param responseClass The implementation class that will be used as the response message.
+     *
+     * @return The newly created response or null.
+     *
+     * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException If the users status is incorrect.
+     * @throws AuthLoginException If the password is incorrect.
+     * @throws IllegalKeyException if the public key is of wrong type.
+     * @throws CADoesntExistsException if the targeted CA does not exist
+     * @throws SignRequestException if the provided request is invalid.
+     * @throws SignRequestSignatureException if the provided client certificate was not signed by
+     *         the CA.
+     * @throws RemoteException if a communication or other error occurs.
+     *
+     * @see se.anatom.ejbca.ca.store.CertificateData
+     * @see se.anatom.ejbca.protocol.IRequestMessage
+     * @see se.anatom.ejbca.protocol.IResponseMessage
+     * @see se.anatom.ejbca.protocol.X509ResponseMessage
+     */
+    public IResponseMessage getCRL(Admin admin, IRequestMessage req, Class responseClass)
+        throws RemoteException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException;
+
+    /**
 	 * Requests for a CRL to be created with the passed (revoked) certificates.
 	 *
 	 * @param admin Information about the administrator or admin preforming the event.

@@ -13,6 +13,7 @@
  
 package se.anatom.ejbca.protocol;
 
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -25,7 +26,7 @@ import java.security.cert.X509Certificate;
  * Base interface for request messages sent to the CA. Implementors of this interface must also
  * implement Serializable if they are to be sent to any EJB bussiness methods.
  *
- * @version $Id: IRequestMessage.java,v 1.12 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: IRequestMessage.java,v 1.13 2004-05-22 12:58:52 anatom Exp $
  */
 public interface IRequestMessage {
     /**
@@ -49,6 +50,19 @@ public interface IRequestMessage {
      */
     public String getIssuerDN();
     
+    /**
+     * Gets the issuer DN (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
+     *
+     * @return issuerDN of CA issuing CRL.
+     */
+    public String getCRLIssuerDN();
+
+    /**
+     * Gets the number (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
+     *
+     * @return serial number of CA certificate for CA issuing CRL.
+     */
+    public BigInteger getCRLSerialNo();
     /**
      * Get the public key from a certification request.
      *
