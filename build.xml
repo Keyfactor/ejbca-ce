@@ -178,7 +178,7 @@ ca.ear, canora.ear, ra.jar, adminweb.war, admin.jar, sampleauth.war">
     <copy todir="${ca.build}">
         <fileset dir="${ca.src}"> 
                 <include name="**/*"/>
-                <exclude name="keyStore*/*"/>
+                <exclude name="keyStore/**"/>
         </fileset>
     </copy>
     <copy todir="${ca.build}">
