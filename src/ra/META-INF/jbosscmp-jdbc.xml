@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
 
-<jaws>
+<jbosscmp-jdbc>
 
 <datasource>DefaultDS</datasource>
    <default-entity>
        <debug>true</debug>
-    </default-entity>
-</jaws>
+   </default-entity>
+
+</jbosscmp-jdbc>

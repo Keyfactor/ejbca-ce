@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 
-<jaws>
+<jbosscmp-jdbc>
 
 <datasource>DefaultDS</datasource>
 
-<!-- Setting for Oracle in EJBCA version > 1.0. 
-     base64cert and base64crl fields need to hold complete certificates and CRLs which can be long. 
--->
+<!-- Default setting for mySQL in EJBCA version > 1.0. 
+     base64cert and base64crl fields is too long form default mapping with some databases. 
+     If using another database (the default HypersonicDB for ex.), simply remove (or edit) 
+     the <entity> sections below if things don't work. -->
 
 <enterprise-beans>
     <entity>
@@ -14,7 +15,7 @@
         <cmp-field>
             <field-name>base64Cert</field-name>
             <jdbc-type>LONGVARCHAR</jdbc-type>
-            <sql-type>LONG</sql-type>
+            <sql-type>TEXT</sql-type>
         </cmp-field>
     </entity>
 
@@ -23,9 +24,9 @@
         <cmp-field>
             <field-name>base64Crl</field-name>
             <jdbc-type>LONGVARCHAR</jdbc-type>
-            <sql-type>LONG</sql-type>
+            <sql-type>TEXT</sql-type>
         </cmp-field>
     </entity>
 </enterprise-beans>
 
-</jaws>
+</jbosscmp-jdbc>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
-<jaws>
+<jbosscmp-jdbc>
 
 <datasource>DefaultDS</datasource>
 
-</jaws>
+</jbosscmp-jdbc>
