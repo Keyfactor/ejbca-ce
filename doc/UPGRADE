@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.5 2004-05-13 07:57:49 anatom Exp $
+$Id: UPGRADE,v 1.6 2004-05-13 09:22:55 anatom Exp $
 
 UPGRADE
 =======
@@ -14,14 +14,12 @@ From EJBCA 2.x to EJBCA 3.x
 EJBCA 3 has several large database changes due to majur new features.
 
 The upgrade process typically consists of:
-1. ca exportprofiles <outpath> (using OLD CA)
-2. Stop JBoss
-3. ant replaceDS (run from NEW EJBCA_HOME)
-4. ant deploy (run from NEW EJBCA_HOME)
-5. Start JBoss
-6. ant upgrade (run from NEW EJBCA_HOME)
-7. restart JBoss
-8. ca importprofiles <inpath> (using NEW CA)
+1. Stop JBoss
+2. ant replaceDS (run from NEW EJBCA_HOME)
+3. ant deploy
+4. Start JBoss
+5. ant upgrade
+6. restart JBoss
 
 Some things are not upgraded from ejbca2, and needs to be rebuilt after the upgrade 
 (if you have used this function and customized).
