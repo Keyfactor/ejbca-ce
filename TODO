@@ -1,4 +1,4 @@
-$Id: TODO,v 1.11 2002-03-07 15:00:36 anatom Exp $
+$Id: TODO,v 1.12 2002-03-08 15:49:09 anatom Exp $
 
 V 1.0
 -----
@@ -11,7 +11,6 @@ V 2.0
 - Better architecture for JSPs (MVC - ModelViewController?).
 - Correct <transaction-xx> for beans in ejb-jar.xml.
 - Certificate update/rollover for CAs and clients.
-- Sample Iptables firewall scripts for CA.
 - Make a database model similar to architecture model.
 - Possibility to warn about certificates about to expire.
 - Return PKCS7 response to IE/Mozilla, response is PKCS7 with whole chain.
