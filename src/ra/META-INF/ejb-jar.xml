@@ -1,132 +1,258 @@
 <?xml version="1.0"?>
-
 <!DOCTYPE ejb-jar PUBLIC
-	"-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN"
-	"http://java.sun.com/dtd/ejb-jar_2_0.dtd">
 
+	"-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN"
+
+	"http://java.sun.com/dtd/ejb-jar_2_0.dtd">
 <ejb-jar>
+
  <enterprise-beans>
 
+
+
    <session>
+
      <description>
+
          Session bean handling user administration, uses UserData entity bean
+
      </description>
+
      <ejb-name>UserAdminSession</ejb-name>
+
      <home>se.anatom.ejbca.ra.IUserAdminSessionHome</home>
+
      <remote>se.anatom.ejbca.ra.IUserAdminSessionRemote</remote>
+
      <ejb-class>se.anatom.ejbca.ra.LocalUserAdminSessionBean</ejb-class>
+
      <session-type>Stateless</session-type>
+
      <transaction-type>Container</transaction-type>
+
    
+
      <env-entry>
+
         <description>JDBC datasource to be used</description>
+
         <env-entry-name>DataSource</env-entry-name>
+
         <env-entry-type>java.lang.String</env-entry-type>
+
         <env-entry-value>java:/DefaultDS</env-entry-value>
+
      </env-entry>
 
+
+
      <ejb-ref>
+
         <description>The User entity bean</description>
+
         <ejb-ref-name>ejb/UserData</ejb-ref-name>
+
         <ejb-ref-type>Entity</ejb-ref-type>
+
         <home>se.anatom.ejbca.ra.UserDataHome</home>
+
         <remote>se.anatom.ejbca.ra.UserData</remote>
+
         <ejb-link>UserData</ejb-link>
+
      </ejb-ref>
+
+
 
    </session>
 
+
+
    <entity>
+
       <description>
+
             This enterprise bean entity represents a User with accompanying data.
+
       </description>
+
       <ejb-name>UserData</ejb-name>
+
       <home>se.anatom.ejbca.ra.UserDataHome</home>
+
       <remote>se.anatom.ejbca.ra.UserData</remote>
+
       <ejb-class>se.anatom.ejbca.ra.UserDataBean</ejb-class>
+
       <persistence-type>Container</persistence-type>
+
       <prim-key-class>se.anatom.ejbca.ra.UserDataPK</prim-key-class>
+
       <reentrant>False</reentrant>
+
       <cmp-version>2.x</cmp-version>
+
       <abstract-schema-name>UserDataBean</abstract-schema-name>
 
+
+
       <cmp-field><field-name>username</field-name></cmp-field>
+
       <cmp-field><field-name>subjectDN</field-name></cmp-field>
+
       <cmp-field><field-name>subjectEmail</field-name></cmp-field>
+
       <cmp-field><field-name>status</field-name></cmp-field>
+
       <cmp-field><field-name>type</field-name></cmp-field>
+
       <cmp-field><field-name>clearPassword</field-name></cmp-field>
+
       <cmp-field><field-name>passwordHash</field-name></cmp-field>
+
    </entity>
+
+
 
   </enterprise-beans>
 
+
+
  <assembly-descriptor>
+
    <security-role>
+
       <description>
+
          This role represents everyone
+
       </description>
+
      <role-name>everyone</role-name>
+
    </security-role>
+
    <security-role>
+
       <description>
+
          This role represents an internal process
+
       </description>
+
       <role-name>InternalUser</role-name>
+
     </security-role>
 
+
+
    <!-- 
+
        Method permissions define who can access a given method on a bean.
+
        Role name internalUser means that the bean methods shouln NOT be 
+
        accessible from the outside.
+
        Role name everyone means that the bean methods can be accessible from
+
        the outside.
+
        NOTE! Security must be enabled in the container for these settings 
+
        to have any real meaning.
+
    -->
+
    <method-permission>
+
      <role-name>InternalUser</role-name>
+
      <method>
+
          <ejb-name>UserData</ejb-name>
+
          <method-name>*</method-name>
+
      </method>
+
      <method>
+
          <ejb-name>UserAdminSession</ejb-name>
+
          <method-name>*</method-name>
+
      </method>
+
    </method-permission>
 
+
+
    <!-- 
+
        Transaction settings. Default setting i for *, which is overridden 
+
        for methods with special transactionsal needs.
+
        Required is used for mission critical methods, which cannot collide.
+
        Supports is used for methods which only read data.
+
    -->
-   <container-transaction>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>*</method-name>
-     </method>
-     <method>
-         <ejb-name>UserData</ejb-name>
-         <method-intf>Remote</method-intf>
-         <method-name>*</method-name>
-     </method>
-     <trans-attribute>Required</trans-attribute>   
-   </container-transaction>       
 
    <container-transaction>
+
      <method>
+
          <ejb-name>UserAdminSession</ejb-name>
-         <method-name>findUser</method-name>
+
+         <method-name>*</method-name>
+
      </method>
+
      <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>findAllUsersByStatus</method-name>
+
+         <ejb-name>UserData</ejb-name>
+
+         <method-intf>Remote</method-intf>
+
+         <method-name>*</method-name>
+
      </method>
-     <trans-attribute>Supports</trans-attribute>   
+
+     <trans-attribute>Required</trans-attribute>   
+
    </container-transaction>       
+
+
+
+   <container-transaction>
+
+     <method>
+
+         <ejb-name>UserAdminSession</ejb-name>
+
+         <method-name>findUser</method-name>
+
+     </method>
+
+     <method>
+
+         <ejb-name>UserAdminSession</ejb-name>
+
+         <method-name>findAllUsersByStatus</method-name>
+
+     </method>
+
+     <trans-attribute>Supports</trans-attribute>   
+
+   </container-transaction>       
+
+
 
  </assembly-descriptor>
 
+
+
 </ejb-jar>
+

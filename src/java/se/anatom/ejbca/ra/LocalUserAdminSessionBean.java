@@ -1,4 +1,3 @@
-
 package se.anatom.ejbca.ra;
 
 import java.io.*;
@@ -12,12 +11,13 @@ import javax.rmi.*;
 import javax.ejb.*;
 
 import se.anatom.ejbca.BaseSessionBean;
+import se.anatom.ejbca.util.CertTools;
 
 /**
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.11 2002-05-23 14:28:27 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.12 2002-05-26 12:06:00 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserAdminSession {
 
@@ -160,6 +160,52 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
         debug("<findUser("+username+")");
         return ret;
     } // findUser
+    
+        /**
+
+    * Implements IUserAdminSession::findUserBySubjectDN.
+
+    */
+
+    public UserAdminData findUserBySubjectDN(String subjectdn) throws FinderException, RemoteException {
+        debug(">findAllUsersBySubjectDN("+subjectdn+")");
+        debug("Looking for users with subjectdn: " + subjectdn);
+        String dn = CertTools.stringToBCDNString(subjectdn);
+        UserAdminData returnval = null;
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        ArrayList ret = new ArrayList();
+        try{
+            con = getConnection();
+            ps = con.prepareStatement("select "+USERDATA_COL+ " from UserData where subjectDN=?");
+            ps.setString(1,dn);
+            rs = ps.executeQuery();
+            while(rs.next()){
+                UserAdminData data = new UserAdminData(rs.getString(1), rs.getString(2), rs.getString(3), rs.getInt(4), rs.getInt(5));
+                data.setPassword(rs.getString(6));
+                ret.add( data );
+            }
+            debug("found "+ret.size()+" user(s) with subjectdn="+subjectdn);
+            debug("<findAllUsersBySubjectDN("+subjectdn+")");
+            if( ret.size() > 0 )
+              returnval = (UserAdminData) ret.get(0);  
+            return returnval;
+        }
+        catch (Exception e) {
+            throw new EJBException(e.getMessage());
+        }
+        finally {
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+                if (con!= null) con.close();
+            } catch(SQLException se) {
+                se.printStackTrace();
+            }
+        }
+    } // findUserBySubjectDN
+ 
 
     /**
     * Implements IUserAdminSession::findAllUsersByStatus.
@@ -188,3 +234,4 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
     } //getConnection
 
 } // LocalUserAdminSessionBean
+
