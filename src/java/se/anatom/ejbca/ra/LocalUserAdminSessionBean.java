@@ -66,7 +66,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.80 2004-07-23 12:19:23 sbailliez Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.81 2004-07-23 17:19:04 sbailliez Exp $
  *
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -80,9 +80,9 @@ import se.anatom.ejbca.util.query.UserMatch;
  * @ejb.permission role-name="InternalUser"
  *
  * @ejb.env-entry
- *   name="Datasource"
- *   type="java.lang.String"
- *   value="java:/${datasource.jndi-name}"
+ *  name="DataSource"
+ *  type="java.lang.String"
+ *  value="java:/${datasource.jndi-name}"
  *
  * @ejb.env-entry
  *   description="Factory class can dynamically link to external implementation class"

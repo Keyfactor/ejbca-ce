@@ -48,7 +48,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.14 2004-07-23 17:15:57 sbailliez Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.15 2004-07-23 17:19:57 sbailliez Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -65,9 +65,9 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
  * @ejb.permission role-name="InternalUser"
  *
  * @ejb.env-entry
- *   name="DataSource"
- *   type="java.lang.String"
- *   value="java:/DefaultDS"
+ * name="DataSource"
+ * type="java.lang.String"
+ * value="java:/${datasource.jndi-name}"
  *
  * @ejb.env-entry
  *   description="Custom Available Access Rules, use ';' to separate multiple accessrules"
