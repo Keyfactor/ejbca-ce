@@ -74,7 +74,7 @@ import com.novell.ldap.LDAPModificationSet;
  * </pre>
  * </p>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.28 2004-01-27 11:36:59 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.29 2004-01-27 14:43:10 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
     private String ldapHost = "localhost";
@@ -381,16 +381,12 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
 
         try {
             crl = CertTools.getCRLfromByteArray(incrl);
-
             // Extract the users DN from the crl.
             dn = CertTools.getIssuerDN(crl);
         } catch (Exception e) {
             error("Error decoding input CRL: ", e);
-            
             logsession.log(admin, admin.getCAId(),LogEntry.MODULE_CA, new java.util.Date(), null, null,
                     LogEntry.EVENT_ERROR_STORECRL, "Error decoding input CRL.");
-
-
             return false;
         }
         /*
@@ -455,11 +451,9 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                     LogEntry.EVENT_ERROR_STORECRL, "Error encoding CRL when storing in LDAP.");
             return false;
         }
-
         if (oldEntry == null) {
             newEntry = new LDAPEntry(dn, attributeSet);
         }
-
         try {
             // connect to the server
             lc.connect(ldapHost, ldapPort);
@@ -479,7 +473,6 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                         LogEntry.EVENT_INFO_STORECRL,
                         "Added object: " + dn + " successfully in LDAP.");
             }
-
             // disconnect with the server
             lc.disconnect();
         } catch (LDAPException e) {
@@ -489,7 +482,6 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                     "Error storing CRL (" + cRLAttribute + ") in LDAP (" + cAObjectclass + ").");            
             return false;
         }
-
         return true;
     } // storeCRL
     
