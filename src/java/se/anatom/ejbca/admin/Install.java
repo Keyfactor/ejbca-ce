@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
 /** Class used as an install script of ejbca
  * 
  * @author philip
- * @version $Id: Install.java,v 1.15 2004-06-15 11:08:34 koen_serry Exp $
+ * @version $Id: Install.java,v 1.16 2004-06-15 11:35:48 koen_serry Exp $
  *
  * The main porpose of this program is to provide easy installment of EJBCA.
  */
@@ -100,9 +100,9 @@ public class Install extends BaseCommand {
 	      System.exit(-1);	
 		}
 	}
-					
+
 	public static void main(String[] args) throws Exception {
-		if(args.length != 5){
+		if(args.length != 6){
 			System.out.println("Usage: install install <unix|windows> <language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>\n" +
 					                     " Or : install displayendmessage <unix|windows> <language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>");
 			System.exit(-1);
@@ -110,7 +110,7 @@ public class Install extends BaseCommand {
 		
 		Install install = new Install(args[ARG_OS], args[ARG_LANGUAGE], args[ARG_VERSION], args[ARG_APPSERVER], args[ARG_WEBSERVER]);
 		
-		if(args.length == 5){
+		if(args.length == 6){
 			if(args[Install.ARG_COMMAND].equalsIgnoreCase("install")){
 		      install.run();
 		    }else{		    			

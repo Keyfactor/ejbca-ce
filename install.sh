@@ -50,7 +50,7 @@ fi
 
 CP=.:./admin.jar:./lib/ldap.jar:$JBOSS_HOME/client/jnp-client.jar:$JBOSS_HOME/client/jboss-j2ee.jar:$JBOSS_HOME/client/jbossall-client.jar:$JBOSS_HOME/client/jboss-client.jar:$JBOSS_HOME/client/jbosssx-client.jar:$JBOSS_HOME/client/jboss-common-client.jar:lib/log4j-1.2.7.jar:lib/bcprov-jdk14-122.jar:lib/bcmail-jdk14-122.jar
 
-if java -cp $CP se.anatom.ejbca.admin.Install install unix en ejbca jboss
+if java -cp $CP se.anatom.ejbca.admin.Install install unix en ejbca jboss tomcat
 then
 #This command must be run as root
 echo
@@ -80,6 +80,6 @@ then echo su failed. Please try again.
 fi
 rm tmp/rootca.der
 
-java -cp $CP se.anatom.ejbca.admin.Install displayendmessage unix en ejbca jboss
+java -cp $CP se.anatom.ejbca.admin.Install displayendmessage unix en ejbca jboss tomcat
 fi 
 
