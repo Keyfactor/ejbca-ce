@@ -23,7 +23,7 @@ import se.anatom.ejbca.util.FileTools;
 /**
  * Imports a PKCS12 file and created a new CA from it.
  *
- * @version $Id: CaImportCACommand.java,v 1.2 2004-10-31 18:56:32 anatom Exp $
+ * @version $Id: CaImportCACommand.java,v 1.3 2004-10-31 18:58:08 anatom Exp $
  */
 public class CaImportCACommand extends BaseCaAdminCommand {
     /**
@@ -68,7 +68,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
                 int length = 0;
                 while (aliases.hasMoreElements()) {
                     alias = (String)aliases.nextElement();
-                    System.out.println("Keystore contains alias: "+alias);
+                    getOutputStream().println("Keystore contains alias: "+alias);
                     length++;
                 }
                 if (length > 1) {
