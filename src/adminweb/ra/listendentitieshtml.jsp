@@ -10,6 +10,7 @@ function viewuser(row){
     var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWUSER_LINK %>?<%= USER_PARAMETER %>="+username;
+    link = encodeURI(link);
     window.open(link, 'view_cert',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }
 
@@ -17,6 +18,7 @@ function edituser(row){
     var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
     var link = "<%= EDITUSER_LINK %>?<%= USER_PARAMETER %>="+username;
+    link = encodeURI(link);
     window.open(link, 'edit_user',config='height=600,width=550,scrollbars=yes,toolbar=no,resizable=1');
 }
 
@@ -24,6 +26,7 @@ function viewhistory(row){
     var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWHISTORY_LINK %>?<%= USER_PARAMETER %>="+username;
+    link = encodeURI(link);
     window.open(link, 'view_history',config='height=600,width=800,scrollbars=yes,toolbar=no,resizable=1');
 }
 
@@ -31,6 +34,7 @@ function viewcert(row){
     var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWCERT_LINK %>?<%= USER_PARAMETER %>="+username;
+    link = encodeURI(link);
     window.open(link, 'view_cert',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }
 
@@ -38,6 +42,7 @@ function viewtoken(row){
     var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWTOKEN_LINK %>?<%= USER_PARAMETER %>="+username;
+    link = encodeURI(link);
     window.open(link, 'view_token',config='height=600,width=600,scrollbars=yes,toolbar=no,resizable=1');
 }
 

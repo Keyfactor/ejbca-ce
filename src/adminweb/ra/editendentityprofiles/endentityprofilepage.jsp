@@ -87,12 +87,12 @@ function checkallfields(){
       alert("<%=  ejbcawebbean.getText("ADEFAULTCERTPROFILE") %>");
       illegalfields++;
     }
-
+    <%    if(globalconfiguration.getIssueHardwareTokens()){ %>
     if(document.editprofile.<%= SELECT_DEFAULTHARDTOKENISSUER %>.options.selectedIndex == -1 && document.editprofile.<%=CHECKBOX_USE_HARDTOKENISSUERS %>.checked){
       alert("<%=  ejbcawebbean.getText("ADEFAULTHARDTOKENISSUER") %>");
       illegalfields++;
     }
-
+    <% } %>
 
     if(illegalfields == 0){
       document.editprofile.<%= CHECKBOX_CLEARTEXTPASSWORD %>.disabled = false;
@@ -105,6 +105,8 @@ function checkallfields(){
       document.editprofile.<%= CHECKBOX_REQUIRED_KEYRECOVERABLE %>.disabled = false;
       document.editprofile.<%= CHECKBOX_KEYRECOVERABLE %>.disabled = false;
       <% } %>
+      document.editprofile.<%= CHECKBOX_REQUIRED_SENDNOTIFICATION %>.disabled = false;
+      document.editprofile.<%= CHECKBOX_SENDNOTIFICATION %>.disabled = false;
     }
 
 
