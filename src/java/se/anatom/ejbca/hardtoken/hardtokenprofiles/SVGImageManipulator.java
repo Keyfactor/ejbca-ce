@@ -11,7 +11,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
@@ -21,6 +24,7 @@ import org.apache.batik.dom.svg.SAXSVGDocumentFactory;
 import org.apache.batik.dom.svg.SVGDOMImplementation;
 import org.apache.batik.dom.svg.SVGOMDocument;
 import org.apache.batik.dom.svg.SVGOMImageElement;
+import org.apache.batik.dom.svg.SVGOMTSpanElement;
 import org.apache.batik.svggen.ImageHandlerBase64Encoder;
 import org.apache.batik.svggen.SVGGeneratorContext;
 import org.apache.batik.svggen.SimpleImageHandler;
@@ -34,6 +38,8 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.svg.SVGRectElement;
 import org.w3c.dom.svg.SVGTextElement;
 
+
+
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 
@@ -43,7 +49,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id: SVGImageManipulator.java,v 1.4 2004-01-28 10:39:05 herrvendil Exp $
+ * @version $Id: SVGImageManipulator.java,v 1.5 2004-02-02 11:55:27 herrvendil Exp $
  */
 public class SVGImageManipulator {
 
@@ -159,6 +165,7 @@ public class SVGImageManipulator {
       Node originaldokument = svgdoc.cloneNode(true);
       
       // Get Text rows
+      Collection texts = new ArrayList();
 	  NodeList list = svgdoc.getDocumentElement().getElementsByTagName("text");	  
 	  int numberofelements = list.getLength();	  
 	  for(int i=0; i<numberofelements; i++){
@@ -166,16 +173,34 @@ public class SVGImageManipulator {
 		if(node instanceof SVGTextElement){	
 		  NodeList list2 = ((SVGTextElement) node).getChildNodes();
 		  int numberofelements2 = list2.getLength();
-		  for(int j=0;j<numberofelements2;j++){
-			  Node node2 = list2.item(j);				
-			  String data = ((GenericText) node2).getData();
-			  data = processString(data, userdata, dnfields, pincodes, pukcodes,
-			                       hardtokensn, hardtokensnwithoutprefix,
-			                       copyoftokensn, copyoftokensnwithoutprefix,
-			                       startdate, enddate);			  
-			  ((GenericText) node2).setData(data);			  
+		  for(int j=0;j<numberofelements2;j++){		  	  
+			  Node node2 = list2.item(j);			  
+			  if(node2 instanceof GenericText)
+			  	texts.add(node2);			    
+			  if(node2 instanceof SVGOMTSpanElement){
+			  	 SVGOMTSpanElement tspan = (SVGOMTSpanElement) node2;
+			  	 NodeList list3 = tspan.getChildNodes();
+			  	 int numberofelements3 = list3.getLength();
+			  	 for(int k=0;k<numberofelements3;k++){
+			  	 	Node node3 = list3.item(k);
+			  	 	if(node3 instanceof GenericText)
+			  	 		texts.add(node3);			    
+			  	 }
+			  }		  
 		  }
-		}						  		  		  		  		  		  	   
+		}		  
+	  }
+	  
+	  Iterator iter = texts.iterator();
+	  String data = "";
+	  while(iter.hasNext()){
+	  	GenericText text = (GenericText) iter.next(); 
+	  	data = text.getData();
+	  	data = processString(data, userdata, dnfields, pincodes, pukcodes,
+	  			hardtokensn, hardtokensnwithoutprefix,
+				copyoftokensn, copyoftokensnwithoutprefix,
+				startdate, enddate);			  
+	  	text.setData(data);
 	  }
                        
       // Add Image
@@ -206,7 +231,7 @@ public class SVGImageManipulator {
       return t;
     }
 
-
+    
 
     private String processString(String text, UserAdminData userdata, DNFieldExtractor dnfields,
                                  String[] pincodes, String[] pukcodes, 
