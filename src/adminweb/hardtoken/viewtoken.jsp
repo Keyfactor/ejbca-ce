@@ -32,8 +32,8 @@
                                             tokenbean.initialize(request, ejbcawebbean);
   String THIS_FILENAME                    = globalconfiguration.getHardTokenPath() + "/viewtoken.jsp";
 
-  final String VIEWCERT_LINK            = globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
-  final String VIEWTOKEN_LINK           = globalconfiguration.getAdminWebPath() + "hardtoken/viewtoken.jsp";
+  final String VIEWCERT_LINK            = globalconfiguration.getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
+  final String VIEWTOKEN_LINK           = globalconfiguration.getBaseUrl() + globalconfiguration.getAdminWebPath() + "hardtoken/viewtoken.jsp";
 
   boolean noparameter              = true;
   boolean authorized               = true;

@@ -10,33 +10,33 @@
  
   final String THIS_FILENAME            =   globalconfiguration.getMenuFilename();
 
-  final String MAIN_LINK                =   globalconfiguration.getAdminWebPath() +globalconfiguration.getMainFilename();
+  final String MAIN_LINK                =   globalconfiguration.getBaseUrl() + globalconfiguration.getAdminWebPath() +globalconfiguration.getMainFilename();
 
-  final String EDITCA_LINK              =  globalconfiguration.getCaPath() 
+  final String EDITCA_LINK              =  globalconfiguration.getBaseUrl() + globalconfiguration.getCaPath() 
                                                   + "/editcas/editcas.jsp";
 
-  final String CA_LINK                  =  globalconfiguration.getCaPath() 
+  final String CA_LINK                  =  globalconfiguration.getBaseUrl() + globalconfiguration.getCaPath() 
                                                   + "/cafunctions.jsp";
-  final String CA_CERTIFICATEPROFILELINK  = globalconfiguration.getCaPath() 
+  final String CA_CERTIFICATEPROFILELINK  = globalconfiguration.getBaseUrl() + globalconfiguration.getCaPath() 
                                                   + "/editcertificateprofiles/editcertificateprofiles.jsp";  
-  final String RA_EDITPROFILESLINK      =  globalconfiguration.getRaPath()+"/editendentityprofiles/editendentityprofiles.jsp";
-  final String RA_LISTUSERSLINK         =  globalconfiguration.getRaPath()+"/listendentities.jsp";
-  final String RA_ADDENDENTITYLINK      =  globalconfiguration.getRaPath()+"/addendentity.jsp";
-  final String RA_LISTENDENTITIESLINK   =  globalconfiguration.getRaPath()+"/listendentities.jsp";
-  final String HT_EDITHARDTOKENISSUERS_LINK  =  globalconfiguration.getHardTokenPath() 
+  final String RA_EDITPROFILESLINK      =  globalconfiguration.getBaseUrl() + globalconfiguration.getRaPath()+"/editendentityprofiles/editendentityprofiles.jsp";
+  final String RA_LISTUSERSLINK         =  globalconfiguration.getBaseUrl() + globalconfiguration.getRaPath()+"/listendentities.jsp";
+  final String RA_ADDENDENTITYLINK      =  globalconfiguration.getBaseUrl() + globalconfiguration.getRaPath()+"/addendentity.jsp";
+  final String RA_LISTENDENTITIESLINK   =  globalconfiguration.getBaseUrl() + globalconfiguration.getRaPath()+"/listendentities.jsp";
+  final String HT_EDITHARDTOKENISSUERS_LINK  =  globalconfiguration.getBaseUrl() + globalconfiguration.getHardTokenPath() 
                                                   + "/edithardtokenissuers.jsp";
-  final String HT_EDITHARDTOKENPROFILES_LINK  =  globalconfiguration.getHardTokenPath() 
+  final String HT_EDITHARDTOKENPROFILES_LINK  =  globalconfiguration.getBaseUrl() + globalconfiguration.getHardTokenPath() 
                                                   + "/edithardtokenprofiles/edithardtokenprofiles.jsp";
-  final String LOG_LINK                 =  globalconfiguration.getLogPath() 
+  final String LOG_LINK                 =  globalconfiguration.getBaseUrl() + globalconfiguration.getLogPath() 
                                                   + "/viewlog.jsp";
-  final String LOG_CONFIGURATION_LINK   =  globalconfiguration.getLogPath() 
+  final String LOG_CONFIGURATION_LINK   =  globalconfiguration.getBaseUrl() + globalconfiguration.getLogPath() 
                                                   + "/logconfiguration/logconfiguration.jsp";
-  final String CONFIGURATION_LINK       =  globalconfiguration.getConfigPath() 
+  final String CONFIGURATION_LINK       =  globalconfiguration.getBaseUrl() + globalconfiguration.getConfigPath() 
                                                   + "/configuration.jsp";
-  final String ADMINISTRATORPRIV_LINK   =  globalconfiguration.getAuthorizationPath() 
+  final String ADMINISTRATORPRIV_LINK   =  globalconfiguration.getBaseUrl() + globalconfiguration.getAuthorizationPath() 
                                                   + "/administratorprivileges.jsp";
-  final String MYPREFERENCES_LINK     =  globalconfiguration.getAdminWebPath() + "mypreferences.jsp";
-  final String HELP_LINK                =  globalconfiguration.getAdminWebPath() + globalconfiguration.getHelpPath() 
+  final String MYPREFERENCES_LINK     =  globalconfiguration.getBaseUrl() + globalconfiguration.getAdminWebPath() + "mypreferences.jsp";
+  final String HELP_LINK                =  globalconfiguration.getBaseUrl() + globalconfiguration.getAdminWebPath() + globalconfiguration.getHelpPath() 
                                                   + "/index_help.html";
 
 
