@@ -1,4 +1,4 @@
-$Id: TODO,v 1.60 2003-06-13 15:10:16 anatom Exp $
+$Id: TODO,v 1.61 2003-06-27 09:49:37 anatom Exp $
 
 V 1.x
 -----
@@ -7,7 +7,8 @@ V 1.x
 V 2.x
 -----
 - Multiple CDPs, comma separated strings should give several CDPs. 
-- PublisherSession should be called on revoke, to give possibility to remove cert from this store (do something or nothing).
+- Make it possible to dynamically configure new OtherNames in subjectAltName.
+- LDAPPublisherSession should remove cert from the store when revoked.
 - More automated testing, Junit as well as web-stuff.
 - Make a database model similar to architecture model.
 - Add a 'Service Locator' to concentrate code for lookups?
