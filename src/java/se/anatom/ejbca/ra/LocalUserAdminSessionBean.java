@@ -36,7 +36,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.39 2003-02-20 10:28:41 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.40 2003-02-20 22:13:00 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -60,6 +60,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     private final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId";
     /** Var holding JNDI name of datasource */
     private String dataSource = "java:/DefaultDS";
+    
+    /** Class used to create notification messages.*/
+    private NotificationCreator notificationcreator;
 
     /** Var optimizing authorization lookups. */
     private EndEntityProfileAuthorizationProxy profileauthproxy;
@@ -94,6 +97,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         certificatesession = certificatesessionhome.create();
         profileauthproxy = new EndEntityProfileAuthorizationProxy(authorizationsession);
         debug("DataSource=" + dataSource);
+        
+        notificationcreator = new NotificationCreator((String)lookup("java:comp/env/sender", java.lang.String.class),
+                                                      (String)lookup("java:comp/env/subject", java.lang.String.class),
+                                                      (String)lookup("java:comp/env/message", java.lang.String.class));
 
       }catch(Exception e){
         throw new EJBException(e.getMessage());
@@ -114,7 +121,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * Implements a mechanism that uses UserDataEntity Bean.
     */
     public void addUser(Admin admin, String username, String password, String dn, String subjectaltname, String email, boolean clearpwd, int endentityprofileid, int certificateprofileid,
-                         boolean administrator, boolean keyrecoverable, int tokentype, int hardwaretokenissuerid)
+                        int type, int tokentype, int hardwaretokenissuerid)
                          throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException {
         debug(">addUser("+username+", password, "+dn+", "+email+")");
         if(globalconfiguration.getEnableEndEntityProfileLimitations()){
@@ -122,7 +129,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
           EndEntityProfile profile = raadminsession.getEndEntityProfile(admin,endentityprofileid);
           try{
             profile.doesUserFullfillEndEntityProfile(username, password, dn, subjectaltname, email, certificateprofileid, clearpwd,
-                                                    administrator, keyrecoverable, tokentype, hardwaretokenissuerid);
+                                                    (type & SecConst.USER_ADMINISTRATOR) != 0, (type & SecConst.USER_KEYRECOVERABLE) != 0, (type & SecConst.USER_SENDNOTIFICATION) != 0,
+                                                    tokentype, hardwaretokenissuerid);
           }catch( UserDoesntFullfillEndEntityProfile udfp){
             logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDENDENTITY,"Userdata didn'nt fullfill end entity profile. " + udfp.getMessage() );
             throw new UserDoesntFullfillEndEntityProfile(udfp.getMessage());
@@ -144,7 +152,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             if(email != null)
                 data1.setSubjectEmail(email);
 
-            data1.setType(makeType(administrator, keyrecoverable));
+            data1.setType(type);
             data1.setEndEntityProfileId(endentityprofileid);
             data1.setCertificateProfileId(certificateprofileid);
             data1.setTokenType(tokentype);
@@ -164,7 +172,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                 throw new EJBException(nsae);
               }
             }
-            //sendNotification(admin);
+            if((type & SecConst.USER_SENDNOTIFICATION) != 0)
+              sendNotification(admin, username, password, dn, subjectaltname, email);
             logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_ADDEDENDENTITY,"");
 
         }catch (Exception e) {
@@ -179,16 +188,18 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * Implements IUserAdminSession::changeUser.
     * Implements a mechanism that uses UserDataEntity Bean.
     */
-    public void changeUser(Admin admin, String username,  String dn, String subjectaltname, String email, int endentityprofileid, int certificateprofileid,
-                           boolean administrator, boolean keyrecoverable, int tokentype, int hardwaretokenissuerid)
+    public void changeUser(Admin admin, String username, String password,  String dn, String subjectaltname, String email,  boolean clearpwd, int endentityprofileid, int certificateprofileid,
+                           int type, int tokentype, int hardwaretokenissuerid, int status)
                               throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException {
         debug(">changeUser("+username+", "+dn+", "+email+")");
+        int oldstatus;
         // Check if user fulfills it's profile.
         if(globalconfiguration.getEnableEndEntityProfileLimitations()){
         EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, endentityprofileid);
         try{
           profile.doesUserFullfillEndEntityProfileWithoutPassword(username,  dn, subjectaltname, email, certificateprofileid,
-                                                                 administrator, keyrecoverable, tokentype, hardwaretokenissuerid);
+                                                                 (type & SecConst.USER_ADMINISTRATOR) != 0, (type & SecConst.USER_KEYRECOVERABLE) != 0, (type & SecConst.USER_SENDNOTIFICATION) != 0, 
+                                                                  tokentype, hardwaretokenissuerid);
         }catch(UserDoesntFullfillEndEntityProfile udfp){
           logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"Userdata didn'nt fullfill end entity profile. + " + udfp.getMessage());
           throw new UserDoesntFullfillEndEntityProfile(udfp.getMessage());
@@ -203,6 +214,13 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         try {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1= home.findByPrimaryKey(pk);
+            
+            if(password != null){
+              if(clearpwd)
+                setClearTextPassword(admin, username, password);                  
+              else
+                setPassword(admin, username, password);                  
+            }
 
             data1.setDN(CertTools.stringToBCDNString(dn));
             if(subjectaltname != null )
@@ -211,14 +229,19 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             if(email != null)
                 data1.setSubjectEmail(email);
 
-            data1.setType(makeType(administrator, keyrecoverable));
+            data1.setType(type);
             data1.setEndEntityProfileId(endentityprofileid);
             data1.setCertificateProfileId(certificateprofileid);
             data1.setTokenType(tokentype);
             data1.setHardTokenIssuerId(hardwaretokenissuerid);
+            oldstatus = data1.getStatus();
+            data1.setStatus(status);
 
             data1.setTimeModified((new java.util.Date()).getTime());
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"");
+            
+            if((type & SecConst.USER_SENDNOTIFICATION) != 0 && (status != oldstatus) && (status == UserDataLocal.STATUS_NEW || status == UserDataLocal.STATUS_KEYRECOVERY))
+              sendNotification(admin, username, password, dn, subjectaltname, email);            
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"New status: "+ status);
         }
         catch (Exception e) {
             logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"");
@@ -840,32 +863,41 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         debug("<saveGlobalConfiguration()");
      } // saveGlobalConfiguration
 
-   private int makeType(boolean administrator, boolean keyrecoverable){
+   private int makeType(boolean administrator, boolean keyrecoverable, boolean sendnotification){
      int returnval = SecConst.USER_ENDUSER;
      if(administrator)
        returnval += SecConst.USER_ADMINISTRATOR;
      if(keyrecoverable)
        returnval += SecConst.USER_KEYRECOVERABLE;
+     if(sendnotification)
+       returnval += SecConst.USER_SENDNOTIFICATION;         
 
      return returnval;
    } // makeType
    
-   private void sendNotification(Admin administrator){
+   private void sendNotification(Admin admin, String username, String password, String dn, String subjectaltname, String email){
      try {
+       if(email== null)
+         throw new Exception("Notification cannot be sent to user where email field is null");
        javax.mail.Session mailSession = (javax.mail.Session) new InitialContext().lookup( "java:comp/env/mail/DefaultMail" );
        javax.mail.Message msg = new MimeMessage( mailSession );
-       msg.setFrom( new InternetAddress( "philip@murph.se" ) );
-       msg.setRecipients( javax.mail.Message.RecipientType.TO, InternetAddress.parse( "philip@murph.se", false ) );
-       msg.setSubject( "This is a test" );
-       msg.setContent( "Hi there!", "text/html" );
+       msg.setFrom( new InternetAddress( notificationcreator.getSender()) );
+       msg.setRecipients( javax.mail.Message.RecipientType.TO, InternetAddress.parse( email, false ) );
+       msg.setSubject( notificationcreator.getSubject() );
+       msg.setContent( notificationcreator.getMessage(username, password, dn, subjectaltname, email), "text/plain" );
        msg.setHeader( "X-Mailer", "JavaMailer" );
        msg.setSentDate( new java.util.Date() );
-       Transport.send( msg );
+       Transport.send( msg );         
+       logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_NOTIFICATION,"Notification to " + email + " sent successfully.");
      }
      catch ( Exception e )
-     {
-       System.out.println( "Can't send email");
+     { 
+       try{  
+         logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_NOTIFICATION, "Error when sending notification to " + email );
+       }catch(Exception f){
+          throw new EJBException(f);   
+       }
      }
-   }
+   } // sendNotification
 
 } // LocalUserAdminSessionBean

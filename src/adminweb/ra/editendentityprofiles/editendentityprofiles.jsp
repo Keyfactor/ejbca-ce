@@ -42,6 +42,7 @@
   static final String CHECKBOX_CLEARTEXTPASSWORD          = "checkboxcleartextpassword";
   static final String CHECKBOX_ADMINISTRATOR              = "checkboxadministrator";
   static final String CHECKBOX_KEYRECOVERABLE             = "checkboxkeyrecoverable";
+  static final String CHECKBOX_SENDNOTIFICATION           = "checkboxsendnotification";
 
   static final String CHECKBOX_REQUIRED_USERNAME          = "checkboxrequiredusername";
   static final String CHECKBOX_REQUIRED_PASSWORD          = "checkboxrequiredpassword";
@@ -50,6 +51,7 @@
   static final String CHECKBOX_REQUIRED_SUBJECTALTNAME    = "checkboxrequiredsubjectaltname";
   static final String CHECKBOX_REQUIRED_EMAIL             = "checkboxrequiredemail";
   static final String CHECKBOX_REQUIRED_ADMINISTRATOR     = "checkboxrequiredadministrator";
+  static final String CHECKBOX_REQUIRED_SENDNOTIFICATION  = "checkboxrequiredsendnotification";
   static final String CHECKBOX_REQUIRED_KEYRECOVERABLE    = "checkboxrequiredkeyrecoverable";
 
 
@@ -68,6 +70,7 @@
   static final String CHECKBOX_USE_EMAIL             = "checkboxuseemail";
   static final String CHECKBOX_USE_ADMINISTRATOR     = "checkboxuseadministrator";
   static final String CHECKBOX_USE_KEYRECOVERABLE    = "checkboxusekeyrecoverable";
+  static final String CHECKBOX_USE_SENDNOTIFICATION  = "checkboxusesendnotification";
   static final String CHECKBOX_USE_HARDTOKENISSUERS  = "checkboxusehardtokenissuers";
 
   static final String SELECT_DEFAULTCERTPROFILE             = "selectdefaultcertprofile";
@@ -323,6 +326,13 @@
              profiledata.setRequired(EndEntityProfile.KEYRECOVERABLE, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_KEYRECOVERABLE)));
              profiledata.setUse(EndEntityProfile.KEYRECOVERABLE, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_KEYRECOVERABLE))); 
  
+             if(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_SENDNOTIFICATION)))
+               profiledata.setValue(EndEntityProfile.SENDNOTIFICATION, 0 ,EndEntityProfile.TRUE);
+             else
+               profiledata.setValue(EndEntityProfile.SENDNOTIFICATION, 0 ,EndEntityProfile.FALSE);
+             profiledata.setRequired(EndEntityProfile.SENDNOTIFICATION, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_SENDNOTIFICATION)));
+             profiledata.setUse(EndEntityProfile.SENDNOTIFICATION, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_SENDNOTIFICATION))); 
+
              String defaultcertprof =  request.getParameter(SELECT_DEFAULTCERTPROFILE);
              profiledata.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0,defaultcertprof);
              profiledata.setRequired(EndEntityProfile.DEFAULTCERTPROFILE, 0,true);

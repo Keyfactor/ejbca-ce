@@ -409,7 +409,7 @@ function confirmrevokation(){
         &nbsp;&nbsp;&nbsp;
       </td>
       <td  valign="top">
-      <% try{ 
+      <%/* try{ 
            if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_EDIT_RIGHTS)){ %>
         <input type="submit" name="<%=BUTTON_CHANGESTATUS %>" value="<%= ejbcawebbean.getText("CHANGESTATUSTO") %>"
                onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSURECHANGE") %>")'><br>
@@ -423,7 +423,7 @@ function confirmrevokation(){
          <option value='<%= Integer.toString(UserDataRemote.STATUS_HISTORICAL) %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
         </select>
        <% }  
-        }catch(AuthorizationDeniedException ade){} %>
+        }catch(AuthorizationDeniedException ade){} */%>&nbsp;
       </td>
     </tr>
   </table>

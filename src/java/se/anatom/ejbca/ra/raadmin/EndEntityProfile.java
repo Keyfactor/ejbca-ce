@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.5 2003-02-14 08:39:47 scop Exp $
+ * @version $Id: EndEntityProfile.java,v 1.6 2003-02-20 22:13:00 herrvendil Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -64,9 +64,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public static final int AVAILKEYSTORE      = 32;
     public static final int DEFAULTTOKENISSUER = 33;
     public static final int AVAILTOKENISSUER   = 34;
+    public static final int SENDNOTIFICATION   = 35;
 
 
-    public static final int NUMBEROFPARAMETERS = 35;
+    public static final int NUMBEROFPARAMETERS = 36;
 
     public static final String SPLITCHAR          = ";";
 
@@ -329,7 +330,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     }
 
 
-    public void doesUserFullfillEndEntityProfile(String username, String password, String dn, String subjectaltname, String email,  int certificateprofileid, boolean clearpwd, boolean administrator, boolean keyrecoverable, int tokentype, int hardwaretokenissuerid)
+    public void doesUserFullfillEndEntityProfile(String username, String password, String dn, String subjectaltname, String email,  int certificateprofileid, 
+                                                 boolean clearpwd, boolean administrator, boolean keyrecoverable, boolean sendnotification, 
+                                                 int tokentype, int hardwaretokenissuerid)
        throws UserDoesntFullfillEndEntityProfile{
 
 
@@ -353,11 +356,13 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
            throw new UserDoesntFullfillEndEntityProfile("Clearpassword (used in batch proccessing) cannot be true.");
       }
 
-      doesUserFullfillEndEntityProfileWithoutPassword(username, dn, subjectaltname, email,  certificateprofileid, administrator, keyrecoverable, tokentype, hardwaretokenissuerid);
+      doesUserFullfillEndEntityProfileWithoutPassword(username, dn, subjectaltname, email,  certificateprofileid, administrator, keyrecoverable, sendnotification, tokentype, hardwaretokenissuerid);
 
     }
 
-    public void doesUserFullfillEndEntityProfileWithoutPassword(String username,  String dn, String subjectaltname, String email,  int certificateprofileid, boolean administrator, boolean keyrecoverable, int tokentype, int hardwaretokenissuerid) throws UserDoesntFullfillEndEntityProfile{
+    public void doesUserFullfillEndEntityProfileWithoutPassword(String username,  String dn, String subjectaltname, String email,  int certificateprofileid, 
+                                                                boolean administrator, boolean keyrecoverable, boolean sendnotification, 
+                                                                int tokentype, int hardwaretokenissuerid) throws UserDoesntFullfillEndEntityProfile{
       DNFieldExtractor subjectdnfields = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
       DNFieldExtractor subjectaltnames   = new DNFieldExtractor(subjectaltname, DNFieldExtractor.TYPE_SUBJECTALTNAME);
       String dnfield;
@@ -403,9 +408,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         if(getValue(ADMINISTRATOR,0).equals(TRUE) && !administrator)
            throw new UserDoesntFullfillEndEntityProfile("Administrator flag is required.");
         if(getValue(ADMINISTRATOR,0).equals(FALSE) && administrator)
-           throw new UserDoesntFullfillEndEntityProfile("Administrator flag cannot be set in end entity profile.");
+           throw new UserDoesntFullfillEndEntityProfile("Administrator flag cannot be set in current end entity profile.");
       }
-   // Check for administrator flag.
+   // Check for keyrecoverable flag.
       if(!getUse(KEYRECOVERABLE,0) &&  administrator)
           throw new UserDoesntFullfillEndEntityProfile("Key Recoverable cannot be used.");
 
@@ -413,8 +418,19 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         if(getValue(KEYRECOVERABLE,0).equals(TRUE) && !administrator)
            throw new UserDoesntFullfillEndEntityProfile("Key Recoverable is required.");
         if(getValue(KEYRECOVERABLE,0).equals(FALSE) && administrator)
-           throw new UserDoesntFullfillEndEntityProfile("Key Recoverable cannot be set in end entity profile.");
+           throw new UserDoesntFullfillEndEntityProfile("Key Recoverable cannot be set in current end entity profile.");
       }
+
+   // Check for send notification flag.
+      if(!getUse(SENDNOTIFICATION,0) &&  sendnotification)
+          throw new UserDoesntFullfillEndEntityProfile("Email notification cannot be used.");
+
+      if(isRequired(SENDNOTIFICATION,0)){
+        if(getValue(SENDNOTIFICATION,0).equals(TRUE) && !sendnotification)
+           throw new UserDoesntFullfillEndEntityProfile("Email notification is required.");
+        if(getValue(SENDNOTIFICATION,0).equals(FALSE) && sendnotification)
+           throw new UserDoesntFullfillEndEntityProfile("Email notification cannot be set in current end entity profile.");
+      }      
 
       // Check if certificate profile is among available certificate profiles.
       String[] availablecertprofiles;
@@ -507,6 +523,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         // New version of the class, upgrade
 
         data.put(VERSION, new Float(LATEST_VERSION));
+         
       }
     }
 

@@ -35,6 +35,26 @@
         <env-entry-value>se.walter.cardPersonalization.ra.ejbca.RMIFactoryImpl</env-entry-value>
      </env-entry>
      <!-- END Env-entries for starting an external RMI service using SSL -->
+     <!-- Env-entries used for notification configuration -->
+     <env-entry>
+        <description>Defines de sender of the notification message</description>
+        <env-entry-name>sender</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>philip@primekey.se</env-entry-value>
+     </env-entry>
+     <env-entry>
+        <description>Defines the subject used in the notification message</description>
+        <env-entry-name>subject</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>Hämta ditt certifikat</env-entry-value>
+     </env-entry>
+     <env-entry>
+        <description>Defines the actual message of the notification. Use the values $Username, $Password, $CN, $O, $OU, $C, $DATE to indicate which texts that should be replaced (Case insensitive).</description>
+        <env-entry-name>message</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>Hej $CN\n\n Detta är en test på en notification.\n\n Du har användarnamn: $Username\n lösenord: $Password\n\n Du skall nu INTE gå ngnstans och hämta ditt certifikat för detta är bara på skoj och för att bevisa för er att det fungerar nu. </env-entry-value>
+     </env-entry>          
+     <!-- END Env-entries used for notification configuration -->     
      <ejb-ref>
         <description>The Certificate Store session bean</description>
         <ejb-ref-name>ejb/CertificateStoreSession</ejb-ref-name>

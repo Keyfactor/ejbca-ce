@@ -17,7 +17,7 @@ import junit.framework.*;
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.19 2003-02-12 11:23:14 scop Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.20 2003-02-20 22:13:06 herrvendil Exp $
  */
 
 public class TestBatchMakeP12 extends TestCase {
@@ -87,7 +87,7 @@ public class TestBatchMakeP12 extends TestCase {
         try{
           data1.addUser(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username, "foo123", "C=SE, O=AnaTom, CN="+username, "", username+"@anatom.se",  false,
                         SecConst.EMPTY_ENDENTITYPROFILE, SecConst.PROFILE_NO_CERTIFICATEPROFILE,
-                        false, false, SecConst.TOKEN_SOFT_P12,0);
+                        1, SecConst.TOKEN_SOFT_P12,0);
           data1.setClearTextPassword(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username,"foo123");
           o = new String("");
         }catch(Exception e){
@@ -101,7 +101,7 @@ public class TestBatchMakeP12 extends TestCase {
         try{
           data1.addUser(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username1, "foo123", "C=SE, O=AnaTom, CN="+username1, "",username1+"@anatom.se", false,
                         SecConst.EMPTY_ENDENTITYPROFILE, SecConst.PROFILE_NO_CERTIFICATEPROFILE,
-                        false, false, SecConst.TOKEN_SOFT_P12,0);
+                        0, SecConst.TOKEN_SOFT_P12,0);
           data1.setClearTextPassword(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER), username1,"foo123");
           o = new String("");
         }catch(Exception e){

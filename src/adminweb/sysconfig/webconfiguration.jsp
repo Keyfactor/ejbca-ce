@@ -81,7 +81,7 @@
                                                                                                 out.write(" CHECKED "); %>> 
       </td>
     </tr>
-    <tr id="Row1"> 
+    <tr id="Row0"> 
       <td width="49%" valign="top"> 
         <h3>Enable Key Recovery</h3>
         <h5>&nbsp; </h5>          
@@ -92,7 +92,7 @@
                                                                                                 out.write(" CHECKED "); %>> 
       </td>
     </tr>
-    <tr id="Row0"> 
+    <tr id="Row1"> 
       <td width="49%" valign="top"> 
         <h3>Issue Hardware Tokens</h3>
         <h5>Check this field if it should be possible to issue hardware tokens. </h5>

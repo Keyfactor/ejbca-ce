@@ -80,7 +80,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.17 2003-02-13 09:09:37 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.18 2003-02-20 22:13:04 herrvendil Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -253,8 +253,8 @@ public class DemoCertReqServlet extends HttpServlet {
     try {
         useradminsession.addUser(admin, newuser.getUsername(), newuser.getPassword(), newuser.getSubjectDN(), newuser.getSubjectAltName()
                                ,newuser.getEmail(), newuser.getClearTextPassword(), newuser.getEndEntityProfileId(),
-                                newuser.getCertificateProfileId(), newuser.getAdministrator(),
-                                newuser.getKeyRecoverable(), newuser.getTokenType(), newuser.getHardTokenIssuerId());
+                                newuser.getCertificateProfileId(), newuser.getType(),
+                                newuser.getTokenType(), newuser.getHardTokenIssuerId());
     } catch (Exception e) {
       throw new ServletException("Error adding user: ", e);
     }

@@ -52,7 +52,7 @@
 
 
   static final String BUTTON_DELETE_USERS      = "buttondeleteusers";
-  static final String BUTTON_CHANGESTATUS      = "buttonchangestatus"; 
+//  static final String BUTTON_CHANGESTATUS      = "buttonchangestatus"; 
   static final String BUTTON_REVOKE_USERS      = "buttonrevokeusers";  
   static final String BUTTON_FIND              = "buttonfind";
   static final String BUTTON_LIST              = "buttonlist";
@@ -80,7 +80,7 @@
   static final String SORTBY_STATUS_DEC           = "sortbystatusdecending";
 
   static final String SELECT_LIST_STATUS        = "selectliststatus";
-  static final String SELECT_CHANGE_STATUS      = "selectchangestatus"; 
+//  static final String SELECT_CHANGE_STATUS      = "selectchangestatus"; 
   static final String SELECT_REVOKE_REASON      = "selectrevokereason"; 
   static final String SELECT_MATCHWITH_ROW1     = "selectmatchwithrow1"; 
   static final String SELECT_MATCHWITH_ROW2     = "selectmatchwithrow2"; 
@@ -257,7 +257,7 @@
          }
         }
       }
-      if( request.getParameter(BUTTON_CHANGESTATUS) != null){
+/*      if( request.getParameter(BUTTON_CHANGESTATUS) != null){
           // Change statuse on selected users
           // TEMPORATE
        editbuttonpressed=true;
@@ -282,7 +282,7 @@
          if(newstatus != null && !newstatus.trim().equals("")) 
            notauthorizedchangeall=!rabean.setUserStatuses(usernames,newstatus);
        }
-      }
+      } */
     }
    }
  

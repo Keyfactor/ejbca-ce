@@ -44,7 +44,7 @@ import org.apache.log4j.Logger;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.25 2003-02-14 08:39:47 scop Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.26 2003-02-20 22:12:43 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -118,8 +118,8 @@ public class RAInterfaceBean {
         if(userdata.getEndEntityProfileId() != 0){
            adminsession.addUser(administrator, userdata.getUsername(), userdata.getPassword(), userdata.getSubjectDN(), userdata.getSubjectAltName()
                                ,userdata.getEmail(), userdata.getClearTextPassword(), userdata.getEndEntityProfileId(),
-                                userdata.getCertificateProfileId(), userdata.getAdministrator(),
-                                userdata.getKeyRecoverable(), userdata.getTokenType(), userdata.getHardTokenIssuerId());
+                                userdata.getCertificateProfileId(), userdata.getType(),
+                                userdata.getTokenType(), userdata.getHardTokenIssuerId());
            addedusermemory.addUser(userdata);
 
         } else {
@@ -216,20 +216,14 @@ public class RAInterfaceBean {
         int certificatetypeid =userdata.getCertificateProfileId();
 
         addedusermemory.changeUser(userdata);
-        adminsession.changeUser(administrator, userdata.getUsername(), userdata.getSubjectDN(), userdata.getSubjectAltName()
-                                   ,userdata.getEmail(),  userdata.getEndEntityProfileId(),
-                                    userdata.getCertificateProfileId(), userdata.getAdministrator(),
-                                    userdata.getKeyRecoverable(), userdata.getTokenType(), userdata.getHardTokenIssuerId());
-          // if ra admin have chosen to store the password as cleartext.
-         if(userdata.getPassword() != null && !userdata.getPassword().trim().equals("")){
-           if(userdata.getClearTextPassword()){
-             adminsession.setClearTextPassword(administrator, userdata.getUsername(), userdata.getPassword());
-           }
-           else{
-             adminsession.setPassword(administrator, userdata.getUsername(), userdata.getPassword());
-           }
-         }
-         log.debug("<changeUserData()");
+        if(userdata.getPassword() != null && !userdata.getPassword().trim().equals(""))
+          userdata.setPassword(null);
+        
+        adminsession.changeUser(administrator, userdata.getUsername(), userdata.getPassword(), userdata.getSubjectDN(), userdata.getSubjectAltName(),
+                                userdata.getEmail(),  userdata.getClearTextPassword(), userdata.getEndEntityProfileId(),
+                                userdata.getCertificateProfileId(), userdata.getType(),
+                                userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getStatus());
+        log.debug("<changeUserData()");
     }
 
     /* Method to filter out a user by it's username */

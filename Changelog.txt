@@ -4,6 +4,7 @@
 Added Hard Token funtionallity, EJBCA ca now be used to issue EID Smard Card tokens
 and store pin/puk data in database. PrimeCard klient (www.primekey,se) module required.
 
+Added functionallity send email notification to added end entities.
 Added Key Recover funtionallity.
 Added Extended Key Usage to certificateprofiles.
 Changed initial temporary super administrator from "CN=Walter" to "CN=

@@ -19,6 +19,7 @@
   static final String CHECKBOX_CLEARTEXTPASSWORD          = "checkboxcleartextpassword";
   static final String CHECKBOX_ADMINISTRATOR              = "checkboxadministrator";
   static final String CHECKBOX_KEYRECOVERABLE             = "checkboxkeyrecoverable";
+  static final String CHECKBOX_SENDNOTIFICATION           = "checkboxsendnotification";
 
   static final String CHECKBOX_VALUE             = "true";
 
@@ -233,6 +234,17 @@
       <td> 
         <input type="checkbox" name="<%=CHECKBOX_KEYRECOVERABLE%>" value="<%=CHECKBOX_VALUE %>" tabindex="13"
                 <%if(userdata.getKeyRecoverable())
+                   out.write("CHECKED");%> disabled="true"> 
+      </td>
+    </tr>
+      <% } if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){ %>
+    <tr  id="Row<%=(row++)%2%>"> 
+      <td  align="right" width="<%=columnwidth%>"> 
+        <%= ejbcawebbean.getText("SENDNOTIFICATION") %> <br>
+      </td>
+      <td > 
+        <input type="checkbox" name="<%=CHECKBOX_SENDNOTIFICATION%>" value="<%=CHECKBOX_VALUE %>" tabindex="12"
+                <%if(userdata.getSendNotification())
                    out.write("CHECKED");%> disabled="true"> 
       </td>
     </tr>

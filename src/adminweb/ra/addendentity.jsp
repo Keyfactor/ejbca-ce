@@ -42,6 +42,7 @@
   static final String CHECKBOX_SUBJECTALTNAME            = "checkboxsubjectaltname";
   static final String CHECKBOX_ADMINISTRATOR              = "checkboxadministrator";
   static final String CHECKBOX_KEYRECOVERABLE             = "checkboxkeyrecoverable";
+  static final String CHECKBOX_SENDNOTIFICATION           = "checkboxsendnotification";
 
 
   static final String CHECKBOX_REQUIRED_USERNAME          = "checkboxrequiredusername";
@@ -319,6 +320,17 @@
              else{
                newuser.setKeyRecoverable(false);   
                oldprofile.setValue(EndEntityProfile.KEYRECOVERABLE, 0, EndEntityProfile.FALSE);               
+             }
+           }  
+           value = request.getParameter(CHECKBOX_SENDNOTIFICATION);
+           if(value !=null){
+             if(value.equals(CHECKBOX_VALUE)){
+               newuser.setSendNotification(true);   
+               oldprofile.setValue(EndEntityProfile.SENDNOTIFICATION, 0, EndEntityProfile.TRUE);                          
+             }
+             else{
+               newuser.setSendNotification(false);   
+               oldprofile.setValue(EndEntityProfile.SENDNOTIFICATION, 0, EndEntityProfile.FALSE);               
              }
            }  
 
@@ -607,6 +619,13 @@ function checkallfields(){
       illegalfields++;
     }
 
+    <%  if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0) && profile.isModifyable(EndEntityProfile.EMAIL,0)){%>
+    if(document.adduser.<%=CHECKBOX_SENDNOTIFICATION %>.checked && (document.adduser.<%= TEXTFIELD_EMAIL %>.value == "")){
+      alert("<%= ejbcawebbean.getText("NOTIFICATIONADDRESSMUSTBE") %>");
+      illegalfields++;
+    } 
+    <% } %>
+
     if(illegalfields == 0){
       <% if(profile.getUse(EndEntityProfile.CLEARTEXTPASSWORD,0)){%> 
       document.adduser.<%= CHECKBOX_CLEARTEXTPASSWORD %>.disabled = false;
@@ -614,7 +633,9 @@ function checkallfields(){
       document.adduser.<%= CHECKBOX_ADMINISTRATOR %>.disabled = false;
       <% } if(profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery()){%> 
       document.adduser.<%= CHECKBOX_KEYRECOVERABLE %>.disabled = false;
-      <% } %>
+      <% } if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){%> 
+      document.adduser.<%= CHECKBOX_SENDNOTIFICATION %>.disabled = false;
+      <% }%>
     }
 
      return illegalfields == 0;  
@@ -991,7 +1012,22 @@ function checkallfields(){
       </td>
       <td></td>
     </tr>
-    <%} %>
+     <% }if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){ %>
+    <tr  id="Row<%=(row++)%2%>"> 
+      <td></td>
+      <td  align="right"> 
+        <%= ejbcawebbean.getText("SENDNOTIFICATION") %> <br>
+      </td>
+      <td > 
+        <input type="checkbox" name="<%=CHECKBOX_SENDNOTIFICATION%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% if(profile.getValue(EndEntityProfile.SENDNOTIFICATION,0).equals(EndEntityProfile.TRUE))
+                                                                                                                 out.write(" CHECKED "); 
+                                                                                                               if(profile.isRequired(EndEntityProfile.SENDNOTIFICATION,0))
+                                                                                                                 out.write(" disabled='true' "); 
+                                                                                                             %>> 
+      </td>
+      <td></td>
+    </tr>
+      <%} %>
        <tr id="Row<%=(row++)%2%>">
 	 <td></td>
 	 <td></td>

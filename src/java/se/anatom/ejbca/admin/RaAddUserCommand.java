@@ -19,7 +19,7 @@ import se.anatom.ejbca.hardtoken.AvailableHardToken;
 
 /** Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.20 2003-02-12 13:21:39 herrvendil Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.21 2003-02-20 22:13:03 herrvendil Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 
@@ -68,9 +68,9 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 System.out.println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
                 System.out.println("SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>\"");
                 if(usekeyrecovery)
-                  System.out.println("Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64; KEYRECOVERABLE=128");
+                  System.out.println("Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64; KEYRECOVERABLE=128; SENDNOTIFICATION=256");
                 else
-                  System.out.println("Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64");                    
+                  System.out.println("Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64; SENDNOTIFICATION=256");                    
                 System.out.print("Token      : User Generated=" + SecConst.TOKEN_SOFT_BROWSERGEN + "; P12=" + SecConst.TOKEN_SOFT_P12 + "; JKS="
                                     + SecConst.TOKEN_SOFT_JKS + ";  PEM=" + SecConst.TOKEN_SOFT_PEM);
                 if( usehardtokens){
@@ -161,6 +161,11 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
               System.out.println("Error : HardTokenIssuer has to be choosen when user with hard tokens is added." );
               error = true;                   
             }
+            
+            if(email.equalsIgnoreCase("NULL") && ((type & SecConst.USER_SENDNOTIFICATION) == SecConst.USER_SENDNOTIFICATION)){
+              System.out.println("Error : Email field cannot be null when send notification type is given." );              
+              error = true;  
+            }
 
             // Check if username already exists.
             try{
@@ -189,9 +194,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                   email = null;
               try{
                 getAdminSession().addUser(administrator, username, password, CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid, certificatetypeid,
-                                         (type & SecConst.USER_ADMINISTRATOR) == SecConst.USER_ADMINISTRATOR,
-                                         (type & SecConst.USER_KEYRECOVERABLE) == SecConst.USER_KEYRECOVERABLE,
-                                          token,hardtokenissuerid);
+                                         type, token, hardtokenissuerid);
                 System.out.println("User '"+username+"' has been added.");
                 System.out.println();
                 System.out.println("Note: If batch processing should be possible, \nalso use 'ra setclearpwd "+username+" <pwd>'.");

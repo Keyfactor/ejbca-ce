@@ -23,21 +23,23 @@ package se.anatom.ejbca;
  * Constants for Token Types
  * Token type is constructed of integer constants since only one token type can be generated.
  *
- * @version $Id: SecConst.java,v 1.9 2003-02-06 15:35:53 herrvendil Exp $
+ * @version $Id: SecConst.java,v 1.10 2003-02-20 22:13:08 herrvendil Exp $
  */
 public class SecConst extends Object {
 
     // User types
 
     /** Dummy type. */
-    public static final int USER_INVALID        =     0x0;
+    public static final int USER_INVALID          =     0x0;
 
     /** This is an end user certificate (default). */
-    public static final int USER_ENDUSER        =     0x1;
+    public static final int USER_ENDUSER          =     0x1;
     /** This user is an administrator. */
-    public static final int USER_ADMINISTRATOR  =     0x40;
+    public static final int USER_ADMINISTRATOR    =     0x40;
     /** This users keystores are key recoverable. */
-    public static final int USER_KEYRECOVERABLE =     0x80;
+    public static final int USER_KEYRECOVERABLE   =     0x80;
+    /** Notification will be sent to this users emailaddress */
+    public static final int USER_SENDNOTIFICATION =     0x100;    
 
     // Old user values
 /* OLD and decapriated constants. 

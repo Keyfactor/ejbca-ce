@@ -168,6 +168,11 @@ function checkemailfield(reqfield){
   }
 
 }
+
+function checkuseemailfield(){
+  if(document.editprofile.<%= CHECKBOX_USE_SENDNOTIFICATION %>.checked)
+    document.editprofile.<%= CHECKBOX_USE_EMAIL %>.checked = true;    
+}
 -->
 
 </SCRIPT>
@@ -639,6 +644,32 @@ function checkemailfield(reqfield){
     </tr>
    <% } %>
     <tr  id="Row0"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%" align="right"> 
+        <%= ejbcawebbean.getText("SENDNOTIFICATION") %> <br>&nbsp;
+      </td>
+      <td width="70%"> 
+        <% used = profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0); %>
+        <input type="checkbox" name="<%=CHECKBOX_SENDNOTIFICATION%>" value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
+           <% if(profiledata.getValue(EndEntityProfile.SENDNOTIFICATION,0) != null && used)
+                 if(profiledata.getValue(EndEntityProfile.SENDNOTIFICATION,0).equals(EndEntityProfile.TRUE))
+                   out.write("CHECKED");
+           %>> <br>    
+         <%= ejbcawebbean.getText("USE") %> 
+        <input type="checkbox" name="<%=CHECKBOX_USE_SENDNOTIFICATION %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusecheckbox('<%=CHECKBOX_USE_SENDNOTIFICATION %>', '<%=CHECKBOX_SENDNOTIFICATION%>', '<%=CHECKBOX_REQUIRED_SENDNOTIFICATION %>'); checkuseemailfield()"
+           <% if(used)
+                 out.write("CHECKED");
+           %>>&nbsp;&nbsp;
+        <%= ejbcawebbean.getText("REQUIRED") %>
+        <input type="checkbox" name="<%=CHECKBOX_REQUIRED_SENDNOTIFICATION%>" value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
+           <% if(profiledata.isRequired(EndEntityProfile.SENDNOTIFICATION,0) && used)
+                out.write("CHECKED");
+           %>> 
+      </td>
+    </tr>
+    <tr  id="Row1"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>

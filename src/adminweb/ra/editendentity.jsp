@@ -37,12 +37,14 @@
   static final String SELECT_SUBJECTALTNAME       = "selectsubjectaltname";
   static final String SELECT_EMAIL                = "selectemail";
   static final String SELECT_HARDTOKENISSUER      = "selecthardtokenissuer";
+  static final String SELECT_CHANGE_STATUS        = "selectchangestatus"; 
 
   static final String CHECKBOX_CLEARTEXTPASSWORD          = "checkboxcleartextpassword";
-  static final String CHECKBOX_SUBJECTDN                 = "checkboxsubjectdn";
-  static final String CHECKBOX_SUBJECTALTNAME            = "checkboxsubjectaltname";
+  static final String CHECKBOX_SUBJECTDN                  = "checkboxsubjectdn";
+  static final String CHECKBOX_SUBJECTALTNAME             = "checkboxsubjectaltname";
   static final String CHECKBOX_ADMINISTRATOR              = "checkboxadministrator";
   static final String CHECKBOX_KEYRECOVERABLE             = "checkboxkeyrecoverable";
+  static final String CHECKBOX_SENDNOTIFICATION           = "checkboxsendnotification";
 
   static final String CHECKBOX_REQUIRED_USERNAME          = "checkboxrequiredusername";
   static final String CHECKBOX_REQUIRED_PASSWORD          = "checkboxrequiredpassword";
@@ -230,6 +232,15 @@
                  newuser.setKeyRecoverable(false);         
                }
              }   
+             value = request.getParameter(CHECKBOX_SENDNOTIFICATION);
+             if(value !=null){
+               if(value.equals(CHECKBOX_VALUE)){
+                 newuser.setSendNotification(true);                  
+               }
+               else{
+                 newuser.setSendNotification(false);         
+               }
+             }   
 
              value = request.getParameter(SELECT_CERTIFICATEPROFILE);
              newuser.setCertificateProfileId(Integer.parseInt(value));   
@@ -245,6 +256,11 @@
              }
              newuser.setHardTokenIssuerId(hardtokenissuer);   
 
+            if(request.getParameter(SELECT_CHANGE_STATUS)!=null){
+              int newstatus = Integer.parseInt(request.getParameter(SELECT_CHANGE_STATUS));
+              if(newstatus == UserDataRemote.STATUS_NEW || newstatus == UserDataRemote.STATUS_GENERATED || newstatus == UserDataRemote.STATUS_HISTORICAL )
+                newuser.setStatus(newstatus); 
+            }
              // Send changes to database.
              rabean.changeUserData(newuser);
              endentitysaved = true;
@@ -462,6 +478,32 @@ function checkallfields(){
       illegalfields++;
     }
 
+    <%  if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0) && profile.isModifyable(EndEntityProfile.EMAIL,0)){%>
+    if(document.edituser.<%=CHECKBOX_SENDNOTIFICATION %>.checked && (document.edituser.<%= TEXTFIELD_EMAIL %>.value == "")){
+      alert("<%= ejbcawebbean.getText("NOTIFICATIONADDRESSMUSTBE") %>");
+      illegalfields++;
+    } 
+    <% } %>
+
+   var selstatus = document.edituser.<%=SELECT_CHANGE_STATUS%>.options.selectedIndex;
+   var status = document.edituser.<%=SELECT_CHANGE_STATUS%>.options[selstatus].value;
+  <%   if(profile.isModifyable(EndEntityProfile.PASSWORD,0)){%>  
+   if((status == <%= UserDataRemote.STATUS_NEW%> || status == <%= UserDataRemote.STATUS_KEYRECOVERY%>) && status != <%= userdata.getStatus() %> && document.edituser.<%= TEXTFIELD_PASSWORD %>.value == ""){
+      alert("<%= ejbcawebbean.getText("REQUIREDPASSWORD") %>");
+      illegalfields++;
+   }
+
+  <% } else { %>
+   if((status == <%= UserDataRemote.STATUS_NEW%> || status == <%= UserDataRemote.STATUS_KEYRECOVERY%>) && status != <%= userdata.getStatus() %> && document.edituser.<%= TEXTFIELD_PASSWORD %>.options.selectedIndex == -1){
+      alert("<%= ejbcawebbean.getText("REQUIREDPASSWORD") %>");
+      illegalfields++;
+   }
+ <% } %>
+
+   if(status != <%= UserDataRemote.STATUS_NEW%> && status != <%= UserDataRemote.STATUS_KEYRECOVERY%> && status != <%= UserDataRemote.STATUS_GENERATED%> && status != <%= UserDataRemote.STATUS_HISTORICAL%>){
+      alert("<%= ejbcawebbean.getText("ONLYSTATUSCANBESELECTED") %>");
+      illegalfields++;
+    }
     if(illegalfields == 0){
       <% if(profile.getUse(EndEntityProfile.CLEARTEXTPASSWORD,0)){%> 
       document.edituser.<%= CHECKBOX_CLEARTEXTPASSWORD %>.disabled = false;
@@ -469,7 +511,9 @@ function checkallfields(){
       document.edituser.<%= CHECKBOX_ADMINISTRATOR %>.disabled = false;
       <% } if(profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery()){%> 
       document.edituser.<%= CHECKBOX_KEYRECOVERABLE %>.disabled = false;
-      <% } %>
+      <% } if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){%> 
+      document.edituser.<%= CHECKBOX_SENDNOTIFICATION %>.disabled = false;
+      <% }%>
     }
 
      return illegalfields == 0;  
@@ -824,7 +868,48 @@ function checkUseInBatch(){
       </td>
       <td></td>
     </tr>
+     <% }if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){ %>
+    <tr  id="Row<%=(row++)%2%>"> 
+      <td  align="right"> 
+        <%= ejbcawebbean.getText("SENDNOTIFICATION") %> <br>
+      </td>
+      <td > 
+        <input type="checkbox" name="<%=CHECKBOX_SENDNOTIFICATION%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% 
+                                                                                                               if(profile.isRequired(EndEntityProfile.SENDNOTIFICATION,0))
+                                                                                                                 out.write(" disabled='true'"); 
+                                                                                                               if(profile.isRequired(EndEntityProfile.SENDNOTIFICATION,0) || userdata.getSendNotification())
+                                                                                                                 out.write(" CHECKED ");
+                                                                                                             %>>  
+      </td>
+      <td></td>
+    </tr>
     <%} %>
+    <tr  id="Row<%=(row++)%2%>"> 
+      <td  align="right"> 
+        &nbsp;
+      </td>
+      <td > 
+        &nbsp;
+      </td>
+      <td></td>
+    </tr>
+    <tr  id="Row<%=(row++)%2%>"> 
+      <td  align="right"> 
+        <%= ejbcawebbean.getText("STATUS") %> <br>
+      </td>
+      <td > 
+        <select name="<%=SELECT_CHANGE_STATUS %>" >
+         <option <%if(userdata.getStatus()== UserDataRemote.STATUS_NEW) out.write(" selected ");%> value='<%= UserDataRemote.STATUS_NEW %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
+         <option <%if(userdata.getStatus()== UserDataRemote.STATUS_FAILED) out.write(" selected ");%> value='<%= UserDataRemote.STATUS_FAILED %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>  -->
+         <option <%if(userdata.getStatus()== UserDataRemote.STATUS_INITIALIZED) out.write(" selected ");%> value='<%= UserDataRemote.STATUS_INITIALIZED %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>  -->
+         <option <%if(userdata.getStatus()== UserDataRemote.STATUS_INPROCESS) out.write(" selected ");%> value='<%= UserDataRemote.STATUS_INPROCESS %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>  -->
+         <option <%if(userdata.getStatus()== UserDataRemote.STATUS_GENERATED) out.write(" selected ");%> value='<%= UserDataRemote.STATUS_GENERATED %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>  
+         <option <%if(userdata.getStatus()== UserDataRemote.STATUS_REVOKED) out.write(" selected ");%> value='<%= UserDataRemote.STATUS_REVOKED %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>  -->
+         <option <%if(userdata.getStatus()== UserDataRemote.STATUS_HISTORICAL) out.write(" selected ");%> value='<%= UserDataRemote.STATUS_HISTORICAL %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
+        </select>
+      </td>
+      <td></td>
+    </tr>
        <tr id="Row<%=(row++)%2%>">
 	 <td></td>
 	 <td><input type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>" tabindex="20"

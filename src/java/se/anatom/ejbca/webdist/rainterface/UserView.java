@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * A class representing a web interface view of a user in the ra user database.
  *
- * @version $Id: UserView.java,v 1.8 2003-01-19 09:40:13 herrvendil Exp $
+ * @version $Id: UserView.java,v 1.9 2003-02-20 22:12:42 herrvendil Exp $
  */
 public class UserView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.
@@ -55,10 +55,14 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
     
     public void setStatus(int status) {userdata.setStatus(status);}
     public int getStatus() {return userdata.getStatus();}
+    public void setType(int type) {userdata.setType(type);}
+    public int getType() {return userdata.getType();}   
     public void setAdministrator(boolean admin) {userdata.setAdministrator(admin);}
     public boolean getAdministrator() {return userdata.getAdministrator();} 
     public void setKeyRecoverable(boolean keyrecoverable) {userdata.setKeyRecoverable(keyrecoverable);}
     public boolean getKeyRecoverable() {return userdata.getKeyRecoverable();}     
+    public void setSendNotification(boolean sendnotification) {userdata.setSendNotification(sendnotification);}
+    public boolean getSendNotification() {return userdata.getSendNotification();}         
     public void setEndEntityProfileId(int profileid) { userdata.setEndEntityProfileId(profileid); }
     public int getEndEntityProfileId(){ return userdata.getEndEntityProfileId(); }
     public void setCertificateProfileId(int profileid) { userdata.setCertificateProfileId(profileid); }

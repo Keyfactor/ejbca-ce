@@ -7,7 +7,7 @@ import se.anatom.ejbca.SecConst;
 /**
  * Hols admin data collected from UserData in the database.
  *
- * @version $Id: UserAdminData.java,v 1.4 2002-10-24 20:10:09 herrvendil Exp $
+ * @version $Id: UserAdminData.java,v 1.5 2003-02-20 22:13:02 herrvendil Exp $
  */
 public class UserAdminData implements Serializable {
     
@@ -101,6 +101,17 @@ public class UserAdminData implements Serializable {
         type = type | SecConst.USER_KEYRECOVERABLE;  
       else
         type = type & (~SecConst.USER_KEYRECOVERABLE);          
+    }
+    
+    public boolean getSendNotification(){
+      return (type & SecConst.USER_SENDNOTIFICATION) == SecConst.USER_SENDNOTIFICATION;          
+    }
+    
+    public void setSendNotification(boolean sendnotification){
+      if(sendnotification)
+        type = type | SecConst.USER_SENDNOTIFICATION;  
+      else
+        type = type & (~SecConst.USER_SENDNOTIFICATION);          
     }
     
 }
