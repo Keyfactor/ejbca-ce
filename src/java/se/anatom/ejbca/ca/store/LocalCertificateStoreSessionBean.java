@@ -31,7 +31,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.33 2003-01-12 17:16:28 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.34 2003-01-13 16:16:52 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -65,9 +65,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         crlHome = (CRLDataLocalHome)lookup("java:comp/env/ejb/CRLDataLocal");
         certHome = (CertificateDataLocalHome)lookup("java:comp/env/ejb/CertificateDataLocal");
         certprofilehome = (CertificateProfileDataLocalHome)lookup("java:comp/env/ejb/CertificateProfileDataLocal");
-        
-        try{ 
-          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
+
+        try{
+          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);
           logsession = logsessionhome.create();
         }catch(Exception e){
           throw new EJBException(e);
@@ -323,7 +323,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
     /**
      * Implements ICertificateStoreSession::findUsernameByCertSerno.
-     */    
+     */
     public String findUsernameByCertSerno(Admin admin, BigInteger serno){
         debug(">findUsernameByCertSerno(),  serno="+serno);
         try {
@@ -365,11 +365,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
     /**
      * Set the status of certificates of given username to revoked.
-     * @param dn the dn of user to revoke certificates.
+     * @param username the username of user to revoke certificates.
+     * @param reason reason the user is revoked from CRLData
+     * @see CRLData
      */
     public void setRevokeStatus(Admin admin, String username, int reason) {
-       X509Certificate certificate = null; 
-       try{ 
+       X509Certificate certificate = null;
+       try{
          Collection certs = findCertificatesByUsername(admin, username);
           // Revoke all certs
          if (!certs.isEmpty()) {
@@ -404,11 +406,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
     /**
      * Set the status of certificate of serno to revoked.
-     * @param dn the serno of user to revoke certificates.
+     * @param serno the serial number of the certificate to revoke.
+     * @param reason reason the user is revoked from CRLData
+     * @see CRLData
      */
     public void setRevokeStatus(Admin admin, BigInteger serno, int reason) {
-       X509Certificate certificate = null; 
-       try{ 
+       X509Certificate certificate = null;
+       try{
          Collection certs = findCertificatesBySerno(admin, serno);
           // Revoke all certs
          if (!certs.isEmpty()) {
@@ -448,9 +452,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      *  @return returns true if all certificates are revoked.
      */
     public boolean checkIfAllRevoked(Admin admin, String username){
-       boolean returnval = true; 
-       X509Certificate certificate = null; 
-       try{ 
+       boolean returnval = true;
+       X509Certificate certificate = null;
+       try{
          Collection certs = findCertificatesByUsername(admin, username);
           // Revoke all certs
          if (!certs.isEmpty()) {

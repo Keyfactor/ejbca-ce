@@ -18,7 +18,7 @@ import junit.framework.*;
 
 /** Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.13 2003-01-12 17:16:35 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.14 2003-01-13 16:17:02 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -108,7 +108,7 @@ public class TestCertificateData extends TestCase {
         data2.setStatus(CertificateData.CERT_REVOKED);
         data2.setType(SecConst.USER_ENDUSER);
         data2.setRevocationDate(new Date());
-        data2.setRevocationReason(CRLData.REASON_KEYCOMPROMISE);
+        data2.setRevocationReason(RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
         cat.debug("Changed it");
        cat.debug("<test02FindAndChange()");
     }
@@ -182,7 +182,7 @@ public class TestCertificateData extends TestCase {
         cat.debug("expiredate="+data3.getExpireDate());
         cat.debug("revocationdate="+data3.getRevocationDate());
         cat.debug("revocationreason="+data3.getRevocationReason());
-        assertTrue("wrong reason", (data3.getRevocationReason() & CRLData.REASON_KEYCOMPROMISE) == CRLData.REASON_KEYCOMPROMISE);
+        assertTrue("wrong reason", (data3.getRevocationReason() & RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE) == RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
 
         cat.debug("Looking for cert with DN="+cert.getSubjectDN().toString());
         ICertificateStoreSessionRemote store = storehome.create();
@@ -264,7 +264,7 @@ public class TestCertificateData extends TestCase {
         cat.debug("expiredate="+data3.getExpireDate());
         cat.debug("revocationdate="+data3.getRevocationDate());
         cat.debug("revocationreason="+data3.getRevocationReason());
-        assertTrue("wrong reason", (data3.getRevocationReason() & CRLData.REASON_KEYCOMPROMISE) == CRLData.REASON_KEYCOMPROMISE);
+        assertTrue("wrong reason", (data3.getRevocationReason() & RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE) == RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
 
         cat.debug("Checking if cert is revoked DN:'"+cert.getIssuerDN().toString()+"', serno:'"+cert.getSerialNumber().toString()+"'.");
         ICertificateStoreSessionRemote store = storehome.create();

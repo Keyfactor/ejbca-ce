@@ -11,14 +11,6 @@ import java.rmi.RemoteException;
  **/
 public interface CRLData extends javax.ejb.EJBObject {
 
-    // Constants for Revocation reason
-    public static int REASON_UNUSED =               0x0;    // Unknown reason for revocation (reason unused).
-    public static int REASON_KEYCOMPROMISE =        0x1;    // Private key has been compromised.
-    public static int REASON_CACOMPROMISE =         0x2;    // CAs private key has been compromised.
-    public static int REASON_AFFILIATIONCHANGED =   0x4;    // Users affiliation changed.
-    public static int REASON_CESSATIONOFOPERATION = 0x8;    // Cessation Of Operation.
-    public static int REASON_CERTIFICATEHOLD =      0x10;    // Certificate is revoced temporarily.
-
     // public methods
     public int getCRLNumber() throws RemoteException;
     public void setCRLNumber(int cRLNumber) throws RemoteException;

@@ -11,6 +11,7 @@ import org.apache.log4j.*;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Base64;
+import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 
 /**
  * Entity Bean representing a certificate.
@@ -75,7 +76,7 @@ public abstract class CertificateDataBean implements javax.ejb.EntityBean {
     public abstract void setRevocationReason(int revocationReason);
     public abstract String getBase64Cert();
     public abstract void setBase64Cert(String base64Cert);
-    
+
     public abstract String getUsername();
     public abstract void setUsername(String username);
 
@@ -135,7 +136,7 @@ public abstract class CertificateDataBean implements javax.ejb.EntityBean {
      * Create by sending in the certificate, which extracts (from the cert)
      * fingerprint (primary key), subjectDN, issuerDN, serial number, expiration date.
      * Status, Type, CAFingerprint, revocationDate and revocationReason are set to default values
-     * (CERT_UNASSIGNED, USER_INVALID, null, null and REASON_UNUSED)
+     * (CERT_UNASSIGNED, USER_INVALID, null, null and REVOKATION_REASON_UNSPECIFIED)
      * and should be set using the respective set-methods.
      *
      * @param incert, the (X509)Certificate to be stored in the database.
@@ -165,7 +166,7 @@ public abstract class CertificateDataBean implements javax.ejb.EntityBean {
         setCAFingerprint(null);
         setExpireDate(tmpcert.getNotAfter());
         setRevocationDate(-1L);
-        setRevocationReason(CRLData.REASON_UNUSED);
+        setRevocationReason(RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
 
         CertificateDataPK pk = new CertificateDataPK(getFingerprint());
         return pk;
