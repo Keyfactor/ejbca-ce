@@ -13,6 +13,7 @@
  
 package se.anatom.ejbca.admin;
 
+import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.util.Enumeration;
 
@@ -22,7 +23,7 @@ import se.anatom.ejbca.util.FileTools;
 /**
  * Imports a PKCS12 file and created a new CA from it.
  *
- * @version $Id: CaImportCACommand.java,v 1.1 2004-10-31 10:28:10 anatom Exp $
+ * @version $Id: CaImportCACommand.java,v 1.2 2004-10-31 18:56:32 anatom Exp $
  */
 public class CaImportCACommand extends BaseCaAdminCommand {
     /**
@@ -59,9 +60,8 @@ public class CaImportCACommand extends BaseCaAdminCommand {
             // Import CA from PKCS12 file
             if (alias == null) {
                 // First we must find what aliases there is in the pkcs12-file
-                KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-                // get user password and file input stream
-                java.io.FileInputStream fis = new java.io.FileInputStream(p12file);
+                KeyStore ks = KeyStore.getInstance("PKCS12","BC");
+                FileInputStream fis = new FileInputStream(p12file);
                 ks.load(fis, kspwd.toCharArray());
                 fis.close();            
                 Enumeration aliases = ks.aliases();
