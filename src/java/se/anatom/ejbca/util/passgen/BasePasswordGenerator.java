@@ -10,48 +10,48 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.util.passgen;
 import java.util.Random;
 import java.util.Date;
 
 /**
- * BasePasswordGenerator is a baseclass for generating random passwords. 
- * Inheriting classes should overload the constants USEDCHARS, MIN_CHARS 
+ * BasePasswordGenerator is a baseclass for generating random passwords.
+ * Inheriting classes should overload the constants USEDCHARS, MIN_CHARS
  * and MAX_CHARS.
  *
- * @version $Id: BasePasswordGenerator.java,v 1.4 2004-04-16 07:39:01 anatom Exp $
+ * @version $Id: BasePasswordGenerator.java,v 1.5 2004-06-10 15:10:46 sbailliez Exp $
  */
-public abstract class BasePasswordGenerator implements IPasswordGenerator{       
-    
+public abstract class BasePasswordGenerator implements IPasswordGenerator{
+
     protected BasePasswordGenerator(char[] usedchars){
 
-       this.usedchars = usedchars; 
+       this.usedchars = usedchars;
     }
-    
+
 	/**
 	 * @see se.anatom.ejbca.util.passgen.IPasswordGenerator
 	 */
-    
-	public String getNewPassword(int minlength, int maxlength){		
+
+	public String getNewPassword(int minlength, int maxlength){
 		int difference = maxlength - minlength;
 		char[] password = null;
-		
-		Random ran = new Random((new Date()).getTime());
-		
+
+		Random ran = new Random();
+
 		// Calculate the length of password
 		int passlen = maxlength;
 		if(minlength != maxlength)
 		  passlen = minlength + ran.nextInt(difference);
-		
+
 		password = new char[passlen];
 		for(int i=0; i < passlen; i++){
 		  password[i] = usedchars[ran.nextInt(usedchars.length)];
-		}					
-		
+		}
+
 		return new String(password);
 	}
-	
-    
+
+
     private final char[] usedchars;
 }
