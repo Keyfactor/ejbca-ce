@@ -1,6 +1,7 @@
 3.0
 ----
 Virtual CAs, run a complete hierarchy in one instance of EJBCA.
+Easier installation and configuration.
 Completed support for OCSP.
 Added 'Authority Information Access' extension for OCSP service URL in certificates.
 
