@@ -51,9 +51,12 @@ function checkusecertificatepoliciesfield(){
 function checkuseextendedkeyusagefield(){
   if(document.editcertificateprofile.<%=CHECKBOX_USEEXTENDEDKEYUSAGE %>.checked){
     document.editcertificateprofile.<%= SELECT_EXTENDEDKEYUSAGE %>.disabled = false;
+    document.editcertificateprofile.<%= CHECKBOX_EXTENDEDKEYUSAGECRITICAL %>.disabled = false;
   }
   else{
     document.editcertificateprofile.<%= SELECT_EXTENDEDKEYUSAGE %>.disabled = true;
+    document.editcertificateprofile.<%= CHECKBOX_EXTENDEDKEYUSAGECRITICAL %>.disabled = true;
+    document.editcertificateprofile.<%= CHECKBOX_EXTENDEDKEYUSAGECRITICAL %>.checked = false;
   }
 }
 
@@ -294,13 +297,17 @@ function checkallfields(){
     </tr>
     <tr  id="Row1"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEEXTENDEDKEYUSAGE") %>
+        <%= ejbcawebbean.getText("USEEXTENDEDKEYUSAGE") %><br><%= ejbcawebbean.getText("EXTENDEDKEYUSAGECRITICAL") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USEEXTENDEDKEYUSAGE %>"  onclick="checkuseextendedkeyusagefield()" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseExtendedKeyUsage())
                  out.write("CHECKED");
-           %>> 
+           %>><br> 
+           <input type="checkbox" name="<%=CHECKBOX_EXTENDEDKEYUSAGECRITICAL %>"  <% if(!certificateprofiledata.getUseExtendedKeyUsage()) out.write(" disabled "); %> value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getExtendedKeyUsageCritical())
+                 out.write("CHECKED");
+           %>>
       </td>
     </tr>
     <tr  id="Row0"> 

@@ -12,12 +12,12 @@ import se.anatom.ejbca.SecConst;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.9 2003-02-20 09:00:58 herrvendil Exp $
+ * @version $Id: CertificateProfile.java,v 1.10 2003-02-20 10:28:39 herrvendil Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
     // Default Values
-    public static final float LATEST_VERSION = 2;
+    public static final float LATEST_VERSION = 5;
 
     // Public Constants
     public static final int DIGITALSIGNATURE = 0;
@@ -84,6 +84,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String ALLOWKEYUSAGEOVERRIDE          = "allowkeyusageoverride";
     protected static final String USEEXTENDEDKEYUSAGE            = "useextendedkeyusage";
     protected static final String EXTENDEDKEYUSAGE               = "extendedkeyusage";
+    protected static final String EXTENDEDKEYUSAGECRITICAL       = "extendedkeyusagecritical";    
     
     // Public Methods
     /** Creates a new instance of CertificateProfile */
@@ -124,6 +125,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       
       setUseExtendedKeyUsage(false);
       setExtendedKeyUsage(new ArrayList());
+      setExtendedKeyUsageCritical(false);      
       
     }
 
@@ -273,6 +275,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return ((Boolean) data.get(USEEXTENDEDKEYUSAGE)).booleanValue();
     }  
     
+    public void setExtendedKeyUsageCritical(boolean critical) {
+        data.put(EXTENDEDKEYUSAGECRITICAL, critical ? Boolean.TRUE : Boolean.FALSE);
+    }
+    public boolean getExtendedKeyUsageCritical() {
+        return ((Boolean) data.get(EXTENDEDKEYUSAGECRITICAL)).booleanValue();
+    }      
     /*
      * Extended Key Usage is an arraylist of constant Integers.
      */
@@ -333,6 +341,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
           data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
         if(data.get(EXTENDEDKEYUSAGE) ==null)       
           data.put(EXTENDEDKEYUSAGE, new ArrayList());
+        if(data.get(EXTENDEDKEYUSAGECRITICAL) == null)
+          data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);        
+        
       }
     }
 

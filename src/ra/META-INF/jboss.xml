@@ -1,0 +1,8 @@
+<jboss>
+  <resource-managers>
+    <resource-manager>
+      <res-name>mail/DefaultMail</res-name>
+      <res-jndi-name>java:/Mail</res-jndi-name>
+    </resource-manager>
+  </resource-managers>
+</jboss>

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 /**
  * EndUserCertificateProfile is a class defining the fixed characteristics of an enduser certificate type
  *
-* @version $Id: EndUserCertificateProfile.java,v 1.5 2003-02-20 09:00:57 herrvendil Exp $
+* @version $Id: EndUserCertificateProfile.java,v 1.6 2003-02-20 10:28:39 herrvendil Exp $
   */
 public class EndUserCertificateProfile extends CertificateProfile{
 
@@ -81,6 +81,8 @@ public class EndUserCertificateProfile extends CertificateProfile{
            eku.add(new Integer(IPSECUSER));             
            data.put(EXTENDEDKEYUSAGE, eku);
         }
+        if(data.get(EXTENDEDKEYUSAGECRITICAL) == null)
+          data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);   
       }
     }    
 

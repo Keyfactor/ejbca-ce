@@ -49,6 +49,7 @@
   static final String CHECKBOX_CERTIFICATEPOLICIESCRITICAL        = "checkcertificatepoliciescritical";
   static final String CHECKBOX_ALLOWKEYUSAGEOVERRIDE              = "checkallowkeyusageoverride";
   static final String CHECKBOX_USEEXTENDEDKEYUSAGE                = "checkuseextendedkeyusage";
+  static final String CHECKBOX_EXTENDEDKEYUSAGECRITICAL           = "checkboxextendedkeyusagecritical";
 
   static final String SELECT_AVAILABLEBITLENGTHS                  = "selectavailablebitlengths";
   static final String SELECT_KEYUSAGE                             = "selectkeyusage";
@@ -350,6 +351,10 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
              value = request.getParameter(CHECKBOX_USEEXTENDEDKEYUSAGE);
              if(value != null && value.equals(CHECKBOX_VALUE)){
                certificateprofiledata.setUseExtendedKeyUsage(true); 
+               value = request.getParameter(CHECKBOX_EXTENDEDKEYUSAGECRITICAL); 
+               if(value != null){
+                 certificateprofiledata.setExtendedKeyUsageCritical(value.equals(CHECKBOX_VALUE));
+               } 
                values = request.getParameterValues(SELECT_EXTENDEDKEYUSAGE);
                ArrayList eku = new ArrayList(); 
                 if(values != null){
@@ -361,6 +366,7 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
               }
               else{
                 certificateprofiledata.setUseExtendedKeyUsage(false); 
+                certificateprofiledata.setExtendedKeyUsageCritical(false); 
                 certificateprofiledata.setExtendedKeyUsage(new ArrayList());        
               }
 

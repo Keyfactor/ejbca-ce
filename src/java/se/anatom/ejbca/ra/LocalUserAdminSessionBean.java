@@ -8,6 +8,10 @@ import javax.naming.*;
 import java.rmi.*;
 import javax.ejb.*;
 import java.math.BigInteger;
+import javax.mail.Transport;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.InternetAddress;
+
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.util.CertTools;
@@ -32,7 +36,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.38 2003-02-12 11:23:18 scop Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.39 2003-02-20 10:28:41 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -160,6 +164,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                 throw new EJBException(nsae);
               }
             }
+            //sendNotification(admin);
             logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_ADDEDENDENTITY,"");
 
         }catch (Exception e) {
@@ -844,5 +849,23 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
      return returnval;
    } // makeType
+   
+   private void sendNotification(Admin administrator){
+     try {
+       javax.mail.Session mailSession = (javax.mail.Session) new InitialContext().lookup( "java:comp/env/mail/DefaultMail" );
+       javax.mail.Message msg = new MimeMessage( mailSession );
+       msg.setFrom( new InternetAddress( "philip@murph.se" ) );
+       msg.setRecipients( javax.mail.Message.RecipientType.TO, InternetAddress.parse( "philip@murph.se", false ) );
+       msg.setSubject( "This is a test" );
+       msg.setContent( "Hi there!", "text/html" );
+       msg.setHeader( "X-Mailer", "JavaMailer" );
+       msg.setSentDate( new java.util.Date() );
+       Transport.send( msg );
+     }
+     catch ( Exception e )
+     {
+       System.out.println( "Can't send email");
+     }
+   }
 
 } // LocalUserAdminSessionBean

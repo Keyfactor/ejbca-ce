@@ -74,6 +74,8 @@ public class CACertificateProfile extends CertificateProfile{
           data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
         if(data.get(EXTENDEDKEYUSAGE) ==null)       
           data.put(EXTENDEDKEYUSAGE, new ArrayList());
+        if(data.get(EXTENDEDKEYUSAGECRITICAL) == null)
+          data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);     
       }
     }
 
