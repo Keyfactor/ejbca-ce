@@ -3,9 +3,9 @@ package se.anatom.ejbca.exception;
 /**
  * Base for all specific application exceptions thrown by EJBCA. Can be used to catch any
  * non-crititcal application exceptions thay may be possible to handle: <code> try { . . . } catch
- * (EjbcaException e) { error(e.getMessage()); ... }</code>
+ * (EjbcaException e) { error("Error: blahblah", e); ... }</code>
  *
- * @version $Id: EjbcaException.java,v 1.6 2003-08-22 09:16:38 anatom Exp $
+ * @version $Id: EjbcaException.java,v 1.7 2003-08-22 09:17:51 anatom Exp $
  */
 public class EjbcaException extends Exception {
     /**
