@@ -17,15 +17,16 @@
     <import file="bin/jboss.xml" />
 
     <!-- set global properties for this build -->
-    <property name="src" value="src" />
-    <property name="src.java" value="${src}/java" />
-    <property name="src.gen" value="bin/gensrc" />
-    <property name="src.dd" value="bin/dd" />
-    
-    <property name="bin" value="./bin" />
+	<property name="tmp" value="./tmp" />
+    <property name="bin" value="./${tmp}/bin" />
     <property name="build" value="${bin}/classes" />
     <property name="lib" value="lib" />
 
+    <property name="src" value="src" />
+    <property name="src.java" value="${src}/java" />
+    <property name="src.gen" value="${bin}/gensrc" />
+    <property name="src.dd" value="${bin}/dd" />
+    
     <property name="test.dir" value="${bin}/junit" />
     <property name="test.src.dir" location="${src}/test" />
     <property name="dist.dir" location="dist" />
@@ -44,6 +45,7 @@
     <property name="statuswar" value="${dist.dir}/status.war" />
 
     <property name="adminweb.src" value="${src}/adminweb" />
+    <property name="adminweb.build" value="${tmp}/adminweb.war" />    
     <property name="adminwebwar" value="${dist.dir}/adminweb.war" />
 
     <!-- Jar with class files needed for administration, i.e. ca, ra, jobrunner -->
@@ -150,6 +152,7 @@ database.password    = ${database.password}
         <delete>
             <fileset dir="${src.java}" includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes" />
         </delete>
+        <delete dir="${tmp}"/>
     </target>
 
     <target name="run-xdoc" depends="init">
@@ -257,11 +260,20 @@ database.password    = ${database.password}
     <!-- Build admin web part                                                -->
     <!-- =================================================================== -->
     <target name="adminweb.war" depends="compile">
-        <war destfile="${adminwebwar}" webxml="${adminweb.src}/WEB-INF/web.xml">
+        <mkdir dir="${adminweb.build}/WEB-INF/lib"/>
+        <copy todir="${adminweb.build}">
+            <fileset dir="${adminweb.src}">
+                <exclude name="**/tomcat*-service.xml"/>
+                <!--exclude name="languages/**"/-->
+            </fileset>
+        </copy>
+        
+    	<jsp-compile uriroot="${adminweb.build}" classpathref="compile.classpath"/>
+        <war destfile="${adminwebwar}" webxml="${adminweb.build}/WEB-INF/web.xml">
             <manifest>
                 <attribute name="Class-Path" value="lib/bcmail-jdk14-124.jar lib/bcprov-jdk14-124.jar lib/log4j-1.2.7.jar lib/ldap.jar lib/commons-lang-2.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar" />
             </manifest>
-            <fileset dir="${adminweb.src}">
+            <fileset dir="${adminweb.build}">
                 <exclude name="WEB-INF/*-service.xml" />
                 <exclude name="WEB-INF/web.xml"/>
                 <!--exclude name="languages/**"/-->
@@ -743,4 +755,42 @@ database.password    = ${database.password}
             <report format="frames" todir="${test.dir}/reports/html" />
         </junitreport>
     </target>
+    
+    <macrodef name="jsp-compile">
+        <attribute name="uriroot"/>
+        <attribute name="todir" default="@{uriroot}"/>
+        <attribute name="classpathref"/>
+        <sequential>
+        <path id="jasper.classpath">
+            <fileset dir="lib/jasper" includes="*.jar"/>
+            <path refid="@{classpathref}"/>
+            <path location="${build}"/>
+        </path>
+        <taskdef name="jasper2" classname="org.apache.jasper.JspC" classpathref="jasper.classpath"/>
+        <mkdir dir="@{todir}/WEB-INF/jspc"/>
+        
+        <property name="jasper.classpath" refid="jasper.classpath"/>
+        <!--echo message="jasper.classpath = ${jasper.classpath}"/-->
+		<jasper2 uriroot="@{uriroot}"
+			package="org.apache.jasper.jspc"
+			outputdir="@{todir}/WEB-INF/jspc"
+			validatexml="false"
+			webXmlFragment="@{todir}/WEB-INF/generated_web.xml"
+			addWebXmlMappings="true"
+            verbose="0"
+            classpath="${jasper.classpath}"/>
+		<!--
+		  Compile them cleanly, jasper is not nice for this so use javac directly
+		  Note that precompilation may not work with weblogic (see weblogic docs)
+		  -->
+		<mkdir dir="@{todir}/WEB-INF/classes"/>
+		<depend srcdir="@{todir}/WEB-INF/jspc" destdir="@{todir}/WEB-INF/classes">
+			<classpath path="${jasper.classpath}"/>
+		</depend>
+		<javac srcdir="@{todir}/WEB-INF/jspc" destdir="@{todir}/WEB-INF/classes" debug="on"
+            includeantruntime="no">
+            <classpath path="${jasper.classpath}"/>
+        </javac>
+        </sequential>
+    </macrodef>    
 </project>
