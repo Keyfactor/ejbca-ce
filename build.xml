@@ -118,7 +118,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- Build ALL                                                           -->
   <!-- =================================================================== -->
   <target name="build" depends="compile, apply.war, status.war, webdist.war, ca.jar, log.jar, authorization.jar,
-  hardtoken.jar, keyrecovery.jar, ca.ear, canora.ear, ra.jar, adminweb.war, admin.jar, sampleauth.war">
+  hardtoken.jar, keyrecovery.jar, ca.ear, ra.jar, adminweb.war, admin.jar">
   </target>
 
   <!-- =================================================================== -->
