@@ -421,6 +421,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/ra/*.class"/> 
                 <include name="se/anatom/ejbca/exception/**/*.class"/>
                 <include name="se/anatom/ejbca/ca/exception/**/*.class"/> 
+                <include name="se/anatom/ejbca/ra/exception/**/*.class"/> 
                 <include name="se/anatom/ejbca/ra/raadmin/AdminPreference.class"/>   
                 <include name="se/anatom/ejbca/ra/raadmin/UserDoesntFullfillEndEntityProfile.class"/>   
                 <include name="se/anatom/ejbca/ra/raadmin/IRaAdminSessionHome.class"/>   
