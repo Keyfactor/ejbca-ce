@@ -36,7 +36,7 @@ Added StaticRegistering to CA hard token manager.
 Fixed error during install when CA-cert does not exist in java truststore.
 Fixed weblink to force a browser type when using an unknown browser.
 Added cli method to re-publish a CA and all it's users to ldap.
-Fixed so EMPTY profile is not selectable in for admin groups not authorized to it.
+Fixed so EMPTY profile is not selectable for admin groups not authorized to it.
 
 3.0.4
 -----
