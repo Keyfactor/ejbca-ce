@@ -1,0 +1,173 @@
+Set up a database for EJBCA in JBoss
+====================================
+
+The following databases have been tested with EJBCA:
+
+* PostegreSQL (http://www.postgresql.org/)
+* MySQL (http://www.mysql.com/)
+* Oracle 8i (http://www.oracle.com/)
+* HypersoniqDB (default in JBoss)
+
+NOTE:
+
+The default database HypersoniqDB should be removed completely.
+The section "JBossCX setup" must be edited for this.
+
+NOW ON TO THE HOWTO!
+
+Configuring EJBCA
+-----------------
+
+1. Rename src/ca/META-INF/jaws-<database>.xml to jaws.xml. If no specific 
+jaws-<database>.xml file is supplied the default jaws.xml is used.
+   Make sure src/ca/META-INF/jaws.xml contains entries to set the correct type-
+   mappings for 'b64cert' and 'b64crl' for the database used.
+
+2. Build EJBCA with 'ant' and deploy with 'deploy.sh/cmd'.
+
+Configuring JBoss
+-----------------
+
+The description given here is for JBoss 2.4.x, for JBoss 3.x please consult the 
+official JBoss documentation.
+
+First comes the general description and in the end database specific configurations 
+are given in sections for the specific databases.
+
+Configuration files in JBoss (with Tomcat or Jetty) is located in the jboss/conf/Tomcat 
+or Jetty directory.
+
+1. Install and setup the database.
+
+2. Create a database for EJBCA, eg: ejbca
+
+2. Put the JDBC driver for the database in jboss/lib/ext.
+
+4. Edit jboss.jcml. The JDBC-driver must be inluded and the database set up as DefaultDS.
+Edit the JDBC section to look like one of the sample configuration given below.
+
+6. Edit standardjaws.xml. Change the default type-mapping to match the chosen 
+database (see below). 
+
+7. DONE! Start JBoss. Run all tests with 'runtest.sh/cmd'.
+   Use your favorite database graphic editor to look at the beautiful tables.
+
+MySQL specifics
+---------------
+Jaws configuration file: jaws-mysql.xml
+
+JDBC driver: mm.mysql-<version>-bin.jar.
+
+Download JDBC driver for mySQL from http://mmmysql.sourceforge.net/
+
+The JDBC section should look something like:
+
+     <!-- =======================================================-->
+     <!-- JDBC-->
+     <!-- =======================================================-->
+
+     <mbean code="org.jboss.jdbc.JdbcProvider" name="DefaultDomain:service=JdbcProvider">
+          <attribute name="Drivers">org.gjt.mm.mysql.Driver,org.hsqldb.jdbcDriver</attribute>
+     </mbean>
+
+     <mbean code="org.jboss.jdbc.XADataSourceLoader" name="DefaultDomain:service=XADataSource,name=DefaultDS">
+       <attribute name="PoolName">DefaultDS</attribute>
+       <attribute name="DataSourceClass">org.jboss.pool.jdbc.xa.wrapper.XADataSourceImpl</attribute>
+       <attribute name="Properties"></attribute>
+       <attribute name="URL">jdbc:mysql://localhost/ejbca</attribute>
+       <attribute name="JDBCUser">root</attribute>
+       <attribute name="Password">yourpassword</attribute>
+       <attribute name="MaxSize">10</attribute>
+       <attribute name="MinSize">1</attribute>
+       <attribute name="GCInterval">450000</attribute>
+       <attribute name="GCEnabled">true</attribute>
+       <attribute name="IdleTimeout">900000</attribute>
+       <attribute name="IdleTimeoutEnabled">true</attribute>
+       <attribute name="MaxIdleTimeoutPercent">1.0</attribute>
+     </mbean>
+
+Type mapping:
+     
+     <datasource>java:/DefaultDS</datasource>
+     <type-mapping>mySQL</type-mapping>     
+
+PostgreSQL specifics
+--------------------
+Jaws configuration file: PostgreSQL works woth standard jaws.xml.
+
+JDBC driver: postgresql.jar (or whatever it's called).
+
+If the JDBC-jar is not included, download it from http://jdbc.postgresql.org/.
+
+The JDBC section should look something like:
+
+     <!-- =======================================================-->
+     <!-- JDBC-->
+     <!-- =======================================================-->
+
+     <mbean code="org.jboss.jdbc.JdbcProvider" name="DefaultDomain:service=JdbcProvider">
+          <attribute name="Drivers">org.postgresql.Driver</attribute>
+     </mbean>
+
+     <mbean code="org.jboss.jdbc.XADataSourceLoader" name="DefaultDomain:service=XADataSource,name=DefaultDS">
+       <attribute name="PoolName">DefaultDS</attribute>
+       <attribute name="DataSourceClass">org.jboss.pool.jdbc.xa.wrapper.XADataSourceImpl</attribute>
+       <attribute name="Properties"></attribute>
+       <attribute name="URL">jdbc:postgresql://localhost/ejbca</attribute>
+       <attribute name="JDBCUser">postgres</attribute>
+       <attribute name="Password">yourpassword</attribute>
+       <attribute name="MaxSize">10</attribute>
+       <attribute name="MinSize">1</attribute>
+       <attribute name="GCInterval">450000</attribute>
+       <attribute name="GCEnabled">true</attribute>
+       <attribute name="IdleTimeout">900000</attribute>
+       <attribute name="IdleTimeoutEnabled">true</attribute>
+       <attribute name="MaxIdleTimeoutPercent">1.0</attribute>
+     </mbean>
+
+Type mapping:
+
+     <datasource>java:/DefaultDS</datasource>
+     <type-mapping>PostgreSQL</type-mapping>
+
+Oracle specifics
+----------------
+Jaws configuration file: jaws-oracle.xml
+
+JDBC driver: classes12.zip,
+
+The JDBC section should look something like:
+
+     <!-- =======================================================-->
+     <!-- JDBC-->
+     <!-- =======================================================-->
+
+     <mbean code="org.jboss.jdbc.JdbcProvider" name="DefaultDomain:service=
+     JdbcProvider">
+          <attribute name="Drivers">
+          oracle.jdbc.driver.OracleDriver,org.hsqldb.jdbcDriver</attribute>
+     </mbean>
+
+     <mbean code="org.jboss.jdbc.XADataSourceLoader"
+     name="DefaultDomain:service=XADataSource,name=DefaultDS">
+       <attribute name="PoolName">DefaultDS</attribute>
+       <attribute name="DataSourceClass">
+       org.jboss.pool.jdbc.xa.wrapper.XADataSourceImpl</attribute>
+       <attribute name="Properties"></attribute>
+       <attribute name="URL">jdbc:oracle:thin:@<ip>:<port>:<db></attribute>
+       <attribute name="JDBCUser">user</attribute>
+       <attribute name="Password">yourpassword</attribute>
+       <attribute name="MaxSize">25</attribute>
+       <attribute name="MinSize">1</attribute>
+       <attribute name="IdleTimeout">1800000</attribute>
+       <attribute name="IdleTimeoutEnabled">true</attribute>
+       <attribute name="MaxIdleTimeoutPercent">1.0</attribute>
+     </mbean>
+
+Type Mapping:
+
+     <datasource>java:/DefaultDS</datasource>
+     <type-mapping>Oracle8</type-mapping>
+
+(Configure JBoss to create primary key in db if you like, see
+http://www.jboss.org/online-manual/HTML/ch06s03.html)
