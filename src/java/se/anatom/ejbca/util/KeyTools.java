@@ -39,7 +39,7 @@ import org.bouncycastle.jce.interfaces.*;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.29 2004-11-08 20:10:13 sbailliez Exp $
+ * @version $Id: KeyTools.java,v 1.30 2005-03-04 12:20:23 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -367,7 +367,7 @@ public class KeyTools {
     public static SubjectKeyIdentifier createSubjectKeyId(PublicKey pubKey) {
         try {
             ByteArrayInputStream bIn = new ByteArrayInputStream(pubKey.getEncoded());
-            SubjectPublicKeyInfo info = new SubjectPublicKeyInfo((ASN1Sequence) new DERInputStream(
+            SubjectPublicKeyInfo info = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(
                         bIn).readObject());
 
             return new SubjectKeyIdentifier(info);

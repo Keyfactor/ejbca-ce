@@ -23,14 +23,15 @@ import org.apache.log4j.Logger;
 
 import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.x509.*;
-import org.bouncycastle.jce.*;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.x509.X509V3CertificateGenerator;
 
 
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.70 2005-02-13 11:27:44 anatom Exp $
+ * @version $Id: CertTools.java,v 1.71 2005-03-04 12:20:23 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -650,11 +651,11 @@ public class CertTools {
         // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Mozilla.
         try {
             if (isCA == true) {
-                SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence) new DERInputStream(
+                SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(
                             new ByteArrayInputStream(pubKey.getEncoded())).readObject());
                 SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
 
-                SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) new DERInputStream(
+                SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(
                             new ByteArrayInputStream(pubKey.getEncoded())).readObject());
                 AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
 
@@ -689,8 +690,8 @@ public class CertTools {
         if (extvalue == null) {
             return null;
         }
-        DEROctetString oct = (DEROctetString) (new DERInputStream(new ByteArrayInputStream(extvalue)).readObject());
-        AuthorityKeyIdentifier keyId = new AuthorityKeyIdentifier((ASN1Sequence) new DERInputStream(
+        DEROctetString oct = (DEROctetString) (new ASN1InputStream(new ByteArrayInputStream(extvalue)).readObject());
+        AuthorityKeyIdentifier keyId = new AuthorityKeyIdentifier((ASN1Sequence) new ASN1InputStream(
                     new ByteArrayInputStream(oct.getOctets())).readObject());
         return keyId.getKeyIdentifier();
     } // getAuthorityKeyId
@@ -708,8 +709,8 @@ public class CertTools {
         if (extvalue == null) {
             return null;
         }
-        ASN1OctetString str = ASN1OctetString.getInstance(new DERInputStream(new ByteArrayInputStream(extvalue)).readObject());
-        SubjectKeyIdentifier keyId = SubjectKeyIdentifier.getInstance(new DERInputStream(new ByteArrayInputStream(str.getOctets())).readObject());
+        ASN1OctetString str = ASN1OctetString.getInstance(new ASN1InputStream(new ByteArrayInputStream(extvalue)).readObject());
+        SubjectKeyIdentifier keyId = SubjectKeyIdentifier.getInstance(new ASN1InputStream(new ByteArrayInputStream(str.getOctets())).readObject());
         return keyId.getKeyIdentifier();
     }  // getSubjectKeyId
 
@@ -727,8 +728,8 @@ public class CertTools {
         if (extvalue == null) {
             return null;
         }
-        DEROctetString oct = (DEROctetString) (new DERInputStream(new ByteArrayInputStream(extvalue)).readObject());
-        ASN1Sequence seq = (ASN1Sequence)new DERInputStream(new ByteArrayInputStream(oct.getOctets())).readObject();
+        DEROctetString oct = (DEROctetString) (new ASN1InputStream(new ByteArrayInputStream(extvalue)).readObject());
+        ASN1Sequence seq = (ASN1Sequence)new ASN1InputStream(new ByteArrayInputStream(oct.getOctets())).readObject();
         // Check the size so we don't ArrayIndexOutOfBounds
         if (seq.size() < pos+1) {
             return null;
@@ -798,7 +799,7 @@ public class CertTools {
         Integer no = (Integer) listitem.get(0);
         if (no.intValue() == 0) {
             byte[] altName = (byte[]) listitem.get(1);
-            DERObject oct = (DERObject) (new DERInputStream(new ByteArrayInputStream(altName)).readObject());
+            DERObject oct = (DERObject) (new ASN1InputStream(new ByteArrayInputStream(altName)).readObject());
             ASN1Sequence seq = ASN1Sequence.getInstance(oct);
             return seq;
         }

@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERInputStream;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
@@ -82,7 +82,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.37 2005-02-11 13:12:28 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.38 2005-03-04 12:20:35 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -215,7 +215,7 @@ public class OCSPServlet extends HttpServlet {
                 //m_log.debug("Found extension AcceptableResponses");
                 ASN1OctetString oct = ext.getValue();
                 try {
-                    ASN1Sequence seq = ASN1Sequence.getInstance((ASN1Sequence) new DERInputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
+                    ASN1Sequence seq = ASN1Sequence.getInstance((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
                     Enumeration en = seq.getObjects();
                     boolean supportsResponseType = false;
                     while (en.hasMoreElements()) {

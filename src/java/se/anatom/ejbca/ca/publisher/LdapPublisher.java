@@ -33,7 +33,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERInputStream;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERTaggedObject;
 
@@ -58,7 +58,7 @@ import com.novell.ldap.LDAPModificationSet;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.13 2005-01-25 10:16:33 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.14 2005-03-04 12:20:36 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher{
 	 	
@@ -171,9 +171,9 @@ public class LdapPublisher extends BasePublisher{
             try {
                 // Get extension value
                 ByteArrayInputStream bIn = new ByteArrayInputStream(subjAltNameValue);
-                DEROctetString asn1 = (DEROctetString) new DERInputStream(bIn).readObject();
+                DEROctetString asn1 = (DEROctetString) new ASN1InputStream(bIn).readObject();
                 ByteArrayInputStream bIn1 = new ByteArrayInputStream(asn1.getOctets());
-                ASN1Sequence san = (ASN1Sequence) new DERInputStream(bIn1).readObject();
+                ASN1Sequence san = (ASN1Sequence) new ASN1InputStream(bIn1).readObject();
 
                 for (int i = 0; i < san.size(); i++) {
                     DERTaggedObject gn = (DERTaggedObject) san.getObjectAt(i);

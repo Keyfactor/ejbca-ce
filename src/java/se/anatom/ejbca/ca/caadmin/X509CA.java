@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEREncodableVector;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERInputStream;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
@@ -72,12 +72,12 @@ import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.jce.PKCS7SignedData;
 import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.jce.X509V2CRLGenerator;
-import org.bouncycastle.jce.X509V3CertificateGenerator;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
 import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.util.encoders.Hex;
+import org.bouncycastle.x509.X509V2CRLGenerator;
+import org.bouncycastle.x509.X509V3CertificateGenerator;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.auth.UserAuthData;
@@ -101,7 +101,7 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.30 2004-11-16 21:55:16 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.31 2005-03-04 12:20:36 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -316,7 +316,7 @@ public class X509CA extends CA implements Serializable {
         if (certProfile.getUseSubjectKeyIdentifier() == true) {
             SubjectPublicKeyInfo spki =
                 new SubjectPublicKeyInfo(
-                    (ASN1Sequence) new DERInputStream(new ByteArrayInputStream(publicKey.getEncoded())).readObject());
+                    (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(publicKey.getEncoded())).readObject());
             SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
             certgen.addExtension(
                 X509Extensions.SubjectKeyIdentifier.getId(),
@@ -328,7 +328,7 @@ public class X509CA extends CA implements Serializable {
             try{
               apki =
                 new SubjectPublicKeyInfo(
-                    (ASN1Sequence) new DERInputStream(new ByteArrayInputStream(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN).getEncoded())).readObject());
+                    (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN).getEncoded())).readObject());
              }catch(CATokenOfflineException e){
                  log.debug("X509CA : Setting STATUS OFFLINE " + this.getName());    
                  this.setStatus(SecConst.CA_OFFLINE);
@@ -345,12 +345,12 @@ public class X509CA extends CA implements Serializable {
             String email = CertTools.getEmailFromDN(altName);
             DEREncodableVector vec = new DEREncodableVector();
             if (email != null) {
-                GeneralName gn = new GeneralName(new DERIA5String(email), 1);
+                GeneralName gn = new GeneralName(1, new DERIA5String(email));
                 vec.add(gn);
             }
             String dns = CertTools.getPartFromDN(altName, CertTools.DNS);
             if (dns != null) {
-                GeneralName gn = new GeneralName(new DERIA5String(dns), 2);
+                GeneralName gn = new GeneralName(2, new DERIA5String(dns));
                 vec.add(gn);
             }
             String uri = CertTools.getPartFromDN(altName, CertTools.URI);
@@ -358,13 +358,13 @@ public class X509CA extends CA implements Serializable {
                 uri  = CertTools.getPartFromDN(altName, CertTools.URI1);
             }
             if (uri != null) {
-                GeneralName gn = new GeneralName(new DERIA5String(uri), 6);
+                GeneralName gn = new GeneralName(6, new DERIA5String(uri));
                 vec.add(gn);
             }
             String ipstr = CertTools.getPartFromDN(altName, CertTools.IPADDR);
             if (ipstr != null) {
                 byte[] ipoctets = StringTools.ipStringToOctets(ipstr);
-                GeneralName gn = new GeneralName(new DEROctetString(ipoctets), 7);
+                GeneralName gn = new GeneralName(7, new DEROctetString(ipoctets));
                 vec.add(gn);
             }
             String upn =  CertTools.getPartFromDN(altName, CertTools.UPN);
@@ -411,7 +411,7 @@ public class X509CA extends CA implements Serializable {
             while (tokenizer.hasMoreTokens()) {
                 // 6 is URI
                 String uri = tokenizer.nextToken();
-                GeneralName gn = new GeneralName(new DERIA5String(uri), 6);
+                GeneralName gn = new GeneralName(6, new DERIA5String(uri));
                 log.debug("Added CRL distpoint: "+uri);
                 ASN1EncodableVector vec = new ASN1EncodableVector();
                 vec.add(gn);
@@ -429,7 +429,7 @@ public class X509CA extends CA implements Serializable {
          if (certProfile.getUseOCSPServiceLocator() == true) {
              String ocspUrl = certProfile.getOCSPServiceLocatorURI();
              // OCSP access location is a URL (GeneralName no 6)
-             GeneralName ocspLocation = new GeneralName(new DERIA5String(ocspUrl), 6);
+             GeneralName ocspLocation = new GeneralName(6, new DERIA5String(ocspUrl));
              certgen.addExtension(X509Extensions.AuthorityInfoAccess.getId(),
                  false, new AuthorityInformationAccess(X509ObjectIdentifiers.ocspAccessMethod, ocspLocation));
          }
@@ -483,7 +483,7 @@ public class X509CA extends CA implements Serializable {
 
         // Authority key identifier
         if (getUseAuthorityKeyIdentifier() == true) {
-            SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence)new DERInputStream(
+            SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence)new ASN1InputStream(
                 new ByteArrayInputStream(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CRLSIGN).getEncoded())).readObject());
             AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
             crlgen.addExtension(X509Extensions.AuthorityKeyIdentifier.getId(), getAuthorityKeyIdentifierCritical(), aki);

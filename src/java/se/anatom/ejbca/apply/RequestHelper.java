@@ -94,7 +94,7 @@ public class RequestHelper {
             return null;
         }
 
-        DERInputStream in = new DERInputStream(new ByteArrayInputStream(buffer));
+        ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(buffer));
         ASN1Sequence spkac = (ASN1Sequence) in.readObject();
         in.close();
 

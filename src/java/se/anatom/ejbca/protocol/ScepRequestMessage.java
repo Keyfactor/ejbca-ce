@@ -39,7 +39,6 @@ import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERInputStream;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -67,7 +66,7 @@ import se.anatom.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.36 2005-02-11 13:12:29 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.37 2005-03-04 12:20:35 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = -235623330828902051L;
@@ -304,7 +303,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
             break;
         }
 
-        DERObject derobj = new DERInputStream(new ByteArrayInputStream(decBytes)).readObject();
+        DERObject derobj = new ASN1InputStream(new ByteArrayInputStream(decBytes)).readObject();
         if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
             ASN1Sequence seq = (ASN1Sequence) derobj;
             pkcs10 = new PKCS10CertificationRequest(seq);
