@@ -18,11 +18,11 @@ import se.anatom.ejbca.webdist.rainterface.Profile;
 
 /** Entity bean should not be used directly, use though Session beans.
  *
- * Entity Bean representing ra admin  user preference.
+ * Entity Bean representing ra admin profile group.
  * Information stored:
  * <pre>
- * Id  (BigInteger SerialNumber)
- * UserPreference
+ * Profile group name
+ * Profiles
  * </pre>
  *
  **/
@@ -31,7 +31,7 @@ public abstract class ProfileGroupDataBean implements javax.ejb.EntityBean {
 
 
 
-    private static Category log = Category.getInstance(UserPreferencesDataBean.class.getName() );
+    private static Category log = Category.getInstance(ProfileGroupDataBean.class.getName() );
 
 
     protected EntityContext  ctx;

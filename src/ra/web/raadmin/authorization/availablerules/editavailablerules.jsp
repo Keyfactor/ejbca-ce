@@ -1,6 +1,6 @@
 <%@page contentType="text/html"%>
 <%@page errorPage="/errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration
-               ,se.anatom.ejbca.webdist.ejbcaathorization.EjbcaAthorization, java.util.Vector"%>
+               ,se.anatom.ejbca.webdist.webconfiguration.AuthorizationDataHandler, java.util.Vector"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -30,6 +30,7 @@
   // Initialize environment
   GlobalConfiguration globalconfiguration =ejbcawebbean.initialize(request); 
   String THIS_FILENAME            =  globalconfiguration .getAuthorizationPath()  + "/availablerules/editavailablerules.jsp";
+  AuthorizationDataHandler adh    = ejbcawebbean.getAuthorizationDataHandler();
 
   if(request.getParameter(ACTION) != null){
     if( request.getParameter(BUTTON_ADD_AVAILABLERULE) != null ){
@@ -56,7 +57,7 @@
  
            if(indexes.size()==0){
              // Add a new basic rule
-             ejbcawebbean.addAvailableAccessRule("/" + newrule);
+             adh.addAvailableAccessRule("/" + newrule);
            }
            else{
              Vector newrules = new Vector();
@@ -67,7 +68,7 @@
                  newrules.addElement(selecteddir + "/" + newrule);
                }
            }
-           ejbcawebbean.addAvailableAccessRules(newrules);
+           adh.addAvailableAccessRules(newrules);
          }
        }
       }
@@ -94,7 +95,7 @@
              removerules.addElement(selecteddir);
            }
          }
-         ejbcawebbean.removeAvailableAccessRules(removerules); 
+         adh.removeAvailableAccessRules(removerules); 
       }
     }
   } 
@@ -126,8 +127,8 @@
 
    // Generate Html file.
    String[] dummy = {};
-   String[] availableaccessrules = (String[]) ejbcawebbean.getAvailableAccessRules().toArray(dummy);
-   if(recordnumber > availableaccessrules.length){
+   String[] availableaccessrules = (String[]) adh.getAvailableAccessRules().toArray(dummy);
+   if(recordnumber >= availableaccessrules.length){
      recordnumber = availableaccessrules.length;
      oldrecordnumber = recordnumber - ejbcawebbean.getEntriesPerPage();
      if(oldrecordnumber < 0) oldrecordnumber =0;
@@ -235,7 +236,7 @@
 <%
 
    // Include Footer 
-   String footurl =   globalconfiguration .getFootBanner(); %>
+   String footurl =   globalconfiguration.getFootBanner(); %>
    
   <jsp:include page="<%= footurl %>" />
 

@@ -7,7 +7,7 @@
     * author  Philip Vendil */ %>
 
 <% 
-  String[] usergroups = ejbcaauthorization.getUserGroupnames(); 
+  String[] usergroups = adh.getUserGroupnames(); 
 %>
 
 

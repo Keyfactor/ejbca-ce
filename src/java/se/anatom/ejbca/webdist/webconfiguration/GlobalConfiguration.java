@@ -27,13 +27,15 @@ public class GlobalConfiguration implements java.io.Serializable {
   
     // Default Values
     
-    private final  String[] OPENDIRECTORIES        = {"/","/banners","/images","/help","/themes","/languages"};
-    private final  String[] HIDDENDIRECTORIES      = {"/banners","/images","/help","/themes","/languages","/WEB-INF"};
+    private final  String[] OPENDIRECTORIES        = {"/", "/banners","/images","/help","/themes","/languages"};
     private final  String[] POSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};
     
-    private final String[] DEFAULT_AVAILABLE_RULES = {"/authorization", "/authorization/availablerules", 
-                                                      "/ca", "/ca/createcrl", "/ca/getcrl", "/config", 
-                                                      "/ra", "/ra/profiles"};
+    private final  String[]  DEFAULT_AVAILABLE_RULES = {"/", "/authorization", "/authorization/availablerules", 
+                                                       "/ca", "/ca/createcrl", "/ca/getcrl", "/config", 
+                                                       "/ra", "/ra/editprofiles"};
+                                                      
+    private final String[]  PROFILEGROUP_ENDINGS    = {"/view", "/create", "/edit", "/delete", "/revoke"};    
+    private final String    PROFILEGROUPPREFIX      = "/profilegroups";
    
     private final  String   HEADBANNER             = "head_banner.jsp";
     private final  String   FOOTBANNER             = "foot_banner.jsp";
@@ -56,26 +58,16 @@ public class GlobalConfiguration implements java.io.Serializable {
        defaultuserpreference = new UserPreference();
        config = new HashMap();
  
-/*      InitialContext ictx = new InitialContext();
+       InitialContext ictx = new InitialContext();
        Context myenv = (Context) ictx.lookup("java:comp/env");            
        String tempbaseurl = ((String) myenv.lookup("BASEURL")).trim();
-       String tempdocroot = ((String) myenv.lookup("DOCUMENTROOT")).trim();
        String tempraadminpath =  ((String) myenv.lookup("RAADMINDIRECTORY")).trim();
        String tempavailablelanguages = ((String) myenv.lookup("AVAILABLELANGUAGES")).trim();
-       String tempavailablethemes = ((String) myenv.lookup("AVAILABLETHEMES")).trim(); */
-       
-       String tempbaseurl = "https://localhost:8443/";
-       String tempdocroot = "f:/cvs/ejbca";
-       String tempraadminpath =  "raadmin/";
-       String tempavailablelanguages = "EN, SE";
-       String tempavailablethemes = "default_theme.css, second_theme.css";
-       
+       String tempavailablethemes = ((String) myenv.lookup("AVAILABLETHEMES")).trim(); 
+              
        if(!tempbaseurl.endsWith("/")){
          tempbaseurl = tempbaseurl + "/";   // Remove ending '/'
        }
-       if(tempdocroot.endsWith("/")){
-         tempdocroot = tempdocroot.substring(0,tempdocroot.length()-1);   // Remove ending '/'
-       }    
        if(tempraadminpath == null)
          tempraadminpath = "";
        if(!tempraadminpath.endsWith("/") && !tempraadminpath.equals("")){
@@ -87,7 +79,6 @@ public class GlobalConfiguration implements java.io.Serializable {
        
        
        setBaseUrl(tempbaseurl);
-       setDocumentRoot(tempdocroot + "/src/ra/web/raadmin/"); 
        config.put(P_RAADMINPATH,tempraadminpath);
        config.put(P_AVAILABLELANGUAGES,tempavailablelanguages);
        config.put(P_AVAILABLETHEMES,tempavailablethemes);
@@ -95,20 +86,23 @@ public class GlobalConfiguration implements java.io.Serializable {
        // Add Ra Admin Path to the default open and hidden directories strings.
        String tempraadminpath2 = tempraadminpath;
        String[] tempopendirectories = new String[OPENDIRECTORIES.length];
-       String[] temphiddendirectories = new String[HIDDENDIRECTORIES.length];
-       
+       String[] tempdefaultrules = new String[DEFAULT_AVAILABLE_RULES.length+1];
+        
        if(!tempraadminpath.equals(""))
          tempraadminpath2 = "/" + tempraadminpath.substring(0,tempraadminpath.length() - 1);
      
        for(int i=0; i < OPENDIRECTORIES.length ; i++){
           tempopendirectories[i] = tempraadminpath2 + OPENDIRECTORIES[i]; 
        }
-       for(int i=0; i < HIDDENDIRECTORIES.length ; i++){
-          temphiddendirectories[i] = tempraadminpath2 + HIDDENDIRECTORIES[i];            
-       } 
+       for(int i=0; i < DEFAULT_AVAILABLE_RULES.length ; i++){
+          tempdefaultrules[i] = tempraadminpath2 + DEFAULT_AVAILABLE_RULES[i]; 
+       }
+       tempdefaultrules[DEFAULT_AVAILABLE_RULES.length]="/";
        
        config.put(P_OPENDIRECTORIES,tempopendirectories);
-       config.put(P_HIDDENDIRECTORIES,temphiddendirectories);
+       config.put(P_DEFAULT_AVAILABLE_RULES,tempdefaultrules);
+       config.put(P_PROFILEGROUP_ENDINGS,PROFILEGROUP_ENDINGS);
+       config.put(P_PROFILEGROUPPREFIX,PROFILEGROUPPREFIX);
        
        setEjbcaTitle(EJBCATITLE);
        
@@ -137,17 +131,9 @@ public class GlobalConfiguration implements java.io.Serializable {
     }
     
     // Configurable fields.
-    public   void setBasicWebConfiguration(String burl, String docroot,
-                                                String opendirs,
-                                                String hiddendirs){
+    public   void setBasicWebConfiguration(String burl, String opendirs){
         setBaseUrl(burl);
-        setDocumentRoot(docroot);
-        setOpenDirectories(opendirs);
-        setOpenDirectories(hiddendirs);      
-    }
-    
-    public   void setDefaultPreference(String todo){
-         
+        setOpenDirectories(opendirs);   
     }
     
     
@@ -162,16 +148,6 @@ public class GlobalConfiguration implements java.io.Serializable {
       }
     }
     
-    public   String getDocumentRoot() {return (String) config.get(P_DOCUMENTROOT);}
-    public   void setDocumentRoot(String docroot){    
-       // Addtrailing '/' if it doesn't exists.  
-      if(!docroot.endsWith("/")){
-        config.put(P_DOCUMENTROOT,docroot + "/");    
-      }
-      else{
-        config.put(P_DOCUMENTROOT,docroot);  
-      }
-    }   
     
     public   String getRaAdminPath(){return (String) config.get(P_RAADMINPATH);}
 
@@ -188,7 +164,14 @@ public class GlobalConfiguration implements java.io.Serializable {
       return returnvalue;
     }
     
-    public String[] getDefaultAvailableDirectories(){return DEFAULT_AVAILABLE_RULES;}
+    /** Returns the default available directories in the authorization module. */
+    public String[] getDefaultAvailableDirectories(){return (String[]) config.get(P_DEFAULT_AVAILABLE_RULES);}
+    
+    /** Returns authorization rules applied to profile groups */
+    public String[] getProfileGroupEndings(){return (String[]) config.get(P_PROFILEGROUP_ENDINGS);}
+    
+    /** Gives the directory profilegroups are placed in auhtorization module. */
+    public String getProfileGroupPrefix(){return (String) config.get(P_PROFILEGROUPPREFIX);} 
     
     /** The opendirectories parameter is a comma separated string containing the 
         open directories*/
@@ -209,39 +192,7 @@ public class GlobalConfiguration implements java.io.Serializable {
       
       config.put(P_OPENDIRECTORIES,dirs);
     }
-
-    public   String[] getHiddenDirectories() {return (String[]) config.get(P_HIDDENDIRECTORIES);}
-    // Returns all opendirectories as a comma-separated string.
-    public   String getHiddenDirectoriesAsString(){
-      String[] hiddendirectories = (String[]) config.get(P_HIDDENDIRECTORIES);
-      String returnvalue = "";
-      for(int i=0; i < hiddendirectories.length -1; i++){           
-         returnvalue += hiddendirectories[i] + ", ";   
-      }
-      returnvalue+= hiddendirectories[hiddendirectories.length -1];      
-      return returnvalue;
-    }
-    
-    /** The hiddendirectories parameter is a comma separated string containing the 
-        hidden directories*/
-    public   void setHiddenDirectories(String hiddendirs){
-      hiddendirs=hiddendirs.trim();  
-      if(hiddendirs.endsWith(",")){
-        hiddendirs=hiddendirs.substring(0,hiddendirs.length()-1);   
-      }
-      String[] dirs = hiddendirs.split(",");
-    
-      for(int i=0; i < dirs.length; i++){
-         dirs[i]=dirs[i].trim();   
-         // Add a heading "/" if it doesn't exists. 
-         if(!dirs[i].startsWith("/")){
-           dirs[i]= "/" + dirs[i];   
-         }
-      }
-      
-      config.put(P_HIDDENDIRECTORIES,dirs);
-    }
-    
+        
      /** Checks the themes paht for css files and returns an array of filenames
      *  without the ".css" ending. */
     
@@ -330,14 +281,16 @@ public class GlobalConfiguration implements java.io.Serializable {
     // Private constants
       // Basic configuration
     private final   String P_BASEURL            = "baseurl";
-    private final   String P_DOCUMENTROOT       = "documentroot";
     private final   String P_RAADMINPATH        = "raadminpath";
     private final   String P_AVAILABLELANGUAGES = "availablelanguages";
     private final   String P_AVAILABLETHEMES    = "availablethemes";
     
     private final   String P_OPENDIRECTORIES    = "opendirectories"; 
-    private final   String P_HIDDENDIRECTORIES  = "hiddendirectories"; 
-        
+    
+    private final   String P_DEFAULT_AVAILABLE_RULES = "defaultavailablerules";
+    private final   String P_PROFILEGROUP_ENDINGS    = "profilegroupendings";
+    private final   String P_PROFILEGROUPPREFIX      = "profilegroupprefix";
+    
       // Banner files.
     private final   String P_HEADBANNER         = "headbanner";  
     private final   String P_FOOTBANNER         = "footbanner";   
@@ -349,7 +302,7 @@ public class GlobalConfiguration implements java.io.Serializable {
     private final   String P_AUTHORIZATION_PATH  = "authorization_path";   
     private final   String P_BANNERS_PATH        = "banners_path";
     private final   String P_CA_PATH             = "ca_path";
-    private final   String P_CONFIG_PATH         = "config_path"; 
+    private final   String P_CONFIG_PATH         = "config_path";   
     private final   String P_HELP_PATH           = "help_path"; 
     private final   String P_IMAGES_PATH         = "images_path";
     private final   String P_LANGUAGE_PATH       = "language_path";

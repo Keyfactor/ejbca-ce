@@ -1,13 +1,7 @@
 package se.anatom.ejbca.ra.authorization;
 
-
-import java.rmi.RemoteException;
-
-
 /**
-
- * For docs, see GlobalWebConfigurationDataBean
-
+ * For docs, see AvailableAccessRulesDataBean
  **/
 
 public interface AvailableAccessRulesDataLocal extends javax.ejb.EJBLocalObject {

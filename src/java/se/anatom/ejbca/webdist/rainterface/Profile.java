@@ -14,8 +14,9 @@ package se.anatom.ejbca.webdist.rainterface;
 public class Profile implements java.io.Serializable, Cloneable {
     
     // Public constants
-    public static final int VALUE = 0;    
+    public static final int VALUE      = 0;    
     public static final int ISREQUIRED = 1;
+    public static final int CHANGEABLE = 2;
     
     public static final int USERNAME          = 0;
     public static final int PASSWORD          = 1;
@@ -43,12 +44,19 @@ public class Profile implements java.io.Serializable, Cloneable {
     /** Creates a new instance of Profile */
     public Profile() {
       // initialize profile data  
-      this. profiledata = new String[NUMBEROFPARAMETERS][2];
+      this. profiledata = new String[NUMBEROFPARAMETERS][3];
       
       for(int i=0; i < NUMBEROFPARAMETERS; i++){
         profiledata[i][VALUE]= "";          
         profiledata[i][ISREQUIRED]= FALSE;  
+        profiledata[i][CHANGEABLE]= TRUE;
       }
+      // Set default required fields.
+      profiledata[USERNAME][ISREQUIRED]=TRUE;
+      profiledata[PASSWORD][ISREQUIRED]=TRUE;
+      profiledata[COMMONNAME][ISREQUIRED]=TRUE;    
+      profiledata[TYPE_ENDUSER][VALUE]=TRUE;
+      profiledata[TYPE_ENDUSER][ISREQUIRED]=TRUE;     
     }
     
     public Profile(String[][] values){
@@ -62,26 +70,55 @@ public class Profile implements java.io.Serializable, Cloneable {
       for(int i=0; i < values.length ; i++){
         profiledata[i][VALUE] = values[i][VALUE];
         profiledata[i][ISREQUIRED] = values[i][ISREQUIRED];
+        profiledata[i][CHANGEABLE] = values[i][CHANGEABLE];
       }
     }
     
     /* method that returns all profile data in strign array format */
     public String[][] getAllValues(){
-      String[][] returndata = new String[NUMBEROFPARAMETERS][2];
+      String[][] returndata = new String[NUMBEROFPARAMETERS][3];
       for(int i = 0; i < profiledata.length; i++){
          returndata[i][VALUE] = new String(profiledata[i][VALUE]); 
-         returndata[i][ISREQUIRED] = new String(profiledata[i][ISREQUIRED]);         
+         returndata[i][ISREQUIRED] = new String(profiledata[i][ISREQUIRED]);  
+         returndata[i][CHANGEABLE] = new String(profiledata[i][CHANGEABLE]);  
       }
       return returndata;   
     }
     
     public void setValue(int parameter, String value) {
-      this.profiledata[parameter][VALUE]= value;          
+       if(value !=null){
+          value=value.trim(); 
+          this.profiledata[parameter][VALUE]=value; 
+       }else{
+          this.profiledata[parameter][VALUE]=""; 
+       }         
     }
     
     public void setRequired(int parameter, String isrequired) {
-      this.profiledata[parameter][ISREQUIRED]= isrequired;  
+      if(isrequired != null){
+         if(isrequired.equals(TRUE)){
+           this.profiledata[parameter][ISREQUIRED]=Profile.TRUE;                  
+         }
+         else{
+           this.profiledata[parameter][ISREQUIRED]=Profile.FALSE; 
+         }
+      }else{
+         this.profiledata[parameter][ISREQUIRED]=Profile.FALSE; 
+      }
     }
+    
+    public void setChangeable(int parameter, String changeable) {
+      if(changeable != null){
+         if(changeable.equals(TRUE)){
+           this.profiledata[parameter][CHANGEABLE]=Profile.TRUE;                  
+         }
+         else{
+           this.profiledata[parameter][CHANGEABLE]=Profile.FALSE; 
+         }
+      }else{
+         this.profiledata[parameter][CHANGEABLE]=Profile.FALSE; 
+      }
+    }    
     
     public void setUsedInEnrollment(boolean used) {
       this.usedinenrollment=used;  
@@ -93,6 +130,10 @@ public class Profile implements java.io.Serializable, Cloneable {
     
     public boolean isRequried(int parameter) {
       return this.profiledata[parameter][ISREQUIRED].equals(TRUE); 
+    } 
+    
+    public boolean isChangeable(int parameter){
+      return this.profiledata[parameter][CHANGEABLE].equals(TRUE);       
     }
     
     public boolean isUsedInEnrollment() {

@@ -24,7 +24,7 @@ import se.anatom.ejbca.webdist.rainterface.Profile;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.5 2002-06-27 10:57:34 herrvendil Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.6 2002-07-04 13:03:18 herrvendil Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
@@ -63,7 +63,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     } //getConnection
 
 
-    /**
+    /** 
      * Loads the global configuration from the database.
      *
      * @throws EJBException if a communication or other error occurs.
@@ -73,12 +73,12 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         GlobalConfiguration ret=null;
         try{
           GlobalWebConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey("0");
-          ret = gcdata.getGlobalConfiguration();
-        } catch (javax.ejb.FinderException fe) {
+          if(gcdata!=null){
+            ret = gcdata.getGlobalConfiguration();
+          }
+        }catch (javax.ejb.FinderException fe) {
              // Create new configuration
              ret = null;
-        } catch(Exception e){
-          throw new EJBException(e);
         }
         debug("<loadGlobalConfiguration()");
         return ret;
@@ -100,8 +100,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
            // Global configuration doesn't yet exists. 
            try{ 
              GlobalWebConfigurationDataLocal data1= globalconfigurationhome.create(pk,globalconfiguration);     
-           } catch(Exception e){
-             throw new EJBException(e);                
+           } catch(CreateException e){         
            }
         }         
         debug("<saveGlobalConfiguration()");
@@ -158,24 +157,18 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
     public boolean changeUserPreference(BigInteger serialnumber, UserPreference userpreference){
        debug(">changeUserPreference(serial : " + serialnumber + ")");
-       info("Changing userpreference" + userpreference.getPreferedLanguage());
        boolean ret = false;
         try {
             UserPreferencesDataLocal updata = userpreferenceshome.findByPrimaryKey(serialnumber);
-                   info("Old userpreference foud" + updata.getUserPreference().getPreferedLanguage());
             userpreferenceshome.remove(serialnumber);
             try{ 
-                UserPreferencesDataLocal updata2 = userpreferenceshome.findByPrimaryKey(serialnumber);
-                 info("Old userpreference not removed" );   
-            }  catch (javax.ejb.FinderException fe) {  
-               info("Old userpreference removed" );   
+                UserPreferencesDataLocal updata2 = userpreferenceshome.findByPrimaryKey(serialnumber);  
+            }  catch (javax.ejb.FinderException fe) {    
             }                  
             updata= userpreferenceshome.create(serialnumber,userpreference);
             try{ 
                 UserPreferencesDataLocal updata3 = userpreferenceshome.findByPrimaryKey(serialnumber);
-                  info("New userpreference  found : " +  updata3.getUserPreference().getPreferedLanguage() );  
             }  catch (javax.ejb.FinderException fe) {  
-                                info("New userpreference not found" );  
             }      
             ret = true;
         } catch (javax.ejb.FinderException fe) {
@@ -304,7 +297,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
           returnvalue=false;
         }
       }
-      if(returnvalue){ // Creat new group and delete old one.
+      if(returnvalue){ // Create new group and delete old one.
         try{
           ProfileGroupDataLocal pgd = profilegroupdatahome.findByPrimaryKey(oldprofilegroupname);
           TreeMap profiledatas = pgd.getProfiles();

@@ -281,7 +281,7 @@
          String serialnumber = oldactionvalue;
          if(serialnumber != null){
            if(!serialnumber.trim().equals("")){
-             users = rabean.filterByRevokedCertificates(serialnumber.trim(),record,size);
+             users = rabean.filterByCertificateSerialNumber(serialnumber.trim(),record,size);
          }
        }
      }else{
@@ -324,7 +324,7 @@
                  serialnumber=serialnumber.trim();
                  if(!serialnumber.equals("")){
                    record=0;   
-                   users = rabean.filterByRevokedCertificates(serialnumber,record,size);
+                   users = rabean.filterByCertificateSerialNumber(serialnumber,record,size);
                    oldaction=OLD_ACTION_ISREVOKED;
                    oldactionvalue=serialnumber;  
                  }

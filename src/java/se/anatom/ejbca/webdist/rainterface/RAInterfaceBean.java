@@ -41,14 +41,14 @@ import se.anatom.ejbca.util.Hex;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.6 2002-06-27 12:14:03 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.7 2002-07-04 13:03:18 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
     // Public constants.
 
     /** Creates new RaInterfaceBean */
-    public RAInterfaceBean() throws  IOException, NamingException, FinderException, CreateException  {
+    public RAInterfaceBean() throws  IOException, NamingException, FinderException, CreateException  {  
       users = new UsersView();
       this.profiles = new ProfileDataHandler();
 
@@ -207,7 +207,7 @@ public class RAInterfaceBean {
     }
 
     /* Method that checks if a certificate serialnumber is revoked and returns the user(s), else a null value. */
-    public String[][] filterByRevokedCertificates(String serialnumber, int index, int size) throws RemoteException,
+    public String[][] filterByCertificateSerialNumber(String serialnumber, int index, int size) throws RemoteException,
                                                                                                    FinderException,
                                                                                                    NamingException,
                                                                                                    NumberFormatException,
@@ -222,6 +222,7 @@ public class RAInterfaceBean {
         certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
         certificatesession = certificatesessionhome.create();
       }
+      serialnumber = serialnumber.replaceAll(" ","");
       Collection certs =certificatesession.findCertificatesBySerno(new BigInteger(serialnumber,16));
       Vector uservector = new Vector();
       String[][] returnval = null;

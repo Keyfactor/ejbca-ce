@@ -106,11 +106,13 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
       if(userdata[COUNTRY]!= null){
         if(!userdata[COUNTRY].trim().equals(""))
           dn = dn +", C="+ userdata[COUNTRY].toUpperCase();     
-      }      
-      if(dn.charAt(0) == ','){
-        dn=dn.substring(1);
+      } 
+      if(dn.length()>0){
+        if(dn.charAt(0) == ','){
+          dn=dn.substring(1);
+        }
       }
-      
+        
       UserAdminData returnuser = new UserAdminData(userdata[USERNAME],dn,userdata[EMAIL], 
                                                    Integer.parseInt(userdata[STATUS]), getHexType());
       returnuser.setPassword(userdata[PASSWORD]);

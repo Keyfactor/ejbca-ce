@@ -94,6 +94,14 @@ function viewcert(){
      >
     <input type="submit" name="<%=BUTTON_FIND %>" value="<%= ejbcawebbean.getText("FIND") %>">
   </p>
+  <p><%= ejbcawebbean.getText("ORIFCERTIFICATSERIAL") %>
+    <input type="text" name="<%=TEXTFIELD_SERIALNUMBER %>" size="33" maxlength="255" 
+     <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_ISREVOKED))
+          out.write("value='"+oldactionvalue+"'"); %>
+     >
+    <input type="submit" name="<%=BUTTON_ISREVOKED %>" value="<%= ejbcawebbean.getText("FIND") %>" 
+           onclick='return checkfieldforhexadecimalnumbers("document.form.<%=TEXTFIELD_SERIALNUMBER %>","<%= ejbcawebbean.getText("ONLYHEXNUMBERS") %>")'>
+  </p>
   <p><%= ejbcawebbean.getText("ORWITHSTATUS") %>
     <select name="<%=SELECT_LIST_STATUS %>">
       <option value=''>--</option> 
@@ -127,14 +135,6 @@ function viewcert(){
               value='<%= Integer.toString(UserData.STATUS_HISTORICAL) %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
     </select>
     <input type="submit" name="<%=BUTTON_LIST %>" value="<%= ejbcawebbean.getText("LIST") %>">
-  </p>
-  <p><%= ejbcawebbean.getText("ORIFCERTIFICATSERIAL") %>
-    <input type="text" name="<%=TEXTFIELD_SERIALNUMBER %>" size="40" maxlength="255" 
-     <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_ISREVOKED))
-          out.write("value='"+oldactionvalue+"'"); %>
-     >
-    <input type="submit" name="<%=BUTTON_ISREVOKED %>" value="<%= ejbcawebbean.getText("ISREVOKED") %>" 
-           onclick='return checkfieldforhexadecimalnumbers("document.form.<%=TEXTFIELD_SERIALNUMBER %>","<%= ejbcawebbean.getText("ONLYHEXNUMBERS") %>")'>
   </p>
   <p><%= ejbcawebbean.getText("ORLISTEXPIRING") %>
     <input type="text" name="<%=TEXTFIELD_DAYS %>" size="3" maxlength="5" 
@@ -334,8 +334,8 @@ function viewcert(){
          <option value='<%= Integer.toString(UserData.STATUS_FAILED) %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>
          <option value='<%= Integer.toString(UserData.STATUS_INITIALIZED) %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>
          <option value='<%= Integer.toString(UserData.STATUS_INPROCESS) %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>
-         <option value='<%= Integer.toString(UserData.STATUS_GENERATED) %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>
-         <option value='<%= Integer.toString(UserData.STATUS_REVOKED) %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>
+        <!--  <option value='<%= Integer.toString(UserData.STATUS_GENERATED) %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>  -->
+        <!--  <option value='<%= Integer.toString(UserData.STATUS_REVOKED) %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>  -->
          <option value='<%= Integer.toString(UserData.STATUS_HISTORICAL) %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
         </select>
       </td>

@@ -52,12 +52,6 @@
   </login-config>
 
   <env-entry>
-    <description>The ejbca dokument root</description>
-    <env-entry-name>DOCUMENTROOT</env-entry-name>
-    <env-entry-value>f:/cvs/ejbca</env-entry-value>
-    <env-entry-type>java.lang.String</env-entry-type>
-  </env-entry>
-  <env-entry>
     <description>Defines the administrationserver baseurl</description>
     <env-entry-name>BASEURL</env-entry-name>
     <env-entry-value>https://localhost:8443/</env-entry-value>

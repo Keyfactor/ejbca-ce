@@ -20,13 +20,10 @@
   static final String BUTTON_CANCEL                          = "buttoncancel";
 
 // Textfields used in webconfiguration.jsp
-  static final String TEXTFIELD_BASEURL                      = "textfieldbaseurl";
-  static final String TEXTFIELD_DOCUMENTROOT                 = "textfielddocumentroot";
   static final String TEXTFIELD_TITLE                        = "textfieldtitle";
   static final String TEXTFIELD_HEADBANNER                   = "textfieldheadbanner";
   static final String TEXTFIELD_FOOTBANNER                   = "textfieldfootbanner";
   static final String TEXTFIELD_OPENDIRECTORIES              = "textfieldopendirectories";
-  static final String TEXTFIELD_HIDDENDIRECTORIES            = "textfieldhiddendirectories";
 
 // Lists used in defaultuserprefereces.jsp
   static final String LIST_PREFEREDLANGUAGE                  = "listpreferedlanguage";
@@ -79,14 +76,6 @@
     if( request.getParameter(BUTTON_NEXT) != null){
        // Change global configuration and proceed with default user preferences.
       GlobalConfiguration gc = ejbcawebbean.getGlobalConfiguration();
-       if(request.getParameter(TEXTFIELD_BASEURL) != null){
-         String baseurl = request.getParameter(TEXTFIELD_BASEURL); 
-         gc.setBaseUrl(baseurl);
-       }
-       if(request.getParameter(TEXTFIELD_DOCUMENTROOT) != null){
-         String documentroot = request.getParameter(TEXTFIELD_DOCUMENTROOT); 
-         gc.setDocumentRoot(documentroot);
-       }
        if(request.getParameter(TEXTFIELD_TITLE) != null){
          String title = request.getParameter(TEXTFIELD_TITLE); 
          gc.setEjbcaTitle(title);
@@ -103,10 +92,7 @@
          String opendirectories = request.getParameter(TEXTFIELD_OPENDIRECTORIES); 
          gc.setOpenDirectories(opendirectories);
        }
-       if(request.getParameter(TEXTFIELD_HIDDENDIRECTORIES) != null){
-         String hiddendirectories = request.getParameter(TEXTFIELD_HIDDENDIRECTORIES); 
-         gc.setHiddenDirectories(hiddendirectories);
-       }
+
 %>  
            <%@ include file="defaultuserpreferences.jsp" %>
 <%  }

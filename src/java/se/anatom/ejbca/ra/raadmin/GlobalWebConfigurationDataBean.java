@@ -50,7 +50,7 @@ public abstract class GlobalWebConfigurationDataBean implements javax.ejb.Entity
         setGlobalConfiguration(globalConfiguration);
 
         log.debug("Created global configuration "+configurationId);
-        return null;
+        return configurationId;
     }
 
     public void ejbPostCreate(String id, GlobalConfiguration globalconfiguration) {

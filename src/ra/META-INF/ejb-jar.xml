@@ -161,7 +161,36 @@
         <local>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataLocal</local>
         <ejb-link>AvailableAccessRulesData</ejb-link>
      </ejb-local-ref>
-               
+     <ejb-local-ref>
+        <description>
+          User Groups
+        </description>
+        <ejb-ref-name>ejb/UserGroupDataLocal</ejb-ref-name>
+        <ejb-ref-type>Entity</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ra.authorization.UserGroupDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.authorization.UserGroupDataLocal</local>
+        <ejb-link>UserGroupData</ejb-link>
+     </ejb-local-ref>
+     <ejb-local-ref>
+        <description>
+          Access Rules
+        </description>
+        <ejb-ref-name>ejb/AccessRulesDataLocal</ejb-ref-name>
+        <ejb-ref-type>Entity</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ra.authorization.AccessRulesDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.authorization.AccessRulesDataLocal</local>
+        <ejb-link>AccessRulesData</ejb-link>
+     </ejb-local-ref>
+     <ejb-local-ref>
+        <description>
+          User Entities
+        </description>
+        <ejb-ref-name>ejb/UserEntityDataLocal</ejb-ref-name>
+        <ejb-ref-type>Entity</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ra.authorization.UserEntityDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.authorization.UserEntityDataLocal</local>
+        <ejb-link>UserEntityData</ejb-link>
+     </ejb-local-ref>                         
      <security-identity>
         <run-as>
             <role-name>InternalUser</role-name>
@@ -294,6 +323,75 @@
       <cmp-field><field-name>profile</field-name></cmp-field>
       <primkey-field>profileName</primkey-field>  
    </entity>   
+
+   <entity>
+      <description>
+            This enterprise bean entity represents an authorization usergroup.
+      </description>
+      <ejb-name>UserGroupData</ejb-name>
+      <local-home>se.anatom.ejbca.ra.authorization.UserGroupDataLocalHome</local-home>
+      <local>se.anatom.ejbca.ra.authorization.UserGroupDataLocal</local>
+      <ejb-class>se.anatom.ejbca.ra.authorization.UserGroupDataBean</ejb-class>
+      <persistence-type>Container</persistence-type>
+      <prim-key-class>java.lang.String</prim-key-class>  
+      <reentrant>False</reentrant>
+      <cmp-version>2.x</cmp-version>
+      <abstract-schema-name>UserGroupDataBean</abstract-schema-name>
+      <cmp-field><field-name>userGroupName</field-name></cmp-field>
+      <primkey-field>userGroupName</primkey-field>       
+      <ejb-local-ref>
+        <ejb-ref-name>ejb/UserEntityDataLocal</ejb-ref-name>
+        <ejb-ref-type>Entity</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ra.authorization.UserEntityDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.authorization.UserEntityDataLocal</local>
+        <ejb-link>UserEntityData</ejb-link>
+      </ejb-local-ref>    
+      <ejb-local-ref>
+        <ejb-ref-name>ejb/AccessRulesDataLocal</ejb-ref-name>
+        <ejb-ref-type>Entity</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ra.authorization.AccessRulesDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.authorization.AccessRulesDataLocal</local>
+        <ejb-link>AccessRulesData</ejb-link>
+      </ejb-local-ref>       
+   </entity>   
+         
+   <entity>
+      <description>
+            This enterprise bean entity represents a user entity.
+      </description>
+      <ejb-name>UserEntityData</ejb-name>
+      <local-home>se.anatom.ejbca.ra.authorization.UserEntityDataLocalHome</local-home>
+      <local>se.anatom.ejbca.ra.authorization.UserEntityDataLocal</local>
+      <ejb-class>se.anatom.ejbca.ra.authorization.UserEntityDataBean</ejb-class>
+      <persistence-type>Container</persistence-type>
+      <prim-key-class>se.anatom.ejbca.ra.authorization.UserEntityPK</prim-key-class>    
+      <reentrant>False</reentrant>
+      <cmp-version>2.x</cmp-version>
+      <abstract-schema-name>UserEntityDataBean</abstract-schema-name>
+      <cmp-field><field-name>pK</field-name></cmp-field>        
+      <cmp-field><field-name>matchWith</field-name></cmp-field>
+      <cmp-field><field-name>matchType</field-name></cmp-field>
+      <cmp-field><field-name>matchValue</field-name></cmp-field>         
+      <primkey-field>pK</primkey-field>     
+   </entity>   
+   <entity>
+      <description>
+            This enterprise bean entity represents an access rule.
+      </description>
+      <ejb-name>AccessRulesData</ejb-name>
+      <local-home>se.anatom.ejbca.ra.authorization.AccessRulesDataLocalHome</local-home>
+      <local>se.anatom.ejbca.ra.authorization.AccessRulesDataLocal</local>
+      <ejb-class>se.anatom.ejbca.ra.authorization.AccessRulesDataBean</ejb-class>
+      <persistence-type>Container</persistence-type>
+      <prim-key-class>se.anatom.ejbca.ra.authorization.AccessRulesPK</prim-key-class>    
+      <reentrant>False</reentrant>
+      <cmp-version>2.x</cmp-version>
+      <abstract-schema-name>AccessRulesDataBean</abstract-schema-name>
+      <cmp-field><field-name>pK</field-name></cmp-field> 
+      <cmp-field><field-name>directory</field-name></cmp-field>
+      <cmp-field><field-name>accessRule</field-name></cmp-field>
+      <primkey-field>pK</primkey-field>  
+   </entity>   
    
    <entity>
       <description>
@@ -304,7 +402,7 @@
       <local>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataLocal</local>
       <ejb-class>se.anatom.ejbca.ra.authorization.AvailableAccessRulesDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
-      <prim-key-class>java.lang.String</prim-key-class>            
+      <prim-key-class>java.lang.String</prim-key-class>             
       <reentrant>False</reentrant>      
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>AvailableAccessRulesDataBean</abstract-schema-name>
@@ -315,7 +413,7 @@
     
   <relationships>
      <ejb-relation>
-       <ejb-relation-name></ejb-relation-name>
+       <ejb-relation-name>ProfileGroupToProfiles</ejb-relation-name>
        <ejb-relationship-role>
          <ejb-relationship-role-name>ProfileGroupData</ejb-relationship-role-name>
          <multiplicity>One</multiplicity>
@@ -335,6 +433,50 @@
          </relationship-role-source>
        </ejb-relationship-role>
      </ejb-relation>
+     
+     <ejb-relation>
+       <ejb-relation-name>UserGroupDataToUserEntities</ejb-relation-name>
+       <ejb-relationship-role>
+         <ejb-relationship-role-name>UserGroupData</ejb-relationship-role-name>
+         <multiplicity>One</multiplicity>
+         <relationship-role-source>
+           <ejb-name>UserGroupData</ejb-name>
+         </relationship-role-source>
+         <cmr-field>
+           <cmr-field-name>userEntities</cmr-field-name>
+           <cmr-field-type>java.util.Collection</cmr-field-type>
+         </cmr-field>
+       </ejb-relationship-role>
+       <ejb-relationship-role>
+         <ejb-relationship-role-name>UserEntityData</ejb-relationship-role-name>
+         <multiplicity>Many</multiplicity>
+         <relationship-role-source>
+           <ejb-name>UserEntityData</ejb-name>
+         </relationship-role-source>
+       </ejb-relationship-role>
+     </ejb-relation>     
+     
+     <ejb-relation>
+       <ejb-relation-name>UserGroupDataToAccessRules</ejb-relation-name>
+       <ejb-relationship-role>
+         <ejb-relationship-role-name>UserGroupData</ejb-relationship-role-name>
+         <multiplicity>One</multiplicity>
+         <relationship-role-source>
+           <ejb-name>UserGroupData</ejb-name>
+         </relationship-role-source>
+         <cmr-field>
+           <cmr-field-name>accessRules</cmr-field-name>
+           <cmr-field-type>java.util.Collection</cmr-field-type>
+         </cmr-field>
+       </ejb-relationship-role>
+       <ejb-relationship-role>
+         <ejb-relationship-role-name>AccessRulesData</ejb-relationship-role-name>
+         <multiplicity>Many</multiplicity>
+         <relationship-role-source>
+           <ejb-name>AccessRulesData</ejb-name>
+         </relationship-role-source>
+       </ejb-relationship-role>
+     </ejb-relation>          
   </relationships>            
    
   <assembly-descriptor>

@@ -262,6 +262,7 @@
 
       var VALUE      = <%= Profile.VALUE %>; 
       var ISREQUIRED = <%= Profile.ISREQUIRED %>;
+      var CHANGEABLE = <%= Profile.CHANGEABLE %>
 
       var USERNAME          = <%= Profile.USERNAME %>;
       var PASSWORD          = <%= Profile.PASSWORD %>;
@@ -291,6 +292,10 @@
                                                        out.write(profiles[i][j][Profile.ISREQUIRED]);
                                                      else
                                                        out.write("false"); %>;
+      profiles[<%= i %>][<%= j %>][CHANGEABLE] = <% if(profiles[i][j][Profile.CHANGEABLE] != null)
+                                                       out.write(profiles[i][j][Profile.CHANGEABLE]);
+                                                     else
+                                                       out.write("false"); %>;
           <% } 
          } %>
    <% if(oldprofile != null){   %>
@@ -303,6 +308,10 @@
                                               out.write(oldprofile[i][Profile.ISREQUIRED]);
                                             else
                                               out.write("false"); %>;
+      oldprofile[<%= i %>][CHANGEABLE] = <% if(oldprofile[i][Profile.CHANGEABLE] != null)
+                                              out.write(oldprofile[i][Profile.CHANGEABLE]);
+                                            else
+                                              out.write("false"); %>;
      <% } 
       } %>
 
@@ -313,15 +322,25 @@ function fillfromprofile(){
   index = document.adduser.<%= SELECT_PROFILE %>.selectedIndex;
 
   document.adduser.<%= TEXTFIELD_USERNAME %>.value = profiles[index][USERNAME][VALUE];
+  document.adduser.<%= TEXTFIELD_USERNAME %>.disabled = !profiles[index][USERNAME][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_PASSWORD %>.value = profiles[index][PASSWORD][VALUE];
+  document.adduser.<%= TEXTFIELD_PASSWORD %>.disabled = !profiles[index][PASSWORD][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_CONFIRMPASSWORD %>.value = profiles[index][PASSWORD][VALUE];
+  document.adduser.<%= TEXTFIELD_CONFIRMPASSWORD %>.disabled = !profiles[index][PASSWORD][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_COMMONNAME %>.value = profiles[index][COMMONNAME][VALUE];
+  document.adduser.<%= TEXTFIELD_COMMONNAME %>.disabled = !profiles[index][COMMONNAME][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_ORGANIZATIONUNIT %>.value = profiles[index][ORGANIZATIONUNIT][VALUE];
+  document.adduser.<%= TEXTFIELD_ORGANIZATIONUNIT %>.disabled = !profiles[index][ORGANIZATIONUNIT][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_ORGANIZATION %>.value = profiles[index][ORGANIZATION][VALUE];
+  document.adduser.<%= TEXTFIELD_ORGANIZATION %>.disabled = !profiles[index][ORGANIZATION][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_LOCALE %>.value = profiles[index][LOCALE][VALUE];
+  document.adduser.<%= TEXTFIELD_LOCALE %>.disabled = !profiles[index][LOCALE][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_STATE %>.value = profiles[index][STATE][VALUE];
+  document.adduser.<%= TEXTFIELD_STATE %>.disabled = !profiles[index][STATE][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_COUNTRY %>.value = profiles[index][COUNTRY][VALUE];
+  document.adduser.<%= TEXTFIELD_COUNTRY %>.disabled = !profiles[index][COUNTRY][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_EMAIL %>.value = profiles[index][EMAIL][VALUE];
+  document.adduser.<%= TEXTFIELD_EMAIL %>.disabled = !profiles[index][EMAIL][CHANGEABLE];
   document.adduser.<%= CHECKBOX_CLEARTEXTPASSWORD %>.checked = eval(profiles[index][CLEARTEXTPASSWORD][VALUE]);
   document.adduser.<%= CHECKBOX_CLEARTEXTPASSWORD %>.disabled = profiles[index][CLEARTEXTPASSWORD][ISREQUIRED];
   document.adduser.<%= CHECKBOX_TYPEENDUSER %>.checked = eval(profiles[index][TYPE_ENDUSER][VALUE]);
@@ -351,15 +370,25 @@ function fillfromprofile(){
 function fillfromoldprofile(){
 
   document.adduser.<%= TEXTFIELD_USERNAME %>.value = oldprofile[USERNAME][VALUE];
+  document.adduser.<%= TEXTFIELD_USERNAME %>.disabled = !oldprofile[USERNAME][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_PASSWORD %>.value = oldprofile[PASSWORD][VALUE];
+  document.adduser.<%= TEXTFIELD_PASSWORD %>.disabled = !oldprofile[PASSWORD][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_CONFIRMPASSWORD %>.value = oldprofile[PASSWORD][VALUE];
+  document.adduser.<%= TEXTFIELD_CONFIRMPASSWORD %>.disabled = !oldprofile[PASSWORD][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_COMMONNAME %>.value = oldprofile[COMMONNAME][VALUE];
+  document.adduser.<%= TEXTFIELD_COMMONNAME %>.disabled = !oldprofile[COMMONNAME][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_ORGANIZATIONUNIT %>.value = oldprofile[ORGANIZATIONUNIT][VALUE];
+  document.adduser.<%= TEXTFIELD_ORGANIZATIONUNIT %>.disabled = !oldprofile[ORGANIZATIONUNIT][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_ORGANIZATION %>.value = oldprofile[ORGANIZATION][VALUE];
+  document.adduser.<%= TEXTFIELD_ORGANIZATION %>.disabled = !oldprofile[ORGANIZATION][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_LOCALE %>.value = oldprofile[LOCALE][VALUE];
+  document.adduser.<%= TEXTFIELD_LOCALE %>.disabled = !oldprofile[LOCALE][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_STATE %>.value = oldprofile[STATE][VALUE];
+  document.adduser.<%= TEXTFIELD_STATE %>.disabled = !oldprofile[STATE][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_COUNTRY %>.value = oldprofile[COUNTRY][VALUE];
+  document.adduser.<%= TEXTFIELD_COUNTRY %>.disabled = !oldprofile[COUNTRY][CHANGEABLE];
   document.adduser.<%= TEXTFIELD_EMAIL %>.value = oldprofile[EMAIL][VALUE];
+  document.adduser.<%= TEXTFIELD_EMAIL %>.disabled = !oldprofile[EMAIL][CHANGEABLE];
   document.adduser.<%= CHECKBOX_CLEARTEXTPASSWORD %>.checked = eval(oldprofile[CLEARTEXTPASSWORD][VALUE]);
   document.adduser.<%= CHECKBOX_CLEARTEXTPASSWORD %>.disabled = oldprofile[CLEARTEXTPASSWORD][ISREQUIRED];
   document.adduser.<%= CHECKBOX_TYPEENDUSER %>.checked = eval(oldprofile[TYPE_ENDUSER][VALUE]);
@@ -468,6 +497,26 @@ function checkallfields(){
       alert("<%= ejbcawebbean.getText("PASSWORDSDOESNTMATCH") %>");
       illegalfields++;
     } 
+
+    if(illegalfields == 0){
+      document.adduser.<%= TEXTFIELD_USERNAME %>.disabled = false;
+      document.adduser.<%= TEXTFIELD_PASSWORD %>.disabled = false;
+      document.adduser.<%= TEXTFIELD_CONFIRMPASSWORD %>.disabled = false;
+      document.adduser.<%= TEXTFIELD_COMMONNAME %>.disabled = false;
+      document.adduser.<%= TEXTFIELD_ORGANIZATIONUNIT %>.disabled = false;
+      document.adduser.<%= TEXTFIELD_ORGANIZATION %>.disabled = false;
+      document.adduser.<%= TEXTFIELD_LOCALE %>.disabled = false;
+      document.adduser.<%= TEXTFIELD_STATE %>.disabled = false;
+      document.adduser.<%= TEXTFIELD_COUNTRY %>.disabled = false;
+      document.adduser.<%= TEXTFIELD_EMAIL %>.disabled = false;
+      document.adduser.<%= CHECKBOX_CLEARTEXTPASSWORD %>.disabled = false;
+      document.adduser.<%= CHECKBOX_TYPEENDUSER %>.disabled = false;
+      document.adduser.<%= CHECKBOX_TYPERA %>.disabled = false;
+      document.adduser.<%= CHECKBOX_TYPERAADMIN %>.disabled = false;
+      document.adduser.<%= CHECKBOX_TYPECA %>.disabled = false;
+      document.adduser.<%= CHECKBOX_TYPECAADMIN %>.disabled = false;
+      document.adduser.<%= CHECKBOX_TYPEROOTCA %>.disabled = false;
+    }
 
      return illegalfields == 0;  
 }

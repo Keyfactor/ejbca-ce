@@ -19,7 +19,6 @@ import javax.ejb.FinderException;
 import java.io.Serializable;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
-import java.io.FileNotFoundException;
 import java.util.Properties;
 import java.util.Date;
 import java.text.DateFormat;
@@ -29,12 +28,12 @@ import java.util.Collection;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
-import se.anatom.ejbca.ra.IUserAdminSessionHome;
+import se.anatom.ejbca.ra.IUserAdminSessionHome; 
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.UserAdminData;
 
-import se.anatom.ejbca.webdist.ejbcaathorization.EjbcaAthorization;
-import se.anatom.ejbca.webdist.ejbcaathorization.AuthorizationDeniedException;
+import se.anatom.ejbca.ra.authorization.EjbcaAuthorization;
+import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.webdist.rainterface.DNFieldExtractor;
 import se.anatom.ejbca.webdist.rainterface.UserView;
 
@@ -46,13 +45,13 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
 public class EjbcaWebBean {
 
     /** Creates a new instance of EjbcaWebBean */
-    public EjbcaWebBean() throws IOException, NamingException, CreateException, FileNotFoundException,
+    public EjbcaWebBean() throws IOException, NamingException, CreateException, 
                                  FinderException, RemoteException{
       globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler();
       globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();
       userspreferences = new UsersPreferenceDataHandler();
-      authorize = new EjbcaAthorization(globalconfiguration);
-      authorizedatahandler = new AuthorizationDataHandler(globalconfiguration);
+      authorizedatahandler = new AuthorizationDataHandler(globalconfiguration);      
+      authorize = new EjbcaAuthorization(authorizedatahandler.getUserGroups(), globalconfiguration);
       weblanguages = new WebLanguages(globalconfiguration);
       initialized=false;
     }
@@ -205,7 +204,7 @@ public class EjbcaWebBean {
     public boolean isAuthorized(String url) throws AuthorizationDeniedException {
       boolean returnval=false;
       if(certificates != null){
-        returnval= authorize.isAthorized(certificates[0],url);
+        returnval= authorize.isAuthorized(certificates[0],url);
       }
       else{
         throw new  AuthorizationDeniedException("Client certificate required.");
@@ -228,10 +227,9 @@ public class EjbcaWebBean {
       return userspreferences;
     }
 
-    /* Returns the Ejbca Authorization component */
-    public EjbcaAthorization getAthorizationComponent() {
-      return authorize;
-    }
+    public AuthorizationDataHandler getAuthorizationDataHandler(){
+       return  authorizedatahandler;    
+    } 
 
     /* Returns the global configuration */
     public GlobalConfiguration getGlobalConfiguration() {
@@ -345,68 +343,26 @@ public class EjbcaWebBean {
     public void addUserPreference(UserPreference up) throws Exception{
       currentuserpreference = up;
       userspreferences.addUserPreference(certificateserialnumber,up);
+      usersweblanguage = new WebLanguages( currentuserpreference.getPreferedLanguage()
+                                          ,currentuserpreference.getSecondaryLanguage());
     }
 
 
     public void changeUserPreference(UserPreference up) throws Exception{
       currentuserpreference = up;
       userspreferences.changeUserPreference(certificateserialnumber,up);
+      usersweblanguage = new WebLanguages(currentuserpreference.getPreferedLanguage()
+                                          ,currentuserpreference.getSecondaryLanguage());
     }
 
-    /**
-     * Method to add an access rule.
-     */
 
-    public void addAvailableAccessRule(String name) throws RemoteException{
-      authorizedatahandler.addAvailableAccessRule(name);
-    } // addAvailableAccessRule
-
-    /**
-     * Method to add an Collection of access rules.
-     */
-
-    public void addAvailableAccessRules(Collection names) throws RemoteException{
-      authorizedatahandler.addAvailableAccessRules(names);
-    } //  addAvailableAccessRules
-
-    /**
-     * Method to remove an access rule.
-     */
-
-    public void removeAvailableAccessRule(String name)  throws RemoteException{
-      authorizedatahandler.removeAvailableAccessRule(name);
-    } // removeAvailableAccessRule
-
-    /**
-     * Method to remove an Collection of access rules.
-     */
-
-    public void removeAvailableAccessRules(Collection names)  throws RemoteException{
-      authorizedatahandler.removeAvailableAccessRules(names);
-    } // removeAvailableAccessRules
-
-    /**
-     * Method that returns a Collection of Strings containing all access rules.
-     */
-
-    public Collection getAvailableAccessRules() throws RemoteException{
-       return authorizedatahandler.getAvailableAccessRules();
-    } // getAvailableAccessRules
-
-    /**
-     * Checks wheither an access rule exists in the database.
-     */
-
-    public boolean existsAvailableAccessRule(String name) throws RemoteException{
-      return authorizedatahandler.existsAvailableAccessRule(name);
-    } // existsAvailableAccessRule
 
     // Private Fields.
     private UsersPreferenceDataHandler userspreferences;
     private UserPreference currentuserpreference;
     private GlobalConfiguration globalconfiguration;
     private GlobalConfigurationDataHandler globaldataconfigurationdatahandler;
-    private EjbcaAthorization authorize;
+    private EjbcaAuthorization authorize;
     private AuthorizationDataHandler authorizedatahandler;
     private WebLanguages weblanguages;
     private WebLanguages usersweblanguage;

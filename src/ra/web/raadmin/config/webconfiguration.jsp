@@ -66,15 +66,6 @@
         <input type="text" name="<%=TEXTFIELD_OPENDIRECTORIES%>" value="<%= gc.getOpenDirectoriesAsString() %>" maxlength="150" size="70">
       </td>
     </tr>
-    <tr id="Row0"> 
-      <td width="49%" valign="top"> 
-        <h3>Hidden Directoires</h3>
-        <h5>A list of directories not to be shown in the authorization module.</h5>
-      </td>
-      <td width="51%" valign="top"> 
-        <input type="text" name="<%=TEXTFIELD_HIDDENDIRECTORIES%>" value="<%= gc.getHiddenDirectoriesAsString() %>" maxlength="150" size="70">
-      </td>
-    </tr>
     <tr> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top">

@@ -1,6 +1,6 @@
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration,se.anatom.ejbca.webdist.ejbcaathorization.AuthorizationDeniedException"%>
+<%@page errorPage="errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration,se.anatom.ejbca.ra.authorization.AuthorizationDeniedException"%>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <% 
@@ -10,24 +10,26 @@
  
   final String THIS_FILENAME            =   globalconfiguration.getMenuFilename();
 
-  final String MAIN_LINK                =  globalconfiguration.getRaAdminPath() +globalconfiguration.getMainFilename();
+  final String MAIN_LINK                =  "/" + globalconfiguration.getRaAdminPath() +globalconfiguration.getMainFilename();
 
-  final String CA_LINK                  = globalconfiguration.getCaPath() 
+  final String CA_LINK                  = "/" +globalconfiguration.getCaPath() 
                                                   + "/cafunctions.jsp";
-  final String RA_LINK                  = globalconfiguration.getRaPath() 
+  final String RA_LINK                  = "/" +globalconfiguration.getRaPath() 
                                                   + "/adduser.jsp";
-  final String RA_EDITPROFILESLINK      = globalconfiguration.getRaPath()+"/profiles/editprofiles.jsp";
-  final String RA_LISTUSERSLINK         = globalconfiguration.getRaPath()+"/listusers.jsp";
-  final String RA_ADDUSERLINK           = globalconfiguration.getRaPath()+"/adduser.jsp";
-  final String RA_LISTUSERS             = globalconfiguration.getRaPath()+"/listusers.jsp";
-  final  String LOG_LINK                = globalconfiguration.getLogPath() 
+  final String RA_EDITPROFILESLINK      = "/" +globalconfiguration.getRaPath()+"/editprofiles/editprofiles.jsp";
+  final String RA_LISTUSERSLINK         = "/" +globalconfiguration.getRaPath()+"/listusers.jsp";
+  final String RA_ADDUSERLINK           = "/" +globalconfiguration.getRaPath()+"/adduser.jsp";
+  final String RA_LISTUSERS             = "/" +globalconfiguration.getRaPath()+"/listusers.jsp";
+  final String LOG_LINK                 = "/" +globalconfiguration.getLogPath() 
                                                   + "/ejbcaauthorization.jsp";
-  final  String CONFIGURATION_LINK      = globalconfiguration.getConfigPath() 
+  final String CONFIGURATION_LINK       = "/" +globalconfiguration.getConfigPath() 
                                                   + "/configuration.jsp";
-  final String AUTHORIZATION_LINK       = globalconfiguration.getAuthorizationPath() 
+  final String AUTHORIZATION_LINK       = "/" +globalconfiguration.getAuthorizationPath() 
                                                   + "/ejbcaauthorization.jsp";
-  final String USERPREFERENCES_LINK     = globalconfiguration.getRaAdminPath() + "userpreferences.jsp";
-  final String HELP_LINK                = globalconfiguration.getRaAdminPath() + globalconfiguration.getHelpPath() 
+  final String AVAILABLE_ACCESSRULES_LINK  = "/" +globalconfiguration.getAuthorizationPath() 
+                                                  + "/availablerules/editavailablerules.jsp";
+  final String USERPREFERENCES_LINK     = "/" +globalconfiguration.getRaAdminPath() + "userpreferences.jsp";
+  final String HELP_LINK                = "/" +globalconfiguration.getRaAdminPath() + globalconfiguration.getHelpPath() 
                                                   + "/index_help.html";
 %>
 <%  
@@ -98,9 +100,16 @@
     // If authorized to edit authorizations then display related links.
     try{
       if(ejbcawebbean.isAuthorized(AUTHORIZATION_LINK)){ %>
-   
-   <A href="<%= AUTHORIZATION_LINK %>" target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("AUTHORIZATION") %></A>
    <br>
+   <A href="<%= AUTHORIZATION_LINK %>" target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("AUTHORIZATION") %></A>
+<%   }
+   }catch(AuthorizationDeniedException e){}
+    // If authorized to edit authorizations then display related links.
+    try{
+      if(ejbcawebbean.isAuthorized(AVAILABLE_ACCESSRULES_LINK)){ %>
+   <br>
+   &nbsp;&nbsp; <A href="<%= AVAILABLE_ACCESSRULES_LINK  %>" target="<%=globalconfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITAVAILABLERULES") %></A>
+   <br>   
 <%   }
    }catch(AuthorizationDeniedException e){}
     // If authorized to edit user preferences then display related links.

@@ -3,5 +3,7 @@
 <jaws>
 
 <datasource>DefaultDS</datasource>
-
+   <default-entity>
+       <debug>true</debug>
+    </default-entity>
 </jaws>

@@ -1,7 +1,7 @@
 <%@page contentType="text/html"%>
 <%@page errorPage="/errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.webdist.webconfiguration.GlobalConfiguration
-               ,se.anatom.ejbca.webdist.ejbcaathorization.EjbcaAthorization,se.anatom.ejbca.webdist.ejbcaathorization.AccessRule, 
-                se.anatom.ejbca.webdist.ejbcaathorization.UserEntity, se.anatom.ejbca.webdist.ejbcaathorization.UsergroupExistsException"%>
+               ,se.anatom.ejbca.ra.authorization.AccessRule, se.anatom.ejbca.webdist.webconfiguration.AuthorizationDataHandler,
+                se.anatom.ejbca.ra.authorization.UserEntity, se.anatom.ejbca.ra.authorization.UsergroupExistsException"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -53,8 +53,6 @@
 
   String usergroup = null;
 
- // Declare authorization module.
-  EjbcaAthorization ejbcaauthorization;
 %>
 <% 
   boolean usergroupexists = false;
@@ -63,7 +61,7 @@
   String includefile = null;
   GlobalConfiguration globalconfiguration =ejbcawebbean.initialize(request); 
   String THIS_FILENAME            =  globalconfiguration .getAuthorizationPath()  + "/ejbcaauthorization.jsp";
-  ejbcaauthorization =   ejbcawebbean.getAthorizationComponent();  %>
+  AuthorizationDataHandler adh    = ejbcawebbean.getAuthorizationDataHandler(); %>
 <html>
 <head>
   <title><%= globalconfiguration .getEjbcaTitle() %></title>
@@ -111,7 +109,7 @@
           usergroup = request.getParameter(SELECT_USERGROUPS);
           if(usergroup != null){
             if(!usergroup.trim().equals("")){
-              ejbcaauthorization.removeUserGroup(usergroup);
+              adh.removeUserGroup(usergroup);
             }
           }
           includefile="editusergroups.jsp";             
@@ -123,7 +121,7 @@
        if(oldusergroup != null && newusergroup != null){
          if(!newusergroup.trim().equals("") && !oldusergroup.trim().equals("")){
            try{
-             ejbcaauthorization.renameUserGroup(oldusergroup, newusergroup);
+             adh.renameUserGroup(oldusergroup, newusergroup);
            }catch(UsergroupExistsException e){ usergroupexists = true;}
          }
        }      
@@ -135,7 +133,7 @@
          if(usergroup != null){
            if(!usergroup.trim().equals("")){
              try{
-               ejbcaauthorization.addUserGroup(usergroup);
+               adh.addUserGroup(usergroup);
              }catch(UsergroupExistsException e){ usergroupexists = true; }
            }      
          }

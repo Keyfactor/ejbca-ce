@@ -1,6 +1,6 @@
 <% /* editacccessrules.jsp
     *
-    * page for editing a usergroups access rules, included from ejbcaathorization.jsp 
+    * page for editing a usergroups access rules, included from AuthorizationDataHandler.jsp 
     * 
     * Created on  14 mars 2002, 20:49
     *
@@ -28,16 +28,16 @@
          String[][] accessrules = new String[indexes.size()][3];
          for(int i = 0; i < indexes.size(); i++){
            index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
-           accessrules[i][EjbcaAthorization.ACCESS_RULE_DIRECTORY] = request.getParameter(HIDDEN_ADDDIRECTORY+index);
-           accessrules[i][EjbcaAthorization.ACCESS_RULE_RULE] = request.getParameter(SELECT_ADDRULE+index);
+           accessrules[i][AuthorizationDataHandler.ACCESS_RULE_DIRECTORY] = request.getParameter(HIDDEN_ADDDIRECTORY+index);
+           accessrules[i][AuthorizationDataHandler.ACCESS_RULE_RULE] = request.getParameter(SELECT_ADDRULE+index);
            if(request.getParameter(CHECKBOX_RECURSIVEROW+index)!= null){
-             accessrules[i][EjbcaAthorization.ACCESS_RULE_RECURSIVE] = "true";
+             accessrules[i][AuthorizationDataHandler.ACCESS_RULE_RECURSIVE] = "true";
            }
            else{
-             accessrules[i][EjbcaAthorization.ACCESS_RULE_RECURSIVE] = "false";
+             accessrules[i][AuthorizationDataHandler.ACCESS_RULE_RECURSIVE] = "false";
            }
          }
-         ejbcaauthorization.addAccessRules(usergroup,accessrules);
+         adh.addAccessRules(usergroup,accessrules);
        }
     }
     if( request.getParameter(BUTTON_DELETE_ACCESSRULES) != null ){
@@ -57,9 +57,9 @@
          String[][] accessrules = new String[indexes.size()][3];
          for(int i = 0; i < indexes.size(); i++){
            index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
-           accessrules[i][EjbcaAthorization.ACCESS_RULE_DIRECTORY] = request.getParameter(HIDDEN_DELETEROW+index);  
+           accessrules[i][AuthorizationDataHandler.ACCESS_RULE_DIRECTORY] = request.getParameter(HIDDEN_DELETEROW+index);  
          }
-         ejbcaauthorization.removeAccessRules(usergroup,accessrules);   
+         adh.removeAccessRules(usergroup,accessrules);   
       }
     }
 
@@ -89,8 +89,8 @@
 
 
    // Generate Html file.
-   String[][] accessrules = ejbcaauthorization.getAccessRules(usergroup);
-   String[] availableaccessrules = ejbcaauthorization.getAvailableRules(usergroup);
+   String[][] accessrules = adh.getAccessRules(usergroup);
+   String[] availableaccessrules = adh.getAvailableRules(usergroup);
    if(recordnumber > availableaccessrules.length){
      recordnumber = availableaccessrules.length;
      oldrecordnumber = recordnumber - ejbcawebbean.getEntriesPerPage();
@@ -144,16 +144,16 @@
       <tr id="Row<%= i%2 %>"> <!-- User entries in css to make lines in table --> 
         <td width="17%">
           <input type="checkbox" name="<%=CHECKBOX_DELETEROW  + i  %>" value="<%= CHECKBOX_VALUE %>">
-          <input type="hidden" name='<%= HIDDEN_DELETEROW + i %>' value='<%= accessrules[i][EjbcaAthorization.ACCESS_RULE_DIRECTORY] %>'>
+          <input type="hidden" name='<%= HIDDEN_DELETEROW + i %>' value='<%= accessrules[i][AuthorizationDataHandler.ACCESS_RULE_DIRECTORY] %>'>
         </td>
-        <td width="37%"><%= accessrules[i][EjbcaAthorization.ACCESS_RULE_DIRECTORY] %></td>
-        <td width="12%"><% if(accessrules[i][EjbcaAthorization.ACCESS_RULE_RULE].equals(String.valueOf(AccessRule.RULE_ACCEPT))){
+        <td width="37%"><%= accessrules[i][AuthorizationDataHandler.ACCESS_RULE_DIRECTORY] %></td>
+        <td width="12%"><% if(accessrules[i][AuthorizationDataHandler.ACCESS_RULE_RULE].equals(String.valueOf(AccessRule.RULE_ACCEPT))){
                              out.write(ejbcawebbean.getText("ACCEPT"));
                            }
-                           if(accessrules[i][EjbcaAthorization.ACCESS_RULE_RULE].equals(String.valueOf(AccessRule.RULE_DECLINE))){
+                           if(accessrules[i][AuthorizationDataHandler.ACCESS_RULE_RULE].equals(String.valueOf(AccessRule.RULE_DECLINE))){
                               out.write(ejbcawebbean.getText("DECLINE"));
                            }%></td>
-        <td width="16%"><% if(accessrules[i][EjbcaAthorization.ACCESS_RULE_RECURSIVE].equals("true")){
+        <td width="16%"><% if(accessrules[i][AuthorizationDataHandler.ACCESS_RULE_RECURSIVE].equals("true")){
                              out.write(ejbcawebbean.getText("YES"));
                            }
                            else{

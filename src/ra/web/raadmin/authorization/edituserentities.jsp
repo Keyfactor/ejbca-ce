@@ -1,6 +1,6 @@
 <% /* edituserentities.jsp
     *
-    * Page for editing a usergroupsuser entities, included from ejbcaathorization.jsp 
+    * Page for editing a usergroupsuser entities, included from AuthorizationDataHandler.jsp 
     * 
     * Created on  14 mars 2002, 20:49
     *
@@ -12,14 +12,14 @@
          // Add given user entity.
          
          String[][] userentity = new String[1][3];
-         userentity[0][EjbcaAthorization.USER_ENTITY_MATCHWITH]  = request.getParameter(SELECT_MATCHWITH);
-         userentity[0][EjbcaAthorization.USER_ENTITY_MATCHTYPE]  = request.getParameter(SELECT_MATCHTYPE);
-         userentity[0][EjbcaAthorization.USER_ENTITY_MATCHVALUE] = request.getParameter(TEXTFIELD_MATCHVALUE);
-         if(userentity[0][EjbcaAthorization.USER_ENTITY_MATCHVALUE] != null){
-           userentity[0][EjbcaAthorization.USER_ENTITY_MATCHVALUE]=
-             userentity[0][EjbcaAthorization.USER_ENTITY_MATCHVALUE].trim();
-           if(!userentity[0][EjbcaAthorization.USER_ENTITY_MATCHVALUE].equals("")){
-             ejbcaauthorization.addUserEntities(usergroup,userentity);
+         userentity[0][AuthorizationDataHandler.USER_ENTITY_MATCHWITH]  = request.getParameter(SELECT_MATCHWITH);
+         userentity[0][AuthorizationDataHandler.USER_ENTITY_MATCHTYPE]  = request.getParameter(SELECT_MATCHTYPE);
+         userentity[0][AuthorizationDataHandler.USER_ENTITY_MATCHVALUE] = request.getParameter(TEXTFIELD_MATCHVALUE);
+         if(userentity[0][AuthorizationDataHandler.USER_ENTITY_MATCHVALUE] != null){
+           userentity[0][AuthorizationDataHandler.USER_ENTITY_MATCHVALUE]=
+             userentity[0][AuthorizationDataHandler.USER_ENTITY_MATCHVALUE].trim();
+           if(!userentity[0][AuthorizationDataHandler.USER_ENTITY_MATCHVALUE].equals("")){
+             adh.addUserEntities(usergroup,userentity);
            }
          }
     }
@@ -40,11 +40,11 @@
          String[][] userentities = new String[indexes.size()][3];
          for(int i = 0; i < indexes.size(); i++){
            index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
-           userentities[i][EjbcaAthorization.USER_ENTITY_MATCHWITH] = request.getParameter(HIDDEN_MATCHWITH+index);
-           userentities[i][EjbcaAthorization.USER_ENTITY_MATCHTYPE] = request.getParameter(HIDDEN_MATCHTYPE+index);
-           userentities[i][EjbcaAthorization.USER_ENTITY_MATCHVALUE] = request.getParameter(HIDDEN_MATCHVALUE+index);
+           userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHWITH] = request.getParameter(HIDDEN_MATCHWITH+index);
+           userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHTYPE] = request.getParameter(HIDDEN_MATCHTYPE+index);
+           userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHVALUE] = request.getParameter(HIDDEN_MATCHVALUE+index);
          }
-         ejbcaauthorization.removeUserEntities(usergroup,userentities);   
+         adh.removeUserEntities(usergroup,userentities);   
       }
     }
 
@@ -53,7 +53,7 @@
 
 <%
    // Generate Html file.
-   String[][] userentities = ejbcaauthorization.getUserEntities(usergroup);
+   String[][] userentities = adh.getUserEntities(usergroup);
 
    int numdeletecheckboxes=userentities.length;
 %>
@@ -111,7 +111,7 @@
           </select>
           </td>
         <td width="33%"> 
-          <input type="text" name="<%= TEXTFIELD_MATCHVALUE %>" size="60">
+          <input type="text" name="<%= TEXTFIELD_MATCHVALUE %>" size="40">
         </td>
         <td width="26%"> 
           <input type="submit" name="<%= BUTTON_ADD_USERENTITY %>" 
@@ -163,41 +163,50 @@
           <input type="checkbox" name="<%= CHECKBOX_DELETE_USERENTITY + i %>" value="<%= CHECKBOX_VALUE %>">
         </td>
         <td width="20%">
-          <input type="hidden" name='<%= HIDDEN_MATCHWITH + i %>' value='<%= userentities[i][EjbcaAthorization.USER_ENTITY_MATCHWITH] %>'>
-        <% if(userentities[i][EjbcaAthorization.USER_ENTITY_MATCHWITH].equals(String.valueOf(UserEntity.WITH_COUNTRY))){
+          <input type="hidden" name='<%= HIDDEN_MATCHWITH + i %>' value='<%= userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHWITH] %>'>
+        <% if(userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHWITH].equals(String.valueOf(UserEntity.WITH_COUNTRY))){
              out.write(ejbcawebbean.getText("WITHCOUNTRY"));
            }
-           if(userentities[i][EjbcaAthorization.USER_ENTITY_MATCHWITH].equals(String.valueOf(UserEntity.WITH_ORGANIZATION))){
+           if(userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHWITH].equals(String.valueOf(UserEntity.WITH_STATE))){
+             out.write(ejbcawebbean.getText("WITHSTATE"));
+           }
+           if(userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHWITH].equals(String.valueOf(UserEntity.WITH_LOCALE))){
+             out.write(ejbcawebbean.getText("WITHLOCATION"));
+           }
+           if(userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHWITH].equals(String.valueOf(UserEntity.WITH_ORGANIZATION))){
              out.write(ejbcawebbean.getText("WITHORGANIZATION"));
            }
-           if(userentities[i][EjbcaAthorization.USER_ENTITY_MATCHWITH].equals(String.valueOf(UserEntity.WITH_ORGANIZATIONUNIT))){
+           if(userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHWITH].equals(String.valueOf(UserEntity.WITH_ORGANIZATIONUNIT))){
              out.write(ejbcawebbean.getText("WITHORGANIZATIONUNIT"));
            }
-           if(userentities[i][EjbcaAthorization.USER_ENTITY_MATCHWITH].equals(String.valueOf(UserEntity.WITH_COMMONNAME))){
+           if(userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHWITH].equals(String.valueOf(UserEntity.WITH_COMMONNAME))){
              out.write(ejbcawebbean.getText("WITHCOMMONNAME"));
+           }
+           if(userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHWITH].equals(String.valueOf(UserEntity.WITH_SERIALNUMBER))){
+             out.write(ejbcawebbean.getText("WITHSERIALNUMBER"));
            }
 %>
         </td>
         <td width="15%">
-          <input type="hidden" name='<%= HIDDEN_MATCHTYPE + i %>' value='<%= userentities[i][EjbcaAthorization.USER_ENTITY_MATCHTYPE] %>'>
-<%      if(userentities[i][EjbcaAthorization.USER_ENTITY_MATCHTYPE].equals(String.valueOf(UserEntity.TYPE_EQUALCASE))){
+          <input type="hidden" name='<%= HIDDEN_MATCHTYPE + i %>' value='<%= userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHTYPE] %>'>
+<%      if(userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHTYPE].equals(String.valueOf(UserEntity.TYPE_EQUALCASE))){
              out.write(ejbcawebbean.getText("EQUALCASE"));
         }
-        if(userentities[i][EjbcaAthorization.USER_ENTITY_MATCHTYPE].equals(String.valueOf(UserEntity.TYPE_EQUALCASEINS))){
+        if(userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHTYPE].equals(String.valueOf(UserEntity.TYPE_EQUALCASEINS))){
              out.write(ejbcawebbean.getText("EQUALCASEINS"));
         }
-        if(userentities[i][EjbcaAthorization.USER_ENTITY_MATCHTYPE].equals(String.valueOf(UserEntity.TYPE_NOT_EQUALCASE))){
+        if(userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHTYPE].equals(String.valueOf(UserEntity.TYPE_NOT_EQUALCASE))){
              out.write(ejbcawebbean.getText("NOTEQUALCASE"));
         }
-        if(userentities[i][EjbcaAthorization.USER_ENTITY_MATCHTYPE].equals(String.valueOf(UserEntity.TYPE_NOT_EQUALCASEINS))){
+        if(userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHTYPE].equals(String.valueOf(UserEntity.TYPE_NOT_EQUALCASEINS))){
              out.write(ejbcawebbean.getText("NOTEQUALCASEINS"));
         }
 %>
 
         </td>
         <td width="53%">
-          <input type="hidden" name='<%= HIDDEN_MATCHVALUE + i %>' value='<%= userentities[i][EjbcaAthorization.USER_ENTITY_MATCHVALUE] %>'>
-           <%= userentities[i][EjbcaAthorization.USER_ENTITY_MATCHVALUE] %>
+          <input type="hidden" name='<%= HIDDEN_MATCHVALUE + i %>' value='<%= userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHVALUE] %>'>
+           <%= userentities[i][AuthorizationDataHandler.USER_ENTITY_MATCHVALUE] %>
         </td>
         <td width="2%">&nbsp;</td>
       </tr>

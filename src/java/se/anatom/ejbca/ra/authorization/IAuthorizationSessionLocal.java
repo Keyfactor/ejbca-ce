@@ -10,9 +10,91 @@ import java.util.Collection;
  */
 
 public interface IAuthorizationSessionLocal extends javax.ejb.EJBLocalObject
-
 {
+  //
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+    public boolean addUserGroup(String usergroupname);
     
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+    public void removeUserGroup(String usergroupname);
+    
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+    public boolean renameUserGroup(String oldname, String newname);
+ 
+    
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+    
+    public UserGroup getUserGroup(String name);
+        
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+    public int getNumberOfUserGroups();
+    
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+     public String[] getUserGroupnames();
+    
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+    public UserGroup[] getUserGroups();
+
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+    
+    public void addAccessRule(String usergroupname, String directory, int rule, boolean recursive);    
+    
+    
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+    public void removeAccessRule(String usergroupname, String directory);
+    
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+    public int getNumberOfAccessRules(String usergroupname);
+    
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+    public AccessRule[] getAccessRules(String usergroupname);
+    
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+    
+    public void addUserEntity(String usergroupname, int matchwith, int matchtype, String matchvalue);    
+    
+    
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+    public void removeUserEntity(String usergroupname, int matchwith, int matchtype, String matchvalue);
+    
+     /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+    public int getNumberOfUserEntities(String usergroupname);
+    
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */ 
+    public UserEntity[] getUserEntities(String usergroupname);
+
+
+           
     // Methods used with AvailableAccessRulesData Entity beans.
     
     /**
