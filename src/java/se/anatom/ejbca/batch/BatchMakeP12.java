@@ -41,7 +41,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.3 2002-01-06 10:51:32 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.4 2002-01-14 13:53:07 anatom Exp $
  *
  */
 
@@ -144,7 +144,7 @@ public class BatchMakeP12 {
     throws Exception {
 
 
-        cat.debug(">doit: username=" + username + ", hiddenpwd, keys=" + rsaKeys.toString());
+        cat.debug(">createUser: username=" + username + ", hiddenpwd, keys=" + rsaKeys.toString());
 
         // Send the certificate request to the CA
         ISignSession ss = signhome.create();
@@ -180,7 +180,7 @@ public class BatchMakeP12 {
         KeyStore p12 = KeyTools.createP12(alias, rsaKeys.getPrivate(), chain[0], chain[1]);
         storeKeyStore(p12, username, password);
         cat.info("Created P12 for " + username+ ".");
-        cat.debug(">doit: username=" + username + ", hiddenpwd, keys=" + rsaKeys.toString());
+        cat.debug(">createUser: username=" + username + ", hiddenpwd, keys=" + rsaKeys.toString());
     } // doit
 
     /**
@@ -196,16 +196,39 @@ public class BatchMakeP12 {
      } //processUser
 
     /**
-     * Creates P12-files for all new users in the local database.
+     * Creates P12-files for all users with status NEW in the local database.
      *
      * @exception Exception if something goes wrong...
      */
     public void createAllNew() throws Exception {
-        cat.debug(">doit:");
+        cat.debug(">createAllNew:");
+        createAllWithStatus(UserData.STATUS_NEW);
+        cat.debug("<createAllNew:");
+    } // createAllNew
+    /**
+     * Creates P12-files for all users with status FAILED in the local database.
+     *
+     * @exception Exception if something goes wrong...
+     */
+    public void createAllFailed() throws Exception {
+        cat.debug(">createAllFailed:");
+        createAllWithStatus(UserData.STATUS_FAILED);
+        cat.debug("<createAllFailed:");
+    } // createAllFailed
+    
+    /**
+     * Creates P12-files for all users with status in the local database.
+     *
+     * @param status
+     *
+     * @exception Exception if something goes wrong...
+     */
+    public void createAllWithStatus(int status) throws Exception {
+        cat.debug(">createAllWithStatus: "+status);
 
         IUserAdminSession admin = adminhome.create();
 
-        Collection result = admin.findAllUsersByStatus(UserData.STATUS_NEW);
+        Collection result = admin.findAllUsersByStatus(status);
         Iterator it = result.iterator();
         String failedusers = "";
         int failcount = 0;
@@ -235,9 +258,9 @@ public class BatchMakeP12 {
         if (failedusers != "")
             throw new Exception("BatchMakeP12 failed for " + failcount + " users (" + successcount + " succeeded) - " + failedusers);
         cat.debug(successcount + " new users generated successfully - " + successusers);
-        cat.debug("<doit:");
+        cat.debug("<createAllWithStatus: "+status);
 
-    } // doit
+    } // createAllWithStatus
 
     /**
      * Creates P12-files for one user in the local database.
@@ -246,7 +269,7 @@ public class BatchMakeP12 {
      * @exception Exception if the user does not exist or something goes wrong during generation
      */
     public void createUser(String username) throws Exception {
-        cat.debug(">doit("+username+")");
+        cat.debug(">createUser("+username+")");
 
         IUserAdminSession admin = adminhome.create();
         UserAdminData data = admin.findUser(username);
@@ -271,7 +294,7 @@ public class BatchMakeP12 {
             throw new Exception("BatchMakeP12 failed for - " + data.getUsername());
         }
         cat.debug("New user generated successfully - " + data.getUsername());
-        cat.debug(">doit("+username+")");
+        cat.debug(">createUser("+username+")");
 
     } // doit
 
@@ -280,22 +303,15 @@ public class BatchMakeP12 {
 
             BasicConfigurator.configure();
             BatchMakeP12 makep12 = new BatchMakeP12();
-            if (args[1] != null) {
-                if (args[1].equals("setdir"))
-                {
-                    if (args[2] == null) {
-                        System.out.println("BatchMakeP12 setdir <dir>");
-                        System.exit(1);
-                    }
-                    makep12.setMainStoreDir(args[2]);
-                }
-                else {
-                    // Make P12 for specified user
-                    makep12.createUser(args[1]);
-                }
+            if (args.length > 0) {
+                // Make P12 for specified user
+                makep12.createUser(args[0]);
             } else {
+                makep12.setMainStoreDir(".");
                 // Make P12 for all NEW users in local DB
                 makep12.createAllNew();
+                // Make P12 for all FAILED users in local DB
+                makep12.createAllFailed();
             }
 
         } catch( Exception e ) {

@@ -222,6 +222,7 @@
                 <include name="se/anatom/ejbca/SecConst*.class"/>
 		<include name="se/anatom/ejbca/util/*.class"/>
 		<include name="se/anatom/ejbca/admin/*.class"/>
+                <include name="se/anatom/ejbca/batch/*.class"/>
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
                 <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
