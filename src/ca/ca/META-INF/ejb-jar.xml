@@ -47,48 +47,6 @@
         <env-entry-value>null</env-entry-value>
      </env-entry>
      <env-entry>
-        <description>Validity in days from days date for created certificate</description>
-        <env-entry-name>validity</env-entry-name>
-        <env-entry-type>java.lang.Long</env-entry-type>
-        <env-entry-value>730</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Use BasicConstraints?</description>
-        <env-entry-name>BasicConstraints</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>true</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>BasicConstraints critical? (RFC2459 says YES)</description>
-        <env-entry-name>BasicConstraintsCritical</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>true</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Use KeyUsage?</description>
-        <env-entry-name>KeyUsage</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>true</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>KeyUsage critical? (RFC2459 says YES)</description>
-        <env-entry-name>KeyUsageCritical</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>true</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Use SubjectKeyIdentifier?</description>
-        <env-entry-name>SubjectKeyIdentifier</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>true</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>SubjectKeyIdentifier critical? (RFC2459 says NO)</description>
-        <env-entry-name>SubjectKeyIdentifierCritical</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>false</env-entry-value>
-     </env-entry>
-     <env-entry>
         <description>Use AuthorityKeyIdentifier?</description>
         <env-entry-name>AuthorityKeyIdentifier</env-entry-name>
         <env-entry-type>java.lang.Boolean</env-entry-type>
@@ -99,54 +57,6 @@
         <env-entry-name>AuthorityKeyIdentifierCritical</env-entry-name>
         <env-entry-type>java.lang.Boolean</env-entry-type>
         <env-entry-value>false</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Use SubjectAlternativeName?</description>
-        <env-entry-name>SubjectAlternativeName</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>true</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>SubjectAlternativeName critical? (RFC2459 says NO)</description>
-        <env-entry-name>SubjectAlternativeNameCritical</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>false</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Use CertificatePolicies?</description>
-        <env-entry-name>CertificatePolicies</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>false</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>CertificatePolicies critical? (RFC2459 says NO)</description>
-        <env-entry-name>CertificatePoliciesCritical</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>false</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>CertificatePolicyId to put in CertificatePolicies, 2.5.29.32.0 is anyPolicy defined in RFC3280</description>
-        <env-entry-name>CertificatePolicyId</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>2.5.29.32.0</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Use CRLDistributionPoint?</description>
-        <env-entry-name>CRLDistributionPoint</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>false</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>CRLDistributionPoint critical? (RFC2459 says NO)</description>
-        <env-entry-name>CRLDistributionPointCritical</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>false</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>URI of CRLDistributionPoint?</description>
-        <env-entry-name>CRLDistURI</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>http://127.0.0.1:8080/webdist/certdist?cmd=crl</env-entry-value>
      </env-entry>
      <env-entry>
         <description>Use old style altName with email in DN? (RFC2459 says NO)</description>
@@ -178,6 +88,7 @@
         <env-entry-type>java.lang.Boolean</env-entry-type>
         <env-entry-value>true</env-entry-value>
      </env-entry>
+
      <ejb-ref>
         <description>The Log session bean</description>
         <ejb-ref-name>ejb/LogSession</ejb-ref-name>
@@ -185,8 +96,7 @@
         <home>se.anatom.ejbca.log.ILogSessionHome</home>
         <remote>se.anatom.ejbca.log.ILogSessionRemote</remote>
         <ejb-link>LogSession</ejb-link>
-     </ejb-ref>     
-     
+     </ejb-ref>          
      <ejb-local-ref>
         <description>The Certificate store used to store and fetch certificates</description>
         <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
