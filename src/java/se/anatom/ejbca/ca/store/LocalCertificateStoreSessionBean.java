@@ -44,7 +44,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.50 2003-09-13 09:01:58 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.51 2003-09-27 09:05:56 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -711,31 +711,26 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
         try {
             Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
-            Certificate ret = null;
-
             if (coll != null) {
                 if (coll.size() > 1)
                   getLogSession().log(admin, issuerDN.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_DATABASE,"Error in database, more than one certificate has the same Issuer : " + issuerDN + " and serialnumber "
                                                                                                           + serno.toString(16) + ".");
                 Iterator iter = coll.iterator();
-
                 if (iter.hasNext()) {
                     RevokedCertInfo revinfo = null;
                     CertificateDataLocal data = (CertificateDataLocal)iter.next();
-                    if (data.getStatus() == CertificateData.CERT_REVOKED) {
-                        revinfo = new RevokedCertInfo(serno, new Date(data.getRevocationDate()), data.getRevocationReason());
+                    revinfo = new RevokedCertInfo(serno, new Date(data.getRevocationDate()), data.getRevocationReason());
+                    // Make sure we have it as NOT revoked if it isn't
+                    if (data.getStatus() != CertificateData.CERT_REVOKED) {
+                        revinfo.setReason(RevokedCertInfo.NOT_REVOKED);
                     }
-
-                    debug("<isRevoked() returned " +
-                        ((data.getStatus() == CertificateData.CERT_REVOKED) ? "yes" : "no"));
-
+                    debug("<isRevoked() returned " + ((data.getStatus() == CertificateData.CERT_REVOKED) ? "yes" : "no"));
                     return revinfo;
                 }
             }
         } catch (Exception e) {
             throw new EJBException(e);
         }
-
         return null;
     } //isRevoked
 

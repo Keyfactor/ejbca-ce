@@ -20,7 +20,7 @@ import se.anatom.ejbca.log.Admin;
  * check for revocation etc. the CertificateStoreSession implements the interface
  * ICertificateStoreSession. Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.19 2003-09-04 14:38:12 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.20 2003-09-27 09:05:56 anatom Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote {
 
@@ -158,7 +158,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      * @param issuerDN the DN of the issuer.
      * @param serno the serialnumber of the certificate that will be checked
      *
-     * @return null if certificate is NOT revoked, RevokedCertInfo if it IS revoked.
+    * @return RevokedCertInfo with revocation information, with reason RevokedCertInfo.NOT_REVOKED if NOT revoked. Returns null if certificate is not found.
      *
      * @throws RemoteException if a communication or other error occurs.
      */

@@ -18,7 +18,7 @@ import junit.framework.*;
 /**
  * Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.21 2003-09-10 11:01:32 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.22 2003-09-27 09:05:47 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -160,14 +160,10 @@ public class TestCertificateData extends TestCase {
             // Revoke all foos certificates
             CertificateDataPK revpk = new CertificateDataPK(fp);
             CertificateData rev = home.findByPrimaryKey(revpk);
-            if (rev.getStatus() != CertificateData.CERT_REVOKED) {
-                rev.setStatus(CertificateData.CERT_REVOKED);
-                rev.setRevocationReason(RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED);
-                rev.setRevocationDate(new Date());
-                log.debug("Revoked cert "+fp);
-            } else {
-                log.debug("Cert '"+fp+"' already revoked.");
-            }
+            rev.setStatus(CertificateData.CERT_REVOKED);
+            rev.setRevocationReason(RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED);
+            rev.setRevocationDate(revDate);
+            log.debug("Revoked cert "+fp);
         }
         log.debug("<test03listAndRevoke()");
     }
@@ -230,7 +226,7 @@ public class TestCertificateData extends TestCase {
         log.debug("expiredate="+data3.getExpireDate());
         log.debug("revocationdate="+data3.getRevocationDate());
         log.debug("revocationreason="+data3.getRevocationReason());
-        assertTrue("wrong reason", (data3.getRevocationReason() & RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE) == RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        assertTrue("wrong reason", (data3.getRevocationReason() == RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED));
 
         log.debug("Looking for cert with DN="+CertTools.getSubjectDN(cert));
         ICertificateStoreSessionRemote store = storehome.create();
@@ -323,10 +319,8 @@ public class TestCertificateData extends TestCase {
      */
     public void test08IsRevoked() throws Exception {
         log.debug(">test08IsRevoked()");
-
         CertificateDataPK pk = new CertificateDataPK();
         pk.fingerprint = CertTools.getFingerprintAsString(cert);
-
         CertificateData data3 = home.findByPrimaryKey(pk);
         assertNotNull("Failed to find cert", data3);
         log.debug("found by key! ="+ data3);
@@ -335,20 +329,22 @@ public class TestCertificateData extends TestCase {
         log.debug("subject="+data3.getSubjectDN());
         log.debug("cafp="+data3.getCAFingerprint());
         assertNotNull("wrong CAFingerprint", data3.getCAFingerprint());
-        log.debug("status=" +data3.getStatus());
+        log.debug("status="+data3.getStatus());
         assertTrue("wrong status", data3.getStatus() == CertificateData.CERT_REVOKED);
         log.debug("type="+data3.getType());
         assertTrue("wrong type", (data3.getType() & SecConst.USER_ENDUSER) == SecConst.USER_ENDUSER);
-        log.debug("serno=" + data3.getSerialNumber());
+        log.debug("serno="+data3.getSerialNumber());
         log.debug("expiredate="+data3.getExpireDate());
         log.debug("revocationdate="+data3.getRevocationDate());
         log.debug("revocationreason="+data3.getRevocationReason());
-        assertTrue("wrong reason", (data3.getRevocationReason() & RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE) == RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        assertTrue("wrong reason", (data3.getRevocationReason() == RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED));
 
         log.debug("Checking if cert is revoked DN:'"+CertTools.getIssuerDN(cert)+"', serno:'"+cert.getSerialNumber().toString()+"'.");
         ICertificateStoreSessionRemote store = storehome.create();
         RevokedCertInfo revinfo = store.isRevoked(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getIssuerDN(cert), cert.getSerialNumber());
-        assertNotNull("Certificate not revoked, it should be!", revinfo);
+        assertNotNull("Certificate not found, it should be!", revinfo);
+        int reason = revinfo.getReason();
+        assertEquals("Certificate not revoked, it should be!", RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED, reason);
         assertTrue("Wrong revocationDate!", revinfo.getRevocationDate().getTime() == data3.getRevocationDate());
         assertTrue("Wrong reason!", revinfo.getReason() == data3.getRevocationReason());
         home.remove(pk);

@@ -50,7 +50,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.40 2003-09-04 09:52:10 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.41 2003-09-27 09:05:55 anatom Exp $
  */
 public class RAInterfaceBean {
 
@@ -549,8 +549,9 @@ public class RAInterfaceBean {
           RevokedInfoView revokedinfo = null;
           X509Certificate cert = (X509Certificate) j.next();
           RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
-          if(revinfo != null)
-            revokedinfo = new RevokedInfoView(revinfo);
+          if ( (revinfo != null) && (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) ) {
+              revokedinfo = new RevokedInfoView(revinfo);
+          }
            certificates[i] = new CertificateView(cert, revokedinfo, username);
         }
       }
@@ -571,9 +572,10 @@ public class RAInterfaceBean {
           RevokedInfoView revokedinfo = null;
           X509Certificate cert = (X509Certificate) j.next();
           RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
-          if(revinfo != null)
-            revokedinfo = new RevokedInfoView(revinfo);
-           certificates[i] = new CertificateView(cert, revokedinfo, username);
+          if ( (revinfo != null) && (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) ) {
+              revokedinfo = new RevokedInfoView(revinfo);
+          }
+          certificates[i] = new CertificateView(cert, revokedinfo, username);
         }
       }
       else{
@@ -609,8 +611,9 @@ public class RAInterfaceBean {
         while(j.hasNext()){
           X509Certificate cert = (X509Certificate) j.next();
           RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
-          if(revinfo == null)
-            allrevoked = false;
+          if ( (revinfo == null) || (revinfo.getReason() == RevokedCertInfo.NOT_REVOKED) ) {
+              allrevoked = false;
+          }
         }
       }
 
@@ -632,12 +635,11 @@ public class RAInterfaceBean {
         UserAdminData user = adminsession.findUser(administrator, username);
 
         RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
-        if(revinfo != null)
-          revokedinfo = new RevokedInfoView(revinfo);
-        
+        if ( (revinfo != null) && (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) ) {
+            revokedinfo = new RevokedInfoView(revinfo);
+        }        
         certificates = new CertificateView[1];
         certificates[0] = new CertificateView(cert, revokedinfo, username);
-              
       }
       else{
         certificates = null;

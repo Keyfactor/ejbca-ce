@@ -41,7 +41,7 @@ import se.anatom.ejbca.log.Admin;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.18 2003-09-04 09:42:05 herrvendil Exp $
+ * @version $Id: CertDistServlet.java,v 1.19 2003-09-27 09:05:55 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -313,7 +313,7 @@ public class CertDistServlet extends HttpServlet {
                 PrintWriter pout = new PrintWriter(res.getOutputStream());
                 pout.println("<html><head><title>Check revocation</title></head>");
                 pout.println("<body><p>");
-                if (revinfo != null) {
+                if ( (revinfo != null) && (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) ) {
                     pout.println("<h1>REVOKED</h1>");
                     pout.println("Certificate with issuer '"+dn+"' and serial number '"+serno+"' is revoked");
                     pout.println("RevocationDate is '"+revinfo.getRevocationDate()+"' and reason '"+revinfo.getReason()+"'.");

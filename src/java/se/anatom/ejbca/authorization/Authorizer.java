@@ -12,6 +12,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
+import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
@@ -24,7 +25,7 @@ import se.anatom.ejbca.util.CertTools;
  *
  * The main metod are isAthorized and authenticate.
  *
- * @version $Id: Authorizer.java,v 1.1 2003-09-04 14:26:37 herrvendil Exp $
+ * @version $Id: Authorizer.java,v 1.2 2003-09-27 09:05:55 anatom Exp $
  */
 public class Authorizer extends Object implements java.io.Serializable{
 
@@ -126,10 +127,13 @@ public class Authorizer extends Object implements java.io.Serializable{
            throw new AuthenticationFailedException("Your certificate cannot be verified by CA certificate chain.");
 */
       // Check if certificate is revoked.
-  
-        if(certificatesession.isRevoked(admin, CertTools.getIssuerDN(certificate),certificate.getSerialNumber()) != null){
+        RevokedCertInfo revinfo = certificatesession.isRevoked(admin, CertTools.getIssuerDN(certificate),certificate.getSerialNumber());
+        if (revinfo == null) {
+            // Certificate missing
+            throw new AuthenticationFailedException("Your certificate cannot be found in database.");
+        } else if (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) {
             // Certificate revoked
-          throw new AuthenticationFailedException("Your certificate have been revoked.");
+            throw new AuthenticationFailedException("Your certificate have been revoked.");
         }
     }
 
