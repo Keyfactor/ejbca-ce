@@ -54,6 +54,7 @@ import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.JDBCUtil;
 
 /**
  * Stores data used by web server clients.
@@ -168,6 +169,8 @@ import se.anatom.ejbca.util.CertTools;
  *
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
+
+    public static final int NO_ISSUER = 0;
 
     /** Var holding JNDI name of datasource */
     private String dataSource = "";
@@ -284,7 +287,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	/**
 	 * Adds a hard token profile to the database.
 	 *
-	 * @throws HardTokenExistsException if hard token already exists.
+	 * @throws HardTokenProfileExistsException if hard token already exists.
 	 * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
 	 */
@@ -316,7 +319,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	 * Adds a hard token profile to the database.
 	 * Used for importing and exporting profiles from xml-files.
 	 *
-	 * @throws HardTokenExistsException if hard token already exists.
+	 * @throws HardTokenProfileExistsException if hard token already exists.
 	 * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Required"
@@ -375,7 +378,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	 /**
 	 * Adds a hard token profile with the same content as the original profile,
 	 *
-	 * @throws HardTokenExistsException if hard token already exists.
+	 * @throws HardTokenProfileExistsException if hard token already exists.
 	 * @throws EJBException if a communication or other error occurs.
       * @ejb.interface-method view-type="both"
       * @ejb.transaction type="Required"
@@ -383,7 +386,6 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	public void cloneHardTokenProfile(Admin admin, String oldname, String newname) throws HardTokenProfileExistsException{
 	   debug(">cloneHardTokenProfile(name: " + oldname + ")");
 	   HardTokenProfile profiledata = null;
-	   boolean success = false;
 	   try{
 		 HardTokenProfileDataLocal htp = hardtokenprofilehome.findByName(oldname);
 		 profiledata = (HardTokenProfile) htp.getHardTokenProfile().clone();
@@ -636,7 +638,6 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     public boolean changeHardTokenIssuer(Admin admin, String alias, HardTokenIssuer issuerdata){
        debug(">changeHardTokenIssuer(alias: " + alias + ")");
        boolean returnvalue = false;
-       int caid = ILogSessionLocal.INTERNALCAID;
        try{
          HardTokenIssuerDataLocal htih = hardtokenissuerhome.findByAlias(alias);
          htih.setHardTokenIssuer(issuerdata);
@@ -915,7 +916,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        */
     public int getHardTokenIssuerId(Admin admin, String alias){
       debug(">getHardTokenIssuerId(alias: " + alias + ")");
-      int returnval = IHardTokenSessionRemote.NO_ISSUER;
+      int returnval = NO_ISSUER;
       HardTokenIssuerDataLocal htih = null;
       try{
         htih = hardtokenissuerhome.findByAlias(alias);
@@ -953,11 +954,11 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         /**
        * Checks if a hard token profile is among a hard tokens issuers available token types.
        *
-       * @param admin, the administrator calling the function
-       * @param isserid, the id of the issuer to check.
-       * @param userdata, the data of user about to be generated
+       * @param admin the administrator calling the function
+       * @param issuerid the id of the issuer to check.
+       * @param userdata the data of user about to be generated
        *
-       * @throws UnavalableTokenException if users tokentype isn't among hard token issuers available tokentypes.
+       * @throws UnavailableTokenException if users tokentype isn't among hard token issuers available tokentypes.
        * @throws EJBException if a communication or other error occurs.
          * @ejb.interface-method view-type="both"
        */
@@ -980,12 +981,12 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        /**
        * Adds a hard token to the database
        *
-       * @param admin, the administrator calling the function
-       * @param tokensn, The serialnumber of token.
-       * @param username, the user owning the token.
-       * @param significantissuerdn, indicates which CA the hard token should belong to.
-       * @param hardtoken, the hard token data
-       * @param certificates,  a collection of certificates places in the hard token
+       * @param admin the administrator calling the function
+       * @param tokensn The serialnumber of token.
+       * @param username the user owning the token.
+       * @param significantissuerdn indicates which CA the hard token should belong to.
+       * @param hardtokendata the hard token data
+       * @param certificates  a collection of certificates places in the hard token
        * @param copyof indicates if the newly created token is a copy of an existing token. Use null if token is an original
        *
        * @throws EJBException if a communication or other error occurs.
@@ -1019,9 +1020,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        /**
        * changes a hard token data in the database
        *
-       * @param admin, the administrator calling the function
-       * @param tokensn, The serialnumber of token.
-       * @param hardtoken, the hard token data
+       * @param admin the administrator calling the function
+       * @param tokensn The serialnumber of token.
+       * @param hardtokendata the hard token data
        *
        * @throws EJBException if a communication or other error occurs.
        * @throws HardTokenDoesntExistsException if tokensn doesn't exists in databas.
@@ -1049,8 +1050,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        /**
        * removes a hard token data from the database
        *
-       * @param admin, the administrator calling the function
-       * @param tokensn, The serialnumber of token.
+       * @param admin the administrator calling the function
+       * @param tokensn The serialnumber of token.
        *
        * @throws EJBException if a communication or other error occurs.
        * @throws HardTokenDoesntExistsException if tokensn doesn't exists in databas.
@@ -1091,8 +1092,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        /**
        * Checks if a hard token serialnumber exists in the database
        *
-       * @param admin, the administrator calling the function
-       * @param tokensn, The serialnumber of token.
+       * @param admin the administrator calling the function
+       * @param tokensn The serialnumber of token.
        *
        * @return true if it exists or false otherwise.
        * @throws EJBException if a communication or other error occurs.
@@ -1116,8 +1117,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       /**
        * returns hard token data for the specified tokensn
        *
-       * @param admin, the administrator calling the function
-       * @param tokensn, The serialnumber of token.
+       * @param admin the administrator calling the function
+       * @param tokensn The serialnumber of token.
        *
        * @return the hard token data or NULL if tokensn doesnt exists in database.
        * @throws EJBException if a communication or other error occurs.
@@ -1164,8 +1165,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       /**
        * returns hard token data for the specified user
        *
-       * @param admin, the administrator calling the function
-       * @param username, The username owning the tokens.
+       * @param admin the administrator calling the function
+       * @param username The username owning the tokens.
        *
        * @return a Collection of all hard token user data.
        * @throws EJBException if a communication or other error occurs.
@@ -1227,9 +1228,6 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     	Connection con = null;
     	PreparedStatement ps = null;
     	ResultSet rs = null;
-    	int count = 1; // return true as default.
-
-
     	try{
     		// Construct SQL query.
     		con = getConnection();
@@ -1246,13 +1244,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     	}catch(Exception e){
     		throw new EJBException(e);
     	}finally{
-    		try{
-    			if(rs != null) rs.close();
-    			if(ps != null) ps.close();
-    			if(con!= null) con.close();
-    		}catch(SQLException se){
-    			error("Error at cleanup: ", se);
-    		}
+            JDBCUtil.close(con, ps, rs);
     	}
 
     }
@@ -1260,11 +1252,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        /**
        * Adds a mapping between a hard token and a certificate
        *
-       * @param admin, the administrator calling the function
-       * @param tokensn, The serialnumber of token.
-       * @param certificate, the certificate to map to.
+       * @param admin the administrator calling the function
+       * @param tokensn The serialnumber of token.
+       * @param certificate the certificate to map to.
        *
-       * @return true if addition went successful. False if map already exists.
        * @throws EJBException if a communication or other error occurs.
         * @ejb.interface-method view-type="both"
         * @ejb.transaction type="Required"
@@ -1286,8 +1277,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       /**
        * Removes a mapping between a hard token and a certificate
        *
-       * @param admin, the administrator calling the function
-       * @param certificate, the certificate to map to.
+       * @param admin the administrator calling the function
+       * @param certificate the certificate to map to.
        *
        *
        * @throws EJBException if a communication or other error occurs.
@@ -1316,8 +1307,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     /**
      * Removes all mappings between a hard token and a certificate
      *
-     * @param admin, the administrator calling the function
-     * @param tokensn, the serial number to remove.
+     * @param admin the administrator calling the function
+     * @param tokensn the serial number to remove.
      *
      *
      * @throws EJBException if a communication or other error occurs.
@@ -1348,8 +1339,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        /**
        * Returns all the X509Certificates places in a hard token.
        *
-       * @param admin, the administrator calling the function
-       * @param tokensn, The serialnumber of token.
+       * @param admin the administrator calling the function
+       * @param tokensn The serialnumber of token.
        *
        * @return a collection of X509Certificates
        * @throws EJBException if a communication or other error occurs.
@@ -1381,10 +1372,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     /**
      * Method used to signal to the log that token was generated successfully.
      *
-     * @param admin, administrator performing action
-     * @param tokensn, tokensn of token generated
-     * @param username, username of user token was generated for.
-     * @param significantissuerdn, indicates which CA the hard token should belong to.
+     * @param admin administrator performing action
+     * @param tokensn tokensn of token generated
+     * @param username username of user token was generated for.
+     * @param significantissuerdn indicates which CA the hard token should belong to.
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Required"
      */
@@ -1400,10 +1391,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     /**
      * Method used to signal to the log that error occured when generating token.
      *
-     * @param admin, administrator performing action
-     * @param tokensn, tokensn of token.
-     * @param username, username of user token was generated for.
-     * @param significantissuerdn, indicates which CA the hard token should belong to.
+     * @param admin administrator performing action
+     * @param tokensn tokensn of token.
+     * @param username username of user token was generated for.
+     * @param significantissuerdn indicates which CA the hard token should belong to.
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Required"
      */
@@ -1421,7 +1412,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	* Method to check if a certificate profile exists in any of the hard token profiles.
 	* Used to avoid desyncronization of certificate profile data.
 	*
-	* @param certificateprofileid the certificateprofileid to search for.
+	* @param id the certificateprofileid to search for.
 	* @return true if certificateprofileid exists in any of the hard token profiles.
      * @ejb.interface-method view-type="both"
 	*/

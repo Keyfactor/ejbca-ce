@@ -108,9 +108,15 @@ import se.anatom.ejbca.util.query.Query;
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
-    private static Logger log = Logger.getLogger(LocalLogSessionBean.class);
-
     public static final int MAXIMUM_QUERY_ROWCOUNT = 300;
+
+    /**
+     * Constant containing caid that couldn't be determined in any other way. Log events can only be viewed.
+     * by superadministrator.
+     */
+    public static final int INTERNALCAID = 0;
+
+    private static final Logger log = Logger.getLogger(LocalLogSessionBean.class);
 
     /** Var holding JNDI name of datasource */
     private String dataSource = "";
@@ -133,7 +139,6 @@ public class LocalLogSessionBean extends BaseSessionBean {
 
     /**
      * Default create for SessionBean without any creation Arguments.
-     * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() {
         try {
@@ -308,7 +313,6 @@ public class LocalLogSessionBean extends BaseSessionBean {
      *
      * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
      * @param viewlogprivileges is a sql query string returned by a LogAuthorization object.
-     * @param authorizedcaids is a collection of integers indicating which CAs the administrator is authorized to view log of.
      * @return a collection of LogEntry. Maximum size of Collection is defined i ILogSessionRemote.MAXIMUM_QUERY_ROWCOUNT
      * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
      * @see se.anatom.ejbca.util.query.Query

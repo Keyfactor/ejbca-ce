@@ -27,6 +27,7 @@ import javax.sql.DataSource;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.util.JDBCUtil;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
@@ -67,7 +68,8 @@ import se.anatom.ejbca.ra.UserDataLocalHome;
  *   business="se.anatom.ejbca.ra.UserDataLocal"
  *   link="UserData"
  *
- * @todo FIXME it is a copy if ejb-jar.xml and the type is entity while it is a session bean
+ * todo FIXME it is a copy if ejb-jar.xml and the type is entity while it is a session bean
+ *
  * @ejb.ejb-external-ref
  *   description="The Certificate Store session bean"
  *   view-type="local"
@@ -104,8 +106,10 @@ import se.anatom.ejbca.ra.UserDataLocalHome;
  */
 public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
+    public static final int MAX_RETURNED_QUEUE_SIZE = 300;
+
     /** Columns in the database used in select */
-    private final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId, cAId";
+    private final static String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId, cAId";
 
     /** Var holding JNDI name of datasource */
     private String dataSource = "";
@@ -186,7 +190,6 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      * Returns the next user scheduled for batch generation for the given issuer.
      *
      * @param admin the administrator performing the actions
-     * @param issuercert the certificate of the hard token issuer.
      *
      * @return The next user to generate or NULL if there are no users i queue.
      * @throws EJBException if a communication or other error occurs.
@@ -200,7 +203,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
       debug("issuerid " + issuerid);
 
-      if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
+      if(issuerid != LocalHardTokenSessionBean.NO_ISSUER){
         Connection con = null;
         ResultSet rs = null;
         PreparedStatement ps = null;
@@ -236,13 +239,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with alias: " + alias);
           throw new EJBException(e);
         } finally {
-           try{
-             if(rs != null) rs.close();
-             if(ps != null) ps.close();
-             if(con!= null) con.close();
-           }catch(SQLException se){
-               error("Fel vid upprensning: ", se);
-           }
+            JDBCUtil.close(con, ps, rs);
         }
       }
 
@@ -255,7 +252,6 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      * A maximum of MAX_RETURNED_QUEUE_SIZE users will be returned by call.
      *
      * @param admin the administrator performing the actions
-     * @param issuercert the certificate of the hard token issuer.
      *
      * @return A Collection of users to generate or NULL if there are no users i queue.
      * @throws EJBException if a communication or other error occurs.
@@ -266,7 +262,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
       ArrayList returnval = new ArrayList();
       int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
 
-      if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
+      if(issuerid != LocalHardTokenSessionBean.NO_ISSUER){
         ResultSet rs = null;
         Connection con = null;
         PreparedStatement ps = null;
@@ -279,7 +275,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
             ps.setInt(3,UserDataLocal.STATUS_NEW);
             ps.setInt(4,UserDataLocal.STATUS_KEYRECOVERY);
             // Assemble result.
-           while(rs.next() && returnval.size() <= IHardTokenBatchJobSessionLocal.MAX_RETURNED_QUEUE_SIZE){
+           while(rs.next() && returnval.size() <= MAX_RETURNED_QUEUE_SIZE){
               UserAdminData data = new UserAdminData(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
                                                , rs.getInt(10), rs.getInt(11)
                                                , new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9))
@@ -293,13 +289,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next tokens for issuer with alias: " + alias);
           throw new EJBException(e);
         }finally{
-           try{
-             if(rs != null) rs.close();
-             if(ps != null) ps.close();
-             if(con!= null) con.close();
-           }catch(SQLException se){
-               error("Fel vid upprensning: ", se);
-           }
+           JDBCUtil.close(con, ps, rs);
         }
       }
 
@@ -315,7 +305,6 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      * Returns the indexed user in queue scheduled for batch generation for the given issuer.
      *
      * @param admin the administrator performing the actions
-     * @param issuercert the certificate of the hard token issuer.
      * @param index index in queue of user to retrieve.
      *
      * @return The next token to generate or NULL if the given user doesn't exist in queue.
@@ -327,7 +316,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
       UserAdminData returnval=null;
       int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
 
-      if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
+      if(issuerid != LocalHardTokenSessionBean.NO_ISSUER){
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -356,13 +345,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with alias: " + alias);
           throw new EJBException(e);
         }finally{
-           try{
-             if(rs != null) rs.close();
-             if(ps != null) ps.close();
-             if(con!= null) con.close();
-           }catch(SQLException se){
-               error("Fel vid upprensning: ", se);
-           }
+           JDBCUtil.close(con, ps, rs);
         }
       }
       debug("<getNextHardTokenToGenerateInQueue()");
@@ -374,7 +357,6 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      * Returns the number of users scheduled for batch generation for the given issuer.
      *
      * @param admin the administrator performing the actions
-     * @param issuercert the certificate of the hard token issuer.
      *
      * @return the number of users to generate.
      * @throws EJBException if a communication or other error occurs.
@@ -385,7 +367,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
       int count = 0;
       int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
 
-      if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
+      if(issuerid != LocalHardTokenSessionBean.NO_ISSUER){
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -406,13 +388,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         }catch(Exception e){
           throw new EJBException(e);
         }finally{
-           try{
-             if(rs != null) rs.close();
-             if(ps != null) ps.close();
-             if(con!= null) con.close();
-           }catch(SQLException se){
-               error("Fel vid upprensning: ", se);
-           }
+           JDBCUtil.close(con, ps, rs);
         }
       }
       debug("<getNumberOfHardTokensToGenerate()");
@@ -451,13 +427,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         }catch(Exception e){
           throw new EJBException(e);
         }finally{
-           try{
-             if(rs != null) rs.close();
-             if(ps != null) ps.close();
-             if(con!= null) con.close();
-           }catch(SQLException se){
-               error("Fel vid upprensning: ", se);
-           }
+           JDBCUtil.close(con, ps, rs);
         }
     } // checkForHardTokenIssuerId
 
