@@ -48,13 +48,13 @@
         <description>Defines the subject used in the notification message</description>
         <env-entry-name>subject</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>Hämta ditt certifikat</env-entry-value>
+        <env-entry-value>Retrieve your certificate</env-entry-value>
      </env-entry>
      <env-entry>
         <description>Defines the actual message of the notification. Use the values $Username, $Password, $CN, $O, $OU, $C, $DATE to indicate which texts that should be replaced (Case insensitive), $NL stands for newline.</description>
         <env-entry-name>message</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>Hej $CN$NL$NL Detta är en test på en notification. $NL$NL Du har användarnamn: $Username$NL lösenord: $Password$NL$NL Du skall nu INTE gå ngnstans och hämta ditt certifikat för detta Är bara på skoj och för att bevisa för er att det fungerar nu.</env-entry-value>
+        <env-entry-value>Hello $CN$NL$NL This is a notification. $NL$NL Your username: $Username$NL password: $Password$NL$NL Your are NOT supposed to go and fetch your certificate, this is only a test.</env-entry-value>
      </env-entry>          
      <!-- END Env-entries used for notification configuration -->     
      <ejb-local-ref>
@@ -390,13 +390,30 @@ END LDAP Publisher -->
    <method-permission>
      <role-name>InternalUser</role-name>
      <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
          <ejb-name>UserData</ejb-name>
          <method-name>*</method-name>
      </method>
      <method>
-         <ejb-name>UserAdminSession</ejb-name>
+         <ejb-name>GlobalConfigurationData</ejb-name>
          <method-name>*</method-name>
      </method>
+     <method>
+         <ejb-name>AdminPreferencesData</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
+         <ejb-name>EndEntityProfileData</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     
    </method-permission>
 
    <!--
@@ -405,6 +422,18 @@ END LDAP Publisher -->
        Required is used for mission critical methods, which cannot collide.
        Supports is used for methods which only read data.
    -->
+   <container-transaction>
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <trans-attribute>Required</trans-attribute>
+   </container-transaction>
+
     <container-transaction>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
@@ -432,6 +461,10 @@ END LDAP Publisher -->
      </method>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
+         <method-name>findAllUsersByStatusWithLimit</method-name>
+     </method>
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
          <method-name>checkForCAId</method-name>
      </method>     
      <method>
@@ -442,17 +475,17 @@ END LDAP Publisher -->
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>checkForCertificateProfileId</method-name>
      </method>
-    <method>
+     <method>
          <ejb-name>UserAdminSession</ejb-name>
-         <method-name>loadGlobalConfiguration</method-name>
+         <method-name>checkForHardTokenProfileId</method-name>
      </method>
     <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>query</method-name>
      </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>getAdminPreference</method-name>
+    <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>existsUser</method-name>
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
@@ -484,96 +517,18 @@ END LDAP Publisher -->
      </method>
      <method>
          <ejb-name>RaAdminSession</ejb-name>
+         <method-name>existsCertificateProfileInEndEntityProfiles</method-name>
+     </method>
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
          <method-name>existsCAInEndEntityProfiles</method-name>
      </method>     
      <method>
          <ejb-name>RaAdminSession</ejb-name>
-         <method-name>existsCertificateProfileInEndEntityProfiles</method-name>
+         <method-name>loadGlobalConfiguration</method-name>
      </method>
      <trans-attribute>Supports</trans-attribute>
    </container-transaction>
-
-   <container-transaction>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>addUser</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>changeUser</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>deleteUser</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>setUserStatus</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>setPassword</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>setClearTextPassword</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>revokeUser</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>revokeCert</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>startExternalService</method-name>
-     </method>
-     <method>
-         <ejb-name>UserAdminSession</ejb-name>
-         <method-name>saveGlobalConfiguration</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>addAdminPreference</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>changeAdminPreference</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>changeAdminPreferenceNoLog</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>saveDefaultAdminPreference</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>addEndEntityProfile</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>cloneEndEntityProfile</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>removeEndEntityProfile</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>renameEndEntityProfile</method-name>
-     </method>
-     <method>
-         <ejb-name>RaAdminSession</ejb-name>
-         <method-name>changeEndEntityProfile</method-name>
-     </method>
-
-     <trans-attribute>Required</trans-attribute>
-   </container-transaction>
-
 
  </assembly-descriptor>
 </ejb-jar>

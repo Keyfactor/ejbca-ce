@@ -745,7 +745,7 @@
      </method>
      <method>
          <ejb-name>RSASignSession</ejb-name>
-         <method-name>createCRL</method-name>
+         <method-name>*</method-name>
      </method>
      <method>
          <ejb-name>CreateCRLSession</ejb-name>
@@ -759,22 +759,20 @@
          <ejb-name>CRLData</ejb-name>
          <method-name>*</method-name>
      </method>
-
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>*</method-name>
+     </method>
+     <method>
+         <ejb-name>CAAdminSession</ejb-name>
+         <method-name>*</method-name>
+     </method>
 <!-- Uncomment to use LDAP publisher
      <method>
          <ejb-name>PublisherSession1</ejb-name>
          <method-name>*</method-name>
      </method>
 END LDAP Publisher -->
-
-     <method>
-         <ejb-name>CertificateStoreSession</ejb-name>
-         <method-name>storeCRL</method-name>
-     </method>
-     <method>
-         <ejb-name>CertificateStoreSession</ejb-name>
-         <method-name>storeCertificate</method-name>
-     </method>
    </method-permission>
 
    <method-permission>
@@ -815,6 +813,26 @@ END LDAP Publisher -->
          <ejb-name>CertificateStoreSession</ejb-name>
          <method-name>getLastCRLNumber</method-name>
      </method>
+     <method>
+         <ejb-name>CAAdminSession</ejb-name>
+         <method-name>getCAInfo</method-name>
+     </method>
+     <method>
+         <ejb-name>CAAdminSession</ejb-name>
+         <method-name>getCAIdToNameMap</method-name>
+     </method>
+     <method>
+         <ejb-name>CAAdminSession</ejb-name>
+         <method-name>getAvailableCAs</method-name>
+     </method>
+     <method>
+         <ejb-name>CAAdminSession</ejb-name>
+         <method-name>getAllCACertificates</method-name>
+     </method>
+     <method>
+         <ejb-name>CAAdminSession</ejb-name>
+         <method-name>exitsCertificateProfileInCAs</method-name>
+     </method>
    </method-permission>
 
    <!--
@@ -846,6 +864,18 @@ END LDAP Publisher -->
      </method>
      <method>
          <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>revokeCertificate</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>setRevokeStatus</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>revokeAllCertByCA</method-name>
+     </method>
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
          <method-name>addCertificateProfile</method-name>
      </method>
      <method>
@@ -865,25 +895,15 @@ END LDAP Publisher -->
          <method-name>changeCertificateProfile</method-name>
      </method>
      <method>
-         <ejb-name>CertificateStoreSession</ejb-name>
-         <method-name>setRevokeStatus</method-name>
-     </method>
-     <method>
-         <ejb-name>CertificateStoreSession</ejb-name>
-         <method-name>revokeAllCertByCA</method-name>
-     </method>
-     <method>
          <ejb-name>CAAdminSession</ejb-name>
          <method-name>*</method-name>
      </method>     
      <method>
          <ejb-name>CertificateData</ejb-name>
-         <method-intf>Remote</method-intf>
          <method-name>*</method-name>
      </method>
      <method>
          <ejb-name>CRLData</ejb-name>
-         <method-intf>Remote</method-intf>
          <method-name>*</method-name>
      </method>
 <!-- Uncomment to use LDAP publisher
@@ -902,6 +922,10 @@ END LDAP Publisher -->
          <method-name>getCertificateChain</method-name>
      </method>
      <method>
+         <ejb-name>RSASignSession</ejb-name>
+         <method-name>getPublisherIdToNameMap</method-name>
+     </method>
+     <method>
          <ejb-name>CertificateStoreSession</ejb-name>
          <method-name>*</method-name>
      </method>
@@ -912,6 +936,14 @@ END LDAP Publisher -->
      <method>
          <ejb-name>CAAdminSession</ejb-name>
          <method-name>getCAIdToNameMap</method-name>
+     </method>
+     <method>
+         <ejb-name>CAAdminSession</ejb-name>
+         <method-name>getAllCACertificates</method-name>
+     </method>
+     <method>
+         <ejb-name>CAAdminSession</ejb-name>
+         <method-name>getAvailableCAs</method-name>
      </method>
 
    <trans-attribute>Supports</trans-attribute>
