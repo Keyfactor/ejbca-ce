@@ -1,4 +1,4 @@
-This what should be done in order to get card that could be used for smartcard logon.
+This is what should be done in order to get card that could be used for smartcard logon.
 
 Please note that [x] refers to one of the references listed in the end of the file.
 
