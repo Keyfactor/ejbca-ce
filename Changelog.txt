@@ -11,7 +11,8 @@ Added encoding=ascii to javac to fix compile on strange locales
 Fixed API for active directory publisher
 Support for more than two levels of CAs
 Initial support for OCSP
-Fixad small bug if using null revocation date
+Fixed small bug if using null revocation date
+Default revocation reason to new reason NOT_REVOKED
 
 2.0.1
 -----
