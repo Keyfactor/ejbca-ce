@@ -36,7 +36,7 @@ import se.anatom.ejbca.util.SqlExecutor;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.8 2004-04-21 20:15:18 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.9 2004-04-22 08:38:15 anatom Exp $
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
@@ -101,8 +101,8 @@ public class UpgradeSessionBean extends BaseSessionBean {
         PreparedStatement ps = null;
         try {
             con = getConnection();
-            // cAId and the table cadata is only in ejbca 3, not 2. Assumes we have something in the database...
-            ps = con.prepareStatement("select distinct cAId from cadata");
+            // cAId in the table admingroupdata is only in ejbca 3, not 2.
+            ps = con.prepareStatement("select distinct cAId from admingroupdata");
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 // We have caId, so we are already at ejbca 3
