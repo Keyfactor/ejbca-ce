@@ -160,11 +160,10 @@ GUI, use 'deploy.sh/cmd nora'.
 6. Initialize the CA for operation by running 'ca.sh/cmd init'.
 
 NOTE-1: After running tests with 'runtest.sh/cmd', you might consider deleting
-the
-database since some leftovers are left in the database. Also DO NOT run the
-testscripts on a production database since it will revoke all certificates in
-the database. 'runtest.sh/cmd should not be run on a production system, only
-to test the installation.
+the database since some leftovers are left in the database. 
+Runtest will create and revoke some testcertificates, so after runtest your CRLs 
+will be populated with a few entries.
+'runtest.sh/cmd should not be run on a production system, only to test the installation.
 
 NOTE-2: The installed keystore is a demo keystore with DN 'C=SE,O=AnaTom,CN=
 TestCA'.
