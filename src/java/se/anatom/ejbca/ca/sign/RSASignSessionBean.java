@@ -87,7 +87,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.93 2003-07-24 15:24:41 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.94 2003-07-24 15:36:51 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     transient X509Certificate caCert;
@@ -1078,6 +1078,7 @@ public class RSASignSessionBean extends BaseSessionBean {
 
         // CRL Distribution point URI
         if (certProfile.getUseCRLDistributionPoint() == true) {
+            // Multiple CDPs are spearated with the ';' sign
             StringTokenizer tokenizer = new StringTokenizer(certProfile.getCRLDistributionPointURI(), ";", false);
             DEREncodableVector vec = new DEREncodableVector();
             while (tokenizer.hasMoreTokens()) {
