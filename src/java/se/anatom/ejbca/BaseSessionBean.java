@@ -20,12 +20,13 @@ import javax.naming.*;
 import javax.rmi.PortableRemoteObject;
 
 import org.apache.log4j.Logger;
+import se.anatom.ejbca.util.ServiceLocator;
 
 
 /**
  * Base for Session Beans providing common features, new Session Beans should extend this.
  *
- * @version $Id: BaseSessionBean.java,v 1.11 2004-04-16 07:39:01 anatom Exp $
+ * @version $Id: BaseSessionBean.java,v 1.12 2004-11-08 21:07:55 sbailliez Exp $
  */
 public class BaseSessionBean implements SessionBean {
     /** Log4j instance for Base */
@@ -125,20 +126,15 @@ public class BaseSessionBean implements SessionBean {
      * Gets InitialContext
      *
      * @return InitialContext
+     * @deprecated Use #getLocator()
      */
     public InitialContext getInitialContext() {
-        baseLog.debug(">getInitialContext()");
-
         try {
             if (cacheCtx == null) {
                 cacheCtx = new InitialContext();
             }
-
-            baseLog.debug("<getInitialContext()");
-
             return cacheCtx;
         } catch (NamingException e) {
-            baseLog.error("Can't get InitialContext", e);
             throw new EJBException(e);
         }
     }
@@ -150,21 +146,11 @@ public class BaseSessionBean implements SessionBean {
      * @param type the class type to narrow the object to.
      *
      * @return Object that can be casted to 'type'.
+     * @deprecated Use #getLocator()
      */
     public Object lookup(String jndiName, Class type) {
-        baseLog.debug(">lookup(" + jndiName + ")");
-
-        InitialContext ctx = getInitialContext();
-
-        try {
-            Object ret = PortableRemoteObject.narrow(ctx.lookup(jndiName), type);
-            baseLog.debug("<lookup(" + jndiName + ")");
-
-            return ret;
-        } catch (NamingException e) {
-            baseLog.debug("NamingException, can't lookup '" + jndiName + "'");
-            throw new EJBException(e);
-        }
+        Object ref = lookup(jndiName);
+        return PortableRemoteObject.narrow(ref, type);
     }
 
     /**
@@ -173,21 +159,10 @@ public class BaseSessionBean implements SessionBean {
      * @param jndiName the JNDI name to lookup.
      *
      * @return Object that can be casted to 'type'.
+     * @deprecated Use #getLocator()
      */
     public Object lookup(String jndiName) {
-        baseLog.debug(">lookup(" + jndiName + ")");
-
-        InitialContext ctx = getInitialContext();
-
-        try {
-            Object ret = ctx.lookup(jndiName);
-            baseLog.debug("<lookup(" + jndiName + ")");
-
-            return ret;
-        } catch (NamingException e) {
-            baseLog.debug("NamingException, can't lookup '" + jndiName + "'");
-            throw new EJBException(e);
-        }
+        return getLocator().getObject(jndiName);
     }
 
     /**
@@ -239,4 +214,13 @@ public class BaseSessionBean implements SessionBean {
     public SessionContext getSessionContext() {
         return ctx;
     }
+
+    /**
+     * return the environment entries locator
+     * @return return the environment entries locator
+     */
+    protected ServiceLocator getLocator() {
+        return ServiceLocator.getInstance();
+    }
+    
 }
