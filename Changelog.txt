@@ -1,3 +1,7 @@
+3.0
+---
+Cleaned system.out debug logs
+
 3.0 beta 3
 ----------
 Upgrade function from ejbca2 with MySQL.
