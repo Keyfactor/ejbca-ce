@@ -21,7 +21,7 @@ import se.anatom.ejbca.log.Admin;
  *
  * Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.13 2003-03-10 07:22:02 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.14 2003-06-13 15:15:19 anatom Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote  {
 
@@ -114,11 +114,11 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     
      /** 
      * Set the status of certificates of given dn to revoked.
-     * @param dn the dn of user to revoke certificates.
+     * @param username the username of user to revoke certificates.
      * @param reason the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON constants.)
      * @throws EJBException if a communication or other error occurs.
      */
-    public void setRevokeStatus(Admin admin, String dn, int reason) throws RemoteException;
+    public void setRevokeStatus(Admin admin, String username, int reason) throws RemoteException;
 
      /**
      * Set the status of certificate with  given serno to revoked.
