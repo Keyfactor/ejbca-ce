@@ -687,11 +687,10 @@ public class RSASignSessionBean extends BaseSessionBean {
      */
     public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException {
         debug(">createCertificate(IRequestMessage)");
-        IResponseMessage ret = null;
-
         // Get CA that will receive request
         CADataLocal cadata = null;
         UserAuthData data = null;
+        IResponseMessage ret = null;            
         try {
             // See if we can get issuerDN directly from request
             if (req.getIssuerDN() != null) {
@@ -733,55 +732,20 @@ public class RSASignSessionBean extends BaseSessionBean {
             } catch (CertificateNotYetValidException cve) {
                 throw new CADoesntExistsException(cve);
             }
-
-
-            if (req.requireKeyInfo()) {
-                // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
-            }
-            // Create the response message and set all required fields
-            try {
-                ret = (IResponseMessage) responseClass.newInstance();
-            } catch (InstantiationException e) {
-                //TODO : do something with these exceptions
-                log.error("Error creating response message", e);
-                return null;
-            } catch (IllegalAccessException e) {
-                log.error("Error creating response message", e);
-                return null;
-            }
-            if (ret.requireSignKeyInfo()) {
-                ret.setSignKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
-            }
-            if (ret.requireEncKeyInfo()) {
-                ret.setEncKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT));
-            }
-            if (req.getSenderNonce() != null) {
-                ret.setRecipientNonce(req.getSenderNonce());
-            }
-            if (req.getTransactionId() != null) {
-                ret.setTransactionId(req.getTransactionId());
-            }
-            // Sendernonce is a random number
-            byte[] senderNonce = new byte[16];
-            randomSource.nextBytes(senderNonce);
-            ret.setSenderNonce(Hex.encode(senderNonce));
-            // If we have a specified request key info, use it in the reply
-            if (req.getRequestKeyInfo() != null) {
-                ret.setRecipientKeyInfo(req.getRequestKeyInfo());
-            }
+            
             // Verify the request
             if (req.verify() == false) {
                 getLogSession().log(admin, cadata.getCAId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "POPO verification failed.");
                 throw new SignRequestSignatureException("Verification of signature (popo) on request failed.");
             }
+            
             if ((req.getUsername() == null) || (req.getPassword() == null)) {
                 log.error("No username/password in request");
                 throw new SignRequestException("No username/password in request!");
                 //ret.setFailInfo(FailInfo.BAD_REQUEST);
                 //ret.setStatus(ResponseStatus.FAILURE);
-            } else {
-                // If we haven't done so yet, authenticate user
+            } else {				
+				// If we haven't done so yet, authenticate user
                 if (data == null) {
                     data = authUser(admin, req.getUsername(), req.getPassword());
                 }
@@ -791,7 +755,11 @@ public class RSASignSessionBean extends BaseSessionBean {
                 }
                 Certificate cert = null;
                 cert = createCertificate(admin, data, ca, reqpk, keyUsage);
-                if (cert != null) {
+                
+                //Create the response message with all nonces and checks etc
+                ret = createResponseMessage(responseClass, req, ca, catoken);
+				
+				if (cert != null) {
                     ret.setCertificate(cert);
                     ret.setStatus(ResponseStatus.SUCCESS);
                 } else {
@@ -899,41 +867,9 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
 
 
-            if (req.requireKeyInfo()) {
-                // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
-            }
-            // Create the response message and set all required fields
-            try {
-                ret = (IResponseMessage) responseClass.newInstance();
-            } catch (InstantiationException e) {
-                //TODO : do something with these exceptions
-                log.error("Error creating response message", e);
-                return null;
-            } catch (IllegalAccessException e) {
-                log.error("Error creating response message", e);
-                return null;
-            }
-            if (ret.requireSignKeyInfo()) {
-                ret.setSignKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
-            }
-            if (ret.requireEncKeyInfo()) {
-                ret.setEncKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT));
-            }
-            if (req.getSenderNonce() != null) {
-                ret.setRecipientNonce(req.getSenderNonce());
-            }
-            if (req.getTransactionId() != null) {
-                ret.setTransactionId(req.getTransactionId());
-            }
-            // Sendernonce is a random number
-            byte[] senderNonce = new byte[16];
-            randomSource.nextBytes(senderNonce);
-            ret.setSenderNonce(Hex.encode(senderNonce));
-            // If we have a specified request key info, use it in the reply
-            if (req.getRequestKeyInfo() != null) {
-                ret.setRecipientKeyInfo(req.getRequestKeyInfo());
-            }
+            //Create the response message with all nonces and checks etc
+            ret = createResponseMessage(responseClass, req, ca, catoken);
+            
             // Get the CRL, don't even bother digging into the encrypted CRLIssuerDN...since we already
             // know that we are the CA (SCEP is soooo stupid!)
             byte[] crl = certificateStore.getLastCRL(admin, req.getIssuerDN());
@@ -973,6 +909,45 @@ public class RSASignSessionBean extends BaseSessionBean {
         return ret;
     }
 
+    private IResponseMessage createResponseMessage(Class responseClass, IRequestMessage req, CA ca, CAToken catoken) throws CATokenOfflineException {
+    	IResponseMessage ret = null;
+    	if (req.requireKeyInfo()) {
+    		// You go figure...scep encrypts message with the public CA-cert
+    		req.setKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+    	}
+    	// Create the response message and set all required fields
+    	try {
+    		ret = (IResponseMessage) responseClass.newInstance();
+    	} catch (InstantiationException e) {
+    		//TODO : do something with these exceptions
+    		log.error("Error creating response message", e);
+    		return null;
+    	} catch (IllegalAccessException e) {
+    		log.error("Error creating response message", e);
+    		return null;
+    	}
+    	if (ret.requireSignKeyInfo()) {
+    		ret.setSignKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+    	}
+    	if (ret.requireEncKeyInfo()) {
+    		ret.setEncKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT));
+    	}
+    	if (req.getSenderNonce() != null) {
+    		ret.setRecipientNonce(req.getSenderNonce());
+    	}
+    	if (req.getTransactionId() != null) {
+    		ret.setTransactionId(req.getTransactionId());
+    	}
+    	// Sendernonce is a random number
+    	byte[] senderNonce = new byte[16];
+    	randomSource.nextBytes(senderNonce);
+    	ret.setSenderNonce(Hex.encode(senderNonce));
+    	// If we have a specified request key info, use it in the reply
+    	if (req.getRequestKeyInfo() != null) {
+    		ret.setRecipientKeyInfo(req.getRequestKeyInfo());
+    	}
+    	return ret;
+    }
     /**
      * Requests for a CRL to be created with the passed (revoked) certificates.
      *
