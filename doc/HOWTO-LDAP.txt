@@ -154,6 +154,16 @@ The LDAP url format is described in rfc2255: http://www.ietf.org/rfc/rfc2255.txt
 Examples of using LDAP with Netscape/Mozilla:
 http://www.umdnj.edu/istweb/pki/pki_files/secure_email_ns7.html
 
+To use LDAP top fetch user certificates and use them for encrypting email there seems to be a 
+reuirement to use SSL connection to the LDAP server 
+(Account Options->Compositions & Addressing->Edit directories->Edit->Use Secure Connection), see also 
+below how to configure OpenLDAp for SSL.
+
+Note: When fetching certificates from LDAP with Mozilla for example with URL:
+ldap://10.89.57.166/dc=bigcorp,dc=com??sub?(cn=MyName)?(objectclass=*)
+To get a checkbox at the fetched certificate, the CA certificate must be installed in the Windows truststore,
+not only in Mozillas.
+
 CONFIGURE OpenLDAP
 ==================
 
