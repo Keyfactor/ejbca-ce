@@ -1,4 +1,4 @@
-$Id: TODO,v 1.9 2002-03-06 10:11:17 anatom Exp $
+$Id: TODO,v 1.10 2002-03-07 08:35:09 anatom Exp $
 
 V 1.0
 -----
@@ -12,6 +12,7 @@ V 2.0
 - Correct <ejb-ref> and <transaction-xx> for beans in ejb-jar.xml.
 - Certificate update/rollover for CAs and clients.
 - Sample Iptables firewall sripts for CA.
+- Make a database model similar to architecture model.
 - Possibility to warn about certificates about to expire.
 - Return PKCS7 response to IE/Mozilla, response is PKCS7 with whole chain.
 ca.crt is also pkcs7 with whole chain.
