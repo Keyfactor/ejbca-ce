@@ -20,7 +20,7 @@ import se.anatom.ejbca.log.Admin;
  * check for revocation etc. the CertificateStoreSession implements the interface
  * ICertificateStoreSession. Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.25 2003-10-25 08:52:37 anatom Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.26 2003-12-04 10:20:49 anatom Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote {
 
@@ -32,36 +32,49 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     * there are millinos of certificates in the DB!).
     * Should only be used for testing purposes.
     *
+    * @param admin Administrator performing the operation
+    * @param issuerDN the dn of the certificates issuer.
     * @return Collection of fingerprints, i.e. Strings, reverse ordered by expireDate where last expireDate is first in array.
     * @throws EJBException if a communication or other error occurs.
     */
     public Collection listAllCertificates(Admin admin, String issuerdn) throws RemoteException;
 
    /**
-    * Lists certificates for a given subject.
+    * Lists certificates for a given subject signed by the given issuer.
     *
+    * @param admin Administrator performing the operation
     * @param subjectDN the DN of the subject whos certificates will be retrieved.
-    * @param issuer the dn of the certificates issuer.
+    * @param issuerDN the dn of the certificates issuer.
     * @return Collection of Certificates (java.security.cert.Certificate) in no specified order or an empty Collection.
     * @throws EJBException if a communication or other error occurs.
     */
-    public Collection findCertificatesBySubjectAndIssuer(Admin admin, String subjectDN, String issuer) throws RemoteException;
+    public Collection findCertificatesBySubjectAndIssuer(Admin admin, String subjectDN, String issuerDN) throws RemoteException;
 
+    /**
+     * Lists certificates for a given subject.
+     *
+     * @param admin Administrator performing the operation
+     * @param subjectDN the DN of the subject whos certificates will be retrieved.
+     * @return Collection of Certificates (java.security.cert.Certificate) in no specified order or an empty Collection.
+     * @throws EJBException if a communication or other error occurs.
+     */
+    public Collection findCertificatesBySubject(Admin admin, String subjectDN) throws RemoteException;
 
 	/**
-	 * Implements ICertificateStoreSession::findCertificateByIssuerAndSerno.
+     * Finds a certificate specified by issuer DN and serial number.
 	 *
-	 * @param admin DOCUMENT ME!
-	 * @param issuerDN DOCUMENT ME!
-	 * @param serno DOCUMENT ME!
+     * @param admin Administrator performing the operation
+	 * @param issuerDN issuer DN of the desired certificate.
+	 * @param serno serial number of the desired certificate!
 	 *
-	 * @return DOCUMENT ME!
+	 * @return Certificate if found or null
 	 */                           
 	public Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno) throws RemoteException;
 	
     /**
      * Finds certificate(s) for a given serialnumber.
      *
+     * @param admin Administrator performing the operation
      * @param serno the serialnumber of the certificate(s) that will be retrieved
      *
      * @return Certificate or null if none found.
@@ -74,6 +87,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     /**
      * Finds certificate(s) for a given usernaem.
      *
+     * @param admin Administrator performing the operation
      * @param username the usernaem of the certificate(s) that will be retrieved
      *
      * @return Certificate or null if none found.
@@ -86,6 +100,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     /**
      * Finds username for a given certificate serial number.
      *
+     * @param admin Administrator performing the operation
      * @param serno the serialnumber of the certificate to find username for.
      *
      * @return username or null if none found.
@@ -98,6 +113,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     /**
      * Finds certificate which expire within a specified time.
      *
+     * @param admin Administrator performing the operation
      * @param expireTime all certificates that expires before this date will be listed
      *
      * @return Collection of Certificates (java.security.cert.Certificate) in no specified order or
@@ -112,6 +128,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     /**
      * Finds certificate with specified fingerprint.
      *
+     * @param admin Administrator performing the operation
      * @return certificate or null if certificate doesn't exists
      *
      * @throws RemoteException if a communication or other error occurs.
@@ -125,7 +142,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
 	 * will be empty if the issuerDN is <tt>null</tt>/empty
 	 * or the collection of serial numbers is empty.
 	 *
-	 * @param admin
+     * @param admin Administrator performing the operation
 	 * @param issuer the subjectDN of a CA certificate
 	 * @param sernos a collection of certificate serialnumbers
 	 *
@@ -194,7 +211,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
 	 * </li>
 	 * </ol>
 	 *
-	 * @param admin
+     * @param admin Administrator performing the operation
 	 * @param type CERTTYPE_* types from SecConst 
 	 * @param issuerDN get all certificates issued by a specific issuer.
 	 *                 If <tt>null</tt> or empty return certificates regardless of
@@ -210,6 +227,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     /**
      * Set the status of certificates of given dn to revoked.
      *
+     * @param admin Administrator performing the operation
      * @param username the username of user to revoke certificates.
      * @param reason the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON
      *        constants.)
@@ -222,6 +240,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     /**
      * Set the status of certificate with  given serno to revoked.
      *
+     * @param admin Administrator performing the operation
      * @param serno the serno of certificate to revoke.
      * @param reason the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON constants.)
      * @throws EJBException if a communication or other error occurs.
@@ -243,6 +262,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     /**
      * Method that checks if a users all certificates have been revoked.
      *
+     * @param admin Administrator performing the operation
      * @param username the username to check for.
      *
      * @return returns true if all certificates are revoked.
@@ -255,10 +275,11 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     /**
      * Checks if a certificate is revoked.
      *
+     * @param admin Administrator performing the operation
      * @param issuerDN the DN of the issuer.
      * @param serno the serialnumber of the certificate that will be checked
      *
-    * @return RevokedCertInfo with revocation information, with reason RevokedCertInfo.NOT_REVOKED if NOT revoked. Returns null if certificate is not found.
+     * @return RevokedCertInfo with revocation information, with reason RevokedCertInfo.NOT_REVOKED if NOT revoked. Returns null if certificate is not found.
      *
      * @throws RemoteException if a communication or other error occurs.
      */
@@ -269,8 +290,8 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
 	 * The method returns the revocation status for a list or certificate identified
 	 * by the serialnumber.
 	 *
-	 * @param admin
-	 * @param issuer the subjectDN of a CA certificate
+     * @param admin Administrator performing the operation
+	 * @param issuerDN the subjectDN of a CA certificate
 	 * @param sernos a collection of certificate serialnumbers
 	 *
 	 * @return Collection a collection of {@link RevokedCertInfo} objects which
@@ -281,6 +302,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     /**
     * Lists all revoked certificates, ie status = CERT_REVOKED.
     *
+    * @param admin Administrator performing the operation
     * @return Collection of Strings containing fingerprint (primary key) of the revoced certificates. Reverse ordered by expireDate where last expireDate is first in array.
     * @throws EJBException if a communication or other error occurs.
     */
@@ -289,6 +311,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
    /**
     * Retrieves the latest CRL issued by this CA.
     *
+    * @param admin Administrator performing the operation
     * @return X509CRL or null of no CRLs have been issued.
     * @throws EJBException if a communication or other error occurs.
     */
@@ -298,6 +321,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
    /**
     * Retrieves the information about the lastest CRL issued by this CA.
     *
+    * @param admin Administrator performing the operation
     * @return CRLInfo of last CRL by CA.
     * @throws EJBException if a communication or other error occurs.
     */
@@ -306,6 +330,8 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
    /**
     * Retrieves the highest CRLNumber issued by the CA.
     *
+    * @param admin Administrator performing the operation
+    * @param issuerdn the subjectDN of a CA certificate
     * @return int.
     * @throws EJBException if a communication or other error occurs.
     */
@@ -316,7 +342,6 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      * Adds a certificate profile to the database.
      *
      * @param admin administrator performing the task
-     * @param certificateprofileid internal ID of new certificate profile, use only if you know it's right.
      * @param certificateprofilename readable name of new certificate profile
      * @param certificateprofile the profile to be added
      *
@@ -341,6 +366,9 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
 	/**
 	 * Adds a certificateprofile  with the same content as the original certificateprofile,
 	 *
+     * @param admin Administrator performing the operation
+     * @param originalcertificateprofilename readable name of old certificate profile
+     * @param newcertificateprofilename readable name of new certificate profile
 	 * @return false if the new certificateprofilename already exists.
 	 *
 	 * @throws RemoteException if a communication or other error occurs.
@@ -349,6 +377,8 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
 
      /**
      * Removes a certificateprofile from the database.
+     *
+     * @param admin Administrator performing the operation
      * @throws EJBException if a communication or other error occurs.
      */
     public void removeCertificateProfile(Admin admin, String certificateprofilename) throws RemoteException;
@@ -361,6 +391,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     /**
      * Updates certificateprofile data
      *
+     * @param admin Administrator performing the operation
      * @return false if certificateprofilename doesn't exists
      *
      * @throws RemoteException if a communication or other error occurs.
@@ -371,6 +402,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     /**
      * Retrives a Collection of id:s (Integer) to authorized profiles.
      *
+     * @param admin Administrator performing the operation
      * @param certprofiletype should be either SecConst.CERTTYPE_ENDENTITY, SecConst.CERTTYPE_SUBCA, SecConst.CERTTYPE_ROOTCA or 0 for all. 
      */
     public Collection getAuthorizedCertificateProfileIds(Admin admin, int certprofiletype) throws RemoteException;
@@ -378,6 +410,8 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     
     /**
      * Method creating a hashmap mapping profile id (Integer) to profile name (String).
+     *
+     * @param admin Administrator performing the operation
      */    
     public HashMap getCertificateProfileIdToNameMap(Admin admin) throws RemoteException;
 
@@ -389,6 +423,8 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
 
      /**
      * Finds a certificate profile by id.
+     
+     * @param admin Administrator performing the operation
      */
     public CertificateProfile getCertificateProfile(Admin admin, int id) throws RemoteException;
 
@@ -396,6 +432,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      /**
      * Returns a certificate profile id, given it's certificate profile name
      *
+     * @param admin Administrator performing the operation
      * @return the id or 0 if certificateprofile cannot be found.
      */
     public int getCertificateProfileId(Admin admin, String certificateprofilename) throws RemoteException;
@@ -403,6 +440,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      /**
      * Returns a certificateprofiles name given it's id.
      *
+     * @param admin Administrator performing the operation
      * @return certificateprofilename or null if certificateprofile id doesn't exists.
      */
     public String getCertificateProfileName(Admin admin, int id) throws RemoteException;
@@ -410,6 +448,7 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      /**
      * Method to check if a CA exists in any of the certificate profiles. Used to avoid desyncronization of CA data.
      *
+     * @param admin Administrator performing the operation
      * @param caid the caid to search for.
      * @return true if ca exists in any of the certificate profiles.
      */

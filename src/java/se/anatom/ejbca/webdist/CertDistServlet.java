@@ -41,7 +41,7 @@ import se.anatom.ejbca.log.Admin;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.21 2003-11-29 16:04:03 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.22 2003-12-04 10:20:50 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -152,17 +152,17 @@ public class CertDistServlet extends HttpServlet {
                 log.debug(e);
                 return;
             }
-        } else if ((command.equalsIgnoreCase(COMMAND_CERT) || command.equalsIgnoreCase(COMMAND_LISTCERT)) &&  issuerdn != null ) {
+        } else if (command.equalsIgnoreCase(COMMAND_CERT) || command.equalsIgnoreCase(COMMAND_LISTCERT)) {
             String dn = req.getParameter(SUBJECT_PROPERTY);
             if (dn == null) {
-                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=cert?subject=<subjectdn>&issuer=<issuerdn>.");
-                log.debug("Bad request, no 'dn' arg to 'lastcert' or 'listcert' command.");
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=lastcert/listcert?subject=<subjectdn>.");
+                log.debug("Bad request, no 'subject' arg to 'lastcert' or 'listcert' command.");
                 return;
             }
             try {
                 log.debug("Looking for certificates for '"+dn+"'.");
                 ICertificateStoreSessionRemote store = storehome.create();
-                Collection certcoll = store.findCertificatesBySubjectAndIssuer(administrator, dn, issuerdn);
+                Collection certcoll = store.findCertificatesBySubject(administrator, dn);
                 Object[] certs = certcoll.toArray();
                 int latestcertno = -1;
                 if (command.equalsIgnoreCase(COMMAND_CERT)) {
@@ -194,8 +194,7 @@ public class CertDistServlet extends HttpServlet {
                 if (command.equalsIgnoreCase(COMMAND_LISTCERT)) {
                     res.setContentType("text/html");
                     PrintWriter pout = new PrintWriter(res.getOutputStream());
-                    pout.println("<html><head><title>Certificates for "+dn+"</title></head>");
-                    pout.println("<body><p>");
+                    printHtmlHeader("Certificates for "+dn, pout);
                     for (int i=0;i<certs.length;i++) {
                         Date notBefore = ((X509Certificate)certs[i]).getNotBefore();
                         Date notAfter = ((X509Certificate)certs[i]).getNotAfter();
@@ -215,7 +214,7 @@ public class CertDistServlet extends HttpServlet {
                     if (certs.length == 0) {
                         pout.println("No certificates exists for '"+dn+"'.");
                     }
-                    pout.println("</body></html>");
+                    printHtmlFooter(pout);
                     pout.close();
                 }
             } catch (Exception e) {
@@ -305,13 +304,13 @@ public class CertDistServlet extends HttpServlet {
         } else if (command.equalsIgnoreCase(COMMAND_REVOKED)) {
             String dn = req.getParameter(ISSUER_PROPERTY);
             if (dn == null) {
-                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=revoked?issuer=<subjectdn>&serno=<serianlnumber>.");
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=revoked?issuer=<issuerdn>&serno=<serialnumber>.");
                 log.debug("Bad request, no 'issuer' arg to 'revoked' command.");
                 return;
             }
             String serno = req.getParameter(SERNO_PROPERTY);
             if (serno == null) {
-                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=revoked?issuer=<subjectdn>&serno=<serianlnumber>.");
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=revoked?issuer=<issuerdn>&serno=<serialnumber>.");
                 log.debug("Bad request, no 'serno' arg to 'revoked' command.");
                 return;
             }
@@ -319,19 +318,23 @@ public class CertDistServlet extends HttpServlet {
             try {
                 ICertificateStoreSessionRemote store = storehome.create();
                 RevokedCertInfo revinfo = store.isRevoked(administrator, dn, new BigInteger(serno));
-                res.setContentType("text/html");
                 PrintWriter pout = new PrintWriter(res.getOutputStream());
-                pout.println("<html><head><title>Check revocation</title></head>");
-                pout.println("<body><p>");
+                res.setContentType("text/html");
+                printHtmlHeader("Check revocation", pout);
                 if (revinfo != null) {
-                    pout.println("<h1>REVOKED</h1>");
-                    pout.println("Certificate with issuer '"+dn+"' and serial number '"+serno+"' is revoked");
-                    pout.println("RevocationDate is '"+revinfo.getRevocationDate()+"' and reason '"+revinfo.getReason()+"'.");
+                    if (revinfo.getReason() == RevokedCertInfo.NOT_REVOKED) {
+                        pout.println("<h1>NOT REVOKED</h1>");
+                        pout.println("Certificate with issuer '"+dn+"' and serial number '"+serno+"' is NOT revoked.");
+                    } else {
+                        pout.println("<h1>REVOKED</h1>");
+                        pout.println("Certificate with issuer '"+dn+"' and serial number '"+serno+"' is revoked.");
+                        pout.println("RevocationDate is '"+revinfo.getRevocationDate()+"' and reason '"+revinfo.getReason()+"'.");
+                    }
                 } else {
-                    pout.println("<h1>NOT REVOKED</h1>");
-                    pout.println("Certificate with issuer '"+dn+"' and serial number '"+serno+"' is NOT revoked");
+                    pout.println("<h1>CERTIFICATE DOES NOT EXIST</h1>");
+                    pout.println("Certificate with issuer '"+dn+"' and serial number '"+serno+"' does not exist.");
                 }
-                pout.println("</body></html>");
+                printHtmlFooter(pout);
                 pout.close();
             } catch (Exception e) {
                 PrintStream ps = new PrintStream(res.getOutputStream());
@@ -348,6 +351,23 @@ public class CertDistServlet extends HttpServlet {
         }
 
     } // doGet
+    
+    private void printHtmlHeader(String title, PrintWriter pout) {
+                pout.println("<html><head>");
+                pout.println("<title>"+title+"</title>");
+                pout.println("<META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">");
+                pout.println("<META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">");
+                pout.println("</head>");
+                pout.println("<body><p>");
+    }
+    private void printHtmlFooter(PrintWriter pout) {
+                pout.println("</body>");
+                pout.println("<head>");
+                pout.println("<META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">");
+                pout.println("<META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">");
+                pout.println("</head>");
+                pout.println("</html>");
+    }
 
     /**
      * Prints debug info back to browser client

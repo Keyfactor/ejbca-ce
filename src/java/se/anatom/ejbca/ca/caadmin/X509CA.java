@@ -55,7 +55,7 @@ import se.anatom.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.7 2003-11-14 14:59:57 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.8 2003-12-04 10:20:21 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -197,8 +197,8 @@ public class X509CA extends CA implements Serializable {
         
         lastDate.setTime(lastDate.getTime() + ( val * 24 * 60 * 60 * 1000));
         X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
-        // Serialnumber is random bits, where random generator is initialized when this
-        // bean is created.
+        // Serialnumber is random bits, where random generator is initialized by the
+        // serno generator.
         BigInteger serno = SernoGenerator.instance().getSerno();
         certgen.setSerialNumber(serno);
         certgen.setNotBefore(firstDate);

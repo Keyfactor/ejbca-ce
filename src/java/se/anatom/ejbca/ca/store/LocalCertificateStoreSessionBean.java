@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.61 2003-12-01 12:18:40 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.62 2003-12-04 10:20:49 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -277,6 +277,39 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     } // listRevokedCertificates
 
     /**
+     * Implements ICertificateStoreSession::findCertificatesBySubjectAndIssuer.
+     *
+     * @param admin DOCUMENT ME!
+     * @param subjectDN DOCUMENT ME!
+     * @param issuerDN DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public Collection findCertificatesBySubjectAndIssuer(Admin admin, String subjectDN, String issuerDN) {
+        debug(">findCertificatesBySubjectAndIssuer(), dn='"+subjectDN+"' and issuer='"+issuerDN+"'");
+        // First make a DN in our well-known format
+        String dn = CertTools.stringToBCDNString(subjectDN);
+        dn = StringTools.strip(dn);
+        String issuerdn = CertTools.stringToBCDNString(issuerDN);
+        issuerdn = StringTools.strip(issuerdn);
+        debug("Looking for cert with (transformed)DN: " + dn);
+        try {
+            Collection coll = certHome.findBySubjectDNAndIssuerDN(dn, issuerdn);
+            Collection ret = new ArrayList();
+            if (coll != null) {
+                Iterator iter = coll.iterator();
+                while (iter.hasNext()) {
+                    ret.add( ((CertificateDataLocal)iter.next()).getCertificate() );
+                }
+            }
+            debug("<findCertificatesBySubjectAndIssuer(), dn='"+subjectDN+"' and issuer='"+issuerDN+"'");
+            return ret;
+        } catch (javax.ejb.FinderException fe) {
+            throw new EJBException(fe);
+        }
+    } //findCertificatesBySubjectAndIssuer
+
+    /**
      * Implements ICertificateStoreSession::findCertificatesBySubject.
      *
      * @param admin DOCUMENT ME!
@@ -284,31 +317,27 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      *
      * @return DOCUMENT ME!
      */
-    public Collection findCertificatesBySubjectAndIssuer(Admin admin, String subjectDN, String issuer) {
-        debug(">findCertificatesBySubjectAndIssuer(), dn='"+subjectDN+"' and issuer='"+issuer+"'");
+    public Collection findCertificatesBySubject(Admin admin, String subjectDN) {
+        debug(">findCertificatesBySubjectAndIssuer(), dn='"+subjectDN+"'");
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(subjectDN);
-        String issuerdn = CertTools.stringToBCDNString(issuer);
+        dn = StringTools.strip(dn);
         debug("Looking for cert with (transformed)DN: " + dn);
-
         try {
-            Collection coll = certHome.findBySubjectDNAndIssuerDN(dn, issuerdn);
+            Collection coll = certHome.findBySubjectDN(dn);
             Collection ret = new ArrayList();
-
             if (coll != null) {
                 Iterator iter = coll.iterator();
-
                 while (iter.hasNext()) {
                     ret.add( ((CertificateDataLocal)iter.next()).getCertificate() );
                 }
             }
-            debug("<findCertificatesBySubjectAndIssuer(), dn='"+subjectDN+"'");
+            debug("<findCertificatesBySubject(), dn='"+subjectDN+"'");
             return ret;
         } catch (javax.ejb.FinderException fe) {
             throw new EJBException(fe);
         }
     } //findCertificatesBySubject
-
 
     /**
      * Finds certificate which expire within a specified time. Implements
@@ -412,24 +441,21 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         debug(">findCertificateByIssuerAndSerno(), dn:"+issuerDN+", serno="+serno);
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(issuerDN);
+        dn = StringTools.strip(dn);
         debug("Looking for cert with (transformed)DN: " + dn);
         try {
             Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
             Certificate ret = null;
-
             if (coll != null) {
                 if (coll.size() > 1)
                   getLogSession().log(admin, issuerDN.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_DATABASE,"Error in database, more than one certificate has the same Issuer : " + issuerDN + " and serialnumber "
                                                                                                           + serno.toString(16) + ".");
                 Iterator iter = coll.iterator();
-
                 if (iter.hasNext()) {
                     ret= ((CertificateDataLocal)iter.next()).getCertificate();
                 }
             }
-
             debug("<findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno);
-
             return ret;
         } catch (Exception fe) {
             throw new EJBException(fe);
@@ -1095,7 +1121,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 					con.close();
 				}
 			} catch (SQLException se) {
-				error("Unable to cleanup after : findCertificateByIssuerAndSernos()", se);
+				error("Unable to cleanup after : isRevoked()", se);
 			}
 		}
 		debug("<isRevoked()");
