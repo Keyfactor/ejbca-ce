@@ -137,11 +137,23 @@ Publishing to AD
 ----------------
 When configuring Active Directory LDAP, Bind DN for the users are usually, 
 cn=<user>,cn=Users,dc=<domain-component>,dc=<domain-component>. 
-For example: cn=Philip Vendil,cn=Users,dc=primekey,dc=se
+For example: cn=Philip Vendil,cn=Users,dc=primekey,dc=se for the domain primekey.se
 
 If your DN is like "cn=Ejbca1,0=MyOrg,c=SE" and your base DN is like
 "DC=Security,DC=Software,DC=MyOrg".
-The publisher for AD should have base DN like "cn=Users,dc=security,dc=software,dc=MyOrg"
+The publisher for AD should have base DN like
+"cn=Users,dc=security,dc=software,dc=MyOrg"
+
+For Login DN you should use the full ldap name, for example:
+"CN=Administrator,C=Users,dc=primekey,dc=se"
+
+In order to connect to AD though SSL you should issue a LDAP SSL P12
+to the domain controller. Accoring to:
+http://support.microsoft.com/default.aspx?scid=kb;en-us;321051&sd=tech
+
+The same certificate is used for both the AD an global catalouge.
+Remember to add the CA certificate to the machine stores trusted root certificates.
+
 
 USING LDAP
 ==========
@@ -166,7 +178,6 @@ not only in Mozillas.
 
 CONFIGURE OpenLDAP
 ==================
-
 The objectclass 'inetOrgPerson' is used by default to store certificates.
 
 Example:
@@ -227,7 +238,6 @@ chose for your CA. The user type is end-user (1), keystore type is PEM, and if u
 check 'use batch').
 Batch generate the PEM keystore:
 ./batch.sh
-
 
 Copy the resulting files p12/pem/ldap.pem, p12/pem/ldap-CA.pem and p12/pem/ldap-Key.pem to your 
 LDAP server. In this example the slapd.conf is located in /usr/local/etc/openldap so we copy the 
