@@ -7,13 +7,30 @@ then
         exit
 fi
 
-cd src/java
 
 # JBoss
-TEST_CP=.:$JBOSS_HOME/client/jnp-client.jar:$JBOSS_HOME/client/jboss-j2ee.jar:$JBOSS_HOME/client/jbossall-client.jar:$JBOSS_HOME/client/jboss-client.jar:$JBOSS_HOME/client/jbosssx-client.jar:$JBOSS_HOME/client/jboss-common-client.jar:../../lib/junit.jar:../../lib/log4j-1.2.7.jar:../../lib/bcprov-jdk14-120.jar:../../lib/bcmail-jdk14-120.jar
+TEST_CP=.:$JBOSS_HOME/client/jnp-client.jar:$JBOSS_HOME/client/jboss-j2ee.jar:$JBOSS_HOME/client/jbossall-client.jar:$JBOSS_HOME/client/jboss-client.jar:$JBOSS_HOME/client/jbosssx-client.jar:$JBOSS_HOME/client/jboss-common-client.jar:../../lib/junit.jar:../../lib/log4j-1.2.7.jar:../../lib/bcprov-jdk14-120.jar:../../lib/bcmail-jdk14-120.jar:../../lib/httpunit.jar
 
 # Weblogic
-#TEST_CP=.:../../lib/weblogic.jar:../../lib/junit.jar:../../lib/log4j-1.2.7.jar:../../lib/bcprov-jdk14-120.jar:../../lib/bcmail-jdk14-120.jar
+#TEST_CP=.:../../lib/weblogic.jar:../../lib/junit.jar:../../lib/log4j-1.2.7.jar:../../lib/bcprov-jdk14-120.jar:../../lib/bcmail-jdk14-120.jar:../../lib/httpunit.jar
+
+# Function to perform HTTP tests instead of regular tests
+webtest()
+{
+    echo Testing webdist web
+    java -cp $TEST_CP se.anatom.ejbca.webdist.junit.TestRunner web
+    java -cp $TEST_CP se.anatom.ejbca.protocol.junit.TestRunner web
+    exit
+}
+
+cd src/java
+
+if [ "$1" = "webtest" ]
+then
+  webtest
+  cd ../..
+  exit
+fi
 
 echo Testing utils
 java -cp $TEST_CP se.anatom.ejbca.util.junit.TestRunner
@@ -33,4 +50,6 @@ echo Testing batch
 java -cp $TEST_CP se.anatom.ejbca.batch.junit.TestRunner
 
 cd ../..
+
+
 
