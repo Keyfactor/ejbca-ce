@@ -32,7 +32,7 @@ import se.anatom.ejbca.util.Base64;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.30 2004-03-11 10:12:00 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.31 2004-03-11 15:52:42 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(ScepRequestMessage.class);
@@ -213,6 +213,14 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                     log.error(errorText + ctoid);
                     error = 3;
                 }
+            } else if (messageType == 22) {
+                // TODO: Support the GetCRL (22) message type
+                log.error("Unsupported messagetype 'GetCRL' received");
+                error = 4;
+            } else if (messageType == 21) {
+                // TODO: Support the GetCert (21) message type
+                log.error("Unsupported messagetype 'GetCert' received");
+                error = 4;
             } else {
                 errorText = "This is not a certification request!";
                 log.error(errorText);
@@ -225,8 +233,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         }
 
         log.debug("<init");
-    }
-     // init
+    } // init
 
     private void decrypt()
         throws NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException,
