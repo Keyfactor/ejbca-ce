@@ -7,15 +7,4 @@
     <datasource-mapping>Oracle8</datasource-mapping>
   </defaults>
 
-    <!-- "resource" is a reserved word in Oracle -->
-  <enterprise-beans>
-    <entity>
-      <ejb-name>AccessRulesData</ejb-name>
-      <cmp-field>
-        <field-name>resource</field-name>
-        <column-name>resource_</column-name>
-      </cmp-field>
-    </entity>
-  </enterprise-beans>
-
 </jbosscmp-jdbc>

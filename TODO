@@ -1,4 +1,4 @@
-$Id: TODO,v 1.69 2003-08-29 12:57:49 anatom Exp $
+$Id: TODO,v 1.70 2003-09-08 10:10:44 anatom Exp $
 
 V 1.x
 -----
@@ -23,8 +23,6 @@ V 2.x
 and ocspSigning extendedKeyUsage + id-pkix-ocsp-check extensions.
 - Encrypt key recoverable keys stored in database.
 - Add smart card support (PKCS15) in CA for protection of private key.
-- Add support for deeper hierarchies than 2 levels of CAs (today only root and
-CA).
 
 General
 -------
