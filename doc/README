@@ -1,4 +1,4 @@
-$Id: README,v 1.105 2003-11-17 09:22:18 anatom Exp $
+$Id: README,v 1.106 2003-12-02 15:12:39 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -282,10 +282,6 @@ located.
 
 CRL can also be created with the 'ca.sh/cmd createcrl <caname>' command.
 
-Note on CRL Distribution Points (CDPs): it is possible to configure
-multiple URLs for CDPs if they are separated by ';'. 
-For example: http://cdpurl-1/mycrl.der;http://cdpurl-2/crl.crl
-
 Deploy
 ======
 After configuration, if you have edited the xml configuration
@@ -304,6 +300,13 @@ our beans and servlets without error messages.
 
 Run the testprograms with 'runtests.sh/cmd' and watch the lovely
 debug output and logs in JBoss.
+
+Creating Users
+--------------
+Users are added in the admin-GUI, 'Add End Entity' or with the cmd-line interface
+'ca.sh/cmd adduser'.
+The users DN is normally entered as "C=SE,O=MyOrg,OU=MyOrgUnit,CN=MyName".
+If a ',' is needed in the DN the comma must be escaped using '\,'.
 
 Create User certificates
 ------------------------
@@ -394,7 +397,6 @@ Root CA, the CA cert-file may need to contain the whole cert
 chain). Exactly how
 your server wants the files is server-dependent.
 
-
 Create CRLs
 -----------
 To create a crl a JobRunnerSession bean is running with JNDI
@@ -421,15 +423,21 @@ JBOSS_HOME=/usr/local/jboss
 A new CA should always issue an (empty) CRL. This is done by 'ca.sh/cmd init' 
 and can also be done by running 'ca.sh/cmd createcrl <caname>'.
 
+Note on CRL Distribution Points (CDPs): it is possible to configure
+multiple URLs for CDPs if they are separated by ';'. 
+For example: http://cdpurl-1/mycrl.der;http://cdpurl-2/crl.crl
+A CRLDistributionPoint for e CA in EJBCA could look like:
+http://<host:port>/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=<url-encoded-issuerDN>
+(such as the link from the webdist pages)
+
+
 REFERENCE MANUAL
 ================
 
 Configuring CA
 --------------
 Comments are provided in src/ca/ca/META-INT/ejb-jar.xml for all
-options
-available
- when configuring the CA. Things that can be configured are:
+options available when configuring the CA. Things that can be configured are:
 The CA is modular in that all parts are different session beans
 which implement
  a specified interface. Another session bean implementing the
