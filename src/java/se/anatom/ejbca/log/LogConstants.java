@@ -3,7 +3,7 @@ package se.anatom.ejbca.log;
 /**
  */
 public interface LogConstants {
-    
+
     public static final int MAXIMUM_QUERY_ROWCOUNT = 300;
 
     /**

@@ -10,19 +10,12 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.protocol;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.cert.CertificateEncodingException;
-
-import javax.ejb.ObjectNotFoundException;
-
 import org.apache.log4j.Logger;
-
 import org.bouncycastle.cms.CMSException;
-
+import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.CADoesntExistsException;
@@ -31,13 +24,17 @@ import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.authorization.AuthorizationDeniedException;
+
+import javax.ejb.ObjectNotFoundException;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.cert.CertificateEncodingException;
 
 
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version  $Id: ScepPkiOpHelper.java,v 1.26 2004-05-22 12:58:51 anatom Exp $
+ * @version  $Id: ScepPkiOpHelper.java,v 1.27 2004-11-20 22:54:28 sbailliez Exp $
  */
 public class ScepPkiOpHelper {
     private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);
@@ -54,7 +51,7 @@ public class ScepPkiOpHelper {
     public ScepPkiOpHelper(Admin admin, ISignSessionRemote signsession) {
         log.debug(">ScepPkiOpHelper");
         this.admin = admin;
-        this.signsession = signsession; 
+        this.signsession = signsession;
         log.debug("<ScepPkiOpHelper");
     }
 
@@ -66,8 +63,8 @@ public class ScepPkiOpHelper {
      * @return byte[] containing response to be sent to client.
      */
     public byte[] scepCertRequest(byte[] msg)
-        throws ObjectNotFoundException, AuthorizationDeniedException, AuthLoginException, 
-            SignRequestException, AuthStatusException, IllegalKeyException, 
+            throws ObjectNotFoundException, AuthorizationDeniedException, AuthLoginException,
+            SignRequestException, AuthStatusException, IllegalKeyException,
             SignRequestSignatureException, CertificateEncodingException {
         byte[] ret = null;
         log.debug(">getRequestMessage(" + msg.length + " bytes)");
@@ -85,7 +82,7 @@ public class ScepPkiOpHelper {
                         Class.forName("se.anatom.ejbca.protocol.ScepResponseMessage"));
                 if (resp != null) {
                     ret = resp.getResponseMessage();
-                }                
+                }
             }
             if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCRL) {
                 // create the stupid encrypted CRL message, the below can actually only be made 
@@ -94,7 +91,7 @@ public class ScepPkiOpHelper {
                         Class.forName("se.anatom.ejbca.protocol.ScepResponseMessage"));
                 if (resp != null) {
                     ret = resp.getResponseMessage();
-                }                
+                }
             }
         } catch (IOException e) {
             log.error("Error receiving ScepMessage: ", e);

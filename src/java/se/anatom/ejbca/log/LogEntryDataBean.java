@@ -13,11 +13,11 @@
 
 package se.anatom.ejbca.log;
 
-import java.util.Date;
-import javax.ejb.CreateException;
-
 import se.anatom.ejbca.BaseEntityBean;
 import se.anatom.ejbca.util.StringTools;
+
+import javax.ejb.CreateException;
+import java.util.Date;
 
 /** Entity bean should not be used directly, use though Session beans.
  *

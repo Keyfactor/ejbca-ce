@@ -10,12 +10,13 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.protocol;
+
+import se.anatom.ejbca.util.CertTools;
 
 import java.io.IOException;
 import java.io.Serializable;
-
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -26,17 +27,15 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-import se.anatom.ejbca.util.CertTools;
-
 
 /**
  * A response message consisting of a single X509 Certificate.
  *
- * @version $Id: X509ResponseMessage.java,v 1.16 2004-07-23 09:58:28 anatom Exp $
+ * @version $Id: X509ResponseMessage.java,v 1.17 2004-11-20 22:54:28 sbailliez Exp $
  */
 public class X509ResponseMessage implements IResponseMessage, Serializable {
     static final long serialVersionUID = -2157072605987735912L;
-    
+
     /** Certificate to be in response message, */
     private Certificate cert = null;
     /** CRL to be in response message, */
@@ -56,6 +55,7 @@ public class X509ResponseMessage implements IResponseMessage, Serializable {
     public void setCertificate(Certificate cert) {
         this.cert = cert;
     }
+
     /**
      * Sets the CRL (if present) in the response message.
      *
@@ -64,15 +64,15 @@ public class X509ResponseMessage implements IResponseMessage, Serializable {
     public void setCrl(CRL crl) {
         this.crl = crl;
     }
-    
-	/**
-	 * Gets the complete certificate in the response message.
-	 *
-	 * @return certificate in the response message.
-	 */
-	public Certificate getCertificate() throws CertificateEncodingException, CertificateException, IOException {
-		return CertTools.getCertfromByteArray(getResponseMessage());
-	}    
+
+    /**
+     * Gets the complete certificate in the response message.
+     *
+     * @return certificate in the response message.
+     */
+    public Certificate getCertificate() throws CertificateEncodingException, CertificateException, IOException {
+        return CertTools.getCertfromByteArray(getResponseMessage());
+    }
 
     /**
      * Gets the response message in the default encoding format.
@@ -137,7 +137,7 @@ public class X509ResponseMessage implements IResponseMessage, Serializable {
      * @see #setEncKeyInfo()
      */
     public boolean create()
-        throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+            throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         // Nothing needs to be done here
         return true;
     }

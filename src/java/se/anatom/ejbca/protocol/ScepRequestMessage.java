@@ -10,12 +10,46 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.protocol;
 
-import java.io.*;
-import java.math.BigInteger;
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.DERInputStream;
+import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.DERPrintableString;
+import org.bouncycastle.asn1.cms.Attribute;
+import org.bouncycastle.asn1.cms.CMSObjectIdentifiers;
+import org.bouncycastle.asn1.cms.ContentInfo;
+import org.bouncycastle.asn1.cms.EnvelopedData;
+import org.bouncycastle.asn1.cms.IssuerAndSerialNumber;
+import org.bouncycastle.asn1.cms.KeyTransRecipientInfo;
+import org.bouncycastle.asn1.cms.RecipientIdentifier;
+import org.bouncycastle.asn1.cms.RecipientInfo;
+import org.bouncycastle.asn1.cms.SignedData;
+import org.bouncycastle.asn1.cms.SignerInfo;
+import org.bouncycastle.cms.CMSEnvelopedData;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.RecipientInformation;
+import org.bouncycastle.cms.RecipientInformationStore;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
+import se.anatom.ejbca.util.Base64;
+import se.anatom.ejbca.util.CertTools;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -24,36 +58,21 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
-
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-
-import org.apache.log4j.Logger;
-
-import org.bouncycastle.asn1.*;
-import org.bouncycastle.asn1.cms.*;
-import org.bouncycastle.cms.*;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
-
-import se.anatom.ejbca.util.Base64;
-import se.anatom.ejbca.util.CertTools;
 
 /**
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.34 2004-07-23 09:58:28 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.35 2004-11-20 22:54:28 sbailliez Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = -235623330828902051L;
-    
+
     private static Logger log = Logger.getLogger(ScepRequestMessage.class);
-        
+
     public static final String id_Verisign = "2.16.840.1.113733";
     public static final String id_pki = id_Verisign + ".1";
     public static final String id_attributes = id_pki + ".9";
@@ -82,7 +101,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     public static int SCEP_TYPE_PKCSREQ = 19;
     public static int SCEP_TYPE_GETCRL = 22;
     public static int SCEP_TYPE_GETCERT = 21;
-    
+
     /**
      * SenderNonce in a request is used as recipientNonce when the server sends back a reply to the
      * client. This is base64 encoded bytes
@@ -102,9 +121,9 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     private String errorText = null;
 
     /** Issuer DN the message is sent to (CAs DN), contained in the 
-     * request as recipientInfo.issuerAndSerialNumber in EnvelopeData part */ 
+     * request as recipientInfo.issuerAndSerialNumber in EnvelopeData part */
     private transient String issuerDN = null;
-    
+
     /** Signed data, the whole enchilada to to speak... */
     private transient SignedData sd = null;
 
@@ -119,7 +138,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
     /** IssuerAndSerialNUmber for CRL request */
     private transient IssuerAndSerialNumber issuerAndSerno = null;
-    
+
     /**
      * Constucts a new SCEP/PKCS7 message handler object.
      *
@@ -128,7 +147,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      * @throws IOException if the request can not be parsed.
      */
     public ScepRequestMessage(byte[] msg)
-        throws IOException, InvalidKeyException, GeneralSecurityException, CMSException {
+            throws IOException, InvalidKeyException, GeneralSecurityException, CMSException {
         log.debug(">ScepRequestMessage");
         this.scepmsg = msg;
         init();
@@ -161,7 +180,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                     ByteArrayOutputStream bOut = new ByteArrayOutputStream();
                     DEROutputStream dOut = new DEROutputStream(bOut);
                     dOut.writeObject(dercert);
-                    if (bOut.size() > 0 ) {
+                    if (bOut.size() > 0) {
                         requestKeyInfo = bOut.toByteArray();
                     }
                 }
@@ -181,7 +200,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                     if (a.getAttrType().getId().equals(id_senderNonce)) {
                         Enumeration values = a.getAttrValues().getObjects();
                         ASN1OctetString str = ASN1OctetString.getInstance(values.nextElement());
-                        senderNonce = new String(Base64.encode(str.getOctets(),false));
+                        senderNonce = new String(Base64.encode(str.getOctets(), false));
                         log.debug("senderNonce = " + senderNonce);
                     }
                     if (a.getAttrType().getId().equals(id_transId)) {
@@ -200,7 +219,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
             }
 
             // If this is a PKCSReq
-            if ( (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) || (messageType == ScepRequestMessage.SCEP_TYPE_GETCRL) ) {
+            if ((messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) || (messageType == ScepRequestMessage.SCEP_TYPE_GETCRL)) {
                 // Extract the contents, which is an encrypted PKCS10 if messageType == 19
                 // and an encrypted IssuerAndSerialNumber if messageType == 22
                 ci = sd.getEncapContentInfo();
@@ -210,8 +229,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                     DEROctetString content = (DEROctetString) ci.getContent();
                     log.debug("envelopedData is " + content.getOctets().length + " bytes.");
 
-                    ASN1Sequence seq1 = (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(
-                                content.getOctets())).readObject();
+                    ASN1Sequence seq1 = (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(content.getOctets())).readObject();
                     envEncData = new ContentInfo(seq1);
                     ctoid = envEncData.getContentType().getId();
 
@@ -225,8 +243,8 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                             RecipientIdentifier rid = recipientInfo.getRecipientIdentifier();
                             IssuerAndSerialNumber iasn = IssuerAndSerialNumber.getInstance(rid.getId());
                             issuerDN = iasn.getName().toString();
-                            log.debug("IssuerDN: "+issuerDN);
-                        }                        
+                            log.debug("IssuerDN: " + issuerDN);
+                        }
                     } else {
                         errorText = "EncapsulatedContentInfo does not contain PKCS7 envelopedData: ";
                         log.error(errorText + ctoid);
@@ -252,7 +270,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     } // init
 
     private void decrypt()
-        throws NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException,
+            throws NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException,
             CMSException, NoSuchProviderException, BadPaddingException,
             InvalidAlgorithmParameterException, GeneralSecurityException, IOException {
         log.debug(">decrypt");
@@ -286,8 +304,8 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         }
 
         DERObject derobj = new DERInputStream(new ByteArrayInputStream(decBytes)).readObject();
-        if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {            
-            ASN1Sequence seq = (ASN1Sequence)derobj;
+        if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
+            ASN1Sequence seq = (ASN1Sequence) derobj;
             pkcs10 = new PKCS10CertificationRequest(seq);
         }
         if (messageType == ScepRequestMessage.SCEP_TYPE_GETCRL) {
@@ -400,7 +418,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
-        log.debug("<getUsername(): "+ret);
+        log.debug("<getUsername(): " + ret);
         return ret;
     }
 
@@ -420,7 +438,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
         }
-        log.debug("<getIssuerDN(): "+ret);
+        log.debug("<getIssuerDN(): " + ret);
         return ret;
     }
 
@@ -445,10 +463,10 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
-        log.debug("<getCRLIssuerDN(): "+ret);
+        log.debug("<getCRLIssuerDN(): " + ret);
         return ret;
     }
-    
+
     /**
      * Gets the number (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
      *
@@ -470,7 +488,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
-        log.debug("<getCRLSerialNo(): "+ret);
+        log.debug("<getCRLSerialNo(): " + ret);
         return ret;
     }
 
@@ -495,7 +513,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
-        log.debug("<getRequestDN(): "+ret);
+        log.debug("<getRequestDN(): " + ret);
         return ret;
     }
 
@@ -568,16 +586,16 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     public byte[] getRequestKeyInfo() {
         return requestKeyInfo;
     }
-    
+
     /** Returns the type of SCEP message it is
      * 
      * @return value as defined by SCEP_TYPE_PKCSREQ, SCEP_TYPE_GETCRL, SCEP_TYPE_GETCERT  
      */
     public int getMessageType() {
         return messageType;
-        
+
     }
-    
+
     //
     // Private helper methods
     //
@@ -602,4 +620,5 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         }
     }
 }
- // ScepRequestMessage
+
+// ScepRequestMessage

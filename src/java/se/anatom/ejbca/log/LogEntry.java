@@ -19,8 +19,8 @@
 
 package se.anatom.ejbca.log;
 
-import java.util.Date;
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  *  This is a  class containing information about one log event in the database. Used mainly during database queries by the web interface.

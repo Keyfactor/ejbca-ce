@@ -10,11 +10,10 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.protocol;
 
 import java.io.IOException;
-
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -40,7 +39,7 @@ import java.security.cert.X509Certificate;
  * byte[] responseMessage = resp.getResponseMessage(); 
  * </code>
  *
- * @version $Id: IResponseMessage.java,v 1.13 2004-05-22 12:58:52 anatom Exp $
+ * @version $Id: IResponseMessage.java,v 1.14 2004-11-20 22:54:28 sbailliez Exp $
  */
 public interface IResponseMessage {
 
@@ -57,7 +56,7 @@ public interface IResponseMessage {
      * @param crl crl in the response message.
      */
     public void setCrl(CRL crl);
-    
+
     /**
      * Gets the response message in the default encoding format.
      *
@@ -111,7 +110,7 @@ public interface IResponseMessage {
      * @see #setEncKeyInfo
      */
     public boolean create()
-        throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException;
+            throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException;
 
     /**
      * indicates if this message needs recipients public and private key to sign. If this returns

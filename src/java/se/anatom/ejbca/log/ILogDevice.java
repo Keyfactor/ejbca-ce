@@ -13,9 +13,9 @@
 
 package se.anatom.ejbca.log;
 
+import java.io.Serializable;
 import java.security.cert.X509Certificate;
 import java.util.Date;
-import java.io.Serializable;
 
 /**
  * Interface used by EJBCA external log devices such as Log4j.

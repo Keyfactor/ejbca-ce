@@ -10,8 +10,21 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.protocol;
+
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.DERPrintableString;
+import org.bouncycastle.asn1.DERString;
+import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.cms.Attribute;
+import org.bouncycastle.asn1.cms.AttributeTable;
+import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
+import se.anatom.ejbca.util.CertTools;
 
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -23,41 +36,26 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.X509Certificate;
 
-import org.apache.log4j.Logger;
-
-import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.DERPrintableString;
-import org.bouncycastle.asn1.DERString;
-import org.bouncycastle.asn1.DERUTF8String;
-import org.bouncycastle.asn1.cms.Attribute;
-import org.bouncycastle.asn1.cms.AttributeTable;
-import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.x509.X509Name;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
-
-import se.anatom.ejbca.util.CertTools;
-
 
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.25 2004-09-25 16:47:31 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.26 2004-11-20 22:54:28 sbailliez Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = 3597275157018205136L;
-    
+
     private static Logger log = Logger.getLogger(PKCS10RequestMessage.class);
 
     /** Raw form of the PKCS10 message */
     protected byte[] p10msg;
 
     /** manually set password */
-    protected String password=null;
-    
+    protected String password = null;
+
     /** manually set username */
-    protected String username=null;
-    
+    protected String username = null;
+
     /** The pkcs10 request message, not serialized. */
     protected transient PKCS10CertificationRequest pkcs10 = null;
 
@@ -115,7 +113,7 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
      * @throws NoSuchProviderException DOCUMENT ME!
      */
     public PublicKey getRequestPublicKey()
-        throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+            throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         try {
             if (pkcs10 == null) {
                 init();
@@ -130,10 +128,11 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     }
 
     /** force a password, i.e. ignore the challenge password in the request
-    */
+     */
     public void setPassword(String pwd) {
-        this.password=pwd;
+        this.password = pwd;
     }
+
     /**
      * Returns the challenge password from the certificattion request.
      *
@@ -179,10 +178,11 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     }
 
     /** force a username, i.e. ignore the DN/username in the request
-    */
+     */
     public void setUsername(String username) {
-        this.username=username;
+        this.username = username;
     }
+
     /**
      * Returns the string representation of the CN field from the DN of the certification request,
      * to be used as username.
@@ -197,11 +197,11 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
         // CN=pix.primekey.se + 1.2.840.113549.1.9.2=pix.primekey.se
         // We only want the CN and not the oid-part.
         int index = name.indexOf(' ');
-        String ret = name; 
+        String ret = name;
         if (index > 0) {
-            ret = name.substring(0,index);        
+            ret = name.substring(0, index);
         }
-        log.debug("UserName='"+ret+"'");
+        log.debug("UserName='" + ret + "'");
         return ret;
     }
 
@@ -213,6 +213,7 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     public String getIssuerDN() {
         return null;
     }
+
     /**
      * Gets the issuer DN (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
      *
@@ -289,7 +290,7 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
      * @throws NoSuchProviderException DOCUMENT ME!
      */
     public boolean verify()
-        throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+            throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         log.debug(">verify()");
 
         boolean ret = false;
@@ -381,4 +382,5 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
         return null;
     }
 }
+
 // PKCS10RequestMessage

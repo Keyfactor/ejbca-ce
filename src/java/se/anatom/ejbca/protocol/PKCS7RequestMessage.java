@@ -10,26 +10,27 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.protocol;
 
-import java.io.*;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 
-import org.apache.log4j.Logger;
-
 
 /**
  * Class to handle PKCS7 request messages sent to the CA.
  *
- * @version $Id: PKCS7RequestMessage.java,v 1.18 2004-07-23 09:58:28 anatom Exp $
+ * @version $Id: PKCS7RequestMessage.java,v 1.19 2004-11-20 22:54:28 sbailliez Exp $
  */
 public class PKCS7RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = 6996678961561879837L;
-    
+
     private static Logger log = Logger.getLogger(PKCS7RequestMessage.class);
 
     /** Raw form of the PKCS7 message */
@@ -119,6 +120,7 @@ public class PKCS7RequestMessage implements IRequestMessage, Serializable {
     public String getIssuerDN() {
         return null;
     }
+
     /**
      * Gets the issuer DN (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
      *

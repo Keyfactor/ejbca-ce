@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.protocol.exception;
 
 import se.anatom.ejbca.exception.EjbcaException;
@@ -19,7 +19,7 @@ import se.anatom.ejbca.exception.EjbcaException;
 /**
  * Error due to some part of the request is not supported.
  *
- * @version $Id: NotSupportedException.java,v 1.2 2004-04-16 07:39:01 anatom Exp $
+ * @version $Id: NotSupportedException.java,v 1.3 2004-11-20 22:54:28 sbailliez Exp $
  */
 public class NotSupportedException extends EjbcaException {
     /**
@@ -31,6 +31,7 @@ public class NotSupportedException extends EjbcaException {
     public NotSupportedException(String message) {
         super(message);
     }
+
     /**
      * Constructor used to create exception with an embedded exception. Calls the same constructor
      * in baseclass <code>Exception</code>.
