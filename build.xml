@@ -221,38 +221,38 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     <!-- Jar the ca.jar package together -->
     <jar basedir="${log.build}" jarfile="${logjar}"/>    
   </target>  
-  
+
   <!-- =================================================================== -->
-  <!-- Build hard token part                                                    -->
+  <!-- Build hard token part                                               -->
   <!-- =================================================================== -->
   <target name="hardtoken.jar" depends="compile">
-    <mkdir    dir="${hardtoken.build}"/>
+    <mkdir dir="${hardtoken.build}"/>
     <copy todir="${hardtoken.build}">
-        <fileset dir="${hardtoken.src}"> 
-                <include name="**/*"/>
-        </fileset>
+      <fileset dir="${hardtoken.src}">
+        <include name="**/*"/>
+      </fileset>
     </copy>
-    <copy todir="${log.build}">
-        <fileset dir="${build}">
-                <include name="se/anatom/ejbca/hardtoken/*.class"/>
-                <include name="se/anatom/ejbca/ra/I*.class"/>
-                <include name="se/anatom/ejbca/ra/UserAdminData.class"/>  
-                <include name="se/anatom/ejbca/ra/UserDataLocal.class"/> 
-                <include name="se/anatom/ejbca/ra/UserDataLocalHome.class"/>                                                
-                <include name="se/anatom/ejbca/ra/authorization/I*.class"/>                
-                <include name="se/anatom/ejbca/ca/store/I*.class"/>  
-                <include name="se/anatom/ejbca/log/I*.class"/>
-                <include name="se/anatom/ejbca/log/Admin.class"/>  
-                <include name="se/anatom/ejbca/log/LogEntry.class"/>                                                                               
-                <include name="se/anatom/ejbca/util/CertTools.class"/> 
-                <include name="se/anatom/ejbca/SecConst.class"/>                                  
-                <exclude name="se/anatom/ejbca/**/*Test*"/>
-        </fileset>
+    <copy todir="${hardtoken.build}">
+      <fileset dir="${build}">
+        <include name="se/anatom/ejbca/hardtoken/*.class"/>
+        <include name="se/anatom/ejbca/ra/I*.class"/>
+        <include name="se/anatom/ejbca/ra/UserAdminData.class"/>
+        <include name="se/anatom/ejbca/ra/UserDataLocal.class"/>
+        <include name="se/anatom/ejbca/ra/UserDataLocalHome.class"/>
+        <include name="se/anatom/ejbca/ra/authorization/I*.class"/>
+        <include name="se/anatom/ejbca/ca/store/I*.class"/>
+        <include name="se/anatom/ejbca/log/I*.class"/>
+        <include name="se/anatom/ejbca/log/Admin.class"/>
+        <include name="se/anatom/ejbca/log/LogEntry.class"/>
+        <include name="se/anatom/ejbca/util/CertTools.class"/>
+        <include name="se/anatom/ejbca/SecConst.class"/>
+        <exclude name="se/anatom/ejbca/**/*Test*"/>
+      </fileset>
     </copy>
-    
+
     <!-- Jar the ca.jar package together -->
-    <jar basedir="${hardtoken.build}" jarfile="${hardtokenjar}"/>    
-  </target>    
+    <jar basedir="${hardtoken.build}" jarfile="${hardtokenjar}"/>
+  </target>
 
   <!-- =================================================================== -->
   <!-- Build ra part                                                    -->
