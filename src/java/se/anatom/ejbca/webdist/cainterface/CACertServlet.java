@@ -28,7 +28,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.10 2003-02-03 09:07:12 scop Exp $
+ * @version $Id: CACertServlet.java,v 1.11 2003-02-03 13:41:26 scop Exp $
  *
  */
 public class CACertServlet extends HttpServlet {
@@ -58,7 +58,7 @@ public class CACertServlet extends HttpServlet {
     }
 
     public void doPost(HttpServletRequest req, HttpServletResponse res)
-        throws IOException {
+        throws IOException, ServletException {
         cat.debug(">doPost()");
         doGet(req, res);
         cat.debug("<doPost()");
