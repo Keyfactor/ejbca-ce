@@ -15,7 +15,7 @@ import junit.framework.*;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestKeyTools.java,v 1.3 2003-09-07 16:32:33 anatom Exp $
+ * @version $Id: TestKeyTools.java,v 1.4 2003-09-28 08:11:27 anatom Exp $
  */
 public class TestKeyTools extends TestCase {
 
@@ -111,11 +111,11 @@ public class TestKeyTools extends TestCase {
         ByteArrayInputStream fis = new ByteArrayInputStream(ks3);
         store.load(fis, storepwd.toCharArray());
         Certificate[] certs = KeyTools.getCertChain(store, pkAlias);
-        log.info("Number of certs: "+certs.length);
+        log.debug("Number of certs: "+certs.length);
         assertEquals("Wrong number of certs returned", 3, certs.length);
         for (int i =0;i<certs.length;i++) {
             X509Certificate cert = (X509Certificate)certs[i];
-            log.info("SubjectDN: "+cert.getSubjectDN().toString());
+            log.debug("SubjectDN: "+cert.getSubjectDN().toString());
             if (i==0) assertEquals("Wrong subjectDN",cert.getSubjectDN().toString(), "CN=fooca,C=SE");
             if (i==1) assertEquals("Wrong subjectDN",cert.getSubjectDN().toString(), "CN=TestSubCA,O=AnaTom,C=SE");
             if (i==2) assertEquals("Wrong subjectDN",cert.getSubjectDN().toString(), "CN=TestCA,O=AnaTom,C=SE");
