@@ -23,11 +23,10 @@ import se.anatom.ejbca.util.StringTools;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.8 2003-09-03 11:27:06 herrvendil Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.9 2003-11-17 10:32:34 anatom Exp $
  */
 public abstract class KeyRecoveryDataBean extends BaseEntityBean {
-
-    private static Category log = Category.getInstance(KeyRecoveryDataBean.class.getName());
+    private static Logger log = Logger.getLogger(KeyRecoveryDataBean.class);
 
 	/**
 	 * DOCUMENT ME!
@@ -156,7 +155,6 @@ public abstract class KeyRecoveryDataBean extends BaseEntityBean {
 		setKeyPair(keypair);
 
 		log.debug("Created Key Recoverydata for user " + username);
-
 		return pk;
 	}
 
