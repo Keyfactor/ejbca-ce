@@ -40,7 +40,7 @@ import java.security.cert.X509Certificate;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.26 2004-11-20 22:54:28 sbailliez Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.27 2005-04-05 07:28:08 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = 3597275157018205136L;
@@ -196,10 +196,12 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
         // Special if the DN contains unstructiredAddress where it becomes: 
         // CN=pix.primekey.se + 1.2.840.113549.1.9.2=pix.primekey.se
         // We only want the CN and not the oid-part.
-        int index = name.indexOf(' ');
         String ret = name;
-        if (index > 0) {
-            ret = name.substring(0, index);
+        if (name != null) {
+            int index = name.indexOf(' ');
+            if (index > 0) {
+                ret = name.substring(0, index);
+            }            
         }
         log.debug("UserName='" + ret + "'");
         return ret;
@@ -235,7 +237,7 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     /**
      * Returns the string representation of the subject DN from the certification request.
      *
-     * @return subject DN from certification request.
+     * @return subject DN from certification request or null.
      */
     public String getRequestDN() {
         try {
@@ -244,7 +246,6 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
             }
         } catch (IllegalArgumentException e) {
             log.error("PKCS10 not inited!");
-
             return null;
         }
 

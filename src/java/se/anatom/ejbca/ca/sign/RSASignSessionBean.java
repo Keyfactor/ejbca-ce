@@ -727,12 +727,15 @@ public class RSASignSessionBean extends BaseSessionBean {
                 throw new SignRequestSignatureException("Verification of signature (popo) on request failed.");
             }
             
-            if ((req.getUsername() == null) || (req.getPassword() == null)) {
-                log.error("No username/password in request");
-                throw new SignRequestException("No username/password in request!");
+            if (req.getUsername() == null) {
+                log.error("No username in request, request DN: "+req.getRequestDN());
+                throw new SignRequestException("No username in request, request DN: "+req.getRequestDN());
                 //ret.setFailInfo(FailInfo.BAD_REQUEST);
                 //ret.setStatus(ResponseStatus.FAILURE);
-            } else {				
+            } else if (req.getPassword() == null) {
+                log.error("No password in request");
+                throw new SignRequestException("No password in request!");
+            } else {              
 				// If we haven't done so yet, authenticate user
                 if (data == null) {
                     data = authUser(admin, req.getUsername(), req.getPassword());
