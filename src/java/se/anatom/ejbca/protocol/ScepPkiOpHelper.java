@@ -19,12 +19,13 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
+import se.anatom.ejbca.util.CertTools;
 
 
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version  $Id: ScepPkiOpHelper.java,v 1.9 2003-06-05 13:08:31 anatom Exp $
+ * @version  $Id: ScepPkiOpHelper.java,v 1.10 2003-06-05 13:18:22 anatom Exp $
  */
 public class ScepPkiOpHelper {
 
@@ -57,7 +58,8 @@ public class ScepPkiOpHelper {
         try {
             reqmsg = new ScepRequestMessage(msg);
             // Get DN and extract Common Name, this is our username
-            String username = reqmsg.getRequestDN();
+            String dn = reqmsg.getRequestDN();
+            String username = CertTools.getPartFromDN(dn,"CN");
             try{
                 UserAdminData data = adminsession.findUser(admin, username);
                 if(data == null)

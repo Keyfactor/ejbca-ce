@@ -173,6 +173,12 @@ public class TestMessages extends TestCase {
             msg.setKeyInfo(caCert, privateKey);
         }
         boolean ret = msg.verify();
+        String dn = msg.getRequestDN();
+        log.debug("DN: "+dn);
+        assertEquals(dn,"C=Se,O=PrimeKey,CN=Tomas G");
+        String pwd = msg.getRequestPassword();
+        log.debug("Pwd: "+pwd);        
+        assertEquals(pwd,"foo123");
         assertTrue("Failed to verify SCEP message.", ret);
         log.debug("<test01TestOpenScep()");
     }
