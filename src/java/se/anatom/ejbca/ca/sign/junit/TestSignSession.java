@@ -38,7 +38,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.26 2003-09-09 12:53:49 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.27 2003-09-23 19:42:03 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -427,10 +427,8 @@ public class TestSignSession extends TestCase {
      */
     public void test08SwedeChars() throws Exception {
         log.debug(">test08SwedeChars()");
-
         // Make user that we know...
         boolean userExists = false;
-
         try {
             UserDataRemote createdata = userhome.create("swede", "foo123", "C=SE, O=ÅÄÖ, CN=åäö", caid);
             assertNotNull("Failed to create user foo", createdata);
@@ -444,7 +442,6 @@ public class TestSignSession extends TestCase {
         } catch (DuplicateKeyException dke) {
             userExists = true;
         }
-
         if (userExists) {
             log.debug("user swede already exists.");
 
@@ -455,15 +452,13 @@ public class TestSignSession extends TestCase {
         }
 
         keys = genKeys();
-
         // user that we know exists...
         X509Certificate cert = (X509Certificate) remote.createCertificate(new Admin(
                     Admin.TYPE_INTERNALUSER), "swede", "foo123", keys.getPublic());
-        assertNotNull("Misslyckades skapa cert", cert);
+        assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         assertEquals("Wrong DN med swedechars", CertTools.getSubjectDN(cert),
             CertTools.stringToBCDNString("C=SE, O=ÅÄÖ, CN=åäö"));
-
         //FileOutputStream fos = new FileOutputStream("swedecert.crt");
         //fos.write(cert.getEncoded());
         //fos.close();
@@ -473,10 +468,9 @@ public class TestSignSession extends TestCase {
     /**
      * Tests scep message
      */
-
 /*
-    public void test07TestOpenScep() throws Exception {
-        log.debug(">test07TestOpenScep()");
+    public void test09TestOpenScep() throws Exception {
+        log.debug(">test09TestOpenScep()");
         UserDataPK pk = new UserDataPK("foo");
         UserDataRemote data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
@@ -486,7 +480,7 @@ public class TestSignSession extends TestCase {
         byte[] msg = resp.getResponseMessage();
         log.debug("Message: "+new String(Base64.encode(msg,true)));
         assertNotNull("Failed to get encoded response message", msg);
-        log.debug("<test07TestOpenScep()");
+        log.debug("<test09TestOpenScep()");
     }
 */
 }
