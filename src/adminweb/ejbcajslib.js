@@ -51,7 +51,7 @@ function displayHelpWindow(helplink) {
 function checkfieldforlegalchars(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-Ö_ 0-9]/g;
+  re = /[^a-öA-Ö_ 0-9.]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
