@@ -2,7 +2,7 @@
     originally contributed by <surd0007(at)yahoo.com.cn>
  
 (This install guide is a complement to the guide present in README).
-$Id: INSTALL-guide.txt,v 1.4 2004-08-23 14:53:31 anatom Exp $
+$Id: INSTALL-guide.txt,v 1.5 2004-08-25 13:51:19 anatom Exp $
 
  
  Softwares needed:
@@ -144,6 +144,10 @@ Users experience using SuSE 9.1 (comes with JBoss installation)
 -------------------------------
 Here are the steps that I had to follow to get everything
 to work on SuSE 9.1 Pro with ejbca 3.0.x:
+SuSE 9.1 Pro comes with JBoss. I used the latest release version instead 
+(3.2.5) which comes with Tomcat 5. If you use the latest version of JBoss, 
+you must make a system user jboss belonging to a group jboss. (You can install 
+the SuSE version and uninstall it, and the user will be created for you.) 
 
 1) su to jboss and uncompress both ejbca and jboss
 
@@ -186,3 +190,7 @@ rcjboss start
 # Note that it takes a LONG time to stop jboss and an even longer time to start
 # it. rcjboss restart with the default SuSE script does not work because the
 time is not sufficient.
+
+12) To start things automatically at boot time, as root in /etc/init.d, do
+insserv jboss
+which places the script in the appropriate startup sections. 
