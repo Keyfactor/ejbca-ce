@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-
 <project name="ejbca" default="build" basedir=".">
 
   <!-- Give user a chance to override without editing this file
@@ -9,6 +8,7 @@
   <property environment="env"/>
 
   <property name="jboss.home" value="${env.JBOSS_HOME}"/>
+
   <!-- set global properties for this build -->
   <property name="src" value="./src"/>
   <property name="javasrc" value="${src}/java"/>
@@ -32,33 +32,9 @@
   <property name="sampleauth.build" value="${tmp}/ca/sampleauth.war" />
   <property name="sampleauthjar" value="${dist}/sampleauth.war" />
 
-  <property name="ca.src" value="${src}/ca/ca" />
-  <property name="ca.build" value="${tmp}/ca/ca-ejb.jar" />
-  <property name="cajar" value="${dist}/ca-ejb.jar" />
-
   <property name="status.src" value="${src}/publicweb/status"/>
   <property name="status.build" value="${tmp}/publicweb/status.war"/>
   <property name="statusjar" value="${dist}/status.war"/>
-
-  <property name="log.src" value="${src}/log" />
-  <property name="log.build" value="${tmp}/log-ejb.jar" />
-  <property name="logjar" value="${dist}/log-ejb.jar" />
-
-  <property name="authorization.src" value="${src}/authorization" />
-  <property name="authorization.build" value="${tmp}/authorization-ejb.jar" />
-  <property name="authorizationjar" value="${dist}/authorization-ejb.jar" />
-
-  <property name="hardtoken.src" value="${src}/hardtoken" />
-  <property name="hardtoken.build" value="${tmp}/hardtoken-ejb.jar" />
-  <property name="hardtokenjar" value="${dist}/hardtoken-ejb.jar" />
-
-  <property name="keyrecovery.src" value="${src}/keyrecovery" />
-  <property name="keyrecovery.build" value="${tmp}/keyrecovery-ejb.jar" />
-  <property name="keyrecoveryjar" value="${dist}/keyrecovery-ejb.jar" />
-
-  <property name="ra.src" value="${src}/ra" />
-  <property name="ra.build" value="${tmp}/ra-ejb.jar" />
-  <property name="rajar" value="${dist}/ra-ejb.jar" />
 
   <property name="adminweb.src" value="${src}/adminweb" />
   <property name="adminweb.build" value="${tmp}/adminweb.war" />
@@ -93,12 +69,12 @@
 
   <property name="jar.classpath" value="lib/ejb-utils.jar"/>
 
-	<path id="ext.classpath">
-		<fileset dir="lib/ext" includes="*.jar"/>
-	</path>
-	
+    <path id="ext.classpath">
+        <fileset dir="lib/ext" includes="*.jar"/>
+    </path>
+    
     <path id="compile.classpath">
-    	<path refid="ext.classpath"/>
+        <path refid="ext.classpath"/>
         <fileset dir="lib" includes="*.jar"/>
     </path>
 
@@ -113,6 +89,24 @@
         <path location="${build}"/>
         <path refid="j2ee.classpath"/>
     </path>
+
+    <!-- those are the default values used within JBoss for easy startup -->
+    <property name="datasource.jndi-name" value="DefaultDS"/>
+    <property name="database.name" value="hsqldb"/>
+    
+    <!-- 
+        ex: /my/path/myfile-postgres.xml -> /my/path/myfile.xml
+    -->
+    <mapper id="database.mapper" type="regexp" from="^(.*)-${database.name}\.(.*)$$" to="\1.\2"/>
+    <!-- does some replace magic to change the datasource jndi name -->
+    <filterchain id="datasource.filters">
+    <tokenfilter>
+        <replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>
+        <!-- this is just for temporary compatibility -->
+        <replacestring from="DefaultDS" to="${datasource.jndi-name}"/>
+    </tokenfilter>
+    </filterchain>
+
 
   <!-- =================================================================== -->
   <!-- Create the time stamp and build directory -->
@@ -151,9 +145,9 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
 
   <!-- =================================================================== -->
   <!-- Compile java sources                                                -->
-	  <!-- =================================================================== -->
+      <!-- =================================================================== -->
     <target name="compile" depends="init">
-        <javac srcdir="${javasrc}" destdir="${build}" debug="on" encoding="iso8859-1"  includeantruntime="no">
+        <javac srcdir="${javasrc}" destdir="${build}" debug="on" includeantruntime="no">
             <classpath refid="compile.classpath"/>
             <exclude name="**/appserver/**"/> <!-- appserver specific files are built separtely-->
         </javac>
@@ -266,15 +260,15 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         <mkdir dir="${ejb-utils.jar.dir}"/>
         <copy todir="${ejb-utils.jar.dir}">
             <fileset dir="${build}">
-            	<include name="se/anatom/ejbca/protocol/**"/> <!-- we've got more than necessary -->
-        		<include name="se/anatom/ejbca/exception/**"/>
+                <include name="se/anatom/ejbca/protocol/**"/> <!-- we've got more than necessary -->
+                <include name="se/anatom/ejbca/exception/**"/>
                 <include name="se/anatom/ejbca/*.*"/>
                 <include name="se/anatom/ejbca/util/**/*.*"/>
             </fileset>
         </copy>
         <jar basedir="${ejb-utils.jar.dir}" jarfile="${ejb-utils.jar}">
             <manifest>
-            	<!-- todo: autogenerate this from a fileset -->
+                <!-- todo: autogenerate this from a fileset -->
                 <attribute name="Class-Path" value="bcmail-jdk14-122.jar bcprov-jdk14-122.jar log4j-1.2.7.jar ldap.jar commons-lang-2.0.jar commons-collections.jar commons-fileupload-1.0.jar"/>
             </manifest>
         </jar>
@@ -284,109 +278,43 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- Build ca part                                                    -->
   <!-- =================================================================== -->
   <target name="ca.jar" depends="compile">
-    <mkdir    dir="${ca.build}"/>
-    <copy todir="${ca.build}">
-        <fileset dir="${ca.src}">
-            <exclude name="keyStore/**"/>
-        </fileset>
-        <fileset dir="${build}">
-            <include name="se/anatom/ejbca/ca/**"/>
-            <include name="se/anatom/ejbca/upgrade/**"/>
-        </fileset>
-        <fileset dir="${src}">
-            <include name="upgrade/**/*.sql"/>
-        </fileset>
-    </copy>
-
-    <!-- Jar the ca.jar package together -->
-    <jar basedir="${ca.build}" jarfile="${cajar}">
-        <manifest>
-            <attribute name="Class-Path" value="${jar.classpath}"/>
-        </manifest>
-    </jar>
+    <!-- this one is a bit messy as the layout does not match the other one -->
+    <ejb-dd-copy todir="${tmp}/ca-ejb.jar" dir="${src}/ca/ca"/>
+    <ejb-jar name="ca">
+        <filesets>
+            <!-- that should be another ejb-jar, but keep it here for now -->
+            <fileset dir="${build}" includes="se/anatom/ejbca/upgrade/**"/>
+            <fileset dir="${src}" includes="upgrade/**/*.sql"/>
+        </filesets>         
+    </ejb-jar>
   </target>
 
   <!-- =================================================================== -->
   <!-- Build log part                                                    -->
   <!-- =================================================================== -->
   <target name="log.jar" depends="compile">
-    <mkdir    dir="${log.build}"/>
-    <copy todir="${log.build}">
-        <fileset dir="${log.src}"/>
-    </copy>
-    <copy todir="${log.build}">
-        <fileset dir="${build}">
-            <include name="se/anatom/ejbca/log/**"/>
-        </fileset>
-    </copy>
-
-    <!-- Jar the log.jar package together -->
-    <jar basedir="${log.build}" jarfile="${logjar}">
-        <manifest>
-            <attribute name="Class-Path" value="${jar.classpath}"/>
-        </manifest>
-    </jar>
+    <ejb-jar name="log"/>
   </target>
 
   <!-- =================================================================== -->
   <!-- Build authorization part                                            -->
   <!-- =================================================================== -->
   <target name="authorization.jar" depends="compile">
-    <mkdir dir="${authorization.build}"/>
-    <copy todir="${authorization.build}">
-      <fileset dir="${authorization.src}"/>
-    </copy>
-    <copy todir="${authorization.build}">
-        <fileset dir="${build}">
-            <include name="se/anatom/ejbca/authorization/**"/>
-        </fileset>
-    </copy>
-    <jar basedir="${authorization.build}" jarfile="${authorizationjar}">
-        <manifest>
-            <attribute name="Class-Path" value="${jar.classpath}"/>
-        </manifest>
-    </jar>
+    <ejb-jar name="authorization"/>
   </target>
 
   <!-- =================================================================== -->
   <!-- Build hard token part                                               -->
   <!-- =================================================================== -->
   <target name="hardtoken.jar" depends="compile">
-    <mkdir dir="${hardtoken.build}"/>
-    <copy todir="${hardtoken.build}">
-      <fileset dir="${hardtoken.src}"/>
-    </copy>
-    <copy todir="${hardtoken.build}">
-        <fileset dir="${build}">
-            <include name="se/anatom/ejbca/hardtoken/**"/>
-        </fileset>
-    </copy>
-    <jar basedir="${hardtoken.build}" jarfile="${hardtokenjar}">
-        <manifest>
-            <attribute name="Class-Path" value="${jar.classpath}"/>
-        </manifest>
-    </jar>
+    <ejb-jar name="hardtoken"/>
   </target>
 
   <!-- =================================================================== -->
   <!-- Build key recovery part                                             -->
   <!-- =================================================================== -->
   <target name="keyrecovery.jar" depends="compile">
-    <mkdir    dir="${keyrecovery.build}"/>
-    <copy todir="${keyrecovery.build}">
-        <fileset dir="${keyrecovery.src}"/>
-    </copy>
-    <copy todir="${keyrecovery.build}">
-        <fileset dir="${build}">
-            <include name="se/anatom/ejbca/keyrecovery/**"/>
-        </fileset>
-    </copy>
-
-    <jar basedir="${keyrecovery.build}" jarfile="${keyrecoveryjar}">
-        <manifest>
-            <attribute name="Class-Path" value="${jar.classpath}"/>
-        </manifest>
-    </jar>
+    <ejb-jar name="keyrecovery"/>
   </target>
 
 
@@ -394,22 +322,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- Build ra part                                                       -->
   <!-- =================================================================== -->
   <target name="ra.jar" depends="compile">
-    <mkdir    dir="${ra.build}"/>
-    <copy todir="${ra.build}">
-        <fileset dir="${ra.src}"/>
-    </copy>
-    <copy todir="${ra.build}">
-        <fileset dir="${build}">
-            <include name="se/anatom/ejbca/ra/**/*.class"/>
-        </fileset>
-    </copy>
-
-    <!-- Jar the ra.jar package together -->
-    <jar  basedir="${ra.build}" jarfile="${rajar}">
-        <manifest>
-            <attribute name="Class-Path" value="${jar.classpath}"/>
-        </manifest>
-    </jar>
+    <ejb-jar name="ra"/>
   </target>
 
   <!-- =================================================================== -->
@@ -419,7 +332,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     <mkdir dir="${webdist.build}/WEB-INF/lib"/>
     <copy todir="${webdist.build}">
         <fileset dir="${webdist.src}">
-        	<include name="**/**"/>
+            <include name="**/**"/>
         </fileset>
     </copy>
 
@@ -438,24 +351,36 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- =================================================================== -->
   <!-- Build admin web part                                                -->
   <!-- =================================================================== -->
-  <target name="adminweb.war" depends="compile">
-    <mkdir dir="${adminweb.build}/WEB-INF/lib"/>
-    <copy todir="${adminweb.build}">
-      <fileset dir="${adminweb.src}">
-        <exclude name="**/tomcat*-service.xml"/>
-      </fileset>
-    </copy>
+    <target name="adminweb.war" depends="compile">
+        <mkdir dir="${adminweb.build}/WEB-INF/lib"/>
+        <copy todir="${adminweb.build}">
+            <fileset dir="${adminweb.src}">
+                <exclude name="**/tomcat*-service.xml"/>
+                <!--exclude name="languages/**"/-->
+            </fileset>
+        </copy>
 
-    <jar jarfile="${adminweb.build}/WEB-INF/lib/adminweb.jar">
-      <fileset dir="${build}">
-        <include name="se/anatom/ejbca/webdist/**"/>
-      </fileset>
-    </jar>
+        <!-- copy resource bundles and escape them in unicode -->
+        <!--copy todir="${adminweb.build}/WEB-INF/classes">
+            <fileset dir="${adminweb.src}">
+            <include name="languages/*_*.properties"/>
+            </fileset>
+            <filterchain>
+            <filterreader classname="org.apache.tools.ant.filters.EscapeUnicode"/>
+            </filterchain>
+        </copy-->
 
-    <war basedir="${adminweb.build}" destfile="${dist}/adminweb.war"
-        webxml="${adminweb.build}/WEB-INF/web.xml"
-        excludes="WEB-INF/web.xml">
-    </war>
+        <jar jarfile="${adminweb.build}/WEB-INF/lib/adminweb.jar">
+            <fileset dir="${build}">
+            <include name="se/anatom/ejbca/webdist/**"/>
+            <include name="se/anatom/ejbca/apply/**"/>
+            </fileset>
+        </jar>
+
+        <war basedir="${adminweb.build}" destfile="${dist}/adminweb.war"
+            webxml="${adminweb.build}/WEB-INF/web.xml"
+            excludes="WEB-INF/web.xml">
+        </war>
   </target>
 
   <!-- =================================================================== -->
@@ -677,37 +602,6 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         </javadoc>
   </target>
 
-  <!-- ========================================================================== -->
-  <!-- Replace every occurrence of the DefaultDS to something else (here ejbcaDS) -->
-  <!-- ========================================================================== -->
-  <target name="replaceDS">
-
-		<!-- Replace every occurence in the files of the Datasource -->
-            <input
-            message="Type of database :"
-            validargs="oracle,mssql,mysql,postgres,sapdb,hsqldb,sybase"
-            addproperty="ejbca.DB"
-            />
-            <input
-            message="Data source (default java:/DefaultDS):"
-            addproperty="ejbca.DS"
-            defaultvalue="java:/DefaultDS"
-            />
-        <!-- Replace the jbosscmp xml description files by the correct ones -->
-        <copy overwrite="true" file="src/ca/ca/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/ca/ca/META-INF/jbosscmp-jdbc.xml"/>
-        <copy overwrite="true" file="src/ra/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/ra/META-INF/jbosscmp-jdbc.xml"/>
-        <copy overwrite="true" file="src/log/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/log/META-INF/jbosscmp-jdbc.xml"/>
-        <copy overwrite="true" file="src/authorization/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/authorization/META-INF/jbosscmp-jdbc.xml"/>
-        <copy overwrite="true" file="src/hardtoken/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/hardtoken/META-INF/jbosscmp-jdbc.xml"/>
-        <copy overwrite="true" file="src/keyrecovery/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/keyrecovery/META-INF/jbosscmp-jdbc.xml"/>
-
-        <replace dir="${src}" value="${ejbca.DS}">
-	        <include name="**/jbosscmp-jdbc.xml"/>
-	        <include name="**/ejb-jar.xml"/>
-	        <replacetoken>java:/DefaultDS</replacetoken>
-        </replace>
-  </target>
-
    <target name="jboss:init" description="Check that jboss.home is correct">
         <!--
             we could have a dedicated jboss for ejbca, so give users a chance to override
@@ -736,43 +630,43 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- Upgrades the database for a new version of ejbca                           -->
   <!-- ========================================================================== -->
   <target name="upgrade" depends="admin.jar">
-		<!-- Get input -->
-  		<input
-		    message="Type of system:"
+        <!-- Get input -->
+        <input
+            message="Type of system:"
             validargs="unix,windows"
-		    addproperty="ejbca.OS"
-		  />
-  		<input
-		    message="Hostname for adminweb (default 127.0.0.1):"
-		    addproperty="ejbca.URL"
-		    defaultvalue="127.0.0.1"
-		  />
-  		<input
-		    message="Type of database:"
+            addproperty="ejbca.OS"
+          />
+        <input
+            message="Hostname for adminweb (default 127.0.0.1):"
+            addproperty="ejbca.URL"
+            defaultvalue="127.0.0.1"
+          />
+        <input
+            message="Type of database:"
             validargs="mysql"
-		    addproperty="ejbca.DB"
-		  />
+            addproperty="ejbca.DB"
+          />
         <!-- validargs="hsql,oracle,mssql,mysql,postgres,sapdb,hsqldb,sybase" -->
-  		<input
-		    message="Data source (default java:/DefaultDS):"
-		    addproperty="ejbca.DS"
-		    defaultvalue="java:/DefaultDS"
-		  />
-  		<input
-		    message="CA name(default MyCA):"
-		    addproperty="ejbca.CA"
-		    defaultvalue="MyCA"
-		  />
-  		<input
-		    message="CA keystore filename (default $JBOSS_HOME/server/default/conf/server.p12):"
-		    addproperty="ejbca.KS"
-		    defaultvalue="${jboss.home}/server/default/conf/server.p12"
-		  />
-  		<input
-		    message="CA keystore password:"
-		    addproperty="ejbca.KSPWD"
-		  />
-	  	<java classname="se.anatom.ejbca.admin.Upgrade" fork="true">
+        <input
+            message="Data source (default java:/DefaultDS):"
+            addproperty="ejbca.DS"
+            defaultvalue="java:/DefaultDS"
+          />
+        <input
+            message="CA name(default MyCA):"
+            addproperty="ejbca.CA"
+            defaultvalue="MyCA"
+          />
+        <input
+            message="CA keystore filename (default $JBOSS_HOME/server/default/conf/server.p12):"
+            addproperty="ejbca.KS"
+            defaultvalue="${jboss.home}/server/default/conf/server.p12"
+          />
+        <input
+            message="CA keystore password:"
+            addproperty="ejbca.KSPWD"
+          />
+        <java classname="se.anatom.ejbca.admin.Upgrade" fork="true">
              <sysproperty key="ejbcaOS" value="${ejbca.OS}"/>
              <sysproperty key="ejbcaURL" value="${ejbca.URL}"/>
              <sysproperty key="ejbcaDB" value="${ejbca.DB}"/>
@@ -780,13 +674,13 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
              <sysproperty key="ejbcaCA" value="${ejbca.CA}"/>
              <sysproperty key="ejbcaKS" value="${ejbca.KS}"/>
              <sysproperty key="ejbcaKSPWD" value="${ejbca.KSPWD}"/>
-	  		 <classpath>
+             <classpath>
                 <pathelement location="."/>
-	  		 	<pathelement location="${adminjar}"/>
-	  		 	<fileset dir="${jboss.home}/client" includes="**/*.jar"/>
-	  		 	<fileset dir="${lib}" includes="**/*.jar"/>
-	  		 </classpath>
-	  	</java>
+                <pathelement location="${adminjar}"/>
+                <fileset dir="${jboss.home}/client" includes="**/*.jar"/>
+                <fileset dir="${lib}" includes="**/*.jar"/>
+             </classpath>
+        </java>
   </target>
 
   <!-- ============================================================================= -->
@@ -811,7 +705,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
       <pathelement location="${jboss.home}/lib/jboss-common.jar"/>
       <pathelement location="${jboss.home}/lib/jboss-jmx.jar"/>
     </path>
-      <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
+      <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on">
         <exclude name="**/CVS/**"/>
         <include name="**/appserver/**"/> <!-- appserver specific files are built separtely-->
         <classpath refid="jbossservices.classpath"/>
@@ -849,21 +743,21 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!--Deploy Jboss Specific Services                       -->
   <!-- =================================================================== -->
   <target name="deployjbossservices" depends="jboss:assert-run,jbossservices, deploy">
-	<copy file="${createcrlservicejar}" tofile="${jboss.home}/server/default/deploy/createcrlservice.jar" verbose="true"/>
+    <copy file="${createcrlservicejar}" tofile="${jboss.home}/server/default/deploy/createcrlservice.jar" verbose="true"/>
   </target>
 
   <!-- ======================================================================= -->
   <!-- Deploy EJBCA ear to JBoss                                               -->
   <!-- ======================================================================= -->
   <target name="deploy" depends="jboss:assert-run, ca.ear, admin.jar">
-	<copy file="${caear}" tofile="${jboss.home}/server/default/deploy/ejbca-ca.ear" verbose="true"/>
+    <copy file="${caear}" tofile="${jboss.home}/server/default/deploy/ejbca-ca.ear" verbose="true"/>
   </target>
 
   <!-- ======================================================================= -->
   <!-- Deploy ear without Admin Web-GUI to JBoss                               -->
   <!-- ======================================================================= -->
   <target name="deploy_nora" depends="jboss:assert-run,canora.ear">
-	<copy file="${caearnora}" tofile="${jboss.home}/server/default/deploy/ejbca-canora.ear" verbose="true"/>
+    <copy file="${caearnora}" tofile="${jboss.home}/server/default/deploy/ejbca-canora.ear" verbose="true"/>
   </target>
 
   <!-- ==================================================================== -->
@@ -920,5 +814,77 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </jalopy>
   </target>
 
-</project>
+    <!--
+        this macro is a specialized copy for deployment descriptors (dd).
+        In the wonderful world of J2EE nothing it is always painful
+        Basically it is copying the appropriate DD for each J2EE server
+        and does some magic replace for datasource jndi name:
+        @datasource.jndi-name@
+    -->
+    <macrodef name="ejb-dd-copy">
+        <attribute name="todir"/>
+        <attribute name="dir"/>
+        <sequential>
 
+        <!-- standard configuration.. should be modified with xdoclet -->
+        <copy todir="@{todir}">
+            <fileset dir="@{dir}" includes="META-INF/ejb-jar.xml"/>
+            <filterchain refid="datasource.filters"/>
+        </copy>
+        
+        <!-- jboss configuration -->
+        <copy todir="@{todir}">
+            <fileset dir="@{dir}" includes="META-INF/jbosscmp-jdbc*.xml"/>
+            <filterchain refid="datasource.filters"/>
+            <mapper refid="database.mapper"/>
+        </copy>
+        <copy todir="@{todir}">
+                <fileset dir="@{dir}" includes="META-INF/jboss.xml"/>
+        </copy>
+        
+        <!-- weblogic configuration -->     
+        <copy todir="@{todir}">
+            <fileset dir="@{dir}" includes="META-INF/weblogic*.xml"/>
+            <filterchain refid="datasource.filters"/>
+        </copy>
+        </sequential>
+    </macrodef>
+
+    <!--
+    Macro that creates an exploded war based on the structure in use for this
+    project. The 'name' attributes should match the se.anatom.ejbca.name package
+    and it expects to find a directory 'name' in src with the META-INF as the
+    subdirectory.
+    -->
+    <macrodef name="ejb-jar">
+        <attribute name="name"/>
+        <element name="filesets" optional="yes"/>
+        <sequential>
+            <property name="@{name}.id" value="@{name}-ejb.jar"/>
+            <property name="@{name}.build.dir" value="${tmp}/${@{name}.id}"/>
+            <mkdir dir="${@{name}.build.dir}"/>
+            
+            <!-- copy/configure the dds -->
+            <ejb-dd-copy todir="${@{name}.build.dir}" dir="${src}/@{name}"/>
+            
+            <!-- copy the appropriate classes -->
+            <copy todir="${@{name}.build.dir}">
+                <fileset dir="${build}">
+                <include name="se/anatom/ejbca/@{name}/**"/>
+                </fileset>
+                <!-- add extra classes, in case it is not enough -->
+                <filesets/>
+            </copy>
+            
+            <!-- jar all files -->
+            <jar basedir="${@{name}.build.dir}" jarfile="${dist}/${@{name}.id}">
+            <manifest>
+                <attribute name="Class-Path" value="${jar.classpath}"/>
+            </manifest>
+            </jar>
+        </sequential>
+    </macrodef>
+
+
+
+</project>
