@@ -1,7 +1,16 @@
 1.4
 ---
-Fixed bug with wrong template path for IE cert enrollment.
 Architectural changes.
+
+1.3.2
+-----
+Fixed compilation error with JDK1.3.
+Fixed bug where order in IssuerDN could be wrong.
+Fixed typo in deploy.cmd/sh.
+
+1.3.1
+-----
+Fixed wrong template path for IE certificate enrollment.
 
 1.3
 ---
