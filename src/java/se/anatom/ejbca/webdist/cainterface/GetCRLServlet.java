@@ -48,7 +48,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java,v 1.18 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: GetCRLServlet.java,v 1.19 2004-11-08 21:18:25 sbailliez Exp $
  */
 public class GetCRLServlet extends HttpServlet {
 
@@ -153,8 +153,8 @@ public class GetCRLServlet extends HttpServlet {
      * Prints debug info back to browser client
      **/
     private class Debug {
-        final private ByteArrayOutputStream buffer;
-        final private PrintStream printer;
+        private final ByteArrayOutputStream buffer;
+        private final PrintStream printer;
         Debug( ){
             buffer=new ByteArrayOutputStream();
             printer=new PrintStream(buffer);
