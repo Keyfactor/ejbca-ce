@@ -196,6 +196,17 @@ EJBCA can be run with servlets and EJBs or only with EJBs. The servlets are only
 this front-end may not be needed.
 The sampleauth servlet is only an example and should never be deployed in a real production environment.
 
+SAMPLES
+-------
+A collection of samples are in the directory src/java/se/anatom/ejbca/samples.
+
+-AuthResult.java
+-RemoteVerifyServlet.java
+These files are a sample of a remote user database providing user authentication to the CA when the CA is about to generate
+a certificate for a user. A remote user database is used by configuring the CA to use the 'RemoteAuthenticationSession' instead 
+of 'LocalAuthenticationSession'.
+The sample files implement a simple file based user database and a servlet that responds to the HTTP requests comming from the CA.
+The sample remote authentication is deployes by deploying the file 'sampleauth.war' in JBoss.
 
 REFERENCES
 ----------
