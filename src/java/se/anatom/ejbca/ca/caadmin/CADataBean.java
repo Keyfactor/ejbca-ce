@@ -24,7 +24,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.2 2003-10-21 13:48:45 herrvendil Exp $
+ * @version $Id: CADataBean.java,v 1.3 2004-03-03 16:18:05 herrvendil Exp $
  */
 public abstract class CADataBean extends BaseEntityBean {
 
@@ -88,6 +88,13 @@ public abstract class CADataBean extends BaseEntityBean {
        
        this.ca = ca;
     }   
+    
+    /**
+     * Passivates bean, resets CA data.
+     */
+    public void ejbPassivate() {
+        this.ca = null;
+    }
     
 
     //

@@ -24,7 +24,7 @@ import se.anatom.ejbca.hardtoken.hardtokenprofiles.SwedishEIDProfile;
  *  hardtokenprofile (Data saved concerning the hard token profile)
  * </pre>
  *
- * @version $Id: HardTokenProfileDataBean.java,v 1.2 2003-12-26 11:49:50 anatom Exp $
+ * @version $Id: HardTokenProfileDataBean.java,v 1.3 2004-03-03 16:19:09 herrvendil Exp $
  **/
 
 public abstract class HardTokenProfileDataBean extends BaseEntityBean {
@@ -109,6 +109,13 @@ public abstract class HardTokenProfileDataBean extends BaseEntityBean {
     // Fields required by Container
     //
 
+    /**
+     * Passivates bean, resets profile data.
+     */
+    public void ejbPassivate() {
+        this.profile = null;
+    }
+    
 
     /**
      * Entity Bean holding data of a ahrd token issuer.
