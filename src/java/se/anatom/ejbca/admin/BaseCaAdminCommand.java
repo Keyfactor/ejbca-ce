@@ -11,6 +11,7 @@ import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.Security;
 import java.security.SignatureException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.ejb.CreateException;
@@ -34,7 +35,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.14 2003-10-03 14:34:20 herrvendil Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.15 2003-11-02 08:46:03 anatom Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
     /** Private key alias in PKCS12 keystores */
@@ -51,38 +52,32 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
      */
     public BaseCaAdminCommand(String[] args) {
         super(args);
-
         // Install BouncyCastle provider
         Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
         int result = Security.addProvider(BCJce);
-
         administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     }
-
     
     /** Retrieves the complete certificate chain from the CA
      *
+     * @param human readable name of CA 
      * @return array of certificates, from ISignSession.getCertificateChain()
-     */
-   
+     */   
     protected Collection getCertChain(String caname) throws Exception{
         debug(">getCertChain()");
-        Collection returnval = null;
+        Collection returnval = new ArrayList();
         try {
             CAInfo cainfo = this.getCAAdminSessionRemote().getCAInfo(administrator,caname);
-            returnval = cainfo.getCertificateChain();
-
+            if (cainfo != null) {
+                returnval = cainfo.getCertificateChain();
+            } 
         } catch (Exception e) {
             error("Error while getting certfificate chain from CA.", e);
         }
-
         debug("<getCertChain()");
-
         return returnval;
     } // getCertChain 
 
-
-    // getCertChain
     protected void makeCertRequest(String dn, KeyPair rsaKeys, String reqfile)
         throws NoSuchAlgorithmException, IOException, NoSuchProviderException, InvalidKeyException, 
             SignatureException {
@@ -121,8 +116,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         os1.close();
         System.out.println("CertificationRequest '" + reqfile + "' generated successfully.");
         debug("<makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
-    }
-
+    } // makeCertRequest
 
     protected void createCRL(String issuerdn) throws NamingException, CreateException, RemoteException {
         debug(">createCRL()");
@@ -150,15 +144,12 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
       return cainfo.getSubjectDN();  
    }
    
-   private ICAAdminSessionRemote getCAAdminSessionRemote() throws Exception{
+   protected ICAAdminSessionRemote getCAAdminSessionRemote() throws Exception{
       if(caadminsession == null){
         Context ctx = getInitialContext();
         ICAAdminSessionHome home = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"), ICAAdminSessionHome.class );            
         caadminsession = home.create();          
-      }
-      
+      } 
       return caadminsession;
-   }
-
-   // createCRL
+   } // createCRL
 }

@@ -6,7 +6,7 @@ import org.apache.log4j.PropertyConfigurator;
 /**
  * Implements the CA command line interface
  *
- * @version $Id: ca.java,v 1.32 2003-08-20 09:50:11 anatom Exp $
+ * @version $Id: ca.java,v 1.33 2003-11-02 08:46:03 anatom Exp $
  */
 public class ca {
     /**
@@ -24,11 +24,10 @@ public class ca {
                 cmd.execute();
             } else {
                 System.out.println(
-                    "Usage: CA info | makeroot | getrootcert | makereq | recrep | processreq | init | createcrl | getcrl | rolloverroot | rolloversub | listexpired | exportprofiles | importprofiles");
+                    "Usage: CA info | init | listcas | makeroot | getrootcert | makereq | recrep | processreq | createcrl | getcrl | rolloverroot | rolloversub | listexpired | exportprofiles | importprofiles");
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
-
             //e.printStackTrace();
         }
     }

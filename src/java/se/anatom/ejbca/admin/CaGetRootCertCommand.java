@@ -9,7 +9,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Export root CA certificate.
  *
- * @version $Id: CaGetRootCertCommand.java,v 1.8 2003-11-01 14:11:05 anatom Exp $
+ * @version $Id: CaGetRootCertCommand.java,v 1.9 2003-11-02 08:46:03 anatom Exp $
  */
 public class CaGetRootCertCommand extends BaseCaAdminCommand {
     /**
@@ -45,21 +45,22 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
         
         try {
             ArrayList chain = new ArrayList(getCertChain(caname));
-            X509Certificate rootcert = (X509Certificate)chain.get(chain.size()-1);
-
-            FileOutputStream fos = new FileOutputStream(filename);
-            if (pem) {
-                fos.write(CertTools.getPEMFromCerts(chain));
+            if (chain.size() > 0) {
+                X509Certificate rootcert = (X509Certificate)chain.get(chain.size()-1);                
+                FileOutputStream fos = new FileOutputStream(filename);
+                if (pem) {
+                    fos.write(CertTools.getPEMFromCerts(chain));
+                } else {
+                    fos.write(rootcert.getEncoded());
+                }
+                fos.close();
             } else {
-                fos.write(rootcert.getEncoded());
+                System.out.println("No CA certificate found.");
             }
-            fos.close();
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
 
         System.out.println("Wrote Root CA certificate to '" + filename + "'");
-    }
-
-    // execute
+    } // execute
 }

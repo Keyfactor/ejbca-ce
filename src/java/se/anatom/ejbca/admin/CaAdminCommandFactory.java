@@ -3,7 +3,7 @@ package se.anatom.ejbca.admin;
 /**
  * Factory for CA Admin Commands.
  *
- * @version $Id: CaAdminCommandFactory.java,v 1.6 2003-08-20 09:50:11 anatom Exp $
+ * @version $Id: CaAdminCommandFactory.java,v 1.7 2003-11-02 08:46:03 anatom Exp $
  */
 public class CaAdminCommandFactory {
     /**
@@ -32,6 +32,8 @@ public class CaAdminCommandFactory {
             return new CaListExpiredCommand(args);
         } else if (args[0].equals("info")) {
             return new CaInfoCommand(args);
+        } else if (args[0].equals("listcas")) {
+            return new CaListCAsCommand(args);
         } else if (args[0].equals("init")) {
             return new CaInitCommand(args);
         } else if (args[0].equals("makereq")) {
