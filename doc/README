@@ -44,7 +44,7 @@ conditions of JBoss.
 
 Ant and Log4j is Copyright 1999-2001, Apache Software Foundation and can be obtained from www.apache.org.
 Jar file for Log4j is distributed with EJBCA. The version of Log4j used in
-this release is 1.1.3.
+this release is 1.1.3. See doc/LICENSE-APACHE for license conditions of Log4j.
 
 JUnit can be obtained from www.junit.org. Jar file needed to run JUnit tests is
 distributed with EJBCA. The version used in this release is 3.7. JUnit is
