@@ -28,12 +28,13 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
     
     // Public Constants.
     /* Constants specifying the kind user access rights to look for, */
-    public static final String VIEW_RIGHTS = GlobalConfiguration.VIEW_RIGHTS;
-    public static final String EDIT_RIGHTS = GlobalConfiguration.EDIT_RIGHTS;
-    public static final String CREATE_RIGHTS = GlobalConfiguration.CREATE_RIGHTS;
-    public static final String DELETE_RIGHTS = GlobalConfiguration.DELETE_RIGHTS;
-    public static final String REVOKE_RIGHTS = GlobalConfiguration.REVOKE_RIGHTS;
-    public static final String HISTORY_RIGHTS = GlobalConfiguration.HISTORY_RIGHTS;    
+    public static final String VIEW_RIGHTS           = GlobalConfiguration.VIEW_RIGHTS;
+    public static final String EDIT_RIGHTS           = GlobalConfiguration.EDIT_RIGHTS;
+    public static final String CREATE_RIGHTS         = GlobalConfiguration.CREATE_RIGHTS;
+    public static final String DELETE_RIGHTS         = GlobalConfiguration.DELETE_RIGHTS;
+    public static final String REVOKE_RIGHTS         = GlobalConfiguration.REVOKE_RIGHTS;
+    public static final String HISTORY_RIGHTS        = GlobalConfiguration.HISTORY_RIGHTS;    
+    public static final String HARDTOKEN_VIEW_RIGHTS = GlobalConfiguration.HARDTOKEN_RA_ENDING;
     
     /** Creates a new instance of ProfileAuthorizationProxy. */
     public EndEntityProfileAuthorizationProxy(IAuthorizationSessionRemote authorizationsession) {

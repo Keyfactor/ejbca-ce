@@ -94,7 +94,7 @@
       </td>
     </tr>
 -->
-<!-- /* Wait for implementation.
+
     <tr id="Row0"> 
       <td width="49%" valign="top"> 
         <h3>Issue Hardware Tokens</h3>
@@ -106,7 +106,7 @@
                                                                                                 out.write(" CHECKED "); %>> 
       </td>
     </tr>
- -->
+
     <tr> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top">

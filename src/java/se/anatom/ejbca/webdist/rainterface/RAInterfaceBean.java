@@ -28,6 +28,9 @@ import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ra.authorization.EndEntityProfileAuthorizationProxy;
 import se.anatom.ejbca.ra.authorization.IAuthorizationSessionHome;
 import se.anatom.ejbca.ra.authorization.IAuthorizationSessionRemote;
+import se.anatom.ejbca.hardtoken.IHardTokenSessionRemote;
+import se.anatom.ejbca.hardtoken.IHardTokenSessionHome;
+import se.anatom.ejbca.hardtoken.HardTokenData;
 import se.anatom.ejbca.util.query.*;
 import se.anatom.ejbca.webdist.cainterface.CertificateProfileNameProxy;
 import se.anatom.ejbca.log.Admin;
@@ -40,7 +43,7 @@ import org.apache.log4j.Category;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.21 2003-01-19 09:40:13 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.22 2003-02-06 15:35:45 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -83,14 +86,17 @@ public class RAInterfaceBean {
         certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
         certificatesession = certificatesessionhome.create();
 
-        obj1 = jndicontext.lookup("AuthorizationSession");
         IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("AuthorizationSession"),
                                                                                  IAuthorizationSessionHome.class);
         globalconfiguration = adminsession.loadGlobalConfiguration(administrator);
         authorizationsession = authorizationsessionhome.create();
         authorizationsession.init(globalconfiguration);
 
-
+        IHardTokenSessionHome hardtokensessionhome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("HardTokenSession"), 
+                                                                                 IHardTokenSessionHome.class);
+        hardtokensession = hardtokensessionhome.create();         
+        
+        
         profileauthproxy = new EndEntityProfileAuthorizationProxy(authorizationsession);
         certprofilenameproxy = new CertificateProfileNameProxy(administrator);
         profilenameproxy = new EndEntityProfileNameProxy(administrator);
@@ -288,6 +294,29 @@ public class RAInterfaceBean {
        return users.getUsers(index,size);
 
     }
+    
+    /* Method to find all users in database */
+    public UserView[] filterByTokenSN(String tokensn, int index,int size) throws Exception{  
+      UserView[] returnval = null;        
+      UserAdminData user = null;     
+      try{
+        tokensn = new RegularExpression.RE(" ",false).replace(tokensn,"");
+      }catch(Exception e){}
+      HardTokenData token = hardtokensession.getHardToken(administrator, tokensn);
+
+      if(token!=null)
+        user = adminsession.findUser(administrator, token.getUsername());
+      
+      Vector uservector = new Vector();     
+      if(user!=null)
+         uservector.addElement(user);
+      
+      users.setUsers(uservector);
+
+      returnval= users.getUsers(index,size);      
+      
+      return returnval;
+    }    
 
     /* Method that checks if a certificate serialnumber is revoked and returns the user(s), else a null value. */
     public UserView[] filterByCertificateSerialNumber(String serialnumber, int index, int size) throws RemoteException,
@@ -509,6 +538,28 @@ public class RAInterfaceBean {
       }
     }
     
+    public void loadTokenCertificates(String tokensn, String username) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
+      Collection certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
+
+      UserAdminData user = adminsession.findUser(administrator, username);
+
+      if(!certs.isEmpty()){
+        Iterator j = certs.iterator();
+        certificates = new CertificateView[certs.size()];
+        for(int i=0; i< certificates.length; i++){
+          RevokedInfoView revokedinfo = null;
+          X509Certificate cert = (X509Certificate) j.next();
+          RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, cert.getIssuerDN().toString(), cert.getSerialNumber());
+          if(revinfo != null)
+            revokedinfo = new RevokedInfoView(revinfo);
+           certificates[i] = new CertificateView(cert, revokedinfo, username);
+        }
+      }
+      else{
+        certificates = null;
+      }
+    }    
+    
     public void loadCACertificates(CertificateView[] cacerts) {
         certificates = cacerts;
     }    
@@ -553,8 +604,8 @@ public class RAInterfaceBean {
       }
 
       return returnval;
-    }
-
+    } 
+    
     public boolean authorizedToEditUser(int profileid) throws RemoteException{  
       return profileauthproxy.getEndEntityProfileAuthorizationNoLog(administrator, profileid, EndEntityProfileAuthorizationProxy.EDIT_RIGHTS);
     }
@@ -563,6 +614,15 @@ public class RAInterfaceBean {
       return profileauthproxy.getEndEntityProfileAuthorizationNoLog(administrator, profileid, EndEntityProfileAuthorizationProxy.HISTORY_RIGHTS);
     }
 
+    public boolean authorizedToViewHardToken(String username) throws Exception{
+      int profileid = adminsession.findUser(administrator, username).getEndEntityProfileId();
+      return profileauthproxy.getEndEntityProfileAuthorizationNoLog(administrator, profileid, EndEntityProfileAuthorizationProxy.HARDTOKEN_VIEW_RIGHTS);       
+    }
+    
+    public boolean authorizedToViewHardToken(int profileid) throws Exception{
+      return profileauthproxy.getEndEntityProfileAuthorizationNoLog(administrator, profileid, EndEntityProfileAuthorizationProxy.HARDTOKEN_VIEW_RIGHTS);       
+    }
+    
     public boolean authorizedToRevokeCert(CertificateView certinfo) throws FinderException, RemoteException, AuthorizationDeniedException{
       boolean returnval=false;   
       int profileid = (adminsession.findUser(administrator, certinfo.getUsername())).getEndEntityProfileId();
@@ -612,6 +672,7 @@ public class RAInterfaceBean {
     private IRaAdminSessionHome            raadminsessionhome;
     private IRaAdminSessionRemote          raadminsession;
     private IAuthorizationSessionRemote    authorizationsession;
+    private IHardTokenSessionRemote        hardtokensession;    
 
     private UsersView                           users;
     private CertificateView[]                   certificates;

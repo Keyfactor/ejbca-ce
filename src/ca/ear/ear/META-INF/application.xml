@@ -25,6 +25,9 @@ application for enrollment (apply) and distribution (webdist).
         <ejb>log.jar</ejb>
     </module>    
     <module>
+        <ejb>hardtoken.jar</ejb>
+    </module>        
+    <module>
         <web>
             <web-uri>apply.war</web-uri>
             <context-root>/ejbca/publicweb/apply</context-root>

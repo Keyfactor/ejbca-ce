@@ -21,7 +21,7 @@ import se.anatom.ejbca.log.Admin;
  *
  * Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.11 2003-01-12 17:16:29 anatom Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.12 2003-02-06 15:35:49 herrvendil Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote  {
 
@@ -96,6 +96,14 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     * @throws EJBException if a communication or other error occurs.
     */
     public Collection findCertificatesByExpireTime(Admin admin, Date expireTime) throws RemoteException;
+    
+    /**
+    * Finds certificate with specified fingerprint.
+    * 
+    * @throws EJBException if a communication or other error occurs.
+    */    
+
+    public Certificate findCertificateByFingerprint(Admin admin, String fingerprint) throws RemoteException;      
     
      /** 
      * Set the status of certificates of given dn to revoked.

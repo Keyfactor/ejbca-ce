@@ -1,12 +1,15 @@
 <html>
 <%@page contentType="text/html"%>
 <%@page errorPage="/errorpage.jsp" import="RegularExpression.RE, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration, se.anatom.ejbca.SecConst
-               ,se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.ra.raadmin.EndEntityProfile, se.anatom.ejbca.webdist.rainterface.EndEntityProfileDataHandler, se.anatom.ejbca.ra.raadmin.EndEntityProfileExistsException"%>
+               ,se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.ra.raadmin.EndEntityProfile, se.anatom.ejbca.webdist.rainterface.EndEntityProfileDataHandler, 
+                se.anatom.ejbca.ra.raadmin.EndEntityProfileExistsException, se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, se.anatom.ejbca.hardtoken.HardTokenIssuer,
+                se.anatom.ejbca.hardtoken.HardTokenIssuerData, se.anatom.ejbca.hardtoken.AvailableHardToken"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <jsp:useBean id="ejbcarabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
 <jsp:setProperty name="ejbcarabean" property="*" /> 
+<jsp:useBean id="tokenbean" scope="session" class="se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean" />
 
 <%! // Declarations 
   static final String ACTION                        = "action";
@@ -65,7 +68,7 @@
   static final String CHECKBOX_USE_EMAIL             = "checkboxuseemail";
   static final String CHECKBOX_USE_ADMINISTRATOR     = "checkboxuseadministrator";
   static final String CHECKBOX_USE_KEYRECOVERABLE    = "checkboxusekeyrecoverable";
-
+  static final String CHECKBOX_USE_HARDTOKENISSUERS  = "checkboxusehardtokenissuers";
 
   static final String SELECT_DEFAULTCERTPROFILE             = "selectdefaultcertprofile";
   static final String SELECT_AVAILABLECERTPROFILES          = "selectavailablecertprofiles";
@@ -109,6 +112,7 @@
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionallity/edit_end_entity_profiles"); 
                                             ejbcarabean.initialize(request);
+                                            tokenbean.initialize(request);
   String THIS_FILENAME            =  globalconfiguration .getRaPath()  + "/editendentityprofiles/editendentityprofiles.jsp";
 %>
  
@@ -354,6 +358,26 @@
                } 
                profiledata.setValue(EndEntityProfile.AVAILKEYSTORE, 0, availabletokentypes);
                profiledata.setRequired(EndEntityProfile.AVAILKEYSTORE, 0, true);    
+             }
+
+             profiledata.setUse(EndEntityProfile.AVAILTOKENISSUER, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_HARDTOKENISSUERS))); 
+
+             String defaulthardtokenissuer =  request.getParameter(SELECT_DEFAULTHARDTOKENISSUER);
+             profiledata.setValue(EndEntityProfile.DEFAULTTOKENISSUER, 0,defaulthardtokenissuer);
+             profiledata.setRequired(EndEntityProfile.DEFAULTTOKENISSUER, 0,true);
+
+             values = request.getParameterValues(SELECT_AVAILABLEHARDTOKENISSUERS);
+ 
+             if(defaulthardtokenissuer != null){
+               String availablehardtokenissuers =defaulthardtokenissuer;
+               if(values!= null){
+                 for(int i=0; i< values.length; i++){
+                     if(!values[i].equals(defaulthardtokenissuer))
+                       availablehardtokenissuers += EndEntityProfile.SPLITCHAR + values[i];                      
+                 }
+               } 
+               profiledata.setValue(EndEntityProfile.AVAILTOKENISSUER, 0, availablehardtokenissuers);
+               profiledata.setRequired(EndEntityProfile.AVAILTOKENISSUER, 0, true);    
              }
           
              ejbcarabean.changeEndEntityProfile(profile,profiledata);

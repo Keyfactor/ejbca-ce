@@ -40,7 +40,12 @@ public class LogEntry implements java.io.Serializable {
     public static final int EVENT_INFO_CREATECRL                      = 18;
     public static final int EVENT_INFO_ADMINISTRATORLOGGEDIN          = 19;
     public static final int EVENT_INFO_AUTHORIZEDTORESOURCE           = 20;
-    public static final int EVENT_INFO_PUBLICWEBUSERCONNECTED         = 21;    
+    public static final int EVENT_INFO_PUBLICWEBUSERCONNECTED         = 21;   
+    public static final int EVENT_INFO_HARDTOKEN_USERDATASENT         = 22; 
+    public static final int EVENT_INFO_HARDTOKENGENERATED             = 23; 
+    public static final int EVENT_INFO_HARDTOKENDATA                  = 24;   
+    public static final int EVENT_INFO_HARDTOKENISSUERDATA            = 25;
+    public static final int EVENT_INFO_HARDTOKENCERTIFICATEMAP        = 26;    
     
     
     
@@ -67,6 +72,11 @@ public class LogEntry implements java.io.Serializable {
     public static final int EVENT_ERROR_ADMINISTRATORLOGGEDIN          = 1019;
     public static final int EVENT_ERROR_NOTAUTHORIZEDTORESOURCE        = 1020;
     public static final int EVENT_ERROR_PUBLICWEBUSERCONNECTED         = 1021;      
+    public static final int EVENT_ERROR_HARDTOKEN_USERDATASENT         = 1022; 
+    public static final int EVENT_ERROR_HARDTOKENGENERATED             = 1023; 
+    public static final int EVENT_ERROR_HARDTOKENDATA                  = 1024;   
+    public static final int EVENT_ERROR_HARDTOKENISSUERDATA            = 1025;
+    public static final int EVENT_ERROR_HARDTOKENCERTIFICATEMAP        = 1026;      
     
     
     // Indicates the module using the logsession bean.
@@ -75,7 +85,7 @@ public class LogEntry implements java.io.Serializable {
     public static final int MODULE_LOG                 = 2;    
     public static final int MODULE_PUBLICWEB           = 3;
     public static final int MODULE_ADMINWEB            = 4;
-    public static final int MODULE_SCAPER              = 5;
+    public static final int MODULE_HARDTOKEN           = 5;
         
     public static final int EVENT_ERROR_BOUNDRARY                = 1000;
     
@@ -84,16 +94,20 @@ public class LogEntry implements java.io.Serializable {
                                                     "EVENT_INFO_DELETEDENDENTITY", "EVENT_INFO_EDITSYSTEMCONFIGURATION", "EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES",
                                                     "EVENT_INFO_EDITLOGCONFIGURATION", "EVENT_INFO_ADMINISTRATORPREFERENCECHANGED", "EVENT_INFO_ENDENTITYPROFILE", "EVENT_INFO_USERAUTHENTICATION",
                                                     "EVENT_INFO_STORECERTIFICATE", "EVENT_INFO_STORECRL", "EVENT_INFO_GETLASTCRL", "EVENT_INFO_CERTPROFILE", "EVENT_INFO_DATABASE",
-                                                    "EVENT_INFO_CREATECERTIFICATE", "EVENT_INFO_CREATECRL", "EVENT_INFO_ADMINISTRATORLOGGEDIN", "EVENT_INFO_AUTHORIZEDTORESOURCE", "EVENT_INFO_PUBLICWEBUSERCONNECTED"};   
+                                                    "EVENT_INFO_CREATECERTIFICATE", "EVENT_INFO_CREATECRL", "EVENT_INFO_ADMINISTRATORLOGGEDIN", "EVENT_INFO_AUTHORIZEDTORESOURCE", 
+                                                    "EVENT_INFO_PUBLICWEBUSERCONNECTED", "EVENT_INFO_HARDTOKEN_USERDATASENT","EVENT_INFO_HARDTOKENGENERATED","EVENT_INFO_HARDTOKENDATA",
+                                                    "EVENT_INFO_HARDTOKENISSUERDATA", "EVENT_INFO_HARDTOKENCERTIFICATEMAP"};   
     
+                                                                                                         
     public static final String[] EVENTNAMES_ERROR = {"EVENT_ERROR_UNKNOWN", "EVENT_ERROR_ADDEDENDENTITY", "EVENT_ERROR_CHANGEDENDENTITY" , "EVENT_ERROR_REVOKEDENDENTITY", "EVENT_ERROR_REVOKEDCERT",
                                                      "EVENT_ERROR_DELETEENDENTITY", "EVENT_ERROR_EDITSYSTEMCONFIGURATION", "EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES",
                                                      "EVENT_ERROR_EDITLOGCONFIGURATION", "EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED", "EVENT_ERROR_ENDENTITYPROFILE", "EVENT_ERROR_USERAUTHENTICATION",
                                                      "EVENT_ERROR_STORECERTIFICATE", "EVENT_ERROR_STORECRL", "EVENT_ERROR_GETLASTCRL", "EVENT_ERROR_CERTPROFILE", "EVENT_ERROR_DATABASE",
                                                      "EVENT_ERROR_CREATECERTIFICATE", "EVENT_ERROR_CREATECRL" ,"EVENT_ERROR_ADMINISTRATORLOGGEDIN", "EVENT_ERROR_NOTAUTHORIZEDTORESOURCE",
-                                                     "EVENT_ERROR_PUBLICWEBUSERCONNECTED"};    
+                                                     "EVENT_ERROR_PUBLICWEBUSERCONNECTED","EVENT_ERROR_HARDTOKEN_USERDATASENT","EVENT_ERROR_HARDTOKENGENERATED","EVENT_ERROR_HARDTOKENDATA",
+                                                     "EVENT_ERROR_HARDTOKENISSUERDATA", "EVENT_ERROR_HARDTOKENCERTIFICATEMAP"};    
                                                      
-    public static final String[] MODULETEXTS    = {"CA", "RA", "LOG", "PUBLICWEB", "ADMINWEB", "SCAPER"};                                                     
+    public static final String[] MODULETEXTS    = {"CA", "RA", "LOG", "PUBLICWEB", "ADMINWEB", "HARDTOKEN"};                                                     
     
    /** 
     * Function used by EJBCA to log information.

@@ -33,7 +33,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.36 2003-01-31 09:55:30 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.37 2003-02-06 15:35:52 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -633,7 +633,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             rmiFactory.startConnection( args );
             debug(">startService()");
         } catch( Exception e ) {
-            error("Lyckades inte starta extern service.", e);
+            error("Error starting external service.", e);
             throw new EJBException("Error starting external service", e);
         }
     } // startExternalService
@@ -663,7 +663,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             // Execute query.
             rs = ps.executeQuery();
             // Assemble result.
-            while(rs.next() && returnval.size() <= IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT){
+           while(rs.next() && returnval.size() <= IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT){
               UserAdminData data = new UserAdminData(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
                                                , rs.getInt(10), rs.getInt(11)
                                                , new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9))
@@ -671,7 +671,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
               data.setPassword(rs.getString(7));
 
               if(globalconfiguration.getEnableEndEntityProfileLimitations()){
-                // Check if administrator is authorized to edit user.
+                // Check if administrator is authorized to view user.
                 if(profileauthproxy.getEndEntityProfileAuthorization(admin,data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS, LogEntry.MODULE_RA))
                   returnval.add(data);
               }
@@ -706,7 +706,6 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        ArrayList returnval = new ArrayList();
         int count = 1; // return true as default.
 
         Query query = new Query(Query.TYPE_USERQUERY);
@@ -719,7 +718,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             // Execute query.
             rs = ps.executeQuery();
             // Assemble result.
-            while(rs.next()){
+            if(rs.next()){
               count = rs.getInt(1);
             }
             debug("<checkForEndEntityProfileId()");
@@ -765,7 +764,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             // Execute query.
             rs = ps.executeQuery();
             // Assemble result.
-            while(rs.next()){
+            if(rs.next()){
               count = rs.getInt(1);
             }
             debug("<checkForCertificateProfileId()");
@@ -798,7 +797,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             ret = gcdata.getGlobalConfiguration();
           }
         }catch (javax.ejb.FinderException fe) {
-             // Create new configuration
+             // Create new configuration           
              ret = new GlobalConfiguration();
         }
         debug("<loadGlobalConfiguration()");

@@ -3,11 +3,13 @@
 <%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.GlobalConfiguration, 
                  se.anatom.ejbca.webdist.rainterface.UserView, se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.SecConst,
                  se.anatom.ejbca.ra.raadmin.EndEntityProfile,se.anatom.ejbca.ra.authorization.AuthorizationDeniedException,  se.anatom.ejbca.ra.UserDataRemote,
-                 javax.ejb.CreateException, java.rmi.RemoteException" %>
+                 javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, 
+                 se.anatom.ejbca.hardtoken.HardTokenIssuer, se.anatom.ejbca.hardtoken.HardTokenIssuerData, se.anatom.ejbca.hardtoken.AvailableHardToken" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <jsp:useBean id="rabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
 <jsp:setProperty name="rabean" property="*" /> 
+<jsp:useBean id="tokenbean" scope="session" class="se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean" />
 <%! // Declarations
  
   static final String USER_PARAMETER           = "username";
@@ -25,6 +27,8 @@
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ra_functionallity/view_end_entity"); 
                                             rabean.initialize(request);
+                                            if(globalconfiguration.getIssueHardwareTokens())
+                                              tokenbean.initialize(request);
   String THIS_FILENAME                    = globalconfiguration.getRaPath()  + "/viewendentity.jsp";
 
   boolean nouserparameter          = true;
@@ -46,8 +50,23 @@
   int[]  fielddata  = null;
   String fieldvalue = null;
 
-  String[] tokentexts = RAInterfaceBean.tokentexts;
-  int[] tokenids = RAInterfaceBean.tokenids;
+   String[] tokentexts = RAInterfaceBean.tokentexts;
+   int[] tokenids = RAInterfaceBean.tokenids;
+
+   if(globalconfiguration.getIssueHardwareTokens()){
+      AvailableHardToken[] availabletokens = tokenbean.getAvailableHardTokens();
+
+      tokentexts = new String[RAInterfaceBean.tokentexts.length + availabletokens.length];
+      tokenids   = new int[tokentexts.length];
+      for(int i=0; i < RAInterfaceBean.tokentexts.length; i++){
+        tokentexts[i]= RAInterfaceBean.tokentexts[i];
+        tokenids[i] = RAInterfaceBean.tokenids[i];
+      }
+      for(int i=0; i < availabletokens.length;i++){
+        tokentexts[i+RAInterfaceBean.tokentexts.length]= availabletokens[i].getName();
+        tokenids[i+RAInterfaceBean.tokentexts.length] = Integer.parseInt(availabletokens[i].getId());         
+      }
+   }
 
   if( request.getParameter(USER_PARAMETER) != null ){
     username = request.getParameter(USER_PARAMETER);
@@ -126,13 +145,16 @@
 	 <td><% if(fieldvalue != null) out.write(fieldvalue); %> 
          </td>
        </tr>
-       <% }  %> 
+       <% } 
+          subjectfieldsize = profile.getSubjectAltNameFieldOrderLength();
+          if(subjectfieldsize < 0){
+       %> 
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SUBJECTALTNAMEFIELDS") %></td>
 	 <td>
          </td>
        </tr>
-      <% subjectfieldsize = profile.getSubjectAltNameFieldOrderLength();
+      <% }
          for(int i = 0; i < subjectfieldsize; i++){
             fielddata = profile.getSubjectAltNameFieldsInOrder(i);
             fieldvalue = userdata.getSubjectAltNameField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]);
@@ -166,16 +188,33 @@
          <td>   
             <% for(int i=0; i < tokentexts.length;i++){
                 if(tokenids[i] == userdata.getTokenType())
-                  out.write(ejbcawebbean.getText(tokentexts[i])); 
+                   if( tokenids[i] > SecConst.TOKEN_SOFT)
+                     out.write(tokentexts[i]);
+                   else
+                     out.write(ejbcawebbean.getText(tokentexts[i]));
               } %>
          </td> 
        </tr>
+       <% if(globalconfiguration.getIssueHardwareTokens()){ %>
+       <tr id="Row<%=(row++)%2%>">
+	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("HARDTOKENISSUER") %></td>
+         <td>   
+            <% if(userdata.getHardTokenIssuerId() == SecConst.NO_HARDTOKENISSUER)
+                 out.write(ejbcawebbean.getText("NONE"));
+               else
+                 out.write(tokenbean.getHardTokenIssuerAlias(userdata.getHardTokenIssuerId()));
+            %>
+         </td> 
+       </tr>
+       <% } 
+       if( profile.getUse(EndEntityProfile.ADMINISTRATOR,0) || profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery()){
+        %>
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("TYPES") %></td>
 	 <td>
          </td>
        </tr>
-      <%  if(profile.getUse(EndEntityProfile.ADMINISTRATOR,0)){ %>
+      <% } if(profile.getUse(EndEntityProfile.ADMINISTRATOR,0)){ %>
     <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right" width="<%=columnwidth%>"> 
         <%= ejbcawebbean.getText("ADMINISTRATOR") %> <br>

@@ -7,9 +7,9 @@ import java.util.HashMap;
  *  saving it's data to a database in BLOB form. 
  *  
  * @see se.anatom.ejbca.util.IUpgradeableData
- * @version $Id: UpgradeableDataHashMap.java,v 1.3 2003-01-12 17:16:33 anatom Exp $
+ * @version $Id: UpgradeableDataHashMap.java,v 1.4 2003-02-06 15:35:49 herrvendil Exp $
  */
-public abstract class UpgradeableDataHashMap implements IUpgradeableData {
+public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.io.Serializable {
         
     public UpgradeableDataHashMap(){
       data = new HashMap();  

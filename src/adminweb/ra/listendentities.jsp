@@ -21,6 +21,7 @@
   static final String OLD_ACTION               = "oldaction";
   static final String OLD_ACTION_LISTUSERS     = "oldactionlistusers";
   static final String OLD_ACTION_FINDUSER      = "oldactionfinduser";
+  static final String OLD_ACTION_FINDTOKEN     = "oldactionfindtoken";
   static final String OLD_ACTION_ISREVOKED     = "oldactionisrevoked";
   static final String OLD_ACTION_LISTEXPIRED   = "oldactionlistexpired";
   static final String OLD_ACTION_NOACTION      = "oldactionnoaction";  
@@ -49,15 +50,14 @@
   static final String OLD_TIME_ROW4      = "oldtimerow4";
   static final String OLD_TIME_ROW5      = "oldtimerow5";
 
-  static final String BUTTON_VIEW_USER         = "buttonviewuser"; 
-  static final String BUTTON_EDIT_USER         = "buttonedituser"; 
-  static final String BUTTON_VIEW_CERTIFICATE  = "buttonviewcertificate"; 
+
   static final String BUTTON_DELETE_USERS      = "buttondeleteusers";
   static final String BUTTON_CHANGESTATUS      = "buttonchangestatus"; 
   static final String BUTTON_REVOKE_USERS      = "buttonrevokeusers";  
   static final String BUTTON_FIND              = "buttonfind";
   static final String BUTTON_LIST              = "buttonlist";
   static final String BUTTON_ISREVOKED         = "buttonisrevoked";
+  static final String BUTTON_FINDTOKEN         = "buttonfindtoken";
   static final String BUTTON_LISTEXPIRED       = "buttonlistexpired";
   static final String BUTTON_RELOAD            = "buttonreload";
   static final String BUTTON_ADVANCEDLIST      = "buttonadvancedlist";
@@ -107,12 +107,13 @@
   static final String CHECKBOX_SELECT_USER      = "checkboxselectuser";
   static final String CHECKBOX_VALUE            = "true";
 
-  static final String TEXTFIELD_USERNAME        = "textfieldusername";
-  static final String TEXTFIELD_SERIALNUMBER    = "textfieldserialnumber";
-  static final String TEXTFIELD_DAYS            = "textfielddays";
-  static final String TEXTFIELD_MATCHVALUE_ROW1 = "textfieldmatchvaluerow1";
-  static final String TEXTFIELD_MATCHVALUE_ROW2 = "textfieldmatchvaluerow2";
-  static final String TEXTFIELD_MATCHVALUE_ROW3 = "textfieldmatchvaluerow3";
+  static final String TEXTFIELD_USERNAME         = "textfieldusername";
+  static final String TEXTFIELD_SERIALNUMBER     = "textfieldserialnumber";
+  static final String TEXTFIELD_TOKENSERIALNUMBER= "textfieldtokenserialnumber";
+  static final String TEXTFIELD_DAYS             = "textfielddays";
+  static final String TEXTFIELD_MATCHVALUE_ROW1  = "textfieldmatchvaluerow1";
+  static final String TEXTFIELD_MATCHVALUE_ROW2  = "textfieldmatchvaluerow2";
+  static final String TEXTFIELD_MATCHVALUE_ROW3  = "textfieldmatchvaluerow3";
 
   static final String HIDDEN_SORTBY             = "hiddensortby";
   static final String HIDDEN_USERNAME           = "hiddenusername";
@@ -128,6 +129,7 @@
   final String VIEWUSER_LINK            = "/" + globalconfiguration.getAdminWebPath() + "ra/viewendentity.jsp";
   final String EDITUSER_LINK            = "/" + globalconfiguration.getAdminWebPath() + "ra/editendentity.jsp";
   final String VIEWHISTORY_LINK         = "/" + globalconfiguration.getAdminWebPath() + "ra/viewhistory.jsp";
+  final String VIEWTOKEN_LINK           = "/" + globalconfiguration.getAdminWebPath() + "hardtoken/viewtoken.jsp";
 
   String oldaction        = OLD_ACTION_NOACTION; 
   String oldactionvalue   = null;
@@ -202,19 +204,7 @@
     }
     if( request.getParameter(ACTION).equals(ACTION_LISTUSERS)){
       blank=false;
-      if( request.getParameter(BUTTON_VIEW_USER) != null){
-        editbuttonpressed=true;
 
-      }
-
-      if( request.getParameter(BUTTON_EDIT_USER) != null){
-        editbuttonpressed=true;
-
-      }
-      if( request.getParameter(BUTTON_VIEW_CERTIFICATE) != null){
-        editbuttonpressed=true;
-
-      }
       if( request.getParameter(BUTTON_DELETE_USERS) != null){
           // Delete selected users
           // TEMPORATE
@@ -392,6 +382,14 @@
          }
        }
      }else{
+       if( (editbuttonpressed || request.getParameter(BUTTON_RELOAD)!=null)&& oldaction.equals(OLD_ACTION_FINDTOKEN) ){
+         String tokenserialnumber = oldactionvalue;
+         if(tokenserialnumber != null){
+           if(!tokenserialnumber.trim().equals("")){
+             users = rabean.filterByTokenSN(tokenserialnumber.trim(),record,size);
+         }
+       }
+     }else{
        if( (editbuttonpressed || request.getParameter(BUTTON_RELOAD)!=null) && oldaction.equals(OLD_ACTION_LISTEXPIRED) ){
          String days = oldactionvalue;
          if(days != null){
@@ -524,6 +522,18 @@
                    users = rabean.filterByCertificateSerialNumber(serialnumber,record,size);
                    oldaction=OLD_ACTION_ISREVOKED;
                    oldactionvalue=serialnumber;  
+                 }
+               }
+           }else{
+             if( request.getParameter(BUTTON_FINDTOKEN) != null){
+               String tokenserialnumber = request.getParameter(TEXTFIELD_TOKENSERIALNUMBER);  
+               if(tokenserialnumber != null){
+                 tokenserialnumber=tokenserialnumber.trim();
+                 if(!tokenserialnumber.equals("")){
+                   record=0;   
+                   users = rabean.filterByTokenSN(tokenserialnumber,record,size);
+                   oldaction=OLD_ACTION_FINDTOKEN;
+                   oldactionvalue=tokenserialnumber;  
                  }
                }
 
@@ -707,7 +717,7 @@
  
             }else{
             users = rabean.getUsers(record,size);
-            }}}}}
+            }}}}}}}
           }
         }
       }

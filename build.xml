@@ -31,6 +31,10 @@
   <property name="log.build" value="${tmp}/log.jar" />
   <property name="logjar" value="${dist}/log.jar" />  
   
+  <property name="hardtoken.src" value="${src}/hardtoken" />
+  <property name="hardtoken.build" value="${tmp}/hardtoken.jar" />
+  <property name="hardtokenjar" value="${dist}/hardtoken.jar" />   
+  
   <property name="ra.src" value="${src}/ra" />
   <property name="ra.build" value="${tmp}/ra.jar" />
   <property name="rajar" value="${dist}/ra.jar" />
@@ -94,8 +98,8 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- =================================================================== -->
   <!-- Build ALL                                                           -->
   <!-- =================================================================== -->
-  <target name="build" depends="compile, apply.war, webdist.war, ca.jar, log.jar,
-ca.ear, canora.ear, ra.jar, adminweb.war, admin.jar, sampleauth.war">
+  <target name="build" depends="compile, apply.war, webdist.war, ca.jar, log.jar, 
+  hardtoken.jar, ca.ear, canora.ear, ra.jar, adminweb.war, admin.jar, sampleauth.war">
   </target>
 
   <!-- =================================================================== -->
@@ -217,6 +221,38 @@ ca.ear, canora.ear, ra.jar, adminweb.war, admin.jar, sampleauth.war">
     <!-- Jar the ca.jar package together -->
     <jar basedir="${log.build}" jarfile="${logjar}"/>    
   </target>  
+  
+  <!-- =================================================================== -->
+  <!-- Build hard token part                                                    -->
+  <!-- =================================================================== -->
+  <target name="hardtoken.jar" depends="compile">
+    <mkdir    dir="${hardtoken.build}"/>
+    <copy todir="${hardtoken.build}">
+        <fileset dir="${hardtoken.src}"> 
+                <include name="**/*"/>
+        </fileset>
+    </copy>
+    <copy todir="${log.build}">
+        <fileset dir="${build}">
+                <include name="se/anatom/ejbca/hardtoken/*.class"/>
+                <include name="se/anatom/ejbca/ra/I*.class"/>
+                <include name="se/anatom/ejbca/ra/UserAdminData.class"/>  
+                <include name="se/anatom/ejbca/ra/UserDataLocal.class"/> 
+                <include name="se/anatom/ejbca/ra/UserDataLocalHome.class"/>                                                
+                <include name="se/anatom/ejbca/ra/authorization/I*.class"/>                
+                <include name="se/anatom/ejbca/ca/store/I*.class"/>  
+                <include name="se/anatom/ejbca/log/I*.class"/>
+                <include name="se/anatom/ejbca/log/Admin.class"/>  
+                <include name="se/anatom/ejbca/log/LogEntry.class"/>                                                                               
+                <include name="se/anatom/ejbca/util/CertTools.class"/> 
+                <include name="se/anatom/ejbca/SecConst.class"/>                                  
+                <exclude name="se/anatom/ejbca/**/*Test*"/>
+        </fileset>
+    </copy>
+    
+    <!-- Jar the ca.jar package together -->
+    <jar basedir="${hardtoken.build}" jarfile="${hardtokenjar}"/>    
+  </target>    
 
   <!-- =================================================================== -->
   <!-- Build ra part                                                    -->
@@ -367,7 +403,17 @@ ca.ear, canora.ear, ra.jar, adminweb.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/ra/raadmin/UserDoesntFullfillEndEntityProfile.class"/>   
                 <include name="se/anatom/ejbca/ra/raadmin/IRaAdminSessionHome.class"/>   
                 <include name="se/anatom/ejbca/ra/raadmin/IRaAdminSessionRemote.class"/>
-                <include name="se/anatom/ejbca/ra/raadmin/EndEntityProfile.class"/>                                                 
+                <include name="se/anatom/ejbca/ra/raadmin/EndEntityProfile.class"/>   
+                <include name="se/anatom/ejbca/hardtoken/AvailableHardToken.class"/>  
+                <include name="se/anatom/ejbca/hardtoken/IHardTokenSessionHome.class"/> 
+                <include name="se/anatom/ejbca/hardtoken/IHardTokenSessionRemote.class"/>     
+                <include name="se/anatom/ejbca/hardtoken/HardTokenIssuer.class"/>   
+                <include name="se/anatom/ejbca/hardtoken/HardTokenIssuerData.class"/>   
+                <include name="se/anatom/ejbca/hardtoken/hardtokentypes/*.class"/>   
+                <include name="se/anatom/ejbca/hardtoken/HardTokenData.class"/>                 
+                <include name="se/anatom/ejbca/hardtoken/UnavailableTokenException.class"/>
+                <include name="se/anatom/ejbca/hardtoken/HardTokenExistsException.class"/> 
+                <include name="se/anatom/ejbca/hardtoken/HardTokenDoesntExistsException.class"/>                                                                                                                                                                          
                 <include name="se/anatom/ejbca/ra/authorization/*Exception.class"/>
                 <include name="se/anatom/ejbca/ra/authorization/UserEntity.class"/>  
                 <include name="se/anatom/ejbca/ra/authorization/AdminInformation.class"/>      
@@ -407,7 +453,8 @@ ca.ear, canora.ear, ra.jar, adminweb.war, admin.jar, sampleauth.war">
                 <include name="apply.war"/>
                 <include name="ca.jar"/>
                 <include name="ra.jar"/>
-                <include name="log.jar"/>                
+                <include name="log.jar"/>         
+                <include name="hardtoken.jar"/>                          
                 <include name="adminweb.war"/>
         </fileset>
     </copy>

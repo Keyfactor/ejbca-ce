@@ -32,26 +32,27 @@ import se.anatom.ejbca.ra.raadmin.AdminPreference;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.20 2003-01-19 09:40:13 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.21 2003-02-06 15:35:46 herrvendil Exp $
  */
 public class EjbcaWebBean {
 
     private static Category cat = Category.getInstance(EjbcaWebBean.class.getName());
     
     // Public Constants.
-    public static final int AUTHORIZED_RA_VIEW_RIGHTS    = 0;
-    public static final int AUTHORIZED_RA_EDIT_RIGHTS    = 1;
-    public static final int AUTHORIZED_RA_CREATE_RIGHTS  = 2;
-    public static final int AUTHORIZED_RA_DELETE_RIGHTS  = 3;
-    public static final int AUTHORIZED_RA_REVOKE_RIGHTS  = 4;
-    public static final int AUTHORIZED_RA_HISTORY_RIGHTS = 5; 
-    public static final int AUTHORIZED_CA_VIEW_CERT      = 6;
+    public static final int AUTHORIZED_RA_VIEW_RIGHTS        = 0;
+    public static final int AUTHORIZED_RA_EDIT_RIGHTS        = 1;
+    public static final int AUTHORIZED_RA_CREATE_RIGHTS      = 2;
+    public static final int AUTHORIZED_RA_DELETE_RIGHTS      = 3;
+    public static final int AUTHORIZED_RA_REVOKE_RIGHTS      = 4;
+    public static final int AUTHORIZED_RA_HISTORY_RIGHTS     = 5; 
+    public static final int AUTHORIZED_HARDTOKEN_VIEW_RIGHTS = 6;
+    public static final int AUTHORIZED_CA_VIEW_CERT          = 7;
     
-    private static final int AUTHORIZED_FIELD_LENGTH     = 7; 
+    private static final int AUTHORIZED_FIELD_LENGTH     = 8; 
     private static final String[] AUTHORIZED_RA_RESOURCES = {"/ra_functionallity/view_end_entity", "/ra_functionallity/edit_end_entity", 
                                                              "/ra_functionallity/create_end_entity", "/ra_functionallity/delete_end_entity",
                                                              "/ra_functionallity/revoke_end_entity","/ra_functionallity/view_end_entity_history",
-                                                             "/ca_functionallity/view_certificate"};
+                                                             "/ra_functionallity/view_hardtoken","/ca_functionallity/view_certificate"};
     
     
     /** Creates a new instance of EjbcaWebBean */

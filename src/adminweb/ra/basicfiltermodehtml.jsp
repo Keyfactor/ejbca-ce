@@ -13,6 +13,16 @@
     <input type="submit" name="<%=BUTTON_ISREVOKED %>" value="<%= ejbcawebbean.getText("FIND") %>" 
            onclick='return checkfieldforhexadecimalnumbers("document.form.<%=TEXTFIELD_SERIALNUMBER %>","<%= ejbcawebbean.getText("ONLYHEXNUMBERS") %>")'>
   </p>
+  <% if(globalconfiguration.getIssueHardwareTokens()){ %>
+  <p><%= ejbcawebbean.getText("ORTOKENSERIAL") %>
+    <input type="text" name="<%=TEXTFIELD_TOKENSERIALNUMBER %>" size="33" maxlength="255" 
+     <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_FINDTOKEN))
+          out.write("value='"+oldactionvalue+"'"); %>
+     >
+    <input type="submit" name="<%=BUTTON_FINDTOKEN %>" value="<%= ejbcawebbean.getText("FIND") %>" 
+           onclick='return checkfieldforlegalchars("document.form.<%=TEXTFIELD_TOKENSERIALNUMBER %>","<%= ejbcawebbean.getText("ONLYLETTERSANDNUMBERS") %>")'>
+  </p>
+  <% } %>
   <p><%= ejbcawebbean.getText("ORWITHSTATUS") %>
     <select name="<%=SELECT_LIST_STATUS %>">
       <option value=''>--</option> 

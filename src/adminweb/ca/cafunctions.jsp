@@ -17,8 +17,7 @@
   final String THIS_FILENAME                = globalconfiguration.getCaPath() 
                                                   + "/cafunctions.jsp";
 
-  final String CREATECRL_LINK               = globalconfiguration.getCaPath() 
-                                                  + "/createcrl/createcrl.jsp";
+  final String CREATECRL_LINK               = "/ca_functionallity/create_crl";
   final String CREATECRL_PAGE               =  "createcrl/createcrl.jsp";
   final String GETCRL_LINK                  = globalconfiguration.getCaPath() 
                                                   + "getcrl.jsp";
@@ -70,7 +69,7 @@
           <tr id="Row0">
             <td>&nbsp;</td>
             <td> 
-              <a href="<%=THIS_FILENAME%>"  onClick="window.open('<%=VIEWCERTIFICATE_LINK%>?cacert=<%=index%>', 'view_cert',config='height=600,width=550,scrollbars=yes,toolbar=no,resizable=1')";><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;&nbsp;
+              <a href="<%=THIS_FILENAME%>"  onClick="window.open('<%=VIEWCERTIFICATE_LINK%>?cacert=<%=index%>', 'view_cert',config='height=600,width=600,scrollbars=yes,toolbar=no,resizable=1')";><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;&nbsp;
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecacert&level=0"><%= ejbcawebbean.getText("DOWNLOADIE")%></a>&nbsp;&nbsp;&nbsp;
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscacert&level=0"><%= ejbcawebbean.getText("DOWNLOADNS")%></a>&nbsp;&nbsp;&nbsp;
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cacert&level=0"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>
@@ -91,7 +90,7 @@
           <tr id="Row<%=i%2%>">
             <td>&nbsp;</td>
             <td> 
-              <a href="<%=THIS_FILENAME%>"  onClick="window.open('<%=VIEWCERTIFICATE_LINK%>?cacert=<%=index%>', 'view_cert',config='height=600,width=550,scrollbars=yes,toolbar=no,resizable=1')";><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;&nbsp;
+              <a href="<%=THIS_FILENAME%>"  onClick="window.open('<%=VIEWCERTIFICATE_LINK%>?cacert=<%=index%>', 'view_cert',config='height=600,width=600,scrollbars=yes,toolbar=no,resizable=1')";><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;&nbsp;
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecacert&level=<%=index%>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a>&nbsp;&nbsp;&nbsp;
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscacert&level=<%=index%>"><%= ejbcawebbean.getText("DOWNLOADNS")%></a>&nbsp;&nbsp;&nbsp;
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cacert&level=<%=index%>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>

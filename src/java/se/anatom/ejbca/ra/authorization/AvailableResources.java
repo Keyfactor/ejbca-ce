@@ -16,7 +16,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * 
  *
- * @version $Id: AvailableResources.java,v 1.3 2003-01-12 17:16:30 anatom Exp $
+ * @version $Id: AvailableResources.java,v 1.4 2003-02-06 15:35:47 herrvendil Exp $
  */
 public class AvailableResources {
         
@@ -24,7 +24,9 @@ public class AvailableResources {
     public AvailableResources(GlobalConfiguration globalconfiguration) throws NamingException, CreateException, RemoteException {   
       this.profileendings=GlobalConfiguration.ENDENTITYPROFILE_ENDINGS;
       this.profileprefix= GlobalConfiguration.ENDENTITYPROFILEPREFIX;
-      this.usestrongauthentication = globalconfiguration.getEnableEndEntityProfileLimitations();
+      this.enableendentityprofilelimitations = globalconfiguration.getEnableEndEntityProfileLimitations();
+      this.usehardtokenissuing = globalconfiguration.getIssueHardwareTokens();
+      this.usekeyrecovery = globalconfiguration.getEnableKeyRecovery();
 
       InitialContext jndicontext = new InitialContext();     
       Object objl = jndicontext.lookup("RaAdminSession");
@@ -46,8 +48,19 @@ public class AvailableResources {
       String[] dummy = {};
       
       insertAvailableRules(resources);
-      if(usestrongauthentication) 
+      if(enableendentityprofilelimitations) 
         insertAvailableProfileRules(resources);
+      
+      if(usehardtokenissuing){
+        for(int i=0; i < GlobalConfiguration.HARDTOKENRESOURCES.length;i++){
+           resources.addElement(GlobalConfiguration.HARDTOKENRESOURCES[i]);           
+        }   
+        resources.addElement("/ra_functionallity" + GlobalConfiguration.HARDTOKEN_RA_ENDING);  
+        resources.addElement("/log_functionallity/view_log/hardtoken_entries");        
+      }
+        
+      if(usekeyrecovery)
+         resources.addElement("/ra_functionallity" + GlobalConfiguration.KEYRECOVERYRESOURCE);  
       
       Collections.sort(resources);
       return (String[]) resources.toArray(dummy);  
@@ -72,16 +85,22 @@ public class AvailableResources {
             int id = raadminsession.getEndEntityProfileId(admin, name);
             resources.addElement(profileprefix + id);
             for(int j=0;j < profileendings.length; j++){     
-              resources.addElement(profileprefix + id +profileendings[j]);             
+              resources.addElement(profileprefix + id +profileendings[j]);  
             }        
+            if(usehardtokenissuing) 
+              resources.addElement(profileprefix + id + GlobalConfiguration.HARDTOKEN_RA_ENDING);     
+            if(usekeyrecovery) 
+              resources.addElement(profileprefix + id + GlobalConfiguration.KEYRECOVERYRESOURCE);                 
           }
         }
-      }catch(RemoteException e){}  
+      }catch(RemoteException e){}        
     }
     // Private fields
     private String[] profileendings;
     private String profileprefix;
     private IRaAdminSessionRemote raadminsession;
     private IAuthorizationSessionRemote authorizationsession;
-    private boolean usestrongauthentication;
+    private boolean enableendentityprofilelimitations;
+    private boolean usehardtokenissuing;
+    private boolean usekeyrecovery;
 }

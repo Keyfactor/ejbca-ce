@@ -13,7 +13,7 @@ import se.anatom.ejbca.log.Admin;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: ICertificateStoreSessionLocal.java,v 1.12 2003-01-12 17:16:29 anatom Exp $
+ * @version $Id: ICertificateStoreSessionLocal.java,v 1.13 2003-02-06 15:35:48 herrvendil Exp $
  * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
  */
 public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject, IPublisherSessionLocal {
@@ -54,6 +54,12 @@ public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject,
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
     public Collection findCertificatesByExpireTime(Admin admin, Date expireTime);
+
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */    
+
+    public Certificate findCertificateByFingerprint(Admin admin, String fingerprint);    
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote

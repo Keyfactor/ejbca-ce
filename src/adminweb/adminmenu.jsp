@@ -20,6 +20,8 @@
   final String RA_LISTUSERSLINK         = "/" +globalconfiguration.getRaPath()+"/listendentities.jsp";
   final String RA_ADDENDENTITYLINK      = "/" +globalconfiguration.getRaPath()+"/addendentity.jsp";
   final String RA_LISTENDENTITIESLINK   = "/" +globalconfiguration.getRaPath()+"/listendentities.jsp";
+  final String HT_EDITHARDTOKENISSUERS_LINK  = "/" +globalconfiguration.getHardTokenPath() 
+                                                  + "/edithardtokenissuers.jsp";
   final String LOG_LINK                 = "/" +globalconfiguration.getLogPath() 
                                                   + "/viewlog.jsp";
   final String LOG_CONFIGURATION_LINK   = "/" +globalconfiguration.getLogPath() 
@@ -41,6 +43,7 @@
   final String RAEDITENDENTITYPROFILES_RESOURCE       = "/ra_functionallity/edit_end_entity_profiles";
   final String RAADDENDENTITY_RESOURCE                = "/ra_functionallity/create_end_entity";
   final String RALISTEDITENDENTITY_RESOURCE           = "/ra_functionallity/view_end_entity";
+  final String HTEDITHARDTOKENISSUERS_RESOURCE        = "/hardtoken_functionallity/edit_hardtoken_issuers";
   final String LOGVIEW_RESOURCE                       = "/log_functionallity/view_log";
   final String LOGCONFIGURATION_RESOURCE              = "/log_functionallity/edit_log_configuration";
   final String SYSTEMCONFIGURATION_RESOURCE           = "/system_functionallity/edit_system_configuration";
@@ -51,6 +54,7 @@
 <%  
   boolean caheaderprinted     =false;
   boolean raheaderprinted     =false;
+  boolean htheaderprinted     =false;
   boolean logheaderprinted    =false;
   boolean systemheaderprinted =false;
 
@@ -126,6 +130,19 @@
            <%=ejbcawebbean.getText("LISTEDITENDENTITIES") %></a><br>
 <%   }
    }catch(AuthorizationDeniedException e){}
+   if(globalconfiguration.getIssueHardwareTokens()){
+     // If authorized to edit the hard token issuers then display related links.
+     try{
+       if(ejbcawebbean.isAuthorizedNoLog(HTEDITHARDTOKENISSUERS_RESOURCE)){ 
+           raheaderprinted=true;%> 
+           <br>  
+           <%=ejbcawebbean.getText("HARDTOKENFUNCTIONS")+"<br>" %>
+           &nbsp;&nbsp;<A href='<%= HT_EDITHARDTOKENISSUERS_LINK %>' target="<%=globalconfiguration.MAINFRAME %>" id="menu"> 
+           <%=ejbcawebbean.getText("EDITHARDTOKENISSUERS") %></a><br>
+
+<%     }
+      }catch(AuthorizationDeniedException e){}
+    }
     // If authorized to view log then display related links.
     try{
       if(ejbcawebbean.isAuthorizedNoLog(LOGVIEW_RESOURCE)){

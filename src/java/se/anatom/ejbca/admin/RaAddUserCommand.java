@@ -12,10 +12,14 @@ import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.ra.GlobalConfiguration;
+import se.anatom.ejbca.hardtoken.IHardTokenSessionRemote;
+import se.anatom.ejbca.hardtoken.IHardTokenSessionHome;
+import se.anatom.ejbca.hardtoken.AvailableHardToken;
 
 /** Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.18 2003-01-23 16:48:09 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.19 2003-02-06 15:35:54 herrvendil Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 
@@ -36,19 +40,41 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"),
                                                                                  IRaAdminSessionHome.class);
             IRaAdminSessionRemote raadminsession = raadminsessionhome.create();
-
+          
             String[] certprofnames = (String[]) certificatesession.getCertificateProfileNames(administrator).toArray((Object[]) new String[0]);
             String[] endentityprofilenames = (String[]) raadminsession.getEndEntityProfileNames(administrator).toArray((Object[]) new String[0]);
 
+            GlobalConfiguration globalconfiguration = getAdminSession().loadGlobalConfiguration(administrator);
+            boolean usehardtokens = globalconfiguration.getIssueHardwareTokens();
+            String[] hardtokenissueraliases = null;
+            AvailableHardToken[] availabletokens = new AvailableHardToken[0];
+            IHardTokenSessionRemote hardtokensession=null;
+            if(usehardtokens){  
+              IHardTokenSessionHome hardtokensessionhome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("HardTokenSession"),
+                                                                                 IHardTokenSessionHome.class);
+              hardtokensession = hardtokensessionhome.create();
+              hardtokenissueraliases = (String[]) hardtokensession.getHardTokenIssuerAliases(administrator).toArray((Object[]) new String[0]);
+              availabletokens = hardtokensession.getAvailableHardTokens();
+            }  
+            
             if (args.length < 8) {
-                System.out.println("Usage: RA adduser <username> <password> <dn> <subjectAltName> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] ");
-                System.out.println();
+                if( usehardtokens)
+                  System.out.println("Usage: RA adduser <username> <password> <dn> <subjectAltName> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] [<hardtokenissuer>]");
+                else
+                  System.out.println("Usage: RA adduser <username> <password> <dn> <subjectAltName> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] ");
+
+                System.out.println("");
                 System.out.println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
                 System.out.println("SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>\"");
                 System.out.println("Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64");
-                System.out.println("Token      : User Generated=" + SecConst.TOKEN_SOFT_BROWSERGEN + "; P12=" + SecConst.TOKEN_SOFT_P12 + "; JKS="
+                System.out.print("Token      : User Generated=" + SecConst.TOKEN_SOFT_BROWSERGEN + "; P12=" + SecConst.TOKEN_SOFT_P12 + "; JKS="
                                     + SecConst.TOKEN_SOFT_JKS + ";  PEM=" + SecConst.TOKEN_SOFT_PEM);
-
+                if( usehardtokens){
+                  for(int i=0;i < availabletokens.length; i++){
+                     System.out.print("; " + availabletokens[i].getName() + "=" +  availabletokens[i].getId() );
+                  }               
+                }
+                System.out.print("\n");
                 System.out.print("Existing certificate profiles  : ");
 
                 for(int i=0; i < certprofnames.length-1; i++){
@@ -62,7 +88,14 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                   System.out.print(endentityprofilenames[i] + ", ");
                 }
                 System.out.print(endentityprofilenames[endentityprofilenames.length-1] + "\n");
-
+                if( usehardtokens){                
+                  System.out.print("Existing endentity profiles  : ");
+                  for(int i=0; i < hardtokenissueraliases.length-1; i++){
+                    System.out.print(hardtokenissueraliases[i] + ", ");
+                  }
+                  System.out.print(hardtokenissueraliases[hardtokenissueraliases.length-1] + "\n");               
+                }
+                
                 System.out.println("If the user does not have a SubjectAltName or an email address, use the value 'null'. ");
                 return;
             }
@@ -77,22 +110,32 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             int token = Integer.parseInt(args[7]);
             int profileid =  SecConst.EMPTY_ENDENTITYPROFILE;
             int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
+            int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
             boolean error = false;
+            boolean usehardtokenissuer = false;
 
             if(args.length == 9){
-              // Use certificate type, no profile.
+              // Use certificate type, no end entity profile.
               certificatetypeid = certificatesession.getCertificateProfileId(administrator, args[8]);
-              profileid = SecConst.EMPTY_ENDENTITYPROFILE;
             }
 
             if(args.length == 10){
-              // Use certificate type and profile.
+              // Use certificate type and end entity profile.
               profileid = raadminsession.getEndEntityProfileId(administrator, args[9]);
               certificatetypeid = certificatesession.getCertificateProfileId(administrator, args[8]);
             }
 
-            if(!validToken(token)){
-              System.out.println("Error : Invalid token number.");
+
+            if(args.length == 11 && usehardtokens){
+              // Use certificate type, end entity profile and hardtokenisseur.
+              profileid = raadminsession.getEndEntityProfileId(administrator, args[9]);
+              certificatetypeid = certificatesession.getCertificateProfileId(administrator, args[8]);
+              hardtokenissuerid = hardtokensession.getHardTokenIssuerId(administrator,args[10]);
+              usehardtokenissuer = true;
+            }
+            
+            if(!validToken(token, usehardtokens, availabletokens)){
+              System.out.println("Error : Invalid token id.");
               error = true;
             }
 
@@ -103,6 +146,16 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
              if(profileid == 0){ // End entity profile not found i database.
               System.out.println("Error : Couldn't find end entity profile in database." );
               error = true;
+            }
+            
+            if(usehardtokenissuer && hardtokenissuerid == SecConst.NO_HARDTOKENISSUER){
+              System.out.println("Error : Couldn't find hard token issuer in database." );
+              error = true;               
+            }
+            
+            if(token > SecConst.TOKEN_SOFT && hardtokenissuerid == SecConst.NO_HARDTOKENISSUER){
+              System.out.println("Error : HardTokenIssuer has to be choosen when user with hard tokens is added." );
+              error = true;                   
             }
 
             // Check if username already exists.
@@ -134,7 +187,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 getAdminSession().addUser(administrator, username, password, CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid, certificatetypeid,
                                          (type & SecConst.USER_ADMINISTRATOR) == SecConst.USER_ADMINISTRATOR,
                                          (type & SecConst.USER_KEYRECOVERABLE) == SecConst.USER_KEYRECOVERABLE,
-                                          token,0);
+                                          token,hardtokenissuerid);
                 System.out.println("User '"+username+"' has been added.");
                 System.out.println();
                 System.out.println("Note: If batch processing should be possible, \nalso use 'ra setclearpwd "+username+" <pwd>'.");
@@ -149,7 +202,17 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
         }
     } // execute
 
-    private boolean validToken(int token){
-       return (token == SecConst.TOKEN_SOFT_BROWSERGEN || token == SecConst.TOKEN_SOFT_P12  || token == SecConst.TOKEN_SOFT_PEM || token == SecConst.TOKEN_SOFT_JKS );
+    private boolean validToken(int token, boolean usehardtokens, AvailableHardToken[] availabletokens){
+       boolean returnval =false;      
+       returnval = (token == SecConst.TOKEN_SOFT_BROWSERGEN || token == SecConst.TOKEN_SOFT_P12  || token == SecConst.TOKEN_SOFT_PEM || token == SecConst.TOKEN_SOFT_JKS );
+       if(!returnval && usehardtokens){
+         for(int i=0; i < availabletokens.length; i++){
+            if(token == Integer.parseInt(availabletokens[i].getId())){
+              returnval = true;
+              break;
+            }  
+         }
+       }  
+       return returnval;
     }
 }

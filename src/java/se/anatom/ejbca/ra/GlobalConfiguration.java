@@ -5,12 +5,12 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  *  This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.6 2003-01-12 17:16:28 anatom Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.7 2003-02-06 15:35:53 herrvendil Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
   
     // Default Values
-    public static final float LATEST_VERSION = 0;
+    public static final float LATEST_VERSION = 1;
     
        
     // Entries to choose from in userpreference part, defines the size of data to be displayed on one page.                                                  
@@ -19,7 +19,8 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private final  String[] DEFAULTPOSSIBLELOGENTRIESPERPAGE = {"10" , "25" , "50" , "100", "200", "400"};        
     
     // Rules available by default i authorization module.
-    private  final  String[] DEFAULT_AVAILABLE_RULES = { "/", "/ca_functionallity", "/ca_functionallity/basic_functions", "/ca_functionallity/view_certificate",
+    private  final  String[] DEFAULT_AVAILABLE_RULES = { "/", "/ca_functionallity", "/ca_functionallity/basic_functions",
+                                                       "/ca_functionallity/view_certificate", "/ca_functionallity/create_crl",
                                                        "/ca_functionallity/edit_certificate_profiles", "/ra_functionallity/edit_end_entity_profiles",
                                                        "/ra_functionallity", "/ra_functionallity/edit_end_entity_profiles", "/ra_functionallity/view_end_entity", 
                                                        "/ra_functionallity/create_end_entity", "/ra_functionallity/edit_end_entity", "/ra_functionallity/delete_end_entity",
@@ -30,7 +31,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
                                                        "/system_functionallity/edit_administrator_privileges/edit_available_accessrules"};
                                                        
     public static final String[] LOGMODULERESOURCES = { "/log_functionallity/view_log/ca_entries","/log_functionallity/view_log/ra_entries","/log_functionallity/view_log/log_entries",
-                                                        "/log_functionallity/view_log/publicweb_entries","/log_functionallity/view_log/adminweb_entries","/log_functionallity/view_log/scaper_entries" };                                                   
+                                                        "/log_functionallity/view_log/publicweb_entries","/log_functionallity/view_log/adminweb_entries","/log_functionallity/view_log/hardtoken_entries" };                                                   
                                                     
     // Available end entity profile authorization rules.                                                   
     public static final String VIEW_RIGHTS = "/view_end_entity";
@@ -38,13 +39,20 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     public static final String CREATE_RIGHTS = "/create_end_entity";
     public static final String DELETE_RIGHTS = "/delete_end_entity";
     public static final String REVOKE_RIGHTS = "/revoke_end_entity";
-    public static final String HISTORY_RIGHTS = "/view_end_entity_history";                                                         
+    public static final String HISTORY_RIGHTS = "/view_end_entity_history";    
                                                        
     // Endings to add to profile authorizxation.                                                   
     public static final String[]  ENDENTITYPROFILE_ENDINGS        = {VIEW_RIGHTS,EDIT_RIGHTS,CREATE_RIGHTS,DELETE_RIGHTS,REVOKE_RIGHTS,HISTORY_RIGHTS};
     
     // Name of end entity profile prefix directory in authorization module.
     public static final String    ENDENTITYPROFILEPREFIX          = "/endentityprofilesrules/";
+    
+    // Hard Token specific resources used in authorization module.
+    public static final String[] HARDTOKENRESOURCES               ={"/hardtoken_functionallity/edit_hardtoken_issuers"};
+    public static final String   HARDTOKEN_RA_ENDING              ="/view_hardtoken";
+        
+    // Hard Token specific resource used in authorization module.    
+    public static final String  KEYRECOVERYRESOURCE                ="/keyrecovery";
    
     // Path added to baseurl used as default vaule in CRLDistributionPointURI field in Certificate Type definitions.
     private final  String   DEFAULTCRLDISTURIPATH  = "ejbca/webdist/certdist?cmd=crl";
@@ -123,6 +131,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
        data.put(LOG_PATH,tempadminpath+"log");
        data.put(RA_PATH,tempadminpath+"ra");
        data.put(THEME_PATH,"themes");
+       data.put(HARDTOKEN_PATH,tempadminpath+"hardtoken");
        
        data.put(LANGUAGEFILENAME,"languagefile");
        data.put(MAINFILENAME,"main.jsp");
@@ -221,6 +230,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     public   String getLogPath() {return (String) data.get(LOG_PATH);}        
     public   String getRaPath() {return (String) data.get(RA_PATH);}
     public   String getThemePath() {return (String) data.get(THEME_PATH);}
+    public   String getHardTokenPath() {return (String) data.get(HARDTOKEN_PATH);}
             
     public   String getLanguageFilename(){return (String) data.get(LANGUAGEFILENAME);}
     public   String getMainFilename(){return (String) data.get(MAINFILENAME);}   
@@ -257,8 +267,13 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     public void upgrade(){
       if(LATEST_VERSION != getVersion()){
         // New version of the class, upgrade  
-        
+        if(data.get(HARDTOKEN_PATH) == null){
+          data.put(HARDTOKEN_PATH, ((String) data.get(ADMINPATH) + "hardtoken"));  
+        }
+          
         data.put(VERSION, new Float(LATEST_VERSION));  
+       
+               
       }  
     }
     
@@ -296,6 +311,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private final   String LOG_PATH            = "log_path"; 
     private final   String RA_PATH             = "ra_path";
     private final   String THEME_PATH          = "theme_path"; 
+    private final   String HARDTOKEN_PATH      = "hardtoken_path";
     
     private final   String LANGUAGEFILENAME    =  "languagefilename"; 
     private final   String MAINFILENAME        =  "mainfilename"; 

@@ -12,6 +12,30 @@
 
    String[] tokentexts = RAInterfaceBean.tokentexts;
    int[] tokenids = RAInterfaceBean.tokenids;
+   String[] hardtokenissueraliases = new String[0];
+   int[] hardtokenissuerids = new int[0];
+
+   if(globalconfiguration.getIssueHardwareTokens()){
+      AvailableHardToken[] availabletokens = tokenbean.getAvailableHardTokens();
+
+      tokentexts = new String[RAInterfaceBean.tokentexts.length + availabletokens.length];
+      tokenids   = new int[tokentexts.length];
+      for(int i=0; i < RAInterfaceBean.tokentexts.length; i++){
+        tokentexts[i]= RAInterfaceBean.tokentexts[i];
+        tokenids[i] = RAInterfaceBean.tokenids[i];
+      }
+      for(int i=0; i < availabletokens.length;i++){
+        tokentexts[i+RAInterfaceBean.tokentexts.length]= availabletokens[i].getName();
+        tokenids[i+RAInterfaceBean.tokentexts.length] = Integer.parseInt(availabletokens[i].getId());         
+      }
+
+      hardtokenissueraliases = tokenbean.getHardTokenIssuerAliases();
+      hardtokenissuerids = new int[hardtokenissueraliases.length];
+      for(int i=0; i < hardtokenissueraliases.length; i++){
+        hardtokenissuerids[i]= tokenbean.getHardTokenIssuerId(hardtokenissueraliases[i]);
+      }
+   }
+
    boolean emailfieldexists = false;
 %>
 <SCRIPT language="JavaScript">
@@ -64,6 +88,12 @@ function checkallfields(){
       illegalfields++;
     }
 
+    if(document.editprofile.<%= SELECT_DEFAULTHARDTOKENISSUER %>.options.selectedIndex == -1 && document.editprofile.<%=CHECKBOX_USE_HARDTOKENISSUERS %>.checked){
+      alert("<%=  ejbcawebbean.getText("ADEFAULTHARDTOKENISSUER") %>");
+      illegalfields++;
+    }
+
+
     if(illegalfields == 0){
       document.editprofile.<%= CHECKBOX_CLEARTEXTPASSWORD %>.disabled = false;
       document.editprofile.<%= CHECKBOX_REQUIRED_CLEARTEXTPASSWORD %>.disabled = false; 
@@ -71,8 +101,8 @@ function checkallfields(){
       document.editprofile.<%= CHECKBOX_USE_EMAIL %>.disabled = false;
       document.editprofile.<%= CHECKBOX_REQUIRED_ADMINISTRATOR %>.disabled = false;
       document.editprofile.<%= CHECKBOX_ADMINISTRATOR %>.disabled = false;
-      document.editprofile.<%= CHECKBOX_REQUIRED_KEYRECOVERABLE %>.disabled = false;
       <% if(globalconfiguration.getEnableKeyRecovery()){ %>
+      document.editprofile.<%= CHECKBOX_REQUIRED_KEYRECOVERABLE %>.disabled = false;
       document.editprofile.<%= CHECKBOX_KEYRECOVERABLE %>.disabled = false;
       <% } %>
     }
@@ -96,6 +126,18 @@ function checkusecheckbox(usefield, value, required){
     reqbox.disabled = true;
   }
 }
+
+function checkusehardtokenissuers(){
+  if(document.editprofile.<%=CHECKBOX_USE_HARDTOKENISSUERS %>.checked){
+    document.editprofile.<%=SELECT_DEFAULTHARDTOKENISSUER %>.disabled = false;
+    document.editprofile.<%=SELECT_AVAILABLEHARDTOKENISSUERS %>.disabled = false;
+  }
+  else{
+    document.editprofile.<%=SELECT_DEFAULTHARDTOKENISSUER %>.disabled = true;
+    document.editprofile.<%=SELECT_AVAILABLEHARDTOKENISSUERS %>.disabled = true;
+  }
+}
+
 
 function checkusetextfield(usefield, value, required, change){
   var usebox = eval("document.editprofile." + usefield);
@@ -409,6 +451,7 @@ function checkemailfield(reqfield){
             <% } %>
         </select>
       </td>
+    </tr>
     <tr  id="Row1"> 
       <td width="5%" valign="top">
          &nbsp;
@@ -444,11 +487,15 @@ function checkemailfield(reqfield){
            <option <%  if(profiledata.getValue(EndEntityProfile.DEFKEYSTORE  ,0) != null)
                           if(profiledata.getValue(EndEntityProfile.DEFKEYSTORE  ,0).equals(Integer.toString(tokenids[i])))
                             out.write(" selected "); %>
-                    value='<%= tokenids[i] %>'><%= ejbcawebbean.getText(tokentexts[i]) %>
+                    value='<%= tokenids[i] %>'><%  if(tokenids[i] <= SecConst.TOKEN_SOFT) 
+                                                      out.write(ejbcawebbean.getText(tokentexts[i]));
+                                                   else
+                                                      out.write(tokentexts[i]);%>
            </option>
             <% } %>
         </select>
       </td>
+    </tr>
     <tr  id="Row1"> 
       <td width="5%" valign="top">
          &nbsp;
@@ -458,26 +505,86 @@ function checkemailfield(reqfield){
       </td>
       <td width="70%"> 
         <select name="<%=SELECT_AVAILABLETOKENTYPES %>" size="7" multiple >
-            <% String[] availabletokens = new RE(EndEntityProfile.SPLITCHAR, false).split(profiledata.getValue(EndEntityProfile.AVAILKEYSTORE, 0 )); 
+            <% String[] profileavailabletokens = new RE(EndEntityProfile.SPLITCHAR, false).split(profiledata.getValue(EndEntityProfile.AVAILKEYSTORE, 0 )); 
                for(int i=0; i < tokentexts.length;i++){ %>
-           <option <% for(int j=0;j< availabletokens.length;j++){
-                         if(availabletokens[j].equals(Integer.toString(tokenids[i])))
+           <option <% for(int j=0;j< profileavailabletokens.length;j++){
+                         if(profileavailabletokens[j].equals(Integer.toString(tokenids[i])))
                             out.write(" selected "); 
                       }%>
-                    value='<%= tokenids[i]%>'><%= ejbcawebbean.getText(tokentexts[i])%>
+                    value='<%= tokenids[i]%>'><%  if(tokenids[i] <= SecConst.TOKEN_SOFT) 
+                                                      out.write(ejbcawebbean.getText(tokentexts[i]));
+                                                   else
+                                                      out.write(tokentexts[i]);%>
            </option>
             <% } %>
         </select>
       </td>
     </tr>
-    <tr  id="Row0">       
+   <% if(globalconfiguration.getIssueHardwareTokens()){ %>
+    <tr  id="Row0"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%" align="right"> 
+        <%= ejbcawebbean.getText("USEHARDTOKENISSUERS") %> <br>&nbsp;
+      </td>
+      <td width="70%"> 
+           <% used =  profiledata.getUse(EndEntityProfile.AVAILTOKENISSUER,0); %>
+        <input type="checkbox" name="<%=CHECKBOX_USE_HARDTOKENISSUERS %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusehardtokenissuers()"
+           <% if(used)
+                 out.write("CHECKED");
+           %>>
+      </td>
+    </tr>
+    <tr  id="Row1"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%" align="right"> 
+        <%= ejbcawebbean.getText("DEFAULTHARDTOKENISSUER") %> <br>&nbsp;
+      </td>
+      <td width="70%"> 
+        <select name="<%=SELECT_DEFAULTHARDTOKENISSUER %>" size="1" <% if(!used) out.write(" disabled "); %>>
+            <% for(int i=0; i < hardtokenissueraliases.length;i++){ %>
+           <option <%  if(profiledata.getValue(EndEntityProfile.DEFAULTTOKENISSUER ,0) != null)
+                          if(profiledata.getValue(EndEntityProfile.DEFAULTTOKENISSUER  ,0).equals(Integer.toString(hardtokenissuerids[i])))
+                            out.write(" selected "); %>
+                    value='<%= hardtokenissuerids[i] %>'><%= hardtokenissueraliases[i] %>
+           </option>
+            <% } %>
+        </select>
+      </td>
+    </tr>
+    <tr  id="Row0"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%" align="right"> 
+        <%= ejbcawebbean.getText("AVAILABLEHARDTOKENISSUERS") %> <br>&nbsp;
+      </td>
+      <td width="70%"> 
+        <select name="<%=SELECT_AVAILABLEHARDTOKENISSUERS %>" size="7" multiple <% if(!used) out.write(" disabled "); %>>
+            <% String[] availableissuers = new RE(EndEntityProfile.SPLITCHAR, false).split(profiledata.getValue(EndEntityProfile.AVAILTOKENISSUER, 0 )); 
+               for(int i=0; i < hardtokenissueraliases.length;i++){ %>
+           <option <% for(int j=0;j< availableissuers.length;j++){
+                         if(availableissuers[j].equals(Integer.toString(hardtokenissuerids[i])))
+                            out.write(" selected "); 
+                      }%>
+                    value='<%= hardtokenissuerids[i]%>'><%= hardtokenissueraliases[i]%>
+           </option>
+            <% } %>
+        </select>
+      </td>
+    </tr>
+    <% } %>
+    <tr  id="Row1">       
       <td width="5%" valign="top">
          &nbsp;
       </td>
       <td width="25%" valign="top" align="right"><%= ejbcawebbean.getText("TYPES") %></td>
       <td width="70%" valign="top" align="right">&nbsp;</td>
     </tr>
-    <tr  id="Row1"> 
+    <tr  id="Row0"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -504,7 +611,7 @@ function checkemailfield(reqfield){
       </td>
     </tr>
 <% if(globalconfiguration.getEnableKeyRecovery()){ %> 
-    <tr  id="Row0"> 
+    <tr  id="Row1"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>
@@ -531,7 +638,7 @@ function checkemailfield(reqfield){
       </td>
     </tr>
    <% } %>
-    <tr  id="Row1"> 
+    <tr  id="Row0"> 
       <td width="5%" valign="top">
          &nbsp;
       </td>

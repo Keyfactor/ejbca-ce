@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * The model representation of an end entity profile, used in in the ra module of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.3 2003-01-19 09:40:14 herrvendil Exp $
+ * @version $Id: EndEntityProfile.java,v 1.4 2003-02-06 15:35:52 herrvendil Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -394,11 +394,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
           checkIfDataFullfillProfile(DNEXTRATORTOPROFILEMAPPER[i],j,subjectaltnames.getField(i,j), DNEXTRATORTOPROFILEMAPPERTEXTS[i], email);            
         }                  
       }    
-           
-
-
-      
-      
+                 
    // Check for administrator flag.
       if(!getUse(ADMINISTRATOR,0) &&  administrator)
           throw new UserDoesntFullfillEndEntityProfile("Administrator cannot be set.");          
@@ -440,8 +436,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
            throw new UserDoesntFullfillEndEntityProfile("Couldn't find certificate profile among available certificate profiles."); 
       }
       
-
- 
       // Check if tokentype is among available  token types.    
       String[] availablesofttokentypes; 
       try{
@@ -457,12 +451,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
           if( Integer.parseInt(availablesofttokentypes[i]) == tokentype)
             found=true;
         }
-       
-        if(!found)
-           throw new UserDoesntFullfillEndEntityProfile("Couldn't find  token type among available token types."); 
-      }
-        
-      
+      }  
+            
       // If soft token check for hardwaretoken issuer id = 0.
       if(tokentype <= SecConst.TOKEN_SOFT){       
         if(hardwaretokenissuerid != 0)
