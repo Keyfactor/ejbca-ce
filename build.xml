@@ -75,6 +75,7 @@
   <property name="caearnora" value="${dist}/ejbca-canora.ear" />
 
   <!-- Jar with class files needed for administration, i.e. ca, ra, jobrunner -->
+  <property name="adminjar.cli" value="${src}/cli" />
   <property name="adminjar.build" value="${tmp}/adminjar" />
   <property name="adminjar" value="./admin.jar" />
 
@@ -526,12 +527,18 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- =================================================================== -->
   <target name="admin.jar" depends="compile">
     <mkdir dir="${adminjar.build}"/>
+         <copy todir="${adminjar.build}">
+        <fileset dir="${adminjar.cli}">
+               <include name="*.properties"/>                                
+       </fileset>
+      </copy>
      <copy todir="${adminjar.build}">
         <fileset dir="${build}">
                <include name="se/anatom/ejbca/IJobRunner*.class"/>
                 <include name="se/anatom/ejbca/SecConst*.class"/>
                 <include name="se/anatom/ejbca/util/*.class"/> 
-                <include name="se/anatom/ejbca/util/query/*.class"/>                
+                <include name="se/anatom/ejbca/util/query/*.class"/>
+                <include name="se/anatom/ejbca/util/passgen/*.class"/>
                 <include name="se/anatom/ejbca/admin/*.class"/>
                 <include name="se/anatom/ejbca/batch/*.class"/>                
                 <include name="se/anatom/ejbca/ca/caadmin/I*.class"/>
@@ -588,10 +595,10 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceRequest.class"/>                                                                                                                                                                                                 
                 <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceResponse.class"/>                                                                                                                                                                                                 
                 <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/IllegalExtendedCAServiceRequestException.class"/>                                                                                                                                                                                                 
-                <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceRequestException.class"/>                                                                                                                                                                                                 
-                <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceNotActiveException.class"/>                                                                                                                                                                                                 
-                <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/OCSPCAServiceInfo.class"/>                                                                                                                                                                                                 
-                <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceInfo.class"/>                                                                                                                                                                                                 
+                <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceRequestException.class"/>
+                <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceNotActiveException.class"/>
+                <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/OCSPCAServiceInfo.class"/>
+                <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceInfo.class"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/> 
        </fileset>
       </copy>

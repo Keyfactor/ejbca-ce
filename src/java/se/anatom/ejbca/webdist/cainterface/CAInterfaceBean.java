@@ -31,6 +31,8 @@ import se.anatom.ejbca.ca.store.CRLInfo;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
+import se.anatom.ejbca.hardtoken.IHardTokenSessionLocal;
+import se.anatom.ejbca.hardtoken.IHardTokenSessionLocalHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionLocal;
 import se.anatom.ejbca.ra.IUserAdminSessionLocalHome;
@@ -48,7 +50,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.21 2003-12-05 14:50:27 herrvendil Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.22 2004-01-31 14:25:00 herrvendil Exp $
  */
 public class CAInterfaceBean   {
 
@@ -85,6 +87,11 @@ public class CAInterfaceBean   {
         
 		ISignSessionLocalHome home = (ISignSessionLocalHome)javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/SignSessionLocal"), ISignSessionLocalHome.class );
 	    signsession = home.create();
+	    
+	    IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/HardTokenSessionLocal"),
+	    		IHardTokenSessionLocalHome.class);
+	    hardtokensession = hardtokensessionhome.create();               
+	    
         
         this.informationmemory = ejbcawebbean.getInformationMemory();
           
@@ -174,7 +181,8 @@ public class CAInterfaceBean   {
         if(certprofile.getType() == CertificateProfile.TYPE_ENDENTITY){
           // Check if any users or profiles use the certificate id.
           certificateprofileused = adminsession.checkForCertificateProfileId(administrator, certificateprofileid)
-                                || raadminsession.existsCertificateProfileInEndEntityProfiles(administrator, certificateprofileid);
+                                || raadminsession.existsCertificateProfileInEndEntityProfiles(administrator, certificateprofileid)
+								|| hardtokensession.existsCertificateProfileInHardTokenProfiles(administrator, certificateprofileid);
         }else{
            certificateprofileused = caadminsession.exitsCertificateProfileInCAs(administrator, certificateprofileid);
         }
@@ -291,6 +299,7 @@ public class CAInterfaceBean   {
     private IUserAdminSessionLocal             adminsession;
     private IRaAdminSessionLocal               raadminsession;
     private ISignSessionLocal                      signsession;
+    private IHardTokenSessionLocal            hardtokensession;
     private CertificateProfileDataHandler      certificateprofiles;
     private CADataHandler                      cadatahandler;
     private boolean                            initialized;

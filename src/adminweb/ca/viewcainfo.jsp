@@ -22,7 +22,7 @@
                                             cabean.initialize(request, ejbcawebbean);
   String THIS_FILENAME                    = globalconfiguration.getCaPath()  + "/viewcainfo.jsp";
 
-  final String VIEWCERT_LINK            = "/" + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
+  final String VIEWCERT_LINK            = globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
 
   boolean nocaparameter          = true;
   boolean notauthorized            = false;

@@ -4,13 +4,13 @@ import org.apache.log4j.PropertyConfigurator;
 
 
 /**
- * Implements the RA command line interface
+ * Implements the setup command line interface
  *
- * @version $Id: ra.java,v 1.24 2004-01-31 14:24:58 herrvendil Exp $
+ * @version $Id: setup.java,v 1.1 2004-01-31 14:24:58 herrvendil Exp $
  */
-public class ra {
+public class setup {
     /**
-     * main RA
+     * Main
      *
      * @param args command line arguments
      */
@@ -18,18 +18,21 @@ public class ra {
         PropertyConfigurator.configure("log4j.properties");
 
         try {
-            IAdminCommand cmd = RaAdminCommandFactory.getCommand(args);
+            IAdminCommand cmd = SetupCommandFactory.getCommand(args);
 
             if (cmd != null) {
                 cmd.execute();
             } else {
                 System.out.println(
-                    "Usage: RA adduser | deluser | setpwd | setclearpwd | setuserstatus | finduser | listnewusers | listusers | revokeuser | keyrecover | keyrecovernewest");
+                    "Usage: SETUP setbaseurl");
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println(e.getMessage());            
             //e.printStackTrace();
             System.exit(-1);
         }
     }
 }
+
+
+//ca

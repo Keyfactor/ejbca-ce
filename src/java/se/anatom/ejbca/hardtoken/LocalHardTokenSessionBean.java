@@ -35,9 +35,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.EIDProfile;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile;
-import se.anatom.ejbca.hardtoken.hardtokentypes.EnhancedEIDHardToken;
 import se.anatom.ejbca.hardtoken.hardtokentypes.HardToken;
-import se.anatom.ejbca.hardtoken.hardtokentypes.SwedishEIDHardToken;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
@@ -50,7 +48,7 @@ import se.anatom.ejbca.util.CertTools;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.19 2004-01-25 09:37:08 herrvendil Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.20 2004-01-31 14:24:59 herrvendil Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
@@ -102,36 +100,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         hardtokencertificatemaphome = (HardTokenCertificateMapLocalHome) lookup("java:comp/env/ejb/HardTokenCertificateMap", HardTokenCertificateMapLocalHome.class);
 		hardtokenprofilehome = (HardTokenProfileDataLocalHome) lookup("java:comp/env/ejb/HardTokenProfileData", HardTokenProfileDataLocalHome.class); 
 		hardtokenpropertyhome = (BasePropertyDataLocalHome) lookup("java:comp/env/ejb/HardTokenPropertyData", BasePropertyDataLocalHome.class);
-		
-		//TODO Tempary add tree tokens
-		final String SWESTANDALONESN = "SWESTANDALONESN";
-
-		
-		final String ENCMASTERSN   = "ENCMASTERSN";
-		final String ENCCOPYSN1     = "ENCCOPYSN1";
-		final String ENCCOPYSN2     = "ENCCOPYSN2";
-		
-		Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
-		if(existsHardToken(admin, SWESTANDALONESN)){
-			this.removeHardToken(admin, SWESTANDALONESN);		
-		}
-		this.addHardToken(admin, SWESTANDALONESN, "superadmin", "CN=testca", SecConst.TOKEN_SWEDISHEID, (HardToken) new SwedishEIDHardToken("initialauthencpin","authencpuk", "initialsignaturepin", "signaturepuk", this.getHardTokenProfileId(admin,"test4")), new ArrayList(), null);
-
-		if(existsHardToken(admin, ENCMASTERSN)){
-			this.removeHardToken(admin, ENCMASTERSN);	
-		}
-		this.addHardToken(admin, ENCMASTERSN, "superadmin", "CN=testca", SecConst.TOKEN_ENHANCEDEID,  new EnhancedEIDHardToken( "initialsignaturepin", "signaturepuk" ,"initialauthpin","authpuk","initialencpin","encpuk",true, this.getHardTokenProfileId(admin,"test4")), new ArrayList(), null);
-
-		if(existsHardToken(admin, ENCCOPYSN1)){
-			this.removeHardToken(admin, ENCCOPYSN1);			
-		}			
-	    this.addHardToken(admin, ENCCOPYSN1, "superadmin", "CN=testca", SecConst.TOKEN_ENHANCEDEID,  new EnhancedEIDHardToken( "initialsignaturepin", "signaturepuk" ,"initialauthpin","authpuk","initialencpin","encpuk",true, this.getHardTokenProfileId(admin,"test4")), new ArrayList(), ENCMASTERSN);
-	    
-		if(existsHardToken(admin, ENCCOPYSN2)){
-			this.removeHardToken(admin, ENCCOPYSN2);
-		}	
-		this.addHardToken(admin, ENCCOPYSN2, "superadmin", "CN=testca", SecConst.TOKEN_ENHANCEDEID,  new EnhancedEIDHardToken( "initialsignaturepin", "signaturepuk" ,"initialauthpin","authpuk","initialencpin","encpuk",true, this.getHardTokenProfileId(admin,"test4")), new ArrayList(), ENCMASTERSN);
-						
+								
         debug("<ejbCreate()");
       }catch(Exception e){
          throw new EJBException(e);

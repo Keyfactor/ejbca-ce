@@ -86,15 +86,9 @@
   </login-config>
 
   <env-entry>
-    <description>Defines the administrationserver baseurl</description>
-    <env-entry-name>BASEURL</env-entry-name>
-    <env-entry-value>https://localhost:8443/</env-entry-value>
-    <env-entry-type>java.lang.String</env-entry-type>
-  </env-entry>
-  <env-entry>
     <description>Defines the admin directory</description>
     <env-entry-name>ADMINDIRECTORY</env-entry-name>
-    <env-entry-value>ejbca/adminweb/</env-entry-value>
+    <env-entry-value>adminweb/</env-entry-value>
     <env-entry-type>java.lang.String</env-entry-type>
   </env-entry>
   <env-entry>

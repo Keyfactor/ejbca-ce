@@ -4,8 +4,9 @@ import se.anatom.ejbca.SecConst;
 
 
 /**
- *  @deprecated EIDHardToken is a class defining data stored in database for a EID token.
- *
+ *  EIDHardToken is a class defining data stored in database for a EID token.
+ *  
+ *  OBSERVE This class should only be used for backward compability with EJBCA 2.0 
  * @version $Id$
  */
 public class EIDHardToken extends HardToken {

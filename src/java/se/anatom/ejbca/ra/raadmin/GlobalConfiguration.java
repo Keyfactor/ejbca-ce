@@ -5,7 +5,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.6 2004-01-29 12:21:25 herrvendil Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.7 2004-01-31 14:24:59 herrvendil Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -55,16 +55,15 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
        setEnableKeyRecovery(false);
        setIssueHardwareTokens(false);
     }
-
+    
+    
     /** Initializes a new global datauration with data used in ra web interface. */
-    public void initialize(String baseurl, String adminpath, String availablelanguages, String availablethemes,
+    public void initialize(String adminpath, String availablelanguages, String availablethemes,
                            String publicport, String privateport, String publicprotocol, String privateprotocol){
-       String tempbaseurl            = baseurl;
+       
        String tempadminpath           = adminpath.trim();
 
-       if(!tempbaseurl.endsWith("/")){
-         tempbaseurl = tempbaseurl + "/";
-       }
+       
        if(tempadminpath == null)
          tempadminpath = "";
        if(!tempadminpath.endsWith("/") && !tempadminpath.equals("")){
@@ -74,8 +73,8 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
          tempadminpath =tempadminpath.substring(1);   // Remove starting '/'
        }
 
-
-       setBaseUrl(tempbaseurl);
+       
+       
        data.put(ADMINPATH,tempadminpath);
        data.put(AVAILABLELANGUAGES,availablelanguages.trim());
        data.put(AVAILABLETHEMES,availablethemes.trim());
@@ -109,19 +108,33 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
 
     /** Checks if global datauration have been initialized. */
     public boolean isInitialized(){
-      return data.get(BASEURL)!=null;
+      return data.get(AVAILABLELANGUAGES)!=null;
     }
 
-    public   String getBaseUrl() {return (String) data.get(BASEURL);}
-    public   void setBaseUrl(String burl){
-      // Add trailing '/' if it doesn't exists.
-      if(!burl.endsWith("/")){
-        data.put(BASEURL,burl + "/");
-      }
-      else{
-        data.put(BASEURL,burl);
-      }
+    public   String getBaseUrl() {    
+    	return (String) data.get(this.PRIVATEPROTOCOL) + "://" + 
+    	           (String) data.get(this.COMPUTERNAME) + ":" +
+    	           (String) data.get(this.PRIVATEPORT) + "/" +
+    	           (String) data.get(this.APPLICATIONPATH);
+   }
+        
+    
+    
+    public void setComputerName(String computername){
+    	data.put(COMPUTERNAME, computername);
     }
+    
+    public   void setApplicationPath(String applicationpath){
+     // Add trailing '/' if it doesn't exists.
+       if(!applicationpath.endsWith("/")){
+         data.put(APPLICATIONPATH,applicationpath + "/");
+       }
+       else{
+         data.put(APPLICATIONPATH,applicationpath);
+       }
+     }
+    
+    
 
     public String getAdminWebPath(){return (String) data.get(ADMINPATH);}
 
@@ -248,7 +261,9 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     // Private fields.
 
     // Private constants
-    private final   String BASEURL            = "baseurl";
+    private final   String BASEURL             = "baseurl";
+    private final   String COMPUTERNAME  = "computername";
+    private final   String APPLICATIONPATH  = "applicationpath";
     private final   String ADMINPATH          = "raadminpath";
     private final   String AVAILABLELANGUAGES = "availablelanguages";
     private final   String AVAILABLETHEMES    = "availablethemes";

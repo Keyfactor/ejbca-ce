@@ -7,7 +7,7 @@ import se.anatom.ejbca.log.Admin;
 
 /**
  *
- * @version $Id: IRaAdminSessionRemote.java,v 1.14 2003-09-04 09:29:36 herrvendil Exp $
+ * @version $Id: IRaAdminSessionRemote.java,v 1.15 2004-01-31 14:24:59 herrvendil Exp $
  */
 public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
     
@@ -204,6 +204,13 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
       * @throws EJBException if a communication or other error occurs.
       */
     public GlobalConfiguration loadGlobalConfiguration(Admin admin) throws RemoteException;
+    
+    /**
+     * Sets the base url in the global configuration.
+     *
+     * @throws EJBException if a communication or other error occurs.
+     */
+    public void initGlobalConfigurationBaseURL(Admin admin, String computername, String applicationpath) throws RemoteException;
 
 }
 

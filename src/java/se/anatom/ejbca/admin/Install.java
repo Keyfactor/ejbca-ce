@@ -13,6 +13,8 @@ import java.util.regex.Pattern;
 
 import org.ietf.ldap.LDAPDN;
 
+import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
+
 /**
  * @author philip
  *
@@ -20,11 +22,12 @@ import org.ietf.ldap.LDAPDN;
  */
 public class Install {
 
-	public static int ARG_OS               =  0;
-	public static int ARG_LANGUAGE   =  1;
-	public static int ARG_VERSION      =  2;
-	public static int ARG_APPSERVER  =  3;
-	public static int ARG_WEBSERVER =  4;
+	public static int ARG_COMMAND   =  0;
+	public static int ARG_OS               =  1;
+	public static int ARG_LANGUAGE   =  2;
+	public static int ARG_VERSION      =  3;
+	public static int ARG_APPSERVER  =  4;
+	public static int ARG_WEBSERVER =  5;
 	
 	private final static int OS_UNIX          = 0; 
 	private final static int OS_WINDOWS  = 1;
@@ -100,12 +103,28 @@ public class Install {
 	}
 					
 	public static void main(String[] args) throws Exception {
-		if(args.length != 5){
-			System.out.println("Usage: install <unix|windows><language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>");
+		if(args.length != 6){
+			System.out.println("Usage: install install <unix|windows><language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>\n" +
+					                     " Or : install displayendmessage <unix|windows><language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>");
 			System.exit(-1);
 		}
+		
 		Install install = new Install(args[ARG_OS], args[ARG_LANGUAGE], args[ARG_VERSION], args[ARG_APPSERVER], args[ARG_WEBSERVER]);
-		install.run();
+		
+		if(args.length == 6){
+			if(args[Install.ARG_COMMAND].equalsIgnoreCase("install")){
+		      install.run();
+		    }else{		    			
+			  if(args[Install.ARG_COMMAND].equalsIgnoreCase("displayendmessage")){		
+			  	install.displayEndMessage();    
+			  }else{
+				System.out.println("Usage: install install <unix|windows><language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>\n" +
+				" Or : install displayendmessage <unix|windows><language> <ejbca|primeca> <jboss|weblogic> <jetty|tomcat>");
+				System.exit(-1);
+			  }
+		    }
+		}					   			
+		
 	}
 	
 	private void displayWelcomeScreen(){
@@ -142,7 +161,7 @@ public class Install {
 	    getSSLServerCertDN();
 	    getSSLKeyStorePasswd();
 	    getSuperAdminPasswd();    
-	    getJavaCACertsPasswd();
+	  //  getJavaCACertsPasswd();
 	     	    	   
 		return isDataCorrect();
 	}
@@ -230,14 +249,17 @@ public class Install {
 	}
 	
 	private void getSSLKeyStorePasswd(){
-		System.out.print(text.getProperty("ENTERADMINWEBPASSWORD"));
+		
+		this.serverkeystorepasswd = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS).getNewPassword(8,8);
+				
+/*		System.out.print(text.getProperty("ENTERADMINWEBPASSWORD"));
 		String answer = getAnswer();
 		while(!answerLegalPassword(answer)){
 			System.out.print(text.getProperty("ILLEGALADMINWEBPASSWORD"));
 			System.out.print(text.getProperty("ENTERADMINWEBPASSWORD"));
 			answer = getAnswer();
 		}
-		this.serverkeystorepasswd = answer;										
+		this.serverkeystorepasswd = answer;*/										
 	}
 	
 	private void getSuperAdminPasswd(){
@@ -275,10 +297,8 @@ public class Install {
 		else
 			System.out.println(this.policyid);
 		System.out.println(text.getProperty("COMPUTERNAME") + " " + this.computername);
-		System.out.println(text.getProperty("SERVERDN") + " " + this.servercertdn);
-		System.out.println(text.getProperty("ADMINWEBPASSWORD") + " " + this.serverkeystorepasswd);
-		System.out.println(text.getProperty("SUPERADMINPASSWORD") + " " + this.superadminpasswd);
-		System.out.println(text.getProperty("CACERTSPASSWORD") + " " + this.javacacertspasswd);
+		System.out.println(text.getProperty("SERVERDN") + " " + this.servercertdn);		
+		System.out.println(text.getProperty("SUPERADMINPASSWORD") + " " + this.superadminpasswd);		
 																																			
 		 boolean correct = false;
 		 System.out.print(text.getProperty("ISTHISCORRECT"));
@@ -298,56 +318,95 @@ public class Install {
 		displayInstallingMessage();
         
 		if(this.os == OS_WINDOWS){
-		  try {
-			Process runcainit = Runtime.getRuntime().exec("ls");
-			if(runcainit.exitValue() != 0){
-				System.out.print(text.getProperty("ERRORINITCA"));
-			}
-			
-		  } catch (IOException e) {
-			System.out.print(text.getProperty("ERRORINITCA"));
-			System.exit(-1);
-		  }
-		  try {
-		  	Process setupadminweb = Runtime.getRuntime().exec("ls");
-		  	if(setupadminweb.exitValue() != 0){
-		  		System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB"));
-		  	}
-		  } catch (IOException e) {
-		  	System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB"));
-		  	System.exit(-1);
-		  }
-		}
-		if(os == OS_UNIX){
-			try {
-				System.out.println("./ca.sh init '" + this.caname + "' '" + this.cadn + "' " + this.keysize + " " + this.validity + " '" + this.policyid + "'");
-				Process runcainit = Runtime.getRuntime().exec("./ca.sh init '" + this.caname + "' '" + this.cadn + "' " + this.keysize + " " + this.validity + " '" + this.policyid + "'");
-				if(runcainit.exitValue() != 0){
+			try {											
+				
+				Process runcainit = Runtime.getRuntime().exec("ca.cmd init " + this.caname + " \"" + this.cadn + "\" " + this.keysize + " " + this.validity + " " + this.policyid.trim() );
+				
+				BufferedReader br = new BufferedReader(new InputStreamReader(runcainit.getInputStream()));
+				Thread.sleep(1000);
+				String line = "";
+				while((line = br.readLine()) != null){
+					System.out.println(line);
+				}
+				
+				if(runcainit.waitFor() != 0){
 					System.out.print(text.getProperty("ERRORINITCA"));
+					System.exit(-1);
 				}				
-			} catch (IOException e) {
+			} catch (Exception e) {
 				System.out.print(text.getProperty("ERRORINITCA"));
 				System.exit(-1);
-			}
-			try {
-				System.out.println("./setup-adminweb.sh '" + this.caname + "'  '" + this.servercertdn + "' '" + this.serverkeystorepasswd + "' '" + this.superadminpasswd + "' '" +  this.javacacertspasswd + "'");
-			   Process setupadminweb = Runtime.getRuntime().exec("./setup-adminweb.sh '" + this.caname + "'  '" + this.servercertdn + "' '" + this.serverkeystorepasswd + "' '" + this.superadminpasswd + "' '" +  this.javacacertspasswd + "'");
-				if(setupadminweb.exitValue() != 0){
+			} 
+			
+			try {			  
+				Process setupadminweb = Runtime.getRuntime().exec("setup-adminweb.cmd " + this.caname + "  \"" + this.servercertdn + "\" " + this.serverkeystorepasswd + " " + this.superadminpasswd + " changeit " + this.computername);			   			   
+				
+				if(setupadminweb.waitFor() != 0){
 					System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB"));
+					System.exit(-1);
 				}
-			} catch (IOException e) {
+				
+				
+				Process getrootcert = Runtime.getRuntime().exec("./ca.cmd getrootcert "+ this.caname + " tmp/rootca.der -der");			   			   
+				
+				if(getrootcert.waitFor() != 0){
+					System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB"));
+					System.exit(-1);
+				}
+				
+			} catch (Exception e) {
+				System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB"));
+				System.exit(-1);
+			}
+		}
+		if(os == OS_UNIX){
+			try {															
+				Process runcainit = Runtime.getRuntime().exec("./ca.sh init " + this.caname + " \"" + this.cadn + "\" " + this.keysize + " " + this.validity + " " + this.policyid.trim() );
+			    								
+				BufferedReader br = new BufferedReader(new InputStreamReader(runcainit.getInputStream()));
+				Thread.sleep(1000);
+				String line = "";
+				while((line = br.readLine()) != null){
+					System.out.println(line);
+				}
+								
+				if(runcainit.waitFor() != 0){
+					System.out.print(text.getProperty("ERRORINITCA"));
+					System.exit(-1);
+				}				
+			} catch (Exception e) {
+				System.out.print(text.getProperty("ERRORINITCA"));
+				System.exit(-1);
+			} 
+			
+			try {			  
+			   Process setupadminweb = Runtime.getRuntime().exec("./setup-adminweb.sh " + this.caname + "  \"" + this.servercertdn + "\" " + this.serverkeystorepasswd + " " + this.superadminpasswd + " changeit " + this.computername);			   			   
+								
+				if(setupadminweb.waitFor() != 0){
+					System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB"));
+					System.exit(-1);
+				}
+												
+				Process getrootcert = Runtime.getRuntime().exec("./ca.sh getrootcert "+ this.caname + " tmp/rootca.der -der");			   			   
+											
+				if(getrootcert.waitFor() != 0){
+					System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB"));
+					System.exit(-1);
+				}
+								
+			} catch (Exception e) {
 				System.out.print(text.getProperty("ERRORSETTINGUPADMINWEB"));
 				System.exit(-1);
 			}
 	    }
-		displayEndMessage();
+		
 	}
 	
 	private void displayInstallingMessage(){
 		System.out.print(text.getProperty("THEINSTALLATIONWILLNOWSTART"));		
 	}
 	
-	private void displayEndMessage(){
+	public void displayEndMessage(){
 		System.out.print(text.getProperty("INSTALLATIONCOMPLETE"));
 		System.out.print(text.getProperty("REMAININGSTEPS"));
 		System.out.print(text.getProperty("GOTOURLSTART") + this.computername + text.getProperty("GOTOURLEND"));
@@ -440,6 +499,9 @@ public class Install {
 	
 	private boolean answerLegalPassword(String answer){
 		int len = answer.length();
+		
+		if(answer.indexOf(' ') != -1 || answer.indexOf('"') != -1 || answer.indexOf('\'') != -1)
+			return false;
 		
 		return len > 1 && len < 14;
 	    			

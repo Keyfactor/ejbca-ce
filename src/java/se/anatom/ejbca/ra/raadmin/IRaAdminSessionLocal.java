@@ -10,7 +10,7 @@ import se.anatom.ejbca.log.Admin;
  * Local interface for EJB, unforturnately this must be a copy of the remote interface except that
  * RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: IRaAdminSessionLocal.java,v 1.13 2003-09-04 09:29:36 herrvendil Exp $
+ * @version $Id: IRaAdminSessionLocal.java,v 1.14 2004-01-31 14:24:59 herrvendil Exp $
  * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
  */
 
@@ -148,5 +148,10 @@ public interface IRaAdminSessionLocal extends javax.ejb.EJBLocalObject
     
     public GlobalConfiguration loadGlobalConfiguration(Admin admin);    
 
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */
+    public void initGlobalConfigurationBaseURL(Admin admin, String computername, String applicationpath);
+    
 }
 

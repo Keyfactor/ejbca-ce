@@ -1,15 +1,18 @@
 @echo off
 rem This script sets up the administrative web interface with client cert authentication.
-rem Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd>
+rem Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd> <computername>
 
 if %1() == () goto error
 if %2() == () goto error
 if %3() == () goto error
 if %4() == () goto error
+if %5() == () goto error
 
-call ra adduser tomcat %3 %2 null %1 null 1 3
+call setup setbaseurl  %6 ejbca
 
-call ra adduser superadmin %4 "CN=SuperAdmin" null %1 null 65 2
+call ra adduser tomcat %3 %2 null %1 null 1 JKS
+
+call ra adduser superadmin %4 "CN=SuperAdmin" null %1 null 65 P12
 
 call ra setclearpwd tomcat %3
 
@@ -57,5 +60,5 @@ echo Unhandled version of JBoss, SSL support must be set up manually
 echo !!!!!
 goto end
 :error
-echo "Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd>"
+echo "Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd> <computername>"
 :end

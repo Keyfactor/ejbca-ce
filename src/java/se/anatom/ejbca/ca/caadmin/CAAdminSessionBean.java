@@ -1,7 +1,6 @@
 package se.anatom.ejbca.ca.caadmin;
 
 import java.io.UnsupportedEncodingException;
-import java.rmi.RemoteException;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -72,7 +71,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.12 2004-01-25 09:37:11 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.13 2004-01-31 14:25:00 herrvendil Exp $
  */
 public class CAAdminSessionBean extends BaseSessionBean {
     

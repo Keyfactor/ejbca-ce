@@ -2,39 +2,46 @@
 IFS=
 
 # This script sets up the administrative web interface with client cert authentication.
-# Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd>
+# Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd> <computername>
 
 if [ -f $1 ]
 then
-    echo "Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd>"
+    echo "Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd> <computername>"
     exit
 fi
 if [ -f $2 ]
 then
-    echo "Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd>"
+    echo "Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd> <computername>"
     exit
 fi
 if [ -f $3 ]
 then
-    echo "Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd>"
+    echo "Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd> <computername>"
     exit
 fi
 if [ -f $4 ]
 then
-    echo "Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd>"
+    echo "Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd> <computername>"
     exit
 fi
 
 if [ -f $5 ]
 then
-    echo "Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd>"
+    echo "Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd> <computername>"
     exit
 fi
 
+if [ -f $6 ]
+then
+    echo "Usage: setup-adminweb <CA Name> <DN Server Cert> <keystore passwd> <SuperAdmin password> <java cacert keystore passwd> <computername>"
+    exit
+fi
 
-./ra.sh adduser tomcat $3 $2 null $1 null 1 3
+./setup.sh setbaseurl $6 ejbca
 
-./ra.sh adduser superadmin $4 "CN=SuperAdmin" null $1 null 65 2
+./ra.sh adduser tomcat $3 $2 null $1 null 1 JKS
+
+./ra.sh adduser superadmin $4 "CN=SuperAdmin" null $1 null 65 P12
 
 ./ra.sh setclearpwd tomcat $3
 

@@ -15,7 +15,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
  * By default all data are saved to a database.
  *
  * @author  Philip Vendil
- * @version $Id: GlobalConfigurationDataHandler.java,v 1.16 2003-09-04 14:38:11 herrvendil Exp $
+ * @version $Id: GlobalConfigurationDataHandler.java,v 1.17 2004-01-31 14:24:59 herrvendil Exp $
  */
 public class GlobalConfigurationDataHandler {
 
@@ -32,7 +32,7 @@ public class GlobalConfigurationDataHandler {
         ret = raadminsession.loadGlobalConfiguration(administrator);
         InitialContext ictx = new InitialContext();
         Context myenv = (Context) ictx.lookup("java:comp/env");      
-        ret.initialize((String) myenv.lookup("BASEURL"), (String) myenv.lookup("ADMINDIRECTORY"),
+        ret.initialize( (String) myenv.lookup("ADMINDIRECTORY"),
                         (String) myenv.lookup("AVAILABLELANGUAGES"), (String) myenv.lookup("AVAILABLETHEMES"), 
                         (String) myenv.lookup("PUBLICPORT"),(String) myenv.lookup("PRIVATEPORT"),
                         (String) myenv.lookup("PUBLICPROTOCOL"),(String) myenv.lookup("PRIVATEPROTOCOL"));

@@ -12,7 +12,7 @@ package se.anatom.ejbca;
  * types. Constants for Token Types Token type is constructed of integer constants since only one
  * token type can be generated.
  *
- * @version $Id: SecConst.java,v 1.18 2004-01-25 09:37:10 herrvendil Exp $
+ * @version $Id: SecConst.java,v 1.19 2004-01-31 14:25:00 herrvendil Exp $
  */
 public class SecConst extends Object {
     // User types
@@ -76,7 +76,9 @@ public class SecConst extends Object {
     /** Constant indicating a standard hard token, defined in scaper. */
     public static final int TOKEN_HARD_DEFAULT = 101;
 
-    /**@deprecated Constant indicating a eid hard token.  */
+    /** Constant indicating a eid hard token.  
+     *   OBSERVE This class should only be used for backward compability with EJBCA 2.0
+     */
     public static final int TOKEN_EID = 102;
     
     /**Constant indicating a swedish eid hard token.  */

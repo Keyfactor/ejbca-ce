@@ -25,7 +25,7 @@
   final String GETCRL_LINK                  = globalconfiguration.getCaPath() 
                                                   + "/getcrl/getcrl.jsp";
   final String GETCRL_PAGE                  =    "getcrl.jsp"; 
-  final String VIEWCERTIFICATE_LINK         = "/" +globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
+  final String VIEWCERTIFICATE_LINK         = globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
   final String VIEWINFO_LINK                = globalconfiguration.getCaPath() + "/viewcainfo.jsp";
   final String DOWNLOADCERTIFICATE_LINK     = globalconfiguration.getCaPath() 
                                                   + "/cacert";

@@ -34,7 +34,8 @@ import se.anatom.ejbca.ra.UserAdminData;
  */
 public class SVGTemplatePrinter {
 
-	private static final String USERDATAFILENAME = "svgtemplateprinttester.properties";
+	
+	private static final String USERDATAFILENAME = "src/cli/svgtemplateprinttester.properties";
 	
 	private SVGImageManipulator imagemanipulator = null;
 	private PrintService printservice = null;

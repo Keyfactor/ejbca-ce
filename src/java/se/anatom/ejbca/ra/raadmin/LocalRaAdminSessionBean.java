@@ -32,7 +32,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.32 2003-10-12 13:14:37 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.33 2004-01-31 14:24:59 herrvendil Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
@@ -574,32 +574,47 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     } //loadGlobalConfiguration
 
     /**
-     * Saves global configuration to the database.
+     * Sets the base url in the global configuration.
+     *
+     * @throws EJBException if a communication or other error occurs.
+     */
+    public void initGlobalConfigurationBaseURL(Admin admin, String computername, String applicationpath)  {
+        debug(">initGlobalConfigurationBaseURL()");
+        GlobalConfiguration gc = this.loadGlobalConfiguration(admin);
+        gc.setComputerName(computername);
+        gc.setApplicationPath(applicationpath);
+        this.saveGlobalConfiguration(admin, gc);        
+        debug("<initGlobalConfigurationBaseURL()");
+     } // initGlobalConfigurationBaseURL
+    
+    /**
+     * Saves the globalconfiguration
      *
      * @throws EJBException if a communication or other error occurs.
      */
 
     public void saveGlobalConfiguration(Admin admin, GlobalConfiguration globalconfiguration)  {
-        debug(">saveGlobalConfiguration()");
-        String pk = "0";
-        try {
-          GlobalConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey(pk);
-          gcdata.setGlobalConfiguration(globalconfiguration);
-          getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITSYSTEMCONFIGURATION,"");
-        }catch (javax.ejb.FinderException fe) {
-           // Global configuration doesn't yet exists.
-           try{
-             GlobalConfigurationDataLocal data1= globalconfigurationhome.create(pk,globalconfiguration);           
-             getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITSYSTEMCONFIGURATION,"");
-           } catch(CreateException e){
-             getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITSYSTEMCONFIGURATION,"");
-           }
-        }
-        this.globalconfiguration=globalconfiguration;
-        debug("<saveGlobalConfiguration()");
-     } // saveGlobalConfiguration
+    	debug(">saveGlobalConfiguration()");
+    	String pk = "0";
+    	try {
+    		GlobalConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey(pk);
+    		gcdata.setGlobalConfiguration(globalconfiguration);
+    		getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITSYSTEMCONFIGURATION,"");
+    	}catch (javax.ejb.FinderException fe) {
+    		// Global configuration doesn't yet exists.
+    		try{
+    			GlobalConfigurationDataLocal data1= globalconfigurationhome.create(pk,globalconfiguration);           
+    			getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITSYSTEMCONFIGURATION,"");
+    		} catch(CreateException e){
+    			getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITSYSTEMCONFIGURATION,"");
+    		}
+    	}
+    	this.globalconfiguration=globalconfiguration;
+    	debug("<saveGlobalConfiguration()");
+    } // saveGlobalConfiguration
     
-
+    
+    
     // Private methods
 
     private int findFreeEndEntityProfileId(){

@@ -127,11 +127,11 @@
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionality/view_end_entity"); 
                                             rabean.initialize(request, ejbcawebbean);
-  final String VIEWCERT_LINK            = "/" + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
-  final String VIEWUSER_LINK            = "/" + globalconfiguration.getAdminWebPath() + "ra/viewendentity.jsp";
-  final String EDITUSER_LINK            = "/" + globalconfiguration.getAdminWebPath() + "ra/editendentity.jsp";
-  final String VIEWHISTORY_LINK         = "/" + globalconfiguration.getAdminWebPath() + "ra/viewhistory.jsp";
-  final String VIEWTOKEN_LINK           = "/" + globalconfiguration.getAdminWebPath() + "hardtoken/viewtoken.jsp";
+  final String VIEWCERT_LINK            = globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
+  final String VIEWUSER_LINK            = globalconfiguration.getAdminWebPath() + "ra/viewendentity.jsp";
+  final String EDITUSER_LINK            = globalconfiguration.getAdminWebPath() + "ra/editendentity.jsp";
+  final String VIEWHISTORY_LINK         = globalconfiguration.getAdminWebPath() + "ra/viewhistory.jsp";
+  final String VIEWTOKEN_LINK           = globalconfiguration.getAdminWebPath() + "hardtoken/viewtoken.jsp";
 
   String oldaction        = OLD_ACTION_NOACTION; 
   String oldactionvalue   = null;
