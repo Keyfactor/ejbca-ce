@@ -39,7 +39,7 @@ import java.util.Iterator;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.25 2005-02-11 13:12:17 anatom Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.26 2005-03-02 11:25:43 anatom Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -308,11 +308,11 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
                 ((KeyRecoveryDataLocal) iter.next()).remove();
             }
 
-            logsession.log(admin, admin.getCAId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), username,
+            logsession.log(admin, admin.getCaId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), username,
                     null, LogEntry.EVENT_INFO_KEYRECOVERY,
                     "All keyrecovery data for user: " + username + " removed.");
         } catch (Exception e) {
-            logsession.log(admin, admin.getCAId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), null,
+            logsession.log(admin, admin.getCaId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), null,
                     null, LogEntry.EVENT_ERROR_KEYRECOVERY,
                     "Error when removing all keyrecovery data for user: " + username + ".");
         }
@@ -364,12 +364,12 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
                     krd.setMarkedAsRecoverable(false);
                 }
 
-                logsession.log(admin, admin.getCAId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
+                logsession.log(admin, admin.getCaId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
                         username, certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
                         "Keydata for user: " + username + " have been sent for key recovery.");
             } catch (Exception e) {
                 log.error("-keyRecovery: ", e);
-                logsession.log(admin, admin.getCAId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
+                logsession.log(admin, admin.getCaId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
                         username, null, LogEntry.EVENT_ERROR_KEYRECOVERY,
                         "Error when trying to revover key data.");
             }
@@ -430,11 +430,11 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
                     returnval = true;
                 }
 
-                logsession.log(admin, admin.getCAId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
+                logsession.log(admin, admin.getCaId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
                         username, newestcertificate, LogEntry.EVENT_INFO_KEYRECOVERY,
                         "User's newest certificate marked for recovery.");
             } catch (Exception e) {
-                logsession.log(admin, admin.getCAId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
+                logsession.log(admin, admin.getCaId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
                         username, null, LogEntry.EVENT_ERROR_KEYRECOVERY,
                         "Error when trying to mark users newest certificate for recovery.");
             }

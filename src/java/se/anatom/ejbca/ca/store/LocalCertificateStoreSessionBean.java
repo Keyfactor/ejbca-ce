@@ -63,7 +63,7 @@ import java.util.Random;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.79 2005-02-11 13:12:14 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.80 2005-03-02 11:25:40 anatom Exp $
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
  * view-type="both"
@@ -260,7 +260,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             CertificateDataLocal data1 = null;
             data1 = certHome.create(cert);
             data1.setUsername(username);
-            data1.setCAFingerprint(cafp);
+            data1.setcAFingerprint(cafp);
             data1.setStatus(status);
             data1.setType(type);
         } catch (Exception e) {
@@ -287,7 +287,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         try {
             X509CRL crl = CertTools.getCRLfromByteArray(incrl);
             CRLDataLocal data1 = crlHome.create(crl, number);
-            data1.setCAFingerprint(cafp);
+            data1.setcAFingerprint(cafp);
             getLogSession().log(admin, crl.getIssuerDN().toString().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECRL, "Number : " + number + " Fingerprint : " + CertTools.getFingerprintAsString(crl) + ".");
         } catch (Exception e) {
             getLogSession().log(admin, LogConstants.INTERNALCAID, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL, "Number : " + number + ".");
@@ -725,7 +725,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
         try {
             CertificateDataLocal res = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
-            ret = new CertificateInfo(res.getFingerprint(), res.getCAFingerprint(), res.getSerialNumber(), res.getIssuerDN(), res.getSubjectDN(),
+            ret = new CertificateInfo(res.getFingerprint(), res.getcAFingerprint(), res.getSerialNumber(), res.getIssuerDN(), res.getSubjectDN(),
                     res.getStatus(), res.getType(), res.getExpireDate(), res.getRevocationDate(), res.getRevocationReason());
             debug("<getCertificateInfo()");
         } catch (FinderException fe) {
@@ -933,7 +933,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 }
             }
         } catch (FinderException e) {
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT, ("Couldn't find certificate with username :" + username));
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT, ("Couldn't find certificate with username :" + username));
             throw new EJBException(e);
         }
         debug("<setRevokeStatus(),  username=" + username);
@@ -1243,7 +1243,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             getLogSession().log(admin, crl.getIssuerDN().toString().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_GETLASTCRL, "Number :" + maxnumber);
             return crl.getEncoded();
         } catch (Exception e) {
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL, "Error retrieving last crl.");
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL, "Error retrieving last crl.");
             throw new EJBException(e);
         }
     } //getLastCRL
@@ -1337,7 +1337,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     public void addCertificateProfile(Admin admin, int certificateprofileid, String certificateprofilename,
                                       CertificateProfile certificateprofile) throws CertificateProfileExistsException {
         if (isCertificateProfileNameFixed(certificateprofilename)) {
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error adding certificaterprofile " + certificateprofilename);
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error adding certificaterprofile " + certificateprofilename);
             throw new CertificateProfileExistsException();
         }
 
@@ -1349,9 +1349,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 try {
                     certprofilehome.create(new Integer(certificateprofileid), certificateprofilename,
                             certificateprofile);
-                    getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, "New certificateprofile " + certificateprofilename + " added successfully");
+                    getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, "New certificateprofile " + certificateprofilename + " added successfully");
                 } catch (Exception f) {
-                    getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error when creating new certificateprofile " + certificateprofilename);
+                    getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error when creating new certificateprofile " + certificateprofilename);
                 }
             }
         }
@@ -1370,7 +1370,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         CertificateProfile certificateprofile = null;
 
         if (isCertificateProfileNameFixed(newcertificateprofilename)) {
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error adding certificaterprofile " + newcertificateprofilename + " using profile " + originalcertificateprofilename + " as template.");
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error adding certificaterprofile " + newcertificateprofilename + " using profile " + originalcertificateprofilename + " as template.");
             throw new CertificateProfileExistsException();
         }
 
@@ -1391,12 +1391,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
             try {
                 certprofilehome.findByCertificateProfileName(newcertificateprofilename);
-                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error adding certificaterprofile " + newcertificateprofilename + " using profile " + originalcertificateprofilename + " as template.");
+                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error adding certificaterprofile " + newcertificateprofilename + " using profile " + originalcertificateprofilename + " as template.");
                 throw new CertificateProfileExistsException();
             } catch (FinderException e) {
                 try {
                     certprofilehome.create(new Integer(findFreeCertificateProfileId()), newcertificateprofilename, certificateprofile);
-                    getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, "New certificateprofile " + newcertificateprofilename + " used profile " + originalcertificateprofilename + " as template.");
+                    getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, "New certificateprofile " + newcertificateprofilename + " used profile " + originalcertificateprofilename + " as template.");
                 } catch (CreateException f) {
                 }
             }
@@ -1416,9 +1416,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         try {
             CertificateProfileDataLocal pdl = certprofilehome.findByCertificateProfileName(certificateprofilename);
             pdl.remove();
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, "Removed certificateprofile " + certificateprofilename + ".");
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, "Removed certificateprofile " + certificateprofilename + ".");
         } catch (Exception e) {
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error removing certificateprofile " + certificateprofilename + ".");
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error removing certificateprofile " + certificateprofilename + ".");
         }
     } // removeCertificateProfile
 
@@ -1430,21 +1430,21 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public void renameCertificateProfile(Admin admin, String oldcertificateprofilename, String newcertificateprofilename) throws CertificateProfileExistsException {
         if (isCertificateProfileNameFixed(oldcertificateprofilename) || isCertificateProfileNameFixed(newcertificateprofilename)) {
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error renaming certificateprofile " + oldcertificateprofilename + " to " + newcertificateprofilename + ".");
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error renaming certificateprofile " + oldcertificateprofilename + " to " + newcertificateprofilename + ".");
             throw new CertificateProfileExistsException("Cannot rename fixed profiles.");
         }
 
         try {
             certprofilehome.findByCertificateProfileName(newcertificateprofilename);
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error renaming certificateprofile " + oldcertificateprofilename + " to " + newcertificateprofilename + ".");
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error renaming certificateprofile " + oldcertificateprofilename + " to " + newcertificateprofilename + ".");
             throw new CertificateProfileExistsException();
         } catch (FinderException e) {
             try {
                 CertificateProfileDataLocal pdl = certprofilehome.findByCertificateProfileName(oldcertificateprofilename);
                 pdl.setCertificateProfileName(newcertificateprofilename);
-                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, "Renamed certificateprofile " + oldcertificateprofilename + " to " + newcertificateprofilename + ".");
+                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, "Renamed certificateprofile " + oldcertificateprofilename + " to " + newcertificateprofilename + ".");
             } catch (FinderException f) {
-                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error renaming certificateprofile " + oldcertificateprofilename + " to " + newcertificateprofilename + ".");
+                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error renaming certificateprofile " + oldcertificateprofilename + " to " + newcertificateprofilename + ".");
             }
         }
     } // renameCertificateProfile
@@ -1460,9 +1460,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         try {
             CertificateProfileDataLocal pdl = certprofilehome.findByCertificateProfileName(certificateprofilename);
             pdl.setCertificateProfile(certificateprofile);
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, "Certificateprofile " + certificateprofilename + " edited.");
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, "Certificateprofile " + certificateprofilename + " edited.");
         } catch (FinderException e) {
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, " Error editing certificateprofile " + certificateprofilename + ".");
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, " Error editing certificateprofile " + certificateprofilename + ".");
         }
     }// changeCertificateProfile
 

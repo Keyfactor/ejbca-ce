@@ -248,16 +248,16 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
                 PublisherDataLocal pdl = publisherhome.findByPrimaryKey(id);
                 try {
                     returnval &= pdl.getPublisher().storeCRL(admin, incrl, cafp, number);
-                    getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null,
+                    getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null,
                             null, LogEntry.EVENT_INFO_STORECRL,
                             "Publisher CLR successfully to publisher " + pdl.getName() + ".");
                 } catch (PublisherException pe) {
-                    getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null,
+                    getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null,
                             LogEntry.EVENT_ERROR_STORECRL, "Error when publishing CRL to " + pdl.getName() + " : " + pe.getMessage());
 
                 }
             } catch (FinderException fe) {
-                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null,
+                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null,
                         LogEntry.EVENT_ERROR_STORECRL, "Publisher with id " + id + " doesn't exist.");
 
             }
@@ -311,17 +311,17 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             PublisherDataLocal pdl = publisherhome.findByPrimaryKey(new Integer(publisherid));
             try {
                 pdl.getPublisher().testConnection(admin);
-                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null,
+                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null,
                         null, LogEntry.EVENT_INFO_PUBLISHERDATA,
                         "Successfully tested the connection with publisher " + pdl.getName() + ".");
             } catch (PublisherConnectionException pe) {
-                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null,
+                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null,
                         LogEntry.EVENT_ERROR_PUBLISHERDATA, "Error when testing the connection with publisher " + pdl.getName() + " : " + pe.getMessage());
 
                 throw new PublisherConnectionException(pe.getMessage());
             }
         } catch (FinderException fe) {
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null,
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null,
                     LogEntry.EVENT_ERROR_PUBLISHERDATA, "Publisher with id " + publisherid + " doesn't exist.");
 
         }
@@ -370,9 +370,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             }
         }
         if (success)
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_PUBLISHERDATA, "Publisher " + name + " added.");
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_PUBLISHERDATA, "Publisher " + name + " added.");
         else
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_PUBLISHERDATA, "Error adding publisher " + name);
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_PUBLISHERDATA, "Error adding publisher " + name);
         if (!success)
             throw new PublisherExistsException();
         debug("<addPublisher()");
@@ -396,9 +396,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         }
 
         if (success)
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_PUBLISHERDATA, "Publisher " + name + " edited.");
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_PUBLISHERDATA, "Publisher " + name + " edited.");
         else
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_PUBLISHERDATA, "Error editing publisher " + name + ".");
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_PUBLISHERDATA, "Error editing publisher " + name + ".");
 
         debug("<changePublisher()");
     } // changePublisher
@@ -418,9 +418,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             publisherdata = (BasePublisher) htp.getPublisher().clone();
             try {
                 addPublisher(admin, newname, publisherdata);
-                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_PUBLISHERDATA, "New publisher " + newname + ", used publisher " + oldname + " as template.");
+                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_PUBLISHERDATA, "New publisher " + newname + ", used publisher " + oldname + " as template.");
             } catch (PublisherExistsException f) {
-                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_PUBLISHERDATA, "Error adding publisher " + newname + " using publisher " + oldname + " as template.");
+                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_PUBLISHERDATA, "Error adding publisher " + newname + " using publisher " + oldname + " as template.");
                 throw f;
             }
         } catch (Exception e) {
@@ -441,9 +441,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         try {
             PublisherDataLocal htp = publisherhome.findByName(name);
             htp.remove();
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_PUBLISHERDATA, "Publisher " + name + " removed.");
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_PUBLISHERDATA, "Publisher " + name + " removed.");
         } catch (Exception e) {
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_PUBLISHERDATA, "Error removing publisher " + name + ".", e);
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_PUBLISHERDATA, "Error removing publisher " + name + ".", e);
         }
         debug("<removePublisher()");
     } // removePublisher
@@ -470,9 +470,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         }
 
         if (success)
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_PUBLISHERDATA, "Publisher " + oldname + " renamed to " + newname + ".");
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_PUBLISHERDATA, "Publisher " + oldname + " renamed to " + newname + ".");
         else
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_PUBLISHERDATA, " Error renaming publisher  " + oldname + " to " + newname + ".");
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_PUBLISHERDATA, " Error renaming publisher  " + oldname + " to " + newname + ".");
 
         if (!success)
             throw new PublisherExistsException();

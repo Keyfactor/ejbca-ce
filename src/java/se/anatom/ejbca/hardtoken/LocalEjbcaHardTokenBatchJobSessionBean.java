@@ -217,7 +217,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
               getLogSession().log(admin, returnval.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with alias :" + alias);
             }
         }catch(Exception e){
-          getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with alias: " + alias);
+          getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with alias: " + alias);
           throw new EJBException(e);
         } finally {
             JDBCUtil.close(con, ps, rs);
@@ -267,7 +267,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
               getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with alias :" + alias);
             }
         }catch(Exception e){
-          getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next tokens for issuer with alias: " + alias);
+          getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next tokens for issuer with alias: " + alias);
           throw new EJBException(e);
         }finally{
            JDBCUtil.close(con, ps, rs);
@@ -323,7 +323,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
               getLogSession().log(admin, returnval.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with alias: " + alias);
             }
         }catch(Exception e){
-          getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with alias: " + alias);
+          getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with alias: " + alias);
           throw new EJBException(e);
         }finally{
            JDBCUtil.close(con, ps, rs);

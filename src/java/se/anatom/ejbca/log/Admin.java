@@ -94,7 +94,7 @@ public class Admin implements Serializable {
      * Doesn't work properly for public web and special users so use with care.
      */
 
-    public int getCAId() {
+    public int getCaId() {
         int returnval = ILogSessionLocal.INTERNALCAID;
         if (type == TYPE_CLIENTCERT_USER)
             returnval = CertTools.getIssuerDN(certificate).hashCode();

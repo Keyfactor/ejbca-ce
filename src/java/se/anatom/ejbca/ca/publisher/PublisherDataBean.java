@@ -109,13 +109,14 @@ public abstract class PublisherDataBean extends BaseEntityBean {
     public abstract void setName(String name);
 
     /**
-     * @ejb.persistence column-name="ABCCounter"
+     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract int getUpdateCounter();
 
     /**
-     * 
+     * @ejb.persistence
+     * @ejb.interface-method view-type="local"
      */
     public abstract void setUpdateCounter(int updatecounter);
 

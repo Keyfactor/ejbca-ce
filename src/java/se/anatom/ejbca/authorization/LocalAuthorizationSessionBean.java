@@ -46,7 +46,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.19 2005-02-11 13:12:19 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.20 2005-03-02 11:25:40 anatom Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -589,7 +589,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 try {
                     agl = admingrouphome.findByGroupNameAndCAId(oldname, caid);
                     agl.setAdminGroupName(newname);
-                    agl.setCAId(caid);
+                    agl.setCaId(caid);
                     signalForAuthorizationTreeUpdate();
                 } catch (Exception e) {
                     error("Can't rename admingroup:" + e.getMessage());
@@ -683,7 +683,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 ArrayList groupcaids = new ArrayList();
                 if (!issuperadmin) {
                     // Is admin authorized to group caid.
-                    if (authorizedcaids.contains(new Integer(agdl.getCAId()))) {
+                    if (authorizedcaids.contains(new Integer(agdl.getCaId()))) {
                         authtogroup = true;
                         // check access rules
                         Iterator iter = agdl.getAccessRuleObjects().iterator();
@@ -712,7 +712,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 allauthorized = authorizedcaids.containsAll(groupcaids);
 
                 if (issuperadmin || ((allauthorized || carecursive) && authtogroup && !superadmingroup)) {
-                    if (!agdl.getAdminGroupName().equals(PUBLICWEBGROUPNAME) && !(agdl.getAdminGroupName().equals(DEFAULTGROUPNAME) && agdl.getCAId() == ILogSessionLocal.INTERNALCAID))
+                    if (!agdl.getAdminGroupName().equals(PUBLICWEBGROUPNAME) && !(agdl.getAdminGroupName().equals(DEFAULTGROUPNAME) && agdl.getCaId() == ILogSessionLocal.INTERNALCAID))
                         returnval.add(agdl.getAdminGroupNames());
                 }
             }

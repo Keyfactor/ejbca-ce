@@ -104,10 +104,10 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
 
       if(returnval != null && log){
         if(returnval.booleanValue()){
-            getLogSessionBean().log(admin, admin.getCAId(), module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,
+            getLogSessionBean().log(admin, admin.getCaId(), module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,
                                     "Resource : " + AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
         }else{
-            getLogSessionBean().log(admin, admin.getCAId(), module, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
+            getLogSessionBean().log(admin, admin.getCaId(), module, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
                                     "Resource : " + AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
         }
       }

@@ -50,7 +50,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.11 2004-05-10 09:24:06 anatom Exp $
+ * @version $Id: CA.java,v 1.12 2005-03-02 11:25:41 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -129,7 +129,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     	if(owner == null)
     		return cainfo.getCAId();
     	
-    	return owner.getCAId().intValue();
+    	return owner.getCaId().intValue();
     }    
     
     public int getCAType(){ return ((Integer)data.get(CATYPE)).intValue();}

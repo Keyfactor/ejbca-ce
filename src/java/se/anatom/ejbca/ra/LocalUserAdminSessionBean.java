@@ -68,7 +68,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.90 2005-02-13 17:51:06 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.91 2005-03-02 11:25:41 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -431,7 +431,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                 data1.setSubjectAltName(subjectaltname);
             if (email != null)
                 data1.setSubjectEmail(email);
-            data1.setCAId(caid);
+            data1.setCaId(caid);
             data1.setType(type);
             data1.setEndEntityProfileId(endentityprofileid);
             data1.setCertificateProfileId(certificateprofileid);
@@ -487,7 +487,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         try {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1 = home.findByPrimaryKey(pk);
-            caid = data1.getCAId();
+            caid = data1.getCaId();
 
             if (!authorizedToCA(admin, caid)) {
                 logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_DELETEENDENTITY, "Administrator not authorized to delete user with this CA.");
@@ -529,7 +529,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         try {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1 = home.findByPrimaryKey(pk);
-            caid = data1.getCAId();
+            caid = data1.getCaId();
 
             if (!authorizedToCA(admin, caid)) {
                 logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY, "Administrator not authorized to change status of user with current CA.");
@@ -596,7 +596,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         String newpasswd = password;
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data = home.findByPrimaryKey(pk);
-        int caid = data.getCAId();
+        int caid = data.getCaId();
 
         EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, data.getEndEntityProfileId());
 
@@ -659,7 +659,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         // Find user
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data = home.findByPrimaryKey(pk);
-        int caid = data.getCAId();
+        int caid = data.getCaId();
 
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to edit user.
@@ -700,7 +700,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             throw new EJBException(oe);
         }
 
-        int caid = data.getCAId();
+        int caid = data.getCaId();
         if (!authorizedToCA(admin, caid)) {
             logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY, "Administrator not authorized to revoke user with given CA.");
             throw new AuthorizationDeniedException("Administrator not authorized to revoke user with given CA.");
@@ -738,7 +738,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             throw new EJBException(oe);
         }
 
-        int caid = data.getCAId();
+        int caid = data.getCaId();
         if (!authorizedToCA(admin, caid)) {
             logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY, "Administrator not authorized to revoke certificates of this CA.");
             throw new AuthorizationDeniedException("Administrator not authorized to revoke certificate of user with given CA.");
@@ -780,7 +780,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             return null;
         }
 
-        if (!authorizedToCA(admin, data.getCAId())) {
+        if (!authorizedToCA(admin, data.getCaId())) {
             throw new AuthorizationDeniedException("Administrator not authorized to view user with given CA.");
         }
 
@@ -790,7 +790,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                 throw new AuthorizationDeniedException("Administrator not authorized to view user.");
         }
 
-        UserAdminData ret = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getCAId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
+        UserAdminData ret = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
                 , data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId()
                 , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
                 , data.getTokenType(), data.getHardTokenIssuerId());
@@ -833,7 +833,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         }
 
         if (data != null) {
-            returnval = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getCAId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
+            returnval = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
                     , data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId()
                     , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
                     , data.getTokenType(), data.getHardTokenIssuerId());
@@ -874,11 +874,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                     break;
             }
 
-            if (!authorizedToCA(admin, data.getCAId())) {
+            if (!authorizedToCA(admin, data.getCaId())) {
                 break;
             }
 
-            UserAdminData user = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getCAId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
+            UserAdminData user = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
                     , data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId()
                     , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
                     , data.getTokenType(), data.getHardTokenIssuerId());
@@ -914,7 +914,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         if (data != null) {
             int type = data.getType();
             if ((type & SecConst.USER_ADMINISTRATOR) == 0) {
-                logsession.log(admin, data.getCAId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_ADMINISTRATORLOGGEDIN, "Certificate didn't belong to an administrator.");
+                logsession.log(admin, data.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_ADMINISTRATORLOGGEDIN, "Certificate didn't belong to an administrator.");
                 throw new AuthorizationDeniedException("Your certificate does not belong to an administrator.");
             }
         } else {

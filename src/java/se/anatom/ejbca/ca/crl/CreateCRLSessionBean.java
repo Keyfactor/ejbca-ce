@@ -49,7 +49,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.25 2005-02-11 13:12:19 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.26 2005-03-02 11:25:42 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -255,7 +255,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
     		    }
     		}
     	} catch (Exception e) {
-    		logsession.log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,e.getMessage());
+    		logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,e.getMessage());
     		throw new EJBException(e);
     	}
 

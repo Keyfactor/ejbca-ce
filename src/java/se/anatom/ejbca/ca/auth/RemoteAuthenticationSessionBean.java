@@ -33,7 +33,7 @@ import se.anatom.ejbca.log.LogEntry;
 /**
  * Authenticates users towards a remote user database, using HTTP-based protocol.
  *
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.15 2004-07-13 08:49:43 sbailliez Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.16 2005-03-02 11:25:40 anatom Exp $
  * @ejb.bean
  *   generate="false"
  * @ejb.home
@@ -61,11 +61,9 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
         debug(">ejbCreate()");
 
         // Get the URL from the environment from deployment descriptor
-        remoteurl = (String) lookup("java:comp/env/AuthURL", java.lang.String.class);
-
+        remoteurl = (String) getLocator().getString("java:comp/env/AuthURL");
         try {
-            ILogSessionHome logsessionhome = (ILogSessionHome) lookup(ILogSessionHome.COMP_NAME,
-                    ILogSessionHome.class);
+            ILogSessionHome logsessionhome = (ILogSessionHome) getLocator().getLocalHome(ILogSessionHome.COMP_NAME);
             logsession = logsessionhome.create();
         } catch (Exception e) {
             throw new EJBException(e);

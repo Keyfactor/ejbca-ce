@@ -37,7 +37,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.9 2005-02-23 16:07:44 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.10 2005-03-02 11:25:41 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -51,7 +51,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="CADataBean"
- *   primkey-field="CAId"
+ *   primkey-field="caId"
  *
  * @ejb.permission role-name="InternalUser"
  *
@@ -95,12 +95,12 @@ public abstract class CADataBean extends BaseEntityBean {
      * @ejb.persistence
      * @ejb.interface-method
     */
-    public abstract Integer getCAId();
+    public abstract Integer getCaId();
 
     /**
      * @ejb.persistence
      */
-    public abstract void setCAId(Integer caid);
+    public abstract void setCaId(Integer caid);
 
     /**
      * @ejb.persistence
@@ -223,7 +223,7 @@ public abstract class CADataBean extends BaseEntityBean {
      */
     public Integer ejbCreate(String subjectdn, String name, int status, CA ca) throws CreateException {
                 
-        setCAId(new Integer(subjectdn.hashCode()));
+        setCaId(new Integer(subjectdn.hashCode()));
         setName(name);        
         setSubjectDN(subjectdn);
         setStatus(status);        

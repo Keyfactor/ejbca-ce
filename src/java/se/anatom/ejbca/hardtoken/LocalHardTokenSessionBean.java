@@ -306,9 +306,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	    }
 	    
 	    if(success)
-	        getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA,"Hard token profile " + name + " added.");
+	        getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA,"Hard token profile " + name + " added.");
 	    else
-	        getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA,"Error adding hard token profile "+ name);
+	        getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA,"Error adding hard token profile "+ name);
 	    
 	    if(!success)
 	        throw new HardTokenProfileExistsException();
@@ -332,9 +332,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	   }catch(FinderException e){}
 
 	   if(success)
-		 getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA,"Hard token profile " +  name + " edited.");
+		 getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA,"Hard token profile " +  name + " edited.");
 	   else
-		 getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA,"Error editing hard token profile " + name + ".");
+		 getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA,"Error editing hard token profile " + name + ".");
 
 	   debug("<changeHardTokenProfile()");
 	} // changeHardTokenProfile
@@ -356,9 +356,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
          try{
 		   addHardTokenProfile(admin, newname, profiledata);
-		   getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA,"New hard token profile " + newname +  ", used profile " + oldname + " as template.");
+		   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA,"New hard token profile " + newname +  ", used profile " + oldname + " as template.");
          }catch(HardTokenProfileExistsException f){
-		   getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA,"Error adding hard token profile " + newname +  " using profile " + oldname + " as template.");
+		   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA,"Error adding hard token profile " + newname +  " using profile " + oldname + " as template.");
 		   throw f;
          }
 
@@ -381,9 +381,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	  try{
 		HardTokenProfileDataLocal htp = hardtokenprofilehome.findByName(name);
 		htp.remove();
-		getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA,"Hard token profile " + name + " removed.");
+		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA,"Hard token profile " + name + " removed.");
 	  }catch(Exception e){
-		 getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA,"Error removing hard token profile " + name + ".",e);
+		 getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA,"Error removing hard token profile " + name + ".",e);
 	  }
 	  debug("<removeHardTokenProfile()");
 	} // removeHardTokenProfile
@@ -410,9 +410,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	   }
 
 	   if(success)
-		 getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA,"Hard token profile " + oldname + " renamed to " + newname +  "." );
+		 getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA,"Hard token profile " + oldname + " renamed to " + newname +  "." );
 	   else
-		 getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA," Error renaming hard token profile  " + oldname +  " to " + newname + "." );
+		 getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA," Error renaming hard token profile  " + oldname +  " to " + newname + "." );
 
        if(!success)
 	     throw new HardTokenProfileExistsException();
@@ -582,9 +582,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        }
 
        if(returnval)
-         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " + alias + " added.");
+         getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " + alias + " added.");
        else
-         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error adding hard token issuer "+ alias);
+         getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error adding hard token issuer "+ alias);
 
        debug("<addHardTokenIssuer()");
        return returnval;
@@ -609,9 +609,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        }catch(FinderException e){}
 
        if(returnvalue)
-         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " +  alias + " edited.");
+         getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " +  alias + " edited.");
        else
-         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error editing hard token issuer " + alias + ".");
+         getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error editing hard token issuer " + alias + ".");
 
        debug("<changeHardTokenIssuer()");
        return returnvalue;
@@ -635,9 +635,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
          returnval = addHardTokenIssuer(admin, newalias, admingroupid, issuerdata);
          if(returnval)
-           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"New hard token issuer " + newalias +  ", used issuer " + oldalias + " as template.");
+           getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"New hard token issuer " + newalias +  ", used issuer " + oldalias + " as template.");
          else
-           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error adding hard token issuer " + newalias +  " using issuer " + oldalias + " as template.");
+           getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error adding hard token issuer " + newalias +  " using issuer " + oldalias + " as template.");
        }catch(Exception e){
           throw new EJBException(e);
        }
@@ -658,9 +658,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       try{
         HardTokenIssuerDataLocal htih = hardtokenissuerhome.findByAlias(alias);
         htih.remove();
-        getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " + alias + " removed.");
+        getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " + alias + " removed.");
       }catch(Exception e){
-         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error removing hard token issuer " + alias + ".",e);
+         getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error removing hard token issuer " + alias + ".",e);
       }
       debug("<removeHardTokenIssuer()");
     } // removeHardTokenIssuer
@@ -689,9 +689,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        }
 
        if(returnvalue)
-         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " + oldalias + " renamed to " + newalias +  "." );
+         getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " + oldalias + " renamed to " + newalias +  "." );
        else
-         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA," Error renaming hard token issuer  " + oldalias +  " to " + newalias + "." );
+         getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA," Error renaming hard token issuer  " + oldalias +  " to " + newalias + "." );
 
        debug("<renameHardTokenIssuer()");
        return returnvalue;
@@ -1279,7 +1279,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      */
     private void removeHardTokenCertificateMappings(Admin admin, String tokensn){
       debug(">removeHardTokenCertificateMappings(tokensn: " + tokensn + ")");
-	  int caid = admin.getCAId();
+	  int caid = admin.getCaId();
       try{
       	Iterator result = hardtokencertificatemaphome.findByTokenSN(tokensn).iterator();
       	while(result.hasNext()){
