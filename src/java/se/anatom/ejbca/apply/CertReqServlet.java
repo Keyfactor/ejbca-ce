@@ -419,13 +419,20 @@ public class CertReqServlet extends HttpServlet {
         {
             byte[] buffer;
             try {
+                // A real PKCS10 PEM request
                 String beginKey = "-----BEGIN CERTIFICATE REQUEST-----";
                 String endKey = "-----END CERTIFICATE REQUEST-----";
                 buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
             } catch (IOException e) {
-                String beginKey = "-----BEGIN NEW CERTIFICATE REQUEST-----";
-                String endKey = "-----END NEW CERTIFICATE REQUEST-----";
-                buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
+                try {
+                    // Keytool PKCS10 PEM request
+                    String beginKey = "-----BEGIN NEW CERTIFICATE REQUEST-----";
+                    String endKey = "-----END NEW CERTIFICATE REQUEST-----";
+                    buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
+                } catch (IOException ioe) {
+                    // IE PKCS10 Base64 coded request
+                    buffer = Base64.decode(b64Encoded);
+                }
             }
             ISignSessionRemote ss = home.create();
             cert = (X509Certificate) ss.createCertificate(username, password, buffer);
