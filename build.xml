@@ -197,6 +197,7 @@
     	<fileset dir="${build}">
 		<include name="se/anatom/ejbca/webdist/**/*.class"/>
 		<include name="se/anatom/ejbca/ca/store/**/ICertificateStore*.class"/>
+                <include name="se/anatom/ejbca/ca/store/**/IPublisher*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
 		<include name="se/anatom/ejbca/util/**/Base64*.class"/>
 		<include name="se/anatom/ejbca/util/**/CertTools*.class"/>
@@ -220,7 +221,8 @@
                 <include name="se/anatom/ejbca/SecConst*.class"/>
 		<include name="se/anatom/ejbca/util/*.class"/>
 		<include name="se/anatom/ejbca/admin/*.class"/>
-                <include name="se/anatom/ejbca/ca/store/ICertificateStoreSession*.class"/>
+                <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
+                <include name="se/anatom/ejbca/ca/store/**/IPublisher*.class"/>
                 <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/RevokedCertInfo*.class"/>
                 <include name="se/anatom/ejbca/ca/store/CertificateData*.class"/>
