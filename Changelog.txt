@@ -9,12 +9,14 @@ Changed initial temporary super administrator from "CN=Walter" to "CN=
 SuperAdmin".
 Removed CA and ROOTCA types in "ra adduser" cmd, from now on use certificate
 profiles.
-Added allowOverrideKeyUsage in certifcate profiles.
+Added allowOverrideKeyUsage in certificate profiles.
 New fields in DN, givenname, surname, initials.
 ExtendedKeyUsage extension (for use in OutLook).
 New servlet in adminweb, AdminCertReqServlet that creates users out of PKCS10-
 requests.
-Bugfixes, cleanups.
+Moved batch and deploy scripts into build.xml.
+Moved external jars into ear-file.
+Lots of bugfixes and cleanups.
 
 2.0b1
 -----

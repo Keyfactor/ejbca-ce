@@ -26,6 +26,7 @@
   <property name="ca.src" value="${src}/ca/ca" />
   <property name="ca.build" value="${tmp}/ca/ca.jar" />
   <property name="cajar" value="${dist}/ca.jar" />
+  <property name="ca.classpath" value="lib/regexp1_0_0.jar lib/bcmail-jdk13-117.jar lib/jce-jdk13-117.jar lib/log4j-1.2.7.jar lib/ldap.jar"/>
 
   <property name="log.src" value="${src}/log" />
   <property name="log.build" value="${tmp}/log.jar" />
@@ -34,7 +35,6 @@
   <property name="hardtoken.src" value="${src}/hardtoken" />
   <property name="hardtoken.build" value="${tmp}/hardtoken.jar" />
   <property name="hardtokenjar" value="${dist}/hardtoken.jar" />   
- 
   
   <property name="keyrecovery.src" value="${src}/keyrecovery" />
   <property name="keyrecovery.build" value="${tmp}/keyrecovery.jar" />
@@ -43,6 +43,7 @@
   <property name="ra.src" value="${src}/ra" />
   <property name="ra.build" value="${tmp}/ra.jar" />
   <property name="rajar" value="${dist}/ra.jar" />
+  <property name="ra.classpath" value="lib/regexp1_0_0.jar lib/bcmail-jdk13-117.jar lib/jce-jdk13-117.jar lib/log4j-1.2.7.jar lib/ldap.jar"/>
   
   <property name="adminweb.src" value="${src}/adminweb" />
   <property name="adminweb.build" value="${tmp}/adminweb.war" />
@@ -211,7 +212,11 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </copy>
     
     <!-- Jar the ca.jar package together -->
-    <jar basedir="${ca.build}" jarfile="${cajar}"/>    
+    <jar basedir="${ca.build}" jarfile="${cajar}">
+        <manifest>
+            <attribute name="Class-Path" value="${ca.classpath}"/>
+        </manifest>
+    </jar>
   </target>
 
   <!-- =================================================================== -->
@@ -317,7 +322,11 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </copy>
     
     <!-- Jar the ra.jar package together -->
-    <jar basedir="${ra.build}" jarfile="${rajar}"/>    
+    <jar  basedir="${ra.build}" jarfile="${rajar}">
+        <manifest>
+            <attribute name="Class-Path" value="${ra.classpath}"/>
+        </manifest>
+    </jar>
   </target>
 
   <!-- =================================================================== -->
@@ -496,6 +505,15 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="adminweb.war"/>
         </fileset>
     </copy>
+    <copy todir="${caear.earbuild}/lib">
+        <fileset dir="${lib}">
+            <include name="regexp1_0_0.jar"/>
+            <include name="bcmail-jdk13-117.jar"/>
+            <include name="jce-jdk13-117.jar"/>
+            <include name="log4j-1.2.7.jar"/>
+            <include name="ldap.jar"/>
+        </fileset>
+    </copy>
   
     <!-- Jar the ear package together -->
     <jar basedir="${caear.earbuild}" jarfile="${caear}"/>    
@@ -533,6 +551,15 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="ra.jar"/>
         </fileset>
     </copy>
+    <copy todir="${caearnora.earbuild}/lib">
+        <fileset dir="${lib}">
+            <include name="regexp1_0_0.jar"/>
+            <include name="bcmail-jdk13-117.jar"/>
+            <include name="jce-jdk13-117.jar"/>
+            <include name="log4j-1.2.7.jar"/>
+            <include name="ldap.jar"/>
+        </fileset>
+    </copy>
   
     <!-- Jar the ear package together -->
     <jar basedir="${caearnora.earbuild}" jarfile="${caearnora}"/>    
@@ -556,9 +583,9 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         </javadoc>
   </target>
 
-  <!-- =================================================================== -->
+  <!-- ========================================================================== -->
   <!-- Replace every occurrence of the DefaultDS to something else (here ejbcaDS) -->
-  <!-- =================================================================== -->
+  <!-- ========================================================================== -->
 
   <target name="checkForDS" unless="ejbca.DS">
 	<fail message="Please run ant with -Dejbca.DS=&lt;your-datasource&gt; ( eg.java:/DefaultDS )"/> 
@@ -585,6 +612,9 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         </replace>
   </target>
 
+  <!-- ============================================================================= -->
+  <!-- Batch generate certificates for users with clear text password and right type -->
+  <!-- ============================================================================= -->
   <target name="batch" depends="admin.jar">
   	<java classname="se.anatom.ejbca.batch.BatchMakeP12" fork="true">
   		 <classpath>
@@ -594,24 +624,25 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   		 </classpath>
   	</java>
   </target>
-  
-  <target name="deploylib">
-	<copy file="${lib.jce}" tofile="${env.JBOSS_HOME}/server/default/lib" verbose="true"/>
-	<copy file="${lib.bcmail}" tofile="${env.JBOSS_HOME}/server/default/lib" verbose="true"/>
-	<copy file="${lib.ldap}" tofile="${env.JBOSS_HOME}/server/default/lib" verbose="true"/>
-	<copy file="${lib.regexp}" tofile="${env.JBOSS_HOME}/server/default/lib" verbose="true"/>
-  </target>  
-  
-  <target name="deploy" depends="deploylib">
+    
+  <!-- ======================================================================= -->
+  <!-- Deploy EJBCA ear to JBoss                                               -->
+  <!-- ======================================================================= -->
+  <target name="deploy" depends="ca.ear">
 	<copy file="${caear}" tofile="${env.JBOSS_HOME}/server/default/deploy/ejbca-ca.ear" verbose="true"/>
   </target>
 
-  <target name="deploy_nora" depends="deploylib">
+  <!-- ======================================================================= -->
+  <!-- Deploy ear without Admin Web-GUI to JBoss                               -->
+  <!-- ======================================================================= -->
+  <target name="deploy_nora" depends="canora.ear">
 	<copy file="${caearnora}" tofile="${env.JBOSS_HOME}/server/default/deploy/ejbca-canora.ear" verbose="true"/>
   </target>
   
   
-
+  <!-- ======================================================================= -->
+  <!-- Deploy a keystore to JBOSS                                              -->
+  <!-- ======================================================================= -->
   <target name="keystore">
   	<copy file="${keystore}" tofile="${env.JBOSS_HOME}/server/default/conf" verbose="true"/>	
   </target>
