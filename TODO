@@ -1,4 +1,4 @@
-$Id: TODO,v 1.52 2002-10-30 11:16:07 anatom Exp $
+$Id: TODO,v 1.53 2003-01-19 17:34:23 anatom Exp $
 
 V 1.x
 -----
@@ -8,7 +8,6 @@ V 2.x
 -----
 - Installation procedure/script, including installation of Web-RA.
 - Describe SSL-setup in server.
-- Fix user 'walter' in admin web-GUI.
 - Make to work with JDK 1.3, problems with importing certificate chains in jks
 using keytool, as well as JDK 1.4 stuff.
 - More automated testing, Junit as well as web-stuff.
