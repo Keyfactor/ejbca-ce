@@ -6,29 +6,33 @@ The dc component support is mandated by all of the X.509 RFCs now.
 For example, if I have this directory:
 
 dc=bigcorp,dc=com
-	|
-	+-dc=fi
-	|
-	|
-	+-dc=se
-		|
-		+-ou=users
-			|
-			+-cn=Mike Jackson
+    |
+    +-dc=fi
+    |
+    |
+    +-dc=se
+        |
+        +-cn=Mike Jackson
 
 The most understandable method is taking the subject name in
 forward order, like:
-cn=Mike Jackson,ou=users,dc=se,dc=bigcorp,dc=com
+cn=Mike Jackson,dc=se,dc=bigcorp,dc=com
 
 If the DN is ordered like this it should be published to the correct object in the tree. 
 
-If the DN os ordered reverse, like:
-dc=bigcorp,dc=com,dc=se,ou=users,cn=Mike Jackson
+If the DN is ordered reverse, like:
+dc=bigcorp,dc=com,dc=se,cn=Mike Jackson
 EJBCA will reorder it incorrectly to forward order, so the publishing will be wrong.
 
 Therefore...
 USER FORWARD ORDER LIKE THIS:
-cn=Mike Jackson,ou=users,dc=se,dc=bigcorp,dc=com
+'cn=Mike Jackson,dc=se,dc=bigcorp,dc=com' if using the dc model
+or
+'cn=Mike Jackson,o=bigcorp,c=se' if using the o,c model.
+
+Attributes like uid, l, serialNumber etc will not work to publish to LDAP at the moment,
+there will be a 'naming vialoation'.
+To publish in LDAP, keep to simple DNs like the one above, only cn and the baseDN.
 
 CONFIGURING LDAP PUBLISHERS
 ===========================
@@ -179,8 +183,9 @@ dn: cn=Admin,o=AnaTom,c=SE
 objectclass: organizationalRole
 cn: Admin
 ---
-
 And using the command:
 ldapadd -x -D "cn=Admin,o=AnaTom,c=SE" -W -f org.ldif
 
+Check what you have in the LDAP by:
+/usr/local/bin/ldapsearch -x -b 'o=AnaTom,c=SE' '(objectclass=*)'
 
