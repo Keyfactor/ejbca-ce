@@ -41,7 +41,7 @@ import se.anatom.ejbca.log.Admin;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.22 2003-12-04 10:20:50 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.23 2004-01-01 17:05:52 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -233,7 +233,7 @@ public class CertDistServlet extends HttpServlet {
                 level = Integer.parseInt(lev);
             else
                 pkcs7 = true;
-            // Root CA is level 0, next below root level 1 etc etc, -1 returns chain as PKCS7
+            // CA is level 0, next over root level 1 etc etc, -1 returns chain as PKCS7
             try {
                 ISignSessionRemote ss = signhome.create();
                 Certificate[] chain = null;
@@ -242,13 +242,13 @@ public class CertDistServlet extends HttpServlet {
                 else
                     chain = (Certificate[]) ss.getCertificateChain(administrator, issuerdn.hashCode()).toArray(new Certificate[0]);
                 // chain.length-1 is last cert in chain (root CA)
-                if ( (chain.length-1-level) < 0 ) {
+                if (chain.length < level) {
                     PrintStream ps = new PrintStream(res.getOutputStream());
-                    ps.println("No CA certificate of level "+level+"exist.");
-                    log.debug("No CA certificate of level "+level+"exist.");
+                    ps.println("No CA certificate of level "+level+" exist.");
+                    log.debug("No CA certificate of level "+level+" exist.");
                     return;
                 }
-                X509Certificate cacert = (X509Certificate)chain[chain.length-1-level];
+                X509Certificate cacert = (X509Certificate)chain[level];
                 String filename=CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
                 if (filename == null)
                     filename = "ca";

@@ -27,6 +27,13 @@ try  {
   <div align="center">CA: <%= ca.getName() %></div>
 <%
         Collection chain = ss.getCertificateChain(admin, caid);
+        // Get the CA-cert
+        Iterator chainiter = chain.iterator();
+        String issuerdn = null;
+        if (chainiter.hasNext()) {
+        	X509Certificate cert = (X509Certificate)chainiter.next();
+        	issuerdn = cert.getSubjectDN().getName();
+        }
         if (chain.size() == 0) {
 %>
   No CA certificates exist 
@@ -36,32 +43,32 @@ try  {
 </p>
 <div align="center">In PEM format:<br>
 </div>
-  <div align="center"><a href="certdist?cmd=cacert&level=0">Root CA</a></div>
 <div align="center">
-  <%
+<%
             int i = 0;
-            if (chain.size() > 1) {
-                for (i=chain.size()-1;i>0;i--) {
+            chainiter = chain.iterator();
+            while (chainiter.hasNext()) {
+            	X509Certificate cert = (X509Certificate)chainiter.next();
 %>
 </div>
-  <div align="center"><a href="certdist?cmd=cacert&level=<%= i %>">CA</a></div>
+  <div align="center"><a href="certdist?cmd=cacert&issuer=<%= issuerdn %>&level=<%= i %>"><%= cert.getSubjectDN().getName() %></a></div>
 <div align="center">
-  <%
-                }
+<%
+				i++;
             }
 %>
 </div>
 <br>
 <div align="center">For Netscape/Mozilla:<br>
 </div>
-  <div align="center"><a href="certdist?cmd=nscacert&level=0">Root CA</a></div>
+  <div align="center"><a href="certdist?cmd=nscacert&issuer=<%= issuerdn %>&level=0">Root CA</a></div>
 <div align="center">
 <%
             if (chain.size() > 1) {
                 for (i=chain.size()-1;i>0;i--) {
 %>
 </div>
-  <div align="center"><a href="certdist?cmd=nscacert&level=<%= i %>">CA</a></div>
+  <div align="center"><a href="certdist?cmd=nscacert&issuer=<%= issuerdn %>&level=<%= i %>">CA</a></div>
 <div align="center">
   <%
                 }
@@ -71,14 +78,14 @@ try  {
 <br>
 <div align="center">For Internet Explorer:<br>
 </div>
-  <div align="center"><a href="certdist?cmd=iecacert&level=0">Root CA</a></div>
+  <div align="center"><a href="certdist?cmd=iecacert&issuer=<%= issuerdn %>&level=0">Root CA</a></div>
 <div align="center">
   <%
             if (chain.size() > 1) {
                 for (i=chain.size()-1;i>0;i--) {
 %>
 </div>
-  <div align="center"><a href="certdist?cmd=iecacert&level=<%= i %>">CA</a></div>
+  <div align="center"><a href="certdist?cmd=iecacert&issuer=<%= issuerdn %>&level=<%= i %>">CA</a></div>
 <div align="center">
   <%
                 }
