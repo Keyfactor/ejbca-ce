@@ -1,3 +1,6 @@
+
+NOTE: This file is outdated and needs updating! Do not use!
+
 use test;
 
 drop table if exists accessrules;
