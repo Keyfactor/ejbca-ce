@@ -10,8 +10,12 @@ The following databases have been tested with EJBCA:
 
 NOTE:
 
-The default database HypersoniqDB should be removed completely.
-The section "JBossCX setup" must be edited for this.
+To use the default database, HypersonicDB, nothing should be done, just install 
+JBoss and run. Read this HOWTO if you want to replace the default database with
+another.
+
+When using another database the default database, HypersoniqDB, should be removed 
+completely. The section "JBossCX setup" must be edited for this.
 
 NOW ON TO THE HOWTO!
 

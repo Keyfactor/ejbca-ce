@@ -2,7 +2,7 @@
 ---
 Configuration howto/support for Oracle.
 CA-certs now downloaded from webdist.
-Minor, mostly cosmetic changes.
+Minor, mostly cosmetic and documentation changes.
 
 1.2
 ---
