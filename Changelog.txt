@@ -1,12 +1,7 @@
-2.0b3
-_____
-
-Changed initial temporary super administrator from "CN=Walter" to "CN=SuperAdmin".
-Removed CA and ROOTCA types in "ra adduser" cmd, from now on use certificate profiles.
-Bugfixes, cleanups.
-
 2.0b2
 -----
+Changed initial temporary super administrator from "CN=Walter" to "CN=SuperAdmin".
+Removed CA and ROOTCA types in "ra adduser" cmd, from now on use certificate profiles.
 Added allowOverrideKeyUsage in certifcate profiles.
 New fields in DN, givenname, surname, initials.
 Bugfixes, cleanups.
