@@ -1,4 +1,4 @@
-$Id: README,v 1.129 2004-03-21 09:37:03 anatom Exp $
+$Id: README,v 1.130 2004-03-21 09:37:47 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -83,7 +83,6 @@ The minimal requirements to download and install are JBoss and Ant.
 
 Bouncycastle
 ------------
-
 For cryptography and creation of certificates and CRLs, EJBCA
 uses the open source JCE crypto provider from Bouncy Castle,
 <http://www.bouncycastle.org/>.
@@ -98,7 +97,6 @@ See doc/LICENSE-BC for license conditions of the Bouncy Castle JCE.
 
 JBoss
 -----
-
 EJBCA is developed on the open source J2EE application server
 JBoss
 <http://www.jboss.org/>. We expect a JBoss with an integrated
@@ -111,7 +109,6 @@ See doc/LICENSE-JBOSS for license conditions of JBoss.
 
 Ant and Log4J
 -------------
-
 Ant (used for building) and Log4j (used for logging) is
 Copyright
 1999-2001, Apache Software Foundation and can be obtained from
@@ -122,7 +119,6 @@ See doc/LICENSE-APACHE for license conditions of Ant and Log4j.
 
 JUnit
 -----
-
 For automated testing JUnit is used and can be obtained from
 <http://www.junit.org/>. Jar file needed to run JUnit tests is
 distributed with EJBCA. 
@@ -137,7 +133,6 @@ Httpjunit can be fund on httpjunit.sourceforge.net
 
 OpenLDAP
 --------
-
 OpenLDAP is an Open Source LDAP directory which can be obtained
 from
 <http://www.openldap.org/>. This jar fil is needed by EJBCA to store
