@@ -23,6 +23,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocal;
+import se.anatom.ejbca.ra.exception.NotFoundException;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
@@ -36,7 +37,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.44 2003-02-28 09:32:29 koen_serry Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.45 2003-02-28 15:26:46 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -259,7 +260,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * Implements IUserAdminSession::deleteUser.
     * Implements a mechanism that uses UserData Entity Bean.
     */
-    public void deleteUser(Admin admin, String username) throws AuthorizationDeniedException, RemoteException{
+    public void deleteUser(Admin admin, String username) throws AuthorizationDeniedException, NotFoundException, FinderException, RemoveException, RemoteException{
         debug(">deleteUser("+username+")");
         // Check if administrator is authorized to delete user.
         if(globalconfiguration.getEnableEndEntityProfileLimitations()){
@@ -270,20 +271,18 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                 logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEENDENTITY,"Administrator not authorized");
                 throw new AuthorizationDeniedException("Administrator not authorized to delete user.");
             }
-          }
-          catch(FinderException e){
+          } catch(FinderException e){
             logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEENDENTITY,"Couldn't find username in database");
-            throw new EJBException(e.getMessage());
+            throw e;
           }
         }
         try {
             UserDataPK pk = new UserDataPK(username);
             home.remove(pk);
             logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_DELETEDENDENTITY,"");
-        }
-        catch (Exception e) {
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEENDENTITY,"");
-            throw new EJBException(e.getMessage());
+        } catch(EJBException e) {
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEENDENTITY,"Couldn't find username in database");
+            throw new NotFoundException("Couldn't find '"+username+"' in database");
         }
         debug("<deleteUser("+username+")");
     } // deleteUser
@@ -306,7 +305,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
           }
           catch(FinderException e){
             logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"Couldn't find username in database.");
-            throw new EJBException(e.getMessage());
+            throw e;
           }
         }
 
