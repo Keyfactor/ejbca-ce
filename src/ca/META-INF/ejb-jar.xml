@@ -233,7 +233,7 @@
    </session>
 
    <session>
-     <ejb-name>LDAPPublisherSession</ejb-name>
+     <ejb-name>PublisherSession1</ejb-name>
      <home>se.anatom.ejbca.ca.store.IPublisherSessionHome</home>
      <remote>se.anatom.ejbca.ca.store.IPublisherSessionRemote</remote>
      <ejb-class>se.anatom.ejbca.ca.store.LDAPPublisherSessionBean</ejb-class>
@@ -369,7 +369,7 @@
          <method-name>*</method-name>
      </method>
      <method>
-         <ejb-name>LDAPPublisherSession</ejb-name>
+         <ejb-name>PublisherSession1</ejb-name>
          <method-name>*</method-name>
      </method>
      <method>

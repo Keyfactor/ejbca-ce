@@ -176,6 +176,14 @@ Options in CertificateStoreSession:
 Configuring databases:
 The session beans use direct database communication (from a connection pool) in some cases. In these cases the JNDI name if the Datasource used is configured in ejb-jar.xml and jaws.xml, (default 'java:/DefaultDS').
 
+Configuring Publishers (LDAP):
+To publish certificates and CRLs in an LDAP directory, uncomment the entry
+for the session bean 'PublisherSession1' in 'ca/META-INF/ejb-jar.xml'. This will configure an
+LDAPPublisherSession so be deployed and when certificates and CRLs are
+created. Don't formget to edit parameters to 'PublisherSession1' to match
+your LDAP server.
+Additional Publishers can be configured by adding new session beans
+called 'PublisherSession2', 'PublisherSession3', etc to ejb-jar.xml. 
 
 Batch creation of certificates:
 Certificates can be created batch-wise with EJBCA. The class se.anatom.ejbca.batch.BatchMakeP12 creates PKCS12 keystores for all users designated as NEW in the local RA database.

@@ -21,7 +21,7 @@ import junit.framework.*;
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.3 2002-01-08 09:45:08 anatom Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.4 2002-01-08 12:32:29 anatom Exp $
  */
 public class TestBatchMakeP12 extends TestCase {
 
@@ -93,10 +93,10 @@ public class TestBatchMakeP12 extends TestCase {
 
             UserData data4=null;
             String username1 = genRandomUserName();
-            data4 = home.create(username1, "foo123", "C=SE, O=AnaTom, CN="+username);
-            assertNotNull("Failed to create user "+username, data4);
+            data4 = home.create(username1, "foo123", "C=SE, O=AnaTom, CN="+username1);
+            assertNotNull("Failed to create user "+username1, data4);
             data4.setType(SecConst.USER_ENDUSER);
-            data4.setSubjectEmail(username+"@anatom.se");
+            data4.setSubjectEmail(username1+"@anatom.se");
             data4.setClearPassword("foo123");
             System.out.println("created "+username1+ ", pwd=foo123");
 

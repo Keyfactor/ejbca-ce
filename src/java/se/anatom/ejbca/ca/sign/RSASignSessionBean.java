@@ -21,6 +21,7 @@ import se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote;
 import se.anatom.ejbca.ca.auth.UserAuthData;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
+import se.anatom.ejbca.ca.store.IPublisherSession;
 import se.anatom.ejbca.ca.store.IPublisherSessionHome;
 import se.anatom.ejbca.ca.store.IPublisherSessionRemote;
 import se.anatom.ejbca.ca.store.CertificateData;
@@ -37,7 +38,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.8 2002-01-08 11:25:24 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.9 2002-01-08 12:32:29 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -180,7 +181,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
      */
     public Certificate[] getCertificateChain() throws RemoteException {
         debug(">getCertificateChain()");
-        // TODO: chould support more than 2 levels of CAs
+        // TODO: should support more than 2 levels of CAs
         Certificate[] chain;
         if (CertTools.isSelfSigned(caCert)) {
             chain = new Certificate[1];
@@ -224,10 +225,10 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             UserAuthData data = authSession.authenticateUser(username, password);
             info("Authorized user " + username + " with DN=" + data.getDN());
             System.out.println("type="+ data.getType());
-            if (data.getType() == SecConst.USER_INVALID) {
+            if ((data.getType() & SecConst.USER_INVALID) !=0) {
                 error("User type is invalid, cannot create certificate for this user.");
             } else {
-                if ( (data.getType() == SecConst.USER_CA) || (data.getType() == SecConst.USER_ROOTCA) ) {
+                if ( ((data.getType() & SecConst.USER_CA) != 0) || ((data.getType() & SecConst.USER_ROOTCA) != 0) ) {
                     System.out.println("Setting new keyusage...");
                     // If this is a CA, we only allow CA-type keyUsage
                     Arrays.fill(keyusage, false);
@@ -243,8 +244,11 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
                 cert.verify(caCert.getPublicKey());
                 // Store certificate in the database
                 initCertificateStore();
-                certificateStore.storeCertificate(cert, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, SecConst.USER_ENDUSER);
+                certificateStore.storeCertificate(cert, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
                 // Call authentication session and tell that we are finished with this user
+                for (int i=0;i<publishers.size();i++) {
+                    ((IPublisherSession)(publishers.get(i))).storeCertificate(cert, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
+                }
                 if (finishUser.booleanValue() == true)
                     authSession.finishUser(username, password);
                 debug("<createCertificate(pk, ku)");
@@ -329,6 +333,9 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             info("Created CRL with number "+number);
             // Store CRL in the database
             certificateStore.storeCRL(crl.getEncoded(), CertTools.getFingerprintAsString(caCert), number);
+            for (int i=0;i<publishers.size();i++) {
+                ((IPublisherSession)(publishers.get(i))).storeCRL(crl.getEncoded(), CertTools.getFingerprintAsString(caCert), number);
+            }
         } catch (Exception e) {
             throw new EJBException(e);
         }
@@ -380,7 +387,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             publishers = new Vector(0);
             try {
                 while (true) {
-                    String jndiName = "PublisherSession" + i;
+                    String jndiName = "PublisherSession" + i++;
                     IPublisherSessionHome pubhome = (IPublisherSessionHome) lookup(jndiName, IPublisherSessionHome.class);
                     IPublisherSessionRemote pubremote = pubhome.create();
                     publishers.add(pubremote);
