@@ -13,16 +13,22 @@
  
 package se.anatom.ejbca;
 
+import se.anatom.ejbca.util.SimpleSequenceGenerator;
+import se.anatom.ejbca.util.ServiceLocator;
+
 import javax.ejb.EntityBean;
 import javax.ejb.EntityContext;
+import javax.ejb.EJBLocalHome;
+import javax.ejb.EJBException;
 
 
 /**
  * Base class for entity beans implementing required methods and helpers.
  *
- * @version $Id: BaseEntityBean.java,v 1.4 2004-04-16 07:39:01 anatom Exp $
+ * @version $Id: BaseEntityBean.java,v 1.5 2004-11-08 21:10:36 sbailliez Exp $
  */
 public class BaseEntityBean implements EntityBean {
+
     protected transient EntityContext ctx;
 
     /**
@@ -81,5 +87,24 @@ public class BaseEntityBean implements EntityBean {
      */
     public void ejbRemove() {
         // Not implemented.
+    }
+
+    /**
+     * Return the next valid sequence this EJB primary key assuming the primary key
+     * is an Integer object (The findByPrimaryKey(Integer pk) should exist in the local home interface.
+     * @return the next valid sequence for that EJB primary key
+     * @throws EJBException if it cannot find a valid sequence count for that bean
+     */
+    protected Integer getNextSequence() throws EJBException {
+        EJBLocalHome home = ctx.getEJBLocalHome();
+        return SimpleSequenceGenerator.getNextCount(home);
+    }
+
+    /**
+     * Helper method to retrieve the locator
+     * @return
+     */
+    protected ServiceLocator getLocator() {
+        return ServiceLocator.getInstance();
     }
 }
