@@ -4,7 +4,7 @@ Set up a database for EJBCA in JBoss
 The following databases have in some stage been tested with EJBCA:
 
 * HypersoniqDB (default in JBoss)
-* PostegreSQL (http://www.postgresql.org/)
+* PostegreSQL 7.2 (http://www.postgresql.org/)
 * MySQL (http://www.mysql.com/)
 * Oracle 8i (http://www.oracle.com/)
 * Sybase
@@ -87,6 +87,10 @@ Type mapping:
 
 PostgreSQL specifics
 --------------------
+EJBCA have been tested with PostgreSQL 7.2, which is why the database mapping
+"PostgreSQL 7.2" is beeing used. Other versions of PostgreSQL might be able to
+use the mapping "PostgreSQL".
+
 Jaws configuration file: jbosscmp-jdbc-postgres.xml
 
 JDBC driver: postgresql.jar (or whatever it's called).
@@ -101,7 +105,7 @@ The item 'ConnectionURL' must be edited to match your database.
 Type mapping:
 
      <datasource>java:/DefaultDS</datasource>
-     <type-mapping>PostgreSQL</type-mapping>
+     <type-mapping>PostgreSQL 7.2</type-mapping>
 
 Oracle specifics
 ----------------

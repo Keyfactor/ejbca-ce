@@ -4,7 +4,7 @@
 
 <defaults>
     <datasource>java:/DefaultDS</datasource>
-    <datasource-mapping>PostgreSQL</datasource-mapping>
+    <datasource-mapping>PostgreSQL 7.2</datasource-mapping>
 </defaults>
 
 </jbosscmp-jdbc>
