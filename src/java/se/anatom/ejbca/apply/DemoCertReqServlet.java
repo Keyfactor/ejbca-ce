@@ -91,7 +91,7 @@ import se.anatom.ejbca.ra.UserAdminData;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.34 2004-04-18 16:01:55 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.35 2004-07-14 07:59:49 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -175,7 +175,7 @@ public class DemoCertReqServlet extends HttpServlet {
       throw new ServletException(e);
     }
 
-     Admin admin = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
+     Admin admin = new Admin(Admin.TYPE_RACOMMANDLINE_USER, request.getRemoteAddr());
      RequestHelper helper = new RequestHelper(admin, debug);
 
       String dn = null;
