@@ -7,7 +7,7 @@
 
 <datasources>
   <local-tx-datasource>
-    <jndi-name>DefaultDS</jndi-name>
+    <jndi-name>EjbcaDS</jndi-name>
     <connection-url>jdbc:oracle:thin:@youroraclehost:1521:ejbca</connection-url>
 	<!--
 

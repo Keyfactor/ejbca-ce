@@ -7,7 +7,7 @@
 
 <datasources>
   <local-tx-datasource>
-    <jndi-name>DeafultDS</jndi-name>
+    <jndi-name>EjbcaDS</jndi-name>
     <connection-url>jdbc:postgresql://[servername]:[port]/ejbca</connection-url>
     <driver-class>org.postgresql.Driver</driver-class>
     <user-name>ejbca</user-name>

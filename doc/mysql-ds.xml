@@ -7,7 +7,7 @@
 
       <!-- The jndi name of the DataSource, it is prefixed with java:/ -->
       <!-- Datasources are not available outside the virtual machine -->
-      <jndi-name>DefaultDS</jndi-name>
+      <jndi-name>EjbcaDS</jndi-name>
 
       <connection-url>jdbc:mysql://localhost:3306/ejbca
       </connection-url>

@@ -8,7 +8,7 @@
 
 <datasources>
   <local-tx-datasource>
-    <jndi-name>DefaultDS</jndi-name>
+    <jndi-name>EjbcaDS</jndi-name>
     <connection-url>jdbc:microsoft:sqlserver://localhost:1433;DatabaseName=ejbca</connection-url>
     <driver-class>com.microsoft.jdbc.sqlserver.SQLServerDriver</driver-class>
     <user-name>ejbca</user-name>
