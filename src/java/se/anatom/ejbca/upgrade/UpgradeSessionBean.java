@@ -16,11 +16,14 @@ package se.anatom.ejbca.upgrade;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -28,6 +31,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import se.anatom.ejbca.BaseSessionBean;
+import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.authorization.AdminGroupExistsException;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
@@ -38,13 +42,16 @@ import se.anatom.ejbca.ca.publisher.IPublisherSessionLocal;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
+import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
 import se.anatom.ejbca.util.FileTools;
 import se.anatom.ejbca.util.JDBCUtil;
 import se.anatom.ejbca.util.SqlExecutor;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.13 2004-05-12 12:53:30 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.14 2004-05-13 13:16:34 herrvendil Exp $
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
@@ -62,6 +69,9 @@ public class UpgradeSessionBean extends BaseSessionBean {
     
     /** The local interface of the publisher session bean */
     private IPublisherSessionLocal publishersession = null;
+    
+    /** The local interface of the raadmin session bean */
+    private IRaAdminSessionLocal raadminsession = null;
     
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -125,6 +135,20 @@ public class UpgradeSessionBean extends BaseSessionBean {
         }
         return authorizationsession;
     } //getAuthorizationSession
+    
+    /** Gets connection to ca admin session bean
+     */
+    private IRaAdminSessionLocal getRaAdminSession() {
+        if(raadminsession == null){
+          try{
+            IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) lookup("java:comp/env/ejb/RaAdminSessionLocal", IRaAdminSessionLocalHome.class);   
+            raadminsession = raadminsessionhome.create();  
+          }catch(Exception e){
+             throw new EJBException(e);
+          }
+        }
+        return raadminsession;
+    } //getRaAdminSession
 
     /** Runs a preCheck to see if an upgrade is possible
      * 
@@ -241,6 +265,23 @@ public class UpgradeSessionBean extends BaseSessionBean {
         // Change fields, i.e. CAId in database tables
         CAInfo cainfo = getCaAdminSession().getCAInfo(admin, caName);
         int caId = cainfo.getCAId();
+        
+        // Fix all End Entity Profiles
+        HashMap profileidtonamemap = getRaAdminSession().getEndEntityProfileIdToNameMap(admin);
+        Iterator iter = profileidtonamemap.keySet().iterator();
+        while(iter.hasNext()){
+        	int next = ((Integer) iter.next()).intValue();
+        	// Only upgrade nonfixed profiles.
+        	if(next > SecConst.EMPTY_ENDENTITYPROFILE){
+        		EndEntityProfile profile = getRaAdminSession().getEndEntityProfile(admin,next);   
+        		profile.setValue(EndEntityProfile.DEFAULTCA,0,Integer.toString(caId));
+        		profile.setRequired(EndEntityProfile.DEFAULTCA,0,true);
+        		profile.setValue(EndEntityProfile.AVAILCAS,0,Integer.toString(caId));
+        		profile.setRequired(EndEntityProfile.AVAILCAS,0,true);
+        		getRaAdminSession().changeEndEntityProfile(admin,(String) profileidtonamemap.get(new Integer(next)),profile);
+        	}
+        }
+        
         PreparedStatement ps1 = null;
         PreparedStatement ps2 = null;
         PreparedStatement ps3 = null;

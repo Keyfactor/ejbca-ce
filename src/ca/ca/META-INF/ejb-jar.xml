@@ -509,7 +509,14 @@
         <local>se.anatom.ejbca.authorization.IAuthorizationSessionLocal</local>
         <ejb-link>AuthorizationSession</ejb-link>
      </ejb-local-ref>
-     
+     <ejb-local-ref>
+        <description>The RAAdmin Session Bean</description>
+        <ejb-ref-name>ejb/RaAdminSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal</local>
+        <ejb-link>RaAdminSession</ejb-link>
+     </ejb-local-ref>     
    </session>
 
    <entity>
@@ -817,12 +824,11 @@
          <ejb-name>CAAdminSession</ejb-name>
          <method-name>*</method-name>
      </method>
-<!-- Uncomment to use LDAP publisher -->
-<!--     <method>
-         <ejb-name>PublisherSession1</ejb-name>
+     <method>
+         <ejb-name>PublisherSession</ejb-name>
          <method-name>*</method-name>
-     </method>  -->
-<!-- END LDAP Publisher -->
+     </method>  -
+
    </method-permission>
 
    <method-permission>
