@@ -1,0 +1,174 @@
+    My LINUX+JBOSS+EJBCA+MYSQL+OPENLDAP How To
+    contributed by <surd0007(at)yahoo.com.cn>
+ 
+(This install guide is a complement to the guide present in README).
+$Id: INSTALL-guide.txt,v 1.1 2003-09-16 07:59:04 anatom Exp $
+
+ 
+ Softwares needed:
+ 	redhat8.0
+ 	j2sdk-1_4_0_02-linux-i586.bin
+ 	jboss-3.0.8.zip
+ 	ejbca_2_0_1.zip
+ 	mysql-3.23.52-3(included in redhat CDs)
+ 	mysql-connector-java-3.0.8-stable-bin.jar(JDBC driver)
+ 	openldap-2.1.12(support BDB type)
+ 	
+ 
+ 
+ Install JDK1.4
+ 	#cp j2sdk-1_4_0_02-linux-i586.bin /usr
+ 	#cd /usr
+ 	#chmod 777 j2sdk-1_4_0_02-linux-i586.bin
+ 	#./j2sdk-1_4_0_02-linux-i586.bin
+ 	#ln -s j2sdk1.4.0_02 java
+ 
+ 
+ Install jboss
+ 	#cp jboss-3.0.8.zip /usr
+ 	#cd /usr
+ 	#unzip jboss-3.0.8.zip
+ 	#cd jboss-3.0.8
+ 
+ Install ant
+ 	#cp apache-ant-1.5.4-bin.tar.gz /usr/j2ee/
+ 	#tar xvfz apache-ant-1.5.4-bin.tar.gz
+ 
+ 
+ Configure environment variables
+ 	add the following text to the tail of /etc/profile:
+ 
+ 	export JAVA_HOME=/usr/java
+ 	export JBOSS_HOME=/usr/jboss-3.0.8
+ 	export PATH=/usr/java/bin:$PATH:/usr/j2ee/apache-ant-1.5.4/bin
+ 	export CLASSPATH=/usr/java/jre/lib/ext/:$CLASSPATH
+ 
+ 	Notes: In order to make the environment variables valid, logout and login again!
+ 
+ Install mysql
+ 	because there is a bug in mysql included in REDHAT8.0, we need fix it:
+ 	add the following info to the [mysqld] section in /etc/my.cnf:
+ 	
+ 	skip-name-resolve
+ 	set-variable=thread_stack=256k
+ 
+ 	#/etc/rc.d/initd/mysqld restart
+ 
+ 	add user "ocsper" with password "123456" and enough privileges. allow user ocsper to
+connect to mysql server.
+ 	create ejbca database under user ocsper.
+ 
+ 	I have written a java application program to ensure configuration above is good! This
+program can use JDBC driver to connect to ejbca database with user ocsper and its password.
+ 
+ 
+ Install EJBCA
+ 	#cp ejbca_2_0_1.zip /usr/j2ee
+ 	#unzip ejbca_2_0_1.zip
+ 	#cd ejbca
+ 
+ 	Using vi to edit build.xml according to the following:
+ 
+ 	......
+     <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on"
+encoding="ascii">
+         <exclude name="**/CVS/**"/>
+         <include name="**/*.java"/>
+     </javac>
+ 	......
+ 
+ 
+ 	Compile ejbca source:
+ 	#ant
+ 	
+ 
+ 	Configure mysql:
+ 	#cd /usr/j2ee/ejbca
+ 	#cp src/ca/ca/META-INF/jbosscmp-jdbc-mysql.xml src/ca/ca/META-INF/jbosscmp-jdbc.xml
+ 	#cp src/ra/META-INF/jbosscmp-jdbc-mysql.xml src/ra/META-INF/jbosscmp-jdbc.xml
+ 	#cp src/log/META-INF/jbosscmp-jdbc-mysql.xml src/log/META-INF/jbosscmp-jdbc.xml
+ 	#cp src/hardtoken/META-INF/jbosscmp-jdbc-mysql.xml
+src/hardtoken/META-INF/jbosscmp-jdbc.xml
+ 	#cp src/keyrecovery/META-INF/jbosscmp-jdbc-mysql.xml
+src/keyrecovery/META-INF/jbosscmp-jdbc.xml
+ 	#ant
+ 	#ant deploy
+ 
+ 
+ 	Configure JBOSS:
+ 	#cp mysql-connector-java-3.0.8-stable.tar.gz /usr
+ 	#tar xvfz mysql-connector-java-3.0.8-stable.tar.gz
+ 	#cd mysql-connector-java-3.0.8-stable
+ 	#cp mysql-connector-java-3.0.8-stable-bin.jar $JBOSS_HOME/server/default/lib/
+ 
+ 
+ 	#cd /usr/j2ee/ejbca
+ 	#cp doc/mysql-service.xml $JBOSS_HOME/server/default/deploy/
+ 	#vi $JBOSS_HOME/server/default/deploy/mysql-service.xml
+ 	
+ 	......
+         <attribute name="JndiName">DefaultDS</attribute>
+         <attribute name="ManagedConnectionFactoryProperties">
+           <properties>
+             <config-property name="ConnectionURL"
+type="java.lang.String">jdbc:mysql://172.16.0.65:3306/ejbca</config-property>
+             <config-property name="DriverClass"
+type="java.lang.String">org.gjt.mm.mysql.Driver</config-property>
+             <!--set these only if you want only default logins, not through JAAS -->
+             <config-property name="UserName"
+type="java.lang.String">ocsper</config-property>
+             <config-property name="Password"
+type="java.lang.String">123456</config-property>
+           </properties>
+         </attribute>
+ 	......
+ 
+ 	#cd $JBOSS_HOME/server/default/deploy/
+ 	#rm hsqldb-service.xml
+ 	
+ 	#vi ../conf/standardjbosscmp-jdbc.xml
+ 
+ 	......
+      <datasource>java:/DefaultDS</datasource>
+      <type-mapping>mySQL</type-mapping>
+ 	......
+ 
+ 	#cd /usr/j2ee/ejbca
+ 	#ant
+ 	#ant deploy
+ 	#./ca.sh makeroot "C=CN,O=NISEC,CN=EJBCA" 1024 365 null
+$JBOSS_HOME/server/default/conf/server.p12 foo123
+ 
+ 	
+ 	#cd $JBOSS_HOME/bin/
+ 	#./run.sh   (pay attention to log info)
+ 
+ 
+ 	#cd /usr/j2ee/ejbca
+ 	#./ca.sh init	
+ 
+ 
+ Configure LDAP
+ 	/usr/local/etc/openldap/slapd.conf as follows:
+ 
+ 	......
+ 	database        bdb
+ 	suffix          "O=NISEC,C=CN"
+ 	rootdn          "CN=Manager,O=NISEC,C=CN"
+ 	rootpw          ldappasswd
+ 	directory       /usr/local/var/data
+ 	index   objectClass     eq
+ 	......
+ 
+ 	/usr/j2ee/ejbca/src/ca/ca/META-INF/ejb-jar.xml as follows:
+ 
+ 
+ 
+ 
+ 
+ 	#cd /usr/j2ee/ejbca
+ 	#ant;ant deploy
+ 
+ 	#cd $JBOSS_HOME/bin
+ 	#run.sh
+        
