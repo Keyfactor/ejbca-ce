@@ -10,7 +10,7 @@ import java.security.cert.X509Certificate;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: ILogSessionLocal.java,v 1.3 2002-09-18 11:31:48 herrvendil Exp $
+ * @version $Id: ILogSessionLocal.java,v 1.4 2002-12-10 07:46:01 herrvendil Exp $
  * @see se.anatom.ejbca.ra.raadmin.ILogSessionRemote
  */
 
@@ -23,8 +23,12 @@ public interface ILogSessionLocal extends javax.ejb.EJBLocalObject
     /**
      * @see se.anatom.ejbca.log.ILogSessionRemote
      */   
-public void log(Admin admin, int module, Date time, String username, X509Certificate certificate, int event, String comment);
+    public void log(Admin admin, int module, Date time, String username, X509Certificate certificate, int event, String comment);
     
+    /**
+     * @see se.anatom.ejbca.log.ILogSessionRemote
+     */   
+    public void log(Admin admininfo, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception);
     /**
      * @see se.anatom.ejbca.log.ILogSessionRemote
      */   

@@ -256,7 +256,7 @@ END LDAP Publisher -->
         <local>se.anatom.ejbca.ca.store.CertificateProfileDataLocal</local>
         <ejb-link>CertificateProfileData</ejb-link>
      </ejb-local-ref>         
-     
+
      
     <security-identity>
         <description></description>
@@ -522,7 +522,6 @@ END LDAP Publisher -->
 	</ejb-ql>
       </query>
    </entity>
-   
    <entity>
       <description>
             This enterprise bean entity represents a certificate type.
@@ -553,7 +552,8 @@ END LDAP Publisher -->
 	  <![CDATA[SELECT DISTINCT OBJECT(a) from CertificateProfileDataBean a WHERE a.certificateProfileName=?1]]>
 	</ejb-ql>
       </query>       
-   </entity>   
+   </entity>
+    
   </enterprise-beans>
 
  <assembly-descriptor>

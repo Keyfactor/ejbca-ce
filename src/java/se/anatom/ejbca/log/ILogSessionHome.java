@@ -6,7 +6,7 @@ import javax.ejb.EJBHome;
 
 
 /**
- * @version $Id: ILogSessionHome.java,v 1.1 2002-09-12 17:12:13 herrvendil Exp $
+ * @version $Id: ILogSessionHome.java,v 1.2 2002-12-10 07:46:01 herrvendil Exp $
  */
 
 public interface ILogSessionHome extends EJBHome {
@@ -18,7 +18,7 @@ public interface ILogSessionHome extends EJBHome {
      * @return IRaAdminSessionRemote interface
      */
 
-    ILogSessionRemote create() throws CreateException, Exception;
+    ILogSessionRemote create() throws RemoteException, CreateException, Exception;
 
 }
 

@@ -9,7 +9,7 @@ import java.util.Date;
 
 /** Implements a log device using Log4j, implementes the Singleton pattern.
  *
- * @version $Id: Log4jLogDevice.java,v 1.2 2002-09-17 09:19:46 herrvendil Exp $
+ * @version $Id: Log4jLogDevice.java,v 1.3 2002-12-10 07:46:01 herrvendil Exp $
  */
 
 public class Log4jLogDevice implements ILogDevice, java.io.Serializable {
@@ -82,6 +82,13 @@ public class Log4jLogDevice implements ILogDevice, java.io.Serializable {
                    admin + ", User : " + user + ", Certificate : " + cert + ", Comment : " + comment);  
        }    
     }
-
+    
+     /**
+     * @see se.anatom.ejbca.log.ILogDevice
+     */
+    public void log(Admin admininfo, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception){
+        log(admininfo, module, time, username, certificate, event, comment);
+        cat.error("Exception : ",exception); 
+    }
 }
 

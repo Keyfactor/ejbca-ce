@@ -26,7 +26,7 @@ import se.anatom.ejbca.util.query.*;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalLogSessionBean.java,v 1.4 2002-10-24 20:05:26 herrvendil Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.5 2002-12-10 07:46:01 herrvendil Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean  {
 
@@ -155,6 +155,41 @@ public class LocalLogSessionBean extends BaseSessionBean  {
    
     } // log
     
+    /** 
+    * Overloaded function that also logs an exception
+    * See function above for more documentation.
+    *
+    * @param exception the exception that has occured
+    */
+    public void log(Admin admin, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception){
+      try{               
+        // Get logging configuration  
+        if(logconfiguration.logEvent(event)){
+          if(logconfiguration.useLogDB()){
+            try{  
+               // Log to the local database.
+               if(certificate != null)                      
+                 logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), module, time, username,
+                                     certificate.getSerialNumber().toString(16), event, comment); 
+               else 
+                 logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), module, time, username,
+                                     null, event, comment);    
+            }catch(javax.ejb.DuplicateKeyException dke){
+              logconfigurationdata.getAndIncrementRowCount();    
+            }
+          }    
+          if(logconfiguration.useExternalLogDevices()){
+            // Log to external devices. I.e Log4j etc 
+            Iterator i = logdevices.iterator();
+            while(i.hasNext()){
+               ((ILogDevice) i.next()).log(admin, module,  time, username, certificate, event, comment, exception);   
+            }              
+          }
+        } 
+      }catch(Exception e){
+        throw new EJBException(e);   
+      }    
+    }
     /**
      * Method to execute a customized query on the log db data. The parameter query should be a legal Query object.
      * 

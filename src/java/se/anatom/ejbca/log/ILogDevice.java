@@ -22,5 +22,13 @@ public interface ILogDevice extends java.io.Serializable {
     * @param comment comment of the event.
     */
     public void log(Admin admininfo, int module, Date time, String username, X509Certificate certificate, int event, String comment);
+    
+    /** 
+    * Overloaded function that also logs an exception
+    * See function above for more documentation.
+    *
+    * @param exception the exception that has occured
+    */
+    public void log(Admin admininfo, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception);
 
 }
