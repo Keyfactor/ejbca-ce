@@ -23,7 +23,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.19 2003-11-01 13:59:07 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.20 2003-11-10 09:25:44 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
     /** Pointer to main certificate store */
@@ -50,7 +50,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         // Create new CA.
         if (args.length < 6) {
-           String msg = "Usage: CA init <caname> <dn> <keysize> <validity-days> <policyID>";
+           String msg = "Used to create a Root CA.";
+           msg += "\nUsage: CA init <caname> <dn> <keysize> <validity-days> <policyID>";
            msg += "\npolicyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0'.";
            throw new IllegalAdminCommandException(msg);
         }
