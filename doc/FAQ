@@ -1,6 +1,6 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.7 2002-05-26 14:40:15 anatom Exp $
+$Id: FAQ,v 1.8 2002-07-21 12:10:05 anatom Exp $
 ---------
 Q : What applications servers do EJBCA run on?
 
@@ -21,9 +21,11 @@ Q : When using JDK 1.4.x i get a java.io.InvalidClassException?
 A : Since JDK 1.4 introduced incompatibilities during class serialization the
 PublicKey
 class used as parameter to some versions of the 'createCertificate' method can
-not be
-passed correctly.
+not be passed correctly.
 You must use JDK 1.4 on both server and client, then it works.
+
+Another problem that may occur is that JBoss have been upgraded since the 
+release of ejbca so the file 'lib/jboss-client.jar' must be replaced by one from JBoss.
 
 -----
 Q : Why are there two versions of all commands, i.e. 'ra.sh' and 'ra.cmd'?
