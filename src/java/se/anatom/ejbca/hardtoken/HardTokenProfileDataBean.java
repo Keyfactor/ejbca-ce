@@ -39,7 +39,6 @@ import se.anatom.ejbca.hardtoken.hardtokenprofiles.SwedishEIDProfile;
  *
  *
  * @ejb.bean
- *	 xxxgenerate="false"
  *   description="This enterprise bean entity represents a hard token profile with accompanying data"
  *   display-name="HardTokenProfileDataEB"
  *   name="HardTokenProfileData"
@@ -72,6 +71,10 @@ import se.anatom.ejbca.hardtoken.hardtokenprofiles.SwedishEIDProfile;
  *   signature="se.anatom.ejbca.hardtoken.HardTokenProfileDataLocal findByName(java.lang.String name)"
  *   query="SELECT DISTINCT OBJECT(a) from HardTokenProfileDataBean a WHERE a.name=?1"
  *
+ * @ejb.finder
+ *   description="findAll"
+ *   signature="java.util.Collection findAll()"
+ *   query="SELECT DISTINCT OBJECT(a) from HardTokenProfileDataBean a"
  */
 public abstract class HardTokenProfileDataBean extends BaseEntityBean {
 

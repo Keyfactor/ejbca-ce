@@ -66,6 +66,12 @@ import se.anatom.ejbca.BaseEntityBean;
  *   description="findByAlias"
  *   signature="se.anatom.ejbca.hardtoken.HardTokenIssuerDataLocal findByAlias(java.lang.String alias)"
  *   query="SELECT DISTINCT OBJECT(a) from HardTokenIssuerDataBean a WHERE a.alias=?1"
+ *
+ * @ejb.finder
+ *   description="findAll"
+ *   signature="java.util.Collection findAll()"
+ *   query="SELECT DISTINCT OBJECT(a) from HardTokenIssuerDataBean AS a"
+
  */
 public abstract class HardTokenIssuerDataBean extends BaseEntityBean {
 
@@ -74,7 +80,7 @@ public abstract class HardTokenIssuerDataBean extends BaseEntityBean {
 	/**
      * @ejb.pk-field
 	 * @ejb.persistence
-     * @ejb.create-method view-type="local"
+     * @ejb.interface-method view-type="local"
      */
     public abstract Integer getId();
 
@@ -85,25 +91,25 @@ public abstract class HardTokenIssuerDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
-     * @ejb.create-method view-type="local"
+     * @ejb.interface-method view-type="local"
      */
     public abstract String getAlias();
 
     /**
      * @ejb.persistence
-     * @ejb.create-method view-type="local"
+     * @ejb.interface-method view-type="local"
      */
     public abstract void setAlias(String alias);
 
     /**
      * @ejb.persistence
-     * @ejb.create-method view-type="local"
+     * @ejb.interface-method view-type="local"
      */
     public abstract int getAdminGroupId();
 
     /**
      * @ejb.persistence
-     * @ejb.create-method view-type="local"
+     * @ejb.interface-method view-type="local"
      */
     public abstract void setAdminGroupId(int groupid);
 
@@ -120,7 +126,7 @@ public abstract class HardTokenIssuerDataBean extends BaseEntityBean {
 
     /**
      * Method that returns the hard token issuer data and updates it if nessesary.
-     * @ejb.create-method view-type="local"
+     * @ejb.interface-method view-type="local"
      */
     public HardTokenIssuer getHardTokenIssuer(){
       HardTokenIssuer returnval = new HardTokenIssuer();
@@ -130,7 +136,7 @@ public abstract class HardTokenIssuerDataBean extends BaseEntityBean {
 
     /**
      * Method that saves the hard token issuer data to database.
-     * @ejb.create-method view-type="local"
+     * @ejb.interface-method view-type="local"
      */
     public void setHardTokenIssuer(HardTokenIssuer hardtokenissuer){
        setData((HashMap) hardtokenissuer.saveData());
