@@ -22,7 +22,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionHome;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote;
-import se.anatom.ejbca.ra.UserDataRemote;
+import se.anatom.ejbca.ra.UserDataLocal;
 
 /**
  * Find details of a user in the database.
@@ -99,7 +99,7 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
              keyrecoverysession.markAsRecoverable(administrator, 
                                                   cert);
         
-             getAdminSession().setUserStatus(administrator, username, UserDataRemote.STATUS_KEYRECOVERY); 
+             getAdminSession().setUserStatus(administrator, username, UserDataLocal.STATUS_KEYRECOVERY); 
  
              System.out.println("Keys corresponding to given certificate has been marked for recovery.");                           
 

@@ -13,13 +13,13 @@
  
 package se.anatom.ejbca.admin;
 
+import javax.naming.InitialContext;
+
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionHome;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote;
-import se.anatom.ejbca.ra.UserDataRemote;
-
-import javax.naming.*;
+import se.anatom.ejbca.ra.UserDataLocal;
 
 
 /**
@@ -79,7 +79,7 @@ public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
              
              keyrecoverysession.markNewestAsRecoverable(administrator, username);
         
-             getAdminSession().setUserStatus(administrator, username, UserDataRemote.STATUS_KEYRECOVERY); 
+             getAdminSession().setUserStatus(administrator, username, UserDataLocal.STATUS_KEYRECOVERY); 
              System.out.println("Key corresponding to users newest certificate has been marked for recovery.");             
  
 
