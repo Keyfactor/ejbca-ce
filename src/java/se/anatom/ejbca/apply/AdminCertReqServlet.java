@@ -32,6 +32,7 @@ import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.FileTools;
+import se.anatom.ejbca.util.StringTools;
 import se.anatom.ejbca.webdist.cainterface.CAInterfaceBean;
 import se.anatom.ejbca.webdist.rainterface.RAInterfaceBean;
 import se.anatom.ejbca.webdist.rainterface.UserView;
@@ -78,7 +79,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * </dl>
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.5 2003-02-27 08:43:14 anatom Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.6 2003-02-27 13:01:23 koen_serry Exp $
  */
 public class AdminCertReqServlet extends HttpServlet {
 

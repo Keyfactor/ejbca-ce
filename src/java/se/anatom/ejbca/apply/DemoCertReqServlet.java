@@ -39,6 +39,7 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.FileTools;
+import se.anatom.ejbca.util.StringTools;
 import se.anatom.ejbca.webdist.rainterface.UserView;
 
 
@@ -80,7 +81,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.19 2003-02-27 08:43:14 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.20 2003-02-27 13:01:24 koen_serry Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
