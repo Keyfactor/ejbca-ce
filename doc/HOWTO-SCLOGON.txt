@@ -6,7 +6,7 @@ Please note that [x] refers to one of the references listed in the end of the fi
    choose to generate a first token.
    copy PrimeCard files to jboss after PrimeCA installation but before restart of jboss.
 
-2. Add our root CA to the domain controller
+2. Add our root CA to the domain controller, the CA cert should contain a CDP (CRL Distribution Point extension).
    Do step 1 and 2 of the configuration instructions described in [1].
 
 3. Generate the private key and create a certificate request on the domain controller.
