@@ -1,6 +1,8 @@
 package se.anatom.ejbca.upgrade;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.ejb.CreateException;
@@ -14,10 +16,11 @@ import se.anatom.ejbca.ca.publisher.IPublisherSessionLocal;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
+import se.anatom.ejbca.util.JDBCUtil;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.1 2004-04-10 10:15:33 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.2 2004-04-12 16:15:42 anatom Exp $
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
@@ -72,12 +75,34 @@ public class UpgradeSessionBean extends BaseSessionBean {
     /** Runs a preCheck to see if an upgrade is possible
      * 
      * @param admin
-     * @return true or false
+     * @return true if ok to upgrade or false if not
      * @throws RemoteException
      */
     private boolean preCheck() {
-        // TODO:
-        return false;
+        debug(">preCheck");
+        boolean ret = false;
+        Connection con = null;
+        PreparedStatement ps = null;
+        try {
+            con = getConnection();
+            // cAId is only in ejbca 3, not 2. Assumes we have something in the database...
+            ps = con.prepareStatement("select distinct cAId from UserData");
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                // We have caId, so we are already at ejbca 3
+                ret = false;
+            } else {
+                // We don't have any caId, so we are at ejbca 2
+                ret = true;
+            }
+        } catch (Exception e) {
+        	// ignore, will return false
+        } finally {
+            JDBCUtil.close(con);
+            JDBCUtil.close(ps);
+        }            
+        debug("<preCheck("+ret+")");
+        return ret;
     }
 
     /** Upgrades the database
