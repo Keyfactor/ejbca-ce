@@ -185,7 +185,8 @@ There are several ways to generate a keystore depending on if the CA is a root
 
 Root CA:
 run 'ca.sh/bat makeroot' and enter all required parameters.
-Ex: 'ca.sh makeroot "C=SE,O=AnaTom,CN=EJBCA" 1024 365 /tmp/server.p12 foo123
+Ex: 'ca.sh makeroot "C=SE,O=AnaTom,CN=EJBCA" 1024 365 null /tmp/server.p12
+foo123'
 will create a root CA with the DN 'C=SE,O=AnaTom,CN=EJBCA'. The keylength is
  1024 bit (RSA) and the validity of the root certificate is 365 days. The CAs
  keystore will be stored in '$JBOSS_HOME/conf/server.p12' and be protected by
@@ -648,5 +649,6 @@ http://www.microsoft.com/windows2000/en/server/help/default.asp?url=
 
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
+
 
 

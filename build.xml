@@ -342,6 +342,8 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/ra/authorization/UserEntity.class"/>  
                 <include name="se/anatom/ejbca/ra/authorization/UserInformation.class"/>      
                 <include name="se/anatom/ejbca/log/Admin.class"/>                                                                                                                                                                                                 
+                <include name="se/anatom/ejbca/protocol/RequestMessage.class"/>                                                                                                                                                                                                 
+                <include name="se/anatom/ejbca/protocol/PKCS10RequestMessage.class"/>                                                                                                                                                                                                 
                 <exclude name="se/anatom/ejbca/**/*Test*"/> 
        </fileset>
       </copy>

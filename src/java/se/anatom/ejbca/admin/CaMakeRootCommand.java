@@ -12,11 +12,11 @@ import se.anatom.ejbca.util.CertTools;
 
 /** makeroot CA admin command, generates keys and creates a keystore (PKCS12) to be used by the CA
  *
- * @version $Id: CaMakeRootCommand.java,v 1.3 2002-09-16 15:21:28 anatom Exp $
+ * @version $Id: CaMakeRootCommand.java,v 1.4 2002-10-22 08:54:26 anatom Exp $
  */
 public class CaMakeRootCommand extends BaseCaAdminCommand {
 
-    
+
     /** Creates a new instance of CaMakeRootCommand */
     public CaMakeRootCommand(String[] args) {
         super(args);
@@ -24,11 +24,11 @@ public class CaMakeRootCommand extends BaseCaAdminCommand {
 
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
                 // Generates keys and creates a keystore (PKCS12) to be used by the CA
-                if (args.length < 6) {
+                if (args.length < 7) {
                     String msg = "Usage: CA makeroot <DN> <keysize> <validity-days> <policyID> <filename> <storepassword>";
                     msg += "\npolicyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0'.";
                     throw new IllegalAdminCommandException(msg);
-                } 
+                }
                 String dn = args[1];
                 int keysize = Integer.parseInt(args[2]);
                 int validity = Integer.parseInt(args[3]);
@@ -52,7 +52,7 @@ public class CaMakeRootCommand extends BaseCaAdminCommand {
                     KeyPair rsaKeys = KeyTools.genKeys(keysize);
                     X509Certificate rootcert = CertTools.genSelfCert(dn, validity, policyId, rsaKeys.getPrivate(), rsaKeys.getPublic(), true);
                     KeyStore ks = KeyTools.createP12(privKeyAlias, rsaKeys.getPrivate(), rootcert, (X509Certificate)null);
-                    
+
                     FileOutputStream os = new FileOutputStream(filename);
                     System.out.println("Storing keystore '"+filename+"'.");
                     ks.store(os, storepwd.toCharArray());
@@ -61,5 +61,5 @@ public class CaMakeRootCommand extends BaseCaAdminCommand {
                 }
                 System.out.println("Keystore "+filename+" generated succefully.");
     } // exceute
-    
+
 } //CaMakeRootCommand
