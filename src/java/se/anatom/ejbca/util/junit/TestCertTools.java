@@ -7,7 +7,7 @@ import junit.framework.*;
 
 /** Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.1 2002-08-02 09:23:16 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.2 2002-08-02 13:33:58 anatom Exp $
  */
 public class TestCertTools extends TestCase {
 
@@ -88,9 +88,33 @@ public class TestCertTools extends TestCase {
         assertEquals(CertTools.stringToBCDNString(dn4), "CN=foo,O=PrimeKey,C=SE");
         String dn5 = "cn=foo,o=PrimeKey,c=SE";
         assertEquals(CertTools.stringToBCDNString(dn5), "CN=foo,O=PrimeKey,C=SE");
+        String dn6 = "C=SE, O=AnaTom, CN=CN";
+        assertEquals(CertTools.stringToBCDNString(dn6), "CN=CN,O=AnaTom,C=SE");
+        String dn7 = "C=CN, O=AnaTom, CN=foo";
+        assertEquals(CertTools.stringToBCDNString(dn7), "CN=foo,O=AnaTom,C=CN");
+        String dn8 = "C=cn, O=AnaTom, CN=foo";
+        assertEquals(CertTools.stringToBCDNString(dn8), "CN=foo,O=AnaTom,C=cn");
+        String dn9 = "CN=foo, O=PrimeKey, C=CN";
+        assertEquals(CertTools.stringToBCDNString(dn9), "CN=foo,O=PrimeKey,C=CN");
+        String dn10 = "CN=foo, O=PrimeKey, C=cn";
+        assertEquals(CertTools.stringToBCDNString(dn10), "CN=foo,O=PrimeKey,C=cn");
+        String dn11 = "CN=foo, O=CN, C=CN";
+        assertEquals(CertTools.stringToBCDNString(dn11), "CN=foo,O=CN,C=CN");
+        String dn12 = "O=PrimeKey,C=SE,CN=CN";
+        assertEquals(CertTools.stringToBCDNString(dn12), "CN=CN,O=PrimeKey,C=SE");
+        String dn13 = "O=PrimeKey,C=SE,CN=CN, OU=FooOU";
+        assertEquals(CertTools.stringToBCDNString(dn13), "CN=CN,OU=FooOU,O=PrimeKey,C=SE");
+        String dn14 = "O=PrimeKey,C=CN,CN=CN, OU=FooOU";
+        assertEquals(CertTools.stringToBCDNString(dn14), "CN=CN,OU=FooOU,O=PrimeKey,C=CN");
+        String dn15 = "O=PrimeKey,C=CN,CN=cn, OU=FooOU";
+        assertEquals(CertTools.stringToBCDNString(dn15), "CN=cn,OU=FooOU,O=PrimeKey,C=CN");
 
-        String dn6 = "cn=jean,cn=EJBCA,dc=home,dc=jean";
-        //assertEquals(CertTools.stringToBCDNString(dn6), "CN=jean,CN=EJBCA,DC=home,DC=jean");
+        String dn16 = "CN=foo, CN=bar,O=CN, C=CN";
+        //assertEquals(CertTools.stringToBCDNString(dn16), "CN=foo,O=PrimeKey,C=SE");
+        String dn17 = "CN=foo,CN=bar, O=CN, C=CN";
+        //assertEquals(CertTools.stringToBCDNString(dn17), "CN=foo,O=PrimeKey,C=SE");
+        String dn18 = "cn=jean,cn=EJBCA,dc=home,dc=jean";
+        //assertEquals(CertTools.stringToBCDNString(dn18), "CN=jean,CN=EJBCA,DC=home,DC=jean");
 
         cat.debug("<test02StringToBCDNString()");
     }
