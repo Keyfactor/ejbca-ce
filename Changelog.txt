@@ -1,6 +1,7 @@
 2.1b1
 -----
 Initial SCEP support.
+Support for multiple CDPs separated by ';'
 
 2.0.1
 -----

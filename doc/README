@@ -1,4 +1,4 @@
-$Id: README,v 1.94 2003-07-23 10:54:05 anatom Exp $
+$Id: README,v 1.95 2003-07-24 15:25:07 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -353,6 +353,10 @@ where '/usr/java/jdk1.3.1_01/bin' is the path to where 'java'
 can be found.
 '/home/ejbca' is where ejbca is installed and 'jobrunner.sh'
 located.
+
+Note on CRL Distribution Points (CDPs): it is possible to configure
+multiple URLs for CDPs if they are separated by ';'. 
+For example: http://cdpurl-1/mycrl.der;http://cdpurl-2/crl.crl
 
 Deploy
 ======

@@ -1,4 +1,4 @@
-$Id: TODO,v 1.64 2003-07-23 13:42:09 anatom Exp $
+$Id: TODO,v 1.65 2003-07-24 15:25:07 anatom Exp $
 
 V 1.x
 -----
@@ -6,7 +6,6 @@ V 1.x
 
 V 2.x
 -----
-- Multiple CDPs, comma separated strings should give several CDPs. 
 - Make it possible to dynamically configure new OtherNames in subjectAltName.
 - LDAPPublisherSession should remove cert from the store when revoked.
 - More automated testing, Junit as well as web-stuff.
