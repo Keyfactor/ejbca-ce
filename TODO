@@ -1,4 +1,4 @@
-$Id: TODO,v 1.79 2004-03-18 08:00:30 anatom Exp $
+$Id: TODO,v 1.80 2004-06-09 08:13:19 anatom Exp $
 
 V 3.x
 -----
@@ -9,6 +9,7 @@ V 3.x
 - Import utility to get users from external datasources.
 - Command line to edit/change users.
 - Better command line tools for batch stuff.
+- I18N, use traditional bundle pickup, and i18n-enable servlets with error messages displayed by error.jsp.
 
 General
 -------
@@ -17,7 +18,7 @@ General
 - Strategy for handling certificate issuance if notAfter is beyond CAs notAfter.
 - Run on other appservers, ie Jonas, Websphere etc.
 - Test LDAP with mod_authz_ldap in apache
-- Implement XKMS specifications
+- XKMS specifications
 - XML/Soap stuff.
 - Check architecture for JSPs (MVC - ModelViewController?).
 - Make a database model similar to architecture model (documentation).
