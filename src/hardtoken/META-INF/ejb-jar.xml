@@ -56,8 +56,8 @@
         <description>The hard token property data entity bean</description>
         <ejb-ref-name>ejb/HardTokenPropertyData</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
-        <local-home>se.anatom.ejbca.BasePropertyDataLocalHome</local-home>
-        <local>se.anatom.ejbca.BasePropertyDataLocal</local>
+        <local-home>se.anatom.ejbca.hardtoken.HardTokenPropertyLocalHome</local-home>
+        <local>se.anatom.ejbca.hardtoken.HardTokenPropertyLocal</local>
         <ejb-link>HardTokenPropertyData</ejb-link>
      </ejb-local-ref>           
      <ejb-local-ref>
@@ -245,11 +245,11 @@
             This enterprise bean entity containing extended information about a hard token as copyof property.
       </description>
       <ejb-name>HardTokenPropertyData</ejb-name>
-      <local-home>se.anatom.ejbca.BasePropertyDataLocalHome</local-home>
-      <local>se.anatom.ejbca.BasePropertyDataLocal</local>
+      <local-home>se.anatom.ejbca.hardtoken.HardTokenPropertyLocalHome</local-home>
+      <local>se.anatom.ejbca.hardtoken.HardTokenPropertyLocal</local>
       <ejb-class>se.anatom.ejbca.hardtoken.HardTokenPropertyEntityBean</ejb-class>
       <persistence-type>Container</persistence-type>
-      <prim-key-class>se.anatom.ejbca.PropertyEntityPK</prim-key-class>
+      <prim-key-class>se.anatom.ejbca.hardtoken.HardTokenPropertyPK</prim-key-class>
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>HardTokenPropertyEntityBean</abstract-schema-name>
