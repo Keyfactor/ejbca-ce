@@ -1,0 +1,13 @@
+
+1.0b2
+-----
+New version of Bouncycastle JCE provider.
+Added and clarified some documentation.
+New version of BC provider fixed compatibility of PKCS10 requests with KeyTool and MS CA.
+Fixed process of PKCS10 request from KeyTool (they use different header).
+Fixed bug during key generation of CA that always generated 1024 bit keys.
+Creates p12-files during test in real temporary dir.
+
+1.0b1
+-----
+Initial release
