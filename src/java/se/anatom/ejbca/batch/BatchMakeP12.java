@@ -40,7 +40,7 @@ import se.anatom.ejbca.util.P12toPEM;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.46 2004-03-04 11:08:29 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.47 2004-04-15 14:11:24 anatom Exp $
  */
 public class BatchMakeP12 {
     /** For logging */
@@ -109,9 +109,7 @@ public class BatchMakeP12 {
 
        
         log.debug("<BatchMakeP12:");
-    }
-
-    // BatchMakeP12
+    } // BatchMakeP12
 
     /**
      * Gets CA-certificate(s).
@@ -127,9 +125,7 @@ public class BatchMakeP12 {
         log.debug("<getCACertificate()");
 
         return rootcert;
-    }
-
-    // getCACertificate
+    } // getCACertificate
 
     /**
      * Gets full CA-certificate chain.
@@ -145,9 +141,7 @@ public class BatchMakeP12 {
         log.debug("<getCACertChain()");
 
         return chain;
-    }
-
-    // getCACertificate
+    } // getCACertificate
 
     /**
      * Sets the location where generated P12-files will be stored, full name will be:
@@ -202,9 +196,7 @@ public class BatchMakeP12 {
 
         log.debug("Keystore stored in " + keyStoreFilename);
         log.debug("<storeKeyStore: ks=" + ks.toString() + ", username=" + username);
-    }
-
-    // storeKeyStore
+    } // storeKeyStore
 
     /**
      * Creates files for a user, sends request to CA, receives reploy and creates P12.
@@ -319,9 +311,7 @@ public class BatchMakeP12 {
         log.info("Generating for all NEW.");
         createAllWithStatus(UserDataLocal.STATUS_NEW);
         log.debug("<createAllNew:");
-    }
-
-    // createAllNew
+    } // createAllNew
 
     /**
      * Creates P12-files for all users with status FAILED in the local database.
@@ -349,9 +339,7 @@ public class BatchMakeP12 {
             createAllWithStatus(UserDataLocal.STATUS_KEYRECOVERY);
             log.debug("<createAllKeyRecover:");
         }
-    }
-
-    // createAllKeyRecover
+    } // createAllKeyRecover
 
     /**
      * Creates P12-files for all users with status in the local database.
@@ -457,9 +445,7 @@ public class BatchMakeP12 {
         } while ((result.size() > 0) && !stopnow);
 
         log.debug("<createAllWithStatus: " + status);
-    }
-
-    // createAllWithStatus
+    } // createAllWithStatus
 
     /**
      * Creates P12-files for one user in the local database.
@@ -533,9 +519,7 @@ public class BatchMakeP12 {
         }
 
         log.debug(">createUser(" + username + ")");
-    }
-
-    // doit
+    } // doit
 
     /**
      * Main
@@ -557,7 +541,7 @@ public class BatchMakeP12 {
                 System.out.println("Usage: batch [username]");
                 System.out.println(
                     "Without arguments generates all users with status NEW or FAILED.");
-                System.exit(0);
+                System.exit(1);
             }
 
             if (args.length > 0) {
@@ -575,11 +559,8 @@ public class BatchMakeP12 {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            System.exit(1);
         }
-    }
-
-    // main
-}
-
-
-//BatchMakeP12
+    } // main
+    
+} // BatchMakeP12
