@@ -22,7 +22,9 @@ import se.anatom.ejbca.ca.caadmin.AvailableHardCAToken;
 import se.anatom.ejbca.ca.caadmin.CAToken;
 
 /**
- * Class managing available Hard CA Tokens. Each HardCaToken plug-in should register itself by using the method register.
+ * Class managing available Hard CA Tokens and instansiated CA Tokens. 
+ * Each HardCaToken plug-in should register itself by using the method register.
+ * The CA keeps a registry of CA tokens created here.
  * 
  */
 public class HardCATokenManager {
@@ -30,9 +32,13 @@ public class HardCATokenManager {
     /** Log4j instance for Base */
     private static transient Logger log = Logger.getLogger(HardCATokenManager.class);
 
-    private static Hashtable availablehardcatokens = new Hashtable();
+    /** Registry of available hard ca token classes that can be instsiated. */
+    private Hashtable availablehardcatokens = new Hashtable();
+    /** Registry of CATokens associated with a specific CA, kept so CATokens will not
+     * be destroyed when a bean is passivated for example. */
     private Hashtable caTokenRegistry = new Hashtable();
 
+    /** Implementing the Singleton pattern */
     private static HardCATokenManager instance = null;
 
     /**
@@ -45,8 +51,25 @@ public class HardCATokenManager {
     	loadClass("se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenSample");
     }
 
-    /** Don't allow external creation of this class 
+    /**
+     * Method loading a class in order to register itself to the manager.
+     * Should be used from the init() method only.
      * 
+     * @param classpath 
+     */
+    private static void loadClass(String classpath){
+        try {           
+            HardCATokenManager.class.getClassLoader().loadClass(classpath).newInstance();       
+        } catch (ClassNotFoundException e) {
+            log.info("Class not found: "+classpath); // Do Nothing, just log
+        } catch (InstantiationException e) {
+            log.error("InstantiationException: "+classpath); // Do Nothing, just log
+        } catch (IllegalAccessException e) {
+            log.error("IllegalAccessException: "+classpath); // Do Nothing, just log
+        }    
+    }
+        
+    /** Don't allow external creation of this class, implementing the Singleton pattern. 
      */
     private HardCATokenManager() {}
     
@@ -59,6 +82,7 @@ public class HardCATokenManager {
         }
         return instance;
     }
+    
     /** Returns a previously registered (using addCAToken) CAToken, or null.
      * 
      * @param caid the id of the CA whose CAToken you want to fetch.
@@ -67,38 +91,22 @@ public class HardCATokenManager {
     public CAToken getCAToken(int caid) {
         return (CAToken)caTokenRegistry.get(new Integer(caid));
     }
+    
     /** Adds a CA token to the token registry.
      * 
      * @param caid the id of the CA whose CAToken you want to fetch.
      * @param token the token to be added
      * @return true if the new token was added to the registry, false if a token already exists for the given caid.
      */
-    public boolean addCAToken(int caid, CAToken token) {
+    public synchronized boolean addCAToken(int caid, CAToken token) {
         if (!caTokenRegistry.contains(new Integer(caid))) {
             caTokenRegistry.put(new Integer(caid), token);
+            log.debug("Added CA token for CA: "+caid);
             return true;
         }
         return false;
     }
     
-    /**
-	 * Method loading a class in order to register itself to the manager.
-	 * Should be used from the init() method only.
-	 * 
-	 * @param classpath 
-	 */
-    private static void loadClass(String classpath){
-    	try {    		
-			HardCATokenManager.class.getClassLoader().loadClass(classpath).newInstance();		
-		} catch (ClassNotFoundException e) {
-		    log.info("Class not found: "+classpath); // Do Nothing, just log
-		} catch (InstantiationException e) {
-		    log.error("InstantiationException: "+classpath); // Do Nothing, just log
-		} catch (IllegalAccessException e) {
-		    log.error("IllegalAccessException: "+classpath); // Do Nothing, just log
-		}    
-    }
-        
     
 	/**
 	 * Method registering a HardCAToken plug-in as available to the system.
@@ -108,21 +116,23 @@ public class HardCATokenManager {
 	 * @param translateable indicates if the name should be translated in adminweb-gui
 	 * @param use indicates it this plug-in should be used.
 	 * 
-	 * @return true if registration went successful.
+	 * @return true if registration went successful, false if the classpath could not be found or the classpath was already registered.
 	 */
-	public static boolean register(String classpath, String name, boolean translateable, boolean use) {
-		boolean retval = false;		
-		try {             
-		   log.debug("HardCATokenManager registering " + classpath);				
-           // Check that class exists   
-		   Class.forName(classpath).getName();	
-           // Add to the available tokens
-		   availablehardcatokens.put(classpath, new AvailableHardCAToken(classpath, name, translateable, use));			
-		   retval = true;
-           log.debug("Registered " + classpath + "Successfully.");
-		} catch (ClassNotFoundException e) {
-	       log.error("Error registering " + classpath + " couldn't find classpath");
-		}			
+	public synchronized boolean addAvailableHardCAToken(String classpath, String name, boolean translateable, boolean use) {
+		boolean retval = false;	
+        if (!availablehardcatokens.contains(classpath)) {
+            try {             
+                   log.debug("HardCATokenManager registering " + classpath);                
+                   // Check that class exists   
+                   Class.forName(classpath).getName();  
+                   // Add to the available tokens
+                   availablehardcatokens.put(classpath, new AvailableHardCAToken(classpath, name, translateable, use));         
+                   retval = true;
+                   log.debug("Registered " + classpath + "Successfully.");
+                } catch (ClassNotFoundException e) {
+                   log.error("Error registering " + classpath + " couldn't find classpath");
+                }            
+        }
 		return retval;
 	}
 	
@@ -131,8 +141,7 @@ public class HardCATokenManager {
 	 * 
 	 * @return a Collection (AvailableHardCAToken) of registrered plug-ins.
 	 */
-	
-	public static Collection getAvailableHardCATokens(){
+	public Collection getAvailableHardCATokens(){
 	   return availablehardcatokens.values();	
 	}
 
@@ -141,8 +150,7 @@ public class HardCATokenManager {
 	 * 
 	 * @return the corresponding AvailableHardCAToken or null of classpath couldn't be found
 	 */
-	
-	public static AvailableHardCAToken getAvailableHardCAToken(String classpath){
+	public AvailableHardCAToken getAvailableHardCAToken(String classpath){
         if (classpath == null) { return null; }
 	    return (AvailableHardCAToken)availablehardcatokens.get(classpath);
 	}

@@ -37,7 +37,7 @@ public class DummyHardCAToken implements IHardCAToken {
 	private static final Logger log = Logger.getLogger(DummyHardCAToken.class);
 	
 	// TODO set this right after testing.
-	private static boolean registered = HardCATokenManager.register("se.anatom.ejbca.ca.caadmin.hardcatokens.DummyHardCAToken", "DummyHardCAToken", false, false);
+	private static boolean registered = HardCATokenManager.instance().addAvailableHardCAToken("se.anatom.ejbca.ca.caadmin.hardcatokens.DummyHardCAToken", "DummyHardCAToken", false, false);
 	
 	public DummyHardCAToken(){
         if (registered) {

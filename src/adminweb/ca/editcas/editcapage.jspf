@@ -7,7 +7,7 @@
   HashMap certprofileidtonamemap = info.getCertificateProfileIdToNameMap();
   HashMap publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
 
-  Collection availablecatokens = HardCATokenManager.getAvailableHardCATokens();
+  Collection availablecatokens = HardCATokenManager.instance().getAvailableHardCATokens();
   String[] availablecatokentypes = new String[availablecatokens.size() + 1];
   String[] availablecatokentypetexts = new String[availablecatokens.size() + 1];  
   availablecatokentypes[0] = "NONE";
@@ -50,7 +50,7 @@
     if(catokeninfo instanceof HardCATokenInfo){
        catokentype = CATokenInfo.CATOKENTYPE_HSM;
        catokenpath = ((HardCATokenInfo  ) catokeninfo).getClassPath();
-       AvailableHardCAToken availablecatoken = HardCATokenManager.getAvailableHardCAToken(catokenpath); 
+       AvailableHardCAToken availablecatoken = HardCATokenManager.instance().getAvailableHardCAToken(catokenpath); 
        if(!availablecatoken.isUsed())
          throw new Exception("HardCAToken is not used, configuration error");
       if(availablecatoken.isTranslateable()){
