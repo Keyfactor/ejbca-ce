@@ -178,7 +178,16 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         </copy>
         <copy todir="${status.build}/WEB-INF/classes">
             <fileset dir="${build}">
-                <include name="se/anatom/ejbca/protocol/OCSPServlet.class"/>
+                <include name="se/anatom/ejbca/protocol/OCSPServlet*.class"/>
+                <include name="se/anatom/ejbca/protocol/exception/MalformedRequestException*.class"/>
+				<include name="se/anatom/ejbca/SecConst*.class"/>
+				<include name="se/anatom/ejbca/ca/crl/RevokedCertInfo*.class"/>
+                <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
+				<include name="se/anatom/ejbca/ca/store/ICertificateStoreSessionLocalHome*.class"/>
+				<include name="se/anatom/ejbca/ca/store/ICertificateStoreSessionLocal*.class"/>
+				<include name="se/anatom/ejbca/log/Admin*.class"/>
+				<include name="se/anatom/ejbca/util/Hex*.class"/>
+                <include name="se/anatom/ejbca/util/**/CertTools*.class"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
             </fileset>
         </copy>
