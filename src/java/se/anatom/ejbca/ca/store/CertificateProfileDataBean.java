@@ -79,13 +79,11 @@ public abstract class CertificateProfileDataBean extends BaseEntityBean {
             returnval = new RootCACertificateProfile();
 
             break;
-
-        case CertificateProfile.TYPE_CA:
-            returnval = new CACertificateProfile();
-
-            break;
-
-        case CertificateProfile.TYPE_ENDENTITY:default:
+          case CertificateProfile.TYPE_SUBCA :
+            returnval =  new CACertificateProfile();      
+            break;  
+          case CertificateProfile.TYPE_ENDENTITY  :
+          default :
             returnval = new EndUserCertificateProfile();
         }
 

@@ -49,16 +49,14 @@ public interface CertificateDataLocalHome extends javax.ejb.EJBLocalHome {
     public Collection findByExpireDate(long expireDate)
         throws FinderException;
 
-    /**
-     * Finds certificates which a specified subjectDN.
-     *
-     * @param subjectDN , the subject whose certificates will be listed
-     *
+    /** Finds certificates which a specified subjectDN.
+     * @param subjectDN, the subject whose certificates will be listed
+     * @param issuerDN, the issuer of certificate
      * @return Collection of CertificateData in no specified order.
      *
      * @throws FinderException if the certificate can not be found in db
      */
-    public Collection findBySubjectDN(String subjectDN)
+    public Collection findBySubjectDNAndIssuerDN(String subjectDN, String issuerdn)
         throws FinderException;
 
     /**

@@ -5,10 +5,11 @@ import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
-import java.util.TreeMap;
+import java.util.HashMap;
 
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
-import se.anatom.ejbca.ca.store.certificateprofiles.*;
+import se.anatom.ejbca.ca.exception.CertificateProfileExistsException;
+import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.log.Admin;
 
 
@@ -19,7 +20,7 @@ import se.anatom.ejbca.log.Admin;
  * check for revocation etc. the CertificateStoreSession implements the interface
  * ICertificateStoreSession. Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.17 2003-08-24 13:40:22 anatom Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.18 2003-09-03 19:57:54 herrvendil Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote {
     /**
@@ -36,32 +37,40 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     public Collection listAllCertificates(Admin admin)
         throws RemoteException;
 
-    /**
-     * Lists certificates for a given subject.
-     *
-     * @param subjectDN the DN of the subject whos certificates will be retrieved.
-     *
-     * @return Collection of Certificates (java.security.cert.Certificate) in no specified order or
-     *         an empty Collection.
-     *
-     * @throws RemoteException if a communication or other error occurs.
-     */
-    public Collection findCertificatesBySubject(Admin admin, String subjectDN)
-        throws RemoteException;
+   /**
+    * Lists fingerprint (primary key) of ALL certificates in the database.
+    * NOTE: Caution should be taken with this method as execution may be very
+    * heavy indeed if many certificates exist in the database (imagine what happens if
+    * there are millinos of certificates in the DB!).
+    * Should only be used for testing purposes.
+    *
+    * @return Collection of fingerprints, i.e. Strings, reverse ordered by expireDate where last expireDate is first in array.
+    * @throws EJBException if a communication or other error occurs.
+    */
+    public Collection listAllCertificates(Admin admin, String issuerdn) throws RemoteException;
 
-    /**
-     * Finds certificate for a given issuer and serialnumber.
-     *
-     * @param issuerDN the DN of the issuer.
-     * @param serno the serialnumber of the certificate that will be retrieved
-     *
-     * @return Certificate or null if none found.
-     *
-     * @throws RemoteException if a communication or other error occurs.
-     */
-    public Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN,
-        BigInteger serno) throws RemoteException;
+   /**
+    * Lists certificates for a given subject.
+    *
+    * @param subjectDN the DN of the subject whos certificates will be retrieved.
+    * @param issuer the dn of the certificates issuer.
+    * @return Collection of Certificates (java.security.cert.Certificate) in no specified order or an empty Collection.
+    * @throws EJBException if a communication or other error occurs.
+    */
+    public Collection findCertificatesBySubjectAndIssuer(Admin admin, String subjectDN, String issuer) throws RemoteException;
 
+
+	/**
+	 * Implements ICertificateStoreSession::findCertificateByIssuerAndSerno.
+	 *
+	 * @param admin DOCUMENT ME!
+	 * @param issuerDN DOCUMENT ME!
+	 * @param serno DOCUMENT ME!
+	 *
+	 * @return DOCUMENT ME!
+	 */                           
+	public Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno) throws RemoteException;
+	
     /**
      * Finds certificate(s) for a given serialnumber.
      *
@@ -112,16 +121,14 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
         throws RemoteException;
 
     /**
-     * Finds usernames of users having certificate(s) expiring within a specified time and that has
-     * status active.
-     *
-     * @return a collection of usernames (String) Implements
-     *         ICertificateStoreSession::findCertificatesByExpireTimeWithLimit.
-     *
-     * @throws RemoteException if a communication or other error occurs.
-     */
-    public Collection findCertificatesByExpireTimeWithLimit(Admin admin, Date expiretime)
-        throws RemoteException;
+    * Finds username for a given certificate serial number.
+    * @param serno the serialnumber of the certificate to find username for.
+    * @return username or null if none found.
+    *
+    * @throws EJBException if a communication or other error occurs.
+    *
+    */    
+    public String findUsernameByCertSerno(Admin admin, BigInteger serno, String issuerdn) throws RemoteException;      
 
     /**
      * Finds certificate with specified fingerprint.
@@ -149,14 +156,11 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      * Set the status of certificate with  given serno to revoked.
      *
      * @param serno the serno of certificate to revoke.
-     * @param reason the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON
-     *        constants.)
-     *
-     * @throws RemoteException if a communication or other error occurs.
-     */
-    public void setRevokeStatus(Admin admin, BigInteger serno, int reason)
-        throws RemoteException;
-
+     * @param reason the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON constants.)
+     * @throws EJBException if a communication or other error occurs.
+     */   
+    public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, int reason) throws RemoteException; 
+   
     /**
      * Method that checks if a users all certificates have been revoked.
      *
@@ -183,36 +187,38 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
         throws RemoteException;
 
     /**
-     * Lists all revoked certificates, ie status = CERT_REVOKED.
-     *
-     * @return Collection of Strings containing fingerprint (primary key) of the revoced
-     *         certificates. Reverse ordered by expireDate where last expireDate is first in
-     *         array.
-     *
-     * @throws RemoteException if a communication or other error occurs.
-     */
-    public Collection listRevokedCertificates(Admin admin)
-        throws RemoteException;
+    * Lists all revoked certificates, ie status = CERT_REVOKED.
+    *
+    * @return Collection of Strings containing fingerprint (primary key) of the revoced certificates. Reverse ordered by expireDate where last expireDate is first in array.
+    * @throws EJBException if a communication or other error occurs.
+    */
+    public Collection listRevokedCertificates(Admin admin, String issuerdn) throws RemoteException;
 
-    /**
-     * Retrieves the latest CRL issued by this CA.
-     *
-     * @return X509CRL or null of no CRLs have been issued.
-     *
-     * @throws RemoteException if a communication or other error occurs.
-     */
-    public byte[] getLastCRL(Admin admin) throws RemoteException;
+   /**
+    * Retrieves the latest CRL issued by this CA.
+    *
+    * @return X509CRL or null of no CRLs have been issued.
+    * @throws EJBException if a communication or other error occurs.
+    */
+    public byte[] getLastCRL(Admin admin, String issuerdn) throws RemoteException;
+    
 
-    /**
-     * Retrieves the highest CRLNumber issued by the CA.
-     *
-     * @return int.
-     *
-     * @throws RemoteException if a communication or other error occurs.
-     */
-    public int getLastCRLNumber(Admin admin) throws RemoteException;
+   /**
+    * Retrieves the information about the lastest CRL issued by this CA.
+    *
+    * @return CRLInfo of last CRL by CA.
+    * @throws EJBException if a communication or other error occurs.
+    */
+    public CRLInfo getLastCRLInfo(Admin admin, String issuerdn) throws RemoteException;
 
-    // Functions used for Certificate Types.
+   /**
+    * Retrieves the highest CRLNumber issued by the CA.
+    *
+    * @return int.
+    * @throws EJBException if a communication or other error occurs.
+    */
+    public int getLastCRLNumber(Admin admin, String issuerdn) throws RemoteException;
+  
 
     /**
      * Adds a certificate profile to the database.
@@ -225,8 +231,9 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      * @return true if added succesfully, false if it already exist
      * @throws RemoteException if a communication or other error occurs.
      */
-    public boolean addCertificateProfile(Admin admin, String certificateprofilename,
-        CertificateProfile certificateprofile) throws RemoteException;
+    public void addCertificateProfile(Admin admin, String certificateprofilename,
+        CertificateProfile certificateprofile) throws CertificateProfileExistsException, RemoteException;
+
     /**
      * Adds a certificate profile to the database.
      *
@@ -238,35 +245,26 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      * @return true if added succesfully, false if it already exist
      * @throws RemoteException if a communication or other error occurs.
      */
-    public boolean addCertificateProfile(Admin admin, int certificateprofileid, String certificateprofilename, CertificateProfile certificateprofile) throws RemoteException;
+    public void addCertificateProfile(Admin admin, int certificateprofileid, String certificateprofilename, CertificateProfile certificateprofile) throws CertificateProfileExistsException, RemoteException;  
+	/**
+	 * Adds a certificateprofile  with the same content as the original certificateprofile,
+	 *
+	 * @return false if the new certificateprofilename already exists.
+	 *
+	 * @throws RemoteException if a communication or other error occurs.
+	 */
+    public void cloneCertificateProfile(Admin admin, String originalcertificateprofilename, String newcertificateprofilename) throws CertificateProfileExistsException, RemoteException;
 
-    /**
-     * Adds a certificateprofile  with the same content as the original certificateprofile,
-     *
-     * @return false if the new certificateprofilename already exists.
-     *
-     * @throws RemoteException if a communication or other error occurs.
-     */
-    public boolean cloneCertificateProfile(Admin admin, String originalcertificateprofilename,
-        String newcertificateprofilename) throws RemoteException;
-
-    /**
+     /**
      * Removes a certificateprofile from the database.
-     *
-     * @throws RemoteException if a communication or other error occurs.
+     * @throws EJBException if a communication or other error occurs.
      */
-    public void removeCertificateProfile(Admin admin, String certificateprofilename)
-        throws RemoteException;
+    public void removeCertificateProfile(Admin admin, String certificateprofilename) throws RemoteException;
 
-    /**
-     * Renames a certificateprofile.
-     *
-     * @return false if new name already exists
-     *
-     * @throws RemoteException if a communication or other error occurs.
+     /**
+     * Renames a certificateprofile
      */
-    public boolean renameCertificateProfile(Admin admin, String oldcertificateprofilename,
-        String newcertificateprofilename) throws RemoteException;
+    public void renameCertificateProfile(Admin admin, String oldcertificateprofilename, String newcertificateprofilename) throws CertificateProfileExistsException, RemoteException;
 
     /**
      * Updates certificateprofile data
@@ -277,74 +275,52 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      */
     public boolean changeCertificateProfile(Admin admin, String certificateprofilename,
         CertificateProfile certificateprofile) throws RemoteException;
+    
+    /**
+     * Retrives a Collection of id:s (Integer) to authorized profiles.
+     *
+     * @param certprofiletype should be either SecConst.CERTTYPE_ENDENTITY, SecConst.CERTTYPE_SUBCA, SecConst.CERTTYPE_ROOTCA or 0 for all. 
+     */
+    public Collection getAuthorizedCertificateProfileIds(Admin admin, int certprofiletype) throws RemoteException;
+    
+    
+    /**
+     * Method creating a hashmap mapping profile id (Integer) to profile name (String).
+     */    
+    public HashMap getCertificateProfileIdToNameMap(Admin admin) throws RemoteException;
+
 
     /**
-     * Returns the available certificateprofile names.
-     *
-     * @return a collection of certificateprofilenames.
-     *
-     * @throws RemoteException if a communication or other error occurs.
+     * Retrives a named certificate profile.
      */
-    public Collection getCertificateProfileNames(Admin admin)
-        throws RemoteException;
+    public CertificateProfile getCertificateProfile(Admin admin, String certificateprofilename) throws RemoteException;
 
-    /**
-     * Returns the available certificateprofile.
-     *
-     * @return A collection of Profiles.
-     *
-     * @throws RemoteException if a communication or other error occurs.
+     /**
+     * Finds a certificate profile by id.
      */
-    public TreeMap getCertificateProfiles(Admin admin)
-        throws RemoteException;
+    public CertificateProfile getCertificateProfile(Admin admin, int id) throws RemoteException;
 
-    /**
-     * Returns the specified certificateprofile.
-     *
-     * @return the certificateprofile data or null if profile doesn't exists.
-     *
-     * @throws RemoteException if a communication or other error occurs.
-     */
-    public CertificateProfile getCertificateProfile(Admin admin, String certificateprofilename)
-        throws RemoteException;
 
-    /**
-     * Returns the specified certificateprofile.
+     /**
+     * Returns a certificate profile id, given it's certificate profile name
      *
-     * @return the certificateprofile data or null if profile doesn't exists.
-     *
-     * @throws RemoteException if a communication or other error occurs.
+     * @return the id or 0 if certificateprofile cannot be found.
      */
-    public CertificateProfile getCertificateProfile(Admin admin, int id)
-        throws RemoteException;
+    public int getCertificateProfileId(Admin admin, String certificateprofilename) throws RemoteException;
 
-    /**
-     * Returns the number of available certificateprofiles.
+     /**
+     * Returns a certificateprofiles name given it's id.
      *
-     * @return the number of available certificateprofiles.
-     *
-     * @throws RemoteException if a communication or other error occurs.
+     * @return certificateprofilename or null if certificateprofile id doesn't exists.
      */
-    public int getNumberOfCertificateProfiles(Admin admin)
-        throws RemoteException;
-
-    /**
-     * Returns a certificateprofile id given it?s certificateprofilename.
+    public String getCertificateProfileName(Admin admin, int id) throws RemoteException;
+    
+     /**
+     * Method to check if a CA exists in any of the certificate profiles. Used to avoid desyncronization of CA data.
      *
-     * @return id number of certificateprofile.
-     *
-     * @throws RemoteException if a communication or other error occurs.
+     * @param caid the caid to search for.
+     * @return true if ca exists in any of the certificate profiles.
      */
-    public int getCertificateProfileId(Admin admin, String certificateprofilename)
-        throws RemoteException;
-
-    /**
-     * Returns a certificateprofile name given it?s id.
-     *
-     * @return the name of certificateprofile.
-     *
-     * @throws RemoteException if a communication or other error occurs.
-     */
-    public String getCertificateProfileName(Admin admin, int id)
-        throws RemoteException;
+    public boolean existsCAInCertificateProfiles(Admin admin, int caid) throws RemoteException;    
+ 
 }

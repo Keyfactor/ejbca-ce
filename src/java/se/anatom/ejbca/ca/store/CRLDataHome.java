@@ -40,8 +40,8 @@ public interface CRLDataHome extends javax.ejb.EJBHome {
      * Finds a CRL by the CRLNumber
      *
      * @param crlNumber the crlNUmberof the searched CRL
-     *
-     * @return CRLData object
+     * @return CRLDataLocal object
      */
-    public CRLData findByCRLNumber(int cRLNumber) throws FinderException, RemoteException;
+    public CRLData findByIssuerDNAndCRLNumber(String issuerdn, int cRLNumber)
+        throws FinderException, RemoteException;
 }

@@ -4,10 +4,11 @@ import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
-import java.util.TreeMap;
+import java.util.HashMap;
 
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
-import se.anatom.ejbca.ca.store.certificateprofiles.*;
+import se.anatom.ejbca.ca.exception.CertificateProfileExistsException;
+import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.log.Admin;
 
 
@@ -15,7 +16,7 @@ import se.anatom.ejbca.log.Admin;
  * Local interface for EJB, unforturnately this must be a copy of the remote interface except that
  * RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: ICertificateStoreSessionLocal.java,v 1.18 2003-08-24 13:40:22 anatom Exp $
+ * @version $Id: ICertificateStoreSessionLocal.java,v 1.19 2003-09-03 19:57:54 herrvendil Exp $
  *
  * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
  */
@@ -24,12 +25,12 @@ public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject,
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public Collection listAllCertificates(Admin admin);
+    public Collection listAllCertificates(Admin admin, String issuerdn);
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public Collection findCertificatesBySubject(Admin admin, String subjectDN);
+    public Collection findCertificatesBySubjectAndIssuer(Admin admin, String subjectDN, String issuer);
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
@@ -48,10 +49,10 @@ public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject,
     public Collection findCertificatesByUsername(Admin admin, String username);
 
     /**
-     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
-     */
-    public String findUsernameByCertSerno(Admin admin, BigInteger serno);
-
+    * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+    */    
+    public String findUsernameByCertSerno(Admin admin, BigInteger serno, String issuerdn);    
+ 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
@@ -79,8 +80,8 @@ public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject,
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
-     */
-    public void setRevokeStatus(Admin admin, BigInteger serno, int reason);
+     */    
+    public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, int reason);    
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
@@ -90,64 +91,67 @@ public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject,
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public Collection listRevokedCertificates(Admin admin);
+    public Collection listRevokedCertificates(Admin admin, String issuerdn);
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public byte[] getLastCRL(Admin admin);
+    public byte[] getLastCRL(Admin admin, String issuerdn);
+    
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */
+    public CRLInfo getLastCRLInfo(Admin admin, String issuerdn);
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public int getLastCRLNumber(Admin admin);
-
+    public int getLastCRLNumber(Admin admin, String issuerdn);
+    
     // Functions used for Certificate Types.
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public boolean addCertificateProfile(Admin admin, String certificateprofilename,
-        CertificateProfile certificateprofile);
+    public void addCertificateProfile(Admin admin, String certificateprofilename, CertificateProfile certificateprofile) throws CertificateProfileExistsException;
+
+	/**
+	 * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+	 */
+	public void addCertificateProfile(Admin admin, int certificateprofileid, String certificateprofilename, 
+		CertificateProfile certificateprofile) throws CertificateProfileExistsException;
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public boolean addCertificateProfile(Admin admin, int certificateprofileid, String certificateprofilename, 
-        CertificateProfile certificateprofile);
+    public void cloneCertificateProfile(Admin admin, String originalcertificateprofilename, String newcertificateprofilename) throws CertificateProfileExistsException;
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public boolean cloneCertificateProfile(Admin admin, String originalcertificateprofilename,
-        String newcertificateprofilename);
+    public void removeCertificateProfile(Admin admin, String certificateprofilename) ;
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public void removeCertificateProfile(Admin admin, String certificateprofilename);
+    public void renameCertificateProfile(Admin admin, String oldcertificateprofilename, String newcertificateprofilename) throws CertificateProfileExistsException;
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public boolean renameCertificateProfile(Admin admin, String oldcertificateprofilename,
-        String newcertificateprofilename);
-
+    public void changeCertificateProfile(Admin admin, String certificateprofilename, CertificateProfile certificateprofile);
+    
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public boolean changeCertificateProfile(Admin admin, String certificateprofilename,
-        CertificateProfile certificateprofile);
-
+    public Collection getAuthorizedCertificateProfileIds(Admin admin, int certprofiletype);
+    
+    
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public Collection getCertificateProfileNames(Admin admin);
+    public HashMap getCertificateProfileIdToNameMap(Admin admin);
 
-    /**
-     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
-     */
-    public TreeMap getCertificateProfiles(Admin admin);
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
@@ -159,10 +163,6 @@ public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject,
      */
     public CertificateProfile getCertificateProfile(Admin admin, int id);
 
-    /**
-     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
-     */
-    public int getNumberOfCertificateProfiles(Admin admin);
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
@@ -173,4 +173,11 @@ public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject,
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
     public String getCertificateProfileName(Admin admin, int id);
+    
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */
+    public boolean existsCAInCertificateProfiles(Admin admin, int caid);       
+
+
 }

@@ -42,6 +42,6 @@ public interface CRLDataLocalHome extends javax.ejb.EJBLocalHome {
      *
      * @return CRLDataLocal object
      */
-    public CRLDataLocal findByCRLNumber(int cRLNumber)
+    public CRLDataLocal findByIssuerDNAndCRLNumber(String issuerdn, int cRLNumber)
         throws FinderException;
 }

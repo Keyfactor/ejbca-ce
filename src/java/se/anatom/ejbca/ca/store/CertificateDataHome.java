@@ -1,14 +1,10 @@
 package se.anatom.ejbca.ca.store;
 
 import java.rmi.RemoteException;
-
-import java.security.cert.Certificate;
-
-import java.util.Collection;
-
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
-
+import java.security.cert.Certificate;
+import java.util.Collection;
 
 /**
  * For docs, see CertificateDataBean
@@ -26,16 +22,8 @@ public interface CertificateDataHome extends javax.ejb.EJBHome {
      */
     public CertificateData create(Certificate incert) throws CreateException, RemoteException;
 
-    /**
-     * finds a certificate in db
-     *
-     * @param pk primare key
-     *
-     * @return certificate object
-     *
-     * @throws FinderException if certificate can not be found
-     * @throws RemoteException communication or other error
-     */
+
+
     public CertificateData findByPrimaryKey(CertificateDataPK pk)
         throws FinderException, RemoteException;
 
@@ -53,17 +41,15 @@ public interface CertificateDataHome extends javax.ejb.EJBHome {
     public Collection findByExpireDate(long expireDate)
         throws FinderException, RemoteException;
 
-    /**
-     * Finds certificates which a specified subjectDN.
-     *
-     * @param subjectDN , the subject whose certificates will be listed
-     *
+    /** Finds certificates which a specified subjectDN.
+     * @param subjectDN, the subject whose certificates will be listed
+     * @param issuerDN, the issuer of certificate
      * @return Collection of CertificateData in no specified order.
      *
      * @throws FinderException if certificate can not be found
      * @throws RemoteException communication or other error
      */
-    public Collection findBySubjectDN(String subjectDN)
+    public Collection findBySubjectDNAndIssuerDN(String subjectDN, String issuerDN)
         throws FinderException, RemoteException;
 
     /**
