@@ -14,9 +14,14 @@
 package se.anatom.ejbca.util.junit;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.security.KeyFactory;
+import java.security.KeyPair;
 import java.security.KeyStore;
+import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.security.spec.PKCS8EncodedKeySpec;
 
 import se.anatom.ejbca.util.*;
 
@@ -26,7 +31,7 @@ import junit.framework.*;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestKeyTools.java,v 1.7 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: TestKeyTools.java,v 1.8 2004-05-08 10:13:00 anatom Exp $
  */
 public class TestKeyTools extends TestCase {
 
@@ -98,6 +103,37 @@ public class TestKeyTools extends TestCase {
     +"BBSS2GOUxqv3IT+aesPrMPNn9RQ//gQUYhjCLPh/h2ULjh+1L2s3f5JIZf0CAWQA"
     +"AA==").getBytes());
 
+    static byte[] keys1024bit = Base64.decode(
+    ("MIICeAIBADANBgkqhkiG9w0BAQEFAASCAmIwggJeAgEAAoGBAKA5rNhYbPuVcArT"
+    +"mkthfrW2tX1Z7SkCD01sDYrkiwOcodFmS1cSyz8eHM51iwHA7CW0WFvfUjomBT5y"
+    +"gRQfIsf5M5DUtYcKM1hmGKSPzvmF4nYv+3UBUesCvBXVRN/wFZ44SZZ3CVvpQUYb"
+    +"GWjyC+Dgol5n8oKOC287rnZUPEW5AgMBAAECgYEAhMtoeyLGqLlRVFfOoL1cVGTr"
+    +"BMp8ail/30435y7GHKc74p6iwLcd5uEhROhc3oYz8ogHV5W+w9zxKbGjU7b+jmh+"
+    +"h/WFao+Gu3sSrZ7ieg95fSuQsBlJp3w+eCAOZwlEu/JQQHDtURui25SPVblZ9/41"
+    +"u8VwFjk9YQx+nT6LclECQQDYlC9bOr1SWL8PBlipXB/UszMsTM5xEH920A+JPF4E"
+    +"4tw+AHecanjr5bXSluRbWSWUjtl5LV2edqAP9EsH1/A1AkEAvWOctUvTlm6fWHJq"
+    +"lZhsWVvOhDG7cn5gFu34J8JJd5QHov0469CpSamY0Q/mPE/y3kDllmyYvnQ+yobB"
+    +"ZRg39QJBAINCM/0/eVQ58vlBKGTkL2pyfNYhapB9pjK04GWVD4o4j7CICfXjVYvq"
+    +"eSq7RoTSX4NMnCLjyrRqQpHIxdxoE+0CQQCz7MzWWGF+Cz6LUrf7w0E8a8H5SR4i"
+    +"GfnEDvSxIR2W4yWWLShEsIoEF4G9LHO5XOMJT3JOxIEgf2OgGQHmv2l5AkBThYUo"
+    +"ni82jZuue3YqXXHY2lz3rVmooAv7LfQ63yzHECFsQz7kDwuRVWWRsoCOURtymAHp"
+    +"La09g2BE+Q5oUUFx").getBytes());
+
+    /** self signed cert done with above private key */
+    static byte[] certbytes = Base64.decode(
+    ("MIICNzCCAaCgAwIBAgIIIOqiVwJHz+8wDQYJKoZIhvcNAQEFBQAwKzENMAsGA1UE"
+    +"AxMEVGVzdDENMAsGA1UEChMEVGVzdDELMAkGA1UEBhMCU0UwHhcNMDQwNTA4MDkx"
+    +"ODMwWhcNMDUwNTA4MDkyODMwWjArMQ0wCwYDVQQDEwRUZXN0MQ0wCwYDVQQKEwRU"
+    +"ZXN0MQswCQYDVQQGEwJTRTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAgbf2"
+    +"Sv34lsY43C8WJjbUd57TNuHJ6p2Es7ojS3D2yxtzQg/A8wL1OfXes344PPNGHkDd"
+    +"QPBaaWYQrvLvqpjKwx/vA1835L3I92MsGs+uivq5L5oHfCxEh8Kwb9J2p3xjgeWX"
+    +"YdZM5dBj3zzyu+Jer4iU4oCAnnyG+OlVnPsFt6ECAwEAAaNkMGIwDwYDVR0TAQH/"
+    +"BAUwAwEB/zAPBgNVHQ8BAf8EBQMDBwYAMB0GA1UdDgQWBBQArVZXuGqbb9yhBLbu"
+    +"XfzjSuXfHTAfBgNVHSMEGDAWgBQArVZXuGqbb9yhBLbuXfzjSuXfHTANBgkqhkiG"
+    +"9w0BAQUFAAOBgQA1cB6wWzC2rUKBjFAzfkLvDUS3vEMy7ntYMqqQd6+5s1LHCoPw"
+    +"eaR42kMWCxAbdSRgv5ATM0JU3Q9jWbLO54FkJDzq+vw2TaX+Y5T+UL1V0o4TPKxp"
+    +"nKuay+xl5aoUcVEs3h3uJDjcpgMAtyusMEyv4d+RFYvWJWFzRTKDueyanw==").getBytes());
+
     static String storepwd="foo123";
     static String pkAlias="privateKey";
     
@@ -132,4 +168,35 @@ public class TestKeyTools extends TestCase {
         }
         log.debug("<test01GetCertChain()");
     }
+    
+    public void test02GenKeys() throws Exception {
+        log.debug(">test02GenKeys()");
+        KeyPair keys = KeyTools.genKeys(1024);
+        assertNotNull("keys must not be null", keys);
+        String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
+        assertNotNull("b64private must not be null", b64private);
+        //System.out.println(b64private);
+        X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(), true);
+        assertNotNull("cert must not be null", cert);
+        String b64cert = new String(Base64.encode(cert.getEncoded()));
+        assertNotNull("b64cert cannot be null", b64cert);
+        //System.out.println(b64cert);
+        log.debug("<test02GenKeys()");
+    }
+
+    public void test03CreateP12() throws Exception {
+        log.debug(">test03CreateP12()");
+        X509Certificate cert = CertTools.getCertfromByteArray(certbytes);
+        PKCS8EncodedKeySpec pkKeySpec = new PKCS8EncodedKeySpec(keys1024bit);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        PrivateKey pk = keyFactory.generatePrivate(pkKeySpec);
+        KeyStore ks = KeyTools.createP12("Foo", pk, cert, (X509Certificate)null);
+        assertNotNull("ks must not be null", ks);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // If password below is more than 7 chars, strong crypto is needed
+        ks.store(baos, "foo123".toCharArray());
+        assertTrue("baos size must not be 0", baos.size()>0);
+        log.debug("<test03CreateP12()");
+    }
+    
 }
