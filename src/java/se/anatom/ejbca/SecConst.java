@@ -25,7 +25,7 @@ package se.anatom.ejbca;
  * types. Constants for Token Types Token type is constructed of integer constants since only one
  * token type can be generated.
  *
- * @version $Id: SecConst.java,v 1.22 2004-07-23 10:24:44 anatom Exp $
+ * @version $Id: SecConst.java,v 1.23 2004-08-04 14:06:08 sbailliez Exp $
  */
 public class SecConst extends Object {
     // User types
@@ -82,20 +82,20 @@ public class SecConst extends Object {
     
     // Certificate profiles.
 
-    public final static int NO_HARDTOKENISSUER            = 0;
+    public static final int NO_HARDTOKENISSUER            = 0;
 
-    public final static int CERTPROFILE_FIXED_ENDUSER         = 1;
-    public final static int CERTPROFILE_FIXED_SUBCA           = 2;
-    public final static int CERTPROFILE_FIXED_ROOTCA          = 3;
-	public final static int CERTPROFILE_FIXED_OCSPSIGNER      = 4;
-	public final static int CERTPROFILE_FIXED_HARDTOKENAUTH   = 5;    
-	public final static int CERTPROFILE_FIXED_HARDTOKENAUTHENC= 6;
-	public final static int CERTPROFILE_FIXED_HARDTOKENENC    = 7;
-	public final static int CERTPROFILE_FIXED_HARDTOKENSIGN   = 8;
+    public static final int CERTPROFILE_FIXED_ENDUSER         = 1;
+    public static final int CERTPROFILE_FIXED_SUBCA           = 2;
+    public static final int CERTPROFILE_FIXED_ROOTCA          = 3;
+	public static final int CERTPROFILE_FIXED_OCSPSIGNER      = 4;
+	public static final int CERTPROFILE_FIXED_HARDTOKENAUTH   = 5;
+	public static final int CERTPROFILE_FIXED_HARDTOKENAUTHENC= 6;
+	public static final int CERTPROFILE_FIXED_HARDTOKENENC    = 7;
+	public static final int CERTPROFILE_FIXED_HARDTOKENSIGN   = 8;
     
-    public final static int EMPTY_ENDENTITYPROFILE = 1; 
+    public static final int EMPTY_ENDENTITYPROFILE = 1;
 
-    public final static int ALLCAS = 1; 
+    public static final int ALLCAS = 1;
         
     /**
      * Constants defining range of id's reserved for fixed certificate types. Observe fixed
