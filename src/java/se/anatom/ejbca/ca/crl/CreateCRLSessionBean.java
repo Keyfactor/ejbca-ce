@@ -25,7 +25,7 @@ import se.anatom.ejbca.ca.sign.ISignSession;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.2 2002-03-07 15:00:37 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.3 2002-05-20 17:52:59 anatom Exp $
  */
 public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerSession {
 
@@ -78,7 +78,7 @@ lookup("java:comp/env/ejb/CertificateStoreSession", ICertificateStoreSessionHome
             for (int i=0; i < revcerts.length; i++)
             {
                 CertificateDataPK pk = new CertificateDataPK();
-                pk.fp = revcerts[i];
+                pk.fingerprint = revcerts[i];
                 CertificateData data = certHome.findByPrimaryKey(pk);
                 // We want to include certificates that was revoked after the last CRL was issued, but before this one
                 // so the revoked certs are included in ONE CRL at least.

@@ -36,8 +36,8 @@ public interface CertificateData extends javax.ejb.EJBObject {
     /** Certificate used for both encryption and signatures. */
     public static final int CERT_TYPE_ENCSIGN       = 0x3;
 
-	// Constants used to contruct KeyUsage
-	/** @see se.anatom.ejbca.ca.sign.ISignSession */
+    // Constants used to contruct KeyUsage
+    /** @see se.anatom.ejbca.ca.sign.ISignSession */
     public static final int        digitalSignature = (1 << 7);
     public static final int        nonRepudiation   = (1 << 6);
     public static final int        keyEncipherment  = (1 << 5);
@@ -49,27 +49,32 @@ public interface CertificateData extends javax.ejb.EJBObject {
     public static final int        decipherOnly     = (1 << 15);
 
     // public methods
-    public Certificate getCertificate() throws RemoteException;
-    public void setCertificate(Certificate cert) throws RemoteException;
     public String getSubjectDN() throws RemoteException;
-    public void setSubjectDN(String dn) throws RemoteException;
+    public void setSubjectDN(String subjectDN) throws RemoteException;
     public String getIssuerDN() throws RemoteException;
-    public void setIssuerDN(String dn) throws RemoteException;
+    public void setIssuerDN(String issuerDN) throws RemoteException;
     public BigInteger getSerialNumber() throws RemoteException;
-    public void setSerialNumber(BigInteger serno) throws RemoteException;
+    public void setSerialNumber(BigInteger serialNumber) throws RemoteException;
     public String getFingerprint() throws RemoteException;
-    public void setFingerprint(String fp) throws RemoteException;
+    public void setFingerprint(String fingerprint) throws RemoteException;
+    public String getCAFingerprint() throws RemoteException;
+    public void setCAFingerprint(String cAFingerorint) throws RemoteException;
     public int getStatus() throws RemoteException;
     public void setStatus(int status) throws RemoteException;
     public int getType() throws RemoteException;
     public void setType(int type) throws RemoteException;
-    public String getCAFingerprint() throws RemoteException;
-    public void setCAFingerprint(String cafp) throws RemoteException;
     public Date getExpireDate() throws RemoteException;
-    public void setExpireDate(Date date) throws RemoteException;
+    public void setExpireDate(Date expireDate) throws RemoteException;
     public Date getRevocationDate() throws RemoteException;
-    public void setRevocationDate(Date date) throws RemoteException;
+    public void setRevocationDate(Date revocationDate) throws RemoteException;
     public int getRevocationReason() throws RemoteException;
-    public void setRevocationReason(int reason) throws RemoteException;
+    public void setRevocationReason(int revocationReason) throws RemoteException;
+    public String getBase64Cert() throws RemoteException;
+    public void setBase64Cert(String base64Cert) throws RemoteException;
 
+    public Certificate getCertificate() throws RemoteException;
+    public void setCertificate(Certificate certificate) throws RemoteException;
+    public void setIssuer(String dn) throws RemoteException;
+    public void setSubject(String dn) throws RemoteException;
+    
 }

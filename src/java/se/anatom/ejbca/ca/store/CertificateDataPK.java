@@ -4,19 +4,21 @@ package se.anatom.ejbca.ca.store;
  * The primary key of the CRL is the SHA1 fingerprint which should be unique.
  **/
 public class CertificateDataPK implements java.io.Serializable {
-    public String fp;
+    public String fingerprint;
 
+    public CertificateDataPK(String fingerprint) {
+        this.fingerprint = fingerprint;
+    }
+    public CertificateDataPK() {
+    }
     public int hashCode( ){
-        return fp.hashCode();
+        return fingerprint.hashCode();
     }
     public boolean equals(Object obj){
-        if(obj instanceof CertificateDataPK){
-            return (fp == ((CertificateDataPK)obj).fp);
-        }
-        return false;
+        return ((CertificateDataPK)obj).fingerprint.equals(fingerprint);
     }
     public String toString(){
-       return fp;
+       return fingerprint.toString();
     }
 
 }

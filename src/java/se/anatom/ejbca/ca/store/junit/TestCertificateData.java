@@ -25,7 +25,7 @@ import junit.framework.*;
 
 /** Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.4 2002-04-01 12:10:17 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.5 2002-05-20 17:52:59 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -75,7 +75,7 @@ public class TestCertificateData extends TestCase {
         cat.debug(">test01CreateNewCert()");
         X509Certificate cert = CertTools.getCertfromByteArray(testcert);
         CertificateDataPK pk = new CertificateDataPK();
-        pk.fp = CertTools.getFingerprintAsString(cert);
+        pk.fingerprint = CertTools.getFingerprintAsString(cert);
         cat.debug("keyed it! ="+ pk);
 
         CertificateData data1=null;
@@ -96,7 +96,7 @@ public class TestCertificateData extends TestCase {
     public void test02FindAndChange() throws Exception {
         cat.debug(">test02FindAndChange()");
         CertificateDataPK pk = new CertificateDataPK();
-        pk.fp = CertTools.getFingerprintAsString(cert);
+        pk.fingerprint = CertTools.getFingerprintAsString(cert);
         CertificateData data2 = home.findByPrimaryKey(pk);
         assertNotNull("Failed to find cert", data2);
         cat.debug("found by key! ="+ data2);
@@ -133,7 +133,7 @@ public class TestCertificateData extends TestCase {
         // Revoke all certs
         for (int i=0; i<certfps.length;i++) {
             CertificateDataPK revpk = new CertificateDataPK();
-            revpk.fp = certfps[i];
+            revpk.fingerprint = certfps[i];
             CertificateData rev = home.findByPrimaryKey(revpk);
             if (rev.getStatus() != CertificateData.CERT_REVOKED) {
                 rev.setStatus(CertificateData.CERT_REVOKED);
@@ -152,7 +152,7 @@ public class TestCertificateData extends TestCase {
         // Verify that all certs are revoked
         for (int i=0; i<certfps.length;i++) {
             CertificateDataPK revpk = new CertificateDataPK();
-            revpk.fp = certfps[i];
+            revpk.fingerprint = certfps[i];
             CertificateData rev = home.findByPrimaryKey(revpk);
             assertTrue(rev.getStatus() == CertificateData.CERT_REVOKED);
             }
@@ -161,7 +161,7 @@ public class TestCertificateData extends TestCase {
     public void test05FindAgain() throws Exception {
         cat.debug(">test05FindAgain()");
         CertificateDataPK pk = new CertificateDataPK();
-        pk.fp = CertTools.getFingerprintAsString(cert);
+        pk.fingerprint = CertTools.getFingerprintAsString(cert);
         CertificateData data3 = home.findByPrimaryKey(pk);
         assertNotNull("Failed to find cert", data3);
         cat.debug("found by key! ="+ data3);
@@ -193,7 +193,7 @@ public class TestCertificateData extends TestCase {
     public void test06FindByExpireTime() throws Exception {
         cat.debug(">test06FindByExpireTime()");
         CertificateDataPK pk = new CertificateDataPK();
-        pk.fp = CertTools.getFingerprintAsString(cert);
+        pk.fingerprint = CertTools.getFingerprintAsString(cert);
         CertificateData data = home.findByPrimaryKey(pk);
         assertNotNull("Failed to find cert", data);
         cat.debug("expiredate="+data.getExpireDate());
@@ -225,7 +225,7 @@ public class TestCertificateData extends TestCase {
     public void test07FindByIssuerAndSerno() throws Exception {
         cat.debug(">test07FindByIssuerAndSerno()");
         CertificateDataPK pk = new CertificateDataPK();
-        pk.fp = CertTools.getFingerprintAsString(cert);
+        pk.fingerprint = CertTools.getFingerprintAsString(cert);
         CertificateData data3 = home.findByPrimaryKey(pk);
         assertNotNull("Failed to find cert", data3);
 
@@ -240,7 +240,7 @@ public class TestCertificateData extends TestCase {
     public void test08IsRevoked() throws Exception {
         cat.debug(">test08IsRevoked()");
         CertificateDataPK pk = new CertificateDataPK();
-        pk.fp = CertTools.getFingerprintAsString(cert);
+        pk.fingerprint = CertTools.getFingerprintAsString(cert);
         CertificateData data3 = home.findByPrimaryKey(pk);
         assertNotNull("Failed to find cert", data3);
         cat.debug("found by key! ="+ data3);

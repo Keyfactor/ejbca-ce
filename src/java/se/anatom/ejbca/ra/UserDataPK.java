@@ -6,17 +6,19 @@ package se.anatom.ejbca.ra;
 public class UserDataPK implements java.io.Serializable {
     public String username;
 
+    public UserDataPK(String username) {
+        this.username = username;
+    }
+    public UserDataPK() {
+    }
     public int hashCode( ){
         return username.hashCode();
     }
     public boolean equals(Object obj){
-        if(obj instanceof UserDataPK){
-            return (username == ((UserDataPK)obj).username);
-        }
-        return false;
+            return ((UserDataPK)obj).username.equals(username);
     }
     public String toString(){
-       return username;
+       return username.toString();
     }
 
 }

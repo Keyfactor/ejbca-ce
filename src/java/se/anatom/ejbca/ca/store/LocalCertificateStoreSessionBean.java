@@ -26,7 +26,7 @@ import se.anatom.ejbca.util.Base64;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.6 2002-04-01 12:10:17 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.7 2002-05-20 17:52:59 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean implements ICertificateStoreSession {
 
@@ -70,8 +70,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         try {
             X509Certificate cert = (X509Certificate)incert;
             CertificateDataPK pk = new CertificateDataPK();
-            pk.fp = CertTools.getFingerprintAsString(cert);
-            info("Storing cert with fp="+pk.fp);
+            pk.fingerprint = CertTools.getFingerprintAsString(cert);
+            info("Storing cert with fp="+pk.fingerprint);
 
             CertificateData data1=null;
             data1 = certHome.create(cert);
@@ -121,7 +121,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         ResultSet result = null;
         try {
             con = getConnection();
-            ps = con.prepareStatement("select fp from CertificateData ORDER BY expireDate DESC");
+            ps = con.prepareStatement("select fingerprint from CertificateData ORDER BY expireDate DESC");
             result = ps.executeQuery();
             Vector vect = new Vector();
             while(result.next()){
@@ -160,7 +160,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
             // This should only list a few thousend certificates at a time, ni case there
             // are really many revoked certificates after some time...
             con = getConnection();
-            ps = con.prepareStatement("select fp from CertificateData where status=? ORDER BY expireDate DESC");
+            ps = con.prepareStatement("select fingerprint from CertificateData where status=? ORDER BY expireDate DESC");
             ps.setInt(1, CertificateData.CERT_REVOKED);
             result = ps.executeQuery();
             Vector vect = new Vector();
@@ -201,7 +201,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         ResultSet result = null;
         try{
             con = getConnection();
-            ps = con.prepareStatement("select b64cert from CertificateData where subjectDN=? ORDER BY expireDate DESC");
+            ps = con.prepareStatement("select base64cert from CertificateData where subjectDN=? ORDER BY expireDate DESC");
             ps.setString(1,dn);
             result = ps.executeQuery();
             Vector vect = new Vector();
@@ -244,7 +244,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         ResultSet result = null;
         try{
             con = getConnection();
-            ps = con.prepareStatement("select b64cert from CertificateData where expireDate<? ORDER BY expireDate DESC");
+            ps = con.prepareStatement("select base64cert from CertificateData where expireDate<? ORDER BY expireDate DESC");
             ps.setLong(1,expireSeconds);
             result = ps.executeQuery();
             Vector vect = new Vector();
@@ -286,7 +286,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         ResultSet result = null;
         try{
             con = getConnection();
-            ps = con.prepareStatement("select b64cert from CertificateData where issuerDN=? and serno=?");
+            ps = con.prepareStatement("select base64cert from CertificateData where issuerDN=? and serialnumber=?");
             ps.setString(1,dn);
             ps.setString(2, serno.toString());
             result = ps.executeQuery();
@@ -329,7 +329,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         String fp = null;
         try{
             con = getConnection();
-            ps = con.prepareStatement("select fp from CertificateData where issuerDN=? and serno=?");
+            ps = con.prepareStatement("select fingerprint from CertificateData where issuerDN=? and serialnumber=?");
             ps.setString(1,dn);
             ps.setString(2, serno.toString());
             result = ps.executeQuery();
@@ -353,7 +353,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
         }
         try{
             CertificateDataPK pk = new CertificateDataPK();
-            pk.fp = fp;
+            pk.fingerprint = fp;
             CertificateData data = certHome.findByPrimaryKey(pk);
             RevokedCertInfo revinfo = null;
             if (data.getStatus() == CertificateData.CERT_REVOKED) {
@@ -387,7 +387,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
                 debug("No CRLs issued yet");
                 return null;
             }
-            ps = con.prepareStatement("select b64crl from CRLData where CRLNumber=?");
+            ps = con.prepareStatement("select base64crl from CRLData where CRLNumber=?");
             ps.setInt(1, maxnumber);
             result = ps.executeQuery();
             X509CRL crl = null;

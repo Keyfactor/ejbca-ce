@@ -19,7 +19,7 @@ import junit.framework.*;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.2 2002-03-21 12:50:55 anatom Exp $
+ * @version $Id: TestUserData.java,v 1.3 2002-05-20 17:52:59 anatom Exp $
  */
 public class TestUserData extends TestCase {
 
@@ -138,7 +138,33 @@ public class TestUserData extends TestCase {
         assertTrue( "wrong pwd foo123", data.comparePassword("foo123"));
         cat.debug("password "+pwd+" returned " + data.comparePassword(pwd));
         assertTrue( "wrong pwd ("+pwd+" works)", data.comparePassword(pwd)==false);
+        data.setOpenPassword("foo234");
         cat.debug("<test03LookupChangedUser()");
+    }
+    public void test03LookupChangedUser2() throws Exception {
+        cat.debug(">test03LookupChangedUser2()");
+        UserDataPK pk = new UserDataPK();
+        pk.username = username;
+        UserData data = home.findByPrimaryKey(pk);
+        cat.debug("found by key! ="+ data);
+        cat.debug("username="+data.getUsername());
+        assertTrue( "wrong username", data.getUsername().equals(username) );
+        cat.debug("subject="+data.getSubjectDN());
+        assertTrue( "wrong DN", data.getSubjectDN().indexOf(username)!=-1 );
+        cat.debug("email="+data.getSubjectEmail());
+        assertNotNull("Email should not be null now.", data.getSubjectEmail());
+        assertTrue( "wrong email", data.getSubjectEmail().equals(username+"@anatom.se"));
+        cat.debug("status="+data.getStatus());
+        assertTrue( "wrong status", data.getStatus() == UserData.STATUS_GENERATED );
+        cat.debug("type="+data.getType());
+        assertTrue( "wrong type", data.getType() == SecConst.USER_ENDUSER);
+        cat.debug("password foo234 returned " + data.comparePassword("foo234"));
+        assertTrue( "wrong pwd foo234", data.comparePassword("foo234"));
+        assertEquals( "wrong clear pwd foo234", data.getClearPassword(), "foo234");
+        cat.debug("password "+pwd+" returned " + data.comparePassword(pwd));
+        assertTrue( "wrong pwd ("+pwd+" works)", data.comparePassword(pwd)==false);
+        data.setOpenPassword("foo234");
+        cat.debug("<test03LookupChangedUser2()");
     }
     public void test04CreateNewUser() throws Exception {
         cat.debug(">test04CreateNewUser()");

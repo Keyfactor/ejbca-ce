@@ -21,10 +21,6 @@ public interface UserData extends javax.ejb.EJBObject {
     // public methods
     public String getUsername() throws RemoteException;
     public void setUsername(String username) throws RemoteException;
-    public boolean comparePassword(String password) throws RemoteException, NoSuchAlgorithmException;
-    public String getPassword() throws RemoteException;
-    public void setPassword(String password) throws RemoteException, NoSuchAlgorithmException;
-    public void setClearPassword(String password) throws RemoteException, NoSuchAlgorithmException;
     public String getSubjectDN() throws RemoteException;
     public void setSubjectDN(String dn) throws RemoteException;
     public String getSubjectEmail() throws RemoteException;
@@ -33,5 +29,12 @@ public interface UserData extends javax.ejb.EJBObject {
     public void setStatus(int status) throws RemoteException;
     public int getType() throws RemoteException;
     public void setType(int type) throws RemoteException;
+    public String getClearPassword() throws RemoteException;
+    public void setClearPassword(String password) throws RemoteException;
+    public String getPasswordHash() throws RemoteException;
+    public void setPasswordHash(String passwordHash) throws RemoteException;
 
+    public void setPassword(String password) throws RemoteException, NoSuchAlgorithmException;
+    public void setOpenPassword(String password) throws RemoteException, NoSuchAlgorithmException;
+    public boolean comparePassword(String password) throws RemoteException, NoSuchAlgorithmException;
 }

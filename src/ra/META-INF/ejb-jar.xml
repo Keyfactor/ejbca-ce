@@ -27,8 +27,8 @@
         <description>The User entity bean</description>
         <ejb-ref-name>ejb/UserData</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
-        <home>se.anatom.ejbca.ca.store.UserDataHome</home>
-        <remote>se.anatom.ejbca.ca.store.UserData</remote>
+        <home>se.anatom.ejbca.ra.UserDataHome</home>
+        <remote>se.anatom.ejbca.ra.UserData</remote>
         <ejb-link>UserData</ejb-link>
      </ejb-ref>
 
@@ -45,15 +45,16 @@
       <persistence-type>Container</persistence-type>
       <prim-key-class>se.anatom.ejbca.ra.UserDataPK</prim-key-class>
       <reentrant>False</reentrant>
-      <cmp-version>1.x</cmp-version>
+      <cmp-version>2.x</cmp-version>
+      <abstract-schema-name>UserDataBean</abstract-schema-name>
 
       <cmp-field><field-name>username</field-name></cmp-field>
-      <cmp-field><field-name>password</field-name></cmp-field>
-      <cmp-field><field-name>passwordHash</field-name></cmp-field>
       <cmp-field><field-name>subjectDN</field-name></cmp-field>
       <cmp-field><field-name>subjectEmail</field-name></cmp-field>
       <cmp-field><field-name>status</field-name></cmp-field>
       <cmp-field><field-name>type</field-name></cmp-field>
+      <cmp-field><field-name>clearPassword</field-name></cmp-field>
+      <cmp-field><field-name>passwordHash</field-name></cmp-field>
    </entity>
 
   </enterprise-beans>
@@ -106,9 +107,9 @@
      </method>
      <method>
          <ejb-name>UserData</ejb-name>
+         <method-intf>Remote</method-intf>
          <method-name>*</method-name>
      </method>
-
      <trans-attribute>Required</trans-attribute>   
    </container-transaction>       
 
@@ -121,7 +122,6 @@
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>findAllUsersByStatus</method-name>
      </method>
-
      <trans-attribute>Supports</trans-attribute>   
    </container-transaction>       
 

@@ -18,7 +18,7 @@ import se.anatom.ejbca.util.Hex;
 
 /** Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaRevokeUserCommand.java,v 1.1 2002-04-14 08:49:31 anatom Exp $
+ * @version $Id: RaRevokeUserCommand.java,v 1.2 2002-05-20 17:52:59 anatom Exp $
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
 
@@ -52,7 +52,7 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
                 CertificateDataHome home = (CertificateDataHome) javax.rmi.PortableRemoteObject.narrow(obj, CertificateDataHome.class);
                 for (int i=0; i<certs.length;i++) {
                     CertificateDataPK revpk = new CertificateDataPK();
-                    revpk.fp = CertTools.getFingerprintAsString((X509Certificate)certs[i]);
+                    revpk.fingerprint = CertTools.getFingerprintAsString((X509Certificate)certs[i]);
                     CertificateData rev = home.findByPrimaryKey(revpk);
                     if (rev.getStatus() != CertificateData.CERT_REVOKED) {
                         rev.setStatus(CertificateData.CERT_REVOKED);

@@ -1,6 +1,7 @@
 package se.anatom.ejbca.ca.store;
 
 import javax.ejb.EntityContext;
+import javax.ejb.CreateException;
 import java.security.cert.*;
 import java.io.IOException;
 import java.util.Date;
@@ -14,69 +15,47 @@ import se.anatom.ejbca.util.Base64;
  * Entity Bean representing a CRL.
  * Information stored:
  * <pre>
- * CRL (b64Crl)
- * Issuer DN (issuerDN)
+ * CRL (base64Crl)
+ * IssuerDN (issuerDN)
  * CRLNumber (CRLNumber)
- * SHA1 fingerprint (fp)
- * CA SHA1 fingerprint (cafp)
+ * SHA1 fingerprint (fingerprint)
+ * CA SHA1 fingerprint (cAFingerprint)
  * thisUpdate (thisUpdate)
  * nextUpdate (nextUpdate)
  * </pre>
  **/
-public class CRLDataBean implements javax.ejb.EntityBean {
+public abstract class CRLDataBean implements javax.ejb.EntityBean {
 
     private static Category cat = Category.getInstance( CRLDataBean.class.getName() );
 
-    public String b64Crl;
-    public String fp;
-    public String issuerDN;
-    public int CRLNumber;
-    public String cafp;
-    /** Date formated as seconds since 1970 (== Date.getTime()) */
-    public long thisUpdate;
-    /** Date formated as seconds since 1970 (== Date.getTime()) */
-    public long nextUpdate;
+    protected EntityContext  ctx;
+    
+    public abstract int getCRLNumber();
+    public abstract void setCRLNumber(int cRLNumber);
+    public abstract String getIssuerDN();
+    /** Use setIssued instead
+     * @see setIssuer
+     */
+    public abstract void setIssuerDN(String issuerDN);
+    public abstract String getFingerprint();
+    public abstract void setFingerprint(String fingerprint);
+    public abstract String getCAFingerprint();
+    public abstract void setCAFingerprint(String cAFingerprint);
+    public abstract Date getThisUpdate();
+    public abstract void setThisUpdate(Date thisUpdate);
+    public abstract Date getNextUpdate();
+    public abstract void setNextUpdate(Date nextUpdate);
+    public abstract String getBase64Crl();
+    public abstract void setBase64Crl(String base64Crl);
 
-    /**
-     * Entity Bean holding info about a CRL.
-     * Create by sending in the CRL, which extracts (from the crl)
-     * fingerprint (primary key), CRLNumber, issuerDN, thisUpdate, nextUpdate.
-     * CAFingerprint are set to default values (null)
-     * and should be set using the respective set-methods.
-     *
-     * @param incrl, the (X509)CRL to be stored in the database.
-     * @param number monotonically increasnig CRL number
-     *
-     **/
-    public CRLDataPK ejbCreate(X509CRL incrl, int number) {
-        // Exctract all fields to store with the certificate.
-        try {
-            b64Crl = new String(Base64.encode(incrl.getEncoded()));
-            fp = CertTools.getFingerprintAsString(incrl);
-        } catch (CRLException ce) {
-            cat.error("Can't extract DER encoded CRL.", ce);
-            return null;
-        }
-        // Make sure names are always looking the same
-        issuerDN = CertTools.stringToBCDNString(incrl.getIssuerDN().toString());
-        cat.debug("Creating crldata, issuer="+issuerDN);
-        // Default values for cafp
-        cafp = null;
-        CRLNumber = number;
-        thisUpdate = incrl.getThisUpdate().getTime();
-        nextUpdate = incrl.getNextUpdate().getTime();
-
-        CRLDataPK pk = new CRLDataPK();
-        pk.fp = fp;
-
-        return pk;
-    }
-    public void ejbPostCreate(X509CRL incrl, int number) {
-        // Do nothing. Required.
-    }
+    //
+    // Public methods used to help us manage CRLs
+    //
+    
     public X509CRL getCRL() {
         X509CRL crl = null;
         try {
+            String b64Crl = getBase64Crl();
             crl = CertTools.getCRLfromByteArray(Base64.decode(b64Crl.getBytes()));
         } catch (IOException ioe) {
             cat.error("Can't decode CRL.", ioe);
@@ -92,53 +71,61 @@ public class CRLDataBean implements javax.ejb.EntityBean {
     }
     public void setCRL(X509CRL incrl){
         try {
-            b64Crl = new String(Base64.encode((incrl).getEncoded()));
+            String b64Crl = new String(Base64.encode((incrl).getEncoded()));
+            setBase64Crl(b64Crl);
         } catch (CRLException ce) {
             cat.error("Can't extract DER encoded CRL.", ce);
         }
     }
-    public int getCRLNumber() {
-        return CRLNumber;
+    public void setIssuer(String dn) {
+        setIssuerDN(CertTools.stringToBCDNString(dn));
     }
-    public void setCRLNumber(int number) {
-        CRLNumber = number;
-    }
-    public String getIssuerDN() {
-        return issuerDN;
-    }
-    public void setIssuerDN(String dn) {
-        issuerDN = CertTools.stringToBCDNString(dn);
-    }
-    public String getFingerprint() {
-        return fp;
-    }
-    public void setFingerprint(String f) {
-        fp = f;
-    }
-    public String getCAFingerprint() {
-        return cafp;
-    }
-    public void setCAFingerprint(String f) {
-        cafp = f;
-    }
-    public Date getThisUpdate() {
-        return new Date(thisUpdate);
-    }
-    public void setThisUpdate(Date date) {
-        thisUpdate = date.getTime();
-    }
-    public Date getNextUpdate() {
-        return new Date(nextUpdate);
-    }
-    public void setNextUpdate(Date date) {
-        nextUpdate = date.getTime();
-    }
+    
+    //
+    // Fields required by Container
+    //
+    
+    /**
+     * Entity Bean holding info about a CRL.
+     * Create by sending in the CRL, which extracts (from the crl)
+     * fingerprint (primary key), CRLNumber, issuerDN, thisUpdate, nextUpdate.
+     * CAFingerprint are set to default values (null)
+     * and should be set using the respective set-methods.
+     *
+     * @param incrl, the (X509)CRL to be stored in the database.
+     * @param number monotonically increasnig CRL number
+     *
+     **/
+    public CRLDataPK ejbCreate(X509CRL incrl, int number) throws CreateException {
+        // Exctract all fields to store with the certificate.
+        try {
+            String b64Crl = new String(Base64.encode(incrl.getEncoded()));
+            setBase64Crl(b64Crl);
+            setFingerprint(CertTools.getFingerprintAsString(incrl));
+        } catch (CRLException ce) {
+            cat.error("Can't extract DER encoded CRL.", ce);
+            return null;
+        }
+        // Make sure names are always looking the same
+        setIssuerDN(CertTools.stringToBCDNString(incrl.getIssuerDN().toString()));
+        cat.debug("Creating crldata, issuer="+getIssuerDN());
+        // Default values for cafp
+        setCAFingerprint(null);
+        setCRLNumber(number);
+        setThisUpdate(incrl.getThisUpdate());
+        setNextUpdate(incrl.getNextUpdate());
 
+        CRLDataPK pk = new CRLDataPK(getFingerprint());
+        return pk;
+    }
+    public void ejbPostCreate(X509CRL incrl, int number) {
+        // Do nothing. Required.
+    }
     public void setEntityContext(EntityContext ctx){
-         // Not implemented.
+         this.ctx=ctx;
     }
     public void unsetEntityContext(){
-         // Not implemented.
+         this.ctx=null;
     }
     public void ejbActivate(){
         // Not implemented.

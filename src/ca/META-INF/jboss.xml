@@ -1,4 +1,5 @@
 <jboss> 
+
   <enterprise-beans>
     <session>
       <ejb-name>AuthenticationSession</ejb-name>
@@ -8,4 +9,5 @@
       </ejb-ref>
     </session>
   </enterprise-beans>
+
 </jboss>

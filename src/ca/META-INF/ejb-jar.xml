@@ -17,7 +17,7 @@
         <description>Location of CA keystore</description>
         <env-entry-name>keyStore</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>../conf/server.p12</env-entry-value>
+        <env-entry-value>../server/default/conf/server.p12</env-entry-value>
      </env-entry>
      <env-entry>
         <description>Password for server keystore, comment out to prompt for pwd.</description>
@@ -376,14 +376,15 @@
       <persistence-type>Container</persistence-type>
       <prim-key-class>se.anatom.ejbca.ca.store.CertificateDataPK</prim-key-class>
       <reentrant>False</reentrant>
-      <cmp-version>1.x</cmp-version>
+      <cmp-version>2.x</cmp-version>
+      <abstract-schema-name>CertificateDataBean</abstract-schema-name>
 
-      <cmp-field><field-name>b64Cert</field-name></cmp-field>
-      <cmp-field><field-name>fp</field-name></cmp-field>
+      <cmp-field><field-name>base64Cert</field-name></cmp-field>
+      <cmp-field><field-name>fingerprint</field-name></cmp-field>
       <cmp-field><field-name>subjectDN</field-name></cmp-field>
       <cmp-field><field-name>issuerDN</field-name></cmp-field>
-      <cmp-field><field-name>cafp</field-name></cmp-field>
-      <cmp-field><field-name>serno</field-name></cmp-field>
+      <cmp-field><field-name>cAFingerprint</field-name></cmp-field>
+      <cmp-field><field-name>serialNumber</field-name></cmp-field>
       <cmp-field><field-name>status</field-name></cmp-field>
       <cmp-field><field-name>type</field-name></cmp-field>
       <cmp-field><field-name>expireDate</field-name></cmp-field>
@@ -402,20 +403,22 @@
       <persistence-type>Container</persistence-type>
       <prim-key-class>se.anatom.ejbca.ca.store.CRLDataPK</prim-key-class>
       <reentrant>False</reentrant>
-      <cmp-version>1.x</cmp-version>
+      <cmp-version>2.x</cmp-version>
+      <abstract-schema-name>CRLDataBean</abstract-schema-name>
 
-      <cmp-field><field-name>b64Crl</field-name></cmp-field>
-      <cmp-field><field-name>fp</field-name></cmp-field>
-      <cmp-field><field-name>CRLNumber</field-name></cmp-field>
+      <cmp-field><field-name>cRLNumber</field-name></cmp-field>
       <cmp-field><field-name>issuerDN</field-name></cmp-field>
-      <cmp-field><field-name>cafp</field-name></cmp-field>
+      <cmp-field><field-name>fingerprint</field-name></cmp-field>
+      <cmp-field><field-name>cAFingerprint</field-name></cmp-field>
       <cmp-field><field-name>thisUpdate</field-name></cmp-field>
       <cmp-field><field-name>nextUpdate</field-name></cmp-field>
+      <cmp-field><field-name>base64Crl</field-name></cmp-field>
    </entity>
 
   </enterprise-beans>
 
  <assembly-descriptor>
+
    <security-role>
       <description>
          This role represents everyone
@@ -438,6 +441,7 @@
        NOTE! Security must be enabled in the container for these settings 
        to have any real meaning.
    -->
+
    <method-permission>
      <role-name>InternalUser</role-name>
      <method>
@@ -460,6 +464,7 @@
          <ejb-name>CRLData</ejb-name>
          <method-name>*</method-name>
      </method>
+
 <!-- Uncomment for LDAP Publisher
      <method>
          <ejb-name>PublisherSession1</ejb-name>
@@ -545,10 +550,12 @@
      </method>
      <method>
          <ejb-name>CertificateData</ejb-name>
+         <method-intf>Remote</method-intf>
          <method-name>*</method-name>
      </method>
      <method>
          <ejb-name>CRLData</ejb-name>
+         <method-intf>Remote</method-intf>
          <method-name>*</method-name>
      </method>
 <!-- Uncomment for LDAP Publisher
@@ -557,7 +564,6 @@
          <method-name>*</method-name>
      </method>
 -->
-
    <trans-attribute>Required</trans-attribute>
    </container-transaction>       
 
@@ -570,11 +576,9 @@
          <ejb-name>CertificateStoreSession</ejb-name>
          <method-name>*</method-name>
      </method>
-
    <trans-attribute>Supports</trans-attribute>
    </container-transaction>       
 
  </assembly-descriptor>
-
 </ejb-jar>
 

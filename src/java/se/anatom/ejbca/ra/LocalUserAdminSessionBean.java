@@ -17,13 +17,13 @@ import se.anatom.ejbca.BaseSessionBean;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.7 2002-03-26 12:39:34 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.8 2002-05-20 17:52:59 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserAdminSession {
 
     private UserDataHome home = null;
     /** Columns in the database used in select */
-    private final String USERDATA_COL = "username, subjectDN, subjectEmail, status, type, password";
+    private final String USERDATA_COL = "username, subjectDN, subjectEmail, status, type, clearpassword";
     /** Var holding JNDI name of datasource */
     private String dataSource = "java:/DefaultDS";
 
@@ -130,7 +130,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
         pk.username = username;
         UserData data = home.findByPrimaryKey(pk);
         try {
-            data.setClearPassword(password);
+            data.setOpenPassword(password);
         } catch (java.security.NoSuchAlgorithmException nsae)
         {
             error("NoSuchAlgorithmException while setting password for user "+username);
@@ -158,7 +158,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
             return null;
         }
         UserAdminData ret = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getStatus(), data.getType());
-        ret.setPassword(data.getPassword());
+        ret.setPassword(data.getClearPassword());
         return ret;
     } // findUser
 
