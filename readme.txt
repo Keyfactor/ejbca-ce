@@ -27,14 +27,26 @@ Please take a minute to thorougly consider the security implications and make su
 DEPENDENCIES
 ------------
 EJBCA uses the OpenSource JCE crypto provider from Bouncycastle (www.bouncycastle.org). 
-The provider is distributed with EJBCA as 'bcprov-<version>.jar. The latest version of the JCE provider can always be downloaded from www.bouncycastle.org.
+The provider is distributed with EJBCA as 'bcprov.jar. The latest version of the JCE provider can always be obtained from www.bouncycastle.org.
+bcprov.jar is Copyright (c) 2000 The Legion Of The Bouncy Castle (http://www.bouncycastle.org).
+The version used in this release is 1.10.
 
 EJBCA is developed on the OpenSource J2EE application server JBoss (www.jboss.org).
+JBoss and jars from JBoss are Copyright (c) 1999-2001 jboss.org.
+Jar files needed to run EJBCA is distributed with EJBCA. The version of
+JBoss used with this release is 2.4.3.
+
+Ant and Log4j is Copyright © 1999-2001, Apache Software Foundation and can be obtained from www.apache.org.
+Jar file for Log4j is distributed with EJBCA. The version of Log4j used in
+this release is 1.1.3.
+
+JUnit can be obtained from www.junit.org. Jar file needed to run JUnit tests is
+distributed with EJBCA. The version used in this release is 3.7.
 
 PLATFORMS
 ---------
 EJBCA is completely written in Java and sould as such run on any platoform where a J2EE server runs.
-Development and testing is performed On Linux and Windows2000 platforms.
+Development and testing is performed on Linux and Windows 2000 platforms.
 
 BUILD
 -----
@@ -46,7 +58,7 @@ Ant 1.4 to build (http://jakarta.apache.org/ant/)
 
 Simply unpack the archive in a directory and run "ant" to build everything.
 
-Copy the Bouncycastle JCE provider lib/bcprov-<version>.jar to the directory jboss/lib/ext in, it will be added to JBoss's classpath 
+Copy the Bouncycastle JCE provider lib/bcprov.jar to the directory jboss/lib/ext in, it will be added to JBoss's classpath 
 automatically when JBoss is started.
 
 Set the environment variable JBOSS_HOME to the directory where JBoss's root is (/jboss). This is done so the deploy script will know where files are to be copied, they are copied to the $JBOSS_HOME/deploy directory.
