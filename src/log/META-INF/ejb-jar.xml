@@ -160,27 +160,25 @@
          <ejb-name>LogSession</ejb-name>
          <method-name>query</method-name>
      </method>
-     <method>
-         <ejb-name>LogSession</ejb-name>
-         <method-name>saveLogConfiguration</method-name>
-     </method>
-
      <trans-attribute>Supports</trans-attribute>
    </container-transaction>
 
    <container-transaction>
      <method>
          <ejb-name>LogSession</ejb-name>
-         <method-name>log</method-name>
-     </method>
-     <method>
-         <ejb-name>LogSession</ejb-name>
          <method-name>saveLogConfiguration</method-name>
      </method>
-
      <trans-attribute>Required</trans-attribute>
    </container-transaction>
 
+   <!-- Important that LOG always commit -->
+   <container-transaction>
+     <method>
+         <ejb-name>LogSession</ejb-name>
+         <method-name>log</method-name>
+     </method>
+     <trans-attribute>RequiresNew</trans-attribute>
+   </container-transaction>
 
  </assembly-descriptor>
 </ejb-jar>
