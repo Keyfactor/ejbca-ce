@@ -14,7 +14,7 @@
         <cmp-field>
             <field-name>b64cert</field-name>
             <jdbc-type>LONGVARCHAR</jdbc-type>
-            <sql-type>VARCHAR2(4000)</sql-type>
+            <sql-type>LONG</sql-type>
         </cmp-field>
     </entity>
 
@@ -23,7 +23,7 @@
         <cmp-field>
             <field-name>b64crl</field-name>
             <jdbc-type>LONGVARCHAR</jdbc-type>
-            <sql-type>VARCHAR2(4000)</sql-type>
+            <sql-type>LONG</sql-type>
         </cmp-field>
     </entity>
 </enterprise-beans>
