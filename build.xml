@@ -17,13 +17,14 @@
     <import file="bin/jboss.xml" />
 
     <!-- set global properties for this build -->
-    <property name="src" value="./src" />
+    <property name="src" value="src" />
     <property name="javasrc" value="${src}/java" />
-    <property name="lib" value="./lib" />
-    <property name="tmp" value="./tmp" />
-    <property name="src.gen" value="bin/gensrc" />
-    <property name="build" value="${tmp}/classes" />
-    <property name="test.dir" value="${tmp}/junit" />
+    <property name="lib" value="lib" />
+    <property name="bin" value="bin" />
+    <property name="src.gen" value="${bin}/gensrc" />
+    <property name="src.dd" value="${bin}/dd" />
+    <property name="build" value="${bin}/classes" />
+    <property name="test.dir" value="${bin}/junit" />
     <property name="test.src.dir" location="${src}/test" />
     <property name="dist" value="./dist" />
     <property name="dist.dir" location="${dist}" />
@@ -180,22 +181,22 @@ database.password    = ${database.password}
             <localhomeinterface />
             <entitypk />
             <session />
-            <deploymentdescriptor destdir="${src.gen}/META-INF" validatexml="false" />
+            <deploymentdescriptor destdir="${src.dd}/META-INF" validatexml="false" />
             <jboss version="3.2" 
                 unauthenticatedPrincipal="nobody" 
                 xmlencoding="UTF-8" 
                 validatexml="false" 
-                destdir="${src.gen}/META-INF" 
+                destdir="${src.dd}/META-INF" 
                 datasource="java:/${datasource.jndi-name}" 
                 datasourcemapping="Hypersonic SQL" />
             <jonas version="4.0" 
                 xmlencoding="UTF-8" 
-                destdir="${src.gen}/META-INF" 
+                destdir="${src.dd}/META-INF" 
                 validatexml="false" 
                 defaultentityjndiname="${datasource.jndi-name}" />
             <weblogic version="7.0" 
                 xmlencoding="UTF-8" 
-                destdir="${src.gen}/META-INF" 
+                destdir="${src.dd}/META-INF" 
                 validatexml="false" 
                 datasource="${datasource.jndi-name}" 
                 persistence="weblogic" />
@@ -281,6 +282,16 @@ database.password    = ${database.password}
         </junitreport>
     </target>
 
+    <target name="ejbca.jar" depends="compile" description="Creates master ejb.jar">
+        <jar jarfile="${dist}/ejbca.jar">
+            <manifest>
+                <!-- todo: autogenerate this from a fileset -->
+                <attribute name="Class-Path" value="bcmail-jdk14-122.jar bcprov-jdk14-122.jar log4j-1.2.7.jar ldap.jar commons-lang-2.0.jar commons-collections.jar commons-fileupload-1.0.jar" />
+            </manifest>
+            <fileset dir="${src.dd}"/>
+            <fileset dir="${build}"/>
+        </jar>
+    </target>
 
     <!-- =================================================================== -->
     <!-- Build apply part                                                    -->
@@ -295,7 +306,8 @@ database.password    = ${database.password}
             <include name="se/anatom/ejbca/protocol/ScepServlet*" />
             <include name="se/anatom/ejbca/apply/**" />
         </patternset>
-        <javac srcdir="${javasrc}" classpathref="compile.classpath" destdir="${build}" debug="on" includeantruntime="no">
+        <javac srcdir="${javasrc}" classpathref="compile.classpath" destdir="${build}" 
+            debug="on" includeantruntime="no">
             <patternset refid="apply.pattern" />
             <classpath path="${build}" />
         </javac>
@@ -323,7 +335,10 @@ database.password    = ${database.password}
         <patternset id="status.pattern">
             <include name="se/anatom/ejbca/protocol/OCSPServlet*.class" />
         </patternset>
-        <javac srcdir="${javasrc}" classpathref="compile.classpath" destdir="${build}" debug="on" includeantruntime="no">
+        <javac srcdir="${javasrc}" 
+            classpathref="compile.classpath" 
+            destdir="${build}" debug="on" 
+            includeantruntime="no">
             <patternset refid="status.pattern" />
             <classpath path="${build}" />
         </javac>
@@ -361,91 +376,6 @@ database.password    = ${database.password}
             <fileset dir="${sampleauth.build}" excludes="WEB-INF/**" />
             <lib dir="${sampleauth.build}/WEB-INF/lib" includes="*.jar" />
         </war>
-    </target>
-
-    <property name="ejb-utils.jar.dir" location="${tmp}/ejb-utils.jar" />
-    <property name="ejb-utils.jar" location="${dist}/ejb-utils.jar" description="Utilities used in EJBs" />
-    <target name="jar:ejb-utils" depends="compile">
-        <mkdir dir="${ejb-utils.jar.dir}" />
-        <patternset id="ejb-utils.patternset">
-            <include name="se/anatom/ejbca/protocol/**" />
-            <exclude name="se/anatom/ejbca/protocol/ScepServlet*" />
-            <exclude name="se/anatom/ejbca/protocol/OCSPServlet*" />
-            <include name="se/anatom/ejbca/exception/**" />
-            <include name="se/anatom/ejbca/*.*" />
-            <include name="se/anatom/ejbca/util/**" />
-        </patternset>
-
-        <javac srcdir="${javasrc}" classpathref="compile.classpath" destdir="${build}" debug="on" includeantruntime="no">
-            <patternset refid="ejb-utils.patternset" />
-            <classpath path="${build}" />
-        </javac>
-        <copy todir="${ejb-utils.jar.dir}">
-            <fileset dir="${build}">
-                <patternset refid="ejb-utils.patternset" />
-            </fileset>
-        </copy>
-        <jar basedir="${ejb-utils.jar.dir}" jarfile="${ejb-utils.jar}">
-            <manifest>
-                <!-- todo: autogenerate this from a fileset -->
-                <attribute name="Class-Path" value="bcmail-jdk14-122.jar bcprov-jdk14-122.jar log4j-1.2.7.jar ldap.jar commons-lang-2.0.jar commons-collections.jar commons-fileupload-1.0.jar" />
-            </manifest>
-        </jar>
-    </target>
-
-    <!-- =================================================================== -->
-    <!-- Build ca part                                                    -->
-    <!-- =================================================================== -->
-    <target name="ca.jar" depends="compile">
-        <!-- this one is a bit messy as the layout does not match the other one -->
-        <ejb-dd-copy todir="${tmp}/ca-ejb.jar" dir="${src}/ca/ca" />
-        <ejb-jar name="ca">
-            <filesets>
-                <!-- that should be another ejb-jar, but keep it here for now -->
-                <fileset dir="${build}" includes="se/anatom/ejbca/upgrade/**" />
-                <fileset dir="${src}" includes="upgrade/**/*.sql" />
-            </filesets>
-        </ejb-jar>
-    </target>
-
-    <!-- =================================================================== -->
-    <!-- Build log part                                                    -->
-    <!-- =================================================================== -->
-    <target name="log.jar" depends="compile">
-        <ejb-jar name="log">
-            <filesets>
-                <fileset dir="${src}/log" includes="logdeviceproperties/**" />
-            </filesets>
-        </ejb-jar>
-    </target>
-
-    <!-- =================================================================== -->
-    <!-- Build authorization part                                            -->
-    <!-- =================================================================== -->
-    <target name="authorization.jar" depends="compile">
-        <ejb-jar name="authorization" />
-    </target>
-
-    <!-- =================================================================== -->
-    <!-- Build hard token part                                               -->
-    <!-- =================================================================== -->
-    <target name="hardtoken.jar" depends="compile">
-        <ejb-jar name="hardtoken" />
-    </target>
-
-    <!-- =================================================================== -->
-    <!-- Build key recovery part                                             -->
-    <!-- =================================================================== -->
-    <target name="keyrecovery.jar" depends="compile">
-        <ejb-jar name="keyrecovery" />
-    </target>
-
-
-    <!-- =================================================================== -->
-    <!-- Build ra part                                                       -->
-    <!-- =================================================================== -->
-    <target name="ra.jar" depends="compile">
-        <ejb-jar name="ra" />
     </target>
 
     <!-- =================================================================== -->
@@ -504,7 +434,10 @@ database.password    = ${database.password}
             </fileset>
         </jar>
 
-        <war basedir="${adminweb.build}" destfile="${dist}/adminweb.war" webxml="${adminweb.build}/WEB-INF/web.xml" excludes="WEB-INF/web.xml">
+        <war basedir="${adminweb.build}" 
+            destfile="${dist}/adminweb.war" 
+            webxml="${adminweb.build}/WEB-INF/web.xml" 
+            excludes="WEB-INF/web.xml">
         </war>
     </target>
 
@@ -525,6 +458,99 @@ database.password    = ${database.password}
 
         <war basedir="${demoweb.build}" destfile="${demowebjar}" webxml="${demoweb.build}/WEB-INF/web.xml" excludes="WEB-INF/web.xml">
         </war>
+    </target>
+
+    <property name="ejb-utils.jar.dir" location="${tmp}/ejb-utils.jar" />
+    <property name="ejb-utils.jar" location="${dist}/ejb-utils.jar" description="Utilities used in EJBs" />
+    <target name="jar:ejb-utils" depends="compile">
+     <!--   <mkdir dir="${ejb-utils.jar.dir}" />
+        <patternset id="ejb-utils.patternset">
+            <include name="se/anatom/ejbca/protocol/**" />
+            <exclude name="se/anatom/ejbca/protocol/ScepServlet*" />
+            <exclude name="se/anatom/ejbca/protocol/OCSPServlet*" />
+            <include name="se/anatom/ejbca/exception/**" />
+            <include name="se/anatom/ejbca/*.*" />
+            <include name="se/anatom/ejbca/util/**" />
+        </patternset>
+
+        <javac srcdir="${javasrc}" classpathref="compile.classpath" destdir="${build}" debug="on" includeantruntime="no">
+            <patternset refid="ejb-utils.patternset" />
+            <classpath path="${build}" />
+        </javac>
+        <copy todir="${ejb-utils.jar.dir}">
+            <fileset dir="${build}">
+                <patternset refid="ejb-utils.patternset" />
+            </fileset>
+        </copy>
+        <jar basedir="${ejb-utils.jar.dir}" jarfile="${ejb-utils.jar}">
+            <manifest>
+                <!- todo: autogenerate this from a fileset ->
+                <attribute name="Class-Path" value="bcmail-jdk14-122.jar bcprov-jdk14-122.jar log4j-1.2.7.jar ldap.jar commons-lang-2.0.jar commons-collections.jar commons-fileupload-1.0.jar" />
+            </manifest>
+        </jar> -->
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Build ca part                                                    -->
+    <!-- =================================================================== -->
+    <target name="ca.jar" depends="compile">
+        <!-- this one is a bit messy as the layout does not match the other one 
+        <ejb-dd-copy todir="${tmp}/ca-ejb.jar" dir="${src}/ca/ca" />
+        <ejb-jar name="ca">
+            <filesets>
+                <!- that should be another ejb-jar, but keep it here for now ->
+                <fileset dir="${build}" includes="se/anatom/ejbca/upgrade/**" />
+                <fileset dir="${src}" includes="upgrade/**/*.sql" />
+            </filesets>
+        </ejb-jar>-->
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Build log part                                                    -->
+    <!-- =================================================================== -->
+    <target name="log.jar" depends="compile">
+        <ejb-jar name="log">
+            <filesets>
+                <fileset dir="${src}/log" includes="logdeviceproperties/**" />
+            </filesets>
+        </ejb-jar>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Build authorization part                                            -->
+    <!-- =================================================================== -->
+    <target name="authorization.jar" depends="compile">
+        <!-- 
+        <ejb-jar name="authorization" />
+        -->
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Build hard token part                                               -->
+    <!-- =================================================================== -->
+    <target name="hardtoken.jar" depends="compile">
+        <!-- 
+        <ejb-jar name="hardtoken" />
+        -->
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Build key recovery part                                             -->
+    <!-- =================================================================== -->
+    <target name="keyrecovery.jar" depends="compile">
+    <!-- 
+        <ejb-jar name="keyrecovery" />
+        -->
+    </target>
+
+
+    <!-- =================================================================== -->
+    <!-- Build ra part                                                       -->
+    <!-- =================================================================== -->
+    <target name="ra.jar" depends="compile">
+    <!-- 
+        <ejb-jar name="ra" />
+        -->
     </target>
 
     <!-- =================================================================== -->
