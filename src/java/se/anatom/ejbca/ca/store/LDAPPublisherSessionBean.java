@@ -7,6 +7,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.util.StringTokenizer;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -68,7 +69,7 @@ import com.novell.ldap.LDAPModificationSet;
  * </pre>
  * </p>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.25 2004-01-25 11:00:29 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.26 2004-01-26 12:49:08 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
     private String ldapHost = "localhost";
@@ -79,6 +80,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
     private String userObjectclass = "inetOrgPerson";
     private String cAObjectclass = "certificateAuthority";
     private String cRLAttribute = "certificateRevocationList;binary";
+    private String aRLAttribute = "authorityRevocationList;binary";
     private String userCertAttribute = "userCertificate;binary";
     private String cACertAttribute = "cACertificate;binary";
 
@@ -100,8 +102,8 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         userObjectclass = (String) lookup("java:comp/env/userObjectclass", java.lang.String.class);
         cAObjectclass = (String) lookup("java:comp/env/cAObjectclass", java.lang.String.class);
         cRLAttribute = (String) lookup("java:comp/env/cRLAttribute", java.lang.String.class);
-        userCertAttribute = (String) lookup("java:comp/env/userCertAttribute",
-                java.lang.String.class);
+        aRLAttribute = (String) lookup("java:comp/env/aRLAttribute", java.lang.String.class);
+        userCertAttribute = (String) lookup("java:comp/env/userCertAttribute", java.lang.String.class);
         cACertAttribute = (String) lookup("java:comp/env/cACertAttribute", java.lang.String.class);
         debug("ldapHost=" + ldapHost);
         debug("loginDN=" + loginDN);
@@ -187,7 +189,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                     "IOException when getting subjectAltNames extension.");
             }
         }
-
+        /*
         if (checkContainerName(dn) == false) {
             info("DN not part of containername, aborting store operation.");                                                         
             logsession.log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), null,
@@ -195,6 +197,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                     "DN not part of containername, aborting store operation.");            
             return false;
         }
+        */
 
         // Check if the entry is already present, we will update it with the new certificate.
         LDAPEntry oldEntry = null;
@@ -234,12 +237,12 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
 
             if (oldEntry != null) {
                 // TODO: Are we the correct type objectclass?
-                modSet = getModificationSet(oldEntry, dn, true);
+                modSet = getModificationSet(oldEntry, dn, false, true);
             } else {
                 objectclass = userObjectclass;
             }
 
-            attributeSet = getAttributeSet(userObjectclass, dn, true);
+            attributeSet = getAttributeSet(userObjectclass, dn, true, true);
             if (email != null) {
                 LDAPAttribute mailAttr = new LDAPAttribute("mail", email);
                 if (oldEntry != null) {
@@ -268,11 +271,11 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
             debug("Publishing CA certificate to " + ldapHost);
 
             if (oldEntry != null) {
-                modSet = getModificationSet(oldEntry, dn, false);
+                modSet = getModificationSet(oldEntry, dn, false, false);
             } else {
                 objectclass = cAObjectclass;
             }
-            attributeSet = getAttributeSet(cAObjectclass, dn, false);
+            attributeSet = getAttributeSet(cAObjectclass, dn, true, false);
             try {
                 attribute = cACertAttribute;
                 LDAPAttribute certAttr = new LDAPAttribute(cACertAttribute, incert.getEncoded());
@@ -281,9 +284,12 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                 } else {
                     attributeSet.add(certAttr);
                     // Also create using the crlattribute, it may be required
-                    LDAPAttribute crlAttr = new LDAPAttribute(cRLAttribute, "");
+                    LDAPAttribute crlAttr = new LDAPAttribute(cRLAttribute, "null".getBytes());
                     attributeSet.add(crlAttr);
-                    debug("Added (fake) attribute for CRL.");
+                    // Also create using the arlattribute, it may be required
+                    LDAPAttribute arlAttr = new LDAPAttribute(aRLAttribute, "null".getBytes());
+                    attributeSet.add(arlAttr);
+                    debug("Added (fake) attribute for CRL and ARL.");
                 }
             } catch (CertificateEncodingException e) {
                 error("Error encoding certificate when storing in LDAP: ", e);
@@ -347,9 +353,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
      */
     public void revokeCertificate(Admin admin, Certificate cert, int reason) {
         // TODO: remove revoked certificate from LDAP
-    }
-
-    //revokeCertificate
+    } //revokeCertificate
 
     /**
      * Published a CRL to LDAP. Creates CA entry if it does not exist.
@@ -366,7 +370,6 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
     public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) {
         int ldapVersion = LDAPConnection.LDAP_V3;
         LDAPConnection lc = new LDAPConnection();
-
         X509CRL crl = null;
         String dn = null;
 
@@ -384,7 +387,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
 
             return false;
         }
-
+        /*
         if (checkContainerName(dn) == false) {
             info("DN not part of containername, aborting store operation.");
             
@@ -395,20 +398,17 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
 
             return false;
         }
+        */
 
         // Check if the entry is already present, we will update it with the new certificate.
         LDAPEntry oldEntry = null;
-
         try {
             // connect to the server
             lc.connect(ldapHost, ldapPort);
-
             // authenticate to the server
             lc.bind(ldapVersion, loginDN, loginPassword);
-
             // try to read the old object
             oldEntry = lc.read(dn);
-
             // disconnect with the server
             lc.disconnect();
         } catch (LDAPException e) {
@@ -416,41 +416,37 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                 debug("No old entry exist for '" + dn + "'.");
             } else {
                 error("Error binding to and reading from LDAP server: ", e);
-               
                 logsession.log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null,
                         LogEntry.EVENT_ERROR_STORECRL,
                         "Error binding to and reading from LDAP server.");
-
                 return false;
             }
         }
 
         LDAPEntry newEntry = null;
         LDAPModificationSet modSet = null;
-
         LDAPAttributeSet attributeSet = null;
 
         if (oldEntry != null) {
-            modSet = getModificationSet(oldEntry, dn, false);
+            modSet = getModificationSet(oldEntry, dn, false, false);
         } else {
-            attributeSet = getAttributeSet(cAObjectclass, dn, false);
+            attributeSet = getAttributeSet(cAObjectclass, dn, true, false);
         }
 
         try {
             LDAPAttribute crlAttr = new LDAPAttribute(cRLAttribute, crl.getEncoded());
-
+            LDAPAttribute arlAttr = new LDAPAttribute(aRLAttribute, crl.getEncoded());
             if (oldEntry != null) {
                 modSet.add(LDAPModification.REPLACE, crlAttr);
+                modSet.add(LDAPModification.REPLACE, arlAttr);
             } else {
                 attributeSet.add(crlAttr);
+                attributeSet.add(arlAttr);
             }
         } catch (CRLException e) {
             error("Error encoding CRL when storing in LDAP: ", e);
-            
             logsession.log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null,
                     LogEntry.EVENT_ERROR_STORECRL, "Error encoding CRL when storing in LDAP.");
-
-
             return false;
         }
 
@@ -461,45 +457,36 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         try {
             // connect to the server
             lc.connect(ldapHost, ldapPort);
-
             // authenticate to the server
             lc.bind(ldapVersion, loginDN, loginPassword);
-
             // Add or modify the entry
             if (oldEntry != null) {
                 lc.modify(dn, modSet);
                 debug("\nModified object: " + dn + " successfully.");
-                
                 logsession.log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null,
                         LogEntry.EVENT_INFO_STORECRL,
                         "Modified object: " + dn + " successfully in LDAP.");
-
             } else {
                 lc.add(newEntry);
                 debug("\nAdded object: " + dn + " successfully.");
-                
                 logsession.log(admin, crl.getIssuerDN().toString().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null,
                         LogEntry.EVENT_INFO_STORECRL,
                         "Added object: " + dn + " successfully in LDAP.");
-
             }
 
             // disconnect with the server
             lc.disconnect();
         } catch (LDAPException e) {
             error("Error storing CRL (" + cRLAttribute + ") in LDAP (" + cAObjectclass + "): ", e);
-            
             logsession.log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null,
                     LogEntry.EVENT_ERROR_STORECRL,
                     "Error storing CRL (" + cRLAttribute + ") in LDAP (" + cAObjectclass + ").");            
-
             return false;
         }
 
         return true;
-    }
-
-    // storeCRL
+    } // storeCRL
+    
     private boolean checkContainerName(String dn) {
         // Match users DN with 'containerName'?
         // Normalize string lo BC DN format to avoide different case in o, C etc.
@@ -512,9 +499,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         }
 
         return true;
-    }
-
-    // checkContainerName
+    } // checkContainerName
 
     /**
      * Creates an LDAPAttributeSet.
@@ -522,17 +507,21 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
      * @param objectclass the objectclass the attribute set should be of.
      * @param dn dn of the LDAP entry.
      * @param extra if we should add extra attributes except the objectclass to the attributeset.
+     * @param pserson true if this is a person-entry, false if it is a CA.
      *
      * @return LDAPAtributeSet created...
      */
-    private LDAPAttributeSet getAttributeSet(String objectclass, String dn, boolean extra) {
+    private LDAPAttributeSet getAttributeSet(String objectclass, String dn, boolean extra, boolean person) {
         LDAPAttributeSet attributeSet = new LDAPAttributeSet();
         LDAPAttribute attr = new LDAPAttribute("objectclass");
-        attr.addValue("top");
-        attr.addValue("person");
-        attr.addValue(objectclass);
+        // The full LDAP object tree is divided with ; in the objectclass
+        StringTokenizer token = new StringTokenizer(objectclass,";");
+        while (token.hasMoreTokens()) {
+            String value = token.nextToken();
+            debug("Adding objectclass value: "+value);
+            attr.addValue(value);
+        }
         attributeSet.add(attr);
-        
 
         /* To Add an entry to the directory,
          *   -- Create the attributes of the entry and add them to an attribute set
@@ -540,16 +529,44 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
          *   -- Create an LDAPEntry object with the DN and the attribute set
          *   -- Call the LDAPConnection add method to add it to the directory
          */
-        //attributeSet.add(new LDAPAttribute("objectclass", objectclass));
-
         if (extra) {
             String cn = CertTools.getPartFromDN(dn, "CN");
             if (cn != null) {
                 attributeSet.add(new LDAPAttribute("cn", cn));
             }
-            String sn = CertTools.getPartFromDN(dn, "SN");
+            // sn means surname in LDAP, and is required for persons
+            String sn = CertTools.getPartFromDN(dn, "SURNAME");
+            if (person) {
+                if ( (sn == null) && (cn != null) ) {
+                    // Take surname to be the last part of the cn
+                    int index = cn.indexOf(' ');
+                    if (index <=0) {
+                        // If there is no natural sn, use cn since sn is required
+                        sn = cn;
+                    } else {
+                        if (index < cn.length()) sn = cn.substring(index);
+                    }
+                }
+            }
             if (sn != null) {
                 attributeSet.add(new LDAPAttribute("sn", sn));
+            }
+            // gn means givenname in LDAP, and is required for persons
+            String gn = CertTools.getPartFromDN(dn, "GIVENNAME");
+            if (person) {
+                if ( (gn == null) && (cn != null) ) {
+                    // Take givenname to be the first part of the cn
+                    int index = cn.indexOf(' ');
+                    if (index <=0) {
+                        // If there is no natural gn/sn, ignore gn if we are using sn
+                        if (sn == null) gn = cn;
+                    } else {
+                        gn = cn.substring(0, index);
+                    }
+                }
+            }
+            if (gn != null) {
+                attributeSet.add(new LDAPAttribute("gn", gn));
             }
             String l = CertTools.getPartFromDN(dn, "L");
             if (l != null) {
@@ -574,46 +591,65 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
      * @param dn dn of the LDAP entry.
      * @param extra if we should add extra attributes except the objectclass to the
      *        modificationset.
+     * @param pserson true if this is a person-entry, false if it is a CA.
      *
      * @return LDAPModificationSet created...
      */
-    private LDAPModificationSet getModificationSet(LDAPEntry oldEntry, String dn, boolean extra) {
+    private LDAPModificationSet getModificationSet(LDAPEntry oldEntry, String dn, boolean extra, boolean person) {
         LDAPModificationSet modSet = new LDAPModificationSet();
 
         if (extra) {
             String cn = CertTools.getPartFromDN(dn, "CN");
-
             if (cn != null) {
                 modSet.add(LDAPModification.REPLACE, new LDAPAttribute("cn", cn));
             }
-
-            String sn = CertTools.getPartFromDN(dn, "SN");
-
+            // sn means surname in LDAP, and is required for persons
+            String sn = CertTools.getPartFromDN(dn, "SURNAME");
+            if (person) {
+                if ( (sn == null) && (cn != null) ) {
+                    // Take surname to be the last part of the cn
+                    int index = cn.indexOf(' ');
+                    if (index <=0) {
+                        // If there is no natural sn, use cn since sn is required
+                        sn = cn;
+                    } else {
+                        if (index < cn.length()) sn = cn.substring(index);
+                    }
+                }
+            }
             if (sn != null) {
                 modSet.add(LDAPModification.REPLACE, new LDAPAttribute("sn", sn));
             }
-
+            // gn means givenname in LDAP, and is required for persons
+            String gn = CertTools.getPartFromDN(dn, "GIVENNAME");
+            if (person) {
+                if ( (gn == null) && (cn != null) ) {
+                    // Take givenname to be the first part of the cn
+                    int index = cn.indexOf(' ');
+                    if (index <=0) {
+                        // If there is no natural gn/sn, ignore gn if we are using sn
+                        if (sn == null) gn = cn;
+                    } else {
+                        gn = cn.substring(0, index);
+                    }
+                }
+            }
+            if (gn != null) {
+                modSet.add(LDAPModification.REPLACE, new LDAPAttribute("gn", gn));
+            }
             String l = CertTools.getPartFromDN(dn, "L");
-
             if (l != null) {
                 modSet.add(LDAPModification.REPLACE, new LDAPAttribute("l", l));
             }
-
             String st = CertTools.getPartFromDN(dn, "ST");
-
             if (st != null) {
                 modSet.add(LDAPModification.REPLACE, new LDAPAttribute("st", st));
             }
-
             String ou = CertTools.getPartFromDN(dn, "OU");
-
             if (ou != null) {
                 modSet.add(LDAPModification.REPLACE, new LDAPAttribute("ou", ou));
             }
         }
-
         return modSet;
-    }
-
-    // getModificationSet
+    } // getModificationSet
 }

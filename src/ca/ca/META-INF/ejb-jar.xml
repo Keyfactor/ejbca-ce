@@ -462,16 +462,16 @@
         <env-entry-value>o=AnaTom,c=SE</env-entry-value>
      </env-entry>
      <env-entry>
-        <description>objectclass for storing user entries.</description>
+        <description>objectclass for storing user entries, hierarchy separated by ;.</description>
         <env-entry-name>userObjectclass</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>inetOrgPerson</env-entry-value>
+        <env-entry-value>top;person;organizationalPerson;inetOrgPerson</env-entry-value>
      </env-entry>
      <env-entry>
-        <description>objectclass for storing CA entries.</description>
+        <description>objectclass for storing CA entries, hierarchy separated by ;.</description>
         <env-entry-name>cAObjectclass</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>certificationAuthority</env-entry-value>
+        <env-entry-value>top;applicationProcess;certificationAuthority</env-entry-value>
      </env-entry>
      <env-entry>
         <description>attribute for storing user certificates.</description>
@@ -490,6 +490,12 @@
         <env-entry-name>cRLAttribute</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>certificateRevocationList;binary</env-entry-value>
+     </env-entry>
+     <env-entry>
+        <description>attribute for storing ARLs.</description>
+        <env-entry-name>aRLAttribute</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>authorityRevocationList;binary</env-entry-value>
      </env-entry>
      <ejb-local-ref>
         <description>The Log session bean</description>
