@@ -54,7 +54,7 @@
         <env-entry-value>null</env-entry-value>
      </env-entry>
      <env-entry>
-        <description>Use AuthorityKeyIdentifier?</description>
+        <description>Use AuthorityKeyIdentifier in CRL?</description>
         <env-entry-name>AuthorityKeyIdentifier</env-entry-name>
         <env-entry-type>java.lang.Boolean</env-entry-type>
         <env-entry-value>true</env-entry-value>
@@ -62,12 +62,6 @@
      <env-entry>
         <description>AuthorityKeyIdentifier critical? (RFC2459 says NO)</description>
         <env-entry-name>AuthorityKeyIdentifierCritical</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>false</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Use old style altName with email in DN? (RFC2459 says NO)</description>
-        <env-entry-name>EmailInDN</env-entry-name>
         <env-entry-type>java.lang.Boolean</env-entry-type>
         <env-entry-value>false</env-entry-value>
      </env-entry>
