@@ -49,7 +49,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.23 2004-07-23 10:24:43 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.24 2004-11-20 20:18:46 sbailliez Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -103,7 +103,7 @@ import se.anatom.ejbca.log.LogEntry;
  * @ejb.ejb-external-ref
  *   description="The signing session used to create CRL"
  *   view-type="local"
- *   ejb-name="SignSessionLocal"
+ *   ejb-name="RSASignSessionLocal"
  *   type="Session"
  *   home="se.anatom.ejbca.ca.sign.ISignSessionLocalHome"
  *   business="se.anatom.ejbca.ca.sign.ISignSessionLocal"
@@ -140,27 +140,19 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
     private ILogSessionLocal logsession;
 
 
-     public static long  CRLOVERLAPTIME = 0;
+     public static final long  CRLOVERLAPTIME = 0;
 
 
     /** Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate () throws CreateException {
-        debug(">ejbCreate()");
-        caadminHome = (ICAAdminSessionLocalHome)lookup("java:comp/env/ejb/CAAdminSessionLocal");
-        storeHome = (ICertificateStoreSessionLocalHome)lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
-        certHome = (CertificateDataLocalHome)lookup("java:comp/env/ejb/CertificateDataLocal");
-        signHome = (ISignSessionLocalHome)lookup("java:comp/env/ejb/SignSessionLocal");
-
-        try{
-          ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup(ILogSessionLocalHome.COMP_NAME,ILogSessionLocalHome.class);       
-          logsession = logsessionhome.create();
-        }catch(Exception e){
-          throw new EJBException(e);
-        }
-
-        debug("<ejbCreate()");
+        caadminHome = (ICAAdminSessionLocalHome)getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+        storeHome = (ICertificateStoreSessionLocalHome)getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+        certHome = (CertificateDataLocalHome)getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
+        signHome = (ISignSessionLocalHome)getLocator().getLocalHome(ISignSessionLocalHome.COMP_NAME);
+        ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
+        logsession = logsessionhome.create();
     }
 
 	/**
