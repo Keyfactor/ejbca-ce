@@ -39,7 +39,7 @@ import se.anatom.ejbca.util.CertTools;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.3 2002-02-28 20:55:10 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.4 2002-05-04 14:20:50 anatom Exp $
  *
  */
 public class CertDistServlet extends HttpServlet {
@@ -205,6 +205,9 @@ public class CertDistServlet extends HttpServlet {
                     return;
                 }
                 X509Certificate cacert = (X509Certificate)chain[chain.length-1-level];
+                String filename=CertTools.getPartFromDN(cacert.getSubjectDN().toString(), "CN");
+                if (filename == null)
+                    filename = "ca";
                 byte[] enccert = cacert.getEncoded();
                 if (command.equalsIgnoreCase(COMMAND_NSCACERT)) {
                     res.setContentType("application/x-x509-ca-cert");
@@ -212,7 +215,7 @@ public class CertDistServlet extends HttpServlet {
                     res.getOutputStream().write(enccert);
                     cat.debug("Sent CA cert to NS client, len="+enccert.length+".");
                 } else if (command.equalsIgnoreCase(COMMAND_IECACERT)) {
-                    res.setHeader("Content-disposition", "attachment; filename=ca.crt");
+                    res.setHeader("Content-disposition", "attachment; filename="+filename+".crt");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);
@@ -222,7 +225,7 @@ public class CertDistServlet extends HttpServlet {
                     String out = "-----BEGIN CERTIFICATE-----\n";
                     out += new String(b64cert);
                     out += "\n-----END CERTIFICATE-----\n";
-                    res.setHeader("Content-disposition", "attachment; filename=ca.pem");
+                    res.setHeader("Content-disposition", "attachment; filename="+filename+".pem");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(out.length());
                     res.getOutputStream().write(out.getBytes());

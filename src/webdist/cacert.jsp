@@ -16,27 +16,42 @@ try  {
     ISignSession ss = home.create();
     Certificate[] chain = ss.getCertificateChain();
     if (chain.length == 0) {
-        out.println("No CA certificates exist");
+%>
+No CA certificates exist
+<%
     } else {
-        out.println("<hr>In PEM format:<br>");
-        out.println("<li><a href=\"/webdist/certdist?cmd=cacert&level=0\">Root CA</a></li>");
+%>
+<hr>In PEM format:<br>
+<li><a href="/webdist/certdist?cmd=cacert&level=0">Root CA</a></li>
+<%
+        int i = 0;
         if (chain.length > 1) {
-            for (int i=chain.length-2;i>=0;i--) {
-                out.println("<li><a href=\"/webdist/certdist?cmd=cacert&level="+i+"\">CA</a></li>");
+            for (i=chain.length-1;i>0;i--) {
+%>
+<li><a href="/webdist/certdist?cmd=cacert&level=<%= i %>">CA</a></li>
+<%
             }
         }
-        out.println("<hr>For Netscape/Mozilla:<br>");
-        out.println("<li><a href=\"/webdist/certdist?cmd=nscacert&level=0\">Root CA</a></li>");
+%>
+<hr>For Netscape/Mozilla:<br>
+<li><a href="/webdist/certdist?cmd=nscacert&level=0">Root CA</a></li>
+<%
         if (chain.length > 1) {
-            for (int i=chain.length-2;i>=0;i--) {
-                out.println("<li><a href=\"/webdist/certdist?cmd=nscacert&level="+i+"\">CA</a></li>");
+            for (i=chain.length-1;i>0;i--) {
+%>
+<li><a href="/webdist/certdist?cmd=nscacert&level=<%= i %>">CA</a></li>
+<%
             }
         }
-        out.println("<hr>For Internet Explorer:<br>");
-        out.println("<li><a href=\"/webdist/certdist?cmd=iecacert&level=0\">Root CA</a></li>");
+%>
+<hr>For Internet Explorer:<br>
+<li><a href="/webdist/certdist?cmd=iecacert&level=0">Root CA</a></li>
+<%
         if (chain.length > 1) {
-            for (int i=chain.length-2;i>=0;i--) {
-                out.println("<li><a href=\"/webdist/certdist?cmd=iecacert&level="+i+"\">CA</a></li>");
+            for (i=chain.length-1;i>0;i--) {
+%>
+<li><a href="/webdist/certdist?cmd=iecacert&level=<%= i %>">CA</a></li>
+<%
             }
         }
     }
