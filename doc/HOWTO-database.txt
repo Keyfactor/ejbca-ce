@@ -1,12 +1,13 @@
 Set up a database for EJBCA in JBoss
 ====================================
 
-The following databases have been tested with EJBCA:
+The following databases have in some stage been tested with EJBCA:
 
+* HypersoniqDB (default in JBoss)
 * PostegreSQL (http://www.postgresql.org/)
 * MySQL (http://www.mysql.com/)
 * Oracle 8i (http://www.oracle.com/)
-* HypersoniqDB (default in JBoss)
+* Sybase
 
 NOTE:
 
@@ -15,8 +16,8 @@ JBoss and run. Read this HOWTO if you want to replace the default database with
 another.
 
 When using another database the default database, HypersoniqDB, should be
-removed
-completely. The file server/defualt/deploy/hsqldb-service.xml should be removed.
+removed completely. 
+The file server/defualt/deploy/hsqldb-service.xml should be removed.
 
 NOW ON TO THE HOWTO!
 
@@ -86,7 +87,7 @@ Type mapping:
 
 PostgreSQL specifics
 --------------------
-Jaws configuration file: PostgreSQL works with standard jbosscmp-jdbc.xml.
+Jaws configuration file: jbosscmp-jdbc-postgres.xml
 
 JDBC driver: postgresql.jar (or whatever it's called).
 
