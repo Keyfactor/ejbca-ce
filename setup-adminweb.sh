@@ -43,6 +43,7 @@ cp p12/tomcat.jks $JBOSS_HOME/.keystore
 echo
 echo Importing certs in the JAVA trust store requires root privileges
 echo
+su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -delete -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass $4"
 su -c "$JAVA_HOME/bin/keytool -alias EJBCA-CA -import -trustcacerts -file tmp/rootca.der -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass $4"
 
 rm tmp/rootca.der
