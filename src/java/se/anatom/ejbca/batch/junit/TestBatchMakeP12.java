@@ -25,7 +25,7 @@ import junit.framework.*;
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.13 2002-11-07 23:03:39 herrvendil Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.14 2002-11-13 12:21:52 anatom Exp $
  */
 
 public class TestBatchMakeP12 extends TestCase {
@@ -89,17 +89,17 @@ public class TestBatchMakeP12 extends TestCase {
         cat.debug(">test01CreateNewUser()");
         IUserAdminSessionRemote data1=null;
         String username = genRandomUserName();
-  
+
         data1 = home.create(new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER));
-        Object o = null;       
+        Object o = null;
         try{
           data1.addUser(username, "foo123", "C=SE, O=AnaTom, CN="+username, "", username+"@anatom.se",  false,
-                        IRaAdminSessionRemote.EMPTY_ENDENTITYPROFILEID, ICertificateStoreSessionRemote.NO_CERTIFICATEPROFILE,
+                        IRaAdminSessionRemote.EMPTY_ENDENTITYPROFILEID, SecConst.PROFILE_NO_CERTIFICATEPROFILE,
                         false, false, SecConst.TOKEN_SOFT_BROWSERGEN,0);
           data1.setClearTextPassword(username,"foo123");
-          o = new String(""); 
+          o = new String("");
         }catch(Exception e){
-          assertNotNull("Failed to create user "+username, o);            
+          assertNotNull("Failed to create user "+username, o);
         }
 
         cat.debug("created "+username+ ", pwd=foo123");
@@ -108,11 +108,11 @@ public class TestBatchMakeP12 extends TestCase {
         o = null;
         try{
           data1.addUser(username1, "foo123", "C=SE, O=AnaTom, CN="+username1, "",username1+"@anatom.se", false,
-                        IRaAdminSessionRemote.EMPTY_ENDENTITYPROFILEID, ICertificateStoreSessionRemote.NO_CERTIFICATEPROFILE,
+                        IRaAdminSessionRemote.EMPTY_ENDENTITYPROFILEID, SecConst.PROFILE_NO_CERTIFICATEPROFILE,
                         false, false, SecConst.TOKEN_SOFT_BROWSERGEN,0);
-          data1.setClearTextPassword(username1,"foo123");   
+          data1.setClearTextPassword(username1,"foo123");
           o = new String("");
-        }catch(Exception e){  
+        }catch(Exception e){
           assertNotNull("Failed to create user "+username1, o);
         }
         cat.debug("created "+username1+ ", pwd=foo123");
