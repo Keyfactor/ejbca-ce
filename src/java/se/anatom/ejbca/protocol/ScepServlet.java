@@ -56,7 +56,7 @@ import se.anatom.ejbca.util.CertTools;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.28 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.29 2004-05-22 11:30:28 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);

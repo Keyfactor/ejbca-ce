@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 /**
  * Class to handle PKCS7 request messages sent to the CA.
  *
- * @version $Id: PKCS7RequestMessage.java,v 1.15 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: PKCS7RequestMessage.java,v 1.16 2004-05-22 11:31:17 anatom Exp $
  */
 public class PKCS7RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(PKCS7RequestMessage.class);
