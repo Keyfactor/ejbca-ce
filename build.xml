@@ -307,7 +307,11 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- Build log part                                                    -->
   <!-- =================================================================== -->
   <target name="log.jar" depends="compile">
-    <ejb-jar name="log"/>
+    <ejb-jar name="log">
+        <filesets>
+            <fileset dir="${src}/log" includes="logdeviceproperties/**"/>
+        </filesets>
+    </ejb-jar>
   </target>
 
   <!-- =================================================================== -->
