@@ -1,5 +1,5 @@
-1.1-tobe
---
+1.1
+---
 Tested with additional databases (mySQL, PostgreSQL).
 The Datasource used is configurable.
 New architecture for Publishers where certificates can be published in addition to the main database.
