@@ -16,7 +16,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.42 2003-09-23 19:34:01 anatom Exp $
+ * @version $Id: CertTools.java,v 1.43 2003-09-23 20:14:14 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -578,8 +578,9 @@ public class CertTools {
 
         // CertificatePolicies extension if supplied policy ID, always non-critical
         if (policyId != null) {
-            CertificatePolicies cp = new CertificatePolicies(policyId);
-            certgen.addExtension(X509Extensions.CertificatePolicies.getId(), false, cp);
+                PolicyInformation pi = new PolicyInformation(new DERObjectIdentifier(policyId));
+                DERSequence seq = new DERSequence(pi);
+                certgen.addExtension(X509Extensions.CertificatePolicies.getId(), false, seq);
         }
 
         X509Certificate selfcert = certgen.generateX509Certificate(privKey);
@@ -601,19 +602,14 @@ public class CertTools {
     public static byte[] getAuthorityKeyId(X509Certificate cert)
         throws IOException {
         byte[] extvalue = cert.getExtensionValue("2.5.29.35");
-
         if (extvalue == null) {
             return null;
         }
-
         DEROctetString oct = (DEROctetString) (new DERInputStream(new ByteArrayInputStream(extvalue)).readObject());
         AuthorityKeyIdentifier keyId = new AuthorityKeyIdentifier((ASN1Sequence) new DERInputStream(
                     new ByteArrayInputStream(oct.getOctets())).readObject());
-
         return keyId.getKeyIdentifier();
-    }
-
-    // getAuthorityKeyId
+    } // getAuthorityKeyId
 
     /**
      * DOCUMENT ME!
@@ -627,18 +623,13 @@ public class CertTools {
     public static byte[] getSubjectKeyId(X509Certificate cert)
         throws IOException {
         byte[] extvalue = cert.getExtensionValue("2.5.29.14");
-
         if (extvalue == null) {
             return null;
         }
-
-        DEROctetString oct = (DEROctetString) (new DERInputStream(new ByteArrayInputStream(extvalue)).readObject());
-        SubjectKeyIdentifier keyId = new SubjectKeyIdentifier(oct);
-
+        ASN1OctetString str = ASN1OctetString.getInstance(new DERInputStream(new ByteArrayInputStream(extvalue)).readObject());
+        SubjectKeyIdentifier keyId = SubjectKeyIdentifier.getInstance(new DERInputStream(new ByteArrayInputStream(str.getOctets())).readObject());
         return keyId.getKeyIdentifier();
-    }
-
-    // getSubjectKeyId
+    }  // getSubjectKeyId
 
     /**
      * DOCUMENT ME!
