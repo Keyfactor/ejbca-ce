@@ -25,7 +25,7 @@ import java.math.BigInteger;
 /**
  * This class implements a hex decoder, decoding a string with hex-characters into the binary form.
  *
- * @version $Id: Hex.java,v 1.7 2004-05-31 16:20:33 anatom Exp $
+ * @version $Id: Hex.java,v 1.8 2004-06-18 10:57:22 anatom Exp $
  */
 public class Hex {
     private static final char[] hex = {
@@ -56,7 +56,7 @@ public class Hex {
     } // encode
 
     /**
-     * Decodar hex till binärt, don't use it's flawed.
+     * Decodar hex till binärt, don't use it's flawed. Use org.bouncycastle.util.encoders.Hex instead.
      *
      * @param dataStr Sträng innehållande hex-representation av data
      *
