@@ -32,7 +32,7 @@ import junit.framework.*;
 
 /** Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.5 2002-03-21 12:50:54 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.6 2002-03-24 10:47:23 anatom Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -136,7 +136,7 @@ public class TestSignSession extends TestCase {
             createdata.setSubjectEmail("foo@anatom.se");
             cat.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (RemoteException re) {
-            if (re.getCause() instanceof DuplicateKeyException) {
+            if (re.detail instanceof DuplicateKeyException) {
                 userExists = true;
             }
         } catch (DuplicateKeyException dke) {

@@ -75,7 +75,7 @@
   <target name="compile" depends="init">
     <!-- Compile the java code from ${javasrc} into ${build} -->
     <!-- <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on"> -->
-    <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="off">
+    <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on">
         <exclude name="**/CVS/**"/>
         <include name="**/*.java"/>
     </javac>
@@ -105,6 +105,7 @@
                 <include name="se/anatom/ejbca/util/**/CertTools*.class"/>
                 <include name="se/anatom/ejbca/util/**/FileTools*.class"/>
                 <include name="se/anatom/ejbca/exception/**/*.class"/>
+                <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
@@ -128,6 +129,7 @@
                 <include name="se/anatom/ejbca/samples/AuthResult*.class"/>
                 <include name="se/anatom/ejbca/samples/RemoteVerify*.class"/>
                 <include name="se/anatom/ejbca/exception/**/*.class"/>
+                <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
@@ -207,6 +209,7 @@
                 <include name="se/anatom/ejbca/util/**/CertTools*.class"/>
                 <include name="se/anatom/ejbca/util/**/Hex*.class"/>
                 <include name="se/anatom/ejbca/exception/**/*.class"/>
+                <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
@@ -234,6 +237,8 @@
                 <include name="se/anatom/ejbca/ca/store/CertificateData*.class"/>
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="se/anatom/ejbca/ra/*.class"/>
+                <include name="se/anatom/ejbca/exception/**/*.class"/>
+                <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>

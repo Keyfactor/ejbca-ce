@@ -11,6 +11,7 @@ import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.KeyStoreException;
+import java.security.UnrecoverableKeyException;
 import java.io.*;
 import java.util.Collection;
 import java.util.Iterator;
@@ -34,6 +35,7 @@ import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSession;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.KeyTools;
+import se.anatom.ejbca.util.P12toPEM;
 
 import org.apache.log4j.*;
 
@@ -41,7 +43,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.8 2002-01-25 13:13:39 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.9 2002-03-24 10:47:23 anatom Exp $
  *
  */
 
@@ -52,7 +54,8 @@ public class BatchMakeP12 {
 
     /** Where created P12-files are stored, default /<username>.p12 */
     private String mainStoreDir = "";
-
+    /** Should we also create PEM-files? */
+    private boolean createPEM = false;
     private IUserAdminSessionHome adminhome;
     private ISignSessionHome signhome;
 
@@ -107,6 +110,13 @@ public class BatchMakeP12 {
     public void setMainStoreDir(String dir) {
         mainStoreDir = dir;
     }
+    /** Specifies whether PEM-files should also be exported. PEM-files are created out of the P12-files
+     * and are NOT protected by password
+     *@param pem true or false
+     */
+    public void createPEM(boolean pem) {
+        createPEM = pem;
+    }
     /**
      * Stores keystore.
      *
@@ -115,7 +125,7 @@ public class BatchMakeP12 {
      * @param passwprd. the password used to protect the peystore
      * @exception IOException if directory to store keystore cannot be created
      */
-    private void storeKeyStore(KeyStore ks, String username, String kspassword) throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
+    private void storeKeyStore(KeyStore ks, String username, String kspassword) throws IOException, KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException {
         cat.debug(">storeKeyStore: ks=" + ks.toString() + ", username=" + username);
         // Where to store it?
         if (mainStoreDir == null)
@@ -125,6 +135,14 @@ public class BatchMakeP12 {
         FileOutputStream os = new FileOutputStream(keyStoreFilename);
         ks.store(os, kspassword.toCharArray());
 
+        // If we should also create PEM-files, do that
+        if (createPEM) {
+            String PEMfilename = mainStoreDir + "/pem";
+            P12toPEM p12topem = new P12toPEM(keyStoreFilename, kspassword, true);
+            p12topem.setExportPath(PEMfilename);
+            p12topem.createPEM();
+        }
+        
         cat.debug("Keystore stored in " + keyStoreFilename);
         cat.debug("<storeKeyStore: ks=" + ks.toString() + ", username=" + username);
     } // storeKeyStore
@@ -142,8 +160,6 @@ public class BatchMakeP12 {
      */
     private void createUser(String username, String password, KeyPair rsaKeys)
     throws Exception {
-
-
         cat.debug(">createUser: username=" + username + ", hiddenpwd, keys=" + rsaKeys.toString());
 
         // Send the certificate request to the CA
@@ -173,12 +189,12 @@ public class BatchMakeP12 {
             throw new Exception("Generated certificate does not verify using CA-certificate.");
         }
 
-
         // Use CommonName as alias in the keystore
         String alias = CertTools.getPartFromDN(cert.getSubjectDN().toString(), "CN");
         // Store keys and certificates in keystore.
         KeyStore p12 = KeyTools.createP12(alias, rsaKeys.getPrivate(), chain[0], chain[1]);
         storeKeyStore(p12, username, password);
+        
         cat.info("Created P12 for " + username+ ".");
         cat.debug(">createUser: username=" + username + ", hiddenpwd, keys=" + rsaKeys.toString());
     } // doit
@@ -292,12 +308,12 @@ public class BatchMakeP12 {
                 cat.error("An error happened, setting status to FAILED.");
                 cat.error(e);
                 admin.setUserStatus(data.getUsername(), UserData.STATUS_FAILED);
-                throw new Exception("BatchMakeP12 failed for - " + data.getUsername());
+                throw new Exception("BatchMakeP12 failed for '" + username+"'.");
             }
         }
         else {
             cat.error("Unknown user: " + username);
-            throw new Exception("BatchMakeP12 failed for - " + data.getUsername());
+            throw new Exception("BatchMakeP12 failed for '" + username+"'.");
         }
         cat.debug("New user generated successfully - " + data.getUsername());
         cat.debug(">createUser("+username+")");
@@ -307,16 +323,29 @@ public class BatchMakeP12 {
     public static void main(String[] args) {
         try {
 
-            BasicConfigurator.configure();
+            org.apache.log4j.PropertyConfigurator.configure();
             BatchMakeP12 makep12 = new BatchMakeP12();
+            // Create subdirectory 'p12' if it does not exist
+            File dir = new File("./p12");
+            dir.mkdir();
+            makep12.setMainStoreDir("./p12");
+            if ( (args.length > 0) && args[0].equals("-?") ) {
+                System.out.println("Usage: batch [username] [-pem]");
+                System.out.println("Without arguments generates all users with status NEW or FAILED.");
+                System.out.println("'-pem' generates PEM-files as well as a PKCS12-file. PEM-files are used with Apache etc.");
+                System.exit(0);
+            }
             if (args.length > 0) {
-                // Make P12 for specified user
-                makep12.createUser(args[0]);
+                if (args[0].equals("-pem")) {
+                    makep12.createPEM(true);
+                } else {
+                    // Make P12 for specified user
+                    if ( (args.length > 1) && (args[1].equals("-pem")) ) {
+                            makep12.createPEM(true);
+                        }
+                    makep12.createUser(args[0]);
+                }
             } else {
-                // Create subdirectory 'p12' if it does not exist
-                File dir = new File("./p12");
-                dir.mkdir();
-                makep12.setMainStoreDir("./p12");
                 // Make P12 for all NEW users in local DB
                 makep12.createAllNew();
                 // Make P12 for all FAILED users in local DB

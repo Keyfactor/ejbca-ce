@@ -41,7 +41,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.18 2002-03-22 11:21:49 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.19 2002-03-24 10:47:23 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -130,10 +130,8 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             // We only support a ca hierarchy with depth 2.
             // TODO:
             caCert = (X509Certificate)certchain[0];
-            TBSCertificateStructure tbs = new TBSCertificateStructure((DERConstructedSequence)new DERInputStream(new ByteArrayInputStream(caCert.getTBSCertificate())).readObject());
-            caSubjectName=tbs.getSubject();
             debug("cacertIssuer: " + caCert.getIssuerDN().toString());
-            debug("cacertSubject: " + caSubjectName.toString());
+            debug("cacertSubject: " + caCert.getSubjectDN().toString());
             // is there only one root cert?
             if (CertTools.isSelfSigned(caCert))
                 rootCert = caCert;

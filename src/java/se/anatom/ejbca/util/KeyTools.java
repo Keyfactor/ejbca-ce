@@ -13,6 +13,7 @@ import java.security.PublicKey;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.KeyStoreException;
 import java.security.interfaces.RSAPublicKey;
 import java.util.*;
 
@@ -30,7 +31,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.3 2002-01-06 10:51:32 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.4 2002-03-24 10:47:23 anatom Exp $
  */
 public class KeyTools {
 
@@ -116,6 +117,61 @@ public class KeyTools {
         return store;
     } // createP12
 
+    /** Retrieves the certificate chain from a keystore.
+     * @param ks the keystore, which has been loaded and opened.
+     * @param privKeyAlias the alias of the privatekey for which the certchain belongs.
+     * @return array of Certificate, length of array is 0 if no certificates are found.
+     */
+    public static Certificate[] getCertChain(KeyStore keyStore, String privateKeyAlias) throws KeyStoreException {
+        cat.debug(">getCertChain: alias='"+privateKeyAlias+"'");
+        Certificate[] certchain = keyStore.getCertificateChain(privateKeyAlias);
+        cat.debug("Certchain retrieved from alias '"+privateKeyAlias+"' has length "+certchain.length);
+        if (certchain.length < 1) {
+            cat.error("Cannot load certificate chain with alias '"+privateKeyAlias+"' from keystore.");
+            cat.debug("<getCertChain: alias='"+privateKeyAlias+"', retlength="+certchain.length);
+            return certchain;
+        } else if (certchain.length > 0) {
+            if (CertTools.isSelfSigned((X509Certificate)certchain[certchain.length-1])) {
+                cat.debug("Issuer='"+((X509Certificate)certchain[certchain.length-1]).getIssuerDN()+"'.");
+                cat.debug("Subject='"+((X509Certificate)certchain[certchain.length-1]).getSubjectDN()+"'.");
+                cat.debug("<getCertChain: alias='"+privateKeyAlias+"', retlength="+certchain.length);
+                return certchain;
+            }
+        }
+        
+        // If we came here, we have a cert which is not root cert in 'cert' 
+        ArrayList array = new ArrayList();
+        for (int i=0;i<certchain.length;i++) {
+            array.add(certchain[i]);
+        }
+        
+        boolean stop = false;
+        while (!stop) {
+            X509Certificate cert = (X509Certificate)array.get(array.size()-1);
+            String ialias = CertTools.getPartFromDN(cert.getIssuerDN().toString(), "CN");
+            Certificate[] chain1 = keyStore.getCertificateChain(ialias);
+            cat.debug("Loaded certificate chain with length "+ chain1.length+" with alias '"+ialias+"'.");
+            if (chain1.length == 0) {
+                cat.error("No RootCA certificate found!");
+                stop = true;
+            }
+            for (int j=0;j<chain1.length;j++) {
+                array.add(chain1[j]);
+                // If one cert is slefsigned, we have found a root certificate, we don't need to go on anymore
+                if (CertTools.isSelfSigned((X509Certificate)chain1[j]))
+                    stop = true;
+            }
+        }
+        Certificate[] ret = new Certificate[array.size()];
+        for (int i=0;i<ret.length;i++) {
+            ret[i] = (X509Certificate)array.get(i);
+            cat.debug("Issuer='"+((X509Certificate)ret[i]).getIssuerDN()+"'.");
+            cat.debug("Subject='"+((X509Certificate)ret[i]).getSubjectDN()+"'.");
+        }
+        cat.debug("<getCertChain: alias='"+privateKeyAlias+"', retlength="+ret.length);
+        return ret;
+    } // getCertChain
+    
     /** create the subject key identifier.
      * @param pubKey the public key
      * @return SubjectKeyIdentifer asn.1 structure

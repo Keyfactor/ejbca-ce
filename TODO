@@ -1,4 +1,4 @@
-$Id: TODO,v 1.20 2002-03-22 10:11:24 anatom Exp $
+$Id: TODO,v 1.21 2002-03-24 10:47:22 anatom Exp $
 
 V 1.0
 -----
@@ -8,11 +8,8 @@ V 1.0
 V 1.x
 -----
 - Upgrade BC provider to latest version.
-- Batch create keystores in other formats, PKCS8/PEM. Apache compatible.
 - Make a database model similar to architecture model.
 - Possibility to warn about certificates about to expire.
-- Return PKCS7 response to IE/Mozilla, response is PKCS7 with whole chain.
-ca.crt is also pkcs7 with whole chain.
 - RA function to generate keystore for user.
 
 V 2.0
@@ -22,6 +19,8 @@ V 2.0
 - Add administration interface web-GUI (through servlets/JSP).
 - Remote secure administration through browser CA-admin and RA-admin.
 - Continue improving exceptions and error handling.
+- Return PKCS7 response to IE/Mozilla, response is PKCS7 with whole chain.
+ca.crt is also pkcs7 with whole chain.
 - Strategy for handling certificate issuance if notAfter is beyond CAs notAfter.
 - EJB best practices, performance meachurments and optimization.
 - Add Configuration (for some stuff) through database so changes can be made on-

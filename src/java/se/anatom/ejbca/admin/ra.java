@@ -76,7 +76,7 @@ public class ra {
                     System.out.println("Deleted user "+username);
                 } else {
                     System.out.println("Delete aborted!");
-                    System.out.println("Please run 'ra deluser "+username+"'.");
+                    System.out.println("Please run 'ra revokeuser "+username+"'.");
                 }
             } else if (args[0].equals("setclearpwd"))
             {

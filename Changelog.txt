@@ -1,13 +1,14 @@
 1.3
 ---
 Configuration howto/support for Oracle.
-Fixed to work on Weblogic.
+Tested on Weblogic.
+Function to batch-generate PEM-files for Apache etc.
+Function to rollover subCA with same key pair in ca.sh/cmd.
 Architectural overview in documentation.
 Better deployment scripts.
 Sample Linux firewall script.
 Added demo accept-all authentication module, NullAuthenticationSession.
 CA-certs can now be downloaded from webdist.
-Function to rollover subCA with same key pair in ca.sh/cmd.
 Lots of minor cosmetic, architectural and GUI changes.
 
 1.2

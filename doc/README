@@ -289,13 +289,19 @@ ra.sh/cmd setclearpwd <username> <password>
 batch.sh/cmd
 
 4. Many servers (ex Apache) wants keys and certificates in PEM-format, not
-PKCS12. Usign openssl a PKCS12 file can easily be trasnformed to PEM-format.
+PKCS12. 
+To generate PEM-files as well as PKCS12-files, add the parameter '-pem' after the 
+'batch.cmd/sh' command. The PEM-files will be stored in a separate subdirectory, 
+'pem'. The generated PEM-files can be used with Apache etc, and are NOT protected 
+by any password.
+
+Another way is to use openssl to transform a PKCS12 file to PEM-format.
 
 openssl pkcs12 -in <pkcs12-file> -nodes
 
 copy and paste private key to key-file, first certificate to server cert-file
 and last certificate to CA cert-file (If your CA is a subordinate CA to another
-Root CA, the CA cert-file may need to contain the whoel cert chain). Exactly how
+Root CA, the CA cert-file may need to contain the whole cert chain). Exactly how
 your server wants the files is server-dependent.
 
 
@@ -429,6 +435,9 @@ Generates PKCS12 files are stored in a subdirectory (to the current directory)
 called 'p12'. If the directory does not exist, it will be created.
 Make sure this directory is WELL protected, since the information contained
 in PCS12 files are secret (private keys).
+To generate PEM-files as well as PKCS12-files, add the parameter '-pem' after the 
+'batch.cmd/sh' command. The PEM-files generates can be used with Apache etc, and 
+are NOT protected by any password.
 
 Fetching certificates and CRLs
 ------------------------------

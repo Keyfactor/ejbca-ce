@@ -21,7 +21,7 @@ import junit.framework.*;
 
 /** Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.3 2002-03-22 10:11:24 anatom Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.4 2002-03-24 10:47:23 anatom Exp $
  */
 public class TestAuthenticationSession extends TestCase {
 
@@ -64,7 +64,7 @@ public class TestAuthenticationSession extends TestCase {
             createdata.setSubjectEmail("foo@anatom.se");
             cat.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (RemoteException re) {
-            if (re.getCause() instanceof DuplicateKeyException) {
+            if (re.detail instanceof DuplicateKeyException) {
                 userExists = true;
             }
         } catch (DuplicateKeyException dke) {
