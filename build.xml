@@ -646,6 +646,61 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   	<copy file="${keystore}" tofile="${env.JBOSS_HOME}/server/default/conf/${ksname}" verbose="true"/>	
   </target>
 
+
+  <!-- ==================================================================== -->
+  <!-- Defines the project classpath                                        -->
+  <!-- ==================================================================== -->
+  <path id="project.classpath" >
+    <!-- our compilation directory -->
+    <pathelement location="${javasrc}" />
+    <!-- needed 3rd party libraries -->
+    <fileset dir="${lib}" >
+      <include name="**/*.jar" />
+    </fileset>
+  </path>
+
+  <!-- ==================================================================== -->
+  <!-- Formats all source files                                             -->
+  <!-- ==================================================================== -->
+  <target name="format" depends="compile">
+
+    <!--  
+      Defines the Jalopy task
+    -->
+    <taskdef name="jalopy" classname="de.hunsicker.jalopy.plugin.ant.AntPlugin">
+      <classpath>
+        <fileset dir="/java/jalopy/lib">
+          <include name="*.jar" />
+        </fileset>
+      </classpath>
+    </taskdef>
+    <!--
+      Invokes Jalopy as follows:
+      - All formatted files will have unix fileformat (\n)
+      - Load your code convention from the given url
+      - Override the convention to use the file history feature
+      - Override the convention to use alder32 checksums of files for history testing
+      - Override the convention to use loglevel "info"
+      - Override the convention to use 2 threads
+      - The import optimization feature will work (if enabled in the active
+        convention), because a classpath reference is specified
+
+        Don't forget to setup an include pattern as Jalopy truly expects
+        valid Java source files as input!
+      -->
+    <jalopy fileformat="unix"
+            convention="ejbcaConventions.xml"
+            history="file"
+            historymethod="adler32"
+            loglevel="warn"
+            threads="2"
+            classpathref="project.classpath">
+      <fileset dir="${javasrc}">
+        <include name="**/*.java" />
+      </fileset>
+    </jalopy>
+  </target>
+  
   <!-- =================================================================== -->
   <!-- Run JUnit tests                                                     -->
   <!-- =================================================================== -->
