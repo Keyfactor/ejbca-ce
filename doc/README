@@ -496,28 +496,35 @@ INSTALLING WEB RA-ADMIN
 =======================
 
 Preliminary documentation - TODO:
-Installation procedure will be enhanced.
+Installation procedure will be enhanced eventually.
 
 
-1. Copy src/ra/web/raadmin/WEB-INF/tomcat-services.xml to
-JBOSS_HOME/server/default/deploy
+1. Copy src/ra/web/raadmin/WEB-INF/tomcat4-service.xml to
+$JBOSS_HOME/server/default/deploy
 
 2. Edit parameters in src/ra/web/raadmin/WEB-INF/web.xml.
 
 3. Create a tomcat server keystore with 'keytool' (create a certificate request
 that is processed by EJBCA and import the returned certificate).
 
-keytool -genkey -keyalg RSA -alias tomcat -keystore .keystore -storepass foo123
-keytool -certreq -alias tomcat -file tomcat.req -keystore .keystore -storepass
+keytool -genkey -keyalg RSA -alias tomcat -keystore keystore -storepass foo123 -
+dname "C=SE,O=PrimeKey,CN=<your-host-name>"
+keytool -certreq -alias tomcat -file tomcat.req -keystore keystore -storepass
 foo123
 
-Create a user in EJBCA, DN="C=SE,O=PrimeKEy,CN=localhost" or similar.
+Create a user in EJBCA, DN="C=SE,O=PrimeKey,CN=<your-host-name>".
+./ra.sh adduser tomacat-user foo123 "C=SE,O=PrimeKey,CN=<your-host-name>" null 1
+
 Process the request from keytool and write the certificate to 'tomcat.pem'.
-Download the CA certificate, transfer to PEM-format and concatenate the
-certificates together in 'tomcat.pem.'
+./ca.sh processreq tomacat-user foo123 tomcat.req tomcat.pem
+
+Download the CA certificate in PEM-format from
+http://localhost:8080/webdist/cacert.jsp (call it ejbca-ca.pem), and concatenate
+the certificates together in 'tomcat.pem.'
+cat ejbca-ca.pem >> tomcat.pem
 
 Import to the keystore:
-keytool -import -alias tomcat -file tomcat.pem -keystore .keystore -storepass
+keytool -import -alias tomcat -file tomcat.pem -keystore keystore -storepass
 foo123
 
 4. Name the keystore '.keystore' and put in $JBOSS_HOME.
@@ -525,13 +532,20 @@ foo123
 5. Add the EJBCA CA certificate to the trust-keystore in
 $JAVA_HOME/jre/lib/security/cacerts
 
-keytool -import -trustcacerts -file ejbca-ca.pem -keystore cacerts -storepass
-changeit
+keytool -import -trustcacerts -file ejbca-ca.pem -keystore
+$JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 
 6. Create a PKCS12 file with EJBCA for a user with CN=walter and the RAADMIN bit
 (temporarily CN=walter gives adminrights).
+./ra.sh adduser raadmin-user foo123 "C=SE,O=PrimeKey,CN=walter"
+walter@primekey.se 32
+./ra.sh setclearpwd raadmin-user foo123
+./batch.sh
 
-7. Install the PKCS12 file in the browser.
+7. Install the generated PKCS12 (p12/walter.p12) file in the browser.
+In Mozilla this is done by Edit->Preferences->Privacy&Security->Certificates->
+Manage Certificates->Import
+In IE it is done by double-clicking on the .p12 file.
 
 8. Start JBoss.
 
@@ -594,6 +608,7 @@ For IE to verify client certs, the ordering in the DN must be strictly the same
 
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
+
 
 
 
