@@ -12,4 +12,7 @@ public interface JNDINames {
      * This is the datasource definition used through the whole EJBCA app.
      */
     String DATASOURCE = "java:comp/env/DataSource";
+
+    /** mail session reference used throughout the app */
+    String MAIL_SESSION = "java:comp/env/mail/DefaultMail";
 }
