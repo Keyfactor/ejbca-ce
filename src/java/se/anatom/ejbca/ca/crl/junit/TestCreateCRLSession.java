@@ -6,25 +6,24 @@ import java.util.*;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import org.apache.log4j.Logger;
-
-import junit.framework.*;
-
-import se.anatom.ejbca.*;
 import se.anatom.ejbca.ca.store.*;
-import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.*;
+import se.anatom.ejbca.*;
+import se.anatom.ejbca.log.Admin;
 
+import org.apache.log4j.Logger;
+import junit.framework.*;
 
 /**
  * Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.10 2003-07-24 08:43:30 anatom Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.11 2003-09-03 16:19:57 herrvendil Exp $
  */
 public class TestCreateCRLSession extends TestCase {
+
     private static Logger log = Logger.getLogger(TestCreateCRLSession.class);
     private static Context ctx;
-    private static IJobRunnerSessionHome home;
+    private static IJobRunnerSessionHome  home;
     private static IJobRunnerSessionRemote remote;
     private static ICertificateStoreSessionHome storehome;
     private static ICertificateStoreSessionRemote storeremote;
@@ -43,13 +42,11 @@ public class TestCreateCRLSession extends TestCase {
         ctx = getInitialContext();
 
         Object obj = ctx.lookup("CreateCRLSession");
-        home = (IJobRunnerSessionHome) javax.rmi.PortableRemoteObject.narrow(obj,
-                IJobRunnerSessionHome.class);
+        home = (IJobRunnerSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IJobRunnerSessionHome.class);
         remote = home.create();
 
         Object obj1 = ctx.lookup("CertificateStoreSession");
-        storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
-                ICertificateStoreSessionHome.class);
+        storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
         storeremote = storehome.create();
         log.debug("<setUp()");
     }
@@ -73,7 +70,7 @@ public class TestCreateCRLSession extends TestCase {
      */
     public void test01CreateNewCRL() throws Exception {
         log.debug(">test01CreateNewCRL()");
-        remote.run(new Admin(Admin.TYPE_INTERNALUSER));
+        remote.run(new Admin(Admin.TYPE_INTERNALUSER), "TODO");
         log.debug("<test01CreateNewCRL()");
     }
 
@@ -86,10 +83,9 @@ public class TestCreateCRLSession extends TestCase {
         log.debug(">test02LastCRL()");
 
         // Get number of last CRL
-        int number = storeremote.getLastCRLNumber(new Admin(Admin.TYPE_INTERNALUSER));
-        log.debug("Last CRLNumber = " + number);
-
-        byte[] crl = storeremote.getLastCRL(new Admin(Admin.TYPE_INTERNALUSER));
+        int number = storeremote.getLastCRLNumber(new Admin(Admin.TYPE_INTERNALUSER),"TODO");
+        log.debug("Last CRLNumber = "+number);
+        byte[] crl = storeremote.getLastCRL(new Admin(Admin.TYPE_INTERNALUSER),"TODO");
         assertNotNull("Could not get CRL", crl);
 
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
@@ -109,10 +105,9 @@ public class TestCreateCRLSession extends TestCase {
         log.debug(">test03CheckNumberofRevokedCerts()");
 
         // Get number of last CRL
-        Collection revfp = storeremote.listRevokedCertificates(new Admin(Admin.TYPE_INTERNALUSER));
-        log.debug("Number of revoked certificates=" + revfp.size());
-
-        byte[] crl = storeremote.getLastCRL(new Admin(Admin.TYPE_INTERNALUSER));
+        Collection revfp = storeremote.listRevokedCertificates(new Admin(Admin.TYPE_INTERNALUSER),"TODO");
+        log.debug("Number of revoked certificates="+revfp.size());
+        byte[] crl = storeremote.getLastCRL(new Admin(Admin.TYPE_INTERNALUSER), "TODO");
         assertNotNull("Could not get CRL", crl);
 
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
@@ -121,9 +116,9 @@ public class TestCreateCRLSession extends TestCase {
 
         if (revset != null) {
             revsize = revset.size();
-        }
-
-        assertEquals(revfp.size(), revsize);
+            assertEquals(revfp.size(), revsize);
+        }  
         log.debug("<test03CheckNumberofRevokedCerts()");
-    }
+      }
+ 
 }
