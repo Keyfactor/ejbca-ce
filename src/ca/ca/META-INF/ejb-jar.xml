@@ -501,6 +501,14 @@
         <local>se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal</local>
         <ejb-link>CAAdminSession</ejb-link>
      </ejb-local-ref>     
+     <ejb-local-ref>
+        <description>The Authorization Session Bean</description>
+        <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.authorization.IAuthorizationSessionLocal</local>
+        <ejb-link>AuthorizationSession</ejb-link>
+     </ejb-local-ref>
      
    </session>
 

@@ -28,7 +28,9 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import se.anatom.ejbca.BaseSessionBean;
+import se.anatom.ejbca.authorization.AdminGroupExistsException;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
+import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
@@ -42,7 +44,7 @@ import se.anatom.ejbca.util.SqlExecutor;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.12 2004-05-12 11:23:53 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.13 2004-05-12 12:53:30 anatom Exp $
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
@@ -109,6 +111,20 @@ public class UpgradeSessionBean extends BaseSessionBean {
         }
         return caadminsession;
     } //getCaAdminSession
+
+    /** Gets connection to ca admin session bean
+     */
+    private IAuthorizationSessionLocal getAuthorizationSession() {
+        if(authorizationsession == null){
+          try{
+            IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) lookup("java:comp/env/ejb/AuthorizationSessionLocal", IAuthorizationSessionLocalHome.class);   
+            authorizationsession = authorizationsessionhome.create();  
+          }catch(Exception e){
+             throw new EJBException(e);
+          }
+        }
+        return authorizationsession;
+    } //getAuthorizationSession
 
     /** Runs a preCheck to see if an upgrade is possible
      * 
@@ -252,6 +268,12 @@ public class UpgradeSessionBean extends BaseSessionBean {
             JDBCUtil.close(ps2);
             JDBCUtil.close(ps3);
             JDBCUtil.close(con);
+        }
+        try {
+            getAuthorizationSession().initialize(admin, caId);
+        } catch (AdminGroupExistsException e) {
+            error("Error initializing admin group: ", e);
+            return false;
         }
         debug("<upgrade()");
         return true;
