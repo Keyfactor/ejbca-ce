@@ -8,8 +8,6 @@ Made type of signing device completely soft configurable.
 Option to generate JKS keystores.
 Many small improvements.
 Many bugfixes: 
-DN can now contain C=CN or similar, 
-fixed CRL distribution point encoding,
 improved serial number generation,
 
 1.4
@@ -18,11 +16,13 @@ Fixed bug with case-sensitivity for column names in Sybase.
 Fixed bug when rolling over subCAs without subjectKeyId in cert.
 Fixed bug with using country=CN in DN.
 Fixed encoding bug in CRL distribution points.
+Fixed LDAP issue with email address.
 Added method for easily getting certificates with different keyUsage.
 Better separated and better looking web pages.
 Deployed with EAR-files.
 Architectural changes.
 New version of Log4j, 1.2.
+Tested with Orion app-server.
 
 1.3.2
 -----
