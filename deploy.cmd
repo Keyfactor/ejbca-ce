@@ -1,6 +1,6 @@
 @echo off
 rem ----
-rem $Id: deploy.cmd,v 1.24 2002-11-29 15:43:30 herrvendil Exp $
+rem $Id: deploy.cmd,v 1.25 2002-12-29 15:54:30 anatom Exp $
 rem
 rem Deploy script for EJBCA
 rem
@@ -25,12 +25,12 @@ echo "%JBOSS_HOME%\server\default\conf\server.p12" already exist, no files copie
 
 rem Install BouncyCastle provider and ldap.jar
 :install
-if exist %JBOSS_HOME%\server\default\lib\jce-jdk13-116.jar goto deploy
-xcopy lib\jce-jdk13-116.jar "%JBOSS_HOME%\server\default\lib" /Q /Y
-xcopy lib\bcmail-jdk13-116.jar "%JBOSS_HOME%\server\default\lib" /Q /Y
+if exist %JBOSS_HOME%\server\default\lib\jce-jdk13-117.jar goto deploy
+xcopy lib\jce-jdk13-117.jar "%JBOSS_HOME%\server\default\lib" /Q /Y
+xcopy lib\bcmail-jdk13-117.jar "%JBOSS_HOME%\server\default\lib" /Q /Y
 xcopy lib\ldap.jar "%JBOSS_HOME%\server\default\lib" /Q /Y
 xcopy lib\regexp1_0_0.jar "%JBOSS_HOME%\server\default\lib" /Q /Y
-echo Copied jce-jdk13-116.jar, bcmail-jdk13-116.jar and ldap.jar to %JBOSS_HOME%\lib. JBoss must be restared.
+echo Copied jce-jdk13-117.jar, bcmail-jdk13-117.jar and ldap.jar to %JBOSS_HOME%\lib. JBoss must be restared.
 
 rem Deploy jar and war files
 :deploy

@@ -3,8 +3,8 @@
     <classpathentry kind="src" path="src/java"/>
     <classpathentry kind="var" path="JRE_LIB" rootpath="JRE_SRCROOT" sourcepath="JRE_SRC"/>
     <classpathentry kind="lib" path="lib/jboss-j2ee.jar"/>
-    <classpathentry kind="lib" path="lib/jce-jdk13-116.jar"/>
-    <classpathentry kind="lib" path="lib/bcmail-jdk13-116.jar"/>
+    <classpathentry kind="lib" path="lib/jce-jdk13-117.jar"/>
+    <classpathentry kind="lib" path="lib/bcmail-jdk13-117.jar"/>
     <classpathentry kind="lib" path="lib/junit.jar"/>
     <classpathentry kind="lib" path="lib/ldap.jar"/>
     <classpathentry kind="lib" path="lib/log4j-1.2.jar"/>
