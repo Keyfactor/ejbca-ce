@@ -12,6 +12,9 @@
  <enterprise-beans>
 
    <session>
+     <description>
+         Session bean handling core CA function,signing certificates.
+     </description>
      <ejb-name>RSASignSession</ejb-name>
      <home>se.anatom.ejbca.ca.sign.ISignSessionHome</home>
      <remote>se.anatom.ejbca.ca.sign.ISignSessionRemote</remote>

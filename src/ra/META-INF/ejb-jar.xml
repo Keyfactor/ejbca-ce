@@ -1,7 +1,9 @@
 ﻿<?xml version="1.0"?>
+
 <!DOCTYPE ejb-jar PUBLIC
 	"-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN"
 	"http://java.sun.com/dtd/ejb-jar_2_0.dtd">
+
 <ejb-jar>
 
  <description></description>
