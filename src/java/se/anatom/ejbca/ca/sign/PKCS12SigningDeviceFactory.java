@@ -4,10 +4,13 @@ import java.util.Properties;
 
 /** Factory for PKCS12 signing device.
  *
- * @version $Id: PKCS12SigningDeviceFactory.java,v 1.5 2003-02-28 00:42:59 koen_serry Exp $
+ * @version $Id: PKCS12SigningDeviceFactory.java,v 1.6 2003-03-01 21:15:54 herrvendil Exp $
  */
 
-public class PKCS12SigningDeviceFactory implements ISigningDeviceFactory {
+public class PKCS12SigningDeviceFactory {
+
+    public PKCS12SigningDeviceFactory() {
+    }
 
    /** Creates (if needed) the signing device and returns the object.
     * @param prop Arguments needed for the eventual creation of the object

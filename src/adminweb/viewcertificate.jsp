@@ -63,17 +63,16 @@
      username = request.getParameter(USER_PARAMETER );
      tokensn  = request.getParameter(HARDTOKENSN_PARAMETER);
      try{  
-       rabean.loadTokenCertificates(tokensn.trim(),username.trim());
+       rabean.loadTokenCertificates(tokensn,username);
        notauthorized = false;
      }catch(AuthorizationDeniedException e){}
      noparameter = false;
   }
 
   if( request.getParameter(USER_PARAMETER ) != null && request.getParameter(HARDTOKENSN_PARAMETER) == null){
-     username = request.getParameter(USER_PARAMETER );
-     out.write(username);
+     username = request.getParameter(USER_PARAMETER);
      try{  
-       rabean.loadCertificates(username.trim());
+       rabean.loadCertificates(username);
        notauthorized = false;
      }catch(AuthorizationDeniedException e){}
      noparameter = false;

@@ -11,7 +11,7 @@ function viewuser(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    window.open(link, 'view_cert',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+    window.open(link, 'view_user',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
 }
 
 function viewadmincert(row){

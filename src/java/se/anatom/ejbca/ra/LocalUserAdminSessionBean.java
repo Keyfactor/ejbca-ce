@@ -37,7 +37,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.45 2003-02-28 15:26:46 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.46 2003-03-01 21:16:14 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -196,6 +196,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                               throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, RemoteException {
         // String used in SQL so strip it
         String dn = StringTools.strip(subjectdn);
+        boolean statuschanged = false; 
         debug(">changeUser("+username+", "+dn+", "+email+")");
         int oldstatus;
         // Check if user fulfills it's profile.
@@ -221,11 +222,17 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             UserDataLocal data1= home.findByPrimaryKey(pk);
 
             if(password != null){
-              if(clearpwd)
+                System.out.println("passowrd == " + password);  
+              if(clearpwd){
+                 System.out.println("clear passowrd ");                   
                 setClearTextPassword(admin, username, password);
-              else
+              }  
+              else{
+                 System.out.println("noclear passowrd ");                      
                 setPassword(admin, username, password);
-            }
+              }
+            }else
+              System.out.println("passowrd == null");    
 
             data1.setDN(dn);
             if(subjectaltname != null )
@@ -240,13 +247,17 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             data1.setTokenType(tokentype);
             data1.setHardTokenIssuerId(hardwaretokenissuerid);
             oldstatus = data1.getStatus();
+            statuschanged = status != oldstatus; 
             data1.setStatus(status);
 
             data1.setTimeModified((new java.util.Date()).getTime());
 
-            if((type & SecConst.USER_SENDNOTIFICATION) != 0 && (status != oldstatus) && (status == UserDataLocal.STATUS_NEW || status == UserDataLocal.STATUS_KEYRECOVERY))
+            if((type & SecConst.USER_SENDNOTIFICATION) != 0 && statuschanged && (status == UserDataLocal.STATUS_NEW || status == UserDataLocal.STATUS_KEYRECOVERY))
               sendNotification(admin, username, password, dn, subjectaltname, email);
-            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"New status: "+ status);
+            if(statuschanged)
+              logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"New status: "+ status);
+            else
+              logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"");               
         }
         catch (Exception e) {
             logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY,"");
