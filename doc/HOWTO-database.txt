@@ -34,7 +34,7 @@ database used.
    Do the same with src/log/META-INF/jbosscmp-jdbc-<database>.xml
    Do the same with src/hardtoken/META-INF/jbosscmp-jdbc-<database>.xml
    Do the same with src/keyrecovery/META-INF/jbosscmp-jdbc-<database>.xml
-   
+
 
 4. Build EJBCA with 'ant' and deploy with 'deploy.sh/cmd'.
 
@@ -97,9 +97,10 @@ use the mapping "PostgreSQL".
 
 Jaws configuration file: jbosscmp-jdbc-postgres.xml
 
-JDBC driver: postgresql.jar (or whatever it's called).
+JDBC driver: the 7.4 driver (development) is needed to support the JDBC used by
+JBoss.
 
-If the JDBC-jar is not included, download it from http://jdbc.postgresql.org/.
+Download JDBC driver for PostgreSQL from http://jdbc.postgresql.org/.
 
 Copy postgres-service.xml to server/default/deploy
 In postgres-service.xml is defined the databas instance (EJBCA) and the database
@@ -129,6 +130,7 @@ Type mapping:
 
      <datasource>java:/DefaultDS</datasource>
      <type-mapping>Oracle8</type-mapping>
+
 
 
 
