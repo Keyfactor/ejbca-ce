@@ -5,7 +5,7 @@ Support for multiple CDPs separated by ';'
 Removed unneded debug output of cert during creation
 Fixed bug in setup-adminweb.sh
 Fixed missing submit button with PEM/P12 users
-New cmd line command to export profiles to XML files
+New cmd line command to export/import profiles to XML files
 
 2.0.1
 -----

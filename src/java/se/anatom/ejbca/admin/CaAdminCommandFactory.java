@@ -3,7 +3,7 @@ package se.anatom.ejbca.admin;
 /**
  * Factory for CA Admin Commands.
  *
- * @version $Id: CaAdminCommandFactory.java,v 1.5 2003-08-19 11:51:08 anatom Exp $
+ * @version $Id: CaAdminCommandFactory.java,v 1.6 2003-08-20 09:50:11 anatom Exp $
  */
 public class CaAdminCommandFactory {
     /**
@@ -50,6 +50,8 @@ public class CaAdminCommandFactory {
             return new CaRolloverSubCommand(args);
         } else if (args[0].equals("exportprofiles")) {
             return new CaExportProfilesCommand(args);
+        } else if (args[0].equals("importprofiles")) {
+            return new CaImportProfilesCommand(args);
         } else {
             return null;
         }
