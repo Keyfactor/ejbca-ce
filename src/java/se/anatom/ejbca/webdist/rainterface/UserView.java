@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * A class representing a web interface view of a user in the ra user database.
  *
- * @version $Id: UserView.java,v 1.9 2003-02-20 22:12:42 herrvendil Exp $
+ * @version $Id: UserView.java,v 1.10 2003-02-23 09:23:34 herrvendil Exp $
  */
 public class UserView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.
@@ -95,13 +95,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
             returnvalue = getSubjectDNField(DNFieldExtractor.CN,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.CN,0));            
             break;  
           case SortBy.SERIALNUMBER : 
-            String value1 =  getSubjectDNField(DNFieldExtractor.SN,0);
-            if(value1.equals(""))
-               value1 = getSubjectDNField(DNFieldExtractor.SN,0);  
-            String value2 = ((UserView) obj).getSubjectDNField(DNFieldExtractor.SERIALNUMBER,0);
-            if(value2.equals(""))
-               value2 = ((UserView) obj).getSubjectDNField(DNFieldExtractor.SERIALNUMBER,0);       
-            returnvalue = value1.compareTo(value2);            
+            returnvalue = getSubjectDNField(DNFieldExtractor.SN,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.SN,0));           
             break;  
           case SortBy.TITLE : 
             returnvalue = getSubjectDNField(DNFieldExtractor.T,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.T,0));            
