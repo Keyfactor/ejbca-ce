@@ -73,7 +73,7 @@ import se.anatom.ejbca.util.CertTools;
  * </pre>
  * </p>
  *
- * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.17 2003-09-03 19:57:54 herrvendil Exp $
+ * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.18 2003-09-04 06:46:05 anatom Exp $
  */
 public class LDAPActiveDirectoryPublisherSessionBean extends BaseSessionBean {
     private String ldapHost = "10.1.1.1";
@@ -355,7 +355,7 @@ public class LDAPActiveDirectoryPublisherSessionBean extends BaseSessionBean {
                 try {
                     InitialContext stctx = new InitialContext();
                     storeHome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(stctx.lookup(
-                                "se/anatom/ejbca/ca/store/ICertificateStoreSessionRemote"),
+                                "CertificateStoreSession"),
                             ICertificateStoreSessionHome.class);
                 } catch (NamingException exc) {
                     error("Error retrieving the home of  CertificateData or CRLData.", exc);
@@ -481,7 +481,7 @@ public class LDAPActiveDirectoryPublisherSessionBean extends BaseSessionBean {
             try {
                 InitialContext stctx = new InitialContext();
                 signHome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(stctx.lookup(
-                            "se/anatom/ejbca/ca/sign/ISignSessionRemote"), ISignSessionHome.class);
+                            "RSASignSession"), ISignSessionHome.class);
             } catch (NamingException exc) {
                 error("Error retrieving the home of CertificateData or CRLData.", exc);
 
