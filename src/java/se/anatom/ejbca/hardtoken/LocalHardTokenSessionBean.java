@@ -61,7 +61,7 @@ import se.anatom.ejbca.util.CertTools;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.26 2004-05-10 16:11:32 herrvendil Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.27 2004-05-15 14:53:09 herrvendil Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
@@ -195,7 +195,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 		 try{
 		   hardtokenprofilehome.create(findFreeHardTokenProfileId(), name, profile);
 		   success = true;
-		 }catch(Exception g){}		 
+		 }catch(CreateException g){}		 
 	   }
      
 	   if(success)
@@ -230,7 +230,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
   	       try{
 		     hardtokenprofilehome.create(new Integer(profileid), name, profile);
 		     success = true;
-		   }catch(Exception g){}		 
+		   }catch(CreateException g){}		 
 	   	 }
 	   }
      
@@ -368,7 +368,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 		  	//Implement for other profile types
 		  }
 		}  		
-	  }catch(Exception e){}
+	  }catch(FinderException e){}
 	  
 	  
 	  
@@ -473,7 +473,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 		if(htp != null){
 		  returnval = htp.getName();
 		}
-	  }catch(Exception e){}
+	  }catch(FinderException e){}
 
 	  debug("<getHardTokenProfileName()");
 	  return returnval;
@@ -496,7 +496,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
          try{
            hardtokenissuerhome.create(findFreeHardTokenIssuerId(), alias, admingroupid, issuerdata);
            returnval = true;
-         }catch(Exception g){}
+         }catch(CreateException g){}
        }
      
        if(returnval)
@@ -654,7 +654,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
           }
         }
         Collections.sort(returnval);
-      }catch(Exception e){}
+      }catch(FinderException e){}
 
       debug("<getHardTokenIssuerDatas()");
       return returnval;
@@ -683,7 +683,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
           }
         }
         Collections.sort(returnval);
-      }catch(Exception e){}
+      }catch(FinderException e){}
 
       debug("<getHardTokenIssuerAliases()");
       return returnval;
@@ -731,7 +731,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         if(htih != null){
           returnval = new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer());
         }
-      }catch(Exception e){}
+      }catch(FinderException e){}
 
       debug("<getHardTokenIssuerData()");
       return returnval;
@@ -752,7 +752,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         if(htih != null){
           returnval = new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer());
         }
-      }catch(Exception e){}
+      }catch(FinderException e){}
 
       debug("<getHardTokenIssuerData()");
       return returnval;
@@ -791,7 +791,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         if(htih != null){
           returnval = htih.getId().intValue();
         }
-      }catch(Exception e){}
+      }catch(FinderException e){}
 
       debug("<getHardTokenIssuerId()");
       return returnval;
@@ -812,7 +812,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         if(htih != null){
           returnval = htih.getAlias();
         }
-      }catch(Exception e){}
+      }catch(FinderException e){}
 
       debug("<getHardTokenIssuerAlias()");
       return returnval;
@@ -1014,7 +1014,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
            returnval = new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),htd.getHardToken(), copyof, copies);
            getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENVIEWED,"Hard token with sn " + tokensn + " viewed.");
          }
-       }catch(Exception e){}
+       }catch(FinderException e){}
 
        debug("<getHardToken()");
        return returnval;
@@ -1063,7 +1063,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
            returnval.add(new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),htd.getHardToken(),copyof, copies));
            getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENVIEWED,"Hard token with sn " + htd.getTokenSN() + " viewed.");
          }
-       }catch(Exception e){}
+       }catch(FinderException e){}
 
        debug("<getHardToken()");
        return returnval;
@@ -1288,7 +1288,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 		     exists = true;	
 		 }
 	   }
-	 }catch(Exception e){}
+	 }catch(FinderException e){}
 
 	 return exists;
    } // existsCertificateProfileInHardTokenProfiles

@@ -43,7 +43,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.36 2004-05-15 14:12:49 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.37 2004-05-15 14:53:10 herrvendil Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
@@ -550,7 +550,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
             };
           }
         }
-      }catch(Exception e){}
+      }catch(FinderException e){}
 
       return exists;
     }
@@ -576,7 +576,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
             };
           }
         }
-      }catch(Exception e){}
+      }catch(FinderException e){}
 
       return exists;
     } // existsCAProfileInEndEntityProfiles    

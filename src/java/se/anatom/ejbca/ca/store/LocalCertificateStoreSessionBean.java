@@ -57,7 +57,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.67 2004-05-13 15:37:07 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.68 2004-05-15 14:53:09 herrvendil Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -1410,7 +1410,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
            try{
              certprofilehome.create(new Integer(findFreeCertificateProfileId()),newcertificateprofilename,certificateprofile);
              getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"New certificateprofile " + newcertificateprofilename +  " used profile " + originalcertificateprofilename + " as template.");
-           }catch(Exception f){}
+           }catch(CreateException f){}
          }
        }catch(CloneNotSupportedException f){}
 
@@ -1544,7 +1544,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
               returnval.add(next.getId());
           }
         }  
-      }catch(Exception e){}
+      }catch(FinderException e){}
       return returnval;
     } // getAuthorizedCertificateProfileNames    
     
@@ -1784,7 +1784,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             }
           }
         }
-      }catch(Exception e){}
+      }catch(FinderException e){}
 
       return exists;
     } // existsCAInCertificateProfiles
@@ -1810,7 +1810,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             }
           }
         }
-      }catch(Exception e){}
+      }catch(FinderException e){}
 
       return exists;
     } // existsPublisherInCertificateProfiles

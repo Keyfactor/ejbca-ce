@@ -52,7 +52,7 @@ import se.anatom.ejbca.ra.ExtendedInformation;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalPublisherSessionBean.java,v 1.4 2004-05-13 15:36:11 herrvendil Exp $
+ * @version $Id: LocalPublisherSessionBean.java,v 1.5 2004-05-15 14:53:10 herrvendil Exp $
  */
 public class LocalPublisherSessionBean extends BaseSessionBean  {
 
@@ -298,7 +298,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean  {
 		 try{
 		   publisherhome.create(findFreePublisherId(), name, publisher);
 		   success = true;
-		 }catch(Exception g){}		 
+		 }catch(CreateException g){}		 
 	   }
      
 	   if(success)
@@ -333,7 +333,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean  {
   	       try{
 		     publisherhome.create(new Integer(id), name, publisher);
 		     success = true;
-		   }catch(Exception g){}		 
+		   }catch(CreateException g){}		 
 	   	 }
 	   }
      
@@ -574,7 +574,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean  {
 		if(htp != null){
 		  returnval = htp.getName();
 		}
-	  }catch(Exception e){}
+	  }catch(FinderException e){}
 
 	  debug("<getPublisherName()");
 	  return returnval;
