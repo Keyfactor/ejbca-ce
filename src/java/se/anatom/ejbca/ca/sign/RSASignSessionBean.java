@@ -38,7 +38,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.12 2002-01-25 11:49:14 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.13 2002-02-22 08:24:21 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -66,7 +66,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
     private Vector publishers = null;
     /* AuthenticationSession for authentication of users when certs are created */
     private IAuthenticationSessionRemote authSession = null;
-    
+
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -170,6 +170,24 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
             // a clustered environment etc.
             long seed = (new Date().getTime()) + this.hashCode();
             random.setSeed(seed);
+            /* Another possibility is to use SecureRandom's default seeding which is designed to be secure:
+            * <p>The seed is produced by counting the number of times the VM
+            * manages to loop in a given period. This number roughly
+            * reflects the machine load at that point in time.
+            * The samples are translated using a permutation (s-box)
+            * and then XORed together. This process is non linear and
+            * should prevent the samples from "averaging out". The s-box
+            * was designed to have even statistical distribution; it's specific
+            * values are not crucial for the security of the seed.
+            * We also create a number of sleeper threads which add entropy
+            * to the system by keeping the scheduler busy.
+            * Twenty such samples should give us roughly 160 bits of randomness.
+            * <P> These values are gathered in the background by a daemon thread
+            * thus allowing the system to continue performing it's different
+            * activites, which in turn add entropy to the random seed.
+            * <p> The class also gathers miscellaneous system information, some
+            * machine dependent, some not. This information is then hashed together
+            * with the 20 seed bytes. */
         } catch( Exception e ) {
             throw new EJBException(e);
         }
@@ -370,7 +388,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
         }
         debug("<initAuthSession()");
     } // initAuthSession
-    
+
     /**
      * Creates the CertificateStore and Publishers so they are available.
      */
