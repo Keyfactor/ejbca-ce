@@ -30,7 +30,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 /** Class to execute a file full of sql commands. Useful for running update scripts.
- * @version $Id: SqlExecutor.java,v 1.2 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: SqlExecutor.java,v 1.3 2004-04-23 08:18:21 anatom Exp $
  */
 public class SqlExecutor {
     static Logger log = Logger.getLogger(SqlExecutor.class);
@@ -106,7 +106,10 @@ public class SqlExecutor {
             int maxCommands = 0;
             List list = new LinkedList();
             while ((temp = br.readLine()) != null) {
-                list.add(temp);
+            	if (!temp.startsWith("#")) { // Don't include comments
+                	log.debug("temp="+temp);
+            		list.add(temp);
+            	}
                 if (!temp.endsWith(";"))
                     continue;
                 maxCommands++;
@@ -117,6 +120,7 @@ public class SqlExecutor {
                 temp = temp.trim();
                 lineno++;
                 if (temp.length() != 0) {
+                    strBuf.append(temp);
                     if (temp.endsWith(";")) {
                         // end of command, remove the ';' and execute
                         char ch = ' ';

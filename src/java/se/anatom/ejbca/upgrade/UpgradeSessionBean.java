@@ -18,6 +18,7 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 import javax.ejb.CreateException;
@@ -36,7 +37,7 @@ import se.anatom.ejbca.util.SqlExecutor;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.9 2004-04-22 08:38:15 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.10 2004-04-23 08:18:19 anatom Exp $
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
@@ -101,18 +102,17 @@ public class UpgradeSessionBean extends BaseSessionBean {
         PreparedStatement ps = null;
         try {
             con = getConnection();
-            // cAId in the table admingroupdata is only in ejbca 3, not 2.
-            ps = con.prepareStatement("select distinct cAId from admingroupdata");
+            // Check if cAId in the table admingroupdata is present. It is present only in ejbca 3, not 2.
+            ps = con.prepareStatement("select * from admingroupdata");
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                // We have caId, so we are already at ejbca 3
-                ret = false;
-            } else {
-                // We don't have any caId, so we are at ejbca 2
-                ret = true;
+            ResultSetMetaData md = rs.getMetaData(); // MySQL does not implement getMetaData directly from ps
+            debug("preCheck: no of columns="+md.getColumnCount());
+            // Ejbca 3 has three columns, ejbca 2 only one
+            if (md.getColumnCount() == 1) {
+            	ret = true;
             }
         } catch (Exception e) {
-        	// ignore, will return false
+        	error("Database error during preCheck: ", e);
         } finally {
             JDBCUtil.close(ps);
             JDBCUtil.close(con);
@@ -132,9 +132,11 @@ public class UpgradeSessionBean extends BaseSessionBean {
         String dbtype = null;
         if (args.length > 0) {
             dbtype = args[0];
+            debug("Database type="+dbtype);
         }
         if (args.length > 1) {
         	dataSource = args[1];
+        	debug("Datasource="+dataSource);
         }
         if (!preCheck()) {
         	info("preCheck failed, no upgrade performed.");

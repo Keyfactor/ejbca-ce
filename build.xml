@@ -768,9 +768,10 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
 		<!-- Get input -->
   		<input
 		    message="Type of database:"
-		    validargs="hsql,oracle,mssql,mysql,postgres,sapdb,hsqldb,sybase"
+            validargs="mysql"
 		    addproperty="ejbca.DB"
 		  />
+        <!-- validargs="hsql,oracle,mssql,mysql,postgres,sapdb,hsqldb,sybase" -->
   		<input
 		    message="Data source (default java:/DefaultDS):"
 		    addproperty="ejbca.DS"

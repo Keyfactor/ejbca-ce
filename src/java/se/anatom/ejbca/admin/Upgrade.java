@@ -27,7 +27,7 @@ import se.anatom.ejbca.upgrade.IUpgradeSessionHome;
 /**
  * Implements call to the upgrade function
  *
- * @version $Id: Upgrade.java,v 1.4 2004-04-16 08:17:25 anatom Exp $
+ * @version $Id: Upgrade.java,v 1.5 2004-04-23 08:18:20 anatom Exp $
  */
 public class Upgrade extends BaseCommand {
 
@@ -82,7 +82,7 @@ public class Upgrade extends BaseCommand {
         try {
             boolean ret = upgrade.upgrade();
             if (!ret) {
-                upgrade.error("Upgrade not performed.");
+                upgrade.error("Upgrade not performed, see server log for details.");
             } else {
              upgrade.info("Upgrade completed.");   
             }
