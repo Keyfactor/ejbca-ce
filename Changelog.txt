@@ -1,5 +1,8 @@
 3.1
 ---
+- Changed packaging to avoid classes duplication between jars
+- Added ear classloader isolation for JBoss to avoid class leaking between ears
+ 
 
 3.0
 ---
