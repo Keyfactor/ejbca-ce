@@ -9,7 +9,7 @@ import se.anatom.ejbca.ra.UserAdminData;
 
 /**
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.2 2002-06-10 16:21:04 herrvendil Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.3 2002-06-23 10:11:45 primelars Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
 
@@ -99,7 +99,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public void startExternalService() throws RemoteException;
+    public void startExternalService(String args[]) throws RemoteException;
 
 }
 

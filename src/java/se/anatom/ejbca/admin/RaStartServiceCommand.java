@@ -5,7 +5,7 @@ import java.io.*;
 
 /** Starts an external service needed for user administrations, runs in the same JVM.
  *
- * @version $Id: RaStartServiceCommand.java,v 1.1 2002-06-10 10:40:52 anatom Exp $
+ * @version $Id: RaStartServiceCommand.java,v 1.2 2002-06-23 10:11:43 primelars Exp $
  */
 public class RaStartServiceCommand extends BaseRaAdminCommand {
 
@@ -16,7 +16,7 @@ public class RaStartServiceCommand extends BaseRaAdminCommand {
 
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
-            getAdminSession().startExternalService();
+            getAdminSession().startExternalService(args);
             System.out.println("External service started");
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

@@ -17,7 +17,7 @@ import se.anatom.ejbca.util.CertTools;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.15 2002-06-10 16:21:04 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.16 2002-06-23 10:11:45 primelars Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -222,7 +222,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
    /**
     * Implements IUserAdminSession::startExternalService.
     */
-    public void startExternalService() {
+    public void startExternalService( String[] args ) {
         debug(">startService()");
         try {
             final int registryPortRMI =
@@ -237,15 +237,12 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             final String keyStorePassword =
                 (String)lookup("java:comp/env/keyStorePassword",
                                  java.lang.String.class);
-            final String trustedFileName =
-                (String)lookup("java:comp/env/trustStoreFileName",
-                                 java.lang.String.class);
             RMIFactory rmiFactory = (RMIFactory)Class.forName(
                 (String)lookup("java:comp/env/RMIFactory",
                                java.lang.String.class)
                 ).newInstance();
             rmiFactory.startConnection(registryPortRMI, startPortRMI,
-                keyFileName, keyStorePassword, trustedFileName );
+                keyFileName, keyStorePassword, args );
             debug(">startService()");
         } catch( Exception e ) {
             error("Lyckades inte starta extern service.", e);

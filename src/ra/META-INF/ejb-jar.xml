@@ -28,7 +28,7 @@
         <description>Factory class can dynamically link to external implementation class.</description>
         <env-entry-name>RMIFactory</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>se.walter.cardPersonalization.ra.server.impl.ejbca.RMIFactoryImpl</env-entry-value>
+        <env-entry-value>se.walter.cardPersonalization.ra.ejbca.RMIFactoryImpl</env-entry-value>
      </env-entry>
      <env-entry>
         <description>Port used for external RMI registry</description>
@@ -46,19 +46,13 @@
         <description>Key store file name for server SSL certificate</description>
         <env-entry-name>keyStoreFileName</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>server.jks</env-entry-value>
+        <env-entry-value>../server/default/conf/SSL.jks</env-entry-value>
      </env-entry>
      <env-entry>
         <description>Key store password</description>
         <env-entry-name>keyStorePassword</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>server</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Trust store file for SSL connections</description>
-        <env-entry-name>trustStoreFileName</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>trusted.jks</env-entry-value>
      </env-entry>
      <!-- END Env-entries for starting an external RMI service using SSL --> 
 

@@ -20,6 +20,8 @@ public interface RMIFactory {
      *
      * @see #startConnection(PluginTools, int, int, String, String, TrustManager[])
      */
-    void startConnection(int registryPortRMI, int startPortRMI,
-        String keyFileName, String keyStorePassword, String trustedFileName ) throws Exception;
+    void startConnection(
+        int registryPortRMI, int startPortRMI, String keyFileName,
+        String keyStorePassword, String[] args
+        ) throws Exception;
 }
