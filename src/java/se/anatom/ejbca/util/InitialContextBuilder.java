@@ -13,19 +13,19 @@
 
 package se.anatom.ejbca.util;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Hashtable;
 import java.util.Properties;
-import java.io.InputStream;
-import java.io.IOException;
-import javax.naming.NamingException;
-import javax.naming.Context;
+
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /**
  * Utility class to manage creation of InitialContext.
  * <p/>
  *
- * @version $Id: InitialContextBuilder.java,v 1.1 2004-10-13 07:14:57 anatom Exp $
+ * @version $Id: InitialContextBuilder.java,v 1.2 2004-10-13 07:19:20 anatom Exp $
  */
 
 public class InitialContextBuilder {
