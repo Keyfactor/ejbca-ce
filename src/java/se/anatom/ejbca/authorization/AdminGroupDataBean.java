@@ -36,29 +36,131 @@ import se.anatom.ejbca.BaseEntityBean;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.4 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.5 2004-06-03 06:58:39 anatom Exp $
+ *
+ * @ejb.bean
+ *   generate="false"
+ *   display-name="This enterprise bean entity represents an authorization usergroup"
+ *   name="AdminGroupData"
+ *   local-jndi-name="AdminGroupData"
+ *   view-type="local"
+ *   type="CMP"
+ *   reentrant="false"
+ *   cmp-version="2.x"
+ *   transaction-type="Container"
+ *   schema="AdminGroupDataBean"
+ *
+ * @ejb.pk
+ *   class="java.lang.Integer"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.home
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.authorization.AdminGroupDataLocalHome"
+ *
+ * @ejb.interface
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.authorization.AdminGroupDataLocal"
+ *
+ * @ejb.finder
+ *   description="findByGroupNameAndCAId"
+ *   signature="Collection findByGroupNameAndCAId(java.lang.String,  int)"
+ *   query="SELECT DISTINCT OBJECT(a) from AdminGroupDataBean a WHERE a.adminGroupName=?1 AND a.cAId=?2"
+ *
+ * @ejb.finder
+ *   description="findAll"
+ *   signature="Collection findAll()"
+ *   query="SELECT DISTINCT OBJECT(a) from AdminGroupDataBean a"
+ *
+ * @ejb.ejb-external-ref
+ *   description=""
+ *   view-type="local"
+ *   ejb-name="AdminEntityDataLocal"
+ *   type="Entity"
+ *   home="se.anatom.ejbca.authorization.AdminEntityDataLocalHome"
+ *   business="se.anatom.ejbca.authorization.AdminEntityDataLocal"
+ *   link="AdminEntityData"
+ *
+ * @ejb.ejb-external-ref
+ *   description=""
+ *   view-type="local"
+ *   ejb-name="AccessRulesDataLocal"
+ *   type="Entity"
+ *   home="se.anatom.ejbca.authorization.AccessRulesDataLocalHome"
+ *   business="se.anatom.ejbca.authorization.AccessRulesDataLocal"
+ *   link="AccessRulesData"
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
  */
 public abstract class AdminGroupDataBean extends BaseEntityBean {
 
     private static Logger log = Logger.getLogger(AdminGroupDataBean.class);
 
+	/**
+	 * @ejb.persistence
+     * @ejb.pk-field
+	 */
     public abstract Integer getPK();
-    public abstract void setPK(Integer pk);
+
+	/**
+	 * @ejb.persistence
+	 */
+	public abstract void setPK(Integer pk);
     
+	/**
+	 * @ejb.persistence
+     * @ejb.pk-field
+     * @ejb.interface-method view-type="local"
+	 */
     public abstract String getAdminGroupName();
+
+	/**
+	 * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+	 */
     public abstract void setAdminGroupName(String admingroupname);
 
+	/**
+	 * @ejb.persistence
+     * @ejb.pk-field
+     * @ejb.interface-method view-type="local"
+	 */
     public abstract int getCAId();
+
+	/**
+	 * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+	 */
     public abstract void setCAId(int caid);    
     
+	/**
+	 */
     public abstract Collection getAdminEntities();
+
+	/**
+	 */
     public abstract void setAdminEntities(Collection adminentities);
 
+	/**
+	 */
     public abstract Collection getAccessRules();
+
+	/**
+	 */
     public abstract void setAccessRules(Collection accessrules);
 
      /**
      * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
+     * @ejb.interface-method view-type="local"
      */
 
     public void addAccessRules(Collection accessrules){
@@ -88,6 +190,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
      /**
      * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
+     * @ejb.interface-method view-type="local"
      */
     public void removeAccessRules(Collection accessrules){
       Iterator iter = accessrules.iterator();
@@ -110,6 +213,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
      /**
      * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
+     * @ejb.interface-method view-type="local"
      */
     public int getNumberOfAccessRules(){
        return  getAccessRules().size();
@@ -117,6 +221,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
      /**
      * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
+     * @ejb.interface-method view-type="local"
      */
     public Collection getAccessRuleObjects(){
       ArrayList returnval = new ArrayList();
@@ -132,6 +237,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
      /**
      * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
+     * @ejb.interface-method view-type="local"
      */
 
     public void addAdminEntities(Collection adminentities){
@@ -163,6 +269,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
      /**
      * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
+     * @ejb.interface-method view-type="local"
      */
     public void removeAdminEntities(Collection adminentities){
       Iterator iter = adminentities.iterator();
@@ -188,6 +295,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
      /**
      * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
+     * @ejb.interface-method view-type="local"
      */
     public int getNumberOfAdminEntities(){
       return getAdminEntities().size();
@@ -195,6 +303,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
      /**
      * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
+     * @ejb.interface-method view-type="local"
      */
     public Collection getAdminEntityObjects(){
       ArrayList returnval = new ArrayList();
@@ -210,6 +319,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
      /**
      * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
+     * @ejb.interface-method view-type="local"
      */
     public AdminGroup getAdminGroup(){
       ArrayList accessrules = new ArrayList();
@@ -237,6 +347,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
      /**
      * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
+     * @ejb.interface-method view-type="local"
      */
     public AdminGroup getAdminGroupNames(){                    
       return new AdminGroup(getPK().intValue() , getAdminGroupName(), getCAId(), null, null);
@@ -248,9 +359,9 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
     /**
      * Entity Bean holding data of raadmin profilegroups.
      * @param admingroupname.
-     *
-     **/
-
+	 *
+     * @ejb.create-method view-type="local"
+     */
     public Integer ejbCreate(Integer pk, String admingroupname, int caid) throws CreateException {        
         setPK(pk);
         setAdminGroupName(admingroupname);

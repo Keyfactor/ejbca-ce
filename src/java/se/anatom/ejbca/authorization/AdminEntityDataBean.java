@@ -27,33 +27,96 @@ import se.anatom.ejbca.BaseEntityBean;
  *   matchvalue
  * </pre>
  *
- * @version $Id: AdminEntityDataBean.java,v 1.2 2004-04-16 07:38:57 anatom Exp $
+ * @ejb.bean
+ *   generate="false"
+ *   display-name="This enterprise bean entity represents a user entity"
+ *   name="AdminEntityData"
+ *   local-jndi-name="AdminEntityData"
+ *   view-type="local"
+ *   type="CMP"
+ *   reentrant="false"
+ *   cmp-version="2.x"
+ *   transaction-type="Container"
+ *   schema="AdminEntityDataBean"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.pk
+ *   class="se.anatom.ejbca.authorization.AdminEntityPK"
+ *   extends="java.lang.Object"
+ *   implements="java.io.Serializable"
+ *
+ * @ejb.home
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.authorization.AdminEntityDataLocalHome"
+ *
+ * @ejb.interface
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.authorization.AdminEntityDataLocal"
+ *
  */
 public abstract class AdminEntityDataBean extends BaseEntityBean {
 
     private static Logger log = Logger.getLogger(AdminEntityDataBean.class);
 
     public abstract int          getPK();
+
+	/**
+	 * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     * @ejb.pk-field
+     */
     public abstract int          getMatchWith();
+
+    /**
+	 * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     * @ejb.pk-field
+     */
     public abstract int          getMatchType();
+
+    /**
+	 * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     * @ejb.pk-field
+     */
     public abstract String       getMatchValue();
 
+    /**
+	 * @ejb.persistence
+	 */
     public abstract void setPK(int pK);
+
+    /**
+	 * @ejb.persistence
+	 */
     public abstract void setMatchWith(int matchwith);
+
+    /**
+	 * @ejb.persistence
+	 */
     public abstract void setMatchType(int matchtype);
+
+    /**
+	 * @ejb.persistence
+	 */
     public abstract void setMatchValue(String matchvalue);
 
 
+    /**
+     * @ejb.interface-method view-type="local"
+     */
     public AdminEntity getAdminEntity(int caid){
       return new AdminEntity(getMatchWith(), getMatchType(), getMatchValue(), caid);
     }
 
 
-    //
-    // Fields required by Container
-    //
-
-
+	/**
+	 *
+     * @ejb.create-method
+	 */
     public AdminEntityPK ejbCreate(String admingroupname, int caid, int matchwith, int matchtype, String matchvalue) throws CreateException {
 
         AdminEntityPK pk = new AdminEntityPK(admingroupname, caid, matchwith,matchtype,matchvalue);
@@ -61,7 +124,6 @@ public abstract class AdminEntityDataBean extends BaseEntityBean {
         setMatchWith(matchwith);
         setMatchType(matchtype);
         setMatchValue(matchvalue);
-
 
         log.debug("Created admin entity "+ matchvalue);
         return pk;

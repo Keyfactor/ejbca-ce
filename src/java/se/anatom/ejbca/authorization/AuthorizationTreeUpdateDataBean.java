@@ -28,23 +28,60 @@ import se.anatom.ejbca.BaseEntityBean;
  * 
  * </pre>
  *
- * @version $Id: AuthorizationTreeUpdateDataBean.java,v 1.2 2004-04-16 07:38:57 anatom Exp $
+ * @ejb.bean
+ *   generate="false"
+ *   description="This enterprise bean entity represents an access rule"
+ *   display-name="AuthorizationTreeUpdateDataEB"
+ *   name="AuthorizationTreeUpdateData"
+ *   local-jndi-name="AuthorizationTreeUpdateData"
+ *   view-type="local"
+ *   type="CMP"
+ *   reentrant="false"
+ *   cmp-version="2.x"
+ *   transaction-type="Container"
+ *   schema="AuthorizationTreeUpdateDataBean"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.pk
+ *   class="java.lang.Integer"
+ *
+ * @ejb.home
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.authorization.AuthorizationTreeUpdateDataLocalHome"
+ *
+ * @ejb.interface
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.authorization.AuthorizationTreeUpdateDataLocal"
+ *
  */
 public abstract class AuthorizationTreeUpdateDataBean extends BaseEntityBean
 {
 
     private static Logger log = Logger.getLogger(AuthorizationTreeUpdateDataBean.class);
 
+	/**
+     * @ejb.pk-Field
+     */
     public abstract Integer getPK();
+
     public abstract void setPK(Integer pK);
 
+	/**
+     * @ejb.interface-method view-type="local"
+     */
     public abstract int getAuthorizationTreeUpdateNumber();
+
     public abstract void setAuthorizationTreeUpdateNumber(int authorizationtreeupdatenumber);
 
     
-    //
-    // Fields required by Container
-    //
+
+	/**
+	 *
+     * @ejb.create-method
+	 */
     public Integer ejbCreate() throws CreateException {
       setPK(new Integer(AuthorizationTreeUpdateDataLocalHome.AUTHORIZATIONTREEUPDATEDATA));
       setAuthorizationTreeUpdateNumber(0);
@@ -57,8 +94,8 @@ public abstract class AuthorizationTreeUpdateDataBean extends BaseEntityBean
 
      /**
      * @see se.anatom.ejbca.authorization.AuthorizationTreeUpdateDataLocal
+     * @ejb.interface-method view-type="local"
      */
-    
     public boolean updateNeccessary(int currentauthorizationtreeupdatenumber){
       return getAuthorizationTreeUpdateNumber() != currentauthorizationtreeupdatenumber;          
     } // updateNeccessary
@@ -66,8 +103,8 @@ public abstract class AuthorizationTreeUpdateDataBean extends BaseEntityBean
 
      /**
      * @see se.anatom.ejbca.authorization.AuthorizationTreeUpdateDataLocal
+     * @ejb.interface-method view-type="local"
      */
-    
     public void incrementAuthorizationTreeUpdateNumber(){
       setAuthorizationTreeUpdateNumber(getAuthorizationTreeUpdateNumber() +1);  
     }  // incrementAuthorizationTreeUpdateNumber
