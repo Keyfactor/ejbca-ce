@@ -48,8 +48,7 @@ public class ra {
                 System.out.println("Email: "+email);
                 System.out.println("Type: "+type);
                 admin.addUser(username, password, dn, email, type);
-            }
-            if (args[0].equals("deluser"))
+            } else if (args[0].equals("deluser"))
             {
                 if (args.length < 2) {
                     System.out.println("Usage: RA deluser username");
@@ -58,8 +57,7 @@ public class ra {
                 String username = args[1];
                 System.out.println("Deleting user "+username);
                 admin.deleteUser(username);
-            }
-            if (args[0].equals("setclearpwd"))
+            } else if (args[0].equals("setclearpwd"))
             {
                 if (args.length < 3) {
                     System.out.println("Usage: RA setclearpwd username password");
@@ -69,8 +67,7 @@ public class ra {
                 String password = args[2];
                 System.out.println("Setting clear text password "+password+" for user "+username);
                 admin.setClearTextPassword(username, password);
-            }
-            if (args[0].equals("setuserstatus"))
+            } else if (args[0].equals("setuserstatus"))
             {
                 if (args.length < 3) {
                     System.out.println("Usage: RA setuserstatus username status");
@@ -81,8 +78,7 @@ public class ra {
                 int status = Integer.parseInt(args[2]);
                 System.out.println("New status for user "+username+" is "+status);
                 admin.setUserStatus(username, status);
-            }
-            if (args[0].equals("finduser"))
+            } else if (args[0].equals("finduser"))
             {
                 if (args.length < 2) {
                     System.out.println("Usage: RA finduser username");
@@ -97,8 +93,7 @@ public class ra {
                 System.out.println("status="+data.getStatus());
                 System.out.println("type="+data.getType());
                 System.out.println("password="+data.getPassword());
-            }
-            if (args[0].equals("listnewusers"))
+            } else if (args[0].equals("listnewusers"))
             {
 
                 Collection coll = admin.findAllUsersByStatus(UserData.STATUS_NEW);
@@ -108,6 +103,8 @@ public class ra {
                     UserAdminData data = (UserAdminData)iter.next();
                     System.out.println("New user: "+data.getUsername()+", \""+data.getDN()+"\", "+data.getEmail()+", "+data.getStatus()+", "+data.getType());
                 }
+            } else {
+                System.out.println("Usage: RA adduser|deluser|setclearpwd|setuserstatus|finduser|listnewusers");
             }
 
         } catch (Exception e) {

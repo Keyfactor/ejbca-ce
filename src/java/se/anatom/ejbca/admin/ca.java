@@ -261,7 +261,7 @@ public class ca {
                 int number = storeremote.getLastCRLNumber();
                 System.out.println("CRL with number " + number+ " generated.");
             } else {
-                System.out.println("Usage: CA makeroot | makereq | recreq | createcrl ");
+            System.out.println("Usage: CA makeroot | rootcert | makereq | recrep | processreq | createcrl ");
             }
 
         } catch (Exception e) {

@@ -27,8 +27,8 @@ PLATFORMS
 EJBCA is completely written in Java and sould as such run on any platoform where a J2EE server runs.
 Development and testing is performed On Linux and Windows2000 platforms.
 
-INSTALL
--------
+BUILD
+-----
 
 Needed to build and run are:
 JDK (1.3.1_x)
@@ -37,18 +37,52 @@ Ant 1.4 to build (http://jakarta.apache.org/ant/)
 
 Simply unpack the archive in a directory and run "ant" to build everything.
 
-Copy the JCE provider lib/bcprov.jar to the directory jboss/lib/ext in, it will be added to JBoss's classpath 
-automatically.
+Copy the Boucycastle JCE provider lib/bcprov.jar to the directory jboss/lib/ext in, it will be added to JBoss's classpath 
+automatically when JBoss is started.
 
-Set the environment variable JBOSS_HOME to the directory where JBoss's root is (/jboss) and run 
-deploy.sh/bat to install the EJBs and WARs (they are copied to the jboss/deploy directory).
+Set the environment variable JBOSS_HOME to the directory where JBoss's root is (/jboss). This is done so the deploy script will know where files are to be copied, they are copied to the $JBOSS_HOME/deploy directory.
 
-Now some things are a bit rudimentary, src/ca/keystore/server.p12 must be in the directory designated by the 
-item 'keyStore' in src/ca/META-INF/ejb-jar.xml (default /tmp/server.p12).
+CONFIGURE
+---------
+
+Now when everything is installed, there are a few things to configure before starting JBOSS and running everything.
+Most important, to run the CA a keystore must be in the directory designated by the item 'keyStore' in src/ca/META-INF/ejb-jar.xml (default /tmp/server.p12). A test keyStore is provided in 'src/ca/keystore/server.p12'.
+
+For the impatient:
+1. Copy 'src/ca/keyStore/server.p12' to /tmp.
+2. Start JBoss, jars and wars should be deployed.
+3. Run the tests with 'runtest.sh/bat'.
+
+Setting up your own CA:
+
+The CA uses a keystore, which is configured at deployment by editing 'src/ca/META-INF/ejb-jar.xml'. Of special interest is the 'keyStore' entry, which points to the keystore holding the CAs private key and certificate chain.
+There are several ways to generate a keystore depending on if the CA is a root CA or subordinate to another CA.
+
+Root CA:
+run 'ca.sh/bat makeroot' and enter all required parameters.
+Ex: 'ca.sh makeroot C=SE,O=AnaTom,CN=EJBCA 1024 365 /tmp/server.p12 foo123
+will create a root CA with the DN 'C=SE,O=AnaTom,CN=EJBCA'. The keylength is 1024 bit (RSA) and the validity of the root certificate is 365 days. The CAs keystore will be stored in 'tmp/server.p12' and be protected by the password 'foo123'.
+Now edit 'src/ca/META-INF/ejb-jar.xml' to reflect the values you entered for 'keyStore' and 'keyStorePass'.
+
+Subordinate CA:
+run 'ca.sh/bat makereq' and enter all required parameters.
+The result will be a PKCS10 certificate request which must be processed by the CA that will certify this subordinate CA.
+//TODO: more description and examples.
+run 'ca.sh/bat recrep' and enter all required parameters to receive the certificate reply sent by the CA certifying this subordinate CA. The certificate reply is simply a DER-encoded certificate.
+Now edit 'src/ca/META-INF/ejb-jar.xml' to reflect the values you entered for 'keyStore' and 'keyStorePass'.
+
+DEPLOY
+------
+After configuration, if you have edited the xml-files manually, please run "ant" to rebuild jars and wars. If youe are using a deployment tool, this may not be needed, consult your documentation for the tool.
+
+Run deploy.sh/bat to install the EJBs and WARs (they are copied to the $JBOSS_HOME/deploy directory).
 
 RUN
 ---
-Run the testprograms with runtests.sh/bat and watch the lovely debug output and logs in JBoss.
+
+Start JBoss with 'run_whith_tomcat.sh/bat'. JBOSS shoudl start up and deploy our beans and servlets without error messages.
+
+Run the testprograms with 'runtests.sh/bat' and watch the lovely debug output and logs in JBoss.
 
 To enroll for certificates using browsers, open http://127.0.0.1:8080/apply/request/index.html (assuming 
 Tomcat listens to port 8080) and use the links for your browser.
@@ -77,3 +111,10 @@ REFERENCES
 ----------
 
 http://home.netscape.com/eng/security/comm4-keygen.html
+
+Note on Mozilla certs:
+For Netscape/Mozilla to be able to verify client certificates the CA-certificates must have the extensions BasicConstraints and AuthorityKeyIdentifier.
+Client certificates also need AuthorityKeyIdentifier
+
+Not on IE certs:
+For IE to verify client certs, the ordering in the DN must be strictly the same in both client and CA certs. Possibly that it must also be in a specific order.

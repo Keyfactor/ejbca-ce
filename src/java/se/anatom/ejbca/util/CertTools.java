@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.2 2001-11-17 18:12:11 anatom Exp $
+ * @version $Id: CertTools.java,v 1.3 2001-11-18 10:53:06 anatom Exp $
  */
 public class CertTools {
 
@@ -282,12 +282,11 @@ public class CertTools {
         certgen.setSubjectDN(CertTools.stringToBcX509Name(dn));
         certgen.setIssuerDN(CertTools.stringToBcX509Name(dn));
         certgen.setPublicKey(pubKey);
-        // Basic constranits is always critical
+        // Basic constranits is always critical and MUST be present at-least in CA-certificates.
         BasicConstraints bc = new BasicConstraints(isCA);
         certgen.addExtension(X509Extensions.BasicConstraints.getId(), true, bc);
 
-        /*
-        // Subject and Authority key identifier is always non-critical
+        // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Mozilla.
         try {
             if (isCA == true) {
                 SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((DERConstructedSequence)new DERInputStream(
@@ -303,8 +302,6 @@ public class CertTools {
             }
         } catch (IOException e) {// do nothing
         }
-         */
-         
             
         X509Certificate selfcert = certgen.generateX509Certificate(privKey);
         return selfcert;
