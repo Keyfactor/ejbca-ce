@@ -22,13 +22,13 @@ import se.anatom.ejbca.util.StringTools;
 /**
  * Holds admin data collected from UserData in the database.
  *
- * @version $Id: UserAdminData.java,v 1.10 2004-04-16 07:38:56 anatom Exp $
+ * @version $Id: UserAdminData.java,v 1.11 2004-11-08 20:56:02 sbailliez Exp $
  */
 public class UserAdminData implements Serializable {
 
     // Public constants
-    static final public int NO_ENDENTITYPROFILE    = 0;
-    static final public int NO_CERTIFICATEPROFILE  = 0;
+    public static final int NO_ENDENTITYPROFILE    = 0;
+    public static final int NO_CERTIFICATEPROFILE  = 0;
 
 
     private String username;
