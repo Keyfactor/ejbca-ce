@@ -41,7 +41,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.4 2002-01-14 13:53:07 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.5 2002-01-14 14:51:50 anatom Exp $
  *
  */
 
@@ -236,23 +236,24 @@ public class BatchMakeP12 {
         int successcount = 0;
         while( it.hasNext() ) {
             UserAdminData data = (UserAdminData) it.next();
-
-            try {
-                cat.debug("Generating keys for " + data.getUsername());
-                // Grab new user, set status to INPROCESS
-                admin.setUserStatus(data.getUsername(), UserData.STATUS_INPROCESS);
-                processUser(data);
-                // If all was OK , set status to GENERATED
-                admin.setUserStatus(data.getUsername(), UserData.STATUS_GENERATED);
-                successusers += ":" + data.getUsername();
-                successcount++;
-            } catch (Exception e) {
-                // If things went wrong set status to FAILED
-                cat.error("An error happened, setting status to FAILED.");
-                cat.error(e);
-                failedusers += ":" + data.getUsername();
-                failcount++;
-                admin.setUserStatus(data.getUsername(), UserData.STATUS_FAILED);
+            if (data.getPassword() != null) {                
+                try {
+                    cat.debug("Generating keys for " + data.getUsername());
+                    // Grab new user, set status to INPROCESS
+                    admin.setUserStatus(data.getUsername(), UserData.STATUS_INPROCESS);
+                    processUser(data);
+                    // If all was OK , set status to GENERATED
+                    admin.setUserStatus(data.getUsername(), UserData.STATUS_GENERATED);
+                    successusers += ":" + data.getUsername();
+                    successcount++;
+                } catch (Exception e) {
+                    // If things went wrong set status to FAILED
+                    cat.error("An error happened, setting status to FAILED.");
+                    cat.error(e);
+                    failedusers += ":" + data.getUsername();
+                    failcount++;
+                    admin.setUserStatus(data.getUsername(), UserData.STATUS_FAILED);
+                }
             }
         }
         if (failedusers != "")

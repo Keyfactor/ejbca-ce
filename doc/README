@@ -25,8 +25,10 @@ Follows X509 and PKIX (RFC2459) standards where applicable.
 Configurable certificate contents.
 Revocation of certificates and CRL creation using scheduled jobs.
 URL-based CRLDistribution Points according to (RFC2459).
-Stores Certificates and CRLs in any SQL database (handled by application server).
-Component based architecture for publishing certificates and CRLs to different sources.
+Stores Certificates and CRLs in any SQL database (handled by application
+ server).
+Component based architecture for publishing certificates and CRLs to different
+ sources.
 Existing publisher for LDAP (optional during configuration).
 Component based architecture for authorizing entities when issuing certificates.
 
@@ -280,40 +282,40 @@ Options in CertificateStoreSession:
 
 Configuring databases:
 The session beans use direct database communication (from a connection pool) in
- some cases. In these cases the JNDI name if the Datasource used is configured
- in ejb-jar.xml and jaws.xml, (default 'java:/DefaultDS').
+some cases. In these cases the JNDI name if the Datasource used is configured in
+ejb-jar.xml and jaws.xml, (default 'java:/DefaultDS').
 
 Configuring Publishers (LDAP):
 To publish certificates and CRLs in an LDAP directory, uncomment the section
 for the session bean 'PublisherSession1' in 'ca/META-INF/ejb-jar.xml', and
 also the section for method permissions for the same session bean. This will
- configure an
-LDAPPublisherSession so be deployed and when certificates and CRLs are
-created. Don't formget to edit parameters to 'PublisherSession1' to match
+configure an LDAPPublisherSession so be deployed and when certificates and CRLs
+are created. Don't formget to edit parameters to 'PublisherSession1' to match
 your LDAP server.
-Additional Publishers can be configured by adding new session beans
-called 'PublisherSession2', 'PublisherSession3', etc to ejb-jar.xml. 
+Additional Publishers can be configured by adding new session beans called
+'PublisherSession2', 'PublisherSession3', etc to ejb-jar.xml.
 
 Batch creation of certificates:
 Certificates can be created batch-wise with EJBCA. The class
- se.anatom.ejbca.batch.BatchMakeP12 creates PKCS12 keystores for all users
- designated as NEW in the local RA database.
-To be able to batch generate certificates, the users must be registered with
- clear text passwords. To set a clear text password for a user use 'ra.sh/cmd
- setclearpwd <username> <password>'.
-//TODO: more documentation to come here...
-
+se.anatom.ejbca.batch.BatchMakeP12 creates PKCS12 keystores for all users
+designated as NEW in the local RA database. To be able to batch generate
+certificates, the users must be registered with clear text passwords. To set a
+clear text password for a user use 'ra.sh/cmd setclearpwd <username>
+<password>'.
+To generate PKCS12 files for all users with status NEW or FAILED, run
+'batch.sh/cmd'. This will generate files for users if their clear text passwords
+are NOT null.
 
 Administrating CA:
 
 The CA has a command line interface ca.sh/cmd. Options are:
 makeroot - creates a new Root CA keystore.
 makereq - generates a certification request to create a keystore for a
- subordinate CA.
-recrep - receives a certification reply (from another CA) for the above
- generated request.
-processreq - processes a certification request for a subordinate CA and creates
- a certification reply.
+subordinate CA.
+recrep - receives a certification reply (from another CA) for
+the above  generated request.
+processreq - processes a certification request for
+a subordinate CA and creates  a certification reply.
 createcrl - issues a CRL.
 getcrl - retrieves the latest CRL.
 
@@ -326,14 +328,14 @@ Administrating RA:
 
 The RA has a command line interface ra.sh/cmd. Options are:
 adduser - adds a user to the database, after addition a user may apply for a
- certificate.
-deluser - removes a user from the database, any issued certificates remain
- active and present in the database.
-setclearpwd - set a clear text password for a user, needed to generate
- certificates batch-wise.
+certificate.
+deluser - removes a user from the database, any issued certificates
+remain  active and present in the database.
+setclearpwd - set a clear text
+password for a user, needed to generate  certificates batch-wise.
 setuserstatus - sets status of a user, users can only apply for certificates
- when their status is NEW.
-finduser - find a user in the database and lists details.
+when their status is NEW. finduser - find a user in the database and lists
+details.
 listnewusers - lists all users with status NEW.
 revokeuser - revokes a user and all certificates issued to the user.
 
@@ -361,7 +363,7 @@ A collection of samples are in the directory src/java/se/anatom/ejbca/samples.
 These files are a sample of a remote user database providing user authentication
  to the CA when the CA is about to generate
 a certificate for a user. A remote user database is used by configuring the CA
- to use the 'RemoteAuthenticationSession' instead 
+ to use the 'RemoteAuthenticationSession' instead
 of 'LocalAuthenticationSession'.
 The sample files implement a simple file based user database and a servlet that
  responds to the HTTP requests comming from the CA.
@@ -373,7 +375,7 @@ Example how a certificate can be fetched programmatically using HTTP/S. The
  sample generates a certificate request and uses POST to the same servlet
 as used from a browser through
  (http://127.0.0.1:8080/apply/request/apply_man.jsp), the servlet url is
- http://127.0.0.1:8080/apply/certreq. 
+ http://127.0.0.1:8080/apply/certreq.
 The certificate reply containing a PEM-formatted certificate is printed to the
  screen.
 
