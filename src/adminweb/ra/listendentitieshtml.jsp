@@ -54,6 +54,13 @@ function confirmdelete(){
   return returnval;
 }
 
+function confirmdeleterevoke(){
+  var returnval;
+  returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREDELETEREVOKE") %>");  
+
+  return returnval;
+}
+
 function confirmrevokation(){
   var returnval = false;
   if(document.form.<%= SELECT_REVOKE_REASON %>.options.selectedIndex == -1){
@@ -400,8 +407,32 @@ function confirmrevokation(){
       </td>
     </tr>
   </table>
+  <br><br
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
     <tr>
+      <td  valign="top">
+      <% try{ 
+           if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS)){ %>
+        <input type="submit" name="<%=BUTTON_REVOKE_USERS %>" value="<%= ejbcawebbean.getText("REVOKESELECTED") %>"
+               onClick='return confirmrevokation()'>&nbsp;&nbsp;&nbsp;
+      <% try{
+           if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_DELETE_RIGHTS)){ %>
+        <input type="submit" name="<%=BUTTON_DELETEREVOKE_USERS %>" value="<%= ejbcawebbean.getText("REVOKEANDDELETE") %>"
+               onClick='return confirmdeleterevoke()'>&nbsp;&nbsp;&nbsp;
+       <%   } 
+          }catch(AuthorizationDeniedException ade){} %>        
+         <br> <%= ejbcawebbean.getText("REVOKATIONREASON") %>&nbsp;
+        <select name="<%=SELECT_REVOKE_REASON %>" >
+          <% for(int i=0; i < RevokedInfoView.reasontexts.length; i++){ 
+               if(i!= 7){%>
+               <option value='<%= i%>'><%= ejbcawebbean.getText(RevokedInfoView.reasontexts[i]) %></option>
+          <%   } 
+             } %>
+         </select>
+       <%} 
+          }catch(AuthorizationDeniedException ade){} %>
+
+      </td>
       <td  valign="top">
       <% try{ 
            if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_DELETE_RIGHTS)){ %>
@@ -410,23 +441,7 @@ function confirmrevokation(){
        <%   } 
           }catch(AuthorizationDeniedException ade){} %>
         &nbsp;&nbsp;&nbsp;
-      </td>
-      <td  valign="top">
-      <% try{ 
-           if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS)){ %>
-        <input type="submit" name="<%=BUTTON_REVOKE_USERS %>" value="<%= ejbcawebbean.getText("REVOKESELECTED") %>"
-               onClick='return confirmrevokation()'><br>
-        <select name="<%=SELECT_REVOKE_REASON %>" >
-          <% for(int i=0; i < RevokedInfoView.reasontexts.length; i++){ 
-               if(i!= 7){%>
-               <option value='<%= i%>'><%= ejbcawebbean.getText(RevokedInfoView.reasontexts[i]) %></option>
-          <%   } 
-             }
-            } 
-          }catch(AuthorizationDeniedException ade){} %>
-        </select>
-        &nbsp;&nbsp;&nbsp;
-      </td>
+      </td>      
       <td  valign="top">
       <%/* try{ 
            if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_EDIT_RIGHTS)){ %>

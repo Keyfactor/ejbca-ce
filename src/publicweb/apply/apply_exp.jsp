@@ -113,7 +113,7 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
        On Error Resume Next
        set options = document.all.CspProvider.options
        index = options.selectedIndex
-       encoder.providerName = options(index).text
+       newencoder.providerName = options(index).text
        tmpProviderType = options(index).value
        newencoder.providerType = tmpProviderType
        newencoder.KeySpec = 2
@@ -151,7 +151,7 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
        On Error Resume Next
        set options = document.all.CspProvider.options
        index = options.selectedIndex
-       encoder.providerName = options(index).text
+       oldencoder.providerName = options(index).text
        tmpProviderType = options(index).value
        oldencoder.providerType = tmpProviderType
        oldencoder.KeySpec = 2

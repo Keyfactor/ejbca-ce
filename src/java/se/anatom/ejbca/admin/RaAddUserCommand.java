@@ -22,14 +22,14 @@ import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import se.anatom.ejbca.util.CertTools;
+
 
 
 
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.27 2003-10-03 14:34:20 herrvendil Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.28 2003-10-29 14:25:54 herrvendil Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
     /**
@@ -175,8 +175,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 }
 
                 System.out.println(
-                    "If the user does not have a SubjectAltName or an email address, use the value 'null'. ");
-
+                    "If the user does not have a SubjectAltName or an email address,\n or you want the password to be auto-generated use the value 'null'. ");
                 return;
             }
 
@@ -283,12 +282,14 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
               System.out.println("Token: "+token);
               System.out.println("Certificate profile: "+certificatetypeid);
               System.out.println("End entity profile: "+profileid);
+			  if (password.toUpperCase().equals("NULL"))
+				  password = null;
               if (subjectaltname.toUpperCase().equals("NULL"))
                   subjectaltname = null;
               if (email.toUpperCase().equals("NULL"))
                   email = null;
               try{
-                getAdminSession().addUser(administrator, username, password, CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid, certificatetypeid,
+                getAdminSession().addUser(administrator, username, password, dn, subjectaltname, email, false, profileid, certificatetypeid,
                                          type, token, hardtokenissuerid, caid);
                 System.out.println("User '"+username+"' has been added.");
                 System.out.println();

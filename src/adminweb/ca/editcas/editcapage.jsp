@@ -526,7 +526,17 @@ function checkallfields(){
       </td>
     </tr>
    <%  } 
-    } %>
+    }
+    if(editca && !waitingresponse){%>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        &nbsp;
+      </td>
+      <td width="50%"> 
+        <a  onClick="window.open('<%=VIEWCERTIFICATE_LINK%>?caid=<%=caid%>', 'view_cert',config='height=600,width=600,scrollbars=yes,toolbar=no,resizable=1')";><u><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></u></a>
+      </td>
+    </tr>
+    <% } %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top"> 
@@ -573,7 +583,7 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top" align="right"></td>
       <td width="51%" valign="top">             
-        <input type="submit" name="<%= BUTTON_RENEWCA %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("RENEWCA") %>" >
+        <input type="submit" name="<%= BUTTON_RENEWCA %>" onClick='return confirmrenewal()' value="<%= ejbcawebbean.getText("RENEWCA") %>" >
       </td>
     </tr>
         <% } %>   

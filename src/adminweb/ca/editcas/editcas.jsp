@@ -78,9 +78,7 @@
 
   static final String FILE_RECIEVEFILE                            = "filerecievefile";
   static final String FILE_CACERTFILE                             = "filecacertfile";
-  static final String FILE_REQUESTFILE                            = "filerequestfile";  
-
-  static final String LINK_DOWNLOAD                               = "TODO";
+  static final String FILE_REQUESTFILE                            = "filerequestfile";    
 
   static final int    MAKEREQUESTMODE     = 0;
   static final int    RECIEVERESPONSEMODE = 1;
@@ -112,6 +110,8 @@
   CADataHandler cadatahandler = cabean.getCADataHandler(); 
   String THIS_FILENAME            =  globalconfiguration.getCaPath()  + "/editcas/editcas.jsp";
   String action = "";
+
+  final String VIEWCERTIFICATE_LINK         = "/" +globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
   
   boolean issuperadministrator = false;
   boolean editca = false;
@@ -510,10 +510,15 @@
            Collection certchain = CertTools.getCertsFromPEM(file);           
            try{
              CAInfo cainfo = cabean.getRequestInfo();              
-             cadatahandler.createCA(cainfo);             
-             PKCS10CertificationRequest certreq = cadatahandler.makeRequest(caid, certchain, true);
-             cabean.savePKCS10RequestData(certreq);   
-               
+             cadatahandler.createCA(cainfo);                           
+             PKCS10CertificationRequest certreq = null;
+             try{ 
+               certreq=cadatahandler.makeRequest(caid, certchain, true);
+             }catch(Exception e){  
+               cadatahandler.removeCA(caid); 
+               errorrecievingfile = true; 
+             }
+             cabean.savePKCS10RequestData(certreq);     
              filemode = CERTREQGENMODE;
              includefile = "displayresult.jsp";
 

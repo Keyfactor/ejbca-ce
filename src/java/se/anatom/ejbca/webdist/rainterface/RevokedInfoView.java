@@ -6,8 +6,9 @@
 package se.anatom.ejbca.webdist.rainterface;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Vector;
+
 
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 
@@ -59,15 +60,19 @@ public class RevokedInfoView {
      */
     public String[] getRevokationReasons() {
         String[] dummy = { "" };
-        Vector reasons = new Vector();
+        ArrayList reasons = new ArrayList();
         int reason = this.revokedcertinfo.getReason();
 
         if ((reason >= 0) && (reason < HIGN_REASON_BOUNDRARY)) {
             // Add this reason.
-            reasons.addElement(reasontexts[reason]);
+            reasons.add(reasontexts[reason]);
         }
 
         return (String[]) reasons.toArray(dummy);
+    }
+
+    public boolean isRevoked(){
+    	return this.revokedcertinfo.getReason() != RevokedCertInfo.NOT_REVOKED;
     }
 
     // Private constants.

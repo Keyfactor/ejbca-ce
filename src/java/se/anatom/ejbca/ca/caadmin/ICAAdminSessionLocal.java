@@ -1,6 +1,7 @@
 
 package se.anatom.ejbca.ca.caadmin;
 
+import java.security.cert.CertPathValidatorException;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -13,7 +14,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
 
 /** Local interface of CAAdmin sessio bean for EJB. Manages CAs
  *
- * @version $Id: ICAAdminSessionLocal.java,v 1.3 2003-10-21 13:48:45 herrvendil Exp $
+ * @version $Id: ICAAdminSessionLocal.java,v 1.4 2003-10-29 14:25:55 herrvendil Exp $
  */
 public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
  
@@ -101,14 +102,14 @@ public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
    *  @rootcertificates A Collection of rootcertificates.
    *  @setstatustowaiting should be set true when creating new CAs and false for renewing old CAs
    */
-  public IRequestMessage  makeRequest(Admin admin, int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException;
+  public IRequestMessage  makeRequest(Admin admin, int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException;
 
   /**
    *  Receives a certificate response from an external CA and sets the newly created CAs status
    *  to active.
    *
    */  
-  public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage) throws CADoesntExistsException, AuthorizationDeniedException;
+  public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException;
 
   /**
    *  Processes a Certificate Request from an external CA. 
@@ -125,7 +126,7 @@ public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
    *         RootCA, otherwise use the null value. 
    *
    */  
-  public void renewCA(Admin admin, int caid, IResponseMessage responcemessage) throws CADoesntExistsException, AuthorizationDeniedException;
+  public void renewCA(Admin admin, int caid, IResponseMessage responcemessage) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException;
 
   /**
    *  Method that revokes the CA. After this is all certificates created by this CA

@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
+
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -59,7 +59,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.4 2003-10-21 13:48:45 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.5 2003-10-29 14:25:55 herrvendil Exp $
  */
 public class CAAdminSessionBean extends BaseSessionBean {
     
@@ -515,7 +515,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     /**
      *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
      */
-    public IRequestMessage  makeRequest(Admin admin, int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException{
+    public IRequestMessage  makeRequest(Admin admin, int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException{
     	PKCS10RequestMessage returnval = null;
         // Check authorization
 		try{
@@ -533,11 +533,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
             
 		// if issuer is insystem CA or selfsigned, then generate new certificate.
 		  if(ca.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA){
-		     // set certificate chain
-		    ArrayList cacerts = new ArrayList();
-		    cacerts.addAll(cachain);			
-			CertPath cp = CertificateFactory.getInstance("X.509","BC").generateCertPath( cacerts );			
-		    ca.setRequestCertificateChain(cp.getCertificates());
+
+
+			ca.setRequestCertificateChain(createCertChain(cachain));
 		    		    		   
 		     // generate PKCS10CertificateRequest
 		     // TODO implement PKCS10 Certificate Request arributes.
@@ -565,9 +563,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
             
             cadata.setCA(ca);
 		  }else{                
-		  // Cannot create certificate request for internal CA
-		    getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: cannot create certificate request for internal CA"); 
-		    throw new EJBException(new EjbcaException("Error: cannot create certificate request for internal CA"));
+		     // Cannot create certificate request for internal CA
+		     getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: cannot create certificate request for internal CA"); 
+		     throw new EJBException(new EjbcaException("Error: cannot create certificate request for internal CA"));
 		  }   
 		
         
@@ -584,7 +582,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     /**
      *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
      */
-    public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage) throws CADoesntExistsException, AuthorizationDeniedException{
+    public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException{
         // check authorization
 		Certificate cacert = null;
 		// Check authorization
@@ -604,21 +602,25 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			if(responsemessage instanceof X509ResponseMessage){
 			  cacert = ((X509ResponseMessage) responsemessage).getCertificate();        
 			}else{
-				getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: illegal response message."); 
+				getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util. Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: illegal response message."); 
 				throw new EJBException(new EjbcaException("Error: illegal response message."));        	
 			}            
             
 		// if issuer is insystem CA or selfsigned, then generate new certificate.
 		  if(ca.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA){
 			 // check the validity of the certificate chain.			
+			
+			// Check that DN is the equals the request.  
+		    if(!CertTools.getSubjectDN((X509Certificate) cacert).equals(CertTools.stringToBCDNString(ca.getSubjectDN()))){
+				getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: Subject DN of recieved certificate doesn't match request"); 
+			  throw new EJBException(new EjbcaException("Error: Subject DN of recieved certificate doesn't match request"));		    
+		    }
 			 
 			ArrayList cachain = new ArrayList();
 			cachain.add(cacert);
-			cachain.addAll(ca.getRequestCertificateChain());
-					
-			CertPath cp = CertificateFactory.getInstance("X.509","BC").generateCertPath(cachain);
-													    
-			ca.setCertificateChain(cp.getCertificates());				     
+			cachain.addAll(ca.getRequestCertificateChain());					
+												              												    
+			ca.setCertificateChain(createCertChain(cachain));				     
 			// Set statuses.			                          	           
 			cadata.setStatus(SecConst.CA_ACTIVE);			
 			 
@@ -635,7 +637,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 		
         
 		}catch(Exception e){
-			getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error when creating certificate request");
+			getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: can't recieve certificate responce for internal CA");
 		   throw new EJBException(e);
 		}          
         
@@ -646,7 +648,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
      *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
      */
    public IResponseMessage processRequest(Admin admin, CAInfo cainfo, IRequestMessage requestmessage) 
-                                    throws CAExistsException, CADoesntExistsException, AuthorizationDeniedException{
+                                    throws CAExistsException, CADoesntExistsException, AuthorizationDeniedException {
         CA ca = null;
         Collection certchain = null;                                   
         Collection certpublishers = null; 	
@@ -751,7 +753,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     /**
      *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
      */
-    public void renewCA(Admin admin, int caid, IResponseMessage responsemessage)  throws CADoesntExistsException, AuthorizationDeniedException{
+    public void renewCA(Admin admin, int caid, IResponseMessage responsemessage)  throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException{
         Collection cachain = null;
         Certificate cacertificate = null;
         // check authorization        
@@ -827,23 +829,19 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			  getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: illegal response message."); 
 			  throw new EJBException(new EjbcaException("Error: illegal response message."));        	
 		    }            
+
+			// Check that DN is the equals the request.  
+			if(!CertTools.getSubjectDN((X509Certificate) cacertificate).equals(CertTools.stringToBCDNString(ca.getSubjectDN()))){
+				getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: Subject DN of recieved certificate doesn't match request"); 
+			  throw new EJBException(new EjbcaException("Error: Subject DN of recieved certificate doesn't match request"));		    
+			}
 		              
 			cachain = new ArrayList();
 		    cachain.add(cacertificate);
 		    cachain.addAll(ca.getRequestCertificateChain());
 			
-		    CollectionCertStoreParameters ccsp = new CollectionCertStoreParameters( cachain );
-		    CertStore store = CertStore.getInstance("Collection", ccsp );
-						
-		    CertPath cp = CertificateFactory.getInstance("X.509","BC").generateCertPath((ArrayList) cachain);									
-		    Set trust = new HashSet();
-		    trust.add( new TrustAnchor( (X509Certificate) ((ArrayList)cachain).get(cachain.size()-1), null ) );
-
-		    CertPathValidator cpv = CertPathValidator.getInstance("PKIX","BC");
-		    PKIXParameters param = new PKIXParameters( trust );
-		    param.addCertStore(store);
-		    param.setDate( new Date() );
-		    PKIXCertPathValidatorResult result = (PKIXCertPathValidatorResult) cpv.validate(cp, param);		    		    		    		   				                        
+			cachain = createCertChain(cachain);
+					    		    		    		   				                        
           }   
         // Set statuses.
           if(cacertificate instanceof X509Certificate)
@@ -1035,6 +1033,121 @@ public class CAAdminSessionBean extends BaseSessionBean {
       }catch(AuthorizationDeniedException e){}    
       return returnval;  
     }    
+    
+    /**
+     * Method to create certificate path and to check it's validity from a list of certificates.
+     * The list of certificates should only contain one root certificate.
+     * 
+     * @param certlist
+     * @return the certificatepath
+     */
+    private Collection createCertChain(Collection certlist) throws CertPathValidatorException{
+       ArrayList returnval = new ArrayList();
+              
+	   certlist = orderCertificateChain(certlist);
+
+	    // set certificate chain
+       TrustAnchor trustanchor = null;
+       ArrayList calist = new ArrayList();
+       Iterator iter = certlist.iterator();
+       while(iter.hasNext()){
+	      Certificate next = (Certificate) iter.next();
+	      if(next instanceof X509Certificate && CertTools.isSelfSigned(((X509Certificate) next))){	      	  	     
+		      trustanchor = new TrustAnchor((X509Certificate) next, null);
+	      }   
+	      else{		     
+	     	calist.add(next);
+	      } 	  
+     }
+		    		  	    	        
+     try {
+	    HashSet trustancors = new HashSet();
+	    trustancors.add(trustanchor);                 
+		
+		//CollectionCertStoreParameters ccsp = new CollectionCertStoreParameters( certlist );
+		//CertStore store = CertStore.getInstance("Collection", ccsp );
+			                
+                
+	    // Create the parameters for the validator
+	    PKIXParameters params = new PKIXParameters(trustancors);
+				    
+	    // Disable CRL checking since we are not supplying any CRLs
+	    params.setRevocationEnabled(false);
+		//params.addCertStore(store);
+		params.setDate( new Date() );
+	    // Create the validator and validate the path
+	    
+	    CertPathValidator certPathValidator
+		    = CertPathValidator.getInstance(CertPathValidator.getDefaultType(), "BC");
+	    CertPath certpath = CertificateFactory.getInstance("X.509").generateCertPath(calist);
+	    
+	    iter = certpath.getCertificates().iterator();
+	    while(iter.hasNext()){
+			System.out.println("CAAdminSessionBean: createcertchain , certpath Cert : "+ ((X509Certificate) iter.next()).getSubjectDN().toString());
+	    }
+	    		
+	    CertPathValidatorResult result = certPathValidator.validate(certpath, params);
+    
+	    // Get the CA used to validate this path
+	    PKIXCertPathValidatorResult pkixResult = (PKIXCertPathValidatorResult)result;
+	    returnval.addAll(certpath.getCertificates());														   	    
+	    
+	    //c a.setRequestCertificateChain(certpath.getCertificates());
+	   TrustAnchor ta = pkixResult.getTrustAnchor();
+	    X509Certificate cert = ta.getTrustedCert();		
+	    returnval.add(cert);	
+    } catch (CertPathValidatorException e) {
+	    throw e;
+    } catch(Exception e){
+	    throw new EJBException(e);
+    }
+    
+    
+     return returnval;
+  }
+  
+  /**
+   * Method ordering a list of x509certificate into a certificate path with to ca at the end.
+   * Does not check validity or verification of any kind, just ordering by issuerdn.
+   * @param certlist list of certificates to order.
+   * @return Collection with certificatechain.
+   */
+  
+  private Collection orderCertificateChain(Collection certlist) throws CertPathValidatorException{
+  	 ArrayList returnval = new ArrayList();
+     X509Certificate rootca = null;
+  	 HashMap cacertmap = new HashMap();  	 
+  	 Iterator iter = certlist.iterator();
+  	 while(iter.hasNext()){
+  	 	X509Certificate cert = (X509Certificate) iter.next();
+  	    if(CertTools.isSelfSigned(cert))
+  	      rootca = cert;
+  	    else
+		  cacertmap.put(cert.getIssuerDN().toString(),cert);  
+  	 }
+  	 
+  	 if(rootca == null)
+  	   throw new CertPathValidatorException("No root CA certificate found in certificatelist");
+  	 
+  	 returnval.add(0,rootca);
+  	 X509Certificate currentcert = rootca;
+  	 int i =0;
+  	 while(certlist.size() != returnval.size() && i <= certlist.size()){
+  	 	X509Certificate nextcert = (X509Certificate) cacertmap.get(currentcert.getSubjectDN().toString());
+  	 	if(nextcert == null)
+		  throw new CertPathValidatorException("Error building certificate path");
+		    	 	  
+		returnval.add(0,nextcert);
+		currentcert = nextcert;
+  	 	i++;
+  	 }
+  	 
+  	 if(i > certlist.size())
+	  throw new CertPathValidatorException("Error building certificate path");
+
+	
+  	 return returnval;  	    
+  }
     
     
 } //CAAdminSessionBean

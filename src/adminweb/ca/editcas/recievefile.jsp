@@ -42,7 +42,7 @@ function check()
         <u><%= ejbcawebbean.getText("HELP") %></u> </A></div> -->
       </td>
     </tr>
-    <form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' onSubmit='return check()'>
+    <form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
       <input type="hidden" name='<%= ACTION %>' value='<%=actions[filemode] %>'>
       <input type="hidden" name='<%= HIDDEN_CAID %>' value='<%= caid %>'>
       <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%= caname%>'>
@@ -50,7 +50,7 @@ function check()
       <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText(helptexts[filemode]) %></td>
       <td width="51%" valign="top">     
         <input TYPE="FILE" NAME="<%= FILE_RECIEVEFILE %>">            
-        <input type="submit" name="<%= BUTTON_RECIEVEFILE %>"  value="<%= ejbcawebbean.getText(buttontexts[filemode]) %>" ><br><br>
+        <input type="submit" name="<%= BUTTON_RECIEVEFILE %>" onClick='return check()' value="<%= ejbcawebbean.getText(buttontexts[filemode]) %>" ><br><br>
         <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">     
       </td>
     </tr>

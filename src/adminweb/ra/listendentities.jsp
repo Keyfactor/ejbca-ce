@@ -50,7 +50,8 @@
   static final String OLD_TIME_ROW5      = "oldtimerow5";
 
 
-  static final String BUTTON_DELETE_USERS      = "buttondeleteusers";
+  static final String BUTTON_DELETE_USERS        = "buttondeleteusers";
+  static final String BUTTON_DELETEREVOKE_USERS  = "buttondeleterevokeusers";
 //  static final String BUTTON_CHANGESTATUS      = "buttonchangestatus"; 
   static final String BUTTON_REVOKE_USERS      = "buttonrevokeusers";  
   static final String BUTTON_FIND              = "buttonfind";
@@ -255,6 +256,37 @@
              usernames[i] = java.net.URLDecoder.decode(request.getParameter(HIDDEN_USERNAME+index),"UTF-8");
            }
            notauthorizedrevokeall = !rabean.revokeUsers(usernames, Integer.parseInt(reason));
+         }
+        }
+      }
+      if( request.getParameter(BUTTON_DELETEREVOKE_USERS) != null){
+        // Check reasons.
+        String reason = request.getParameter(SELECT_REVOKE_REASON);
+        if(reason != null){
+
+          // Revoke selected users
+         editbuttonpressed=true;
+         java.util.Enumeration parameters = request.getParameterNames();
+         java.util.Vector indexes = new  java.util.Vector();
+         int index;
+         while(parameters.hasMoreElements()){
+          String parameter = (String) parameters.nextElement();
+           if(parameter.startsWith(CHECKBOX_SELECT_USER) && request.getParameter(parameter).equals(CHECKBOX_VALUE)) {
+             index = java.lang.Integer.parseInt(parameter.substring(CHECKBOX_SELECT_USER.length())); //Without []
+             indexes.addElement(new Integer(index));
+           }
+         }
+       
+         if(indexes.size() > 0){
+           String[] usernames = new String[indexes.size()];
+           for(int i = 0; i < indexes.size(); i++){
+             index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
+             usernames[i] = java.net.URLDecoder.decode(request.getParameter(HIDDEN_USERNAME+index),"UTF-8");
+           }           
+           if(rabean.revokeUsers(usernames, Integer.parseInt(reason)))
+             notauthorizeddeleteall = !rabean.deleteUsers(usernames);
+           else
+             notauthorizedrevokeall = true;   
          }
         }
       }

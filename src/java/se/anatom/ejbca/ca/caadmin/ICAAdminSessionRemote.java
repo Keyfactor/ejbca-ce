@@ -2,6 +2,7 @@
 package se.anatom.ejbca.ca.caadmin;
 
 import java.rmi.RemoteException;
+import java.security.cert.CertPathValidatorException;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -14,7 +15,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
 
 /** Remote interface of CAAdmin session bean for EJB. Manages CAs
  *
- * @version $Id: ICAAdminSessionRemote.java,v 1.2 2003-10-21 13:48:45 herrvendil Exp $
+ * @version $Id: ICAAdminSessionRemote.java,v 1.3 2003-10-29 14:25:55 herrvendil Exp $
  */
 public interface ICAAdminSessionRemote extends javax.ejb.EJBObject {
  
@@ -63,12 +64,12 @@ public interface ICAAdminSessionRemote extends javax.ejb.EJBObject {
   /**
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
    */
-  public IRequestMessage  makeRequest(Admin admin, int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, RemoteException;
+  public IRequestMessage  makeRequest(Admin admin, int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, RemoteException;
 
   /**
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
    */
-  public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage) throws CADoesntExistsException, AuthorizationDeniedException, RemoteException;
+  public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, RemoteException;
 
   /**
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
@@ -78,7 +79,7 @@ public interface ICAAdminSessionRemote extends javax.ejb.EJBObject {
   /**
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
    */
-  public void renewCA(Admin admin, int caid, IResponseMessage responcemessage) throws CADoesntExistsException, AuthorizationDeniedException, RemoteException;
+  public void renewCA(Admin admin, int caid, IResponseMessage responcemessage) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, RemoteException;
 
   /**
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal

@@ -45,6 +45,8 @@
   static final String CHECKBOX_KEYRECOVERABLE             = "checkboxkeyrecoverable";
   static final String CHECKBOX_SENDNOTIFICATION           = "checkboxsendnotification";
 
+  static final String CHECKBOX_REGENERATEPASSWD           = "checkboxregeneratepasswd";
+
   static final String CHECKBOX_REQUIRED_USERNAME          = "checkboxrequiredusername";
   static final String CHECKBOX_REQUIRED_PASSWORD          = "checkboxrequiredpassword";
   static final String CHECKBOX_REQUIRED_CLEARTEXTPASSWORD = "checkboxrequiredcleartextpassword";
@@ -122,6 +124,16 @@
                value=value.trim(); 
                if(!value.equals("")){
                  newuser.setPassword(value);         
+               }
+             }
+             
+             value = request.getParameter(CHECKBOX_REGENERATEPASSWD);
+             if(value !=null){
+               if(value.equals(CHECKBOX_VALUE)){
+                 newuser.setPassword("NEWPASSWORD");          
+               }
+               else{
+                   newuser.setPassword(null);
                }
              }
 
@@ -622,19 +634,28 @@ function checkallfields(){
 
    var selstatus = document.edituser.<%=SELECT_CHANGE_STATUS%>.options.selectedIndex;
    var status = document.edituser.<%=SELECT_CHANGE_STATUS%>.options[selstatus].value;
-  <%   if(profile.isModifyable(EndEntityProfile.PASSWORD,0)){%>  
+   var seltoken = document.edituser.<%=SELECT_TOKEN%>.options.selectedIndex;
+   var token = document.edituser.<%=SELECT_TOKEN%>.options[seltoken].value
+
+  <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){ 
+       if(profile.isModifyable(EndEntityProfile.PASSWORD,0)){%>  
    if((status == <%= UserDataRemote.STATUS_NEW%> || status == <%= UserDataRemote.STATUS_KEYRECOVERY%>) && status != <%= userdata.getStatus() %> && document.edituser.<%= TEXTFIELD_PASSWORD %>.value == ""){
       alert("<%= ejbcawebbean.getText("REQUIREDPASSWORD") %>");
       illegalfields++;
    }
 
-  <% } else { %>
+  <%   } else { %>
    if((status == <%= UserDataRemote.STATUS_NEW%> || status == <%= UserDataRemote.STATUS_KEYRECOVERY%>) && status != <%= userdata.getStatus() %> && document.edituser.<%= TEXTFIELD_PASSWORD %>.options.selectedIndex == -1){
       alert("<%= ejbcawebbean.getText("REQUIREDPASSWORD") %>");
       illegalfields++;
    }
+ <%   }
+    }else{%>
+   if((status == <%= UserDataRemote.STATUS_NEW%> || status == <%= UserDataRemote.STATUS_KEYRECOVERY%>) && status != <%= userdata.getStatus() %> && document.edituser.<%= CHECKBOX_REGENERATEPASSWD %>.checked == false && token <= <%= SecConst.TOKEN_SOFT%> ){
+      alert("<%= ejbcawebbean.getText("PASSWORDMUSTBEREGEN") %>");
+      illegalfields++;
+   }
  <% } %>
-
    if(status != <%= UserDataRemote.STATUS_NEW%> && status != <%= UserDataRemote.STATUS_KEYRECOVERY%> && status != <%= UserDataRemote.STATUS_GENERATED%> && status != <%= UserDataRemote.STATUS_HISTORICAL%>){
       alert("<%= ejbcawebbean.getText("ONLYSTATUSCANBESELECTED") %>");
       illegalfields++;
@@ -655,6 +676,8 @@ function checkallfields(){
 }
 <% if(profile.getUse(EndEntityProfile.CLEARTEXTPASSWORD,0)){%> 
 function checkUseInBatch(){
+
+  <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){  %> 
   var returnval = false;
   if(document.edituser.<%= CHECKBOX_CLEARTEXTPASSWORD %>.checked){
   <% if(!profile.isModifyable(EndEntityProfile.PASSWORD,0)){ %>
@@ -669,6 +692,8 @@ function checkUseInBatch(){
     alert("<%= ejbcawebbean.getText("PASSWORDREQUIRED") %>");    
     document.edituser.<%= CHECKBOX_CLEARTEXTPASSWORD %>.checked  = false;  
   }
+
+  <% } %>
 
   return !returnval;
 }
@@ -753,7 +778,15 @@ function checkUseInBatch(){
         </td>
 	<td>&nbsp;</td>
       </tr>
-       <% } 
+       <% }else{ %>
+      <tr id="Row<%=(row++)%2%>">
+	<td align="right"><%= ejbcawebbean.getText("REGENERATENEWPASSWORD") %></td>
+        <td>              
+         <input type="checkbox" name="<%= CHECKBOX_REGENERATEPASSWD %>" value="<%= CHECKBOX_VALUE %>"  tabindex="<%=tabindex++%>">
+        </td>
+	<td>&nbsp;</td>
+      </tr>
+      <% } 
           if(profile.getUse(EndEntityProfile.PASSWORD,0)){%>
       <tr id="Row<%=(row++)%2%>">
 	<td align="right"><%= ejbcawebbean.getText("CONFIRMPASSWORD") %></td>

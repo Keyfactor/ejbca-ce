@@ -20,7 +20,7 @@ import se.anatom.ejbca.util.Hex;
  * by JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: CertificateView.java,v 1.12 2003-09-04 09:52:10 herrvendil Exp $
+ * @version $Id: CertificateView.java,v 1.13 2003-10-29 14:25:54 herrvendil Exp $
  */
 public class CertificateView {
 
@@ -208,7 +208,7 @@ public class CertificateView {
 
 
     public boolean isRevoked(){
-      return revokedinfo != null;
+      return revokedinfo != null  && revokedinfo.isRevoked();     
     }
 
     public String[] getRevokationReasons(){
