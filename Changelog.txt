@@ -1,13 +1,16 @@
 2.0
 ---
 Moved to EJB 2.0 (JBoss 3 now required).
-Changed Entity beans and database schema slightly, for EJB 2.0
+Changed database schema, for EJB 2.0 and the many new features.
 Web GUI for administration using SSL.
 Uses EJB Local interfaces for greatly improved speed.
 Made type of signing device completely soft configurable.
+New access control on method invocation.
 Option to generate JKS keystores.
+Added CertificatePolicies extension.
 Many small improvements.
-Many bugfixes: 
+Many bugfixes:
+all fixes from v1.4,
 improved serial number generation,
 
 1.4

@@ -192,8 +192,11 @@ will create a root CA with the DN 'C=SE,O=AnaTom,CN=EJBCA'. The keylength is
  the password
  'foo123'. Quote the DN  so it is treated as one argument.
 Now edit 'src/ca/ca/META-INF/ejb-jar.xml' to reflect the values you entered for
- 'keyStore' and 'keyStorePass'. If the keystore is placed in a custom directory,
- don't run the command 'deploy.cmd/sh keystore'.
+ 'keyStore' and 'keyStorePass'.
+If the keystore is placed in a custom directory, don't run the command
+'deploy.cmd/sh keystore', otherwise run 'deploy.cmd/sh keystore'.
+Run 'ant' and 'deploy.cmd/sh' to build and deploy your new configuration
+(password).
 
 Subordinate CA:
 run 'ca.sh/bat makereq' and enter all required parameters.
@@ -636,3 +639,4 @@ For IE to verify client certs, the ordering in the DN must be strictly the same
 
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
+
