@@ -768,6 +768,16 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <target name="upgrade" depends="admin.jar">
 		<!-- Get input -->
   		<input
+		    message="Type of system:"
+            validargs="unix,windows"
+		    addproperty="ejbca.OS"
+		  />
+  		<input
+		    message="Hostname for adminweb (default 127.0.0.1):"
+		    addproperty="ejbca.URL"
+		    defaultvalue="127.0.0.1"
+		  />
+  		<input
 		    message="Type of database:"
             validargs="mysql"
 		    addproperty="ejbca.DB"
@@ -793,6 +803,8 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
 		    addproperty="ejbca.KSPWD"
 		  />
 	  	<java classname="se.anatom.ejbca.admin.Upgrade" fork="true">
+             <sysproperty key="ejbcaOS" value="${ejbca.OS}"/>
+             <sysproperty key="ejbcaURL" value="${ejbca.URL}"/>
              <sysproperty key="ejbcaDB" value="${ejbca.DB}"/>
              <sysproperty key="ejbcaDS" value="${ejbca.DS}"/>
              <sysproperty key="ejbcaCA" value="${ejbca.CA}"/>

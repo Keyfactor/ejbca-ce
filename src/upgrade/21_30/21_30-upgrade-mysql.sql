@@ -74,8 +74,11 @@ ALTER TABLE keyrecoverydata
 ALTER TABLE logentrydata
     ADD caId int(11) NOT NULL DEFAULT '0' AFTER adminData;
 
+#UPDATE userdata set endentityprofileid=1 where endentityprofileid=0;
 ALTER TABLE userdata
     ADD cAId int(11) NOT NULL DEFAULT '0' AFTER subjectDN,
     ADD extendedInformationData longblob NULL DEFAULT NULL AFTER keyStorePassword;
 
-
+# Delete data that must be imported again
+#DELETE FROM certificateprofiledata;
+#DELETE FROM endentityprofiledata;
