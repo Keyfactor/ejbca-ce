@@ -37,11 +37,6 @@ public class TestRunner extends Object {
         junit.textui.TestRunner.run(suite());
     }
 
-    private void cleanUp() {
-        log.debug(">cleanUp()");
-        log.debug("<cleanUp()");
-    }
-
     /**
      * Sets up test suite
      *

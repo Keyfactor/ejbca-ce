@@ -86,7 +86,7 @@ import se.anatom.ejbca.util.StringTools;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.38 2005-02-13 11:27:45 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.39 2005-02-16 13:11:14 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -100,14 +100,6 @@ public class DemoCertReqServlet extends HttpServlet {
   // Edit this constant to the id of your preferable ca used to sign certificate.
   private final static int DEFAULT_DEMOCAID = 0;
   
-  private final static byte[] BEGIN_CERT =
-    "-----BEGIN CERTIFICATE-----".getBytes();
-
-  private final static byte[] END_CERT =
-    "-----END CERTIFICATE-----".getBytes();
-
-  private final static byte[] NL = "\n".getBytes();
-
   public void init(ServletConfig config) throws ServletException
   {
     super.init(config);

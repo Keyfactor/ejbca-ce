@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
 /**
  * main test class
  *
- * @version $Id: TestRunnerStart.java,v 1.1 2004-06-10 16:17:43 sbailliez Exp $
+ * @version $Id: TestRunnerStart.java,v 1.2 2005-02-16 13:11:00 anatom Exp $
  */
 public class TestRunnerStart extends Object {
     private static Logger log = Logger.getLogger(TestRunnerStart.class);
@@ -35,11 +35,6 @@ public class TestRunnerStart extends Object {
     public static void main(String[] args) {
         BasicConfigurator.configure();
         junit.textui.TestRunner.run(suite());
-    }
-
-    private void cleanUp() {
-        log.debug(">cleanUp()");
-        log.debug("<cleanUp()");
     }
 
     /**
