@@ -332,7 +332,7 @@ function checkallfields(){
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top"> 
         <input type="submit" name="<%= BUTTON_SAVE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
-        <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
+        <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("RESTORE") %>">
       </td>
     </tr>
   </table>
