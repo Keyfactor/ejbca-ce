@@ -4,11 +4,13 @@
 
    int[] usefieldsindn =  {DNFieldExtractor.CN, DNFieldExtractor.UID, DNFieldExtractor.SN, 
                            DNFieldExtractor.GIVENNAME, DNFieldExtractor.SURNAME, DNFieldExtractor.T, 
-                           DNFieldExtractor.L, DNFieldExtractor.INITIALS, DNFieldExtractor.E };
+                           DNFieldExtractor.L, DNFieldExtractor.INITIALS, DNFieldExtractor.E, 
+			   DNFieldExtractor.ST, DNFieldExtractor.C, DNFieldExtractor.O, DNFieldExtractor.OU};
 
    String[] usefieldsindntexts = {"MATCHCOMMONNAME","MATCHUID","MATCHDNSERIALNUMBER",
                                 "MATCHGIVENNAME", "MATCHSURNAME","MATCHTITLE",
-                                "MATCHLOCALE","MATCHINITIALS","OLDEMAILDN1"}; 
+                                "MATCHLOCALE","MATCHINITIALS","OLDEMAILDN1", "MATCHSTATE",
+				"MATCHCOUNTRY", "MATCHORGANIZATION", "MATCHORGANIZATIONUNIT"}; 
 
 %> 
    <tr id="Row<%=row++%2%>"> 
@@ -221,7 +223,7 @@
         </div>
       </td>
       <td width="50%" valign="top">   
-        <select name="<%=EditPublisherJSPHelper.SELECT_LDAPUSEFIELDINLDAPDN%>" size="9" multiple >       
+        <select name="<%=EditPublisherJSPHelper.SELECT_LDAPUSEFIELDINLDAPDN%>" size="13" multiple >       
             <% HashSet currentfields = new HashSet(ldappublisher.getUseFieldInLdapDN());
                for(int i=0;i < usefieldsindn.length; i++){ %>                                  
               <option value="<%=usefieldsindn[i]%>" <% if(currentfields.contains(new Integer(usefieldsindn[i]))) out.write(" selected "); %>> 
