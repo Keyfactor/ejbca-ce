@@ -54,7 +54,7 @@ import java.util.HashMap;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.28 2004-07-05 15:28:36 sbailliez Exp $
+ * @version $Id: UserDataBean.java,v 1.29 2004-07-23 12:19:23 sbailliez Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
  * display-name="UserDataEB"
@@ -77,8 +77,8 @@ import java.util.HashMap;
  * local-class="se.anatom.ejbca.ra.UserDataLocalHome"
  * remote-class="se.anatom.ejbca.ra.UserDataHome"
  *
- * @ejb.interface extends="javax.ejb.EJBObject,UserDataModel"
- * local-extends="javax.ejb.EJBLocalObject,UserDataModel"
+ * @ejb.interface extends="javax.ejb.EJBObject,UserDataConstants"
+ * local-extends="javax.ejb.EJBLocalObject,UserDataConstants"
  * local-class="se.anatom.ejbca.ra.UserDataLocal"
  * remote-class="se.anatom.ejbca.ra.UserDataRemote"
  *
@@ -86,7 +86,7 @@ import java.util.HashMap;
  *   description="findBySubjectDN"
  *   view-type="local"
  *   signature="se.anatom.ejbca.ra.UserDataLocal findBySubjectDN(java.lang.String username, int caId)"
- *   query="SELECT DISTINCT OBJECT(a) from UserDataBean a WHERE a.subjectDN=?1 AND a.cAId=?2"
+ *   query="SELECT DISTINCT OBJECT(a) from UserDataBean a WHERE a.subjectDN=?1 AND a.CAId=?2"
  * @ejb.finder
  *   view-type="remote"
  *   signature="se.anatom.ejbca.ra.UserDataRemote findBySubjectDN(java.lang.String username, int caId)"

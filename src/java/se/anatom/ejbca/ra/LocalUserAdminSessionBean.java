@@ -66,7 +66,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.79 2004-07-05 09:52:14 sbailliez Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.80 2004-07-23 12:19:23 sbailliez Exp $
  *
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -75,6 +75,8 @@ import se.anatom.ejbca.util.query.UserMatch;
  *   type="Stateless"
  *   transaction-type="Container"
  *
+ * @ejb.transaction type="Required"
+ * 
  * @ejb.permission role-name="InternalUser"
  *
  * @ejb.env-entry
@@ -163,8 +165,8 @@ import se.anatom.ejbca.util.query.UserMatch;
  *   remote-class="se.anatom.ejbca.ra.IUserAdminSessionHome"
  *
  * @ejb.interface
- *   extends="javax.ejb.EJBObject,UserAdminModel"
- *   local-extends="javax.ejb.EJBLocalObject,UserAdminModel"
+ *   extends="javax.ejb.EJBObject,UserAdminConstants"
+ *   local-extends="javax.ejb.EJBLocalObject,UserAdminConstants"
  *   local-class="se.anatom.ejbca.ra.IUserAdminSessionLocal"
  *   remote-class="se.anatom.ejbca.ra.IUserAdminSessionRemote"
  *
@@ -766,6 +768,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
      *
      * @return UserAdminData or null if the user is not found.
      * @ejb.interface-method
+     * @ejb.transaction type="Supports"
     */
     public UserAdminData findUser(Admin admin, String username) throws FinderException, AuthorizationDeniedException {
         debug(">findUser("+username+")");
@@ -802,6 +805,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * @param subjectdn
     * @return UserAdminData or null if the user is not found.
     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
     */
     public UserAdminData findUserBySubjectDN(Admin admin, String subjectdn, String issuerdn) throws AuthorizationDeniedException {
         debug(">findUserBySubjectDN("+subjectdn+")");
@@ -846,6 +850,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * @param email
     * @return UserAdminData or null if the user is not found.
     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
     */
     public Collection findUserByEmail(Admin admin, String email) throws AuthorizationDeniedException {
         debug(">findUserByEmail("+email+")");
@@ -890,6 +895,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * @param subjectdn
     * @throws AuthorizationDeniedException if user isn't an administrator.
     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
     */
     public void checkIfCertificateBelongToAdmin(Admin admin, BigInteger certificatesnr, String issuerdn) throws AuthorizationDeniedException {
         debug(">checkIfCertificateBelongToAdmin("+certificatesnr+")");
@@ -927,6 +933,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     * @param status the new status, from 'UserData'.
     * @return Collection of UserAdminData
      * @ejb.interface-method
+     * @ejb.transaction type="Supports"
     */
     public Collection findAllUsersByStatus(Admin admin, int status) throws FinderException {
         debug(">findAllUsersByStatus("+status+")");
@@ -949,6 +956,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     *
     * @return Collection of UserAdminData
      * @ejb.interface-method
+     * @ejb.transaction type="Supports"
     */
     public Collection findAllUsersWithLimit(Admin admin) throws FinderException{
       debug(">findAllUsersWithLimit()");
@@ -965,6 +973,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     *
     * @param status the new status, from 'UserData'.
      * @ejb.interface-method
+     * @ejb.transaction type="Supports"
     */
     public Collection findAllUsersByStatusWithLimit(Admin admin, int status, boolean onlybatchusers) throws FinderException{
        debug(">findAllUsersByStatusWithLimit()");
@@ -1010,6 +1019,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
      * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
      * @see se.anatom.ejbca.util.query.Query
      * @ejb.interface-method
+     * @ejb.transaction type="Supports"
      */
     public Collection query(Admin admin, Query query, String caauthorizationstring, String endentityprofilestring) throws IllegalQueryException{
       return query(admin, query, true, caauthorizationstring, endentityprofilestring, false);
@@ -1110,6 +1120,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
      * @param endentityprofileid the id of end entity profile to look for.
      * @return true if endentityprofileid exists in userdatabase.
      * @ejb.interface-method
+     * @ejb.transaction type="Supports"
      */
     public boolean checkForEndEntityProfileId(Admin admin, int endentityprofileid){
         debug(">checkForEndEntityProfileId()");
@@ -1150,6 +1161,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
      * @param certificateprofileid the id of certificateprofile to look for.
      * @return true if certificateproileid exists in userdatabase.
      * @ejb.interface-method
+     * @ejb.transaction type="Supports"
      */
     public boolean checkForCertificateProfileId(Admin admin, int certificateprofileid){
         debug(">checkForCertificateProfileId()");
@@ -1188,6 +1200,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
      * @param caid the id of CA to look for.
      * @return true if caid exists in userdatabase.
      * @ejb.interface-method
+     * @ejb.transaction type="Supports"
      */
     public boolean checkForCAId(Admin admin, int caid){
         debug(">checkForCAId()");
@@ -1227,6 +1240,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 	 * @param profileid of hardtokenprofile to look for.
 	 * @return true if proileid exists in userdatabase.
      * @ejb.interface-method
+     * @ejb.transaction type="Supports"
 	 */
 	public boolean checkForHardTokenProfileId(Admin admin, int profileid){
 		debug(">checkForHardTokenProfileId()");
@@ -1301,6 +1315,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     *
     * @return true if username already exists.
     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
     */
    public boolean existsUser(Admin admin, String username){
       boolean returnval = true;
