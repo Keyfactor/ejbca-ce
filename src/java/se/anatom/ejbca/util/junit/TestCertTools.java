@@ -14,7 +14,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.16 2003-10-03 14:34:15 herrvendil Exp $
+ * @version $Id: TestCertTools.java,v 1.17 2003-10-25 09:38:44 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -283,7 +283,8 @@ public class TestCertTools extends TestCase {
         assertEquals("Wrong subject key id", new String(Hex.encode(CertTools.getSubjectKeyId(cert))),"E74F5690F48D147783847CD26448E8094ABB08A0".toLowerCase());
         assertEquals("Wrong authority key id", new String(Hex.encode(CertTools.getAuthorityKeyId(cert))),"637BF476A854248EA574A57744A6F45E0F579251".toLowerCase());
         assertEquals("Wrong upn alt name", "foo@foo", CertTools.getUPNAltName(cert));
-        assertEquals("Wrong certificate policy", "1.1.1.1.1.1", CertTools.getCertificatePolicyId(cert));
+        assertEquals("Wrong certificate policy", "1.1.1.1.1.1", CertTools.getCertificatePolicyId(cert, 0));
+        assertNull("Not null policy", CertTools.getCertificatePolicyId(cert, 1));
 //        System.out.println(cert);
 //        FileOutputStream fos = new FileOutputStream("foo.cert");
 //        fos.write(cert.getEncoded());

@@ -16,7 +16,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.45 2003-10-20 07:56:50 anatom Exp $
+ * @version $Id: CertTools.java,v 1.46 2003-10-25 09:38:37 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -584,18 +584,14 @@ public class CertTools {
         X509Certificate selfcert = certgen.generateX509Certificate(privKey);
 
         return selfcert;
-    }
-
-    //genselfCert
+    } //genselfCert
 
     /**
-     * DOCUMENT ME!
+     * Get the authority key identifier from a certificate extensions
      *
-     * @param cert DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     *
-     * @throws IOException DOCUMENT ME!
+     * @param cert certificate containing the extension
+     * @return byte[] containing the authority key identifier
+     * @throws IOException if extension can not be parsed
      */
     public static byte[] getAuthorityKeyId(X509Certificate cert)
         throws IOException {
@@ -610,13 +606,11 @@ public class CertTools {
     } // getAuthorityKeyId
 
     /**
-     * DOCUMENT ME!
+     * Get the subject key identifier from a certificate extensions
      *
-     * @param cert DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     *
-     * @throws IOException DOCUMENT ME!
+     * @param cert certificate containing the extension
+     * @return byte[] containing the subject key identifier
+     * @throws IOException if extension can not be parsed
      */
     public static byte[] getSubjectKeyId(X509Certificate cert)
         throws IOException {
@@ -630,33 +624,35 @@ public class CertTools {
     }  // getSubjectKeyId
 
     /**
-     * DOCUMENT ME!
+     * Get a certificate policy ID from a certificate policies extension
      *
-     * @param cert DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     *
-     * @throws IOException DOCUMENT ME!
+     * @param cert certificate containing the extension
+     * @param pos position of the policy id, if several exist, the first is as pos 0
+     * @return String with the certificate policy OID
+     * @throws IOException if extension can not be parsed
      */
-    public static String getCertificatePolicyId(X509Certificate cert)
+    public static String getCertificatePolicyId(X509Certificate cert, int pos)
         throws IOException {
-        byte[] extvalue = cert.getExtensionValue("2.5.29.32");
+        byte[] extvalue = cert.getExtensionValue(X509Extensions.CertificatePolicies.getId());
         if (extvalue == null) {
             return null;
         }
         DEROctetString oct = (DEROctetString) (new DERInputStream(new ByteArrayInputStream(extvalue)).readObject());
-        CertificatePolicies cp = new CertificatePolicies((ASN1Sequence) new DERInputStream(
-                    new ByteArrayInputStream(oct.getOctets())).readObject());
-        String id = cp.getPolicy(0);
+        ASN1Sequence seq = (ASN1Sequence)new DERInputStream(new ByteArrayInputStream(oct.getOctets())).readObject();
+        // Check the size so we don't ArrayIndexOutOfBounds
+        if (seq.size() < pos+1) {
+            return null;
+        }
+        PolicyInformation pol = new PolicyInformation((ASN1Sequence)seq.getObjectAt(pos));
+        String id = pol.getPolicyIdentifier().getId();
         return id;
     } // getCertificatePolicyId
 
     /**
      * Gets the Microsoft specific UPN altName.
      *
-     * @param cert DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @param cert certificate containing the extension
+     * @return String with the UPN name
      */
     public static String getUPNAltName(X509Certificate cert)
         throws IOException, CertificateParsingException {
