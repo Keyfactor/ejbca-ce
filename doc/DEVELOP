@@ -81,9 +81,7 @@ ILogSessionRemote/Local : The log functionality itself.
 
 To perform logging, one must first aquire the remote interface to the log
 session:
-obj1 = jndicontext.lookup("LogSession");
-LogSessionHome logsessionhome = (ILogSessionHome
-javax.rmi.PortableRemoteObject.narrow(obj1, ILogSessionHome.class);
+ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
 logsession = logsessionhome.create();
 
 Next step is to log trough the function 'log', it's as easy as can be.
@@ -168,34 +166,13 @@ Making session beans
 ====================
 
 All session beans should inherit the class se.anatom.ejbca.BaseSessionBean.java.
-When doing lookups for other beans from within the new bean, a simple construct
-is provided and MUST be used:
-
-For remote interfaces to other beans:
-
-    /** Looks up a JNDI name using the (cached) InitialContext
-     *@param jndiName the JNDI name to lookup.
-     *@param type the class type to narrow the object to.
-     *@return Object that can be casted to 'type'.
-     */
-    public Object lookup( String jndiName, Class type );
-
-
-For local interfaces to other beans:
-    /** Looks up a JNDI name using the (cached) InitialContext
-     *@param jndiName the JNDI name to lookup.
-     *@return Object that can be casted to 'type'.
-     */
-    public Object lookup( String jndiName);
-
 
 Making entity beans
 ===================
 
 All entity beans should inherit the class se.anatom.ejbca.BaseEntityBean.java.
 When doing this, the standard methods like setting the context are already in
-there. They
-can however always be overriden.
+there. They can however always be overriden.
 
 
 CVS
@@ -203,17 +180,32 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.18 2005-03-09 07:08:42 anatom Exp $
+@version $Id: DEVELOP,v 1.19 2005-03-09 11:22:34 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.18 2005-03-09 07:08:42 anatom Exp $
+ * @version $Id: DEVELOP,v 1.19 2005-03-09 11:22:34 anatom Exp $
  */
 
-EJBCA2: CA KeyStore architecture/creating a custom CA Keystore
+All java files should include the following header as the first lines in the file:
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
+ 
+CA KeyStore architecture/creating a custom CA Keystore
 ======================================================
 
 The CA Keystore, where the CAs private key is stored and used is
