@@ -37,7 +37,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.52 2003-03-18 16:28:02 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.53 2003-03-19 09:36:24 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -618,7 +618,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         try{
            // Construct SQL query.
             con = getConnection();
-            ps = con.prepareStatement("select " + USERDATA_COL + " from UserData");
+            ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where status=?");
+            ps.setInt(1,status);
             // Execute query.
             rs = ps.executeQuery();
             // Assemble result.

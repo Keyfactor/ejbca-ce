@@ -6,7 +6,7 @@ import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 
 /** Find details of a user in the database.
  *
- * @version $Id: RaFindUserCommand.java,v 1.4 2003-01-12 17:16:31 anatom Exp $
+ * @version $Id: RaFindUserCommand.java,v 1.5 2003-03-19 09:36:13 anatom Exp $
  */
 public class RaFindUserCommand extends BaseRaAdminCommand {
 
@@ -27,20 +27,26 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
               if (data != null) {
                 System.out.println("Found user:");
                 System.out.println("username="+data.getUsername());
+                System.out.println("password="+data.getPassword());
                 System.out.println("dn=\""+data.getDN()+"\"");
                 System.out.println("email="+data.getEmail());
                 System.out.println("status="+data.getStatus());
                 System.out.println("type="+data.getType());
-                System.out.println("password="+data.getPassword());
+                System.out.println("token type="+data.getTokenType());
+                System.out.println("end entity profile id="+data.getEndEntityProfileId());
+                System.out.println("certificate entity profile id="+data.getCertificateProfileId());
+                System.out.println("hard token issuer id="+data.getHardTokenIssuerId());
+                System.out.println("created="+data.getTimeCreated());
+                System.out.println("modified="+data.getTimeModified());
               } else {
                 System.out.println("User '"+username+"' does not exist.");
               }
             }catch(AuthorizationDeniedException e){
-               System.out.println("Error : Not authorized to view user."); 
-            }  
+               System.out.println("Error : Not authorized to view user.");
+            }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
     } // execute
-    
+
 }
