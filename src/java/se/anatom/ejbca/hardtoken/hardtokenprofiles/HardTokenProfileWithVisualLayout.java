@@ -1,8 +1,11 @@
 package se.anatom.ejbca.hardtoken.hardtokenprofiles;
 
+import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.io.IOException;
 import java.io.StringReader;
+
+import org.apache.batik.transcoder.TranscoderException;
 
 import se.anatom.ejbca.ra.UserAdminData;
 
@@ -14,7 +17,7 @@ import se.anatom.ejbca.ra.UserAdminData;
  * processed. This information could be PIN-type number of certificates, 
  * certificate profiles and so on. 
  *
- * @version $Id: HardTokenProfileWithVisualLayout.java,v 1.1 2003-12-05 14:50:27 herrvendil Exp $
+ * @version $Id: HardTokenProfileWithVisualLayout.java,v 1.2 2004-01-27 10:10:47 herrvendil Exp $
  */
 public abstract class HardTokenProfileWithVisualLayout extends HardTokenProfileWithPINEnvelope implements IVisualLayoutSettings{
 		
@@ -82,8 +85,8 @@ public abstract class HardTokenProfileWithVisualLayout extends HardTokenProfileW
 	/**
 	 * @see se.anatom.ejbca.hardtoken.hardtokenprofiles.IVisualLayoutSettings#printVisualValidity(se.anatom.ejbca.ra.UserAdminData, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
 	 */
-	public byte[] printVisualValidity(UserAdminData userdata, String[] pincodes, String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException{
-	  byte[] returnval = null;
+	public Printable printVisualValidity(UserAdminData userdata, String[] pincodes, String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException{
+		Printable returnval = null;
 	  
 	  if(getVisualLayoutData() != null){
 	  	  if(visualsvgimagemanipulator == null)

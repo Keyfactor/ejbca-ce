@@ -44,7 +44,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id: SVGImageManipulator.java,v 1.2 2004-01-27 08:50:39 herrvendil Exp $
+ * @version $Id: SVGImageManipulator.java,v 1.3 2004-01-27 10:10:47 herrvendil Exp $
  */
 public class SVGImageManipulator {
 
@@ -141,7 +141,7 @@ public class SVGImageManipulator {
      */
     public Printable print(UserAdminData userdata, 
                       String[] pincodes, String[] pukcodes,
-	                  String hardtokensn, String copyoftokensn) throws IOException, PrinterException, TranscoderException  {
+	                  String hardtokensn, String copyoftokensn) throws IOException, PrinterException {
       // Initialize
 	  DNFieldExtractor dnfields = new DNFieldExtractor(userdata.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
 	  // DNFieldExtractor subaltnamefields = new DNFieldExtractor(dn,DNFieldExtractor.TYPE_SUBJECTALTNAME);
