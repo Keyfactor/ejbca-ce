@@ -1,4 +1,4 @@
-$Id: README,v 1.92 2003-07-02 07:55:07 anatom Exp $
+$Id: README,v 1.93 2003-07-22 10:59:47 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -867,8 +867,12 @@ $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 
 SCEP
 =====
-TODO: Scep is not fully functional yet! 
-OpenScep seems to create garbage request strings in 4 out of 5 tries, just try again until it works...
+Level of SCEP support:
+EJBCA does succesfully receive SCEP 'PKCSReq' requests and send back the certifificate immediately in a proper SCEP reply message.
+EJBCA does not support the 'polling' model.
+EJBCA will not send back proper SCEP error messages in case of failure, the error messages are not implemented yet.
+
+The most common errors should be wrong username/password or wrong status (not NEW/10) on the user in EJBCA.
 
 Since SCEP uses encryption, you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
 The policy files can be found at the same place as the JDK 1.4 download. Further information on this can be found in 
