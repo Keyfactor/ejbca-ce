@@ -1,5 +1,6 @@
 1.4
 ---
+Fixed bug with wrong template path for IE cert enrollment.
 Architectural changes.
 
 1.3
