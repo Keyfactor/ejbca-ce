@@ -1,4 +1,4 @@
-$Id: README,v 1.72 2003-03-11 09:46:05 anatom Exp $
+$Id: README,v 1.73 2003-03-11 10:31:16 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source Initiative.
@@ -636,7 +636,7 @@ foo123
 
 run as root:
 keytool -import -trustcacerts -file ca.der -keystore
-$JAVA_HOME/jre/lib/security/cacerta -storepass changeit
+$JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 
 SAMPLES
 =======
