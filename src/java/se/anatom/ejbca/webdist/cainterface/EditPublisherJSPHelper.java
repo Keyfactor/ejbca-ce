@@ -32,7 +32,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a publisher jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditPublisherJSPHelper.java,v 1.3 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: EditPublisherJSPHelper.java,v 1.4 2004-09-07 12:25:14 anatom Exp $
  */
 public class EditPublisherJSPHelper {
 	
@@ -256,11 +256,6 @@ public class EditPublisherJSPHelper {
 				 	  value = value.trim();
 				 	  ldappublisher.setPort(value); 
 				 	}
-				 	value = request.getParameter(TEXTFIELD_LDAPPORT);
-				 	if(value != null){                              
-				 		value = value.trim();
-				 		ldappublisher.setPort(value); 
-				 	}
 				 	value = request.getParameter(TEXTFIELD_LDAPBASEDN);
 				 	if(value != null){                              
 				 		value = value.trim();
@@ -306,7 +301,6 @@ public class EditPublisherJSPHelper {
 				 		value = value.trim();
 				 		ldappublisher.setARLAttribute(value); 
 				 	}
-
                     value = request.getParameter(CHECKBOX_LDAPUSESSL);
 					if(value != null)                              
 					  ldappublisher.setUseSSL(value.equals(CHECKBOX_VALUE));
