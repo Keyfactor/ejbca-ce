@@ -12,3 +12,5 @@ echo building HOWTO-database.html
 #txt2html --nolink HOWTO-mysql.txt > HOWTO-mysql.html
 #txt2html --nolink HOWTO-postgresql.txt > HOWTO-postgresql.html
 txt2html --nolink HOWTO-database.txt > HOWTO-database.html
+echo building HOWTO-weblogic.html
+txt2html --nolink HOWTO-Weblogic.txt > HOWTO-Weblogic.html
