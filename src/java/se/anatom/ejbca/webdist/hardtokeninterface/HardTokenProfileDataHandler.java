@@ -67,13 +67,13 @@ public class HardTokenProfileDataHandler implements Serializable {
       return returnval;          
     }
     
-    /** Metod to rename a end entity profile */
+    /** Metod to rename a hard token profile */
     public void renameHardTokenProfile(String oldname, String newname) throws HardTokenProfileExistsException, AuthorizationDeniedException{
      if(authorizedToProfileName(oldname, true)){    
 		hardtokensession.renameHardTokenProfile(administrator, oldname,newname);
 	   this.info.hardTokenDataEdited();
      }else
-       throw new AuthorizationDeniedException("Not authorized to rename certificate profile");
+       throw new AuthorizationDeniedException("Not authorized to rename hard token profile");
     }
     
 
@@ -140,7 +140,7 @@ public class HardTokenProfileDataHandler implements Serializable {
         if(editcheck)        
           authorizationsession.isAuthorizedNoLog(administrator, "/hardtoken_functionality/edit_hardtoken_profiles");
           
-        HashSet authorizedcertprofilesids = new HashSet(info.getAuthorizedEndEntityProfileNames().entrySet());
+        HashSet authorizedcertprofilesids = new HashSet(info.getAuthorizedEndEntityCertificateProfileNames().entrySet());
        
         if(profile != null){
           

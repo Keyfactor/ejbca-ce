@@ -440,7 +440,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/ca/caadmin/*Info.class"/>
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="se/anatom/ejbca/ca/store/certificatetypes/*.class"/>                
-                <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
+                <include name="se/anatom/ejbca/ca/publisher/IPublisher*.class"/>
                 <include name="se/anatom/ejbca/ca/sign/ISign*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
                 <include name="se/anatom/ejbca/util/**/Base64*.class"/>
@@ -507,7 +507,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/ra/*.class"/>
                 <include name="se/anatom/ejbca/authorization/*.class"/>      
                 <include name="se/anatom/ejbca/ra/raadmin/*.class"/>
-                <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
+                <include name="se/anatom/ejbca/ca/publisher/IPublisher*.class"/>
                 <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/**/RevokedCertInfo*.class"/>
                 <include name="se/anatom/ejbca/util/*.class"/>
@@ -550,7 +550,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/ca/store/*Info.class"/>
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="se/anatom/ejbca/ca/store/certificateprofiles/*.class"/>                
-                <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
+                <include name="se/anatom/ejbca/ca/publisher/IPublisher*.class"/>
                 <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/RevokedCertInfo*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/ICreateCRL*.class"/>
@@ -803,6 +803,8 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     <copy todir="${createcrlservice.build}">
         <fileset dir="${build}">
                 <include name="se/anatom/ejbca/appserver/jboss/CRLCreate*.class"/>
+                <include name="se/anatom/ejbca/ca/crl/ICreateCRL*.class"/>
+                <include name="se/anatom/ejbca/log/Admin.class"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
@@ -816,7 +818,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- =================================================================== -->
   <!--Deploy Jboss Specific Services                       -->
   <!-- =================================================================== -->
-  <target name="deployjbossservices" depends="jbossservices">
+  <target name="deployjbossservices" depends="jbossservices, deploy">
 	<copy file="${createcrlservicejar}" tofile="${env.JBOSS_HOME}/server/default/deploy/createcrlservice.jar" verbose="true"/>
   </target>
   

@@ -16,6 +16,7 @@ import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.authorization.AdminGroup;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
+import se.anatom.ejbca.ca.publisher.IPublisherSessionLocal;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
@@ -47,6 +48,7 @@ public class InformationMemory {
                              ISignSessionLocal signsession,
                              ICertificateStoreSessionLocal certificatestoresession,
                              IHardTokenSessionLocal hardtokensession,
+							 IPublisherSessionLocal publishersession,
                              GlobalConfiguration globalconfiguration){
       this.caadminsession = caadminsession;                           
       this.administrator = administrator;
@@ -54,6 +56,7 @@ public class InformationMemory {
       this.authorizationsession = authorizationsession;
       this.signsession = signsession;
       this.certificatestoresession = certificatestoresession;
+      this.publishersession = publishersession;
       this.globalconfiguration = globalconfiguration;
       
       this.raauthorization = new RAAuthorization(administrator, raadminsession, authorizationsession);
@@ -254,9 +257,25 @@ public class InformationMemory {
      */
     public HashMap getPublisherIdToNameMap(){
     	if(publisheridtonamemap == null)
-    	   publisheridtonamemap = signsession.getPublisherIdToNameMap(administrator);
+    	   publisheridtonamemap = publishersession.getPublisherIdToNameMap(administrator);
     	   
     	 return publisheridtonamemap;   	
+    }
+    
+    /**
+     * Returns all authorized publishers names as a treemap of name (String) -> id (Integer).
+     */
+    public TreeMap getAuthorizedPublisherNames(){
+    	if(publishernames==null){
+    		publishernames = new TreeMap();  
+    		Iterator iter = publishersession.getAuthorizedPublisherIds(administrator).iterator();      
+    		HashMap idtonamemap = getPublisherIdToNameMap();
+    		while(iter.hasNext()){
+    			Integer id = (Integer) iter.next();
+    			publishernames.put(idtonamemap.get(id),id);
+    		}
+    	}
+    	return publishernames;
     }
         
     /**
@@ -449,7 +468,15 @@ public class InformationMemory {
       raauthorization.clear();
       caauthorization.clear();
       hardtokenauthorization.clear();
-    }    
+    }
+    
+    /**
+     * Method that should be called every time a publisher has been edited
+     */
+    public void publishersEdited(){
+    	publisheridtonamemap = null;
+    	publishernames = null;    	
+    } 
     
     /**
      * Method that should be called every time a administrative privilegdes has been edited
@@ -491,6 +518,7 @@ public class InformationMemory {
     private IRaAdminSessionLocal raadminsession;
     private IAuthorizationSessionLocal authorizationsession;
     private ISignSessionLocal signsession;
+    private IPublisherSessionLocal publishersession;
     private ICertificateStoreSessionLocal certificatestoresession;
     
     // Memory variables.
@@ -506,6 +534,7 @@ public class InformationMemory {
     HashMap publisheridtonamemap = null;
 
     TreeMap authgroups = null;
+    TreeMap publishernames = null;
     HashMap admingrpidmap = null;
     
     HashSet authorizedaccessrules = null;

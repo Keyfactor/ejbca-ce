@@ -12,6 +12,7 @@ import java.util.Date;
  *  This is a  class containing information about one log event in the database. Used mainly during database queries by the web interface.
  *
  * @author  TomSelleck
+ * @version 
  */
 public class LogEntry implements java.io.Serializable {
   
@@ -53,6 +54,7 @@ public class LogEntry implements java.io.Serializable {
     public static final int EVENT_INFO_CAEDITED                       = 31;
     public static final int EVENT_INFO_CAREVOKED                      = 32;
 	public static final int EVENT_INFO_HARDTOKENPROFILEDATA           = 33;
+	public static final int EVENT_INFO_PUBLISHERDATA                  = 34;
     
     // Error events. Important all id:s should map to the array EVENTNAMES_ERROR - EVENT_ERROR_BOUNDRARY.
     public static final int EVENT_ERROR_UNKNOWN                        = 1000;      
@@ -89,7 +91,8 @@ public class LogEntry implements java.io.Serializable {
     public static final int EVENT_ERROR_CAEDITED                       = 1031;
     public static final int EVENT_ERROR_CAREVOKED                      = 1032;
 	public static final int EVENT_ERROR_HARDTOKENPROFILEDATA           = 1033;
-    
+	public static final int EVENT_ERROR_PUBLISHERDATA                  = 1034;
+	
     // Indicates the module using the logsession bean.
     public static final int MODULE_CA                  = 0;
     public static final int MODULE_RA                  = 1;
@@ -110,7 +113,7 @@ public class LogEntry implements java.io.Serializable {
                                                     "EVENT_INFO_CREATECERTIFICATE", "EVENT_INFO_CREATECRL", "EVENT_INFO_ADMINISTRATORLOGGEDIN", "EVENT_INFO_AUTHORIZEDTORESOURCE", 
                                                     "EVENT_INFO_PUBLICWEBUSERCONNECTED", "EVENT_INFO_HARDTOKEN_USERDATASENT","EVENT_INFO_HARDTOKENGENERATED","EVENT_INFO_HARDTOKENDATA",
                                                     "EVENT_INFO_HARDTOKENISSUERDATA", "EVENT_INFO_HARDTOKENCERTIFICATEMAP", "EVENT_INFO_KEYRECOVERY", "EVENT_INFO_NOTIFICATION",
-                                                    "EVENT_INFO_HARDTOKENVIEWED", "EVENT_INFO_CACREATED", "EVENT_INFO_CAEDITED", "EVENT_INFO_CAREVOKED","EVENT_INFO_HARDTOKENPROFILEDATA" };   
+                                                    "EVENT_INFO_HARDTOKENVIEWED", "EVENT_INFO_CACREATED", "EVENT_INFO_CAEDITED", "EVENT_INFO_CAREVOKED","EVENT_INFO_HARDTOKENPROFILEDATA","EVENT_INFO_PUBLISHERDATA" };   
     
                                                                                                          
     public static final String[] EVENTNAMES_ERROR = {"EVENT_ERROR_UNKNOWN", "EVENT_ERROR_ADDEDENDENTITY", "EVENT_ERROR_CHANGEDENDENTITY" , "EVENT_ERROR_REVOKEDENDENTITY", "EVENT_ERROR_REVOKEDCERT",
@@ -120,7 +123,8 @@ public class LogEntry implements java.io.Serializable {
                                                      "EVENT_ERROR_CREATECERTIFICATE", "EVENT_ERROR_CREATECRL" ,"EVENT_ERROR_ADMINISTRATORLOGGEDIN", "EVENT_ERROR_NOTAUTHORIZEDTORESOURCE",
                                                      "EVENT_ERROR_PUBLICWEBUSERCONNECTED","EVENT_ERROR_HARDTOKEN_USERDATASENT","EVENT_ERROR_HARDTOKENGENERATED","EVENT_ERROR_HARDTOKENDATA",
                                                      "EVENT_ERROR_HARDTOKENISSUERDATA", "EVENT_ERROR_HARDTOKENCERTIFICATEMAP", "EVENT_ERROR_KEYRECOVERY", "EVENT_ERROR_NOTIFICATION",
-                                                     "EVENT_ERROR_HARDTOKENVIEWED", "EVENT_ERROR_CACREATED", "EVENT_ERROR_CAEDITED", "EVENT_ERROR_CAREVOKED", "EVENT_ERROR_HARDTOKENPROFILEDATA"};    
+                                                     "EVENT_ERROR_HARDTOKENVIEWED", "EVENT_ERROR_CACREATED", "EVENT_ERROR_CAEDITED", "EVENT_ERROR_CAREVOKED", "EVENT_ERROR_HARDTOKENPROFILEDATA",
+													 "EVENT_ERROR_PUBLISHERDATA"};    
                                                      
     public static final String[] MODULETEXTS    = {"CA", "RA", "LOG", "PUBLICWEB", "ADMINWEB", "HARDTOKEN", "KEYRECOVERY", "AUTHORIZATION"};                                                     
     

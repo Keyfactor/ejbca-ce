@@ -71,7 +71,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.14 2004-02-11 10:44:48 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.15 2004-03-07 12:07:49 herrvendil Exp $
  */
 public class CAAdminSessionBean extends BaseSessionBean {
     
@@ -982,7 +982,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 		    getCertificateStoreSession().revokeAllCertByCA(admin, issuerdn, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);				
 
 			// Revoke CA certificate 
-			getCertificateStoreSession().revokeCertificate(admin, cadata.getCACertificate(), reason);
+			getCertificateStoreSession().revokeCertificate(admin, cadata.getCACertificate(), cadata.getCRLPublishers(), reason);
 				
 			InitialContext jndicontext = new InitialContext();            
             getCRLCreateSession().run(admin, issuerdn);
@@ -1126,7 +1126,29 @@ public class CAAdminSessionBean extends BaseSessionBean {
        catch(java.io.UnsupportedEncodingException e){}  
         
       return returnval;  
-    } // exitsCertificateProfileInCAs    
+    } // exitsCertificateProfileInCAs
+    
+
+    /**
+     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     */    
+    public boolean exitsPublisherInCAs(Admin admin, int publisherid){
+      boolean returnval = false;
+      try{
+        Collection result = cadatahome.findAll();
+        Iterator iter = result.iterator();
+        while(iter.hasNext()){                                
+          CADataLocal cadata = (CADataLocal) iter.next();
+          Iterator pubiter = cadata.getCA().getCRLPublishers().iterator();
+          while(pubiter.hasNext()){
+            returnval = returnval || (((Integer) pubiter.next()).intValue() == publisherid);
+          }  
+        }
+      }catch(javax.ejb.FinderException fe){}        
+       catch(java.io.UnsupportedEncodingException e){}  
+        
+      return returnval;  
+    } // exitsPublisherInCAs
     
     private boolean authorizedToCA(Admin admin, int caid){
       boolean returnval = false;
@@ -1134,7 +1156,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
         returnval = getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid);
       }catch(AuthorizationDeniedException e){}    
       return returnval;  
-    }    
+    }            
+    
     
     /**
      * Method to create certificate path and to check it's validity from a list of certificates.

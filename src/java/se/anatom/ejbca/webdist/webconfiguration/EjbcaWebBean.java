@@ -23,6 +23,8 @@ import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
+import se.anatom.ejbca.ca.publisher.IPublisherSessionLocal;
+import se.anatom.ejbca.ca.publisher.IPublisherSessionLocalHome;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
@@ -46,7 +48,7 @@ import se.anatom.ejbca.util.CertTools;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.34 2003-10-21 13:48:47 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.35 2004-03-07 12:16:58 herrvendil Exp $
  */
 public class EjbcaWebBean {
 
@@ -140,10 +142,14 @@ public class EjbcaWebBean {
 		IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IHardTokenSessionLocalHome.class);
 		IHardTokenSessionLocal hardtokensession = hardtokensessionhome.create();
         
+		IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/PublisherSessionLocal"),
+				IPublisherSessionLocalHome.class);
+		IPublisherSessionLocal publishersession = publishersessionhome.create();               
+		
         
         globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(administrator, raadminsession, authorizationsession);        
         globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();
-        this.informationmemory = new InformationMemory(administrator, caadminsession, raadminsession, authorizationsession, signsession, certificatestoresession, hardtokensession, globalconfiguration);
+        this.informationmemory = new InformationMemory(administrator, caadminsession, raadminsession, authorizationsession, signsession, certificatestoresession, hardtokensession, publishersession, globalconfiguration);
                 
         adminspreferences = new AdminPreferenceDataHandler(administrator);
         weblanguages = new WebLanguages(globalconfiguration);
@@ -225,11 +231,16 @@ public class EjbcaWebBean {
         
 		obj1 = jndicontext.lookup("java:comp/env/HardTokenSessionLocal");
 		IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IHardTokenSessionLocalHome.class);
-		IHardTokenSessionLocal hardtokensession = hardtokensessionhome.create();        
+		IHardTokenSessionLocal hardtokensession = hardtokensessionhome.create();  
+		
+		IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/PublisherSessionLocal"),
+				IPublisherSessionLocalHome.class);
+		IPublisherSessionLocal publishersession = publishersessionhome.create();               
+		
 
         globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(administrator, raadminsession, authorizationsession);        
         globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();
-        this.informationmemory = new InformationMemory(administrator, caadminsession, raadminsession, authorizationsession, signsession, certificatestoresession, hardtokensession, globalconfiguration);
+        this.informationmemory = new InformationMemory(administrator, caadminsession, raadminsession, authorizationsession, signsession, certificatestoresession, hardtokensession, publishersession, globalconfiguration);
         
         authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, authorizationsession);
  

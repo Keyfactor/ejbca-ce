@@ -15,7 +15,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
 
 /** Remote interface of CAAdmin session bean for EJB. Manages CAs
  *
- * @version $Id: ICAAdminSessionRemote.java,v 1.3 2003-10-29 14:25:55 herrvendil Exp $
+ * @version $Id: ICAAdminSessionRemote.java,v 1.4 2004-03-07 12:07:49 herrvendil Exp $
  */
 public interface ICAAdminSessionRemote extends javax.ejb.EJBObject {
  
@@ -100,6 +100,11 @@ public interface ICAAdminSessionRemote extends javax.ejb.EJBObject {
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
    */
   public boolean exitsCertificateProfileInCAs(Admin admin, int certificateprofileid) throws RemoteException;
+
+  /**
+   *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+   */
+  public boolean exitsPublisherInCAs(Admin admin, int publisherid) throws RemoteException;
     
 }
 

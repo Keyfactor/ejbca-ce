@@ -53,16 +53,6 @@
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>SHA1PRNG</env-entry-value>
      </env-entry>     
-<!-- Uncomment to use LDAP publisher -->
-<!--     <env-entry>
-        <description>Environment entry used to map a publishers id to name in the web interface.
-                     the Id is the integer in the end of the key.
-        </description>
-        <env-entry-name>PublisherName1</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>First Publisher</env-entry-value>     
-     </env-entry> -->
-<!--END LDAP Publisher --> 
      <ejb-local-ref>
         <description>The CA entity bean.</description>
         <ejb-ref-name>ejb/CADataLocal</ejb-ref-name>
@@ -99,19 +89,17 @@
         <local>se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal</local>
         <ejb-link>AuthenticationSession</ejb-link>
      </ejb-local-ref>
-<!-- Uncomment to use LDAP publisher -->
-<!--   <ejb-local-ref>
+     <ejb-local-ref>
         <description>
                 Publishers are configured to store certificates and CRLs in additional places
                 from the main database. Publishers runs as local beans.
         </description>
-        <ejb-ref-name>ejb/PublisherSession1</ejb-ref-name>
+        <ejb-ref-name>ejb/PublisherSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ca.store.IPublisherSessionLocalHome</local-home>
-        <local>se.anatom.ejbca.ca.store.IPublisherSessionLocal</local>
-        <ejb-link>PublisherSession1</ejb-link>
-     </ejb-local-ref> -->
-<!--END LDAP Publisher -->
+        <local-home>se.anatom.ejbca.ca.publisher.IPublisherSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.publisher.IPublisherSessionLocal</local>
+        <ejb-link>PublisherSession</ejb-link>
+     </ejb-local-ref> 
     <security-identity>
         <description></description>
         <run-as>
@@ -356,6 +344,17 @@
         <local>se.anatom.ejbca.authorization.IAuthorizationSessionLocal</local>
         <ejb-link>AuthorizationSession</ejb-link>
      </ejb-local-ref>
+     <ejb-local-ref>
+        <description>
+                Publishers are configured to store certificates and CRLs in additional places
+                from the main database. Publishers runs as local beans.
+        </description>
+        <ejb-ref-name>ejb/PublisherSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ca.publisher.IPublisherSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.publisher.IPublisherSessionLocal</local>
+        <ejb-link>PublisherSession</ejb-link>
+     </ejb-local-ref> 
 
     <security-identity>
         <description></description>
@@ -420,77 +419,47 @@
 
    </session>
 
-<!-- Uncomment to use LDAP publisher -->
-<!--   <session>
-     <ejb-name>PublisherSession1</ejb-name>
-     <home>se.anatom.ejbca.ca.store.IPublisherSessionHome</home>
-     <remote>se.anatom.ejbca.ca.store.IPublisherSessionRemote</remote>
-     <local-home>se.anatom.ejbca.ca.store.IPublisherSessionLocalHome</local-home>
-     <local>se.anatom.ejbca.ca.store.IPublisherSessionLocal</local>
-     <ejb-class>se.anatom.ejbca.ca.store.LDAPPublisherSessionBean</ejb-class>
+
+   <session>
+     <ejb-name>PublisherSession</ejb-name>
+     <home>se.anatom.ejbca.ca.publisher.IPublisherSessionHome</home>
+     <remote>se.anatom.ejbca.ca.publisher.IPublisherSessionRemote</remote>
+     <local-home>se.anatom.ejbca.ca.publisher.IPublisherSessionLocalHome</local-home>
+     <local>se.anatom.ejbca.ca.publisher.IPublisherSessionLocal</local>
+     <ejb-class>se.anatom.ejbca.ca.publisher.LocalPublisherSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
+     <env-entry>
+        <description>JDBC datasource to be used</description>
+        <env-entry-name>DataSource</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>java:/DefaultDS</env-entry-value>
+     </env-entry>
+     <ejb-local-ref>
+        <description>The publisher data entity bean</description>
+        <ejb-ref-name>ejb/PublisherData</ejb-ref-name>
+        <ejb-ref-type>Entity</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ca.publisher.PublisherDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.publisher.PublisherDataLocal</local>
+        <ejb-link>PublisherData</ejb-link>
+     </ejb-local-ref>
+     <ejb-local-ref>
+        <description>The Authorization Session Bean</description>
+        <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.authorization.IAuthorizationSessionLocal</local>
+        <ejb-link>AuthorizationSession</ejb-link>
+     </ejb-local-ref>
+     <ejb-local-ref>
+        <description>The CAAdmin Session Bean</description>
+        <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal</local>
+        <ejb-link>CAAdminSession</ejb-link>
+     </ejb-local-ref>
 
-     <env-entry>
-        <description>LDAP host</description>
-        <env-entry-name>ldapHost</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>localhost</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>LDAP port</description>
-        <env-entry-name>ldapPort</env-entry-name>
-        <env-entry-type>java.lang.Integer</env-entry-type>
-        <env-entry-value>389</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>DN used to login to LDAP server</description>
-        <env-entry-name>loginDN</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>cn=Admin,o=AnaTom,c=SE</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Password used to login to LDAP server.</description>
-        <env-entry-name>loginPassword</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>foo123</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>objectclass for storing user entries, hierarchy separated by ;.</description>
-        <env-entry-name>userObjectclass</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>top;person;organizationalPerson;inetOrgPerson</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>objectclass for storing CA entries, hierarchy separated by ;.</description>
-        <env-entry-name>cAObjectclass</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>top;applicationProcess;certificationAuthority</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>attribute for storing user certificates.</description>
-        <env-entry-name>userCertAttribute</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>userCertificate;binary</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>attribute for storing CA certificates.</description>
-        <env-entry-name>cACertAttribute</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>cACertificate;binary</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>attribute for storing CRLs.</description>
-        <env-entry-name>cRLAttribute</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>certificateRevocationList;binary</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>attribute for storing ARLs.</description>
-        <env-entry-name>aRLAttribute</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>authorityRevocationList;binary</env-entry-value>
-     </env-entry>
      <ejb-local-ref>
         <description>The Log session bean</description>
         <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
@@ -499,8 +468,8 @@
         <local>se.anatom.ejbca.log.ILogSessionLocal</local>
         <ejb-link>LogSession</ejb-link>
      </ejb-local-ref>
-   </session> -->
-<!-- END LDAP Publisher -->
+   </session> 
+
 
    <entity>
       <description>
@@ -677,7 +646,37 @@
          </ejb-ql>
        </query>
    </entity>
+   <entity>
+      <description>
+            This enterprise bean entity represents a publisher.
+      </description>
+      <ejb-name>PublisherData</ejb-name>
+      <local-home>se.anatom.ejbca.ca.publisher.PublisherDataLocalHome</local-home>
+      <local>se.anatom.ejbca.ca.publisher.PublisherDataLocal</local>
+      <ejb-class>se.anatom.ejbca.ca.publisher.PublisherDataBean</ejb-class>
+      <persistence-type>Container</persistence-type>
+      <prim-key-class>java.lang.Integer</prim-key-class>
+      <reentrant>False</reentrant>
+      <cmp-version>2.x</cmp-version>
+      <abstract-schema-name>PublisherDataBean</abstract-schema-name>
+      <cmp-field><field-name>id</field-name></cmp-field>
+      <cmp-field><field-name>name</field-name></cmp-field>
+      <cmp-field><field-name>updateCounter</field-name></cmp-field>
+      <cmp-field><field-name>data</field-name></cmp-field>
+      <primkey-field>id</primkey-field>
 
+      <query>
+      	<query-method>
+      	  <method-name>findByName</method-name>
+      	  <method-params>
+      	    <method-param>java.lang.String</method-param>
+      	  </method-params>
+      	</query-method>
+	    <ejb-ql>
+	      <![CDATA[SELECT DISTINCT OBJECT(a) from PublisherDataBean a WHERE a.name=?1]]>
+	    </ejb-ql>
+       </query>
+   </entity>    
    <entity>
       <description>
             Entity Bean containing CA data
@@ -916,12 +915,10 @@
          <ejb-name>CRLData</ejb-name>
          <method-name>*</method-name>
      </method>
-<!-- Uncomment to use LDAP publisher -->
-<!--     <method>
-         <ejb-name>PublisherSession1</ejb-name>
+          <method>
+         <ejb-name>PublisherSession</ejb-name>
          <method-name>*</method-name>
-     </method> -->
-<!-- END LDAP Publisher -->
+     </method>
 
    <trans-attribute>Required</trans-attribute>
    </container-transaction>
@@ -954,6 +951,26 @@
      <method>
          <ejb-name>CAAdminSession</ejb-name>
          <method-name>getAvailableCAs</method-name>
+     </method>
+     <method>
+         <ejb-name>PublisherSession</ejb-name>
+         <method-name>getPublisherIdToNameMap</method-name>
+     </method>
+     <method>
+         <ejb-name>PublisherSession</ejb-name>
+         <method-name>getPublisher</method-name>
+     </method>
+     <method>
+         <ejb-name>PublisherSession</ejb-name>
+         <method-name>getPublisherUpdateCount</method-name>
+     </method>
+     <method>
+         <ejb-name>PublisherSession</ejb-name>
+         <method-name>getPublisherId</method-name>
+     </method>
+     <method>
+         <ejb-name>PublisherSession</ejb-name>
+         <method-name>getPublisherName</method-name>
      </method>
 
    <trans-attribute>Supports</trans-attribute>

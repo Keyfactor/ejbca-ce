@@ -16,7 +16,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 /**
  * 
  *
- * @version $Id: AvailableAccessRules.java,v 1.6 2004-02-19 12:16:49 herrvendil Exp $
+ * @version $Id: AvailableAccessRules.java,v 1.7 2004-03-07 12:06:59 herrvendil Exp $
  */
 public class AvailableAccessRules {
         
@@ -47,45 +47,45 @@ public class AvailableAccessRules {
 
     public static final String ROLE_PUBLICWEBUSER                                 = "/public_web_user";
     public static final String ROLE_ADMINISTRATOR                                 = "/administrator";
-    public static final String ROLE_SUPERADMINISTRATOR                       = "/super_administrator";
+    public static final String ROLE_SUPERADMINISTRATOR                            = "/super_administrator";
     
     
-    public static final String REGULAR_CAFUNCTIONALTY                                 = "/ca_functionality";
-    public static final String REGULAR_CABASICFUNCTIONS                             = "/ca_functionality/basic_functions";    
-    public static final String REGULAR_VIEWCERTIFICATE                                 = "/ca_functionality/view_certificate";    
-    public static final String REGULAR_CREATECRL                                           = "/ca_functionality/create_crl";    
-    public static final String REGULAR_EDITCERTIFICATEPROFILES                    = "/ca_functionality/edit_certificate_profiles";
-    public static final String REGULAR_CREATECERTIFICATE                              = "/ca_functionality/create_certificate";
-    public static final String REGULAR_STORECERTIFICATE                               = "/ca_functionality/store_certificate";    
-    public static final String REGULAR_RAFUNCTIONALITY                                 = "/ra_functionality";
-    public static final String REGULAR_EDITENDENTITYPROFILES                       = "/ra_functionality/edit_end_entity_profiles";    
-    public static final String REGULAR_VIEWENDENTITY                                     = "/ra_functionality/view_end_entity";    
-    public static final String REGULAR_CREATEENDENTITY                                 = "/ra_functionality/create_end_entity";
-    public static final String REGULAR_EDITENDENTITY                                      = "/ra_functionality/edit_end_entity";
-    public static final String REGULAR_DELETEENDENTITY                                  = "/ra_functionality/delete_end_entity";
-    public static final String REGULAR_REVOKEENDENTITY                                 = "/ra_functionality/revoke_end_entity";    
-    public static final String REGULAR_VIEWENDENTITYHISTORY                        = "/ra_functionality/view_end_entity_history";
-    public static final String REGULAR_LOGFUNCTIONALITY                                = "/log_functionality"; 
-    public static final String REGULAR_VIEWLOG                                                = "/log_functionality/view_log"; 
-    public static final String REGULAR_LOGCONFIGURATION                              = "/log_functionality/edit_log_configuration"; 
-    public static final String REGULAR_SYSTEMFUNCTIONALITY                          = "/system_functionality";
-    public static final String REGULAR_EDITADMINISTRATORPRIVILEDGES           = "/system_functionality/edit_administrator_privileges";
+    public static final String REGULAR_CAFUNCTIONALTY                             = "/ca_functionality";
+    public static final String REGULAR_CABASICFUNCTIONS                           = "/ca_functionality/basic_functions";    
+    public static final String REGULAR_VIEWCERTIFICATE                            = "/ca_functionality/view_certificate";    
+    public static final String REGULAR_CREATECRL                                  = "/ca_functionality/create_crl";    
+    public static final String REGULAR_EDITCERTIFICATEPROFILES                    = "/ca_functionality/edit_certificate_profiles";    
+    public static final String REGULAR_CREATECERTIFICATE                          = "/ca_functionality/create_certificate";
+    public static final String REGULAR_STORECERTIFICATE                           = "/ca_functionality/store_certificate";    
+    public static final String REGULAR_RAFUNCTIONALITY                            = "/ra_functionality";
+    public static final String REGULAR_EDITENDENTITYPROFILES                      = "/ra_functionality/edit_end_entity_profiles";    
+    public static final String REGULAR_VIEWENDENTITY                              = "/ra_functionality/view_end_entity";    
+    public static final String REGULAR_CREATEENDENTITY                            = "/ra_functionality/create_end_entity";
+    public static final String REGULAR_EDITENDENTITY                              = "/ra_functionality/edit_end_entity";
+    public static final String REGULAR_DELETEENDENTITY                            = "/ra_functionality/delete_end_entity";
+    public static final String REGULAR_REVOKEENDENTITY                            = "/ra_functionality/revoke_end_entity";    
+    public static final String REGULAR_VIEWENDENTITYHISTORY                       = "/ra_functionality/view_end_entity_history";
+    public static final String REGULAR_LOGFUNCTIONALITY                           = "/log_functionality"; 
+    public static final String REGULAR_VIEWLOG                                    = "/log_functionality/view_log"; 
+    public static final String REGULAR_LOGCONFIGURATION                           = "/log_functionality/edit_log_configuration"; 
+    public static final String REGULAR_SYSTEMFUNCTIONALITY                        = "/system_functionality";
+    public static final String REGULAR_EDITADMINISTRATORPRIVILEDGES               = "/system_functionality/edit_administrator_privileges";
     
-    public static final String REGULAR_VIEWHARDTOKENS                                  = "/ra_functionality" + HARDTOKEN_RIGHTS;    
-    public static final String REGULAR_KEYRECOVERY                                         = "/ra_functionality" + KEYRECOVERY_RIGHTS;
+    public static final String REGULAR_VIEWHARDTOKENS                             = "/ra_functionality" + HARDTOKEN_RIGHTS;    
+    public static final String REGULAR_KEYRECOVERY                                = "/ra_functionality" + KEYRECOVERY_RIGHTS;
     	
-    public static final String HARDTOKEN_HARDTOKENFUNCTIONALITY             = "/hardtoken_functionality";
-    public static final String HARDTOKEN_EDITHARDTOKENISSUERS                 = "/hardtoken_functionality/edit_hardtoken_issuers";
-    public static final String HARDTOKEN_EDITHARDTOKENPROFILES                = "/hardtoken_functionality/edit_hardtoken_profiles";
+    public static final String HARDTOKEN_HARDTOKENFUNCTIONALITY                   = "/hardtoken_functionality";
+    public static final String HARDTOKEN_EDITHARDTOKENISSUERS                     = "/hardtoken_functionality/edit_hardtoken_issuers";
+    public static final String HARDTOKEN_EDITHARDTOKENPROFILES                    = "/hardtoken_functionality/edit_hardtoken_profiles";
     public static final String HARDTOKEN_ISSUEHARDTOKENS                          = "/hardtoken_functionality/issue_hardtokens";
-    public static final String HARDTOKEN_ISSUEHARDTOKENADMINISTRATORS = "/hardtoken_functionality/issue_hardtoken_administrators";
+    public static final String HARDTOKEN_ISSUEHARDTOKENADMINISTRATORS             = "/hardtoken_functionality/issue_hardtoken_administrators";
     
         // Standard Regular Access Rules
     private  final  String[] STANDARDREGULARACCESSRULES = {REGULAR_CAFUNCTIONALTY, 
                                                            REGULAR_CABASICFUNCTIONS,
                                                            REGULAR_VIEWCERTIFICATE, 
                                                            REGULAR_CREATECRL,
-                                                           REGULAR_EDITCERTIFICATEPROFILES,
+                                                           REGULAR_EDITCERTIFICATEPROFILES,                                                           
                                                            REGULAR_CREATECERTIFICATE,
                                                            REGULAR_STORECERTIFICATE,
                                                            REGULAR_RAFUNCTIONALITY, 

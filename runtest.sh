@@ -46,8 +46,11 @@ echo Testing ca.sign
 java -cp $TEST_CP se.anatom.ejbca.ca.sign.junit.TestRunner
 echo Testing ca.crl
 java -cp $TEST_CP se.anatom.ejbca.ca.crl.junit.TestRunner
+echo Testing ca.publisher
+java -cp $TEST_CP se.anatom.ejbca.ca.publisher.junit.TestRunner
 echo Testing batch
 java -cp $TEST_CP se.anatom.ejbca.batch.junit.TestRunner
+
 
 cd ../..
 

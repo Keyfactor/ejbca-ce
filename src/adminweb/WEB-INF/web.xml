@@ -196,5 +196,12 @@
     <local-home>se.anatom.ejbca.keyrecovery.KeyRecoverySessionLocalHome</local-home>
     <local>se.anatom.ejbca.keyrecovery.KeyRecoverySessionLocal</local>
     <ejb-link>KeyRecoverySession</ejb-link>
-  </ejb-local-ref>      
+  </ejb-local-ref>          
+  <ejb-local-ref>
+    <ejb-ref-name>PublisherSessionLocal</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <local-home>se.anatom.ejbca.ca.publisher.PublisherSessionLocalHome</local-home>
+    <local>se.anatom.ejbca.ca.publisher.PublisherSessionLocal</local>
+    <ejb-link>PublisherSession</ejb-link>
+  </ejb-local-ref>     
 </web-app>

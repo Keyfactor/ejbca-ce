@@ -14,7 +14,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
 
 /** Local interface of CAAdmin sessio bean for EJB. Manages CAs
  *
- * @version $Id: ICAAdminSessionLocal.java,v 1.6 2004-01-11 13:55:02 anatom Exp $
+ * @version $Id: ICAAdminSessionLocal.java,v 1.7 2004-03-07 12:07:49 herrvendil Exp $
  */
 public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
  
@@ -162,6 +162,11 @@ public interface ICAAdminSessionLocal extends javax.ejb.EJBLocalObject {
    *  Method used to check if certificate profile id exists in any CA.
    */    
   public boolean exitsCertificateProfileInCAs(Admin admin, int certificateprofileid);
+
+  /**
+   *  Method used to check if publishers id exists in any CAs CRLPublishers Collection.
+   */
+  public boolean exitsPublisherInCAs(Admin admin, int publisherid);
     
 }
 

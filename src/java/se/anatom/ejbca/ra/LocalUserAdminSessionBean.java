@@ -2,7 +2,6 @@ package se.anatom.ejbca.ra;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,8 +31,6 @@ import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
-import se.anatom.ejbca.ca.store.IPublisherSessionLocal;
-import se.anatom.ejbca.ca.store.IPublisherSessionLocalHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
@@ -55,7 +52,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.73 2004-02-11 10:44:59 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.74 2004-03-07 12:12:13 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -69,8 +66,6 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     /** The local interface of the authorization session bean */
     private IAuthorizationSessionLocal authorizationsession;
     
-    /** A vector of publishers home interfaces where certs and CRLs are stored */
-    private ArrayList publishers = null;
 
     /** The remote interface of the log session bean */
     private ILogSessionLocal logsession;
@@ -110,22 +105,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
         ICertificateStoreSessionLocalHome certificatesessionhome = (ICertificateStoreSessionLocalHome) lookup("java:comp/env/ejb/CertificateStoreSessionLocal", ICertificateStoreSessionLocalHome.class);
         certificatesession = certificatesessionhome.create();
-        // Init the publisher session beans
-        int i = 1;
-        publishers = new ArrayList();
-        try {
-            while (true) {
-                String jndiName = "java:comp/env/ejb/PublisherSessionLocal" + i;
-                IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)lookup(jndiName);
-                publishers.add(pubHome);
-                debug("Added publisher class '"+pubHome.getClass().getName()+"'");
-                i++;
-            }
-        } catch (EJBException e) {
-            // We could not find this publisher
-            debug("Failed to find publisher at index '"+i+"', no more publishers.");
-        }
-
+        
+        
       }catch(Exception e){
           error("Error creating session bean:",e);
           throw new EJBException(e);
@@ -593,8 +574,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             throw new AuthorizationDeniedException("Not authorized to revoke user : " + username + ".");
           }
         }
+        
+        Collection publishers = this.certificatesession.getCertificateProfile(admin, data.getCertificateProfileId()).getPublisherList();        
         setUserStatus(admin, username, UserDataRemote.STATUS_REVOKED);
-        certificatesession.setRevokeStatus(admin, username, reason);
+        certificatesession.setRevokeStatus(admin, username, publishers, reason);
         logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_REVOKEDENDENTITY,"");
         debug("<revokeUser()");
     } // revokeUser
@@ -628,27 +611,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             throw new AuthorizationDeniedException("Not authorized to revoke user : " + username + ".");
           }
         }
-        certificatesession.setRevokeStatus(admin, issuerdn, certserno, reason);
+        Collection publishers = this.certificatesession.getCertificateProfile(admin, data.getCertificateProfileId()).getPublisherList();
+        certificatesession.setRevokeStatus(admin, issuerdn, certserno, publishers, reason);
         // Revoke certificate in publishers
         Certificate cert = certificatesession.findCertificateByIssuerAndSerno(admin, issuerdn, certserno);
-        if (publishers.size() > 0) {
-            if (cert != null){
-                if (cert instanceof X509Certificate) {
-                    X509Certificate x509cert = (X509Certificate)cert; 
-                    if (x509cert.getSerialNumber().compareTo(certserno) == 0) {
-                        for (int i=0;i<publishers.size();i++) {
-                            try {
-                                IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(i);
-                                IPublisherSessionLocal pub = pubHome.create();
-                                pub.revokeCertificate(admin, cert, reason);
-                            } catch (CreateException e) {
-                                log.debug("Error creating publisher session: ", e);
-                            }
-                        }
-                    }
-                }
-            }
-        } // if (publishers.size() > 0)
+                
 
         if(certificatesession.checkIfAllRevoked(admin, username)){
           setUserStatus(admin, username, UserDataRemote.STATUS_REVOKED);

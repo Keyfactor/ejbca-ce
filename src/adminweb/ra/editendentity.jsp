@@ -849,8 +849,14 @@ function checkUseInBatch(){
       </tr>
       <% } 
          if(profile.getUse(EndEntityProfile.EMAIL,0)){ 
-           String emailname   = userdata.getEmail().substring(0,userdata.getEmail().indexOf('@'));
-           String emaildomain = userdata.getEmail().substring(userdata.getEmail().indexOf('@')+1);
+           String emailname = "";
+           String emaildomain = "";
+           if(userdata.getEmail() != null){
+             emailname   = userdata.getEmail().substring(0,userdata.getEmail().indexOf('@'));
+             emaildomain = userdata.getEmail().substring(userdata.getEmail().indexOf('@')+1);
+           }
+
+ 
 %>
        <tr id="Row<%=(row++)%2%>">	 
 	 <td align="right"><%= ejbcawebbean.getText("EMAIL") %></td>

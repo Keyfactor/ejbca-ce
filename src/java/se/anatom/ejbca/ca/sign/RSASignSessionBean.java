@@ -48,8 +48,8 @@ import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.store.CertificateData;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
-import se.anatom.ejbca.ca.store.IPublisherSessionLocal;
-import se.anatom.ejbca.ca.store.IPublisherSessionLocalHome;
+import se.anatom.ejbca.ca.publisher.IPublisherSessionLocal;
+import se.anatom.ejbca.ca.publisher.IPublisherSessionLocalHome;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
@@ -65,7 +65,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.123 2004-02-10 11:08:40 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.124 2004-03-07 12:09:17 herrvendil Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -84,6 +84,10 @@ public class RSASignSessionBean extends BaseSessionBean {
     /* Home interface to Authentication session */
     private IAuthenticationSessionLocalHome authHome = null;
 
+    /* Home interface to Publisher session */
+    private IPublisherSessionLocalHome publishHome = null;
+
+    
     /** The local interface of the log session bean */
     private ILogSessionLocal logsession;
     /**
@@ -112,28 +116,13 @@ public class RSASignSessionBean extends BaseSessionBean {
 
             cadatahome = (CADataLocalHome)lookup("java:comp/env/ejb/CADataLocal");
             
+            publishHome = (IPublisherSessionLocalHome) lookup("java:comp/env/ejb/PublisherSessionLocal");
+            
             // Get a decent source of random data
             String  randomAlgorithm = (String) lookup("java:comp/env/randomAlgorithm");
             randomSource = SecureRandom.getInstance(randomAlgorithm);
             SernoGenerator.setAlgorithm(randomAlgorithm);
 
-            // Init the publisher session beans
-            int i = 1;
-            publishers = new ArrayList();
-            publisheridtonamemap = new HashMap();
-            try {
-                while (true) {
-                    String jndiName = "java:comp/env/ejb/PublisherSession" + i;
-                    IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)lookup(jndiName);
-                    publishers.add(pubHome);
-                    publisheridtonamemap.put(new Integer(i), (String)lookup("java:comp/env/PublisherName" + i, java.lang.String.class));
-                    debug("Added publisher class '"+pubHome.getClass().getName()+"'");
-                    i++;
-                }
-            } catch (EJBException e) {
-                // We could not find this publisher
-                debug("Failed to find publisher at index '"+i+"', no more publishers.");
-            }
 
         } catch( Exception e ) {
             debug("Caught exception in ejbCreate(): ", e);
@@ -284,11 +273,12 @@ public class RSASignSessionBean extends BaseSessionBean {
      * Implements ISignSession::createCertificate
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
-        debug(">createCertificate(pk, ku)");
+        debug(">createCertificate(pk, ku)");        
         try {
             // Authorize user and get DN
             UserAuthData data = authUser(admin, username, password);
-            debug("Authorized user " + username + " with DN='" + data.getDN()+"'.");
+            debug("Authorized user " + username + " with DN='" + data.getDN()+"'." + " with CA=" + data.getCAId());
+            
             debug("type="+ data.getType());
             // get CA
             CADataLocal cadata = null; 
@@ -621,13 +611,8 @@ public class RSASignSessionBean extends BaseSessionBean {
           String fingerprint = CertTools.getFingerprintAsString(cacert);
           certificateStore.storeCRL(admin, crl.getEncoded(), fingerprint, number);
           // Store crl in ca CRL publishers.
-          Iterator iter = ca.getCRLPublishers().iterator();
-          while(iter.hasNext()){
-            int publisherid = ((Integer) iter.next()).intValue();
-            IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(publisherid-1);
-            IPublisherSessionLocal pub = pubHome.create();
-            pub.storeCRL(admin, crl.getEncoded(), fingerprint, number);             
-          }
+          IPublisherSessionLocal pub = publishHome.create();
+          pub.storeCRL(admin, ca.getCRLPublishers(), crl.getEncoded(), fingerprint, number);
         } catch (Exception e) {          
             getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,"");          
             throw new EJBException(e);
@@ -656,15 +641,8 @@ public class RSASignSessionBean extends BaseSessionBean {
                     certificateStore.storeCertificate(admin, cacert, "SYSTEMCA", fingerprint, CertificateData.CERT_ACTIVE, certtype);
                 }  
                 // Store cert in ca cert publishers.
-                Iterator iter = usedpublishers.iterator();
-                while(iter.hasNext()){
-                    int publisherid = ((Integer) iter.next()).intValue(); 
-                    debug("Storing certificate in publisher: "+publisherid);                                     
-                    // Store CA certificate
-                    IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(publisherid-1);
-                    IPublisherSessionLocal pub = pubHome.create();
-                    pub.storeCertificate(admin, cacert, fingerprint, fingerprint, CertificateData.CERT_ACTIVE, certtype);            
-                }
+                IPublisherSessionLocal pub = publishHome.create();
+                pub.storeCertificate(admin, usedpublishers, cacert, fingerprint, fingerprint, CertificateData.CERT_ACTIVE, certtype);
         }
        }catch(javax.ejb.CreateException ce){
            throw new EJBException(ce);   
@@ -744,7 +722,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @return Certificate that has been generated and signed by the CA
      */
     private Certificate createCertificate(Admin admin, UserAuthData data, CA ca, PublicKey pk, int keyusage) throws IllegalKeyException {
-        debug(">createCertificate(pk, ku)");
+        debug(">createCertificate(pk, ku)");        
         try {
             // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
             if (data.getType() == SecConst.USER_INVALID) {
@@ -810,14 +788,9 @@ public class RSASignSessionBean extends BaseSessionBean {
                 String fingerprint = CertTools.getFingerprintAsString(cert);
                 certificateStore.storeCertificate(admin, cert, data.getUsername(), fingerprint, CertificateData.CERT_ACTIVE, certProfile.getType());
                 // Store certificate in certificate profiles publishers.
-                iter = certProfile.getPublisherList().iterator();
-                while(iter.hasNext()){
-                  int publisherid = ((Integer) iter.next()).intValue();
-                  debug("Storing certificate with publisher: "+publisherid);
-                  IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(publisherid-1);
-                  IPublisherSessionLocal pub = pubHome.create();
-                  pub.storeCertificate(admin, cert, data.getUsername(), fingerprint, CertificateData.CERT_ACTIVE, certProfile.getType());                    
-                }                                                
+                IPublisherSessionLocal pub = publishHome.create();
+                pub.storeCertificate(admin, certProfile.getPublisherList(), cert, data.getUsername(), fingerprint, CertificateData.CERT_ACTIVE, certProfile.getType());
+                                                
                 debug("<createCertificate(pk, ku)");
                 return cert;
             }
