@@ -12,11 +12,11 @@ import java.util.Collection;
 public interface UserDataHome extends javax.ejb.EJBHome {
 
     public UserData create(String username, String password, String dn)
-        throws CreateException, NoSuchAlgorithmException;
+        throws CreateException, NoSuchAlgorithmException, RemoteException;
 
     public UserData findByPrimaryKey(UserDataPK pk)
-        throws FinderException;
+        throws FinderException, RemoteException;
 
     public Collection findByStatus(int status)
-        throws FinderException;
+        throws FinderException, RemoteException;
 }

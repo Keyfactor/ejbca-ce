@@ -1,6 +1,5 @@
 package se.anatom.ejbca.ca.store.junit;
 
-import java.util.Random;
 import java.util.*;
 import java.lang.Integer;
 import java.io.*;
@@ -25,7 +24,7 @@ import junit.framework.*;
 
 /** Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.5 2002-05-20 17:52:59 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.6 2002-05-21 15:22:51 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -46,7 +45,7 @@ public class TestCertificateData extends TestCase {
     static Category cat = Category.getInstance( TestCertificateData.class.getName() );
     private static Context ctx;
     private static CertificateDataHome home;
-    private static ICertificateStoreSessionHome storehome; 
+    private static ICertificateStoreSessionHome storehome;
     private static X509Certificate cert;
 
     public TestCertificateData(String name) {
@@ -202,22 +201,24 @@ public class TestCertificateData extends TestCase {
         long yearmillis = 365*24*60*60*1000;
         long findDateSecs = data.getExpireDate().getTime() - (yearmillis*100);
         Date findDate = new Date(findDateSecs);
-        
+
         ICertificateStoreSessionRemote store = storehome.create();
         cat.debug("1. Looking for cert with expireDate="+findDate);
-        Certificate[] certs = store.findCertificatesByExpireTime(findDate);
-        cat.debug("findCertificatesByExpireTime returned "+ certs.length+" certs.");
-        assertTrue("No certs should have expired before this date", certs.length == 0);
+        Collection certs = store.findCertificatesByExpireTime(findDate);
+        cat.debug("findCertificatesByExpireTime returned "+ certs.size()+" certs.");
+        assertTrue("No certs should have expired before this date", certs.size() == 0);
         findDateSecs = data.getExpireDate().getTime() + 10000;
         findDate = new Date(findDateSecs);
         cat.debug("2. Looking for cert with expireDate="+findDate);
         certs = store.findCertificatesByExpireTime(findDate);
-        cat.debug("findCertificatesByExpireTime returned "+ certs.length+" certs.");
-        assertTrue("Some certs should have expired before this date", certs.length != 0);
-        for (int i=0;i<certs.length;i++) {
-            Date retDate = ((X509Certificate)certs[i]).getNotAfter();
+        cat.debug("findCertificatesByExpireTime returned "+ certs.size()+" certs.");
+        assertTrue("Some certs should have expired before this date", certs.size() != 0);
+        Iterator iter = certs.iterator();
+        while (iter.hasNext()) {
+            X509Certificate cert = (X509Certificate)iter.next();
+            Date retDate = cert.getNotAfter();
             cat.debug(retDate);
-            assertTrue("This cert is not expired by the specified Date.", retDate.getTime() < findDate.getTime()); 
+            assertTrue("This cert is not expired by the specified Date.", retDate.getTime() < findDate.getTime());
         }
         cat.debug("<test06FindByExpireTime()");
     }

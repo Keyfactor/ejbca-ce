@@ -18,7 +18,7 @@ import se.anatom.ejbca.ca.crl.RevokedCertInfo;
  * retrieve CRLs, check for revocation etc. the CertificateStoreSession implements
  * the interface ICertificateStoreSession.
  *
- * @version $Id: ICertificateStoreSession.java,v 1.3 2002-04-01 12:10:17 anatom Exp $
+ * @version $Id: ICertificateStoreSession.java,v 1.4 2002-05-21 15:22:51 anatom Exp $
  */
 public interface ICertificateStoreSession extends IPublisherSession {
 
@@ -57,11 +57,11 @@ public interface ICertificateStoreSession extends IPublisherSession {
     * Finds certificate which expire within a specified time.
     *
     * @param expireTime all certificates that expires before this date will be listed
-    * @return Array of Certificates (reverse) ordered by expireDate where last expireDate is first in array.
+    * @return Collection of Certificates (java.security.cert.Certificate) (reverse) ordered by expireDate where last expireDate is first in array.
     * @throws EJBException if a communication or other error occurs.
     */
-    public Certificate[] findCertificatesByExpireTime(Date expireTime) throws RemoteException;
- 
+    public Collection findCertificatesByExpireTime(Date expireTime) throws RemoteException;
+
    /**
     * Checks if a certificate is revoked.
     *

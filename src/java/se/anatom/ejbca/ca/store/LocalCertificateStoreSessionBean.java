@@ -7,6 +7,7 @@ import java.math.BigInteger;
 
 import java.util.Date;
 import java.util.Vector;
+import java.util.Collection;
 import java.sql.*;
 import javax.sql.DataSource;
 import javax.naming.*;
@@ -26,7 +27,7 @@ import se.anatom.ejbca.util.Base64;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.8 2002-05-21 08:52:30 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.9 2002-05-21 15:22:51 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean implements ICertificateStoreSession {
 
@@ -233,12 +234,23 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
      * Implements ICertificateStoreSession::findCertificatesByExpireTime.
      * Uses select directly from datasource.
      */
-    public Certificate[] findCertificatesByExpireTime(Date expireTime) {
+    public Collection findCertificatesByExpireTime(Date expireTime) {
         debug(">findCertificatesByExpireTime(), time="+expireTime);
         // First make expiretime in well know format
-        long expireSeconds = expireTime.getTime();
-        debug("Looking for certs with (expireSeconds: " + expireSeconds);
+        debug("Looking for certs that expire before: " + expireTime);
+        try {
+            Collection coll = certHome.findByExpireDate(expireTime);
+            debug("<findCertificatesByExpireTime(), time="+expireTime);
+            return coll;
+        } catch (javax.ejb.FinderException fe) {
+            cat.error(fe);
+            throw new EJBException(fe);
+        } catch (java.rmi.RemoteException re) {
+            cat.error(re);
+            throw new EJBException(re);
+        }
 
+/*
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet result = null;
@@ -269,6 +281,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
                 se.printStackTrace();
             }
         }
+*/
     } //findCertificatesByExpireTime
 
    /**
