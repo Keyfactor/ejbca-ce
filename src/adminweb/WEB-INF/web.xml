@@ -21,6 +21,21 @@
     <servlet-class>se.anatom.ejbca.webdist.cainterface.CACertServlet</servlet-class>
     <load-on-startup>99</load-on-startup>
   </servlet>
+  
+  <!-- Servlet used to receive and automagically create users from the received request
+  <servlet>
+    <servlet-name>AdminCertReq</servlet-name>
+    <display-name>AdminCertReqServlet</display-name>
+    <description>Handles certificate requests</description>
+    <servlet-class>se.anatom.ejbca.apply.AdminCertReqServlet</servlet-class>
+    <load-on-startup>99</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AdminCertReq</servlet-name>
+    <url-pattern>/ca/certreq</url-pattern>
+  </servlet-mapping>
+  -->
+
   <servlet-mapping>
     <servlet-name>GetCRL</servlet-name>
     <url-pattern>/ca/getcrl/getcrl</url-pattern>
@@ -29,6 +44,7 @@
     <servlet-name>CACert</servlet-name>
     <url-pattern>/ca/cacert</url-pattern>
   </servlet-mapping>
+
   <session-config>
     <session-timeout>30</session-timeout>
   </session-config>
