@@ -209,7 +209,9 @@ with the admin-GUI works just as fine).
 In the mail ejbca directory type (use simply 'ra' on windows):
 ./ra.sh adduser ldap foo123 "C=SE,O=Foo,CN=ldap" null AdminCA1 null 1 PEM
 ./ra.sh setclearpwd foo123 
-(User type end-user, keystore type PEM, use batch).
+Where foo123 is the ldap users password, C=SE... is the users DN and AdminCA1 is the name you 
+chose for your CA. The user type is end-user (1), keystore type is PEM, and if using the admin-GUI 
+check 'use batch').
 Batch generate the PEM keystore:
 ./batch.sh
 
@@ -229,7 +231,14 @@ Restart slapd:
 ./slapd -h "ldap:/// ldaps:///"
 and check thats it is running with 'ps -ef|grep slapd'.
 
-Configure your LDAP publisher to use SSL by checking the checkbox 'Use SSL', the port
+On SuSE, if using the builting OpenLDAP you have to enable ldaps in /etc/sysconfig/openldap:
+OPENLDAP_START_LDAPS="yes"
+and then run
+SuSEconfig 
+and then
+rcldap start 
+
+Configure your LDAP publisher in EJBCA to use SSL by checking the checkbox 'Use SSL', the port
 shold change to port 636.
 
 Note! The CA certificate of the (root)CA used to sign the ldap server certificate must be present in
