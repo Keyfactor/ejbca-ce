@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<jboss-app>
+	<!--
+		JBoss classloader is an absolute abomination and a total hack
+		that encourages sloppy programming practices.
+		
+		The following fallback to something closer to the traditional J2EE isolation system.
+		
+		To have a look at the loading disaster:
+		
+		http://localhost:8080/jmx-console/HtmlAdaptor?action=inspectMBean&name=se.anatom.ejbca.loader%3Aloader%3Dejbca.ear
+	  -->
+	<loader-repository>se.anatom.ejbca.loader:loader=ejbca.ear</loader-repository>
+</jboss-app>
