@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.28 2002-05-26 12:44:59 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.29 2002-05-26 13:28:53 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -212,7 +212,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
     /**
      * Implements ISignSession::getCertificateChain
      */
-    public Certificate[] getCertificateChain() throws RemoteException {
+    public Certificate[] getCertificateChain() {
         debug(">getCertificateChain()");
         // TODO: should support more than 2 levels of CAs
         Certificate[] chain;
@@ -230,7 +230,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(String username, String password, PublicKey pk) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException {
+    public Certificate createCertificate(String username, String password, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">createCertificate(pk)");
         // Standard key usages for end users are: digitalSignature | keyEncipherment or nonRepudiation
         // Default key usage is digitalSignature | keyEncipherment
@@ -249,14 +249,14 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(String username, String password, PublicKey pk, boolean[] keyusage) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException {
+    public Certificate createCertificate(String username, String password, PublicKey pk, boolean[] keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         return createCertificate(username, password, pk, sunKeyUsageToBC(keyusage));
     }
 
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(String username, String password, PublicKey pk, int keyusage) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException {
+    public Certificate createCertificate(String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">createCertificate(pk, ku)");
 
         try {
@@ -310,7 +310,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(String username, String password, int certType, PublicKey pk) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException {
+    public Certificate createCertificate(String username, String password, int certType, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">createCertificate(pk, certType)");
         // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
         boolean[] keyusage = new boolean[9];
@@ -344,7 +344,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(String username, String password, Certificate incert) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestSignatureException {
+    public Certificate createCertificate(String username, String password, Certificate incert) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestSignatureException {
         debug(">createCertificate(cert)");
         X509Certificate cert = (X509Certificate)incert;
         try {
@@ -362,14 +362,14 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(String username, String password, byte[] pkcs10req) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
+    public Certificate createCertificate(String username, String password, byte[] pkcs10req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
         return createCertificate( username, password, pkcs10req, -1 );
     }
 
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(String username, String password, byte[] pkcs10req, int keyUsage) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
+    public Certificate createCertificate(String username, String password, byte[] pkcs10req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
         debug(">createCertificate(pkcs10)");
         Certificate ret = null;
         try {
@@ -408,7 +408,7 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
     /**
      * Implements ISignSession::createCRL
      */
-    public X509CRL createCRL(Vector certs) throws RemoteException {
+    public X509CRL createCRL(Vector certs) {
         debug(">createCRL()");
         X509CRL crl = null;
         try {

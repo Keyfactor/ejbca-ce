@@ -19,14 +19,14 @@ import se.anatom.ejbca.ca.store.CertificateData;
 import se.anatom.ejbca.ca.store.CertificateDataLocal;
 import se.anatom.ejbca.ca.store.CertificateDataPK;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
-import se.anatom.ejbca.ca.sign.ISignSessionHome;
-import se.anatom.ejbca.ca.sign.ISignSession;
+import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
+import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 
 /**
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.7 2002-05-26 11:12:12 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.8 2002-05-26 13:28:53 anatom Exp $
  */
 public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerSession {
 
@@ -39,7 +39,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
     private CertificateDataLocalHome certHome = null;
 
     /** The home interface of the signing session */
-    private ISignSessionHome signHome = null;
+    private ISignSessionLocalHome signHome = null;
 
     /** Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -51,7 +51,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
         debug("crlperiod:" + crlperiod);
         storeHome = (ICertificateStoreSessionLocalHome)lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
         certHome = (CertificateDataLocalHome)lookup("java:comp/env/ejb/CertificateDataLocal");
-        signHome = (ISignSessionHome) lookup("java:comp/env/ejb/SignSession", ISignSessionHome.class);
+        signHome = (ISignSessionLocalHome)lookup("java:comp/env/ejb/SignSessionLocal");
         debug("<ejbCreate()");
     }
 
@@ -93,7 +93,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
                     certs.add(certinfo);
                 }
             }
-            ISignSession sign = signHome.create();
+            ISignSessionLocal sign = signHome.create();
             X509CRL crl = sign.createCRL(certs);
 
             //FileOutputStream fos = new FileOutputStream("srvtestcrl.der");

@@ -11,6 +11,8 @@
      <ejb-name>RSASignSession</ejb-name>
      <home>se.anatom.ejbca.ca.sign.ISignSessionHome</home>
      <remote>se.anatom.ejbca.ca.sign.ISignSessionRemote</remote>
+     <local-home>se.anatom.ejbca.ca.sign.ISignSessionLocalHome</local-home>
+     <local>se.anatom.ejbca.ca.sign.ISignSessionLocal</local>
      <ejb-class>se.anatom.ejbca.ca.sign.RSASignSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
@@ -306,14 +308,14 @@
         <local>se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal</local>
         <ejb-link>CertificateStoreSession</ejb-link>
      </ejb-local-ref>
-     <ejb-ref>
+     <ejb-local-ref>
         <description>The signing session used to create CRL</description>
-        <ejb-ref-name>ejb/SignSession</ejb-ref-name>
+        <ejb-ref-name>ejb/SignSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.ca.store.ISignSessionHome</home>
-        <remote>se.anatom.ejbca.ca.store.ISignSessionRemote</remote>
+        <local-home>se.anatom.ejbca.ca.store.ISignSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.store.ISignSessionLocal</local>
         <ejb-link>RSASignSession</ejb-link>
-     </ejb-ref>
+     </ejb-local-ref>
 
    </session>
 
