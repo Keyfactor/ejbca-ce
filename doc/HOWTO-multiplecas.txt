@@ -32,6 +32,9 @@ profiles and end entity profiles for use by ProdCA.
 Add a new end entity with the administrators DN etc. CA should be ProdCA and don't forget to check the 
 'Administrator' checkbox.
 Issue the certificate for the administrator.
+Create a new administrator group for the CA and edit access rules to what you like, for example 'CA Administrators'.
+Add the new administrator the the admin group by selecting for example 'CN' in the drop down list and 
+giving the administrators CN. You can also use other attributes such as the certificate serialnumber etc.
 
 Export the CA-certificate for ProdCA to a file from 'Basic Functions'->'Download PEM file', save as ca.pem
 or similar.
@@ -40,7 +43,8 @@ Import the CA-certificate in Javas trust keystore with a command like:
 keytool -import -trustcacerts -keystore $JAVA_HOME/jre/lib/security/cacerts -file ca
 .pem -alias prodca
 
-The password for the file cacerts is 'changeit'.
+The password for the file cacerts is 'changeit'. You should consider chaning this to something more secure.
+keytool -storepasswd -new new_pwd -storepass changeit -keystore $JAVA_HOME/jre/lib/security/cacerts
 
 Restart JBoss for the new settings to take effect.
 
@@ -63,6 +67,8 @@ Set status to NEW, save and close.
 
 Batch generate a new keystore for tomcat. 
 Copy the file $EJBCA_HOME/p12/tomcat.jks to $JBOSS_HOME/bin, replacing the old file there.
+On Linux/UNix systems Tomcat might want the tomcat.jks file to be executable. In that case, modify permissions
+of the file when put in place.
 
 Restart JBoss. 
 
