@@ -87,7 +87,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.17 2004-05-10 04:35:10 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.18 2004-05-10 09:24:06 anatom Exp $
  */
 public class CAAdminSessionBean extends BaseSessionBean {
     
@@ -1124,11 +1124,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			                        2048,
 			                        OCSPCAServiceInfo.KEYALGORITHM_RSA));
                 
-                
+            int validity = (int) ((cacertificate.getNotAfter().getTime() - cacertificate.getNotBefore().getTime()) / (24*3600*1000));
             X509CAInfo cainfo = new X509CAInfo(cacertificate.getSubjectDN().toString(),
                                                caname, SecConst.CA_ACTIVE,
                                                "", certprof,
-                                               (int) ((cacertificate.getNotAfter().getTime() - cacertificate.getNotBefore().getTime()) / (24/3600)), 
+                                               validity, 
                                                cacertificate.getNotAfter(), // Expiretime                                              
                                                CAInfo.CATYPE_X509,
                                                signedby,

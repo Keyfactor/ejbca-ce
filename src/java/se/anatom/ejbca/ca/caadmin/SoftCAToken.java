@@ -24,6 +24,8 @@ import java.util.HashMap;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.apache.log4j.Logger;
+
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.exception.CATokenAuthenticationFailedException;
 import se.anatom.ejbca.ca.exception.CATokenOfflineException;
@@ -34,9 +36,12 @@ import se.anatom.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.8 2004-05-10 08:47:12 anatom Exp $
+ * @version $Id: SoftCAToken.java,v 1.9 2004-05-10 09:24:06 anatom Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
+
+    /** Log4j instance */
+    private static Logger log = Logger.getLogger(SoftCAToken.class);
 
     public static final float LATEST_VERSION = 1; 
     
@@ -175,7 +180,8 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
        keystore.load(null,null);
      
        // import sign keys.
-       int keysize = ((RSAPublicKey) p12publickey).getModulus().intValue();
+       int keysize = ((RSAPublicKey) p12publickey).getModulus().bitLength();
+       log.debug("KeySize="+keysize);
        Certificate[] certchain = new Certificate[1];
        certchain[0] = CertTools.genSelfCert("CN=dummy1", 1000, null, p12privatekey, p12publickey, true);
        keystore.setKeyEntry(PRIVATESIGNKEYALIAS, p12privatekey,pkpass,certchain);       

@@ -27,7 +27,6 @@ import java.util.Vector;
 
 import javax.ejb.EJBException;
 
-import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.auth.UserAuthData;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAService;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
@@ -51,7 +50,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.10 2004-05-10 04:35:10 herrvendil Exp $
+ * @version $Id: CA.java,v 1.11 2004-05-10 09:24:06 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
