@@ -7,7 +7,8 @@ Fixed primary key for HardTokenPropertyBean, see RELEASE_NOTES.
 Made SUN specific algorithms and providers configurable, to be able to use other jvm.
 Made DN order configurable with switch in source.
 Alias in PKCS12 is now CN by default and username if CN does not exist.
-Added junit tests of entity beans
+Added junit tests of entity beans.
+And some other minor fixes...
 
 3.0 beta 1
 ----------
