@@ -1,4 +1,4 @@
-$Id: README,v 1.74 2003-03-11 12:30:08 anatom Exp $
+$Id: README,v 1.75 2003-03-14 09:41:18 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source Initiative.
@@ -202,7 +202,7 @@ Now edit 'src/ca/ca/META-INF/ejb-jar.xml' to reflect the values you entered for
  'keyStore' and 'keyStorePass'.
 If the keystore is placed in a custom directory, don't run the command
 'ant keystore', otherwise run 'ant keystore'.
-Run 'ant' and 'ant deploy' to build and deploy your new configuration
+Run 'ant deploy' to build and deploy your new configuration
 (password).
 
 Subordinate CA:
