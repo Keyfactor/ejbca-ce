@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.keyrecovery;
 
 import java.math.BigInteger;
@@ -23,12 +23,14 @@ import javax.ejb.FinderException;
 /**
  * For docs, see KeyRecoveryDataBean
  *
- * @version $Id: KeyRecoveryDataLocalHome.java,v 1.6 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: KeyRecoveryDataLocalHome.java,v 1.7 2004-06-08 14:35:58 sbailliez Exp $
  */
 public interface KeyRecoveryDataLocalHome extends javax.ejb.EJBLocalHome {
-	/**
-	 *  @see se.anatom.ejbca.keyrecovery.KeyRecoveryDataBean
-	 */
+
+   public static final String COMP_NAME="java:comp/env/ejb/KeyRecoveryDataLocal";
+   public static final String JNDI_NAME="KeyRecoveryData";    
+
+
 	public KeyRecoveryDataLocal create(BigInteger certificatesn, String issuerdn, String username,
 		byte[] keydata) throws CreateException;
 

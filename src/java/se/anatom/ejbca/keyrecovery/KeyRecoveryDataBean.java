@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.keyrecovery;
 
 import java.math.BigInteger;
@@ -36,11 +36,11 @@ import se.anatom.ejbca.util.StringTools;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.13 2004-06-03 09:22:53 anatom Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.14 2004-06-08 14:35:58 sbailliez Exp $
  *
  * @ejb.bean
- *   generate="false"
- *   display-name="Stores key recovery data"
+ *   description="Stores key recovery data"
+ *   display-name="KeyRecoveryDataEB"
  *   name="KeyRecoveryData"
  *   local-jndi-name="KeyRecoveryData"
  *   view-type="local"
@@ -76,6 +76,14 @@ import se.anatom.ejbca.util.StringTools;
  *   description="findByUserMark"
  *   signature="Collection findByUserMark(java.lang.String)"
  *   query="SELECT DISTINCT OBJECT(a) from KeyRecoveryDataBean a WHERE a.username=?1 AND a.markedAsRecoverable=TRUE"
+ *
+ * @jonas.bean
+ *   ejb-name="KeyRecoveryData"
+ *   jndi-name="KeyRecoveryData"
+ *
+ * @jonas.jdbc-mapping
+ *   jdbc-table-name  = "KeyRecoveryData"
+ *   automatic-pk="true"
  */
 public abstract class KeyRecoveryDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(KeyRecoveryDataBean.class);
@@ -147,28 +155,28 @@ public abstract class KeyRecoveryDataBean extends BaseEntityBean {
 	public BigInteger getCertificateSN() {
 		return new BigInteger(getCertSN(), 16);
 	}
-	
+
     /**
      * @ejb.interface-method view-type="local"
      */
 	public void setCertificateSN(BigInteger certificatesn) {
 		setCertSN(certificatesn.toString(16));
 	}
-	
+
     /**
      * @ejb.interface-method view-type="local"
      */
 	public byte[] getKeyDataAsByteArray(){
-		return Base64.decode(this.getKeyData().getBytes()); 
+		return Base64.decode(this.getKeyData().getBytes());
 	}
-	
+
 	/**
      * @ejb.interface-method view-type="local"
      */
 	public void setKeyDataFromByteArray(byte[] keydata){
 	  	setKeyData(new String(Base64.encode(keydata)));
 	}
-	
+
 	//
 	// Fields required by Container
 	//

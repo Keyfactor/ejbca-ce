@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.keyrecovery;
 
 import java.security.KeyPair;
@@ -46,7 +46,7 @@ import se.anatom.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.16 2004-06-03 09:22:53 anatom Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.17 2004-06-08 14:35:58 sbailliez Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -62,9 +62,10 @@ import se.anatom.ejbca.util.CertTools;
  * @ejb.permission role-name="InternalUser"
  *
  * @ejb.env-entry
- *   name="Datasource"
+ *   description="JDBC datasource to be used"
+ *   name="DataSource"
  *   type="java.lang.String"
- *   value="java:/DefaultDS"   
+ *   value="java:/DefaultDS"
  *
  * @ejb.ejb-external-ref
  *   description="The key recovery data entity bean"
@@ -245,10 +246,10 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
 		try {
 			int caid = CertTools.getIssuerDN(certificate).hashCode();
-			
-			KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) getSignSession().extendedService(admin,caid, 
+
+			KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) getSignSession().extendedService(admin,caid,
 					                                                                new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS,keypair));
-						
+
 			keyrecoverydatahome.create(certificate.getSerialNumber(),
 				CertTools.getIssuerDN(certificate), username, response.getKeyData());
 			getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), username,
@@ -297,11 +298,11 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 			krd.setMarkedAsRecoverable(markedasrecoverable);
 
 			int caid = CertTools.getIssuerDN(certificate).hashCode();
-			
-			KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) getSignSession().extendedService(admin,caid, 
+
+			KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) getSignSession().extendedService(admin,caid,
 					new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS,keypair));
-			
-			
+
+
 			krd.setKeyDataFromByteArray(response.getKeyData());
 			getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
 				krd.getUsername(), certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
@@ -347,7 +348,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 				"Keyrecovery data for certificate with serial number : " +
 				certificate.getSerialNumber().toString(16) + ", " +
 				CertTools.getIssuerDN(certificate) + " removed.");
-		} catch (Exception e) {			
+		} catch (Exception e) {
 				getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), null,
 					certificate, LogEntry.EVENT_ERROR_KEYRECOVERY,
 					"Error when removing keyrecovery data for certificate with serial number : " +
@@ -375,7 +376,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 			Collection result = keyrecoverydatahome.findByUsername(username);
 			Iterator iter = result.iterator();
 
-			while (iter.hasNext()) {				
+			while (iter.hasNext()) {
 				((KeyRecoveryDataLocal) iter.next()).remove();
 			}
 
@@ -421,9 +422,9 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
 					if (returnval == null) {
 						int caid = krd.getIssuerDN().hashCode();
-						
-						KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) getSignSession().extendedService(admin,caid, 
-								new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS,krd.getKeyDataAsByteArray()));												
+
+						KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) getSignSession().extendedService(admin,caid,
+								new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS,krd.getKeyDataAsByteArray()));
 						KeyPair keys = response.getKeyPair();
 						returnval = new KeyRecoveryData(krd.getCertificateSN(), krd.getIssuerDN(),
 								krd.getUsername(), krd.getMarkedAsRecoverable(), keys);
@@ -543,7 +544,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 				certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
 				"User's certificate marked for recovery.");
 			returnval = true;
-		} catch (Exception e) {			
+		} catch (Exception e) {
 				getLogSession().log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), null,
 					certificate, LogEntry.EVENT_ERROR_KEYRECOVERY,
 					"Error when trying to mark certificate for recovery.");
@@ -595,7 +596,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	 * @throws EJBException if a communication or other error occurs.
 	 *
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports" 
+	 * @ejb.transaction type="Supports"
 	 */
 	public boolean isUserMarked(Admin admin, String username) {
 		debug(">isUserMarked(user: " + username + ")");
@@ -652,7 +653,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
 		return returnval;
 	} // existsKeys
-    
+
 }// LocalKeyRecoverySessionBean
 
 
