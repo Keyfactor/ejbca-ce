@@ -31,7 +31,7 @@ import se.anatom.ejbca.util.Base64;
  * Class to handle SCEP request messages sent to the CA. TODO: don't forget extensions, e.g.
  * KeyUsage requested by end entity  TODO: extract senderNonce  TODO: extract transactionId
  *
- * @version $Id: ScepRequestMessage.java,v 1.24 2003-07-24 08:43:31 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.25 2003-09-04 19:56:03 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage,
     Serializable {
@@ -53,9 +53,12 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     /**
      * The messageType attribute specify the type of operation performed by the transaction. This
      * attribute is required in all PKI messages. Currently, the following message types are
-     * defined:  PKCSReq (19)  -- Permits use of PKCS#10 certificate request  CertRep (3)   --
-     * Response to certificate or CRL request  GetCertInitial (20)  -- Certificate polling in
-     * manual enrollment  GetCert (21)  -- Retrieve a certificate  GetCRL  (22)  -- Retrieve a CRL
+     * defined:  
+     * PKCSReq (19)  -- Permits use of PKCS#10 certificate request  
+     * CertRep (3)   -- Response to certificate or CRL request  
+     * GetCertInitial (20)  -- Certificate polling in manual enrollment  
+     * GetCert (21)  -- Retrieve a certificate  
+     * GetCRL  (22)  -- Retrieve a CRL
      */
     private int messageType = 0;
 

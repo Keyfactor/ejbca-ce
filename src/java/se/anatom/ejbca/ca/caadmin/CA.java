@@ -15,6 +15,7 @@ import java.util.Vector;
 import javax.ejb.EJBException;
 
 import se.anatom.ejbca.ca.auth.UserAuthData;
+import se.anatom.ejbca.ca.exception.IllegalKeyStoreException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.util.Base64;
@@ -24,7 +25,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.1 2003-09-03 16:21:29 herrvendil Exp $
+ * @version $Id: CA.java,v 1.2 2003-09-04 19:52:45 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -110,7 +111,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     
     public int getCertificateProfileId() {return ((Integer) data.get(CERTIFICATEPROFILEID)).intValue();}
     
-    public CAToken getCAToken() throws Exception{
+    public CAToken getCAToken() throws IllegalKeyStoreException {
       if(catoken == null){
         System.out.println("CA: LOADING CATOKEN" + getName());  
         switch(((Integer) ((HashMap)data.get(CATOKENDATA)).get(CAToken.CATOKENTYPE)).intValue()){

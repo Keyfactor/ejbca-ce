@@ -2,6 +2,9 @@ package se.anatom.ejbca.ca.sign;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.PublicKey;
 import java.security.Security;
@@ -30,6 +33,7 @@ import se.anatom.ejbca.ca.auth.UserAuthData;
 import se.anatom.ejbca.ca.caadmin.CA;
 import se.anatom.ejbca.ca.caadmin.CADataLocal;
 import se.anatom.ejbca.ca.caadmin.CADataLocalHome;
+import se.anatom.ejbca.ca.caadmin.CAToken;
 import se.anatom.ejbca.ca.caadmin.X509CA;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
@@ -54,7 +58,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.97 2003-09-03 17:36:44 herrvendil Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.98 2003-09-04 19:52:48 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -428,42 +432,72 @@ public class RSASignSessionBean extends BaseSessionBean {
 
     /**
      * Implements ISignSession::createCertificate
+     *
+     * @param admin Information about the administrator or admin preforming the event.
+     * @param username unique username within the instance.
+     * @param password password for the user.
+     * @param req a Certification Request message, containing the public key to be put in the
+     *        created certificate. Currently no additional parameters in requests are considered!
+     * @param keyUsage integer with bit mask describing desired keys usage. Bit mask is packed in
+     *        in integer using contants from CertificateData. ex. int keyusage =
+     *        CertificateData.digitalSignature | CertificateData.nonRepudiation; gives
+     *        digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
+     *        | CertificateData.cRLSign; gives keyCertSign and cRLSign
+     *
+     * @return The newly created certificate or null.
+     *
+     * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException If the users status is incorrect.
+     * @throws AuthLoginException If the password is incorrect.
+     * @throws IllegalKeyException if the public key is of wrong type.
+     * @throws SignRequestException if the provided request is invalid.
+     * @throws SignRequestSignatureException if the provided client certificate was not signed by
+     *         the CA.
      */
     public Certificate createCertificate(Admin admin, String username, String password, IRequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException {
         debug(">createCertificate(user,pwd,IRequestMessage)");
-        Certificate ret = null;/*
+        Certificate ret = null;
         try {
-            try {
-                if (req.requireKeyInfo()) {
-                    req.setKeyInfo(caCert, signingDevice.getPrivateDecKey());
-                }
-                if (req.verify() == false) {
-                    getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"POPO verification failed.");
-                    throw new EJBException("Verification of signature (popo) on request failed.");
-                }
-                PublicKey reqpk = req.getRequestPublicKey();
-                if (reqpk == null)
-                    throw new InvalidKeyException("Key is null!");
-                if (keyUsage < 0)
-                    ret =createCertificate(admin, username,password,reqpk);
-                else
-                    ret =createCertificate(admin, username,password,reqpk,keyUsage);
-            } catch (IOException e) {
-                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error reading PKCS10-request.");
-                throw new SignRequestException("Error reading PKCS10-request.");
-            } catch (NoSuchAlgorithmException e) {
-                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error in PKCS10-request, no such algorithm.");
-                throw new SignRequestException("Error in PKCS10-request, no such algorithm.");
-            } catch (NoSuchProviderException e) {
-                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Internal error processing PKCS10-request.");
-                throw new SignRequestException("Internal error processing PKCS10-request.");
-            } catch (InvalidKeyException e) {
-                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error in PKCS10-request, invlid key.");
-                throw new SignRequestException("Error in PKCS10-request, invalid key.");
+            // Authorize user and get DN
+            IAuthenticationSessionLocal authSession = authHome.create();
+            UserAuthData data = authSession.authenticateUser(admin, username, password);
+            // get CA
+            CADataLocal cadata = null; 
+            try{
+                cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
+            }catch(javax.ejb.FinderException fe){
+                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Invalid CA Id",fe);  
+                throw new EJBException(fe);                   
             }
-        } catch (RemoteException re) {
-            throw new EJBException(re);
-        }*/
+            CA ca = cadata.getCA();
+            CAToken catoken = ca.getCAToken();
+            if (req.requireKeyInfo()) {
+                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateDecKey());
+            }
+            if (req.verify() == false) {
+                getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"POPO verification failed.");
+                throw new EJBException("Verification of signature (popo) on request failed.");
+            }
+            PublicKey reqpk = req.getRequestPublicKey();
+            if (reqpk == null)
+                throw new InvalidKeyException("Key is null!");
+            if (keyUsage < 0)
+                ret =createCertificate(admin, username,password,reqpk);
+            else
+                ret =createCertificate(admin, username,password,reqpk,keyUsage);
+        } catch (NoSuchAlgorithmException e) {
+            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error in PKCS10-request, no such algorithm.");
+            throw new SignRequestException("Error in request, no such algorithm.");
+        } catch (NoSuchProviderException e) {
+            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Internal error processing PKCS10-request.");
+            throw new SignRequestException("Internal error processing request.");
+        } catch (InvalidKeyException e) {
+            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,new java.util.Date(),username,null,LogEntry.EVENT_ERROR_CREATECERTIFICATE,"Error in PKCS10-request, invlid key.");
+            throw new SignRequestException("Error in request, invalid key.");
+        } catch (Exception e) {
+            log.error(e);
+            throw new EJBException(e);
+        }
         debug("<createCertificate(user,pwd,IRequestMessage)");
         return ret;
     }
@@ -578,10 +612,10 @@ public class RSASignSessionBean extends BaseSessionBean {
         return crl;
     } // createCRL
     
-    /**
+     /** Method that publishes the given CA certificate chain to the list of publishers.
+     * Is mainly used by CAAdminSessionBean when CA is created.
      *  @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
-    
     public void publishCACertificate(Admin admin, Collection certificatechain, Collection usedpublishers, boolean rootca){
       try{
         int certtype = CertificateProfile.TYPE_SUBCA;

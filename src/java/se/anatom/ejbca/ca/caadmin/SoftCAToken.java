@@ -9,14 +9,16 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.HashMap;
 
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
+import se.anatom.ejbca.ca.exception.IllegalKeyStoreException;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.1 2003-09-03 16:21:29 herrvendil Exp $
+ * @version $Id: SoftCAToken.java,v 1.2 2003-09-04 19:52:45 anatom Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
 
@@ -40,32 +42,40 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
       data.put(VERSION, new Float(LATEST_VERSION));
     }
     
-    public SoftCAToken(HashMap data) throws Exception{
+    public SoftCAToken(HashMap data) throws IllegalArgumentException, IllegalKeyStoreException {
       loadData(data);  
       if(data.get(KEYSTORE) != null){  
         System.out.println("SoftCAToken: init: KEYSTORE isn't null");  
          // lookup keystore passwords      
-        InitialContext ictx = new InitialContext();
-        String keystorepass = (String) ictx.lookup("java:comp/env/keyStorePass");      
-        if (keystorepass == null)
-            throw new IllegalArgumentException("Missing keyStorePass property.");
-        
-        String privatekeypass = (String) ictx.lookup("java:comp/env/privateKeyPass");
+         String privatekeypass = null;
+         String keystorepass = null;
+         try {
+             InitialContext ictx = new InitialContext();
+             keystorepass = (String) ictx.lookup("java:comp/env/keyStorePass");      
+             if (keystorepass == null)
+                 throw new IllegalArgumentException("Missing keyStorePass property.");
+             privatekeypass = (String) ictx.lookup("java:comp/env/privateKeyPass");
+         } catch (NamingException ne) {
+             throw new IllegalArgumentException("Missing keyStorePass or privateKeyPass property.");
+         }
         char[] pkpass = null;
-        if ((privatekeypass).equals("null"))
+        if ("null".equals(privatekeypass))
             pkpass = null;
         else
             pkpass = privatekeypass.toCharArray();
                
-        
-        KeyStore keystore=KeyStore.getInstance("PKCS12", "BC");
-        keystore.load(new java.io.ByteArrayInputStream(Base64.decode(((String) data.get(KEYSTORE)).getBytes())),keystorepass.toCharArray());
+        try {
+            KeyStore keystore=KeyStore.getInstance("PKCS12", "BC");
+            keystore.load(new java.io.ByteArrayInputStream(Base64.decode(((String) data.get(KEYSTORE)).getBytes())),keystorepass.toCharArray());
       
-        this.privateSignKey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, pkpass);
-        this.privateDecKey = (PrivateKey) keystore.getKey(PRIVATEDECKEYALIAS, pkpass);      
+            this.privateSignKey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, pkpass);
+            this.privateDecKey = (PrivateKey) keystore.getKey(PRIVATEDECKEYALIAS, pkpass);      
       
-        this.publicSignKey = ((Certificate) keystore.getCertificateChain(PRIVATESIGNKEYALIAS)[0]).getPublicKey();
-        this.publicEncKey = ((Certificate) keystore.getCertificateChain(PRIVATEDECKEYALIAS)[0]).getPublicKey();
+            this.publicSignKey = ((Certificate) keystore.getCertificateChain(PRIVATESIGNKEYALIAS)[0]).getPublicKey();
+            this.publicEncKey = ((Certificate) keystore.getCertificateChain(PRIVATEDECKEYALIAS)[0]).getPublicKey();
+        } catch (Exception e) {
+            throw new IllegalKeyStoreException(e);
+        }
         
         data.put(CATOKENTYPE, new Integer(CATokenInfo.CATOKENTYPE_P12));        
      } 
