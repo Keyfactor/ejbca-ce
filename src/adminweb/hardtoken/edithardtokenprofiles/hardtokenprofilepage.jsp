@@ -7,8 +7,11 @@
  
   HashMap caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
     
-  int[] hardtokentypes = {SwedishEIDProfile.TYPE_SWEDISHEID, EnhancedEIDProfile.TYPE_ENHANCEDEID};
-  String[] hardtokentypetexts = {"SWEDISHEID", "ENHANCEDEID"};
+//  int[] hardtokentypes = {SwedishEIDProfile.TYPE_SWEDISHEID, EnhancedEIDProfile.TYPE_ENHANCEDEID};
+//  String[] hardtokentypetexts = {"SWEDISHEID", "ENHANCEDEID"};
+
+  int[] hardtokentypes = {SwedishEIDProfile.TYPE_SWEDISHEID};
+  String[] hardtokentypetexts = {"SWEDISHEID"};
 
   int row = 0;
 %>
@@ -156,7 +159,7 @@ function checkallfields(){
                value='<%= helper.profiledata.getHardTokenSNPrefix()%>'>
       </td>
     </tr>
-    <tr  id="Row<%=row++%2%>"> 
+    <!--<tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("NUMBEROFCOPIES") %> 
       </td>
@@ -174,7 +177,7 @@ function checkallfields(){
                  out.write("CHECKED");
            %>> 
       </td>
-    </tr>
+    </tr> -->
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("EREASABLE") %> 
