@@ -18,7 +18,7 @@ public class ra {
 
     public static void main(String [] args){
         if (args.length < 1) {
-            System.out.println("Usage: RA adduser|deluser|setclearpwd|setuserstatus|finduser|listnewusers");
+            System.out.println("Usage: RA adduser|deluser|setclearpwd|setuserstatus|finduser|listnewusers|revokeuser");
             System.exit(1);
         }
         try {
@@ -103,8 +103,32 @@ public class ra {
                     UserAdminData data = (UserAdminData)iter.next();
                     System.out.println("New user: "+data.getUsername()+", \""+data.getDN()+"\", "+data.getEmail()+", "+data.getStatus()+", "+data.getType());
                 }
+            } else if (args[0].equals("revokeuser"))
+            {
+                // TODO:
+                /*
+                Object obj2 = jndiContext.lookup("CertificateStoreSession");
+                ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
+                ICertificateStoreSessionRemote store = storehome.create();
+                String[] certfps = store.listAllCertificates();
+                System.out.println("List certs:");
+                for (int i=0;i< certfps.length;i++)
+                    System.out.println(certfps[i]);
+                
+                // Revoke all certs
+                for (int i=0; i<certfps.length;i++) {
+                    CertificateDataPK revpk = new CertificateDataPK();
+                    revpk.fp = certfps[i];
+                    CertificateData rev = home.findByPrimaryKey(revpk);
+                    if (rev.getStatus() != CertificateData.CERT_REVOKED) {
+                        rev.setStatus(CertificateData.CERT_REVOKED);
+                        rev.setRevocationDate(new Date());
+                        System.out.println("Revoked cert "+certfps[i]);
+                    }
+                }
+                */
             } else {
-                System.out.println("Usage: RA adduser|deluser|setclearpwd|setuserstatus|finduser|listnewusers");
+                System.out.println("Usage: RA adduser|deluser|setclearpwd|setuserstatus|finduser|listnewusers|revokeuser");
             }
 
         } catch (Exception e) {
