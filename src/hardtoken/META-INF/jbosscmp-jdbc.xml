@@ -4,7 +4,7 @@
 
 <defaults>
     <datasource>java:/DefaultDS</datasource>
-    <datasource-mapping>Hypersonic SQL</datasource-mapping>
+    <datasource-mapping>mySQL</datasource-mapping>
 </defaults>
 
 </jbosscmp-jdbc>

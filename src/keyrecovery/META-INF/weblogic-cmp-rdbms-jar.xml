@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE weblogic-rdbms-jar PUBLIC
+ '-//BEA Systems, Inc.//DTD WebLogic 7.0.0 EJB RDBMS Persistence//EN'
+ 'http://www.bea.com/servers/wls700/dtd/weblogic-rdbms20-persistence-700.dtd'>
+
+<weblogic-rdbms-jar>
+
+    <weblogic-rdbms-bean>
+        <ejb-name>KeyRecoveryData</ejb-name>
+        <data-source-name>DefaultDS</data-source-name>
+        <table-map>
+            <table-name>KEYRECOVERYDATA</table-name>
+            <field-map>
+                <cmp-field>pK/cmp-field>
+                <dbms-column>pK</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>certSN</cmp-field>
+                <dbms-column>certSN</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>issuerDN</cmp-field>
+                <dbms-column>issuerDN</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>username</cmp-field>
+                <dbms-column>username</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>markedAsRecoverable</cmp-field>
+                <dbms-column>markedAsRecoverable</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>keyPair</cmp-field>
+                <dbms-column>keyPair</dbms-column>
+            </field-map>
+        </table-map>
+    </weblogic-rdbms-bean>
+
+    <create-default-dbms-tables>False</create-default-dbms-tables>
+</weblogic-rdbms-jar>

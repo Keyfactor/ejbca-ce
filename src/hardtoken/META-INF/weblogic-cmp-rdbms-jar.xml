@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE weblogic-rdbms-jar PUBLIC
+ '-//BEA Systems, Inc.//DTD WebLogic 7.0.0 EJB RDBMS Persistence//EN'
+ 'http://www.bea.com/servers/wls700/dtd/weblogic-rdbms20-persistence-700.dtd'>
+
+<weblogic-rdbms-jar>
+
+    <weblogic-rdbms-bean>
+        <ejb-name>HardTokenIssuerData</ejb-name>
+        <data-source-name>DefaultDS</data-source-name>
+        <table-map>
+            <table-name>HARDTOKENISSUERDATA</table-name>
+            <field-map>
+                <cmp-field>id</cmp-field>
+                <dbms-column>id</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>alias</cmp-field>
+                <dbms-column>alias</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>certificateSN</cmp-field>
+                <dbms-column>certificateSN</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>certIssuerDN</cmp-field>
+                <dbms-column>certIssuerDN</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>data</cmp-field>
+                <dbms-column>data</dbms-column>
+            </field-map>
+        </table-map>
+    </weblogic-rdbms-bean>
+
+    <weblogic-rdbms-bean>
+        <ejb-name>HardTokenData</ejb-name>
+        <data-source-name>DefaultDS</data-source-name>
+        <table-map>
+            <table-name>HARDTOKENDATA</table-name>
+            <field-map>
+                <cmp-field>tokenSN</cmp-field>
+                <dbms-column>tokenSN</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>username</cmp-field>
+                <dbms-column>username</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>cTime</cmp-field>
+                <dbms-column>cTime</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>mTime</cmp-field>
+                <dbms-column>mTime</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>tokenType</cmp-field>
+                <dbms-column>tokenType</dbms-column>
+            </field-map>
+            <field-map>
+                <cmp-field>data</cmp-field>
+                <dbms-column>data</dbms-column>
+            </field-map>
+        </table-map>
+    </weblogic-rdbms-bean>
+
+    <create-default-dbms-tables>False</create-default-dbms-tables>
+</weblogic-rdbms-jar>
