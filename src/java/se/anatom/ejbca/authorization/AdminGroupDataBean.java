@@ -37,7 +37,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.7 2004-06-08 13:17:48 sbailliez Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.8 2004-06-10 14:21:52 sbailliez Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
@@ -68,7 +68,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *
  * @ejb.finder
  *   description="findByGroupNameAndCAId"
- *   signature="java.util.Collection findByGroupNameAndCAId(java.lang.String,  int)"
+ *   signature="java.util.Collection findByGroupNameAndCAId(java.lang.String name,  int id)"
  *   query="SELECT DISTINCT OBJECT(a) from AdminGroupDataBean a WHERE a.adminGroupName=?1 AND a.cAId=?2"
  *
  * @ejb.finder
