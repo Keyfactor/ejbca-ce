@@ -341,14 +341,17 @@ public class ca {
                     for (int i=0;i<publishers.size();i++) {
                         ((IPublisherSession)(publishers.get(i))).storeCertificate(cert, cafingerprint, CertificateData.CERT_ACTIVE, type);
                     }
+                    System.out.println("-Stored CA certificates in certificate store(s).");
                 }
                 // Second create (and publish) CRL
                 createCRL();
+                System.out.println("-Created and published initial CRL.");
                 System.out.println("CA initialized");
             } else if (args[0].equals("rolloverroot")) {
                 // Creates a new root certificate with new validity, using the same key
                 if (args.length < 4) {
-                    System.out.println("Usage: CA rolloverroot <validity-days> <filename> <storepassword>");
+                    System.out.println("Usage: CA rolloverroot <validity-days> <keystore filename> <storepassword>");
+                    System.out.println("Rolloverroot is used to generate a new RootCA certificate using an existing keypair. This updates the current RootCA keystore.");
                     return;
                 }
                 int validity = Integer.parseInt(args[1]);
@@ -394,6 +397,7 @@ public class ca {
                 FileOutputStream os = new FileOutputStream(filename);
                 ks.store(os, storepwd.toCharArray());
                 System.out.println("Keystore "+filename+" generated succefully.");
+                System.out.println("Please restart application server and run 'ca init'.");
             } else {
                 System.out.println("Usage: CA info | makeroot | getrootcert | makereq | recrep | processreq | init | createcrl | getcrl | rolloverroot");
             }
@@ -428,9 +432,9 @@ public class ca {
     } // getRootCert
     
     static private Context getInitialContext() throws NamingException{
-        //System.out.println(">GetInitialContext");
+        cat.debug(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        //System.out.println("<GetInitialContext");
+        cat.debug("<getInitialContext");
         return ctx;
     } //getInitialContext
 
@@ -438,7 +442,7 @@ public class ca {
      * Creates the CertificateStore and Publishers so they are available.
      */
     static private void initCertificateStore() throws RemoteException {
-        //System.out.println(">initCertificateStore()");
+        cat.debug(">initCertificateStore()");
         Context context = null;
         try {
             context = getInitialContext();
@@ -479,7 +483,7 @@ public class ca {
                 ce.printStackTrace();
             }
         }
-        //System.out.println("<initCertificateStore()");
+        cat.debug("<initCertificateStore()");
     } // initCertificateStore
     
 } //ca

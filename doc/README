@@ -343,19 +343,21 @@ Options in CertificateStoreSession:
 Administrating CA
 -----------------
 The CA has a command line interface ca.sh/cmd. Options are:
-makeroot - creates a new Root CA keystore (only used by Root CA).
-Quote the DN  so it is treated as one argument.
-getrootcert - exports the Root CA certificate to file.
-makereq - generates a certification request to create a keystore for a
+
+* init - Iniitalizes a CA in the beginning or after a rollover. Stores CA certificates and publishes first CRL.
+* makeroot - creates a new Root CA keystore (only used by Root CA). 
+Quote the DN (") so it is treated as one argument.
+* getrootcert - exports the Root CA certificate to file.
+* makereq - generates a certification request to create a keystore for a
 subordinate CA. Quote the DN  so it is treated as one argument.
-recrep - receives a certification reply (from another CA) for
+* recrep - receives a certification reply (from another CA) for
 the above  generated request.
-processreq - processes a certification request for
+* processreq - processes a certification request for
 a subordinate CA and creates  a certification reply.
-createcrl - issues a CRL.
-getcrl - retrieves the latest CRL.
-rolloverrootcert - creates a new Root CA certificate using the same key pair
-(only used by Root CA).
+* createcrl - issues a CRL.
+* getcrl - retrieves the latest CRL.
+* rolloverroot - used to generate a new RootCA certificate using an existing keypair. This updates the current RootCA keystore.
+(only used by Root CA). When this is used, sub-certificates do not need to be resigned.
 
 Configuring RA
 --------------
@@ -365,20 +367,21 @@ Options in UserAdminSession:
 Administrating RA
 -----------------
 The RA has a command line interface ra.sh/cmd. Options are:
-adduser - adds a user to the database, after addition a user may apply for a
+
+* adduser - adds a user to the database, after addition a user may apply for a
 certificate. If email address is set to 'null', no email is put in certificates.
-Quote the DN  so it is treated as one argument.
-deluser - removes a user from the database, any issued certificates
+Quote the DN (") so it is treated as one argument.
+* deluser - removes a user from the database, any issued certificates
 remain  active and present in the database.
-setclearpwd - set a clear text
+* setclearpwd - set a clear text
 password for a user, needed to generate  certificates batch-wise.
-setuserstatus - sets status of a user, users can only apply for certificates
+* setuserstatus - sets status of a user, users can only apply for certificates
 when their status is NEW. finduser - find a user in the database and lists
 details.
-listnewusers - lists all users with status NEW.
-listusers - lists users with specified status (give command to see list of
+* listnewusers - lists all users with status NEW.
+* listusers - lists users with specified status (give command to see list of
 status codes).
-revokeuser - revokes a user and all certificates issued to the user.
+* revokeuser - revokes a user and all certificates issued to the user.
 
 Configuring databases
 ---------------------
