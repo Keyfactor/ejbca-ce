@@ -32,7 +32,9 @@ database used.
 
 2. Do the same with src/ra/META-INF/jbosscmp-jdbc-<database>.xml
 
-2. Build EJBCA with 'ant' and deploy with 'deploy.sh/cmd'.
+3. Do the same with src/log/META-INF/jbosscmp-jdbc-<database>.xml
+
+4. Build EJBCA with 'ant' and deploy with 'deploy.sh/cmd'.
 
 Configuring JBoss
 -----------------
