@@ -14,6 +14,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.cert.X509CRL;
 import java.security.*;
+import java.security.interfaces.RSAPublicKey;
 import java.lang.reflect.Method;
 
 import se.anatom.ejbca.BaseSessionBean;
@@ -35,6 +36,7 @@ import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
+import se.anatom.ejbca.ca.exception.IllegalKeyException;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.ILogSessionHome;
@@ -49,7 +51,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.53 2002-11-17 14:01:38 herrvendil Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.54 2002-11-18 11:18:23 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -200,7 +202,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException {
         debug(">createCertificate(pk)");
         // Standard key usages for end users are: digitalSignature | keyEncipherment or nonRepudiation
         // Default key usage is digitalSignature | keyEncipherment
@@ -218,14 +220,14 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, boolean[] keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, boolean[] keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException {
         return createCertificate(admin, username, password, pk, sunKeyUsageToBC(keyusage));
     }
 
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException {
         debug(">createCertificate(pk, ku)");
 
         try {
@@ -236,7 +238,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             debug("type="+ data.getType());
             if ((data.getType() & SecConst.USER_INVALID) !=0) {
                 logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE,"User type is invalid, cannot create certificate for this user.");
-            } else {               
+            } else {
                 if ( ((data.getType() & SecConst.USER_CA) != 0) || ((data.getType() & SecConst.USER_ROOTCA) != 0) ) {
                     debug("Setting new keyusage...");
                     // If this is a CA, we only allow CA-type keyUsage
@@ -261,6 +263,14 @@ public class RSASignSessionBean extends BaseSessionBean {
                     certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
                 }
                 cat.debug("Using certificate profile with id "+certProfileId);
+                int keyLength = ((RSAPublicKey)pk).getModulus().bitLength();
+                cat.debug("Keylength = "+keyLength); // bitBength() will return 1 less bit if BigInt i negative
+                if ( (keyLength < (certProfile.getMinimumAvailableBitLength()-1))
+                    || (keyLength > (certProfile.getMaximumAvailableBitLength())) ) {
+                        String msg = "Illegal key length "+keyLength;
+                        cat.error(msg);
+                        throw new IllegalKeyException(msg);
+                    }
                 X509Certificate cert = makeBCCertificate(data, caSubjectName, pk, keyusage, certProfile);
                 logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, cert, LogEntry.EVENT_INFO_CREATECERTIFICATE,"");
                 debug("Generated certificate with SerialNumber '" + Hex.encode(cert.getSerialNumber().toByteArray())+"' for user '"+username+"'.");
@@ -286,6 +296,8 @@ public class RSASignSessionBean extends BaseSessionBean {
             throw se;
         } catch (AuthLoginException le) {
             throw le;
+        } catch (IllegalKeyException ke) {
+            throw ke;
         } catch (Exception e) {
             throw new EJBException(e);
         }
@@ -297,7 +309,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * Implements ISignSession::createCertificate
      */
 
-    public Certificate createCertificate(Admin admin, String username, String password, int certType, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
+    public Certificate createCertificate(Admin admin, String username, String password, int certType, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException {
         debug(">createCertificate(pk, certType)");
         // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
         boolean[] keyusage = new boolean[9];
@@ -331,7 +343,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     /**
      * Implements ISignSession::createCertificate
      */
-    public Certificate createCertificate(Admin admin, String username, String password, Certificate incert) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestSignatureException {
+    public Certificate createCertificate(Admin admin, String username, String password, Certificate incert) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestSignatureException {
         debug(">createCertificate(cert)");
         X509Certificate cert = (X509Certificate)incert;
         try {
@@ -355,7 +367,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * Implements ISignSession::createCertificate
      */
 
-    public Certificate createCertificate(Admin admin, String username, String password, RequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
+    public Certificate createCertificate(Admin admin, String username, String password, RequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException {
         return createCertificate(admin, username, password, req, -1 );
     }
 
@@ -363,7 +375,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * Implements ISignSession::createCertificate
      */
 
-    public Certificate createCertificate(Admin admin, String username, String password, RequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException {
+    public Certificate createCertificate(Admin admin, String username, String password, RequestMessage req, int keyUsage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestException, SignRequestSignatureException {
         debug(">createCertificate(pkcs10)");
         Certificate ret = null;
         try {

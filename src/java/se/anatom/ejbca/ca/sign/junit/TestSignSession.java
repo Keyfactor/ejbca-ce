@@ -34,7 +34,7 @@ import junit.framework.*;
 
 /** Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.14 2002-11-17 14:01:40 herrvendil Exp $
+ * @version $Id: TestSignSession.java,v 1.15 2002-11-18 11:18:25 anatom Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -159,7 +159,7 @@ public class TestSignSession extends TestCase {
         cat.debug("Generating keys, please wait...");
         KeyPair rsaKeys = keygen.generateKeyPair();
 
-        cat.debug("Generated " + rsaKeys.getPrivate().getAlgorithm() + " keys with length" + ((RSAPrivateKey)rsaKeys.getPrivate()).getPrivateExponent().bitLength());
+        cat.debug("Generated " + rsaKeys.getPrivate().getAlgorithm() + " keys with length" + ((RSAPrivateKey)rsaKeys.getPrivate()).getModulus().bitLength());
 
         return rsaKeys;
 
