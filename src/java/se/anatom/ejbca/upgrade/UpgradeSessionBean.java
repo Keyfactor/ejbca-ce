@@ -50,7 +50,57 @@ import se.anatom.ejbca.util.SqlExecutor;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.19 2004-06-10 15:12:10 sbailliez Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.20 2004-09-08 20:55:20 koen_serry Exp $
+ * @ejb.bean
+ *   display-name="UpgradeSB"
+ *   name="UpgradeSession"
+ *   view-type="both"
+ *   type="Stateless"
+ *   transaction-type="Container"
+ *
+ * @ejb.home
+ *   extends="javax.ejb.EJBHome"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.upgrade.IUpgradeSessionLocalHome"
+ *   remote-class="se.anatom.ejbca.upgrade.IUpgradeSessionHome"
+ *
+ * @ejb.env-entry
+ * name="DataSource"
+ * type="java.lang.String"
+ * value="java:/${datasource.jndi-name}"
+ *
+ * @ejb.interface
+ *   extends="javax.ejb.EJBObject"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.upgrade.IUpgradeSessionLocal"
+ *   remote-class="se.anatom.ejbca.upgrade.IUpgradeSessionRemote"
+ * 
+ * @ejb.ejb-external-ref
+ *   description="The Authorization session bean"
+ *   view-type="local"
+ *   ejb-name="AuthorizationSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome"
+ *   business="se.anatom.ejbca.authorization.IAuthorizationSessionLocal"
+ *   link="AuthorizationSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Ra Admin session bean"
+ *   view-type="local"
+ *   ejb-name="RaAdminSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome"
+ *   business="se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal"
+ *   link="RaAdminSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Log session bean"
+ *   view-type="local"
+ *   ejb-name="LogSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.log.ILogSessionLocalHome"
+ *   business="se.anatom.ejbca.log.ILogSessionLocal"
+ *   link="LogSession"
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
@@ -182,7 +232,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
     }
 
     /** Upgrades the database
-     *
+     * @ejb.interface-method
      * @param admin
      * @return true or false if upgrade was done or not
      * @throws RemoteException
