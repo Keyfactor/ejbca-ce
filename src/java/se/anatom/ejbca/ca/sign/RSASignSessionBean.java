@@ -9,6 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
@@ -62,7 +63,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.101 2003-09-09 12:53:49 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.102 2003-09-14 19:39:29 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -83,6 +84,10 @@ public class RSASignSessionBean extends BaseSessionBean {
 
     /** The local interface of the log session bean */
     private ILogSessionLocal logsession;
+    /**
+     * Source of good random data
+     */
+    SecureRandom randomSource = null;
     
 
     /**
@@ -108,6 +113,9 @@ public class RSASignSessionBean extends BaseSessionBean {
 
             cadatahome = (CADataLocalHome)lookup("java:comp/env/ejb/CADataLocal");
             
+            // Get a decent source of random data
+            String  randomAlgorithm = (String) lookup("java:comp/env/randomAlgorithm");
+            randomSource = SecureRandom.getInstance(randomAlgorithm);
 
             // Init the publisher session beans
             int i = 1;
@@ -433,16 +441,43 @@ public class RSASignSessionBean extends BaseSessionBean {
             if (reqpk == null) {
                 throw new InvalidKeyException("Key is null!");
             }
-            cert = createCertificate(admin,data,ca,reqpk,keyUsage);        
-            ret = (IResponseMessage)responseClass.newInstance();
+            try {
+                ret = (IResponseMessage) responseClass.newInstance();
+            } catch (InstantiationException e) {
+                //TODO : do something with these exceptions
+                log.error("Error creating response message",e);
+                return null;
+            } catch (IllegalAccessException e) {
+                log.error("Error creating response message",e);
+                return null;
+            }
             if (ret.requireSignKeyInfo()) {
                 ret.setSignKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateSignKey());
             }
             if (ret.requireEncKeyInfo()) {
                 ret.setEncKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateDecKey());
             }
-            ret.setCertificate(cert);
-            ret.setStatus(IResponseMessage.STATUS_OK);
+            if (req.getSenderNonce() != null) {
+                ret.setRecipientNonce(req.getSenderNonce());
+            }
+            if (req.getTransactionId() != null) {
+                ret.setTransactionId(req.getTransactionId());
+            }
+            // Sendernonce is a random number
+            byte[] senderNonce = new byte[16];
+            randomSource.nextBytes(senderNonce);
+            ret.setSenderNonce(Hex.encode(senderNonce));
+            try {
+                cert = createCertificate(admin,data,ca,reqpk,keyUsage);        
+            } catch (IllegalKeyException e) {
+                log.error("Public key is of wrong type",e);
+            }
+            if (cert != null) {
+                ret.setCertificate(cert);
+                ret.setStatus(IResponseMessage.STATUS_OK);
+            } else {
+                ret.setStatus(IResponseMessage.STATUS_FAILED);
+            }
             ret.create();
             // TODO: handle returning errors as response message,
             // javax.ejb.ObjectNotFoundException and the others thrown...
@@ -456,15 +491,10 @@ public class RSASignSessionBean extends BaseSessionBean {
             log.error("Invalid key in request: ", e);
         } catch (NoSuchAlgorithmException e) {
             log.error("No such algorithm: ", e);
-        } catch (IllegalAccessException e) {
-            log.error("Illegal Access: ", e);
-        } catch (InstantiationException e) {
-            log.error("Cannot create class for response message: ", e);
         } catch (IOException e) {
             log.error("Cannot create response message: ", e);
         } 
         debug("<createCertificate(IRequestMessage)");
-        ret.setStatus(IResponseMessage.STATUS_FAILED);
         return ret;
     }
 
