@@ -18,23 +18,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.HashMap;
 
-import javax.naming.InitialContext;
-
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.exception.CertificateProfileExistsException;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfileExistsException;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 
 
 /**
  * Export profiles from the databse to XML-files.
  *
- * @version $Id: CaImportProfilesCommand.java,v 1.8 2004-10-13 07:14:45 anatom Exp $
+ * @version $Id: CaImportProfilesCommand.java,v 1.9 2005-02-11 14:01:29 anatom Exp $
  */
 public class CaImportProfilesCommand extends BaseCaAdminCommand {
     /**
@@ -54,22 +48,6 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
-
-            //InitialContext jndicontext = new InitialContext();
-            InitialContext jndicontext = getInitialContext();
-
-            Object obj1 = jndicontext.lookup("CertificateStoreSession");
-            ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
-                    ICertificateStoreSessionHome.class);
-            ICertificateStoreSessionRemote certificatesession = certificatesessionhome.create();
-
-            obj1 = jndicontext.lookup("RaAdminSession");
-
-            IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup(
-                        "RaAdminSession"), IRaAdminSessionHome.class);
-            IRaAdminSessionRemote raadminsession = raadminsessionhome.create();
-
-
 
             if (args.length < 2) {
                 getOutputStream().println("Usage: CA importprofiles <inpath>");
@@ -112,20 +90,20 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                 // Check if the profiles already exist, cause we donät want to add them if they do
                                 boolean error = false;
                                 if (entityprofile) {
-                                    if (raadminsession.getEndEntityProfileId(administrator, profilename) != SecConst.PROFILE_NO_PROFILE) {
+                                    if (getRaAdminSession().getEndEntityProfileId(administrator, profilename) != SecConst.PROFILE_NO_PROFILE) {
                                         getOutputStream().println("Error: Entity profile '"+profilename+"' already exist in database.");
                                         error = true;
                                     }
-                                    if (raadminsession.getEndEntityProfile(administrator, profileid) != null) {
+                                    if (getRaAdminSession().getEndEntityProfile(administrator, profileid) != null) {
                                         getOutputStream().println("Error: Entity profileid '"+profileid+"' already exist in database.");
                                         error = true;
                                     }
                                 } else {
-                                    if (certificatesession.getCertificateProfileId(administrator,profilename) != SecConst.PROFILE_NO_PROFILE) {
+                                    if (getCertificateStoreSession().getCertificateProfileId(administrator,profilename) != SecConst.PROFILE_NO_PROFILE) {
                                         getOutputStream().println("Error: Certificate profile '"+profilename+"' already exist in database.");
                                         error = true;
                                     }
-                                    if (certificatesession.getCertificateProfile(administrator,profileid) != null) {
+                                    if (getCertificateStoreSession().getCertificateProfile(administrator,profileid) != null) {
                                         getOutputStream().println("Error: Certificate profile id '"+profileid+"' already exist in database.");
                                         error = true;
                                     }
@@ -139,17 +117,17 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         eprofile = new EndEntityProfile();
                                         eprofile.loadData((HashMap)decoder.readObject());
                                         try{                                        
-                                           raadminsession.addEndEntityProfile(administrator,profileid,profilename,eprofile);
-										   getOutputStream().println("Added entity profile '"+profilename+"' to database.");
+                                            getRaAdminSession().addEndEntityProfile(administrator,profileid,profilename,eprofile);
+                                            getOutputStream().println("Added entity profile '"+profilename+"' to database.");
                                         }catch(EndEntityProfileExistsException eepee){  
-										  getOutputStream().println("Error: Error adding entity profile '"+profilename+"' to database.");
+                                            getOutputStream().println("Error: Error adding entity profile '"+profilename+"' to database.");
                                         }                                        
                                     } else {
                                         cprofile = new CertificateProfile();
                                         cprofile.loadData((HashMap)decoder.readObject());
                                         try{                                        
-                                          certificatesession.addCertificateProfile(administrator,profileid,profilename,cprofile);
-										  getOutputStream().println("Added certificate profile '"+profilename+"' to database.");
+                                            getCertificateStoreSession().addCertificateProfile(administrator,profileid,profilename,cprofile);
+                                            getOutputStream().println("Added certificate profile '"+profilename+"' to database.");
                                         }catch(CertificateProfileExistsException cpee){
 											getOutputStream().println("Error: Error adding certificate profile '"+profilename+"' to database.");
                                         }                                          

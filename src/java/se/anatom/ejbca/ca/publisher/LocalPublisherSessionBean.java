@@ -338,25 +338,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
 
     public void addPublisher(Admin admin, String name, BasePublisher publisher) throws PublisherExistsException {
         debug(">addPublisher(name: " + name + ")");
-        boolean success = false;
-        try {
-            publisherhome.findByName(name);
-        } catch (FinderException e) {
-            try {
-                publisherhome.create(findFreePublisherId(), name, publisher);
-                success = true;
-            } catch (CreateException g) {
-            }
-        }
-
-        if (success)
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_PUBLISHERDATA, "Publisher " + name + " added.");
-        else
-            getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_PUBLISHERDATA, "Error adding publisher " + name);
-
-        if (!success)
-            throw new PublisherExistsException();
-
+        addPublisher(admin,findFreePublisherId().intValue(),name,publisher);
         debug("<addPublisher()");
     } // addPublisher
 
@@ -383,15 +365,14 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
                     publisherhome.create(new Integer(id), name, publisher);
                     success = true;
                 } catch (CreateException g) {
+                    error("Unexpected error creating new publisher: ", g);
                 }
             }
         }
-
         if (success)
             getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_PUBLISHERDATA, "Publisher " + name + " added.");
         else
             getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_PUBLISHERDATA, "Error adding publisher " + name);
-
         if (!success)
             throw new PublisherExistsException();
         debug("<addPublisher()");

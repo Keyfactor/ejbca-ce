@@ -18,21 +18,15 @@ import java.io.FileOutputStream;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.naming.*;
-
 import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 
 
 /**
  * Export profiles from the databse to XML-files.
  *
- * @version $Id: CaExportProfilesCommand.java,v 1.9 2005-02-11 13:12:18 anatom Exp $
+ * @version $Id: CaExportProfilesCommand.java,v 1.10 2005-02-11 14:01:28 anatom Exp $
  */
 public class CaExportProfilesCommand extends BaseCaAdminCommand {
     /**
@@ -52,25 +46,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
-                       
-            //InitialContext jndicontext = new InitialContext();
-            InitialContext jndicontext = getInitialContext();
-
-            Object obj1 = jndicontext.lookup("CertificateStoreSession");
-            ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
-                    ICertificateStoreSessionHome.class);
-            ICertificateStoreSessionRemote certificatesession = certificatesessionhome.create();
-
-            obj1 = jndicontext.lookup("RaAdminSession");
-
-            IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup(
-                        "RaAdminSession"), IRaAdminSessionHome.class);
-            IRaAdminSessionRemote raadminsession = raadminsessionhome.create();
-
-            Collection certprofids = certificatesession.getAuthorizedCertificateProfileIds(administrator,0);
-                                                                  
-			Collection endentityprofids = raadminsession.getAuthorizedEndEntityProfileIds(administrator);
-                                                        
+            Collection certprofids = getCertificateStoreSession().getAuthorizedCertificateProfileIds(administrator,0);                                               
+			Collection endentityprofids = getRaAdminSession().getAuthorizedEndEntityProfileIds(administrator);
 
             if (args.length < 2) {
                 getOutputStream().println(
@@ -88,8 +65,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                 if (profileid == SecConst.PROFILE_NO_PROFILE) { // Certificate profile not found i database.
                     getOutputStream().println("Error : Couldn't find certificate profile '"+profileid+"' in database.");
                 } else {
-					String profilename = certificatesession.getCertificateProfileName(administrator, profileid);									
-                    CertificateProfile profile = certificatesession.getCertificateProfile(administrator,profileid);
+					String profilename = getCertificateStoreSession().getCertificateProfileName(administrator, profileid);									
+                    CertificateProfile profile = getCertificateStoreSession().getCertificateProfile(administrator,profileid);
                     if (profile == null) {
                         getOutputStream().println("Error : Couldn't find certificate profile '"+profilename+"'-"+profileid+" in database.");
                     } else {
@@ -109,8 +86,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                 if (profileid == SecConst.PROFILE_NO_PROFILE) { // Entity profile not found i database.
                     getOutputStream().println("Error : Couldn't find entity profile '"+profileid+"' in database.");
                 } else {
-                	String profilename = raadminsession.getEndEntityProfileName(administrator, profileid);
-                    EndEntityProfile profile = raadminsession.getEndEntityProfile(administrator, profileid);
+                	String profilename = getRaAdminSession().getEndEntityProfileName(administrator, profileid);
+                    EndEntityProfile profile = getRaAdminSession().getEndEntityProfile(administrator, profileid);
                     if (profile == null) {
                         getOutputStream().println("Error : Couldn't find entity profile '"+profilename+"'-"+profileid+" in database.");
                     } else {

@@ -13,7 +13,29 @@
 
 package se.anatom.ejbca.batch;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.rmi.RemoteException;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.Iterator;
+
+import javax.ejb.CreateException;
+import javax.naming.Context;
+import javax.naming.NamingException;
+
 import org.apache.log4j.Logger;
+
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
@@ -28,34 +50,16 @@ import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.InitialContextBuilder;
 import se.anatom.ejbca.util.KeyTools;
 import se.anatom.ejbca.util.P12toPEM;
-import se.anatom.ejbca.util.InitialContextBuilder;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Collection;
-import java.util.Iterator;
 
 
 /**
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.52 2005-02-11 13:12:15 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.53 2005-02-11 14:02:14 anatom Exp $
  */
 public class BatchMakeP12 {
     /**
@@ -298,6 +302,47 @@ public class BatchMakeP12 {
         }
     } //processUser
 
+    private boolean doCreate(IUserAdminSessionRemote admin, UserAdminData data, int status) throws Exception {
+        boolean ret = false;
+        int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
+        boolean createJKS = false;
+        boolean createPEM = false;
+        boolean createP12 = false;
+        // get users Token Type.
+        tokentype = data.getTokenType();
+        createP12 = tokentype == SecConst.TOKEN_SOFT_P12;
+        createPEM = tokentype == SecConst.TOKEN_SOFT_PEM;
+        createJKS = tokentype == SecConst.TOKEN_SOFT_JKS;
+        
+        // Only generate supported tokens
+        if (createP12 || createPEM || createJKS) {
+            if (status == UserDataLocal.STATUS_KEYRECOVERY) {
+                log.info("Retrieving keys for " + data.getUsername());
+            } else {
+                log.info("Generating keys for " + data.getUsername());
+            }                               
+            
+            // Grab new user, set status to INPROCESS
+            admin.setUserStatus(administrator, data.getUsername(),
+                    UserDataLocal.STATUS_INPROCESS);
+            processUser(data, createJKS, createPEM,
+                    (status == UserDataLocal.STATUS_KEYRECOVERY));
+            
+            // If all was OK , set status to GENERATED
+            admin.setUserStatus(administrator, data.getUsername(),
+                    UserDataLocal.STATUS_GENERATED);
+            
+            // Delete clear text password
+            admin.setClearTextPassword(administrator, data.getUsername(), null);
+            ret = true;
+            log.info("New user generated successfully - " + data.getUsername());
+        } else {
+            log.debug("Cannot batchmake browser generated token for user (wrong tokentype)- " +
+                    data.getUsername());
+        }        
+        return ret;
+    }
+    
     /**
      * Creates P12-files for all users with status NEW in the local database.
      *
@@ -320,9 +365,7 @@ public class BatchMakeP12 {
         log.info("Generating for all FAILED.");
         createAllWithStatus(UserDataLocal.STATUS_FAILED);
         log.debug("<createAllFailed:");
-    }
-
-    // createAllFailed
+    } // createAllFailed
 
     /**
      * Creates P12-files for all users with status KEYRECOVER in the local database.
@@ -363,55 +406,16 @@ public class BatchMakeP12 {
                 if (result.size() < IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT) {
                     stopnow = true;
                 }
-
                 Iterator it = result.iterator();
-                boolean createJKS;
-                boolean createPEM;
-                boolean createP12;
-                int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
                 String failedusers = "";
                 String successusers = "";
-
                 while (it.hasNext()) {
-                    createJKS = false;
-                    createPEM = false;
-                    createP12 = false;
-
                     UserAdminData data = (UserAdminData) it.next();
-
                     if ((data.getPassword() != null) && (data.getPassword().length() > 0)) {
                         try {
-                            // get users Token Type.
-                            tokentype = data.getTokenType();
-                            createP12 = tokentype == SecConst.TOKEN_SOFT_P12;
-                            createPEM = tokentype == SecConst.TOKEN_SOFT_PEM;
-                            createJKS = tokentype == SecConst.TOKEN_SOFT_JKS;
-
-                            // Only generate supported tokens
-                            if (createP12 || createPEM || createJKS) {
-                                if (status == UserDataLocal.STATUS_KEYRECOVERY) {
-                                    log.info("Retrieving keys for " + data.getUsername());
-                                } else {
-                                    log.info("Generating keys for " + data.getUsername());
-                                }                               
-
-                                // Grab new user, set status to INPROCESS
-                                admin.setUserStatus(administrator, data.getUsername(),
-                                        UserDataLocal.STATUS_INPROCESS);
-                                processUser(data, createJKS, createPEM,
-                                        (status == UserDataLocal.STATUS_KEYRECOVERY));
-
-                                // If all was OK , set status to GENERATED
-                                admin.setUserStatus(administrator, data.getUsername(),
-                                        UserDataLocal.STATUS_GENERATED);
-
-                                // Delete clear text password
-                                admin.setClearTextPassword(administrator, data.getUsername(), null);
+                            if (doCreate(admin, data, status)) {
                                 successusers += (":" + data.getUsername());
                                 successcount++;
-                            } else {
-                                log.debug("Cannot batchmake browser generated token for user (wrong tokentype)- " +
-                                        data.getUsername());
                             }
                         } catch (Exception e) {
                             // If things went wrong set status to FAILED
@@ -464,37 +468,7 @@ public class BatchMakeP12 {
             if ((status == UserDataLocal.STATUS_NEW) ||
                     ((status == UserDataLocal.STATUS_KEYRECOVERY) && usekeyrecovery)) {
                 try {
-                    // get users Token Type.
-                    tokentype = data.getTokenType();
-                    createP12 = tokentype == SecConst.TOKEN_SOFT_P12;
-                    createPEM = tokentype == SecConst.TOKEN_SOFT_PEM;
-                    createJKS = tokentype == SecConst.TOKEN_SOFT_JKS;
-
-                    // Only generate supported tokens
-                    if (createP12 || createPEM || createJKS) {
-                        if (status == UserDataLocal.STATUS_KEYRECOVERY) {
-                            log.info("Retrieving keys for " + data.getUsername());
-                        } else {
-                            log.info("Generating keys for " + data.getUsername());
-                        }
-
-                        // Grab new user, set status to INPROCESS
-                        admin.setUserStatus(administrator, data.getUsername(),
-                                UserDataLocal.STATUS_INPROCESS);
-                        processUser(data, createJKS, createPEM,
-                                (status == UserDataLocal.STATUS_KEYRECOVERY));
-
-                        // If all was OK , set status to GENERATED
-                        admin.setUserStatus(administrator, data.getUsername(),
-                                UserDataLocal.STATUS_GENERATED);
-
-                        // Delete clear text password
-                        admin.setClearTextPassword(administrator, data.getUsername(), null);
-                        log.info("New user generated successfully - " + data.getUsername());
-                    } else {
-                        log.info("Cannot batchmake browser generated token for user - " +
-                                data.getUsername());
-                    }
+                    doCreate(admin, data, status);
                 } catch (Exception e) {
                     // If things went wrong set status to FAILED
                     log.error("An error happened, setting status to FAILED (if not keyrecovery).");

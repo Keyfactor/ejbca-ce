@@ -273,24 +273,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	 */
 	public void addHardTokenProfile(Admin admin, String name, HardTokenProfile profile) throws HardTokenProfileExistsException{
 	   debug(">addHardTokenProfile(name: " + name + ")");
-	   boolean success=false;
-	   try{
-		  hardtokenprofilehome.findByName(name);
-	   }catch(FinderException e){
-		 try{
-		   hardtokenprofilehome.create(findFreeHardTokenProfileId(), name, profile);
-		   success = true;
-		 }catch(CreateException g){}
-	   }
-
-	   if(success)
-		 getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA,"Hard token profile " + name + " added.");
-	   else
-		 getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA,"Error adding hard token profile "+ name);
-
-		if(!success)
-		  throw new HardTokenProfileExistsException();
-
+       addHardTokenProfile(admin,findFreeHardTokenProfileId().intValue(),name,profile);
 	   debug("<addHardTokenProfile()");
 	} // addHardTokenProfile
 
@@ -304,31 +287,32 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Required"
 	 */
-
 	public void addHardTokenProfile(Admin admin, int profileid, String name, HardTokenProfile profile) throws HardTokenProfileExistsException{
-	   debug(">addHardTokenProfile(name: " + name + ", id: " + profileid +")");
-	   boolean success=false;
-	   try{
-		  hardtokenprofilehome.findByName(name);
-	   }catch(FinderException e){
-	   	 try{
-			hardtokenprofilehome.findByPrimaryKey(new Integer(profileid));
-		 }catch(FinderException f){
-  	       try{
-		     hardtokenprofilehome.create(new Integer(profileid), name, profile);
-		     success = true;
-		   }catch(CreateException g){}
-	   	 }
-	   }
-
-	   if(success)
-		 getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA,"Hard token profile " + name + " added.");
-	   else
-		 getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA,"Error adding hard token profile "+ name);
-
-       if(!success)
-         throw new HardTokenProfileExistsException();
-	   debug("<addHardTokenProfile()");
+	    debug(">addHardTokenProfile(name: " + name + ", id: " + profileid +")");
+	    boolean success=false;
+	    try{
+	        hardtokenprofilehome.findByName(name);
+	    }catch(FinderException e){
+	        try{
+	            hardtokenprofilehome.findByPrimaryKey(new Integer(profileid));
+	        }catch(FinderException f){
+	            try{
+	                hardtokenprofilehome.create(new Integer(profileid), name, profile);
+	                success = true;
+	            }catch(CreateException g){
+	                error("Unexpected error creating new hard token profile: ", g);      
+	            }
+	        }
+	    }
+	    
+	    if(success)
+	        getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA,"Hard token profile " + name + " added.");
+	    else
+	        getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA,"Error adding hard token profile "+ name);
+	    
+	    if(!success)
+	        throw new HardTokenProfileExistsException();
+	    debug("<addHardTokenProfile()");
 	} // addHardTokenProfile
 
 	/**
