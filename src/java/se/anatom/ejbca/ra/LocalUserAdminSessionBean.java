@@ -37,7 +37,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.47 2003-03-02 21:22:35 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.48 2003-03-04 14:43:30 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -636,27 +636,47 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
     */
     public Collection findAllUsersWithLimit(Admin admin)  throws FinderException, RemoteException{
         debug(">findAllUsersWithLimit()");
-        Collection users = home.findAll();
-        Collection ret = new ArrayList();
-        Iterator iter = users.iterator();
-        while (iter.hasNext() && (ret.size() <= IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT ))
-        {
-            UserDataLocal user = (UserDataLocal) iter.next();
-            UserAdminData userData =  new UserAdminData(user.getUsername(), user.getSubjectDN(), user.getSubjectAltName() ,user.getSubjectEmail(), user.getStatus()
-                                        , user.getType(), user.getEndEntityProfileId(), user.getCertificateProfileId()
-                                        , new java.util.Date(user.getTimeCreated()), new java.util.Date(user.getTimeModified())
-                                        , user.getTokenType(), user.getHardTokenIssuerId());
-            userData.setPassword(user.getClearPassword());
-            if(globalconfiguration.getEnableEndEntityProfileLimitations()){
-              // Check if administrator is authorized to view user.
-              if(profileauthproxy.getEndEntityProfileAuthorization(admin, user.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS, LogEntry.MODULE_RA))
-                ret.add(userData);
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        ArrayList returnval = new ArrayList();
+
+        try{
+           // Construct SQL query.
+            con = getConnection();
+            ps = con.prepareStatement("select " + USERDATA_COL + " from UserData");
+            // Execute query.
+            rs = ps.executeQuery();
+            // Assemble result.
+           while(rs.next() && returnval.size() <= IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT){
+              UserAdminData data = new UserAdminData(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
+                                               , rs.getInt(10), rs.getInt(11)
+                                               , new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9))
+                                               ,  rs.getInt(12), rs.getInt(13));
+              data.setPassword(rs.getString(7));
+
+              if(globalconfiguration.getEnableEndEntityProfileLimitations()){
+                // Check if administrator is authorized to view user.
+                if(profileauthproxy.getEndEntityProfileAuthorization(admin,data.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.VIEW_RIGHTS, LogEntry.MODULE_RA))
+                  returnval.add(data);
+              }
+              else
+                returnval.add(data);
             }
-            else
-              ret.add(userData);
+            debug("<findAllUsersWithLimit()");
+            return returnval;
+
+        }catch(Exception e){
+          throw new EJBException(e);
+        }finally{
+           try{
+             if(rs != null) rs.close();
+             if(ps != null) ps.close();
+             if(con!= null) con.close();
+           }catch(SQLException se){
+              se.printStackTrace();
+           }
         }
-        debug("<findAllUsersWithLimit()");
-        return ret;
     }
 
    /**

@@ -65,13 +65,11 @@ public class UsersView {
       for(int i = 0; i < end; i++){
         returnval[i] = (UserView) users.get(index+i);   
       }
-      System.out.println("UsersView, getUsers(UserView[] users), index : " + index + ", size : " + size + " number : " + returnval.length);         
       
       return returnval;
     }
     
     public void setUsers(UserView[] users) {
-      System.out.println("UsersView, SetUsers(UserView[] users), Loading : " + users.length);        
       this.users.clear();
       if(users !=null && users.length > 0){       
         for(int i=0; i < users.length; i++){
@@ -84,7 +82,6 @@ public class UsersView {
     
     public void setUsers(UserAdminData[] users) throws RemoteException, NamingException, FinderException, CreateException {
       UserView user;  
-      System.out.println("UsersView, SetUsers(UserAdminData[] users), Loading : " + users.length);       
       this.users.clear();
       if(users !=null && users.length > 0){ 
         for(int i=0; i< users.length; i++){
@@ -98,7 +95,6 @@ public class UsersView {
 
     public void setUsers(Collection importusers) throws RemoteException, NamingException, FinderException, CreateException{ 
         
-      System.out.println("UsersView, SetUsers(inportusers), Loading : " + importusers.size());  
       UserView user;  
       Iterator i;  
       this.users.clear();
@@ -115,18 +111,15 @@ public class UsersView {
     }
 
     public void addUser(UserView user) {
-      System.out.println("UsersView, AddUser() ");          
        user.setSortBy(this.sortby);        
        users.add(user);
     }
     
     public int size(){
-      System.out.println("UsersView, size() : "+ users.size());           
       return users.size();   
     }
     
     public void clear(){
-      System.out.println("UsersView, clear() ");              
       this.users.clear();   
     }
     // Private fields

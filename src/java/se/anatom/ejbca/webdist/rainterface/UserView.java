@@ -9,7 +9,7 @@ import se.anatom.ejbca.util.StringTools;
 /**
  * A class representing a web interface view of a user in the ra user database.
  *
- * @version $Id: UserView.java,v 1.12 2003-02-27 08:43:27 anatom Exp $
+ * @version $Id: UserView.java,v 1.13 2003-03-04 14:43:18 herrvendil Exp $
  */
 public class UserView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.
@@ -27,6 +27,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
 
       subjectdnfields = new DNFieldExtractor(userdata.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
       subjectaltnames = new DNFieldExtractor(userdata.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
+      setCommonName(); 
 
       cleartextpwd = userdata.getPassword() != null;
     }
@@ -37,6 +38,8 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
     public void setSubjectDN(String dn) {
       userdata.setDN(dn);
       subjectdnfields.setDN(dn, DNFieldExtractor.TYPE_SUBJECTDN);
+      
+      setCommonName();
     }
     public String getSubjectDN() {return userdata.getDN();}
 
@@ -85,6 +88,20 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
     public String getSubjectAltNameField(int parameter, int number){
       return subjectaltnames.getField(parameter,number);
     }
+    
+    /**
+     * getCommonName is a special function used in list end entity gui to display names in cases not a CN field exists in dn only, surname and givennamn
+     */
+    public String getCommonName(){
+      return commonname;   
+    }
+    
+    private void setCommonName(){
+        commonname = getSubjectDNField(DNFieldExtractor.CN,0);
+        if(commonname.equals("")){
+          commonname = getSubjectDNField(DNFieldExtractor.GIVENNAME,0) + " " + getSubjectDNField(DNFieldExtractor.SURNAME,0);
+        }                    
+    }
 
     public int compareTo(Object obj) {
       int returnvalue = -1;
@@ -94,7 +111,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
             returnvalue = getUsername().compareTo(((UserView) obj).getUsername());
             break;
           case SortBy.COMMONNAME :
-            returnvalue = getSubjectDNField(DNFieldExtractor.CN,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.CN,0));
+            returnvalue = this.commonname.compareTo(((UserView) obj).getCommonName());
             break;
           case SortBy.SERIALNUMBER :
             returnvalue = getSubjectDNField(DNFieldExtractor.SN,0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.SN,0));
@@ -153,5 +170,6 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
     private UserAdminData userdata;
     private DNFieldExtractor subjectdnfields;
     private DNFieldExtractor subjectaltnames;
+    private String commonname = "";
     private boolean cleartextpwd;
 }

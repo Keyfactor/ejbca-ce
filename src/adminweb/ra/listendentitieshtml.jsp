@@ -294,7 +294,7 @@ function confirmrevokation(){
     <td width="11%"><%= users[i].getUsername() %>
        <input type="hidden" name='<%= HIDDEN_USERNAME + i %>' value='<%= users[i].getUsername() %>'>
     </td>
-    <td width="19%"><%= users[i].getSubjectDNField(DNFieldExtractor.CN,0) %></td>
+    <td width="19%"><%= users[i].getCommonName() %></td>
     <td width="17%"><%= users[i].getSubjectDNField(DNFieldExtractor.OU,0) %></td>
     <td width="18%"><%= users[i].getSubjectDNField(DNFieldExtractor.O,0) %></td>
     <td width="12%"><%  switch(users[i].getStatus()){

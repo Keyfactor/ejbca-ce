@@ -18,12 +18,12 @@ import se.anatom.ejbca.log.Admin;
 
 /**
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.16 2003-02-28 15:26:45 anatom Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.17 2003-03-04 14:43:30 herrvendil Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
 
     // Public constants
-    public static final int MAXIMUM_QUERY_ROWCOUNT = 300; // The maximun number of rows passed back in a query.
+    public static final int MAXIMUM_QUERY_ROWCOUNT = 100; // The maximun number of rows passed back in a query.
     // Public methods
 
 
