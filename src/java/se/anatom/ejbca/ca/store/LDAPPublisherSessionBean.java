@@ -46,7 +46,7 @@ import se.anatom.ejbca.log.LogEntry;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.19 2003-03-11 09:47:40 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.20 2003-06-13 15:24:26 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
 
@@ -95,121 +95,6 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
           throw new EJBException(e);
         }
     }
-
-    /**
-     * Published a CRL to LDAP. Creates CA entry if it does not exist.
-     *
-     * @param incrl The DER coded CRL to be stored.
-     * @param chainfp Fingerprint (hex) of the CAs certificate.
-     * @param number CRL number.
-     *
-     * @return true if storage was successful.
-     * @throws EJBException if a communication or other error occurs.
-     */
-    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) {
-
-        int ldapVersion  = LDAPConnection.LDAP_V3;
-        LDAPConnection lc = new LDAPConnection();
-
-        X509CRL crl = null;
-        String dn = null;
-        try {
-            crl = CertTools.getCRLfromByteArray(incrl);
-            // Extract the users DN from the crl.
-            dn = CertTools.getIssuerDN(crl);
-        } catch (Exception e) {
-            error("Error decoding input CRL: ",e);
-            try{
-              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Error decoding input CRL.");
-            }catch(RemoteException re){}
-            return false;
-        }
-
-        if (checkContainerName(dn) == false) {
-            info("DN not part of containername, aborting store operation.");
-            try{
-              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"DN not part of containername, aborting store operation.");
-            }catch(RemoteException re){}
-            return false;
-        }
-
-        // Check if the entry is already present, we will update it with the new certificate.
-        LDAPEntry oldEntry = null;
-        try {
-            // connect to the server
-            lc.connect( ldapHost, ldapPort );
-            // authenticate to the server
-            lc.bind( ldapVersion, loginDN, loginPassword );
-            // try to read the old object
-            oldEntry = lc.read(dn);
-            // disconnect with the server
-            lc.disconnect();
-        } catch( LDAPException e ) {
-            if (e.getLDAPResultCode() == LDAPException.NO_SUCH_OBJECT) {
-                debug("No old entry exist for '"+dn+"'.");
-            } else {
-                error( "Error binding to and reading from LDAP server: ", e);
-               try{
-                 logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Error binding to and reading from LDAP server.");
-               }catch(RemoteException re){}
-                return false;
-            }
-        }
-        LDAPEntry newEntry = null;
-        LDAPModificationSet modSet = null;
-
-        LDAPAttributeSet attributeSet = null;
-        if (oldEntry != null)
-            modSet = getModificationSet(oldEntry, dn, false);
-        else
-            attributeSet = getAttributeSet(cAObjectclass, dn, false);
-        try {
-            LDAPAttribute crlAttr = new LDAPAttribute( cRLAttribute, crl.getEncoded() );
-            if (oldEntry != null)
-                modSet.add(LDAPModification.REPLACE, crlAttr);
-            else
-                attributeSet.add( crlAttr );
-        } catch (CRLException e) {
-            error("Error encoding CRL when storing in LDAP: ",e);
-            try{
-               logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Error encoding CRL when storing in LDAP.");
-            }catch(RemoteException re){}
-            return false;
-        }
-        if (oldEntry == null)
-            newEntry = new LDAPEntry( dn, attributeSet );
-        try {
-            // connect to the server
-            lc.connect( ldapHost, ldapPort );
-            // authenticate to the server
-            lc.bind( ldapVersion, loginDN, loginPassword );
-            // Add or modify the entry
-            if (oldEntry != null) {
-                lc.modify(dn, modSet);
-                debug( "\nModified object: " + dn + " successfully." );
-                try{
-                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECRL,"Modified object: " + dn + " successfully in LDAP.");
-                }catch(RemoteException re){}
-            } else {
-                lc.add( newEntry );
-                debug( "\nAdded object: " + dn + " successfully." );
-                try{
-                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECRL,"Added object: " + dn + " successfully in LDAP.");
-                }catch(RemoteException re){}
-            }
-            // disconnect with the server
-            lc.disconnect();
-        }
-        catch( LDAPException e ) {
-            error( "Error storing CRL ("+cRLAttribute+") in LDAP ("+cAObjectclass+"): ", e);
-            try{
-               logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Error storing CRL ("+cRLAttribute+") in LDAP ("+cAObjectclass+").");
-            }catch(RemoteException re){}
-            return false;
-        }
-
-        return true;
-    } // storeCRL
 
     /**
      * Publishes a certificate to LDAP. Creates entry if it does not exist.
@@ -409,6 +294,133 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         return true;
     } // storeCertificate
 
+    /**
+     * Revokes a certificate (already revoked by the CA), the Publisher decides what to do, if anything.
+     *
+     * @param cert The DER coded Certificate that has been revoked.
+     * @return true if revocation was successful.
+     * @throws EJBException if a communication or other error occurs.
+     */
+     public boolean revokeCertificate(Admin admin, Certificate cert) {
+         // TODO: remove revoked certificate from LDAP
+         return true;
+     } //revokeCertificate
+     
+    /**
+     * Published a CRL to LDAP. Creates CA entry if it does not exist.
+     *
+     * @param incrl The DER coded CRL to be stored.
+     * @param chainfp Fingerprint (hex) of the CAs certificate.
+     * @param number CRL number.
+     *
+     * @return true if storage was successful.
+     * @throws EJBException if a communication or other error occurs.
+     */
+    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) {
+
+        int ldapVersion  = LDAPConnection.LDAP_V3;
+        LDAPConnection lc = new LDAPConnection();
+
+        X509CRL crl = null;
+        String dn = null;
+        try {
+            crl = CertTools.getCRLfromByteArray(incrl);
+            // Extract the users DN from the crl.
+            dn = CertTools.getIssuerDN(crl);
+        } catch (Exception e) {
+            error("Error decoding input CRL: ",e);
+            try{
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Error decoding input CRL.");
+            }catch(RemoteException re){}
+            return false;
+        }
+
+        if (checkContainerName(dn) == false) {
+            info("DN not part of containername, aborting store operation.");
+            try{
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"DN not part of containername, aborting store operation.");
+            }catch(RemoteException re){}
+            return false;
+        }
+
+        // Check if the entry is already present, we will update it with the new certificate.
+        LDAPEntry oldEntry = null;
+        try {
+            // connect to the server
+            lc.connect( ldapHost, ldapPort );
+            // authenticate to the server
+            lc.bind( ldapVersion, loginDN, loginPassword );
+            // try to read the old object
+            oldEntry = lc.read(dn);
+            // disconnect with the server
+            lc.disconnect();
+        } catch( LDAPException e ) {
+            if (e.getLDAPResultCode() == LDAPException.NO_SUCH_OBJECT) {
+                debug("No old entry exist for '"+dn+"'.");
+            } else {
+                error( "Error binding to and reading from LDAP server: ", e);
+               try{
+                 logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Error binding to and reading from LDAP server.");
+               }catch(RemoteException re){}
+                return false;
+            }
+        }
+        LDAPEntry newEntry = null;
+        LDAPModificationSet modSet = null;
+
+        LDAPAttributeSet attributeSet = null;
+        if (oldEntry != null)
+            modSet = getModificationSet(oldEntry, dn, false);
+        else
+            attributeSet = getAttributeSet(cAObjectclass, dn, false);
+        try {
+            LDAPAttribute crlAttr = new LDAPAttribute( cRLAttribute, crl.getEncoded() );
+            if (oldEntry != null)
+                modSet.add(LDAPModification.REPLACE, crlAttr);
+            else
+                attributeSet.add( crlAttr );
+        } catch (CRLException e) {
+            error("Error encoding CRL when storing in LDAP: ",e);
+            try{
+               logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Error encoding CRL when storing in LDAP.");
+            }catch(RemoteException re){}
+            return false;
+        }
+        if (oldEntry == null)
+            newEntry = new LDAPEntry( dn, attributeSet );
+        try {
+            // connect to the server
+            lc.connect( ldapHost, ldapPort );
+            // authenticate to the server
+            lc.bind( ldapVersion, loginDN, loginPassword );
+            // Add or modify the entry
+            if (oldEntry != null) {
+                lc.modify(dn, modSet);
+                debug( "\nModified object: " + dn + " successfully." );
+                try{
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECRL,"Modified object: " + dn + " successfully in LDAP.");
+                }catch(RemoteException re){}
+            } else {
+                lc.add( newEntry );
+                debug( "\nAdded object: " + dn + " successfully." );
+                try{
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECRL,"Added object: " + dn + " successfully in LDAP.");
+                }catch(RemoteException re){}
+            }
+            // disconnect with the server
+            lc.disconnect();
+        }
+        catch( LDAPException e ) {
+            error( "Error storing CRL ("+cRLAttribute+") in LDAP ("+cAObjectclass+"): ", e);
+            try{
+               logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Error storing CRL ("+cRLAttribute+") in LDAP ("+cAObjectclass+").");
+            }catch(RemoteException re){}
+            return false;
+        }
+
+        return true;
+    } // storeCRL     
+
     private boolean checkContainerName(String dn)
     {
         // Match users DN with 'containerName'?
@@ -492,7 +504,5 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
             }
         }
         return modSet;
-    }
-
- // getModificationSet
+    } // getModificationSet
 }

@@ -55,7 +55,7 @@ import org.apache.log4j.*;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.10 2003-03-11 09:47:40 anatom Exp $
+ * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.11 2003-06-13 15:24:25 anatom Exp $
  */
 public class LDAPActiveDirectoryPublisherSessionBean
     extends BaseSessionBean {
@@ -348,8 +348,19 @@ public class LDAPActiveDirectoryPublisherSessionBean
                 }
 
         return true;
-    }
-    // storeCertificate
+    } // storeCertificate
+
+    /**
+     * Revokes a certificate (already revoked by the CA), the Publisher decides what to do, if anything.
+     *
+     * @param cert The DER coded Certificate that has been revoked.
+     * @return true if revocation was successful.
+     * @throws EJBException if a communication or other error occurs.
+     */
+     public boolean revokeCertificate(Admin admin, Certificate cert) {
+         // TODO: remove revoked certificate from LDAP
+         return true;
+     } //revokeCertificate
 
     public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number)
         throws RemoteException {
