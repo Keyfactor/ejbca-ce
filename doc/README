@@ -438,6 +438,8 @@ clear text password for a user use 'ra.sh/cmd setclearpwd <username>
 To generate PKCS12 files for all users with status NEW or FAILED, run
 'batch.sh/cmd'. This will generate files for users if their clear text passwords
 are NOT null.
+Without arguments 'batch' generates PKCS12 files for all NEW or FAILED users.
+To generate a PKCS12 file for a specific user, enter command 'batch.cmd/sh <username>'.
 Generates PKCS12 files are stored in a subdirectory (to the current directory)
 called 'p12'. If the directory does not exist, it will be created.
 Make sure this directory is WELL protected, since the information contained

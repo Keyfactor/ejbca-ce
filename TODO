@@ -1,4 +1,4 @@
-$Id: TODO,v 1.25 2002-03-28 08:46:45 anatom Exp $
+$Id: TODO,v 1.26 2002-03-28 09:12:11 anatom Exp $
 
 V 1.0
 -----
@@ -7,10 +7,8 @@ V 1.0
 
 V 1.x
 -----
-- Upgrade BC provider to latest version.
 - Make a database model similar to architecture model.
-- Possibility to warn about certificates about to expire.
-- RA function to generate keystore for user.
+- Function to warn about certificates about to expire.
 
 V 2.0
 -----
