@@ -1,4 +1,4 @@
-$Id: TODO,v 1.53 2003-01-19 17:34:23 anatom Exp $
+$Id: TODO,v 1.54 2003-01-25 16:43:12 anatom Exp $
 
 V 1.x
 -----
@@ -26,7 +26,7 @@ http://support.microsoft.com/default.aspx?scid=kb;EN-US;q281245
 - Multiple instances of EJBCA running within a singe JBoss.
 - Key recovery 
 - XML/Soap stuff.
-
+- Multiple CDPs, comma separated strings should give several CDPs. 
 
 Future
 ------
