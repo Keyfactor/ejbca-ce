@@ -87,7 +87,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.18 2004-05-10 09:24:06 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.19 2004-05-10 11:03:47 herrvendil Exp $
  */
 public class CAAdminSessionBean extends BaseSessionBean {
     
@@ -803,7 +803,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
      */
     public IResponseMessage processRequest(Admin admin, CAInfo cainfo, IRequestMessage requestmessage) 
     throws CAExistsException, CADoesntExistsException, AuthorizationDeniedException, CATokenOfflineException {
-    	CA ca = null;
+    	CA ca = null;    
     	Collection certchain = null;                                   
     	Collection certpublishers = null; 	
     	IResponseMessage returnval = null;
@@ -882,8 +882,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     					ca.setCAToken(new NullCAToken());
     				}
     				
-    				// set status to active
-    				ca.setStatus(SecConst.CA_EXTERNAL);   
+    				// set status to active    				  
     				cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_EXTERNAL, ca);
     				
     				// Publish CA certificates.
@@ -1148,11 +1147,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
             
             X509CA ca = new X509CA(cainfo);
             ca.setCAToken(catoken);
-            ca.setCertificateChain(certificatechain);
-            ca.setStatus(SecConst.CA_ACTIVE);
+            ca.setCertificateChain(certificatechain);            
             
             // Store CA in database.
-            cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(),  ca.getStatus(), (CA) ca);
+            cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_ACTIVE, (CA) ca);
             getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CACREATED,"CA imported successfully from old P12 file, status: " + ca.getStatus());
         }catch(Exception e){
             getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"An error occured when trying to import CA from old P12 file", e);
