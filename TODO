@@ -1,4 +1,4 @@
-$Id: TODO,v 1.29 2002-05-23 15:25:20 anatom Exp $
+$Id: TODO,v 1.30 2002-05-24 09:32:05 anatom Exp $
 
 V 1.0
 -----
@@ -11,6 +11,7 @@ V 1.x
 
 V 2.0
 -----
+- Local interfaces for Entity Beans
 - Make a database model similar to architecture model.
 - Add a 'Service Locator' to concentrate code for lookups.
 - Use a 'Value List Handler' for listing of all certificates, clrs and users.
