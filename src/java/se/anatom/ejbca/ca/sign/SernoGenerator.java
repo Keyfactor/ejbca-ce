@@ -10,13 +10,16 @@ import org.apache.log4j.Logger;
 /**
  * Implements a singleton serial number generator using SecureRandom.
  *
- * @version $Id: SernoGenerator.java,v 1.6 2003-07-24 08:43:30 anatom Exp $
+ * @version $Id: SernoGenerator.java,v 1.7 2004-02-10 11:08:41 anatom Exp $
  */
 public class SernoGenerator implements ISernoGenerator {
     /** Log4j instance */
     private static Logger log = Logger.getLogger(SernoGenerator.class);
 
-    /* random generator */
+    /** random generator algorithm */
+    private static String algorithm = "SHA1PRNG";
+    
+    /** random generator */
     private SecureRandom random;
 
     /** A handle to the unique Singleton instance. */
@@ -29,7 +32,7 @@ public class SernoGenerator implements ISernoGenerator {
         log.debug(">SernoGenerator()");
 
         // Init random number generator for random serialnumbers
-        random = SecureRandom.getInstance("SHA1PRNG");
+        random = SecureRandom.getInstance(algorithm);
 
         // Using this seed we should get a different seed every time.
         // We are not concerned about the security of the random bits, only that they are different every time.
@@ -71,7 +74,6 @@ public class SernoGenerator implements ISernoGenerator {
         if (instance == null) {
             instance = new SernoGenerator();
         }
-
         return instance;
     }
 
@@ -109,4 +111,11 @@ public class SernoGenerator implements ISernoGenerator {
     public void setSeed(long seed) {
         random.setSeed(seed);
     }
+    
+    /** 
+     * Set the random number algorithm used to something different than the default SHA1PRNG.
+     */
+     public static void setAlgorithm(String algo) {
+         algorithm = algo;
+     }
 }

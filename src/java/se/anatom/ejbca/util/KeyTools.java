@@ -26,7 +26,7 @@ import org.bouncycastle.jce.interfaces.*;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.23 2003-11-24 14:49:15 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.24 2004-02-10 11:08:46 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -219,16 +219,12 @@ public class KeyTools {
         if (cert == null) {
             throw new IllegalArgumentException("Parameter cert cannot be null.");
         }
-
         int len = 1;
-
         if (cachain != null) {
             len += cachain.length;
         }
-
         Certificate[] chain = new Certificate[len];
         chain[0] = cert;
-
         if (cachain != null) {
             for (int i = 0; i < cachain.length; i++) {
                 chain[i + 1] = cachain[i];
@@ -236,7 +232,7 @@ public class KeyTools {
         }
 
         // store the key and the certificate chain
-        KeyStore store = KeyStore.getInstance("JKS", "SUN");
+        KeyStore store = KeyStore.getInstance("JKS");
         store.load(null, null);
 
         // First load the key entry

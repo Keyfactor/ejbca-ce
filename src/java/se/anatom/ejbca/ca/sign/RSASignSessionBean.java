@@ -65,7 +65,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.122 2004-01-26 12:48:58 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.123 2004-02-10 11:08:40 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -115,6 +115,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             // Get a decent source of random data
             String  randomAlgorithm = (String) lookup("java:comp/env/randomAlgorithm");
             randomSource = SecureRandom.getInstance(randomAlgorithm);
+            SernoGenerator.setAlgorithm(randomAlgorithm);
 
             // Init the publisher session beans
             int i = 1;
