@@ -2,9 +2,20 @@
 
 <jbosscmp-jdbc>
 
-<defaults>
+  <defaults>
     <datasource>java:/DefaultDS</datasource>
     <datasource-mapping>Oracle8</datasource-mapping>
-</defaults>
+  </defaults>
+
+  <!-- "comment" is a reserved word in Oracle -->
+  <enterprise-beans>
+    <entity>
+      <ejb-name>LogEntryData</ejb-name>
+      <cmp-field>
+        <field-name>comment</field-name>
+        <column-name>comment_</column-name>
+      </cmp-field>
+    </entity>
+  </enterprise-beans>
 
 </jbosscmp-jdbc>
