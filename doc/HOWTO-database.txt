@@ -3,7 +3,7 @@ Set up a database for EJBCA in JBoss
 
 The following databases have in some stage been tested with EJBCA:
 
-* HSQLDB (default in JBoss)
+* Hypersoniq (hsqldb) (default in JBoss)
 * PostegreSQL 7.2 (http://www.postgresql.org/)
 * MySQL (http://www.mysql.com/)
 * Oracle 8i (http://www.oracle.com/)
@@ -18,6 +18,16 @@ If all is well the automatic deployment script of EJBCA will configure all that 
 you and you will be up and running in 30 seconds.
 
 NOW ON TO THE HOWTO!
+
+Troubleshooting database problems:
+---------------------------------
+* Have you configured a <database-ds.xml> in JBOSS_HOME/server/default/deploy?
+* Do you have the correct username/password configured in <database-ds.xml>?
+* Is the JDBC driver installed in JBOSS_HOME/server/default/lib?
+* Does you database accept incoming connection from the network, not only localhost?
+* Do you have a firewall blocking connections to the database?
+* Can you connect to the database from another machine?
+* Use ip-address instead of hostname in <database-ds.xml> (DNS problems?)
 
 Configuring EJBCA
 -----------------
