@@ -1,3 +1,4 @@
+<%@page contentType="text/html"%>
 <%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,se.anatom.ejbca.ca.sign.*, se.anatom.ejbca.log.Admin"%>
 
 <HTML>
@@ -185,8 +186,6 @@ try  {
           If InStr(1, TheForm.email.Value, "@", 1)<2 Then
              MsgBox("Email address should contain an @ character!")
              Exit Sub
-          Else
-          TheForm.user.Value=TheForm.user.Value+",EmailAddress="+TheForm.email.Value
           end if
        end if
        result = CSR(2)
