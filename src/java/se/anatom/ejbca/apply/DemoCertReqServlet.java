@@ -74,7 +74,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.6 2003-01-16 10:24:38 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.7 2003-01-16 11:44:46 anatom Exp $
  */
 public class DemoCertReqServlet
   extends HttpServlet {
@@ -194,7 +194,7 @@ public class DemoCertReqServlet
         return;
     }
 
-    String includeEmail = request.getParameter("FormsCheckbox1");
+    String includeEmail = request.getParameter("includeemail");
     cat.debug("includeEmail="+includeEmail);
 
     UserView newuser = new UserView();
