@@ -1,5 +1,5 @@
-2.1b1
------
+2.1
+----
 Initial SCEP support.
 Initial OCSP support.
 Support for multiple CDPs separated by ';'
