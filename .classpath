@@ -2,13 +2,13 @@
 <classpath>
     <classpathentry kind="src" path="src/java"/>
     <classpathentry kind="lib" path="lib/jboss-j2ee.jar"/>
-    <classpathentry kind="lib" path="lib/bcprov-jdk14-119.jar"/>
-    <classpathentry kind="lib" path="lib/bcmail-jdk14-119.jar"/>
     <classpathentry kind="lib" path="lib/junit.jar"/>
     <classpathentry kind="lib" path="lib/ldap.jar"/>
     <classpathentry kind="lib" path="lib/servlet.jar"/>
     <classpathentry kind="lib" path="lib/log4j-1.2.7.jar"/>
     <classpathentry kind="lib" path="lib/mail.jar"/>
     <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+    <classpathentry kind="lib" path="lib/bcmail-jdk14-120.jar"/>
+    <classpathentry kind="lib" path="lib/bcprov-jdk14-120.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
