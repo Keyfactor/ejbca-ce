@@ -16,7 +16,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 /**
  * A class representing a view of a CA Information view..
  *
- * @version $Id: CAInfoView.java,v 1.5 2003-11-14 14:59:58 herrvendil Exp $
+ * @version $Id: CAInfoView.java,v 1.6 2004-03-14 14:01:50 herrvendil Exp $
  */
 public class CAInfoView implements java.io.Serializable, Cloneable {
     // Public constants.
@@ -123,7 +123,7 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
 		
 		if(active){
 	      cainfodata[OCSP] = ejbcawebbean.getText("ACTIVE") + 
-                             "<br>" + "&nbsp;<a onClick='viewocspcert()'><u>" +
+                             "<br>" + "&nbsp;<a style='cursor:hand;' onClick='viewocspcert()'><u>" +
 			                 ejbcawebbean.getText("VIEWOCSPCERTIFICATE") + 
 			                 "</u></a>";	
 		}else{
