@@ -625,6 +625,11 @@ The certificate reply containing a PEM-formatted certificate is printed to the
 REFERENCES
 ==========
 
+JBOSS/JETTY:
+To get client certificates to work with Jetty add: 
+ <Set name="NeedClientAuth">true</Set>
+to the SSL listener configuration.
+ 
 PGP:
 PKCS12 files generated from EJBCA works excellent as PGP-keys.
 
