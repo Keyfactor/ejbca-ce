@@ -24,9 +24,9 @@ Configuring EJBCA
 -----------------
 
 1. Rename src/ca/META-INF/jaws-<database>.xml to jaws.xml. If no specific
-jaws-<database>.xml file is supplied the default jaws.xml is used.
-   Make sure src/ca/META-INF/jaws.xml contains entries to set the correct type-
-   mappings for 'b64cert' and 'b64crl' for the database used.
+jaws-<database>.xml file is supplied the default jaws.xml is used. Make sure
+src/ca/META-INF/jaws.xml contains entries to set the correct type-mappings for
+'b64cert' and 'b64crl' for the database used.
 
 2. Build EJBCA with 'ant' and deploy with 'deploy.sh/cmd'.
 
@@ -186,4 +186,5 @@ Type Mapping:
 
 (Configure JBoss to create primary key in db if you like, see
 http://www.jboss.org/online-manual/HTML/ch06s03.html)
+
 
