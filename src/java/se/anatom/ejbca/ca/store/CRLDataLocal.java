@@ -19,14 +19,16 @@ public interface CRLDataLocal extends javax.ejb.EJBLocalObject {
     public void setFingerprint(String fingerprint);
     public String getCAFingerprint();
     public void setCAFingerprint(String cAFingerprint);
-    public Date getThisUpdate();
-    public void setThisUpdate(Date thisUpdate);
-    public Date getNextUpdate();
-    public void setNextUpdate(Date nextUpdate);
+    public long getThisUpdate();
+    public void setThisUpdate(long thisUpdate);
+    public long getNextUpdate();
+    public void setNextUpdate(long nextUpdate);
     public String getBase64Crl();
     public void setBase64Crl(String base64Crl);
 
     public X509CRL getCRL();
     public void setCRL(X509CRL crl);
     public void setIssuer(String dn);
+    public void setThisUpdate(Date thisUpdate);
+    public void setNextUpdate(Date nextUpdate);
 }

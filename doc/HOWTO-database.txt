@@ -16,7 +16,7 @@ another.
 
 When using another database the default database, HypersoniqDB, should be
 removed
-completely. The section "JBossCX setup" must be edited for this.
+completely. The file server/defualt/deploy/hsqldb-service.xml should be removed.
 
 NOW ON TO THE HOWTO!
 
@@ -26,33 +26,33 @@ Configuring EJBCA
 1. Rename src/ca/META-INF/jaws-<database>.xml to jaws.xml. If no specific
 jaws-<database>.xml file is supplied the default jaws.xml is used. Make sure
 src/ca/META-INF/jaws.xml contains entries to set the correct type-mappings for
-'b64cert' and 'b64crl' for the database used.
+'base64cert' and 'base64crl' for the database used.
 
 2. Build EJBCA with 'ant' and deploy with 'deploy.sh/cmd'.
 
 Configuring JBoss
 -----------------
 
-The description given here is for JBoss 2.4.x, for JBoss 3.x please consult the
+The description given here is for JBoss 3.x. Consider consulting the
 official JBoss documentation.
 
 First comes the general description and in the end database specific
 configurations
 are given in sections for the specific databases.
 
-Configuration files in JBoss (with Tomcat or Jetty) is located in the
-jboss/conf/Tomcat
-or Jetty directory.
+Database configuration files in JBoss (with Tomcat or Jetty) is located in the
+<jboss-home>/server/default/deploy.
 
 1. Install and setup the database.
 
 2. Create a database for EJBCA, for example 'ejbca'.
 
-2. Put the JDBC driver for the database in jboss/lib/ext.
+2. Put the JDBC driver for the database in <jboss-home>/server/default/lib/.
 
-4. Edit jboss.jcml. The JDBC-driver must be inluded and the database set up as
-DefaultDS.
-Edit the JDBC section to look like one of the sample configuration given below.
+4. Copy the proper <database>-service.xml file to <jboss-home>
+/server/default/deploy. The JDBC-driver must be inluded and the database set up
+as DefaultDS. Current <database>-service.xml files can be obtained from
+jboss.org, provided here are snapshots that work for me.
 
 6. Edit standardjaws.xml. Change the default type-mapping to match the chosen
 database (see below).
@@ -68,35 +68,10 @@ JDBC driver: mm.mysql-<version>-bin.jar.
 
 Download JDBC driver for mySQL from http://mmmysql.sourceforge.net/
 
-The JDBC section should look something like:
-
-     <!-- =======================================================-->
-     <!-- JDBC-->
-     <!-- =======================================================-->
-
-     <mbean code="org.jboss.jdbc.JdbcProvider" name="DefaultDomain:service=
-     JdbcProvider">
-          <attribute name="Drivers">
-          org.gjt.mm.mysql.Driver,org.hsqldb.jdbcDriver</attribute>
-     </mbean>
-
-     <mbean code="org.jboss.jdbc.XADataSourceLoader"
-     name="DefaultDomain:service=XADataSource,name=DefaultDS">
-       <attribute name="PoolName">DefaultDS</attribute>
-       <attribute name="DataSourceClass">
-       org.jboss.pool.jdbc.xa.wrapper.XADataSourceImpl</attribute>
-       <attribute name="Properties"></attribute>
-       <attribute name="URL">jdbc:mysql://localhost/ejbca</attribute>
-       <attribute name="JDBCUser">root</attribute>
-       <attribute name="Password">yourpassword</attribute>
-       <attribute name="MaxSize">10</attribute>
-       <attribute name="MinSize">1</attribute>
-       <attribute name="GCInterval">450000</attribute>
-       <attribute name="GCEnabled">true</attribute>
-       <attribute name="IdleTimeout">900000</attribute>
-       <attribute name="IdleTimeoutEnabled">true</attribute>
-       <attribute name="MaxIdleTimeoutPercent">1.0</attribute>
-     </mbean>
+Copy mysql-service.xml to server/default/deploy
+In mysql-service.xml is defined the databas instance (EJBCA) and the database
+username (EJBCA) and password (EJBCA).These must be changed to your values.
+The item 'ConnectionURL' must be edited to match your database.
 
 Type mapping:
 
@@ -111,34 +86,10 @@ JDBC driver: postgresql.jar (or whatever it's called).
 
 If the JDBC-jar is not included, download it from http://jdbc.postgresql.org/.
 
-The JDBC section should look something like:
-
-     <!-- =======================================================-->
-     <!-- JDBC-->
-     <!-- =======================================================-->
-
-     <mbean code="org.jboss.jdbc.JdbcProvider" name="DefaultDomain:service=
-     JdbcProvider">
-          <attribute name="Drivers">org.postgresql.Driver</attribute>
-     </mbean>
-
-     <mbean code="org.jboss.jdbc.XADataSourceLoader"
-     name="DefaultDomain:service=XADataSource,name=DefaultDS">
-       <attribute name="PoolName">DefaultDS</attribute>
-       <attribute name="DataSourceClass">
-       org.jboss.pool.jdbc.xa.wrapper.XADataSourceImpl</attribute>
-       <attribute name="Properties"></attribute>
-       <attribute name="URL">jdbc:postgresql://localhost/ejbca</attribute>
-       <attribute name="JDBCUser">postgres</attribute>
-       <attribute name="Password">yourpassword</attribute>
-       <attribute name="MaxSize">10</attribute>
-       <attribute name="MinSize">1</attribute>
-       <attribute name="GCInterval">450000</attribute>
-       <attribute name="GCEnabled">true</attribute>
-       <attribute name="IdleTimeout">900000</attribute>
-       <attribute name="IdleTimeoutEnabled">true</attribute>
-       <attribute name="MaxIdleTimeoutPercent">1.0</attribute>
-     </mbean>
+Copy postgres-service.xml to server/default/deploy
+In postgres-service.xml is defined the databas instance (EJBCA) and the database
+username (EJBCA) and password (EJBCA).These must be changed to your values.
+The item 'ConnectionURL' must be edited to match your database.
 
 Type mapping:
 
@@ -148,43 +99,19 @@ Type mapping:
 Oracle specifics
 ----------------
 Jaws configuration file: jaws-oracle.xml
+JBoss configuration file: oracle-service.xml
 
-JDBC driver: classes12.zip,
+JDBC driver: classes12.zip (can be downloaded from http://www.oracle.com/).
 
-The JDBC section should look something like:
+Create tables manually in the database according to database-tables.sql.
 
-     <!-- =======================================================-->
-     <!-- JDBC-->
-     <!-- =======================================================-->
+Copy oracle-service.xml to server/default/deploy
+In oracle-service.xml is defined the databas instance (EJBCA) and the database
+username (EJBCA) and password (EJBCA).These must be changed to your values.
+The item 'ConnectionURL' must be edited to match your database.
 
-     <mbean code="org.jboss.jdbc.JdbcProvider" name="DefaultDomain:service=
-     JdbcProvider">
-          <attribute name="Drivers">
-          oracle.jdbc.driver.OracleDriver,org.hsqldb.jdbcDriver</attribute>
-     </mbean>
-
-     <mbean code="org.jboss.jdbc.XADataSourceLoader"
-     name="DefaultDomain:service=XADataSource,name=DefaultDS">
-       <attribute name="PoolName">DefaultDS</attribute>
-       <attribute name="DataSourceClass">
-       org.jboss.pool.jdbc.xa.wrapper.XADataSourceImpl</attribute>
-       <attribute name="Properties"></attribute>
-       <attribute name="URL">jdbc:oracle:thin:@<ip>:<port>:<db></attribute>
-       <attribute name="JDBCUser">user</attribute>
-       <attribute name="Password">yourpassword</attribute>
-       <attribute name="MaxSize">25</attribute>
-       <attribute name="MinSize">1</attribute>
-       <attribute name="IdleTimeout">1800000</attribute>
-       <attribute name="IdleTimeoutEnabled">true</attribute>
-       <attribute name="MaxIdleTimeoutPercent">1.0</attribute>
-     </mbean>
-
-Type Mapping:
+Type mapping:
 
      <datasource>java:/DefaultDS</datasource>
      <type-mapping>Oracle8</type-mapping>
-
-(Configure JBoss to create primary key in db if you like, see
-http://www.jboss.org/online-manual/HTML/ch06s03.html)
-
 

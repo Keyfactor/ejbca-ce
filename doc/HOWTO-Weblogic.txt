@@ -5,56 +5,19 @@ CONFIGURING Weblogic
 1. In the database configured for DefaultPool and DefaultDS in Weblogic, create
 tables for the entity beans, CertificateData, CRLData and UserData.
 
-	CREATE TABLE CERTIFICATEDATA
-	(
-	B64CERT          LONG,
-	FP               VARCHAR2(45)      NOT NULL,
-	SUBJECTDN        VARCHAR2(256),
-	ISSUERDN         VARCHAR2(256),
-	SERNO            VARCHAR2(32),
-	STATUS           INTEGER,
-	TYPE             INTEGER,
-	CAFP             VARCHAR(45),
-	EXPIREDATE       NUMBER,
-	REVOCATIONDATE   NUMBER,
-	REVOCATIONREASON INTEGER,
-	PRIMARY KEY("FP")
-	);
-
-	CREATE TABLE CRLDATA
-	(
-	B64CRL           LONG,
-	FP               VARCHAR2(45)      NOT NULL,
-	ISSUERDN         VARCHAR2(256),
-	CRLNUMBER        VARCHAR2(32),
-	CAFP             VARCHAR(45),
-	THISUPDATE       NUMBER,
-	NEXTUPDATE       NUMBER,
-	PRIMARY KEY("FP")
-	);
-
-	CREATE TABLE USERDATA
-	(
-	USERNAME         VARCHAR2(32) NOT NULL,
-	PASSWORD         VARCHAR2(32),
-	PASSWORDHASH     VARCHAR2(64),
-	SUBJECTDN        VARCHAR2(256),
-	SUBJECTEMAIL     VARCHAR2(128),
-	STATUS           INTEGER,
-	TYPE             INTEGER,
-	PRIMARY KEY("USERNAME")
-	);
-
+See the file database-tables.sql for table definitions.
+    
 
 Don't forget to create public synonyms and access rights for your tables, or
 however you organize the data...
 
-	CREATE PUBLIC SYNONYM CERTIFICATEDATA FOR EJBCA.CERTIFICATEDATA;
-	CREATE PUBLIC SYNONYM CRLDATA FOR EJBCA.CRLDATA;
-	CREATE PUBLIC SYNONYM USERDATA FOR EJBCA.USERDATA;
-	GRANT UPDATE, SELECT, INSERT, DELETE ON EJBCA.CERTIFICATEDATA TO HJOURNALAPP;
-	GRANT UPDATE, SELECT, INSERT, DELETE ON EJBCA.CRLDATA TO HJOURNALAPP;
-	GRANT UPDATE, SELECT, INSERT, DELETE ON EJBCA.USERDATA TO HJOURNALAPP;
+    CREATE PUBLIC SYNONYM CERTIFICATEDATA FOR EJBCA.CERTIFICATEDATA;
+    CREATE PUBLIC SYNONYM CRLDATA FOR EJBCA.CRLDATA;
+    CREATE PUBLIC SYNONYM USERDATA FOR EJBCA.USERDATA;
+    GRANT UPDATE, SELECT, INSERT, DELETE ON EJBCA.CERTIFICATEDATA TO
+    EJBCA;
+    GRANT UPDATE, SELECT, INSERT, DELETE ON EJBCA.CRLDATA TO EJBCA;
+    GRANT UPDATE, SELECT, INSERT, DELETE ON EJBCA.USERDATA TO EJBCA;
 
 2. Edit deployment descriptors to sidestep some container differences...
 in both src/ca/META-INF/ejb-jar.xml and src/ra/META-INF/ejb-jar.xml, change the
@@ -86,4 +49,5 @@ should be obvious what needs to be changed.
 call Weblogic instead of JBoss.
 
 6. Run 'runtest.cmd/sh' to test the setup.
+
 

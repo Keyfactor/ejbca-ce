@@ -29,7 +29,7 @@ public abstract class CRLDataBean implements javax.ejb.EntityBean {
     private static Category cat = Category.getInstance( CRLDataBean.class.getName() );
 
     protected EntityContext  ctx;
-    
+
     public abstract int getCRLNumber();
     public abstract void setCRLNumber(int cRLNumber);
     public abstract String getIssuerDN();
@@ -41,17 +41,19 @@ public abstract class CRLDataBean implements javax.ejb.EntityBean {
     public abstract void setFingerprint(String fingerprint);
     public abstract String getCAFingerprint();
     public abstract void setCAFingerprint(String cAFingerprint);
-    public abstract Date getThisUpdate();
-    public abstract void setThisUpdate(Date thisUpdate);
-    public abstract Date getNextUpdate();
-    public abstract void setNextUpdate(Date nextUpdate);
+    public abstract long getThisUpdate();
+    /** Date formated as seconds since 1970 (== Date.getTime()) */
+    public abstract void setThisUpdate(long thisUpdate);
+    public abstract long getNextUpdate();
+    /** Date formated as seconds since 1970 (== Date.getTime()) */
+    public abstract void setNextUpdate(long nextUpdate);
     public abstract String getBase64Crl();
     public abstract void setBase64Crl(String base64Crl);
 
     //
     // Public methods used to help us manage CRLs
     //
-    
+
     public X509CRL getCRL() {
         X509CRL crl = null;
         try {
@@ -80,11 +82,21 @@ public abstract class CRLDataBean implements javax.ejb.EntityBean {
     public void setIssuer(String dn) {
         setIssuerDN(CertTools.stringToBCDNString(dn));
     }
-    
+    public void setThisUpdate(Date thisUpdate) {
+        if (thisUpdate == null)
+            setThisUpdate(-1L);
+        setThisUpdate(thisUpdate.getTime());
+    }
+    public void setNextUpdate(Date nextUpdate) {
+        if (nextUpdate == null)
+            setNextUpdate(-1L);
+        setNextUpdate(nextUpdate.getTime());
+    }
+
     //
     // Fields required by Container
     //
-    
+
     /**
      * Entity Bean holding info about a CRL.
      * Create by sending in the CRL, which extracts (from the crl)
