@@ -76,6 +76,7 @@
       <cmp-field><field-name>id</field-name></cmp-field>      
       <cmp-field><field-name>adminType</field-name></cmp-field>
       <cmp-field><field-name>adminData</field-name></cmp-field>
+      <cmp-field><field-name>module</field-name></cmp-field>      
       <cmp-field><field-name>time</field-name></cmp-field>
       <cmp-field><field-name>username</field-name></cmp-field>
       <cmp-field><field-name>certificateSNR</field-name></cmp-field>

@@ -33,7 +33,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.25 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.26 2002-09-17 09:19:47 herrvendil Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -119,7 +119,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             X509Certificate cert = (X509Certificate)incert;
             CertificateDataPK pk = new CertificateDataPK();
             pk.fingerprint = CertTools.getFingerprintAsString(cert);
-            logsession.log(admin, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE,"");             
+            logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE,"");             
             CertificateDataLocal data1=null;
             data1 = certHome.create(cert);
             data1.setCAFingerprint(cafp);
@@ -128,7 +128,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
         catch (Exception e) {
             try{
-              logsession.log(admin, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"");
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"");
             }catch(RemoteException re){}  
             throw new EJBException(e);
         }
@@ -146,11 +146,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
           X509CRL crl = CertTools.getCRLfromByteArray(incrl);
           CRLDataLocal data1 = crlHome.create(crl, number);
           data1.setCAFingerprint(cafp);
-          logsession.log(admin, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECRL,"Number : " +  number + " Fingerprint : " + CertTools.getFingerprintAsString(crl) + ".");    
+          logsession.log(admin,  LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECRL,"Number : " +  number + " Fingerprint : " + CertTools.getFingerprintAsString(crl) + ".");    
         }
         catch (Exception e) {
           try{  
-            logsession.log(admin, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Number : " +  number +  ".");  
+            logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL,"Number : " +  number +  ".");  
           }catch(RemoteException re){} 
           throw new EJBException(e);
         }
@@ -292,7 +292,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             Certificate ret = null;
             if (coll != null) {
                 if (coll.size() > 1)
-                  logsession.log(admin, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_DATABASE,"Error in database, more than one certificate has the same Issuer : " + issuerDN + " and serialnumber "
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_DATABASE,"Error in database, more than one certificate has the same Issuer : " + issuerDN + " and serialnumber "
                                                                                                           + serno.toString(16) + ".");                      
                 Iterator iter = coll.iterator();
                 if (iter.hasNext()) {
@@ -349,7 +349,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
               rev.setRevocationDate(new Date());
               rev.setRevocationReason(reason);
               try{
-                logsession.log(admin, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_REVOKEDCERT,("Reason :" + reason)); 
+                logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_REVOKEDCERT,("Reason :" + reason)); 
               }catch(RemoteException re){
                 throw new EJBException(re);              
               }                
@@ -359,7 +359,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
          
        }catch(FinderException e){
           try{ 
-            logsession.log(admin, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT,("Couldn't find certificate with dn :" + dn));     
+            logsession.log(admin,  LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT,("Couldn't find certificate with dn :" + dn));     
           }catch(RemoteException f){
           throw new EJBException(f);              
           }    
@@ -382,7 +382,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             Certificate ret = null;
             if (coll != null) {
                 if (coll.size() > 1)
-                  logsession.log(admin, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_DATABASE,"Error in database, more than one certificate has the same Issuer : " + issuerDN + " and serialnumber "
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_DATABASE,"Error in database, more than one certificate has the same Issuer : " + issuerDN + " and serialnumber "
                                                                                                           + serno.toString(16) + ".");   
                 Iterator iter = coll.iterator();
                 if (iter.hasNext()) {
@@ -420,12 +420,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             if (crl == null)
                 return null;
             
-            logsession.log(admin, new java.util.Date(), null, null, LogEntry.EVENT_INFO_GETLASTCRL,"Number :" + maxnumber);              
+            logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_GETLASTCRL,"Number :" + maxnumber);              
             return crl.getEncoded();
         }
         catch (Exception e) {
             try{
-              logsession.log(admin, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL,"Error retrieving last crl.");   
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL,"Error retrieving last crl.");   
             }catch(RemoteException re){
               throw new EJBException(re);              
             }              
@@ -484,9 +484,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
       
         try{
          if(returnval)
-           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"New certificateprofile " + certificatetypename + ".");             
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"New certificateprofile " + certificatetypename + ".");             
          else    
-           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificateprofile " + certificatetypename + ".");   
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificateprofile " + certificatetypename + ".");   
        }catch(RemoteException re){
           throw new EJBException(re);              
        }         
@@ -509,9 +509,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
        try{
          if(returnval)
-           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"New certificateprofile " + newcertificatetypename +  " used profile " + originalcertificatetypename + " as template.");             
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"New certificateprofile " + newcertificatetypename +  " used profile " + originalcertificatetypename + " as template.");             
          else    
-           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificaterprofile " + newcertificatetypename +  " using profile " + originalcertificatetypename + " as template.");  
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error adding certificaterprofile " + newcertificatetypename +  " using profile " + originalcertificatetypename + " as template.");  
        }catch(RemoteException re){
           throw new EJBException(re);              
        }
@@ -527,10 +527,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
       try{
         CertificateTypeDataLocal pdl = certtypehome.findByCertificateTypeName(certificatetypename);
         pdl.remove();
-        logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"Removed certificateprofile " + certificatetypename + ".");        
+        logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"Removed certificateprofile " + certificatetypename + ".");        
       }catch(Exception e){
          try{ 
-           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error removing certificateprofile " + certificatetypename + ".");    
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error removing certificateprofile " + certificatetypename + ".");    
          }catch(RemoteException re){} 
       }
     } // removeCertificateType
@@ -552,9 +552,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
       
        try{
          if(returnvalue)
-           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"Renamed certificateprofile " + oldcertificatetypename +  " to " + newcertificatetypename + ".");             
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"Renamed certificateprofile " + oldcertificatetypename +  " to " + newcertificatetypename + ".");             
          else    
-           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error renaming certificateprofile " + oldcertificatetypename +  " to " + newcertificatetypename + ".");     
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE,"Error renaming certificateprofile " + oldcertificatetypename +  " to " + newcertificatetypename + ".");     
        }catch(RemoteException re){
           throw new EJBException(re);              
        }         
@@ -577,9 +577,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
        
        try{
          if(returnvalue)
-           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"Certificateprofile " + certificatetypename +  " edited.");             
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_CERTPROFILE,"Certificateprofile " + certificatetypename +  " edited.");             
          else    
-           logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE," Error editing certificateprofile " + certificatetypename + ".");  
+           logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CERTPROFILE," Error editing certificateprofile " + certificatetypename + ".");  
        }catch(RemoteException re){
           throw new EJBException(re);              
        }  

@@ -39,13 +39,14 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
 public class EjbcaAuthorization extends Object implements java.io.Serializable{
        
     /** Creates new EjbcaAthorization */
-    public EjbcaAuthorization(UserGroup[] usergroups, GlobalConfiguration globalconfiguration, ILogSessionRemote logsession, Admin admin) throws NamingException, CreateException, RemoteException {         
+    public EjbcaAuthorization(UserGroup[] usergroups, GlobalConfiguration globalconfiguration, ILogSessionRemote logsession, Admin admin, int module) throws NamingException, CreateException, RemoteException {         
         getParameters(globalconfiguration);
         accesstree = new AccessTree(opendirectories);       
         buildAccessTree(usergroups); 
         
         this.admin= admin;
-        this.logsession = logsession;        
+        this.logsession = logsession;    
+        this.module=module;
         InitialContext jndicontext = new InitialContext();
         Object obj1 = jndicontext.lookup("CertificateStoreSession");
         try{
@@ -79,12 +80,12 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
         // Check in accesstree. 
        if(accesstree.isAuthorized(userinformation, resource) == false){
          try{
-          logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);       
+          logsession.log(admin, module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);       
          }catch(RemoteException re){}    
          throw  new AuthorizationDeniedException();  
        }
        try{
-        logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);       
+        logsession.log(admin, module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);       
        }catch(RemoteException re){}           
        
         return true;
@@ -172,6 +173,7 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
     private AccessTree            accesstree;  
     private Certificate[]         cacertificatechain;
     private Admin                 admin;
+    private int                   module;
     
     private ICertificateStoreSessionRemote certificatesession;      
     private ISignSessionRemote             signsession; 

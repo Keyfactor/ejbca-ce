@@ -33,7 +33,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.26 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.27 2002-09-17 09:19:47 herrvendil Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -118,13 +118,13 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
           // Check if user fulfills it's profile.
           Profile profile = raadminsession.getProfile(profileid);
           if(!profile.doesUserFulfillProfile(username, password, dn, email, type,  certificatetypeid, clearpwd)){
-            logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDUSER,"Userdata didn'nt fulfill profile."); 
+            logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDUSER,"Userdata didn'nt fulfill profile."); 
             throw new UserDoesntFullfillProfile("Given userdata doesn't match it's profile.");   
           }  
 
             // Check if administrator is authorized to add user.
             if(!profileauthproxy.getProfileAuthorization(profileid,ProfileAuthorizationProxy.CREATE_RIGHTS)){
-              logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDUSER,"Administrator not authorized");   
+              logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDUSER,"Administrator not authorized");   
               throw new AuthorizationDeniedException("Administrator not authorized to create user.");  
             }  
         }           
@@ -152,10 +152,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                 throw new EJBException(nsae);
               }
             }
-            logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_INFO_ADDEDUSER,""); 
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_ADDEDUSER,""); 
 
         }catch (Exception e) {
-            logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDUSER,""); 
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_ADDEDUSER,""); 
             throw new EJBException(e.getMessage());
         }
 
@@ -173,12 +173,12 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         if(globalconfiguration.getUseStrongAuthorization()){
         Profile profile = raadminsession.getProfile(profileid);
         if(!profile.doesUserFulfillProfileWithoutPassword(username,  dn, email, type, certificatetypeid)){
-          logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Userdata didn'nt fulfill profile.");                
+          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Userdata didn'nt fulfill profile.");                
           throw new UserDoesntFullfillProfile("Given userdata doesn't match it's profile.");   
         }  
         // Check if administrator is authorized to edit user. 
           if(!profileauthproxy.getProfileAuthorization(profileid,ProfileAuthorizationProxy.EDIT_RIGHTS)){
-            logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Administrator not authorized");               
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Administrator not authorized");               
             throw new AuthorizationDeniedException("Administrator not authorized to edit user.");  
           }  
         }        
@@ -194,10 +194,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             data1.setProfileId(profileid);
             data1.setCertificateTypeId(certificatetypeid);
             data1.setTimeModified((new java.util.Date()).getTime());
-            logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDUSER,"");
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDUSER,"");
         }
         catch (Exception e) {
-            logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,""); 
+            logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,""); 
             throw new EJBException(e.getMessage());
         }
         debug("<changeUser("+username+", password, "+dn+", "+email+", "+type+")");
@@ -216,22 +216,22 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1 = home.findByPrimaryKey(pk);     
             if(!profileauthproxy.getProfileAuthorization(data1.getProfileId(),ProfileAuthorizationProxy.DELETE_RIGHTS)){
-                logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEUSER,"Administrator not authorized");                     
+                logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEUSER,"Administrator not authorized");                     
                 throw new AuthorizationDeniedException("Administrator not authorized to delete user."); 
             }    
           }
           catch(FinderException e){
-            logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEUSER,"Couldn't find username in database");               
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEUSER,"Couldn't find username in database");               
             throw new EJBException(e.getMessage());            
           }    
         }  
         try {
             UserDataPK pk = new UserDataPK(username);
             home.remove(pk);
-            logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_INFO_DELETEDUSER,"");
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_DELETEDUSER,"");
         }
         catch (Exception e) {
-            logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEUSER,"");
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_DELETEUSER,"");
             throw new EJBException(e.getMessage());
         }
         debug("<deleteUser("+username+")");
@@ -249,12 +249,12 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1 = home.findByPrimaryKey(pk);              
             if(!profileauthproxy.getProfileAuthorization(data1.getProfileId(),ProfileAuthorizationProxy.EDIT_RIGHTS)){
-                logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Administrator not authorized to change status");                 
+                logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Administrator not authorized to change status");                 
                 throw new AuthorizationDeniedException("Administrator not authorized to edit user.");              
             }    
           }
           catch(FinderException e){
-            logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Couldn't find username in database.");    
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Couldn't find username in database.");    
             throw new EJBException(e.getMessage());            
           }    
         }      
@@ -264,7 +264,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         UserDataLocal data = home.findByPrimaryKey(pk);
         data.setStatus(status);
         data.setTimeModified((new java.util.Date()).getTime());        
-        logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDUSER,("New status : " + status));        
+        logsession.log(admin, LogEntry.MODULE_RA,  new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDUSER,("New status : " + status));        
         debug("<setUserStatus("+username+", "+status+")");
     } // setUserStatus
 
@@ -293,21 +293,21 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
                 fullfillsprofile=false;
             }
           if(!fullfillsprofile){
-            logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Password didn't fulfill users profile.");  
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Password didn't fulfill users profile.");  
             throw new UserDoesntFullfillProfile("Given userdata doesn't match it's profile.");  
           }  
 
           // Check if administrator is authorized to edit user.
 
           if(!profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.EDIT_RIGHTS)){
-            logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Administrator isn't authorized to change password.");               
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Administrator isn't authorized to change password.");               
             throw new AuthorizationDeniedException("Administrator not authorized to edit user.");          
           }  
         }
         try {
             data.setPassword(password);
             data.setTimeModified((new java.util.Date()).getTime());
-            logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDUSER,"Password changed.");              
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDUSER,"Password changed.");              
         } catch (java.security.NoSuchAlgorithmException nsae)
         {
             debug("NoSuchAlgorithmException while setting password for user "+username);
@@ -330,12 +330,12 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
           Profile profile = raadminsession.getProfile(data.getProfileId());
        
           if(profile.isRequired(Profile.CLEARTEXTPASSWORD) && profile.getValue(Profile.CLEARTEXTPASSWORD).equals(Profile.FALSE)){
-            logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Clearpassword didn't fulfill users profile.");                
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Clearpassword didn't fulfill users profile.");                
             throw new UserDoesntFullfillProfile("Given userdata doesn't match it's profile.");   
           }  
           // Check if administrator is authorized to edit user.
           if(!profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.EDIT_RIGHTS)){
-            logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Administrator isn't authorized to change clearpassword.");               
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_CHANGEDUSER,"Administrator isn't authorized to change clearpassword.");               
             throw new AuthorizationDeniedException("Administrator not authorized to edit user.");          
           }  
         }                
@@ -343,12 +343,12 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
             if (password == null){
                 data.setClearPassword("");
                 data.setTimeModified((new java.util.Date()).getTime());
-                logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDUSER,"Clearpassword changed.");                     
+                logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDUSER,"Clearpassword changed.");                     
             }    
             else{
                 data.setOpenPassword(password);
                 data.setTimeModified((new java.util.Date()).getTime());
-                logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDUSER,"Clearpassword changed.");                     
+                logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDUSER,"Clearpassword changed.");                     
             }    
         } catch (java.security.NoSuchAlgorithmException nsae)
         {
@@ -375,13 +375,13 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
          
         if(globalconfiguration.getUseStrongAuthorization()){ 
           if(!profileauthproxy.getProfileAuthorization(data.getProfileId(),ProfileAuthorizationProxy.REVOKE_RIGHTS)){
-            logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_REVOKEDUSER,"Administrator not authorized");           
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_REVOKEDUSER,"Administrator not authorized");           
             throw new AuthorizationDeniedException("Not authorized to revoke user : " + username + ".");
           }
         }  
         setUserStatus(username, UserDataRemote.STATUS_REVOKED);
         certificatesession.setRevokeStatus(data.getSubjectDN(), reason);
-        logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_INFO_REVOKEDUSER,"");    
+        logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_REVOKEDUSER,"");    
         debug("<revokeUser()");
     } // revokeUser
 
@@ -493,11 +493,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         if(data != null){
           int type = data.getType();
           if( (type & 32)  == 0){ // Temporate RAADMIN.
-            logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ADMINISTRATORLOGGEDIN,"Certificate didn't belong to an administrator."); 
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ADMINISTRATORLOGGEDIN,"Certificate didn't belong to an administrator."); 
             throw new  AuthorizationDeniedException("Your certificate do not belong to an administrator.");
           }  
         }else{
-          logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ADMINISTRATORLOGGEDIN,"Certificate didn't belong to any user.");  
+          logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ADMINISTRATORLOGGEDIN,"Certificate didn't belong to any user.");  
           throw new  AuthorizationDeniedException("Your certificate do not belong to any user.");
         }
 
@@ -774,18 +774,18 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
           GlobalConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey(pk);
           gcdata.setGlobalConfiguration(globalconfiguration);
           try{
-            logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITSYSTEMCONFIGURATION,"");    
+            logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITSYSTEMCONFIGURATION,"");    
           }catch(RemoteException re){}  
         }catch (javax.ejb.FinderException fe) {
            // Global configuration doesn't yet exists.
            try{
              GlobalConfigurationDataLocal data1= globalconfigurationhome.create(pk,globalconfiguration);
              try{
-               logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITSYSTEMCONFIGURATION,"");    
+               logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITSYSTEMCONFIGURATION,"");    
              }catch(RemoteException re){}              
            } catch(CreateException e){
              try{   
-               logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITSYSTEMCONFIGURATION,"");   
+               logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITSYSTEMCONFIGURATION,"");   
              }catch(RemoteException re){} 
            }
         }

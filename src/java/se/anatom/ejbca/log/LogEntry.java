@@ -69,6 +69,14 @@ public class LogEntry implements java.io.Serializable {
     public static final int EVENT_ERROR_PUBLICWEBUSERCONNECTED         = 1021;      
     
     
+    // Indicates the module using the logsession bean.
+    public static final int MODULE_CA                  = 0;
+    public static final int MODULE_RA                  = 1;
+    public static final int MODULE_LOG                 = 2;    
+    public static final int MODULE_PUBLICWEB           = 3;
+    public static final int MODULE_ADMINWEB            = 4;
+    public static final int MODULE_SCAPER              = 5;
+        
     public static final int EVENT_ERROR_BOUNDRARY                = 1000;
     
     // Id -> String maps
@@ -84,12 +92,15 @@ public class LogEntry implements java.io.Serializable {
                                                      "EVENT_ERROR_STORECERTIFICATE", "EVENT_ERROR_STORECRL", "EVENT_ERROR_GETLASTCRL", "EVENT_ERROR_CERTPROFILE", "EVENT_ERROR_DATABASE",
                                                      "EVENT_ERROR_CREATECERTIFICATE", "EVENT_ERROR_CREATECRL" ,"EVENT_ERROR_ADMINISTRATORLOGGEDIN", "EVENT_ERROR_NOTAUTHORIZEDTORESOURCE",
                                                      "EVENT_ERROR_PUBLICWEBUSERCONNECTED"};    
+                                                     
+    public static final String[] MODULETEXTS    = {"CA", "RA", "LOG", "PUBLICWEB", "ADMINWEB", "SCAPER"};                                                     
     
    /** 
     * Function used by EJBCA to log information.
     *
     * @param admintype is pricipally the type of data stored in the admindata field, should be one of se.anatom.ejbca.log.Admin.TYPE_ constants.
     * @param admindata is the data identifying the administrator, should be certificate snr or ip-address when no certificate could be retrieved.
+    * @param module indicates from which module the event was logged. i.e RA, CA ....
     * @param time the time the event occured.
     * @param username the name of the user involved or null if no user is involved.
     * @param certificate the certificate involved in the event or null if no certificate is involved.
@@ -97,9 +108,10 @@ public class LogEntry implements java.io.Serializable {
     * @param comment comment of the event.
     */    
     
-    public LogEntry(int admintype, String admindata, Date time, String username, String certificatesnr, int event, String comment){
+    public LogEntry(int admintype, String admindata, int module, Date time, String username, String certificatesnr, int event, String comment){
        this.admintype=admintype;
        this.admindata=admindata;
+       this.module=module;
        this.time=time;
        this.username=username;
        this.certificatesnr=certificatesnr;
@@ -129,6 +141,10 @@ public class LogEntry implements java.io.Serializable {
     public String getAdminData(){
       return this.admindata;   
     }
+    
+    public int getModule(){
+      return this.module;    
+    }
 
     public Date getTime(){
       return this.time;   
@@ -148,12 +164,14 @@ public class LogEntry implements java.io.Serializable {
   
     public String getComment(){
       return this.comment;   
-    }    
+    } 
+       
     // Private methods 
     
     // Private fields
     private    int    admintype;
     private    String admindata;
+    private    int    module;
     private    Date   time;
     private    String username;
     private    String certificatesnr;

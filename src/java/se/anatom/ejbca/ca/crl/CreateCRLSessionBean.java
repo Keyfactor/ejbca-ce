@@ -30,7 +30,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.9 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.10 2002-09-17 09:19:47 herrvendil Exp $
  */
 public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerSession {
 
@@ -119,7 +119,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
             //fos.close();
         } catch (Exception e) {
             try{
-              logsession.log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,"");       
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,"");       
             }catch(RemoteException re){
               throw new EJBException(re);                
             } 

@@ -11,7 +11,7 @@ import java.security.cert.X509Certificate;
 
 /**
  *
- * @version $Id: ILogSessionRemote.java,v 1.1 2002-09-12 17:12:13 herrvendil Exp $
+ * @version $Id: ILogSessionRemote.java,v 1.2 2002-09-17 09:19:46 herrvendil Exp $
  */
 public interface ILogSessionRemote extends javax.ejb.EJBObject {
     
@@ -27,7 +27,7 @@ public interface ILogSessionRemote extends javax.ejb.EJBObject {
      * @param event id of the event, should be one of the se.anatom.ejbca.log.LogEntry.EVENT_ constants.
      * @param comment comment of the event.
      */
-    public void log(Admin admin,Date time, String username, X509Certificate certificate, int event, String comment) throws RemoteException;
+    public void log(Admin admin, int module, Date time, String username, X509Certificate certificate, int event, String comment) throws RemoteException;
     
      /**
      * Method to execute a customized query on the log db data. The parameter query should be a legal Query object.

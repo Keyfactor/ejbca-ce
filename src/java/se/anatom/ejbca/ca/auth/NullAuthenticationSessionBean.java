@@ -22,7 +22,7 @@ import se.anatom.ejbca.log.LogEntry;
  * the username is returned as DN.
  * Useful for demo purposes to give out certificates to anyone.
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.5 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.6 2002-09-17 09:19:44 herrvendil Exp $
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean {
 
@@ -61,7 +61,7 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
             if ( (dn != null) && (dn.length()>0) ){
                 String email = CertTools.getPartFromDN(dn, "EmailAddress");
                 try{
-                  logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"NULL-Authenticated user");       
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"NULL-Authenticated user");       
                 }catch(RemoteException re){
                   throw new EJBException(re);                
                 }                 
@@ -70,7 +70,7 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
                 return ret;
             } else {
                 try{
-                  logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"User does not contain a DN.");       
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"User does not contain a DN.");       
                 }catch(RemoteException re){
                   throw new EJBException(re);                
                 }                    

@@ -20,7 +20,7 @@ import java.util.Date;
  *  comment an optional comment of the event.
  * </pre>
  *
- * @version $Id: LogEntryDataBean.java,v 1.1 2002-09-12 17:12:13 herrvendil Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.2 2002-09-17 09:19:46 herrvendil Exp $
  **/
 
 public abstract class LogEntryDataBean implements javax.ejb.EntityBean {
@@ -35,6 +35,10 @@ public abstract class LogEntryDataBean implements javax.ejb.EntityBean {
     
     public abstract String getAdminData();
     public abstract void setAdminData(String admindata);    
+    
+    // Indicates the module (CA,RA ...) using the logsession bean.
+    public abstract int getModule();
+    public abstract void setModule(int module);
 
     public abstract long getTime();
     public abstract void setTime(long time);
@@ -56,16 +60,17 @@ public abstract class LogEntryDataBean implements javax.ejb.EntityBean {
     } 
     
     public LogEntry getLogEntry(){
-      return new LogEntry( getAdminType(), getAdminData(), getTimeAsDate(), getUsername(), getCertificateSNR(), getEvent(), getComment()); 
+      return new LogEntry( getAdminType(), getAdminData(), getModule(), getTimeAsDate(), getUsername(), getCertificateSNR(), getEvent(), getComment()); 
     }
     //
     // Fields required by Container
     //
 
-    public Integer ejbCreate(Integer id, int admintype, String admindata, Date time, String username, String certificatesnr, int event, String comment) throws CreateException {
+    public Integer ejbCreate(Integer id, int admintype, String admindata, int module, Date time, String username, String certificatesnr, int event, String comment) throws CreateException {
         setId(id);
         setAdminType(admintype);
         setAdminData(admindata);
+        setModule(module);
         setTime(time.getTime());
         setUsername(username);
         setCertificateSNR(certificatesnr);            
@@ -74,7 +79,7 @@ public abstract class LogEntryDataBean implements javax.ejb.EntityBean {
         return id;
     }
 
-    public void ejbPostCreate(Integer id, int admintype, String admindata, Date time, String username, String certificatesnr, int event, String comment) {
+    public void ejbPostCreate(Integer id, int admintype, String admindata, int module, Date time, String username, String certificatesnr, int event, String comment) {
         // Do nothing. Required.
     }
 

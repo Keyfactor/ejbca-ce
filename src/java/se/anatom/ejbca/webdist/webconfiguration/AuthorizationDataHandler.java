@@ -13,13 +13,14 @@ import java.security.cert.X509Certificate;
 import se.anatom.ejbca.ra.authorization.*;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.log.ILogSessionRemote;
 
 /**
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
  * @author  Philip Vendil
- * @version $Id: AuthorizationDataHandler.java,v 1.7 2002-09-13 08:34:18 herrvendil Exp $
+ * @version $Id: AuthorizationDataHandler.java,v 1.8 2002-09-17 09:19:47 herrvendil Exp $
  */
 public class AuthorizationDataHandler {
 
@@ -49,7 +50,7 @@ public class AuthorizationDataHandler {
        }
 
        availabledirectories = new AvailableDirectories(globalconfiguration);
-       authorize = new EjbcaAuthorization(getUserGroups(), globalconfiguration, logsession, administrator);
+       authorize = new EjbcaAuthorization(getUserGroups(), globalconfiguration, logsession, administrator, LogEntry.MODULE_ADMINWEB);
     }
     // Public methods.
     /**

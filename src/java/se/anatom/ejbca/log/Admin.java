@@ -20,6 +20,7 @@ import se.anatom.ejbca.ra.authorization.UserInformation;
 public class Admin implements java.io.Serializable {
   
     // Public Constants
+    // Indicates the type of administrator.
     public static final int TYPE_CLIENTCERT_USER       = 0;
     public static final int TYPE_PUBLIC_WEB_USER       = 1;
     public static final int TYPE_RACOMMANDLINE_USER    = 2;
@@ -30,7 +31,7 @@ public class Admin implements java.io.Serializable {
     public static final int SPECIAL_ADMIN_BOUNDRARY = 100;
     
     public static final String[] ADMINTYPETEXTS = {"CLIENTCERT","PUBLICWEBUSER","RACMDLINE","CACMDLINE","BATCHCMDLINE", "INTERNALUSER"};
-    
+        
     private int[] ADMINTYPETOADMINENTIRY = {0, UserEntity.SPECIALUSER_PUBLICWEBUSER, UserEntity.SPECIALUSER_CACOMMANDLINEADMIN, 
                                                UserEntity.SPECIALUSER_RACOMMANDLINEADMIN, UserEntity.SPECIALUSER_BATCHCOMMANDLINEADMIN,
                                                UserEntity.SPECIALUSER_INTERNALUSER};
@@ -45,24 +46,24 @@ public class Admin implements java.io.Serializable {
     
     public Admin(int type, String ip){
       this.type=type;
-      this.data=ip;        
+      this.data=ip;  
     }
     
     public Admin(int type){
       this.type=type;
-      this.data=null;
+      this.data=null;    
     }
 
     // Public Methods    
     
     public int getAdminType(){
-      return this.type;   
+      return this.type;         
     }
     
     public String getAdminData(){
       return this.data;   
     }
-    
+        
     // Method that takes the internal data and returns a UserInformation object required by the Authorization module.
     public UserInformation getUserInformation(){
        if(type == TYPE_CLIENTCERT_USER)

@@ -42,7 +42,7 @@ import se.anatom.ejbca.ra.raadmin.UserPreference;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.15 2002-09-13 08:34:18 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.16 2002-09-17 09:19:47 herrvendil Exp $
  */
 public class EjbcaWebBean {
 
@@ -98,7 +98,7 @@ public class EjbcaWebBean {
         // Check that user is administrator.
         adminsession.checkIfSubjectDNisAdmin(userdn);
 
-        logsession.log(administrator, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORLOGGEDIN,"");               
+        logsession.log(administrator,LogEntry.MODULE_ADMINWEB,  new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORLOGGEDIN,"");               
         
       }
       try{

@@ -21,7 +21,7 @@ import se.anatom.ejbca.log.LogEntry;
 /**
  * Authenticates users towards a remote user database, using HTTP-based protocol.
  *
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.5 2002-09-12 18:14:16 herrvendil Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.6 2002-09-17 09:19:44 herrvendil Exp $
  */
 public class RemoteAuthenticationSessionBean extends BaseSessionBean {
 
@@ -72,7 +72,7 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
         // Only end users can be authenticated on remote database (so far...)
         ret.setType(SecConst.USER_ENDUSER);
         try{
-          logsession.log(admin, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"Autenticated user");       
+          logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"Autenticated user");       
         }catch(RemoteException re){
            throw new EJBException(re);                
         }          

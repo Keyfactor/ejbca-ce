@@ -9,7 +9,7 @@ import java.util.Date;
 
 /** Implements a log device using Log4j, implementes the Singleton pattern.
  *
- * @version $Id: Log4jLogDevice.java,v 1.1 2002-09-12 17:12:13 herrvendil Exp $
+ * @version $Id: Log4jLogDevice.java,v 1.2 2002-09-17 09:19:46 herrvendil Exp $
  */
 
 public class Log4jLogDevice implements ILogDevice, java.io.Serializable {
@@ -47,7 +47,7 @@ public class Log4jLogDevice implements ILogDevice, java.io.Serializable {
      * @see se.anatom.ejbca.log.ILogDevice
      */
     
-    public void log(Admin admininfo, Date time, String username, X509Certificate certificate, int event, String comment){
+    public void log(Admin admininfo, int module, Date time, String username, X509Certificate certificate, int event, String comment){
        String user  = "No User Involved";
        String cert  = "No Certificate Involved";       
        String admin = "Administrator not known";
@@ -73,12 +73,12 @@ public class Log4jLogDevice implements ILogDevice, java.io.Serializable {
                
        if(event < LogEntry.EVENT_ERROR_BOUNDRARY){
          // Do Log4j Informational logging.             
-         cat.info(time.toGMTString() + ", " + LogEntry.EVENTNAMES_INFO[event] + ", Administrator : " + 
+         cat.info(time.toGMTString() + ", " + LogEntry.MODULETEXTS[module] +  ", " + LogEntry.EVENTNAMES_INFO[event] + ", Administrator : " + 
                   admin + ", User : " + user + ", Certificate : " + cert + ", Comment : " + comment);  
        }
        else{
          // Do Log4j error logging.   
-         cat.error(time.toGMTString() + ", " + LogEntry.EVENTNAMES_ERROR[event - LogEntry.EVENT_ERROR_BOUNDRARY] + ", Administrator : " + 
+         cat.error(time.toGMTString() + ", " + LogEntry.MODULETEXTS[module] + ", " + LogEntry.EVENTNAMES_ERROR[event - LogEntry.EVENT_ERROR_BOUNDRARY] + ", Administrator : " + 
                    admin + ", User : " + user + ", Certificate : " + cert + ", Comment : " + comment);  
        }    
     }

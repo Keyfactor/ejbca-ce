@@ -27,16 +27,17 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
     public static final int ADMINTYPE         = 1;
     public static final int ADMINDATA         = 2;
     public static final int ADMINCERTDN       = 3;
-    public static final int USERNAME          = 4;
-    public static final int CERTIFICATE       = 5;
-    public static final int CERTIFICATEDN     = 6;
-    public static final int EVENT             = 7;
-    public static final int COMMENT           = 8;
+    public static final int MODULE            = 4;
+    public static final int USERNAME          = 5;
+    public static final int CERTIFICATE       = 6;
+    public static final int CERTIFICATEDN     = 7;
+    public static final int EVENT             = 8;
+    public static final int COMMENT           = 9;
    
     public static final String TRUE = "T";
     public static final String FALSE = "F";
     
-    public static final int NUMBEROF_FIELDS=9;
+    public static final int NUMBEROF_FIELDS=10;
 
     
     /** Creates a new instance of UserView */
@@ -102,6 +103,7 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
           }  
        }
             
+       
        logentrydata[USERNAME] = logentry.getUsername();
        if(logentrydata[USERNAME] != null && logentrydata[USERNAME].trim().equals(""))
          logentrydata[USERNAME] = null;  
@@ -141,7 +143,7 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
             break;  
           case SortBy.ADMINDATA : 
             returnvalue = logentrydata[ADMINDATA].compareTo(((LogEntryView) obj).getValue(ADMINDATA));            
-            break;  
+            break;             
           case SortBy.CERTIFICATE : 
             returnvalue = logentrydata[CERTIFICATE].compareTo(((LogEntryView) obj).getValue(CERTIFICATE));            
             break;  

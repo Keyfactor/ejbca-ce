@@ -26,7 +26,7 @@ import se.anatom.ejbca.util.query.*;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalLogSessionBean.java,v 1.1 2002-09-12 17:12:13 herrvendil Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.2 2002-09-17 09:19:46 herrvendil Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean  {
 
@@ -55,7 +55,7 @@ public class LocalLogSessionBean extends BaseSessionBean  {
     private static final int LOGCONFIGURATION_ID = 0; 
     
     /** Columns in the database used in select */
-    private final String LOGENTRYDATA_COL = "adminType, adminData, time, username, certificateSNR, event, comment";    
+    private final String LOGENTRYDATA_COL = "adminType, adminData, module, time, username, certificateSNR, event, comment";    
     
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -124,24 +124,24 @@ public class LocalLogSessionBean extends BaseSessionBean  {
      * @param event id of the event, should be one of the se.anatom.ejbca.log.LogEntry.EVENT_ constants.
      * @param comment comment of the event.
      */
-    public void log(Admin admin, Date time, String username, X509Certificate certificate, int event, String comment){
+    public void log(Admin admin, int module,  Date time, String username, X509Certificate certificate, int event, String comment){
       try{               
         // Get logging configuration  
         if(logconfiguration.logEvent(event)){
           if(logconfiguration.useLogDB()){
              // Log to the local database.
              if(certificate != null)                      
-               logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(),time, username,
+               logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), module, time, username,
                                    certificate.getSerialNumber().toString(16), event, comment); 
              else 
-               logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(),time, username,
+               logentryhome.create(logconfigurationdata.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), module, time, username,
                                    null, event, comment);               
           }    
           if(logconfiguration.useExternalLogDevices()){
             // Log to external devices. I.e Log4j etc 
             Iterator i = logdevices.iterator();
             while(i.hasNext()){
-               ((ILogDevice) i.next()).log(admin, time, username, certificate, event, comment);   
+               ((ILogDevice) i.next()).log(admin, module,  time, username, certificate, event, comment);   
             }              
           }
         } 
@@ -177,8 +177,8 @@ public class LocalLogSessionBean extends BaseSessionBean  {
             rs = ps.executeQuery();
             // Assemble result.            
             while(rs.next() && returnval.size() <= MAXIMUM_QUERY_ROWCOUNT){
-              LogEntry data = new LogEntry(rs.getInt(1), rs.getString(2), new java.util.Date(rs.getLong(3)), rs.getString(4), rs.getString(5)
-                                               , rs.getInt(6), rs.getString(7));   
+              LogEntry data = new LogEntry(rs.getInt(1), rs.getString(2), rs.getInt(1),  new java.util.Date(rs.getLong(4)), rs.getString(5), rs.getString(6)
+                                               , rs.getInt(7), rs.getString(8));   
               returnval.add(data); 
             }
             debug("<query()");  
@@ -229,13 +229,13 @@ public class LocalLogSessionBean extends BaseSessionBean  {
       try{  
         try{
           (logconfigurationhome.findByPrimaryKey(new Integer(LOGCONFIGURATION_ID))).saveLogConfiguration(logconfiguration);
-          log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITLOGCONFIGURATION,"");            
+          log(admin, LogEntry.MODULE_LOG, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITLOGCONFIGURATION,"");            
         }catch(FinderException e){          
            logconfigurationhome.create(new Integer(LOGCONFIGURATION_ID),logconfiguration);
-           log(admin, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITLOGCONFIGURATION,"");             
+           log(admin, LogEntry.MODULE_LOG, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITLOGCONFIGURATION,"");             
         }
       }catch(Exception e){
-            log(admin, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITLOGCONFIGURATION,"");  
+            log(admin, LogEntry.MODULE_LOG, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITLOGCONFIGURATION,"");  
          throw new EJBException(e);   
       }
     } // saveLogConfiguration
