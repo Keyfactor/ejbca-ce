@@ -27,6 +27,7 @@ Changed error message when unlimithed strengh policy files not installed during 
 Handle double type encoding in install.en.properties for other languages.
 Tested with JBoss 4.0.1.
 Support for PostgreSQL 8.0 on JBoss 4.
+Fix for 'rule' column name in config for MS SQL server 2000.
 
 3.0.4
 -----

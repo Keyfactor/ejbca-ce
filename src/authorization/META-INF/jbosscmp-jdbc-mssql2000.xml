@@ -7,4 +7,14 @@
     <datasource-mapping>MS SQLSERVER2000</datasource-mapping>
 </defaults>
 
+  <enterprise-beans>
+    <entity>
+      <ejb-name>AccessRulesData</ejb-name>
+      <cmp-field>
+        <field-name>rule</field-name>
+        <column-name>rule_</column-name>
+      </cmp-field>
+    </entity>
+  </enterprise-beans> 
+    
 </jbosscmp-jdbc>
