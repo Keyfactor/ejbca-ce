@@ -31,6 +31,7 @@ public class AvailableDirectories {
     public AvailableDirectories(GlobalConfiguration globalconfiguration) throws NamingException, CreateException, RemoteException {   
       this.profileendings=globalconfiguration.getProfileEndings();
       this.profileprefix= globalconfiguration.getProfilePrefix();
+      this.usestrongauthentication = globalconfiguration.getUseStrongAuthorization();
 
       InitialContext jndicontext = new InitialContext();     
       Object objl = jndicontext.lookup("RaAdminSession");
@@ -42,6 +43,7 @@ public class AvailableDirectories {
       IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(objl, 
                                                                        IAuthorizationSessionHome.class);
       authorizationsession = authorizationsessionhome.create();
+      authorizationsession.init(globalconfiguration);
  
     }
     // Public methods 
@@ -51,7 +53,8 @@ public class AvailableDirectories {
       String[] dummy = {};
       
       insertAvailableRules(directories);
-      insertAvailableProfileRules(directories);
+      if(usestrongauthentication) 
+        insertAvailableProfileRules(directories);
       
       Collections.sort(directories);
       return (String[]) directories.toArray(dummy);  
@@ -72,9 +75,10 @@ public class AvailableDirectories {
       
           while(i.hasNext()){
             String name = (String) i.next();
-            directories.addElement(profileprefix + "/" + name);
-            for(int j=0;j < profileendings.length; j++){
-              directories.addElement(profileprefix + "/" + name+profileendings[j]);             
+            int id = raadminsession.getProfileId(name);
+            directories.addElement(profileprefix + id);
+            for(int j=0;j < profileendings.length; j++){     
+              directories.addElement(profileprefix + id +profileendings[j]);             
             }        
           }
         }
@@ -85,4 +89,5 @@ public class AvailableDirectories {
     private String profileprefix;
     private IRaAdminSessionRemote raadminsession;
     private IAuthorizationSessionRemote authorizationsession;
+    private boolean usestrongauthentication;
 }

@@ -4,10 +4,11 @@ package se.anatom.ejbca.admin;
 import java.io.*;
 
 import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 
 /** Find details of a user in the database.
  *
- * @version $Id: RaFindUserCommand.java,v 1.1 2002-04-14 08:49:31 anatom Exp $
+ * @version $Id: RaFindUserCommand.java,v 1.2 2002-08-27 12:41:06 herrvendil Exp $
  */
 public class RaFindUserCommand extends BaseRaAdminCommand {
 
@@ -23,8 +24,9 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
                 return;
             }
             String username = args[1];
-            UserAdminData data = getAdminSession().findUser(username);
-            if (data != null) {
+            try{
+              UserAdminData data = getAdminSession().findUser(username);
+              if (data != null) {
                 System.out.println("Found user:");
                 System.out.println("username="+data.getUsername());
                 System.out.println("dn=\""+data.getDN()+"\"");
@@ -32,9 +34,12 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
                 System.out.println("status="+data.getStatus());
                 System.out.println("type="+data.getType());
                 System.out.println("password="+data.getPassword());
-            } else {
+              } else {
                 System.out.println("User '"+username+"' does not exist.");
-            }
+              }
+            }catch(AuthorizationDeniedException e){
+               System.out.println("Error : Not authorized to view user."); 
+            }  
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

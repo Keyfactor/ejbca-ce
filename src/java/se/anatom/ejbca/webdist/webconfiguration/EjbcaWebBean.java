@@ -29,7 +29,7 @@ import se.anatom.ejbca.ra.authorization.EjbcaAuthorization;
 import se.anatom.ejbca.ra.authorization.UserInformation;
 import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ra.authorization.AuthenticationFailedException;
-import se.anatom.ejbca.webdist.rainterface.DNFieldExtractor;
+import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import se.anatom.ejbca.webdist.rainterface.UserView;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.ra.raadmin.UserPreference;
@@ -38,7 +38,7 @@ import se.anatom.ejbca.ra.raadmin.UserPreference;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.11 2002-07-28 23:27:47 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.12 2002-08-27 12:41:06 herrvendil Exp $
  */
 public class EjbcaWebBean {
 
@@ -47,12 +47,6 @@ public class EjbcaWebBean {
     /** Creates a new instance of EjbcaWebBean */
     public EjbcaWebBean() throws IOException, NamingException, CreateException,
                                  FinderException, RemoteException{                           
-      globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler();
-      globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();
-      userspreferences = new UsersPreferenceDataHandler();
-      authorizedatahandler = new AuthorizationDataHandler(globalconfiguration);
-      authorize = new EjbcaAuthorization(authorizedatahandler.getUserGroups(), globalconfiguration);
-      weblanguages = new WebLanguages(globalconfiguration);
       initialized=false;
     }
 
@@ -72,9 +66,16 @@ public class EjbcaWebBean {
       if(certificates == null) throw new AuthenticationFailedException("Client certificate required.");
       // Check if certificate is still valid
       if(!initialized){
+        UserInformation userinformation = new UserInformation(certificates[0]) ;  
+        globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(userinformation);
+        globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();
+        userspreferences = new UsersPreferenceDataHandler();
+        authorizedatahandler = new AuthorizationDataHandler(globalconfiguration);
+        weblanguages = new WebLanguages(globalconfiguration);          
+          
         userdn = certificates[0].getSubjectX500Principal().toString();
 
-        authorize.authenticate(certificates[0]);
+        authorizedatahandler.authenticate(certificates[0]);
         
         // Check if user certificate is revoked
         InitialContext jndicontext = new InitialContext();
@@ -82,20 +83,14 @@ public class EjbcaWebBean {
         Object obj1 = jndicontext.lookup("UserAdminSession");
         IUserAdminSessionHome adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
         IUserAdminSessionRemote  adminsession = adminsessionhome.create();
-
+        adminsession.init(userinformation);
 
         // Check if certificate belongs to a RA Admin
         cat.debug("Verifying authoirization of '"+userdn);
-        UserAdminData userdata = adminsession.findUserBySubjectDN(userdn);
-        if(userdata != null){
-          UserView user = new UserView(userdata,null,null);
-          if(user.getValue(UserView.TYPE_RAADMIN) == null)
-            throw new  AuthorizationDeniedException("Your certificate do not belong to a RA Admin.");
-          if(user.getValue(UserView.TYPE_RAADMIN).equals(UserView.FALSE))
-            throw new  AuthorizationDeniedException("Your certificate do not belong to a RA Admin.");
-        }else{
-          throw new  AuthorizationDeniedException("Your certificate do not belong to any user.");
-        }
+        
+        // Check that user is administrator.
+        adminsession.CheckIfSubjectDNisAdmin(userdn);
+
       }
       try{
         isAuthorized(URLDecoder.decode(request.getRequestURI(),"UTF-8"));
@@ -183,8 +178,8 @@ public class EjbcaWebBean {
     /* Checks if the user have authorization to view the url */
     public boolean isAuthorized(String url) throws AuthorizationDeniedException {
       boolean returnval=false;
-      if(certificates != null){
-        returnval= authorize.isAuthorized(new UserInformation(certificates[0]),url);
+      if(certificates != null){           
+        returnval= authorizedatahandler.isAuthorized(new UserInformation(certificates[0]),url);
       }
       else{
         throw new  AuthorizationDeniedException("Client certificate required.");
@@ -385,7 +380,6 @@ public class EjbcaWebBean {
     private UserPreference currentuserpreference;
     private GlobalConfiguration globalconfiguration;
     private GlobalConfigurationDataHandler globaldataconfigurationdatahandler;
-    private EjbcaAuthorization authorize;
     private AuthorizationDataHandler authorizedatahandler;
     private WebLanguages weblanguages;
     private WebLanguages usersweblanguage;

@@ -696,7 +696,11 @@ END LDAP Publisher -->
      <method>
          <ejb-name>CertificateStoreSession</ejb-name>
          <method-name>changeCertificateType</method-name>
-     </method>                         
+     </method>  
+     <method>
+         <ejb-name>CertificateStoreSession</ejb-name>
+         <method-name>setRevokeStatus</method-name>
+     </method>                              
      <method>
          <ejb-name>CertificateData</ejb-name>
          <method-intf>Remote</method-intf>

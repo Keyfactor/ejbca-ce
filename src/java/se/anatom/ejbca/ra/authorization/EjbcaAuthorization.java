@@ -16,6 +16,8 @@ import javax.ejb.FinderException;
 import java.rmi.RemoteException;
 import javax.rmi.PortableRemoteObject;
 
+import org.ietf.ldap.LDAPDN;
+
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
@@ -37,7 +39,7 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
     public EjbcaAuthorization(UserGroup[] usergroups, GlobalConfiguration globalconfiguration) throws NamingException, CreateException, RemoteException {         
         getParameters(globalconfiguration);
         accesstree = new AccessTree(opendirectories);       
-        loadAccessData(usergroups); 
+        buildAccessTree(usergroups); 
         
         InitialContext jndicontext = new InitialContext();
         Object obj1 = jndicontext.lookup("CertificateStoreSession");
@@ -54,7 +56,14 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
     
     // Public methods.
     
-    /** EjbcaAthorization beans main method. Checks if a user have access to a specific resource. */ 
+    /**
+     * Method to check if a user is authorized to a resource
+     *
+     * @param userinformation information about the user to be authorized.
+     * @param resource the resource to look up.
+     * @returns true if authorizes
+     * @throws AuthorizationDeniedException when authorization is denied.
+     */
     public boolean isAuthorized(UserInformation userinformation, String resource) throws AuthorizationDeniedException {
         // Check in accesstree. 
        if(accesstree.isAuthorized(userinformation, resource) == false)
@@ -82,10 +91,11 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
         boolean verified = false;
         for(int i=0; i < this.cacertificatechain.length; i++){
            try{ 
-   //          if(certificate.getIssuerDN.equals(((X509Certificate) cacertificatechain[i]).getSubjectDN())){          
+//            System.out.println("EjbcaAuthorization: authenticate : Comparing : "  + certificate.getIssuerDN() + " With " + ((X509Certificate) cacertificatechain[i]).getSubjectDN());    
+//            if(LDAPDN.equals(certificate.getIssuerDN().toString(), ((X509Certificate) cacertificatechain[i]).getSubjectDN().toString())){          
                certificate.verify(cacertificatechain[i].getPublicKey());
                verified = true;
-          //   }    
+//            }    
            }catch(Exception e){}   
         }
         if(!verified)
@@ -104,7 +114,10 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
         
     }
      
-
+    /** Metod to load the access data from database. */
+    public void buildAccessTree(UserGroup[] usergroups){
+      accesstree.buildTree(usergroups, opendirectories);
+    }
     
     // Private metods 
     
@@ -116,12 +129,6 @@ public class EjbcaAuthorization extends Object implements java.io.Serializable{
                          globalconfiguration .getOpenDirectories().length);
     }
     
-
-    
-    /** Metod to load the access data from database. */
-    private void loadAccessData(UserGroup[] usergroups){
-      accesstree.buildTree(usergroups, opendirectories);
-    }
 
     // Private fields.
     

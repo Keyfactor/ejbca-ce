@@ -13,13 +13,17 @@ import se.anatom.ejbca.ca.store.certificatetypes.*;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: ICertificateStoreSessionLocal.java,v 1.5 2002-08-05 01:57:06 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionLocal.java,v 1.6 2002-08-27 12:41:06 herrvendil Exp $
  * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
  */
 public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject, IPublisherSessionLocal {
          
     public final static int FIXED_CERTIFICATETYPE_BOUNDRY = ICertificateStoreSessionRemote.FIXED_CERTIFICATETYPE_BOUNDRY;    
 
+    public final static int FIXED_ENDUSER = LocalCertificateStoreSessionBean.FIXED_ENDUSER;
+    public final static int FIXED_CA = LocalCertificateStoreSessionBean.FIXED_CA;
+    public final static int FIXED_ROOTCA = LocalCertificateStoreSessionBean.FIXED_ROOTCA; 
+    
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
@@ -50,6 +54,11 @@ public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject,
      */
     public RevokedCertInfo isRevoked(String issuerDN, BigInteger serno);
 
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */    
+    public void setRevokeStatus(String dn);
+    
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */

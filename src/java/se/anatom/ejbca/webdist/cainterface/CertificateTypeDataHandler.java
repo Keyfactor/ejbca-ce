@@ -29,11 +29,9 @@ public class CertificateTypeDataHandler implements Serializable {
 
     public static final int FIXED_CERTIFICATETYPE_BOUNDRY        = ICertificateStoreSessionRemote.FIXED_CERTIFICATETYPE_BOUNDRY;    
     /** Creates a new instance of CertificateTypeDataHandler */
-    public CertificateTypeDataHandler() throws RemoteException, NamingException, FinderException, CreateException{
-       InitialContext jndicontext = new InitialContext();
-       ICertificateStoreSessionHome certificatestoresessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("CertificateStoreSession"), 
-                                                                                 ICertificateStoreSessionHome.class);
-       certificatestoresession = certificatestoresessionhome.create();               
+    public CertificateTypeDataHandler(ICertificateStoreSessionRemote certificatesession) throws RemoteException, FinderException{
+
+       certificatestoresession = certificatesession;               
  
        Collection certificatetypenames = certificatestoresession.getCertificateTypeNames();
        

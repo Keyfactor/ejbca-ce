@@ -9,16 +9,22 @@ import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.util.query.Query;
 import se.anatom.ejbca.util.query.IllegalQueryException;
+import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
+import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillProfile;
+import se.anatom.ejbca.ra.authorization.UserInformation;
 
 /**
  *
- * @version $Id: IUserAdminSessionRemote.java,v 1.6 2002-07-28 23:27:47 herrvendil Exp $
+ * @version $Id: IUserAdminSessionRemote.java,v 1.7 2002-08-27 12:41:06 herrvendil Exp $
  */
 public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
 
     // Public constants
     public static final int MAXIMUM_QUERY_ROWCOUNT = 300; // The maximun number of rows passed back in a query.
     // Public methods
+    
+    /** Initializes the statful session bean. */
+    public void init(UserInformation userinformation) throws RemoteException;
     
    /**
     * Adds a user in the database.
@@ -33,8 +39,8 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public void addUser(String username, String password, String dn, String email, int type, int profileid, int certificatetypeid)
-      throws RemoteException;
+    public void addUser(String username, String password, String dn, String email, int type, boolean clearpwd, int profileid, int certificatetypeid)
+                         throws AuthorizationDeniedException, UserDoesntFullfillProfile, RemoteException;
     
     /**
     * Changes data for a user in the database speciefied by username.
@@ -49,8 +55,8 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @throws EJBException if a communication or other error occurs.
     */   
-    public void changeUser(String username, String dn, String email, int type, int profileid, int certificatetypeid) 
-       throws RemoteException;    
+    public void changeUser(String username,  String dn, String email, int type, int profileid, int certificatetypeid) 
+        throws AuthorizationDeniedException, UserDoesntFullfillProfile, RemoteException;    
 
    /**
     * Deletes a user from the database. The users certificates must be revoked BEFORE this method is called.
@@ -59,7 +65,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public void deleteUser(String username) throws RemoteException;
+    public void deleteUser(String username) throws AuthorizationDeniedException, RemoteException;
 
    /**
     * Changes status of a user.
@@ -69,7 +75,14 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public void setUserStatus(String username, int status) throws FinderException, RemoteException;
+    public void setUserStatus(String username, int status) throws AuthorizationDeniedException, FinderException, RemoteException;
+
+    /**
+     * Method that revokes a user.
+     *
+     * @param username, the username to revoke.
+     */    
+    public void revokeUser(String username) throws AuthorizationDeniedException,FinderException, RemoteException;    
 
    /**
     * Sets a new password for a user.
@@ -79,7 +92,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public void setPassword(String username, String password) throws FinderException, RemoteException;
+    public void setPassword(String username, String password) throws UserDoesntFullfillProfile, AuthorizationDeniedException,FinderException, RemoteException;
 
     /**
     * Sets a clear text password for a user.
@@ -89,7 +102,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     *
     * @throws EJBException if a communication or other error occurs.
     */
-    public void setClearTextPassword(String username, String password) throws FinderException, RemoteException;
+    public void setClearTextPassword(String username, String password) throws UserDoesntFullfillProfile, AuthorizationDeniedException,FinderException, RemoteException;
 
    /**
     * Finds a user.
@@ -98,7 +111,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @return UserAdminData or null if the user is not found.
     * @throws EJBException if a communication or other error occurs.
     */
-    public UserAdminData findUser(String username) throws FinderException, RemoteException;
+    public UserAdminData findUser(String username) throws FinderException, RemoteException, AuthorizationDeniedException;
     
     /**
     * Finds a user by its subjectDN.
@@ -108,7 +121,27 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     */
 
-    public UserAdminData findUserBySubjectDN(String subjectdn) throws FinderException, RemoteException;
+    public UserAdminData findUserBySubjectDN(String subjectdn) throws AuthorizationDeniedException, FinderException, RemoteException;
+    
+    /**
+    * Finds a user by its Email.
+    *
+    * @param subjectdn
+    * @return UserAdminData or null if the user is not found.
+    * @throws EJBException if a communication or other error occurs.
+    */    
+
+    public UserAdminData findUserByEmail(String email) throws AuthorizationDeniedException, RemoteException;
+    
+    /**
+    * Method that checks if user with specified userdn exists in database and is set as administrator.
+    *
+    * @param subjectdn
+    * @throws AuthorizationDeniedException if user isn't an administrator.
+    * @throws EJBException if a communication or other error occurs.
+    */    
+    
+    public void CheckIfSubjectDNisAdmin(String subjectdn) throws AuthorizationDeniedException, RemoteException;  
 
    /**
     * Finds all users with a specified status.
@@ -118,7 +151,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     * @see se.anatom.ejbca.ra.UserAdminData
     */
-    public Collection findAllUsersByStatus(int status) throws FinderException, RemoteException;
+    public Collection findAllUsersByStatus(int status) throws AuthorizationDeniedException, FinderException, RemoteException;
 
    /**
     * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
@@ -127,7 +160,7 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
     * @throws EJBException if a communication or other error occurs.
     * @see se.anatom.ejbca.ra.UserAdminData
     */    
-    public Collection findAllUsersWithLimit()  throws FinderException, RemoteException;
+    public Collection findAllUsersWithLimit()  throws  FinderException, RemoteException;
     
     /**
     * Starts an external service that may be needed bu user administration.
@@ -145,6 +178,24 @@ public interface IUserAdminSessionRemote extends javax.ejb.EJBObject {
      * @see se.anatom.ejbca.util.query.Query 
      */
      public Collection query(Query query) throws IllegalQueryException , RemoteException;    
+     
+    /** 
+     * Methods that checks if a user exists in the database having the given profileid. This function is mainly for avoiding 
+     * desyncronisation when profile is deleted.
+     *
+     * @param profileid the id of profile to look for.
+     * @return true if profileid exists in userdatabase.
+     */
+    public boolean checkForProfileId(int profileid)  throws RemoteException;        
+     
+    /** 
+     * Methods that checks if a user exists in the database having the given certificatetypeid. This function is mainly for avoiding 
+     * desyncronisation when a certificatetype is deleted.
+     *
+     * @param certificatetypeid the id of certificatetype to look for.
+     * @return true if certificatetypeid exists in userdatabase.
+     */     
+    public boolean checkForCertificateTypeId(int certificatetypeid) throws RemoteException;   
     
      // Functions used to save  Global Configuration
    /**

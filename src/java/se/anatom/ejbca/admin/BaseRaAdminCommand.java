@@ -7,10 +7,12 @@ import java.rmi.RemoteException;
 
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
+import se.anatom.ejbca.ra.authorization.UserInformation;
+import se.anatom.ejbca.ra.authorization.UserEntity;
 
 /** Base for RA commands, contains comom functions for RA operations
  *
- * @version $Id: BaseRaAdminCommand.java,v 1.3 2002-06-10 16:21:04 herrvendil Exp $
+ * @version $Id: BaseRaAdminCommand.java,v 1.4 2002-08-27 12:41:06 herrvendil Exp $
  */
 public abstract class BaseRaAdminCommand extends BaseAdminCommand {
 
@@ -38,6 +40,7 @@ public abstract class BaseRaAdminCommand extends BaseAdminCommand {
                     cacheHome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
                 }
                 cacheAdmin = cacheHome.create();
+                cacheAdmin.init(new UserInformation(UserEntity.SPECIALUSER_RACOMMANDLINEADMIN));
             }
             debug("<getAdminSession()");
             return  cacheAdmin;

@@ -29,7 +29,7 @@ import se.anatom.ejbca.util.Base64;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.22 2002-08-14 13:17:53 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.23 2002-08-27 12:41:06 herrvendil Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -307,6 +307,32 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             throw new EJBException(fe);
         }
     } // findCertificateBySerno
+    
+    /** 
+     * Set the status of certificates of given dn to revoked.
+     * @param dn the dn of user to revoke certificates.
+     */
+    public void setRevokeStatus(String dn) {
+       try{ 
+         Collection certs = findCertificatesBySubject(dn);
+          // Revoke all certs
+         if (!certs.isEmpty()) {
+           Iterator j = certs.iterator();
+           while (j.hasNext()) {
+             CertificateDataPK revpk = new CertificateDataPK();
+             revpk.fingerprint = CertTools.getFingerprintAsString((X509Certificate) j.next());
+             CertificateDataLocal rev = certHome.findByPrimaryKey(revpk);
+             if (rev.getStatus() != CertificateData.CERT_REVOKED) {
+              rev.setStatus(CertificateData.CERT_REVOKED);
+              rev.setRevocationDate(new Date());
+            }
+          }
+         }
+       }catch(FinderException e){
+          throw new EJBException(e);           
+       }
+    } // setRevokeStatus   
+    
 
     /**
      * Implements ICertificateStoreSession::isRevoked.

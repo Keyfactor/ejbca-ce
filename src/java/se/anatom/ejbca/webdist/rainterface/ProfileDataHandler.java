@@ -19,6 +19,8 @@ import java.util.TreeMap;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.ra.raadmin.Profile;
+import se.anatom.ejbca.ra.raadmin.ProfileExistsException;
+import se.anatom.ejbca.ra.raadmin.ProfileDoesntExistsException;
 /**
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
@@ -26,27 +28,14 @@ import se.anatom.ejbca.ra.raadmin.Profile;
  */
 public class ProfileDataHandler {
 
-    public static final String EMPTY_PROFILE        = "EMPTY";    
+    public static final String EMPTY_PROFILE        = IRaAdminSessionRemote.EMPTY_PROFILE;    
     /** Creates a new instance of ProfileDataHandler */
     public ProfileDataHandler() throws   RemoteException, NamingException, FinderException, CreateException{
        InitialContext jndicontext = new InitialContext();
        IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"), 
                                                                                  IRaAdminSessionHome.class);
        raadminsession = raadminsessionhome.create();               
- 
-       Collection profilenames = raadminsession.getProfileNames();
-       
-       boolean exists = false;
-       if(profilenames!=null){       
-         Iterator i = profilenames.iterator();      
-         while(i.hasNext()){
-           if(((String) i.next()).equals(EMPTY_PROFILE)){
-             exists=true;   
-           }
-         }
-       }
-       if(!exists)
-           raadminsession.addProfile(EMPTY_PROFILE,new Profile());             
+          
     }
         
        /** Method to add a profile. Throws ProfileExitsException if profile already exists  */
@@ -77,7 +66,12 @@ public class ProfileDataHandler {
     public Profile getProfile(String name) throws RemoteException {
         return raadminsession.getProfile(name);
     }  
-        
+    
+      /** Method to get a reference to a profile.*/ 
+    public Profile getProfile(int id) throws RemoteException {
+        return raadminsession.getProfile(id);
+    }      
+          
     /** Returns the number of profiles i database. */
     public int getNumberOfProfiles() throws RemoteException {
       return raadminsession.getNumberOfProfiles();

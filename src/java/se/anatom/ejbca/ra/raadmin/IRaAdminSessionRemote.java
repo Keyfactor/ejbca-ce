@@ -12,9 +12,13 @@ import se.anatom.ejbca.ra.raadmin.Profile;
 
 /**
  *
- * @version $Id: IRaAdminSessionRemote.java,v 1.4 2002-07-20 18:40:08 herrvendil Exp $
+ * @version $Id: IRaAdminSessionRemote.java,v 1.5 2002-08-27 12:41:07 herrvendil Exp $
  */
 public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
+    
+    public final static String EMPTY_PROFILE = LocalRaAdminSessionBean.EMPTY_PROFILE;
+    public final static int EMPTY_PROFILEID  = LocalRaAdminSessionBean.EMPTY_PROFILEID;
+    
     
     public UserPreference getUserPreference(BigInteger serialnumber) throws RemoteException;
 
@@ -142,5 +146,14 @@ public interface IRaAdminSessionRemote extends javax.ejb.EJBObject {
        * @throws EJBException if a communication or other error occurs.
        */    
     public String getProfileName(int id) throws RemoteException;    
+    
+     /** 
+     * Method to check if a certificatetype exists in any of the profiles. Used to avoid desyncronization of profile data.
+     *
+     * @param certificatetypeid the certificatetype id to search for.
+     * @return true if certificatetype exists in any of the accessrules.
+     */
+    
+    public boolean existsCertificateTypeInProfiles(int certificatetypeid) throws RemoteException;
 }
 

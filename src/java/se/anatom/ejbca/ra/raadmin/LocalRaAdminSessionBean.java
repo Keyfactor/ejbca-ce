@@ -18,6 +18,7 @@ import javax.rmi.*;
 import javax.ejb.*;
 
 import org.apache.log4j.*;
+import RegularExpression.RE;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ra.GlobalConfiguration;
@@ -28,7 +29,7 @@ import se.anatom.ejbca.ra.raadmin.Profile;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.10 2002-07-22 22:58:42 herrvendil Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.11 2002-08-27 12:41:07 herrvendil Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
@@ -46,6 +47,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
      */
+    public final static String EMPTY_PROFILE   = "EMPTY"; 
+    public final static int    EMPTY_PROFILEID = 1;
+    
     public void ejbCreate() throws CreateException {
         debug(">ejbCreate()");
         dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
@@ -54,6 +58,14 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         userpreferenceshome = (UserPreferencesDataLocalHome)lookup("java:comp/env/ejb/UserPreferencesDataLocal", UserPreferencesDataLocalHome.class);
         profiledatahome = (ProfileDataLocalHome)lookup("java:comp/env/ejb/ProfileDataLocal", ProfileDataLocalHome.class);
         debug("<ejbCreate()");
+               
+        try{
+          profiledatahome.findByProfileName(EMPTY_PROFILE);
+        }catch(FinderException e){
+          try{  
+            profiledatahome.create(new Integer(EMPTY_PROFILEID),EMPTY_PROFILE,new Profile());
+          }catch(Exception f){}  
+        }
 
     }
 
@@ -68,9 +80,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     
 
      /**
-
      * Finds the userpreference belonging to a certificate serialnumber. Returns null if user doesn't exists.
-
      */
 
     public UserPreference getUserPreference(BigInteger serialnumber){
@@ -90,9 +100,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     } // getUserPreference
 
     /**
-
      * Adds a user preference to the database. Returns false if user already exists.
-
      */
 
     public boolean addUserPreference(BigInteger serialnumber, UserPreference userpreference){
@@ -110,9 +118,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     } // addUserPreference
 
     /**
-
      * Changes the userpreference in the database. Returns false if user doesn't exists.
-
      */
 
     public boolean changeUserPreference(BigInteger serialnumber, UserPreference userpreference){
@@ -141,9 +147,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     } // changeUserPreference
 
     /**
-
      * Checks if a userpreference exists in the database.
-
      */
 
     public boolean existsUserPreference(BigInteger serialnumber){
@@ -179,7 +183,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     } // addProfile
 
      /**
-     * Adds a profile to a group with the same content as the original profile,
+     * Adds a profile to a group with the same content as the original profile.
      */
     public boolean cloneProfile(String originalprofilename, String newprofilename){
        Profile profile = null; 
@@ -344,6 +348,33 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
       return returnval;
     } // getProfileName
     
+     /** 
+     * Method to check if a certificatetype exists in any of the profiles. Used to avoid desyncronization of profile data.
+     *
+     * @param certificatetypeid the certificatetype id to search for.
+     * @return true if certificatetype exists in any of the accessrules.
+     */
+    
+    public boolean existsCertificateTypeInProfiles(int certificatetypeid){
+      String[] availablecerttypes=null;
+      boolean exists = false;
+      try{
+        Collection result = profiledatahome.findAll();
+        Iterator i = result.iterator();
+        while(i.hasNext() && !exists){
+          availablecerttypes = new RE(Profile.SPLITCHAR, false).split(((ProfileDataLocal) i.next()).getProfile().getValue(Profile.AVAILABLECERTTYPES));
+          for(int j=0; j < availablecerttypes.length; j++){
+            if(Integer.parseInt(availablecerttypes[j]) == certificatetypeid){
+              exists=true;
+              break;
+            };
+          }
+        }
+      }catch(Exception e){}
+      
+      return exists;
+    }
+    
     // Private methods
     
     private Integer findFreeProfileId(){
@@ -352,7 +383,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
       
       while(!foundfree){
         try{  
-          if(id != 0)  
+          if(id > 1)  
             profiledatahome.findByPrimaryKey(new Integer(id));
           id++;
         }catch(FinderException e){

@@ -1,10 +1,10 @@
-<!-- Version: $Id: viewcertificate.jsp,v 1.2 2002-07-20 18:40:08 herrvendil Exp $ -->
+<!-- Version: $Id: viewcertificate.jsp,v 1.3 2002-08-27 12:41:05 herrvendil Exp $ -->
 
 <html>
 <%@page contentType="text/html"%>
 <%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.GlobalConfiguration, 
                  se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.CertificateView,
-                 javax.ejb.CreateException, java.rmi.RemoteException" %>
+                 javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.ra.authorization.AuthorizationDeniedException" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <jsp:useBean id="rabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
@@ -36,9 +36,11 @@
 %><%
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
+                                            rabean.initialize(request);
   String THIS_FILENAME            =  globalconfiguration.getRaAdminPath()  + "viewcertificate.jsp";
 
   boolean nosubjectdnparameter    = true;
+  boolean notauthorized           = true;
   CertificateView certificatedata = null;
   String certificatesubjectdn     = null;
   String username                 = null;         
@@ -54,7 +56,11 @@
     if(request.getParameter(BUTTON_VIEW_PREVIOUS) == null && request.getParameter(BUTTON_VIEW_NEXT) == null){
       // load certificates and get the one with latest expiring date.
       certificatesubjectdn = request.getParameter(SUBJECTDN_PARAMETER);
-      rabean.loadCertificates(certificatesubjectdn);
+      try{
+        rabean.loadCertificates(certificatesubjectdn);
+        notauthorized = false;
+      }catch(AuthorizationDeniedException e){
+      }
       numberofcertificates = rabean.getNumberOfCertificates();
       if(numberofcertificates > 0)
         certificatedata = rabean.getCertificate(0);
@@ -96,10 +102,14 @@
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYCERT") + "'" + SUBJECTDN_PARAMETER + "'"%></h4></div> 
   <% } 
      else{
-       if(certificatedata == null){%>
+      if(notauthorized){%>
+  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOVIEWCERT") %></h4></div> 
+  <%   } 
+       else{
+         if(certificatedata == null){%>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("CERTIFICATEDOESNTEXIST") %></h4></div> 
-    <% }
-       else{ %>
+    <%   }
+         else{ %>
 
   <form name="viewcertificate" action="<%= THIS_FILENAME %>" method="post">
      <input type="hidden" name='<%= SUBJECTDN_PARAMETER %>' value='<%=certificatesubjectdn %>'> 
@@ -284,7 +294,8 @@
      </table> 
    </form>
    <p></p>
-   <% }
+   <%   }
+      }
     }%>
 
 </body>

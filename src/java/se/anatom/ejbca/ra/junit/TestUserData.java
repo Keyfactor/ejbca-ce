@@ -17,7 +17,8 @@ import java.rmi.RemoteException;
 import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.util.*;
 import se.anatom.ejbca.SecConst;
-
+import se.anatom.ejbca.ra.authorization.UserInformation;
+import se.anatom.ejbca.ra.authorization.UserEntity;
 
 import org.apache.log4j.*;
 import junit.framework.*;
@@ -28,7 +29,7 @@ import junit.framework.*;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.7 2002-07-05 23:43:18 herrvendil Exp $
+ * @version $Id: TestUserData.java,v 1.8 2002-08-27 12:41:07 herrvendil Exp $
  */
 
 public class TestUserData extends TestCase {
@@ -195,6 +196,7 @@ public class TestUserData extends TestCase {
         Object obj1 = ctx.lookup("UserAdminSession");
         IUserAdminSessionHome adminhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
         IUserAdminSessionRemote admin = adminhome.create();
+        admin.init(new UserInformation(UserEntity.SPECIALUSER_RACOMMANDLINEADMIN));
         Collection coll = admin.findAllUsersByStatus(UserDataRemote.STATUS_NEW);
         Iterator iter = coll.iterator();
         while (iter.hasNext())

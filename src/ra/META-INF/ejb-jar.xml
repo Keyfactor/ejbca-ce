@@ -13,7 +13,7 @@
      <home>se.anatom.ejbca.ra.IUserAdminSessionHome</home>
      <remote>se.anatom.ejbca.ra.IUserAdminSessionRemote</remote>
      <ejb-class>se.anatom.ejbca.ra.LocalUserAdminSessionBean</ejb-class>
-     <session-type>Stateless</session-type>
+     <session-type>Stateful</session-type>
      <transaction-type>Container</transaction-type>
 
      <env-entry>
@@ -55,7 +55,30 @@
         <env-entry-value>server</env-entry-value>
      </env-entry>
      <!-- END Env-entries for starting an external RMI service using SSL --> 
-
+     <ejb-ref>
+        <description>The Certificate Store session bean</description>
+        <ejb-ref-name>ejb/CertificateStoreSession</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <home>se.anatom.ejbca.ca.store.ICertificateStoreSessionHome</home>
+        <remote>se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote</remote>
+        <ejb-link>CertificateStoreSession</ejb-link>
+     </ejb-ref>     
+     <ejb-local-ref>
+        <description>The Authorization session bean</description>
+        <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocal</local>
+        <ejb-link>AuthorizationSession</ejb-link>
+     </ejb-local-ref>
+     <ejb-local-ref>
+        <description>The Ra Admin session bean</description>
+        <ejb-ref-name>ejb/RaAdminSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal</local>
+        <ejb-link>RaAdminSession</ejb-link>
+     </ejb-local-ref>     
      <ejb-local-ref>
         <description>The User entity bean</description>
         <ejb-ref-name>ejb/UserDataLocal</ejb-ref-name>
@@ -83,7 +106,9 @@
          ProfileData ant UserPreferencesData
      </description>
      <ejb-name>RaAdminSession</ejb-name>
+     <local-home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome</local-home>
      <home>se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome</home>
+     <local>se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal</local>     
      <remote>se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote</remote>
      <ejb-class>se.anatom.ejbca.ra.raadmin.LocalRaAdminSessionBean</ejb-class>
      <session-type>Stateless</session-type>
@@ -129,7 +154,9 @@
          UserGroupData
      </description>
      <ejb-name>AuthorizationSession</ejb-name>
+     <local-home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocalHome</local-home>     
      <home>se.anatom.ejbca.ra.authorization.IAuthorizationSessionHome</home>
+     <local>se.anatom.ejbca.ra.authorization.IAuthorizationSessionLocal</local>
      <remote>se.anatom.ejbca.ra.authorization.IAuthorizationSessionRemote</remote>
      <ejb-class>se.anatom.ejbca.ra.authorization.LocalAuthorizationSessionBean</ejb-class>
      <session-type>Stateful</session-type>
@@ -180,39 +207,7 @@
         <local-home>se.anatom.ejbca.ra.authorization.UserEntityDataLocalHome</local-home>
         <local>se.anatom.ejbca.ra.authorization.UserEntityDataLocal</local>
         <ejb-link>UserEntityData</ejb-link>
-     </ejb-local-ref>       
-     <ejb-ref>
-        <description>The User Admin sessionbean </description>
-        <ejb-ref-name>ejb/UserAdminSession</ejb-ref-name>
-        <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.ra.IUserAdminSessionHome</home>
-        <remote>se.anatom.ejbca.ra.IUserAdminSessionRemote</remote>
-        <ejb-link>UserAdminSession</ejb-link>
-     </ejb-ref>   
-     <ejb-ref>
-        <description>The User Admin Session bean </description>
-        <ejb-ref-name>ejb/UserAdminSession</ejb-ref-name>
-        <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.ra.IUserAdminSessionHome</home>
-        <remote>se.anatom.ejbca.ra.IUserAdminSessionRemote</remote>
-        <ejb-link>UserAdminSession</ejb-link>
-     </ejb-ref>  
-     <ejb-ref>
-        <description>The Certificate Store Session bean </description>
-        <ejb-ref-name>ejb/CertificateStoreSession</ejb-ref-name>
-        <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.ca.store.ICertificateStoreSessionHome</home>
-        <remote>se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote</remote>
-        <ejb-link>CertificateStoreSession</ejb-link>
-     </ejb-ref>  
-      <ejb-ref>
-        <description>The Sign Session bean </description>
-        <ejb-ref-name>ejb/RSASignSession</ejb-ref-name>
-        <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.ca.sign.ISignSessionHome</home>
-        <remote>se.anatom.ejbca.ca.sign.ISignSessionRemote</remote>
-        <ejb-link>RSASignSession</ejb-link>
-     </ejb-ref>                    
+     </ejb-local-ref>                  
      <security-identity>
         <run-as>
             <role-name>InternalUser</role-name>
@@ -485,14 +480,30 @@
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>findUserBySubjectDN</method-name>
      </method>
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>findUserByEmail</method-name>
+     </method>     
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>CheckIfSubjectDNisAdmin</method-name>
+     </method>     
     <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>findAllUsersByStatus</method-name>
      </method>
      <method>
          <ejb-name>UserAdminSession</ejb-name>
-         <method-name>findAllUsersWithLimit()</method-name>
+         <method-name>findAllUsersWithLimit</method-name>
      </method>
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>checkForProfileId</method-name>
+     </method>
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>checkForCertificateTypeId</method-name>
+     </method>          
     <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>loadGlobalConfiguration</method-name>
@@ -533,7 +544,10 @@
          <ejb-name>RaAdminSession</ejb-name>
          <method-name>getProfileName</method-name>
      </method> 
-               
+     <method>
+         <ejb-name>RaAdminSession</ejb-name>
+         <method-name>existsCertificateTypeInProfiles</method-name>
+     </method>                
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>isAuthorized</method-name>
@@ -577,7 +591,11 @@
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>existsAvailableAccessRule</method-name>
-     </method>                          
+     </method> 
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>existsProfileInRules</method-name>
+     </method>                              
      <trans-attribute>Supports</trans-attribute> 
    </container-transaction>
     
@@ -598,6 +616,10 @@
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>setUserStatus</method-name>
      </method>
+     <method>
+         <ejb-name>UserAdminSession</ejb-name>
+         <method-name>revokeUser</method-name>
+     </method>     
      <method>
          <ejb-name>UserAdminSession</ejb-name>
          <method-name>setPassword</method-name>

@@ -18,7 +18,7 @@ function edituser(row){
     var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
     var link = "<%= EDITUSER_LINK %>?<%= USER_PARAMETER %>="+username;
-    window.open(link, 'edit_user',config='height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+    window.open(link, 'edit_user',config='height=600,width=550,scrollbars=yes,toolbar=no,resizable=1');
 }
 
 function viewcert(row){
@@ -141,6 +141,15 @@ function confirmdelete(){
 
   <% if(illegalquery){ %>
       <H4 id="alert"><div align="center"><%= ejbcawebbean.getText("INVALIDQUERY") %></div></H4>
+  <% } %>
+  <% if(notauthorizedrevokeall){ %>
+      <H4 id="alert"><div align="center"><%= ejbcawebbean.getText("ONLYAUTHORIZEDUSERSREV") %></div></H4>
+  <% } %>
+  <% if(notauthorizeddeleteall){ %>
+      <H4 id="alert"><div align="center"><%= ejbcawebbean.getText("ONLYAUTHORIZEDUSERSDEL") %></div></H4>
+  <% } %>
+  <% if(notauthorizedchangeall){ %>
+      <H4 id="alert"><div align="center"><%= ejbcawebbean.getText("ONLYAUTHORIZEDUSERSCHANG") %></div></H4>
   <% } %>
   <% if(largeresult){ %>
      <H4 id="alert"><div align="center" ><%= ejbcawebbean.getText("TOLARGERESULT")  + " " + RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT
@@ -292,9 +301,11 @@ function confirmdelete(){
                       }%></td>
       <td width="18%">
         <A  onclick='viewuser(<%= i %>)'>
-        <u><%= ejbcawebbean.getText("VIEWUSER") %></u> </A>
+        <u><%= ejbcawebbean.getText("VIEWUSER") %></u> </A> 
+        <% if(rabean.authorizedToEditUser(users[i][UserView.PROFILE]) || !globalconfiguration.getUseStrongAuthorization()){ %>
         <A  onclick='edituser(<%= i %>)'>
         <u><%= ejbcawebbean.getText("EDITUSER") %></u> </A>
+        <% } %>
         <A  onclick='viewcert(<%= i %>)'>
         <u><%= ejbcawebbean.getText("VIEWCERTIFICATE") %></u> </A>
       </td>

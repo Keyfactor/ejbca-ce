@@ -19,12 +19,13 @@ import java.security.cert.X509Certificate;
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
+import se.anatom.ejbca.ra.GlobalConfiguration;
 
 /**
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.4 2002-07-20 18:40:08 herrvendil Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.5 2002-08-27 12:41:02 herrvendil Exp $
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
@@ -36,6 +37,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     private UserGroupDataLocalHome usergrouphome = null;
     
     private EjbcaAuthorization authorization = null;
+    
+    private String profileprefix = null;
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -48,18 +51,20 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
           debug("DataSource=" + dataSource); 
           availableaccessruleshome = (AvailableAccessRulesDataLocalHome)lookup("java:comp/env/ejb/AvailableAccessRulesDataLocal");
           usergrouphome = (UserGroupDataLocalHome)lookup("java:comp/env/ejb/UserGroupDataLocal");
-          IUserAdminSessionHome useradminsessionhome = (IUserAdminSessionHome) lookup("UserAdminSession");
-          IUserAdminSessionRemote useradminsession = useradminsessionhome.create();
-          authorization = new EjbcaAuthorization(getUserGroups(), useradminsession.loadGlobalConfiguration()); 
         }catch(Exception e){
            throw new CreateException(e.getMessage());   
         }
-        
+       debug("<ejbCreate()");
+    }
+    
+    /** Initializes the statful session bean. */
+    public void init(GlobalConfiguration globalconfiguration){        
         // Check if usergroup table is empty, if so insert default superuser.
        try{
          Collection result = usergrouphome.findAll();
          if(result.size()==0){
           // Authorization table is empty, fill with default and special usergroups.
+           System.out.println("Filling in Default authorization data.");
            UserGroupDataLocal ugdl = usergrouphome.create("Default");
            ugdl.addUserEntity(UserEntity.WITH_COMMONNAME,UserEntity.TYPE_EQUALCASEINS,"Walter");
            ugdl.addAccessRule("/",AccessRule.RULE_ACCEPT,true);
@@ -79,9 +84,18 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
          }
        }catch(FinderException e){
 
+       }catch(CreateException e){
+           throw new EJBException(e.getMessage());             
        }
-       debug("<ejbCreate()");
-    }
+       
+       try{
+          authorization = new EjbcaAuthorization(getUserGroups(),globalconfiguration); 
+       }catch(NullPointerException f){
+       }catch(Exception e){
+           throw new EJBException(e.getMessage());   
+       }       
+       this.profileprefix = globalconfiguration.getProfilePrefix();
+    }    
 
     // Methods used with UserGroupData Entity Beans
     
@@ -134,8 +148,19 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
      */
     public void removeUserGroup(String usergroupname){
       try{
-        UserGroupDataLocal ugl = usergrouphome.findByPrimaryKey(usergroupname);
-        ugl.remove();
+         UserGroupDataLocal ugl = usergrouphome.findByPrimaryKey(usergroupname);          
+        // Remove groups user entities.
+         UserEntity[] userentities = ugl.getUserEntitiesAsArray();      
+         for(int i=0; i < userentities.length;i++){
+           ugl.removeUserEntity(userentities[i].getMatchWith(),userentities[i].getMatchType(), userentities[i].getMatchValue());
+         }
+        // Remove groups accessrules.  
+         AccessRule[] accessrules = ugl.getAccessRulesAsArray();          
+         for(int i=0; i < accessrules.length;i++){
+           ugl.removeAccessRule(accessrules[i].getDirectory());
+         }         
+         
+         ugl.remove();
       }catch(Exception e){}
     } // removeUserGroup
 
@@ -160,7 +185,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
           UserGroupDataLocal newugl = usergrouphome.create(newname);
           newugl.addAccessRules(accessrules);
           newugl.addUserEntities(userentities);
-          usergrouphome.remove(oldname);
+          removeUserGroup(oldname);
         }catch(Exception e){
           returnval=false;
         }
@@ -241,6 +266,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     public void addAccessRule(String usergroupname, String directory, int rule, boolean recursive){
       try{
         (usergrouphome.findByPrimaryKey(usergroupname)).addAccessRule(directory,rule,recursive);
+        authorization.buildAccessTree(getUserGroups());       
       }catch(FinderException e){}
     } // addAccessRule
 
@@ -252,6 +278,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     public void removeAccessRule(String usergroupname, String directory){
       try{
         (usergrouphome.findByPrimaryKey(usergroupname)).removeAccessRule(directory);
+        authorization.buildAccessTree(getUserGroups());
       }catch(FinderException e){}
     } // removeAccessRule
 
@@ -276,6 +303,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
       AccessRule[] returnval=null;
       try{
         returnval=(usergrouphome.findByPrimaryKey(usergroupname)).getAccessRulesAsArray();
+        authorization.buildAccessTree(getUserGroups());
       }catch(FinderException e){}
 
       return returnval;
@@ -289,6 +317,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     public void addUserEntity(String usergroupname, int matchwith, int matchtype, String matchvalue){  
       try{
         (usergrouphome.findByPrimaryKey(usergroupname)).addUserEntity(matchwith, matchtype, matchvalue);
+        authorization.buildAccessTree(getUserGroups());
       }catch(FinderException e){}
     } // addUserEntity
 
@@ -300,6 +329,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     public void removeUserEntity(String usergroupname, int matchwith, int matchtype, String matchvalue){
       try{
         (usergrouphome.findByPrimaryKey(usergroupname)).removeUserEntity(matchwith, matchtype, matchvalue);
+        authorization.buildAccessTree(getUserGroups());
       }catch(FinderException e){}
     } // removeUserEntity
 
@@ -338,7 +368,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     public void addAvailableAccessRule(String name){
         debug(">addAvailableAccessRule(name : " + name + ")");
         try {
-            AvailableAccessRulesDataLocal data= availableaccessruleshome.create(name);
+            AvailableAccessRulesDataLocal data= availableaccessruleshome.create(name);         
         }
         catch (Exception e) {
         }
@@ -439,6 +469,34 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
        return returnval;
     } // existsAvailableAccessRule
 
+    /** 
+     * Method to check if a profile exists in any profile rules. Used to avoid desyncronization of profilerules.
+     *
+     * @param profileid the profile id to search for.
+     * @return true if profile exists in any of the accessrules.
+     */
+    
+    public boolean existsProfileInRules(int profileid){
+       boolean exists = false;
+       String profilestring= this.profileprefix + Integer.toString(profileid);
+       try{
+         Collection result = usergrouphome.findAll();
+         Iterator i = result.iterator();
+         AccessRule[] accessrules = null; 
+         
+         while(i.hasNext() && !exists){
+            UserGroupDataLocal ugdl = (UserGroupDataLocal) i.next();
+            accessrules=ugdl.getAccessRulesAsArray();
+            for(int j=0; j < accessrules.length; j++){
+               exists = accessrules[j].getDirectory().startsWith(profilestring);
+               if(exists)
+                 break;  
+            }
+         }
+       } catch(FinderException e){}        
+       
+       return exists;   
+    }
 
 
 } // LocalAvailableAccessRulesDataBean

@@ -16,6 +16,7 @@ import java.security.interfaces.RSAPublicKey;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
 import se.anatom.ejbca.ca.store.certificatetypes.CertificateType;
+import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 
 
 /**

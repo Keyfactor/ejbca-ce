@@ -4,14 +4,18 @@ import java.security.cert.X509Certificate;
 
 import java.rmi.RemoteException;
 import javax.ejb.FinderException;
-
+import se.anatom.ejbca.ra.GlobalConfiguration;
 
 
 /**
  *
- * @version $Id: IAuthorizationSessionRemote.java,v 1.3 2002-07-20 18:40:08 herrvendil Exp $
+ * @version $Id: IAuthorizationSessionRemote.java,v 1.4 2002-08-27 12:41:02 herrvendil Exp $
  */
 public interface IAuthorizationSessionRemote extends javax.ejb.EJBObject {
+    
+    /** Initializes the statful session bean. */
+    public void init(GlobalConfiguration globalconfiguration)throws RemoteException;
+    
     // Methods used with AvailableAccessRulesData Entity beans.
     
     /** 
@@ -161,6 +165,15 @@ public interface IAuthorizationSessionRemote extends javax.ejb.EJBObject {
      */ 
     
     public boolean existsAvailableAccessRule(String name) throws RemoteException;
+    
+     /** 
+     * Method to check if a profile exists in any profile rules. Used to avoid desyncronization of profilerules.
+     *
+     * @param profileid the profile id to search for.
+     * @return true if profile exists in any of the accessrules.
+     */
+    
+    public boolean existsProfileInRules(int profileid) throws RemoteException;
     
 }
 

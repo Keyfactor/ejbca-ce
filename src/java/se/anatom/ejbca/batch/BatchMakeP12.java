@@ -31,6 +31,8 @@ import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.UserDataLocal;
+import se.anatom.ejbca.ra.authorization.UserInformation;
+import se.anatom.ejbca.ra.authorization.UserEntity;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.util.CertTools;
@@ -43,7 +45,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.20 2002-07-31 16:39:46 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.21 2002-08-27 12:41:07 herrvendil Exp $
  *
  */
 
@@ -289,7 +291,8 @@ public class BatchMakeP12 {
         cat.debug(">createAllWithStatus: "+status);
 
         IUserAdminSessionRemote admin = adminhome.create();
-
+        admin.init(new UserInformation(UserEntity.SPECIALUSER_RACOMMANDLINEADMIN));
+        
         Collection result = admin.findAllUsersByStatus(status);
         Iterator it = result.iterator();
         String failedusers = "";
@@ -338,6 +341,7 @@ public class BatchMakeP12 {
     public void createUser(String username) throws Exception {
         cat.debug(">createUser("+username+")");
         IUserAdminSessionRemote admin = adminhome.create();
+        admin.init(new UserInformation(UserEntity.SPECIALUSER_RACOMMANDLINEADMIN));
         UserAdminData data = admin.findUser(username);
         if ((data != null) && (data.getPassword() != null)) {
             try {

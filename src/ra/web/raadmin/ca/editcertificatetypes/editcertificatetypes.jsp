@@ -65,8 +65,10 @@
   boolean  triedtodeletefixedcertificatetype = false;
   boolean  triedtoaddfixedcertificatetype    = false;
   boolean  certificatetypeexists             = false;
+  boolean  certificatetypedeletefailed       = false;
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
+                                            cabean.initialize(request); 
 
   String THIS_FILENAME            =  globalconfiguration.getCaPath()  + "/editcertificatetypes/editcertificatetypes.jsp";
 
@@ -112,7 +114,7 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
           if(certificatetype != null){
             if(!certificatetype.trim().equals("")){
               if(!certificatetype.endsWith("(FIXED)")){ 
-                cabean.removeCertificateType(certificatetype);
+                certificatetypedeletefailed = !cabean.removeCertificateType(certificatetype);
               }else{
                 triedtodeletefixedcertificatetype=true;
               }

@@ -66,6 +66,17 @@
         <input type="text" name="<%=TEXTFIELD_OPENDIRECTORIES%>" value="<%= gc.getOpenDirectoriesAsString() %>" maxlength="150" size="70">
       </td>
     </tr>
+    <tr id="Row0"> 
+      <td width="49%" valign="top"> 
+        <h3>Use Strong Authorization</h3>
+        <h5>Check this field if you want to use strong authorization on profiles. </h5>
+      </td>
+      <td width="51%" valign="top"> 
+        <input type="checkbox" name="<%=CHECKBOX_USESTRONGAUTHORIZATION%>" value="<%=CHECKBOX_VALUE %>" 
+                                                                                          <% if(gc.getUseStrongAuthorization())
+                                                                                                out.write(" CHECKED "); %>> 
+      </td>
+    </tr>
     <tr> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top">

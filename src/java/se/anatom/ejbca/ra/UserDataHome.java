@@ -11,7 +11,7 @@ import java.util.Collection;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataHome.java,v 1.7 2002-07-28 23:27:47 herrvendil Exp $
+ * @version $Id: UserDataHome.java,v 1.8 2002-08-27 12:41:06 herrvendil Exp $
  **/
 
 public interface UserDataHome extends javax.ejb.EJBHome {
@@ -25,6 +25,10 @@ public interface UserDataHome extends javax.ejb.EJBHome {
 
     public UserDataRemote findBySubjectDN(String dn)          
         throws FinderException, RemoteException;
+    
+     public UserDataRemote findBySubjectEmail(String email)          
+        throws FinderException, RemoteException;   
+    
     /** Finds users with a specified status.
      * @param status the status of the required users
      * @return Collection of UserDataRemote in no specific order

@@ -36,6 +36,12 @@ then
   cp lib/ldap.jar $JBOSS_HOME/server/default/lib
   echo Copied ldap.jar to $JBOSS_HOME/server/default/lib. JBoss must be restared.
 fi
+if ! [ -f $JBOSS_HOME/server/default/lib/regexp1_0_0.jar ]
+then
+  cp lib/regexp1_0_0.jar $JBOSS_HOME/server/default/lib
+  echo Copied regexp1_0_0.jar to $JBOSS_HOME/server/default/lib. JBoss must be restared.
+fi
+
 
 # Deploy jar and war files
 CAEARSRC=dist/ejbca-ca.ear

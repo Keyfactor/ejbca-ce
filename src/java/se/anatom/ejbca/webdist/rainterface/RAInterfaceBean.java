@@ -22,6 +22,7 @@ import java.io.ObjectInputStream;
 import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.math.BigInteger;
 
@@ -29,6 +30,7 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
+import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.CertificateDataPK;
@@ -39,6 +41,14 @@ import se.anatom.ejbca.ra.UserDataRemote;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
 import se.anatom.ejbca.ra.raadmin.Profile;
+import se.anatom.ejbca.ra.raadmin.ProfileExistsException;
+import se.anatom.ejbca.ra.raadmin.ProfileDoesntExistsException;
+import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillProfile;
+import se.anatom.ejbca.ra.authorization.UserInformation;
+import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
+import se.anatom.ejbca.ra.authorization.ProfileAuthorizationProxy;
+import se.anatom.ejbca.ra.authorization.IAuthorizationSessionHome;
+import se.anatom.ejbca.ra.authorization.IAuthorizationSessionRemote;
 import se.anatom.ejbca.util.query.*;
 import se.anatom.ejbca.webdist.cainterface.CertificateTypeNameProxy;
 
@@ -46,7 +56,7 @@ import se.anatom.ejbca.webdist.cainterface.CertificateTypeNameProxy;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.11 2002-08-05 01:57:05 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.12 2002-08-27 12:41:05 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -57,110 +67,139 @@ public class RAInterfaceBean {
     public RAInterfaceBean() throws  IOException, NamingException, FinderException, CreateException  {  
       users = new UsersView();
       addedusermemory = new AddedUserMemory();
-      
-      this.profiles = new ProfileDataHandler();
-
-      // Get the UserAdminSession instance.
-      jndicontext = new InitialContext();
-      Object obj1 = jndicontext.lookup("UserAdminSession");
-      adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-      adminsession = adminsessionhome.create();
- 
-      obj1 = jndicontext.lookup("CertificateStoreSession");
-      certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-      certificatesession = certificatesessionhome.create();
-      
-      obj1 = jndicontext.lookup("RaAdminSession");
-      raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"), 
-                                                                                 IRaAdminSessionHome.class);
-      raadminsession = raadminsessionhome.create();           
-    
+      this.profiles = new ProfileDataHandler();    
     }
     // Public methods.
+    public void initialize(HttpServletRequest request) throws  Exception{
+
+      if(!initialized){
+        userinformation = new UserInformation(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);  
+        // Get the UserAdminSession instance.
+        jndicontext = new InitialContext();
+        Object obj1 = jndicontext.lookup("UserAdminSession");
+        adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
+        adminsession = adminsessionhome.create();
+        adminsession.init(userinformation);
+      
+        obj1 = jndicontext.lookup("RaAdminSession");
+        raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"), 
+                                                                                 IRaAdminSessionHome.class);
+        raadminsession = raadminsessionhome.create(); 
+        
+        obj1 =  jndicontext.lookup("CertificateStoreSession");   
+        certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
+        certificatesession = certificatesessionhome.create();
+        
+        obj1 = jndicontext.lookup("AuthorizationSession");
+        IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("AuthorizationSession"),
+                                                                                 IAuthorizationSessionHome.class);
+        authorizationsession = authorizationsessionhome.create();
+        authorizationsession.init(adminsession.loadGlobalConfiguration());
+        
+        profileauthproxy = new ProfileAuthorizationProxy(userinformation, authorizationsession);
+        certtypenameproxy = new CertificateTypeNameProxy();    
+        profilenameproxy = new ProfileNameProxy();  
+        initialized =true; 
+      }
+    }
 
     /* Adds a user to the database, the string array must be in format defined in class UserView. */
-    public void addUser(String[] stringuserdata) throws RemoteException, NamingException, FinderException, CreateException{
+    public void addUser(String[] stringuserdata) throws Exception{
         // lookup profileid and certificatetype id;
         if(stringuserdata[UserView.PROFILE] != null){
           if(stringuserdata[UserView.PROFILE].trim() != ""){
-            int profileid =  raadminsession.getProfileId(stringuserdata[UserView.PROFILE].trim());
-            int certificatetypeid = certificatesession.getCertificateTypeId(stringuserdata[UserView.CERTIFICATETYPE].trim());
+            int profileid =  Integer.parseInt(stringuserdata[UserView.PROFILE]);
+            int certificatetypeid = Integer.parseInt(stringuserdata[UserView.CERTIFICATETYPE]);
+            boolean clearpwd = false;
+            // if ra admin have chosen to store the password as cleartext.
+            if(stringuserdata[UserView.CLEARTEXTPASSWORD] != null && stringuserdata[UserView.CLEARTEXTPASSWORD].equals(UserView.TRUE)){
+              clearpwd = true;
+            }            
             if(profileid != 0){
-              UserView userview =  new UserView(stringuserdata,null,null,profileid,certificatetypeid );
-              addedusermemory.addUser(userview);
+              UserView userview =  new UserView(stringuserdata,null,null);
               UserAdminData user = userview.convertToUserAdminData();
               adminsession.addUser(user.getUsername(), user.getPassword(), user.getDN(), user.getEmail()
-                                   ,user.getType(),profileid, certificatetypeid);
-               // if ra admin have chosen to store the password as cleartext.
-               if(stringuserdata[UserView.CLEARTEXTPASSWORD] != null && stringuserdata[UserView.CLEARTEXTPASSWORD].equals(UserView.TRUE)){
-                 adminsession.setClearTextPassword(user.getUsername(), user.getPassword());
-               }
+                                   ,user.getType(),clearpwd,profileid, certificatetypeid);
+              addedusermemory.addUser(userview);
+
             }
           }
         }  
     }
 
-    /* Removes a number of users from the database. */
-    public void deleteUsers(String[] usernames) throws RemoteException, NamingException, CreateException{
-
+    /* Removes a number of users from the database. 
+     *
+     * @param usernames an array of usernames to delete.
+     * @return false if administrator wasn't authorized to delete all of given users.
+     * */
+    public boolean deleteUsers(String[] usernames) throws Exception{
+      boolean success = true;
       for(int i=0; i < usernames.length; i++){
-         adminsession.deleteUser(usernames[i]);
+         try{ 
+           adminsession.deleteUser(usernames[i]);
+         }catch(AuthorizationDeniedException e){
+           success = false;   
+         }
       }
+      return success;   
     }
-
-    public void setUserStatuses(String[] usernames, String status) throws RemoteException, NamingException, FinderException, CreateException{
+      
+    /* Changes the status of a number of users from the database. 
+     *
+     * @param usernames an array of usernames to change.
+     * @param status gives the status to apply to users, should be one of UserDataRemote.STATUS constants.
+     * @return false if administrator wasn't authorized to change all of the given users.
+     * */
+    public boolean setUserStatuses(String[] usernames, String status) throws Exception{
+      boolean success = true;  
       int intstatus = 0;
       try{
         intstatus = Integer.parseInt(status);
       }catch(Exception e){}
       for(int i=0; i < usernames.length; i++){
-        adminsession.setUserStatus(usernames[i],intstatus);
-      }
-    }
-
-    public void revokeUsers(String[] usernames) throws  Exception{
-
-      for(int i=0; i < usernames.length; i++){
-        UserAdminData data = adminsession.findUser(usernames[i]);
-        adminsession.setUserStatus(usernames[i], UserDataRemote.STATUS_REVOKED);
-
-
-        Collection certs = certificatesession.findCertificatesBySubject(data.getDN());
-        // Revoke all certs
-        if (!certs.isEmpty()) {
-          Iterator j = certs.iterator();
-          Object obj = jndicontext.lookup("CertificateData");
-          CertificateDataHome home = (CertificateDataHome) javax.rmi.PortableRemoteObject.narrow(obj, CertificateDataHome.class);
-          while (j.hasNext()) {
-            CertificateDataPK revpk = new CertificateDataPK();
-            revpk.fingerprint = CertTools.getFingerprintAsString((X509Certificate) j.next());
-            CertificateData rev = home.findByPrimaryKey(revpk);
-            if (rev.getStatus() != CertificateData.CERT_REVOKED) {
-              rev.setStatus(CertificateData.CERT_REVOKED);
-              rev.setRevocationDate(new Date());
-            }
-          }
+        try{  
+          adminsession.setUserStatus(usernames[i],intstatus);
+        }catch(AuthorizationDeniedException e){
+           success = false;   
         }
       }
+      return success;
+    }
+
+    /** Revokes the the given users.
+     *
+     * @param users an array of usernames to revoke.
+     * @return false if administrator wasn't authorized to revoke all of the given users.
+     */
+    public boolean revokeUsers(String[] usernames) throws  Exception{
+      boolean success = true;
+      for(int i=0; i < usernames.length; i++){
+        try{
+          adminsession.revokeUser( usernames[i]); 
+        }catch( AuthorizationDeniedException e){
+          success =false;   
+        }
+      } 
+      return success;
     }
 
     /* Changes the userdata  */
-    public void changeUserData(String[] userdata) throws RemoteException, NamingException, FinderException, CreateException {
+    public void changeUserData(String[] userdata) throws Exception {
         int profileid = UserAdminData.NO_PROFILE;
         int certificatetypeid = UserAdminData.NO_CERTIFICATETYPE;    
         // lookup profileid and certificatetype id;
         if(userdata[UserView.PROFILE] != null){
           if(userdata[UserView.PROFILE].trim() != ""){
-            profileid =  raadminsession.getProfileId(userdata[UserView.PROFILE].trim());
+             profileid =  Integer.parseInt(userdata[UserView.PROFILE]);
           }
         }
         if(userdata[UserView.CERTIFICATETYPE] != null){
           if(userdata[UserView.CERTIFICATETYPE].trim() != ""){
-             certificatetypeid = certificatesession.getCertificateTypeId(userdata[UserView.CERTIFICATETYPE].trim());
+             certificatetypeid = Integer.parseInt(userdata[UserView.CERTIFICATETYPE]);
           }
         }
         
-        UserView userview = new UserView(userdata,null,null,profileid,certificatetypeid);
+        UserView userview = new UserView(userdata,null,null);
         UserAdminData user = userview.convertToUserAdminData();
         addedusermemory.changeUser(userview);
         adminsession.changeUser(user.getUsername(),  user.getDN(), user.getEmail(),user.getType(), profileid, certificatetypeid);
@@ -178,8 +217,12 @@ public class RAInterfaceBean {
     /* Method to filter out a user by it's username */
     public String[][] filterByUsername(String username) throws RemoteException, NamingException, FinderException, CreateException{
        UserAdminData[] userarray = new UserAdminData[1];
-       UserAdminData user = adminsession.findUser(username);
-
+       UserAdminData user = null;
+       try{
+         user = adminsession.findUser(username);
+       }catch(AuthorizationDeniedException e){  
+       }
+         
        if(user != null){
          userarray[0]=user;
          users.setUsers(userarray);
@@ -192,18 +235,34 @@ public class RAInterfaceBean {
 
     /* Method used to check if user exists */
     public boolean userExist(String username) throws RemoteException, NamingException, FinderException, CreateException{
-      return adminsession.findUser(username) != null;
+       UserAdminData user =null;
+       try{
+         user = adminsession.findUser(username);
+       }catch(AuthorizationDeniedException e){  
+       }        
+        
+      return user != null;
     }
 
-    /* Method to retrieve a user from the database without inserting it into users data, used by 'viewuser.jsp' and 'edituser.jsp' pages*/
-    public UserView findUser(String username) throws RemoteException, NamingException, FinderException, CreateException{
+    /* Method to retrieve a user from the database without inserting it into users data, used by 'viewuser.jsp' and page*/
+    public UserView findUser(String username) throws RemoteException, NamingException, FinderException, CreateException, AuthorizationDeniedException{
 
        UserAdminData user = adminsession.findUser(username);
-       UserView userview = new UserView(user,raadminsession.getProfileName(user.getProfileId()), "NO_CERTIFICATE_TYPE"); // TEMPORATE
+       UserView userview = new UserView(user); 
        return userview;
 
-    }
+    } 
+    /* Method to retrieve a user from the database without inserting it into users data, used by 'edituser.jsp' and page*/
+    public UserView findUserForEdit(String username) throws RemoteException, NamingException, FinderException, CreateException, AuthorizationDeniedException{
 
+       UserAdminData user = adminsession.findUser(username);
+       if(!profileauthproxy.getProfileAuthorization(user.getProfileId(),ProfileAuthorizationProxy.EDIT_RIGHTS))     
+         throw new AuthorizationDeniedException("Not Authorized to edit user.");
+       
+       UserView userview = new UserView(user); 
+       return userview;
+
+    } 
     
     /* Method to find all users in database */
     public String[][] findAllUsers(int index,int size) throws RemoteException,FinderException,NamingException,
@@ -228,7 +287,12 @@ public class RAInterfaceBean {
       if(certs != null){
         Iterator iter = certs.iterator();
         while(iter.hasNext()){
-           UserAdminData user = adminsession.findUserBySubjectDN(((X509Certificate) iter.next()).getSubjectDN().toString());
+           UserAdminData user = null; 
+           try{ 
+             user = adminsession.findUserBySubjectDN(((X509Certificate) iter.next()).getSubjectDN().toString());
+           }catch(AuthorizationDeniedException e){  
+             user=null;
+           }     
            if(user != null){
              uservector.addElement(user);
            }
@@ -252,14 +316,19 @@ public class RAInterfaceBean {
 
       long d = Long.parseLong(days);
       Date finddate = new Date();
-      long millis = (d * 24 * 60 * 60 * 1000);
+      long millis = (d * 86400000); // One day in milliseconds.
       finddate.setTime(finddate.getTime() + (long)millis);
 
       Collection certs =certificatesession.findCertificatesByExpireTime(finddate);
       if(!certs.isEmpty()){
         Iterator i = certs.iterator();
         while(i.hasNext() && uservector.size() <= MAXIMUM_QUERY_ROWCOUNT ){
-           UserAdminData user = adminsession.findUserBySubjectDN(((X509Certificate) i.next()).getSubjectDN().toString());
+           UserAdminData user = null;
+           try{
+             user = adminsession.findUserBySubjectDN(((X509Certificate) i.next()).getSubjectDN().toString());
+           }catch(AuthorizationDeniedException e){  
+             user=null;
+           }  
            if(user != null && addedusers.get(user.getUsername()) == null){
              addedusers.put(user.getUsername() ,new Boolean(true));  
              uservector.addElement(user);
@@ -315,6 +384,37 @@ public class RAInterfaceBean {
       return profiles.getProfileNames();
     }
     
+    /** Returns the profile name from id proxied */
+    public String getProfileName(int profileid) throws RemoteException{
+      return profilenameproxy.getProfileName(profileid);
+    }
+    
+    public String[] getCreateAuthorizedProfileNames() throws RemoteException{
+      Vector result = new Vector();
+      String[] profilenames =  profiles.getProfileNames();
+      String[] dummy = {};
+      for(int i =0; i< profilenames.length; i++){
+        if(profileauthproxy.getProfileAuthorization(profiles.getProfileId(profilenames[i]),ProfileAuthorizationProxy.CREATE_RIGHTS)){
+          result.add(profilenames[i]);   
+        }
+      }
+     
+      return (String[]) result.toArray(dummy);
+    }    
+    
+    public String[] getEditAuthorizedProfileNames() throws RemoteException{
+      Vector result = new Vector();
+      String[] profilenames =  profiles.getProfileNames();
+      String[] dummy = {};
+      for(int i =0; i< profilenames.length; i++){
+        if(profileauthproxy.getProfileAuthorization(profiles.getProfileId(profilenames[i]),ProfileAuthorizationProxy.EDIT_RIGHTS)){
+          result.add(profilenames[i]);   
+        }
+      }
+     
+      return (String[]) result.toArray(dummy);
+    }        
+    
     public int getProfileId(String profilename) throws RemoteException{
       return profiles.getProfileId(profilename);   
     }
@@ -327,11 +427,19 @@ public class RAInterfaceBean {
     public Profile getProfile(String name) throws RemoteException{
       return profiles.getProfile(name);
     }
+    
+    public Profile getProfile(int id) throws RemoteException{
+      return profiles.getProfile(id);
+    }
 
     public String[][] getProfileAsString(String name) throws RemoteException{
       return profiles.getProfile(name).getAllValues();
     }
-
+    
+    public String[][] getProfileAsString(int id) throws RemoteException{
+      return profiles.getProfile(id).getAllValues();
+    }
+    
     public void addProfile(String name) throws ProfileExistsException, RemoteException{
        profiles.addProfile(name, new Profile());
     }
@@ -344,8 +452,20 @@ public class RAInterfaceBean {
        profiles.changeProfile(name, profile);
     }
 
-    public void removeProfile(String name)throws RemoteException{
-        profiles.removeProfile(name);
+    /* Returns false if profile is used by any user or in authorization rules. */
+    public boolean removeProfile(String name)throws RemoteException{
+        boolean profileused = false;
+        int profileid = raadminsession.getProfileId(name);
+        // Check if any users or authorization rule use the profile.
+
+        profileused = adminsession.checkForProfileId(profileid) 
+                      || authorizationsession.existsProfileInRules(profileid); 
+
+        if(!profileused){
+          profiles.removeProfile(name);
+        }
+        
+        return !profileused;
     }
 
     public void renameProfile(String oldname, String newname) throws ProfileExistsException, RemoteException{
@@ -356,22 +476,16 @@ public class RAInterfaceBean {
       profiles.cloneProfile(originalname, newname);
     }
 
-    public String[][] getLastProfileAsString(String lastprofilename) throws RemoteException{
-      return profiles.getLastProfileAsString(lastprofilename);
-    }
-
-    public Profile getLastProfile(String lastprofilename) throws RemoteException{
-      return profiles.getLastProfile(lastprofilename);
-    }
-
-    public void loadCertificates(String subjectdn) throws RemoteException, NamingException, CreateException{
+    public void loadCertificates(String subjectdn) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
       if(certificatesession == null){
         Object obj1 = jndicontext.lookup("CertificateStoreSession");
         certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
         certificatesession = certificatesessionhome.create();
       }
       Collection certs = certificatesession.findCertificatesBySubject(subjectdn);
-
+      
+      UserAdminData user = adminsession.findUserBySubjectDN(subjectdn);
+      
       if(!certs.isEmpty()){
         Iterator j = certs.iterator();
         certificates = new CertificateView[certs.size()];
@@ -408,13 +522,24 @@ public class RAInterfaceBean {
       return returnval;
     }
     
+    public boolean authorizedToEditUser(String profileid) throws RemoteException{
+      return profileauthproxy.getProfileAuthorization(Integer.parseInt(profileid), ProfileAuthorizationProxy.EDIT_RIGHTS);
+    }
+    
     public String[] getCertificateTypeNames() throws RemoteException{
       String[] dummy = {""};
-      return (String[]) certificatesession.getCertificateTypeNames().toArray(dummy); 
+      Collection certtypenames = certificatesession.getCertificateTypeNames();
+      if(certtypenames == null)
+        return new String[0];
+      else        
+        return (String[]) certtypenames.toArray(dummy); 
     }
     
     public int getCertificateTypeId(String certificatetypename) throws RemoteException{
       return certificatesession.getCertificateTypeId(certificatetypename); 
+    }
+    public String getCertificateTypeName(int certificatetypeid) throws RemoteException{
+      return certtypenameproxy.getCertificateTypeName(certificatetypeid); 
     }
    
     // Private methods.
@@ -429,9 +554,15 @@ public class RAInterfaceBean {
     private ICertificateStoreSessionRemote certificatesession;
     private ICertificateStoreSessionHome   certificatesessionhome;
     private IRaAdminSessionHome            raadminsessionhome;    
-    private IRaAdminSessionRemote          raadminsession;    
+    private IRaAdminSessionRemote          raadminsession;  
+    private IAuthorizationSessionRemote    authorizationsession;
 
     private UsersView                      users;
     private CertificateView[]              certificates;
     private AddedUserMemory                addedusermemory;
+    private UserInformation                userinformation;
+    private ProfileAuthorizationProxy      profileauthproxy;
+    private CertificateTypeNameProxy       certtypenameproxy;  
+    private ProfileNameProxy               profilenameproxy;
+    private boolean initialized=false;
 }

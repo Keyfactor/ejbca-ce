@@ -12,7 +12,7 @@ import se.anatom.ejbca.ra.raadmin.Profile;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: IRaAdminSessionLocal.java,v 1.4 2002-07-22 10:38:48 anatom Exp $
+ * @version $Id: IRaAdminSessionLocal.java,v 1.5 2002-08-27 12:41:07 herrvendil Exp $
  * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
  */
 
@@ -20,6 +20,9 @@ public interface IRaAdminSessionLocal extends javax.ejb.EJBLocalObject
 
 {
 
+    public final static String EMPTY_PROFILE = LocalRaAdminSessionBean.EMPTY_PROFILE;
+    public final static int EMPTY_PROFILEID  = LocalRaAdminSessionBean.EMPTY_PROFILEID;    
+    
     public UserPreference getUserPreference(BigInteger serialnumber);
 
     /**
@@ -105,6 +108,12 @@ public interface IRaAdminSessionLocal extends javax.ejb.EJBLocalObject
      * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
      */
     public String getProfileName(int id);
+    
+     /**
+     * @see se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote
+     */
+    
+    public boolean existsCertificateTypeInProfiles(int certificatetypeid);    
 
 }
 

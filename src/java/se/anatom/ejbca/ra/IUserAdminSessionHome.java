@@ -6,8 +6,9 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
 
 
+
 /**
- * @version $Id: IUserAdminSessionHome.java,v 1.3 2002-06-27 11:00:25 anatom Exp $
+ * @version $Id: IUserAdminSessionHome.java,v 1.4 2002-08-27 12:41:06 herrvendil Exp $
  */
 public interface IUserAdminSessionHome extends EJBHome {
 

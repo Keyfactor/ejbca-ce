@@ -25,7 +25,7 @@ import org.apache.log4j.*;
  * Userentities
  * </pre>
  *
- * @version $Id: UserGroupDataBean.java,v 1.2 2002-07-23 16:02:58 anatom Exp $
+ * @version $Id: UserGroupDataBean.java,v 1.3 2002-08-27 12:41:02 herrvendil Exp $
  **/
 
 public abstract class UserGroupDataBean implements javax.ejb.EntityBean {
@@ -63,7 +63,8 @@ public abstract class UserGroupDataBean implements javax.ejb.EntityBean {
          }
        }
        getAccessRules().add(data);
-     }catch(Exception e){}
+     }catch(Exception e){    
+     }
    } // addAccessRule
 
     public void addAccessRules(AccessRule[] accessrules){
@@ -295,7 +296,7 @@ public abstract class UserGroupDataBean implements javax.ejb.EntityBean {
     }
 
     public void ejbRemove() {
-
+       
     }
 
     // Private Methods.

@@ -10,6 +10,7 @@ import java.util.Iterator;
 
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.UserDataLocal;
+import se.anatom.ejbca.ra.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.CertificateDataPK;
@@ -20,7 +21,7 @@ import se.anatom.ejbca.util.Hex;
 
 /** Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaRevokeUserCommand.java,v 1.6 2002-08-16 19:56:22 anatom Exp $
+ * @version $Id: RaRevokeUserCommand.java,v 1.7 2002-08-27 12:41:06 herrvendil Exp $
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
 
@@ -48,23 +49,12 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
             getAdminSession().setUserStatus(username, UserDataLocal.STATUS_REVOKED);
             System.out.println("New status="+UserDataLocal.STATUS_REVOKED);
 
-            Object obj2 = getInitialContext().lookup("CertificateStoreSession");
-            ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
-            ICertificateStoreSessionRemote store = storehome.create();
-            // Revoke all certs
-            Object obj = getInitialContext().lookup("CertificateData");
-            CertificateDataHome home = (CertificateDataHome) javax.rmi.PortableRemoteObject.narrow(obj, CertificateDataHome.class);
-            Collection certs = home.findBySubjectDN(data.getDN());
-            Iterator iter = certs.iterator();
-            while (iter.hasNext()) {
-                CertificateData rev = (CertificateData)iter.next();
-                if (rev.getStatus() != CertificateData.CERT_REVOKED) {
-                    rev.setStatus(CertificateData.CERT_REVOKED);
-                    rev.setRevocationDate(new Date());
-                    rev.setRevocationReason(reason);
-                    System.out.println("Revoked cert with serialNumber "+Hex.encode(((X509Certificate)rev.getCertificate()).getSerialNumber().toByteArray()));
-                }
-            }
+            // Revoke users certificates
+            try{
+             getAdminSession().revokeUser(username);
+            }catch(AuthorizationDeniedException e){
+              System.out.println("Error : Not authorized to revoke user.");                             
+            }           
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

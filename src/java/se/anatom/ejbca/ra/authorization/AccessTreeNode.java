@@ -15,7 +15,7 @@ import org.apache.log4j.*;
  * The building component of the AccessTree. All nodes consist of these objects.
  *
  * @author  Philip Vendil
- * @version $Id: AccessTreeNode.java,v 1.3 2002-07-20 18:40:08 herrvendil Exp $
+ * @version $Id: AccessTreeNode.java,v 1.4 2002-08-27 12:41:02 herrvendil Exp $
  */
 
 public class AccessTreeNode implements Serializable{
@@ -136,6 +136,7 @@ public class AccessTreeNode implements Serializable{
        String matchname;
 
        internalstate = matchInformation(userinformation);
+       
        if(resource.matches(this.name)) {
          // If this directory have state open or accept recursive state is given
          if(this.open || state == STATE_ACCEPT_RECURSIVE || internalstate == STATE_ACCEPT || internalstate == STATE_ACCEPT_RECURSIVE ){
@@ -196,7 +197,7 @@ public class AccessTreeNode implements Serializable{
     }
 
        private int matchInformation(UserInformation userinformation){
-          cat.debug(">matchCertificate");
+          cat.debug(">matchInformation");
           final int ACCESSRULE = 0;
           final int USERGROUP  = 1;
 
@@ -229,7 +230,7 @@ public class AccessTreeNode implements Serializable{
               }
             }
           }
-          cat.debug("<matchCertificate: returns " + state );
+          cat.debug("<matchInformation: returns " + state );
           return state;
        }
 

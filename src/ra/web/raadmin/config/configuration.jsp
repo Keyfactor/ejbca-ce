@@ -25,12 +25,16 @@
   static final String TEXTFIELD_FOOTBANNER                   = "textfieldfootbanner";
   static final String TEXTFIELD_OPENDIRECTORIES              = "textfieldopendirectories";
 
+  static final String CHECKBOX_USESTRONGAUTHORIZATION        = "checkboxusestrongauthorization";
+
 // Lists used in defaultuserprefereces.jsp
   static final String LIST_PREFEREDLANGUAGE                  = "listpreferedlanguage";
   static final String LIST_SECONDARYLANGUAGE                 = "listsecondarylanguage";
   static final String LIST_THEME                             = "listtheme";
   static final String LIST_ENTIESPERPAGE                     = "listentriesperpage";
 
+
+  static final String CHECKBOX_VALUE             = "true";
 %> 
 <% 
   // Initialize environment.
@@ -91,6 +95,12 @@
        if(request.getParameter(TEXTFIELD_OPENDIRECTORIES) != null){
          String opendirectories = request.getParameter(TEXTFIELD_OPENDIRECTORIES); 
          gc.setOpenDirectories(opendirectories);
+       }
+       if(request.getParameter(CHECKBOX_USESTRONGAUTHORIZATION) != null){
+         gc.setUseStrongAuthorization(request.getParameter(CHECKBOX_USESTRONGAUTHORIZATION).equals(CHECKBOX_VALUE));
+       }
+       else{
+         gc.setUseStrongAuthorization(false);
        }
 
 %>  

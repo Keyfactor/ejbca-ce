@@ -9,7 +9,7 @@ import java.security.cert.X509Certificate;
 import javax.security.auth.x500.X500Principal;
 import java.io.Serializable;
 
-import se.anatom.ejbca.webdist.rainterface.DNFieldExtractor;
+import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 /**
  * A class representing a user entity. It can be set to match one users dn or an entire organization by matching against ou.
  * The class main method is match() wicth takes a X509Certificate and tries to see if it fullfills set matching requirements.
@@ -18,13 +18,14 @@ import se.anatom.ejbca.webdist.rainterface.DNFieldExtractor;
  * Matchtype constants tells under which contitions the match shall be performed.
  *
  * @author  Philip Vendil
- * @version $Id: UserEntity.java,v 1.3 2002-07-20 18:40:08 herrvendil Exp $
+ * @version $Id: UserEntity.java,v 1.4 2002-08-27 12:41:02 herrvendil Exp $
  */
 public class UserEntity implements Serializable, Comparable {
-    // Special Users. (Constants cannot have 0 value.
+    // Special Users. (Constants cannot have 0 value).
     public static final int SPECIALUSER_COMMONWEBUSER             = 2000;
     public static final int SPECIALUSER_CACOMMANDLINEADMIN        = 2001;
     public static final int SPECIALUSER_RACOMMANDLINEADMIN        = 2002;
+    public static final int SPECIALUSER_NOUSER                    = 2003;   
     
     // Match type constants.
     public static final int TYPE_EQUALCASE        = 1000;
@@ -55,6 +56,7 @@ public class UserEntity implements Serializable, Comparable {
     
     public UserEntity(int specialuser){
       this.matchtype=specialuser;
+      this.matchwith=WITH_SERIALNUMBER;
     }  
 
     // Public methods.

@@ -197,12 +197,10 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
     </copy>
     <copy todir="${ra.build}">
         <fileset dir="${build}">
-                <include name="se/anatom/ejbca/ra/**/*.class"/>      
-                <include name="se/anatom/ejbca/ra/raadmin/*.class"/>       
+                <include name="se/anatom/ejbca/ra/**/*.class"/>            
                 <include name="se/anatom/ejbca/*.class"/>
                 <include name="se/anatom/ejbca/util/**/*.class"/>
                 <include name="se/anatom/ejbca/util/query/*.class"/>                
-                <include name="se/anatom/ejbca/webdist/rainterface/*.class"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>           
         </fileset>
     </copy>
@@ -271,7 +269,11 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
-     
+    <copy todir="${raadmin.build}/WEB-INF/lib">
+        <fileset dir="${lib}">
+                <include name="regexp1_0_0.jar"/>
+        </fileset>
+    </copy>     
     <!-- Jar the webdist.war package together -->
     <jar basedir="${raadmin.build}" jarfile="${raadminjar}"/>    
   </target>
@@ -281,11 +283,11 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
   <!-- =================================================================== -->
   <target name="admin.jar" depends="compile">
     <mkdir dir="${adminjar.build}"/>
-    <copy todir="${adminjar.build}">
+     <copy todir="${adminjar.build}">
         <fileset dir="${build}">
-                <include name="se/anatom/ejbca/IJobRunner*.class"/>
+               <include name="se/anatom/ejbca/IJobRunner*.class"/>
                 <include name="se/anatom/ejbca/SecConst*.class"/>
-                <include name="se/anatom/ejbca/util/*.class"/>
+                <include name="se/anatom/ejbca/util/*.class"/> 
                 <include name="se/anatom/ejbca/util/query/*.class"/>                
                 <include name="se/anatom/ejbca/admin/*.class"/>
                 <include name="se/anatom/ejbca/batch/*.class"/>
@@ -295,15 +297,21 @@ ca.ear, canora.ear, ra.jar, raadmin.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
                 <include name="se/anatom/ejbca/ca/crl/RevokedCertInfo*.class"/>
                 <include name="se/anatom/ejbca/ca/store/CertificateData*.class"/>
-                <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
-                <include name="se/anatom/ejbca/ra/*.class"/>
+                <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/> 
+                <include name="se/anatom/ejbca/ra/*.class"/> 
                 <include name="se/anatom/ejbca/exception/**/*.class"/>
-                <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
-                <include name="se/anatom/ejbca/ra/raadmin/UserPreference.class"/>                
-                <exclude name="se/anatom/ejbca/**/*Test*"/>
-        </fileset>
-    </copy>
-  
+                <include name="se/anatom/ejbca/ca/exception/**/*.class"/> 
+                <include name="se/anatom/ejbca/ra/raadmin/UserPreference.class"/>   
+                <include name="se/anatom/ejbca/ra/raadmin/UserDoesntFullfillProfile.class"/>   
+                <include name="se/anatom/ejbca/ra/raadmin/IRaAdminSessionHome.class"/>   
+                <include name="se/anatom/ejbca/ra/raadmin/IRaAdminSessionRemote.class"/>
+                <include name="se/anatom/ejbca/ra/raadmin/Profile.class"/>                                                 
+                <include name="se/anatom/ejbca/ra/authorization/*Exception.class"/>
+                <include name="se/anatom/ejbca/ra/authorization/UserEntity.class"/>  
+                <include name="se/anatom/ejbca/ra/authorization/UserInformation.class"/>                                                                                                                                                                                      
+                <exclude name="se/anatom/ejbca/**/*Test*"/> 
+       </fileset>
+      </copy>
     <!-- Jar the admin.jar package together -->
     <jar basedir="${adminjar.build}" jarfile="${adminjar}"/>    
   </target>

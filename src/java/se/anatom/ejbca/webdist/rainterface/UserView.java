@@ -5,9 +5,13 @@
  */
 
 package se.anatom.ejbca.webdist.rainterface;
+
+import org.ietf.ldap.LDAPDN;
+
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.UserDataRemote;
+import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import java.util.Date;
 
 /**
@@ -49,24 +53,26 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
     /** Creates a new instance of UserView */
     public UserView() {
       userdata = new String[NUMBEROF_USERFIELDS];   
+      for(int i=0; i<  NUMBEROF_USERFIELDS ; i++){
+        userdata[i] = "";    
+      }
     }
     
-    public UserView(UserAdminData newuserdata, String profilename, String certificatetypename){
-      userdata = new String[NUMBEROF_USERFIELDS];          
-      setValues(newuserdata, profilename, certificatetypename);
+    public UserView(UserAdminData newuserdata){
+      userdata = new String[NUMBEROF_USERFIELDS];
+      for(int i=0; i<  NUMBEROF_USERFIELDS ; i++){
+        userdata[i] = "";    
+      }      
+      setValues(newuserdata);
       this.timecreated= newuserdata.getTimeCreated();
       this.timemodified= newuserdata.getTimeModified();     
-      this.profileid= newuserdata.getProfileId();
-      this.certificatetypeid= newuserdata.getCertificateTypeId();
     }
     
-    public UserView(String[] newuserdata, Date timecreated, Date timemodified, int profileid, int certificatetypeid){
-      userdata = new String[NUMBEROF_USERFIELDS]; 
+    public UserView(String[] newuserdata, Date timecreated, Date timemodified){
+       userdata = new String[NUMBEROF_USERFIELDS]; 
        setValues(newuserdata);     
        this.timecreated= timecreated;
        this.timemodified= timemodified;
-       this.profileid= profileid;
-       this.certificatetypeid=certificatetypeid;
     }
     
     // Public methods.
@@ -96,8 +102,8 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
       String dn = "";
       boolean first = true;
       if(userdata[COMMONNAME]!= null){
-        if(!userdata[COMMONNAME].trim().equals("")){
-          dn = dn +"CN="+ userdata[COMMONNAME];     
+        if(!userdata[COMMONNAME].trim().equals("")){  
+          dn = dn + LDAPDN.escapeRDN("CN="+ userdata[COMMONNAME]);     
           first=false;
         }  
       }
@@ -105,7 +111,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
         if(!userdata[ORGANIZATIONUNIT].trim().equals("")){
           if(!first)
             dn = dn + ", ";     
-          dn = dn + "OU="+ userdata[ORGANIZATIONUNIT];
+          dn = dn + LDAPDN.escapeRDN("OU="+ userdata[ORGANIZATIONUNIT]);
           first = false;
         }  
       }
@@ -113,7 +119,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
         if(!userdata[ORGANIZATION].trim().equals("")){
           if(!first)
             dn = dn + ", ";                 
-          dn = dn  + "O="+ userdata[ORGANIZATION]; 
+          dn = dn  + LDAPDN.escapeRDN("O="+ userdata[ORGANIZATION]); 
           first = false;
         }  
       }      
@@ -121,7 +127,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
         if(!userdata[LOCALE].trim().equals("")){
           if(!first)
             dn = dn + ", ";                
-          dn = dn +"L="+ userdata[LOCALE];    
+          dn = dn + LDAPDN.escapeRDN("L="+ userdata[LOCALE]);    
           first = false;          
         }  
       } 
@@ -129,7 +135,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
         if(!userdata[STATE].trim().equals("")){
           if(!first)
             dn = dn + ", ";                 
-          dn = dn +"ST="+ userdata[STATE];   
+          dn = dn + LDAPDN.escapeRDN("ST="+ userdata[STATE]);   
           first = false;           
         }
       }
@@ -137,7 +143,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
         if(!userdata[COUNTRY].trim().equals("")){
           if(!first)
             dn = dn + ", ";                 
-          dn = dn +"C="+ userdata[COUNTRY].toUpperCase();     
+          dn = dn + LDAPDN.escapeRDN("C="+ userdata[COUNTRY].toUpperCase());     
           first = false;           
         }  
       } 
@@ -146,17 +152,18 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
           dn=dn.substring(1);
         }
       }
-        
+      dn=LDAPDN.normalize(dn);  
+      
       UserAdminData returnuser = new UserAdminData(userdata[USERNAME],dn,userdata[EMAIL], 
-                                                   Integer.parseInt(userdata[STATUS]), getHexType(), profileid,
-                                                   certificatetypeid, timecreated, timemodified);
+                                                   Integer.parseInt(userdata[STATUS]), getHexType(), Integer.parseInt(userdata[PROFILE]),
+                                                   Integer.parseInt(userdata[CERTIFICATETYPE]), timecreated, timemodified);
       returnuser.setPassword(userdata[PASSWORD]);
         
       return returnuser;
     }
     
     /* Sets the values according to the values in the UserAdminData object.*/ 
-    public void setValues(UserAdminData newuserdata, String profilename, String certificatetypename){
+    public void setValues(UserAdminData newuserdata){
        int startindex, endindex =0;
        String userdn= newuserdata.getDN(); 
        
@@ -182,8 +189,8 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
        userdata[STATE]              = dn.getField(DNFieldExtractor.STATE);
        userdata[COUNTRY]            = dn.getField(DNFieldExtractor.COUNTRY);       
        userdata[USERDN]             = userdn; 
-       userdata[PROFILE]            = profilename;
-       userdata[CERTIFICATETYPE]    = certificatetypename;
+       userdata[PROFILE]            = Integer.toString(newuserdata.getProfileId());
+       userdata[CERTIFICATETYPE]    = Integer.toString(newuserdata.getCertificateTypeId());
        
     }
     
@@ -299,8 +306,8 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
     
     public Date getTimeCreated(){return timecreated;}
     public Date getTimeModified(){return timemodified;}  
-    public int getProfileId(){return profileid;}
-    public int getCertificateTypeId(){return certificatetypeid;}
+    public int getProfileId(){return Integer.parseInt(userdata[PROFILE]);}
+    public int getCertificateTypeId(){return Integer.parseInt(userdata[CERTIFICATETYPE]);}
     // Private constants.  
     
     // Private methods.
@@ -308,6 +315,4 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
     private SortBy sortby; 
     private Date timecreated;
     private Date timemodified;
-    private int profileid;
-    private int certificatetypeid;
 }

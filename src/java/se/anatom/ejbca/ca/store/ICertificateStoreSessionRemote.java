@@ -21,13 +21,16 @@ import se.anatom.ejbca.ca.store.certificatetypes.*;
  *
  * Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.3 2002-08-05 01:57:06 herrvendil Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.4 2002-08-27 12:41:06 herrvendil Exp $
  */
 public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote  {
         
     /** Constants defining range of id's reserved for fixed certificate types. Observe fixed certificates cannot have value 0. */
     public final static int FIXED_CERTIFICATETYPE_BOUNDRY = 1000;
 
+    public final static int FIXED_ENDUSER = LocalCertificateStoreSessionBean.FIXED_ENDUSER;
+    public final static int FIXED_CA = LocalCertificateStoreSessionBean.FIXED_CA;
+    public final static int FIXED_ROOTCA = LocalCertificateStoreSessionBean.FIXED_ROOTCA; 
    /**
     * Lists fingerprint (primary key) of ALL certificates in the database.
     * NOTE: Caution should be taken with this method as execution may be very
@@ -77,6 +80,13 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
     * @throws EJBException if a communication or other error occurs.
     */
     public Collection findCertificatesByExpireTime(Date expireTime) throws RemoteException;
+    
+     /** 
+     * Set the status of certificates of given dn to revoked.
+     * @param dn the dn of user to revoke certificates.
+     * @throws EJBException if a communication or other error occurs.
+     */
+    public void setRevokeStatus(String dn) throws RemoteException;
 
    /**
     * Checks if a certificate is revoked.

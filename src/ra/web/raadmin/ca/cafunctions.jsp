@@ -2,7 +2,7 @@
 <%@page contentType="text/html"%>
 <%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration,
                                               se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.webdist.rainterface.CertificateView,
-                                              se.anatom.ejbca.webdist.rainterface.DNFieldExtractor, se.anatom.ejbca.ra.authorization.AuthorizationDeniedException"%>
+                                              se.anatom.ejbca.ra.raadmin.DNFieldExtractor, se.anatom.ejbca.ra.authorization.AuthorizationDeniedException"%>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
@@ -12,6 +12,7 @@
 %>
 <%   // Initialize environment
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
+                                            cabean.initialize(request); 
 
   final String THIS_FILENAME                = globalconfiguration.getCaPath() 
                                                   + "/cafunctions.jsp";

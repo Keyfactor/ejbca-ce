@@ -7,7 +7,7 @@ rem Weblogic
 rem set CP=.;.\admin.jar;.\lib\weblogic.jar;.\lib\junit.jar;.\lib\log4j-1.2.jar;.\lib\jce-jdk13-114.jar
 
 rem JBoss
-java -cp %CP% se.anatom.ejbca.admin.ra %1 %2 %3 %4 %5 %6
+java -cp %CP% se.anatom.ejbca.admin.ra %1 %2 %3 %4 %5 %6 %7 %8
 
 rem Weblogic
-rem java -cp %CP% se.anatom.ejbca.admin.ra %1 %2 %3 %4 %5 %6
+rem java -cp %CP% se.anatom.ejbca.admin.ra %1 %2 %3 %4 %5 %6 %7 %8

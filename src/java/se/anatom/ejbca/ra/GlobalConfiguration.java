@@ -12,6 +12,7 @@ import javax.naming.InitialContext;
 import javax.naming.Context;
 
 import se.anatom.ejbca.ra.raadmin.UserPreference;
+import se.anatom.ejbca.ra.authorization.ProfileAuthorizationProxy;
 
 /**
  *  This is a  class containing global configuration parameters and default
@@ -26,17 +27,33 @@ public class GlobalConfiguration implements java.io.Serializable {
     private final  String[] POSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};    
     
     // Directories made open to all ra administrators, but client certificate is still needed.
-    private final  String[] OPENDIRECTORIES        = {"/raadmin/", "/raadmin/banners","/raadmin/images","/raadmin/help",
-                                                      "/raadmin/themes","/raadmin/languages"};    
+    private final  String[] OPENDIRECTORIES        = { "banners","images","help",
+                                                      "/themes","/languages"};    
     // Rules available by default i authorization module.
-    private final  String[]  DEFAULT_AVAILABLE_RULES = {"/", "/raadmin/", "/raadmin/authorization", "/raadmin/authorization/availablerules", 
-                                                       "/raadmin/ca", "/raadmin/ca/editcertificatetypes", "/raadmin/ca/createcrl", "/raadmin/ca/getcrl", "/raadmin/config", 
-                                                       "/raadmin/ra", "/raadmin/ra/editprofiles"};
-                                                      
+    private final  String[]  DEFAULT_AVAILABLE_RULES = {  "authorization", "authorization/availablerules", 
+                                                       "ca", "ca/editcertificatetypes", "ca/createcrl", "ca/getcrl", "config", 
+                                                       "ra", "ra/editprofiles"};
+ 
+    // Available authorization rules.                                                   
+    public static final String VIEW_RIGHTS = "/view";
+    public static final String EDIT_RIGHTS = "/edit";
+    public static final String CREATE_RIGHTS = "/create";
+    public static final String DELETE_RIGHTS = "/delete";
+    public static final String REVOKE_RIGHTS = "/revoke";
+    public static final String HISTORY_RIGHTS = "/history";                                                         
+                                                       
     // Endings to add to profile authorizxation.                                                   
-    private final String[]  PROFILE_ENDINGS        = {"/view", "/create", "/edit", "/delete", "/revoke","/history"};  
+    private final String[]  PROFILE_ENDINGS        = {VIEW_RIGHTS,
+                                                      EDIT_RIGHTS,
+                                                      CREATE_RIGHTS,
+                                                      DELETE_RIGHTS,
+                                                      REVOKE_RIGHTS,
+                                                      HISTORY_RIGHTS};
+    
+    
+   
     // Name of profile prefix directory in authorization module.
-    private final String    PROFILEPREFIX          = "/profiles";
+    private final String    PROFILEPREFIX          = "/profiles/";
    
     // Path added to baseurl used as default vaule in CRLDistributionPointURI field in Certificate Type definitions.
     private final String    DEFAULTCRLDISTURIPATH  = "webdist/certdist?cmd=crl";
@@ -80,9 +97,8 @@ public class GlobalConfiguration implements java.io.Serializable {
        config.put(P_POSSIBLEENTRIESPERPAGE,POSSIBLEENTRIESPERPAGE);       
        config.put(P_PROFILE_ENDINGS,PROFILE_ENDINGS);
        config.put(P_PROFILEPREFIX,PROFILEPREFIX);
-       
-       config.put(P_OPENDIRECTORIES, OPENDIRECTORIES);
-       config.put(P_DEFAULT_AVAILABLE_RULES, DEFAULT_AVAILABLE_RULES);
+             
+       setUseStrongAuthorization(false);
     }
     
     /** Initializes a new global configuration with data used in ra web interface. */
@@ -104,6 +120,21 @@ public class GlobalConfiguration implements java.io.Serializable {
          tempraadminpath =tempraadminpath.substring(1);   // Remove starting '/'
        }   
        
+       String[] tempopendirs = new String[OPENDIRECTORIES.length+2];
+       tempopendirs[0] = "/";
+       tempopendirs[1] = "/" +  tempraadminpath;  
+       for(int i=2;i < tempopendirs.length; i++){
+          tempopendirs[i] =  "/" + tempraadminpath + OPENDIRECTORIES[i-2];  
+       }    
+       String[] tempdefaultdirs = new String[DEFAULT_AVAILABLE_RULES.length+2];
+       tempdefaultdirs[0] = "/";
+       tempdefaultdirs[1] = "/" +  tempraadminpath;     
+       for(int i=2;i < tempdefaultdirs.length; i++){
+          tempdefaultdirs[i] =  "/" + tempraadminpath + DEFAULT_AVAILABLE_RULES[i-2];  
+       }           
+ 
+       config.put(P_OPENDIRECTORIES, tempopendirs);
+       config.put(P_DEFAULT_AVAILABLE_RULES, tempdefaultdirs);       
        
        setBaseUrl(tempbaseurl);
        config.put(P_RAADMINPATH,tempraadminpath);
@@ -274,7 +305,10 @@ public class GlobalConfiguration implements java.io.Serializable {
     public   String[] getPossibleEntiresPerPage(){return (String[]) config.get(P_POSSIBLEENTRIESPERPAGE);}      
 
     public   String getAvailableLanguagesAsString(){return (String) config.get(P_AVAILABLELANGUAGES);} 
-    public   String getAvailableThenesAsString(){return (String) config.get(P_AVAILABLETHEMES);}         
+    public   String getAvailableThenesAsString(){return (String) config.get(P_AVAILABLETHEMES);}  
+    
+    public   boolean getUseStrongAuthorization(){return ((Boolean) config.get(P_USESTRONGAUTHORIZATION)).booleanValue();}
+    public   void    setUseStrongAuthorization(boolean usestrongauthorization){ config.put(P_USESTRONGAUTHORIZATION,new Boolean(usestrongauthorization));}
     
     // Private fields.
     
@@ -317,6 +351,8 @@ public class GlobalConfiguration implements java.io.Serializable {
     private final   String P_ERRORPAGE           =  "errorpage";  
     
     private final   String P_POSSIBLEENTRIESPERPAGE = "possibleentiresperpage";    
+    
+    private final   String P_USESTRONGAUTHORIZATION = "usestrongauthorization";
     
     // Private fields
     private    HashMap        config;

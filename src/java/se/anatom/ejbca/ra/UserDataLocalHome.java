@@ -9,7 +9,7 @@ import java.util.Collection;
 /**
  * For docs, see UserDataBean
  *
- * @version $Id: UserDataLocalHome.java,v 1.2 2002-07-28 23:27:47 herrvendil Exp $
+ * @version $Id: UserDataLocalHome.java,v 1.3 2002-08-27 12:41:06 herrvendil Exp $
  **/
 
 public interface UserDataLocalHome extends javax.ejb.EJBLocalHome {
@@ -22,6 +22,9 @@ public interface UserDataLocalHome extends javax.ejb.EJBLocalHome {
     
     public UserDataLocal findBySubjectDN(String dn) 
         throws FinderException;
+    
+    public UserDataLocal findBySubjectEmail(String email) 
+        throws FinderException;    
 
 
     /** Finds users with a specified status.

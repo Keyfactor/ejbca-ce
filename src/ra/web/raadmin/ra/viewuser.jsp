@@ -2,7 +2,7 @@
 <%@page contentType="text/html"%>
 <%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.GlobalConfiguration, 
                  se.anatom.ejbca.webdist.rainterface.UserView, se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, 
-                 se.anatom.ejbca.ra.raadmin.Profile,  se.anatom.ejbca.ra.UserDataRemote,
+                 se.anatom.ejbca.ra.raadmin.Profile,se.anatom.ejbca.ra.authorization.AuthorizationDeniedException,  se.anatom.ejbca.ra.UserDataRemote,
                  javax.ejb.CreateException, java.rmi.RemoteException" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -27,20 +27,30 @@
 %><%
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
+                                            rabean.initialize(request);
   String THIS_FILENAME            =  globalconfiguration.getRaPath()  + "/viewuser.jsp";
 
   boolean nouserparameter          = true;
+  boolean notauthorized            = false;
 
   String[] userdata = null;
   String   username = null;
   UserView user     = null;
+  Profile  profile = null;
 
   if( request.getParameter(USER_PARAMETER) != null ){
     username = request.getParameter(USER_PARAMETER);
-    user = rabean.findUser(username);
+    try{
+      user = rabean.findUser(username);
+    } catch(AuthorizationDeniedException e){
+       notauthorized = true;
+    }
     userdata = user.getValues();
+    profile = rabean.getProfile(Integer.parseInt(userdata[UserView.PROFILE]));
     nouserparameter = false;
   }  
+
+  int row = 0; 
 %>
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
@@ -60,80 +70,102 @@
        if(userdata == null){%>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("USERDOESNTEXIST") %></h4></div> 
     <% }
-       else{ %>
+       else{ 
+         if(notauthorized){ %>
+  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOVIEW") %></h4></div> 
+     <%  }else{%>
 
   <form name="adduser" action="<%= THIS_FILENAME %>" method="post">
      <input type="hidden" name='<%= USER_PARAMETER %>' value='<%=username %>'>
      <table border="0" cellpadding="0" cellspacing="2" width="400">
-      <tr id="Row0">
+      <% if(profile.getUse(Profile.USERNAME)){ %>
+      <tr id="Row<%=(row++)%2%>">
 	<td align="right"><%= ejbcawebbean.getText("USERNAME") %></td>
 	<td><% if(userdata[UserView.USERNAME] != null) out.write(userdata[UserView.USERNAME]); %>
         </td>
       </tr>
-      <tr id="Row1">
+      <% }  %>
+      <tr id="Row<%=(row++)%2%>">
 	<td align="right"><%= ejbcawebbean.getText("PROFILE") %></td>
-	<td><% if(userdata[UserView.PROFILE] != null) out.write(userdata[UserView.PROFILE]);
+	<td><% if(userdata[UserView.PROFILE] != null) 
+                 if(Integer.parseInt(userdata[UserView.PROFILE]) != 0)
+                    out.write(rabean.getProfileName(Integer.parseInt(userdata[UserView.PROFILE])));
+                 else out.write(ejbcawebbean.getText("NOPROFILEDEFINED"));
                else out.write(ejbcawebbean.getText("NOPROFILEDEFINED")); %>
         </td>
       </tr>
-      <tr id="Row0">
+      <% if(profile.getUse(Profile.CLEARTEXTPASSWORD)){ %>
+      <tr id="Row<%=(row++)%2%>">
 	<td align="right"><%= ejbcawebbean.getText("CLEARTEXTPASSWORD") %></td>
 	<td><input type="checkbox" name="<%= CHECKBOX_CLEARTEXTPASSWORD %>" value="<%= CHECKBOX_VALUE %>" disabled="true"
             <%if(userdata[UserView.CLEARTEXTPASSWORD] != null && userdata[UserView.CLEARTEXTPASSWORD].equals(UserView.TRUE))
                    out.write("CHECKED");%>>
         </td>
       </tr>
-       <tr id="Row1">
+      <% } if(profile.getUse(Profile.COMMONNAME)){ %>
+       <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("COMMONNAME") %></td>
 	 <td><% if(userdata[UserView.COMMONNAME] != null) out.write(userdata[UserView.COMMONNAME]); %> 
          </td>
        </tr>
-       <tr id="Row0">
+      <% } if(profile.getUse(Profile.ORGANIZATIONUNIT)){ %>
+       <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("ORGANIZATIONUNIT") %></td>
 	 <td><% if(userdata[UserView.ORGANIZATIONUNIT] != null) out.write(userdata[UserView.ORGANIZATIONUNIT]); %> 
          </td>
        </tr>
-       <tr id="Row1">
+      <% } if(profile.getUse(Profile.ORGANIZATION)){ %>
+       <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("ORGANIZATION") %></td>
 	 <td><% if(userdata[UserView.ORGANIZATION] != null) out.write(userdata[UserView.ORGANIZATION]); %> 
          </td>
        </tr>
-       <tr id="Row0">
+      <% } if(profile.getUse(Profile.LOCALE)){ %>
+       <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("LOCALE") %></td>
 	 <td><% if(userdata[UserView.LOCALE] != null) out.write(userdata[UserView.LOCALE]); %>
          </td>
        </tr>
-       <tr id="Row1">
+      <% } if(profile.getUse(Profile.STATE)){ %>
+       <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("STATE") %></td>
 	 <td><% if(userdata[UserView.STATE] != null) out.write(userdata[UserView.STATE]); %> 
          </td>
        </tr>
-       <tr id="Row0">
+      <% } if(profile.getUse(Profile.COUNTRY)){ %>
+       <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("COUNTRY") %></td>
 	 <td><% if(userdata[UserView.COUNTRY] != null) out.write(userdata[UserView.COUNTRY]); %>
           </td>
        </tr>
-       <tr id="Row1">
+      <% } %>
+       <tr id="Row<%=(row++)%2%>">
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>
        </tr>
-       <tr id="Row0">
+      <% if(profile.getUse(Profile.EMAIL)){ %>
+       <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("EMAIL") %></td>
 	 <td><% if(userdata[UserView.EMAIL] != null) out.write(userdata[UserView.EMAIL]); %>
          </td>
        </tr>
-       <tr id="Row1">
+       <% } %>
+       <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("CERTIFICATETYPE") %></td>
-	 <td><% if(userdata[UserView.CERTIFICATETYPE] != null) out.write(userdata[UserView.CERTIFICATETYPE]); 
+	 <td><% if(userdata[UserView.CERTIFICATETYPE] != null)
+                  if(Integer.parseInt(userdata[UserView.CERTIFICATETYPE]) != 0)
+                    out.write(rabean.getCertificateTypeName(Integer.parseInt(userdata[UserView.CERTIFICATETYPE]))); 
+                  else out.write(ejbcawebbean.getText("NOCERTIFICATETYPEDEFINED"));
                 else out.write(ejbcawebbean.getText("NOCERTIFICATETYPEDEFINED"));%>
          </td>
        </tr>
-       <tr id="Row0">
+       <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("TYPES") %></td>
 	 <td>
          </td>
        </tr>
-    <tr  id="Row0"> 
+      <%  if(profile.getUse(Profile.TYPE_ENDUSER)){ %>
+    <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
         <%= ejbcawebbean.getText("TYPEENDUSER") %> <br>
       </td>
@@ -143,7 +175,8 @@
                    out.write("CHECKED");%> disabled="true"> 
       </td>
     </tr>
-    <tr  id="Row1"> 
+      <% } if(profile.getUse(Profile.TYPE_RA)){ %>
+    <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
         <%= ejbcawebbean.getText("TYPERA") %> 
       </td>
@@ -153,7 +186,8 @@
                    out.write("CHECKED");%> disabled="true"> 
       </td>
     </tr>
-    <tr  id="Row0"> 
+      <% } if(profile.getUse(Profile.TYPE_RAADMIN)){ %>
+    <tr  id="Row<%=(row++)%2%>"> 
       <td align="right"> 
         <%= ejbcawebbean.getText("TYPERAADMIN") %> 
       </td>
@@ -163,7 +197,8 @@
                    out.write("CHECKED");%> disabled="true"> 
       </td>
     </tr>
-    <tr  id="Row1"> 
+      <% } if(profile.getUse(Profile.TYPE_CA)){ %>
+    <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
         <%= ejbcawebbean.getText("TYPECA") %> 
       </td>
@@ -173,7 +208,8 @@
                    out.write("CHECKED");%> disabled="true"> 
       </td>
     </tr>
-    <tr  id="Row0">
+      <% } if(profile.getUse(Profile.TYPE_CAADMIN)){ %>
+    <tr  id="Row<%=(row++)%2%>">
       <td align="right"> 
         <%= ejbcawebbean.getText("TYPECAADMIN") %> 
       </td>
@@ -183,7 +219,8 @@
                    out.write("CHECKED");%> disabled="true"> 
       </td>
     </tr>
-    <tr  id="Row1"> 
+      <% } if(profile.getUse(Profile.TYPE_ROOTCA)){ %>
+    <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
         <%= ejbcawebbean.getText("TYPEROOTCA") %> 
       </td>
@@ -193,7 +230,8 @@
                    out.write("CHECKED");%> disabled="true"> 
       </td>
     </tr>
-    <tr id="Row1">
+      <% } %>
+    <tr id="Row<%=(row++)%2%>">
       <td>&nbsp;</td>
       <td>&nbsp</td>
     </tr> 
@@ -203,13 +241,13 @@
          <%= ejbcawebbean.printDateTime(user.getTimeCreated()) %>
        </td>
     </tr> 
-    <tr id="Row1">
+    <tr id="Row<%=(row++)%2%>">
       <td><%= ejbcawebbean.getText("MODIFIED") %></td>
       <td>
          <%= ejbcawebbean.printDateTime(user.getTimeModified()) %>
        </td>
      </tr> 
-       <tr id="Row0">
+       <tr id="Row<%=(row++)%2%>">
 	 <td></td>
 	 <td>
              <input type="reset" name="<%= BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="20"
@@ -220,7 +258,8 @@
    </form>
    <p></p>
    <% }
-    }%>
+    }
+   }%>
 
 </body>
 </html>

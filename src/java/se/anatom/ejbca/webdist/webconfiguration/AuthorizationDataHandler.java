@@ -8,21 +8,16 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Vector;
+import java.security.cert.X509Certificate;
 
-import se.anatom.ejbca.ra.authorization.IAuthorizationSessionHome;
-import se.anatom.ejbca.ra.authorization.IAuthorizationSessionRemote;
-import se.anatom.ejbca.ra.authorization.UserEntity;
-import se.anatom.ejbca.ra.authorization.AccessRule;
-import se.anatom.ejbca.ra.authorization.AvailableDirectories;
-import se.anatom.ejbca.ra.authorization.UsergroupExistsException;
-import se.anatom.ejbca.ra.authorization.UserGroup;
+import se.anatom.ejbca.ra.authorization.*;
 import se.anatom.ejbca.ra.GlobalConfiguration;
 
 /**
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
  * @author  Philip Vendil
- * @version $Id: AuthorizationDataHandler.java,v 1.4 2002-07-20 18:40:08 herrvendil Exp $
+ * @version $Id: AuthorizationDataHandler.java,v 1.5 2002-08-27 12:41:06 herrvendil Exp $
  */
 public class AuthorizationDataHandler {
 
@@ -40,6 +35,8 @@ public class AuthorizationDataHandler {
        IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("AuthorizationSession"),
                                                                                  IAuthorizationSessionHome.class);
        authorizationsession = authorizationsessionhome.create();
+       authorizationsession.init(globalconfiguration);
+       
        Collection names = authorizationsession.getAvailableAccessRules();
        if(names.size()==0){
           Vector rules = new Vector();
@@ -51,24 +48,53 @@ public class AuthorizationDataHandler {
        }
 
        availabledirectories = new AvailableDirectories(globalconfiguration);
+       authorize = new EjbcaAuthorization(getUserGroups(), globalconfiguration);
     }
-
+    // Public methods.
+    /**
+     * Method to check if a user is authorized to a resource
+     *
+     * @param userinformation information about the user to be authorized.
+     * @param resource the resource to look up.
+     * @returns true if authorizes
+     * @throws AuthorizationDeniedException when authorization is denied.
+     */
+    public boolean isAuthorized(UserInformation userinformation, String resource) throws AuthorizationDeniedException{
+      return authorize.isAuthorized(userinformation, resource);
+    }
+    
+    /**
+     * Method that authenticates a certificate by verifying signature, checking validity and lookup if certificate is revoked.
+     *
+     * @param certificate the certificate to be authenticated. 
+     *
+     * @throws AuthenticationFailedException if authentication failed. 
+     */
+    public void authenticate(X509Certificate certificate) throws AuthenticationFailedException {
+      authorize.authenticate(certificate);
+    }
+    
     // Methods used with usergroup data
         /** Method to add a new usergroup to the access control data.*/
     public void addUserGroup(String name) throws UsergroupExistsException, RemoteException{
         if(!authorizationsession.addUserGroup(name))
           throw new UsergroupExistsException();
+    
+        authorize.buildAccessTree(authorizationsession.getUserGroups());        
     }
 
     /** Method to remove a usergroup.*/
     public void removeUserGroup(String name) throws RemoteException{
         authorizationsession.removeUserGroup(name);
+        authorize.buildAccessTree(authorizationsession.getUserGroups());        
     }
 
     /** Method to rename a usergroup. */
     public void renameUserGroup(String oldname, String newname) throws UsergroupExistsException, RemoteException{
         if(!authorizationsession.renameUserGroup(oldname,newname))
           throw new UsergroupExistsException();
+        
+         authorize.buildAccessTree(authorizationsession.getUserGroups());
     }
 
     /** Method to retrieve all usergroup's names.*/
@@ -83,13 +109,13 @@ public class AuthorizationDataHandler {
     /** Method to add an array of access rules to a usergroup. The accessrules must be a 2d array where
      *  the outer array specifies the field using ACCESS_RULE constants. */
     public void addAccessRules(String groupname, String[][] accessrules) throws RemoteException{
-        int arraysize = accessrules.length;
         try{
-          for(int i=0; i < arraysize; i++){
+          for(int i=0; i < accessrules.length; i++){
             authorizationsession.addAccessRule(groupname, accessrules[i][ACCESS_RULE_DIRECTORY],
                                 java.lang.Integer.valueOf(accessrules[i][ACCESS_RULE_RULE]).intValue(),
                                 java.lang.Boolean.valueOf(accessrules[i][ACCESS_RULE_RECURSIVE]).booleanValue());
           }
+          authorize.buildAccessTree(authorizationsession.getUserGroups());          
         }catch (Exception e){
             // Do not add erronios rules.
         }
@@ -102,6 +128,8 @@ public class AuthorizationDataHandler {
           for(int i=0; i < arraysize; i++){
             authorizationsession.removeAccessRule(groupname, accessrules[i][ACCESS_RULE_DIRECTORY]);
           }
+          
+          authorize.buildAccessTree(authorizationsession.getUserGroups());  
         }catch (Exception e){
             // Do not add erronios rules.
         }
@@ -121,6 +149,7 @@ public class AuthorizationDataHandler {
              returnarray[i][ACCESS_RULE_RECURSIVE] = String.valueOf(accessrules[i].isRecursive());
           }
         }
+        
         return returnarray;
     }
 
@@ -143,6 +172,7 @@ public class AuthorizationDataHandler {
                                 Integer.parseInt(userentities[i][USER_ENTITY_MATCHTYPE]),
                                 userentities[i][USER_ENTITY_MATCHVALUE]);
           }
+          authorize.buildAccessTree(authorizationsession.getUserGroups());          
        }catch (Exception e){
             // Do not add erronios rules.
        }
@@ -157,6 +187,7 @@ public class AuthorizationDataHandler {
                                                                ,Integer.parseInt(userentities[i][USER_ENTITY_MATCHTYPE])
                                                                ,userentities[i][USER_ENTITY_MATCHVALUE]);
         }
+        authorize.buildAccessTree(authorizationsession.getUserGroups());
       }catch (Exception e){
         // Do not remove erronios rules.
       }
@@ -233,4 +264,5 @@ public class AuthorizationDataHandler {
     // Private fields
     private IAuthorizationSessionRemote authorizationsession;
     private AvailableDirectories        availabledirectories;
+    private EjbcaAuthorization          authorize;
 }

@@ -147,8 +147,23 @@
       <tr id="Row<%= i%2 %>"> <!-- User entries in css to make lines in table --> 
         <td width="17%">
           <input type="checkbox" name="<%=CHECKBOX_DELETEROW  + i  %>" value="<%= CHECKBOX_VALUE %>">
+
           <input type="hidden" name='<%= HIDDEN_DELETEROW + i %>' value='<%= accessrules[i][AuthorizationDataHandler.ACCESS_RULE_DIRECTORY] %>'>
         </td>
+           <% 
+           // Check if it is a profile rule, then replace profile id with profile name.
+
+           if(accessrules[i][AuthorizationDataHandler.ACCESS_RULE_DIRECTORY].startsWith(globalconfiguration.getProfilePrefix())){
+              if(accessrules[i][AuthorizationDataHandler.ACCESS_RULE_DIRECTORY].lastIndexOf('/') < globalconfiguration.getProfilePrefix().length())
+                accessrules[i][AuthorizationDataHandler.ACCESS_RULE_DIRECTORY] = globalconfiguration.getProfilePrefix()  
+                                                                               + rabean.getProfileName(Integer.parseInt(accessrules[i][AuthorizationDataHandler.ACCESS_RULE_DIRECTORY].substring(globalconfiguration.getProfilePrefix().length())));
+              
+              else
+                accessrules[i][AuthorizationDataHandler.ACCESS_RULE_DIRECTORY] = globalconfiguration.getProfilePrefix()  
+                                                                               + rabean.getProfileName(Integer.parseInt(accessrules[i][AuthorizationDataHandler.ACCESS_RULE_DIRECTORY].substring(globalconfiguration.getProfilePrefix().length(),
+                                                                                                                                                                              accessrules[i][AuthorizationDataHandler.ACCESS_RULE_DIRECTORY].lastIndexOf('/'))))
+                                                                               + accessrules[i][AuthorizationDataHandler.ACCESS_RULE_DIRECTORY].substring(accessrules[i][AuthorizationDataHandler.ACCESS_RULE_DIRECTORY].lastIndexOf('/'));
+           } %>
         <td width="37%"><%= accessrules[i][AuthorizationDataHandler.ACCESS_RULE_DIRECTORY] %></td>
         <td width="12%"><% if(accessrules[i][AuthorizationDataHandler.ACCESS_RULE_RULE].equals(String.valueOf(AccessRule.RULE_ACCEPT))){
                              out.write(ejbcawebbean.getText("ACCEPT"));
@@ -232,8 +247,22 @@
         <td width="17%"> 
           <input type="checkbox" name="<%= CHECKBOX_ADDROW  + i %>" value="<%= CHECKBOX_VALUE %>">
           </td>
-        <td width="37%"> <%= availableaccessrules[i] %>
-          <input type="hidden" name='<%= HIDDEN_ADDDIRECTORY  + i %>' value='<%= availableaccessrules[i] %>'>      
+        <td width="37%">
+          <input type="hidden" name='<%= HIDDEN_ADDDIRECTORY  + i %>' value='<%= availableaccessrules[i] %>'>  
+              <% 
+           // Check if it is a profile rule, then replace profile id with profile name.
+           if(availableaccessrules[i].startsWith(globalconfiguration.getProfilePrefix())){
+              if(availableaccessrules[i].lastIndexOf('/') < globalconfiguration.getProfilePrefix().length())
+                availableaccessrules[i] = globalconfiguration.getProfilePrefix()  
+                                          + rabean.getProfileName(Integer.parseInt(availableaccessrules[i].substring(globalconfiguration.getProfilePrefix().length())));
+              else
+                availableaccessrules[i] = globalconfiguration.getProfilePrefix() 
+                                          + rabean.getProfileName(Integer.parseInt(availableaccessrules[i].substring(globalconfiguration.getProfilePrefix().length(),
+                                                                                   availableaccessrules[i].lastIndexOf('/'))))
+                                          + availableaccessrules[i].substring(availableaccessrules[i].lastIndexOf('/'));
+           }
+           out.print(availableaccessrules[i]); %>
+                
           </td>
         <td width="12%"> 
           <select name="<%=SELECT_ADDRULE  + i  %>" size="1">

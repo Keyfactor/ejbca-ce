@@ -2,11 +2,12 @@
 <%@page errorPage="/errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.GlobalConfiguration
                ,se.anatom.ejbca.ra.authorization.AccessRule, se.anatom.ejbca.webdist.webconfiguration.AuthorizationDataHandler,
                 se.anatom.ejbca.ra.authorization.UserEntity, se.anatom.ejbca.ra.authorization.UsergroupExistsException,
-                se.anatom.ejbca.ra.authorization.UserGroup"%>
+                se.anatom.ejbca.ra.authorization.UserGroup, se.anatom.ejbca.webdist.rainterface.RAInterfaceBean"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
-
+<jsp:useBean id="rabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
+<jsp:setProperty name="ejbcawebbean" property="*" /> 
 <%! // Declarations  
   static final String ACTION                   = "action";
   static final String ACTION_EDIT_GROUPS       = "editgroup";
@@ -62,6 +63,7 @@
   // Initialize environment
   String includefile = null;
   GlobalConfiguration globalconfiguration =ejbcawebbean.initialize(request); 
+                                                 rabean.initialize(request); 
   String THIS_FILENAME            =  globalconfiguration .getAuthorizationPath()  + "/ejbcaauthorization.jsp";
   AuthorizationDataHandler adh    = ejbcawebbean.getAuthorizationDataHandler(); %>
 <html>

@@ -39,7 +39,13 @@
         <td width="35%"></td>
       </tr>
     <% } %>
-
+    <% if(certificatetypedeletefailed){ %> 
+      <tr> 
+        <td width="5%"></td>
+        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("COULDNTDELETECERTTYPE") %></H4></td>
+        <td width="35%"></td>
+      </tr>
+    <% } %>
       <tr> 
         <td width="5%"></td>
         <td width="60%"><H3><%= ejbcawebbean.getText("CURRENTCERTIFICATETYPES") %></H3></td>

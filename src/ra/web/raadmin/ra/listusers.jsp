@@ -129,7 +129,7 @@
 %><%
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request); 
-
+                                            rabean.initialize(request);
   final String VIEWCERT_LINK            = "/" + globalconfiguration.getRaAdminPath() + "viewcertificate.jsp";
 
   String oldaction        = OLD_ACTION_NOACTION; 
@@ -167,6 +167,9 @@
 
   boolean illegalquery            = false;
   boolean largeresult             = false;
+  boolean notauthorizedrevokeall  = false; 
+  boolean notauthorizeddeleteall  = false; 
+  boolean notauthorizedchangeall  = false; 
 
   int filtermode = ejbcawebbean.getLastFilterMode();
 
@@ -237,12 +240,11 @@
            index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
            usernames[i] = request.getParameter(HIDDEN_USERNAME+index);
          }
-         rabean.deleteUsers(usernames);
+         notauthorizeddeleteall = !rabean.deleteUsers(usernames);
        }
       }
       if( request.getParameter(BUTTON_REVOKE_USERS) != null){
           // Revoke selected users
-          // TEMPORATE
        editbuttonpressed=true;
        java.util.Enumeration parameters = request.getParameterNames();
        java.util.Vector indexes = new  java.util.Vector();
@@ -261,7 +263,7 @@
            index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
            usernames[i] = request.getParameter(HIDDEN_USERNAME+index);
          }
-         rabean.revokeUsers(usernames);
+         notauthorizedrevokeall = !rabean.revokeUsers(usernames);
        }
       }
       if( request.getParameter(BUTTON_CHANGESTATUS) != null){
@@ -274,7 +276,6 @@
        while(parameters.hasMoreElements()){
         String parameter = (String) parameters.nextElement();
          if(parameter.startsWith(CHECKBOX_SELECT_USER) && request.getParameter(parameter).equals(CHECKBOX_VALUE)) {
-         out.write(parameter+" , ");
            index = java.lang.Integer.parseInt(parameter.substring(CHECKBOX_SELECT_USER.length())); //Without []
            indexes.addElement(new Integer(index));
          }
@@ -288,7 +289,7 @@
            usernames[i] = request.getParameter(HIDDEN_USERNAME+index);
          }
          if(newstatus != null && !newstatus.trim().equals("")) 
-           rabean.setUserStatuses(usernames,newstatus);
+           notauthorizedchangeall=!rabean.setUserStatuses(usernames,newstatus);
        }
       }
     }

@@ -2,6 +2,7 @@ package se.anatom.ejbca.ra.authorization;
 
 import java.util.Collection;
 import java.security.cert.X509Certificate;
+import se.anatom.ejbca.ra.GlobalConfiguration;
 
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see IAuthorizationSessionRemote for docs.
@@ -12,6 +13,10 @@ import java.security.cert.X509Certificate;
 
 public interface IAuthorizationSessionLocal extends javax.ejb.EJBLocalObject
 {
+    
+    /** Initializes the statful session bean. */
+    public void init(GlobalConfiguration globalconfiguration);
+    
     /**
      * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
      */ 
@@ -143,6 +148,11 @@ public interface IAuthorizationSessionLocal extends javax.ejb.EJBLocalObject
      */ 
     
     public boolean existsAvailableAccessRule(String name);
+
+    /**
+     * @see se.anatom.ejbca.ra.raadmin.IAuthorizationSessionRemote
+     */     
+    public boolean existsProfileInRules(int profileid);
        
 }
 

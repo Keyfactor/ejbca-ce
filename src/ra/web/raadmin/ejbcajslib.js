@@ -61,6 +61,45 @@ function checkfieldforlegalchars(thetextfield , alerttext){
   }
 }
 
+function checkfieldforlegalcharswithchangeable(thetextfield , alerttext){
+  field = eval(thetextfield);
+  var text = new String(field.value);
+  re = /[^a-öA-Ö_ 0-9;]/g;
+  if(re.exec(text)){
+    alert(alerttext);
+    return false;
+  }
+  else{
+    return true;
+  }
+}
+
+function checkfieldforlegaldnchars(thetextfield , alerttext){
+  field = eval(thetextfield);
+  var text = new String(field.value);
+  re = /[^a-öA-Ö_ 0-9@.,]/g;
+  if(re.exec(text)){
+    alert(alerttext);
+    return false;
+  }
+  else{
+    return true;
+  }
+}
+
+function checkfieldforlegaldncharswithchangeable(thetextfield , alerttext){
+  field = eval(thetextfield);
+  var text = new String(field.value);
+  re = /[^a-öA-Ö_ 0-9@.,;]/g;
+  if(re.exec(text)){
+    alert(alerttext);
+    return false;
+  }
+  else{
+    return true;
+  }
+}
+
 function checkfieldforlegalemailchars(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
@@ -73,6 +112,20 @@ function checkfieldforlegalemailchars(thetextfield , alerttext){
     return true;
   }
 }
+
+function checkfieldforlegalemailcharswithchangeable(thetextfield , alerttext){
+  field = eval(thetextfield);
+  var text = new String(field.value);
+  re = /[^a-öA-Ö_0-9@.;]/g;
+  if(re.exec(text)){
+    alert(alerttext);
+    return false;
+  }
+  else{
+    return true;
+  }
+}
+
 
 function checkfieldfordecimalnumbers(thetextfield , alerttext){
   field = eval(thetextfield);

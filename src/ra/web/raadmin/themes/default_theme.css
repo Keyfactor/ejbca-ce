@@ -1,9 +1,8 @@
 
 
 
-<!-- Tags used in main frame -->
 body { color: black; font-size: 12pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.5in; background-color: white}
-
+H { font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.5in; background-color: white}
 body#menu {color: black; font-size: 11pt; font-weight: bold; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.2in; background-color: white}
 a#menu {color: black}
 a:link#menu {color: black}
@@ -11,12 +10,10 @@ a:vlink#menu {color: black}
 a:active#menu {color: black}
 a:hover#menu {color: black}
 
-h4#alert {color: red font-size: 12pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular;  background-color: white}
+#alert {color: red font-size: 12pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular;  background-color: white}
 
 #Row0 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
 #Row1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #e5ecff }
 
-<!-- Tags used in head frame -->
 
-<!-- Tags used in menu frame -->
 
