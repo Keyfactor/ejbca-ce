@@ -7,8 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Random;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -32,7 +34,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.3 2003-10-21 13:48:47 herrvendil Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.4 2004-01-08 14:31:26 herrvendil Exp $
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 
@@ -87,7 +89,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
         }
 
         try{       
-          authorizer = new Authorizer(getAdminGroups(new Admin(Admin.TYPE_INTERNALUSER)),getLogSession(), getCertificateStoreSession(), getRaAdminSession(), getCAAdminSession(), new Admin(Admin.TYPE_INTERNALUSER),LogEntry.MODULE_AUTHORIZATION);
+          authorizer = new Authorizer(getAdminGroups(new Admin(Admin.TYPE_INTERNALUSER)), admingrouphome, 
+                                      getLogSession(), getCertificateStoreSession(), getRaAdminSession(), getCAAdminSession(), new Admin(Admin.TYPE_INTERNALUSER),LogEntry.MODULE_AUTHORIZATION);
         }catch(Exception e){
            throw new EJBException(e);
         }
@@ -202,12 +205,13 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
          }
        }catch(FinderException e){}
          // Add Special Admin Group
-       try{
-          admingrouphome.findByPrimaryKey(new AdminGroupPK(DEFAULTGROUPNAME, ILogSessionLocal.INTERNALCAID));   
-       }catch(FinderException e){
-         // Add Default Group
-         try{  
-           AdminGroupDataLocal agdl = admingrouphome.create(DEFAULTGROUPNAME,  ILogSessionLocal.INTERNALCAID);
+
+         try{
+            admingrouphome.findByGroupNameAndCAId(DEFAULTGROUPNAME, ILogSessionLocal.INTERNALCAID);   
+         }catch(FinderException e){
+           // Add Default Group
+           try{  
+           AdminGroupDataLocal agdl = admingrouphome.create(new Integer(findFreeAdminGroupId()), DEFAULTGROUPNAME,  ILogSessionLocal.INTERNALCAID);
         
            ArrayList adminentities = new ArrayList();
            adminentities.add(new AdminEntity(AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN));
@@ -236,10 +240,10 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
 	   // Add Public Web Group
 	   this.removeAdminGroup(admin, "Public Web Users",  ILogSessionLocal.INTERNALCAID);
 	   try{
-		  admingrouphome.findByPrimaryKey(new AdminGroupPK("Public Web Users", ILogSessionLocal.INTERNALCAID));   
+		  admingrouphome.findByGroupNameAndCAId("Public Web Users", ILogSessionLocal.INTERNALCAID);   
 	   }catch(FinderException e){	   	   	 
 	     try{           	   	 
-		   AdminGroupDataLocal agdl = admingrouphome.create("Public Web Users",  ILogSessionLocal.INTERNALCAID);
+		   AdminGroupDataLocal agdl = admingrouphome.create(new Integer(findFreeAdminGroupId()),"Public Web Users",  ILogSessionLocal.INTERNALCAID);
         
 		   ArrayList adminentities = new ArrayList();
 		   adminentities.add(new AdminEntity(AdminEntity.SPECIALADMIN_PUBLICWEBUSER));		 
@@ -287,6 +291,46 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
          updateAuthorizationTree(admin);
        return authorizer.isAuthorizedNoLog(admin, resource);
     }
+    
+	/**
+	 * Method to check if a group is authorized to a resource.
+	 */
+	public boolean isGroupAuthorized(Admin admin, int admingrouppk, String resource) throws AuthorizationDeniedException{
+	  if(updateNeccessary())
+	    updateAuthorizationTree(admin);
+	  return authorizer.isGroupAuthorized(admin, admingrouppk, resource);
+	}    
+	
+	/**
+	 * Method to check if a group is authorized to a resource without any logging. 
+	 */
+	public boolean isGroupAuthorizedNoLog(Admin admin, int admingrouppk, String resource) throws AuthorizationDeniedException{
+	  if(updateNeccessary())
+		updateAuthorizationTree(admin);
+	  return authorizer.isGroupAuthorizedNoLog(admin, admingrouppk, resource);
+	}    	
+
+	/**
+	 * Method to check if an administrator exists in the specified admingroup. 
+	 */
+	public boolean existsAdministratorInGroup(Admin admin, int admingrouppk){
+	  boolean returnval = false;	
+	  if(updateNeccessary())
+		updateAuthorizationTree(admin);
+		
+      try{
+      	AdminGroupDataLocal agdl = admingrouphome.findByPrimaryKey(new Integer(admingrouppk));
+      	Iterator adminentitites = agdl.getAdminGroup().getAdminEntities().iterator();
+      	while(adminentitites.hasNext()){
+      	  AdminEntity ae = (AdminEntity) adminentitites.next();
+      	  returnval = returnval || ae.match(admin.getAdminInformation());	
+      	}      	
+      }catch(FinderException fe){}
+		
+	  return returnval;
+	}
+
+
 
     /**
      * Method to validate and check revokation status of a users certificate.
@@ -310,13 +354,13 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
         
         boolean success=true;
         try{
-          admingrouphome.findByPrimaryKey(new AdminGroupPK(admingroupname, caid));
+          admingrouphome.findByGroupNameAndCAId(admingroupname, caid);
           success=false;
         }catch(FinderException e){
         }
         if(success){
           try{
-            admingrouphome.create(admingroupname, caid);
+            admingrouphome.create(new Integer(findFreeAdminGroupId()), admingroupname, caid);
             success=true;
           }catch(CreateException e){
              error("Can't add admingroup:"+e.getMessage());
@@ -340,7 +384,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     public void removeAdminGroup(Admin admin, String admingroupname, int caid){
       if(!(admingroupname.equals(DEFAULTGROUPNAME) && caid == ILogSessionLocal.INTERNALCAID)){        
         try{
-           AdminGroupDataLocal agl = admingrouphome.findByPrimaryKey(new AdminGroupPK(admingroupname, caid));
+           AdminGroupDataLocal agl = admingrouphome.findByGroupNameAndCAId(admingroupname, caid);
           // Remove groups user entities.
            agl.removeAdminEntities(agl.getAdminEntityObjects());
 
@@ -373,20 +417,16 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
         boolean success = false;
         AdminGroupDataLocal agl = null;
         try{
-          agl = admingrouphome.findByPrimaryKey(new AdminGroupPK(newname, caid));
+          agl = admingrouphome.findByGroupNameAndCAId(newname, caid);
           throw new AdminGroupExistsException();
         }catch(FinderException e){
           success = true;
         }
         if(success){
           try{
-            agl =  admingrouphome.findByPrimaryKey(new AdminGroupPK(oldname, caid));
-            Collection accessrules = agl.getAccessRuleObjects();
-            Collection adminentities = agl.getAdminEntityObjects();
-            AdminGroupDataLocal newagl = admingrouphome.create(newname, caid);
-            newagl.addAccessRules(accessrules);
-            newagl.addAdminEntities(adminentities);
-            removeAdminGroup(admin, oldname, caid);
+            agl =  admingrouphome.findByGroupNameAndCAId(oldname, caid);
+            agl.setAdminGroupName(newname);
+            agl.setCAId(caid);
             signalForAuthorizationTreeUpdate();          
           }catch(Exception e){
             error("Can't rename admingroup:"+e.getMessage());
@@ -410,7 +450,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     public AdminGroup getAdminGroup(Admin admin, String admingroupname, int caid){
       AdminGroup returnval = null;
       try{
-        returnval = (admingrouphome.findByPrimaryKey(new AdminGroupPK(admingroupname, caid))).getAdminGroup();
+        returnval = (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).getAdminGroup();
       }catch(Exception e){
           error("Can't get admingroup:"+e.getMessage());
       }
@@ -475,7 +515,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     public void addAccessRules(Admin admin, String admingroupname, int caid, Collection accessrules){
       if(!(admingroupname.equals(DEFAULTGROUPNAME) && caid == ILogSessionLocal.INTERNALCAID)){
         try{
-          (admingrouphome.findByPrimaryKey(new AdminGroupPK(admingroupname, caid))).addAccessRules(accessrules);
+          (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).addAccessRules(accessrules);
           signalForAuthorizationTreeUpdate();
           logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Added accessrules to admingroup : " + admingroupname );
         }catch(Exception e){
@@ -493,7 +533,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     public void removeAccessRules(Admin admin, String admingroupname, int caid, Collection accessrules){
       if(!(admingroupname.equals(DEFAULTGROUPNAME) && caid == ILogSessionLocal.INTERNALCAID)){
        try{
-         (admingrouphome.findByPrimaryKey(new AdminGroupPK(admingroupname, caid))).removeAccessRules(accessrules);
+         (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).removeAccessRules(accessrules);
          signalForAuthorizationTreeUpdate();
          logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Removed accessrules from admingroup : " + admingroupname );
         }catch(Exception e){
@@ -512,7 +552,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     public void addAdminEntities(Admin admin, String admingroupname, int caid, Collection adminentities){ 
       if(!(admingroupname.equals(DEFAULTGROUPNAME) && caid == ILogSessionLocal.INTERNALCAID)){
         try{
-          (admingrouphome.findByPrimaryKey(new AdminGroupPK(admingroupname, caid))).addAdminEntities(adminentities);
+          (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).addAdminEntities(adminentities);
           signalForAuthorizationTreeUpdate();
           logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Added administrator entities to administratorgroup " + admingroupname);
         }catch(Exception e){
@@ -530,7 +570,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     public void removeAdminEntities(Admin admin, String admingroupname, int caid, Collection adminentities){
       if(!(admingroupname.equals(DEFAULTGROUPNAME) && caid == ILogSessionLocal.INTERNALCAID)){
         try{
-          (admingrouphome.findByPrimaryKey(new AdminGroupPK(admingroupname, caid))).removeAdminEntities(adminentities);
+          (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).removeAdminEntities(adminentities);
           signalForAuthorizationTreeUpdate();
           logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES,"Removed administrator entities from administratorgroup " + admingroupname);
         }catch(Exception e){
@@ -631,6 +671,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     public boolean existsCAInRules(Admin admin, int caid){
       return existsCAInAdminGroups(caid) && existsCAInAccessRules(caid);         
     } // existsCAInRules   
+    
     
     /**
      * Help function to existsCAInRules, checks if caid axists among admingroups.
@@ -755,6 +796,22 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean  {
     private void signalForAuthorizationTreeUpdate(){              
        getAuthorizationTreeUpdateData().incrementAuthorizationTreeUpdateNumber();
     }
+    
+	private int findFreeAdminGroupId(){
+	  Random random = new Random((new Date()).getTime());
+	  int id = random.nextInt();
+	  boolean foundfree = false;
+
+	  while(!foundfree){
+		try{		  
+			this.admingrouphome.findByPrimaryKey(new Integer(id));
+			id = random.nextInt();
+		}catch(FinderException e){
+		   foundfree = true;
+		}
+	  }
+	  return id;
+	} // findFreeCertificateProfileId
     
 } // LocalAvailableAccessRulesDataBean
 

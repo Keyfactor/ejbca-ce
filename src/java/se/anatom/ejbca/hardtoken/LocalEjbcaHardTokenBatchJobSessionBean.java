@@ -1,30 +1,33 @@
 package se.anatom.ejbca.hardtoken;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.sql.*;
+
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+import javax.naming.NamingException;
 import javax.sql.DataSource;
-import javax.naming.*;
-import javax.ejb.*;
-import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.BaseSessionBean;
+import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
+import se.anatom.ejbca.log.LogEntry;
+import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.ra.UserDataLocalHome;
-import se.anatom.ejbca.ra.UserAdminData;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.log.LogEntry;
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.util.CertTools;
 
 /**
  * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from EJBCA RA.
  *
- * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.13 2003-11-14 14:59:58 herrvendil Exp $
+ * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.14 2004-01-08 14:31:26 herrvendil Exp $
  */
 public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
@@ -119,10 +122,10 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      */
 
 
-    public UserAdminData getNextHardTokenToGenerate(Admin admin, X509Certificate issuercert) throws UnavailableTokenException{
+    public UserAdminData getNextHardTokenToGenerate(Admin admin, String alias) throws UnavailableTokenException{
       debug(">getNextHardTokenToGenerate()");
       UserAdminData returnval=null;
-      int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, issuercert);
+      int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
 
       if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
         Connection con = null;
@@ -140,11 +143,11 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
               returnval.setPassword(rs.getString(7));
             }
             if(returnval !=null){
-              getHardTokenSession().getIsTokenTypeAvailableToIssuer(admin, issuerid, returnval);
-              getLogSession().log(admin, returnval.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with dn: " + CertTools.getSubjectDN(issuercert));
+              getHardTokenSession().getIsHardTokenProfileAvailableToIssuer(admin, issuerid, returnval);
+              getLogSession().log(admin, returnval.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with alias :" + alias);
             }
         }catch(Exception e){
-          getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with dn: " + CertTools.getSubjectDN(issuercert));
+          getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with alias: " + alias);
           throw new EJBException(e);
         } finally {
            try{
@@ -170,10 +173,10 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      * @throws EJBException if a communication or other error occurs.
      */
 
-    public Collection getNextHardTokensToGenerate(Admin admin, X509Certificate issuercert) throws UnavailableTokenException{
+    public Collection getNextHardTokensToGenerate(Admin admin, String alias) throws UnavailableTokenException{
       debug(">getNextHardTokensToGenerate()");
       ArrayList returnval = new ArrayList();
-      int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, issuercert);
+      int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
 
       if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
         ResultSet rs = null;
@@ -189,12 +192,12 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
                                                , new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9))
                                                ,  rs.getInt(12), rs.getInt(13));
               data.setPassword(rs.getString(7));
-              getHardTokenSession().getIsTokenTypeAvailableToIssuer(admin, issuerid, data);
+              getHardTokenSession().getIsHardTokenProfileAvailableToIssuer(admin, issuerid, data);
               returnval.add(data);
-              getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with dn: " + CertTools.getSubjectDN(issuercert));
+              getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with alias :" + alias);
             }
         }catch(Exception e){
-          getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next tokens for issuer with dn: " + CertTools.getSubjectDN(issuercert));
+          getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next tokens for issuer with alias: " + alias);
           throw new EJBException(e);
         }finally{
            try{
@@ -226,10 +229,10 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      */
 
 
-    public UserAdminData getNextHardTokenToGenerateInQueue(Admin admin, X509Certificate issuercert, int index) throws UnavailableTokenException{
+    public UserAdminData getNextHardTokenToGenerateInQueue(Admin admin, String alias, int index) throws UnavailableTokenException{
       debug(">getNextHardTokenToGenerateInQueue()");
       UserAdminData returnval=null;
-      int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, issuercert);
+      int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
 
       if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
         Connection con = null;
@@ -247,11 +250,11 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
               returnval.setPassword(rs.getString(7));
             }
             if(returnval !=null){
-              getHardTokenSession().getIsTokenTypeAvailableToIssuer(admin, issuerid, returnval);
-              getLogSession().log(admin, returnval.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with dn: " + CertTools.getSubjectDN(issuercert));
+              getHardTokenSession().getIsHardTokenProfileAvailableToIssuer(admin, issuerid, returnval);
+              getLogSession().log(admin, returnval.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Userdata sent for token generation to issuer with alias: " + alias);
             }
         }catch(Exception e){
-          getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with dn: " + CertTools.getSubjectDN(issuercert));
+          getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with alias: " + alias);
           throw new EJBException(e);
         }finally{
            try{
@@ -278,10 +281,10 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      */
 
 
-    public int getNumberOfHardTokensToGenerate(Admin admin, X509Certificate issuercert){
+    public int getNumberOfHardTokensToGenerate(Admin admin, String alias){
       debug(">getNumberOfHardTokensToGenerate()");
       int count = 0;
-      int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, issuercert);
+      int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
 
       if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
         Connection con = null;

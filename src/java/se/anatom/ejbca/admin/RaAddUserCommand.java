@@ -15,7 +15,6 @@ import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.hardtoken.AvailableHardToken;
 import se.anatom.ejbca.hardtoken.IHardTokenSessionHome;
 import se.anatom.ejbca.hardtoken.IHardTokenSessionRemote;
 import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
@@ -29,7 +28,7 @@ import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.29 2003-12-05 14:50:26 herrvendil Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.30 2004-01-08 14:31:26 herrvendil Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
     /**
@@ -75,7 +74,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             boolean usehardtokens = globalconfiguration.getIssueHardwareTokens();
             boolean usekeyrecovery = globalconfiguration.getEnableKeyRecovery();
             String[] hardtokenissueraliases = null;
-            AvailableHardToken[] availabletokens = new AvailableHardToken[0];
+            
 
             IHardTokenSessionRemote hardtokensession=null;
             if(usehardtokens){  
@@ -83,7 +82,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                                                                                  IHardTokenSessionHome.class);
               hardtokensession = hardtokensessionhome.create();
               hardtokenissueraliases = (String[]) hardtokensession.getHardTokenIssuerAliases(administrator).toArray((Object[]) new String[0]);
-              availabletokens = hardtokensession.getAvailableHardTokens();
+             // availabletokens = hardtokensession.getAvailableHardTokens(); // TODO
             }  
             
             if (args.length < 9) {
@@ -221,7 +220,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
               usehardtokenissuer = true;
             }
             
-            if (!validToken(token, usehardtokens, availabletokens)) {
+            if (!validToken(token, usehardtokens)) {
                 System.out.println("Error : Invalid token id.");
                 error = true;
             }
@@ -307,8 +306,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
     }
 
     // execute
-    private boolean validToken(int token, boolean usehardtokens,
-        AvailableHardToken[] availabletokens) {
+    private boolean validToken(int token, boolean usehardtokens) {
         boolean returnval = false;
         returnval = ((token == SecConst.TOKEN_SOFT_BROWSERGEN) ||
             (token == SecConst.TOKEN_SOFT_P12) || (token == SecConst.TOKEN_SOFT_PEM) ||

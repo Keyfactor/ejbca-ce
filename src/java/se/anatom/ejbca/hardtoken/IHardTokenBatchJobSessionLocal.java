@@ -1,15 +1,14 @@
 package se.anatom.ejbca.hardtoken;
 
 import java.util.Collection;
-import java.security.cert.X509Certificate;
 
-import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ra.UserAdminData;
 
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see IHardTokenBatchJobSessionRemote for docs.
  *
- * @version $Id: IHardTokenBatchJobSessionLocal.java,v 1.4 2003-09-03 12:47:24 herrvendil Exp $
+ * @version $Id: IHardTokenBatchJobSessionLocal.java,v 1.5 2004-01-08 14:31:26 herrvendil Exp $
  * @see se.anatom.ejbca.hardtoken.IHardTokenBatchJobSessionLocal
  */
 
@@ -22,25 +21,25 @@ public interface IHardTokenBatchJobSessionLocal extends javax.ejb.EJBLocalObject
      * @see se.anatom.ejbca.hardtoken.IHardTokenBatchJobSessionRemote
      */ 
        
-    public UserAdminData getNextHardTokenToGenerate(Admin admin, X509Certificate issuercert)  throws UnavailableTokenException;
+    public UserAdminData getNextHardTokenToGenerate(Admin admin, String alias)  throws UnavailableTokenException;
 
     /**
      * @see se.anatom.ejbca.hardtoken.IHardTokenBatchJobSessionRemote
      */ 
        
-    public Collection getNextHardTokensToGenerate(Admin admin, X509Certificate issuercert)  throws UnavailableTokenException;
+    public Collection getNextHardTokensToGenerate(Admin admin, String alias)  throws UnavailableTokenException;
     
     /**
      * @see se.anatom.ejbca.hardtoken.IHardTokenBatchJobSessionRemote
      */ 
        
-    public UserAdminData getNextHardTokenToGenerateInQueue(Admin admin, X509Certificate issuercert, int index)  throws UnavailableTokenException;
+    public UserAdminData getNextHardTokenToGenerateInQueue(Admin admin, String alias, int index)  throws UnavailableTokenException;
     
     /**
      * @see se.anatom.ejbca.hardtoken.IHardTokenBatchJobSessionRemote
      */  
        
-    public int getNumberOfHardTokensToGenerate(Admin admin, X509Certificate issuercert);   
+    public int getNumberOfHardTokensToGenerate(Admin admin, String alias);   
  
     /**
      * @see se.anatom.ejbca.hardtoken.IHardTokenBatchJobSessionRemote

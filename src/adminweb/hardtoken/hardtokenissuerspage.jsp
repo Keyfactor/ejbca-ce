@@ -1,15 +1,17 @@
 
 <% 
   TreeMap issuerdatas   = ejbcawebbean.getInformationMemory().getHardTokenIssuers();
+
+
 %>
   <script language=javascript>
 <!--
 function checkfields(){
    var returnval;
-   returnval = !((document.editissuers.<%=TEXTFIELD_ALIAS %>.value=="") || (document.editissuers.<%=TEXTFIELD_CERTSN %>.value==""))  
+   returnval = !((document.editissuers.<%=TEXTFIELD_ALIAS %>.value==""))  
  
    if(!returnval)
-     alert("<%= ejbcawebbean.getText("BOTHFIELDMUSTBEFILLED")%>");
+     alert("<%= ejbcawebbean.getText("ALIASFIELDMUSTBEFILLED")%>");
 
    return returnval;
 }
@@ -60,10 +62,10 @@ function checkselected(){
             <% Iterator i = issuerdatas.keySet().iterator();
                while(i.hasNext()){  
                  String curalias = (String) i.next();
-                 HardTokenIssuerData data = (HardTokenIssuerData) issuerdatas.get(curalias);                 
+                 HardTokenIssuerData data = (HardTokenIssuerData) issuerdatas.get(curalias);
                   %>
               <option value="<%=curalias%>"> 
-                  <%= curalias %>, <%=  ejbcawebbean.getText("SHORTSERIALNUMBER") %> : <%= data.getCertificateSN().toString(16) + ", " + caidtonamemap.get(new Integer(data.getIssuerDN().hashCode()))%>  
+                  <%= curalias + ", "+ adminidtonamemap.get(new Integer(data.getAdminGroupId()))%>  
                </option>
             <%}%>
               <option value="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -111,22 +113,22 @@ function checkselected(){
              <%= ejbcawebbean.getText("ALIAS") %>
         </td>
         <td width="*"> 
+         &nbsp;
          <input type="text" name="<%=TEXTFIELD_ALIAS%>" size="40" maxlength="255">
         </td>
       </tr> 
       <tr>
         <td width="130">
-             <%= ejbcawebbean.getText("CERTIFICATESN") %>
+             <%= ejbcawebbean.getText("ADMINGROUP") %>
         </td>
         <td width="*"> 
-         <input type="text" name="<%=TEXTFIELD_CERTSN%>" size="40" maxlength="255">
           &nbsp;
-          <select name="<%=SELECT_CA%>" >
-            <%Iterator iter = ejbcawebbean.getInformationMemory().getAuthorizedCAIds().iterator(); 
+          <select name="<%=SELECT_ADMINGROUP%>" >
+            <%Iterator iter = authgroups.iterator();
               while(iter.hasNext()){
-                Integer authorizedcaid = (Integer) iter.next();%>
-              <option value="<%= authorizedcaid%>">
-                 <%= caidtonamemap.get(authorizedcaid)%>
+                AdminGroup group = (AdminGroup) iter.next();%>
+              <option value="<%= group.getAdminGroupId()%>">
+                 <%= group.getAdminGroupName() %>
               </option>
             <%}%>
           </select>
@@ -137,9 +139,9 @@ function checkselected(){
             &nbsp;&nbsp;
         </td>
         <td width="*">            
-          <input type="submit" name="<%= BUTTON_ADD_ISSUER%>" onClick='return (checkfieldforlegalchars("document.editissuers.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERSINALIAS") %>") && checkfieldforhexadecimalnumbers("document.editissuers.<%=TEXTFIELD_CERTSN%>","<%= ejbcawebbean.getText("ONLYHEXINCERTSN") %>") && checkfields())' value="<%= ejbcawebbean.getText("ADDISSUER") %>">&nbsp;&nbsp;&nbsp;
-          <input type="submit" name="<%= BUTTON_RENAME_ISSUER%>" onClick='return (checkfieldforlegalchars("document.editissuers.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERSINALIAS") %>") && checkfieldforhexadecimalnumbers("document.editissuers.<%=TEXTFIELD_CERTSN%>","<%= ejbcawebbean.getText("ONLYHEXINCERTSN") %>") && checkfields() && checkselected())'  value="<%= ejbcawebbean.getText("RENAMESELECTED") %>">&nbsp;&nbsp;&nbsp;
-          <input type="submit" name="<%= BUTTON_CLONE_ISSUER%>" onClick='return (checkfieldforlegalchars("document.editissuers.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERSINALIAS") %>") && checkfieldforhexadecimalnumbers("document.editissuers.<%=TEXTFIELD_CERTSN%>","<%= ejbcawebbean.getText("ONLYHEXINCERTSN") %>") && checkfields() && checkselected())'  value="<%= ejbcawebbean.getText("USESELECTEDASTEMPLATE") %>">
+          <input type="submit" name="<%= BUTTON_ADD_ISSUER%>" onClick='return (checkfieldforlegalchars("document.editissuers.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERSINALIAS") %>")  && checkfields())' value="<%= ejbcawebbean.getText("ADDISSUER") %>">&nbsp;&nbsp;&nbsp;
+          <input type="submit" name="<%= BUTTON_RENAME_ISSUER%>" onClick='return (checkfieldforlegalchars("document.editissuers.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERSINALIAS") %>")  && checkfields() && checkselected())'  value="<%= ejbcawebbean.getText("RENAMESELECTED") %>">&nbsp;&nbsp;&nbsp;
+          <input type="submit" name="<%= BUTTON_CLONE_ISSUER%>" onClick='return (checkfieldforlegalchars("document.editissuers.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERSINALIAS") %>")  && checkfields() && checkselected())'  value="<%= ejbcawebbean.getText("USESELECTEDASTEMPLATE") %>">
         </td>
       <tr> 
         <td width="130">&nbsp; </td>

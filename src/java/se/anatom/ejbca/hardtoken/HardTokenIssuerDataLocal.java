@@ -1,13 +1,10 @@
 package se.anatom.ejbca.hardtoken;
 
-import java.math.BigInteger;
-
-import se.anatom.ejbca.hardtoken.HardTokenIssuer;
 
 /**
  * For docs, see HardTokenIssuerDataBean
  *
- * @version $Id: HardTokenIssuerDataLocal.java,v 1.4 2003-09-03 12:47:24 herrvendil Exp $
+ * @version $Id: HardTokenIssuerDataLocal.java,v 1.5 2004-01-08 14:31:26 herrvendil Exp $
  **/
 
 public interface HardTokenIssuerDataLocal extends javax.ejb.EJBLocalObject {
@@ -20,14 +17,10 @@ public interface HardTokenIssuerDataLocal extends javax.ejb.EJBLocalObject {
 
     public void setAlias(String alias);
     
-    public BigInteger getCertSN();
+    public int getAdminGroupId();
     
-    public void setCertSN(BigInteger certificatesn);
-
-    public String getCertIssuerDN();
-    
-    public void setCertIssuerDN(String certissuerdn);
-    
+    public void setAdminGroupId(int admingroupid);
+   
     public HardTokenIssuer getHardTokenIssuer();
 
     public void setHardTokenIssuer(HardTokenIssuer issuerdata);

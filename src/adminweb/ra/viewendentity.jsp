@@ -1,6 +1,6 @@
 <html>
 <%@page contentType="text/html"%>
-<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
+<%@page errorPage="/errorpage.jsp"  import="java.util.TreeMap, java.util.Iterator, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
                  se.anatom.ejbca.webdist.rainterface.UserView, se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.SecConst,
                  se.anatom.ejbca.ra.raadmin.EndEntityProfile,se.anatom.ejbca.authorization.AuthorizationDeniedException,  se.anatom.ejbca.ra.UserDataRemote,
                  javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, 
@@ -53,17 +53,21 @@
    int[] tokenids = RAInterfaceBean.tokenids;
 
    if(globalconfiguration.getIssueHardwareTokens()){
-      AvailableHardToken[] availabletokens = tokenbean.getAvailableHardTokens();
+      TreeMap hardtokenprofiles = ejbcawebbean.getInformationMemory().getHardTokenProfiles();
 
-      tokentexts = new String[RAInterfaceBean.tokentexts.length + availabletokens.length];
+      tokentexts = new String[RAInterfaceBean.tokentexts.length + hardtokenprofiles.keySet().size()];
       tokenids   = new int[tokentexts.length];
       for(int i=0; i < RAInterfaceBean.tokentexts.length; i++){
         tokentexts[i]= RAInterfaceBean.tokentexts[i];
         tokenids[i] = RAInterfaceBean.tokenids[i];
       }
-      for(int i=0; i < availabletokens.length;i++){
-        tokentexts[i+RAInterfaceBean.tokentexts.length]= availabletokens[i].getName();
-        tokenids[i+RAInterfaceBean.tokentexts.length] = Integer.parseInt(availabletokens[i].getId());         
+      Iterator iter = hardtokenprofiles.keySet().iterator();
+      int index=0;
+      while(iter.hasNext()){       
+        String name = (String) iter.next();
+        tokentexts[index+RAInterfaceBean.tokentexts.length]= name;
+        tokenids[index+RAInterfaceBean.tokentexts.length] = ((Integer) hardtokenprofiles.get(name)).intValue();
+        index++;
       }
    }
 

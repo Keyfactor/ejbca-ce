@@ -117,13 +117,14 @@
       <local>se.anatom.ejbca.authorization.AdminGroupDataLocal</local>
       <ejb-class>se.anatom.ejbca.authorization.AdminGroupDataBean</ejb-class>
       <persistence-type>Container</persistence-type>
-      <prim-key-class>se.anatom.ejbca.authorization.AdminGroupPK</prim-key-class>      
+      <prim-key-class>java.lang.Integer</prim-key-class>      
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>AdminGroupDataBean</abstract-schema-name>
       <cmp-field><field-name>pK</field-name></cmp-field>
       <cmp-field><field-name>adminGroupName</field-name></cmp-field>
       <cmp-field><field-name>cAId</field-name></cmp-field>
+      <primkey-field>pK</primkey-field>      
       <ejb-local-ref>
         <ejb-ref-name>ejb/AdminEntityDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
@@ -140,6 +141,18 @@
       </ejb-local-ref>
       <query>
         <query-method>
+          <method-name>findByGroupNameAndCAId</method-name>
+          <method-params>
+      	    <method-param>java.lang.String</method-param>
+      	    <method-param>int</method-param>            
+          </method-params>  
+        </query-method>
+        <ejb-ql>
+          <![CDATA[SELECT DISTINCT OBJECT(a) from AdminGroupDataBean a WHERE a.adminGroupName=?1 AND a.cAId=?2]]>
+        </ejb-ql>
+      </query>
+      <query>
+        <query-method>
           <method-name>findAll</method-name>
             <method-params></method-params>
         </query-method>
@@ -148,7 +161,7 @@
         </ejb-ql>
       </query>
    </entity>
-
+   
    <entity>
       <description>
             This enterprise bean entity represents a user entity.
@@ -288,7 +301,7 @@
        Required is used for mission critical methods, which cannot collide.
        Supports is used for methods which only read data.
    -->
-    <container-transaction>
+<!--    <container-transaction>
     <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>isAuthorized</method-name>
@@ -296,6 +309,14 @@
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
          <method-name>isAuthorizedNoLog</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>isGroupAuthorized</method-name>
+     </method>
+     <method>
+         <ejb-name>AuthorizationSession</ejb-name>
+         <method-name>isGroupAuthorizedNoLog</method-name>
      </method>
      <method>
          <ejb-name>AuthorizationSession</ejb-name>
@@ -330,7 +351,7 @@
          <method-name>getAuthorizedEndEntityProfileIds</method-name>
      </method>               
      <trans-attribute>Supports</trans-attribute>
-   </container-transaction>
+   </container-transaction> -->
 
    <container-transaction>
      <method>

@@ -1,9 +1,11 @@
 package se.anatom.ejbca.hardtoken;
 
-import javax.ejb.CreateException;
 import java.util.HashMap;
-import java.math.BigInteger;
+
+import javax.ejb.CreateException;
+
 import org.apache.log4j.Logger;
+
 import se.anatom.ejbca.BaseEntityBean;
 
 /** Entity bean should not be used directly, use though Session beans.
@@ -13,12 +15,11 @@ import se.anatom.ejbca.BaseEntityBean;
  * <pre>
  *  id (Primary key)
  *  alias (of the hard token issuer)
- *  certificatesn (Certificate SN of the hard token issuer)
- *  certificateissuersn (The SN of the certificate issuing the hard toke issuers certificate.) 
+ *  admingroupid (Integer pointing to administrator group associated to this issuer) 
  *  hardtokenissuer (Data saved concerning the hard token issuer)
  * </pre>
  *
- * @version $Id: HardTokenIssuerDataBean.java,v 1.7 2003-09-03 12:47:24 herrvendil Exp $
+ * @version $Id: HardTokenIssuerDataBean.java,v 1.8 2004-01-08 14:31:26 herrvendil Exp $
  **/
 
 public abstract class HardTokenIssuerDataBean extends BaseEntityBean {
@@ -33,20 +34,13 @@ public abstract class HardTokenIssuerDataBean extends BaseEntityBean {
     public abstract String getAlias();
     public abstract void setAlias(String alias);
     
-    public abstract String getCertificateSN();
-    public abstract void setCertificateSN(String certificatesn);
-    
-    public abstract String getCertIssuerDN();    
-    public abstract void setCertIssuerDN(String certissuerdn);  
+    public abstract int getAdminGroupId();
+    public abstract void setAdminGroupId(int groupid);
 
     public abstract HashMap getData();
     public abstract void setData(HashMap data);
     
-    public BigInteger getCertSN(){ return new BigInteger(getCertificateSN(),16); }
-    
-    public void setCertSN(BigInteger certificatesn){ setCertificateSN(certificatesn.toString(16)); } 
-
-   
+       
     /** 
      * Method that returns the hard token issuer data and updates it if nessesary.
      */    
@@ -77,18 +71,17 @@ public abstract class HardTokenIssuerDataBean extends BaseEntityBean {
      *
      **/
 
-    public Integer ejbCreate(Integer id, String alias, BigInteger certificatesn, String certissuerdn,  HardTokenIssuer issuerdata) throws CreateException {
+    public Integer ejbCreate(Integer id, String alias, int admingroupid,  HardTokenIssuer issuerdata) throws CreateException {
         setId(id);
         setAlias(alias);
-        setCertificateSN(certificatesn.toString(16));   
-        setCertIssuerDN(certissuerdn);     
+        setAdminGroupId(admingroupid);
         setHardTokenIssuer(issuerdata);
         
         log.debug("Created Hard Token Issuer "+ alias );
         return id;
     }
 
-    public void ejbPostCreate(Integer id, String alias, BigInteger certificatesn, String certissuerdn,  HardTokenIssuer issuerdata) {
+    public void ejbPostCreate(Integer id, String alias, int admingroupid,  HardTokenIssuer issuerdata) {
         // Do nothing. Required.
     }
 }

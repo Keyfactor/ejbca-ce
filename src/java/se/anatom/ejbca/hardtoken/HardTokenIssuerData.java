@@ -6,11 +6,11 @@
 
 package se.anatom.ejbca.hardtoken;
 
-import java.math.BigInteger;
 
 /**
  *  This is a value class containing the data relating to a hard token issuer sent between 
  *  server and clients.
+ * 
  *
  * @author  TomSelleck
  */
@@ -20,11 +20,10 @@ public class HardTokenIssuerData implements java.io.Serializable, Comparable {
     // Indicates the type of administrator.
  
     // Public Constructors
-    public HardTokenIssuerData(int hardtokenissuerid, String alias, BigInteger certificatesn, String issuerdn, HardTokenIssuer hardtokenissuer){
+    public HardTokenIssuerData(int hardtokenissuerid, String alias, int admingroupid , HardTokenIssuer hardtokenissuer){
       this.hardtokenissuerid=hardtokenissuerid;
       this.alias=alias;     
-      this.certificatesn=certificatesn;
-      this.issuerdn=issuerdn;      
+      this.admingroupid = admingroupid; 
       this.hardtokenissuer=hardtokenissuer;
     }
     
@@ -36,12 +35,9 @@ public class HardTokenIssuerData implements java.io.Serializable, Comparable {
     public String getAlias(){ return this.alias; }   
     public void setAlias(String alias){ this.alias=alias; }
     
-    public BigInteger getCertificateSN(){ return this.certificatesn; }   
-    public void setCertificateSN(BigInteger certificatesn){ this.certificatesn=certificatesn; }
-    
-    public String getIssuerDN(){ return this.issuerdn; }   
-    public void setIssuerDN(String issuerdn){ this.issuerdn=issuerdn;}    
-   
+    public int getAdminGroupId(){ return this.admingroupid; }   
+    public void setAdminGroupId(int admingroupid){ this.admingroupid=admingroupid;}
+           
     public HardTokenIssuer getHardTokenIssuer(){ return this.hardtokenissuer; }   
     public void setHardTokenIssuer(HardTokenIssuer hardtokenissuer){ this.hardtokenissuer=hardtokenissuer; }    
        
@@ -52,7 +48,6 @@ public class HardTokenIssuerData implements java.io.Serializable, Comparable {
     // Private fields
     private    int             hardtokenissuerid;
     private    String          alias;   
-    private    BigInteger      certificatesn;
-    private    String          issuerdn;    
+    private    int             admingroupid; 
     private    HardTokenIssuer hardtokenissuer;
 }

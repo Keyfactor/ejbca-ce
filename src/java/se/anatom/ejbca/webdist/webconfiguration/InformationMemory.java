@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.TreeMap;
 
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.authorization.AdminGroup;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
@@ -156,7 +157,7 @@ public class InformationMemory {
      * Returns all authorized certificate profile names as a treemap of name (String) -> id (Integer)
      */
     public TreeMap getEditCertificateProfileNames(){
-      return this.caauthorization.getEditCertificateProfileNames();   
+      return this.caauthorization.getEditCertificateProfileNames(getGlobalConfiguration().getIssueHardwareTokens());   
     }     
     
     /**
@@ -363,11 +364,60 @@ public class InformationMemory {
 	public boolean authorizedToHardTokenIssuer(String alias){			  	    
 	   return hardtokenauthorization.authorizedToHardTokenIssuer(alias);
 	}	
+
+
+	/**
+	 *  @see se.anatom.ejbca.webdist.hardtokeninterface.HardTokenAuthorization.java
+	 */	
+	public Collection getHardTokenIssuingAdminGroups(){
+	  return hardtokenauthorization.getHardTokenIssuingAdminGroups();	
+	}
+
+    /**
+     * Returns a sorted map with authorized admingroupname -> admingroupid
+     */
+
+    public TreeMap getAuthorizedAdminGroups(){
+      if(authgroups == null){
+        authgroups = new TreeMap();
+        HashMap caidtoname = getCAIdToNameMap(); 
+        Iterator iter = this.authorizationsession.getAuthorizedAdminGroupNames(administrator).iterator();
+        while(iter.hasNext()){
+          AdminGroup admingroup = (AdminGroup) iter.next();	
+          authgroups.put(admingroup.getAdminGroupName() + ", CA: " + caidtoname.get(new Integer(admingroup.getCAId())),new Integer(admingroup.getAdminGroupId()));
+        }              		
+      }
+    	
+      return authgroups;	 
+    }
+
+
+	/**
+	 * Returns a map with authorized admingroupid -> admingroupname
+	 */
+    
+    public HashMap getAdminGroupIdToNameMap(){
+      if(admingrpidmap == null){
+      	TreeMap admingrpnames = getAuthorizedAdminGroups();
+		admingrpidmap = new HashMap();
+      	Iterator iter = admingrpnames.keySet().iterator();
+      	while(iter.hasNext()){
+      		Object next = iter.next();
+			admingrpidmap.put(admingrpnames.get(next) ,next);	
+      	}			
+      	
+      }
+    	
+      return admingrpidmap;	
+    }
+
     
     /**
      * Method that should be called every time CA configuration is edited.
      */
     public void cAsEdited(){
+      authgroups = null;
+      admingrpidmap = null;
       caidtonamemap = null;   
       endentityavailablecas = null;
 	  authorizedaccessrules = null;
@@ -405,7 +455,9 @@ public class InformationMemory {
      * Method that should be called every time a administrative privilegdes has been edited
      */
     public void administrativePriviledgesEdited(){
-      endentityavailablecas = null;  
+      endentityavailablecas = null;
+	  authgroups = null;  
+	  admingrpidmap = null;
       logauthorization.clear();   
       raauthorization.clear();
       caauthorization.clear();
@@ -424,7 +476,11 @@ public class InformationMemory {
      * Method that should be called every time the system configuration has been edited
      */    
     public void systemConfigurationEdited(GlobalConfiguration globalconfiguration){
-      this.globalconfiguration = globalconfiguration;  
+      this.globalconfiguration = globalconfiguration;
+	  logauthorization.clear();   
+	  raauthorization.clear();
+	  caauthorization.clear();
+	  hardtokenauthorization.clear();
     }
     
     
@@ -448,6 +504,9 @@ public class InformationMemory {
     HashMap certificateprofileidtonamemap = null;    
     HashMap endentityavailablecas = null;
     HashMap publisheridtonamemap = null;
+
+    TreeMap authgroups = null;
+    HashMap admingrpidmap = null;
     
     HashSet authorizedaccessrules = null;
     

@@ -12,35 +12,45 @@ import java.util.Iterator;
 
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
- * HardTokenIssuer is a class representing the data saved for each HardTokenIssuer.
+ * HardTokenIssuer V3 is a class representing the data saved for each HardTokenIssuer.
+ * it isn't back compatible with the old version.
  *
  * @author  TomSelleck
- * @version $Id: HardTokenIssuer.java,v 1.5 2003-09-03 12:47:24 herrvendil Exp $
+ * @version $Id: HardTokenIssuer.java,v 1.6 2004-01-08 14:31:26 herrvendil Exp $
  */
 public  class HardTokenIssuer extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
     // Default Values
-    public static final float LATEST_VERSION = 0;
+    public static final float LATEST_VERSION = 1;
 
     // Protexted Constants, must be overloaded by all deriving classes.   
-    protected static final String AVAILABLEHARDTOKENS     = "availablehardtokens"; 
-    
+    protected static final String AVAILABLEHARDTOKENSPROFILES  = "availablehardtokensprofiles"; 
+	protected static final String DESCRIPTION                  = "description"; 
     // Public Constructors.
     
     public HardTokenIssuer(){
-      data.put(AVAILABLEHARDTOKENS,new ArrayList());         
+      data.put(AVAILABLEHARDTOKENSPROFILES,new ArrayList());
+      data.put(DESCRIPTION,"");         
     }
     
     // Public Methods
     
     // Availablehardtokens defines which hard tokens the issuer is able to issue. 
-    public ArrayList getAvailableHardTokens(){
-      return  (ArrayList) data.get(AVAILABLEHARDTOKENS); 
+    public ArrayList getAvailableHardTokenProfiles(){
+      return  (ArrayList) data.get(AVAILABLEHARDTOKENSPROFILES); 
     }
     
-    public void setAvailableHardTokens(ArrayList availablehardtokens){
-      data.put(AVAILABLEHARDTOKENS,availablehardtokens); 
+    public void setAvailableHardTokenProfiles(ArrayList availablehardtokens){
+      data.put(AVAILABLEHARDTOKENSPROFILES,availablehardtokens); 
     }    
+    
+    public String getDescription(){
+      return  (String) data.get(DESCRIPTION);	
+    }
+
+	public void setDescription(String description){
+	  data.put(DESCRIPTION, description);	
+	}    
     
     public void setField(String field, Object value){ 
        data.put(field,value);   
@@ -53,7 +63,7 @@ public  class HardTokenIssuer extends UpgradeableDataHashMap implements Serializ
 
     /** Implemtation of UpgradableDataHashMap function upgrade. */
 
-    public void upgrade(){
+    public void upgrade(){	
     }
     
     public Object clone() throws CloneNotSupportedException {

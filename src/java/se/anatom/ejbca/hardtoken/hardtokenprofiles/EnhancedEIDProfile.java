@@ -11,7 +11,7 @@ import se.anatom.ejbca.SecConst;
 /**
  * EnhancedEIDProfile with three certificates and key recovery functionallity
  * 
- * @version $Id: EnhancedEIDProfile.java,v 1.1 2003-12-05 14:50:27 herrvendil Exp $
+ * @version $Id: EnhancedEIDProfile.java,v 1.2 2004-01-08 14:31:26 herrvendil Exp $
  */
 public class EnhancedEIDProfile extends EIDProfile {
 						
@@ -50,9 +50,9 @@ public class EnhancedEIDProfile extends EIDProfile {
 	  data.put(TYPE, new Integer(TYPE_ENHANCEDEID));
       
       ArrayList certprofileids = new ArrayList(NUMBEROFCERTIFICATES);
-	  certprofileids.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN)); // TODO add special certificate profiles
-	  certprofileids.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH)); // TODO add special certificate profiles
-	  certprofileids.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENENC)); // TODO add special certificate profiles
+	  certprofileids.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN)); 
+	  certprofileids.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH)); 
+	  certprofileids.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENENC)); 
 	  data.put(CERTIFICATEPROFILEID, certprofileids);
 	  	  
 	  ArrayList caids = new ArrayList(NUMBEROFCERTIFICATES);

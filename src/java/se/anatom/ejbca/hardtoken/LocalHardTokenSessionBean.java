@@ -1,45 +1,49 @@
 package se.anatom.ejbca.hardtoken;
 
-import java.math.BigInteger;
-import java.util.Date;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.TreeMap;
 import java.util.Iterator;
 import java.util.Random;
-import java.sql.*;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
+import java.util.TreeMap;
+
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+import javax.ejb.FinderException;
+import javax.naming.NamingException;
 import javax.sql.DataSource;
-import javax.naming.*;
-import javax.ejb.*;
 
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ra.UserAdminData;
-import se.anatom.ejbca.log.ILogSessionLocal;
-import se.anatom.ejbca.log.ILogSessionLocalHome;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.log.LogEntry;
-import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.hardtoken.hardtokenprofiles.EIDProfile;
-import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile;
-import se.anatom.ejbca.hardtoken.hardtokentypes.*;
+import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
+import se.anatom.ejbca.hardtoken.hardtokenprofiles.EIDProfile;
+import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile;
+import se.anatom.ejbca.hardtoken.hardtokentypes.HardToken;
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.log.ILogSessionLocal;
+import se.anatom.ejbca.log.ILogSessionLocalHome;
+import se.anatom.ejbca.log.LogEntry;
+import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.util.CertTools;
 
 /**
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.17 2003-12-05 14:50:26 herrvendil Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.18 2004-01-08 14:31:26 herrvendil Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
@@ -69,8 +73,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     /** The remote interface of  log session bean */
     private ILogSessionLocal logsession = null;
 
-    /** Data about to the system available hard tokens, information is retrieved from META-INF.XML */
-    private AvailableHardToken[] availablehardtokens = null;
+
 
 
      /**
@@ -459,27 +462,22 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      * @throws EJBException if a communication or other error occurs.
      */
 
-    public boolean addHardTokenIssuer(Admin admin, String alias, BigInteger certificatesn, String certissuerdn, HardTokenIssuer issuerdata){
+    public boolean addHardTokenIssuer(Admin admin, String alias, int admingroupid, HardTokenIssuer issuerdata){
        debug(">addHardTokenIssuer(alias: " + alias + ")");
-       boolean returnval=false;
-       String bcdn = CertTools.stringToBCDNString(certissuerdn);
+       boolean returnval=false;       
        try{
           hardtokenissuerhome.findByAlias(alias);
        }catch(FinderException e){
          try{
-           hardtokenissuerhome.findByCertificateSN(certificatesn.toString(16), bcdn);
-         }catch(FinderException f){
-           try{
-             hardtokenissuerhome.create(findFreeHardTokenIssuerId(), alias, certificatesn, bcdn, issuerdata);
-             returnval = true;
-           }catch(Exception g){}
-         }
+           hardtokenissuerhome.create(findFreeHardTokenIssuerId(), alias, admingroupid, issuerdata);
+           returnval = true;
+         }catch(Exception g){}         
        }
      
        if(returnval)
-         getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " + alias + " added.");
+         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " + alias + " added.");
        else
-         getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error adding hard token issuer "+ alias);
+         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error adding hard token issuer "+ alias);
        
        debug("<addHardTokenIssuer()");
        return returnval;
@@ -498,15 +496,14 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        int caid = ILogSessionLocal.INTERNALCAID;
        try{
          HardTokenIssuerDataLocal htih = hardtokenissuerhome.findByAlias(alias);
-         htih.setHardTokenIssuer(issuerdata);
-         caid = htih.getCertIssuerDN().hashCode();
+         htih.setHardTokenIssuer(issuerdata);         
          returnvalue = true;
        }catch(FinderException e){}
       
        if(returnvalue)
-         getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " +  alias + " edited.");
+         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " +  alias + " edited.");
        else
-         getLogSession().log(admin, ILogSessionLocal.INTERNALCAID, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error editing hard token issuer " + alias + ".");
+         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error editing hard token issuer " + alias + ".");
 
        debug("<changeHardTokenIssuer()");
        return returnvalue;
@@ -518,20 +515,19 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      * @return false if the new alias or certificatesn already exists.
      * @throws EJBException if a communication or other error occurs.
      */
-    public boolean cloneHardTokenIssuer(Admin admin, String oldalias, String newalias, BigInteger newcertificatesn, String newcertissuerdn){
+    public boolean cloneHardTokenIssuer(Admin admin, String oldalias, String newalias, int admingroupid){
        debug(">cloneHardTokenIssuer(alias: " + oldalias + ")");
        HardTokenIssuer issuerdata = null;
-       boolean returnval = false;
-	   String bcdn = CertTools.stringToBCDNString(newcertissuerdn);
+       boolean returnval = false;	   
        try{
          HardTokenIssuerDataLocal htih = hardtokenissuerhome.findByAlias(oldalias);
          issuerdata = (HardTokenIssuer) htih.getHardTokenIssuer().clone();
 
-         returnval = addHardTokenIssuer(admin, newalias, newcertificatesn, bcdn, issuerdata);
+         returnval = addHardTokenIssuer(admin, newalias, admingroupid, issuerdata);
          if(returnval)
-           getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"New hard token issuer " + newalias +  ", used issuer " + oldalias + " as template.");
+           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"New hard token issuer " + newalias +  ", used issuer " + oldalias + " as template.");
          else
-           getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error adding hard token issuer " + newalias +  " using issuer " + oldalias + " as template.");
+           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error adding hard token issuer " + newalias +  " using issuer " + oldalias + " as template.");
        }catch(Exception e){
           throw new EJBException(e);
        }
@@ -549,12 +545,11 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       debug(">removeHardTokenIssuer(alias: " + alias + ")");
       int caid = ILogSessionLocal.INTERNALCAID;
       try{
-        HardTokenIssuerDataLocal htih = hardtokenissuerhome.findByAlias(alias);
-        caid = htih.getCertIssuerDN().hashCode();
+        HardTokenIssuerDataLocal htih = hardtokenissuerhome.findByAlias(alias);        
         htih.remove();
-        getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " + alias + " removed.");
+        getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " + alias + " removed.");
       }catch(Exception e){
-         getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error removing hard token issuer " + alias + ".",e);
+         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,"Error removing hard token issuer " + alias + ".",e);
       }
       debug("<removeHardTokenIssuer()");
     } // removeHardTokenIssuer
@@ -566,36 +561,50 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      * @throws EJBException if a communication or other error occurs.
      */
     public boolean renameHardTokenIssuer(Admin admin, String oldalias, String newalias,
-                                         BigInteger newcertificatesn, String newcertissuerdn){
+                                         int newadmingroupid){
        debug(">renameHardTokenIssuer(from " + oldalias + " to " + newalias + ")");
-       boolean returnvalue = false;
-	   String bcdn = CertTools.stringToBCDNString(newcertissuerdn);	   
+       boolean returnvalue = false;	   	  
        try{
           hardtokenissuerhome.findByAlias(newalias);
        }catch(FinderException e){
-         try{
-           hardtokenissuerhome.findByCertificateSN(newcertificatesn.toString(16), bcdn);
-         }catch(FinderException f){
            try{
              HardTokenIssuerDataLocal htih = hardtokenissuerhome.findByAlias(oldalias);
              htih.setAlias(newalias);
-             htih.setCertSN(newcertificatesn);
-             htih.setCertIssuerDN(bcdn);
+             htih.setAdminGroupId(newadmingroupid);    
              returnvalue = true;
-           }catch(FinderException g){}
-         }
+           }catch(FinderException g){}         
        }
-
        
        if(returnvalue)
-         getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " + oldalias + " renamed to " + newalias +  "." );
+         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,"Hard token issuer " + oldalias + " renamed to " + newalias +  "." );
        else
-         getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA," Error renaming hard token issuer  " + oldalias +  " to " + newalias + "." );
-
+         getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA," Error renaming hard token issuer  " + oldalias +  " to " + newalias + "." );
 
        debug("<renameHardTokenIssuer()");
        return returnvalue;
     } // renameHardTokenIssuer
+    
+    /**
+     * Method to check if an administrator is authorized to issue hard tokens for
+     * the given alias.
+     * 
+     * @param admin administrator to check
+     * @param alias alias of hardtoken issuer. 
+     * @return true if administrator is authorized to issue hardtoken with given alias.
+     */
+    public boolean getAuthorizedToHardTokenIssuer(Admin admin, String alias){
+      boolean returnval = false;
+      
+      try{
+      	int admingroupid = hardtokenissuerhome.findByAlias(alias).getAdminGroupId();
+		returnval = authorizationsession.isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens");
+      	returnval = returnval && authorizationsession.existsAdministratorInGroup(admin, admingroupid);      	 
+      	
+      }catch(FinderException fe){}
+       catch(AuthorizationDeniedException ade){}
+      	
+      return returnval;	
+    }
 
       /**
        * Returns the available hard token issuers.
@@ -614,7 +623,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
           Iterator i = result.iterator();
           while(i.hasNext()){
             htih = (HardTokenIssuerDataLocal) i.next();
-            returnval.add(new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getCertSN(), htih.getCertIssuerDN(), htih.getHardTokenIssuer()));
+            returnval.add(new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer()));
           }
         }
         Collections.sort(returnval);
@@ -667,7 +676,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
           Iterator i = result.iterator();
           while(i.hasNext()){
             HardTokenIssuerDataLocal htih = (HardTokenIssuerDataLocal) i.next();
-            returnval.put(htih.getAlias(), new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getCertSN() ,htih.getCertIssuerDN(), htih.getHardTokenIssuer()));
+            returnval.put(htih.getAlias(), new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer()));
           }
         }
       }catch(FinderException e){}
@@ -689,7 +698,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       try{
         htih = hardtokenissuerhome.findByAlias(alias);
         if(htih != null){
-          returnval = new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getCertSN() ,htih.getCertIssuerDN(), htih.getHardTokenIssuer());
+          returnval = new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer());
         }
       }catch(Exception e){}
 
@@ -710,34 +719,14 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       try{
         htih = hardtokenissuerhome.findByPrimaryKey(new Integer(id));
         if(htih != null){
-          returnval = new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getCertSN() ,htih.getCertIssuerDN(), htih.getHardTokenIssuer());
+          returnval = new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer());
         }
       }catch(Exception e){}
 
       debug("<getHardTokenIssuerData()");
       return returnval;
-    } // getHardTokenIssuerData
+    } // getHardTokenIssuerData    
 
-       /**
-       * Returns the specified  hard token issuer.
-       *
-       * @return the  hard token issuer data or null if  hard token issuer doesn't exists.
-       * @throws EJBException if a communication or other error occurs.
-       */
-    public HardTokenIssuerData getHardTokenIssuerData(Admin admin, X509Certificate issuercertificate){
-      debug(">getHardTokenIssuerData()");
-      HardTokenIssuerData returnval = null;
-      HardTokenIssuerDataLocal htih = null;
-      try{
-        htih = hardtokenissuerhome.findByCertificateSN(issuercertificate.getSerialNumber().toString(16), CertTools.getIssuerDN(issuercertificate));
-        if(htih != null){
-          returnval = new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getCertSN() ,htih.getCertIssuerDN(), htih.getHardTokenIssuer());
-        }
-      }catch(Exception e){}
-
-      debug("<getHardTokenIssuerData()");
-      return returnval;
-    } // getHardTokenIssuerData
 
       /**
        * Returns the number of available hard token issuer.
@@ -777,27 +766,6 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       return returnval;
     } // getNumberOfHardTokenIssuersId
 
-      /**
-       * Returns a hard token issuer id given the issuers certificate.
-       *
-       * @return id number of hard token issuer.
-       * @throws EJBException if a communication or other error occurs.
-       */
-    public int getHardTokenIssuerId(Admin admin, X509Certificate issuercertificate){
-      debug(">getHardTokenIssuerId()");
-      int returnval = IHardTokenSessionRemote.NO_ISSUER;
-      HardTokenIssuerDataLocal htih = null;
-      try{
-        htih = hardtokenissuerhome.findByCertificateSN(issuercertificate.getSerialNumber().toString(16), CertTools.getIssuerDN(issuercertificate));
-        if(htih != null){
-          returnval = htih.getId().intValue();
-        }
-      }catch(Exception e){}
-
-      debug("<getHardTokenIssuerId()");
-      return returnval;
-    } // getNumberOfHardTokenIssuersId
-
        /**
        * Returns a hard token issuer alias given its id.
        *
@@ -820,7 +788,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     } // getHardTokenIssuerAlias
 
         /**
-       * Checks if a tokentype is among a hard tokens issuers available token types.
+       * Checks if a hard token profile is among a hard tokens issuers available token types.
        *
        * @param admin, the administrator calling the function
        * @param isserid, the id of the issuer to check.
@@ -830,10 +798,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        * @throws EJBException if a communication or other error occurs.
        */
 
-    public void getIsTokenTypeAvailableToIssuer(Admin admin, int issuerid, UserAdminData userdata) throws UnavailableTokenException{
+    public void getIsHardTokenProfileAvailableToIssuer(Admin admin, int issuerid, UserAdminData userdata) throws UnavailableTokenException{
         debug(">getIsTokenTypeAvailableToIssuer(issuerid: " + issuerid + ", tokentype: " + userdata.getTokenType()+ ")");
         boolean returnval = false;
-        ArrayList availabletokentypes = getHardTokenIssuerData(admin, issuerid).getHardTokenIssuer().getAvailableHardTokens();
+        ArrayList availabletokentypes = getHardTokenIssuerData(admin, issuerid).getHardTokenIssuer().getAvailableHardTokenProfiles();
 
         for(int i=0; i < availabletokentypes.size(); i++){
           if(((Integer) availabletokentypes.get(i)).intValue() == userdata.getTokenType())
@@ -1088,40 +1056,6 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        return returnval;
     } // findCertificatesInHardToken
 
-       /**
-       * Retrieves an array of to the system avaliable hardware tokens defines in the hard token modules ejb-jar.XML
-       *
-       *
-       * @return an array of to the system available hard tokens.
-       * @throws EJBException if a communication or other error occurs.
-       */
-    public AvailableHardToken[] getAvailableHardTokens(){
-      debug(">getAvailableHardTokens()");
-      if(availablehardtokens==null){
-        String[] hardtokensclasses = null;
-        String[] hardtokensnames = null;
-        
-        // Get configuration of log device classes from ejb-jar.xml
-        String hardtokensclassstring = (String)lookup("java:comp/env/hardTokenClasses", java.lang.String.class);
-        String hardtokensnamestring  = (String)lookup("java:comp/env/hardTokenNames", java.lang.String.class);
-        
-
-        try{
-          hardtokensclasses = hardtokensclassstring.split(";");
-          hardtokensnames  = hardtokensnamestring.split(";");        
-        }catch(Exception e){
-          throw new EJBException(e);
-        }
-
-        availablehardtokens = new AvailableHardToken[hardtokensclasses.length];
-        for(int i=0; i < hardtokensclasses.length; i++){
-          availablehardtokens[i] = new AvailableHardToken(hardtokensnames[i], hardtokensclasses[i]);
-        }
-      }
-
-      debug("<getAvailableHardTokens()");
-      return availablehardtokens;
-    } // getAvailableHardTokens
 
     /**
      * Method used to signal to the log that token was generated successfully.

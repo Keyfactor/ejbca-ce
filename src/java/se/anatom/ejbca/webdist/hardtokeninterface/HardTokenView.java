@@ -14,9 +14,8 @@ import se.anatom.ejbca.util.StringTools;
  */
 public class HardTokenView implements java.io.Serializable, Cloneable {
     // Public constants.
-    public HardTokenView(AvailableHardToken[] availablehardtokens) {
-        this.tokendata = new HardTokenData();
-        this.availablehardtokens = availablehardtokens;
+    public HardTokenView() {
+        this.tokendata = new HardTokenData();        
     }
 
     /**
@@ -25,9 +24,8 @@ public class HardTokenView implements java.io.Serializable, Cloneable {
      * @param availablehardtokens DOCUMENT ME!
      * @param newtokendata DOCUMENT ME!
      */
-    public HardTokenView(AvailableHardToken[] availablehardtokens, HardTokenData newtokendata) {
-        tokendata = newtokendata;
-        this.availablehardtokens = availablehardtokens;
+    public HardTokenView(HardTokenData newtokendata) {
+        tokendata = newtokendata;        
     }
 
     /**
@@ -175,6 +173,5 @@ public class HardTokenView implements java.io.Serializable, Cloneable {
 
     // Private constants.
     // Private methods.
-    private HardTokenData tokendata;
-    private AvailableHardToken[] availablehardtokens;
+    private HardTokenData tokendata;    
 }

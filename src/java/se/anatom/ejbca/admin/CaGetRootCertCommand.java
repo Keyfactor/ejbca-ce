@@ -9,7 +9,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Export root CA certificate.
  *
- * @version $Id: CaGetRootCertCommand.java,v 1.10 2003-12-15 13:38:29 anatom Exp $
+ * @version $Id: CaGetRootCertCommand.java,v 1.11 2004-01-08 14:31:26 herrvendil Exp $
  */
 public class CaGetRootCertCommand extends BaseCaAdminCommand {
     /**
@@ -28,12 +28,13 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-        if (args.length < 3) {
+		
+        if (args.length < 3) {		
             String msg = "Save root CA certificate (PEM- or DER-format) to file.\n";
             msg += "Usage: CA getrootcert <caname> <filename> <-der>";
             throw new IllegalAdminCommandException(msg);
-        }
-
+        }		
+		
         String caname = args[1];
         String filename = args[2];
         boolean pem = true;
@@ -42,24 +43,29 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
                 pem = false;
             }
         }
-        
+        	
+		System.out.flush();
         try {
             ArrayList chain = new ArrayList(getCertChain(caname));
             if (chain.size() > 0) {
-                X509Certificate rootcert = (X509Certificate)chain.get(chain.size()-1);                
+                X509Certificate rootcert = (X509Certificate)chain.get(chain.size()-1);
+ 
                 FileOutputStream fos = new FileOutputStream(filename);
-                if (pem) {
+                if (pem) {		
                     fos.write(CertTools.getPEMFromCerts(chain));
-                } else {
+                } else {					
                     fos.write(rootcert.getEncoded());
-                }
+                }				
                 fos.close();
+				System.out.println("Wrote Root CA certificate to '" + filename + "'");
             } else {
                 System.out.println("No CA certificate found.");
             }
-        } catch (Exception e) {
+        } catch (Exception e) {			
             throw new ErrorAdminCommandException(e);
         }
+
+        
         System.out.println("Wrote Root CA certificate to '" + filename + "'");
     } // execute
 }

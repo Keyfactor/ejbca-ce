@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
  * The building component of the AccessTree. All nodes consist of these objects.
  *
  * @author  Philip Vendil
- * @version $Id: AccessTreeNode.java,v 1.2 2003-10-21 13:48:47 herrvendil Exp $
+ * @version $Id: AccessTreeNode.java,v 1.3 2004-01-08 14:31:26 herrvendil Exp $
  */
 public class AccessTreeNode implements Serializable{
 
@@ -162,30 +162,36 @@ public class AccessTreeNode implements Serializable{
            
           for (int i = 0; i < useraccesspairs.size();i++){ 
             accessuserpair = (Object[]) useraccesspairs.get(i);
-            adminentities = ((AdminGroup) accessuserpair[ADMINGROUP]).getAdminEntities();
-            Iterator iter = adminentities.iterator();
-            while(iter.hasNext()){
-              AdminEntity adminentity = (AdminEntity) iter.next();  
-              // If user entity match.
-              if(adminentity.match(admininformation)){
-                int thisuserstate = ((AccessRule) accessuserpair[ACCESSRULE]).getRuleState();
-                int thisuserstateprio = adminentity.getPriority();
-                // If rule has higher priority, it's state is to be used.
-                if( stateprio < thisuserstateprio){
-                   state=thisuserstate;
-                   stateprio=thisuserstateprio;
-                }
-                else{
-                  if( stateprio == thisuserstateprio){
-                    // If the priority is the same then decline has priority over accept.
-                    if(state < thisuserstate){
+            if(admininformation.isGroupUser()){
+              if(((AdminGroup) accessuserpair[ADMINGROUP]).getAdminGroupId() == admininformation.getGroupId()){	              
+			    state = ((AccessRule) accessuserpair[ACCESSRULE]).getRuleState();
+              }	
+            }else{                                    
+              adminentities = ((AdminGroup) accessuserpair[ADMINGROUP]).getAdminEntities();
+              Iterator iter = adminentities.iterator();
+              while(iter.hasNext()){
+                AdminEntity adminentity = (AdminEntity) iter.next();  
+                // If user entity match.
+                if(adminentity.match(admininformation)){
+                  int thisuserstate = ((AccessRule) accessuserpair[ACCESSRULE]).getRuleState();
+                  int thisuserstateprio = adminentity.getPriority();
+                  // If rule has higher priority, it's state is to be used.
+                  if( stateprio < thisuserstateprio){
+                    state=thisuserstate;
+                    stateprio=thisuserstateprio;
+                  }
+                  else{
+                    if( stateprio == thisuserstateprio){
+                      // If the priority is the same then decline has priority over accept.
+                      if(state < thisuserstate){
                         state=thisuserstate;
+                      }
                     }
                   }
                 }
               }
             }
-          }
+          }  
           log.debug("<matchInformation: returns " + state );
           return state;
        }

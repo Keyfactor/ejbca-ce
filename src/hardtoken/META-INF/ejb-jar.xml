@@ -28,20 +28,6 @@
         <env-entry-value>java:/DefaultDS</env-entry-value>
      </env-entry>
 
-     <!-- Env-entries for defining to the system available hard tokens. -->
-     <env-entry>
-        <description>String representing the names of the available hard tokens. The different names should be separated with semicolons (;).</description>
-        <env-entry-name>hardTokenNames</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>SwedishEID;EnhancedEID</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>String representing the classes of the available hard tokens. The different classes should be separated with semicolons (;).</description>
-        <env-entry-name>hardTokenClasses</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>se.anatom.ejbca.hardtoken.hardtokensprofiles.SwedishEID;se.anatom.ejbca.hardtoken.hardtokensprofiles.EnhancedEID</env-entry-value>
-     </env-entry>
-
      <ejb-local-ref>
         <description>The hard token profile data entity bean</description>
         <ejb-ref-name>ejb/HardTokenProfileData</ejb-ref-name>
@@ -66,6 +52,14 @@
         <local>se.anatom.ejbca.hardtoken.HardTokenDataLocal</local>
         <ejb-link>HardTokenData</ejb-link>
      </ejb-local-ref>
+     <ejb-local-ref>
+        <description>The hard token property data entity bean</description>
+        <ejb-ref-name>ejb/HardTokenPropertyData</ejb-ref-name>
+        <ejb-ref-type>Entity</ejb-ref-type>
+        <local-home>se.anatom.ejbca.BasePropertyDataLocalHome</local-home>
+        <local>se.anatom.ejbca.BasePropertyDataLocal</local>
+        <ejb-link>HardTokenPropertyData</ejb-link>
+     </ejb-local-ref>           
      <ejb-local-ref>
         <description>The hard token to certificate map data entity bean</description>
         <ejb-ref-name>ejb/HardTokenCertificateMap</ejb-ref-name>
@@ -194,8 +188,7 @@
       <abstract-schema-name>HardTokenIssuerDataBean</abstract-schema-name>
       <cmp-field><field-name>id</field-name></cmp-field>
       <cmp-field><field-name>alias</field-name></cmp-field>
-      <cmp-field><field-name>certificateSN</field-name></cmp-field>
-      <cmp-field><field-name>certIssuerDN</field-name></cmp-field>
+      <cmp-field><field-name>adminGroupId</field-name></cmp-field>      
       <cmp-field><field-name>data</field-name></cmp-field>
       <primkey-field>id</primkey-field>
       
@@ -210,20 +203,8 @@
 	  <![CDATA[SELECT DISTINCT OBJECT(a) from HardTokenIssuerDataBean a WHERE a.alias=?1]]>
 	</ejb-ql>
       </query>
-      <query>
-      	<query-method>
-      	  <method-name>findByCertificateSN</method-name>
-      	  <method-params>
-      	    <method-param>java.lang.String</method-param>
-      	    <method-param>java.lang.String</method-param>            
-      	  </method-params>
-      	</query-method>
-	<ejb-ql>
-	  <![CDATA[SELECT DISTINCT OBJECT(a) from HardTokenIssuerDataBean a WHERE a.certificateSN=?1 AND a.certIssuerDN=?2]]>
-	</ejb-ql>
-      </query>    
    </entity>
-
+   
    <entity>
       <description>
             This enterprise bean entity represents a hard token with accompanying data.
@@ -258,6 +239,51 @@
 	</ejb-ql>
       </query>
    </entity> 
+   
+   <entity>
+      <description>
+            This enterprise bean entity containing extended information about a hard token as copyof property.
+      </description>
+      <ejb-name>HardTokenPropertyData</ejb-name>
+      <local-home>se.anatom.ejbca.BasePropertyDataLocalHome</local-home>
+      <local>se.anatom.ejbca.BasePropertyDataLocal</local>
+      <ejb-class>se.anatom.ejbca.hardtoken.HardTokenPropertyEntityBean</ejb-class>
+      <persistence-type>Container</persistence-type>
+      <prim-key-class>se.anatom.ejbca.PropertyEntityPK</prim-key-class>
+      <reentrant>False</reentrant>
+      <cmp-version>2.x</cmp-version>
+      <abstract-schema-name>HardTokenPropertyEntityBean</abstract-schema-name>
+      <cmp-field><field-name>pK</field-name></cmp-field>
+      <cmp-field><field-name>id</field-name></cmp-field>
+      <cmp-field><field-name>property</field-name></cmp-field>      
+      <cmp-field><field-name>value</field-name></cmp-field>
+      <primkey-field>pK</primkey-field>
+      
+      <query>
+      	<query-method>
+      	  <method-name>findByProperty</method-name>
+      	  <method-params>
+            <method-param>int</method-param>
+      	    <method-param>java.lang.String</method-param>
+      	  </method-params>
+      	</query-method>
+	<ejb-ql>
+	  <![CDATA[SELECT DISTINCT OBJECT(a) from HardTokenPropertyEntityBean a WHERE a.id =?1 AND a.property=?2]]>
+	</ejb-ql>
+      </query>
+      <query>
+      	<query-method>
+      	  <method-name>findIdsByPropertyAndValue</method-name>
+      	  <method-params>
+      	    <method-param>java.lang.String</method-param>
+      	    <method-param>java.lang.String</method-param>            
+      	  </method-params>
+      	</query-method>
+	<ejb-ql>
+	  <![CDATA[SELECT DISTINCT OBJECT(a) from HardTokenPropertyEntityBean a WHERE a.property =?1 AND a.value=?2]]>
+	</ejb-ql>
+      </query>    
+   </entity>
    
    <entity>
       <description>
@@ -324,7 +350,7 @@
          <ejb-name>HardTokenBatchJobSession</ejb-name>
          <method-name>*</method-name>
      </method>
-     <method>
+  <!--   <method>
          <ejb-name>HardTokenIssuerData</ejb-name>
          <method-name>*</method-name>
      </method>
@@ -335,7 +361,7 @@
      <method>
          <ejb-name>HardTokenCertificateMap</ejb-name>
          <method-name>*</method-name>
-     </method>          
+     </method>          -->
    </method-permission>
 
    <!--

@@ -1,18 +1,18 @@
 package se.anatom.ejbca.hardtoken;
+import java.rmi.RemoteException;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.TreeMap;
-import java.math.BigInteger;
-import java.security.cert.X509Certificate;
-import java.rmi.RemoteException;
-import se.anatom.ejbca.ra.UserAdminData;
-import se.anatom.ejbca.log.Admin;
+
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile;
-import se.anatom.ejbca.hardtoken.hardtokentypes.*;
+import se.anatom.ejbca.hardtoken.hardtokentypes.HardToken;
+import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ra.UserAdminData;
 
 /**
  *
- * @version $Id: IHardTokenSessionRemote.java,v 1.6 2003-12-05 14:50:26 herrvendil Exp $
+ * @version $Id: IHardTokenSessionRemote.java,v 1.7 2004-01-08 14:31:26 herrvendil Exp $
  */
 public interface IHardTokenSessionRemote extends javax.ejb.EJBObject {
     
@@ -128,7 +128,7 @@ public interface IHardTokenSessionRemote extends javax.ejb.EJBObject {
      * @throws EJBException if a communication or other error occurs.
      */        
     
-    public boolean addHardTokenIssuer(Admin admin, String alias, BigInteger certificatesn, String certissuerdn, HardTokenIssuer issuerdata) throws RemoteException;   
+    public boolean addHardTokenIssuer(Admin admin, String alias, int admingroupid, HardTokenIssuer issuerdata) throws RemoteException;   
     
     /**
      * Updates hard token issuer data
@@ -146,7 +146,7 @@ public interface IHardTokenSessionRemote extends javax.ejb.EJBObject {
      * @throws EJBException if a communication or other error occurs.     
      */ 
     public boolean cloneHardTokenIssuer(Admin admin, String oldalias, String newalias, 
-                                        BigInteger newcertificatesn, String newcertissuerdn) throws RemoteException;
+	                                    int admingroupid) throws RemoteException;
     
      /**
      * Removes a hard token issuer from the database. 
@@ -162,7 +162,18 @@ public interface IHardTokenSessionRemote extends javax.ejb.EJBObject {
      * @throws EJBException if a communication or other error occurs.           
      */ 
     public boolean renameHardTokenIssuer(Admin admin, String oldalias, String newalias, 
-                                         BigInteger newcertificatesn, String newcertissuerdn) throws RemoteException;   
+	                                     int newadmingroupid) throws RemoteException;   
+    
+	/**
+	 * Method to check if an administrator is authorized to issue hard tokens for
+	 * the given alias.
+	 * 
+	 * @param admin administrator to check
+	 * @param alias alias of hardtoken issuer. 
+	 * @return true if administrator is authorized to issue hardtoken with given alias.
+	 */
+	public boolean getAuthorizedToHardTokenIssuer(Admin admin, String alias) throws RemoteException;
+    
     
       /**
        * Returns the available hard token issuers.
@@ -220,13 +231,6 @@ public interface IHardTokenSessionRemote extends javax.ejb.EJBObject {
        */    
     public int getHardTokenIssuerId(Admin admin, String alias) throws RemoteException;
     
-      /**
-       * Returns a hard token issuer id given the issuers certificate.
-       *
-       * @return id number of hard token issuer.
-       * @throws EJBException if a communication or other error occurs.
-       */    
-    public int getHardTokenIssuerId(Admin admin, X509Certificate issuercertificate) throws RemoteException;    
     
        /**
        * Returns a hard token issuer alias given its id.
@@ -236,8 +240,8 @@ public interface IHardTokenSessionRemote extends javax.ejb.EJBObject {
        */    
     public String getHardTokenIssuerAlias(Admin admin, int id) throws RemoteException;  
     
-        /**
-       * Checks if a tokentype is among a hard tokens issuers available token types.
+      /**
+       * Checks if a hardtoken profile is among a hard tokens issuers available token types.
        *
        * @param admin, the administrator calling the function
        * @param isserid, the id of the issuer to check.
@@ -247,7 +251,7 @@ public interface IHardTokenSessionRemote extends javax.ejb.EJBObject {
        * @throws EJBException if a communication or other error occurs.
        */    
     
-    public void getIsTokenTypeAvailableToIssuer(Admin admin, int issuerid, UserAdminData userdata) throws UnavailableTokenException, RemoteException;
+    public void getIsHardTokenProfileAvailableToIssuer(Admin admin, int issuerid, UserAdminData userdata) throws UnavailableTokenException, RemoteException;
        
        /**
        * Adds a hard token to the database
@@ -354,14 +358,6 @@ public interface IHardTokenSessionRemote extends javax.ejb.EJBObject {
        */    
     public Collection findCertificatesInHardToken(Admin admin, String tokensn) throws RemoteException;      
     
-       /**
-       * Retrieves an array of to the system avaliable hardware tokens defines in the hard token modules ejb-jar.XML
-       *
-       *
-       * @return an array of to the system available hard tokens.  
-       * @throws EJBException if a communication or other error occurs.
-       */     
-    public AvailableHardToken[] getAvailableHardTokens() throws RemoteException;
     
     /** 
      * Method used to signal to the log that token was generated successfully.

@@ -309,17 +309,21 @@
 
    if( userdata != null && profile != null){
      if(globalconfiguration.getIssueHardwareTokens() ){
-        AvailableHardToken[] availablehardtokens = tokenbean.getAvailableHardTokens();
+        TreeMap hardtokenprofiles = ejbcawebbean.getInformationMemory().getHardTokenProfiles();
 
-        tokentexts = new String[RAInterfaceBean.tokentexts.length + availablehardtokens.length];
+        tokentexts = new String[RAInterfaceBean.tokentexts.length + hardtokenprofiles.keySet().size()];
         tokenids   = new int[tokentexts.length];
         for(int i=0; i < RAInterfaceBean.tokentexts.length; i++){
           tokentexts[i]= RAInterfaceBean.tokentexts[i];
           tokenids[i] = RAInterfaceBean.tokenids[i];
         }
-        for(int i=0; i < availablehardtokens.length;i++){
-          tokentexts[i+RAInterfaceBean.tokentexts.length]= availablehardtokens[i].getName();
-          tokenids[i+RAInterfaceBean.tokentexts.length] = Integer.parseInt(availablehardtokens[i].getId());         
+        Iterator iter = hardtokenprofiles.keySet().iterator();
+        int index=0;
+        while(iter.hasNext()){       
+          String name = (String) iter.next();
+          tokentexts[index+RAInterfaceBean.tokentexts.length]= name;
+          tokenids[index+RAInterfaceBean.tokentexts.length] = ((Integer) hardtokenprofiles.get(name)).intValue();
+          index++;
         }
      }
 
@@ -336,7 +340,7 @@
               for(int j=0; j < availablehardtokenissuers.length; j++){
                 HardTokenIssuerData issuerdata = tokenbean.getHardTokenIssuerData(Integer.parseInt(availablehardtokenissuers[j]));
                 if(issuerdata !=null){
-                  Iterator iter = issuerdata.getHardTokenIssuer().getAvailableHardTokens().iterator();
+                  Iterator iter = issuerdata.getHardTokenIssuer().getAvailableHardTokenProfiles().iterator();
                   while(iter.hasNext()){
                     if(Integer.parseInt(availabletokens[i]) == ((Integer) iter.next()).intValue())
                       tokenissuers[i].add(new Integer(availablehardtokenissuers[j]));

@@ -24,18 +24,19 @@ import se.anatom.ejbca.util.CertTools;
  *
  * The main metod are isAthorized and authenticate.
  *
- * @version $Id: Authorizer.java,v 1.4 2003-10-21 13:48:47 herrvendil Exp $
+ * @version $Id: Authorizer.java,v 1.5 2004-01-08 14:31:26 herrvendil Exp $
  */
 public class Authorizer extends Object implements java.io.Serializable{
 
 
     
     /** Creates new EjbcaAthorization */
-    public Authorizer(Collection admingroups, ILogSessionLocal logsession, ICertificateStoreSessionLocal certificatestoresession, 
+    public Authorizer(Collection admingroups, AdminGroupDataLocalHome  admingrouphome,
+                      ILogSessionLocal logsession, ICertificateStoreSessionLocal certificatestoresession, 
                       IRaAdminSessionLocal raadminsession, ICAAdminSessionLocal caadminsession, Admin admin, int module) 
                         throws NamingException, CreateException, RemoteException {
         accesstree = new AccessTree();
-        authorizationproxy = new AuthorizationProxy(accesstree);
+        authorizationproxy = new AuthorizationProxy(admingrouphome, accesstree);
         buildAccessTree(admingroups);
         
                 
@@ -92,6 +93,53 @@ public class Authorizer extends Object implements java.io.Serializable{
        }
         return true;
     }
+    
+	/**
+	 * Method to check if a group is authorized to a resource
+	 *
+	 * @param admininformation information about the user to be authorized.
+	 * @param resource the resource to look up.
+	 * @return true if authorizes
+	 * @throws AuthorizationDeniedException when authorization is denied.
+	 */
+	public boolean isGroupAuthorized(Admin admin, int pk, String resource) throws AuthorizationDeniedException {
+
+	   AdminInformation admininformation = admin.getAdminInformation();
+	   
+	   if(!authorizationproxy.isGroupAuthorized(admininformation, pk, resource)){
+		 if(!admininformation.isSpecialUser())
+		   logsession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group authorized to resource : " + resource);
+		 else
+		   logsession.log(admin, ILogSessionLocal.INTERNALCAID, module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group authorized to resource : " + resource);  
+		 throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
+	   }
+	   if(!admininformation.isSpecialUser())
+		 logsession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);       
+	   else
+		 logsession.log(admin, ILogSessionLocal.INTERNALCAID,  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
+           
+	   return true;
+	}
+
+
+	/**
+	 * Method to check if a group is authorized to a resource without performing any logging
+	 *
+	 * @param AdminInformation information about the user to be authorized.
+	 * @param resource the resource to look up.
+	 * @return true if authorizes
+	 * @throws AuthorizationDeniedException when authorization is denied.
+	 */
+	public boolean isGroupAuthorizedNoLog(Admin admin, int pk, String resource) throws AuthorizationDeniedException {
+		// Check in accesstree.
+	   if(!authorizationproxy.isGroupAuthorized(admin.getAdminInformation(), 
+	                                              pk, resource)){
+		 throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
+	   }
+		return true;
+	}
+
+    
 
     /**
      * Method that authenticates a certificate by verifying signature, checking validity and lookup if certificate is revoked.

@@ -1,24 +1,30 @@
 package se.anatom.ejbca.webdist.hardtokeninterface;
 
-import javax.naming.*;
 import java.rmi.RemoteException;
-import java.util.Collection;
-import java.util.TreeMap;
-import java.util.Iterator;
-import java.math.BigInteger;
-
 import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.TreeMap;
+
+import javax.naming.InitialContext;
 import javax.servlet.http.HttpServletRequest;
 
-import se.anatom.ejbca.log.*;
-import se.anatom.ejbca.hardtoken.*;
+import se.anatom.ejbca.authorization.AdminGroup;
 import se.anatom.ejbca.authorization.AdminInformation;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
+import se.anatom.ejbca.hardtoken.HardTokenData;
+import se.anatom.ejbca.hardtoken.HardTokenIssuer;
+import se.anatom.ejbca.hardtoken.HardTokenIssuerData;
+import se.anatom.ejbca.hardtoken.HardTokenIssuerDoesntExistsException;
+import se.anatom.ejbca.hardtoken.HardTokenIssuerExistsException;
+import se.anatom.ejbca.hardtoken.IHardTokenBatchJobSessionLocal;
+import se.anatom.ejbca.hardtoken.IHardTokenBatchJobSessionLocalHome;
+import se.anatom.ejbca.hardtoken.IHardTokenSessionLocal;
+import se.anatom.ejbca.hardtoken.IHardTokenSessionLocalHome;
+import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionLocal;
 import se.anatom.ejbca.ra.IUserAdminSessionLocalHome;
-import se.anatom.ejbca.util.StringTools;
-import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
 
@@ -63,10 +69,10 @@ public class HardTokenInterfaceBean {
 		IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionLocalHome.class);
 		IUserAdminSessionLocal useradminsession = adminsessionhome.create();
 
-        availablehardtokens = hardtokensession.getAvailableHardTokens();
         initialized=true;
         
         this.informationmemory = ejbcawebbean.getInformationMemory();
+              
         
         this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, authorizationsession , useradminsession, informationmemory);
 		
@@ -85,7 +91,7 @@ public class HardTokenInterfaceBean {
       if(res.size() > 0){
         this.result = new HardTokenView[res.size()];
         for(int i=0;iter.hasNext();i++){
-          this.result[i]=new HardTokenView(availablehardtokens, (HardTokenData) iter.next());
+          this.result[i]=new HardTokenView((HardTokenData) iter.next());
         }
       }
       else
@@ -126,7 +132,7 @@ public class HardTokenInterfaceBean {
       this.result=null;
       HardTokenData token =  hardtokensession.getHardToken(admin, tokensn);
       if(token != null)
-        returnval = new  HardTokenView(availablehardtokens, token);
+        returnval = new  HardTokenView(token);
 
       return returnval;
     }
@@ -160,22 +166,26 @@ public class HardTokenInterfaceBean {
       return hardtokensession.getHardTokenIssuerData(admin, id);
     }
 
-    public void addHardTokenIssuer(String alias, String certificatesn, String certissuerdn) throws HardTokenIssuerExistsException, RemoteException{
-      if(this.informationmemory.getAuthorizedCAIds().contains(new Integer((CertTools.stringToBCDNString(certissuerdn)).hashCode()))){
-        certificatesn = StringTools.stripWhitespace(certificatesn);      
-        if(!hardtokensession.addHardTokenIssuer(admin, alias, new BigInteger(certificatesn,16), certissuerdn, new HardTokenIssuer()))
-          throw new HardTokenIssuerExistsException();
-        informationmemory.hardTokenDataEdited();
-      }  
+    public void addHardTokenIssuer(String alias, int admingroupid) throws HardTokenIssuerExistsException, RemoteException{
+      Iterator iter = this.informationmemory.getHardTokenIssuingAdminGroups().iterator();
+      while(iter.hasNext()){
+      	if(((AdminGroup) iter.next()).getAdminGroupId() == admingroupid){
+			if(!hardtokensession.addHardTokenIssuer(admin, alias, admingroupid, new HardTokenIssuer()))
+			  throw new HardTokenIssuerExistsException();
+			informationmemory.hardTokenDataEdited();      		
+      	}
+      }      
     }
 
-    public void addHardTokenIssuer(String alias, String certificatesn, String certissuerdn, HardTokenIssuer hardtokenissuer) throws HardTokenIssuerExistsException, RemoteException {
-      if(this.informationmemory.getAuthorizedCAIds().contains(new Integer((CertTools.stringToBCDNString(certissuerdn)).hashCode()))){	
-        certificatesn = StringTools.stripWhitespace(certificatesn);
-        if(!hardtokensession.addHardTokenIssuer(admin, alias, new BigInteger(certificatesn,16), certissuerdn, hardtokenissuer))
-          throw new HardTokenIssuerExistsException();
-        informationmemory.hardTokenDataEdited();
-      }
+    public void addHardTokenIssuer(String alias, int admingroupid, HardTokenIssuer hardtokenissuer) throws HardTokenIssuerExistsException, RemoteException {
+		Iterator iter = this.informationmemory.getHardTokenIssuingAdminGroups().iterator();
+		while(iter.hasNext()){
+		  if(((AdminGroup) iter.next()).getAdminGroupId() == admingroupid){
+			  if(!hardtokensession.addHardTokenIssuer(admin, alias, admingroupid, new HardTokenIssuer()))
+				throw new HardTokenIssuerExistsException();
+			  informationmemory.hardTokenDataEdited();      		
+		  }
+		}
     }
 
     public void changeHardTokenIssuer(String alias, HardTokenIssuer hardtokenissuer) throws HardTokenIssuerDoesntExistsException, RemoteException{
@@ -203,29 +213,25 @@ public class HardTokenInterfaceBean {
         return !issuerused;	
     }
 
-    public void renameHardTokenIssuer(String oldalias, String newalias, String newcertificatesn, String certissuersn) throws HardTokenIssuerExistsException, RemoteException{
-      if(informationmemory.authorizedToHardTokenIssuer(oldalias)){	
-        newcertificatesn = StringTools.stripWhitespace(newcertificatesn);
-        if(!hardtokensession.renameHardTokenIssuer(admin, oldalias, newalias, new BigInteger(newcertificatesn,16), certissuersn))
+    public void renameHardTokenIssuer(String oldalias, String newalias, int newadmingroupid) throws HardTokenIssuerExistsException, RemoteException{
+      if(informationmemory.authorizedToHardTokenIssuer(oldalias)){	        
+        if(!hardtokensession.renameHardTokenIssuer(admin, oldalias, newalias, newadmingroupid))
          throw new HardTokenIssuerExistsException();
        
          informationmemory.hardTokenDataEdited();
       }   
     }
 
-    public void cloneHardTokenIssuer(String oldalias, String newalias, String newcertificatesn, String newcertissuerdn) throws HardTokenIssuerExistsException, RemoteException{
-	  if(informationmemory.authorizedToHardTokenIssuer(oldalias)){    	
-        newcertificatesn = StringTools.stripWhitespace(newcertificatesn);
-        if(!hardtokensession.cloneHardTokenIssuer(admin, oldalias, newalias, new BigInteger(newcertificatesn,16), newcertissuerdn))
+    public void cloneHardTokenIssuer(String oldalias, String newalias, int newadmingroupid) throws HardTokenIssuerExistsException, RemoteException{
+	  if(informationmemory.authorizedToHardTokenIssuer(oldalias)){    	        
+        if(!hardtokensession.cloneHardTokenIssuer(admin, oldalias, newalias, newadmingroupid))
           throw new HardTokenIssuerExistsException();
         
         informationmemory.hardTokenDataEdited();
 	  }
     }
 
-    public AvailableHardToken[] getAvailableHardTokens(){
-      return availablehardtokens;
-    }
+
     
     
 	
@@ -235,8 +241,7 @@ public class HardTokenInterfaceBean {
 	}    
     // Private fields.
     private IHardTokenSessionLocal          hardtokensession;
-    private IHardTokenBatchJobSessionLocal  hardtokenbatchsession;    
-    private AvailableHardToken[]            availablehardtokens;
+    private IHardTokenBatchJobSessionLocal  hardtokenbatchsession;        
     private AdminInformation                admininformation;
     private Admin                           admin;
     private InformationMemory               informationmemory;

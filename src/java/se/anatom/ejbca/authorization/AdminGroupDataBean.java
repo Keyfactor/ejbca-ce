@@ -23,14 +23,14 @@ import se.anatom.ejbca.BaseEntityBean;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.2 2003-11-14 14:59:57 herrvendil Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.3 2004-01-08 14:31:25 herrvendil Exp $
  */
 public abstract class AdminGroupDataBean extends BaseEntityBean {
 
     private static Logger log = Logger.getLogger(AdminGroupDataBean.class);
 
-    public abstract int getPK();
-    public abstract void setPK(int pk);
+    public abstract Integer getPK();
+    public abstract void setPK(Integer pk);
     
     public abstract String getAdminGroupName();
     public abstract void setAdminGroupName(String admingroupname);
@@ -219,14 +219,14 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
         }
       }
 
-      return new AdminGroup(getAdminGroupName(), getCAId(), accessrules, adminentities);
-    } // getAdminGroup
+      return new AdminGroup(getPK().intValue() ,getAdminGroupName(), getCAId(), accessrules, adminentities);
+    } // getAdminGroup 
 
      /**
      * @see se.anatom.ejbca.authorization.AdminGroupDataLocal
      */
     public AdminGroup getAdminGroupNames(){                    
-      return new AdminGroup(getAdminGroupName(), getCAId(), null, null);
+      return new AdminGroup(getPK().intValue() , getAdminGroupName(), getCAId(), null, null);
     } // getAdminGroupNames
     //
     // Fields required by Container
@@ -238,9 +238,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      *
      **/
 
-    public AdminGroupPK ejbCreate(String admingroupname, int caid) throws CreateException {
-        AdminGroupPK pk = new AdminGroupPK(admingroupname,caid);
-        setPK(pk.hashCode());
+    public Integer ejbCreate(Integer pk, String admingroupname, int caid) throws CreateException {        
+        setPK(pk);
         setAdminGroupName(admingroupname);
         setCAId(caid);
         log.debug("Created admingroup : "+admingroupname);
@@ -248,7 +247,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
         return pk;
     }
 
-    public void ejbPostCreate(String admingroupname, int caid) {
+    public void ejbPostCreate(Integer pk, String admingroupname, int caid) {
 
         // Do nothing. Required.
 

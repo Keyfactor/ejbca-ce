@@ -33,6 +33,21 @@ public interface IAuthorizationSessionLocal extends javax.ejb.EJBLocalObject
      */
     public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException;
 
+	/**
+	 * @see se.anatom.ejbca.authorization.IAuthorizationSessionRemote
+	 */
+	public boolean isGroupAuthorized(Admin admin, int admingrouppk, String resource) throws AuthorizationDeniedException;
+
+	/**
+	 * @see se.anatom.ejbca.authorization.IAuthorizationSessionRemote
+	 */
+	public boolean isGroupAuthorizedNoLog(Admin admin, int admingrouppk, String resource) throws AuthorizationDeniedException;
+
+	/**
+	 * @see se.anatom.ejbca.authorization.IAuthorizationSessionRemote
+	 */
+	public boolean existsAdministratorInGroup(Admin admin, int admingrouppk);
+
     /**
      * @see se.anatom.ejbca.authorization.IAuthorizationSessionRemote
      */

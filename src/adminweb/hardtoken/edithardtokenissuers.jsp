@@ -2,7 +2,7 @@
 <%@page contentType="text/html"%>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst
                ,se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, se.anatom.ejbca.hardtoken.HardTokenIssuer, se.anatom.ejbca.hardtoken.HardTokenIssuerData, se.anatom.ejbca.hardtoken.HardTokenIssuerExistsException,
-               se.anatom.ejbca.hardtoken.HardTokenIssuerDoesntExistsException, se.anatom.ejbca.hardtoken.AvailableHardToken, se.anatom.ejbca.webdist.rainterface.CertificateView"%>
+               se.anatom.ejbca.hardtoken.HardTokenIssuerDoesntExistsException, se.anatom.ejbca.hardtoken.AvailableHardToken, se.anatom.ejbca.webdist.rainterface.CertificateView, se.anatom.ejbca.authorization.AdminGroup"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -24,17 +24,19 @@
   static final String BUTTON_CLONE_ISSUER      = "buttoncloneissuer";
 
   static final String SELECT_ISSUER            = "selectissuer";
-  static final String SELECT_CA                = "selectca";
+  static final String SELECT_ADMINGROUP        = "selectadmingroup";
   static final String TEXTFIELD_ALIAS          = "textfieldalias";
-  static final String HIDDEN_ALIAS             = "hiddenalias";
-  static final String TEXTFIELD_CERTSN         = "textfieldcertsn";
+  static final String HIDDEN_ALIAS             = "hiddenalias";  
   
  
 // Buttons used in profile.jsp
   static final String BUTTON_SAVE              = "buttonsave";
   static final String BUTTON_CANCEL            = "buttoncancel";
  
-  static final String SELECT_AVAILABLEHARDTOKENS            = "selectavailablehardtokens";
+  static final String SELECT_AVAILABLEHARDTOKENPROFILES            = "selectavailablehardtokenprofiles";
+  static final String TEXTFIELD_DESCRIPTION    = "textfielddescription";
+
+
 
   static final String SELECT_TYPE                         = "selecttype";
   String alias = null;
@@ -100,15 +102,14 @@
       }
       if( request.getParameter(BUTTON_RENAME_ISSUER) != null){ 
          // Rename selected profile and display profilespage.
-       String newalias  = request.getParameter(TEXTFIELD_ALIAS);
-       String newcertsn = request.getParameter(TEXTFIELD_CERTSN);
+       String newalias  = request.getParameter(TEXTFIELD_ALIAS);       
        String oldalias = request.getParameter(SELECT_ISSUER);
-       String certissuerdn = cabean.getCAInfo(Integer.parseInt(request.getParameter(SELECT_CA))).getCAInfo().getSubjectDN();
+       int admingroupid = Integer.parseInt(request.getParameter(SELECT_ADMINGROUP));
        
-       if(oldalias != null && newalias != null && newcertsn!=null && certissuerdn != null){
-         if(!newalias.trim().equals("") && !oldalias.trim().equals("") && !newcertsn.trim().equals("")){
+       if(oldalias != null && newalias != null){
+         if(!newalias.trim().equals("") && !oldalias.trim().equals("")){
            try{
-             tokenbean.renameHardTokenIssuer(oldalias.trim(),newalias.trim(),newcertsn.trim(),certissuerdn);
+             tokenbean.renameHardTokenIssuer(oldalias,newalias.trim(), admingroupid);
            }catch( HardTokenIssuerExistsException e){
              issuerexists=true;
            }        
@@ -117,14 +118,13 @@
        includefile="hardtokenissuerspage.jsp"; 
       }
       if( request.getParameter(BUTTON_ADD_ISSUER) != null){
-         // Add profile and display profilespage.
-         alias = request.getParameter(TEXTFIELD_ALIAS);
-         String newcertsn = request.getParameter(TEXTFIELD_CERTSN);
-         String certissuerdn = cabean.getCAInfo(Integer.parseInt(request.getParameter(SELECT_CA))).getCAInfo().getSubjectDN();
-         if(alias != null && newcertsn != null && certissuerdn != null){
-           if(!alias.trim().equals("") && !newcertsn.trim().equals("")){
-             try{
-               tokenbean.addHardTokenIssuer(alias.trim(), newcertsn.trim(),certissuerdn);
+         // Add profile and display profilespage.         
+         alias = request.getParameter(TEXTFIELD_ALIAS);        
+         int admingroupid = Integer.parseInt(request.getParameter(SELECT_ADMINGROUP));
+         if(alias != null){
+           if(!alias.trim().equals("")){
+             try{              
+               tokenbean.addHardTokenIssuer(alias.trim(), admingroupid);
              }catch( HardTokenIssuerExistsException e){
                issuerexists=true;
              }
@@ -134,14 +134,13 @@
       }
       if( request.getParameter(BUTTON_CLONE_ISSUER) != null){
          // clone profile and display profilespage.
-       String newalias  = request.getParameter(TEXTFIELD_ALIAS);
-       String newcertsn = request.getParameter(TEXTFIELD_CERTSN);
+       String newalias  = request.getParameter(TEXTFIELD_ALIAS);       
        String oldalias = request.getParameter(SELECT_ISSUER);
-       String certissuerdn = cabean.getCAInfo(Integer.parseInt(request.getParameter(SELECT_CA))).getCAInfo().getSubjectDN();
-       if(oldalias != null && newalias != null && newcertsn != null && certissuerdn != null){
-         if(!oldalias.trim().equals("") && !newalias.trim().equals("") && !newcertsn.trim().equals("")){
+       int admingroupid = Integer.parseInt(request.getParameter(SELECT_ADMINGROUP));
+       if(oldalias != null && newalias != null){
+         if(!oldalias.trim().equals("") && !newalias.trim().equals("")){
              try{ 
-               tokenbean.cloneHardTokenIssuer(oldalias.trim(),newalias.trim(), newcertsn.trim(), certissuerdn);
+               tokenbean.cloneHardTokenIssuer(oldalias.trim(),newalias.trim(), admingroupid);
              }catch( HardTokenIssuerExistsException e){
                issuerexists=true;
              }
@@ -158,17 +157,23 @@
            if(request.getParameter(BUTTON_SAVE) != null){
              issuer = tokenbean.getHardTokenIssuerData(alias).getHardTokenIssuer();
              // Save changes.
-             ArrayList availabletokens = new ArrayList();
+             ArrayList availableprofiles = new ArrayList();
  
-             String[] values = request.getParameterValues(SELECT_AVAILABLEHARDTOKENS);
+             String[] values = request.getParameterValues(SELECT_AVAILABLEHARDTOKENPROFILES);
              
              if(values!= null){
                for(int i=0; i< values.length; i++){
-                 availabletokens.add(new Integer(values[i]));                     
+                 availableprofiles.add(new Integer(values[i]));                     
                }
              } 
-             issuer.setAvailableHardTokens(availabletokens);
+             issuer.setAvailableHardTokenProfiles(availableprofiles);
                       
+             String description = request.getParameter(TEXTFIELD_DESCRIPTION);
+             if(description == null)
+               description = "";
+             issuer.setDescription(description);
+
+
              tokenbean.changeHardTokenIssuer(alias,issuer);
              includefile="hardtokenissuerspage.jsp";
            }
@@ -180,6 +185,9 @@
       }
     }
   }
+  Collection authgroups = ejbcawebbean.getInformationMemory().getHardTokenIssuingAdminGroups();
+  HashMap adminidtonamemap = ejbcawebbean.getInformationMemory().getAdminGroupIdToNameMap();
+
  // Include page
   if( includefile.equals("hardtokenissuerspage.jsp")){ %>
    <%@ include file="hardtokenissuerspage.jsp" %>

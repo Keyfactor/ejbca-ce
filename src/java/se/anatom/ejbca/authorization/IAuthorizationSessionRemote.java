@@ -9,7 +9,7 @@ import se.anatom.ejbca.log.Admin;
 
 /**
  *
- * @version $Id: IAuthorizationSessionRemote.java,v 1.1 2003-09-04 14:26:37 herrvendil Exp $
+ * @version $Id: IAuthorizationSessionRemote.java,v 1.2 2004-01-08 14:31:26 herrvendil Exp $
  */
 public interface IAuthorizationSessionRemote extends javax.ejb.EJBObject {
     
@@ -40,6 +40,22 @@ public interface IAuthorizationSessionRemote extends javax.ejb.EJBObject {
      * @param resource the resource to check authorization for. 
      */
     public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException, RemoteException;
+
+	/**
+	 * Method to check if a group is authorized to a resource. 
+	 */
+	public boolean isGroupAuthorized(Admin admin, int admingrouppk, String resource) throws AuthorizationDeniedException, RemoteException;
+
+	/**
+	 * Method to check if a group is authorized to a resource without any logging. 
+	 */
+	public boolean isGroupAuthorizedNoLog(Admin admin, int admingrouppk, String resource) throws AuthorizationDeniedException, RemoteException;
+
+
+	/**
+	 * Method to check if an administrator exists in the specified admingroup. 
+	 */
+	public boolean existsAdministratorInGroup(Admin admin, int admingrouppk) throws RemoteException;
 
     /**
      * Method to validate and check revokation status of a users certificate.

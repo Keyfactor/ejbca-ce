@@ -9,20 +9,21 @@ import java.io.Serializable;
 /**
  * A class that represents a group of users and their access rules.
  *
- * @version $Id: AdminGroup.java,v 1.1 2003-09-04 14:26:37 herrvendil Exp $
+ * @version $Id: AdminGroup.java,v 1.2 2004-01-08 14:31:26 herrvendil Exp $
  */
 public class AdminGroup implements Serializable, Comparable {
                                
     
     /** Creates a new instance of AdminGroup */
-    public AdminGroup(String admingroupname, int caid) {
+    public AdminGroup(String admingroupname, int caid) {      
       this.admingroupname=admingroupname;
       this.caid=caid;  
       accessrules = new ArrayList();
       adminentities = new ArrayList();
     }
 
-    public AdminGroup(String admingroupname, int caid, ArrayList accessrules, ArrayList adminentities){
+    public AdminGroup(int admingroupid, String admingroupname, int caid, ArrayList accessrules, ArrayList adminentities){
+      this.admingroupid=admingroupid;
       this.admingroupname=admingroupname;
       this.caid=caid;
       this.accessrules=accessrules;
@@ -52,6 +53,10 @@ public class AdminGroup implements Serializable, Comparable {
     
     public int getCAId(){
       return this.caid;
+    }
+    
+    public int getAdminGroupId(){
+      return this.admingroupid;	
     }
     
     public String getAdminGroupName(){
@@ -90,6 +95,7 @@ public class AdminGroup implements Serializable, Comparable {
     // Private methods
 
     // Private fields
+    private int       admingroupid;
     private String    admingroupname;
     private int       caid;
     private ArrayList accessrules;

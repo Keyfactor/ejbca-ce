@@ -1,5 +1,7 @@
 <% HardTokenIssuerData issuerdata = tokenbean.getHardTokenIssuerData(alias);
-   AvailableHardToken[] availabletokens = tokenbean.getAvailableHardTokens();
+   
+   TreeMap hardtokenprofiles = ejbcawebbean.getInformationMemory().getHardTokenProfiles();
+
    boolean used = false;
 
    int row=0;
@@ -11,8 +13,8 @@
 function checkallfields(){
     var illegalfields = 0;
 
-    if(document.editissuer.<%=SELECT_AVAILABLEHARDTOKENS%>.options.selectedIndex == -1){
-      alert("<%=  ejbcawebbean.getText("ATLEASTONTTOKENMUST") %>");
+    if(document.editissuer.<%=SELECT_AVAILABLEHARDTOKENPROFILES%>.options.selectedIndex == -1){
+      alert("<%=  ejbcawebbean.getText("ATLEASTONETOKENPROFILE") %>");
       illegalfields++;
     }
 
@@ -53,26 +55,18 @@ function checkallfields(){
       <td width="70%"> 
          <%=  issuerdata.getAlias() %>
       </td>
+    </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
         &nbsp;
       </td>
       <td width="25%"  align="right"> 
-        <%= ejbcawebbean.getText("CERTIFICATESN") %> 
+        <%= ejbcawebbean.getText("ADMINGROUP") %> 
       </td>
       <td width="70%"> 
-        <%= issuerdata.getCertificateSN().toString(16) %> 
+        <%= adminidtonamemap.get(new Integer(issuerdata.getAdminGroupId())) %> 
       </td>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="5%" valign="top">
-        &nbsp;
-      </td>
-      <td width="25%"  align="right"> 
-        <%= ejbcawebbean.getText("CA") %> 
-      </td>
-      <td width="70%"> 
-        <%=caidtonamemap.get(new Integer(issuerdata.getIssuerDN().hashCode()))%> 
-      </td>
+    </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
@@ -83,25 +77,50 @@ function checkallfields(){
       <td width="70%"> 
          &nbsp;&nbsp; 
       </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%"  align="right"> 
+         <%= ejbcawebbean.getText("DESCRIPTION") %> 
+      </td>
+      <td width="70%"> 
+          <textarea name="<%=TEXTFIELD_DESCRIPTION%>" cols=40 rows=6><% out.write(issuerdata.getHardTokenIssuer().getDescription());%></textarea>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%"  align="right"> 
+          &nbsp;
+      </td>
+      <td width="70%"> 
+         &nbsp;&nbsp; 
+      </td>
+    </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
         &nbsp;
       </td>
       <td width="25%"  align="right"> 
-        <%= ejbcawebbean.getText("AVAILABLEHARDTOKENTYPES") %> 
+        <%= ejbcawebbean.getText("AVAILABLEHARDTOKENPROFILES") %> 
       </td>
       <td width="70%"> 
-        <select name="<%=SELECT_AVAILABLEHARDTOKENS %>" size="10" multiple >
-            <% 
-               for(int i=0; i < availabletokens.length; i++){ %>
-           <option  value='<%= availabletokens[i].getId()%>'
-           <% ArrayList currenttokens = issuerdata.getHardTokenIssuer().getAvailableHardTokens();
+        <select name="<%=SELECT_AVAILABLEHARDTOKENPROFILES %>" size="10" multiple >
+            <% Iterator profiles = hardtokenprofiles.keySet().iterator();
+               while(profiles.hasNext()){ 
+                 String profilename = (String) profiles.next();
+                 Integer profileid = (Integer) hardtokenprofiles.get(profilename);%>
+           <option  value='<%= profileid.intValue()%>'
+           <% ArrayList currenttokens = issuerdata.getHardTokenIssuer().getAvailableHardTokenProfiles();
               if(currenttokens != null){   
                 Iterator iter = currenttokens.iterator();
                 while(iter.hasNext())
-                  if(((Integer) iter.next()).toString().equals(availabletokens[i].getId()))
+                  if(((Integer) iter.next()).equals(profileid))
                     out.write(" selected "); 
-              }%>><%= availabletokens[i].getName() %>
+              }%>><%= profilename %>
            </option>
             <% } %>
         </select>  

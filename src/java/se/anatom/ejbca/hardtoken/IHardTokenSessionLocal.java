@@ -1,18 +1,18 @@
 package se.anatom.ejbca.hardtoken;
 
-import java.math.BigInteger;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.TreeMap;
-import java.security.cert.X509Certificate;
+
+import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile;
+import se.anatom.ejbca.hardtoken.hardtokentypes.HardToken;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.UserAdminData;
-import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile;
-import se.anatom.ejbca.hardtoken.hardtokentypes.*;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: IHardTokenSessionLocal.java,v 1.5 2003-12-05 14:50:26 herrvendil Exp $
+ * @version $Id: IHardTokenSessionLocal.java,v 1.6 2004-01-08 14:31:26 herrvendil Exp $
  * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
  */
 
@@ -94,13 +94,12 @@ public interface IHardTokenSessionLocal extends javax.ejb.EJBLocalObject
 	public boolean existsCertificateProfileInHardTokenProfiles(Admin admin, int id);
     
     
-
     
     /**
      * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
      */      
     
-    public boolean addHardTokenIssuer(Admin admin, String alias, BigInteger certificatesn, String certissuerdn, HardTokenIssuer issuerdata);   
+    public boolean addHardTokenIssuer(Admin admin, String alias, int admingroupid, HardTokenIssuer issuerdata);   
     
     /**
      * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
@@ -113,7 +112,7 @@ public interface IHardTokenSessionLocal extends javax.ejb.EJBLocalObject
      */
     
     public boolean cloneHardTokenIssuer(Admin admin, String oldalias, String newalias, 
-                                        BigInteger newcertificatesn, String newcertissuerdn);
+                                        int newadmingroupid);
     
     /**
      * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
@@ -126,7 +125,12 @@ public interface IHardTokenSessionLocal extends javax.ejb.EJBLocalObject
      */
     
     public boolean renameHardTokenIssuer(Admin admin, String oldalias, String newalias,
-                                         BigInteger newcertificatesn, String newcertissuerdn);   
+                                         int newadmingroupid);   
+
+	/**
+	 * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
+	 */
+	public boolean getAuthorizedToHardTokenIssuer(Admin admin, String alias);
     
     /**
      * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
@@ -169,12 +173,7 @@ public interface IHardTokenSessionLocal extends javax.ejb.EJBLocalObject
      */
     
     public int getHardTokenIssuerId(Admin admin, String alias);
-    
-    /**
-     * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
-     */
-    
-    public int getHardTokenIssuerId(Admin admin, X509Certificate issuercertificate);    
+           
     
     /**
      * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
@@ -186,7 +185,7 @@ public interface IHardTokenSessionLocal extends javax.ejb.EJBLocalObject
      * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
      */
     
-    public void getIsTokenTypeAvailableToIssuer(Admin admin, int issuerid, UserAdminData userdata) throws UnavailableTokenException;
+    public void getIsHardTokenProfileAvailableToIssuer(Admin admin, int issuerid, UserAdminData userdata) throws UnavailableTokenException;
        
     /**
      * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
@@ -241,11 +240,6 @@ public interface IHardTokenSessionLocal extends javax.ejb.EJBLocalObject
     
     public Collection findCertificatesInHardToken(Admin admin, String tokensn);      
     
-    /**
-     * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
-     */
-    
-    public AvailableHardToken[] getAvailableHardTokens();
     
     /**
      * @see se.anatom.ejbca.hardtoken.IHardTokenSessionRemote
