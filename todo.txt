@@ -1,4 +1,4 @@
-$Id: todo.txt,v 1.4 2001-11-18 10:53:06 anatom Exp $
+$Id: todo.txt,v 1.5 2001-11-18 11:38:56 anatom Exp $
 
 V 1.0
 -----
@@ -21,3 +21,4 @@ V 2.0
 - Complete implementation of createCertificate() method in SignSessionBean.
 - Try 'real' databases (MySQL, PostgreSQL) with jboss.
 - Run on other appservers, ie Weblogic, Websphere etc.
+- Add smart card support (PKCS15) in CA for protection of private key.
