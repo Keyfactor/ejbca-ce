@@ -44,10 +44,13 @@ public class ca {
     private static ICertificateStoreSession certificateStore = null;
     /** A vector of publishers where certs and CRLs are stored */
     private static Vector publishers = null;
-
+    /** Private key alias in PKCS12 keystores */
+    private static String privKeyAlias = "privateKey";
+    private static char[] privateKeyPass = null;
+    
     public static void main(String [] args){
         if (args.length < 1) {
-            System.out.println("Usage: CA makeroot | rootcert | makereq | recrep | processreq | init | createcrl | getcrl");
+            System.out.println("Usage: CA makeroot | getrootcert | makereq | recrep | processreq | init | createcrl | getcrl | rolloverroot");
             return;
         }
         try {
@@ -79,12 +82,12 @@ public class ca {
                 System.out.println("Generating keys, please wait...");
                 KeyPair rsaKeys = KeyTools.genKeys(keysize);
                 X509Certificate rootcert = CertTools.genSelfCert(dn, validity, rsaKeys.getPrivate(), rsaKeys.getPublic(), true);
-                KeyStore ks = KeyTools.createP12("privateKey", rsaKeys.getPrivate(), rootcert, null);
+                KeyStore ks = KeyTools.createP12(privKeyAlias, rsaKeys.getPrivate(), rootcert, null);
 
                 FileOutputStream os = new FileOutputStream(filename);
                 ks.store(os, storepwd.toCharArray());
                 System.out.println("Keystore "+filename+" generated succefully.");
-            } else if (args[0].equals("rootcert")) {
+            } else if (args[0].equals("getrootcert")) {
                 // Export root CA certificate
                 if (args.length < 2) {
                     System.out.println("Save root CA certificate to file.");
@@ -92,10 +95,7 @@ public class ca {
                     return;
                 }
                 String filename = args[1];
-                Context ctx = getInitialContext();
-                ISignSessionHome home = (ISignSessionHome)javax.rmi.PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
-                ISignSession ss = home.create();
-                Certificate[] chain = ss.getCertificateChain();
+                Certificate[] chain = getCertChain();
                 X509Certificate rootcert = (X509Certificate)chain[chain.length-1];
                 FileOutputStream fos = new FileOutputStream(filename);
                 fos.write(rootcert.getEncoded());
@@ -320,9 +320,57 @@ public class ca {
                 }
                 // Second create (and publish) CRL
                 createCRL();
-                
+            } else if (args[0].equals("rolloverroot")) {
+                // Creates a new root certificate with new validity, using the same key
+                if (args.length < 4) {
+                    System.out.println("Usage: CA rolloverroot <validity-days> <filename> <storepassword>");
+                    return;
+                }
+                int validity = Integer.parseInt(args[1]);
+                String filename = args[2];
+                String storepwd = args[3];
+                // Get old root certificate
+                Certificate[] chain = getCertChain();
+                if (chain.length > 2) {
+                    System.out.println("Certificate chain too long, this P12 was not generated with EJBCA?");
+                    return;
+                }
+                X509Certificate rootcert = (X509Certificate)chain[chain.length-1];
+                if (!CertTools.isSelfSigned(rootcert)) {
+                    System.out.println("Root certificate is not self signed???");
+                    return;
+                }
+                X509Certificate cacert = null;
+                if (chain.length > 1)
+                    cacert = (X509Certificate)chain[chain.length-2];
+                // Get private key
+                KeyStore keyStore=KeyStore.getInstance("PKCS12", "BC");
+                InputStream is = new FileInputStream(filename);
+                keyStore.load(is, storepwd.toCharArray());
+                PrivateKey privateKey = (PrivateKey)keyStore.getKey(privKeyAlias, privateKeyPass);
+                if (privateKey == null) {
+                    System.out.println("No private key with alias '"+privKeyAlias+"' in keystore, this P12 was not generated with EJBCA?");
+                    return;
+                }                
+                // Generate the new root certificate
+                X509Certificate newrootcert = CertTools.genSelfCert(rootcert.getSubjectDN().toString(), validity, privateKey, rootcert.getPublicKey(), true);
+                // verify that the old and new keyidentifieras are the same
+                String oldKeyId = Hex.encode(CertTools.getAuthorityKeyId(rootcert));
+                String newKeyId = Hex.encode(CertTools.getAuthorityKeyId(newrootcert));
+                System.out.println("Old key id: "+oldKeyId);
+                System.out.println("New key id: "+newKeyId);
+                if (oldKeyId.compareTo(newKeyId) != 0) {
+                    System.out.println("Old key identifier and new key identifieras does not match, have the key pair changed?");
+                    System.out.println("Unable to rollover Root CA.");
+                    return;
+                }
+                // Create the new PKCS12 file
+                KeyStore ks = KeyTools.createP12(privKeyAlias, privateKey, newrootcert, cacert);
+                FileOutputStream os = new FileOutputStream(filename);
+                ks.store(os, storepwd.toCharArray());
+                System.out.println("Keystore "+filename+" generated succefully.");
             } else {
-                System.out.println("Usage: CA makeroot | rootcert | makereq | recrep | processreq | init | createcrl | getcrl");
+                System.out.println("Usage: CA makeroot | getrootcert | makereq | recrep | processreq | init | createcrl | getcrl | rolloverroot");
             }
 
         } catch (Exception e) {
@@ -341,12 +389,25 @@ public class ca {
         System.out.println("CRL with number " + number+ " generated.");
     }
 
+    static private Certificate[] getCertChain() {
+        try {
+            Context ctx = getInitialContext();
+            ISignSessionHome home = (ISignSessionHome)javax.rmi.PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
+            ISignSession ss = home.create();
+            Certificate[] chain = ss.getCertificateChain();
+            return chain;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    } // getRootCert
+    
     static private Context getInitialContext() throws NamingException{
         //System.out.println(">GetInitialContext");
         Context ctx = new javax.naming.InitialContext();
         //System.out.println("<GetInitialContext");
         return ctx;
-    }
+    } //getInitialContext
 
     /**
      * Creates the CertificateStore and Publishers so they are available.

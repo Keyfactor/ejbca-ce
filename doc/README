@@ -314,7 +314,8 @@ in PCS12 files are secret (private keys).
 Administrating CA:
 
 The CA has a command line interface ca.sh/cmd. Options are:
-makeroot - creates a new Root CA keystore.
+makeroot - creates a new Root CA keystore (only used by Root CA).
+getrootcert - exports the Root CA certificate to file.
 makereq - generates a certification request to create a keystore for a
 subordinate CA.
 recrep - receives a certification reply (from another CA) for
@@ -323,6 +324,7 @@ processreq - processes a certification request for
 a subordinate CA and creates  a certification reply.
 createcrl - issues a CRL.
 getcrl - retrieves the latest CRL.
+rolloverrootcert - creates a new Root CA certificate using the same key pair (only used by Root CA).
 
 Configuring RA:
 
@@ -342,6 +344,7 @@ setuserstatus - sets status of a user, users can only apply for certificates
 when their status is NEW. finduser - find a user in the database and lists
 details.
 listnewusers - lists all users with status NEW.
+listusers - lists users with specified status (give command to see list of status codes).
 revokeuser - revokes a user and all certificates issued to the user.
 
 Fetching certificates and CRLs:

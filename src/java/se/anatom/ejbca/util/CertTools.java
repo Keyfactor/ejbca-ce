@@ -25,7 +25,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.8 2002-01-25 11:49:15 anatom Exp $
+ * @version $Id: CertTools.java,v 1.9 2002-01-30 10:58:11 anatom Exp $
  */
 public class CertTools {
 
@@ -316,6 +316,16 @@ public class CertTools {
         return selfcert;
     } //genselfCert
 
+    public static byte[] getAuthorityKeyId(X509Certificate cert) throws IOException {
+        byte[] extvalue = cert.getExtensionValue("2.5.29.35");
+        if (extvalue == null)
+            return null;
+        
+        DEROctetString oct = (DEROctetString)(new DERInputStream(new ByteArrayInputStream(extvalue)).readObject());
+        AuthorityKeyIdentifier keyId = new AuthorityKeyIdentifier((DERConstructedSequence)new DERInputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
+        return keyId.getKeyIdentifier();
+    } // getAuthorityKeyId
+    
     /**
       * Generate SHA1 fingerprint in string representation.
       *
