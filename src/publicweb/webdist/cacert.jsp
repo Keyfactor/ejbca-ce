@@ -51,7 +51,7 @@ try  {
             	X509Certificate cert = (X509Certificate)chainiter.next();
 %>
 </div>
-  <div align="center"><a href="certdist?cmd=cacert&issuer=<%= issuerdn %>&level=<%= i %>"><%= cert.getSubjectDN().getName() %></a></div>
+  <div align="center"><a href="certdist?cmd=cacert&issuer=<%= issuerdn %>&level=<%= i %>"><%= cert.getSubjectDN().getName() %></a>, <a href="certdist?cmd=ocspcert&issuer=<%= cert.getSubjectDN().getName() %>">OCSPResponder certificate</a></div>
 <div align="center">
 <%
 				i++;
@@ -69,7 +69,7 @@ try  {
             	X509Certificate cert = (X509Certificate)chainiter.next();
 %>
 </div>
-  <div align="center"><a href="certdist?cmd=nscacert&issuer=<%= issuerdn %>&level=<%= i %>"><%= cert.getSubjectDN().getName() %></a></div>
+  <div align="center"><a href="certdist?cmd=nscacert&issuer=<%= issuerdn %>&level=<%= i %>"><%= cert.getSubjectDN().getName() %></a>, <a href="certdist?cmd=nsocspcert&issuer=<%= cert.getSubjectDN().getName() %>">OCSPResponder certificate</a></div>
 <div align="center">
 <%
                 i++;
@@ -87,7 +87,7 @@ try  {
             	X509Certificate cert = (X509Certificate)chainiter.next();
 %>
 </div>
-  <div align="center"><a href="certdist?cmd=iecacert&issuer=<%= issuerdn %>&level=<%= i %>"><%= cert.getSubjectDN().getName() %></a></div>
+  <div align="center"><a href="certdist?cmd=iecacert&issuer=<%= issuerdn %>&level=<%= i %>"><%= cert.getSubjectDN().getName() %></a>, <a href="certdist?cmd=ieocspcert&issuer=<%= cert.getSubjectDN().getName() %>">OCSPResponder certificate</a></div>
 <div align="center">
 <%
                 i++;

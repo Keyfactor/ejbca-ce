@@ -5,22 +5,26 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import java.util.Date;
 import java.util.Collection;
+import java.util.Iterator;
 import java.security.cert.*;
 import java.math.BigInteger;
 
-import javax.rmi.PortableRemoteObject;
 import javax.naming.InitialContext;
-
-import se.anatom.ejbca.util.Base64;
 
 import org.apache.log4j.Logger;
 
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.sign.ISignSessionHome;
-import se.anatom.ejbca.ca.sign.ISignSessionRemote;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
+import se.anatom.ejbca.ca.sign.ISignSessionLocal;
+import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
+import se.anatom.ejbca.ca.caadmin.CAInfo;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.log.Admin;
 
 /**
@@ -41,7 +45,7 @@ import se.anatom.ejbca.log.Admin;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.24 2004-01-01 19:44:15 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.25 2004-01-11 13:55:02 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -55,6 +59,9 @@ public class CertDistServlet extends HttpServlet {
     private static final String COMMAND_NSCACERT = "nscacert";
     private static final String COMMAND_IECACERT = "iecacert";
     private static final String COMMAND_CACERT = "cacert";
+    private static final String COMMAND_NSOCSPCERT = "nsocspcert";
+    private static final String COMMAND_IEOCSPCERT = "ieocspcert";
+    private static final String COMMAND_OCSPCERT = "ocspcert";
     
     private static final String SUBJECT_PROPERTY = "subject";
 	private static final String CAID_PROPERTY = "caid";
@@ -62,8 +69,9 @@ public class CertDistServlet extends HttpServlet {
     private static final String SERNO_PROPERTY = "serno";
     private static final String LEVEL_PROPERTY = "level";
 
-    private ICertificateStoreSessionHome storehome = null;
-    private ISignSessionHome signhome = null;
+    private ICertificateStoreSessionLocalHome storehome = null;
+    private ISignSessionLocalHome signhome = null;
+    private ICAAdminSessionLocalHome cahome = null;
 
     /**
      * init servlet
@@ -78,9 +86,9 @@ public class CertDistServlet extends HttpServlet {
 
             // Get EJB context and home interfaces
             InitialContext ctx = new InitialContext();
-            storehome = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
-            ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
-            signhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
+            storehome = (ICertificateStoreSessionLocalHome)ctx.lookup("java:comp/env/ejb/CertificateStoreSessionLocal");
+            signhome = (ISignSessionLocalHome)ctx.lookup("java:comp/env/ejb/SignSessionLocal");
+            cahome = (ICAAdminSessionLocalHome)ctx.lookup("java:comp/env/ejb/CAAdminSessionLocal");
         } catch( Exception e ) {
             throw new ServletException(e);
         }
@@ -134,7 +142,7 @@ public class CertDistServlet extends HttpServlet {
             command = "";
         if (command.equalsIgnoreCase(COMMAND_CRL) && issuerdn != null) {
             try {
-                ICertificateStoreSessionRemote store = storehome.create();
+                ICertificateStoreSessionLocal store = storehome.create();
                 byte[] crl = store.getLastCRL(administrator, issuerdn);
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);
@@ -161,7 +169,7 @@ public class CertDistServlet extends HttpServlet {
             }
             try {
                 log.debug("Looking for certificates for '"+dn+"'.");
-                ICertificateStoreSessionRemote store = storehome.create();
+                ICertificateStoreSessionLocal store = storehome.create();
                 Collection certcoll = store.findCertificatesBySubject(administrator, dn);
                 Object[] certs = certcoll.toArray();
                 int latestcertno = -1;
@@ -235,7 +243,7 @@ public class CertDistServlet extends HttpServlet {
                 pkcs7 = true;
             // CA is level 0, next over root level 1 etc etc, -1 returns chain as PKCS7
             try {
-                ISignSessionRemote ss = signhome.create();
+                ISignSessionLocal ss = signhome.create();
                 Certificate[] chain = null;
                 if(caid != 0)
 				    chain = (Certificate[]) ss.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
@@ -301,6 +309,71 @@ public class CertDistServlet extends HttpServlet {
                 log.debug(e);
                 return;
             }
+        } else if ((command.equalsIgnoreCase(COMMAND_NSOCSPCERT) || command.equalsIgnoreCase(COMMAND_IEOCSPCERT) || command.equalsIgnoreCase(COMMAND_OCSPCERT)) && ( issuerdn != null || caid != 0)) {
+            try {
+                ICAAdminSessionLocal casession = cahome.create();
+                CAInfo cainfo = null;
+                if(caid != 0) {
+                    cainfo = casession.getCAInfo(administrator, caid);
+                } else {
+                    int id = issuerdn.hashCode();
+                    cainfo = casession.getCAInfo(administrator, id);
+                }
+                X509Certificate ocspcert = (X509Certificate)null;
+                Iterator iter = ((CAInfo) cainfo).getExtendedCAServiceInfos().iterator();
+                while(iter.hasNext()){
+                  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();
+                  if(next instanceof OCSPCAServiceInfo){
+                    boolean active = (next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE);
+                    if(((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath() != null)
+                      ocspcert = (X509Certificate) ((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath().get(0);          
+                  }
+                }
+                // If no cert, send back a NOT_FOUND response
+                if (ocspcert == null) {
+                    res.sendError(HttpServletResponse.SC_NOT_FOUND, "No OCSP certificate found for CA.");
+                    return;
+                }
+                String filename=CertTools.getPartFromDN(CertTools.getSubjectDN(ocspcert), "CN");
+                if (filename == null)
+                    filename = "ocsp";
+                byte[] enccert = null;
+                enccert = ocspcert.getEncoded();
+                if (command.equalsIgnoreCase(COMMAND_NSOCSPCERT)) {
+                    res.setContentType("application/x-x509-ca-cert");
+                    res.setContentLength(enccert.length);
+                    res.getOutputStream().write(enccert);
+                    log.debug("Sent OCSP cert to NS client, len="+enccert.length+".");
+                } else if (command.equalsIgnoreCase(COMMAND_IEOCSPCERT)) {
+                    res.setHeader("Content-disposition", "attachment; filename="+filename+".crt");
+                    res.setContentType("application/octet-stream");
+                    res.setContentLength(enccert.length);
+                    res.getOutputStream().write(enccert);
+                    log.debug("Sent OCSP cert to IE client, len="+enccert.length+".");
+                } else if (command.equalsIgnoreCase(COMMAND_OCSPCERT)) {
+                    byte[] b64cert = Base64.encode(enccert);
+                    String out;
+                    out = "-----BEGIN CERTIFICATE-----\n";
+                    out += new String(b64cert);
+                    out += "\n-----END CERTIFICATE-----\n";
+                    res.setHeader("Content-disposition", "attachment; filename="+filename+".pem");
+                    res.setContentType("application/octet-stream");
+                    res.setContentLength(out.length());
+                    res.getOutputStream().write(out.getBytes());
+                    log.debug("Sent OCSP cert to client, len="+out.length()+".");
+            } else {
+                res.setContentType("text/plain");
+                res.getOutputStream().println("Commands="+COMMAND_NSCACERT+" || "+COMMAND_IECACERT+" || "+COMMAND_CACERT);
+                return;
+            }
+            } catch (Exception e) {
+                PrintStream ps = new PrintStream(res.getOutputStream());
+                e.printStackTrace(ps);
+                res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting OCSP certificate for CA.");
+                log.debug("Error getting OCSP certificate for CA.");
+                log.debug(e);
+                return;
+            }
         } else if (command.equalsIgnoreCase(COMMAND_REVOKED)) {
             String dn = req.getParameter(ISSUER_PROPERTY);
             if (dn == null) {
@@ -316,7 +389,7 @@ public class CertDistServlet extends HttpServlet {
             }
             log.debug("Looking for certificate for '"+dn+"' and serno='"+serno+"'.");
             try {
-                ICertificateStoreSessionRemote store = storehome.create();
+                ICertificateStoreSessionLocal store = storehome.create();
                 RevokedCertInfo revinfo = store.isRevoked(administrator, dn, new BigInteger(serno));
                 PrintWriter pout = new PrintWriter(res.getOutputStream());
                 res.setContentType("text/html");
