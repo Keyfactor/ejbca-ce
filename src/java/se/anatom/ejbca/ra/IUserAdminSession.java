@@ -9,7 +9,7 @@ import se.anatom.ejbca.ra.UserAdminData;
 
 /**
  *
- * @version $Id: IUserAdminSession.java,v 1.7 2002-05-26 12:06:00 herrvendil Exp $
+ * @version $Id: IUserAdminSession.java,v 1.8 2002-06-10 10:40:54 anatom Exp $
  */
 public interface IUserAdminSession {
 
@@ -73,7 +73,7 @@ public interface IUserAdminSession {
     * @throws EJBException if a communication or other error occurs.
     */
     public UserAdminData findUser(String username) throws FinderException, RemoteException;
-    
+
     /**
     * Finds a user by its subjectDN.
     *
@@ -81,8 +81,7 @@ public interface IUserAdminSession {
     * @return UserAdminData or null if the user is not found.
     * @throws EJBException if a communication or other error occurs.
     */
-
-    public UserAdminData findUserBySubjectDN(String subjectdn) throws FinderException, RemoteException;
+    public UserAdminData findUserBySubjectDN(String subjectdn) throws RemoteException;
 
    /**
     * Finds all users with a specified status.
@@ -94,5 +93,11 @@ public interface IUserAdminSession {
     */
     public Collection findAllUsersByStatus(int status) throws FinderException, RemoteException;
 
+   /**
+    * Starts an external service that may be needed bu user administration.
+    *
+    * @throws EJBException if a communication or other error occurs.
+    */
+    void startExternalService() throws RemoteException;
 }
 

@@ -3,7 +3,7 @@ package se.anatom.ejbca.admin;
 
 /** Factory for RA Admin Commands.
  *
- * @version $Id: RaAdminCommandFactory.java,v 1.2 2002-04-14 09:11:10 anatom Exp $
+ * @version $Id: RaAdminCommandFactory.java,v 1.3 2002-06-10 10:40:52 anatom Exp $
  */
 public class RaAdminCommandFactory {
 
@@ -37,7 +37,9 @@ public class RaAdminCommandFactory {
             return new RaListUsersCommand(args);
         else if (args[0].equals("revokeuser"))
             return new RaRevokeUserCommand(args);
-        else 
+        else if (args[0].equals("startrmi"))
+            return new RaStartServiceCommand(args);
+        else
             return null;
     } // getCommand
 } // RaAdminCommandFactory

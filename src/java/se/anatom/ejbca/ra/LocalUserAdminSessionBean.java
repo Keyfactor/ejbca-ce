@@ -17,7 +17,7 @@ import se.anatom.ejbca.util.CertTools;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.13 2002-05-29 12:52:52 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.14 2002-06-10 10:40:54 anatom Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserAdminSession {
 
@@ -43,7 +43,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
     * Implements IUserAdminSession::addUser.
     * Implements a mechanism that uses UserDataEntity Bean.
     */
-    public void addUser(String username, String password, String dn, String email, int type) throws RemoteException {
+    public void addUser(String username, String password, String dn, String email, int type) {
         debug(">addUser("+username+", password, "+dn+", "+email+", "+type+")");
 
         try {
@@ -67,7 +67,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
     * Implements IUserAdminSession::deleteUser.
     * Implements a mechanism that uses UserData Entity Bean.
     */
-    public void deleteUser(String username) throws RemoteException {
+    public void deleteUser(String username) {
         debug(">deleteUser("+username+")");
 
         try {
@@ -154,13 +154,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
         return ret;
     } // findUser
 
-        /**
-
+   /**
     * Implements IUserAdminSession::findUserBySubjectDN.
-
     */
-
-    public UserAdminData findUserBySubjectDN(String subjectdn) throws FinderException, RemoteException {
+    public UserAdminData findUserBySubjectDN(String subjectdn) {
         debug(">findAllUsersBySubjectDN("+subjectdn+")");
         debug("Looking for users with subjectdn: " + subjectdn);
         String dn = CertTools.stringToBCDNString(subjectdn);
@@ -180,13 +177,13 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
                 ret.add( data );
             }
             debug("found "+ret.size()+" user(s) with subjectdn="+subjectdn);
-            debug("<findAllUsersBySubjectDN("+subjectdn+")");
             if( ret.size() > 0 )
               returnval = (UserAdminData) ret.get(0);
+            debug("<findAllUsersBySubjectDN("+subjectdn+")");
             return returnval;
         }
         catch (Exception e) {
-            throw new EJBException(e.getMessage());
+            throw new EJBException(e);
         }
         finally {
             try {
@@ -194,11 +191,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
                 if (ps != null) ps.close();
                 if (con!= null) con.close();
             } catch(SQLException se) {
-                se.printStackTrace();
+                error("SQL-fel vid sökning efter med DN='"+subjectdn+".", se);
+                throw new EJBException(se);
             }
         }
     } // findUserBySubjectDN
-
 
     /**
     * Implements IUserAdminSession::findAllUsersByStatus.
@@ -220,6 +217,41 @@ public class LocalUserAdminSessionBean extends BaseSessionBean implements IUserA
         debug("<findAllUsersByStatus("+status+")");
         return ret;
     } // findAllUsersByStatus
+
+
+   /**
+    * Implements IUserAdminSession::startExternalService.
+    */
+    public void startExternalService() {
+        debug(">startService()");
+        try {
+            final int registryPortRMI =
+                ((Integer)lookup("java:comp/env/registryPortRMI",
+                                 java.lang.Integer.class)).intValue();
+            final int startPortRMI =
+                ((Integer)lookup("java:comp/env/startPortRMI",
+                                 java.lang.Integer.class)).intValue();
+            final String keyFileName =
+                (String)lookup("java:comp/env/keyStoreFileName",
+                                 java.lang.String.class);
+            final String keyStorePassword =
+                (String)lookup("java:comp/env/keyStorePassword",
+                                 java.lang.String.class);
+            final String trustedFileName =
+                (String)lookup("java:comp/env/trustStoreFileName",
+                                 java.lang.String.class);
+            RMIFactory rmiFactory = (RMIFactory)Class.forName(
+                (String)lookup("java:comp/env/RMIFactory",
+                               java.lang.String.class)
+                ).newInstance();
+            rmiFactory.startConnection(registryPortRMI, startPortRMI,
+                keyFileName, keyStorePassword, trustedFileName );
+            debug(">startService()");
+        } catch( Exception e ) {
+            error("Lyckades inte starta extern service.", e);
+            throw new EJBException("Error starting external service", e);
+        }
+    } // startExternalService
 
     private Connection getConnection() throws SQLException, NamingException {
            DataSource ds = (DataSource)getInitialContext().lookup(dataSource);
