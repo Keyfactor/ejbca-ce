@@ -13,6 +13,7 @@
 - The AccessRulesDataBean entity bean has been modified as it was not compliant with EJB Specifications.
   All fields of the PK are now persistent fields. This means that it is NOT backward compatible.
   ! No SQL migration file is available right now to do so !
+- Small text and spelling fixes.
 
 
 3.0.3
