@@ -23,7 +23,7 @@ import org.apache.log4j.*;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.21 2002-12-13 13:39:22 anatom Exp $
+ * @version $Id: CertTools.java,v 1.22 2002-12-29 14:45:44 anatom Exp $
  */
 public class CertTools {
 
@@ -77,6 +77,9 @@ public class CertTools {
         if (o.trim().equalsIgnoreCase("E")) {
             return X509Name.EmailAddress;
         }
+        if (o.trim().equalsIgnoreCase("EMail")) {
+            return X509Name.EmailAddress;
+        }
         return null;
     } // getOid
 
@@ -114,7 +117,7 @@ public class CertTools {
         Vector ordering = new Vector();
         Vector values = new Vector();
         int index = -1;
-        String[] objects = { "EmailAddress", "E", "UID", "CN", "SN", "T", "OU", "O", "L", "ST", "DC", "C" };
+        String[] objects = { "EmailAddress", "E", "EMail", "UID", "CN", "SN", "T", "OU", "O", "L", "ST", "DC", "C" };
         for (int i = 0;i<objects.length;i++) {
             //cat.debug("Looking for "+objects[i]);
             String object = objects[i].toLowerCase();
