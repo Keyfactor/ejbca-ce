@@ -1,4 +1,4 @@
-$Id: TODO,v 1.5 2002-01-08 12:40:56 anatom Exp $
+$Id: TODO,v 1.6 2002-01-29 10:03:19 anatom Exp $
 
 V 1.0
 -----
@@ -7,7 +7,8 @@ V 1.0
 
 V 2.0
 -----
-- Look into using ant for command line commands, i.e. 'ant -f runtime.xml ca <args>'
+- Certificate update/rollover for CAs and clients.
+- Possibility to warn about certificates about to expire.
 - Return PKCS7 response to IE/Mozilla, response is PKCS7 with whole chain. ca.crt is also pkcs7 with whole chain.
 - Add administration interface web-GUI (through servlets/JSP).
 - Remote secure administration through browser CA-admin and RA-admin.
@@ -26,3 +27,4 @@ V 2.0
 - RA function to generate keystore for user.
 - Keystore in other formats, PKCS8/PEM.
 - Describe SSL-setup in server.
+- XKMS specifications, and more XML/Soap stuff.
