@@ -133,11 +133,13 @@ Ant 1.4.x/1.5.x to build (http://jakarta.apache.org/ant/)
 Simply unpack the archive in a directory and run "ant" to build everything.
 
 Set the environment variable JBOSS_HOME to the directory where JBoss's root is
- (/jboss-<version>_Tomcat-<version>). This is done so the deploy script will know where files are to be
+ (/jboss-<version>_Tomcat-<version>). This is done so the deploy script will
+ know where files are to be
  copied, they are copied to the $JBOSS_HOME/deploy directory.
 
 Run 'deploy.cmd/sh', this will copy the Bouncycastle JCE provider, the LDAP
-library and the regexp library to the directory $JBOSS_HOME/server/default/lib, it will be added to
+library and the regexp library to the directory $JBOSS_HOME/server/default/lib,
+it will be added to
 JBoss's classpath automatically when JBoss is started.
 
 You can also build javadoc on all APIs used with 'ant javadoc'.
@@ -160,10 +162,11 @@ GUI, use 'deploy.sh/cmd nora'.
 6. Initialize the CA for operation by running 'ca.sh/cmd init'.
 
 NOTE-1: After running tests with 'runtest.sh/cmd', you might consider deleting
-the database since some leftovers are left in the database. 
-Runtest will create and revoke some testcertificates, so after runtest your CRLs 
+the database since some leftovers are left in the database.
+Runtest will create and revoke some testcertificates, so after runtest your CRLs
 will be populated with a few entries.
-'runtest.sh/cmd should not be run on a production system, only to test the installation.
+'runtest.sh/cmd should not be run on a production system, only to test the
+installation.
 
 NOTE-2: The installed keystore is a demo keystore with DN 'C=SE,O=AnaTom,CN=
 TestCA'.
@@ -423,11 +426,12 @@ The RA has a command line interface ra.sh/cmd. Options are:
 * adduser - adds a user to the database, after addition a user may apply for a
 certificate. If email address is set to 'null', no email is put in certificates.
 Quote the DN (") so it is treated as one argument.
-Altnames is a string simlar to the DN string nut using alternative names from 
-RFC3280, i.e. "rfc822Name=<email>, dNSName=<host name>, uri=<http://<whatever>" 
+Altnames is a string simlar to the DN string nut using alternative names from
+RFC3280, i.e. "rfc822Name=<email>, dNSName=<host name>, uri=<http://<whatever>"
 The full list is: otherName, rfc822Name, dNSName, x400Address, directoryName,
 ediPartyName, uniformResourceIdentifier, iPAddress, registeredID
-Only rfc822Name, dNSName and uniformResourceIdentifier (uri) is supported at the moment.
+Only rfc822Name, dNSName and uniformResourceIdentifier (uri) is supported at the
+moment.
 * deluser - removes a user from the database, any issued certificates
 remain  active and present in the database.
 * setpwd - set a new password for a user. The password is stored as a hash in
@@ -589,6 +593,17 @@ In IE it is done by double-clicking on the .p12 file.
 
 10. Go to https://localhost:8443/raadmin
 
+Reference: to generate a JKS with keytool
+keytool -genkey -alias foo -keystore foo.jks -keyalg RSA -dname "C=SE,O=
+AnaTom,CN=foo" -storepass foo123
+keytool -certreq -alias foo -keystore foo.jks -sigalg SHA1WithRSA -storepass
+foo123 -file foo.req
+ra.sh adduser foo foo123 "C=SE,O=AnaTom,CN=foo" null, null 1 1
+ca.sh processreq foo foo123 foo.req foo.pem
+ca.sh getrootcert ca.der
+keytool -import -alias foo -file foo.pem -keystore foo.jks -storepass foo123
+keytool -trustcacerts -alias cacert -file ca.der -keystore foo.jks -storepass
+foo123
 
 SAMPLES
 =======
@@ -632,10 +647,10 @@ REFERENCES
 ==========
 
 JBOSS/JETTY:
-To get client certificates to work with Jetty add: 
+To get client certificates to work with Jetty add:
  <Set name="NeedClientAuth">true</Set>
 to the SSL listener configuration.
- 
+
 PGP:
 PKCS12 files generated from EJBCA works excellent as PGP-keys.
 
@@ -660,6 +675,7 @@ http://www.microsoft.com/windows2000/en/server/help/default.asp?url=
 
 To generate html code from textfiles, txt2html was used.
 txt2html --nolinks HOWTO-mysql.txt > HOWTO-mysql.html
+
 
 
 
