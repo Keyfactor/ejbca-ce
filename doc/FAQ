@@ -1,6 +1,6 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.21 2004-05-09 08:33:24 anatom Exp $
+$Id: FAQ,v 1.22 2004-05-14 06:13:36 anatom Exp $
 
 ---------
 Q : After upgrading the version of Java, the Admin GUI no longer works.
@@ -10,6 +10,10 @@ javas trust-store. This is imported when running 'install.sh/cmd' and when
 you upgraded java, you have a new, empty truststore.
 Import the CA-certificate in $JAVA_HOME/jre/lib/security/cacerts again, 
 or copy the old truststore from the earlier JAVA_HOME.
+You can manually import it by exporting the ca-certificate:
+'./ca.sh getrootcert <caname> root.der -der'
+and importing it in cacerts:
+'keytool -import -trustcacerts -file root.der -keystore $JAVA_HOME/jre/lib/security/cacerts'
 
 ---------
 Q : When running 'install' or creating JKS or PKCS12 files you can't use longer 
