@@ -1,0 +1,36 @@
+<HTML>
+<HEAD>
+<TITLE>EJBCA Demo Certificate Enrollment</TITLE>
+</HEAD>
+<BODY bgcolor="#ffffff" link="black" vlink="black" alink="black">
+
+<center>
+<FONT face=arial size="3"><strong>EJBCA Demo Certificate Enrollment
+</strong></FONT>
+</center>
+
+<HR>
+Welcome to certificate enrollment. We support enrollment though different methods:
+<ol>
+<li>Mozilla/Netscape Navigator.
+<li>Internet Explorer.
+</ol>
+<P>
+If you are using a browser please <a href="demo_apply_unknown.html">click</a> to fetch your personal certificate.
+
+<SCRIPT LANGUAGE="JavaScript">
+var browserName = navigator.appName;
+var browserNum = parseInt(navigator.appVersion);
+linkSelector ();
+function linkSelector () {
+        if(browserName == "Netscape") {
+                document.links[0].href = "demo_apply_nav.jsp";
+        }
+    else if ((browserName == "Microsoft Internet Explorer") &&(browserNum>= 4)) {
+                document.links[0].href = "demo_apply_exp.jsp";
+        }
+}
+</SCRIPT>
+</BODY>
+</HTML>
+
