@@ -1,0 +1,33 @@
+
+Running EJBCA on MacOSX
+========================
+This example uses MySQL as database.
+
+$ cd /usr/local/ejbca
+$ sudo ant replaceDS
+
+- Say mysql for Type of database
+- Say java:/EjbcaDS for data source
+
+$ sudo ant deploy
+
+- Restart JBoss
+
+$ sudo chmod u=rwx install.sh
+$ sudo chmod u=rwx ca.sh
+$ sudo chmod u=rwx setup-adminweb.sh
+$ sudo chmod u=rwx setup.sh
+$ sudo chmod u=rwx batch.sh
+
+- Comment out the 2 "keytool"-rows in setup-adminweb.sh
+- Comment out the "rm tmp/rootca.der"-row in setup-adminweb.sh
+
+$ sudo ./install.sh <javacacerts password>
+$ sudo keytool -delete -alias EJBCA-CA -keystore $JAVA_HOME/lib/security/cacerts -storepass <storepassword
+>
+$ sudo keytool -import -noprompt -trustcacerts -alias EJBCA-CA -file tmp/rootca.der -keystore $JAVA_HOME/l
+ib/security/cacerts -storepass <storepassword>
+$ sudo rm tmp/rootca.der
+
+- Restart JBoss
+- Import p12/superadmin.p12 in Keychain

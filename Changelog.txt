@@ -35,6 +35,7 @@ Added pageEncoding for jsp pages and removed explicit encoding tag in meta-inf f
 Fixed bug with republishing CA certificates.
 Check execute permission on batch.sh from install script.
 Many clarifications in docs.
+Tested on MacOSX.
 
 3.0.2
 -----
