@@ -734,17 +734,18 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- ========================================================================== -->
   <!-- Replace every occurrence of the DefaultDS to something else (here ejbcaDS) -->
   <!-- ========================================================================== -->
-  <target name="checkForDS" unless="ejbca.DS">
-	<fail message="Please run ant with -Dejbca.DS=&lt;your-datasource&gt; ( eg.java:/DefaultDS )"/> 
-  </target>
-
-  <target name="replaceDS" if="ejbca.DS" depends="checkForDS">
+  <target name="replaceDS">
 
 		<!-- Replace every occurence in the files of the Datasource -->
   		<input
 		    message="Type of database :"
 		    validargs="oracle,mssql,mysql,postgres,sapdb,hsqldb,sybase"
 		    addproperty="ejbca.DB"
+		  />
+  		<input
+		    message="Data source (default java:/DefaultDS):"
+		    addproperty="ejbca.DS"
+		    defaultvalue="java:/DefaultDS"
 		  />
 		<!-- Replace the jbosscmp xml description files by the correct ones -->
 		<copy overwrite="true" file="src/ca/ca/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/ca/ca/META-INF/jbosscmp-jdbc.xml"/>
