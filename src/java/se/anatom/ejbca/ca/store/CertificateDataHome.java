@@ -22,8 +22,14 @@ public interface CertificateDataHome extends javax.ejb.EJBHome {
 
     /** Finds certificate which expire within a specified time.
      * @param expireTime (Date.getTime()-format), all certificates that expires before this date will be listed.
-     * @return Collection of Certificates (java.security.cert.Certificate) in no specified order.
+     * @return Collection of CertificateData in no specified order.
      */
     public Collection findByExpireDate(long expireDate)
+        throws FinderException, RemoteException;
+    /** Finds certificate which a specified subjectDN.
+     * @param subjectDN, the subject whose certificates will be listaed
+     * @return Collection of CertificateData in no specified order.
+     */
+    public Collection findBySubjectDN(String subjectDN)
         throws FinderException, RemoteException;
 }

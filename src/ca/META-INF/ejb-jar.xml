@@ -401,8 +401,19 @@
       	  </method-params>
       	</query-method>
 	<ejb-ql>
-	  <![CDATA[SELECT OBJECT(a) from CertificateDataBean a WHERE a.expireDate<?1]]>
+	  <![CDATA[SELECT DISTINCT OBJECT(a) from CertificateDataBean a WHERE a.expireDate<?1]]>
 	</ejb-ql>
+      </query>
+      <query>
+      	<query-method>
+      	  <method-name>findBySubjectDN</method-name>
+      	  <method-params>
+      	    <method-param>java.lang.String</method-param>
+      	  </method-params>
+      	</query-method>
+	<ejb-ql>
+	  <![CDATA[SELECT DISTINCT OBJECT(a) from CertificateDataBean a WHERE a.subjectDN=?1]]>
+        </ejb-ql>
       </query>
    </entity>
 

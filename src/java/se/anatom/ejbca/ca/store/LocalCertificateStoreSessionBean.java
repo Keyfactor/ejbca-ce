@@ -28,7 +28,7 @@ import se.anatom.ejbca.util.Base64;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.10 2002-05-22 09:15:00 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.11 2002-05-23 09:00:13 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean implements ICertificateStoreSession {
 
@@ -192,41 +192,28 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean implements
     * Implements ICertificateStoreSession::findCertificatesBySubject.
     * Uses select directly from datasource.
     */
-    public Certificate[] findCertificatesBySubject(String subjectDN) {
+    public Collection findCertificatesBySubject(String subjectDN) {
         debug(">findCertificatesBySubject(), dn="+subjectDN);
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(subjectDN);
         debug("Looking for cert with (transformed)DN: " + dn);
-
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet result = null;
-        try{
-            con = getConnection();
-            ps = con.prepareStatement("select base64Cert from CertificateData where subjectDN=? ORDER BY expireDate DESC");
-            ps.setString(1,dn);
-            result = ps.executeQuery();
-            Vector vect = new Vector();
-            while(result.next()){
-                vect.addElement(CertTools.getCertfromByteArray(Base64.decode(result.getString(1).getBytes())));
+        try {
+            Collection coll = certHome.findBySubjectDN(dn);
+            Collection ret = new Vector();
+            if (coll != null) {
+                Iterator iter = coll.iterator();
+                while (iter.hasNext()) {
+                    ret.add( ((CertificateData)iter.next()).getCertificate() );
+                }
             }
-            debug("found "+vect.size()+" certificate(s) with DN="+dn);
-            X509Certificate[] returnArray = new X509Certificate[vect.size()];
-            vect.copyInto(returnArray);
             debug("<findCertificatesBySubject(), dn="+subjectDN);
-            return returnArray;
-        }
-        catch (Exception e) {
-            throw new EJBException(e);
-        }
-        finally {
-            try {
-                if (result != null) result.close();
-                if (ps != null) ps.close();
-                if (con!= null) con.close();
-            } catch(SQLException se) {
-                se.printStackTrace();
-            }
+            return ret;
+        } catch (javax.ejb.FinderException fe) {
+            cat.error(fe);
+            throw new EJBException(fe);
+        } catch (java.rmi.RemoteException re) {
+            cat.error(re);
+            throw new EJBException(re);
         }
     } //findCertificatesBySubject
 

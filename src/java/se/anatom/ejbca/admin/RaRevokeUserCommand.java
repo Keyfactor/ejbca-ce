@@ -5,6 +5,8 @@ import java.io.*;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import java.util.Collection;
+import java.util.Iterator;
 
 import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.UserData;
@@ -18,7 +20,7 @@ import se.anatom.ejbca.util.Hex;
 
 /** Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaRevokeUserCommand.java,v 1.2 2002-05-20 17:52:59 anatom Exp $
+ * @version $Id: RaRevokeUserCommand.java,v 1.3 2002-05-23 09:00:13 anatom Exp $
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
 
@@ -41,29 +43,26 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
             System.out.println("Old status="+data.getStatus());
             getAdminSession().setUserStatus(username, UserData.STATUS_REVOKED);
             System.out.println("New status="+UserData.STATUS_REVOKED);
-            
+
             Object obj2 = getInitialContext().lookup("CertificateStoreSession");
             ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
             ICertificateStoreSession store = storehome.create();
-            Certificate[] certs = store.findCertificatesBySubject(data.getDN());
             // Revoke all certs
-            if (certs.length > 0 ) {
-                Object obj = getInitialContext().lookup("CertificateData");
-                CertificateDataHome home = (CertificateDataHome) javax.rmi.PortableRemoteObject.narrow(obj, CertificateDataHome.class);
-                for (int i=0; i<certs.length;i++) {
-                    CertificateDataPK revpk = new CertificateDataPK();
-                    revpk.fingerprint = CertTools.getFingerprintAsString((X509Certificate)certs[i]);
-                    CertificateData rev = home.findByPrimaryKey(revpk);
-                    if (rev.getStatus() != CertificateData.CERT_REVOKED) {
-                        rev.setStatus(CertificateData.CERT_REVOKED);
-                        rev.setRevocationDate(new Date());
-                        System.out.println("Revoked cert with serialNumber "+Hex.encode(((X509Certificate)certs[i]).getSerialNumber().toByteArray()));
-                    }
+            Object obj = getInitialContext().lookup("CertificateData");
+            CertificateDataHome home = (CertificateDataHome) javax.rmi.PortableRemoteObject.narrow(obj, CertificateDataHome.class);
+            Collection certs = home.findBySubjectDN(data.getDN());
+            Iterator iter = certs.iterator();
+            while (iter.hasNext()) {
+                CertificateData rev = (CertificateData)iter.next();
+                if (rev.getStatus() != CertificateData.CERT_REVOKED) {
+                    rev.setStatus(CertificateData.CERT_REVOKED);
+                    rev.setRevocationDate(new Date());
+                    System.out.println("Revoked cert with serialNumber "+Hex.encode(((X509Certificate)rev.getCertificate()).getSerialNumber().toByteArray()));
                 }
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
     } // execute
-    
+
 }

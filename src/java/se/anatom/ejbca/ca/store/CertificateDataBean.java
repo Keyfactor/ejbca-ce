@@ -76,7 +76,7 @@ public abstract class CertificateDataBean implements javax.ejb.EntityBean {
     public abstract void setBase64Cert(String base64Cert);
 
     //
-    // Public methods used to help us manage certificates
+    // Public business methods used to help us manage certificates
     //
     public Certificate getCertificate() {
         X509Certificate cert = null;

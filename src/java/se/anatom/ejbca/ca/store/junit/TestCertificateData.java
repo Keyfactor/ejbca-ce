@@ -24,7 +24,7 @@ import junit.framework.*;
 
 /** Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.7 2002-05-22 09:15:00 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.8 2002-05-23 09:00:13 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -181,9 +181,10 @@ public class TestCertificateData extends TestCase {
 
         cat.debug("Looking for cert with DN="+cert.getSubjectDN().toString());
         ICertificateStoreSessionRemote store = storehome.create();
-        Certificate[] certs = store.findCertificatesBySubject(cert.getSubjectDN().toString());
-        for (int i=0;i<certs.length;i++) {
-            X509Certificate xcert = (X509Certificate)certs[i];
+        Collection certs = store.findCertificatesBySubject(cert.getSubjectDN().toString());
+        Iterator iter = certs.iterator();
+        while (iter.hasNext()) {
+            X509Certificate xcert = (X509Certificate)iter.next();
             cat.debug(xcert.getSubjectDN().toString()+" - "+xcert.getSerialNumber().toString());
             //cat.debug(certs[i].toString());
         }

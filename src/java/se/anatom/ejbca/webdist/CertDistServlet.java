@@ -5,6 +5,7 @@ import java.io.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import java.util.Date;
+import java.util.Collection;
 import java.security.cert.*;
 import java.math.BigInteger;
 
@@ -39,7 +40,7 @@ import se.anatom.ejbca.util.CertTools;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.4 2002-05-04 14:20:50 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.5 2002-05-23 09:00:13 anatom Exp $
  *
  */
 public class CertDistServlet extends HttpServlet {
@@ -125,7 +126,8 @@ public class CertDistServlet extends HttpServlet {
             try {
                 cat.debug("Looking for certificates for '"+dn+"'.");
                 ICertificateStoreSession store = storehome.create();
-                Certificate[] certs = store.findCertificatesBySubject(dn);
+                Collection certcoll = store.findCertificatesBySubject(dn);
+                Certificate[] certs = (Certificate[])certcoll.toArray();
                 int latestcertno = -1;
                 if (command.equalsIgnoreCase(COMMAND_CERT)) {
                     long maxdate = 0;
@@ -147,7 +149,7 @@ public class CertDistServlet extends HttpServlet {
                         res.setContentLength(cert.length);
                         res.getOutputStream().write(cert);
                         cat.info("Sent latest certificate for '"+dn+"' to client at " + remoteAddr);
-                        
+
                     } else {
                         res.sendError(HttpServletResponse.SC_NOT_FOUND, "No certificate found for requested subject '"+dn+"'.");
                         cat.debug("No certificate found for '"+dn+"'.");
@@ -172,7 +174,7 @@ public class CertDistServlet extends HttpServlet {
                         pout.println("</pre>");
                         pout.println("<a href=\"certdist?cmd=revoked&issuer="+issuer+"&serno="+serno.toString()+"\">Check if certificate is revoked</a>");
                         pout.println("<hr>");
-                        
+
                     }
                     if (certs.length == 0) {
                         pout.println("No certificates exists for '"+dn+"'.");
@@ -242,7 +244,7 @@ public class CertDistServlet extends HttpServlet {
                 cat.error("Error getting CA certificates.");
                 cat.error(e);
                 return;
-            }            
+            }
         } else if (command.equalsIgnoreCase(COMMAND_REVOKED)) {
             String dn = req.getParameter(ISSUER_PROPERTY);
             if (dn == null) {
@@ -281,7 +283,7 @@ public class CertDistServlet extends HttpServlet {
                 cat.error("Error checking revocation for '"+dn+"' with serno '"+serno+"'.");
                 cat.error(e);
                 return;
-            }                
+            }
         } else {
             res.setContentType("text/plain");
             res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Commands=lastcert | listcerts | crl | revoked");
