@@ -8,7 +8,7 @@
 <%
 try  {
     String dn=request.getParameter("issuer");
-    String serno=request.getParameter("serno");
+    String serno=request.getParameter("serno").trim();
     if ((dn == null) || (serno == null)) {
         out.println("Usage: revoked.jsp?issuer=<DN>&serno=<serial number>");
     } else {
