@@ -44,7 +44,7 @@ import se.anatom.ejbca.util.P12toPEM;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.42 2003-10-29 15:23:33 herrvendil Exp $
+ * @version $Id: BatchMakeP12.java,v 1.43 2003-11-17 09:06:36 anatom Exp $
  */
 public class BatchMakeP12 {
     /** For logging */
@@ -299,12 +299,19 @@ public class BatchMakeP12 {
         if (usekeyrecovery && keyrecoverflag) {
             // Recover Keys
            IKeyRecoverySessionRemote keyrecoverysession = keyrecoveryhome.create();
-           rsaKeys = ((KeyRecoveryData) keyrecoverysession.keyRecovery(administrator, data.getUsername())).getKeyPair();
-         }else{                    
+           KeyRecoveryData recoveryData = (KeyRecoveryData) keyrecoverysession.keyRecovery(administrator, data.getUsername());
+           if (recoveryData != null) {
+               rsaKeys = recoveryData.getKeyPair();
+           } else {
+               throw new Exception("No Key Recovery Data available for user, "+data.getUsername()+" can not be generated.");
+           }
+         } else {                    
            rsaKeys = KeyTools.genKeys(1024);
          }
          // Get certificate for user and create P12
-         createUser(data.getUsername(), data.getPassword(), data.getCAId(), rsaKeys, createJKS, createPEM, data.getKeyRecoverable());
+         if (rsaKeys != null) {
+             createUser(data.getUsername(), data.getPassword(), data.getCAId(), rsaKeys, createJKS, createPEM, data.getKeyRecoverable());
+         }
      } //processUser
 
     /**
@@ -433,8 +440,11 @@ public class BatchMakeP12 {
                             log.error("An error happened, setting status to FAILED.", e);
                             failedusers += (":" + data.getUsername());
                             failcount++;
-                            admin.setUserStatus(administrator, data.getUsername(),
-                                UserDataLocal.STATUS_FAILED);
+                            if (status == UserDataLocal.STATUS_KEYRECOVERY) {
+                                admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_KEYRECOVERY);
+                            } else {
+                                admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_FAILED);
+                            }
                         }
                     } else {
                         log.debug("User '" + data.getUsername() +
@@ -512,10 +522,13 @@ public class BatchMakeP12 {
                     }
                 } catch (Exception e) {
                     // If things went wrong set status to FAILED
-                    log.error("An error happened, setting status to FAILED.");
+                    log.error("An error happened, setting status to FAILED (if not keyrecovery).");
                     log.error(e);
-                    admin.setUserStatus(administrator, data.getUsername(),
-                        UserDataLocal.STATUS_FAILED);
+                    if (status == UserDataLocal.STATUS_KEYRECOVERY) {
+                        admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_KEYRECOVERY);
+                    } else {
+                        admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_FAILED);
+                    }
                     throw new Exception("BatchMakeP12 failed for '" + username + "'.");
                 }
             } else {
