@@ -2,7 +2,7 @@
 -----
 Added allowOverrideKeyUsage in certifcate profiles.
 New fields in DN, givenname, surname, initials.
-
+Bugfixes, cleanups.
 
 2.0b1
 -----
