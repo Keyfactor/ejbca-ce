@@ -16,25 +16,13 @@
          Session bean handling core CA function,signing certificates.
      </description>
      <ejb-name>RSASignSession</ejb-name>
-     <home>se.anatom.ejbca.ca.sign.ISignSessionHome</home>
-     <remote>se.anatom.ejbca.ca.sign.ISignSessionRemote</remote>
      <local-home>se.anatom.ejbca.ca.sign.ISignSessionLocalHome</local-home>
      <local>se.anatom.ejbca.ca.sign.ISignSessionLocal</local>
+     <home>se.anatom.ejbca.ca.sign.ISignSessionHome</home>
+     <remote>se.anatom.ejbca.ca.sign.ISignSessionRemote</remote>
      <ejb-class>se.anatom.ejbca.ca.sign.RSASignSessionBean</ejb-class>
      <session-type>Stateless</session-type>
-     <transaction-type>Container</transaction-type>
-     <env-entry>
-        <description>Factory class for creating a SigningDevice</description>
-        <env-entry-name>signingDeviceFactory</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>se.anatom.ejbca.ca.sign.PKCS12SigningDeviceFactory</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Location of CA keystore</description>
-        <env-entry-name>keyStore</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>../server/default/conf/server.p12</env-entry-value>
-     </env-entry>
+     <transaction-type>Container</transaction-type>     
      <env-entry>
         <description>Password for server keystore, comment out to prompt for pwd.</description>
         <env-entry-name>keyStorePass</env-entry-name>
@@ -42,62 +30,39 @@
         <env-entry-value>foo123</env-entry-value>
      </env-entry>
      <env-entry>
-        <description>Alias in keystore for CA private key</description>
-        <env-entry-name>privateKeyAlias</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>privateKey</env-entry-value>
-     </env-entry>
-     <env-entry>
         <description>Password for CA private key, only used for JKS-keystore. Leave as null for PKCS12-keystore, comment out to prompt</description>
         <env-entry-name>privateKeyPass</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>null</env-entry-value>
-     </env-entry>
+     </env-entry>          
+<!-- Uncomment to use LDAP publisher -->
+<!--     
      <env-entry>
-        <description>Use AuthorityKeyIdentifier in CRL?</description>
-        <env-entry-name>AuthorityKeyIdentifier</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>true</env-entry-value>
+        <description>Environment entry ussed to map a publishers id to name in the web interface.
+                     the Id is the integer in the end of the key.
+        </description>
+        <env-entry-name>PublisherName1</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>First Publisher</env-entry-value>     
      </env-entry>
-     <env-entry>
-        <description>AuthorityKeyIdentifier critical? (RFC2459 says NO)</description>
-        <env-entry-name>AuthorityKeyIdentifierCritical</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>false</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Use CRLNumber?</description>
-        <env-entry-name>CRLNumber</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>true</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>CRLNumber critical? (RFC2459 says NO)</description>
-        <env-entry-name>CRLNumberCritical</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>false</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Period in hours between CRLs beeing issued</description>
-        <env-entry-name>CRLPeriod</env-entry-name>
-        <env-entry-type>java.lang.Long</env-entry-type>
-        <env-entry-value>24</env-entry-value>
-     </env-entry>
-     <env-entry>
-        <description>Call finishUser in AuthenticationSession after generation?</description>
-        <env-entry-name>FinishUser</env-entry-name>
-        <env-entry-type>java.lang.Boolean</env-entry-type>
-        <env-entry-value>true</env-entry-value>
-     </env-entry>
-
-     <ejb-ref>
+-->
+<!--END LDAP Publisher --> 
+     <ejb-local-ref>
+        <description>The CA entity bean.</description>
+        <ejb-ref-name>ejb/CADataLocal</ejb-ref-name>
+        <ejb-ref-type>Entity</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ca.caadmin.ICADataLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.caadmin.ICADataLocal</local>
+        <ejb-link>CAData</ejb-link>
+     </ejb-local-ref>          
+     <ejb-local-ref>
         <description>The Log session bean</description>
-        <ejb-ref-name>ejb/LogSession</ejb-ref-name>
+        <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.log.ILogSessionHome</home>
-        <remote>se.anatom.ejbca.log.ILogSessionRemote</remote>
+        <local-home>se.anatom.ejbca.log.ILogSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.log.ILogSessionLocal</local>
         <ejb-link>LogSession</ejb-link>
-     </ejb-ref>
+     </ejb-local-ref>
      <ejb-local-ref>
         <description>The Certificate store used to store and fetch certificates</description>
         <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
@@ -118,8 +83,8 @@
         <local>se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal</local>
         <ejb-link>AuthenticationSession</ejb-link>
      </ejb-local-ref>
-<!-- Uncomment to use LDAP publisher
-     <ejb-local-ref>
+<!-- Uncomment to use LDAP publisher -->
+<!--     <ejb-local-ref>
         <description>
                 Publishers are configured to store certificates and CRLs in addiotional places
                 from the main database. Publishers runs as local beans.
@@ -130,7 +95,8 @@
         <local>se.anatom.ejbca.ca.store.IPublisherSessionLocal</local>
         <ejb-link>PublisherSession1</ejb-link>
      </ejb-local-ref>
-END LDAP Publisher -->
+-->
+<!--END LDAP Publisher -->
     <security-identity>
         <description></description>
         <run-as>
@@ -151,22 +117,23 @@ END LDAP Publisher -->
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
 
-     <ejb-ref>
+     <ejb-local-ref>
         <description>The User entity bean</description>
-        <ejb-ref-name>ejb/UserData</ejb-ref-name>
+        <ejb-ref-name>ejb/UserDataLocal</ejb-ref-name>
         <ejb-ref-type>Entity</ejb-ref-type>
-        <home>se.anatom.ejbca.ca.store.UserDataHome</home>
-        <remote>se.anatom.ejbca.ca.store.UserDataRemote</remote>
-     </ejb-ref>
+        <local-home>se.anatom.ejbca.ca.store.UserDataLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.store.UserDataLocal</local>
+        <ejb-link>UserData</ejb-link>
+     </ejb-local-ref>
 
-     <ejb-ref>
+     <ejb-local-ref>
         <description>The Log session bean</description>
-        <ejb-ref-name>ejb/LogSession</ejb-ref-name>
+        <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.log.ILogSessionHome</home>
-        <remote>se.anatom.ejbca.log.ILogSessionRemote</remote>
+        <local-home>se.anatom.ejbca.log.ILogSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.log.ILogSessionLocal</local>
         <ejb-link>LogSession</ejb-link>
-     </ejb-ref>
+     </ejb-local-ref>
 
      <security-identity>
         <description></description>
@@ -208,6 +175,95 @@ END LDAP Publisher -->
 -->
 
    <session>
+     <description>
+         Session bean manging CAs
+     </description>
+     <ejb-name>CAAdminSession</ejb-name>
+     <home>se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome</home>
+     <remote>se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote</remote>
+     <local-home>se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome</local-home>
+     <local>se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal</local>
+     <ejb-class>se.anatom.ejbca.ca.caadmin.CAAdminSessionBean</ejb-class>
+     <session-type>Stateless</session-type>
+     <transaction-type>Container</transaction-type>
+
+     <env-entry>
+        <description>JDBC datasource to be used</description>
+        <env-entry-name>DataSource</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>java:/DefaultDS</env-entry-value>
+     </env-entry>         
+     <env-entry>
+        <description>Used internally to keystores in database.</description>
+        <env-entry-name>keyStorePass</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>foo123</env-entry-value>
+     </env-entry>
+     <env-entry>
+        <description>Used internally to store keys in keystore in database.</description>
+        <env-entry-name>privateKeyPass</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>null</env-entry-value>
+     </env-entry>
+     <ejb-local-ref>
+        <description>The CA entity bean.</description>
+        <ejb-ref-name>ejb/CADataLocal</ejb-ref-name>
+        <ejb-ref-type>Entity</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ca.caadmin.ICADataLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.caadmin.ICADataLocal</local>
+        <ejb-link>CAData</ejb-link>
+     </ejb-local-ref>     
+     <ejb-local-ref>
+        <description>The Log session bean</description>
+        <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.log.ILogSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.log.ILogSessionLocal</local>
+        <ejb-link>LogSession</ejb-link>
+     </ejb-local-ref>
+     <ejb-local-ref>
+        <description>The Authorization Session Bean</description>
+        <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.authorization.IAuthorizationSessionLocal</local>
+        <ejb-link>AuthorizationSession</ejb-link>
+     </ejb-local-ref>
+     <ejb-local-ref>
+        <description>The Certificate Store Session Bean</description>
+        <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal</local>
+        <ejb-link>CertificateStoreSession</ejb-link>
+     </ejb-local-ref>  
+     <ejb-local-ref>
+        <description>The Sign Session Bean</description>
+        <ejb-ref-name>ejb/SignSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ca.sign.ISignSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.store.ISignSessionLocal</local>
+        <ejb-link>RSASignSession</ejb-link>
+     </ejb-local-ref>  
+
+     <ejb-local-ref>
+        <description>The User Admin Session Bean</description>
+        <ejb-ref-name>ejb/UserAdminSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ra.IUserAdminSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.ra.IUserAdminStoreSessionLocal</local>
+        <ejb-link>CertificateStoreSession</ejb-link>
+     </ejb-local-ref>     
+    <security-identity>
+        <description></description>
+        <run-as>
+            <description></description>
+            <role-name>InternalUser</role-name>
+        </run-as>
+    </security-identity>
+   </session>
+
+   <session>
      <ejb-name>CertificateStoreSession</ejb-name>
      <home>se.anatom.ejbca.ca.store.ICertificateStoreSessionHome</home>
      <remote>se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote</remote>
@@ -223,14 +279,6 @@ END LDAP Publisher -->
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>java:/DefaultDS</env-entry-value>
      </env-entry>
-     <ejb-ref>
-        <description>The Log session bean</description>
-        <ejb-ref-name>ejb/LogSession</ejb-ref-name>
-        <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.log.ILogSessionHome</home>
-        <remote>se.anatom.ejbca.log.ILogSessionRemote</remote>
-        <ejb-link>LogSession</ejb-link>
-     </ejb-ref>
      <ejb-local-ref>
         <description>The Certificate entity bean used to store and fetch certificates</description>
         <ejb-ref-name>ejb/CertificateDataLocal</ejb-ref-name>
@@ -257,7 +305,22 @@ END LDAP Publisher -->
         <local>se.anatom.ejbca.ca.store.CertificateProfileDataLocal</local>
         <ejb-link>CertificateProfileData</ejb-link>
      </ejb-local-ref>
-
+     <ejb-local-ref>
+        <description>The Log session bean</description>
+        <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.log.ILogSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.log.ILogSessionLocal</local>
+        <ejb-link>LogSession</ejb-link>
+     </ejb-local-ref>
+     <ejb-local-ref>
+        <description>The Authorization session bean</description>
+        <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.authorization.IAuthorizationSessionLocal</local>
+        <ejb-link>AuthorizationSession</ejb-link>
+     </ejb-local-ref>
 
     <security-identity>
         <description></description>
@@ -277,20 +340,14 @@ END LDAP Publisher -->
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>
 
-     <env-entry>
-        <description>Period in hours between CRLs beeing issued</description>
-        <env-entry-name>CRLPeriod</env-entry-name>
-        <env-entry-type>java.lang.Long</env-entry-type>
-        <env-entry-value>24</env-entry-value>
-     </env-entry>
-     <ejb-ref>
+     <ejb-local-ref>
         <description>The Log session bean</description>
-        <ejb-ref-name>ejb/LogSession</ejb-ref-name>
+        <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.log.ILogSessionHome</home>
-        <remote>se.anatom.ejbca.log.ILogSessionRemote</remote>
+        <local-home>se.anatom.ejbca.log.ILogSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.log.ILogSessionLocalRemote</local>
         <ejb-link>LogSession</ejb-link>
-     </ejb-ref>
+     </ejb-local-ref>
      <ejb-local-ref>
         <description>The Certificate entity bean used manipulate certificates</description>
         <ejb-ref-name>ejb/CertificateDataLocal</ejb-ref-name>
@@ -299,6 +356,14 @@ END LDAP Publisher -->
         <local>se.anatom.ejbca.ca.store.CertificateDataLocal</local>
         <ejb-link>CertificateData</ejb-link>
      </ejb-local-ref>
+     <ejb-local-ref>
+        <description>The CA Admin Session</description>
+        <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal</local>
+        <ejb-link>CAAdminSession</ejb-link>
+     </ejb-local-ref>     
      <ejb-local-ref>
         <description>The Certificate store used to store and fetch certificates</description>
         <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
@@ -318,8 +383,8 @@ END LDAP Publisher -->
 
    </session>
 
-<!-- Uncomment to use LDAP publisher
-   <session>
+<!-- Uncomment to use LDAP publisher -->
+<!--   <session>
      <ejb-name>PublisherSession1</ejb-name>
      <home>se.anatom.ejbca.ca.store.IPublisherSessionHome</home>
      <remote>se.anatom.ejbca.ca.store.IPublisherSessionRemote</remote>
@@ -389,16 +454,16 @@ END LDAP Publisher -->
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>certificateRevocationList;binary</env-entry-value>
      </env-entry>
-     <ejb-ref>
+     <ejb-local-ref>
         <description>The Log session bean</description>
-        <ejb-ref-name>ejb/LogSession</ejb-ref-name>
+        <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
-        <home>se.anatom.ejbca.log.ILogSessionHome</home>
-        <remote>se.anatom.ejbca.log.ILogSessionRemote</remote>
+        <local-home>se.anatom.ejbca.log.ILogSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.log.ILogSessionLocal</local>
         <ejb-link>LogSession</ejb-link>
-     </ejb-ref>
-   </session>
-END LDAP Publisher -->
+     </ejb-local-ref>
+   </session> -->
+<!-- END LDAP Publisher -->
 
    <entity>
       <description>
@@ -442,13 +507,14 @@ END LDAP Publisher -->
       </query>
       <query>
       	<query-method>
-      	  <method-name>findBySubjectDN</method-name>
+      	  <method-name>findBySubjectDNAndIssuerDN</method-name>
       	  <method-params>
       	    <method-param>java.lang.String</method-param>
+            <method-param>java.lang.String</method-param>
       	  </method-params>
       	</query-method>
 	<ejb-ql>
-	  <![CDATA[SELECT DISTINCT OBJECT(a) from CertificateDataBean a WHERE a.subjectDN=?1]]>
+	  <![CDATA[SELECT DISTINCT OBJECT(a) from CertificateDataBean a WHERE a.subjectDN=?1 AND a.issuerDN=?2]]>
         </ejb-ql>
       </query>
       <query>
@@ -513,13 +579,14 @@ END LDAP Publisher -->
 
       <query>
       	<query-method>
-      	  <method-name>findByCRLNumber</method-name>
+      	  <method-name>findByIssuerDNAndCRLNumber</method-name>
       	  <method-params>
+            <method-param>java.lang.String</method-param>
       	    <method-param>int</method-param>
       	  </method-params>
       	</query-method>
 	<ejb-ql>
-	  <![CDATA[SELECT DISTINCT OBJECT(a) from CRLDataBean a WHERE a.cRLNumber=?1]]>
+	  <![CDATA[SELECT DISTINCT OBJECT(a) from CRLDataBean a WHERE a.issuerDN=?1 AND a.cRLNumber=?2]]>
 	</ejb-ql>
       </query>
    </entity>
@@ -563,6 +630,48 @@ END LDAP Publisher -->
        </query>
    </entity>
 
+   <entity>
+      <description>
+            Entity Bean containing CA data
+      </description>
+      <ejb-name>CAData</ejb-name>
+      <local-home>se.anatom.ejbca.ca.caadmin.CADataLocalHome</local-home>
+      <local>se.anatom.ejbca.ca.caadmin.CADataLocal</local>
+      <ejb-class>se.anatom.ejbca.ca.caadmin.CADataBean</ejb-class>
+      <persistence-type>Container</persistence-type>
+      <prim-key-class>java.lang.Integer</prim-key-class>
+      <reentrant>False</reentrant>
+      <cmp-version>2.x</cmp-version>
+      <abstract-schema-name>CADataBean</abstract-schema-name>
+      <cmp-field><field-name>cAId</field-name></cmp-field>
+      <cmp-field><field-name>name</field-name></cmp-field>
+      <cmp-field><field-name>subjectDN</field-name></cmp-field>
+      <cmp-field><field-name>status</field-name></cmp-field>
+      <cmp-field><field-name>expireTime</field-name></cmp-field>
+      <cmp-field><field-name>data</field-name></cmp-field>
+      <primkey-field>cAId</primkey-field>          
+      <query>
+      	<query-method>
+      	  <method-name>findByName</method-name>
+      	  <method-params>
+      	    <method-param>java.lang.String</method-param>
+      	  </method-params>
+      	</query-method>
+        <ejb-ql>
+          <![CDATA[SELECT DISTINCT OBJECT(a) from CADataBean a WHERE a.name=?1]]>
+        </ejb-ql>
+       </query>
+       <query>
+         <query-method>
+           <method-name>findAll</method-name>
+           <method-params/>
+         </query-method>
+         <ejb-ql>
+           <![CDATA[SELECT DISTINCT OBJECT(a) from CADataBean AS a]]>
+         </ejb-ql>
+       </query>
+   </entity>   
+   
   </enterprise-beans>
 
  <assembly-descriptor>
@@ -722,6 +831,10 @@ END LDAP Publisher -->
          <method-name>setRevokeStatus</method-name>
      </method>
      <method>
+         <ejb-name>CAAdminSession</ejb-name>
+         <method-name>*</method-name>
+     </method>     
+     <method>
          <ejb-name>CertificateData</ejb-name>
          <method-intf>Remote</method-intf>
          <method-name>*</method-name>
@@ -750,6 +863,15 @@ END LDAP Publisher -->
          <ejb-name>CertificateStoreSession</ejb-name>
          <method-name>*</method-name>
      </method>
+     <method>
+         <ejb-name>CAAdminSession</ejb-name>
+         <method-name>getCAInfo</method-name>
+     </method>
+     <method>
+         <ejb-name>CAAdminSession</ejb-name>
+         <method-name>getCAIdToNameMap</method-name>
+     </method>
+
    <trans-attribute>Supports</trans-attribute>
    </container-transaction>
 

@@ -32,6 +32,10 @@
   <property name="log.build" value="${tmp}/log.jar" />
   <property name="logjar" value="${dist}/log.jar" />  
   
+  <property name="authorization.src" value="${src}/authorization" />
+  <property name="authorization.build" value="${tmp}/authorization.jar" />
+  <property name="authorizationjar" value="${dist}/authorization.jar" />    
+  
   <property name="hardtoken.src" value="${src}/hardtoken" />
   <property name="hardtoken.build" value="${tmp}/hardtoken.jar" />
   <property name="hardtokenjar" value="${dist}/hardtoken.jar" />   
@@ -113,7 +117,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- =================================================================== -->
   <!-- Build ALL                                                           -->
   <!-- =================================================================== -->
-  <target name="build" depends="compile, apply.war, webdist.war, ca.jar, log.jar, 
+  <target name="build" depends="compile, apply.war, webdist.war, ca.jar, log.jar, authorization.jar,
   hardtoken.jar, keyrecovery.jar, ca.ear, canora.ear, ra.jar, adminweb.war, admin.jar, sampleauth.war">
   </target>
 
@@ -237,10 +241,38 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         </fileset>
     </copy>
     
-    <!-- Jar the ca.jar package together -->
+    <!-- Jar the log.jar package together -->
     <jar basedir="${log.build}" jarfile="${logjar}"/>    
   </target>  
 
+  <!-- =================================================================== -->
+  <!-- Build authorization part                                               -->
+  <!-- =================================================================== -->
+  <target name="authorization.jar" depends="compile">
+    <mkdir dir="${authorization.build}"/>
+    <copy todir="${authorization.build}">
+      <fileset dir="${authorization.src}">
+        <include name="**/*"/>
+      </fileset>
+    </copy>
+    <copy todir="${authorization.build}">
+        <fileset dir="${build}">
+                <include name="se/anatom/ejbca/authorization/*.class"/>
+                <include name="se/anatom/ejbca/ca/caadmin/I*.class"/>
+                <include name="se/anatom/ejbca/ca/caadmin/*Info.class"/>
+                <include name="se/anatom/ejbca/ra/I*.class"/>                                                              
+                <include name="se/anatom/ejbca/ca/store/I*.class"/>  
+                <include name="se/anatom/ejbca/log/I*.class"/>
+                <include name="se/anatom/ejbca/log/Admin.class"/>  
+                <include name="se/anatom/ejbca/log/LogEntry.class"/>
+                <include name="se/anatom/ejbca/util/*.class"/> 
+                <include name="se/anatom/ejbca/SecConst.class"/>                                  
+                <exclude name="se/anatom/ejbca/**/*Test*"/>
+        </fileset>
+    </copy>
+    <jar basedir="${authorization.build}" jarfile="${authorizationjar}"/>    
+  </target>      
+  
   <!-- =================================================================== -->
   <!-- Build hard token part                                               -->
   <!-- =================================================================== -->
@@ -258,7 +290,8 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/ra/UserAdminData.class"/>  
                 <include name="se/anatom/ejbca/ra/UserDataLocal.class"/> 
                 <include name="se/anatom/ejbca/ra/UserDataLocalHome.class"/>                                                
-                <include name="se/anatom/ejbca/ra/authorization/I*.class"/>                
+                <include name="se/anatom/ejbca/authorization/I*.class"/>                
+                <include name="se/anatom/ejbca/authorization/*Exception.class"/>
                 <include name="se/anatom/ejbca/ca/store/I*.class"/>  
                 <include name="se/anatom/ejbca/log/I*.class"/>
                 <include name="se/anatom/ejbca/log/Admin.class"/>  
@@ -312,7 +345,11 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </copy>
     <copy todir="${ra.build}">
         <fileset dir="${build}">
-                <include name="se/anatom/ejbca/ra/**/*.class"/>            
+                <include name="se/anatom/ejbca/ra/**/*.class"/>                
+                <include name="se/anatom/ejbca/ca/caadmin/I*.class"/>
+                <include name="se/anatom/ejbca/ca/caadmin/*Info.class"/>
+                <include name="se/anatom/ejbca/authorization/I*.class"/>
+                <include name="se/anatom/ejbca/authorization/*Exception.class"/>            
                 <include name="se/anatom/ejbca/*.class"/>
                 <include name="se/anatom/ejbca/util/**/*.class"/>
                 <include name="se/anatom/ejbca/util/query/*.class"/>   
@@ -341,7 +378,9 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </copy>
     <copy todir="${webdist.build}/WEB-INF/classes">
         <fileset dir="${build}">
-                <include name="se/anatom/ejbca/webdist/*.class"/>
+                <include name="se/anatom/ejbca/webdist/*.class"/>                
+                <include name="se/anatom/ejbca/ca/caadmin/I*.class"/>
+                <include name="se/anatom/ejbca/ca/caadmin/*Info.class"/>
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="se/anatom/ejbca/ca/store/certificatetypes/*.class"/>                
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
@@ -394,12 +433,14 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </copy>
     <copy todir="${demoweb.build}/WEB-INF/classes">
         <fileset dir="${build}">
-                <include name="se/anatom/ejbca/webdist/**/*.class"/>
+                <include name="se/anatom/ejbca/webdist/**/*.class"/>                
+                <include name="se/anatom/ejbca/ca/caadmin/I*.class"/>
+                <include name="se/anatom/ejbca/ca/caadmin/*Info.class"/>
                 <include name="se/anatom/ejbca/ca/store/CertificateData*.class"/>                
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>         
                 <include name="se/anatom/ejbca/ca/store/certificateprofiles/*.class"/>                        
                 <include name="se/anatom/ejbca/ra/*.class"/>
-                <include name="se/anatom/ejbca/ra/authorization/*.class"/>      
+                <include name="se/anatom/ejbca/authorization/*.class"/>      
                 <include name="se/anatom/ejbca/ra/raadmin/*.class"/>
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
                 <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
@@ -428,7 +469,10 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/util/*.class"/> 
                 <include name="se/anatom/ejbca/util/query/*.class"/>                
                 <include name="se/anatom/ejbca/admin/*.class"/>
-                <include name="se/anatom/ejbca/batch/*.class"/>
+                <include name="se/anatom/ejbca/batch/*.class"/>                
+                <include name="se/anatom/ejbca/ca/caadmin/I*.class"/>
+                <include name="se/anatom/ejbca/ca/caadmin/*Info.class"/>
+                <include name="se/anatom/ejbca/ca/store/*Info.class"/>
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
                 <include name="se/anatom/ejbca/ca/store/certificateprofiles/*.class"/>                
                 <include name="se/anatom/ejbca/ca/store/IPublisher*.class"/>
@@ -436,7 +480,6 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/ca/crl/RevokedCertInfo*.class"/>
                 <include name="se/anatom/ejbca/ca/store/CertificateData*.class"/>
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/> 
-                <include name="se/anatom/ejbca/ca/caadmin/CAInfo*.class"/> 
                 <include name="se/anatom/ejbca/ra/*.class"/> 
                 <include name="se/anatom/ejbca/exception/**/*.class"/>
                 <include name="se/anatom/ejbca/ca/exception/**/*.class"/> 
@@ -445,12 +488,15 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/ra/raadmin/UserDoesntFullfillEndEntityProfile.class"/>   
                 <include name="se/anatom/ejbca/ra/raadmin/IRaAdminSessionHome.class"/>   
                 <include name="se/anatom/ejbca/ra/raadmin/IRaAdminSessionRemote.class"/>
-                <include name="se/anatom/ejbca/ra/raadmin/EndEntityProfile.class"/>   
-                <include name="se/anatom/ejbca/ra/authorization/IAuthorizationSessionHome.class"/>       
-                <include name="se/anatom/ejbca/ra/authorization/IAuthorizationSessionRemote.class"/>                              
-                <include name="se/anatom/ejbca/ra/authorization/*Exception.class"/>
-                <include name="se/anatom/ejbca/ra/authorization/UserEntity.class"/>
-                <include name="se/anatom/ejbca/ra/authorization/AdminInformation.class"/>                 
+                <include name="se/anatom/ejbca/ra/raadmin/EndEntityProfile.class"/> 
+                <include name="se/anatom/ejbca/ra/raadmin/GlobalConfiguration.class"/>
+                <include name="se/anatom/ejbca/ra/raadmin/EndEntityProfileExistsException.class"/>                   
+                <include name="se/anatom/ejbca/authorization/IAuthorizationSessionHome.class"/>       
+                <include name="se/anatom/ejbca/authorization/IAuthorizationSessionRemote.class"/>                              
+                <include name="se/anatom/ejbca/authorization/AdminGroup.class"/>       
+                <include name="se/anatom/ejbca/authorization/*Exception.class"/>
+                <include name="se/anatom/ejbca/authorization/UserEntity.class"/>
+                <include name="se/anatom/ejbca/authorization/AdminInformation.class"/>                 
                 <include name="se/anatom/ejbca/hardtoken/AvailableHardToken.class"/>  
                 <include name="se/anatom/ejbca/hardtoken/IHardTokenSessionHome.class"/> 
                 <include name="se/anatom/ejbca/hardtoken/IHardTokenSessionRemote.class"/>     
@@ -467,6 +513,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="se/anatom/ejbca/keyrecovery/IKeyRecoverySessionHome.class"/> 
                 <include name="se/anatom/ejbca/keyrecovery/KeyRecoveryData.class"/>                                                                              
                 <include name="se/anatom/ejbca/log/Admin.class"/>                                                                                                                                                                                                 
+                <include name="se/anatom/ejbca/protocol/IResponseMessage.class"/>
                 <include name="se/anatom/ejbca/protocol/IRequestMessage.class"/>                                                                                                                                                                                                 
                 <include name="se/anatom/ejbca/protocol/PKCS10RequestMessage.class"/>                                                                                                                                                                                                 
                 <include name="se/anatom/ejbca/protocol/IResponseMessage.class"/>                                                                                                                                                                                                 
@@ -482,7 +529,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- =================================================================== -->
   <!-- Build CA-ear                                                        -->
   <!-- =================================================================== -->
-  <target name="ca.ear" depends="apply.war, webdist.war, ca.jar, ra.jar, adminweb.war, log.jar, hardtoken.jar, keyrecovery.jar">
+  <target name="ca.ear" depends="apply.war, webdist.war, ca.jar, ra.jar, adminweb.war, log.jar, hardtoken.jar, keyrecovery.jar, authorization.jar">
     <mkdir dir="${caear.build}"/>
     <copy todir="${caear.earbuild}">
         <fileset dir="${caear.earsrc}"> 
@@ -506,6 +553,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="ca.jar"/>
                 <include name="ra.jar"/>
                 <include name="log.jar"/>         
+                <include name="authorization.jar"/>
                 <include name="hardtoken.jar"/>   
                 <include name="keyrecovery.jar"/>                                        
                 <include name="adminweb.war"/>
@@ -552,7 +600,8 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="webdist.war"/>
                 <include name="apply.war"/>
                 <include name="ca.jar"/>
-                <include name="log.jar"/>                 
+                <include name="log.jar"/>   
+                <include name="authorization.jar"/>              
                 <include name="ra.jar"/>
         </fileset>
     </copy>
@@ -607,6 +656,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
 		<copy overwrite="true" file="src/ca/ca/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/ca/ca/META-INF/jbosscmp-jdbc.xml"/>
 		<copy overwrite="true" file="src/ra/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/ra/META-INF/jbosscmp-jdbc.xml"/>
 		<copy overwrite="true" file="src/log/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/log/META-INF/jbosscmp-jdbc.xml"/>
+		<copy overwrite="true" file="src/authorization/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/authorization/META-INF/jbosscmp-jdbc.xml"/>                
 		<copy overwrite="true" file="src/hardtoken/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/hardtoken/META-INF/jbosscmp-jdbc.xml"/>
 		<copy overwrite="true" file="src/keyrecovery/META-INF/jbosscmp-jdbc-${ejbca.DB}.xml" tofile="src/keyrecovery/META-INF/jbosscmp-jdbc.xml"/>
 
